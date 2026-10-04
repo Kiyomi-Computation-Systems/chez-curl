@@ -22,9 +22,11 @@
 ### Layout, process & libraries
 
 * Plans live in `/.plans`, decision records in `/.plans/decisions`
-* The subagent-driven development ledger lives in `/.superpowers/sdd/` —
-  `progress.md` is the spine and `global-constraints.md` binds every task
-  brief. Read both before starting slice work; close-outs are recorded there.
+* The ledger is `/.plans/progress.md`: where the project stands, the next
+  slice, and a close-out for each merged slice. `/.plans/global-constraints.md`
+  holds the decision records' hard rules and binds every task brief. Read both
+  before starting slice work. `/.superpowers/` is git-ignored plugin scratch,
+  not the ledger.
 * Add entries to `CHANGELOG.md` for each release
 * `/docs` is for user facing documentation only.
 * Documentation should be very concise, focused, to the point, ELI5 style.
