@@ -90,7 +90,8 @@ other entry point is bound eagerly in the same library body. Nothing binds lazil
 of the most-recently-loaded rule above.
 
 - A failed load is `load-failed`.
-- A library below the floor is `below-floor`. The floor's value is D10.
+- A library below the floor is `below-floor`. The floor is 7.85.0
+  ([ADR-0003](0003-libcurl-floor-7-85.md)).
 - A library without `CURL_VERSION_SSL` is `no-ssl`.
 - None of these tries the next candidate. A failed or unsuitable library is information
   the user needs, and masking it would make behaviour machine-dependent. A library that
@@ -160,6 +161,6 @@ ADR-0016 recorded the lack of that as a gap.
   bits and TLS backend. An OS update that swaps Apple's libcurl then fails a test, not a
   user.
 - **The reason symbols are the contract.** They are `invalid-override`, `not-found`,
-  `load-failed`, `below-floor` and `no-ssl`. Tests and CI assert the reason, not the
+  `load-failed`, `below-floor`, `no-ssl` and `missing-api` (ADR-0003). Tests and CI assert the reason, not the
   remedy text, which a catch-all clause can print for any failure (chez-cmark-gfm
   `traps.md`).
