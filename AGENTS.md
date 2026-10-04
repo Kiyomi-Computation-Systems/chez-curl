@@ -19,6 +19,21 @@
 
 * libcurl
 
+### Guix development container
+
+* **On a Guix host, run every build and test through `scripts/guix-env`**,
+  e.g. `scripts/guix-env make check-guix-inside`. Batch commands with
+  `scripts/guix-env sh -c 'make a && make b'`: each call takes a second or
+  more to start.
+* Edit, commit and push on the host. The container has no git identity,
+  agents or tokens, and no network but loopback (ADR-0006).
+* Verify it with `make check-guix`, run on the host.
+* The container exports `CHEZ` (the real `scheme` binary), `CC` (gcc; the
+  toolchain has no `cc`) and `CHEZ_CURL_LIBCURL` (the profile's
+  `libcurl.so.4`, ADR-0002). It sets no `LD_LIBRARY_PATH`.
+* Anything that needs the network runs on the host: git, submodules,
+  downloads.
+
 ### Layout, process & libraries
 
 * Plans live in `/.plans`, decision records in `/.plans/decisions`
@@ -43,6 +58,47 @@
   it fail.
 * Prefer a check to a comment.
 * **Do not** write tests that rely on reading code comments
+
+## Traps the family has already hit
+
+Each shipped a green test or a working-looking build that was wrong, in
+chez-cmark-gfm, chez-libuv or here. The incident behind each is in
+`.plans/traps.md`; read it before working in that area.
+
+**Tests**
+
+* `guard` returns the body's value when nothing raises, and `0` is truthy.
+  Assert *what was raised* against an expected value, with a distinct sentinel
+  for the no-raise case.
+* SRFI-64 turns an exception in the *actual* expression into `#f`. Never
+  expect `#f` from something that can raise.
+* Every `tests/test-*.sps` must end with its own `(exit …)`: SRFI-64 sets no
+  exit status. Anything after that line never runs.
+* Chez evaluates arguments right to left in compiled library code, left to
+  right when interpreted. No assertion may depend on argument order.
+* An assertion passes whenever *another* rule can produce its expected value.
+  Assert whole outputs, not substrings, and build a test's base from
+  non-default values.
+
+**Chez and the FFI**
+
+* `foreign-procedure` resolves its entry point when evaluated, so every
+  binding must follow the library's load. Mistakes fail at *import*.
+* A library body runs only when one of its bindings is *referenced*. A test of
+  load-time behaviour must call into the library.
+
+**Checks and environment**
+
+* Deleting a subsystem disarms the checks built around it, and they stay
+  green. On any deletion, ask of every surviving check "what would make this
+  fail now?"; "nothing" is a defect.
+* Point `CHEZ` at the real binary: a symlink breaks boot-file lookup, and a
+  wrapper script hides Chez from Valgrind. `make check-guix` checks it.
+* Put `timeout` outside Valgrind, never between it and Chez: Valgrind checks
+  only the command it is handed.
+* `guix shell --pure` does not stop a login shell from rebuilding `PATH`.
+  `scripts/guix-env` uses `--container`, and `make check-guix` checks where a
+  login shell finds each tool.
 
 ## Closing ritual
 
