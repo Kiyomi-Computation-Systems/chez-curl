@@ -7,19 +7,25 @@ close-out under **Close-outs**, newest first.
 ## Now
 
 - **Milestone:** M0 (brief §8), not started.
-- **Next slice:** the development container from
-  [ADR-0006](decisions/0006-pinned-guix-container.md). That is `scripts/guix-env`,
-  `scripts/guix-env-enter`, `scripts/require-tools`, `manifest.scm`, `channels.scm`, and
-  a `Makefile` with `help`, `check-help` and `check-guix`, following
-  `~/src/cl-commonmark-gfm`. AGENTS.md gains its container section in the same slice.
+- **Next slice:** slice 1 of the [harness plan](2026-10-04-harness-plan.md) (§6). That is
+  the development container from [ADR-0006](decisions/0006-pinned-guix-container.md), now
+  with Valgrind, and the Makefile skeleton (`help`, `check-help`, `check-guix`). It
+  follows `~/src/cl-commonmark-gfm`. AGENTS.md gains its container and traps sections in
+  the same slice.
 - **Waiting on evidence:** ADR-0013 (`__collect_safe`) stays Proposed until spike E1
   at M3. Until then its rules bind as written.
-- **Loose ends:**
-  - The brief's status line still reads "draft — nothing accepted yet". Where the brief
-    and an ADR disagree, the ADR is current.
-  - AGENTS.md says `CHANGELOG.md`, but the repository has `CHANGELOG.org`.
 
 ## Close-outs
+
+### 2026-10-04 — ledger, constraints and the engine records (PR #2, `9077e28`)
+
+- **Moved the ledger to `.plans/`.** AGENTS.md names this file as the ledger and
+  `global-constraints.md` as the hard rules every task brief must follow. `/.superpowers/`
+  is git-ignored plugin scratch.
+- **Recorded the brief's engine rules.** ADR-0012 (accepted): one engine thread owns every
+  transfer handle. ADR-0013 (proposed until spike E1): blocking calls are `__collect_safe`,
+  and so is every callback they can invoke.
+- **Carried forward:** close-outs written after a merge land one PR late, as this one did.
 
 ### 2026-10-04 — open decisions settled (PR #1, `407a8c5`)
 

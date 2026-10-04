@@ -134,6 +134,29 @@ provisional. They bind until that record is accepted or amended.
 - **A check counts only after it has been watched failing** (ADR-0006, ADR-0007,
   AGENTS.md).
 
+## Memory and the test harness
+
+- **Valgrind on Linux is the memory gate.** Each suite runs as
+  `timeout N valgrind --error-exitcode=9 --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite $CHEZ --program …`.
+  `timeout` wraps Valgrind and never sits between it and Chez (ADR-0014).
+- **The gate must be seen to fail.** `make check-memory-gate` runs before `make test-memory`,
+  and planted defects must fail with Valgrind's own marker (ADR-0014).
+- **No suppression files.** `--undef-value-errors=no` is added only with a recorded run that
+  needed it (ADR-0014).
+- **When the gate runs:** CI runs it on `main`, on tags and on request. Locally it runs in the
+  container (ADR-0014).
+- **Counters:** every native object is counted, always on, per engine. Suites assert that the
+  counts move and return to zero (ADR-0014).
+- **SRFI-64 comes from `vendor/chez-srfi`,** at the commit `Akku.lock` pins. `make
+  check-pins` holds the two equal, and there are no Akku scripts (ADR-0015).
+- **`make deps` never fetches.** Submodules are fetched on the host (ADR-0015).
+- **The suite rules are checked** (ADR-0015):
+  - every `tests/test-*.sps` ends with the shared exit form, and `check-suites` checks it;
+  - a suite that ran no tests fails;
+  - every suite runs under `timeout`;
+  - `make test` runs every suite and fails if any did.
+- **Refusal probes print `(reason . symbol)`, and tests assert that symbol** (ADR-0015).
+
 ## Engine and threads
 
 - **One engine thread owns every transfer handle:** the multi handle, plus the easy,

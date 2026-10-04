@@ -1,6 +1,7 @@
 # ADR-0006: Builds and tests run in a pinned, toolchain-only Guix container with no network
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-04 to add Valgrind
+  ([ADR-0014](0014-valgrind-memory-gate.md))
 - **Date:** 2026-10-04
 - **Scope:** development tooling. No library change.
 - **Settles:** D11. That decision was raised on 2026-10-04, after the brief was written.
@@ -58,6 +59,7 @@ connect and accept succeed, and connecting to 192.0.2.1 fails with "Network is u
 3. **The manifest.** `manifest.scm` holds:
    - `chez-scheme`, `curl` (library and headers) and `gcc-toolchain` (ADR-0001, ADR-0003);
    - `node` and `openssl` (ADR-0005);
+   - `valgrind`, for the memory gate (ADR-0014, added 2026-10-04);
    - the shell tools the Makefile and scripts call, and nothing else.
 
    Each entry carries a comment naming the decision that needs it.
@@ -85,7 +87,9 @@ connect and accept succeed, and connecting to 192.0.2.1 fails with "Network is u
    - `CHEZ_CURL_LIBCURL` is absolute, exists, resolves under `/gnu/store` and is named
      `libcurl.so.4`;
    - the network is loopback only: a loopback connect succeeds and an outside address is
-     unreachable.
+     unreachable;
+   - Valgrind instruments `$CHEZ`: a run under it prints an `ERROR SUMMARY` line, as
+     chez-cmark-gfm's self-test checks (added 2026-10-04, for ADR-0014).
 
    Each assertion is watched failing under a targeted change before it counts.
 7. **Agents and people edit, commit and push on the host.** Builds and tests go through
