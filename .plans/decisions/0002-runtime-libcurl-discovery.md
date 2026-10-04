@@ -131,9 +131,9 @@ ADR-0016 recorded the lack of that as a gap.
 - **Nothing reads `LD_LIBRARY_PATH` or `DYLD_*` on chez-curl's behalf.** Anyone pointing at
   a non-standard libcurl uses `CHEZ_CURL_LIBCURL`. That covers Nix, `/opt` prefixes and
   hand builds.
-- **Development never depends on the search.** The dev environment's Guix manifest sets
-  `CHEZ_CURL_LIBCURL` through a search-path specification, as chez-cmark-gfm's
-  `manifest.scm` sets its override. Two kinds of test cover the search instead:
+- **Development never depends on the search.** The development container exports
+  `CHEZ_CURL_LIBCURL` ([ADR-0006](0006-pinned-guix-container.md)). Two kinds of test cover
+  the search instead:
   - **The pure function, with synthetic inputs.** Each rule gets a test that fails by
     name when the rule is relaxed. These include:
     - a Guix world never yields a standard directory, even when one "exists" in the
