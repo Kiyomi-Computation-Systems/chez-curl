@@ -3,12 +3,15 @@
 - **Status:** Proposed. It binds as written until spike E1 (M3) records its measurements.
   It is then accepted, or amended to fit them.
 - **Date:** 2026-10-04
+- **Corrected:** 2026-10-04. The E5 series is chez-http-server's, not chez-libuv's. Its
+  figures are restated from that spike report, which ran on macOS only.
 - **Scope:** chez-curl v1: every foreign procedure and foreign callable
 - **Settles:** the brief's §5 rule, provisionally
 - **Related:**
   - brief §5 and §8 (M2, M3 and spike E1);
   - chez-libuv ADR-0019, whose first decision this mirrors, and ADR-0002, which was held
     until its spike's evidence came in;
+  - chez-http-server's `.plans/research/spike/spike-control-flow.md`, home of the E5 series;
   - [ADR-0001](0001-bind-libcurl-directly.md) (`memcpy` is a plain call);
   - [ADR-0012](0012-engine-thread-owns-every-handle.md) (the engine).
 
@@ -17,13 +20,16 @@
 Chez's collector is stop-the-world. The user guide (CSUG 10.4.1 §4.3) says
 `__collect_safe` "allows concurrent collection by deactivating the current thread … when
 the foreign procedure is called". A thread blocked in a plain foreign call stays active,
-so every other thread's collection waits for it. The brief cites chez-libuv's measurements:
+so every other thread's collection waits for it.
+
+chez-http-server's E5 spike series measured this through chez-libuv's binding, on macOS
+arm64 with Chez 10.4.1. chez-libuv's ADR-0019 rests on these numbers:
 
 | Spike | Setup | Result |
 |---|---|---|
-| E5c | a worker allocating beside a loop thread blocked in a plain `uv_run` | ~24 ms of allocation took 10.2 s |
-| E5g | the same, with `uv_run` declared `__collect_safe` | 23–33 ms |
-| E5f | the cost of the declaration | ~60–65 ns per callback conversion |
+| E5c | a worker allocating beside a loop thread blocked in a plain `uv_run`, with a 300 ms timer | 10,272 ms, against a 28 ms baseline |
+| E5g | E5c rerun against chez-libuv v0.6.0, where `uv_run` is `__collect_safe` | 23–35 ms |
+| E5f | the cost of the declaration, 5 million callbacks per trial | "about 60 ns per callback" (plain ~180–190 ns, `__collect_safe` ~235–250 ns) |
 
 The same guide gives two rules that bind here:
 
@@ -69,26 +75,29 @@ Provisional until E1.
    memory from `foreign-alloc`, freed afterwards.
 5. **Spike E1 (M3) measures, against curl:**
    - a worker thread's allocation time while the engine blocks in `curl_multi_poll`, with
-     the call declared plain and then `__collect_safe` (chez-libuv's E5c and E5g);
+     the call declared plain and then `__collect_safe` (chez-http-server's E5c and E5g);
    - which libcurl calls block;
    - which call each callback fires from;
    - whether one callback may serve both a `__collect_safe` call and a plain one. CSUG does
      not say, and M2's and M3's paths may share callbacks.
 
-   Its findings file decides whether this record is accepted or amended.
+   E1 runs on Linux, which the E5 series never did. Every claim is run twice. Its programs
+   are committed beside its findings file, which decides whether this record is accepted
+   or amended.
 
 ### Rejected
 
 - **Every callback `__collect_safe`, as the brief worded it.** That pays ~60 ns per call
   where no `__collect_safe` call can invoke the callback. And CSUG does not say such a
   callback is safe when entered from a plain call, so E1 tests that first.
-- **Accepting now on chez-libuv's numbers.** The brief rules it out.
-- **No `__collect_safe` at all.** E5c measured what that costs: 10.2 s.
+- **Accepting now on the E5 numbers.** The brief rules it out, and those numbers come from
+  macOS only.
+- **No `__collect_safe` at all.** E5c measured what that costs: 10,272 ms instead of 28 ms.
 
 ## Consequences
 
 - **M2 starts with `curl_easy_perform` and its callbacks declared `__collect_safe`.**
-- **The cost is small where the rule applies.** It is ~60–65 ns per callback conversion
+- **The cost is small where the rule applies.** It is about 60 ns per callback conversion
   (E5f), against write chunks of up to 16 KiB (`CURL_MAX_WRITE_SIZE`, 16384).
 - **Contradicting findings get raised, not worked around.** A finding during M2 or M3 that
   contradicts this record is raised and ruled on, not quietly worked around.
