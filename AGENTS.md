@@ -7,7 +7,8 @@
 * Use the functional core / imperative shell pattern
 * Follow the 12 Factor Apps philosophy
 * Project is built for Chez Scheme
-* Project should be portable across macos (darwin), linux, and windows
+* Project should be portable across macos (darwin) and linux; windows is not
+  supported (`.plans/decisions/0004-windows-not-supported.md`)
 * Project should be portable across amd64 and arm64
 * **DO NOT** setup macos CI runners: linux only!
 * Exported functions should have a comment with a Typed Racket style type signature
