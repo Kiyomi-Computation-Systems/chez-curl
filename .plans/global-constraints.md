@@ -119,6 +119,7 @@ provisional. They bind until that record is accepted or amended.
 - **The container has no network.** Tests reach nothing beyond loopback (ADR-0006).
 - **Inside the container:**
   - `CHEZ` is the real `scheme` binary;
+  - `CC` is the profile's `gcc`, since the toolchain has no `cc`;
   - `CHEZ_CURL_LIBCURL` is the profile's `libcurl.so.4`;
   - there is no `LD_LIBRARY_PATH` and no `--emulate-fhs`.
 

@@ -1,0 +1,152 @@
+#!/bin/sh
+# Runs INSIDE the pinned container, as `make check-guix-inside`. Not a
+# launcher: `make check-guix` runs tests/guix-env-launcher.sh on the host,
+# then this through scripts/guix-env. Asserts what the environment exists
+# for (ADR-0006). Each failure names its assertion.
+set -u
+
+if [ -z "${GUIX_ENVIRONMENT:-}" ]; then
+  echo "check-guix: FAILED not-in-environment: this is the self-test, not the launcher; use make check-guix" >&2
+  exit 2
+fi
+
+fail=0
+ok()  { echo "check-guix: ok $*"; }
+bad() { echo "check-guix: FAILED $*" >&2; fail=1; }
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+# Assertion 1: nothing of the host's HOME is visible. The container's HOME
+# holds at most the directories leading down to the repository, which it
+# shares; anything else (a dotfile, a key, a host tool's config) means the
+# isolation this environment exists for is gone.
+home_ok=1
+for e in "$HOME"/* "$HOME"/.[!.]* "$HOME"/..?*; do
+  [ -e "$e" ] || continue
+  case "$PWD/" in
+    "$e"/*) ;;
+    *) bad "isolated-home: $e is visible inside the container"; home_ok=0 ;;
+  esac
+done
+[ "$home_ok" -eq 1 ] && ok "isolated-home ($HOME holds only the path to $PWD)"
+
+# Assertion 2: however a login shell finds a tool, it runs the pinned
+# binary. Both forms, since rc files branch on $-. Compared by resolved
+# path: a host or guix-home copy that is a different store item is not the
+# pinned one.
+for mode in -lc -lic; do
+  for tool in scheme curl node openssl gcc valgrind make; do
+    p=$(bash "$mode" "command -v $tool" 2>/dev/null | tail -n 1)
+    want=$(readlink -f "$GUIX_ENVIRONMENT/bin/$tool")
+    got=
+    [ -n "$p" ] && got=$(readlink -f "$p")
+    if [ -n "$got" ] && [ "$got" = "$want" ]; then
+      ok "tool-path[$mode] ($tool: $p)"
+    else
+      bad "tool-path[$mode]: $tool resolves to '${got:-nothing}' (via '${p:-nothing}'), expected $want"
+    fi
+  done
+done
+
+# Assertion 3: the Makefile's $(CHEZ) is the profile's Chez binary itself.
+# A wrapper script that execs Chez satisfies the suites while hiding Chez
+# from Valgrind, which then prints no ERROR SUMMARY. One that doesn't exec
+# makes Valgrind report on the shell instead, so the ELF check is needed
+# too.
+chez=${CHEZ:-}
+case "$chez" in
+  "$GUIX_ENVIRONMENT"/*) ok "chez-variable ($chez)" ;;
+  *) bad "chez-variable: CHEZ is '${chez:-unset}', expected under $GUIX_ENVIRONMENT" ;;
+esac
+magic=$(head -c 4 "$chez" 2>/dev/null | od -An -tx1 | tr -d ' \n')
+if [ "$magic" = 7f454c46 ]; then
+  ok "chez-is-elf"
+else
+  bad "chez-is-elf: '${chez:-unset}' starts with '${magic:-nothing}', not an ELF header"
+fi
+if valgrind "$chez" --version 2>&1 | grep -q 'ERROR SUMMARY'; then
+  ok "valgrind-instruments-chez"
+else
+  bad "valgrind-instruments-chez: valgrind '${chez:-unset}' --version printed no ERROR SUMMARY"
+fi
+
+# Assertion 4: the Makefile's $(CC) is the profile's gcc, and it compiles a
+# program against libcurl's headers, as the constants check will.
+cc=${CC:-}
+case "$cc" in
+  "$GUIX_ENVIRONMENT"/*) ok "cc-variable ($cc)" ;;
+  *) bad "cc-variable: CC is '${cc:-unset}', expected under $GUIX_ENVIRONMENT" ;;
+esac
+cat >"$tmp/headers.c" <<'EOF'
+#include <stdio.h>
+#include <curl/curl.h>
+int main(void) { printf("libcurl headers %s\n", LIBCURL_VERSION); return 0; }
+EOF
+got=
+if "$cc" -o "$tmp/headers" "$tmp/headers.c" 2>"$tmp/cc.err"; then
+  got=$("$tmp/headers")
+fi
+case "$got" in
+  "libcurl headers "[0-9]*.[0-9]*.[0-9]*) ok "curl-headers (${got#libcurl headers })" ;;
+  *) bad "curl-headers: '${cc:-unset}' could not compile against <curl/curl.h>: $(head -n 1 "$tmp/cc.err")" ;;
+esac
+
+# Assertion 5: CHEZ_CURL_LIBCURL names the profile's libcurl.so.4 itself,
+# not the store file it resolves to, so the suites never depend on
+# discovery (ADR-0002).
+lib=${CHEZ_CURL_LIBCURL:-}
+want=$GUIX_ENVIRONMENT/lib/libcurl.so.4
+if [ "$lib" != "$want" ]; then
+  bad "libcurl-override: CHEZ_CURL_LIBCURL is '${lib:-unset}', expected $want"
+elif [ ! -f "$lib" ]; then
+  bad "libcurl-override: $lib is not a regular file"
+else
+  ok "libcurl-override ($lib -> $(readlink -f "$lib"))"
+fi
+
+# Assertion 6: no library loads by bare name. Exit 3 means Chez refused
+# the load, 4 that it loaded, and anything else that Chez itself failed.
+printf '%s\n' '(exit (guard (e (#t 3)) (load-shared-object "libcurl.so.4") 4))' \
+  | "$chez" -q >/dev/null 2>&1
+status=$?
+case "$status" in
+  3) ok "no-bare-name-load (libcurl.so.4 refused)" ;;
+  4) bad "no-bare-name-load: Chez loaded libcurl.so.4 by bare name (LD_LIBRARY_PATH=${LD_LIBRARY_PATH-unset})" ;;
+  *) bad "no-bare-name-load: '${chez:-unset}' exited $status, expected 3" ;;
+esac
+
+# Assertion 7: the network is loopback only. A loopback connection is
+# accepted, and an outside address (TEST-NET-1, RFC 5737) is unreachable
+# at once, not merely silent.
+net=$(node -e '
+const net = require("node:net");
+const done = (msg) => { console.log(msg); process.exit(0); };
+const server = net.createServer((socket) => socket.end());
+server.listen(0, "127.0.0.1", () => {
+  const inside = net.connect(server.address().port, "127.0.0.1");
+  inside.on("error", (e) => done("loopback " + e.code));
+  inside.on("connect", () => {
+    inside.destroy();
+    server.close();
+    const outside = net.connect(9, "192.0.2.1");
+    setTimeout(() => done("loopback accepted; 192.0.2.1 silent for 5s"), 5000).unref();
+    outside.on("connect", () => done("loopback accepted; 192.0.2.1 connected"));
+    outside.on("error", (e) => done("loopback accepted; 192.0.2.1 " + e.code));
+  });
+});' 2>&1)
+if [ "$net" = "loopback accepted; 192.0.2.1 ENETUNREACH" ]; then
+  ok "loopback-only ($net)"
+else
+  bad "loopback-only: $net"
+fi
+
+# Assertion 8: the Makefile's own checks pass in here too.
+if ! make --no-print-directory check-help; then
+  bad "check-help"
+fi
+
+if [ "$fail" -eq 0 ]; then
+  echo "check-guix: ALL CHECKS PASSED"
+fi
+exit "$fail"

@@ -124,6 +124,9 @@ These are general traps, copied with their one-line rules. Their incidents go in
   call into the library.
 - **`$CHEZ` must be the real binary,** neither a symlink nor a wrapper. `check-guix` checks it.
 - **`timeout` goes outside Valgrind,** never between it and Chez.
+- **`guix shell --pure` does not stop a login shell from rebuilding `PATH`.** The container
+  uses `--container`, and `check-guix` checks where a login shell finds each tool. Added in
+  slice 1, which copied that check.
 - **An assertion passes whenever another rule can produce its expected value.** Assert whole
   outputs, and build test bases from non-default values.
 - **Deleting a subsystem disarms its checks.** Ask what would make each surviving check

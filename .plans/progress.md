@@ -6,16 +6,38 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **Milestone:** M0 (brief §8), not started.
-- **Next slice:** slice 1 of the [harness plan](2026-10-04-harness-plan.md) (§6). That is
-  the development container from [ADR-0006](decisions/0006-pinned-guix-container.md), now
-  with Valgrind, and the Makefile skeleton (`help`, `check-help`, `check-guix`). It
-  follows `~/src/cl-commonmark-gfm`. AGENTS.md gains its container and traps sections in
-  the same slice.
+- **Milestone:** M0 (brief §8), in progress.
+- **Done:** slice 1 of the [harness plan](2026-10-04-harness-plan.md) (§6). That is the
+  development container from [ADR-0006](decisions/0006-pinned-guix-container.md), with
+  Valgrind, and the Makefile skeleton (`help`, `check-help`, `check-guix`). Its close-out
+  follows the merge.
+- **Next slice:** slice 2, the test harness
+  ([ADR-0015](decisions/0015-test-harness-and-scheme-dependencies.md)):
+  - the chez-srfi submodule, `Akku.manifest`, `Akku.lock`, `check-pins` and `deps`;
+  - the `test` loop, `check-suites` and `check-test-fails`;
+  - `tests/curl-testing.sls` and `packaging/debian-prereqs.txt`.
 - **Waiting on evidence:** ADR-0013 (`__collect_safe`) stays Proposed until spike E1
   at M3. Until then its rules bind as written.
 
 ## Close-outs
+
+### 2026-10-04 — living brief, harness plan, memory and test records (PR #3, `ea56eb4`)
+
+- **The brief is a living document,** accepted for M0. It cites the records and defers to
+  them where they disagree.
+- **Recorded how M0 checks itself:**
+  - ADR-0014: Valgrind on Linux is the memory gate, and it must be seen to fail.
+  - ADR-0015: SRFI-64 comes from a vendored chez-srfi pinned in `Akku.lock`, and the suite
+    rules are checks.
+- **Planned the harness.** The harness plan covers what M0 copies from chez-cmark-gfm and
+  chez-libuv, seven improvements on them, CI's lanes, and five slices.
+- **Corrected two records:**
+  - ADR-0006 gained Valgrind. It had been lost by copying cl-commonmark-gfm's container
+    rather than chez-cmark-gfm's.
+  - ADR-0013's E5 figures are chez-http-server's, measured on macOS only.
+- **Renamed** `CHANGELOG.org` to `CHANGELOG.md`.
+- **Carried forward:** close-outs written after a merge still land one PR late, as this
+  one does.
 
 ### 2026-10-04 — ledger, constraints and the engine records (PR #2, `9077e28`)
 

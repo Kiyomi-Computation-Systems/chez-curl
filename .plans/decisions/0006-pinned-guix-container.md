@@ -1,7 +1,8 @@
 # ADR-0006: Builds and tests run in a pinned, toolchain-only Guix container with no network
 
 - **Status:** Accepted; amended 2026-10-04 to add Valgrind
-  ([ADR-0014](0014-valgrind-memory-gate.md))
+  ([ADR-0014](0014-valgrind-memory-gate.md)), and again on 2026-10-04 with what M0 slice 1
+  measured ([amendment](#amendment-2026-10-04-what-slice-1-measured))
 - **Date:** 2026-10-04
 - **Scope:** development tooling. No library change.
 - **Settles:** D11. That decision was raised on 2026-10-04, after the brief was written.
@@ -67,12 +68,17 @@ connect and accept succeed, and connecting to 192.0.2.1 fails with "Network is u
    - **`CHEZ`** is `$GUIX_ENVIRONMENT/bin/scheme`, the real binary. A `chez` symlink breaks
      boot-file lookup, and a wrapper script hides Chez from Valgrind (chez-cmark-gfm
      `traps.md`).
-   - **`CHEZ_CURL_LIBCURL`** is the one `libcurl.so.4` under `$GUIX_ENVIRONMENT/lib`,
-     resolved to exactly one file the way cl-commonmark-gfm's `resolve_one` does. So the
-     suites never depend on discovery (ADR-0002).
+   - **`CC`** is `$GUIX_ENVIRONMENT/bin/gcc`. `gcc-toolchain` installs no `cc` at the pin,
+     so make's default `CC` would find no compiler (amended 2026-10-04).
+   - **`CHEZ_CURL_LIBCURL`** is `$GUIX_ENVIRONMENT/lib/libcurl.so.4`, the profile's own
+     entry rather than the store file behind it. So the suites never depend on discovery
+     (ADR-0002). The script refuses to start when this file, `bin/scheme` or `bin/gcc` is
+     missing (amended 2026-10-04).
    - **No `LD_LIBRARY_PATH` and no `--emulate-fhs`.** Nothing here loads a library by bare
-     name (ADR-0002), and leaving both out keeps a bare-name load from succeeding by
-     accident.
+     name (ADR-0002). `LD_LIBRARY_PATH` would make a bare-name load succeed by accident,
+     and the self-test checks that one fails. `--emulate-fhs` stays out because ADR-0002
+     never searches standard directories in a Guix world. Measured, it does not make
+     Guix's Chez load by bare name (amended 2026-10-04).
    - **No `.guix-env/` state directory and no `GUIX_ENV_MANIFEST`.** Nothing in this
      toolchain keeps state between runs, and there is no second manifest. Each can be added
      the way cl-commonmark-gfm has it, when something needs it.
@@ -81,15 +87,21 @@ connect and accept succeed, and connecting to 192.0.2.1 fails with "Network is u
 6. **`make check-guix`** runs the host-side launcher tests, then `make check-guix-inside` in
    the container. That self-test asserts:
    - the container's `HOME` is isolated;
-   - Chez, curl, node, openssl and cc resolve under `/gnu/store`, however a login shell
-     finds them;
-   - `CHEZ` is an ELF binary;
-   - `CHEZ_CURL_LIBCURL` is absolute, exists, resolves under `/gnu/store` and is named
-     `libcurl.so.4`;
+   - Chez, curl, node, openssl, gcc, Valgrind and make resolve to the profile's own
+     binaries, however a login shell finds them (gcc stands in for `cc`, which the
+     toolchain lacks; amended 2026-10-04);
+   - `CHEZ` lies under the profile and is an ELF binary;
+   - `CC` lies under the profile, and compiles a program against `<curl/curl.h>` (added
+     2026-10-04);
+   - `CHEZ_CURL_LIBCURL` is exactly `$GUIX_ENVIRONMENT/lib/libcurl.so.4`, and exists
+     (amended 2026-10-04);
+   - no library loads by bare name: Chez's `load-shared-object` of `libcurl.so.4` is
+     refused (added 2026-10-04);
    - the network is loopback only: a loopback connect succeeds and an outside address is
      unreachable;
    - Valgrind instruments `$CHEZ`: a run under it prints an `ERROR SUMMARY` line, as
-     chez-cmark-gfm's self-test checks (added 2026-10-04, for ADR-0014).
+     chez-cmark-gfm's self-test checks (added 2026-10-04, for ADR-0014);
+   - the Makefile's own checks pass inside it (added 2026-10-04).
 
    Each assertion is watched failing under a targeted change before it counts.
 7. **Agents and people edit, commit and push on the host.** Builds and tests go through
@@ -125,3 +137,19 @@ connect and accept succeed, and connecting to 192.0.2.1 fails with "Network is u
 - **The container isolates the toolchain; it is not a sandbox.** The repository is shared
   read-write, and the host later runs what the container writes there.
 - **Bumping the pin** means changing `channels.scm` and running `make check-guix`.
+
+## Amendment, 2026-10-04: what slice 1 measured
+
+M0 slice 1 built this container and watched each of its checks fail
+([mutation log](../guix-env-mutation-log.md)). Three findings changed the text above:
+
+- **`gcc-toolchain` installs `gcc` but no `cc` at the pin.** The container exports `CC`,
+  as it exports `CHEZ`, and the self-test checks `gcc` and `$CC`.
+- **`--emulate-fhs` does not let Guix's Chez load a library by bare name.** With the flag,
+  `/lib/libcurl.so.4`, `/usr/lib/libcurl.so.4` and `/etc/ld.so.cache` all exist. Chez's
+  `load-shared-object` of `libcurl.so.4` is still refused, while an absolute `/usr/lib`
+  path loads. That Chez's loader is Guix's glibc, which searches none of them. The flag
+  stays out for ADR-0002's reason. The launcher's test checks that it is absent; no
+  self-test assertion can tell, and the property one would guard holds either way.
+- **`LD_LIBRARY_PATH` does let it.** Set to the profile's `lib`, it makes that same
+  bare-name load succeed. The self-test now asserts that the load fails.
