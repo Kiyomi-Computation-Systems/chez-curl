@@ -7,7 +7,8 @@
 #     one argument per line;
 #   - scripts/guix-env-enter: run directly, against a fake profile;
 #   - scripts/require-tools, and the Makefile's use of it: run with PATH
-#     set to a directory of stub executables.
+#     set to a directory of stub executables, and, for M2, in a copy of the
+#     tree with the real PATH.
 #
 # `make check-guix` runs this before entering the container. Checks name
 # themselves, and the exit status is non-zero if any failed.
@@ -282,6 +283,58 @@ check "M1 make check-guix without guix: fails" [ "$status" -ne 0 ]
 check "M1 make check-guix without guix: names the goal" \
   grep -Fxq "make check-guix: guix not found." "$tmp/err"
 check "M1 make check-guix without guix: runs no test" [ ! -s "$started" ]
+
+# M2: `make test` with no Chez stops at its prerequisite check-suites, whose
+# require-tools hint names `test`, the goal the user typed, not
+# `check-suites`: GOAL's $(MAKECMDGOALS) branch, reached through a
+# prerequisite. It runs in a copy of the tree, with the real PATH, so deps and
+# check-help pass and check-suites' require-tools is what stops it, before any
+# suite runs. The copy has no .git and no build/: make test needs neither, and
+# in a worktree .git points outside the one directory the container shares.
+# Only the hint's first line is compared: the line after it depends on whether
+# the host has guix. make's own "***" line carries a Makefile line number.
+copy=$tmp/tree
+mkdir "$copy"
+for entry in "$root"/* "$root"/.[!.]* "$root"/..?*; do
+  [ -e "$entry" ] || [ -L "$entry" ] || continue
+  case "$entry" in "$root/.git" | "$root/build") continue ;; esac
+  cp -a "$entry" "$copy/" || { echo "guix-env-launcher: could not copy $entry" >&2; exit 2; }
+done
+( env -i PATH="$PATH" "$make_bin" --no-print-directory -C "$copy" test CHEZ=no-such-chez ) \
+  >"$tmp/out" 2>"$tmp/err"
+status=$?
+check "M2 make test without Chez: fails" [ "$status" -ne 0 ]
+check "M2 make test without Chez: the prerequisite's hint names test" \
+  grep -Fxq "make test: no-such-chez not found." "$tmp/err"
+check "M2 make test without Chez: runs no suite" lacks "=== "
+check "M2 make test without Chez: names no suite's outcome" lacks "test: "
+
+# T9: the TIMEOUT fallback. GNU timeout is `timeout`, else `gtimeout` (where
+# Homebrew's coreutils installs it, on macOS), else the bare name `timeout`,
+# which require-tools then reports missing. Each case asks make which TIMEOUT it
+# would use, with PATH holding only the stubs. The first holds both names, so
+# `timeout` must win. The quotes in the recipe make make run it through the
+# shell, whose echo is built in: with no quote or other shell character in the
+# line, make would exec echo itself, and PATH has no echo.
+print_timeout() {
+  status=999
+  env -i PATH="$stubs" "$make_bin" --no-print-directory -C "$root" \
+    --eval 'print-timeout: ; @echo "$(TIMEOUT)"' print-timeout >"$tmp/out" 2>"$tmp/err"
+  status=$?
+}
+printed() { [ "$status" -eq 0 ] && [ "$(cat "$tmp/out")" = "$1" ]; }
+
+reset_stubs timeout gtimeout
+print_timeout
+check "T9a timeout and gtimeout: timeout, by its path" printed "$stubs/timeout"
+
+reset_stubs gtimeout
+print_timeout
+check "T9b only gtimeout: gtimeout, by its path" printed "$stubs/gtimeout"
+
+reset_stubs
+print_timeout
+check "T9c neither: the bare name timeout" printed timeout
 
 printf '%d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

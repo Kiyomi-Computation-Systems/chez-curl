@@ -141,9 +141,24 @@ else
   bad "loopback-only: $net"
 fi
 
-# Assertion 8: the Makefile's own checks pass in here too.
+# Assertion 8: there is no git in here. In a git worktree, .git names a
+# directory outside the one directory this container shares, so git here
+# would read nothing, and whatever needed it would fail in every worktree
+# (ADR-0006's amendment).
+if p=$(command -v git); then
+  bad "no-git: git is at $p; anything that needs git runs on the host"
+else
+  ok "no-git"
+fi
+
+# Assertion 9: the Makefile's own checks pass in here too: check-help, and
+# test, which runs every suite (ADR-0015). check-pins is not one of them: it
+# needs git, so it runs on the host and in CI.
 if ! make --no-print-directory check-help; then
   bad "check-help"
+fi
+if ! make --no-print-directory test; then
+  bad "test"
 fi
 
 if [ "$fail" -eq 0 ]; then

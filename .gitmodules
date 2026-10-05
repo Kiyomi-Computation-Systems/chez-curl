@@ -1,0 +1,3 @@
+[submodule "vendor/chez-srfi"]
+	path = vendor/chez-srfi
+	url = https://github.com/arcfide/chez-srfi.git

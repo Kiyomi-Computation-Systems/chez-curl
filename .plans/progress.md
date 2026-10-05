@@ -7,19 +7,36 @@ close-out under **Close-outs**, newest first.
 ## Now
 
 - **Milestone:** M0 (brief §8), in progress.
-- **Done:** slice 1 of the [harness plan](2026-10-04-harness-plan.md) (§6). That is the
-  development container from [ADR-0006](decisions/0006-pinned-guix-container.md), with
-  Valgrind, and the Makefile skeleton (`help`, `check-help`, `check-guix`). Its close-out
-  follows the merge.
-- **Next slice:** slice 2, the test harness
-  ([ADR-0015](decisions/0015-test-harness-and-scheme-dependencies.md)):
-  - the chez-srfi submodule, `Akku.manifest`, `Akku.lock`, `check-pins` and `deps`;
-  - the `test` loop, `check-suites` and `check-test-fails`;
-  - `tests/curl-testing.sls` and `packaging/debian-prereqs.txt`.
+- **Done:** slices 1 and 2 of the [harness plan](2026-10-04-harness-plan.md) (§6):
+  - slice 1, the container and the Makefile skeleton;
+  - slice 2, the test harness
+    ([ADR-0015](decisions/0015-test-harness-and-scheme-dependencies.md)). Its close-out
+    follows the merge.
+- **Next slice:** slice 3, loading (ADR-0001, ADR-0002, ADR-0003):
+  - `require-threaded`, the conditions, and pure discovery with its suite;
+  - `native.sls`, with the load order, the version check and the probes;
+  - `make build` as the preflight, the refusal probes, and `check-seam`.
 - **Waiting on evidence:** ADR-0013 (`__collect_safe`) stays Proposed until spike E1
   at M3. Until then its rules bind as written.
 
 ## Close-outs
+
+### 2026-10-04 — M0 slice 1: the pinned container and the Makefile skeleton (PR #4, `e8a2f63`)
+
+- **Built ADR-0006's container, with Valgrind.** `scripts/guix-env` runs the pinned
+  toolchain with no network. `make check-guix` tests the launcher on the host (60 checks),
+  then checks the container from inside. A cached start takes about 1.5 s.
+- **Checked the help.** `check-help` holds `make help`'s own listing equal to `.PHONY`,
+  both ways.
+- **Measured, and amended ADR-0006:**
+  - the pinned toolchain has no `cc`, so the container exports `CC`;
+  - `--emulate-fhs` does not let Guix's Chez load a library by bare name;
+  - `LD_LIBRARY_PATH` does, so the self-test asserts that such a load fails.
+- **Evidence:** the [mutation log](guix-env-mutation-log.md) records 50 mutations, each
+  failing its check by name. The red run caught a launcher test that passed for the wrong
+  reason.
+- **Carried forward:** `GOAL`'s `MAKECMDGOALS` branch stays unexercised until a target
+  reaches `require-tools` through a prerequisite, which is slice 2's `test`.
 
 ### 2026-10-04 — living brief, harness plan, memory and test records (PR #3, `ea56eb4`)
 

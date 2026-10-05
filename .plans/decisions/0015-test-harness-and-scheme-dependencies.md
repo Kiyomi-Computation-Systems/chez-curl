@@ -1,6 +1,6 @@
 # ADR-0015: Tests use SRFI-64 from a vendored chez-srfi pinned in Akku.lock, and the suite rules are checks
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-04 with what M0 slice 2 built (marked inline)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl's test suites and Scheme dependencies
 - **Related:**
@@ -9,7 +9,8 @@
   - chez-cmark-gfm ADR-0017 (no Akku scripts);
   - [ADR-0001](0001-bind-libcurl-directly.md) (whether to publish on Akku is open);
   - [ADR-0006](0006-pinned-guix-container.md) (no network in the container);
-  - [the harness plan](../2026-10-04-harness-plan.md).
+  - [the harness plan](../2026-10-04-harness-plan.md);
+  - evidence: [the test-harness mutation log](../test-harness-mutation-log.md).
 
 ## Context
 
@@ -37,20 +38,42 @@ The 2026-10-04 survey found the siblings' suite rules are written down but never
 2. **Akku declares and pins it.** `Akku.manifest` declares chez-srfi as a development
    dependency and runs no scripts. `Akku.lock` pins the same commit, and `make check-pins`
    fails when the submodule and `Akku.lock` disagree. Publishing chez-curl on Akku is still
-   undecided (ADR-0001).
+   undecided (ADR-0001). Amended 2026-10-04 in M0 slice 2:
+   - `check-pins` reads both the commit the superproject records and the one checked out,
+     since those move separately.
+   - It runs on the host and in CI, not in the container and not as part of `make test`.
+     The container has no git, because in a git worktree its git could read nothing
+     (ADR-0006's amendment).
+   - `tests/test-manifest.sps` reads `Akku.manifest` and `Akku.lock` as data. It holds the
+     manifest to no `depends` and no `scripts`, `depends/dev` to chez-srfi alone, and the
+     lock to the manifest's version.
 3. **`make deps` never fetches.** It links the checked-out submodule into
    `build/scheme-libs`. If the submodule is empty, it fails and points at
    `git submodule update --init` on the host. The container has no network (ADR-0006).
 4. **The suite rules are checks:**
    - **`make check-suites`** reads every `tests/test-*.sps` as data. It requires each to end
      with the shared exit form, which fails when the runner saw a failure or saw no tests at
-     all.
+     all. The form is `(exit (suite-exit-status runner))`, from `tests/curl-testing.sls`. Its
+     verdict is 0 only when the runner saw a pass and no failure or unexpected pass. It is
+     never a count, since exit statuses wrap at 256. Before its last datum, a suite may
+     exit early only with `(exit 1)`, since an early `(exit 0)` would skip the verdict
+     (amended 2026-10-04 in M0 slice 2).
    - **`make test`** runs `check-help` and `check-suites` first. It then runs every suite,
      even after a failure, and fails if any did.
    - **Every suite runs under `timeout`.** `scripts/require-tools` makes `timeout` required.
-     Exit status 124 is reported as HUNG, not as a failing assertion.
+     Exit status 124 is reported as HUNG, not as a failing assertion. On macOS, make finds
+     Homebrew coreutils' `gtimeout`, and `--foreground` lets Ctrl-C reach a running suite
+     (amended 2026-10-04 in M0 slice 2).
    - **`make check-test-fails`** plants a failing suite in a copy of the tree. `make test`
-     must exit non-zero there and still run the suites after it.
+     must exit non-zero there and still run the suites after it. It also plants:
+     - a suite that runs no test;
+     - one that hangs;
+     - one without the shared exit form;
+     - one that exits 0 early;
+     - an empty file.
+
+     It also empties the glob. Each case must fail by name, and a planted passing suite after
+     the plant proves the loop goes on (amended 2026-10-04 in M0 slice 2).
 5. **Probes and helpers sit outside the `test-*` glob.** A probe that exercises a refusal
    catches the condition and prints `(reason . symbol)`. Tests assert that symbol and never
    match error text.
@@ -64,7 +87,9 @@ The 2026-10-04 survey found the siblings' suite rules are written down but never
 
 ## Consequences
 
-- **`git submodule update --init` runs on the host,** before the first `make deps`.
+- **`git submodule update --init` runs on the host,** before the first `make deps`. Until it
+  runs, a fresh clone fails `make deps`, `make check-pins` and `make check-guix`, each
+  naming that command (amended 2026-10-04 in M0 slice 2).
 - **Bumping chez-srfi takes two edits,** the submodule and `Akku.lock`, and `check-pins`
   holds them together.
 - **A suite that forgets its exit line, runs no tests, or hangs fails by name.** None can

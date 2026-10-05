@@ -70,6 +70,17 @@ it should not be a comment. (chez-cmark-gfm)
   `cannot open …/scripts/guix-env-enter`, contains that string. The check now
   compares the whole of stderr. (chez-curl)
 
+* **An exit status is taken modulo 256.** Chez's `(exit 256)` exits 0, and
+  `(exit #t)` exits 1 (both measured at the pin). An exit form that reported its
+  failure count would pass a suite with exactly 256 failures. `suite-exit-status`
+  answers 0 or 1, never a count. (chez-curl)
+* **A suite cannot vouch for the verdict it exits through.**
+  `tests/test-curl-testing.sps` tests `suite-exit-status` and ends, like every
+  suite, by exiting with it. In slice 2's first mutation run, `suite-exit-status`
+  rewritten to ignore failures made that suite's own assertions fail, and then
+  exit 0 through the broken verdict, so `make test` passed. The suite now exits 1
+  on any failure of its own before it reaches the shared form. (chez-curl)
+
 ## Chez and the FFI
 
 * **`foreign-procedure` resolves its entry point when the expression is evaluated,
@@ -87,6 +98,12 @@ it should not be a comment. (chez-cmark-gfm)
   *call* into the library — `tests/load-failed-probe.sps` calls
   `markdown->html` for exactly this reason. The same property is what makes
   `make check-purity` meaningful and what limits it. (chez-cmark-gfm)
+* **Chez's `system` stops silently at a NUL.** The command goes to C as a
+  NUL-terminated string, so whatever follows the NUL is dropped. Measured at the
+  pin: `echo before`, then a NUL, then `> /tmp/nul-out` printed `before` to
+  stdout and wrote no file. Redirections written after the command are the part
+  that goes missing. `capture-command` refuses an argument holding a NUL rather
+  than quote it. (chez-curl)
 
 ## Checks and environment
 
@@ -150,3 +167,26 @@ it should not be a comment. (chez-cmark-gfm)
   container (chez-cmark-gfm's ADR-0018, since withdrawn), its Bash tool put `/bin:/usr/bin`
   ahead of the profile, which a `bash -l` check never showed. `guix shell
   --check` diagnoses clobbering for a `--pure` shell. (chez-cmark-gfm)
+* **`guix shell -m` serves its cached profile while the manifest is no newer
+  than the cache.** In slice 2, a mutation driver copied the tree with `tar`,
+  which keeps file times, and a baseline case flaked: a copy's changed
+  `manifest.scm` was older than the cache entry for that path, so the container
+  ran the old toolchain. Measured at the pin: once a profile with git was
+  cached, a manifest without git, dated 2020, still got git. A manifest
+  rewritten within a second of the cache was missed too. `touch` a manifest
+  that a mutation changes. (chez-curl)
+* **In an empty submodule directory, `git -C` answers for the superproject.**
+  `git -C vendor/chez-srfi rev-parse HEAD` in an uninitialised submodule
+  returns the superproject's HEAD, so `check-pins` reported pin drift against
+  the wrong repository instead of saying the submodule was not checked out. The
+  first fix tested for `vendor/chez-srfi/.git`, but the slice 2 review showed an
+  empty `.git` directory passes that test and still gets the superproject's
+  answer. `check-pins` now compares `git -C vendor/chez-srfi rev-parse
+  --show-toplevel` with the directory itself. (chez-curl)
+* **In a git worktree, `.git` points outside the working directory.** Its
+  `.git` is a file naming a directory inside the main repository's `.git`, and
+  the container shares only the working directory. Slice 2 first put git in
+  the container so `make test` could run `check-pins`. Its review found that
+  `make test` and `make check-guix` then failed in every worktree, with
+  `fatal: not a git repository: (null)`, where slice 1 had worked. The container
+  has no git again, and `check-pins` runs on the host and in CI. (chez-curl)
