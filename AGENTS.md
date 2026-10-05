@@ -22,7 +22,7 @@
 ### Guix development container
 
 * **On a Guix host, run every build and test through `scripts/guix-env`**,
-  e.g. `scripts/guix-env make check-guix-inside`. Batch commands with
+  e.g. `scripts/guix-env make test`. Batch commands with
   `scripts/guix-env sh -c 'make a && make b'`: each call takes a second or
   more to start.
 * Edit, commit and push on the host. The container has no git identity,
@@ -31,8 +31,9 @@
 * The container exports `CHEZ` (the real `scheme` binary), `CC` (gcc; the
   toolchain has no `cc`) and `CHEZ_CURL_LIBCURL` (the profile's
   `libcurl.so.4`, ADR-0002). It sets no `LD_LIBRARY_PATH`.
-* Anything that needs the network runs on the host: git, submodules,
-  downloads.
+* Anything that needs the network or git runs on the host: fetches, pushes,
+  downloads, `make check-pins`, and `git submodule update --init`, which a
+  fresh clone needs once before `make deps`. The container has no git.
 
 ### Layout, process & libraries
 
@@ -58,6 +59,8 @@
   it fail.
 * Prefer a check to a comment.
 * **Do not** write tests that rely on reading code comments
+* `make test` runs every suite under GNU `timeout`. On macOS, run
+  `brew install coreutils`, and make finds its `gtimeout`.
 
 ## Traps the family has already hit
 
@@ -72,8 +75,14 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   for the no-raise case.
 * SRFI-64 turns an exception in the *actual* expression into `#f`. Never
   expect `#f` from something that can raise.
-* Every `tests/test-*.sps` must end with its own `(exit …)`: SRFI-64 sets no
-  exit status. Anything after that line never runs.
+* Every `tests/test-*.sps` must end with `(exit (suite-exit-status runner))`:
+  SRFI-64 sets no exit status. Anything after that line never runs, and
+  `make check-suites` checks it is there.
+* An exit status is taken modulo 256, so `(exit 256)` exits 0. Exit with 0 or
+  1, never a count.
+* A suite cannot vouch for the verdict it exits through. A suite that tests
+  `suite-exit-status` must also exit 1 on its own failures, before the
+  shared form.
 * Chez evaluates arguments right to left in compiled library code, left to
   right when interpreted. No assertion may depend on argument order.
 * An assertion passes whenever *another* rule can produce its expected value.
@@ -99,6 +108,15 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * `guix shell --pure` does not stop a login shell from rebuilding `PATH`.
   `scripts/guix-env` uses `--container`, and `make check-guix` checks where a
   login shell finds each tool.
+* `guix shell -m` reuses its cached profile while the manifest is no newer
+  than the cache, so a copy that keeps old file times (`tar`, `cp -p`) runs
+  the old toolchain. `touch` a manifest that a mutation changes.
+* In an empty submodule directory, `git -C` answers for the superproject.
+  Compare `git -C <dir> rev-parse --show-toplevel` with the directory itself
+  before trusting anything else it says.
+* In a git worktree, `.git` points outside the working directory, so a
+  container that shares only the working directory sees no repository. Keep
+  git on the host.
 
 ## Closing ritual
 

@@ -121,7 +121,9 @@ provisional. They bind until that record is accepted or amended.
   - `CHEZ` is the real `scheme` binary;
   - `CC` is the profile's `gcc`, since the toolchain has no `cc`;
   - `CHEZ_CURL_LIBCURL` is the profile's `libcurl.so.4`;
-  - there is no `LD_LIBRARY_PATH` and no `--emulate-fhs`.
+  - there is no `LD_LIBRARY_PATH` and no `--emulate-fhs`;
+  - there is no git, so anything that needs git runs on the host. In a worktree, the
+    container's git could read nothing.
 
   (ADR-0006)
 - **The test origin is `tests/origin.mjs`.** It uses Node's standard library only and
@@ -148,11 +150,18 @@ provisional. They bind until that record is accepted or amended.
   container (ADR-0014).
 - **Counters:** every native object is counted, always on, per engine. Suites assert that the
   counts move and return to zero (ADR-0014).
-- **SRFI-64 comes from `vendor/chez-srfi`,** at the commit `Akku.lock` pins. `make
-  check-pins` holds the two equal, and there are no Akku scripts (ADR-0015).
+- **SRFI-64 comes from `vendor/chez-srfi`,** at the commit `Akku.lock` pins.
+  - `make check-pins` holds `Akku.lock`, the recorded gitlink and the checkout equal. It
+    runs on the host and in CI.
+  - `tests/test-manifest.sps` holds `Akku.manifest` to no scripts and no runtime
+    dependency.
+
+  (ADR-0015)
 - **`make deps` never fetches.** Submodules are fetched on the host (ADR-0015).
 - **The suite rules are checked** (ADR-0015):
-  - every `tests/test-*.sps` ends with the shared exit form, and `check-suites` checks it;
+  - every `tests/test-*.sps` ends with the shared exit form,
+    `(exit (suite-exit-status runner))`, and `check-suites` checks it;
+  - before that, a suite may exit early only with `(exit 1)`;
   - a suite that ran no tests fails;
   - every suite runs under `timeout`;
   - `make test` runs every suite and fails if any did.

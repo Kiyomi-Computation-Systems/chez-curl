@@ -1,0 +1,47 @@
+# Debian/Ubuntu packages to build and test chez-curl in CI, on ubuntu-24.04
+# (harness plan section 4).
+#
+# NOT YET EXERCISED. M0 slice 5 adds the workflow, and its first run is the
+# first time anything installs from this file. Until then only two things
+# have been checked, on the maintainer's machine, which runs Guix and has no
+# apt: that Ubuntu noble carries all three packages below
+# (packages.ubuntu.com, 2026-10-04), and the Chez build described under
+# build-essential. If that first run finds something missing, add it here.
+#
+# ONE copy, deliberately: the workflow is to install from this file instead
+# of restating the list in a step, so a list in two places cannot drift.
+# Lines starting with # and blank lines are ignored, so the section headers
+# below are labels only: every uncommented line is installed together. Keep
+# each package alone on its line, because a trailing comment would be
+# installed as a package.
+#
+# Not listed, because nothing here could check them: Node and the openssl
+# command line (ADR-0005), whatever fetches and unpacks the Chez tarball, and
+# the GnuTLS lane's libcurl (from M2). Nor git, which `make check-pins` needs:
+# the runner checks the repository out with its own.
+
+# --- to build Chez Scheme 10.4.0 from the release tarball --------------------
+# CI builds Chez itself because noble's chezscheme is 9.5.8, below the floor
+# (ADR-0001). With ./configure --disable-x11 --disable-curses, Chez's BUILDING
+# file asks for nothing but a C compiler and make, so there is no libx11-dev
+# and no libncurses-dev. Checked: in the project's Guix container, which has a
+# C toolchain and make and whose compiler finds no curses.h, ncurses.h,
+# X11/Xlib.h, uuid/uuid.h or zlib.h, that configure line and a plain `make`
+# built Chez 10.4.0 from the release tarball, and (threaded?) answered #t.
+# `make install` there stopped at gzip, which it runs on the man page; gzip is
+# an Essential Debian package, so it needs no line here.
+# build-essential is the C toolchain: gcc, g++, make and libc6-dev.
+build-essential
+
+# --- to check constants against libcurl's headers ----------------------------
+# ADR-0001: a C program compiled at test time checks every constant, and the
+# layout of every struct Scheme reads, against <curl/curl.h>. Missing headers
+# fail that check; they never skip it. This package carries the headers, and
+# depends on libcurl4t64, the runtime libcurl.so.4 that discovery loads
+# (ADR-0002). The compiler is build-essential's.
+libcurl4-openssl-dev
+
+# --- for the memory gate ------------------------------------------------------
+# ADR-0014: on Linux, every suite runs under Valgrind, and the gate must be
+# seen to fail.
+valgrind

@@ -61,7 +61,8 @@ connect and accept succeed, and connecting to 192.0.2.1 fails with "Network is u
    - `chez-scheme`, `curl` (library and headers) and `gcc-toolchain` (ADR-0001, ADR-0003);
    - `node` and `openssl` (ADR-0005);
    - `valgrind`, for the memory gate (ADR-0014, added 2026-10-04);
-   - the shell tools the Makefile and scripts call, and nothing else.
+   - the shell tools the Makefile and scripts call, and nothing else. git is not one of
+     them ([amendment](#amendment-2026-10-04-no-git-in-the-container)).
 
    Each entry carries a comment naming the decision that needs it.
 4. **What `scripts/guix-env-enter` sets inside the container:**
@@ -101,6 +102,8 @@ connect and accept succeed, and connecting to 192.0.2.1 fails with "Network is u
      unreachable;
    - Valgrind instruments `$CHEZ`: a run under it prints an `ERROR SUMMARY` line, as
      chez-cmark-gfm's self-test checks (added 2026-10-04, for ADR-0014);
+   - there is no git (added 2026-10-04 in M0 slice 2, see the
+     [amendment](#amendment-2026-10-04-no-git-in-the-container));
    - the Makefile's own checks pass inside it (added 2026-10-04).
 
    Each assertion is watched failing under a targeted change before it counts.
@@ -121,8 +124,9 @@ connect and accept succeed, and connecting to 192.0.2.1 fails with "Network is u
 
 ## Consequences
 
-- **Anything that needs the network runs on the host.** That includes git, and fetching
-  the floor lane's curl tarball (ADR-0003). Fetching can't happen in the container at all.
+- **Anything that needs the network or git runs on the host.** That includes submodules,
+  `make check-pins`, and fetching the floor lane's curl tarball (ADR-0003). Fetching can't
+  happen in the container at all.
 - **The container is for x86_64 Linux hosts like this one.** The Mac does not use it.
 - **Each `scripts/guix-env` call pays the `time-machine` startup.** That was about one second
   here for a cached one-package profile. A first run downloads the manifest's packages.
@@ -153,3 +157,16 @@ M0 slice 1 built this container and watched each of its checks fail
   self-test assertion can tell, and the property one would guard holds either way.
 - **`LD_LIBRARY_PATH` does let it.** Set to the profile's `lib`, it makes that same
   bare-name load succeed. The self-test now asserts that the load fails.
+
+## Amendment, 2026-10-04: no git in the container
+
+M0 slice 2 first put git in the manifest, so that `make test` could run `make check-pins`
+there. Its review found that this broke every git worktree:
+
+- In a worktree, `.git` is a file naming a directory inside the main repository's `.git`.
+  That directory lies outside the one directory the container shares.
+- So the container's git found no repository: `fatal: not a git repository: (null)`.
+- `make test` and `make check-guix` failed in every worktree, which had worked at slice 1.
+
+The container stays toolchain-only, as decided above. `make check-pins` runs on the host
+and in CI, and `make test` does not depend on it.
