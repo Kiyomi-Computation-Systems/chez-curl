@@ -1,0 +1,1 @@
+Not a library, and not a file Chez would load: check-seam passes it by.

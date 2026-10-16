@@ -7,19 +7,53 @@ close-out under **Close-outs**, newest first.
 ## Now
 
 - **Milestone:** M0 (brief §8), in progress.
-- **Done:** slices 1 and 2 of the [harness plan](2026-10-04-harness-plan.md) (§6):
+- **Done:** slices 1 to 3 of the [harness plan](2026-10-04-harness-plan.md) (§6):
   - slice 1, the container and the Makefile skeleton;
   - slice 2, the test harness
-    ([ADR-0015](decisions/0015-test-harness-and-scheme-dependencies.md)). Its close-out
-    follows the merge.
-- **Next slice:** slice 3, loading (ADR-0001, ADR-0002, ADR-0003):
-  - `require-threaded`, the conditions, and pure discovery with its suite;
-  - `native.sls`, with the load order, the version check and the probes;
-  - `make build` as the preflight, the refusal probes, and `check-seam`.
+    ([ADR-0015](decisions/0015-test-harness-and-scheme-dependencies.md));
+  - slice 3, loading (ADR-0001, ADR-0002, ADR-0003, ADR-0007, all amended), with its
+    [mutation log](loading-mutation-log.md). Its close-out follows the merge.
+- **Next slice:** slice 4, constants and layouts (ADR-0001):
+  - `check-constants`, the C program compiled at test time, which also checks
+    `curl_version_info_data`'s offsets;
+  - the `__collect_safe` attribute suite;
+  - the floors file and `check-floors`.
+- **Waiting on a decision:** loading GnuTLS's libcurl leaks a block in p11-kit
+  (`traps.md`), so ADR-0014's gate fails on any suite that loads it, and ADR-0014 allows no
+  suppression file. Settle it before slice 5 builds the gate.
 - **Waiting on evidence:** ADR-0013 (`__collect_safe`) stays Proposed until spike E1
   at M3. Until then its rules bind as written.
+- **Open for M3:** a first reference to `(curl)` from a second thread, made while the load
+  runs, raises `cyclic dependency` (ADR-0002's amendment).
 
 ## Close-outs
+
+### 2026-10-04 — M0 slice 2: the test harness (PR #5, `9bacc6d`)
+
+- **Pinned SRFI-64.** `vendor/chez-srfi` is a submodule at `7879b52`, recorded in
+  `Akku.lock`. `make deps` links it and never fetches. `make check-pins` holds the lock, the
+  gitlink and the checkout equal, on the host.
+- **Built the test loop.** `make test` runs every suite under GNU `timeout` (or `gtimeout`),
+  names each as pass, FAIL or HUNG, and fails if any failed or hung, or if none exists.
+- **Turned the suite rules into checks.**
+  - `check-suites` requires the shared exit form last, and allows only `(exit 1)` before it.
+  - `check-test-fails` plants eight bad cases, and `make test` must fail on each, by name.
+- **Shared helpers** live in `tests/curl-testing.sls`. The exit verdict is 0 or 1, never a
+  count, because exit statuses wrap at 256.
+- **Took git out of the container again.** In a git worktree, the container's git could read
+  nothing, so `make test` and `make check-guix` failed there. A `no-git` self-test assertion
+  keeps it out (ADR-0006 amended).
+- **Built with subagents.** Sonnet did the pins, Opus the harness core and an adversarial
+  review, and Sonnet the review's fixes. The review found the worktree failure, a flaw in
+  the brief itself.
+- **Evidence:** the [mutation log](test-harness-mutation-log.md). Each check has a red run,
+  and each mutation fails its check by name. The rewritten `check-suites` got fresh mutants
+  after the fixes.
+- **Carried forward:**
+  - `capture-command` shares one counter across threads and writes predictable `/tmp`
+    names. Fix it before the first threaded suite (M3).
+  - `check-suites` refuses a suite that starts with a `#!` line.
+  - The Node origin's helpers wait for the slice that adds `tests/origin.mjs`.
 
 ### 2026-10-04 — M0 slice 1: the pinned container and the Makefile skeleton (PR #4, `e8a2f63`)
 

@@ -4,6 +4,12 @@
 ;;;   suite-exit-form    the last datum of every tests/test-*.sps
 ;;;   suite-exit-status  the verdict that form exits with
 ;;;   capture-command    run a command; its exit status, stdout and stderr
+;;;   call-with-temp-directory
+;;;                      a fresh mktemp -d directory, removed after a call
+;;;   make-process-temp-directory
+;;;                      one removed when the process ends
+;;;   remove-temp-directory
+;;;                      a directory and all it holds, removed
 ;;;   run-until          step until a predicate holds, capped by steps
 ;;;   seeded-bytes       a payload that is the same on every run
 ;;;   describe           a raised object as text, for evidence
@@ -12,10 +18,12 @@
 ;;; path, not in src/. Its own suite is tests/test-curl-testing.sps.
 (library (curl-testing)
   (export suite-exit-form suite-exit-status
-          capture-command run-until seeded-bytes describe)
+          capture-command call-with-temp-directory make-process-temp-directory
+          remove-temp-directory run-until seeded-bytes describe)
   (import (rnrs)
           (srfi :64)
-          (only (chezscheme) display-condition get-process-id getenv system))
+          (only (chezscheme) base-exception-handler display-condition
+                exit-handler file-directory? get-process-id getenv system))
 
   ;; --- the shared exit form ------------------------------------------------
 
@@ -131,6 +139,92 @@
 
   (define (remove-files . paths)
     (for-each (lambda (path) (when (file-exists? path) (delete-file path))) paths))
+
+  ;; --- temporary directories -----------------------------------------------
+
+  ;; call-with-temp-directory : (String -> Any) -> Any
+  ;; Makes a fresh directory with `mktemp -d`, under $TMPDIR or /tmp, and
+  ;; answers (PROC DIR), DIR being its absolute path. Afterwards the directory
+  ;; and all it holds are removed, whether PROC returns, raises or escapes.
+  ;; It raises before PROC runs when mktemp's answer is refused, below.
+  (define (call-with-temp-directory proc)
+    (let ((dir (make-temp-directory)))
+      (dynamic-wind
+        (lambda () #f)
+        (lambda () (proc dir))
+        (lambda () (remove-temp-directory dir)))))
+
+  ;; make-process-temp-directory : -> String
+  ;; A fresh directory, as call-with-temp-directory makes, for a suite whose
+  ;; body is flat top-level forms and cannot be wrapped. It is removed when
+  ;; the process ends: through `exit`, or through a raise that nothing
+  ;; guards, which ends a program with status 255 without calling the exit
+  ;; handler. A program that falls off its last form calls neither (measured
+  ;; at 10.4.0), so a suite ends with (exit ...), as check-suites requires.
+  ;; A warning, which Chez raises to the same handler and goes on from, does
+  ;; not remove it. remove-temp-directory removes it earlier, and the hooks
+  ;; then find nothing to do. A removal that fails in a hook is ignored
+  ;; there: it must not stop an exit, nor raise from the handler it runs in.
+  (define (make-process-temp-directory)
+    (let ((dir (make-temp-directory)))
+      (exit-handler
+       (let ((previous (exit-handler)))
+         (lambda args
+           (remove-quietly dir)
+           (apply previous args))))
+      (base-exception-handler
+       (let ((previous (base-exception-handler)))
+         (lambda (condition)
+           (unless (warning? condition)
+             (remove-quietly dir))
+           (previous condition))))
+      dir))
+
+  (define (remove-quietly dir)
+    (guard (e (#t #f)) (remove-temp-directory dir)))
+
+  ;; remove-temp-directory : String -> Unit
+  ;; Removes the directory DIR and all it holds; DIR may be gone already.
+  ;; Only an absolute path other than / is removed. It raises when the
+  ;; directory is still there afterwards.
+  (define (remove-temp-directory dir)
+    (unless (absolute-path? dir)
+      (assertion-violation 'remove-temp-directory "not an absolute path" dir))
+    (when (string=? dir "/")
+      (assertion-violation 'remove-temp-directory "not the root directory" dir))
+    (when (file-exists? dir)
+      (capture-command (list "rm" "-rf" dir))
+      (when (file-exists? dir)
+        (error 'remove-temp-directory "could not remove the directory" dir))))
+
+  ;; make-temp-directory : -> String
+  ;; A fresh directory from `mktemp -d`. mktemp prints the path and a
+  ;; newline. The path is that line, whole: $TMPDIR may hold a space, and a
+  ;; path cut at whitespace names another directory, which a removal would
+  ;; then destroy. So the answer must be exactly one line, an absolute path
+  ;; to a directory that exists. Any other answer (a relative path, a second
+  ;; line, a missing directory, a failure) is refused with a raise, and
+  ;; nothing is removed.
+  (define (make-temp-directory)
+    (let* ((made (capture-command '("mktemp" "-d")))
+           (dir (single-line (cadr made))))
+      (if (and (= (car made) 0) dir (absolute-path? dir) (file-directory? dir))
+          dir
+          (error 'make-temp-directory
+                 "mktemp -d did not answer one absolute path to a directory" made))))
+
+  ;; single-line : String -> (U String #f)
+  ;; TEXT without its one final newline, when that leaves a line: not empty,
+  ;; and with no newline in it.
+  (define (single-line text)
+    (let ((n (string-length text)))
+      (and (> n 1)
+           (char=? (string-ref text (- n 1)) #\newline)
+           (let ((line (substring text 0 (- n 1))))
+             (and (not (memv #\newline (string->list line))) line)))))
+
+  (define (absolute-path? s)
+    (and (> (string-length s) 0) (char=? (string-ref s 0) #\/)))
 
   ;; --- run-until -----------------------------------------------------------
 

@@ -1,6 +1,6 @@
 # ADR-0003: The libcurl floor is 7.85.0, and two APIs are probed at load
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-16: `missing-api` also names a missing entry point
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D10. That decision was raised on 2026-10-04, after the brief was written.
@@ -118,3 +118,11 @@ reasons and testability.
 - **Ubuntu 22.04, Debian 11 and RHEL 9 are below the floor.** Their users need a newer
   libcurl, named through `CHEZ_CURL_LIBCURL` (ADR-0002). The supported-platforms
   documentation says so.
+
+## Amendment, 2026-10-16: `missing-api` also names a missing entry point
+
+M0 slice 3 checks each required entry point with `foreign-entry?` before binding it.
+A library without one is refused as `missing-api`, with the entry point's C name as its
+detail. The other way to fail is Chez's bare `no entry for`, which decision 2 is written
+to avoid. A library that is not libcurl at all is refused this way, as missing
+`curl_version_info`. The two probes in decision 2 keep their meaning.

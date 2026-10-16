@@ -75,6 +75,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   for the no-raise case.
 * SRFI-64 turns an exception in the *actual* expression into `#f`. Never
   expect `#f` from something that can raise.
+* SRFI-64 does not catch an exception in the *expected* expression, nor in a
+  suite's top-level definitions: the suite dies and no test is named. Compute
+  anything that can raise under a `guard`.
 * Every `tests/test-*.sps` must end with `(exit (suite-exit-status runner))`:
   SRFI-64 sets no exit status. Anything after that line never runs, and
   `make check-suites` checks it is there.
@@ -95,6 +98,15 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   binding must follow the library's load. Mistakes fail at *import*.
 * A library body runs only when one of its bindings is *referenced*. A test of
   load-time behaviour must call into the library.
+* A `guard` in a program cannot catch a raise from an imported library's body.
+  A probe must `eval` its call inside the guard.
+* Chez runs a library body that raised a serious condition again at every
+  later reference, and wedges one that raised anything else. A load must
+  remember its first failure and raise only serious conditions, so libcurl is
+  never loaded twice.
+* A value that must outlive a failed load, such as the `libcurl-info` record,
+  lives outside `native.sls`: any reference into native after a refusal raises
+  again.
 
 **Checks and environment**
 
@@ -117,6 +129,20 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * In a git worktree, `.git` points outside the working directory, so a
   container that shares only the working directory sees no repository. Keep
   git on the host.
+* Reading a library's import form does not show all it can import: `for`,
+  a body `import`, `eval`, `import-only`, `$primitive`, and files Chez loads
+  that the check doesn't read (`.ss`, a lone `.so`, `.#g.sls`). Deny lists
+  lose; `check-seam` admits only what its allowlists name.
+* An uncaught raise skips Chez's `exit-handler`. Cleanup at a program's top
+  level must also hook `base-exception-handler`.
+* Take a temporary directory's name from `mktemp`'s one line, never its first
+  word. A path cut at a space once had the wrong directory removed.
+* `make test`'s `timeout --foreground` does not kill a suite's children.
+  After a HUNG suite, look for orphans.
+* Guix's `gcc` warns on stderr at every link. Judge a compile by its exit
+  status.
+* Loading GnuTLS's libcurl leaks a block in p11-kit's constructor, so
+  Valgrind's gate fails on any suite that loads it. It is not chez-curl's leak.
 
 ## Closing ritual
 
