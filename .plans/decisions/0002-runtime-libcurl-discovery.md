@@ -1,6 +1,7 @@
 # ADR-0002: Find libcurl at runtime: an override, else one candidate list per world, loaded once by absolute path
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-16 with what M0 slice 3 built and measured
+  ([amendment](#amendment-2026-10-16-what-slice-3-built-and-measured))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1. Linux distributions, Guix environments and macOS.
 - **Settles:** D7. That decision was raised on 2026-10-04, after the brief was written.
@@ -164,3 +165,55 @@ ADR-0016 recorded the lack of that as a gap.
   `load-failed`, `below-floor`, `no-ssl` and `missing-api` (ADR-0003). Tests and CI assert the reason, not the
   remedy text, which a catch-all clause can print for any failure (chez-cmark-gfm
   `traps.md`).
+
+## Amendment, 2026-10-16: what slice 3 built and measured
+
+M0 slice 3 built this decision as `(curl private discovery)`, `(curl private native)` and
+`(curl)`, and watched each check fail ([mutation log](../loading-mutation-log.md)). It
+settled what the text above left open, and measured four things the text did not foresee.
+
+**Settled in the building:**
+
+- **A set but empty `CHEZ_CURL_LIBCURL` is `invalid-override`.** The remedy says to unset
+  it to use discovery.
+- **The platform comes from Chez's machine type.** A name ending in `le` is Linux, one
+  ending in `osx` is macOS, and any other has no candidates.
+- **macOS's one candidate is chosen without an existence check,** since loading decides.
+- **The world is Guix** when a line of `/proc/self/maps` names a file whose basename is
+  `libc.so.6` under `/gnu/store/`.
+- **More of the load refuses by name:**
+  - a library lacking a required entry point, `curl_version_info` included, is
+    `missing-api`, naming it ([ADR-0003](0003-libcurl-floor-7-85.md));
+  - NULL from `curl_version_info`, a NULL version string, NULL from `curl_easy_init`, and
+    a non-zero `curl_global_init` are each `load-failed`, with a detail naming what
+    happened.
+- **The version and the floor are checked before `curl_global_init`,** so a refused
+  library is never initialised. libcurl documents `curl_global_init` as its first call.
+  `curl_version_info` before it is measured on 8.20.0 only. CI's floor lane will show
+  7.85.0.
+- **A refusal made after the version was read carries the library's report,** its
+  `libcurl-info`, in a sixth field of `&curl-library-unavailable`. Decision 4 asks for that.
+- **The probes catch a refusal by evaluating the call** in `(environment '(rnrs) '(curl))`.
+  A program's `guard` cannot catch a raise from a library it imports.
+- **Tests assert reason symbols, never message text.** The preflight's printed output is
+  its own contract, and its tests hold it whole.
+
+**Measured:**
+
+- **Chez runs a library body that raised a serious condition again at every later
+  reference, and wedges one that raised anything else** (`.plans/traps.md`). Decision 3's
+  "one load" therefore needed a memory. `(curl private load-state)`, whose own body cannot
+  raise, records the load's first failure. Every step of the load runs inside `load-step`,
+  which first makes the raised object serious. The load is then raised again at every
+  reference, and never run twice in one process.
+- **A first reference from a second thread, made while the load is running, raises
+  `cyclic dependency involving invocation of library`.** This cannot be fixed inside a
+  library body. It stays open for M3, which will decide whether to keep loading in the body
+  or to load at first use under a mutex. The second would amend decision 3's "nothing binds
+  lazily".
+- **`foreign-entry?` searches every object the process has loaded.** If the host program
+  has already loaded another libcurl, a required entry point missing from the chosen one
+  is found in the other, and binds to it. One libcurl per process is a premise of this
+  decision, not something it can check.
+- **The install check with the override unset is partial.** `tests/test-library-loading.sps`
+  loads by discovery alone from the working tree. An installed tree waits for packaging.

@@ -1,6 +1,7 @@
 # ADR-0007: One repository, two libraries, and a seam a check enforces
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-16 with the routes round the seam that slice 3
+  closed ([amendment](#amendment-2026-10-16-the-routes-round-the-seam))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1 layout
 - **Settles:** D1 (brief §10)
@@ -62,3 +63,45 @@ prefer a check to a comment.
   public surface, which is exactly what a second consumer would get.
 - **Growing the public `(curl ...)` surface is deliberate.** Adding a library to the check's
   list is a reviewed change, not a side effect of an import.
+
+## Amendment, 2026-10-16: the routes round the seam
+
+M0 slice 3 built `tests/check-seam.sps`. Its review found that decision 2's two rules,
+applied to the `import` form alone, could be bypassed ([mutation log](../loading-mutation-log.md),
+parts 2, 5 and 6). The check now also fails, naming the file:
+
+- **A library in neither family.** A library's family is its name's first identifier,
+  `curl` or `http-client`. Without this rule, `(curl x)` could import `(util)`, which
+  imports `(http-client)`.
+- **An import that is not on an allowlist.** A library under `src/` may import only:
+  - the `(rnrs …)` libraries other than `(rnrs eval)`, listed as `rnrs-libraries`;
+  - `(only (chezscheme) name …)`, every name drawn from `allowed-chez-names`;
+  - `(curl …)` and `(http-client …)` libraries, under rules (a) and (b).
+
+  `(scheme)`, `(chezscheme csv7)` and third-party libraries all fail. A first fix denied
+  named routes such as `import`, `eval` and `compile`. A second review then reached
+  `(http-client …)` through `import-only`, `top-level-value` and `$primitive`, which no
+  denylist named. So `allowed-chez-names` holds exactly the names `src/` imports, and its
+  suite holds it equal to them. Adding a name is a reviewed change, as adding to
+  `public-curl` is.
+- **A file Chez could load as a library that the check does not read.** That covers every
+  ending in `(library-extensions)` other than `.sls`, and compiled `.so` files: a lone
+  `.so` loads as the library.
+- **Fail-closed cases:** no library under `src/`, a file that cannot be read as data, a
+  datum that is not a library form, and a malformed import.
+
+Emacs lock files are skipped: a dangling symbolic link whose name starts with `.#`. Any
+other file of that name is read, since a regular `.#g.sls` loads as a library.
+
+The lists are `public-curl`, `allowed-chez-names` and `rnrs-libraries`, in
+`tests/check-seam.sps`. `tests/test-check-seam.sps` runs the check on a fixture tree
+for every rule and asserts each whole output. `make check-test-fails` plants a bad import,
+and `make test` must fail on it.
+
+The `require-threaded` order rule (ADR-0001) bent to fit the seam. A `(curl …)` library
+imports `(curl private require-threaded)` first. An `(http-client …)` library imports
+`(curl)` first instead, since it may not import a private library, and `(curl)` imports
+the refusal first.
+
+Endings are matched case-sensitively, which a case-insensitive macOS file system may not
+honour.

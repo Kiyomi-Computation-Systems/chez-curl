@@ -1,6 +1,7 @@
 # ADR-0001: Bind libcurl directly, with no C shim; the floor is Chez 10.4.0, threaded
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-16 with what M0 slice 3 built
+  ([amendment](#amendment-2026-10-16-what-slice-3-built))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D6. That decision was raised on 2026-10-04, after the brief was written.
@@ -150,3 +151,20 @@ nothing else.
 - **M0 has nothing to compile.** `make build` becomes a preflight that names the libcurl it
   loaded, with its version, features and TLS backend, as chez-cmark-gfm's does. How that
   libcurl is found is D7.
+
+## Amendment, 2026-10-16: what slice 3 built
+
+- **`curl_version_info` is called with `CURLVERSION_TENTH`.** That was `CURLVERSION_NOW`
+  at the 7.85.0 floor, so a library at the floor fills every field the binding reads.
+  `CURLVERSION_NOW` moves with the headers: it is `CURLVERSION_TWELFTH` in 8.20.0.
+- **`curl_version_info_data` is a `define-ftype`** through `gsasl_version`, the last field
+  that age fills. `features` is read as an unsigned int, since a bit 31 would make a C
+  `int` negative. Slice 4's C program checks the offsets.
+- **The Chez floor is checked as well as threads.** `(curl private require-threaded)`
+  refuses, at expansion and by name, a Chez that is not threaded or is older than 10.4.0.
+  A pre-release of 10.4.0 is refused too, since it precedes the release. The refusal
+  imports only names an older Chez has: a missing name would fail with Chez's bare
+  `missing import`, which the refusal exists to replace. Its suite expands copies of the
+  refusal that answer as an older, pre-release or non-threaded Chez. By hand, Guix's
+  Chez 10.2.0 was refused by name. A real non-threaded one is measured only by CI's
+  non-threaded lane.

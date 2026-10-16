@@ -4,8 +4,10 @@
 #   scripts/guix-env make <target>
 
 # The Chez binary. In the container, scripts/guix-env-enter exports the
-# profile's real `scheme` binary.
+# profile's real `scheme` binary. Exported, so that a suite which spawns
+# Chez (tests/test-library-loading.sps) spawns this one.
 CHEZ ?= scheme
+export CHEZ
 
 # The make target to name in a missing-tool hint (scripts/require-tools):
 # what the user typed, $(MAKECMDGOALS), or, when that is empty, the
@@ -19,8 +21,9 @@ GOAL = $(strip $(if $(MAKECMDGOALS),$(MAKECMDGOALS),$@))
 SRFI_SRC  := vendor/chez-srfi
 SRFI_LIBS := build/scheme-libs
 
-# Chez's library path for the suites: tests/ holds (curl-testing).
-LIBDIRS := tests:$(SRFI_LIBS)
+# Chez's library path for the suites: src/ holds chez-curl's own libraries,
+# (curl private ...) among them, and tests/ holds (curl-testing).
+LIBDIRS := src:tests:$(SRFI_LIBS)
 
 # Every suite, in one order everywhere: make 3.82 to 4.2 leave $(wildcard)
 # unsorted.
@@ -35,7 +38,7 @@ TIMEOUT ?= $(or $(shell command -v timeout 2>/dev/null),$(shell command -v gtime
 
 # One physical line: check-help reads it with awk, and fails if it ends in
 # a backslash.
-.PHONY: help check-help check-guix check-guix-inside deps check-pins test check-suites check-test-fails
+.PHONY: help check-help check-guix check-guix-inside deps check-pins build test check-suites check-seam check-test-fails
 
 .DEFAULT_GOAL := help
 
@@ -166,13 +169,24 @@ check-pins: ## Fail unless Akku.lock, the gitlink and the checkout name one chez
 	fi; \
 	exit $$fail
 
+# There is nothing to compile (ADR-0001). build loads libcurl as (curl)
+# would, through tests/preflight.sps, and names it: its path and source,
+# version, TLS backend, features and host. A refused libcurl fails it, with
+# the reason, the path, the candidates checked and a remedy, and, when the
+# refusal came after the version was read, that library's own report. make
+# test does not depend on it.
+build: ## Load libcurl as (curl) would and name it; fail with the reason when it is refused
+	@scripts/require-tools "$(GOAL)" $(CHEZ)
+	@$(CHEZ) --libdirs src --program tests/preflight.sps
+
 # Runs every suite, in order, each under timeout, and goes on after a
 # failure. One line names each suite's outcome: pass, FAIL with its exit
 # status, or HUNG when timeout killed it (exit 124). It fails if any suite
 # failed or hung, or if none matched. --foreground keeps a suite in make's
 # process group, so Ctrl-C at a terminal reaches it at once, and does not
-# wait out the timeout. `make check-test-fails` proves the loop fails.
-test: deps check-help check-suites ## Run every tests/test-*.sps under timeout; fail if one fails or hangs, or none exists
+# wait out the timeout. `make check-test-fails` proves the loop fails. The
+# checks come first: check-help, check-suites and check-seam each stop it.
+test: deps check-help check-suites check-seam ## Run every tests/test-*.sps under timeout; fail if one fails or hangs, or none exists
 	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ)
 	@if [ -z "$(SUITES)" ]; then \
 	  echo "test: no suites: nothing matches tests/test-*.sps" >&2; \
@@ -203,9 +217,27 @@ check-suites: deps ## Fail unless every tests/test-*.sps ends with the shared ex
 	@scripts/require-tools "$(GOAL)" $(CHEZ)
 	@$(CHEZ) --libdirs $(LIBDIRS) --program tests/check-suites.sps $(SUITES)
 
-# Plants bad suites, one at a time, in a copy of the tree, and requires make
-# test to fail on each by name. tests/check-test-fails.sh lists the plants.
-# The copy has no .git, so nothing in it runs git.
-check-test-fails: ## Plant bad suites, and none at all, in a copy; make test must fail on each, by name
+# Reads every src/**/*.sls as data, evaluating nothing, and fails, naming the
+# file and the import, when a (curl ...) library imports an (http-client ...)
+# library, or an (http-client ...) library imports a (curl ...) library that is
+# not public: only (curl) is (ADR-0007, tests/check-seam.sps). A library may
+# import only allowlists: the (rnrs ...) libraries but (rnrs eval), (only
+# (chezscheme) name ...) with each name in allowed-chez-names, and (curl ...)
+# and (http-client ...) libraries. Any other import fails, (scheme) and
+# (chezscheme csv7) included, as does a library in neither family, a file Chez
+# could load as a library but this check does not read (.ss, .scm, .sch, .so,
+# ...), no library under src/, and a file it cannot read as data. It skips a
+# .# dangling symbolic link, Emacs's lock file, and reads any other .# name.
+# tests/test-check-seam.sps runs it on a fixture tree for each rule. It needs
+# no deps: it imports only (rnrs) and a few of Chez's own bindings.
+check-seam: ## Fail unless the imports keep (curl ...) and (http-client ...) apart, with (curl) the only way across
+	@scripts/require-tools "$(GOAL)" $(CHEZ)
+	@$(CHEZ) --program tests/check-seam.sps src
+
+# Plants bad suites, and a bad import across the seam, one at a time, in a copy
+# of the tree, and requires make test to fail on each by name.
+# tests/check-test-fails.sh lists the plants. The copy has no .git, so nothing
+# in it runs git.
+check-test-fails: ## Plant bad suites, none at all and a bad import, in a copy; make test must fail on each, by name
 	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ)
 	@MAKE='$(MAKE)' TIMEOUT='$(TIMEOUT)' CHEZ='$(CHEZ)' sh tests/check-test-fails.sh

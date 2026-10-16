@@ -9,8 +9,8 @@ provisional. They bind until that record is accepted or amended.
 
 - **Platforms:** Linux and macOS, on amd64 and arm64. No Windows code paths, CI or
   abstractions (ADR-0004).
-- **Chez:** 10.4.0 or later, threaded. A non-threaded Chez is refused at import, by name
-  (ADR-0001).
+- **Chez:** 10.4.0 or later, threaded. An older, pre-release or non-threaded Chez is
+  refused at import, by name (ADR-0001, amended).
 - **libcurl:** 7.85.0 or later, meaning `version_num` ≥ `0x075500` (ADR-0003).
 - **Anything newer than the floor is optional, one feature at a time.** Options are
   looked up by name. Functions are bound only if `foreign-entry?` finds them (ADR-0003).
@@ -52,6 +52,9 @@ provisional. They bind until that record is accepted or amended.
   - **macOS:** `/usr/lib/libcurl.4.dylib` only.
 - **One load, then verify.** After a failure, chez-curl never tries another candidate
   (ADR-0002).
+- **The load runs at most once per process.** `(curl private load-state)` records its first
+  failure, and every later reference raises that failure again. Every load step runs
+  inside `load-step`, so only serious conditions are raised (ADR-0002, amended).
 - **Binding order.** `curl_version_info` is bound and checked first. Every other entry
   point is then bound eagerly, in the same library body. Nothing binds lazily (ADR-0001,
   ADR-0002).
@@ -63,10 +66,13 @@ provisional. They bind until that record is accepted or amended.
   (ADR-0002, ADR-0003)
 - **The refusal reasons are the contract:** `invalid-override`, `not-found`,
   `load-failed`, `below-floor`, `no-ssl` and `missing-api`. Tests assert the reason
-  symbol, never the message text (ADR-0002, ADR-0003).
+  symbol, never the message text. The preflight's printed output is its own contract, and
+  its tests hold it whole (ADR-0002, ADR-0003, both amended).
+- **A required entry point the library lacks is `missing-api`,** naming it. Each is checked
+  with `foreign-entry?` before it is bound (ADR-0003, amended).
 - **Every outcome reports what it loaded:** the path, its source, and the library's
-  version, features and TLS backend. `not-found` lists every candidate it checked
-  (ADR-0002).
+  version, features and TLS backend. A refusal made after the version was read carries
+  that report. `not-found` lists every candidate it checked (ADR-0002, amended).
 
 ## URLs and protocols
 
@@ -107,9 +113,18 @@ provisional. They bind until that record is accepted or amended.
 - **One repository, `chez-curl`, with five libraries:** `(curl)`, `(curl private ...)`,
   `(curl unsupported)`, `(http-client)` and `(http-client private ...)` (ADR-0007,
   ADR-0010).
-- **`make check-seam` guards the boundary, and `make test` runs it.** No `(curl ...)`
-  library imports `(http-client ...)`. An `(http-client ...)` library imports only `(curl)`
-  from the low level. Tests are exempt (ADR-0007).
+- **`make check-seam` guards the boundary, and `make test` runs it.** Tests are exempt
+  (ADR-0007, amended).
+  - No `(curl ...)` library imports `(http-client ...)`. An `(http-client ...)` library
+    imports only `(curl)` from the low level.
+  - Every library under `src/` is in one of the two families.
+  - A library imports only from allowlists: `(rnrs ...)` except `(rnrs eval)`, `(only
+    (chezscheme) name ...)` with names from `allowed-chez-names`, and the two families.
+    Adding to a list is a reviewed change.
+  - No file under `src/` may be one Chez loads as a library that the check doesn't read.
+- **Every `src/` library imports the refusal first:** a `(curl ...)` library imports
+  `(curl private require-threaded)`, and an `(http-client ...)` library imports `(curl)`
+  (ADR-0001, ADR-0007, both amended).
 - **No dependency on chez-http-server,** in either direction (ADR-0011).
 
 ## Environment and tests

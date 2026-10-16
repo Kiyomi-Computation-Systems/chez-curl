@@ -35,6 +35,35 @@ it should not be a comment. (chez-cmark-gfm)
   differential leg reported 79/79 green against a `cmark-gfm` that crashed on
   every fixture, because the helper's raise on a non-zero exit was swallowed.
   (chez-cmark-gfm and chez-libuv)
+* **SRFI-64 does not catch an exception in a test's *expected* expression.**
+  `%test-comp2body` evaluates `expected` before `%test-evaluate-with-catch` runs
+  the actual one. A raise there escapes the runner: the suite dies with exit 255,
+  no FAIL line names that test, and every later test is skipped. `make test`
+  still names the suite FAIL, but the test that failed goes unnamed. Compute an
+  expected value that can raise beforehand, under a `guard` with a sentinel.
+  Reproduced with `(test-equal "b" (car '()) 'x)`. Found while building
+  `tests/test-discovery.sps`, whose oracle shells out. A suite's top-level
+  definitions are the same: they run before its first test, so a raise there
+  ends the suite with no test named. `tests/test-native.sps` guards its
+  `(define info …)` for this reason. (chez-curl, M0 slice 3)
+* **An uncaught raise in a program skips Chez's `exit-handler`.** It also
+  skips `abort-handler` and `reset-handler`; only `base-exception-handler` is
+  called. Reproduced with a program that sets `(exit-handler …)` and then
+  evaluates `(car '())`: exit 255, and the handler printed nothing. A suite's
+  top-level cleanup, such as removing a temporary directory, has to hook
+  `base-exception-handler` as well. `make-process-temp-directory` in
+  `(curl-testing)` does. (chez-curl, M0 slice 3)
+* **A path cut at whitespace gets the wrong directory removed.** The first C
+  oracle took `mktemp -d`'s output up to the first space. With
+  `TMPDIR='/x/can ary'` and `/x/can` present, it compiled into `/x/can` and ran
+  `rm -rf` on it. Take a temporary directory's name from the command's one
+  line, check that it is absolute and exists, and remove it under
+  `dynamic-wind`. (chez-curl, M0 slice 3)
+* **Under `--foreground`, `timeout` does not time out the command's
+  children.** Its own help says so. `make test` passes `--foreground` so that
+  Ctrl-C reaches a suite at once. A suite named HUNG can therefore leave a
+  child running: a `check-seam` mutant without its depth limit spun on after
+  its suite was killed. After a HUNG, look for orphans. (chez-curl, M0 slice 3)
 * **Every `tests/test-*.sps` must end with its own `(exit …)`.** SRFI-64 does not set
   a process exit status, so a suite missing that line always reports success and
   `make test` stays green through real failures. Anything appended *after* it is
@@ -98,15 +127,79 @@ it should not be a comment. (chez-cmark-gfm)
   *call* into the library — `tests/load-failed-probe.sps` calls
   `markdown->html` for exactly this reason. The same property is what makes
   `make check-purity` meaningful and what limits it. (chez-cmark-gfm)
+* **A `guard` in a program cannot catch a raise from an imported library's
+  body.** Chez invokes the libraries a program references before the
+  program's body runs, so the program dies with exit 255 before its first
+  line. Measured at the pin: a library whose body raised `boom` killed a
+  program that wrapped its only call in `(guard (e (#t …)) …)`, and `body ran`
+  never printed. `tests/refusal-probe.sps` and `tests/preflight.sps` don't
+  import `(curl)`. They `eval` the call in `(environment '(rnrs) '(curl))`
+  inside the guard. `(environment '(curl))` alone lacks `let`. (chez-curl,
+  M0 slice 3)
+* **What happens at a library's next reference depends on what its body
+  raised.** Measured at the pin, with one library per kind of raise:
+  - **After a serious condition** (`&serious`, `&error`, `&assertion`,
+    `&violation`), Chez runs the body again in full. With a decoy libcurl
+    refused for `missing-api`, three guarded references ran the whole load
+    three times, `curl_global_init` included. A changed `CHEZ_CURL_LIBCURL`
+    would have loaded a second libcurl, which ADR-0002 forbids.
+  - **After anything else** (a symbol, a number, `&warning`, a bare
+    `&message`), the library is wedged. Every later reference raises `cyclic
+    dependency involving invocation of library`, and the body never runs
+    again.
+  - **While the body is still running,** a first reference from a second
+    thread raises the same `cyclic dependency` error, rather than waiting.
+
+  So the load records its first failure in `(curl private load-state)`, whose
+  own body cannot raise, and raises only serious conditions. The two-thread
+  case is open until M3. (chez-curl, M0 slice 3)
 * **Chez's `system` stops silently at a NUL.** The command goes to C as a
   NUL-terminated string, so whatever follows the NUL is dropped. Measured at the
   pin: `echo before`, then a NUL, then `> /tmp/nul-out` printed `before` to
   stdout and wrote no file. Redirections written after the command are the part
   that goes missing. `capture-command` refuses an argument holding a NUL rather
   than quote it. (chez-curl)
+* **A value meant to outlive a failed load must live outside the library that
+  loads.** Once `(curl private native)` has raised, any reference to one of
+  its bindings runs its body again and raises again. So when the
+  `libcurl-info` record and its accessors were defined in native, a caller
+  could not read the report that a refusal carries. Mutant LB11 shows the
+  probe and the preflight dying with exit 255. The record lives in `(curl
+  private libcurl-info)`, whose body cannot raise. (chez-curl, M0 slice 3)
+* **Loading GnuTLS's libcurl leaks memory in p11-kit.** `dlopen` runs
+  p11-kit's constructor, which calls `newlocale`, and glibc's
+  `compute_locale_search_path` loses the block. `valgrind
+  --errors-for-leak-kinds=definite` exits 9 on `tests/test-native.sps`: 171
+  bytes definitely lost with the container's `GUIX_LOCPATH`, 103 without it,
+  and 0 for an empty program. It is not chez-curl's leak, but ADR-0014's gate
+  fails on it. (chez-curl, M0 slice 3)
 
 ## Checks and environment
 
+* **A check that reads a library's import form does not see everything the
+  library can import.** Each of these reached `(http-client session)` from a
+  `(curl …)` library while the first `check-seam` reported "the seam holds":
+  - `(import (for (http-client) expand))`. R6RS has `for` as well as `only`,
+    `except`, `prefix` and `rename`.
+  - `(import …)` as a body form, or inside a `let`, once the library imports
+    `(chezscheme)`, or just its `import`. `(scheme)` is another name for
+    `(chezscheme)`. The review found this; the builder's probe had imported
+    only `(rnrs)`, and its log recorded "`import` is no body form".
+  - `eval`, `interpret` or `compile` on an import form.
+  - A file the check doesn't read but Chez loads.
+    - `(library-extensions)` lists `.chezscheme.sls .ss .sls .scm .sch`.
+    - A compiled `.so` with no source beside it loads as the library.
+    - A `.chezscheme.sls` shadows the `.sls` beside it.
+
+  A first fix denied those names. A second review then got through with
+  `import-only`, `top-level-value 'eval` and `$primitive`. A regular file named
+  `.#g.sls`, hidden by a skip meant for Emacs lock files, also loaded. Deny
+  lists lose to Chez's many routes, so `check-seam` now admits only what an
+  allowlist names, and skips only dangling `.#` links. (chez-curl, M0 slice 3)
+* **Guix's `gcc` writes `guile: warning: failed to install locale` to
+  stderr** on every link, because its linker wrapper is a Guile script. Judge
+  a compile by its exit status, never by an empty stderr. (chez-curl, M0
+  slice 3)
 * **Deleting a subsystem disarms the checks built around it, and they stay
   green.** Release 2.0 removed the C shim and produced seven of these in one
   branch. `make check-purity` poisoned `CHEZ_CMARK_GFM_SHIM`, which the same

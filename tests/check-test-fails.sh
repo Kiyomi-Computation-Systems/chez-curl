@@ -14,6 +14,8 @@
 #                inside a when                 no suite runs
 #   empty        an empty file (Chez fails     check-suites names it, and
 #                it, exit 255, unexplained)    no suite runs
+#   seam         a (curl ...) library that     check-seam names the import,
+#                imports (http-client ...)     and no suite runs
 #   no-suites    every suite deleted           make test refuses to pass
 #
 # The copy holds no real suite, so no slow one can run into the 5 s
@@ -25,11 +27,14 @@
 #
 # A case requires a non-zero exit, and compares the lines starting
 # "check-suites: " or "test: " as a whole: check-suites' verdict, the plant's
-# outcome, the after-suite's pass line, and the count.
+# outcome, the after-suite's pass line, and the count. The seam case also
+# compares the lines starting "check-seam: ".
 #
 # The copy is the working tree without .git and build/, and with the
 # chez-srfi checkout, so make deps works there and nothing is fetched.
-# Nothing in the copy runs git. make deps relinks build/ in the copy.
+# Nothing in the copy runs git. make deps relinks build/ in the copy. Its
+# src/ is the script's own, two libraries with legal imports, whatever the
+# tree holds, so check-seam passes in every case but seam.
 #
 # `make check-test-fails` passes MAKE and TIMEOUT, the tools it found. Run
 # directly, the script takes make and timeout from PATH.
@@ -65,6 +70,26 @@ for entry in "$root"/* "$root"/.[!.]* "$root"/..?*; do
 done
 # No real suite: the plant and the after-suite are the only two.
 rm -f "$copy"/tests/test-*.sps
+# No real library: one on each side of the seam, each import legal, so that
+# check-seam passes until a case plants a bad one.
+rm -rf "$copy/src"
+mkdir "$copy/src"
+cat >"$copy/src/curl.sls" <<'EOF'
+#!r6rs
+;;; Written by tests/check-test-fails.sh: a legal (curl) library.
+(library (curl)
+  (export curl-version)
+  (import (rnrs))
+  (define curl-version "fixture"))
+EOF
+cat >"$copy/src/http-client.sls" <<'EOF'
+#!r6rs
+;;; Written by tests/check-test-fails.sh: a legal (http-client) library.
+(library (http-client)
+  (export client-version)
+  (import (rnrs) (curl))
+  (define client-version curl-version))
+EOF
 
 # ---- the plants ----
 plant_dir=$tmp/plants
@@ -151,6 +176,16 @@ cat >"$plant_dir/nested-exit" <<'EOF'
 (exit (suite-exit-status runner))
 EOF
 
+cat >"$plant_dir/seam" <<'EOF'
+#!r6rs
+;;; Planted by tests/check-test-fails.sh: a (curl ...) library that imports
+;;; an (http-client ...) library, which ADR-0007's seam forbids.
+(library (curl planted)
+  (export planted)
+  (import (rnrs) (http-client session))
+  (define planted 1))
+EOF
+
 cat >"$plant_dir/after" <<'EOF'
 #!r6rs
 ;;; Planted by tests/check-test-fails.sh: a suite that passes, sorted after
@@ -186,17 +221,18 @@ expected() {
   printf 'test: ran 2, passed 1, failed %d, hung %d\n' "$2" "$3"
 }
 
-# run_case NAME WANTED: runs make test in the copy, then requires a
-# non-zero exit and exactly the WANTED check-suites and test lines. On a
-# failure it prints make test's whole output.
+# run_case NAME WANTED [LINES]: runs make test in the copy, then requires a
+# non-zero exit and exactly the WANTED lines: those matching the egrep pattern
+# LINES, by default the check-suites and test lines. On a failure it prints
+# make test's whole output.
 run_case() {
-  name=$1 wanted=$2
+  name=$1 wanted=$2 lines=${3:-'^(check-suites|test): '}
   ( cd "$copy" &&
       "${TIMEOUT:-timeout}" "$make_timeout" "${MAKE:-make}" --no-print-directory test \
         TEST_TIMEOUT="$suite_timeout" ) \
     >"$tmp/out" 2>&1
   status=$?
-  got=$(grep -E '^(check-suites|test): ' "$tmp/out")
+  got=$(grep -E "$lines" "$tmp/out")
   wrong=0
   if [ "$status" -eq 124 ]; then
     bad "$name: make test did not finish within ${make_timeout}s, so no per-suite timeout is stopping its suites"
@@ -206,7 +242,7 @@ run_case() {
     wrong=1
   fi
   if [ "$got" != "$wanted" ]; then
-    bad "$name: make test's check-suites and test lines differ"
+    bad "$name: make test's lines differ"
     printf '%s\n' "$wanted" | sed 's/^/  wanted: /' >&2
     printf '%s\n' "$got" | sed 's/^/  got:    /' >&2
     wrong=1
@@ -245,6 +281,17 @@ run_case "nested-exit: check-suites names an exit inside a form before the verdi
 : >"$copy/$plant"
 run_case "empty: check-suites names a suite with no datum, and no suite runs" \
   "check-suites: $plant: it holds no datum, so it cannot end with (exit (suite-exit-status runner))"
+
+# The plant is gone, so only the after-suite is left to check.
+rm -f "$copy/$plant"
+mkdir "$copy/src/curl"
+cp "$plant_dir/seam" "$copy/src/curl/planted.sls"
+run_case "seam: check-seam names a (curl ...) library that imports (http-client ...), and no suite runs" \
+  "$(checked 1
+     echo 'check-seam: src/curl/planted.sls: (curl planted) imports (http-client session), but no (curl ...) library may import an (http-client ...) library'
+     echo 'check-seam: FAILED (problems: 1)')" \
+  '^(check-suites|check-seam|test): '
+rm -rf "$copy/src/curl"
 
 rm -f "$copy"/tests/test-*.sps
 run_case "no-suites: make test refuses to pass with no suite to run" \

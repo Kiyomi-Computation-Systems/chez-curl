@@ -1,7 +1,7 @@
 #!r6rs
 ;;; The suite for (curl-testing), the helpers every suite shares (ADR-0015):
-;;; the verdict behind the shared exit form, then capture-command, run-until,
-;;; seeded-bytes and describe.
+;;; the verdict behind the shared exit form, then capture-command, the
+;;; temporary directories, run-until, seeded-bytes and describe.
 ;;;
 ;;; Each expected value is one the code under test cannot produce by failing.
 ;;; SRFI-64 turns a raise in the actual expression into #f, so no expected
@@ -9,7 +9,8 @@
 ;;; against a no-raise sentinel.
 (import (rnrs)
         (srfi :64)
-        (only (chezscheme) parameterize record-writer)
+        (only (chezscheme) parameterize record-writer getenv putenv directory-list
+              file-directory?)
         ;; Chez's own current-error-port is a parameter; (rnrs)'s takes no
         ;; argument, and reads the same port.
         (prefix (only (chezscheme) current-error-port) chez:)
@@ -133,6 +134,295 @@
 (test-equal "capture-command: a command has at least its name"
   '(assertion-violation capture-command (()))
   (raised (lambda () (capture-command '()))))
+
+;; --- temporary directories ------------------------------------------------
+;; call-with-temp-directory, make-process-temp-directory and
+;; remove-temp-directory. The dangerous mistake is a path cut at whitespace,
+;; so that a removal destroys a neighbour: those rows keep a canary directory
+;; beside the one that is made, and require it to survive.
+
+(define chez (getenv "CHEZ"))
+
+(test-equal "CHEZ names the Chez to spawn"
+  'set
+  (if (and chez (not (string=? chez ""))) 'set 'unset))
+
+;; absolute? : String -> Boolean
+(define (absolute? s)
+  (and (> (string-length s) 0) (char=? (string-ref s 0) #\/)))
+
+;; prefix? : String String -> Boolean
+(define (prefix? prefix s)
+  (and (<= (string-length prefix) (string-length s))
+       (string=? prefix (substring s 0 (string-length prefix)))))
+
+;; call-with-env : String String (-> Any) -> Any
+;; THUNK with the environment variable NAME set to VALUE. Afterwards NAME is
+;; put back to its old value, or to /tmp when it was unset: putenv cannot
+;; unset, and /tmp is where mktemp and capture-command go for an unset TMPDIR.
+;; Only PATH and TMPDIR are set here.
+(define (call-with-env name value thunk)
+  (let ((old (getenv name)))
+    (dynamic-wind
+      (lambda () (putenv name value))
+      thunk
+      (lambda () (putenv name (or old "/tmp"))))))
+
+;; write-file : String String -> Unit
+(define (write-file path text)
+  (call-with-port (open-file-output-port path (file-options no-fail) (buffer-mode block)
+                                         (make-transcoder (utf-8-codec)))
+    (lambda (p) (put-string p text))))
+
+;; sorted-names : String -> (Listof String)
+(define (sorted-names dir) (list-sort string<? (directory-list dir)))
+
+(test-equal "call-with-temp-directory: PROC gets the path of an empty directory, and the directory is gone after"
+  '((#t #t ()) removed)
+  (let* ((made #f)
+         (inside (call-with-temp-directory
+                  (lambda (dir)
+                    (set! made dir)
+                    (list (absolute? dir) (file-directory? dir) (directory-list dir))))))
+    (list inside (if (file-exists? made) 'left 'removed))))
+
+(test-equal "call-with-temp-directory: its answer is PROC's, and what the directory held is removed too"
+  '(answer ("g" "sub") removed)
+  (let* ((made #f)
+         (listing #f)
+         (value (call-with-temp-directory
+                 (lambda (dir)
+                   (set! made dir)
+                   (capture-command
+                    (list "sh" "-c" "mkdir \"$1/sub\" && echo x > \"$1/sub/f\" && echo y > \"$1/g\""
+                          "sh" dir))
+                   (set! listing (sorted-names dir))
+                   'answer))))
+    (list value listing (if (file-exists? made) 'left 'removed))))
+
+(test-equal "call-with-temp-directory: the directory is removed when PROC raises, and the raise goes on"
+  '(boom removed)
+  (let ((made #f))
+    (guard (e (#t (list e (if (file-exists? made) 'left 'removed))))
+      (call-with-temp-directory
+       (lambda (dir) (set! made dir) (raise 'boom)))
+      'no-raise)))
+
+(test-equal "call-with-temp-directory: the directory is removed when PROC escapes"
+  '(escaped removed)
+  (let* ((made #f)
+         (value (call/cc
+                 (lambda (k)
+                   (call-with-temp-directory
+                    (lambda (dir) (set! made dir) (k 'escaped)))))))
+    (list value (if (file-exists? made) 'left 'removed))))
+
+(test-equal "call-with-temp-directory: TMPDIR holding a space is one path; the directory beside it survives"
+  '(inside kept removed)
+  (call-with-temp-directory
+   (lambda (base)
+     (let ((canary (string-append base "/can"))
+           (spaced (string-append base "/can ary")))
+       (capture-command (list "mkdir" canary spaced))
+       (write-file (string-append canary "/keep") "keep\n")
+       (let ((inside (call-with-env "TMPDIR" spaced
+                       (lambda ()
+                         (call-with-temp-directory
+                          (lambda (dir)
+                            (if (prefix? (string-append spaced "/") dir) 'inside 'elsewhere)))))))
+         (list inside
+               (if (file-exists? (string-append canary "/keep")) 'kept 'destroyed)
+               (if (null? (directory-list spaced)) 'removed 'left)))))))
+
+;; refusal : (-> Any) -> Any
+;; THUNK's raise, or the symbol no-raise.
+(define (refusal thunk) (raised thunk))
+
+(define mktemp-refusal
+  '(other-raise "mktemp -d did not answer one absolute path to a directory"))
+
+(test-equal "call-with-temp-directory: a newline in TMPDIR makes two lines, which it refuses; the directory named by the first survives"
+  (list mktemp-refusal 'kept 'never-called)
+  (call-with-temp-directory
+   (lambda (base)
+     (let ((canary (string-append base "/can"))
+           (newlined (string-append base "/can\nary"))
+           (called 'never-called))
+       (capture-command (list "mkdir" canary newlined))
+       (write-file (string-append canary "/keep") "keep\n")
+       (let ((answer (call-with-env "TMPDIR" newlined
+                       (lambda ()
+                         (refusal (lambda ()
+                                    (call-with-temp-directory
+                                     (lambda (dir) (set! called 'called)))))))))
+         (list answer
+               (if (file-exists? (string-append canary "/keep")) 'kept 'destroyed)
+               called))))))
+
+;; A mktemp on PATH ahead of the real one, answering what BODY (shell
+;; commands) makes it. CANARY is a directory that exists, which BODY may name.
+(define (with-fake-mktemp base body thunk)
+  (let ((bin (string-append base "/bin")))
+    (capture-command (list "mkdir" bin))
+    (write-file (string-append bin "/mktemp") (string-append "#!/bin/sh\n" body "\n"))
+    (capture-command (list "chmod" "+x" (string-append bin "/mktemp")))
+    (call-with-env "PATH" (string-append bin ":" (getenv "PATH")) thunk)))
+
+(for-each
+ (lambda (row)
+   (let ((name (car row)) (body (cadr row)))
+     (test-equal (string-append "call-with-temp-directory refuses a mktemp that answers " name
+                                ", and calls nothing, and removes nothing")
+       (list mktemp-refusal 'kept 'never-called)
+       (call-with-temp-directory
+        (lambda (base)
+          (let ((canary (string-append base "/can"))
+                (called 'never-called))
+            (capture-command (list "mkdir" canary))
+            (write-file (string-append canary "/keep") "keep\n")
+            (let ((answer (with-fake-mktemp base (string-append "CANARY='" canary "'\n" body)
+                            (lambda ()
+                              (refusal (lambda ()
+                                         (call-with-temp-directory
+                                          (lambda (dir) (set! called 'called)))))))))
+              (list answer
+                    (if (file-exists? (string-append canary "/keep")) 'kept 'destroyed)
+                    called))))))))
+ '(("a relative path to a directory that exists" "printf 'tests\\n'")
+   ("a path that is not there" "printf '/no/such/directory/anywhere\\n'")
+   ("an empty line"        "printf '\\n'")
+   ("no newline"           "printf '%s' \"$CANARY\"")
+   ("two lines, the first a directory" "printf '%s\\n%s\\n' \"$CANARY\" \"$CANARY/second\"")
+   ("a directory and exit 1" "printf '%s\\n' \"$CANARY\"; exit 1")))
+
+(test-equal "remove-temp-directory: it removes a directory and what is in it, and a path that is gone is no error"
+  '(no-raise removed no-raise)
+  (call-with-temp-directory
+   (lambda (base)
+     (let ((victim (string-append base "/victim")))
+       (capture-command (list "mkdir" "-p" (string-append victim "/sub")))
+       (let ((first (refusal (lambda () (remove-temp-directory victim)))))
+         (list first
+               (if (file-exists? victim) 'left 'removed)
+               (refusal (lambda () (remove-temp-directory victim)))))))))
+
+;; with-fake-rm : String (-> Any) -> Any
+;; THUNK with an rm ahead of the real one on PATH that removes nothing and
+;; logs its arguments to BASE/rm-log. A refusal is shown to run no rm, and a
+;; removal that should have been refused cannot reach a real directory.
+(define (with-fake-rm base thunk)
+  (let ((bin (string-append base "/bin")))
+    (capture-command (list "mkdir" bin))
+    (write-file (string-append bin "/rm")
+                (string-append "#!/bin/sh\necho \"$@\" >> '" base "/rm-log'\nexit 0\n"))
+    (capture-command (list "chmod" "+x" (string-append bin "/rm")))
+    (call-with-env "PATH" (string-append bin ":" (getenv "PATH")) thunk)))
+
+(test-equal "remove-temp-directory: only an absolute path other than /, and it runs no rm for any other"
+  '((assertion-violation remove-temp-directory ("relative/dir"))
+    (assertion-violation remove-temp-directory ("/"))
+    (assertion-violation remove-temp-directory (""))
+    never-run)
+  (call-with-temp-directory
+   (lambda (base)
+     (with-fake-rm base
+       (lambda ()
+         (list (refusal (lambda () (remove-temp-directory "relative/dir")))
+               (refusal (lambda () (remove-temp-directory "/")))
+               (refusal (lambda () (remove-temp-directory "")))
+               (if (file-exists? (string-append base "/rm-log")) 'run 'never-run)))))))
+
+(test-equal "remove-temp-directory: a directory still there after rm is a raise"
+  (list (list 'other-raise "could not remove the directory") 'still-there)
+  (call-with-temp-directory
+   (lambda (base)
+     (let ((bin (string-append base "/bin"))
+           (victim (string-append base "/victim")))
+       (capture-command (list "mkdir" bin victim))
+       (write-file (string-append bin "/rm") "#!/bin/sh\nexit 0\n")
+       (capture-command (list "chmod" "+x" (string-append bin "/rm")))
+       (let ((answer (call-with-env "PATH" (string-append bin ":" (getenv "PATH"))
+                       (lambda () (refusal (lambda () (remove-temp-directory victim)))))))
+         (list answer (if (file-exists? victim) 'still-there 'removed)))))))
+
+;; process-outcome : String [Symbol] -> (List Integer Symbol (Listof String) Symbol)
+;; Runs a program that makes a process temp directory, prints its path, then
+;; runs the forms in AFTER, in a fresh Chez whose TMPDIR is a directory of
+;; this suite's making. The answer: its exit status; whether the path it
+;; printed is under that TMPDIR; whatever else it printed, as lines; and
+;; whether the directory is gone. With the symbol fake-rm after AFTER, the
+;; program's PATH has an rm that removes nothing, so a removal fails.
+(define (process-outcome after . options)
+  (call-with-temp-directory
+   (lambda (base)
+     (let ((program (string-append base "/probe.sps"))
+           (bin (string-append base "/bin")))
+       (when (memq 'fake-rm options)
+         (capture-command (list "mkdir" bin))
+         (write-file (string-append bin "/rm") "#!/bin/sh\nexit 0\n")
+         (capture-command (list "chmod" "+x" (string-append bin "/rm"))))
+       (write-file program
+                   (string-append
+                    "#!r6rs\n"
+                    "(import (rnrs) (only (chezscheme) warning file-directory?) (curl-testing))\n"
+                    "(define dir (make-process-temp-directory))\n"
+                    "(put-string (current-output-port) dir)\n"
+                    "(put-string (current-output-port) \"\\n\")\n"
+                    after "\n"))
+       (let* ((answer (capture-command
+                       (append (list "env" (string-append "TMPDIR=" base))
+                               (if (memq 'fake-rm options)
+                                   (list (string-append "PATH=" bin ":" (getenv "PATH")))
+                                   '())
+                               (list chez "--libdirs" "tests:build/scheme-libs"
+                                     "--program" program))))
+              (lines (let loop ((chars (string->list (cadr answer))) (line '()) (found '()))
+                       (cond ((null? chars) (reverse found))
+                             ((char=? (car chars) #\newline)
+                              (loop (cdr chars) '() (cons (list->string (reverse line)) found)))
+                             (else (loop (cdr chars) (cons (car chars) line) found)))))
+              (dir (and (pair? lines) (car lines))))
+         (list (car answer)
+               (if (and dir (prefix? (string-append base "/") dir)) 'under-tmpdir 'elsewhere)
+               (if (pair? lines) (cdr lines) lines)
+               (if (and dir (file-exists? dir)) 'left 'removed)))))))
+
+(define kept-line
+  (string-append "(put-string (current-output-port) (if (file-directory? dir) \"kept\\n\" \"gone\\n\"))\n"
+                 "(exit 0)"))
+
+(test-equal "make-process-temp-directory: removed by exit, which keeps its status"
+  '(3 under-tmpdir () removed)
+  (process-outcome "(exit 3)"))
+
+(test-equal "make-process-temp-directory: removed by a raise nothing guards, status 255"
+  '(255 under-tmpdir () removed)
+  (process-outcome "(car '())"))
+
+(test-equal "make-process-temp-directory: removed by a raise of a non-condition too"
+  '(255 under-tmpdir () removed)
+  (process-outcome "(raise 'boom)"))
+
+(test-equal "make-process-temp-directory: a removal that fails in the exit hook neither raises nor changes the status"
+  '(3 under-tmpdir () left)
+  (process-outcome "(exit 3)" 'fake-rm))
+
+(test-equal "make-process-temp-directory: a removal that fails in the exception hook neither loops nor changes the status"
+  '(255 under-tmpdir () left)
+  (process-outcome "(car '())" 'fake-rm))
+
+(test-equal "make-process-temp-directory: a raise a guard catches does not remove it"
+  '(0 under-tmpdir ("kept") removed)
+  (process-outcome
+   (string-append "(guard (e (#t 'caught)) (car '()))\n"
+                  "(guard (e (#t 'caught)) (raise 'boom))\n"
+                  kept-line)))
+
+(test-equal "make-process-temp-directory: a warning, which goes on, does not remove it"
+  '(0 under-tmpdir ("kept") removed)
+  (process-outcome
+   (string-append "(warning 'probe \"just a warning\")\n" kept-line)))
+
 
 ;; --- run-until ------------------------------------------------------------
 
