@@ -1,0 +1,13 @@
+# Test fixture: a matrix value holding a version that is no floor. check-floors cannot see it, and the build scripts ignore it.
+name: Fixture
+on:
+  pull_request:
+jobs:
+  main:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        curl: ["8.1.3"]
+    steps:
+      - run: scripts/ci/build-chez.sh /opt/chez
+      - run: scripts/ci/build-curl.sh /opt/curl

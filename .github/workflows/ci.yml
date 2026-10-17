@@ -1,0 +1,439 @@
+name: CI
+
+# One workflow, Linux only, on a pinned runner image (harness plan, section 4).
+#
+# What is deliberately not here:
+#   - A macOS runner. AGENTS.md: linux only. macOS is covered by running the
+#     suites by hand before tagging.
+#   - The Guix container. Nothing in CI runs it (ADR-0006): the toolchain here
+#     is Chez built from its release tarball (ADR-0001), the runner's libcurl
+#     and its packages (packaging/debian-prereqs.txt).
+#   - Node. No suite uses it until M1 adds the test origin (ADR-0005).
+#   - A GnuTLS lane. It comes with M2 (ADR-0002).
+#
+# The jobs, all independent, and every one of them on every event below: each
+# pull request, each push to main or a v* tag, and each run asked for from the
+# Actions tab.
+#   main        every action pinned to a commit, every check, then the
+#               suites, against the runner's libcurl.
+#   floor       the suites against libcurl at its floor, built from source.
+#   floor-disabled-api
+#               two lanes, one per API that ADR-0003 probes at load: a libcurl
+#               at its floor built with only its options API disabled, and one
+#               with only its header API disabled. `make build` must refuse
+#               each as missing-api, naming the entry point whose probe failed.
+#   nothreads   every public library must be refused, by name, on a Chez built
+#               with --nothreads (ADR-0001).
+#   memory      the Valgrind gate (ADR-0014): the planted defects must fail it,
+#               then every suite runs under it.
+#
+# This workflow states no floor. The scripts that build Chez and libcurl at
+# their floors, scripts/ci/build-chez.sh and build-curl.sh, take no version and
+# read theirs from packaging/floors.sexp (ADR-0016), and so do the steps that
+# need one, through scripts/ci/floor.sh. So nothing written here, an env value
+# or a matrix value, changes what is built or checked. `make check-floors`
+# holds every file in this directory: no line may contain either floor's
+# version, or name the two env keys the floors were held in before the scripts
+# read them, a comment included.
+#
+# Every action is pinned to a full commit SHA, with its tag in a comment: a
+# tag can be moved to other code, a commit cannot. The main job's first check,
+# scripts/ci/check-action-pins.sh, fails on any line with a uses key that is
+# not exactly that, whatever the key's spelling.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A pull request's runs share one group, its ref, and cancel-in-progress is
+# true there: a new push to the pull request cancels its run in progress, and
+# any run still pending. Every other run, a push to main or a tag, or a run
+# asked for by hand, has a group of its own, its run id: GitHub keeps at most
+# one run pending per group, and cancels a pending run when a newer one queues
+# in its group, whatever cancel-in-progress says. So such a run never waits
+# behind another, and is never cancelled or dropped for a newer one. A group
+# per commit would not do: a tag pushed on the commit main just ran would wait
+# in main's group, and a third run of that commit would cancel it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Every cache below is keyed by what it holds: the floors file, which names the
+# version, the build script, the build flags (a threaded Chez and a
+# --nothreads Chez are two entries; the rest of each configure line is in the
+# build script), and the runner image. A changed floor or build is never
+# served stale. Each cache is restored and saved in two steps, so a build is
+# banked even when a later step fails. Every job builds what it needs: a cold
+# cache costs each job a build, once, and the first to save wins.
+
+jobs:
+  main:
+    name: main (checks and suites, Chez built from source)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      # Every line with a uses key in this directory is the form of a full
+      # commit SHA with its tag in a comment. It needs only the checkout, so it
+      # runs first.
+      - name: Every action is pinned to a commit
+        run: scripts/ci/check-action-pins.sh .github/workflows
+
+      # The one package list. A failed grep must not become an empty install.
+      - name: Install the packages in packaging/debian-prereqs.txt
+        run: |
+          pkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')
+          if [ -z "$pkgs" ]; then
+            echo "::error::packaging/debian-prereqs.txt yielded no packages: a broken step, not an empty list"
+            exit 1
+          fi
+          sudo apt-get update -qq
+          # shellcheck disable=SC2086
+          sudo apt-get install -y --no-install-recommends $pkgs
+
+      - name: Identify the runner image
+        id: image
+        run: |
+          . /etc/os-release
+          echo "id=${ID}-${VERSION_ID}-${RUNNER_ARCH}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Chez
+        id: chez
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: chez-threads-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-chez.sh') }}-${{ steps.image.outputs.id }}
+
+      - name: Build Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        run: scripts/ci/build-chez.sh "$RUNNER_TEMP/chez-threads"
+
+      - name: Save Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: ${{ steps.chez.outputs.cache-primary-key }}
+
+      - name: Report the versions this run uses
+        run: |
+          "$RUNNER_TEMP/chez-threads/bin/scheme" --version
+          cc --version | head -n 1
+          valgrind --version
+          echo "image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+
+      # CHEZ is the real binary, not a symlink or a wrapper. No
+      # CHEZ_CURL_LIBCURL: the runner's libcurl is found by discovery.
+      - name: Checks, build, suites
+        env:
+          CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
+        run: make check-help check-suites check-pins check-seam check-floors build test check-test-fails
+
+  floor:
+    name: floor (the suites against libcurl at its floor)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      CURL_EXTRA_FLAGS: ""
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Install the packages in packaging/debian-prereqs.txt
+        run: |
+          pkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')
+          if [ -z "$pkgs" ]; then
+            echo "::error::packaging/debian-prereqs.txt yielded no packages: a broken step, not an empty list"
+            exit 1
+          fi
+          sudo apt-get update -qq
+          # shellcheck disable=SC2086
+          sudo apt-get install -y --no-install-recommends $pkgs
+
+      - name: Identify the runner image
+        id: image
+        run: |
+          . /etc/os-release
+          echo "id=${ID}-${VERSION_ID}-${RUNNER_ARCH}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Chez
+        id: chez
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: chez-threads-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-chez.sh') }}-${{ steps.image.outputs.id }}
+
+      - name: Build Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        run: scripts/ci/build-chez.sh "$RUNNER_TEMP/chez-threads"
+
+      - name: Save Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: ${{ steps.chez.outputs.cache-primary-key }}
+
+      # The configure flags go into the cache key, as words: a key may hold no
+      # comma, and a space is best left out.
+      - name: Name the configure flags for the cache key
+        id: flags
+        run: echo "key=$(printf '%s' "$CURL_EXTRA_FLAGS" | tr -c '[:alnum:]' '-')" >> "$GITHUB_OUTPUT"
+
+      - name: Restore libcurl at its floor
+        id: curl
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/curl-floor
+          key: curl-openssl-${{ steps.flags.outputs.key }}-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-curl.sh') }}-${{ steps.image.outputs.id }}
+
+      - name: Build libcurl at its floor
+        if: steps.curl.outputs.cache-hit != 'true'
+        run: |
+          read -r -a extra <<< "$CURL_EXTRA_FLAGS"
+          scripts/ci/build-curl.sh "$RUNNER_TEMP/curl-floor" "${extra[@]}"
+
+      - name: Save libcurl at its floor
+        if: steps.curl.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/curl-floor
+          key: ${{ steps.curl.outputs.cache-primary-key }}
+
+      # The preflight names the library it loaded: the lane is only worth
+      # anything if that is the floor's, not the runner's. The floor is the
+      # build script's own: scripts/ci/floor.sh reads it from the same file.
+      # C_INCLUDE_PATH and CHEZ_CURL_LIBCURL both name the floor: the constants
+      # check compiles against headers that must be no newer than the library
+      # (ADR-0001).
+      - name: Build and test against libcurl at its floor
+        env:
+          CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
+          CHEZ_CURL_LIBCURL: ${{ runner.temp }}/curl-floor/lib/libcurl.so.4
+          C_INCLUDE_PATH: ${{ runner.temp }}/curl-floor/include
+        run: |
+          set -o pipefail
+          floor=$(scripts/ci/floor.sh libcurl)
+          make build | tee "$RUNNER_TEMP/build.log"
+          if ! grep -qxF "  version:  $floor" "$RUNNER_TEMP/build.log"; then
+            echo "::error::make build did not load libcurl at its floor ($floor): this lane tests nothing"
+            exit 1
+          fi
+          make test
+
+  # One lane per API that ADR-0003 probes at load, each with its own libcurl,
+  # built and cached under its own key: the configure flag is in the key. With
+  # both APIs disabled, the options probe, which runs first, would refuse the
+  # library alone, and the header probe would never be seen to fire.
+  floor-disabled-api:
+    name: floor-disabled-api (${{ matrix.api }} API disabled, make build must refuse it)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - api: options
+            flag: --disable-get-easy-options
+            entry: curl_easy_option_by_name
+          - api: header
+            flag: --disable-headers-api
+            entry: curl_easy_header
+    env:
+      CURL_EXTRA_FLAGS: ${{ matrix.flag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Install the packages in packaging/debian-prereqs.txt
+        run: |
+          pkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')
+          if [ -z "$pkgs" ]; then
+            echo "::error::packaging/debian-prereqs.txt yielded no packages: a broken step, not an empty list"
+            exit 1
+          fi
+          sudo apt-get update -qq
+          # shellcheck disable=SC2086
+          sudo apt-get install -y --no-install-recommends $pkgs
+
+      - name: Identify the runner image
+        id: image
+        run: |
+          . /etc/os-release
+          echo "id=${ID}-${VERSION_ID}-${RUNNER_ARCH}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Chez
+        id: chez
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: chez-threads-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-chez.sh') }}-${{ steps.image.outputs.id }}
+
+      - name: Build Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        run: scripts/ci/build-chez.sh "$RUNNER_TEMP/chez-threads"
+
+      - name: Save Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: ${{ steps.chez.outputs.cache-primary-key }}
+
+      - name: Name the configure flags for the cache key
+        id: flags
+        run: echo "key=$(printf '%s' "$CURL_EXTRA_FLAGS" | tr -c '[:alnum:]' '-')" >> "$GITHUB_OUTPUT"
+
+      - name: Restore libcurl at its floor, with the ${{ matrix.api }} API disabled
+        id: curl
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/curl-floor-no-${{ matrix.api }}-api
+          key: curl-openssl-${{ steps.flags.outputs.key }}-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-curl.sh') }}-${{ steps.image.outputs.id }}
+
+      - name: Build libcurl at its floor, with the ${{ matrix.api }} API disabled
+        if: steps.curl.outputs.cache-hit != 'true'
+        env:
+          PREFIX: ${{ runner.temp }}/curl-floor-no-${{ matrix.api }}-api
+        run: |
+          read -r -a extra <<< "$CURL_EXTRA_FLAGS"
+          scripts/ci/build-curl.sh "$PREFIX" "${extra[@]}"
+
+      - name: Save libcurl at its floor, with the ${{ matrix.api }} API disabled
+        if: steps.curl.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/curl-floor-no-${{ matrix.api }}-api
+          key: ${{ steps.curl.outputs.cache-primary-key }}
+
+      # Not the suite: this library must be refused. The refusal is the lane's
+      # whole point, so make build must exit non-zero and print preflight's
+      # refusal, whole lines in order: the reason missing-api, this library's
+      # path, and the entry point whose probe failed, which tells the two lanes
+      # apart (scripts/ci/expect-missing-api.sh). Anything else is a red lane.
+      - name: make build must refuse the library as missing-api, naming ${{ matrix.entry }}
+        env:
+          CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
+          CHEZ_CURL_LIBCURL: ${{ runner.temp }}/curl-floor-no-${{ matrix.api }}-api/lib/libcurl.so.4
+          ENTRY: ${{ matrix.entry }}
+        run: scripts/ci/expect-missing-api.sh "$ENTRY"
+
+  nothreads:
+    name: nothreads (every public library is refused on a Chez without threads)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install the packages in packaging/debian-prereqs.txt
+        run: |
+          pkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')
+          if [ -z "$pkgs" ]; then
+            echo "::error::packaging/debian-prereqs.txt yielded no packages: a broken step, not an empty list"
+            exit 1
+          fi
+          sudo apt-get update -qq
+          # shellcheck disable=SC2086
+          sudo apt-get install -y --no-install-recommends $pkgs
+
+      - name: Identify the runner image
+        id: image
+        run: |
+          . /etc/os-release
+          echo "id=${ID}-${VERSION_ID}-${RUNNER_ARCH}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Chez without threads
+        id: chez
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-nothreads
+          key: chez-nothreads-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-chez.sh') }}-${{ steps.image.outputs.id }}
+
+      - name: Build Chez without threads
+        if: steps.chez.outputs.cache-hit != 'true'
+        run: scripts/ci/build-chez.sh "$RUNNER_TEMP/chez-nothreads" --nothreads
+
+      - name: Save Chez without threads
+        if: steps.chez.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-nothreads
+          key: ${{ steps.chez.outputs.cache-primary-key }}
+
+      # No submodules, no deps: the check imports only src/.
+      - name: Every public library must be refused, by name
+        env:
+          CHEZ: ${{ runner.temp }}/chez-nothreads/bin/scheme
+        run: make check-nothreads
+
+  # The Valgrind gate, on every run (ADR-0014). Measured in the Guix
+  # container: about 75 seconds for check-memory-gate and 100 for every suite
+  # under test-memory; a cold cache adds the Chez build.
+  memory:
+    name: memory (the Valgrind gate)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Install the packages in packaging/debian-prereqs.txt
+        run: |
+          pkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')
+          if [ -z "$pkgs" ]; then
+            echo "::error::packaging/debian-prereqs.txt yielded no packages: a broken step, not an empty list"
+            exit 1
+          fi
+          sudo apt-get update -qq
+          # shellcheck disable=SC2086
+          sudo apt-get install -y --no-install-recommends $pkgs
+
+      - name: Identify the runner image
+        id: image
+        run: |
+          . /etc/os-release
+          echo "id=${ID}-${VERSION_ID}-${RUNNER_ARCH}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Chez
+        id: chez
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: chez-threads-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-chez.sh') }}-${{ steps.image.outputs.id }}
+
+      - name: Build Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        run: scripts/ci/build-chez.sh "$RUNNER_TEMP/chez-threads"
+
+      - name: Save Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: ${{ steps.chez.outputs.cache-primary-key }}
+
+      # The gate proves nothing unless it can fail, so the planted defects run
+      # first: a heap overrun and a definite leak must each fail it, by
+      # Valgrind's own marker. Outside any Guix environment: no suppression is
+      # passed, and no flag that hides a report.
+      - name: The gate must fail on planted defects
+        env:
+          CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
+        run: make check-memory-gate
+
+      - name: Every suite under Valgrind
+        env:
+          CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
+        run: make test-memory

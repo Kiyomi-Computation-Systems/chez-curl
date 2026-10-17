@@ -1,6 +1,7 @@
 # ADR-0003: The libcurl floor is 7.85.0, and two APIs are probed at load
 
-- **Status:** Accepted; amended 2026-10-16: `missing-api` also names a missing entry point
+- **Status:** Accepted; amended 2026-10-16: `missing-api` also names a missing entry point,
+  and the disabled-API lane is measured (M0 slice 5)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D10. That decision was raised on 2026-10-04, after the brief was written.
@@ -126,3 +127,30 @@ A library without one is refused as `missing-api`, with the entry point's C name
 detail. The other way to fail is Chez's bare `no entry for`, which decision 2 is written
 to avoid. A library that is not libcurl at all is refused this way, as missing
 `curl_version_info`. The two probes in decision 2 keep their meaning.
+
+## Amendment, 2026-10-16: the disabled-API lane, measured (M0 slice 5)
+
+- **A disabled build keeps both symbols, as the context says, and the probes are what
+  refuse it.** For curl 7.85.0 built with `--disable-get-easy-options --disable-headers-api`,
+  `nm -D` lists `curl_easy_option_by_name` and `curl_easy_header` as defined in both
+  builds. Their behaviour is what differs:
+
+  | | plain | disabled |
+  |---|---|---|
+  | `curl_easy_option_by_name("URL")` | non-NULL | NULL |
+  | `curl_easy_header` on a fresh handle | 3, `CURLHE_NOHEADERS` | 7, `CURLHE_NOT_BUILT_IN` |
+
+  So `foreign-entry?` finds both, and the load's two probes refuse the library.
+- **With both APIs off, the first probe hides the second.** `check-apis` checks the options
+  API first, so a curl built without both is always refused naming
+  `curl_easy_option_by_name`. The header probe would never be the reason.
+- **So CI's `floor-disabled-api` job is two lanes, one flag each.**
+  - `options` is built with only `--disable-get-easy-options`, and must be refused naming
+    `curl_easy_option_by_name`.
+  - `header` is built with only `--disable-headers-api`, and must be refused naming
+    `curl_easy_header`.
+  - Each runs `make build` alone, and requires a non-zero exit and the preflight's whole
+    refusal block, line by line: the reason, the path, the source, the detail naming that
+    lane's entry point, and the version.
+  - Measured locally, on curls 7.85.0 built in the container and in Docker: each lane passes
+    on its own library and fails on the other's, by its detail line alone.

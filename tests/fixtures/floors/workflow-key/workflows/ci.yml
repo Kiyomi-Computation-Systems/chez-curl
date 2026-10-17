@@ -1,0 +1,12 @@
+# Test fixture: a job's env redefines the libcurl floor, to a version that is not the floor.
+name: Fixture
+on:
+  pull_request:
+jobs:
+  main:
+    runs-on: ubuntu-24.04
+    env:
+      CURL_FLOOR_VERSION: "8.1.3"
+    steps:
+      - run: scripts/ci/build-chez.sh /opt/chez
+      - run: scripts/ci/build-curl.sh /opt/curl

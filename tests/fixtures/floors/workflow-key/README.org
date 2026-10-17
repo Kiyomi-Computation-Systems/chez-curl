@@ -1,0 +1,24 @@
+* A fixture README
+
+An opening paragraph.
+
+** Status
+
+- Chez Scheme 9.9.9 or later, built with threads
+- libcurl 1.0.0 or later, built with TLS
+
+** Requirements
+
+- Chez Scheme 10.9.1 or later, built with threads
+- libcurl 8.1.2 or later, built with TLS
+- Node.js 22.3 or later, for the tests
+
+Nothing else is needed.
+
+*** Details
+
+- A list under a deeper heading is not the section's list.
+
+** License
+
+- Node.js 1 or later, for the tests

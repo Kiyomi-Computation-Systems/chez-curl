@@ -1,23 +1,36 @@
 #!r6rs
 ;;; The suite for (floors) and tests/check-floors.sps, the program behind
-;;; `make check-floors` (harness plan, section 3, item 5). packaging/floors.sexp
+;;; `make check-floors` (harness plan, section 3, item 5), and for the CI
+;;; scripts that read the floors file or hold the workflows. packaging/floors.sexp
 ;;; is the one file that writes the Chez, libcurl and Node floors, and
-;;; check-floors holds README.org to it. Without this suite, deleting a rule
-;;; would leave `make test` green: the real README and floors file break none
-;;; of them.
+;;; check-floors holds README.org to it, and every file under CI's workflow
+;;; directory: CI states no floor, so no line of any file there may contain
+;;; either floor's version text, nor name the two env keys that once held
+;;; them. The build scripts read the floors from the file themselves
+;;; (scripts/ci/floor.sh), so an env value or a matrix value in a workflow
+;;; cannot change what CI builds. Without this suite, deleting a rule would
+;;; leave `make test` green: the real README, workflows and floors file break
+;;; none of them.
 ;;;
-;;; Three layers, each asserting whole values written by hand here, never read
+;;; Four layers, each asserting whole values written by hand here, never read
 ;;; back from the code under test: a substring would pass whenever another
 ;;; rule produced the same words.
 ;;;
 ;;;   - the pure procedures, on texts held in this suite: every rule of the
-;;;     floors file, and every rule of the README comparison, one fault in an
-;;;     otherwise legal text;
-;;;   - the program, on the fixture directories under tests/fixtures/floors/:
-;;;     its exit status, whole stdout and whole stderr, and the files it
-;;;     cannot read;
+;;;     floors file, every rule of the README comparison and every rule of the
+;;;     workflows comparison, one fault in an otherwise legal text;
+;;;   - the program, on the fixture directories under tests/fixtures/floors/,
+;;;     each with its workflows in a directory of their own, and on an empty
+;;;     directory it makes, since git keeps none: its exit status, whole
+;;;     stdout and whole stderr, and the files and directories it cannot
+;;;     read;
 ;;;   - the answers (floors) gives a suite: a floor by name, as text and as
-;;;     numbers.
+;;;     numbers;
+;;;   - the CI scripts, run in a fresh tree that holds the real scripts/ci
+;;;     and a floors file of the suite's own: floor.sh and the build scripts
+;;;     read the floor from that file, and fail closed on a bad one;
+;;;     check-action-pins.sh on workflow directories the suite writes. Where a
+;;;     script would download, a curl that only names its URL stands in.
 ;;;
 ;;; The floors in every legal text here, 10.9.1, 8.1.2 and 22.3, are none of
 ;;; the real floors, so a check that wrote the README's lines from constants
@@ -116,6 +129,40 @@
 
 (define (lacks-line line)
   (r: (q section) " lacks the list line " (q line) ", which " fp " gives"))
+
+(define wd "W")
+(define wp "W/ci.yml")
+
+;; wrote : String Natural String String String -> String
+;; The complaint about line N of the workflow file PATH, which contains a
+;; floor's version text. WHICH is "Chez" or "libcurl", VERSION its floor,
+;; FLOORS the floors file's path.
+(define (wrote path n which version floors)
+  (string-append path ": line " (number->string n) " contains the " which " floor " version
+                 ", which no workflow line may write: the build scripts read it from " floors))
+
+;; named : String Natural String String -> String
+;; The complaint about line N of the workflow file PATH, which names KEY, one
+;; of the two env keys CI no longer has. FLOORS is the floors file's path.
+(define (named path n key floors)
+  (string-append path ": line " (number->string n) " names " key
+                 ", which no workflow line may name: the build scripts read the floors from " floors))
+
+;; literal, keyed : Natural String String -> String
+;; The complaints about line N of ci.yml, held against the floors file f.sexp.
+(define (literal n which version) (wrote wp n which version fp))
+(define (keyed n key) (named wp n key fp))
+
+;; elsewhere, keyed-in : String Natural String String -> String
+;; The same for a workflow file but ci.yml.
+(define (elsewhere path n which version) (wrote path n which version fp))
+(define (keyed-in path n key) (named path n key fp))
+
+;; no-files, no-ci : String
+;; The complaints about a workflow directory that holds no file, and one that
+;; holds files but no ci.yml.
+(define no-files (string-append wd ": it holds no file, but must hold ci.yml, the workflow CI runs"))
+(define no-ci (string-append wd ": it holds no ci.yml, the workflow CI runs"))
 
 ;; --- the floors file: texts ----------------------------------------------------------
 
@@ -347,10 +394,33 @@
 (define (under-section . body)
   (apply readme (append (list "* Title" "" "An opening paragraph." "" section "") body)))
 
+;; --- the workflows the README rows are held beside ----------------------------------
+
+;; workflow : String ... -> String
+;; The lines, each ended by a newline.
+(define (workflow . lines)
+  (apply string-append (map (lambda (line) (string-append line "\n")) lines)))
+
+;; workflow-with : String ... -> String
+;; A legal workflow, which states no floor, with the lines BODY after its first
+;; job's steps.
+(define (workflow-with . body)
+  (apply workflow
+         (append (list "name: CI" "" "on:" "  pull_request:" "" "jobs:" "  main:"
+                       "    runs-on: ubuntu-24.04" "    steps:"
+                       "      - run: scripts/ci/build-chez.sh /opt/chez"
+                       "      - run: scripts/ci/build-curl.sh /opt/curl")
+                 body)))
+
+;; The first line of BODY in workflow-with is line 12.
+(define body-line 12)
+
+(define good-workflow (workflow-with))
+
 (define (readme-row name text problems)
   (test-equal (string-append "README: " name)
     (list 'returned problems)
-    (outcome (lambda () (check-floors fp good rp text)))))
+    (outcome (lambda () (check-floors fp good rp text wd (list (list wp good-workflow)))))))
 
 (readme-row "the three lines the floors give, in order" (apply under-section good-lines) '())
 
@@ -543,26 +613,261 @@
         (altered-line "2" line-node line-libcurl)
         (altered-line "3" line-chez line-node)))
 
+;; --- the workflow: what is legal -----------------------------------------------------
+
+(define (workflow-row name text problems)
+  (test-equal (string-append "workflow: " name)
+    (list 'returned problems)
+    (outcome (lambda ()
+               (check-floors fp good rp (apply under-section good-lines) wd (list (list wp text)))))))
+
+(workflow-row "a workflow that states no floor: nothing to report" good-workflow '())
+
+(workflow-row "the Node floor may be written anywhere: it is no floor of the workflow"
+  (workflow-with "      - run: node --version # 22.3 or later" "      - run: echo 22")
+  '())
+
+(workflow-row "a version that is no floor of the file may be written anywhere"
+  (workflow-with "      - run: echo 10.4.0 7.85.0, the real floors, here other versions"
+                 "      - run: echo 10.9 8.1 10.9.0 8.1.3")
+  '())
+
+;; check-floors reads text, not YAML. A matrix value of another version is no
+;; floor's text, so it is not seen here: the build scripts read the floors
+;; from the file and take no version, so the value reaches nothing.
+(workflow-row "a matrix value of another version is no floor's text: check-floors cannot see it"
+  (workflow "jobs:" "  floor:" "    strategy:" "      matrix:" "        curl: [\"8.1.3\", \"8.1.1\"]")
+  '())
+
+;; --- the workflow: the two env keys --------------------------------------------------
+
+;; job-env : String -> String
+;; A workflow whose first job's env holds LINE, which is line 8.
+(define (job-env line)
+  (workflow "name: CI" "on:" "  pull_request:" "jobs:" "  floor:"
+            "    runs-on: ubuntu-24.04" "    env:" (string-append "      " line)
+            "    steps:" "      - run: make build"))
+
+(workflow-row "a job's env redefining the libcurl floor, to another version"
+  (job-env "CURL_FLOOR_VERSION: \"8.1.3\"")
+  (list (keyed 8 "CURL_FLOOR_VERSION")))
+
+(workflow-row "a job's env redefining the Chez floor, to another version"
+  (job-env "CHEZ_VERSION: \"10.8.0\"")
+  (list (keyed 8 "CHEZ_VERSION")))
+
+(workflow-row "a job's env redefining a floor, to the floor itself: the floor's text and the key"
+  (job-env "CURL_FLOOR_VERSION: \"8.1.2\"")
+  (list (literal 8 "libcurl" "8.1.2") (keyed 8 "CURL_FLOOR_VERSION")))
+
+(workflow-row "a key in a reference, in the expression syntax"
+  (workflow-with "      - run: scripts/ci/build-chez.sh ${{ env.CHEZ_VERSION }} /opt/chez")
+  (list (keyed body-line "CHEZ_VERSION")))
+
+(workflow-row "a key in a reference, in the shell syntax"
+  (workflow-with "      - run: scripts/ci/build-curl.sh \"$CURL_FLOOR_VERSION\" /opt/curl")
+  (list (keyed body-line "CURL_FLOOR_VERSION")))
+
+(workflow-row "a key in a comment"
+  (workflow-with "      # CHEZ_VERSION used to hold the Chez floor")
+  (list (keyed body-line "CHEZ_VERSION")))
+
+(workflow-row "a key inside a longer name is still the key's text"
+  (job-env "MY_CHEZ_VERSION: other")
+  (list (keyed 8 "CHEZ_VERSION")))
+
+(workflow-row "both keys on one line: both are named, the Chez key first"
+  (workflow-with "      - run: echo $CURL_FLOOR_VERSION $CHEZ_VERSION")
+  (list (keyed body-line "CHEZ_VERSION") (keyed body-line "CURL_FLOOR_VERSION")))
+
+(workflow-row "the old env block: each line's floor, then its key, in line order"
+  (workflow "env:" "  CHEZ_VERSION: \"10.9.1\"" "  CURL_FLOOR_VERSION: \"8.1.2\"" "jobs:")
+  (list (literal 2 "Chez" "10.9.1") (keyed 2 "CHEZ_VERSION")
+        (literal 3 "libcurl" "8.1.2") (keyed 3 "CURL_FLOOR_VERSION")))
+
+;; --- the workflow: a floor written anywhere ------------------------------------------
+
+(workflow-row "the Chez floor in a run step"
+  (workflow-with "      - run: scripts/ci/build-chez.sh 10.9.1 /opt/chez")
+  (list (literal body-line "Chez" "10.9.1")))
+
+(workflow-row "the libcurl floor in a run step"
+  (workflow-with "      - run: scripts/ci/build-curl.sh 8.1.2 /opt/curl")
+  (list (literal body-line "libcurl" "8.1.2")))
+
+(workflow-row "the Chez floor in a comment"
+  (workflow-with "      # Chez 10.9.1 is built from its tarball")
+  (list (literal body-line "Chez" "10.9.1")))
+
+(workflow-row "the libcurl floor in a cache key"
+  (workflow-with "          key: curl-8.1.2-linux")
+  (list (literal body-line "libcurl" "8.1.2")))
+
+(workflow-row "the floor inside a longer number is still the floor's text"
+  (workflow-with "      - run: echo 110.9.1")
+  (list (literal body-line "Chez" "10.9.1")))
+
+(workflow-row "both floors on one line: both are named, the Chez floor first"
+  (workflow-with "      - run: echo 8.1.2 10.9.1")
+  (list (literal body-line "Chez" "10.9.1")
+        (literal body-line "libcurl" "8.1.2")))
+
+(workflow-row "a floor on several lines: each line is named, in line order"
+  (workflow-with "      - run: echo 8.1.2" "      - run: echo fine" "      - run: echo 10.9.1")
+  (list (literal body-line "libcurl" "8.1.2")
+        (literal (+ body-line 2) "Chez" "10.9.1")))
+
+(workflow-row "a floor and a key on different lines: line order"
+  (workflow "env:" "  other: $CHEZ_VERSION" "jobs:" "      - run: echo 10.9.1")
+  (list (keyed 2 "CHEZ_VERSION") (literal 4 "Chez" "10.9.1")))
+
+;; --- the workflows: every file under the directory -----------------------------------
+
+(define (workflows-row name workflows problems)
+  (test-equal (string-append "workflows: " name)
+    (list 'returned problems)
+    (outcome (lambda ()
+               (check-floors fp good rp (apply under-section good-lines) wd workflows)))))
+
+(define release "W/release.yml")
+
+;; release-with : String ... -> String
+;; A second workflow, with the lines BODY after its steps. The first line of
+;; BODY is line 7.
+(define (release-with . body)
+  (apply workflow
+         (append (list "name: Release" "on:" "  push:" "jobs:" "  release:" "    steps:")
+                 body)))
+
+(define release-line 7)
+
+(define clean-release (release-with "      - run: make build"))
+
+;; the-old-env : String
+;; The env block CI had before the floors moved to the floors file: two lines,
+;; which are lines 2 and 3 of a workflow that starts with them.
+(define the-old-env
+  (workflow "env:" "  CHEZ_VERSION: \"10.9.1\"" "  CURL_FLOOR_VERSION: \"8.1.2\""))
+
+(workflows-row "a second workflow that writes no floor: nothing to report"
+  (list (list wp good-workflow) (list release clean-release))
+  '())
+
+(workflows-row "the Node floor, and versions that are no floor, may be written in a second workflow"
+  (list (list wp good-workflow)
+        (list release (release-with "      - run: node --version # 22.3" "      - run: echo 10.9 8.1.3")))
+  '())
+
+(workflows-row "a second workflow that writes the Chez floor in a step: named, by its own path and line"
+  (list (list wp good-workflow)
+        (list release (release-with "      - run: scripts/ci/build-chez.sh 10.9.1 /opt/chez")))
+  (list (elsewhere release release-line "Chez" "10.9.1")))
+
+(workflows-row "a second workflow that writes the libcurl floor in a comment"
+  (list (list wp good-workflow)
+        (list release (release-with "      - run: make build" "# curl 8.1.2 is the floor")))
+  (list (elsewhere release (+ release-line 1) "libcurl" "8.1.2")))
+
+(workflows-row "a second workflow whose env names the Chez key: named, by its own path and line"
+  (list (list wp good-workflow)
+        (list release (release-with "      - run: make build" "      - run: echo $CHEZ_VERSION")))
+  (list (keyed-in release (+ release-line 1) "CHEZ_VERSION")))
+
+(workflows-row "the old env block in a second workflow: each line's floor and key"
+  (list (list wp good-workflow) (list release the-old-env))
+  (list (elsewhere release 2 "Chez" "10.9.1") (keyed-in release 2 "CHEZ_VERSION")
+        (elsewhere release 3 "libcurl" "8.1.2") (keyed-in release 3 "CURL_FLOOR_VERSION")))
+
+(workflows-row "the old env block in ci.yml itself is no exception"
+  (list (list wp the-old-env))
+  (list (literal 2 "Chez" "10.9.1") (keyed 2 "CHEZ_VERSION")
+        (literal 3 "libcurl" "8.1.2") (keyed 3 "CURL_FLOOR_VERSION")))
+
+(workflows-row "every file is held, in path order, whatever order they come in; a line names its floors, then its keys"
+  (list (list "W/z.yml" (workflow "# 10.9.1"))
+        (list wp (workflow-with "      - run: echo 8.1.2"))
+        (list "W/a.yml" (workflow "" "# CHEZ_VERSION is 8.1.2 and 10.9.1")))
+  (list (elsewhere "W/a.yml" 2 "Chez" "10.9.1")
+        (elsewhere "W/a.yml" 2 "libcurl" "8.1.2")
+        (keyed-in "W/a.yml" 2 "CHEZ_VERSION")
+        (literal body-line "libcurl" "8.1.2")
+        (elsewhere "W/z.yml" 1 "Chez" "10.9.1")))
+
+(workflows-row "a file in a subdirectory is held like any other"
+  (list (list wp good-workflow) (list "W/sub/notes.yml" (workflow "# 10.9.1")))
+  (list (elsewhere "W/sub/notes.yml" 1 "Chez" "10.9.1")))
+
+(workflows-row "a ci.yml in a subdirectory is not the workflow: there is no ci.yml, and its lines are held"
+  (list (list "W/sub/ci.yml" (workflow-with "      - run: echo 10.9.1")))
+  (list no-ci
+        (elsewhere "W/sub/ci.yml" body-line "Chez" "10.9.1")))
+
+(workflows-row "no file at all: the directory is named, once"
+  '()
+  (list no-files))
+
+(workflows-row "no ci.yml, and a second workflow that writes no floor"
+  (list (list release clean-release))
+  (list no-ci))
+
+(workflows-row "an unreadable ci.yml, #f, is not compared, and is no missing ci.yml; the others still are"
+  (list (list wp #f)
+        (list release (release-with "      - run: echo 10.9.1")))
+  (list (elsewhere release release-line "Chez" "10.9.1")))
+
+(workflows-row "an unreadable second workflow, #f, is not compared"
+  (list (list wp good-workflow) (list release #f))
+  '())
+
 ;; --- the README is held to the file, and the file comes first ------------------------
 
-(test-equal "README: the lines come from the floors file: other floors, other lines"
+(test-equal "README and workflow: the lines come from the floors file: other floors, other lines"
   (list 'returned
         (list (altered-line "1" line-chez "- Chez Scheme 10.0.0 or later, built with threads")
               (altered-line "2" line-libcurl "- libcurl 7.85.0 or later, built with TLS")
-              (altered-line "3" line-node "- Node.js 20 or later, for the tests")))
+              (altered-line "3" line-node "- Node.js 20 or later, for the tests")
+              (literal body-line "Chez" "10.0.0")
+              (literal body-line "libcurl" "7.85.0")))
   (outcome (lambda ()
              (check-floors fp (floors-of "\"10.0.0\"" "\"7.85.0\"" "\"20\"")
-                           rp (apply under-section good-lines)))))
+                           rp (apply under-section good-lines)
+                           wd (list (list wp (workflow-with "      - run: echo 10.0.0 7.85.0")))))))
 
-(test-equal "a bad floors file is reported alone: the README is not read against it"
+(test-equal "a bad floors file is reported alone: neither the README nor the workflow is read against it"
   (list 'returned (list (missing-key "node")))
   (outcome (lambda ()
              (check-floors fp "((chez \"10.9.1\") (libcurl \"8.1.2\"))"
-                           rp (readme "* Title")))))
+                           rp (readme "* Title")
+                           wd (list (list wp (workflow "# 10.9.1 and CHEZ_VERSION")))))))
 
-(test-equal "a good floors file and a good README report nothing"
+(test-equal "a good floors file, README and workflow report nothing"
   '(returned ())
-  (outcome (lambda () (check-floors fp good rp (apply under-section good-lines)))))
+  (outcome (lambda ()
+             (check-floors fp good rp (apply under-section good-lines) wd (list (list wp good-workflow))))))
+
+(test-equal "an unreadable README, #f, is not compared, and the workflow still is"
+  (list 'returned (list (literal 1 "Chez" "10.9.1") (keyed 1 "CHEZ_VERSION")))
+  (outcome (lambda () (check-floors fp good rp #f wd (list (list wp (workflow "# 10.9.1 CHEZ_VERSION")))))))
+
+(test-equal "an unreadable ci.yml, #f, is not compared, and the README still is"
+  (list 'returned (list no-section))
+  (outcome (lambda () (check-floors fp good rp (readme "* Title") wd (list (list wp #f))))))
+
+(test-equal "a workflow directory that could not be read, #f, is not compared, and the README still is"
+  (list 'returned (list no-section))
+  (outcome (lambda () (check-floors fp good rp (readme "* Title") wd #f))))
+
+(test-equal "an unreadable README and an unreadable workflow directory compare nothing"
+  '(returned ())
+  (outcome (lambda () (check-floors fp good rp #f wd #f))))
+
+(test-equal "a bad README and a bad workflow are both reported, the README first"
+  (list 'returned
+        (list (lacks-line line-node)
+              (literal 1 "libcurl" "8.1.2")))
+  (outcome (lambda ()
+             (check-floors fp good rp (under-section line-chez line-libcurl)
+                           wd (list (list wp (workflow "# 8.1.2")))))))
 
 ;; --- the program -----------------------------------------------------------------------
 
@@ -578,16 +883,18 @@
 (define (at case file) (string-append fixtures "/" case "/" file))
 
 ;; both : String -> (Listof String)
-;; The two files of the fixture directory CASE, as the program takes them.
-(define (both case) (list (at case "floors.sexp") (at case "README.org")))
+;; The three arguments the program takes for the fixture directory CASE: the
+;; floors file, the README and the workflow directory.
+(define (both case)
+  (list (at case "floors.sexp") (at case "README.org") (at case "workflows")))
 
-;; holds : String String String -> (List 0 String "")
-;; What a pass prints: the README that states the floors in the floors file,
-;; and the floors.
-(define (holds readme-path floors-path summary)
+;; holds : String String String String String -> (List 0 String "")
+;; What a pass prints: the README and the workflow directory that hold the
+;; floors in the floors file, the files read there, and the floors.
+(define (holds readme-path workflows-path names floors-path summary)
   (list 0
-        (string-append "check-floors: " readme-path " states the floors in "
-                       floors-path " (" summary ")\n")
+        (string-append "check-floors: " readme-path " and " workflows-path " (" names ")"
+                       " hold the floors in " floors-path " (" summary ")\n")
         ""))
 
 ;; refused : Natural String ... -> (List 1 "" String)
@@ -605,10 +912,17 @@
   (string-append path ": it cannot be read: Exception in open-file-input-port: failed for "
                  path ": no such file or directory"))
 
+;; cannot-list : String String -> String
+;; The complaint about a workflow directory at PATH that cannot be listed, for
+;; WHY: "no such file or directory", or "not a directory".
+(define (cannot-list path why)
+  (string-append path ": it cannot be read: Exception in directory-list: failed for "
+                 path ": " why))
+
 (define usage
   (list 1
         ""
-        "check-floors: usage: scheme --libdirs tests --program tests/check-floors.sps FLOORS README\n"))
+        "check-floors: usage: scheme --libdirs tests --program tests/check-floors.sps FLOORS README WORKFLOWS\n"))
 
 ;; cases : (Listof (List String String (Listof String) Expected))
 ;; The fixture directory, what it holds, the arguments, and the program's
@@ -616,9 +930,9 @@
 (define cases
   (list
    (list "legal"
-         "floors no real floor equals, a README with their lines among other lists and sections"
+         "floors no real floor equals, a README with their lines among other lists and sections, a ci.yml that states no floor"
          (both "legal")
-         (holds (at "legal" "README.org") (at "legal" "floors.sexp")
+         (holds (at "legal" "README.org") (at "legal" "workflows") "ci.yml" (at "legal" "floors.sexp")
                 "chez 10.9.1, libcurl 8.1.2, node 22.3"))
    (list "readme-altered"
          "one README line altered"
@@ -634,7 +948,7 @@
          (refused 1 (string-append (at "no-section" "README.org")
                                    ": it has no \"** Requirements\" section")))
    (list "floors-invalid"
-         "a floors file with a missing key and a bad version: both named, and the README not read"
+         "a floors file with a missing key and a bad version: both named, and the README and workflows not read"
          (both "floors-invalid")
          (refused 2
                   (string-append (at "floors-invalid" "floors.sexp") ": the key node is missing")
@@ -647,28 +961,106 @@
    (list "no-floors"
          "a README and no floors file beside it"
          (both "no-floors")
-         (refused 1 (cannot-read (at "no-floors" "floors.sexp"))))))
+         (refused 1 (cannot-read (at "no-floors" "floors.sexp"))))
+   (list "workflow-literal"
+         "ci.yml passes the libcurl floor to a build script"
+         (both "workflow-literal")
+         (refused 1 (wrote (at "workflow-literal" "workflows/ci.yml") 10 "libcurl" "8.1.2"
+                           (at "workflow-literal" "floors.sexp"))))
+   (list "workflow-key"
+         "a job's env in ci.yml redefines the libcurl floor, to a version that is not the floor"
+         (both "workflow-key")
+         (refused 1 (named (at "workflow-key" "workflows/ci.yml") 9 "CURL_FLOOR_VERSION"
+                           (at "workflow-key" "floors.sexp"))))
+   (list "workflow-env-restored"
+         "ci.yml has its old top-level env, writing both floors, and steps that refer to it"
+         (both "workflow-env-restored")
+         (refused 6
+                  (wrote (at "workflow-env-restored" "workflows/ci.yml") 6 "Chez" "10.9.1"
+                         (at "workflow-env-restored" "floors.sexp"))
+                  (named (at "workflow-env-restored" "workflows/ci.yml") 6 "CHEZ_VERSION"
+                         (at "workflow-env-restored" "floors.sexp"))
+                  (wrote (at "workflow-env-restored" "workflows/ci.yml") 7 "libcurl" "8.1.2"
+                         (at "workflow-env-restored" "floors.sexp"))
+                  (named (at "workflow-env-restored" "workflows/ci.yml") 7 "CURL_FLOOR_VERSION"
+                         (at "workflow-env-restored" "floors.sexp"))
+                  (named (at "workflow-env-restored" "workflows/ci.yml") 12 "CHEZ_VERSION"
+                         (at "workflow-env-restored" "floors.sexp"))
+                  (named (at "workflow-env-restored" "workflows/ci.yml") 13 "CURL_FLOOR_VERSION"
+                         (at "workflow-env-restored" "floors.sexp"))))
+   (list "workflow-matrix"
+         "a matrix value holding a version that is no floor: no floor's text, so nothing to report"
+         (both "workflow-matrix")
+         (holds (at "workflow-matrix" "README.org") (at "workflow-matrix" "workflows") "ci.yml"
+                (at "workflow-matrix" "floors.sexp") "chez 10.9.1, libcurl 8.1.2, node 22.3"))
+   (list "no-workflow"
+         "a floors file and a README, and no workflow directory beside them"
+         (both "no-workflow")
+         (refused 1 (cannot-list (at "no-workflow" "workflows") "no such file or directory")))
+   (list "workflows-second-literal"
+         "a second workflow beside ci.yml writes the Chez floor in a step"
+         (both "workflows-second-literal")
+         (refused 1 (wrote (at "workflows-second-literal" "workflows/release.yml") 11 "Chez" "10.9.1"
+                           (at "workflows-second-literal" "floors.sexp"))))
+   (list "workflows-second-key"
+         "a second workflow beside ci.yml has an env naming the Chez key"
+         (both "workflows-second-key")
+         (refused 1 (named (at "workflows-second-key" "workflows/release.yml") 7 "CHEZ_VERSION"
+                           (at "workflows-second-key" "floors.sexp"))))
+   (list "workflows-second-clean"
+         "a second workflow beside ci.yml that writes no floor: both read, and both named"
+         (both "workflows-second-clean")
+         (holds (at "workflows-second-clean" "README.org") (at "workflows-second-clean" "workflows")
+                "ci.yml, release.yml" (at "workflows-second-clean" "floors.sexp")
+                "chez 10.9.1, libcurl 8.1.2, node 22.3"))
+   (list "workflows-nested"
+         "a file in a subdirectory of the workflows names the libcurl floor in a comment"
+         (both "workflows-nested")
+         (refused 1 (wrote (at "workflows-nested" "workflows/sub/notes.yml") 2 "libcurl" "8.1.2"
+                           (at "workflows-nested" "floors.sexp"))))
+   (list "workflows-dir-link"
+         "a symbolic link to a directory among the workflows is not followed: it is a file that cannot be read"
+         (both "workflows-dir-link")
+         (refused 1 (string-append
+                     (at "workflows-dir-link" "workflows/linked")
+                     ": it cannot be read: Exception in get-string-all: failed on #<binary input port "
+                     (at "workflows-dir-link" "workflows/linked") ">: is a directory")))))
 
 ;; ad hoc : (List String (Listof String) Expected)
-;; Runs that need no directory of their own: neither file exists, a bad
-;; floors file with no README, and the wrong number of arguments.
+;; Runs that need no directory of their own: no file exists, a bad floors file
+;; with no README, a workflows argument that is a file, and the wrong number of
+;; arguments.
 (define ad-hoc
   (list
-   (list "neither file exists: both named, the floors first"
-         (list (at "legal" "none.sexp") (at "legal" "none.org"))
-         (refused 2 (cannot-read (at "legal" "none.sexp"))
-                  (cannot-read (at "legal" "none.org"))))
-   (list "a bad floors file and no README: the floors problems, then the README"
-         (list (at "floors-invalid" "floors.sexp") (at "floors-invalid" "none.org"))
-         (refused 3
+   (list "no file exists: all three named, the floors first, then the README, then the workflow directory"
+         (list (at "legal" "none.sexp") (at "legal" "none.org") (at "legal" "none"))
+         (refused 3 (cannot-read (at "legal" "none.sexp"))
+                  (cannot-read (at "legal" "none.org"))
+                  (cannot-list (at "legal" "none") "no such file or directory")))
+   (list "a bad floors file, no README and no workflow directory: the floors problems, then the README, then the directory"
+         (list (at "floors-invalid" "floors.sexp") (at "floors-invalid" "none.org")
+               (at "floors-invalid" "none"))
+         (refused 4
                   (string-append (at "floors-invalid" "floors.sexp") ": the key node is missing")
                   (string-append (at "floors-invalid" "floors.sexp")
                                  ": chez: the version \"10.9\" is not three dot-separated naturals, major.minor.patch")
-                  (cannot-read (at "floors-invalid" "none.org"))))
+                  (cannot-read (at "floors-invalid" "none.org"))
+                  (cannot-list (at "floors-invalid" "none") "no such file or directory")))
+   (list "a README with a problem and no workflow directory: both named, the README first"
+         (list (at "legal" "floors.sexp") (at "no-section" "README.org") (at "legal" "none"))
+         (refused 2
+                  (string-append (at "no-section" "README.org") ": it has no \"** Requirements\" section")
+                  (cannot-list (at "legal" "none") "no such file or directory")))
+   (list "the workflows argument names ci.yml itself, a file: it cannot be read as a directory"
+         (list (at "legal" "floors.sexp") (at "legal" "README.org") (at "legal" "workflows/ci.yml"))
+         (refused 1 (cannot-list (at "legal" "workflows/ci.yml") "not a directory")))
    (list "no arguments: the usage line, exit 1" '() usage)
    (list "one argument: the usage line, exit 1" (list (at "legal" "floors.sexp")) usage)
-   (list "three arguments: the usage line, exit 1"
-         (list (at "legal" "floors.sexp") (at "legal" "README.org") "extra")
+   (list "two arguments: the usage line, exit 1"
+         (list (at "legal" "floors.sexp") (at "legal" "README.org"))
+         usage)
+   (list "four arguments: the usage line, exit 1"
+         (list (at "legal" "floors.sexp") (at "legal" "README.org") (at "legal" "workflows") "extra")
          usage)))
 
 (for-each
@@ -683,6 +1075,20 @@
    (test-equal (car case) (caddr case) (run (cadr case))))
  ad-hoc)
 
+;; git keeps no empty directory, so the empty workflow directory is made here,
+;; beside a floors file and a README that pass. Its path is the run's input,
+;; so the expected answer is built from it; the answer itself is the program's.
+(test-equal "an empty workflow directory: named, once, and nothing else"
+  '(returned same)
+  (outcome
+   (lambda ()
+     (call-with-temp-directory
+      (lambda (dir)
+        (let ((got (run (list (at "no-workflow" "floors.sexp") (at "no-workflow" "README.org") dir)))
+              (want (refused 1 (string-append dir ": it holds no file, but must hold ci.yml,"
+                                              " the workflow CI runs"))))
+          (if (equal? got want) 'same (list 'got got 'want want))))))))
+
 ;; The program and the pure procedure agree on the fixtures: each answer above
 ;; comes from check-floors on the files' texts. A fixture the pure procedure
 ;; passes, but the program refuses, would be the program's own rule.
@@ -690,7 +1096,8 @@
   '(returned ())
   (outcome (lambda ()
              (check-floors "f" (file-text (at "legal" "floors.sexp"))
-                           "r" (file-text (at "legal" "README.org"))))))
+                           "r" (file-text (at "legal" "README.org"))
+                           "w" (list (list "w/ci.yml" (file-text (at "legal" "workflows/ci.yml"))))))))
 
 ;; A fixture nothing runs guards nothing, and a case with no fixture runs on a
 ;; missing directory.
@@ -765,6 +1172,494 @@
 (test-equal "read-floors answers the checked-in file's three floors, in order"
   '(returned (chez libcurl node))
   (outcome (lambda () (map car (read-floors)))))
+
+;; --- the CI scripts ------------------------------------------------------------------
+;;
+;; Each script that reads the floors finds packaging/floors.sexp from its own
+;; place, two directories up. So each row below runs the real scripts/ci from
+;; a copy, in a fresh tree whose packaging/floors.sexp is the row's own. Where
+;; a script would download a tarball, a curl that only names its URL, first on
+;; the PATH, stands in. The rows run each script with sh, not by its own name,
+;; so a lost execute bit is not what they find.
+
+;; fake-curl : String
+;; A curl that names the URL it was asked for, its last argument, and fails.
+(define fake-curl "#!/bin/sh\nfor url; do :; done\necho \"$url\" >&2\nexit 7\n")
+
+;; write-file : String String -> Unit
+;; TEXT as the whole of the file at PATH, as UTF-8. The directory is there.
+(define (write-file path text)
+  (call-with-port (open-file-output-port path (file-options no-fail) (buffer-mode block)
+                                         (make-transcoder (utf-8-codec)))
+    (lambda (port) (put-string port text))))
+
+;; checked : String (Listof String) -> Unit
+;; Runs ARGV, which sets a row up and must exit 0 and print nothing.
+(define (checked what argv)
+  (let ((answer (capture-command argv)))
+    (unless (equal? answer (list 0 "" ""))
+      (error 'checked what answer))))
+
+;; write-file-in : String String String -> Unit
+;; TEXT as the file at DIR/NAME, with the directories above it made.
+(define (write-file-in dir name text)
+  (let* ((path (string-append dir "/" name))
+         (slash (let loop ((i (- (string-length path) 1)))
+                  (if (char=? (string-ref path i) #\/) i (loop (- i 1))))))
+    (checked "mkdir" (list "mkdir" "-p" (substring path 0 slash)))
+    (write-file path text)))
+
+;; last-line : String -> String
+;; The last line of TEXT, whose last character is a newline.
+(define (last-line text)
+  (let loop ((i (- (string-length text) 2)))
+    (cond ((< i 0) (substring text 0 (- (string-length text) 1)))
+          ((char=? (string-ref text i) #\newline)
+           (substring text (+ i 1) (- (string-length text) 1)))
+          (else (loop (- i 1))))))
+
+;; with-tree : (U String #f) (Listof (Pair String String)) ((String) -> Any) -> Any
+;; PROC on ROOT, a fresh directory holding a copy of the real scripts/ci, a
+;; packaging/floors.sexp with FLOORS-TEXT (none when it is #f), and in shim/
+;; each executable of SHIMS, a name and its text, after a curl that only
+;; names its URL: a script that got as far as a download, by a fault, would
+;; find that curl, not the network, first on the shimmed PATH.
+(define (with-tree floors-text shims proc)
+  (call-with-temp-directory
+   (lambda (root)
+     (checked "mkdir" (list "mkdir" "-p" (string-append root "/scripts")
+                            (string-append root "/packaging") (string-append root "/shim")))
+     (checked "cp" (list "cp" "-R" "scripts/ci" (string-append root "/scripts/ci")))
+     (when floors-text
+       (write-file (string-append root "/packaging/floors.sexp") floors-text))
+     (for-each (lambda (shim)
+                 (write-file-in root (string-append "shim/" (car shim)) (cdr shim))
+                 (checked "chmod" (list "chmod" "+x" (string-append root "/shim/" (car shim)))))
+               (cons (cons "curl" fake-curl) shims))
+     (proc root))))
+
+;; script : String String -> String
+;; The path of the script NAME of scripts/ci in the tree at ROOT.
+(define (script root name) (string-append root "/scripts/ci/" name))
+
+;; shimmed : String -> String
+;; The PATH assignment that puts the tree's shim/ first.
+(define (shimmed root) (string-append "PATH=" root "/shim:" (getenv "PATH")))
+
+;; tree-row : String (U String #f) (Listof (Pair String String))
+;;            ((String) -> (Listof String)) (List Integer String String) -> Unit
+;; The command ARGV-OF builds for the tree's root must answer EXPECTED: its
+;; exit status, whole stdout and whole stderr.
+(define (tree-row name floors-text shims argv-of expected)
+  (test-equal (string-append "scripts: " name)
+    (list 'returned expected)
+    (outcome (lambda ()
+               (with-tree floors-text shims
+                 (lambda (root) (capture-command (argv-of root))))))))
+
+;; sh-script : String String ... -> (String -> (Listof String))
+;; sh running the script NAME with ARGS, the root's PATH shimmed.
+(define (sh-script name . args)
+  (lambda (root)
+    (append (list "env" (shimmed root) "sh" (script root name)) args)))
+
+;; sh-script-env : (Listof String) String String ... -> (String -> (Listof String))
+;; The same, with the assignments ENV set first.
+(define (sh-script-env env name . args)
+  (lambda (root)
+    (append (list "env" (shimmed root)) env (list "sh" (script root name)) args)))
+
+;; --- floor.sh ------------------------------------------------------------------------
+
+(define (floor-sh-row name floors-text args expected)
+  (tree-row (string-append "floor.sh: " name) floors-text '()
+            (apply sh-script "floor.sh" args) expected))
+
+;; refused-floor : String ... -> (List 1 "" String)
+(define (refused-floor . words)
+  (list 1 "" (string-append "floor.sh: packaging/floors.sexp: " (apply string-append words) "\n")))
+
+(define floor-usage (list 2 "" "usage: floor.sh chez|libcurl|node\n"))
+
+(define not-one-list "it is not one list of (key \"version\") entries")
+
+(floor-sh-row "the Chez floor" good '("chez") (list 0 "10.9.1\n" ""))
+(floor-sh-row "the libcurl floor" good '("libcurl") (list 0 "8.1.2\n" ""))
+(floor-sh-row "the Node floor" good '("node") (list 0 "22.3\n" ""))
+
+(floor-sh-row "zero is a natural, and so is a number of several digits"
+  (floors-of "\"0.0.0\"" "\"10.0.10\"" "\"0\"") '("libcurl") (list 0 "10.0.10\n" ""))
+
+(floor-sh-row "a comment above, an entry's own line and after the datum holds an entry of the same name: it is no entry"
+  (string-append ";; the old (libcurl \"7.0.0\")\n"
+                 "((chez \"10.9.1\") ; and (libcurl \"7.1.0\")\n"
+                 " (libcurl \"8.1.2\")\n"
+                 " (node \"22.3\"))\n"
+                 ";; (libcurl \"7.2.0\")\n")
+  '("libcurl") (list 0 "8.1.2\n" ""))
+
+(floor-sh-row "the datum spread over lines, with spaces inside it"
+  "(\n  ( chez   \"10.9.1\" )\n\n(libcurl \"8.1.2\")\n (node\t\"22.3\"))"
+  '("libcurl") (list 0 "8.1.2\n" ""))
+
+(tree-row "floor.sh: the env cannot change it: the key CI once had is set, and the file's floor comes out"
+          good '()
+          (sh-script-env '("CHEZ_VERSION=1.2.3" "CURL_FLOOR_VERSION=4.5.6") "floor.sh" "libcurl")
+          (list 0 "8.1.2\n" ""))
+
+(floor-sh-row "no floors file" #f '("chez") (refused-floor "it cannot be read"))
+(floor-sh-row "an empty file" "" '("chez") (refused-floor not-one-list))
+(floor-sh-row "a file of comments only" ";; nothing here\n" '("chez") (refused-floor not-one-list))
+
+(floor-sh-row "the key is missing"
+  "((chez \"10.9.1\") (node \"22.3\"))" '("libcurl")
+  (refused-floor "it holds no libcurl entry"))
+
+(floor-sh-row "the key twice"
+  "((chez \"10.9.1\") (chez \"10.9.2\") (libcurl \"8.1.2\") (node \"22.3\"))" '("chez")
+  (refused-floor "it holds more than one chez entry"))
+
+(floor-sh-row "the other floors are well-formed, and the one asked for is not"
+  (floors-of good-chez "\"8.1\"" good-node) '("libcurl")
+  (refused-floor "the libcurl version \"8.1\" is not three dot-separated naturals, major.minor.patch"))
+
+(floor-sh-row "another floor's malformed version is not this floor's problem: check-floors names it"
+  (floors-of good-chez "\"8.1\"" good-node) '("chez")
+  (list 0 "10.9.1\n" ""))
+
+(floor-sh-row "a version with a leading zero"
+  (floors-of good-chez "\"08.1.2\"" good-node) '("libcurl")
+  (refused-floor "the libcurl version \"08.1.2\" is not three dot-separated naturals, major.minor.patch"))
+
+(floor-sh-row "a version with four numbers"
+  (floors-of "\"10.9.1.1\"" good-libcurl good-node) '("chez")
+  (refused-floor "the chez version \"10.9.1.1\" is not three dot-separated naturals, major.minor.patch"))
+
+(floor-sh-row "a version with a letter"
+  (floors-of good-chez "\"8.1.x\"" good-node) '("libcurl")
+  (refused-floor "the libcurl version \"8.1.x\" is not three dot-separated naturals, major.minor.patch"))
+
+(floor-sh-row "an empty version"
+  (floors-of good-chez "\"\"" good-node) '("libcurl")
+  (refused-floor "the libcurl version \"\" is not three dot-separated naturals, major.minor.patch"))
+
+(floor-sh-row "an empty Node version"
+  (floors-of good-chez good-libcurl "\"\"") '("node")
+  (refused-floor "the node version \"\" is not dot-separated naturals"))
+
+(floor-sh-row "a version that is a symbol, not a string"
+  "((chez 10.9.1) (libcurl \"8.1.2\") (node \"22.3\"))" '("libcurl")
+  (refused-floor not-one-list))
+
+(floor-sh-row "a key in capitals"
+  "((Chez \"10.9.1\") (libcurl \"8.1.2\") (node \"22.3\"))" '("libcurl")
+  (refused-floor not-one-list))
+
+(floor-sh-row "an entry of three elements"
+  "((chez \"10.9.1\" \"x\") (libcurl \"8.1.2\") (node \"22.3\"))" '("libcurl")
+  (refused-floor not-one-list))
+
+(floor-sh-row "a second datum"
+  (string-append good good) '("chez")
+  (refused-floor not-one-list))
+
+(floor-sh-row "text after the datum"
+  (string-append good "(more)\n") '("chez")
+  (refused-floor not-one-list))
+
+(floor-sh-row "a datum comment, which the Scheme reader skips and this script does not read"
+  (string-append "#;(chez \"9.5.8\")\n" good) '("chez")
+  (refused-floor "it holds a # outside a ; comment, which this script does not read"))
+
+(floor-sh-row "a block comment"
+  (string-append "#| (chez \"9.5.8\") |#\n" good) '("chez")
+  (refused-floor "it holds a # outside a ; comment, which this script does not read"))
+
+(floor-sh-row "no name: the usage" good '() floor-usage)
+(floor-sh-row "a name that is no floor: the usage" good '("python") floor-usage)
+(floor-sh-row "two names: the usage" good '("chez" "libcurl") floor-usage)
+
+;; --- the build scripts ----------------------------------------------------------------
+
+;; The checked-in floors file, whose floors the build scripts must have a
+;; pinned sum for: the rows that use it get as far as the download.
+(define real-text (guard (e (#t "")) (file-text floors-path)))
+(define real-chez (guard (e (#t "?")) (floor-text (parse-floors real-text) 'chez)))
+(define real-curl (guard (e (#t "?")) (floor-text (parse-floors real-text) 'libcurl)))
+
+(define unpinned (floors-of "\"9.9.9\"" "\"9.9.9\"" good-node))
+
+(define (no-sum who what version)
+  (list 1 ""
+        (string-append who ": no sha256 is pinned for " what " " version
+                       ": fetch its release tarball, check it, and add the sum to tarball_sha256 in this script\n")))
+
+(define chez-usage (list 2 "" "usage: build-chez.sh PREFIX [--nothreads]\n"))
+(define curl-usage (list 2 "" "usage: build-curl.sh PREFIX [EXTRA-CONFIGURE-FLAGS...]\n"))
+
+(tree-row "build-curl.sh: the checked-in libcurl floor has a pinned sum: it reaches the download of its tarball"
+          real-text '()
+          (lambda (root) (list "env" (shimmed root) "sh" (script root "build-curl.sh") "/opt/curl"))
+          (list 7 "" (string-append "https://curl.se/download/curl-" real-curl ".tar.xz\n")))
+
+(tree-row "build-chez.sh: the checked-in Chez floor has a pinned sum: it reaches the download of its tarball"
+          real-text '()
+          (lambda (root) (list "env" (shimmed root) "sh" (script root "build-chez.sh") "/opt/chez"))
+          (list 7 ""
+                (string-append "https://github.com/cisco/ChezScheme/releases/download/v" real-chez
+                               "/csv" real-chez ".tar.gz\n")))
+
+(tree-row "build-chez.sh: --nothreads reaches the same download"
+          real-text '()
+          (lambda (root) (list "env" (shimmed root) "sh" (script root "build-chez.sh") "/opt/chez" "--nothreads"))
+          (list 7 ""
+                (string-append "https://github.com/cisco/ChezScheme/releases/download/v" real-chez
+                               "/csv" real-chez ".tar.gz\n")))
+
+(tree-row "build-curl.sh: a libcurl floor with no pinned sum fails, naming it"
+          unpinned '()
+          (lambda (root) (list "env" (shimmed root) "sh" (script root "build-curl.sh") "/opt/curl"))
+          (no-sum "build-curl.sh" "curl" "9.9.9"))
+
+(tree-row "build-chez.sh: a Chez floor with no pinned sum fails, naming it"
+          unpinned '()
+          (lambda (root) (list "env" (shimmed root) "sh" (script root "build-chez.sh") "/opt/chez"))
+          (no-sum "build-chez.sh" "Chez" "9.9.9"))
+
+(tree-row "build-curl.sh: the env cannot select a version with a sum: the file's floor has none, and fails"
+          unpinned '()
+          (sh-script-env (list "CURL_FLOOR_VERSION=7.85.0" "CHEZ_VERSION=10.4.0" "version=7.85.0")
+                         "build-curl.sh" "/opt/curl")
+          (no-sum "build-curl.sh" "curl" "9.9.9"))
+
+(tree-row "build-chez.sh: the env cannot select a version with a sum: the file's floor has none, and fails"
+          unpinned '()
+          (sh-script-env (list "CURL_FLOOR_VERSION=7.85.0" "CHEZ_VERSION=10.4.0" "version=10.4.0")
+                         "build-chez.sh" "/opt/chez")
+          (no-sum "build-chez.sh" "Chez" "9.9.9"))
+
+(tree-row "build-curl.sh: a malformed libcurl floor fails closed, before any download"
+          (floors-of good-chez "\"7.85\"" good-node) '()
+          (sh-script "build-curl.sh" "/opt/curl")
+          (list 1 ""
+                (string-append
+                 "floor.sh: packaging/floors.sexp: the libcurl version \"7.85\" is not three dot-separated naturals, major.minor.patch\n"
+                 "build-curl.sh: no libcurl floor to build\n")))
+
+(tree-row "build-chez.sh: a Chez floor written twice fails closed, before any download"
+          "((chez \"10.4.0\") (chez \"10.4.0\") (libcurl \"7.85.0\") (node \"20\"))"
+          '()
+          (sh-script "build-chez.sh" "/opt/chez")
+          (list 1 ""
+                (string-append
+                 "floor.sh: packaging/floors.sexp: it holds more than one chez entry\n"
+                 "build-chez.sh: no Chez floor to build\n")))
+
+(tree-row "build-curl.sh: no floors file fails closed, before any download"
+          #f '()
+          (sh-script "build-curl.sh" "/opt/curl")
+          (list 1 ""
+                (string-append "floor.sh: packaging/floors.sexp: it cannot be read\n"
+                               "build-curl.sh: no libcurl floor to build\n")))
+
+(tree-row "build-curl.sh: a version where the prefix goes, as the old calls gave one, is no absolute prefix"
+          real-text '() (sh-script "build-curl.sh" "7.85.0" "/opt/curl")
+          (list 2 "" "build-curl.sh: PREFIX must be an absolute path, not '7.85.0'\n"))
+
+(tree-row "build-chez.sh: a version and a prefix, as the old calls gave, is the usage"
+          real-text '() (sh-script "build-chez.sh" "10.4.0" "/opt/chez")
+          chez-usage)
+
+(tree-row "build-chez.sh: no prefix is the usage" real-text '() (sh-script "build-chez.sh") chez-usage)
+(tree-row "build-chez.sh: a flag but --nothreads is the usage" real-text '()
+          (sh-script "build-chez.sh" "/opt/chez" "--threads") chez-usage)
+(tree-row "build-chez.sh: a relative prefix is refused" real-text '()
+          (sh-script "build-chez.sh" "chez")
+          (list 2 "" "build-chez.sh: PREFIX must be an absolute path, not 'chez'\n"))
+(tree-row "build-curl.sh: no prefix is the usage" real-text '() (sh-script "build-curl.sh") curl-usage)
+
+;; --- expect-missing-api.sh ------------------------------------------------------------
+
+;; refusal : String -> String
+;; The refusal block preflight prints for a libcurl missing the header API, at VERSION.
+(define (refusal version)
+  (string-append "chez-curl: libcurl refused\n"
+                 "(reason . missing-api)\n"
+                 "  path:       /lib/libcurl.so.4\n"
+                 "  source:     override\n"
+                 "  detail:     curl_easy_header\n"
+                 "  version:    " version "\n"
+                 "  TLS:        fake\n"))
+
+;; a make that prints a refusal at VERSION and fails, as make build does
+(define (fake-make version)
+  (string-append "#!/bin/sh\ncat <<'EOF'\n" (refusal version) "EOF\nexit 2\n"))
+
+(define (missing-api-argv env)
+  (lambda (root)
+    (append (list "env" (shimmed root) "CHEZ_CURL_LIBCURL=/lib/libcurl.so.4") env
+            (list "sh" (script root "expect-missing-api.sh") "curl_easy_header"))))
+
+(tree-row "expect-missing-api.sh: the version it requires is the libcurl floor of the file"
+          good (list (cons "make" (fake-make "8.1.2")))
+          (missing-api-argv '())
+          (list 0
+                (string-append (refusal "8.1.2")
+                               "expect-missing-api: make build exited 2, refusing /lib/libcurl.so.4 at 8.1.2 as missing-api, naming curl_easy_header\n")
+                ""))
+
+;; The diff in a failure holds the names of temporary files, so the row
+;; compares the status, the verdict that closes the output, and stderr.
+(define (verdict-row name floors-text shim-make env)
+  (test-equal (string-append "scripts: expect-missing-api.sh: " name)
+    '(returned (1 "::error::expect-missing-api: make build exited 2, but did not refuse /lib/libcurl.so.4 at 8.1.2 as missing-api, naming curl_easy_header: the diff above runs from what must be printed to what was" ""))
+    (outcome (lambda ()
+               (with-tree floors-text (list (cons "make" shim-make))
+                 (lambda (root)
+                   (let ((answer (capture-command ((missing-api-argv env) root))))
+                     (list (car answer) (last-line (cadr answer)) (caddr answer)))))))))
+
+(verdict-row "a refusal at another version than the file's libcurl floor fails"
+             good (fake-make "7.85.0") '())
+
+(verdict-row "the env cannot name the version: CURL_FLOOR_VERSION is not read"
+             good (fake-make "7.85.0") '("CURL_FLOOR_VERSION=7.85.0"))
+
+;; --- check-action-pins.sh ------------------------------------------------------------
+
+(define pin-sha "3d3c42e5aac5ba805825da76410c181273ba90b1")
+
+;; pinned : String -> String
+;; A canonical step line for ACTION.
+(define (pinned action tag) (string-append "      - uses: " action "@" pin-sha " # " tag))
+
+;; steps : String ... -> String
+;; A workflow whose first job's steps are LINES. Its first is line 4.
+(define (steps . lines) (apply workflow "jobs:" "  main:" "    steps:" lines))
+
+(define the-pinned (pinned "actions/checkout" "v7.0.1"))
+
+;; pin-row : String (Listof (Pair String String)) (String -> (List Integer String String)) -> Unit
+;; check-action-pins.sh on a fresh directory holding FILES, a name and its
+;; text, answers what EXPECTED-OF gives for the directory's path.
+(define (pin-row name files expected-of)
+  (test-equal (string-append "pins: " name)
+    '(returned same)
+    (outcome
+     (lambda ()
+       (call-with-temp-directory
+        (lambda (dir)
+          (for-each (lambda (file) (write-file-in dir (car file) (cdr file))) files)
+          (let ((got (capture-command (list "sh" "scripts/ci/check-action-pins.sh" dir)))
+                (want (expected-of dir)))
+            (if (equal? got want) 'same (list 'got got 'want want)))))))))
+
+(define (pins-pass n)
+  (lambda (dir)
+    (list 0
+          (string-append "check-action-pins: all " (number->string n) " lines with a uses key under "
+                         dir " name a full commit SHA, with its tag in a comment\n")
+          "")))
+
+;; pins-fail : Natural Natural (Listof (Pair String (Pair Natural String))) -> (String -> Answer)
+;; BAD is each line at fault, as its file, number and text; BAD-COUNT and
+;; TOTAL are given, not counted.
+(define (pins-fail bad-count total . bad)
+  (lambda (dir)
+    (list 1 ""
+          (string-append
+           (apply string-append
+                  (map (lambda (b)
+                         (string-append "check-action-pins: " dir "/" (car b) ":"
+                                        (number->string (cadr b)) ":" (cddr b) "\n"))
+                       bad))
+           "check-action-pins: " (number->string bad-count) " of " (number->string total)
+           " lines with a uses key are not \"uses: OWNER/REPO@<40 hex digits> # vTAG\", after an optional \"- \"\n"))))
+
+(define (pins-error text)
+  (lambda (dir) (list 1 "" (string-append "check-action-pins: " (text dir) "\n"))))
+
+(pin-row "canonical lines: a step's first key, a later key, a path action and a reusable workflow"
+         (list (cons "ci.yml"
+                     (steps the-pinned
+                            (string-append "        uses: actions/cache/restore@" pin-sha " # v6.1.0")
+                            (string-append "    uses: owner/repo/.github/workflows/x.yml@" pin-sha " # v1"))))
+         (pins-pass 3))
+
+(pin-row "a comment, a value and a word that only end in uses are no uses key"
+         (list (cons "ci.yml"
+                     (steps the-pinned
+                            "      # uses: actions/checkout@v4"
+                            "      - name: Report the versions this run uses"
+                            "      - run: echo reuses: x")))
+         (pins-pass 1))
+
+;; bad-line : String String -> Unit
+;; A workflow with the canonical line and then LINE, which is line 5.
+(define (bad-line name line)
+  (pin-row name
+           (list (cons "ci.yml" (steps the-pinned line)))
+           (pins-fail 1 2 (cons "ci.yml" (cons 5 line)))))
+
+(bad-line "a tag" "      - uses: actions/checkout@v4")
+(bad-line "a branch" "      - uses: actions/checkout@main")
+(bad-line "a short commit" (string-append "      - uses: actions/checkout@3d3c42e # v7.0.1"))
+(bad-line "a commit with no tag comment" (string-append "      - uses: actions/checkout@" pin-sha))
+(bad-line "a comment that is no tag" (string-append "      - uses: actions/checkout@" pin-sha " # latest"))
+(bad-line "more after the tag" (string-append "      - uses: actions/checkout@" pin-sha " # v7.0.1 and more"))
+(bad-line "a uses key after other text on the line, in a trailing comment: it fails closed"
+          (string-append "      - name: checkout # uses: actions/checkout@" pin-sha " # v7.0.1"))
+(bad-line "a local action" "      - uses: ./.github/actions/setup")
+(bad-line "a docker image" "      - uses: docker://alpine:3.20")
+(bad-line "a quoted value" (string-append "      - uses: \"actions/checkout@" pin-sha "\" # v7.0.1"))
+(bad-line "a flow mapping, though its commit is pinned"
+          (string-append "      - {uses: actions/checkout@" pin-sha ", with: {submodules: true}} # v7.0.1"))
+(bad-line "a flow mapping on a tag" "      - {uses: actions/checkout@v4, with: {submodules: true}}")
+(bad-line "a flow sequence of mappings" "    steps: [{uses: actions/checkout@v4}]")
+(bad-line "a later key of a flow mapping, after a comma" "      - {name: x,uses: actions/checkout@v4}")
+(bad-line "a double-quoted key" "      - \"uses\": actions/checkout@v4")
+(bad-line "a double-quoted key, though its commit is pinned"
+          (string-append "      - \"uses\": actions/checkout@" pin-sha " # v7.0.1"))
+(bad-line "a single-quoted key" "      - 'uses': actions/checkout@v4")
+(bad-line "a space before the colon" "      - uses : actions/checkout@v4")
+(bad-line "a space before the colon, though its commit is pinned"
+          (string-append "      - uses : actions/checkout@" pin-sha " # v7.0.1"))
+(bad-line "a key in a nested sequence" (string-append "      - - uses: actions/checkout@" pin-sha " # v7.0.1"))
+(bad-line "a key with its value on the next line" "      - uses:")
+
+(pin-row "every file is read, subdirectories too, and each line at fault is named by its own file, in path order"
+         (list (cons "ci.yml" (steps the-pinned "      - uses: actions/checkout@v4"))
+               (cons "sub/b.yml" (steps "      - uses: actions/cache@abc # v6" the-pinned)))
+         (pins-fail 2 4
+                    (cons "ci.yml" (cons 5 "      - uses: actions/checkout@v4"))
+                    (cons "sub/b.yml" (cons 4 "      - uses: actions/cache@abc # v6"))))
+
+(pin-row "a directory with no file: nothing was checked"
+         '() (pins-error (lambda (dir) (string-append dir " holds no file"))))
+
+(pin-row "no file has a uses key: nothing was checked"
+         (list (cons "ci.yml" (workflow "name: CI" "on: push")))
+         (pins-error (lambda (dir)
+                       (string-append "no file under " dir " has a line with a uses key, so nothing was checked"))))
+
+(pin-row "a uses key only in a comment: nothing was checked"
+         (list (cons "ci.yml" (workflow "# uses: actions/checkout@v4")))
+         (pins-error (lambda (dir)
+                       (string-append "no file under " dir " has a line with a uses key, so nothing was checked"))))
+
+(test-equal "pins: a path that is no directory"
+  '(returned same)
+  (outcome
+   (lambda ()
+     (call-with-temp-directory
+      (lambda (dir)
+        (let ((got (capture-command (list "sh" "scripts/ci/check-action-pins.sh" (string-append dir "/none"))))
+              (want (list 1 "" (string-append "check-action-pins: " dir "/none is not a directory\n"))))
+          (if (equal? got want) 'same (list 'got got 'want want))))))))
+
+(test-equal "pins: no directory named: the usage"
+  '(returned (2 "" "usage: check-action-pins.sh DIR\n"))
+  (outcome (lambda () (capture-command (list "sh" "scripts/ci/check-action-pins.sh")))))
 
 (test-end "check-floors")
 

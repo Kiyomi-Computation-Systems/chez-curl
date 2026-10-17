@@ -1,6 +1,6 @@
 # ADR-0016: The floors have one source, `packaging/floors.sexp`
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-16: CI reads the floors from the file (M0 slice 5)
 - **Date:** 2026-10-16
 - **Scope:** every statement of the Chez, libcurl and Node floors
 - **Settles:** the harness plan's §3 item 5
@@ -60,3 +60,32 @@ supports.
   - the Node floor, which no code reads until the test origin lands in M1;
   - the floors named in comments;
   - the decoy libcurl's 7.85.0, in `tests/decoy-libcurl.c`.
+
+## Amendment, 2026-10-16: CI reads the floors from the file (M0 slice 5)
+
+- **CI states no floor.** `scripts/ci/floor.sh NAME` prints one floor from
+  `packaging/floors.sexp`. It fails closed unless the file is one list of `(key "version")`
+  entries, holding exactly one well-formed entry for NAME.
+  - `build-chez.sh PREFIX [--nothreads]` and `build-curl.sh PREFIX [FLAGS...]` take no
+    version, and read their floor through it.
+  - So does every step that compares a version: the floor lane's check that `make build`
+    loaded the floor, and `expect-missing-api.sh`'s version line.
+  - The cache keys hash `packaging/floors.sexp` with the build script.
+- **Why:** the first design wrote the floors once, as two env lines that every step
+  referred to. A review showed that a job-level `env:` redefining `CURL_FLOOR_VERSION` to
+  8.1.3 passed `check-floors`. The floor lane would then have built, and checked against, a
+  libcurl that is not the floor. A text check cannot see a redefinition. A script that reads
+  the file can't be handed one.
+- **`make check-floors` holds every file under `.github/workflows/`,** subdirectories
+  included. No line may contain either floor's version text, or name `CHEZ_VERSION` or
+  `CURL_FLOOR_VERSION`. A missing or empty directory fails, and so does one with no
+  `ci.yml`. A linked directory is not followed.
+- **The tarball sums.** Each build script pins a sha256 per version, and a floor with no
+  pinned sum fails. `test-check-floors` runs both scripts, up to their sum check, on the
+  checked-in floors, so raising a floor without pinning its tarball fails `make test`.
+- **Changing a floor edits:** the file, the README lines, `verify.sls`'s `libcurl-floor`,
+  `require-threaded.sls`'s `minimum`, the literal rows that name the old floor, and the
+  tarball's sum in its build script.
+- **Not caught:** a step that builds a version without the scripts. A matrix value of
+  another version reaches nothing, since the scripts take no version.
+- **The Node floor is still unchecked:** nothing in CI uses Node until M1.

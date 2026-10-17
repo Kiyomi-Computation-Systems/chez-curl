@@ -166,13 +166,18 @@ it should not be a comment. (chez-cmark-gfm)
   could not read the report that a refusal carries. Mutant LB11 shows the
   probe and the preflight dying with exit 255. The record lives in `(curl
   private libcurl-info)`, whose body cannot raise. (chez-curl, M0 slice 3)
-* **Loading GnuTLS's libcurl leaks memory in p11-kit.** `dlopen` runs
-  p11-kit's constructor, which calls `newlocale`, and glibc's
-  `compute_locale_search_path` loses the block. `valgrind
+* **In the Guix container, loading libcurl leaks one block in Guix's glibc.**
+  `dlopen` runs p11-kit's constructor, which calls `newlocale`, and
+  `compute_locale_search_path` loses the block. That function comes from Guix's
+  `GUIX_LOCPATH` patch to glibc, not from upstream. `valgrind
   --errors-for-leak-kinds=definite` exits 9 on `tests/test-native.sps`: 171
   bytes definitely lost with the container's `GUIX_LOCPATH`, 103 without it,
-  and 0 for an empty program. It is not chez-curl's leak, but ADR-0014's gate
-  fails on it. (chez-curl, M0 slice 3)
+  and 0 for an empty program (M0 slice 3). A C program that only `dlopen`s
+  libcurl, or `libp11-kit` alone, loses the same block, under every locale
+  setting. On Ubuntu 24.04, which loads p11-kit through both of its libcurls,
+  nothing is lost (measured in Docker, 2026-10-16). It is not chez-curl's leak.
+  ADR-0014 now allows one suppression for it, in the container only.
+  (chez-curl)
 
 * **A layout check by offset alone passes a field that is too narrow.** In slice 4, a
   mutation declared `curl_version_info_data`'s `ssl_version_num` as `int`, where C has
@@ -323,3 +328,47 @@ it should not be a comment. (chez-cmark-gfm)
   `$TMPDIR`, which GNU and BSD `mktemp` read alike. On Linux, a fake `mktemp` that ignores
   `TMPDIR` when given no template reproduced the 11 failures by name, and the Mac then
   passed every suite. (chez-curl)
+* **Valgrind reads options that no command line shows.** It adds `VALGRIND_OPTS`, then
+  `~/.valgrindrc`, then `./.valgrindrc`, to the options it is given. In slice 5, a
+  suppression of `fun:*` passed through `VALGRIND_OPTS` turned the planted 777-byte leak
+  from exit 9 to exit 0, with `suppressed: 777 bytes`, under the gate's exact command.
+  `make test-memory` refuses to run while any of the three is present. (chez-curl)
+* **Valgrind cannot see into Chez's heap.** Measured under slice 5's gate, both of these
+  passed with 0 errors and nothing definitely lost:
+  - a `memcpy` of 24 bytes into a 23-byte bytevector, through a `u8*` argument;
+  - a 777-byte `foreign-alloc` block, wrapped in an ftype pointer and dropped, which
+    Valgrind called "still reachable", even after a full collection.
+
+  Chez's heap is one block to Valgrind, and any raw address an object ever held there counts
+  as a live reference. The planted defects pass only because they use shapes Valgrind can
+  see: a `foreign-alloc` block, and an address kept as a fixnum. Bytevector copies get
+  their bound from one checked wrapper (ADR-0001, amended), and leaks of foreign memory
+  from the counters, as a gate (ADR-0014, amended). (chez-curl)
+* **`--command-line-only=yes` does not stop `VALGRIND_LIB`.** It stops `VALGRIND_OPTS` and
+  both `.valgrindrc` files. But with `VALGRIND_LIB` pointed at a copy of Valgrind's library
+  directory, Valgrind read the copy's `default.supp`, and a catch-all entry there passed
+  the planted leak. Measured on 3.27 here, and on Ubuntu's 3.22 in Docker. (chez-curl)
+* **A suite under Valgrind can forge Valgrind's lines.** The guest runs in Valgrind's own
+  process, so it shares the PID in `==PID==`. Measured: a program printing
+  `==PID== ERROR SUMMARY: 0 errors` put a line the gate would have trusted next to the real
+  one. Valgrind now writes to its own `--log-file`, and the gate reads only that.
+  (chez-curl)
+* **A make variable that feeds both a command and its check widens both.** The suppression
+  file's path fed both Valgrind's `--suppressions` and the gate's allowlist of suppressions
+  files. So `make test-memory MEMORY_SUPPRESSION_FILE=<a catch-all>` passed the planted
+  overrun. The path is now fixed with `override`. (chez-curl)
+* **A text check for a value cannot see the value redefined.** Slice 5 first wrote the CI
+  floors once, as two env lines that every step referred to, and `check-floors` refused the
+  version text anywhere else. A job-level `env:` setting `CURL_FLOOR_VERSION: "8.1.3"`
+  passed, so the floor lane would have tested a libcurl that is not the floor. Now the build
+  scripts read `packaging/floors.sexp` themselves, and no workflow may name a floor key.
+  Make the consumer read the source, rather than checking that copies match. (chez-curl)
+* **A check whose empty output means pass, passes when the checker fails.** The gate's awk
+  printed what was wrong, and nothing meant pass. With an awk that exits 2 first on `PATH`,
+  a wrapper `CHEZ` that hid Chez from Valgrind passed. Now awk must exit 0 and print exactly
+  `ok`. (chez-curl)
+* **An allowlist of names still passes a macro's pattern variable spelt as one of them.**
+  `((_ uptr) (foreign-procedure "memcpy" (uptr uptr size_t) uptr))`, used as
+  `(bind-memcpy u8*)`, passed a reader that allowed `uptr`, and Chez bound a `u8*` memcpy that
+  copied one bytevector into another. `test-collect-safe` now treats every pattern symbol as
+  no type at all. (chez-curl)

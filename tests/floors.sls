@@ -5,15 +5,22 @@
 ;;; packaging/floors.sexp is the one file that writes the Chez, libcurl and
 ;;; Node floors: one datum, ((chez "M.m.p") (libcurl "M.m.p") (node "M")),
 ;;; the keys exactly these, in this order. README.org's Requirements section
-;;; states the floors for a reader, and `make check-floors` holds that to the
-;;; file. The Scheme code that enforces a floor is held to it by behaviour, in
+;;; states the floors for a reader, and CI states none: the scripts that build
+;;; Chez and libcurl at their floors read them from the file themselves
+;;; (scripts/ci/floor.sh), and no line of any file in CI's workflow directory
+;;; may contain either floor's version text, or name the two env keys the
+;;; workflow once held them in; `make check-floors` holds both to the file. The
+;;; Scheme code that enforces a floor is held to it by behaviour, in
 ;;; tests/test-verify.sps and tests/test-require-threaded.sps, which read the
 ;;; floors from here. Some comments, and the literal rows of
 ;;; tests/test-library-loading.sps, still name a floor: those rows fail by
 ;;; name when it changes, and the comments are not checked.
 ;;;
 ;;;   floors-problems   what is wrong with the floors file's text
-;;;   check-floors      what is wrong with the floors file or the README
+;;;   check-floors      what is wrong with the floors file, the README or the
+;;;                     workflows
+;;;   workflows-problems what is wrong with the workflow directory's files
+;;;   ci-workflow       the workflow, by name, that the directory must hold
 ;;;   parse-floors      the floors file's text as a Floors, or a raise
 ;;;   read-floors       the checked-in floors file as a Floors
 ;;;   floor-text        a floor by name, as text
@@ -48,9 +55,30 @@
 ;;; indented, "* ". Prose and blank lines between them are not compared.
 ;;; Lists under other headings are not compared either. The comparison is
 ;;; exact, a space at a line's end included: each line is named as written.
+;;;
+;;; What the workflows must be. CI states no floor: scripts/ci/build-chez.sh
+;;; and build-curl.sh take no version, and read theirs from the floors file, so
+;;; nothing a workflow says, an env value or a matrix value, changes what they
+;;; build. Every file under the workflow directory is held, in subdirectories
+;;; too, so a second workflow cannot say one unseen. The directory must hold a
+;;; file, and ci.yml, directly in it. And no line of any file there may
+;;; contain, as text:
+;;;
+;;;   - the Chez floor's version, or the libcurl floor's, with the versions the
+;;;     floors file gives, whatever the line is: a step, a cache key, a comment;
+;;;   - CHEZ_VERSION or CURL_FLOOR_VERSION, the two env keys CI held the floors
+;;;     in before the build scripts read them, so a job- or step-level env that
+;;;     redefines one fails, whatever version it gives, and so does a reference
+;;;     to one, ${{ env.CHEZ_VERSION }} or $CHEZ_VERSION.
+;;;
+;;; The text is searched, not parsed as YAML, so a version inside a longer
+;;; number is also the floor's text, and a key inside a longer name is also the
+;;; key's. A value that is no floor's text, as a matrix of other versions, is
+;;; not seen here: nothing reads it. The Node floor is not held: no step of any
+;;; workflow uses Node yet.
 (library (floors)
   (export floors-path check-floors floors-problems parse-floors read-floors file-text
-          floor-text floor-numbers requirement-lines)
+          floor-text floor-numbers requirement-lines workflows-problems ci-workflow)
   (import (rnrs)
           (only (chezscheme) display-condition parameterize print-graph))
 
@@ -407,13 +435,108 @@
          (list-problems rpath fpath (filter list-line? (car found))
                         (requirement-lines floors))))))
 
-  ;; check-floors : String String String String -> (Listof String)
+  ;; --- the workflows --------------------------------------------------------
+
+  ;; workflow-floors : (Listof (List Symbol String))
+  ;; The floors no workflow line may contain: the floor's key in the floors
+  ;; file, and what the messages call it.
+  (define workflow-floors
+    '((chez "Chez")
+      (libcurl "libcurl")))
+
+  ;; workflow-keys : (Listof String)
+  ;; The env keys no workflow line may name, the Chez floor's first: those CI
+  ;; held the floors in before the build scripts read them from the file.
+  (define workflow-keys '("CHEZ_VERSION" "CURL_FLOOR_VERSION"))
+
+  ;; contains? : String String -> Boolean
+  ;; Whether PIECE is somewhere in TEXT.
+  (define (contains? text piece)
+    (let ((n (string-length text)) (m (string-length piece)))
+      (let loop ((i 0))
+        (cond ((> (+ i m) n) #f)
+              ((string=? (substring text i (+ i m)) piece) #t)
+              (else (loop (+ i 1)))))))
+
+  ;; ci-workflow : String
+  ;; The name of the file, directly in the workflow directory, that it must
+  ;; hold.
+  (define ci-workflow "ci.yml")
+
+  ;; line-problems : String String (Listof String) (Listof (List String String)) -> (Listof String)
+  ;; Each complaint about the lines LINES of the file at PATH, in line order:
+  ;; for a line, the floors whose version text it contains, the Chez floor
+  ;; first, then the keys it names, the Chez key first. FPATH is the floors
+  ;; file's path, FLOORS (name version) for each floor.
+  (define (line-problems path fpath lines floors)
+    (let loop ((rest lines) (n 1))
+      (if (null? rest)
+          '()
+          (append
+           (apply append
+                  (map (lambda (floor)
+                         (if (contains? (car rest) (cadr floor))
+                             (list (string-append
+                                    path ": line " (number->string n) " contains the "
+                                    (car floor) " floor " (cadr floor)
+                                    ", which no workflow line may write: the build scripts read it from "
+                                    fpath))
+                             '()))
+                       floors))
+           (apply append
+                  (map (lambda (key)
+                         (if (contains? (car rest) key)
+                             (list (string-append
+                                    path ": line " (number->string n) " names " key
+                                    ", which no workflow line may name: the build scripts read the floors from "
+                                    fpath))
+                             '()))
+                       workflow-keys))
+           (loop (cdr rest) (+ n 1))))))
+
+  ;; workflows-problems : String String (Listof (List String (U String #f))) Floors -> (Listof String)
+  ;; What is wrong with WORKFLOWS, every file under the workflow directory
+  ;; WDIR, each as its path and its text, against FLOORS, from the floors file
+  ;; at FPATH. A text that is #f is a file the caller could not read, which it
+  ;; names: it is not compared. In order: a directory with no file, named
+  ;; alone; one with no ci.yml, WDIR/ci.yml; and then, file by file in the
+  ;; order of their paths, whatever order they come in, each line that
+  ;; contains a floor's version text or names a floor's env key
+  ;; (line-problems).
+  (define (workflows-problems fpath wdir workflows floors)
+    (let* ((ci-path (string-append wdir "/" ci-workflow))
+           ;; (name version) for each floor.
+           (rows (map (lambda (row)
+                        (list (cadr row) (floor-text floors (car row))))
+                      workflow-floors))
+           (sorted (list-sort (lambda (a b) (string<? (car a) (car b))) workflows)))
+      (if (null? workflows)
+          (list (string-append wdir ": it holds no file, but must hold " ci-workflow
+                               ", the workflow CI runs"))
+          (append
+           (if (assoc ci-path sorted)
+               '()
+               (list (string-append wdir ": it holds no " ci-workflow ", the workflow CI runs")))
+           (apply append
+                  (map (lambda (entry)
+                         (if (cadr entry)
+                             (line-problems (car entry) fpath (split (cadr entry) #\newline) rows)
+                             '()))
+                       sorted))))))
+
+  ;; check-floors : String String String (U String #f) String
+  ;;                (U (Listof (List String (U String #f))) #f) -> (Listof String)
   ;; What is wrong with FTEXT, the text of the floors file at FPATH, or, when
-  ;; that is right, with RTEXT, the text of the README at RPATH, against it.
-  ;; Empty when both are right. A bad floors file is reported alone: the
-  ;; README cannot be held to it.
-  (define (check-floors fpath ftext rpath rtext)
+  ;; that is right, with RTEXT, the text of the README at RPATH, and then with
+  ;; WORKFLOWS, every file under the workflow directory WDIR as its path and
+  ;; text, against it (workflows-problems). Empty when all are right. A bad
+  ;; floors file is reported alone: the others cannot be held to it. A text
+  ;; that is #f is a file that could not be read, and WORKFLOWS #f a directory
+  ;; that could not be read, which the caller reports: neither is compared.
+  (define (check-floors fpath ftext rpath rtext wdir workflows)
     (let ((problems (floors-problems fpath ftext)))
       (if (null? problems)
-          (readme-problems rpath rtext fpath (car (cadr (read-data ftext))))
+          (let ((floors (car (cadr (read-data ftext)))))
+            (append (if rtext (readme-problems rpath rtext fpath floors) '())
+                    (if workflows (workflows-problems fpath wdir workflows floors) '())))
           problems))))

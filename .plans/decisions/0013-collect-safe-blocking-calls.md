@@ -2,7 +2,7 @@
 
 - **Status:** Proposed. It binds as written until spike E1 (M3) records its measurements.
   It is then accepted, or amended to fit them. Amended 2026-10-16 with the attribute suite
-  (M0 slice 4).
+  (M0 slice 4), and with what a binding may hand C from Chez's heap (M0 slice 5).
 - **Date:** 2026-10-04
 - **Corrected:** 2026-10-04. The E5 series is chez-http-server's, not chez-libuv's. Its
   figures are restated from that spike report, which ran on macOS only.
@@ -143,3 +143,56 @@ Provisional until E1.
   parameter types would close that gap.
 - **M2 must add `foreign-callable` to `check-seam`'s `allowed-chez-names`.** It is not on
   the list today.
+
+## Amendment, 2026-10-16: what a binding may hand C from Chez's heap (M0 slice 5)
+
+- **`test-collect-safe` reads every type as an allowlist.** That covers every parameter and
+  result, of procedures, callables and wrapper uses alike.
+  - The immediate and address types allowed are those CSUG 10.4.0 §4.2 lists:
+    `integer-8` to `integer-64` and their `unsigned-` forms, `double-float`, `single-float`,
+    `double`, `float`, `short`, `unsigned-short`, `int`, `unsigned`, `unsigned-int`, `long`,
+    `unsigned-long`, `long-long`, `unsigned-long-long`, `ptrdiff_t`, `size_t`, `ssize_t`,
+    `iptr`, `uptr`, `void*`, `fixnum`, `boolean`, `stdbool`, `char`, `wchar_t` and `wchar`.
+    `void` is allowed as a result only.
+  - Also allowed: `(* NAME)` or `(& NAME)`, where `(curl private layouts)` defines NAME with
+    `define-ftype`.
+  - Anything else fails as unreadable. That includes types the pinned Chez accepts but this
+    list leaves out: `integer-24` to `integer-56`, `ptr` (CSUG's alias for `scheme-object`),
+    `utf-16` and `utf-32`, `ftype-pointer` and `ftype-scheme-object-pointer`. A binding that
+    needs one adds it here by amendment.
+- **A macro's pattern variable is never a type or a convention.** A reviewer supplied `u8*` as
+  a macro argument, and a reader that knew only the bad types let it through. The allowlist
+  alone still passed a pattern variable spelt `uptr`, and Chez then copied one bytevector into
+  another. So every symbol in a `syntax-rules`, `syntax-case`, `with-syntax` or
+  `identifier-syntax` pattern counts as a pattern variable. Used as a type, it fails as
+  unreadable, and used as a convention, it fails as `conventions-from-pattern`. This
+  over-approximates: a literal or keyword spelt like a type is refused too.
+- **The other types are crossings: they hand C a pointer into Chez's heap,** where Valgrind
+  sees nothing (ADR-0014, amended). They come in three kinds:
+  - **A bytevector's data:** a `u8*`, `u16*` or `u32*` parameter, or a callable's result of
+    those types. Only a row marked `(bytevector-crossing CITATION)` may have one, and M2's
+    checked wrapper adds the first (ADR-0001, amended). A procedure's `u8*` result, and a
+    callable's `u8*` parameter, are no crossing, since Chez copies C's bytes into a fresh
+    bytevector.
+  - **A string:** a `string`, `utf-8`, `utf-16le`, `utf-16be`, `utf-32le`, `utf-32be` or
+    `wstring` parameter, or a callable's result of those types. A procedure's string result,
+    and a callable's string parameter, are copies, and no crossing. Chez makes the copy in its
+    own heap, so a callee that keeps the pointer reads garbage once the collector has moved
+    or reused it. libcurl keeps some: it does not copy `CURLOPT_POSTFIELDS`, and it writes
+    into `CURLOPT_ERRORBUFFER`. So only a row marked `(string-not-kept CITATION)` may have
+    one, citing a sentence that its callee keeps no pointer. A string libcurl keeps goes
+    through foreign memory.
+  - **A Scheme object itself:** `scheme-object`. No row may have one, marked or not.
+
+  Each is its own violation: `bytevector-crossing`, `string-crossing` and `scheme-object`.
+  A row carries one mark at most, of either kind.
+- **What the callees keep.** `curl_easy_option_by_name` and `curl_easy_header` read their
+  name argument during the call, and keep no pointer to it.
+
+  Their rows carry `(string-not-kept ...)` marks quoting that sentence. The live suite holds
+  `src/` to exactly those two marks and those two crossings.
+- **A marked row is never `__collect_safe`.** That closes, for crossings, the gap the slice 4
+  amendment named: Chez enforced decision 4 for strings only, and a bytevector could reach a
+  blocking call.
+- **For M2:** a callable's code object must be locked with `lock-object` while C holds its
+  entry point. Nothing checks that yet.
