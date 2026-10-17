@@ -1,5 +1,5 @@
 #!r6rs
-;;; (curl private constants): the libcurl constants loading needs, each a
+;;; (curl private constants): the libcurl constants chez-curl needs, each a
 ;;; Scheme definition copied from libcurl's headers (ADR-0001, decision 3).
 ;;; The values are curl 8.20.0's, read from the container's
 ;;; include/curl/. libcurl never renumbers them.
@@ -9,7 +9,8 @@
 (library (curl private constants)
   (export curl-version-features curl-version-ssl
           curlhe-not-built-in curlh-header curl-global-default curle-ok
-          curlversion-tenth)
+          curle-bad-function-argument curlversion-tenth
+          curlinfo-private curlinfo-rtsp-client-cseq curlot-types)
   (import (curl private require-threaded)
           (rnrs))
 
@@ -74,10 +75,42 @@
   ;; curl/curl.h: CURLE_OK = 0.
   (define curle-ok 0)
 
+  ;; curle-bad-function-argument : Positive-Integer
+  ;; curl/curl.h: CURLE_BAD_FUNCTION_ARGUMENT, the CURLcode 43. What
+  ;; curl_easy_setopt answers for a value its option refuses, such as a
+  ;; negative MAXFILESIZE_LARGE.
+  (define curle-bad-function-argument 43)
+
   ;; curlversion-tenth : Natural
   ;; curl/curl.h: CURLVERSION_TENTH, the tenth CURLversion, 9. The age to
   ;; pass curl_version_info: it was CURLVERSION_NOW at the floor, 7.85.0
   ;; (7.77.0 added it, 7.87.0 the eleventh), so a library at the floor
   ;; fills every field it names. CURLVERSION_NOW itself moves with the
   ;; headers: it is CURLVERSION_TWELFTH in 8.20.0.
-  (define curlversion-tenth 9))
+  (define curlversion-tenth 9)
+
+  ;; curlinfo-private : Positive-Integer
+  ;; curl/curl.h: CURLINFO_PRIVATE, CURLINFO_STRING + 21, 0x100000 + 21.
+  ;; curl_easy_getinfo writes the pointer CURLOPT_PRIVATE set, as given.
+  (define curlinfo-private 1048597)
+
+  ;; curlinfo-rtsp-client-cseq : Positive-Integer
+  ;; curl/curl.h: CURLINFO_RTSP_CLIENT_CSEQ, CURLINFO_LONG + 37,
+  ;; 0x200000 + 37. curl_easy_getinfo writes the long
+  ;; CURLOPT_RTSP_CLIENT_CSEQ set.
+  (define curlinfo-rtsp-client-cseq 2097189)
+
+  ;; curlot-types : (Listof (Pairof Symbol Natural))
+  ;; Every curl_easytype in curl/options.h, in its order, each named for its
+  ;; CURLOT_* name without the prefix: the type code of an option, as
+  ;; curl_easy_option_by_name's struct curl_easyoption gives it.
+  (define curlot-types
+    '((long     . 0)     ; CURLOT_LONG      a long, a range of values
+      (values   . 1)     ; CURLOT_VALUES    a long, a set or bitmask
+      (off-t    . 2)     ; CURLOT_OFF_T     a curl_off_t
+      (object   . 3)     ; CURLOT_OBJECT    a void *
+      (string   . 4)     ; CURLOT_STRING    a char *, NUL-terminated
+      (slist    . 5)     ; CURLOT_SLIST     a struct curl_slist *
+      (cbptr    . 6)     ; CURLOT_CBPTR     a void *, handed to a callback
+      (blob     . 7)     ; CURLOT_BLOB      a struct curl_blob *
+      (function . 8))))  ; CURLOT_FUNCTION  a function pointer

@@ -4,7 +4,8 @@
   ([slice 3](#amendment-2026-10-16-what-slice-3-built),
   [slice 4](#amendment-2026-10-16-what-slice-4-built),
   [slice 5](#amendment-2026-10-16-the-non-threaded-check-m0-slice-5),
-  [bytevector copies](#amendment-2026-10-16-bytevector-copies-go-through-one-checked-wrapper-m0-slice-5))
+  [bytevector copies](#amendment-2026-10-16-bytevector-copies-go-through-one-checked-wrapper-m0-slice-5));
+  amended 2026-10-17 with [what slice 6 built](#amendment-2026-10-17-the-variadic-bindings-m0-slice-6)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D6. That decision was raised on 2026-10-04, after the brief was written.
@@ -249,3 +250,83 @@ nothing else.
     too, since Chez makes their copy in its own heap. They need a mark saying their callee
     keeps no pointer (ADR-0013, amended).
   - The wrapper's bound is mutation-tested when M2 builds it.
+
+## Amendment, 2026-10-17: the variadic bindings (M0 slice 6)
+
+- **Decision 1 is built.** `bind-variadic` is a second known wrapper in
+  `(curl private native)`. Its template carries `(__varargs_after 2)`, so no use can drop it:
+  `test-collect-safe` refuses a convention taken from a macro's pattern.
+  - It binds `curl_easy_setopt` three times, `(uptr int long)`, `(uptr int uptr)` and
+    `(uptr int integer-64)`, and `curl_easy_getinfo` once, `(uptr int uptr)`, whose one
+    variadic argument is where to write the answer.
+  - They are bound last in the load's step 6, so a library that lacks an earlier entry point
+    is still refused naming that one.
+  - The conventions table requires exactly `(__varargs_after 2)` of all four entries this
+    decision names, and each row names `bind-variadic` as the only way to bind its entry. A
+    direct binding, even with the convention, fails as `wrong-binder`. `curl_multi_setopt`
+    and `curl_share_setopt` hold M3 to it before they are bound.
+  - libcurl has other variadic entry points, `curl_formadd` and the `curl_mprintf` family.
+    chez-curl binds neither.
+  - String options are not bound yet: M2 decides which strings libcurl keeps
+    (`CURLOPT_POSTFIELDS` keeps its pointer).
+- **Decision 2's lookup exists.** `curl-easy-option` reads an option's id and `CURLOT_*`
+  type code from `curl_easy_option_by_name`, through the `curl-easyoption` ftype, and
+  `(curl private constants)`'s `curlot-types` names the codes. No option id is written in
+  Scheme.
+- **Decision 4 gains `struct curl_easyoption`.** Each field is checked, but not the struct's
+  size, so a field dropped from the end would pass. Native reads one option at a time, by
+  the pointer libcurl hands it, and never steps from one to the next.
+- **The Consequences' first FFI test is `test-variadic`, without a transfer.** libcurl
+  stores what setopt gives it, and getinfo reads it back, or answers by its code:
+  - **a pointer:** `CURLOPT_PRIVATE`, read back through `CURLINFO_PRIVATE`, exactly, for two
+    sentinels above 2^32;
+  - **a `long`:** `RTSP_CLIENT_CSEQ`, read back through `CURLINFO_RTSP_CLIENT_CSEQ`. It
+    needs a libcurl built with RTSP, as Guix's, Ubuntu's and the floor build are. Apple's is
+    shown by the maintainer's run.
+    8.20.0 clamps a value above 2^31-1 and refuses a negative one with
+    `CURLE_BAD_FUNCTION_ARGUMENT`, keeping the value it had. 7.85.0 and 8.5.0 do neither. So
+    the sentinels lie in [1, 2^31-1], differ, and each setopt's code is asserted: a refused
+    second value would otherwise read back as the first;
+  - **a `long`'s sign and width:** `MAXFILESIZE` refuses a negative `long`. 0 and 2^40 are
+    taken, and -1 and -(2^40) refused. The round trip alone passed a `long` binding typed
+    `int`, since Chez zero-extends an `int` and every sentinel fits in 31 bits;
+  - **a `curl_off_t`:** `MAXFILESIZE_LARGE` has no readback, but answers by sign. 0 and
+    2^62 are taken, and -1 and -(2^62) refused.
+
+  Each of these was measured in C at 7.85.0 (the floor, built by `scripts/ci/build-curl.sh`),
+  Ubuntu's 8.5.0 and Guix's 8.20.0, and through the suite at 8.20.0 (`MAXFILESIZE` was not
+  run in C at 8.20.0). The mutation log holds the table.
+
+  A string option, and each option's effect in a real transfer, are still M2's.
+- **Measured: x86-64 cannot see the annotation.** With `(__varargs_after 2)` removed, every
+  value above arrives, and every answer is the same. By the AAPCS64, Linux arm64 passes
+  variadic arguments as it passes named ones too, which is not measured.
+- **`make check-variadic` plants five mutants, each in a copy.** The unchanged copy must
+  pass first. One mutant removes the annotation from `bind-variadic`'s template. Four bind
+  one use each, the three setopts and getinfo, through `bind-required`.
+  - On every platform, `test-collect-safe` must fail on each mutant, naming exactly the
+    bindings it changed. CI's main job runs it.
+  - On Apple arm64, `test-variadic` must fail too. The step decides by Chez's machine type,
+    `arm64osx` or `tarm64osx`, since a Chez under Rosetta runs x86-64's ABI.
+    - Each setopt mutant must fail by name, with a failing test through that binding.
+      Getinfo stays annotated there, so no wild write hides the result.
+    - The template and getinfo mutants may fail by name or die, since getinfo may write
+      through a garbage pointer.
+  - Anywhere else, it reports what `test-variadic` did, and does not fail on it.
+- **On Apple arm64: pending.** No machine here is Apple arm64. Until the maintainer's M1 runs
+  `make test` and `make check-variadic`, nothing shows that the annotation is what makes the
+  values arrive there, nor that `test-variadic` sees them fail to.
+- **That run gates M2,** as the maintainer decided on 2026-10-17, when the Mac was out of
+  reach and slice 6 merged without it. M1 binds no variadic entry point, so it goes ahead.
+  M2 binds no setopt or getinfo option until `make check-variadic` has passed on Apple
+  arm64, with each arm64 step failing on its planted binding, and the result is recorded
+  here. A failure there is a finding against this decision, settled before M2 starts.
+- **Not checked yet, and carried forward:**
+  - A binding's parameter types against libcurl's prototypes. With getinfo's destination
+    typed `int`, `test-variadic` passed, since the slot `foreign-alloc` gave lies below
+    2^31. M2, which binds most of the API, needs a prototype check.
+  - That `curlot-types` lists every `curl_easytype`. M2's setopt type check leans on it.
+  - `curl-easyoption`'s total size.
+  - `test-variadic` needs a libcurl built with RTSP. One built with `--disable-rtsp` fails
+    it, though chez-curl itself needs only HTTP and HTTPS.
+- **Evidence:** the [mutation log](../variadic-mutation-log.md).

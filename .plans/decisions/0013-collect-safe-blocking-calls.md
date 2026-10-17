@@ -2,7 +2,8 @@
 
 - **Status:** Proposed. It binds as written until spike E1 (M3) records its measurements.
   It is then accepted, or amended to fit them. Amended 2026-10-16 with the attribute suite
-  (M0 slice 4), and with what a binding may hand C from Chez's heap (M0 slice 5).
+  (M0 slice 4), and with what a binding may hand C from Chez's heap (M0 slice 5). Amended
+  2026-10-17 with what the reader holds the binding macros to (M0 slice 6).
 - **Date:** 2026-10-04
 - **Corrected:** 2026-10-04. The E5 series is chez-http-server's, not chez-libuv's. Its
   figures are restated from that spike report, which ran on macOS only.
@@ -196,3 +197,88 @@ Provisional until E1.
   blocking call.
 - **For M2:** a callable's code object must be locked with `lock-object` while C holds its
   entry point. Nothing checks that yet.
+
+## Amendment, 2026-10-17: what the reader holds the binding macros to (M0 slice 6)
+
+- **The hole.** The reader held every occurrence of `foreign-procedure` to account, but held
+  the known wrappers only where their name headed a form. Slice 6's review bound
+  `curl_easy_setopt` with no `(__varargs_after 2)` three ways, and each passed `make test`:
+  - the use inside quasiquote, which the reader reads as data;
+  - an `identifier-syntax` alias of `bind-required`;
+  - `bind-required` handed to another macro as an argument.
+
+  The last also bound a plain `curl_easy_perform` with an unmarked `u8*`, against decision 4
+  and the slice 5 amendment, and `test-collect-safe` passed 67/67. The hole dated from
+  slice 4.
+- **A wrapper's name is now an occurrence,** held to two places: the head of a use in code,
+  and the name its one `define-syntax` defines. Code is outside data and outside every macro,
+  since a head inside a macro can still be reached as data. Anywhere else, the name is
+  `stray`: as an argument, in data, in a macro, bound as a name, or in an export or import.
+  So no library exports a wrapper, and none reaches one under another name.
+- **A row may name its binder,** `(bound-by NAME)`, after any mark. A binding of its entry
+  made any other way is `wrong-binder`. ADR-0001's four variadic rows name `bind-variadic`.
+- **Every macro `src/` defines is a row of `known-macros`:** its name, its kind and its file.
+  A macro can take apart a form it is handed, and bind what it rebuilds, while the reader
+  reads the form as written. Each of these bound an entry the reader never saw, with
+  `make test` green, in the fix rounds' probes: a new macro rewriting a use's entry, and a
+  `syntax-case` taking its own template apart.
+  - A `define-syntax` at a library body's top level must name a row and stand in its file:
+    `macro-unlisted`, `macro-elsewhere`.
+  - Any other `define-syntax` is `macro-nested`, and every `let-syntax` and `letrec-syntax`
+    is `macro-local`.
+  - The kinds are `binder` (the known wrappers) and `plain`. Fixtures may use a third,
+    `any`, held to its place and file only. The live suite pins `src/`'s table by hand, so
+    `src/` cannot use `any`.
+- **A binder's pattern takes no operand apart.** Every element but its parameter list is a
+  symbol. A pattern like `(_ entry (arg ...) result (w e . rest))` could rebuild a use
+  handed to it, and the reader had never looked.
+- **A plain macro may not build a binding or touch its input.** It holds:
+  - no `foreign-procedure`, `foreign-callable` or wrapper name (`plain-macro-binds`);
+  - none of `syntax-case`, `with-syntax`, `syntax->datum` or `datum->syntax`
+    (`plain-macro-takes-apart`);
+  - for `syntax-rules`, only flat patterns, `(_ id ...)` (`plain-macro-pattern`).
+
+  A procedural one has more rules:
+  - It is exactly `(lambda (ID) BODY ...)` (`plain-macro-transformer`).
+  - ID stands only as the last argument of a `syntax-violation` call
+    (`plain-macro-input`).
+  - `syntax-violation` stands only at the head of a call in tail position
+    (`plain-macro-raise`). In a `guard`, a handler can take the input back out of the
+    condition with `syntax-violation-form`. A `let` can also rebind the name.
+  - Its library imports only whole `(rnrs ...)` libraries, never `(rnrs eval)`, and
+    `(only (chezscheme) ...)` (`plain-macro-import`). Otherwise another library's
+    `syntax-violation`, or a procedure that builds a binding from strings, gets in.
+  Each route was probed: handed `(foreign-procedure "labs" ...)`, Chez answered
+  `no entry for "abs"`. Today's plain macros, `load-step` and `require-supported-chez`,
+  pass as written.
+- **A flat pattern still let a use hand a macro its head.** A scoped review of the fix
+  rounds gave `load-step` a second clause, `((_ head operand ...) (head operand ...))`.
+  native.sls then wrote `(load-step define-syntax bind-quietly ...)`, and bound an entry
+  through the macro that defined. `test-collect-safe` passed 102/102, and Chez bound the
+  hidden entry. Two rules close it:
+  - `define-syntax`, `let-syntax` and `letrec-syntax` are occurrences. Each stands only at
+    the head of a form written in code, and is `stray` anywhere else;
+  - no pattern variable heads a form in a listed macro's template (`macro-pattern-head`).
+    The one exception is a binder's `foreign-procedure` parameter list, `(arg ...)`, which
+    is types and never evaluated.
+- **A `case` clause's datum list is data.** The reader had walked it as code, and counted a
+  binding there that Chez never makes.
+- **What the rest rests on.** Chez refuses a raw symbol in a transformer's output, so a built
+  name needs `datum->syntax`. It also refuses a second `syntax-violation` beside a whole
+  `(rnrs)`. `check-seam`'s allowlist keeps `eval`, `expand` and `interpret` out of `src/`,
+  and its rules (h) and (i) keep every library a `src/` library imports in `src/`, where
+  this reader reads it (ADR-0007, amended).
+- **Limit: a phantom.** A plain macro that quotes an operand, `((_ tag expr) (quote expr))`,
+  makes the reader count a binding Chez never makes. Alone it hides nothing, and no route
+  that hides a binding is known open. The reader's header names it with the other limits.
+- **For M2, measured on small trees,** these rules will need reviewed additions:
+  - a callable must be the whole right-hand side of a `define` with a symbol name. A
+    callable in a `let`, one made by a factory procedure, and two through `define-values`
+    were each refused as `callable-not-defined`;
+  - a helper macro with a nested pattern, such as `(with-easy-handle (h) body ...)`, is
+    refused as `plain-macro-pattern`. No kind admits one yet;
+  - `curl_easy_perform` needs a third binder, whose template carries `__collect_safe`.
+- **Evidence:** the fix rounds of the
+  [variadic mutation log](../variadic-mutation-log.md): 74 cases on a snapshot identical to
+  the tree. Its 72 mutations are each killed by name, PH1 shows the phantom above, and the
+  unchanged tree passes.

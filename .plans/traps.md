@@ -109,6 +109,12 @@ it should not be a comment. (chez-cmark-gfm)
   rewritten to ignore failures made that suite's own assertions fail, and then
   exit 0 through the broken verdict, so `make test` passed. The suite now exits 1
   on any failure of its own before it reaches the shared form. (chez-curl)
+* **A setter that refuses a value keeps the one it had.** libcurl 8.20 refuses a negative
+  `RTSP_CLIENT_CSEQ` with `CURLE_BAD_FUNCTION_ARGUMENT` and leaves the earlier value in
+  place. So a round trip that sets the same sentinel twice, and does not assert setopt's
+  code, reads the first value back after the second never arrived. Slice 6 planted a refused
+  second value: with the sentinel reused, the round trip passed; with two distinct
+  sentinels, it failed. Give each call its own sentinel, and assert every code. (chez-curl)
 
 ## Chez and the FFI
 
@@ -198,6 +204,19 @@ it should not be a comment. (chez-cmark-gfm)
 
   Now no library may re-export a Chez name, and layouts is held to struct `define-ftype`
   forms alone. A rule on who imports a keyword is not a rule on who can use it. (chez-curl)
+* **On x86-64, a variadic binding without `(__varargs_after 2)` works.** Integer and
+  pointer arguments after the named ones travel in the same registers either way. Measured
+  in slice 6: with the annotation removed, every value `test-variadic` sets arrives, and
+  every answer is the same. Apple arm64 passes them on the stack, so by its ABI the same
+  binding hands libcurl garbage there. That is
+  predicted, not yet measured. `test-collect-safe` requires the annotation everywhere, and only
+  `make check-variadic` on Apple arm64 can watch a missing one fail. (chez-curl)
+* **An `int` binding for a 64-bit variadic argument looks like it works.** Chez passes the
+  `int` zero-extended, so -1 reaches libcurl's `va_arg(curl_off_t)` as 4294967295.
+  `MAXFILESIZE_LARGE` then answered `CURLE_OK` where -1 must be refused. Chez's own range
+  check refuses only values beyond 32 bits. So a test of a 64-bit binding must pass a
+  negative value whose answer differs from its zero-extended twin's, as `test-variadic`'s
+  -1 through the `curl_off_t` binding does. (chez-curl)
 
 ## Checks and environment
 
@@ -372,3 +391,53 @@ it should not be a comment. (chez-cmark-gfm)
   `(bind-memcpy u8*)`, passed a reader that allowed `uptr`, and Chez bound a `u8*` memcpy that
   copied one bytevector into another. `test-collect-safe` now treats every pattern symbol as
   no type at all. (chez-curl)
+* **A reader that tracks a binding macro by its name at a form's head misses every other
+  route to it.** Slice 6's review bound `curl_easy_setopt` with no `(__varargs_after 2)`
+  three ways, each passing `make test` and `check-variadic`: the use inside quasiquote, an
+  `identifier-syntax` alias of `bind-required`, and `bind-required` passed to another macro.
+  The last also bound a plain `curl_easy_perform` with an unmarked `u8*`, and
+  `test-collect-safe` passed 67/67. The hole dated from slice 4. A wrapper's name is now held
+  to a use's head and its own `define-syntax`. (chez-curl)
+* **A macro can take apart a form it is handed, and bind what it rebuilds.** The reader reads
+  the form as written. In slice 6's fix rounds, each of these bound an entry the reader never
+  saw. A probe handed `(foreign-procedure "labs" ...)`, and Chez answered `no entry for
+  "abs"`:
+  - a new `syntax-rules` macro rewriting a wrapper use's entry;
+  - a `syntax-case` taking its own template apart;
+  - a binder whose pattern took an operand apart;
+  - a procedural macro handing its input to a procedure in another library;
+  - one taking its input back from `syntax-violation`'s condition with `guard`;
+  - one rebinding `syntax-violation` with `let`;
+  - one importing another library's `syntax-violation`;
+  - one building a binding from strings in another library.
+
+  Now every macro `src/` defines is a row of `known-macros`, and a plain macro may not touch
+  its input, raise anywhere but in tail position, or import beyond whole `(rnrs ...)` and
+  `(only (chezscheme) ...)`. Two Chez facts help: it refuses a raw symbol in a transformer's
+  output, and a second `syntax-violation` beside a whole `(rnrs)`. (chez-curl)
+* **A flat pattern still lets a use hand a macro its head.** The scoped review of the fix
+  rounds gave `load-step` a second clause, `((_ head operand ...) (head operand ...))`,
+  which passed every plain rule. native.sls then wrote
+  `(load-step define-syntax bind-quietly ...)`, a macro defined where no `define-syntax`
+  heads a form, and bound an entry through it. `test-collect-safe` passed 102/102, and Chez
+  answered `no entry` for the hidden name. Now the three macro keywords stand only at a
+  written head, and no pattern variable heads a form in a listed macro's template.
+  (chez-curl)
+* **A `case` clause's datums are data.** The reader walked them as code, and counted a
+  `foreign-procedure` there as a binding that Chez never makes. A phantom like that can
+  keep a count while another route hides the real binding. (chez-curl)
+* **A check that knows a library by its name must hold it to its name's path.** Chez finds
+  a library by its path, in each library directory in turn, and `tests/` is on the suites'
+  path. A `src/` library importing `(curl private extra)` from `tests/` passed `check-seam`,
+  and its binding was out of `test-collect-safe`'s reach. With every import required to be
+  defined under `src/`, a second definition, as a second form in `conditions.sls`, still
+  passed, while Chez loaded the `tests/` copy and `test-variadic` died with `no entry`. Now
+  each `src/` file holds one library, at its name's path. (chez-curl)
+* **A crash proves nothing about the assertions after it.** `check-variadic`'s first arm64
+  step took any non-zero exit of a mutant without the annotation anywhere. There, getinfo
+  writes through a garbage pointer before any setopt assertion is read. The step now
+  mutates one binding at a time and requires a named failure through it. (chez-curl)
+* **Nothing checks a binding's parameter types against libcurl's prototypes.** With
+  getinfo's destination typed `int`, `test-variadic` passed, since `foreign-alloc`'s slot
+  lies below 2^31 here and Chez's range check never fires. A `long` typed `int` passed too,
+  until slice 6's fix round added negative `long` cases. (chez-curl)

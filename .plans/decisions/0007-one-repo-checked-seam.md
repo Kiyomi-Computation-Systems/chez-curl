@@ -2,7 +2,9 @@
 
 - **Status:** Accepted; amended 2026-10-16 with the routes round the seam that slice 3
   closed ([amendment](#amendment-2026-10-16-the-routes-round-the-seam)), and with slice 4's
-  one-library names ([amendment](#amendment-2026-10-16-some-names-are-for-one-library-only-m0-slice-4))
+  one-library names ([amendment](#amendment-2026-10-16-some-names-are-for-one-library-only-m0-slice-4));
+  amended 2026-10-17 with where a library may be defined
+  ([amendment](#amendment-2026-10-17-a-library-is-defined-under-src-at-its-names-path-m0-slice-6))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1 layout
 - **Settles:** D1 (brief §10)
@@ -152,3 +154,24 @@ honour.
 - **The rule keys on a library's name, not its file.** A second library form named
   `(curl private layouts)`, in another file, would pass `check-seam`. Only the exactness
   test notices it, because it counts the importers.
+
+## Amendment, 2026-10-17: a library is defined under `src/`, at its name's path (M0 slice 6)
+
+- **The route.** The suites' library path is `src:tests:build/scheme-libs`, so a `src/`
+  library can import a `(curl ...)` library that lives in `tests/`. Slice 6's scoped review
+  did that. `tests/curl/private/extra.sls` bound an entry point, and `native.sls` imported
+  and used it. `check-seam` held, and `test-collect-safe`, which reads only `src/`, passed.
+  Chez bound the entry, and `test-native` died with `no entry`. Only `make build`, whose
+  library path is `src` alone, caught it.
+- **Rule (h): every `(curl ...)` or `(http-client ...)` library that a `src/` library
+  imports is defined under `src/`.** It names an import only when no other rule refuses it,
+  so an import that rule (a) already refuses gets one complaint.
+- **Rule (h) alone was not enough.** A second library form named `(curl private extra)`,
+  added to `conditions.sls`, satisfied it, while Chez loaded the `tests/` copy, found by its
+  path. `check-seam` held 11 libraries in 10 files, and `test-variadic` died with `no entry`.
+- **Rule (i): each file under `src/` holds exactly one library, at the path its name
+  gives,** as Chez maps it with `--libdirs src`: the name's parts joined by `/`, with `.sls`.
+  That also closes this record's earlier limit: a second library named
+  `(curl private layouts)`, in another file, now fails by name.
+- **What both rely on:** `src/` comes first on every library path the suites use, the
+  Makefile's `LIBDIRS` and `check-variadic`'s `--libdirs`. Nothing checks that order.

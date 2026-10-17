@@ -64,6 +64,9 @@
 * `make test` runs every suite under GNU `timeout`. On macOS, run
   `brew install coreutils`, and make finds its `gtimeout`. Homebrew installs
   Chez as `chez`, which make also finds.
+* `make check-variadic` can watch a variadic binding fail only on Apple arm64.
+  Run it on the Mac whenever a variadic binding changes. Elsewhere it checks
+  only the static half: `test-collect-safe` must refuse each planted binding.
 
 ## Traps the family has already hit
 
@@ -91,6 +94,8 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   shared form.
 * Chez evaluates arguments right to left in compiled library code, left to
   right when interpreted. No assertion may depend on argument order.
+* A setter that refuses a value keeps the one it had. Give each round trip
+  its own sentinel, and assert every return code.
 * An assertion passes whenever *another* rule can produce its expected value.
   Assert whole outputs, not substrings, and build a test's base from
   non-default values.
@@ -115,6 +120,25 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * A layout check by offset passes a field that is too narrow when padding keeps
   the next offset, and one by offset and size passes a `double` for a pointer.
   `test-constants` checks each field's offset, size and kind.
+* On x86-64, a variadic binding without `(__varargs_after 2)` works, and an
+  `int` for a 64-bit variadic argument passes -1 as 4294967295. Apple arm64
+  passes variadic arguments on the stack, so by its ABI the first hands
+  libcurl garbage there; that is not yet measured. `test-collect-safe` requires the
+  annotation, and `test-variadic` passes -1 through each 64-bit binding:
+  `MAXFILESIZE` for the `long` one, `MAXFILESIZE_LARGE` for `curl_off_t`.
+* A reader that tracks a binding macro by its name at a form's head misses it
+  reached any other way: unquoted, aliased, or passed to another macro. And a
+  macro can take apart a form it is handed, or be handed a head, and bind
+  what it rebuilds. So a wrapper's name is held to a use's head, every macro
+  `src/` defines is a row of `known-macros`, and the reader's header lists
+  what each kind may hold (traps.md).
+* A flat macro pattern still lets a use hand the macro its head:
+  `((_ head operand ...) (head operand ...))` took `define-syntax` and defined
+  a macro no check saw. No pattern variable may head a form in a listed
+  macro's template.
+* Chez finds a library by its path, and `tests/` is on the suites' library
+  path. So `check-seam` requires every family import to be defined under
+  `src/`, each file to hold one library, at its name's path.
 * A function ftype binds C without `foreign-procedure`: `make-ftype-pointer`
   takes an entry point's name, or a procedure. A rule on who may import a
   keyword loses to a re-export, or to a macro that takes the keyword as an

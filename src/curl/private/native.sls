@@ -46,7 +46,10 @@
 ;;;                curl_global_init failed (detail: what happened)
 ;;;   missing-api  a required entry point is absent (detail: its C name)
 (library (curl private native)
-  (export loaded-libcurl)
+  (export loaded-libcurl curl-easy-option
+          curl-easy-init curl-easy-cleanup
+          curl-easy-setopt-long curl-easy-setopt-pointer curl-easy-setopt-off-t
+          curl-easy-getinfo)
   (import (curl private require-threaded)
           (rnrs)
           (only (chezscheme) ftype-ref make-ftype-pointer
@@ -143,6 +146,23 @@
          (required-entry entry library)
          (foreign-procedure entry (arg ...) result)))))
 
+  ;; (bind-variadic ENTRY (ARG-TYPE ...) RESULT-TYPE LIBRARY): ENTRY, a C
+  ;; function whose arguments after the first two are variadic, bound with
+  ;; foreign-procedure and (__varargs_after 2), after required-entry has
+  ;; found it. One binding per value type (ADR-0001, decision 1). The
+  ;; convention is the template's own, never a use's: Apple arm64 passes
+  ;; variadic arguments on the stack, and a binding without it hands C
+  ;; garbage there, while x86-64 and Linux arm64 work either way.
+  ;; tests/foreign-conventions.sls holds every use to its row, and make
+  ;; check-variadic removes the convention here, in a copy, to watch that
+  ;; fail.
+  (define-syntax bind-variadic
+    (syntax-rules ()
+      ((_ entry (arg ...) result library)
+       (begin
+         (required-entry entry library)
+         (foreign-procedure (__varargs_after 2) entry (arg ...) result)))))
+
   ;; --- 1. choose -----------------------------------------------------------------
 
   (define chosen
@@ -224,6 +244,8 @@
     (load-step (bind-required "curl_easy_option_by_name" (string) uptr info)))
 
   ;; CURL *curl_easy_init(void)
+  ;; curl-easy-init : -> Natural
+  ;; A fresh easy handle's address; 0 when libcurl could make none.
   (define curl-easy-init (load-step (bind-required "curl_easy_init" () uptr info)))
 
   ;; CURLHcode curl_easy_header(CURL *easy, const char *name, size_t index,
@@ -234,7 +256,35 @@
      (bind-required "curl_easy_header" (uptr string size_t unsigned-int int uptr) int info)))
 
   ;; void curl_easy_cleanup(CURL *easy)
+  ;; curl-easy-cleanup : Natural -> Void
   (define curl-easy-cleanup (load-step (bind-required "curl_easy_cleanup" (uptr) void info)))
+
+  ;; CURLcode curl_easy_setopt(CURL *handle, CURLoption option, ...),
+  ;; variadic after option: bound once per value type. curl_off_t is 64
+  ;; bits on every platform chez-curl supports. Bound last, so a library
+  ;; that lacks an earlier entry point is refused naming that one.
+  ;;
+  ;; curl-easy-setopt-long : Natural Integer Integer -> Integer
+  ;; curl-easy-setopt-pointer : Natural Integer Natural -> Integer
+  ;; curl-easy-setopt-off-t : Natural Integer Integer -> Integer
+  ;; HANDLE, an option's id from curl-easy-option, and a long, a pointer
+  ;; or a curl_off_t: the CURLcode.
+  (define curl-easy-setopt-long
+    (load-step (bind-variadic "curl_easy_setopt" (uptr int long) int info)))
+
+  (define curl-easy-setopt-pointer
+    (load-step (bind-variadic "curl_easy_setopt" (uptr int uptr) int info)))
+
+  (define curl-easy-setopt-off-t
+    (load-step (bind-variadic "curl_easy_setopt" (uptr int integer-64) int info)))
+
+  ;; CURLcode curl_easy_getinfo(CURL *handle, CURLINFO info, ...), variadic
+  ;; after info: its one argument there is where to write the answer.
+  ;; curl-easy-getinfo : Natural Integer Natural -> Integer
+  ;; HANDLE, a CURLINFO_* code from (curl private constants), and the
+  ;; address libcurl writes the answer to: the CURLcode.
+  (define curl-easy-getinfo
+    (load-step (bind-variadic "curl_easy_getinfo" (uptr int uptr) int info)))
 
   ;; --- 7. the two API probes, then check-apis --------------------------------------------
 
@@ -268,4 +318,18 @@
   ;; The libcurl this process loaded and accepted. Reaching this binding
   ;; runs the load above, once; a refusal raises from there instead, at
   ;; this reference and every later one.
-  (define (loaded-libcurl) info))
+  (define (loaded-libcurl) info)
+
+  ;; curl-easy-option : String -> (U #f (Pairof Integer Natural))
+  ;; The option NAME (without CURLOPT_) as the loaded libcurl knows it: its
+  ;; id and its CURLOT type code, read through curl-easyoption from what
+  ;; curl_easy_option_by_name answers; #f when that is NULL, a name this
+  ;; libcurl does not know. Raw codes: (curl private constants)'s
+  ;; curlot-types names them. Ids come from here alone, never from Scheme
+  ;; (ADR-0001, decision 2).
+  (define (curl-easy-option name)
+    (let ((address (curl-easy-option-by-name name)))
+      (and (not (zero? address))
+           (let ((option (make-ftype-pointer curl-easyoption address)))
+             (cons (ftype-ref curl-easyoption (id) option)
+                   (ftype-ref curl-easyoption (type) option)))))))

@@ -136,7 +136,7 @@ jobs:
       - name: Checks, build, suites
         env:
           CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
-        run: make check-help check-suites check-pins check-seam check-floors build test check-test-fails
+        run: make check-help check-suites check-pins check-seam check-floors build test check-test-fails check-variadic check-dev check-clean
 
   floor:
     name: floor (the suites against libcurl at its floor)

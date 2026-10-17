@@ -60,7 +60,7 @@ override MEMORY_SUPPRESSION_FILE := tests/guix-glibc-locpath.supp
 
 # One physical line: check-help reads it with awk, and fails if it ends in
 # a backslash.
-.PHONY: help check-help check-guix check-guix-inside deps check-pins build test check-suites check-seam check-floors check-nothreads check-test-fails test-memory check-memory-gate
+.PHONY: help check-help check-guix check-guix-inside deps check-pins build dev check-dev test check-suites check-seam check-floors check-nothreads check-test-fails check-variadic test-memory check-memory-gate clean check-clean
 
 .DEFAULT_GOAL := help
 
@@ -201,6 +201,25 @@ build: ## Load libcurl as (curl) would and name it; fail with the reason when it
 	@scripts/require-tools "$(GOAL)" $(CHEZ)
 	@$(CHEZ) --libdirs src --program tests/preflight.sps
 
+# A REPL for working on chez-curl by hand. make build's preflight runs first
+# and names the libcurl it loaded, and a refused libcurl stops it there, with
+# the reason. The REPL's library path is the suites' own, LIBDIRS, so (curl),
+# (curl private ...), (curl-testing) and (srfi :64) all import. On a Guix
+# host, run it as `scripts/guix-env make dev`.
+dev: deps build ## Start a REPL with (curl) and the suites' libraries on its library path, after make build
+	@scripts/require-tools "$(GOAL)" $(CHEZ)
+	@$(CHEZ) --libdirs $(LIBDIRS)
+
+# Runs make dev through make, in a fresh copy of the tree with no build/, with
+# forms piped into its REPL. It requires build's report, the banner, and two
+# lines those forms print only once (curl), (curl-testing) and (srfi :64) have
+# imported, naming the version, path and source build named. With
+# CHEZ_CURL_LIBCURL naming no file, make dev must fail with build's refusal
+# before any REPL starts (tests/check-dev.sh).
+check-dev: ## Fail unless make dev runs build, then a REPL that imports (curl) and the suites' libraries; a refused libcurl must stop it
+	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ)
+	@MAKE='$(MAKE)' TIMEOUT='$(TIMEOUT)' sh tests/check-dev.sh
+
 # Runs every suite, in order, each under timeout, and goes on after a
 # failure. One line names each suite's outcome: pass, FAIL with its exit
 # status, or HUNG when timeout killed it (exit 124). It fails if any suite
@@ -298,6 +317,24 @@ check-nothreads: ## Fail unless every public library refuses to import, by name,
 check-test-fails: ## Plant bad suites, none at all, a bad import and a stale README, in a copy; make test must fail on each, by name
 	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ)
 	@MAKE='$(MAKE)' TIMEOUT='$(TIMEOUT)' CHEZ='$(CHEZ)' sh tests/check-test-fails.sh
+
+# Removes (__varargs_after 2) in a copy of src/, tests/ and
+# .plans/decisions/, five ways, each from the unchanged
+# src/curl/private/native.sls: from bind-variadic's template, then from
+# each of its four uses alone, bound through bind-required instead. On
+# every platform, tests/test-collect-safe.sps must fail on each, naming
+# exactly the mutated bindings. On Apple arm64, Chez's machine type
+# arm64osx or tarm64osx, tests/test-variadic.sps must fail too: on a setopt
+# use alone by name, exiting 1, with a failing test through that binding;
+# on the template, or getinfo alone, by a named test or by dying. Anywhere
+# else it runs that suite on each mutant and reports what it did: x86-64
+# and Linux arm64 pass variadic arguments as they pass named ones, so only
+# Apple arm64 can show a binding without the convention failing
+# (ADR-0001). The unchanged copy must pass both first.
+# tests/check-variadic.sh holds the steps. The copy has no .git.
+check-variadic: deps ## Remove (__varargs_after 2) from bind-variadic's template, then from each use alone, in a copy; test-collect-safe must fail on each, and on Apple arm64 test-variadic too
+	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ)
+	@TIMEOUT='$(TIMEOUT)' CHEZ='$(CHEZ)' TEST_TIMEOUT='$(TEST_TIMEOUT)' sh tests/check-variadic.sh
 
 # Runs every MEMORY_SUITES suite under Valgrind, in order, each under
 # timeout, and goes on after a failure (ADR-0014). timeout wraps Valgrind
@@ -519,3 +556,17 @@ test-memory: deps ## Run every MEMORY_SUITES suite under Valgrind; fail on any e
 check-memory-gate: ## Plant a heap overrun and a leak; make test-memory must fail on each, by name, and its one suppression must hold
 	@scripts/require-tools "$(GOAL)" $(firstword $(VALGRIND)) $(TIMEOUT) $(CHEZ)
 	@MAKE='$(MAKE)' TIMEOUT='$(TIMEOUT)' CHEZ='$(CHEZ)' VALGRIND='$(VALGRIND)' LIBDIRS='$(LIBDIRS)' sh tests/check-memory-gate.sh
+
+# Removes build/, and nothing else: make deps' links (the links, never what
+# they name, since rm does not follow a link), the memory gate's logs and
+# every check's scratch. The path is written out, not a variable, so no make
+# command line can point it elsewhere. With no build/, it passes.
+clean: ## Remove build/, and nothing else
+	rm -rf build
+
+# Runs make clean in a copy of the tree, after make deps and a few planted
+# files and links out of build/, and requires build/ gone, every other path
+# unchanged, no link followed, a second make clean to pass, and make deps to
+# work after it (tests/check-clean.sh).
+check-clean: ## Fail unless make clean, in a copy, removes build/, changes nothing else, follows no link, and can run twice
+	@MAKE='$(MAKE)' sh tests/check-clean.sh
