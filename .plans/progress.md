@@ -16,9 +16,10 @@ close-out under **Close-outs**, newest first.
   - slice 4, constants and layouts (ADR-0001, ADR-0007 and ADR-0013 amended, ADR-0016
     new), with its [mutation log](constants-mutation-log.md). Its close-out follows the
     merge.
-- **First macOS run,** 2026-10-16, on the maintainer's Mac (Homebrew's Chez 10.4.1, Apple's
-  libcurl 8.7.1). `make test` passes all 13 suites, after a fix: a bare `mktemp -d` ignored
-  `TMPDIR` there (`traps.md`). Linux on arm64 has not run yet.
+- **First macOS run,** 2026-10-16, on the maintainer's Mac: Apple silicon (M1, so arm64),
+  Homebrew's Chez 10.4.1, Apple's libcurl 8.7.1. `make test` passes all 13 suites, after a
+  fix: a bare `mktemp -d` ignored `TMPDIR` there (`traps.md`). So macOS has run on arm64;
+  Linux on arm64 and macOS on amd64 have not.
 - **Next slice:** slice 5, the memory gate and CI (ADR-0014):
   - `test-memory` and `check-memory-gate`;
   - `.github/workflows/ci.yml` with the harness plan's §4 lanes. The floor lane points both
