@@ -20,7 +20,7 @@
 
   ;; Direct bindings: the conventions are what precedes the entry.
   (define curl-easy-perform (foreign-procedure __collect_safe "curl_easy_perform" (uptr) int))
-  (define memcpy (foreign-procedure "memcpy" (u8* uptr size_t) uptr))
+  (define memcpy (foreign-procedure "memcpy" (uptr uptr size_t) uptr))
 
   ;; Two conventions, in the other order from the row's: compared as sets.
   (define two

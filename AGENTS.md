@@ -59,6 +59,8 @@
   it fail.
 * Prefer a check to a comment.
 * **Do not** write tests that rely on reading code comments
+* `make check-nothreads` fails on a threaded Chez by design, so `make test`
+  doesn't run it. CI runs it on a `--nothreads` Chez.
 * `make test` runs every suite under GNU `timeout`. On macOS, run
   `brew install coreutils`, and make finds its `gtimeout`. Homebrew installs
   Chez as `chez`, which make also finds.
@@ -128,6 +130,21 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   wrapper script hides Chez from Valgrind. `make check-guix` checks it.
 * Put `timeout` outside Valgrind, never between it and Chez: Valgrind checks
   only the command it is handed.
+* Valgrind also reads `VALGRIND_OPTS` and a `.valgrindrc` in `$HOME` or the
+  working directory, which no command line shows. A suppression passed that way
+  hid the planted leak. `--command-line-only=yes` stops those, but not
+  `VALGRIND_LIB`, which moves `default.supp`. So `make test-memory` refuses every
+  `VALGRIND_*` variable, and holds each suite's options and suppressions lists
+  to the gate's exactly.
+* A suite under Valgrind shares its PID, so it can print lines that look like
+  Valgrind's own. Read Valgrind's evidence only from its `--log-file`.
+* A check whose empty output means pass, passes when the checker itself fails.
+  Require a positive `ok` line, and the checker's exit status.
+* An allowlist of type names still passes a macro's pattern variable spelt as
+  one of them. `test-collect-safe` counts every pattern symbol as no type.
+* Valgrind cannot see into Chez's heap: an overrun into a bytevector, and a
+  leaked block whose address an ftype pointer held, both pass. Bytevector copies
+  go through one checked wrapper, and the counters are the leak gate.
 * `guix shell --pure` does not stop a login shell from rebuilding `PATH`.
   `scripts/guix-env` uses `--container`, and `make check-guix` checks where a
   login shell finds each tool.
@@ -152,8 +169,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   After a HUNG suite, look for orphans.
 * Guix's `gcc` warns on stderr at every link. Judge a compile by its exit
   status.
-* Loading GnuTLS's libcurl leaks a block in p11-kit's constructor, so
-  Valgrind's gate fails on any suite that loads it. It is not chez-curl's leak.
+* In the container, loading libcurl leaks one block: p11-kit's constructor
+  calls `newlocale`, and Guix's `GUIX_LOCPATH` patch to glibc loses it. Ubuntu
+  loses nothing. ADR-0014 allows one suppression for it, in the container only.
 * A bare `mktemp -d` ignores `TMPDIR` on macOS. Give `mktemp` a template
   under `$TMPDIR`.
 * A constants check says nothing about a library whose headers it did not

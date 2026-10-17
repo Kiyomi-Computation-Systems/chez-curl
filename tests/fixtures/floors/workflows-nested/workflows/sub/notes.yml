@@ -1,0 +1,2 @@
+# Test fixture: a file in a subdirectory of the workflows, which GitHub does
+# not run, but check-floors still reads. It names the libcurl floor, 8.1.2.

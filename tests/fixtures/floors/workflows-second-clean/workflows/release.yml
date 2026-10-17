@@ -1,0 +1,10 @@
+# Test fixture: a second workflow, beside ci.yml, that writes no floor.
+name: Release
+on:
+  push:
+    tags: ["v*"]
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: make build

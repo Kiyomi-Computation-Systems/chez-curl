@@ -88,7 +88,9 @@ Each closes a gap the survey found in a sibling.
 
 One workflow, Linux only (AGENTS.md), on a pinned `ubuntu-24.04`.
 
-- **The main job, on every push and pull request.**
+- **The main job, on every pull request, every push to `main` and every `v*` tag.** A branch
+  pushed without a pull request gets no run, since every change reaches `main` through one
+  (amended 2026-10-16, slice 5).
   - It runs `check-help`, `check-suites`, `check-pins`, `check-seam`, `check-floors`,
     `build` (the preflight), `test` and `check-test-fails`.
   - Chez 10.4.0 is built from the release tarball, and cached.
@@ -98,13 +100,18 @@ One workflow, Linux only (AGENTS.md), on a pinned `ubuntu-24.04`.
 - **The GnuTLS lane, from M2.** The suite runs again with `CHEZ_CURL_LIBCURL` naming the
   runner's `libcurl-gnutls.so.4`. This gives brief §9 risk 3 its second backend (ADR-0002).
 - **The floor lane.** It builds curl 7.85.0 from the release tarball, caches it by version,
-  and runs the suite against it through the override. A variant built with
-  `--disable-get-easy-options --disable-headers-api` must be refused with `missing-api`
-  (ADR-0003).
+  and runs the suite against it through the override. Two variants, one built with only
+  `--disable-get-easy-options` and one with only `--disable-headers-api`, must each be
+  refused with `missing-api`, naming that API's entry point (ADR-0003, amended 2026-10-16).
 - **The non-threaded lane.** It builds Chez 10.4.0 with `--nothreads`, under its own cache key.
   The non-threaded check then requires every public library's import to be refused, by name.
-- **The memory lane, on `main`, on tags and on request.** It runs `check-memory-gate`, then
-  `test-memory` (ADR-0014).
+- **The memory lane, on every run.** It runs `check-memory-gate`, then `test-memory`. It was
+  first planned for `main`, tags and on request, until slice 5 measured the gate at a few
+  minutes (ADR-0014, amended 2026-10-16).
+- **Every action is pinned to a commit SHA,** with its tag in a comment, and the main job
+  checks it. Any spelling of a `uses` key that isn't the canonical pinned line fails.
+- **CI states no floor.** Its build scripts read `packaging/floors.sexp` through
+  `scripts/ci/floor.sh`, and take no version (ADR-0016, amended 2026-10-16).
 - **Nothing in CI runs the Guix container** (ADR-0006).
 
 ## 5. Traps carried into AGENTS.md

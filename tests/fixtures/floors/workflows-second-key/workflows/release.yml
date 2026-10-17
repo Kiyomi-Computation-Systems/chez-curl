@@ -1,0 +1,12 @@
+# Test fixture: a second workflow, beside ci.yml, whose env names the key for the Chez floor.
+name: Release
+on:
+  push:
+    tags: ["v*"]
+env:
+  CHEZ_VERSION: "9.5.8"
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: make build

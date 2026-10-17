@@ -1,8 +1,10 @@
 # ADR-0001: Bind libcurl directly, with no C shim; the floor is Chez 10.4.0, threaded
 
-- **Status:** Accepted; amended 2026-10-16 with what M0 slices 3 and 4 built
+- **Status:** Accepted; amended 2026-10-16 with what M0 slices 3 to 5 built
   ([slice 3](#amendment-2026-10-16-what-slice-3-built),
-  [slice 4](#amendment-2026-10-16-what-slice-4-built))
+  [slice 4](#amendment-2026-10-16-what-slice-4-built),
+  [slice 5](#amendment-2026-10-16-the-non-threaded-check-m0-slice-5),
+  [bytevector copies](#amendment-2026-10-16-bytevector-copies-go-through-one-checked-wrapper-m0-slice-5))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D6. That decision was raised on 2026-10-04, after the brief was written.
@@ -218,3 +220,32 @@ nothing else.
 - **The feature list is checked from Scheme to C,** not against the headers for
   completeness. A bit the headers have and the list lacks goes unchecked here.
   `test-verify` holds the list as it is.
+
+## Amendment, 2026-10-16: the non-threaded check (M0 slice 5)
+
+- **`make check-nothreads` is the non-threaded check.** It finds every public library under
+  `src/` (one with no `private` in its name), and fails when it finds none. It imports each
+  with `(environment '(rnrs) NAME)`, which expands the library without running its body, so
+  libcurl is never loaded. It requires `require-threaded`'s refusal by name: a syntax
+  violation from `chez-curl`, carrying its message.
+- **It fails on a threaded Chez, by design,** naming `(curl)`, so `make test` does not run
+  it. CI's `nothreads` lane runs it on Chez 10.4.0 built with `--nothreads`.
+  `tests/test-check-nothreads.sps` holds each rule on fixture trees. On a copy whose refusal
+  always fires, the check passed. A real `--nothreads` Chez is first measured by CI.
+
+## Amendment, 2026-10-16: bytevector copies go through one checked wrapper (M0 slice 5)
+
+- **Valgrind cannot see an overrun into a bytevector.** Measured under slice 5's gate: a
+  `memcpy` of 24 bytes into a 23-byte bytevector, through a `u8*` argument, passed with 0
+  errors. A bytevector lives in Chez's own heap, which Valgrind sees as one live block
+  (ADR-0014, amended).
+- **So decision 5's copies get their bound from Scheme, decided by the maintainer before M2
+  writes the first one.**
+  - One checked wrapper owns every copy between a bytevector and foreign memory. Before
+    calling `memcpy`, it asserts that `offset + n` is within the bytevector's length.
+  - No other binding may hand C a bytevector's data: a `u8*`, `u16*` or `u32*` parameter,
+    or a callable's result of those types. `test-collect-safe` refuses any such binding
+    unless its table row marks it as the reviewed crossing. String parameters are crossings
+    too, since Chez makes their copy in its own heap. They need a mark saying their callee
+    keeps no pointer (ADR-0013, amended).
+  - The wrapper's bound is mutation-tested when M2 builds it.

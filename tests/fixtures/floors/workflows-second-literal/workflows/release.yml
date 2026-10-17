@@ -1,0 +1,12 @@
+# Test fixture: a second workflow, beside ci.yml, that writes the Chez floor
+# in a step, where no workflow line may write it.
+name: Release
+on:
+  push:
+    tags: ["v*"]
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: scripts/ci/build-chez.sh 10.9.1 /opt/chez
+      - run: make build

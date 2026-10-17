@@ -1,0 +1,13 @@
+# Test fixture: the workflow as it was, its top-level env writing the floors of its floors.sexp.
+name: Fixture
+on:
+  pull_request:
+env:
+  CHEZ_VERSION: "10.9.1"
+  CURL_FLOOR_VERSION: "8.1.2"
+jobs:
+  main:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: scripts/ci/build-chez.sh ${{ env.CHEZ_VERSION }} /opt/chez
+      - run: scripts/ci/build-curl.sh ${{ env.CURL_FLOOR_VERSION }} /opt/curl

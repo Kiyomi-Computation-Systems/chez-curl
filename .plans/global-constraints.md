@@ -16,7 +16,9 @@ provisional. They bind until that record is accepted or amended.
   looked up by name. Functions are bound only if `foreign-entry?` finds them (ADR-0003).
 - **Node:** 20 or later, for the test origin only (ADR-0005).
 - **The floors have one source, `packaging/floors.sexp`.** `make check-floors`, which
-  `make test` runs, holds the list lines of README.org's `** Requirements` to it. `test-verify` and
+  `make test` runs, holds the list lines of README.org's `** Requirements` to it. CI states no
+  floor: its build scripts read the file through `scripts/ci/floor.sh`, and no workflow line
+  may write a floor's version or name a floor key. `test-verify` and
   `test-require-threaded` hold the code to it by behaviour. To change a floor, edit the file,
   the README, `libcurl-floor` or `minimum`, and the literal rows that name the old floor
   (ADR-0016).
@@ -57,7 +59,17 @@ provisional. They bind until that record is accepted or amended.
 
   (ADR-0013, amended)
 - **Bulk copies use libc's `memcpy`,** bound directly as a plain call, never
-  `__collect_safe` (ADR-0001).
+  `__collect_safe`. One checked wrapper owns every copy between a bytevector and foreign
+  memory, and asserts the bound in Scheme first: Valgrind cannot see an overrun into a
+  bytevector.
+- **`test-collect-safe` reads every binding's types as an allowlist,** and refuses a
+  crossing, a type that hands C a pointer into Chez's heap, unless its row is marked.
+  - A bytevector's data (`u8*`, `u16*`, `u32*`) needs `(bytevector-crossing CITATION)`:
+    M2's checked wrapper only.
+  - A string type needs `(string-not-kept CITATION)`, citing that its callee keeps no
+    pointer. A string libcurl keeps, like `CURLOPT_POSTFIELDS`, goes through foreign memory.
+  - `scheme-object` is never allowed.
+  - A marked row is never `__collect_safe` (ADR-0001, ADR-0013, both amended).
 - **`curl_global_init` is called exactly once,** from the library body (ADR-0003).
 - **Every string `curl_url_get` returns is freed with `curl_free`** (ADR-0008).
 
@@ -175,9 +187,22 @@ provisional. They bind until that record is accepted or amended.
   when its stdin closes. Exact bytes come from its raw `node:net` face (ADR-0005).
 - **TLS test material is generated per run** with the `openssl` command line. None is
   checked in (ADR-0005).
-- **CI builds Chez from the release tarball.** It also runs a floor lane against curl
-  7.85.0 built from source, plus a 7.85.0 variant with the options and header APIs
-  disabled (ADR-0001, ADR-0003).
+- **CI is `.github/workflows/ci.yml`, on a pinned `ubuntu-24.04`, Linux only.** It builds Chez
+  from the release tarball, with a pinned sha256, and caches it.
+  - `main` runs every check, `make build` and the suites.
+  - `floor` runs `make build` and `make test` against curl 7.85.0 built from source, with
+    `CHEZ_CURL_LIBCURL` and `C_INCLUDE_PATH` both pointed at it.
+  - `floor-disabled-api` is two lanes. Each builds that curl without one API, and requires
+    `make build` to refuse it as `missing-api`, naming that API's entry point, in the whole
+    refusal block.
+  - `nothreads` runs `make check-nothreads` on a `--nothreads` Chez.
+  - `memory` runs on every run: every pull request, every push to `main`, and every tag.
+  - Every `uses:` names a full commit SHA, with its tag in a comment.
+    `scripts/ci/check-action-pins.sh` checks it.
+  - A run on a pull request cancels that pull request's earlier run. Any other run has a
+    concurrency group of its own, so nothing on `main` or a tag is cancelled.
+
+  (ADR-0001, ADR-0003, ADR-0014, ADR-0016, all amended)
 - **A check counts only after it has been watched failing** (ADR-0006, ADR-0007,
   AGENTS.md).
 
@@ -188,12 +213,27 @@ provisional. They bind until that record is accepted or amended.
   `timeout` wraps Valgrind and never sits between it and Chez (ADR-0014).
 - **The gate must be seen to fail.** `make check-memory-gate` runs before `make test-memory`,
   and planted defects must fail with Valgrind's own marker (ADR-0014).
-- **No suppression files.** `--undef-value-errors=no` is added only with a recorded run that
-  needed it (ADR-0014).
-- **When the gate runs:** CI runs it on `main`, on tags and on request. Locally it runs in the
-  container (ADR-0014).
+- **One suppression, used only when `GUIX_ENVIRONMENT` is set.** It covers the block Guix's
+  glibc loses under `compute_locale_search_path` when libcurl loads p11-kit. CI passes no
+  suppression. `make check-memory-gate` holds the file to that one entry. In a Guix
+  environment, a suite must have exactly one block suppressed if it read `libp11-kit`, and
+  none if it did not. `--undef-value-errors=no` is added only with a recorded run that
+  needed it (ADR-0014, amended).
+- **Valgrind checks exactly the gate's command.** `make test-memory` refuses every
+  `VALGRIND_*` variable and both `.valgrindrc` files, and passes `--command-line-only=yes`.
+  Valgrind writes its own `--log-file`, and every piece of evidence is read from it alone.
+  - Each suite's `Valgrind options:` block must equal the gate's list exactly, in order.
+  - Its suppressions read must be exactly Valgrind's own `default.supp`, plus ours in Guix.
+  - A pass needs Valgrind's `Command:` line naming `$CHEZ`, symbols read from that file,
+    and `ERROR SUMMARY: 0 errors from 0 contexts`.
+
+  (ADR-0014, amended)
+- **When the gate runs:** CI runs it on every pull request, on `main` and on tags. Locally it
+  runs in the container (ADR-0014, amended).
 - **Counters:** every native object is counted, always on, per engine. Suites assert that the
-  counts move and return to zero (ADR-0014).
+  counts move and return to zero, and a suite fails if any count is not zero at its end.
+  They are the leak gate for foreign memory a Chez object has held. Valgrind treats such a
+  block as reachable, even once the object is dropped (ADR-0014, amended).
 - **SRFI-64 comes from `vendor/chez-srfi`,** at the commit `Akku.lock` pins.
   - `make check-pins` holds `Akku.lock`, the recorded gitlink and the checkout equal. It
     runs on the host and in CI.

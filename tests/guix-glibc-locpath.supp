@@ -1,0 +1,23 @@
+# tests/guix-glibc-locpath.supp: the memory gate's one suppression
+# (ADR-0014, amended 2026-10-16). make test-memory hands it to Valgrind only
+# in a Guix environment (GUIX_ENVIRONMENT set). CI passes none.
+#
+# In the Guix container, loading libcurl runs p11-kit's constructor, which
+# calls newlocale. Guix's glibc patch for GUIX_LOCPATH adds
+# compute_locale_search_path, and it loses one block there every time: 171
+# bytes with the container's GUIX_LOCPATH. Upstream glibc has no such
+# function, and Ubuntu loses nothing. It is not chez-curl's leak.
+#
+# make check-memory-gate holds this file to exactly the entry below. It also
+# requires a container run that loads libcurl to report the entry used on
+# one block, the same run without it to fail on that block, and the planted
+# leak to fail with it read. Widening it takes an amendment to ADR-0014.
+{
+   guix-glibc-locpath
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:realloc
+   fun:argz_add_sep
+   fun:compute_locale_search_path
+   fun:newlocale
+}

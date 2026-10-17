@@ -16,9 +16,9 @@
 # installed as a package.
 #
 # Not listed, because nothing here could check them: Node and the openssl
-# command line (ADR-0005), whatever fetches and unpacks the Chez tarball, and
-# the GnuTLS lane's libcurl (from M2). Nor git, which `make check-pins` needs:
-# the runner checks the repository out with its own.
+# command line (ADR-0005), and the GnuTLS lane's libcurl (from M2). Nor git,
+# which `make check-pins` needs: the runner checks the repository out with its
+# own.
 
 # --- to build Chez Scheme at the floor in packaging/floors.sexp --------------
 # CI builds Chez itself because noble's chezscheme is 9.5.8, below the floor
@@ -32,6 +32,27 @@
 # an Essential Debian package, so it needs no line here.
 # build-essential is the C toolchain: gcc, g++, make and libc6-dev.
 build-essential
+
+# --- to fetch and unpack the tarballs the CI lanes build from -----------------
+# scripts/ci/build-chez.sh and scripts/ci/build-curl.sh download a release
+# tarball with curl, check its sha256, and unpack it with tar: a .tar.gz for
+# Chez, a .tar.xz for curl, which needs xz. The runner image has all of these
+# already; they are listed so that this file is the whole truth about a bare
+# machine, as the throwaway container the floor lane's curl build is first run
+# in has none of them. Needed by every lane that builds Chez, and by the floor
+# lanes.
+ca-certificates
+curl
+xz-utils
+
+# --- to build the floor lanes' libcurl ---------------------------------------
+# The floor lanes (ADR-0003) build curl at the floor from its release tarball,
+# with OpenSSL, through scripts/ci/build-curl.sh. ./configure --with-openssl
+# wants OpenSSL's headers. libcurl4-openssl-dev below depends on this package,
+# so it would be installed anyway; it is named here for the lanes that need it:
+# the floor lane, and the two floor-disabled-api lanes, each of which disables
+# one API.
+libssl-dev
 
 # --- to check constants against libcurl's headers ----------------------------
 # ADR-0001: a C program compiled at test time checks every constant, and the

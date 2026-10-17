@@ -14,27 +14,76 @@ close-out under **Close-outs**, newest first.
   - slice 3, loading (ADR-0001, ADR-0002, ADR-0003, ADR-0007, all amended), with its
     [mutation log](loading-mutation-log.md);
   - slice 4, constants and layouts (ADR-0001, ADR-0007 and ADR-0013 amended, ADR-0016
-    new), with its [mutation log](constants-mutation-log.md). Its close-out follows the
-    merge.
+    new), with its [mutation log](constants-mutation-log.md).
 - **First macOS run,** 2026-10-16, on the maintainer's Mac: Apple silicon (M1, so arm64),
   Homebrew's Chez 10.4.1, Apple's libcurl 8.7.1. `make test` passes all 13 suites, after a
   fix: a bare `mktemp -d` ignored `TMPDIR` there (`traps.md`). So macOS has run on arm64;
   Linux on arm64 and macOS on amd64 have not.
-- **Next slice:** slice 5, the memory gate and CI (ADR-0014):
-  - `test-memory` and `check-memory-gate`;
-  - `.github/workflows/ci.yml` with the harness plan's §4 lanes. The floor lane points both
-    `C_INCLUDE_PATH` and `CHEZ_CURL_LIBCURL` at curl 7.85.0;
-  - CI's workflow joins what `check-floors` holds (ADR-0016).
-- **Waiting on a decision:** loading GnuTLS's libcurl leaks a block in p11-kit
-  (`traps.md`), so ADR-0014's gate fails on any suite that loads it, and ADR-0014 allows no
-  suppression file. Since slice 4, `test-constants` loads it too. Settle it before slice 5
-  builds the gate.
+- **In progress:** slice 5, the memory gate and CI (ADR-0014, amended), on `m0/memory-gate`,
+  with its [mutation log](memory-ci-mutation-log.md):
+  - `make test-memory` and `make check-memory-gate`. Valgrind checks exactly the gate's
+    command, and a suite passes only on evidence from Valgrind's own log. The one
+    suppression is passed only in a Guix environment;
+  - `.github/workflows/ci.yml`: the `main`, `floor`, `floor-disabled-api` (two lanes),
+    `nothreads` and `memory` jobs. The memory gate runs on every run, and actions are pinned
+    to SHAs. CI states no floor: its build scripts read `packaging/floors.sexp`;
+  - `make check-nothreads`, and `check-floors` holding every workflow file;
+  - `test-collect-safe` holding every binding's types to an allowlist, and refusing a heap
+    crossing without a reviewed mark.
+
+  Built, then reviewed three times. Every check passes in the container. CI itself has not
+  run yet.
+- **Decided for M2,** by the maintainer:
+  - one checked wrapper owns every copy between a bytevector and foreign memory;
+  - the counters become the leak gate, since Valgrind cannot see Chez's heap (ADR-0001,
+    ADR-0014, amended).
+- **Settled before slice 5:** the leak in the container. Loading libcurl there loses one
+  block in Guix's glibc, and Ubuntu 24.04 loses nothing (`traps.md`). ADR-0014 now allows
+  one suppression for it, passed in the container only.
 - **Waiting on evidence:** ADR-0013 (`__collect_safe`) stays Proposed until spike E1
   at M3. Until then its rules bind as written.
 - **Open for M3:** a first reference to `(curl)` from a second thread, made while the load
   runs, raises `cyclic dependency` (ADR-0002's amendment).
 
 ## Close-outs
+
+### 2026-10-16 — M0 slice 4: constants and layouts, the convention suite and the floors (PR #7, `ba42f70`)
+
+- **Checks constants and struct layouts against libcurl's own headers.** `test-constants`
+  generates one C program from `constants.sls`'s exports and `layouts.sls`'s
+  `define-ftype`s. It checks each constant's value, and each field's offset, size and kind.
+  A C name follows from its Scheme name. The headers must be no newer than the library
+  `(curl)` loads.
+- **The structs live in `(curl private layouts)`,** held to struct `define-ftype` forms
+  alone.
+- **Checks every binding's conventions.** `test-collect-safe` holds every
+  `foreign-procedure` and `foreign-callable` to a table, each row quoting the record
+  sentence behind it. `curl_easy_perform` and `curl_multi_poll` already have
+  `__collect_safe` rows (ADR-0013).
+- **The floors have one source,** `packaging/floors.sexp` (ADR-0016). `make check-floors`
+  holds the README to it, and the suites hold the code to it by behaviour.
+- **`check-seam` rules (f) and (g)** keep `define-ftype` in layouts and stop any library
+  re-exporting a Chez name. A function ftype would bind C that no other check sees.
+- **The first macOS run,** on the maintainer's M1, passes all 13 suites. Two fixes got it
+  there. A bare `mktemp -d` ignored `TMPDIR` on macOS, and Homebrew installs Chez as
+  `chez`.
+- **Built with subagents,** eight in all, about 2.1M tokens: the builders on Opus, Opus and
+  Sonnet, two reviews on Opus, and two fix rounds.
+  - The first review found that function ftypes could bind C unseen, and that nothing tied
+    the headers to the library. Fields of the wrong kind passed, a test asserted message
+    text, and a constant's C name was free text.
+  - The review of the fixes walked round the `define-ftype` rule three ways: re-export, a
+    macro argument, and an exported macro. That was a flaw in the fix brief, which named too
+    narrow a class.
+- **Evidence:** the [mutation log](constants-mutation-log.md), in six parts. Every check has
+  a red run, and every mutation fails its check by name.
+- **Carried forward:**
+  - CI's floor lane must point both `C_INCLUDE_PATH` and `CHEZ_CURL_LIBCURL` at curl
+    7.85.0, and CI's workflow joins what `check-floors` holds.
+  - Known limits: the kind check can't tell a pointer from an aggregate of the same size,
+    a name built at expansion is out of the convention suite's reach, and rule (g) sees
+    bindings only.
+  - Linux on arm64 and macOS on amd64 have not run.
 
 ### 2026-10-16 — M0 slice 3: loading libcurl, `(curl)` and the seam check (PR #6, `bfc3aa6`)
 

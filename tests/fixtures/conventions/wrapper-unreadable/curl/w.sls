@@ -50,4 +50,25 @@
   ;; the entry is a literal, which a use must spell e, not a pattern variable
   (define-syntax w-literal-entry
     (syntax-rules (e)
-      ((_ e) (foreign-procedure e () int)))))
+      ((_ e) (foreign-procedure e () int))))
+
+  ;; a parameter list that mixes a type and a pattern variable
+  (define-syntax w-mixed-parameters
+    (syntax-rules ()
+      ((_ e arg ...) (foreign-procedure e (uptr arg ...) int))))
+
+  ;; a parameter list with no pattern variable, that is no list of types
+  (define-syntax w-literal-parameters
+    (syntax-rules ()
+      ((_ e) (foreign-procedure e ("u8*") int))))
+
+  ;; the result a pattern variable nested in the pattern, so its place in a
+  ;; use is unknown
+  (define-syntax w-nested-result
+    (syntax-rules ()
+      ((_ e (r)) (foreign-procedure e () r))))
+
+  ;; a result that holds a pattern variable, and is not one
+  (define-syntax w-pointer-result
+    (syntax-rules ()
+      ((_ e r) (foreign-procedure e () (* r))))))
