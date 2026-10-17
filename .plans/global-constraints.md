@@ -27,8 +27,14 @@ provisional. They bind until that record is accepted or amended.
 
 - **No C is compiled for the library: no shim** (ADR-0001).
 - **Variadic entry points are bound once per value type,** with `(__varargs_after 2)`.
-  These are `curl_easy_setopt`, `curl_easy_getinfo`, `curl_multi_setopt` and
-  `curl_share_setopt` (ADR-0001).
+  The ones chez-curl binds are `curl_easy_setopt`, `curl_easy_getinfo`, `curl_multi_setopt`
+  and `curl_share_setopt`. libcurl has others, `curl_formadd` and the `curl_mprintf`
+  family, which chez-curl does not bind.
+  - Each of the four is bound through `bind-variadic`, whose template carries the
+    convention, and `test-collect-safe` requires both of every binding of them.
+  - x86-64 runs a binding without the convention correctly, so only Apple arm64 can show
+    one failing. `make check-variadic` must be run on an Apple arm64 Mac whenever a
+    variadic binding changes (ADR-0001, amended).
 - **`CURLOPT_*` ids and types come from the loaded library,** through
   `curl_easy_option_by_name`. They are never written in Scheme (ADR-0001).
 - **Every other constant is a Scheme definition** in `(curl private constants)`. A C program
@@ -53,9 +59,35 @@ provisional. They bind until that record is accepted or amended.
   `tests/foreign-conventions.sls`'s table,** and `test-collect-safe` checks its conventions
   against it.
   - An entry is a string literal, given directly or to a known wrapper (today
-    `bind-required`).
+    `bind-required` and `bind-variadic`). A wrapper's conventions are its template's own,
+    never a use's, and its pattern takes no operand apart.
+  - A wrapper's name may stand only at the head of a use in code, or as the name its one
+    `define-syntax` defines. Anywhere else it is stray: as an argument, in data, in a
+    macro, bound as a name, or in an export or import. So no library exports a wrapper.
+  - A row may name the one wrapper its entry must be bound through, `(bound-by NAME)`.
+    The four variadic rows name `bind-variadic`.
   - A callable is the whole right-hand side of `(define name ...)`.
-  - A new binding macro joins `known-wrappers`.
+- **Every macro `src/` defines is a row of `known-macros`,** in
+  `tests/foreign-conventions.sls`: a binder (a known wrapper) or a plain macro, defined at
+  a library body's top level in the file its row names. Any other `define-syntax`, and every `let-syntax` and `letrec-syntax`, fails.
+  A new macro is a reviewed change to that table. A macro can take apart a form it is
+  handed, or be handed a head, and bind what it rebuilds, while the reader reads the form
+  as written.
+  - `define-syntax`, `let-syntax` and `letrec-syntax` stand only at the head of a form
+    written in code. As an operand, in data or in a template, each is stray.
+  - No pattern variable heads a form in a listed macro's template, except a binder's
+    parameter list, which is types.
+  - A plain macro holds no `foreign-procedure`, `foreign-callable` or wrapper name, and
+    none of `syntax-case`, `with-syntax`, `syntax->datum` or `datum->syntax`. Its
+    `syntax-rules` patterns are flat, `(_ id ...)`.
+  - A procedural plain macro is `(lambda (ID) BODY ...)`. ID stands only as the last
+    argument of a `syntax-violation` call in tail position, and `syntax-violation` only at
+    the head of such calls. Its library imports only whole `(rnrs ...)` libraries, never
+    `(rnrs eval)`, and `(only (chezscheme) ...)`.
+  - The reader treats quote, quasiquote, vector and box literals, and a `case` clause's
+    datum list, as data.
+  - Its limit: a phantom. A plain macro that quotes an operand makes the reader count a
+    binding Chez never makes. Alone it hides nothing.
 
   (ADR-0013, amended)
 - **Bulk copies use libc's `memcpy`,** bound directly as a plain call, never
@@ -163,6 +195,11 @@ provisional. They bind until that record is accepted or amended.
   - A name in `library-only-chez-names` is imported only by the libraries listed with it:
     `define-ftype` by `(curl private layouts)` alone.
   - No file under `src/` may be one Chez loads as a library that the check doesn't read.
+  - Every `(curl ...)` or `(http-client ...)` library a `src/` library imports is defined
+    under `src/` (rule (h)). `tests/` is on the suites' library path too.
+  - Each file under `src/` holds exactly one library, at the path its name gives (rule
+    (i)). Chez finds a library by its path, so one defined elsewhere could lose to a copy
+    in `tests/`. Both rules rely on `src/` coming first in `LIBDIRS`, which nothing checks.
 - **Every `src/` library imports the refusal first:** a `(curl ...)` library imports
   `(curl private require-threaded)`, and an `(http-client ...)` library imports `(curl)`
   (ADR-0001, ADR-0007, both amended).

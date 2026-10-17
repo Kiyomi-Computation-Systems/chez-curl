@@ -1,8 +1,8 @@
 #!r6rs
-;; A legal tree: every way the reader accounts for foreign-procedure and
-;; foreign-callable, and words that only look like them.
+;; A legal tree: every way the reader accounts for foreign-procedure,
+;; foreign-callable and a known wrapper, and words that only look like them.
 (library (curl a)
-  (export bind-required on-write)
+  (export curl-easy-init curl-global-init curl-easy-cleanup on-write)
   (import (rnrs)
           (only (chezscheme) foreign-procedure foreign-callable foreign-entry?))
 
@@ -16,7 +16,27 @@
          (required-entry entry library)
          (foreign-procedure entry (arg ...) result)))))
 
+  ;; Its uses, in its own file: a library may not export it. A let's
+  ;; initial value is code.
   (define curl-easy-init (bind-required "curl_easy_init" () uptr #f))
+
+  (define curl-global-init
+    (let ((bound (bind-required "curl_global_init" (long) int #f))) bound))
+
+  ;; Plain macros, as load-state.sls and require-threaded.sls write them: a
+  ;; syntax-rules whose pattern is identifiers only, and a transformer that
+  ;; takes nothing apart. A use handed whole to the first is code.
+  (define-syntax step
+    (syntax-rules ()
+      ((_ expr) (guard (e (#t (raise e))) expr))))
+
+  (define-syntax checked
+    (lambda (x)
+      (if (string? "ok")
+          #'(define checked-ok #t)
+          (syntax-violation 'checked "refused" x))))
+
+  (define curl-easy-cleanup (step (bind-required "curl_easy_cleanup" (uptr) void #f)))
 
   ;; Direct bindings: the conventions are what precedes the entry.
   (define curl-easy-perform (foreign-procedure __collect_safe "curl_easy_perform" (uptr) int))
@@ -26,7 +46,8 @@
   (define two
     (foreign-procedure (__varargs_after 2) __collect_safe "fixture_two_conventions" (uptr int long) int))
 
-  ;; A define-syntax that is no known wrapper, binding a string entry.
+  ;; A define-syntax that is no known wrapper, binding a string entry: the
+  ;; fixture's table lists it as any, which only a fixture may.
   (define-syntax bind-poll
     (syntax-rules ()
       ((_) (foreign-procedure __collect_safe "curl_multi_poll" (uptr uptr unsigned int uptr) int))))
@@ -35,5 +56,5 @@
   (define on-write
     (foreign-callable __collect_safe (lambda (data size n user) (* size n)) (uptr size_t size_t uptr) size_t))
 
-  ;; Neither is an occurrence: a string, and another symbol.
-  (define names (list "foreign-procedure" 'foreign-procedures)))
+  ;; None is an occurrence: strings, and other symbols.
+  (define names (list "foreign-procedure" 'foreign-procedures "bind-required" 'bind-variadics)))

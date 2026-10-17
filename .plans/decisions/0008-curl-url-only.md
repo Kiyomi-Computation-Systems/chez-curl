@@ -1,6 +1,6 @@
 # ADR-0008: URLs are parsed, checked and resolved by libcurl's own URL API
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-17: the measured verdicts become M2's tests
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D2 (brief §10)
@@ -87,3 +87,15 @@ resolution examples in RFC 3986 §5.4.
   survive parsing. Redirect policy (M5) compares the scheme, the lowercased host and the
   effective port, using `CURLU_DEFAULT_PORT` when reading the port.
 - **uriparse and chez-curl stay independent,** sharing no code.
+
+## Amendment, 2026-10-17: the measured verdicts become M2's tests
+
+- **The verdicts measured above are M2's first URL tests,** run against the loaded libcurl:
+  the six resolutions, the dot segments, the four refusals, the two RFC 3986 deviations and
+  what parsing keeps.
+- **Why M2, not M0:** the harness plan put them in M0's slices 3 and 4, and neither
+  slice wrote them. Testing them needs `curl_url`, `curl_url_set`, `curl_url_get`,
+  `curl_url_cleanup` and `curl_free`, which M0 has no use for. M2 binds them for the transfer
+  (decision 1), and its suite starts from this table.
+- **Floor:** the table was measured on 8.20.0. M2's suite runs at the floor too, in CI's
+  floor lane, so a verdict that differs at 7.85.0 fails there, naming the verdict.

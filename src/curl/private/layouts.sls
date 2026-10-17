@@ -16,7 +16,7 @@
 ;;; It never loads libcurl. (curl private native) does, and reads these
 ;;; through ftype pointers.
 (library (curl private layouts)
-  (export curl-version-info-data)
+  (export curl-version-info-data curl-easyoption)
   (import (curl private require-threaded)
           (rnrs)
           (only (chezscheme) define-ftype))
@@ -55,4 +55,20 @@
       (zstd-ver-num unsigned-int)
       (zstd-version uptr)
       (hyper-version uptr)
-      (gsasl-version uptr))))
+      (gsasl-version uptr)))
+
+  ;; curl-easyoption : Ftype
+  ;; struct curl_easyoption, curl/options.h, every field: what
+  ;; curl_easy_option_by_name answers a pointer to. id is a CURLoption and
+  ;; type a curl_easytype, both enums of int's size; type is read as
+  ;; unsigned, since its codes are natural numbers (constants.sls's
+  ;; curlot-types). name is the option's name without CURLOPT_. The suite
+  ;; checks each field here, not the struct's size, so a field left off
+  ;; the end would pass it; native reads options one at a time, by
+  ;; pointer, and never steps from one to the next.
+  (define-ftype curl-easyoption
+    (struct
+      (name uptr)
+      (id int)
+      (type unsigned-int)
+      (flags unsigned-int))))

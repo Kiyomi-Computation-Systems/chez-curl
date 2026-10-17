@@ -6,7 +6,10 @@
 ;;;
 ;;;   conventions-table   one row per C entry point or callable: its key,
 ;;;                       its required conventions, and a citation
-;;;   known-wrappers      the macros whose template binds an entry point
+;;;   known-macros        every macro src/ may define: its name, its kind,
+;;;                       and the file whose library body defines it
+;;;   known-wrappers      its binders, the macros whose template binds an
+;;;                       entry point
 ;;;   scan-conventions    every binding under a directory, read as data, and
 ;;;                       every occurrence the reader cannot account for
 ;;;   table-violations    each binding held against the table
@@ -31,18 +34,104 @@
 ;;;   - the head of a foreign-callable form that is the whole right-hand side
 ;;;     of (define name ...). Its row is keyed by NAME, a symbol.
 ;;;
-;;; Anything else is a violation naming the file and the form: a quoted
-;;; occurrence among them, since quote and quasiquote (unquote included) and
-;;; vector and box literals are data. So is a file it cannot read, a datum
-;;; with shared structure (which it does not walk), a symbolic link to a
-;;; directory (which it does not follow), and a directory with no source
-;;; file. A source file is one Chez could load a library from, by the source
-;;; endings of (library-extensions); a dangling symbolic link named .#..., an
-;;; Emacs lock file, is skipped.
+;;; A known wrapper's name is an occurrence too, held to two places:
 ;;;
-;;; Its limit: a name built at expansion time, by string->symbol or
-;;; datum->syntax, is out of any reader's reach. check-seam keeps those out
-;;; of src/ by admitting only the (chezscheme) names on its allowlist.
+;;;   - the head of a use in code. Code is outside data, and outside every
+;;;     macro: a transformer, its templates, patterns and literals, and the
+;;;     syntax objects it builds (template-forms). A head in a macro can
+;;;     still be reached as data: a syntax-case can take its own template
+;;;     apart, and a syntax-rules template can hand a use to a head that
+;;;     its own use names;
+;;;   - the name its one define-syntax defines.
+;;;
+;;; So a wrapper's name is stray as an argument of any form, in data, in a
+;;; macro, as a name a binding form binds, and in an export or an import.
+;;; With no export, no library reaches a wrapper another defines, under any
+;;; name.
+;;;
+;;; define-syntax, let-syntax and letrec-syntax are occurrences too
+;;; (macro-keywords). Each stands only at the head of a form written in
+;;; code: as an operand, in data, or at a head in a macro's template, it is
+;;; stray, since there a macro, not the source, decides what it defines.
+;;;
+;;; The macros a tree may define are a table's, known-macros for src/, which
+;;; each scan is given: rows (NAME KIND FILE), FILE below the root. A macro
+;;; can take apart a form it is handed, a known wrapper's use or a
+;;; foreign-procedure form, and bind what it rebuilds, while the reader
+;;; reads the form as written. So:
+;;;
+;;;   - a define-syntax at a library body's top level must name a row, and
+;;;     stand in its FILE;
+;;;   - every other define-syntax, nested in any form, and every let-syntax
+;;;     and letrec-syntax, is named;
+;;;   - in a binder's or a plain macro's templates, each a syntax-rules
+;;;     clause's or identifier-syntax's set! clause's, no pattern variable
+;;;     heads a form: there a use could hand in any keyword, define-syntax,
+;;;     import or another, and the macro would write the form it heads. A
+;;;     foreign-procedure form's parameter list is types, not a form, so a
+;;;     binder's (arg ...) there is allowed;
+;;;   - a binder is a known wrapper, read as above. Its pattern takes no
+;;;     operand apart: every element but its parameter list is neither a
+;;;     list nor a vector;
+;;;   - a plain macro neither builds a binding nor takes its operands apart.
+;;;     Its definition holds no foreign-procedure, foreign-callable or known
+;;;     wrapper's name, and none of syntax-case, with-syntax, syntax->datum
+;;;     and datum->syntax. Every pattern in it, a syntax-rules clause's and
+;;;     identifier-syntax's set! clause's, is (_ id ...) or (set! id id),
+;;;     identifiers only. A procedural one is exactly (lambda (ID) BODY
+;;;     ...), one identifier. In BODY, ID stands only as the last argument
+;;;     of a syntax-violation call, and syntax-violation only at the head of
+;;;     a call in tail position: through if's branches, cond's and case's
+;;;     clauses, and the last form of when, unless, begin, and, or and the
+;;;     let forms. Its library imports only whole (rnrs ...) libraries but
+;;;     (rnrs eval), and (only (chezscheme) name ...), with (rnrs) or (rnrs
+;;;     syntax-case) among them. So its output cannot depend on its input,
+;;;     whose one way out is the condition a tail raise hands the expander,
+;;;     and no procedure of another library, which could take the input
+;;;     apart or build a binding from strings, is in its reach;
+;;;   - any is a fixture tree's kind, for a macro the tree uses to test
+;;;     another rule: it is held to its row and its place, and to neither
+;;;     kind's rules. known-macros names none.
+;;;
+;;; Anything else is a violation naming the file and the form: a quoted
+;;; occurrence among them. Data is what quote and quasiquote (unquote
+;;; included) hold, vector and box literals, a library's name, its export
+;;; and import clauses, an import or export form anywhere, a case clause's
+;;; datum list, and what define, define-values, lambda, case-lambda, the
+;;; let forms, fluid-let, do and guard bind. So is a file it cannot read, a datum with shared structure
+;;; (which it does not walk), a symbolic link to a directory (which it does
+;;; not follow), and a directory with no source file. A source file is one
+;;; Chez could load a library from, by the source endings of
+;;; (library-extensions); a dangling symbolic link named .#..., an Emacs
+;;; lock file, is skipped.
+;;;
+;;; Its limits. The rules for plain macros rest on what they do not read:
+;;;
+;;;   - two facts of Chez, each measured. It refuses a raw symbol in a
+;;;     transformer's output, from a list or a quasisyntax alike ("encountered
+;;;     raw symbol"), so a name built by string->symbol reaches code only
+;;;     through datum->syntax. And with (rnrs) imported whole, it refuses any
+;;;     other binding of syntax-violation in the library, imported or
+;;;     defined ("multiple definitions");
+;;;   - R6RS's handlers: one sees a raise only from within its own extent,
+;;;     so a raise in tail position reaches the expander's alone;
+;;;   - check-seam's allowlist of (chezscheme) names, which keeps eval,
+;;;     expand and interpret out of src/; its rules (h) and (i), which
+;;;     require every family library src/ imports to be defined under src/,
+;;;     alone in the file its name's path gives, so the one Chez loads for
+;;;     it, with src/ first on the suites' library path, is the one this
+;;;     reader reads; and test-constants, which holds define-ftype to
+;;;     structs.
+;;;
+;;; And it reads a use as written. A plain macro's template may put an
+;;; operand in data, by quote: the reader then counts a binding the operand
+;;; writes that Chez never makes. Measured, such a phantom held
+;;; test-collect-safe's counts while test-variadic failed on the binding
+;;; that was not there. A phantom hides no binding by itself, but could
+;;; keep a count while another route did, and no route that hides one is
+;;; known open.
+;;;
+;;; A fixture tree's any macros are held to neither kind's rules.
 ;;;
 ;;; Types, read as an allowlist (ADR-0013, amended). Every parameter and
 ;;; result type of every binding must be one of these, else the binding is
@@ -59,10 +148,10 @@
 ;;; wrapper cannot take a type from its use. Nor can one whose pattern
 ;;; variable is spelt as a type, uptr say: inside a syntax-rules,
 ;;; syntax-case, with-syntax or identifier-syntax form, every symbol of its
-;;; patterns is a pattern variable, and a binding's type (or a wrapper
-;;; use's) that is one is unreadable; a convention that is one is
-;;; conventions-from-pattern. The reader reads the types of
-;;; direct forms, and of a known wrapper's uses: a template's parameter
+;;; patterns is a pattern variable, and a binding's type that is one is
+;;; unreadable; a convention that is one is conventions-from-pattern. A
+;;; known wrapper's use is never inside a macro. The reader reads the types
+;;; of direct forms, and of a known wrapper's uses: a template's parameter
 ;;; list is its own types, or (arg ...), a pattern element at a fixed
 ;;; place, which each use then gives; its result is its own type, or a
 ;;; pattern variable at a fixed place, likewise.
@@ -102,6 +191,42 @@
 ;;;   (wrapper-entry-not-string FILE NAME FORM)
 ;;;   (wrapper-undefined FILE NAME FORM)     a use with no definition
 ;;;   (wrapper-defined-again FILE NAME)      a second definition
+;;;   (macro-unlisted FILE NAME)             a define-syntax at a library
+;;;                                          body's top level that names no
+;;;                                          row of the macro table
+;;;   (macro-elsewhere FILE NAME LISTED)     a row's macro defined in FILE,
+;;;                                          not in LISTED, its row's file
+;;;   (macro-nested FILE FORM)               a define-syntax anywhere but a
+;;;                                          library body's top level
+;;;   (macro-local FILE FORM)                a let-syntax or letrec-syntax
+;;;   (plain-macro-binds FILE NAME SYMBOL)   a plain macro's definition holds
+;;;                                          foreign-procedure,
+;;;                                          foreign-callable or a known
+;;;                                          wrapper's name, once a symbol
+;;;   (plain-macro-takes-apart FILE NAME SYMBOL)
+;;;                                          it holds one of syntax-case,
+;;;                                          with-syntax, syntax->datum and
+;;;                                          datum->syntax, once a symbol
+;;;   (plain-macro-pattern FILE NAME PATTERN)
+;;;                                          a pattern in it that is not
+;;;                                          (_ id ...) or (set! id id)
+;;;   (plain-macro-transformer FILE NAME FORM)
+;;;                                          a procedural transformer that is
+;;;                                          not (lambda (ID) BODY ...)
+;;;   (plain-macro-import FILE NAME)         its library imports more than
+;;;                                          whole (rnrs ...) libraries and
+;;;                                          (only (chezscheme) ...), or
+;;;                                          neither (rnrs) nor (rnrs
+;;;                                          syntax-case) whole
+;;;   (plain-macro-input FILE NAME FORM)     its input stands in FORM, not as
+;;;                                          a syntax-violation call's last
+;;;                                          argument
+;;;   (plain-macro-raise FILE NAME FORM)     syntax-violation stands in FORM,
+;;;                                          not at the head of a call in
+;;;                                          tail position
+;;;   (macro-pattern-head FILE NAME FORM)    a binder's or plain macro's
+;;;                                          template holds FORM, headed by
+;;;                                          one of its pattern variables
 ;;;   (types-unreadable FILE FORM)           a type it cannot read, or one on
 ;;;                                          no allowlist; FORM is a callable's
 ;;;                                          define
@@ -110,6 +235,12 @@
 ;;;                                          pattern variable
 ;;;   (no-row KEY FILE)                      a binding the table lacks
 ;;;   (mismatch KEY EXPECTED ACTUAL FILE)    conventions that differ, as sets
+;;;   (wrong-binder KEY EXPECTED ACTUAL FILE)
+;;;                                          a binding made otherwise than its
+;;;                                          row's (bound-by EXPECTED): ACTUAL
+;;;                                          is foreign-procedure,
+;;;                                          foreign-callable or a known
+;;;                                          wrapper's name
 ;;;   (bytevector-crossing KEY TYPES FILE)   bytevector crossings its row does
 ;;;                                          not mark
 ;;;   (string-crossing KEY TYPES FILE)       string crossings its row does not
@@ -119,9 +250,9 @@
 ;;; A FORM is the datum written, cut to 100 characters. Paths are ROOT
 ;;; joined to the names below it.
 (library (foreign-conventions)
-  (export conventions-table known-wrappers
+  (export conventions-table known-macros known-wrappers
           scan-conventions scan? scan-bindings scan-violations scan-wrappers
-          table-violations check-conventions table-problems)
+          scan-macros table-violations check-conventions table-problems)
   (import (rnrs)
           (only (chezscheme) box? unbox directory-list display-condition
                 file-directory? file-regular? file-symbolic-link?
@@ -149,15 +280,23 @@
     (cite adr-0001 "Bulk byte moves use libc's `memcpy`, bound directly, as a plain call."))
   (define name-not-kept
     (cite adr-0013 "`curl_easy_option_by_name` and `curl_easy_header` read their name argument during the call, and keep no pointer to it."))
+  ;; The four variadic entries, each bound once per value type with
+  ;; (__varargs_after 2): their first two parameters are named, the rest
+  ;; variadic. Apple arm64 passes those on the stack, so the convention is
+  ;; what makes them arrive there.
+  (define variadic-after-2
+    (cite adr-0001 "Variadic entry points are bound once per value type, with `(__varargs_after 2)`."))
 
   ;; conventions-table : (Listof Row)
-  ;; A Row is (List (U String Symbol) (Listof Convention) String), or that
-  ;; and a fourth element, a Mark: (bytevector-crossing CITATION) or
-  ;; (string-not-kept CITATION).
+  ;; A Row is (List (U String Symbol) (Listof Convention) String), then
+  ;; optionally a Mark, (bytevector-crossing CITATION) or (string-not-kept
+  ;; CITATION), then optionally a Binder, (bound-by BINDER), its last
+  ;; element.
   ;; One row per C entry point, keyed by its name, a string, or per
   ;; callable, keyed by the name it is defined as, a symbol. A convention is
   ;; a symbol, __collect_safe, or a list, (__varargs_after 2). Rows for
-  ;; entries not bound yet hold M2 to ADR-0013 the moment it binds them.
+  ;; entries not bound yet hold M2 to ADR-0013 the moment it binds them,
+  ;; and M3 to ADR-0001 for curl_multi_setopt and curl_share_setopt.
   ;; ADR-0013 is Proposed: spike E1 (M3) may move a row.
   ;;
   ;; A mark clears the row's bindings of one kind of crossing: a
@@ -166,6 +305,13 @@
   ;; marked row is never __collect_safe (ADR-0013's decision 4). A row has
   ;; one mark at most. Two rows are marked string-not-kept; M2's checked
   ;; wrapper adds the first bytevector-crossing.
+  ;;
+  ;; A binder names the one way the row's entry may be bound: a known
+  ;; wrapper, foreign-procedure or foreign-callable. The four variadic rows
+  ;; name bind-variadic, whose template carries the convention, so a
+  ;; binding made any other way, directly with the convention included, is
+  ;; the wrong binder, and make check-variadic's mutation of that template
+  ;; reaches every binding of them.
   (define conventions-table
     (list (list "curl_version_info" '() cannot-block)
           (list "curl_global_init" '() cannot-block)
@@ -173,16 +319,39 @@
           (list "curl_easy_init" '() cannot-block)
           (list "curl_easy_header" '() cannot-block (list 'string-not-kept name-not-kept))
           (list "curl_easy_cleanup" '() cleanup-open)
+          (list "curl_easy_setopt" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
+          (list "curl_easy_getinfo" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
+          (list "curl_multi_setopt" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
+          (list "curl_share_setopt" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
           (list "curl_easy_perform" '(__collect_safe) can-block)
           (list "curl_multi_poll" '(__collect_safe) can-block)
           (list "curl_multi_perform" '() multi-perform-plain)
           (list "memcpy" '() memcpy-plain)))
 
+  ;; known-macros : (Listof (List Symbol Kind String))
+  ;; Every macro src/ may define: its name, its kind, and the file below
+  ;; src/ whose library body defines it, at its top level. A Kind is binder,
+  ;; a known wrapper; plain, a macro that neither builds a binding nor takes
+  ;; its operands apart; or any, which only a fixture tree's table may name.
+  ;; The suite holds it equal, both ways, to what src/ defines, and to
+  ;; these four rows written out by hand.
+  (define known-macros
+    '((bind-required binder "curl/private/native.sls")
+      (bind-variadic binder "curl/private/native.sls")
+      (load-step plain "curl/private/load-state.sls")
+      (require-supported-chez plain "curl/private/require-threaded.sls")))
+
+  ;; binders : (Listof (List Symbol Kind String)) -> (Listof Symbol)
+  ;; The names of MACROS' binder rows, in order: the known wrappers.
+  (define (binders macros)
+    (map car (filter (lambda (row) (and (pair? row) (pair? (cdr row)) (eq? (cadr row) 'binder)))
+                     macros)))
+
   ;; known-wrappers : (Listof Symbol)
-  ;; The macros whose template binds an entry point: src/curl/private/
-  ;; native.sls's bind-required. The suite holds it equal to the wrappers
-  ;; src/ defines.
-  (define known-wrappers '(bind-required))
+  ;; The macros whose template binds an entry point: known-macros' binders,
+  ;; src/curl/private/native.sls's bind-required and bind-variadic. The
+  ;; suite holds it equal to the wrappers src/ defines.
+  (define known-wrappers (binders known-macros))
 
   ;; --- the scan's answer ----------------------------------------------------------
 
@@ -197,8 +366,11 @@
   ;; scan-violations : Scan -> (Listof Violation)
   ;; scan-wrappers : Scan -> (Listof Symbol)
   ;;   the known wrappers defined once, and read, in the order defined
+  ;; scan-macros : Scan -> (Listof (List Symbol String))
+  ;;   each define-syntax at a library body's top level: its name, and its
+  ;;   file below the root, in the order read
   (define-record-type scan
-    (fields bindings violations wrappers))
+    (fields bindings violations wrappers macros))
 
   ;; --- text ------------------------------------------------------------------------
 
@@ -304,6 +476,8 @@
   ;; --- reading forms ---------------------------------------------------------------
 
   ;; occurrence? : Any -> Boolean
+  ;; X is foreign-procedure or foreign-callable. A known wrapper's name is an
+  ;; occurrence too, which datum-findings adds.
   (define (occurrence? x)
     (and (memq x '(foreign-procedure foreign-callable)) #t))
 
@@ -493,6 +667,19 @@
     "its parameter list is neither types nor a pattern element at a fixed place in its pattern")
   (define unplaced-result
     "its result is neither a type nor a pattern variable at a fixed place in its pattern")
+  (define takes-apart
+    "its pattern takes an operand apart: an element other than its parameter list is a list or a vector")
+
+  ;; pattern-takes-apart? : Pair (U (List 'types (Listof Any)) (List 'at Natural)) -> Boolean
+  ;; PATTERN, a list, holds a list or a vector where a use gives an operand,
+  ;; but for the parameter list a use gives at the place READING names: the
+  ;; template could then rebuild what a use hands it, a use among them.
+  (define (pattern-takes-apart? pattern reading)
+    (let loop ((rest (cdr pattern)) (i 1))
+      (cond ((null? rest) #f)
+            ((and (eq? (car reading) 'at) (= i (cadr reading))) (loop (cdr rest) (+ i 1)))
+            ((or (pair? (car rest)) (vector? (car rest))) #t)
+            (else (loop (cdr rest) (+ i 1))))))
 
   ;; one-clause-rules? : Any -> Boolean
   (define (one-clause-rules? rules)
@@ -525,6 +712,27 @@
   ;; macro-forms : (Listof Symbol)
   ;; The forms whose clauses bind pattern variables in their templates.
   (define macro-forms '(syntax-rules syntax-case with-syntax identifier-syntax))
+
+  ;; template-forms : (Listof Symbol)
+  ;; The forms whose parts are a macro's to place: a transformer, its
+  ;; templates, patterns and literals, and the syntax objects it builds.
+  ;; macro-forms are among them. A head there with a literal entry can still
+  ;; be reached as data: a syntax-case can take its template apart, and a
+  ;; syntax-rules template can hand a form to a head its own use names. So
+  ;; a known wrapper's name in one is stray, never a use.
+  (define template-forms
+    (append '(define-syntax let-syntax letrec-syntax syntax quasisyntax) macro-forms))
+
+  ;; macro-keywords : (Listof Symbol)
+  ;; The forms that define a macro. Each is an occurrence: it stands only at
+  ;; the head of a form written in code. Handed to a macro, as an operand,
+  ;; or written in its template, the macro would decide what it defines.
+  (define macro-keywords '(define-syntax let-syntax letrec-syntax))
+
+  ;; data-forms : (Listof Symbol)
+  ;; The forms read as data whole: quote and quasiquote, unquote included,
+  ;; and import and export, whose parts name bindings and bind none.
+  (define data-forms '(quote quasiquote import export))
 
   ;; macro-variables : Pair -> (Listof Symbol)
   ;; The pattern variables FORM, headed by one of macro-forms, may bind,
@@ -639,6 +847,8 @@
                                 (result (result-reading pattern (cadddr parts) variables)))
                             (cond ((not reading) (list 'unreadable unplaced-parameters fp))
                                   ((not result) (list 'unreadable unplaced-result fp))
+                                  ((pattern-takes-apart? pattern reading)
+                                   (list 'unreadable takes-apart fp))
                                   (else (list 'ok fp index (car parts) reading result)))))))))))))))
 
   ;; --- the walk --------------------------------------------------------------------
@@ -646,21 +856,286 @@
   ;; A Finding is one of
   ;;   (binding KEY CONVENTIONS FILE VIA CROSSINGS)
   ;;   (violation VIOLATION)
-  ;;   (use NAME FILE FORM BOUND)            a known wrapper's use, read later,
-  ;;                                         and the pattern variables around it
+  ;;   (use NAME FILE FORM)                  a known wrapper's use, read later
   ;;   (wrapper NAME FILE (U (List INDEX CONVENTIONS READING RESULT) #f))
   ;;                                         a definition; #f when unreadable
 
-  ;; datum-findings : String Any (Listof Symbol) (Listof Symbol) -> (Listof Finding)
-  ;; What one datum of the file PATH holds, in the order written. FTYPES are
-  ;; the names layouts defines.
-  (define (datum-findings path datum wrappers ftypes)
+  ;; take-apart-names : (Listof Symbol)
+  ;; The (rnrs) names a transformer takes a syntax object apart, or builds
+  ;; one from data, with. A plain macro's definition holds none.
+  (define take-apart-names '(syntax-case with-syntax syntax->datum datum->syntax))
+
+  ;; distinct : (Listof Any) -> (Listof Any)
+  ;; LST without repeats, each where it first stands.
+  (define (distinct lst)
+    (reverse (fold-left (lambda (seen x) (if (memq x seen) seen (cons x seen))) '() lst)))
+
+  ;; forms-headed : (Listof Symbol) Any -> (Listof Pair)
+  ;; Every list in X headed by one of HEADS, at any depth, in order.
+  (define (forms-headed heads x)
+    (cond ((pair? x)
+           (append (if (memq (car x) heads) (list x) '())
+                   (forms-headed heads (car x))
+                   (forms-headed heads (cdr x))))
+          ((vector? x) (forms-headed heads (vector->list x)))
+          (else '())))
+
+  ;; flat-pattern? : Any Symbol -> Boolean
+  ;; PATTERN takes no operand apart: a syntax-rules clause's (_ id ...), or
+  ;; identifier-syntax's (set! id id), identifiers only.
+  (define (flat-pattern? pattern head)
+    (and (list? pattern)
+         (if (eq? head 'syntax-rules)
+             (and (pair? pattern) (eq? (car pattern) '_) (for-all symbol? (cdr pattern)))
+             (and (= (length pattern) 3)
+                  (eq? (car pattern) 'set!)
+                  (for-all symbol? (cdr pattern))))))
+
+  ;; clause-patterns : Pair -> (Listof Any)
+  ;; The patterns of a syntax-rules or identifier-syntax FORM: each clause's
+  ;; head after syntax-rules' literals, and identifier-syntax's set! clause.
+  (define (clause-patterns form)
+    (if (eq? (car form) 'syntax-rules)
+        (if (pair? (cdr form)) (map car (filter pair? (elements (cddr form)))) '())
+        (map car (filter (lambda (clause) (and (pair? clause) (pair? (car clause))))
+                         (elements (cdr form))))))
+
+  ;; unflat-patterns : Any -> (Listof Any)
+  ;; Every pattern in X that takes an operand apart.
+  (define (unflat-patterns x)
+    (fold-left (lambda (found form)
+                 (append found
+                         (filter (lambda (pattern) (not (flat-pattern? pattern (car form))))
+                                 (clause-patterns form))))
+               '() (forms-headed '(syntax-rules identifier-syntax) x)))
+
+  ;; pattern-transformer? : Any -> Boolean
+  ;; RHS, a define-syntax's transformer, is pattern-based: a syntax-rules
+  ;; or identifier-syntax form. Any other is procedural.
+  (define (pattern-transformer? rhs)
+    (and (pair? rhs) (memq (car rhs) '(syntax-rules identifier-syntax)) #t))
+
+  ;; lambda-transformer-input : Any -> (U Symbol #f)
+  ;; ID, when RHS is exactly (lambda (ID) BODY ...): one identifier
+  ;; parameter, no rest, and a body.
+  (define (lambda-transformer-input rhs)
+    (and (list? rhs)
+         (>= (length rhs) 3)
+         (eq? (car rhs) 'lambda)
+         (list? (cadr rhs))
+         (= (length (cadr rhs)) 1)
+         (symbol? (car (cadr rhs)))
+         (car (cadr rhs))))
+
+  ;; input-leaks : Symbol Any -> (Listof Any)
+  ;; The forms in X where ID stands other than as the last argument of a
+  ;; syntax-violation call: each the list, vector or box holding it. In data,
+  ;; what quote, quasiquote, syntax and quasisyntax hold, no place is
+  ;; allowed. A rebinding of ID is a place too, so shadowing it is named.
+  (define (input-leaks id x)
+    (let walk ((x x) (data? #f))
+      (cond
+        ((pair? x)
+         (let* ((data? (or data? (and (memq (car x) '(quote quasiquote syntax quasisyntax)) #t)))
+                (reported? (and (not data?) (eq? (car x) 'syntax-violation) (list? x))))
+           (let loop ((rest x) (found '()))
+             (cond ((pair? rest)
+                    (loop (cdr rest)
+                          (append found
+                                  (cond ((not (eq? (car rest) id)) (walk (car rest) data?))
+                                        ((and reported? (null? (cdr rest)) (not (eq? rest x))) '())
+                                        (else (list x))))))
+                   ((null? rest) found)
+                   ((eq? rest id) (append found (list x)))
+                   (else (append found (walk rest data?)))))))
+        ((vector? x)
+         (fold-left (lambda (found e)
+                      (append found (if (eq? e id) (list x) (walk e #t))))
+                    '() (vector->list x)))
+        ((box? x) (if (eq? (unbox x) id) (list x) (walk (unbox x) #t)))
+        (else '()))))
+
+  ;; tail-raises : Any -> (Listof Pair)
+  ;; The syntax-violation calls in tail position of FORM, itself in tail
+  ;; position of a transformer's body: reached through if's branches, the
+  ;; last form of cond's and case's clauses (no =>), and the last form of
+  ;; when, unless, begin, and, or and the let forms. A handler a transformer
+  ;; sets up, by guard or with-exception-handler, never surrounds one, so
+  ;; the condition, which holds the input, goes to the expander alone.
+  (define (tail-raises form)
+    (define (last-of forms)
+      (if (pair? forms) (tail-raises (list-ref forms (- (length forms) 1))) '()))
+    (define (clauses-of clauses)
+      (fold-left (lambda (found clause)
+                   (append found
+                           (if (and (list? clause) (>= (length clause) 2)
+                                    (not (eq? (cadr clause) '=>)))
+                               (last-of (cdr clause))
+                               '())))
+                 '() clauses))
+    (if (not (and (list? form) (pair? form)))
+        '()
+        (let ((n (length form)))
+          (case (car form)
+            ((syntax-violation) (list form))
+            ((if) (append (if (>= n 3) (tail-raises (caddr form)) '())
+                          (if (>= n 4) (tail-raises (cadddr form)) '())))
+            ((cond) (clauses-of (cdr form)))
+            ((case) (if (>= n 2) (clauses-of (cddr form)) '()))
+            ((when unless) (if (>= n 3) (last-of (cddr form)) '()))
+            ((begin and or) (last-of (cdr form)))
+            ((let) (cond ((and (>= n 4) (symbol? (cadr form))) (last-of (cdddr form)))
+                         ((>= n 3) (last-of (cddr form)))
+                         (else '())))
+            ((let* letrec letrec* let-values let*-values) (if (>= n 3) (last-of (cddr form)) '()))
+            (else '())))))
+
+  ;; raise-places : Any (Listof Pair) -> (Listof Any)
+  ;; The places in X where syntax-violation stands other than at the head of
+  ;; one of TAILS: a binding of the name, a call elsewhere, data.
+  (define (raise-places x tails)
+    (cond
+      ((pair? x)
+       (let loop ((rest x) (found '()))
+         (cond ((pair? rest)
+                (loop (cdr rest)
+                      (append found
+                              (cond ((not (eq? (car rest) 'syntax-violation)) (raise-places (car rest) tails))
+                                    ((and (eq? rest x) (memq x tails)) '())
+                                    (else (list x))))))
+               ((null? rest) found)
+               ((eq? rest 'syntax-violation) (append found (list x)))
+               (else (append found (raise-places rest tails))))))
+      ((vector? x)
+       (fold-left (lambda (found e)
+                    (append found (if (eq? e 'syntax-violation) (list x) (raise-places e tails))))
+                  '() (vector->list x)))
+      ((box? x) (if (eq? (unbox x) 'syntax-violation) (list x) (raise-places (unbox x) tails)))
+      (else '())))
+
+  ;; whole-rnrs : (Listof Any)
+  ;; The import specs that bring (rnrs)'s syntax-violation in unwrapped.
+  ;; With one, Chez refuses any other binding of the name in the library,
+  ;; imported or defined: measured, "multiple definitions for
+  ;; syntax-violation".
+  (define whole-rnrs '((rnrs) (rnrs syntax-case)))
+
+  ;; plain-imports? : (Listof Any) -> Boolean
+  ;; IMPORTS, a library's import specs, let a procedural plain macro there
+  ;; reach no procedure of another library: each is a whole (rnrs ...)
+  ;; library but (rnrs eval), or (only (chezscheme) name ...), whose names
+  ;; check-seam holds to its allowlist; and (rnrs) or (rnrs syntax-case) is
+  ;; among them, unwrapped. A procedure another library exports could take
+  ;; the input apart, or build a binding from strings with datum->syntax,
+  ;; where no rule reads it: measured, both bound the entry it chose.
+  (define (plain-imports? imports)
+    (and (for-all (lambda (spec)
+                    (or (and (list? spec) (pair? spec) (eq? (car spec) 'rnrs)
+                             (for-all symbol? spec)
+                             (not (equal? spec '(rnrs eval))))
+                        (chez-only? spec)))
+                  imports)
+         (exists (lambda (spec) (member spec whole-rnrs)) imports)
+         #t))
+
+  ;; pattern-heads : (Listof Symbol) Any -> (Listof Pair)
+  ;; Every form in X whose head is one of VARS, a macro's pattern variables,
+  ;; at any depth, data included, in order. A foreign-procedure form's
+  ;; parameter list is types, which Chez never evaluates, so it is skipped:
+  ;; a binder's (arg ...) there is no form.
+  (define (pattern-heads vars x)
+    (cond
+      ((pair? x)
+       (let ((types (and (eq? (car x) 'foreign-procedure) (list? x) (>= (length x) 4)
+                         (list? (list-ref x (- (length x) 2)))
+                         (list-ref x (- (length x) 2)))))
+         (append (if (and (symbol? (car x)) (memq (car x) vars)) (list x) '())
+                 (let loop ((rest x) (found '()))
+                   (if (pair? rest)
+                       (loop (cdr rest)
+                             (append found (if (and types (eq? (car rest) types))
+                                               '()
+                                               (pattern-heads vars (car rest)))))
+                       found)))))
+      ((vector? x) (fold-left (lambda (found e) (append found (pattern-heads vars e)))
+                              '() (vector->list x)))
+      (else '())))
+
+  ;; template-heads : Any -> (Listof Pair)
+  ;; The forms in FORM's templates, each a syntax-rules clause's or
+  ;; identifier-syntax's set! clause's, headed by one of that clause's
+  ;; pattern variables: there a use can hand in any keyword, define-syntax,
+  ;; import or another, and the macro writes the form it heads.
+  (define (template-heads form)
+    (append
+     (fold-left
+      (lambda (found rules)
+        (let ((literals (if (and (pair? (cdr rules)) (list? (cadr rules))) (cadr rules) '())))
+          (append found
+                  (if (pair? (cdr rules))
+                      (fold-left (lambda (found clause)
+                                   (append found
+                                           (if (and (list? clause) (= (length clause) 2) (pair? (car clause)))
+                                               (pattern-heads (pattern-variables (car clause) literals)
+                                                              (cadr clause))
+                                               '())))
+                                 '() (elements (cddr rules)))
+                      '()))))
+      '() (forms-headed '(syntax-rules) form))
+     (fold-left
+      (lambda (found syntax)
+        (append found
+                (fold-left (lambda (found clause)
+                             (append found
+                                     (if (and (list? clause) (= (length clause) 2) (pair? (car clause)))
+                                         (pattern-heads (filter (lambda (s) (not (memq s '(set! _ ...))))
+                                                                (symbols-in (car clause)))
+                                                        (cadr clause))
+                                         '())))
+                           '() (elements (cdr syntax)))))
+      '() (forms-headed '(identifier-syntax) form))))
+
+  ;; macro-row : (Listof Any) Symbol -> (U (List Symbol Symbol String) #f)
+  ;; NAME's row in MACROS, when it is (NAME KIND FILE).
+  (define (macro-row macros name)
+    (find (lambda (row)
+            (and (list? row) (= (length row) 3) (eq? (car row) name)
+                 (symbol? (cadr row)) (string? (caddr row))))
+          macros))
+
+  ;; datum-findings : String String String Any (Listof Symbol) (Listof Symbol) Table
+  ;;                  -> (Listof Finding)
+  ;; What one datum of the file PATH holds, in the order written. PATH is
+  ;; ROOT joined to REL. FTYPES are the names layouts defines; MACROS is the
+  ;; table of the macros the tree may define.
+  (define (datum-findings root path rel datum wrappers ftypes macros)
     (let ((shared (shared-part datum))
           (found '())
           (accounted '())
-          (bound '()))
+          (bound '())
+          (in-macro? #f)
+          (top-form #f)
+          (imports '()))
 
       (define (emit! finding) (set! found (cons finding found)))
+
+      ;; binding-name? : Any -> Boolean
+      ;; X binds an entry point: foreign-procedure, foreign-callable, or a
+      ;; known wrapper's name.
+      (define (binding-name? x) (or (occurrence? x) (and (memq x wrappers) #t)))
+
+      ;; name? : Any -> Boolean
+      ;; X is an occurrence the reader must account for: a binding name, or
+      ;; one of macro-keywords.
+      (define (name? x) (or (binding-name? x) (and (memq x macro-keywords) #t)))
+
+      ;; within-macro : (-> Unit) -> Unit
+      ;; THUNK, run with in-macro? set: inside one of template-forms.
+      (define (within-macro thunk)
+        (let ((outer in-macro?))
+          (set! in-macro? #t)
+          (thunk)
+          (set! in-macro? outer)))
 
       ;; from-pattern? : Any -> Boolean
       ;; X holds a pattern variable of a macro form around it.
@@ -670,10 +1145,11 @@
       (define (violation! . v) (emit! (list 'violation v)))
 
       ;; walk : Any Any Boolean -> Unit
-      ;; X, an element of PARENT. QUOTED? holds inside quote and quasiquote,
-      ;; and in a vector or box literal: data, not code.
+      ;; X, an element of PARENT. QUOTED? holds inside data-forms, in a
+      ;; vector or box literal, and for what a binding form binds: data, not
+      ;; code.
       (define (walk x parent quoted?)
-        (cond ((occurrence? x) (violation! 'stray path (abbreviated parent)))
+        (cond ((name? x) (violation! 'stray path (abbreviated parent)))
               ((pair? x) (walk-pair x quoted?))
               ((vector? x) (for-each (lambda (e) (walk e x #t)) (vector->list x)))
               ((box? x) (walk (unbox x) x #t))
@@ -689,11 +1165,16 @@
                 ((null? rest) #f)
                 (else (walk rest form quoted?)))))
 
+      ;; A known wrapper's name is a use only at a head outside every one of
+      ;; template-forms; anywhere else walk finds it, and it is stray.
       (define (walk-pair form quoted?)
         (let ((head (car form)))
+          (when (and (not quoted?) in-macro? (memq head macro-keywords))
+            (violation! 'stray path (abbreviated form)))
+          (unless quoted? (placement! form))
           (cond
             (quoted? (walk-elements form 0 #t))
-            ((memq head '(quote quasiquote)) (walk-elements form 0 #t))
+            ((memq head data-forms) (walk-elements form 0 #t))
             ((memq form accounted) (walk-elements form 1 #f))
             ((eq? head 'foreign-procedure)
              (procedure-form! form)
@@ -704,15 +1185,148 @@
             ((callable-definition? form) (callable-definition! form))
             ((and (eq? head 'define-syntax) (pair? (cdr form)) (memq (cadr form) wrappers))
              (wrapper-definition! form))
-            ((memq head wrappers)
-             (emit! (list 'use head path form bound))
+            ((and (memq head wrappers) (not in-macro?))
+             (emit! (list 'use head path form))
              (walk-elements form 1 #f))
-            ((memq head macro-forms)
+            ((memq head template-forms)
              (let ((outer bound))
-               (set! bound (append (macro-variables form) bound))
-               (walk-elements form 0 #f)
+               (when (memq head macro-forms)
+                 (set! bound (append (macro-variables form) bound)))
+               (within-macro (lambda () (walk-elements form 1 #f)))
                (set! bound outer)))
+            ((and (eq? head 'case) (list? form) (>= (length form) 2))
+             (case-form! form))
+            ((binding-form! form))
             (else (walk-elements form 0 #f)))))
+
+      ;; placement! : Pair -> Unit
+      ;; A define-syntax anywhere but a library body's top level, by name, is
+      ;; named; so is every let-syntax and letrec-syntax.
+      (define (placement! form)
+        (case (car form)
+          ((define-syntax)
+           (unless (eq? form top-form) (violation! 'macro-nested path (abbreviated form))))
+          ((let-syntax letrec-syntax) (violation! 'macro-local path (abbreviated form)))
+          (else #f)))
+
+      ;; top-macro! : Pair -> Unit
+      ;; FORM, (define-syntax NAME ...) at a library body's top level, held
+      ;; to its row in MACROS: listed, defined in its file, and, unless a
+      ;; binder or any, held as plain.
+      (define (top-macro! form)
+        (let* ((name (cadr form)) (row (macro-row macros name)))
+          (emit! (list 'macro name rel))
+          (cond
+            ((not row) (violation! 'macro-unlisted path name))
+            (else
+             (unless (string=? (caddr row) rel)
+               (violation! 'macro-elsewhere path name (string-append root "/" (caddr row))))
+             (unless (memq (cadr row) '(binder any))
+               (plain! form name))
+             (unless (eq? (cadr row) 'any)
+               (for-each (lambda (place) (violation! 'macro-pattern-head path name (abbreviated place)))
+                         (template-heads form)))))))
+
+      ;; plain! : Pair Symbol -> Unit
+      ;; A plain macro's definition builds no binding and takes no operand
+      ;; apart: it holds no name that binds, none of take-apart-names, and
+      ;; no pattern but a flat one. A procedural one is exactly
+      ;; (lambda (ID) BODY ...), and its input goes nowhere but to
+      ;; syntax-violation, so its output cannot depend on it.
+      (define (plain! form name)
+        (let ((symbols (distinct (symbols-in form)))
+              (rhs (and (list? form) (= (length form) 3) (caddr form))))
+          (for-each (lambda (s) (when (binding-name? s) (violation! 'plain-macro-binds path name s)))
+                    symbols)
+          (for-each (lambda (s)
+                      (when (memq s take-apart-names) (violation! 'plain-macro-takes-apart path name s)))
+                    symbols)
+          (for-each (lambda (pattern) (violation! 'plain-macro-pattern path name (abbreviated pattern)))
+                    (unflat-patterns form))
+          (unless (pattern-transformer? rhs)
+            (let ((id (lambda-transformer-input rhs)))
+              (if (not id)
+                  (violation! 'plain-macro-transformer path name (abbreviated rhs))
+                  (let* ((body (cddr rhs))
+                         (tails (tail-raises (list-ref body (- (length body) 1)))))
+                    (unless (plain-imports? imports)
+                      (violation! 'plain-macro-import path name))
+                    (for-each (lambda (place) (violation! 'plain-macro-input path name (abbreviated place)))
+                              (fold-left (lambda (found form)
+                                           (append found (if (eq? form id) (list rhs) (input-leaks id form))))
+                                         '() body))
+                    (for-each (lambda (place) (violation! 'plain-macro-raise path name (abbreviated place)))
+                              (raise-places body tails))))))))
+
+      ;; case-form! : Pair -> Unit
+      ;; (case KEY (DATUMS EXPR ...) ...): the key and each clause's
+      ;; expressions are code, and each DATUMS data, which Chez compares the
+      ;; key with and never evaluates.
+      (define (case-form! form)
+        (walk (cadr form) form #f)
+        (for-each (lambda (clause)
+                    (cond ((not (pair? clause)) (walk clause form #f))
+                          (else
+                           (unless (eq? (car clause) 'else) (walk (car clause) clause #t))
+                           (walk-elements clause 1 #f))))
+                  (cddr form)))
+
+      ;; names! : Any Any -> Unit
+      ;; X, part of PARENT, names what a binding form binds, so it is data:
+      ;; every occurrence in it is stray, and no form in it is read.
+      (define (names! x parent) (walk x parent #t))
+
+      ;; bindings! : Any Any -> Unit
+      ;; ((NAMES EXPR ...) ...), part of PARENT: each NAMES as names!, the
+      ;; rest as code. Anything else is data.
+      (define (bindings! bindings parent)
+        (if (list? bindings)
+            (for-each (lambda (binding)
+                        (if (pair? binding)
+                            (begin (names! (car binding) binding)
+                                   (walk-elements binding 1 #f))
+                            (names! binding bindings)))
+                      bindings)
+            (names! bindings parent)))
+
+      ;; binding-form! : Pair -> Boolean
+      ;; FORM, when it is a binding form of a shape the reader knows: what
+      ;; it binds read by names!, the rest as code; #t. #f for any other
+      ;; form, which walk-pair reads whole as code.
+      (define (binding-form! form)
+        (let ((n (if (list? form) (length form) 0)))
+          (case (car form)
+            ((define define-values lambda)
+             (and (>= n 2)
+                  (begin (names! (cadr form) form) (walk-elements form 2 #f) #t)))
+            ((case-lambda)
+             (and (>= n 1)
+                  (begin (for-each (lambda (clause)
+                                     (if (pair? clause)
+                                         (begin (names! (car clause) clause)
+                                                (walk-elements clause 1 #f))
+                                         (names! clause form)))
+                                   (cdr form))
+                         #t)))
+            ((let)
+             (cond ((and (>= n 3) (symbol? (cadr form)))
+                    (names! (cadr form) form)
+                    (bindings! (caddr form) form)
+                    (walk-elements form 3 #f)
+                    #t)
+                   ((>= n 2) (bindings! (cadr form) form) (walk-elements form 2 #f) #t)
+                   (else #f)))
+            ((let* letrec letrec* let-values let*-values fluid-let do)
+             (and (>= n 2)
+                  (begin (bindings! (cadr form) form) (walk-elements form 2 #f) #t)))
+            ((guard)
+             (and (>= n 2)
+                  (pair? (cadr form))
+                  (begin (names! (car (cadr form)) (cadr form))
+                         (walk-elements (cadr form) 1 #f)
+                         (walk-elements form 2 #f)
+                         #t)))
+            (else #f))))
 
       (define (procedure-form! form)
         (let ((parts (procedure-parts form)))
@@ -764,33 +1378,45 @@
              (violation! 'wrapper-unreadable path name (cadr reading))
              (when (caddr reading)
                (set! accounted (cons (caddr reading) accounted)))))
-          (walk-elements form 0 #f)))
+          ;; The name is the one place a wrapper's name stands for itself.
+          (within-macro (lambda () (walk-elements form 2 #f)))))
 
-      ;; The import clause: an (only (chezscheme) ...) accounts for the two
-      ;; names. Every other part of a library form is walked as code.
+      ;; The name, export and import clauses are data. In the import clause,
+      ;; an (only (chezscheme) ...) accounts for foreign-procedure and
+      ;; foreign-callable, and for no known wrapper's name. The body is code.
       (define (walk-library form)
-        (walk (cadr form) form #f)
-        (walk (caddr form) form #f)
+        (set! imports (cdr (cadddr form)))
+        (walk (cadr form) form #t)
+        (walk (caddr form) form #t)
         (for-each (lambda (spec)
                     (if (chez-only? spec)
-                        (for-each (lambda (id) (unless (occurrence? id) (walk id spec #f)))
+                        (for-each (lambda (id) (unless (occurrence? id) (walk id spec #t)))
                                   (cddr spec))
-                        (walk spec (cadddr form) #f)))
+                        (walk spec (cadddr form) #t)))
                   (cdr (cadddr form)))
-        (for-each (lambda (body) (walk body form #f)) (cddddr form)))
+        (for-each (lambda (body)
+                    (when (and (pair? body) (eq? (car body) 'define-syntax)
+                               (pair? (cdr body)) (symbol? (cadr body)))
+                      (set! top-form body)
+                      (top-macro! body))
+                    (walk body form #f)
+                    (set! top-form #f))
+                  (cddddr form)))
 
       (cond (shared (violation! 'shared-structure path (abbreviated shared)))
             ((library-form? datum) (walk-library datum))
             (else (walk datum datum #f)))
       (reverse found)))
 
-  ;; file-findings : String (Listof Symbol) (Listof Symbol) -> (Listof Finding)
-  (define (file-findings path wrappers ftypes)
-    (let ((data (read-data path)))
+  ;; file-findings : String String (Listof Symbol) (Listof Symbol) Table -> (Listof Finding)
+  ;; PATH is ROOT joined to the names below it.
+  (define (file-findings root path wrappers ftypes macros)
+    (let ((data (read-data path))
+          (rel (substring path (+ (string-length root) 1) (string-length path))))
       (if (eq? (car data) 'unreadable)
           (list (list 'violation (list 'unreadable path (cadr data))))
           (fold-left (lambda (found datum)
-                       (append found (datum-findings path datum wrappers ftypes)))
+                       (append found (datum-findings root path rel datum wrappers ftypes macros)))
                      '() (cadr data)))))
 
   ;; use-types : Pair (U (List 'types (Listof Any)) (List 'at Natural)) -> Any
@@ -809,17 +1435,15 @@
         (cadr reading)
         (and (> (length form) (cadr reading)) (list-ref form (cadr reading)))))
 
-  ;; use-crossings : Pair Reading Reading (Listof Symbol) (Listof Symbol)
+  ;; use-crossings : Pair Reading Reading (Listof Symbol)
   ;;                 -> (U (Listof Symbol) 'unreadable)
-  ;; A use's crossings, or 'unreadable when a type it writes is one of
-  ;; BOUND, the pattern variables around it. A type its wrapper's template
-  ;; writes is the template's own.
-  (define (use-crossings form reading result ftypes bound)
-    (let ((types (use-types form reading))
-          (written (append (if (eq? (car reading) 'at) (list (use-types form reading)) '())
-                           (if (eq? (car result) 'at) (list (use-result form result)) '()))))
-      (if (and (list? types)
-               (not (exists (lambda (s) (memq s bound)) (symbols-in written))))
+  ;; A use's crossings, or 'unreadable when its types are no list or on no
+  ;; allowlist. A type its wrapper's template writes is the template's own.
+  ;; A use is never inside a macro, so no type it writes is a pattern
+  ;; variable.
+  (define (use-crossings form reading result ftypes)
+    (let ((types (use-types form reading)))
+      (if (list? types)
           (signature-crossings types (use-result form result) ftypes #f)
           'unreadable)))
 
@@ -876,7 +1500,7 @@
                                  (cons (list 'wrapper-entry-not-string file name (abbreviated form))
                                        violations)
                                  defined))
-                          ((eq? (use-crossings form reading result ftypes (list-ref f 4)) 'unreadable)
+                          ((eq? (use-crossings form reading result ftypes) 'unreadable)
                            (loop (cdr rest) bindings
                                  (cons (list 'wrapper-types-unreadable file name (abbreviated form))
                                        violations)
@@ -884,29 +1508,33 @@
                           (else
                            (loop (cdr rest)
                                  (cons (list (list-ref form index) conventions file name
-                                             (use-crossings form reading result ftypes (list-ref f 4)))
+                                             (use-crossings form reading result ftypes))
                                        bindings)
                                  violations defined))))))))))))))
 
-  ;; scan-conventions : String (Listof Symbol) -> Scan
-  ;; Every source file under ROOT, read as data, with WRAPPERS as the known
-  ;; wrappers, and the ftypes ROOT's layouts defines. Files are read in
-  ;; sorted order, and each one's forms in the order written, so the answer
-  ;; is the same on every run.
-  (define (scan-conventions root wrappers)
+  ;; scan-conventions : String Macros -> Scan
+  ;; Every source file under ROOT, read as data, with MACROS as the table
+  ;; of the macros it may define, its binders the known wrappers, and the
+  ;; ftypes ROOT's layouts defines. Files are read in sorted order, and each
+  ;; one's forms in the order written, so the answer is the same on every
+  ;; run.
+  (define (scan-conventions root macros)
     (let* ((found (if (file-directory? root) (tree root) (list '() '())))
            (files (list-sort string<? (car found)))
            (links (list-sort string<? (cadr found)))
            (ftypes (layout-ftypes root))
-           (findings (fold-left (lambda (all path)
-                                  (append all (file-findings path wrappers ftypes)))
-                                '() files))
+           (wrappers (binders macros))
+           (all (fold-left (lambda (all path)
+                             (append all (file-findings root path wrappers ftypes macros)))
+                           '() files))
+           (findings (filter (lambda (f) (not (eq? (car f) 'macro))) all))
            (resolved (resolve findings ftypes)))
       (make-scan (car resolved)
                  (append (if (null? files) (list (list 'no-sources root)) '())
                          (map (lambda (link) (list 'directory-link link)) links)
                          (cadr resolved))
-                 (caddr resolved))))
+                 (caddr resolved)
+                 (map cdr (filter (lambda (f) (eq? (car f) 'macro)) all)))))
 
   ;; --- the table's verdicts ----------------------------------------------------------
 
@@ -919,19 +1547,42 @@
   ;; mark-kinds : (Listof Symbol)
   (define mark-kinds '(bytevector-crossing string-not-kept))
 
+  ;; mark? : Any -> Boolean
+  ;; (KIND CITATION), KIND one of mark-kinds and CITATION a string; that the
+  ;; citation quotes a record is table-problems' to check.
+  (define (mark? x)
+    (and (list? x)
+         (= (length x) 2)
+         (memq (car x) mark-kinds)
+         (string? (cadr x))
+         #t))
+
   ;; row-mark : Any -> (U (List Symbol String) #f)
-  ;; ROW's fourth element, when it is a mark: (KIND CITATION), KIND one of
-  ;; mark-kinds and CITATION a string; that the citation quotes a record is
-  ;; table-problems' to check.
+  ;; ROW's fourth element, when it is a mark.
   (define (row-mark row)
     (and (list? row)
-         (= (length row) 4)
-         (let ((mark (cadddr row)))
-           (and (list? mark)
-                (= (length mark) 2)
-                (memq (car mark) mark-kinds)
-                (string? (cadr mark))
-                mark))))
+         (<= 4 (length row) 5)
+         (mark? (cadddr row))
+         (cadddr row)))
+
+  ;; binder-tagged? : Any -> Boolean
+  ;; X is (bound-by ...), whatever follows.
+  (define (binder-tagged? x)
+    (and (pair? x) (eq? (car x) 'bound-by)))
+
+  ;; binder-shaped? : Any -> Boolean
+  ;; X is (bound-by BINDER), BINDER a symbol.
+  (define (binder-shaped? x)
+    (and (binder-tagged? x) (list? x) (= (length x) 2) (symbol? (cadr x))))
+
+  ;; row-binder : Any -> (U Symbol #f)
+  ;; The BINDER of ROW's last element, when ROW has four or five and that
+  ;; is (bound-by BINDER).
+  (define (row-binder row)
+    (and (list? row)
+         (<= 4 (length row) 5)
+         (let ((last (list-ref row (- (length row) 1))))
+           (and (binder-shaped? last) (cadr last)))))
 
   ;; marked? : Any Symbol -> Boolean
   (define (marked? row kind)
@@ -951,21 +1602,26 @@
   ;; table-violations : (Listof Binding) Table -> (Listof Violation)
   ;; Each binding against its row, found by key with equal?, so the string
   ;; "memcpy" and the symbol memcpy are two keys. Conventions are compared
-  ;; as sets. A bytevector crossing needs a row marked bytevector-crossing,
-  ;; a string one marked string-not-kept, and scheme-object fails whatever
-  ;; the row.
+  ;; as sets. A row's binder must be how the binding was made. A bytevector
+  ;; crossing needs a row marked bytevector-crossing, a string one marked
+  ;; string-not-kept, and scheme-object fails whatever the row.
   (define (table-violations bindings table)
     (fold-left
      (lambda (found binding)
        (let* ((key (car binding))
               (conventions (cadr binding))
               (file (caddr binding))
+              (via (list-ref binding 3))
               (passed (list-ref binding 4))
-              (row (find (lambda (row) (and (pair? row) (equal? (car row) key))) table)))
+              (row (find (lambda (row) (and (pair? row) (equal? (car row) key))) table))
+              (binder (and row (row-binder row))))
          (append found
                  (cond ((not row) (list (list 'no-row key file)))
                        ((same-set? (cadr row) conventions) '())
                        (else (list (list 'mismatch key (cadr row) conventions file))))
+                 (if (and binder (not (eq? binder via)))
+                     (list (list 'wrong-binder key binder via file))
+                     '())
                  (kind-violation 'bytevector-crossing bytevector-types passed
                                  (and row (marked? row 'bytevector-crossing)) key file)
                  (kind-violation 'string-crossing string-types passed
@@ -973,12 +1629,12 @@
                  (kind-violation 'scheme-object object-types passed #f key file))))
      '() bindings))
 
-  ;; check-conventions : String (Listof Symbol) Table
+  ;; check-conventions : String Macros Table
   ;;                     -> (List (Listof Binding) (Listof Violation))
   ;; The bindings under ROOT, and every violation: the scan's, then the
-  ;; table's.
-  (define (check-conventions root wrappers table)
-    (let* ((scanned (scan-conventions root wrappers))
+  ;; table's. MACROS is the table of macros the tree may define.
+  (define (check-conventions root macros table)
+    (let* ((scanned (scan-conventions root macros))
            (bindings (scan-bindings scanned)))
       (list bindings
             (append (scan-violations scanned) (table-violations bindings table)))))
@@ -988,14 +1644,16 @@
   (define records ".plans/decisions/")
 
   ;; row-shaped? : Any -> Boolean
-  ;; (key conventions citation), with or without a fourth element, which
-  ;; table-problems holds to a mark's shape.
+  ;; (key conventions citation), then at most two elements: a fourth, and a
+  ;; fifth tagged bound-by. table-problems holds a last element tagged
+  ;; bound-by to a binder's shape, and any other fourth to a mark's.
   (define (row-shaped? row)
     (and (list? row)
-         (<= 3 (length row) 4)
+         (<= 3 (length row) 5)
          (or (string? (car row)) (symbol? (car row)))
          (list? (cadr row))
-         (string? (caddr row))))
+         (string? (caddr row))
+         (or (< (length row) 5) (binder-tagged? (list-ref row 4)))))
 
   ;; citation-parts : String -> (U (Pair String String) #f)
   ;; "RECORD: PHRASE" as (RECORD . PHRASE); #f with no ": " or no phrase.
@@ -1041,24 +1699,35 @@
   (define mark-citation
     '(crossing-citation-shape crossing-citation-not-a-record crossing-citation-phrase-missing))
 
-  ;; mark-problems : Row String -> (Listof Violation)
-  ;; A shaped row's mark, when it has one: its shape, its citation, and its
-  ;; conventions, which may not be __collect_safe.
-  (define (mark-problems row root)
-    (cond
-      ((= (length row) 3) '())
-      ((not (row-mark row)) (list (list 'crossing-mark-shape (car row) (cadddr row))))
-      (else
-       (append (citation-problems (car row) (cadr (row-mark row)) root mark-citation)
-               (if (member '__collect_safe (cadr row))
-                   (list (list 'crossing-collect-safe (car row)))
-                   '())))))
+  ;; extra-problems : Row String -> (Listof Violation)
+  ;; What follows a shaped row's citation: a binder, when the last element
+  ;; is tagged bound-by, and a mark, when anything precedes it. The mark's
+  ;; shape, its citation, and its row's conventions, which may not be
+  ;; __collect_safe; then the binder's shape.
+  (define (extra-problems row root)
+    (let* ((extras (cdddr row))
+           (last (and (pair? extras) (list-ref extras (- (length extras) 1))))
+           (binder (and last (binder-tagged? last) last))
+           (marks (if binder (filter (lambda (x) (not (eq? x binder))) extras) extras)))
+      (append
+       (cond
+         ((null? marks) '())
+         ((not (mark? (car marks))) (list (list 'crossing-mark-shape (car row) (car marks))))
+         (else
+          (append (citation-problems (car row) (cadr (car marks)) root mark-citation)
+                  (if (member '__collect_safe (cadr row))
+                      (list (list 'crossing-collect-safe (car row)))
+                      '()))))
+       (if (and binder (not (binder-shaped? binder)))
+           (list (list 'binder-shape (car row) binder))
+           '()))))
 
   ;; table-problems : Table String -> (Listof Violation)
   ;; What is wrong with TABLE, whose citations are paths under ROOT, in row
   ;; order:
   ;;   (row-shape ROW)                          not (key conventions citation),
-  ;;                                            with or without a fourth element
+  ;;                                            then a fourth element, a fifth
+  ;;                                            tagged bound-by, or neither
   ;;   (duplicate-row KEY)                      a second row for KEY
   ;;   (citation-shape KEY CITATION)            not "RECORD: PHRASE"
   ;;   (citation-not-a-record KEY RECORD)       no file in .plans/decisions/
@@ -1070,6 +1739,8 @@
   ;;   (crossing-citation-not-a-record KEY RECORD)
   ;;   (crossing-citation-phrase-missing KEY RECORD PHRASE)
   ;;   (crossing-collect-safe KEY)              a marked row __collect_safe
+  ;;   (binder-shape KEY BINDER)                a last element tagged bound-by
+  ;;                                            that is not (bound-by SYMBOL)
   (define (table-problems table root)
     (let loop ((rows table) (keys '()) (found '()))
       (if (null? rows)
@@ -1084,4 +1755,4 @@
                (loop (cdr rows) (cons (car row) keys)
                      (append found
                              (citation-problems (car row) (caddr row) root row-citation)
-                             (mark-problems row root))))))))))
+                             (extra-problems row root))))))))))

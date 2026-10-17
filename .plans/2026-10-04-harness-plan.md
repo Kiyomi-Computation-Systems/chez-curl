@@ -161,7 +161,29 @@ These are general traps, copied with their one-line rules. Their incidents go in
 5. **Memory gate and CI** (ADR-0014).
    - `test-memory` and `check-memory-gate`.
    - `.github/workflows/ci.yml` with §4's lanes.
+6. **Closing M0** (added 2026-10-17, when the probes below were checked).
+   - `curl_easy_setopt` bound once per value type, and `curl_easy_getinfo`, with
+     `test-variadic` and `check-variadic`.
+   - `make dev` and `make clean`, which the brief's M0 names, with `check-dev` and
+     `check-clean`.
 
 The probes run while deciding become tests in slices 3 and 4: varargs setopt, the census of
 the options API, world detection, `curl_url`'s verdicts, the header-API probe, and the
 loopback-only container (progress.md, PR #1's close-out).
+
+**Where each went** (2026-10-17). Two missed slices 3 and 4, and nothing recorded it until
+slice 6 checked.
+
+- **World detection:** `test-discovery` and `test-library-loading` (slice 3).
+- **The header-API probe:** the load's probe, held by `test-verify` and
+  `test-library-loading`, and by CI's disabled-API lane (slices 3 and 5).
+- **The loopback-only container:** `scripts/guix-env-selftest`'s seventh assertion, which
+  `make check-guix` runs (slice 1).
+- **The options API:** the load's probe that it knows `URL` (slice 3). Slice 6 reads an
+  option's id and type through it. The census of every option the setopt layer takes is
+  M2's, when it binds them.
+- **Varargs setopt:** slice 6, `test-variadic` and `make check-variadic`. On x86-64 a
+  missing `(__varargs_after 2)` passes, so only Apple arm64 can watch it fail (ADR-0001).
+- **`curl_url`'s verdicts: moved to M2,** which binds `curl_url` for the transfer
+  (ADR-0008). Testing them needs bindings that M0 has no use for. ADR-0008's measured
+  table is where M2's suite starts.

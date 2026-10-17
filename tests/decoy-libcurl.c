@@ -44,6 +44,13 @@
 #include <curl/curl.h>
 #include <curl/header.h>
 
+/* With gcc, curl/curl.h makes curl_easy_setopt and curl_easy_getinfo
+   type-checking macros, as its typecheck-gcc.h does for a caller. This
+   file defines the functions themselves, as libcurl's own sources do after
+   the same #undef. */
+#undef curl_easy_setopt
+#undef curl_easy_getinfo
+
 static char calls[2048];
 
 /* called: appends one entry, printf-style, to the call log. */
@@ -198,6 +205,24 @@ CURLHcode curl_easy_header(CURL *easy, const char *name, size_t nameindex,
 void curl_easy_cleanup(CURL *easy)
 {
   called("curl_easy_cleanup(%s)", HANDLE_NAME(easy));
+}
+#endif
+
+/* The variadic pair the load binds and never calls: so no entry for
+   either is in a log the suite expects, and one there would fail it. */
+#ifndef DECOY_LACKS_curl_easy_setopt
+CURLcode curl_easy_setopt(CURL *easy, CURLoption option, ...)
+{
+  called("curl_easy_setopt(%s,%d)", HANDLE_NAME(easy), (int)option);
+  return CURLE_OK;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_easy_getinfo
+CURLcode curl_easy_getinfo(CURL *easy, CURLINFO info, ...)
+{
+  called("curl_easy_getinfo(%s,%d)", HANDLE_NAME(easy), (int)info);
+  return CURLE_OK;
 }
 #endif
 

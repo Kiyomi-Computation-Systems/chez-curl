@@ -47,7 +47,21 @@
 ;;;       Chez accepts, is an export it cannot read. This rule does not see a
 ;;;       macro that a library exports and whose template uses the name: for
 ;;;       define-ftype, tests/test-constants.sps leaves its one library no
-;;;       macro.
+;;;       macro;
+;;;   (h) a library imports a (curl ...) or (http-client ...) library that no
+;;;       library under the directory defines, an import rules (a) and (b)
+;;;       do not refuse already. Chez would load it from another
+;;;       directory on its library path, and the suites' path holds tests/:
+;;;       a library there, which no rule here reads, could bind anything. A
+;;;       library counts as defined wherever under the directory it stands:
+;;;       rule (i) then fails any that is not at its name's path, alone in
+;;;       its file;
+;;;   (i) a file holds more than one library, or a library stands anywhere
+;;;       but its name's path: (curl private extra) in curl/private/
+;;;       extra.sls, (curl) in curl.sls. Chez looks for a library at that
+;;;       path in each library directory in turn, so one defined elsewhere
+;;;       under the directory could satisfy rule (h) while another directory
+;;;       supplied the library Chez loads.
 ;;;
 ;;; The lists are allowlists: a name or a library that is not on one fails,
 ;;; so a route nobody thought of is closed until a reviewer opens it.
@@ -353,9 +367,21 @@
       (else
        (apply append (map (lambda (id) (name-complaints path name id)) names))))))
 
-;; import-complaints : String (Listof Symbol) Any -> (Listof String)
-;; What is wrong with the import set SPEC of the library NAME.
-(define (import-complaints path name spec)
+;; undefined-complaints : String (Listof Symbol) (Listof Symbol) (Listof (Listof Symbol))
+;;                        -> (Listof String)
+;; Rule (h): the library NAME imports IMPORTED, a family library, and
+;; DEFINED, the libraries defined under the directory, lacks it.
+(define (undefined-complaints path name imported defined)
+  (if (member imported defined)
+      '()
+      (list (string-append path ": " (written name) " imports " (written imported)
+                           ", but no library under src/ defines it, so Chez would load it"
+                           " from elsewhere on its library path, which this check does not read"))))
+
+;; import-complaints : String (Listof Symbol) Any (Listof (Listof Symbol)) -> (Listof String)
+;; What is wrong with the import set SPEC of the library NAME. DEFINED is
+;; the libraries defined under the directory.
+(define (import-complaints path name spec defined)
   (let ((imported (spec-name spec 0)))
     (cond
       ((not imported)
@@ -369,6 +395,8 @@
                             (written imported))))
       ((member imported rnrs-libraries)
        '())
+      ;; Rule (h) names an import no other rule refuses: one refused already
+      ;; fails the seam, defined or not.
       ((family? 'curl imported)
        (if (and (family? 'http-client name) (not (member imported public-curl)))
            (list (string-append path ": " (written name) " imports "
@@ -376,14 +404,14 @@
                                 ", but an (http-client ...) library may"
                                 " import only the public (curl ...)"
                                 " libraries " (written public-curl)))
-           '()))
+           (undefined-complaints path name imported defined)))
       ((family? 'http-client imported)
        (if (family? 'curl name)
            (list (string-append path ": " (written name) " imports "
                                 (written imported)
                                 ", but no (curl ...) library may import"
                                 " an (http-client ...) library"))
-           '()))
+           (undefined-complaints path name imported defined)))
       (else
        (list (string-append path ": " (written name) " imports "
                             (written imported)
@@ -449,10 +477,10 @@
                                     pairs)))))
                 (cdr (caddr form))))))
 
-;; library-complaints : String Any -> (Listof String)
+;; library-complaints : String Any (Listof (Listof Symbol)) -> (Listof String)
 ;; What is wrong with the library form FORM, read from PATH: its family, then
 ;; its imports, in import order, then its exports, in export order.
-(define (library-complaints path form)
+(define (library-complaints path form defined)
   (let ((name (reference-name (cadr form))))
     (append
      (if (memq (car name) families)
@@ -462,30 +490,75 @@
                               " of a library's name under src/ must be "
                               (joined " or " (map symbol->string families)))))
      (apply append
-            (map (lambda (spec) (import-complaints path name spec))
+            (map (lambda (spec) (import-complaints path name spec defined))
                  (cdr (cadddr form))))
      (export-complaints path name form))))
 
-;; data-complaints : String (Listof Any) -> (Listof String)
-(define (data-complaints path data)
+;; data-complaints : String (Listof Any) (Listof (Listof Symbol)) -> (Listof String)
+(define (data-complaints path data defined)
   (if (null? data)
       (list (string-append path ": it holds no datum, so it holds no library form"))
       (let loop ((rest data) (n 1))
         (if (null? rest)
             '()
             (append (if (library-form? (car rest))
-                        (library-complaints path (car rest))
+                        (library-complaints path (car rest) defined)
                         (list (string-append path ": datum " (number->string n)
                                              " is " (abbreviated (car rest))
                                              ", not a library form")))
                     (loop (cdr rest) (+ n 1)))))))
 
-;; check-file : String -> (Pair (Listof String) Natural)
+;; defined-libraries : (Listof String) -> (Listof (Listof Symbol))
+;; The name of every library form in FILES, those it can read.
+(define (defined-libraries files)
+  (apply append
+         (map (lambda (path)
+                (let ((found (read-data path)))
+                  (if (eq? (car found) 'data)
+                      (map (lambda (form) (reference-name (cadr form)))
+                           (filter library-form? (cadr found)))
+                      '())))
+              files)))
+
+;; library-path : String (Listof Any) -> String
+;; Where Chez, given ROOT as its one library directory (--libdirs src),
+;; looks for the library NAME: ROOT, then NAME's identifiers joined by /,
+;; then a source ending of (library-extensions). Rule (e)'s companion check
+;; refuses every ending but .sls under ROOT, so .sls is the one it loads.
+(define (library-path root name)
+  (string-append root "/"
+                 (joined "/" (map (lambda (part) (if (symbol? part) (symbol->string part) (written part)))
+                                  name))
+                 ".sls"))
+
+;; placement-complaints : String (Listof Any) String -> (Listof String)
+;; Rule (i): the file at PATH holds exactly one library, LIBRARIES being
+;; its library forms, and each stands at its name's path below ROOT.
+(define (placement-complaints path libraries root)
+  (append
+   (if (> (length libraries) 1)
+       (list (string-append path ": it holds " (number->string (length libraries))
+                            " libraries, but Chez loads one library from a file, so each file"
+                            " under src/ holds exactly one"))
+       '())
+   (apply append
+          (map (lambda (form)
+                 (let* ((name (reference-name (cadr form)))
+                        (want (library-path root name)))
+                   (if (string=? path want)
+                       '()
+                       (list (string-append path ": " (written name) " is defined here, but Chez"
+                                            " loads it from " want ", its name's path")))))
+               libraries))))
+
+;; check-file : String (Listof (Listof Symbol)) String -> (Pair (Listof String) Natural)
 ;; The complaints about the file at PATH, and how many libraries it holds.
-(define (check-file path)
+;; DEFINED is the libraries defined under ROOT, the directory.
+(define (check-file path defined root)
   (let ((found (read-data path)))
     (if (eq? (car found) 'data)
-        (cons (data-complaints path (cadr found))
+        (cons (append (data-complaints path (cadr found) defined)
+                      (placement-complaints path (filter library-form? (cadr found)) root))
               (length (filter library-form? (cadr found))))
         (cons (list (string-append path ": it cannot be read as data: " (cadr found)))
               0))))
@@ -505,7 +578,8 @@
              (files (list-sort string<? (car found)))
              (links (list-sort string<? (cadr found)))
              (unread (list-sort string<? (caddr found)))
-             (results (map check-file files))
+             (defined (defined-libraries files))
+             (results (map (lambda (path) (check-file path defined root)) files))
              (complaints
               (append
                (if (null? files)

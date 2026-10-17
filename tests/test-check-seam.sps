@@ -112,6 +112,24 @@
 
 (define seam-a "but no (curl ...) library may import an (http-client ...) library")
 
+;; holds-several : String String Natural -> String
+;; Rule (i): the file FILE in the tree CASE holds COUNT libraries.
+(define (holds-several case file count)
+  (string-append (at case file) ": it holds " (number->string count)
+                 " libraries, but Chez loads one library from a file, so each file under"
+                 " src/ holds exactly one"))
+
+;; off-path : String String String String -> String
+;; Rule (i): the library NAME, defined in FILE in the tree CASE, belongs at
+;; PATH, below the tree.
+(define (off-path case file name path)
+  (string-append (at case file) ": " name " is defined here, but Chez loads it from "
+                 (at case path) ", its name's path"))
+
+(define undefined-tail
+  (string-append ", but no library under src/ defines it, so Chez would load it from"
+                 " elsewhere on its library path, which this check does not read"))
+
 ;; no-such-file : String String -> String
 ;; The complaint for FILE in the tree CASE, a symbolic link to nothing.
 (define (no-such-file case file)
@@ -124,21 +142,37 @@
 (define cases
   (list
    (list "legal"
-         "a legal tree: wrappers over (rnrs ...), (only (chezscheme) ...), a version reference, two libraries in a file, and files it passes by"
-         (holds 5 4))
+         "a legal tree: wrappers over (rnrs ...), (only (chezscheme) ...), a version reference, a library importing another of the tree's, every family import defined in the tree, each library alone at its name's path, and files it passes by"
+         (holds 7 7))
 
    ;; --- the seam itself: rules (a) and (b) ---
    (list "rule-a"
-         "rule (a): a (curl ...) library importing an (http-client ...) library"
+         "rule (a): a (curl ...) library importing an (http-client ...) library, which the tree does not define: rule (h) does not name an import another rule refuses"
          (refused 1 (string-append (at "rule-a" "curl/x.sls") ": (curl x) imports (http-client y), " seam-a)))
    (list "rule-b"
          "rule (b): an (http-client ...) library importing a (curl ...) library that is not public"
          (refused 1 (string-append (at "rule-b" "http-client/z.sls")
                                    ": (http-client z) imports (curl private thing), but an (http-client ...) library may import only the public (curl ...) libraries ((curl))")))
    (list "second-library"
-         "every library form in a file is checked, the second included"
-         (refused 1 (string-append (at "second-library" "curl/two.sls")
-                                   ": (curl two-b) imports (http-client target), " seam-a)))
+         "every library form in a file is checked, the second included; rule (i) names the file, and the second library, off its name's path"
+         (refused 3
+                  (string-append (at "second-library" "curl/two-a.sls")
+                                 ": (curl two-b) imports (http-client target), " seam-a)
+                  (holds-several "second-library" "curl/two-a.sls" 2)
+                  (off-path "second-library" "curl/two-a.sls" "(curl two-b)" "curl/two-b.sls")))
+   (list "off-path"
+         "rule (i): a second library in a file, which an import elsewhere finds defined, and a library alone in a file named for another"
+         (refused 3
+                  (holds-several "off-path" "curl/a.sls" 2)
+                  (off-path "off-path" "curl/a.sls" "(curl extra)" "curl/extra.sls")
+                  (off-path "off-path" "curl/b.sls" "(curl c)" "curl/c.sls")))
+   (list "import-undefined"
+         "a (curl ...) import, through prefix, and an (http-client ...) import that no library in the tree defines; ones it defines pass"
+         (refused 2
+                  (string-append (at "import-undefined" "curl/x.sls")
+                                 ": (curl x) imports (curl private extra)" undefined-tail)
+                  (string-append (at "import-undefined" "http-client/z.sls")
+                                 ": (http-client z) imports (http-client w)" undefined-tail)))
 
    ;; --- rule (d): the families ---
    (list "neither-family"
@@ -215,7 +249,7 @@
    ;; --- rule (f): names only some libraries may import ---
    (list "ftype-listed"
          "rule (f), passing: define-ftype imported by (curl private layouts), the one library library-only-chez-names lists for it"
-         (holds 2 2))
+         (holds 3 3))
    (list "ftype-elsewhere"
          "rule (f): define-ftype imported by a library that is not listed, in either family, or by names that only look like the listed one; the listed library beside them is not named"
          (refused 4
@@ -223,7 +257,7 @@
                                  (library-only "define-ftype" "(curl private layouts)"))
                   (string-append (at "ftype-elsewhere" "curl/layouts.sls") ": (curl layouts) "
                                  (library-only "define-ftype" "(curl private layouts)"))
-                  (string-append (at "ftype-elsewhere" "curl/private/layouts-extra.sls")
+                  (string-append (at "ftype-elsewhere" "curl/private/layouts/extra.sls")
                                  ": (curl private layouts extra) "
                                  (library-only "define-ftype" "(curl private layouts)"))
                   (string-append (at "ftype-elsewhere" "http-client/h.sls") ": (http-client h) "
@@ -317,8 +351,8 @@
          (refused 1 (string-append (at "lock-directory" "curl/.#dir/bad.sls")
                                    ": (curl \\x2E;\\x23;dir bad) imports (http-client target), " seam-a)))
    (list "lock-symlink-live"
-         "a .# symbolic link that resolves to a library is no lock file: it is read"
-         (holds 2 2))
+         "a .# symbolic link that resolves to a library is no lock file: it is read, and named by rule (i), since the library it holds is not at its own name's path"
+         (refused 1 (off-path "lock-symlink-live" "curl/.#real.sls" "(curl real)" "curl/real.sls")))
    (list "dangling-link"
          "a dangling symbolic link not named .# is no lock file: it is named, for it cannot be read"
          (refused 1 (no-such-file "dangling-link" "curl/dangling.sls")))

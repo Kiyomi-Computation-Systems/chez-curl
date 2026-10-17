@@ -400,7 +400,9 @@
        (cons "curl_easy_option_by_name" (list version-call init-call))
        (cons "curl_easy_init" (list version-call init-call))
        (cons "curl_easy_header" (list version-call init-call))
-       (cons "curl_easy_cleanup" (list version-call init-call))))
+       (cons "curl_easy_cleanup" (list version-call init-call))
+       (cons "curl_easy_setopt" (list version-call init-call))
+       (cons "curl_easy_getinfo" (list version-call init-call))))
 
 ;; --- the real libcurl ---------------------------------------------------------------
 

@@ -7,32 +7,42 @@ close-out under **Close-outs**, newest first.
 ## Now
 
 - **Milestone:** M0 (brief §8), in progress.
-- **Done:** slices 1 to 4 of the [harness plan](2026-10-04-harness-plan.md) (§6):
+- **Done:** slices 1 to 5 of the [harness plan](2026-10-04-harness-plan.md) (§6):
   - slice 1, the container and the Makefile skeleton;
   - slice 2, the test harness
     ([ADR-0015](decisions/0015-test-harness-and-scheme-dependencies.md));
   - slice 3, loading (ADR-0001, ADR-0002, ADR-0003, ADR-0007, all amended), with its
     [mutation log](loading-mutation-log.md);
   - slice 4, constants and layouts (ADR-0001, ADR-0007 and ADR-0013 amended, ADR-0016
-    new), with its [mutation log](constants-mutation-log.md).
+    new), with its [mutation log](constants-mutation-log.md);
+  - slice 5, the memory gate and CI (ADR-0014 amended), with its
+    [mutation log](memory-ci-mutation-log.md).
 - **First macOS run,** 2026-10-16, on the maintainer's Mac: Apple silicon (M1, so arm64),
   Homebrew's Chez 10.4.1, Apple's libcurl 8.7.1. `make test` passes all 13 suites, after a
   fix: a bare `mktemp -d` ignored `TMPDIR` there (`traps.md`). So macOS has run on arm64;
   Linux on arm64 and macOS on amd64 have not.
-- **In progress:** slice 5, the memory gate and CI (ADR-0014, amended), on `m0/memory-gate`,
-  with its [mutation log](memory-ci-mutation-log.md):
-  - `make test-memory` and `make check-memory-gate`. Valgrind checks exactly the gate's
-    command, and a suite passes only on evidence from Valgrind's own log. The one
-    suppression is passed only in a Guix environment;
-  - `.github/workflows/ci.yml`: the `main`, `floor`, `floor-disabled-api` (two lanes),
-    `nothreads` and `memory` jobs. The memory gate runs on every run, and actions are pinned
-    to SHAs. CI states no floor: its build scripts read `packaging/floors.sexp`;
-  - `make check-nothreads`, and `check-floors` holding every workflow file;
-  - `test-collect-safe` holding every binding's types to an allowlist, and refusing a heap
-    crossing without a reviewed mark.
+- **CI has never run.** Every job of PR #8 was "not started because recent account payments
+  have failed or your spending limit needs to be increased". GitHub parsed the workflow and
+  listed all six jobs, so the file is valid. What only CI can show is still unshown: Chez
+  built from its tarball on the runner, a real `--nothreads` Chez, the suites under Ubuntu's
+  Valgrind 3.22, and the jobs' times.
+- **In progress:** slice 6, which closes M0, on `m0/variadic`, with its
+  [mutation log](variadic-mutation-log.md):
+  - the variadic bindings: `curl_easy_setopt` once per value type, and `curl_easy_getinfo`,
+    through `bind-variadic`. `test-variadic` round-trips each value through libcurl with no
+    transfer, and `make check-variadic` plants a missing `(__varargs_after 2)`, per binding
+    (ADR-0001, amended);
+  - `test-collect-safe` closed the routes round the binding macros that two reviews found,
+    open since slice 4. Every macro `src/` defines is now a row of `known-macros`
+    (ADR-0013, amended), and `check-seam`'s rules (h) and (i) keep every library `src/`
+    imports in `src/`, at its name's path (ADR-0007, amended);
+  - `make dev` and `make clean`, which the brief's M0 names, held by `check-dev` and
+    `check-clean`;
+  - the decision-time probes accounted for: which became tests, and `curl_url`'s verdicts
+    moved to M2 (the harness plan, §6; ADR-0008, amended).
 
-  Built, then reviewed three times. Every check passes in the container. CI itself has not
-  run yet.
+  Every check passes in the container. **Waiting on the maintainer's M1:** `make test` and
+  `make check-variadic` on Apple arm64, the only ABI where a missing annotation fails.
 - **Decided for M2,** by the maintainer:
   - one checked wrapper owns every copy between a bytevector and foreign memory;
   - the counters become the leak gate, since Valgrind cannot see Chez's heap (ADR-0001,
@@ -46,6 +56,42 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency` (ADR-0002's amendment).
 
 ## Close-outs
+
+### 2026-10-17 — M0 slice 5: the memory gate and CI (PR #8, `eda03a2`)
+
+- **Valgrind is the memory gate** (ADR-0014). `make test-memory` runs every suite under
+  exactly the gate's command, and a suite passes only on evidence from Valgrind's own log:
+  its command, the Chez it read, and no errors. It refuses every `VALGRIND_*` variable and
+  both `.valgrindrc` files, and holds each suite's options and suppressions to the gate's.
+- **One suppression, in the container only.** Loading libcurl there loses one block in Guix's
+  glibc. Ubuntu 24.04 loses nothing, so CI passes no suppression.
+- **`make check-memory-gate` must see it fail:** a planted overrun, a planted leak, each
+  hidden source of options, a forged log, and a run with no evidence.
+- **CI's workflow:** the `main`, `floor`, `floor-disabled-api` (two lanes), `nothreads` and
+  `memory` jobs. The gate runs on every pull request, push to `main` and tag, and actions are
+  pinned to full SHAs. CI states no floor: its build scripts read `packaging/floors.sexp`
+  (ADR-0016, amended), and `check-floors` holds every workflow file to that.
+- **`make check-nothreads`** requires every public library to refuse, by name, a Chez built
+  without threads. It fails on a threaded Chez by design, so CI runs it on a `--nothreads`
+  build.
+- **Valgrind cannot see Chez's heap.** An overrun into a bytevector passes, and so does a
+  dropped block whose address an ftype pointer held. So `test-collect-safe` now holds every
+  binding's types to an allowlist, and refuses a heap crossing without a reviewed mark. For
+  M2, the maintainer decided on one checked wrapper for bytevector copies, and the counters
+  as the leak gate.
+- **Built with subagents,** nine in all, about 3.2M tokens, the most yet.
+  - Each of three reviews found a class the last fix had left open: a deny list that
+    `VALGRIND_LIB` walked round, passes taken from empty output, a pattern variable spelt
+    like an allowed type, and a floor redefined in a job's `env:`.
+  - The lesson: brief a check as "passes only on evidence", never as "refuses X".
+- **Evidence:** the [mutation log](memory-ci-mutation-log.md), in eight parts. Every check
+  has a red run, and every mutation fails its check by name.
+- **Carried forward:**
+  - CI's first run, once billing allows. Expect it to need fixes.
+  - For M2: the checked bytevector wrapper, the counters as the leak gate, and `lock-object`
+    for every callable C holds (ADR-0013).
+  - Valgrind follows no child process, so the Chez processes `test-library-loading` spawns
+    run unchecked.
 
 ### 2026-10-16 — M0 slice 4: constants and layouts, the convention suite and the floors (PR #7, `ba42f70`)
 

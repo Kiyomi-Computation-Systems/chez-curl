@@ -2,9 +2,10 @@
 ;; Pattern variables spelt as types or a convention, in macros that are no
 ;; known wrapper: each use hands Chez another type in their place (measured:
 ;; bind-memcpy's use binds memcpy with two u8* parameters). Each is
-;; unreadable: syntax-rules, syntax-case through the known wrapper's use,
-;; with-syntax, identifier-syntax's set! clause, a callable's result, and a
-;; convention. A macro whose pattern binds no type stays readable.
+;; unreadable: syntax-rules, with-syntax, identifier-syntax's set! clause, a
+;; callable's result, and a convention. The known wrapper's use in a
+;; syntax-case template is stray, whatever its types. A macro whose pattern
+;; binds no type stays readable.
 (library (curl p)
   (export copy-in through with on-pattern perform poll)
   (import (rnrs) (only (chezscheme) foreign-procedure foreign-callable foreign-entry?))

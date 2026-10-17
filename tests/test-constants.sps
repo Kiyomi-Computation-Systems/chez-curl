@@ -108,7 +108,11 @@
     (curlh-header . "CURLH_HEADER")
     (curl-global-default . "CURL_GLOBAL_DEFAULT")
     (curle-ok . "CURLE_OK")
-    (curlversion-tenth . "CURLVERSION_TENTH")))
+    (curle-bad-function-argument . "CURLE_BAD_FUNCTION_ARGUMENT")
+    (curlversion-tenth . "CURLVERSION_TENTH")
+    (curlinfo-private . "CURLINFO_PRIVATE")
+    (curlinfo-rtsp-client-cseq . "CURLINFO_RTSP_CLIENT_CSEQ")
+    (curlot-types . (each "CURLOT_"))))
 
 ;; c-name-aliases : (Listof (Pairof Symbol String))
 ;; Each export whose row names a C constant other than the export's own
@@ -125,7 +129,8 @@
 ;; layout-rows : (Listof (Pairof Symbol String))
 ;; Each define-ftype of (curl private layouts), with the C type it lays out.
 (define layout-rows
-  '((curl-version-info-data . "curl_version_info_data")))
+  '((curl-version-info-data . "curl_version_info_data")
+    (curl-easyoption . "struct curl_easyoption")))
 
 ;; field-kinds : (Listof (Pairof Symbol (Listof Kind)))
 ;; Each Chez primitive type a layout field may have, with the kinds of C
