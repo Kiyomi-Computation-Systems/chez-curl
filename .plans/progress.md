@@ -6,8 +6,8 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **Milestone:** M0 (brief §8), in progress.
-- **Done:** slices 1 to 5 of the [harness plan](2026-10-04-harness-plan.md) (§6):
+- **Milestone:** M0 (brief §8) is built. M1, the test instrument (brief §7), is next.
+- **Done:** slices 1 to 6 of the [harness plan](2026-10-04-harness-plan.md) (§6):
   - slice 1, the container and the Makefile skeleton;
   - slice 2, the test harness
     ([ADR-0015](decisions/0015-test-harness-and-scheme-dependencies.md));
@@ -16,33 +16,24 @@ close-out under **Close-outs**, newest first.
   - slice 4, constants and layouts (ADR-0001, ADR-0007 and ADR-0013 amended, ADR-0016
     new), with its [mutation log](constants-mutation-log.md);
   - slice 5, the memory gate and CI (ADR-0014 amended), with its
-    [mutation log](memory-ci-mutation-log.md).
+    [mutation log](memory-ci-mutation-log.md);
+  - slice 6, which closes M0: the variadic bindings, the binding-macro routes closed,
+    `make dev` and `make clean` (ADR-0001, ADR-0007, ADR-0008 and ADR-0013 amended), with
+    its [mutation log](variadic-mutation-log.md).
+- **M0's one open item: the Apple arm64 run.** `make test` and `make check-variadic` on the
+  maintainer's M1, the only ABI where a missing `(__varargs_after 2)` fails. The Mac was out
+  of reach when slice 6 merged, so the maintainer made the run a gate: M2 binds no setopt or
+  getinfo option until it passes and ADR-0001 records it. M1 binds no variadic entry point.
 - **First macOS run,** 2026-10-16, on the maintainer's Mac: Apple silicon (M1, so arm64),
   Homebrew's Chez 10.4.1, Apple's libcurl 8.7.1. `make test` passes all 13 suites, after a
   fix: a bare `mktemp -d` ignored `TMPDIR` there (`traps.md`). So macOS has run on arm64;
-  Linux on arm64 and macOS on amd64 have not.
+  Linux on arm64 and macOS on amd64 have not. The two suites added since,
+  `test-check-nothreads` and `test-variadic`, have not run there.
 - **CI has never run.** Every job of PR #8 was "not started because recent account payments
   have failed or your spending limit needs to be increased". GitHub parsed the workflow and
   listed all six jobs, so the file is valid. What only CI can show is still unshown: Chez
   built from its tarball on the runner, a real `--nothreads` Chez, the suites under Ubuntu's
-  Valgrind 3.22, and the jobs' times.
-- **In progress:** slice 6, which closes M0, on `m0/variadic`, with its
-  [mutation log](variadic-mutation-log.md):
-  - the variadic bindings: `curl_easy_setopt` once per value type, and `curl_easy_getinfo`,
-    through `bind-variadic`. `test-variadic` round-trips each value through libcurl with no
-    transfer, and `make check-variadic` plants a missing `(__varargs_after 2)`, per binding
-    (ADR-0001, amended);
-  - `test-collect-safe` closed the routes round the binding macros that two reviews found,
-    open since slice 4. Every macro `src/` defines is now a row of `known-macros`
-    (ADR-0013, amended), and `check-seam`'s rules (h) and (i) keep every library `src/`
-    imports in `src/`, at its name's path (ADR-0007, amended);
-  - `make dev` and `make clean`, which the brief's M0 names, held by `check-dev` and
-    `check-clean`;
-  - the decision-time probes accounted for: which became tests, and `curl_url`'s verdicts
-    moved to M2 (the harness plan, §6; ADR-0008, amended).
-
-  Every check passes in the container. **Waiting on the maintainer's M1:** `make test` and
-  `make check-variadic` on Apple arm64, the only ABI where a missing annotation fails.
+  Valgrind 3.22, the floor lane at 7.85.0, and the jobs' times.
 - **Decided for M2,** by the maintainer:
   - one checked wrapper owns every copy between a bytevector and foreign memory;
   - the counters become the leak gate, since Valgrind cannot see Chez's heap (ADR-0001,

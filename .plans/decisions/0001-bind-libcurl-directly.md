@@ -316,6 +316,11 @@ nothing else.
 - **On Apple arm64: pending.** No machine here is Apple arm64. Until the maintainer's M1 runs
   `make test` and `make check-variadic`, nothing shows that the annotation is what makes the
   values arrive there, nor that `test-variadic` sees them fail to.
+- **That run gates M2,** as the maintainer decided on 2026-10-17, when the Mac was out of
+  reach and slice 6 merged without it. M1 binds no variadic entry point, so it goes ahead.
+  M2 binds no setopt or getinfo option until `make check-variadic` has passed on Apple
+  arm64, with each arm64 step failing on its planted binding, and the result is recorded
+  here. A failure there is a finding against this decision, settled before M2 starts.
 - **Not checked yet, and carried forward:**
   - A binding's parameter types against libcurl's prototypes. With getinfo's destination
     typed `int`, `test-variadic` passed, since the slot `foreign-alloc` gave lies below
