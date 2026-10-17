@@ -4,9 +4,10 @@
 #   scripts/guix-env make <target>
 
 # The Chez binary. In the container, scripts/guix-env-enter exports the
-# profile's real `scheme` binary. Exported, so that a suite which spawns
-# Chez (tests/test-library-loading.sps) spawns this one.
-CHEZ ?= scheme
+# profile's real `scheme` binary. Elsewhere it is `scheme` on PATH, or else
+# `chez`, the name Homebrew installs it under on macOS. Exported, so that a
+# suite which spawns Chez (tests/test-library-loading.sps) spawns this one.
+CHEZ ?= $(or $(if $(shell command -v scheme 2>/dev/null),scheme),$(if $(shell command -v chez 2>/dev/null),chez),scheme)
 export CHEZ
 
 # The make target to name in a missing-tool hint (scripts/require-tools):

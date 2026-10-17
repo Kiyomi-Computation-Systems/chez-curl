@@ -198,7 +198,9 @@
         (error 'remove-temp-directory "could not remove the directory" dir))))
 
   ;; make-temp-directory : -> String
-  ;; A fresh directory from `mktemp -d`. mktemp prints the path and a
+  ;; A fresh directory from `mktemp -d`, given a template under $TMPDIR, or
+  ;; /tmp: a bare `mktemp -d` honours TMPDIR on Linux and ignores it on
+  ;; macOS, while both read a template alike. mktemp prints the path and a
   ;; newline. The path is that line, whole: $TMPDIR may hold a space, and a
   ;; path cut at whitespace names another directory, which a removal would
   ;; then destroy. So the answer must be exactly one line, an absolute path
@@ -206,12 +208,22 @@
   ;; line, a missing directory, a failure) is refused with a raise, and
   ;; nothing is removed.
   (define (make-temp-directory)
-    (let* ((made (capture-command '("mktemp" "-d")))
+    (let* ((made (capture-command (list "mktemp" "-d" (temp-template))))
            (dir (single-line (cadr made))))
       (if (and (= (car made) 0) dir (absolute-path? dir) (file-directory? dir))
           dir
           (error 'make-temp-directory
                  "mktemp -d did not answer one absolute path to a directory" made))))
+
+  ;; temp-template : -> String
+  ;; mktemp's template: the scratch directory, without the slash macOS's
+  ;; TMPDIR ends with, then curl-testing.XXXXXX.
+  (define (temp-template)
+    (let loop ((dir (scratch-directory)))
+      (let ((n (string-length dir)))
+        (if (and (> n 0) (char=? (string-ref dir (- n 1)) #\/))
+            (loop (substring dir 0 (- n 1)))
+            (string-append dir "/curl-testing.XXXXXX")))))
 
   ;; single-line : String -> (U String #f)
   ;; TEXT without its one final newline, when that leaves a line: not empty,
