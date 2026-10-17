@@ -1,0 +1,7 @@
+* A fixture README, with no floors file beside it
+
+** Requirements
+
+- Chez Scheme 10.9.1 or later, built with threads
+- libcurl 8.1.2 or later, built with TLS
+- Node.js 22.3 or later, for the tests

@@ -7,26 +7,70 @@ close-out under **Close-outs**, newest first.
 ## Now
 
 - **Milestone:** M0 (brief §8), in progress.
-- **Done:** slices 1 to 3 of the [harness plan](2026-10-04-harness-plan.md) (§6):
+- **Done:** slices 1 to 4 of the [harness plan](2026-10-04-harness-plan.md) (§6):
   - slice 1, the container and the Makefile skeleton;
   - slice 2, the test harness
     ([ADR-0015](decisions/0015-test-harness-and-scheme-dependencies.md));
   - slice 3, loading (ADR-0001, ADR-0002, ADR-0003, ADR-0007, all amended), with its
-    [mutation log](loading-mutation-log.md). Its close-out follows the merge.
-- **Next slice:** slice 4, constants and layouts (ADR-0001):
-  - `check-constants`, the C program compiled at test time, which also checks
-    `curl_version_info_data`'s offsets;
-  - the `__collect_safe` attribute suite;
-  - the floors file and `check-floors`.
+    [mutation log](loading-mutation-log.md);
+  - slice 4, constants and layouts (ADR-0001, ADR-0007 and ADR-0013 amended, ADR-0016
+    new), with its [mutation log](constants-mutation-log.md). Its close-out follows the
+    merge.
+- **First macOS run,** 2026-10-16, on the maintainer's Mac: Apple silicon (M1, so arm64),
+  Homebrew's Chez 10.4.1, Apple's libcurl 8.7.1. `make test` passes all 13 suites, after a
+  fix: a bare `mktemp -d` ignored `TMPDIR` there (`traps.md`). So macOS has run on arm64;
+  Linux on arm64 and macOS on amd64 have not.
+- **Next slice:** slice 5, the memory gate and CI (ADR-0014):
+  - `test-memory` and `check-memory-gate`;
+  - `.github/workflows/ci.yml` with the harness plan's §4 lanes. The floor lane points both
+    `C_INCLUDE_PATH` and `CHEZ_CURL_LIBCURL` at curl 7.85.0;
+  - CI's workflow joins what `check-floors` holds (ADR-0016).
 - **Waiting on a decision:** loading GnuTLS's libcurl leaks a block in p11-kit
   (`traps.md`), so ADR-0014's gate fails on any suite that loads it, and ADR-0014 allows no
-  suppression file. Settle it before slice 5 builds the gate.
+  suppression file. Since slice 4, `test-constants` loads it too. Settle it before slice 5
+  builds the gate.
 - **Waiting on evidence:** ADR-0013 (`__collect_safe`) stays Proposed until spike E1
   at M3. Until then its rules bind as written.
 - **Open for M3:** a first reference to `(curl)` from a second thread, made while the load
   runs, raises `cyclic dependency` (ADR-0002's amendment).
 
 ## Close-outs
+
+### 2026-10-16 — M0 slice 3: loading libcurl, `(curl)` and the seam check (PR #6, `bfc3aa6`)
+
+- **Loads libcurl as ADR-0002 says.** Discovery is a pure function of the environment: the
+  override, or one candidate list per world. `native.sls` then loads once, reads
+  `curl_version_info` first, checks the floor and SSL, calls `curl_global_init` once,
+  binds every entry point after `foreign-entry?` finds it, and runs the two API probes.
+- **Refusals stick.** Each is one of six reason symbols and carries the library's report
+  once its version is read. `(curl private load-state)` records the first failure and raises
+  it again at every later reference, so libcurl is never loaded twice.
+- **`(curl)` reports what it loaded:** the path, its source, the version, the features and
+  the TLS backend. `make build` is the preflight that prints it.
+- **Refuses an unusable Chez by name:** one older than 10.4.0, a 10.4.0 pre-release, or one
+  without threads, at expansion.
+- **`check-seam` guards ADR-0007's boundary with allowlists,** and `make test` runs it.
+  Every `src/` library is in one of the two families, and file endings Chez would load but
+  the check can't read are refused by name.
+- **Tests without the real thing:** decoy libcurls compiled at test time, a C oracle that
+  reads the same library through `dlopen`, and an in-process suite for `native.sls`.
+- **Built with subagents,** eight in all, about 2.8M tokens: the pure core and the native
+  layer on Opus, `check-seam` on Sonnet in its own worktree, two reviews on Opus and three
+  fix rounds.
+  - The first review found a flaw in the brief itself: its import-order rule contradicted
+    ADR-0007. It also found refusals that didn't stick, and tests that would fail on CI.
+  - The second review found fixes that blocked only the reviewer's examples, a cleanup that
+    could remove the wrong directory, and rules tested only in scratch.
+- **Evidence:** the [mutation log](loading-mutation-log.md), in six parts. Every check has a
+  red run, and every mutation fails its check by name.
+- **Carried forward:**
+  - Loading GnuTLS's libcurl leaks a block in p11-kit, which fails ADR-0014's gate. Decide
+    before slice 5.
+  - At M3, a first reference to `(curl)` from a second thread, while the load runs, raises
+    `cyclic dependency`.
+  - CI must run `make build`, which `make test` doesn't. The disabled-API lane should run the
+    preflight and expect `missing-api`, rather than the full suite.
+  - Nothing has run on macOS or arm64 yet.
 
 ### 2026-10-04 — M0 slice 2: the test harness (PR #5, `9bacc6d`)
 

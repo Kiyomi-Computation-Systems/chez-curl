@@ -15,6 +15,11 @@ provisional. They bind until that record is accepted or amended.
 - **Anything newer than the floor is optional, one feature at a time.** Options are
   looked up by name. Functions are bound only if `foreign-entry?` finds them (ADR-0003).
 - **Node:** 20 or later, for the test origin only (ADR-0005).
+- **The floors have one source, `packaging/floors.sexp`.** `make check-floors`, which
+  `make test` runs, holds the list lines of README.org's `** Requirements` to it. `test-verify` and
+  `test-require-threaded` hold the code to it by behaviour. To change a floor, edit the file,
+  the README, `libcurl-floor` or `minimum`, and the literal rows that name the old floor
+  (ADR-0016).
 
 ## Native code
 
@@ -24,11 +29,33 @@ provisional. They bind until that record is accepted or amended.
   `curl_share_setopt` (ADR-0001).
 - **`CURLOPT_*` ids and types come from the loaded library,** through
   `curl_easy_option_by_name`. They are never written in Scheme (ADR-0001).
-- **Every other constant is a Scheme definition.** A C program compiled at test time
-  checks each one against libcurl's headers. Missing headers fail that test; they never
-  skip it (ADR-0001).
-- **Structs Scheme reads are `define-ftype`s,** checked by the same program with `sizeof`
-  and `offsetof` (ADR-0001).
+- **Every other constant is a Scheme definition** in `(curl private constants)`. A C program
+  compiled at test time checks each one against libcurl's headers. Missing headers fail
+  that test; they never skip it. A new export needs a row in `tests/test-constants.sps`,
+  or that suite fails. Its C name is the export's name, upcased, with `-` as `_`, unless
+  `c-name-aliases` names another, which is a reviewed change. A constant written anywhere
+  else is checked by nothing (ADR-0001, amended).
+- **Structs Scheme reads are `define-ftype`s in `(curl private layouts)`,** each a struct of
+  primitive-typed fields. The same program checks every field's offset, size and kind. A
+  new struct needs a row in the same suite. The headers it compiles against must be no
+  newer than the library chez-curl loads (ADR-0001, amended).
+- **`define-ftype` is used only in `(curl private layouts)`,** as struct forms alone. A
+  function ftype would bind an entry point, or make a callable, that no other check sees.
+  - `check-seam` lets only layouts import it (rule (f)). No library may re-export a name it
+    imports from `(chezscheme)` (rule (g)).
+  - `test-constants` holds layouts to an exact shape: its imports, struct `define-ftype`
+    forms alone, and exports of exactly their names.
+
+  (ADR-0007, ADR-0013, both amended)
+- **Every `foreign-procedure` and `foreign-callable` has a row in
+  `tests/foreign-conventions.sls`'s table,** and `test-collect-safe` checks its conventions
+  against it.
+  - An entry is a string literal, given directly or to a known wrapper (today
+    `bind-required`).
+  - A callable is the whole right-hand side of `(define name ...)`.
+  - A new binding macro joins `known-wrappers`.
+
+  (ADR-0013, amended)
 - **Bulk copies use libc's `memcpy`,** bound directly as a plain call, never
   `__collect_safe` (ADR-0001).
 - **`curl_global_init` is called exactly once,** from the library body (ADR-0003).
@@ -121,6 +148,8 @@ provisional. They bind until that record is accepted or amended.
   - A library imports only from allowlists: `(rnrs ...)` except `(rnrs eval)`, `(only
     (chezscheme) name ...)` with names from `allowed-chez-names`, and the two families.
     Adding to a list is a reviewed change.
+  - A name in `library-only-chez-names` is imported only by the libraries listed with it:
+    `define-ftype` by `(curl private layouts)` alone.
   - No file under `src/` may be one Chez loads as a library that the check doesn't read.
 - **Every `src/` library imports the refusal first:** a `(curl ...)` library imports
   `(curl private require-threaded)`, and an `(http-client ...)` library imports `(curl)`

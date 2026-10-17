@@ -4,9 +4,10 @@
 #   scripts/guix-env make <target>
 
 # The Chez binary. In the container, scripts/guix-env-enter exports the
-# profile's real `scheme` binary. Exported, so that a suite which spawns
-# Chez (tests/test-library-loading.sps) spawns this one.
-CHEZ ?= scheme
+# profile's real `scheme` binary. Elsewhere it is `scheme` on PATH, or else
+# `chez`, the name Homebrew installs it under on macOS. Exported, so that a
+# suite which spawns Chez (tests/test-library-loading.sps) spawns this one.
+CHEZ ?= $(or $(if $(shell command -v scheme 2>/dev/null),scheme),$(if $(shell command -v chez 2>/dev/null),chez),scheme)
 export CHEZ
 
 # The make target to name in a missing-tool hint (scripts/require-tools):
@@ -38,7 +39,7 @@ TIMEOUT ?= $(or $(shell command -v timeout 2>/dev/null),$(shell command -v gtime
 
 # One physical line: check-help reads it with awk, and fails if it ends in
 # a backslash.
-.PHONY: help check-help check-guix check-guix-inside deps check-pins build test check-suites check-seam check-test-fails
+.PHONY: help check-help check-guix check-guix-inside deps check-pins build test check-suites check-seam check-floors check-test-fails
 
 .DEFAULT_GOAL := help
 
@@ -185,8 +186,9 @@ build: ## Load libcurl as (curl) would and name it; fail with the reason when it
 # failed or hung, or if none matched. --foreground keeps a suite in make's
 # process group, so Ctrl-C at a terminal reaches it at once, and does not
 # wait out the timeout. `make check-test-fails` proves the loop fails. The
-# checks come first: check-help, check-suites and check-seam each stop it.
-test: deps check-help check-suites check-seam ## Run every tests/test-*.sps under timeout; fail if one fails or hangs, or none exists
+# checks come first: check-help, check-suites, check-seam and check-floors
+# each stop it.
+test: deps check-help check-suites check-seam check-floors ## Run every tests/test-*.sps under timeout; fail if one fails or hangs, or none exists
 	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ)
 	@if [ -z "$(SUITES)" ]; then \
 	  echo "test: no suites: nothing matches tests/test-*.sps" >&2; \
@@ -223,7 +225,10 @@ check-suites: deps ## Fail unless every tests/test-*.sps ends with the shared ex
 # not public: only (curl) is (ADR-0007, tests/check-seam.sps). A library may
 # import only allowlists: the (rnrs ...) libraries but (rnrs eval), (only
 # (chezscheme) name ...) with each name in allowed-chez-names, and (curl ...)
-# and (http-client ...) libraries. Any other import fails, (scheme) and
+# and (http-client ...) libraries. A name in library-only-chez-names, at first
+# define-ftype, may be imported only by the libraries listed with it, at first
+# (curl private layouts), and no library may export a name it imports from
+# (chezscheme). Any other import fails, (scheme) and
 # (chezscheme csv7) included, as does a library in neither family, a file Chez
 # could load as a library but this check does not read (.ss, .scm, .sch, .so,
 # ...), no library under src/, and a file it cannot read as data. It skips a
@@ -234,10 +239,23 @@ check-seam: ## Fail unless the imports keep (curl ...) and (http-client ...) apa
 	@scripts/require-tools "$(GOAL)" $(CHEZ)
 	@$(CHEZ) --program tests/check-seam.sps src
 
-# Plants bad suites, and a bad import across the seam, one at a time, in a copy
-# of the tree, and requires make test to fail on each by name.
-# tests/check-test-fails.sh lists the plants. The copy has no .git, so nothing
-# in it runs git.
-check-test-fails: ## Plant bad suites, none at all and a bad import, in a copy; make test must fail on each, by name
+# packaging/floors.sexp is the one file that writes the Chez, libcurl and Node
+# floors. This reads it and README.org as data and fails, naming each problem,
+# when the floors file is not exactly the datum (floors) describes, or when
+# README.org's "** Requirements" section does not hold, as one list, the three
+# lines the file calls for (tests/floors.sls, tests/check-floors.sps).
+# tests/test-check-floors.sps holds each rule on texts and fixtures. The
+# Scheme code that enforces a floor is held to the file by tests/test-verify.sps
+# and tests/test-require-threaded.sps, which read it. It imports only (rnrs),
+# a few of Chez's own bindings and (floors), so it needs no deps.
+check-floors: ## Fail unless README.org states the floors in packaging/floors.sexp
+	@scripts/require-tools "$(GOAL)" $(CHEZ)
+	@$(CHEZ) --libdirs tests --program tests/check-floors.sps packaging/floors.sexp README.org
+
+# Plants bad suites, a bad import across the seam and a README that disagrees
+# with the floors file, one at a time, in a copy of the tree, and requires
+# make test to fail on each by name. tests/check-test-fails.sh lists the
+# plants. The copy has no .git, so nothing in it runs git.
+check-test-fails: ## Plant bad suites, none at all, a bad import and a stale README, in a copy; make test must fail on each, by name
 	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ)
 	@MAKE='$(MAKE)' TIMEOUT='$(TIMEOUT)' CHEZ='$(CHEZ)' sh tests/check-test-fails.sh

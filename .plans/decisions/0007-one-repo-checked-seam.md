@@ -1,7 +1,8 @@
 # ADR-0007: One repository, two libraries, and a seam a check enforces
 
 - **Status:** Accepted; amended 2026-10-16 with the routes round the seam that slice 3
-  closed ([amendment](#amendment-2026-10-16-the-routes-round-the-seam))
+  closed ([amendment](#amendment-2026-10-16-the-routes-round-the-seam)), and with slice 4's
+  one-library names ([amendment](#amendment-2026-10-16-some-names-are-for-one-library-only-m0-slice-4))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1 layout
 - **Settles:** D1 (brief §10)
@@ -105,3 +106,49 @@ the refusal first.
 
 Endings are matched case-sensitively, which a case-insensitive macOS file system may not
 honour.
+
+## Amendment, 2026-10-16: some names are for one library only (M0 slice 4)
+
+- **Rule (f): a name in `library-only-chez-names` may be imported from `(chezscheme)` only
+  by the libraries listed with it.** At first that is `define-ftype`, for
+  `(curl private layouts)` alone. Any other library that imports it is named.
+- **Why:** a function ftype binds a C entry point, or makes a callable, without
+  `foreign-procedure` or `foreign-callable`. Slice 4's review bound `curl_easy_perform`
+  this way in `native.sls`, past the conventions table (ADR-0013) and the load's
+  `foreign-entry?` check, with every check green. `define-ftype` is the only way to a
+  function ftype: an anonymous `(function ...)` in `make-ftype-pointer` or `ftype-ref` is
+  invalid syntax, so those two stay open to every library.
+- **Rule (f) alone was not enough.** The review of the fix reached `define-ftype` from
+  another library three ways, with `make test` green:
+  - layouts re-exported it;
+  - a macro in layouts took it as an argument, so no form was headed by the name;
+  - layouts exported a macro that expands to it.
+
+  Two more checks close those routes.
+- **Rule (g): no library exports a name it imports from `(chezscheme)`,** either plainly or
+  as the internal name of a `rename` spec. Rule (c) already refuses any wrapper around
+  `(only (chezscheme) ...)`, so the local names are the listed ones. An export spec the
+  check cannot read fails.
+- **`test-constants` holds `(curl private layouts)` to an exact shape:**
+  - the file is that one library;
+  - its imports are exactly the refusal, `(rnrs)` and `(only (chezscheme) define-ftype)`;
+  - its body is `(define-ftype NAME (struct ...))` forms alone, with no macro, `begin` or
+    other form;
+  - it exports exactly those names;
+  - the symbol `define-ftype` appears nowhere else in the file, quoted or not.
+
+  It also reads this check's list as data, and requires the `define-ftype` entry to be
+  exactly `(curl private layouts)`. So widening rule (f) to another library fails until
+  that library is shape-checked too.
+- **Rule (g) sees bindings, not values or macros.** A library could still hand out a Chez
+  procedure through `(define dl load-shared-object)`, or a keyword through an exported
+  macro. For `define-ftype` that route is shut, since layouts may hold no code. A future
+  library-only name needs the same pattern: its libraries held to a shape by a suite that
+  reads their rule (f) entry.
+- **The lists are exact, like the others.** `tests/test-check-seam.sps` requires each name in
+  `library-only-chez-names` to be in `allowed-chez-names`, and each entry's libraries to be
+  exactly the libraries under `src/` that import the name. Adding a name or a library is a
+  reviewed change.
+- **The rule keys on a library's name, not its file.** A second library form named
+  `(curl private layouts)`, in another file, would pass `check-seam`. Only the exactness
+  test notices it, because it counts the importers.

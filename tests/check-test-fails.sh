@@ -16,6 +16,8 @@
 #                it, exit 255, unexplained)    no suite runs
 #   seam         a (curl ...) library that     check-seam names the import,
 #                imports (http-client ...)     and no suite runs
+#   floors       README's Chez line says       check-floors names the line,
+#                10.3.0, not the floor         and no suite runs
 #   no-suites    every suite deleted           make test refuses to pass
 #
 # The copy holds no real suite, so no slow one can run into the 5 s
@@ -28,13 +30,16 @@
 # A case requires a non-zero exit, and compares the lines starting
 # "check-suites: " or "test: " as a whole: check-suites' verdict, the plant's
 # outcome, the after-suite's pass line, and the count. The seam case also
-# compares the lines starting "check-seam: ".
+# compares the lines starting "check-seam: ", and the floors case those
+# starting "check-floors: ".
 #
 # The copy is the working tree without .git and build/, and with the
 # chez-srfi checkout, so make deps works there and nothing is fetched.
 # Nothing in the copy runs git. make deps relinks build/ in the copy. Its
 # src/ is the script's own, two libraries with legal imports, whatever the
-# tree holds, so check-seam passes in every case but seam.
+# tree holds, so check-seam passes in every case but seam. README.org and
+# packaging/floors.sexp are the tree's own, and agree, so check-floors passes
+# in every case but floors.
 #
 # `make check-test-fails` passes MAKE and TIMEOUT, the tools it found. Run
 # directly, the script takes make and timeout from PATH.
@@ -292,6 +297,26 @@ run_case "seam: check-seam names a (curl ...) library that imports (http-client 
      echo 'check-seam: FAILED (problems: 1)')" \
   '^(check-suites|check-seam|test): '
 rm -rf "$copy/src/curl"
+
+# The floors case: the copy's README states an older Chez than the floors
+# file does. The file's floor is read from the file, so this script is no
+# fourth place that writes it. check-floors passes before and after: the
+# README is restored.
+chez_floor=$(sed -n 's/^ *((chez "\([0-9.]*\)").*$/\1/p' "$root/packaging/floors.sexp")
+case "$chez_floor" in
+  "" | *[!0-9.]*) bad "floors: could not read the Chez floor from packaging/floors.sexp"; chez_floor=0.0.0 ;;
+esac
+sed 's/^- Chez Scheme .* or later, built with threads$/- Chez Scheme 10.3.0 or later, built with threads/' \
+  "$root/README.org" >"$copy/README.org"
+if cmp -s "$root/README.org" "$copy/README.org"; then
+  bad "floors: the plant did not change README.org, so it plants nothing"
+fi
+run_case "floors: check-floors names a README that states another Chez floor, and no suite runs" \
+  "$(checked 1
+     echo "check-floors: README.org: list line 1 under \"** Requirements\" is \"- Chez Scheme 10.3.0 or later, built with threads\", but packaging/floors.sexp gives \"- Chez Scheme $chez_floor or later, built with threads\""
+     echo 'check-floors: FAILED (problems: 1)')" \
+  '^(check-suites|check-floors|test): '
+cp "$root/README.org" "$copy/README.org"
 
 rm -f "$copy"/tests/test-*.sps
 run_case "no-suites: make test refuses to pass with no suite to run" \

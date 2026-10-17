@@ -20,7 +20,7 @@
 # the GnuTLS lane's libcurl (from M2). Nor git, which `make check-pins` needs:
 # the runner checks the repository out with its own.
 
-# --- to build Chez Scheme 10.4.0 from the release tarball --------------------
+# --- to build Chez Scheme at the floor in packaging/floors.sexp --------------
 # CI builds Chez itself because noble's chezscheme is 9.5.8, below the floor
 # (ADR-0001). With ./configure --disable-x11 --disable-curses, Chez's BUILDING
 # file asks for nothing but a C compiler and make, so there is no libx11-dev

@@ -49,7 +49,7 @@
   (export loaded-libcurl)
   (import (curl private require-threaded)
           (rnrs)
-          (only (chezscheme) define-ftype ftype-ref make-ftype-pointer
+          (only (chezscheme) ftype-ref make-ftype-pointer
                 foreign-procedure foreign-entry? load-shared-object
                 foreign-alloc foreign-free foreign-ref foreign-sizeof
                 format format-condition? display-condition
@@ -58,6 +58,7 @@
           (curl private libcurl-info)
           (curl private conditions)
           (curl private constants)
+          (curl private layouts)
           (curl private discovery)
           (curl private verify))
 
@@ -123,41 +124,6 @@
              (do ((i 0 (+ i 1))) ((= i n))
                (bytevector-u8-set! bytes i (foreign-ref 'unsigned-8 address i)))
              (utf8->string bytes)))))
-
-  ;; curl_version_info_data, curl/curl.h, through the last field
-  ;; CURLVERSION_TENTH fills, gsasl_version: the age asked for at the floor
-  ;; (constants.sls). C's padding and alignment apply, as in a C struct.
-  ;; Slice 4 checks the offsets against the headers (ADR-0001, decision 4).
-  ;; features is an int in C. It is read as unsigned, the same size: a bit
-  ;; 31 in a later libcurl would make an int negative, and feature-names
-  ;; takes a natural number.
-  (define-ftype curl-version-info-data
-    (struct
-      (age int)
-      (version uptr)
-      (version-num unsigned-int)
-      (host uptr)
-      (features unsigned-int)
-      (ssl-version uptr)
-      (ssl-version-num long)
-      (libz-version uptr)
-      (protocols uptr)
-      (ares uptr)
-      (ares-num int)
-      (libidn uptr)
-      (iconv-ver-num int)
-      (libssh-version uptr)
-      (brotli-ver-num unsigned-int)
-      (brotli-version uptr)
-      (nghttp2-ver-num unsigned-int)
-      (nghttp2-version uptr)
-      (quic-version uptr)
-      (cainfo uptr)
-      (capath uptr)
-      (zstd-ver-num unsigned-int)
-      (zstd-version uptr)
-      (hyper-version uptr)
-      (gsasl-version uptr)))
 
   ;; required-entry : String (U Libcurl-Info #f) -> Void
   ;; Raises missing-api, naming NAME and carrying LIBRARY, unless the loaded

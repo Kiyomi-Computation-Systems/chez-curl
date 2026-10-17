@@ -8,6 +8,12 @@ An HTTP Client for Chez Scheme built on libcurl.
 ✨ *AI Disclosure:* LLMs are used extensively in the planning and development of this project.
 #+end_quote
 
+** Requirements
+
+- Chez Scheme 10.4.0 or later, built with threads
+- libcurl 7.85.0 or later, built with TLS
+- Node.js 20 or later, for the tests
+
 ** Status
 
 ** Quick start

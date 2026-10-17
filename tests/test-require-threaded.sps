@@ -23,6 +23,15 @@
 ;;; pre-release comes before the release it is numbered for, so
 ;;; 10.4.0-pre-release.N is below the floor and 10.5.0-pre-release.N is not.
 ;;;
+;;; The floor is held to packaging/floors.sexp, the one file that writes it.
+;;; Each expected message takes the floor's text from that file, and further
+;;; rows are built from it: Chez at the floor loads, a pre-release of the
+;;; floor itself is refused naming it, and the versions on each side of the
+;;; floor load or are refused. A file and a refusal that disagree fail here,
+;;; by name. The literal rows stay: they name 10.4.0 and its neighbours, so
+;;; a floor changed in both places at once is a decision a reader of this
+;;; suite sees.
+;;;
 ;;; make test runs every suite from the repository root, where src/ is. An
 ;;; empty or missing src/ fails here by name, never passes for want of rows.
 ;;;
@@ -31,6 +40,7 @@
 (import (rnrs)
         (srfi :64)
         (curl-testing)
+        (floors)
         (only (chezscheme) directory-list file-directory? file-symbolic-link? eval
               interaction-environment))
 
@@ -53,6 +63,22 @@
         (newline)))))
 
 (define refusal-library '(curl private require-threaded))
+
+;; The Chez floor of packaging/floors.sexp, computed under a guard: a raise at
+;; top level would end the suite with no test named, and one in an expected
+;; expression would escape SRFI-64. Each is a symbol when the file cannot give
+;; the floor, so the rows built from it fail by name.
+
+;; chez-floor : (U (List Natural Natural Natural) Symbol)
+(define chez-floor
+  (guard (e (#t 'floors-file-unreadable))
+    (let ((parts (floor-numbers (read-floors) 'chez)))
+      (if (= (length parts) 3) parts 'not-three-numbers))))
+
+;; chez-floor-text : (U String Symbol)
+(define chez-floor-text
+  (guard (e (#t 'floors-file-unreadable))
+    (floor-text (read-floors) 'chez)))
 
 ;; --- reading the tree -----------------------------------------------------------
 
@@ -434,13 +460,19 @@
   (expand-under (and refusal-form (as-nonthreaded refusal-form))
                 '(require-threaded as-nonthreaded)))
 
-;; The floor is Chez 10.4.0, threaded (ADR-0001). Each expected message is the
-;; whole text, naming the floor and the version that was refused.
-;; refused-below-floor : String -> (List 'refused Symbol String)
-;; What expand-refusal answers for a Chez whose version reads FOUND.
+;; The floor is Chez 10.4.0, threaded (ADR-0001), written in
+;; packaging/floors.sexp. Each expected message is the whole text, naming the
+;; floor, as that file writes it, and the version that was refused.
+;; refused-below-floor : String -> (List 'refused Symbol (U String Symbol))
+;; What expand-refusal answers for a Chez whose version reads FOUND. The
+;; message is a symbol when the floors file cannot give the floor: the row
+;; fails by name, and nothing raises in an expected expression.
 (define (refused-below-floor found)
   (list 'refused 'chez-curl
-        (string-append "chez-curl needs Chez Scheme 10.4.0 or later, and this one is " found)))
+        (if (and (string? chez-floor-text) (string? found))
+            (string-append "chez-curl needs Chez Scheme " chez-floor-text
+                           " or later, and this one is " found)
+            'floors-file-unreadable)))
 
 (test-equal "the refusal asks (scheme-version-number)"
   'asks
@@ -457,7 +489,7 @@
  (lambda (row)
    (let ((version (car row)) (pre (cadr row)) (said (caddr row)))
      (test-equal (string-append "where Chez is " (version-text version pre)
-                                ", the refusal raises its message naming 10.4.0")
+                                ", the refusal raises its message naming the floor")
        (refused-below-floor said)
        (expand-refusal (and refusal-form (as-version refusal-form version pre))
                        '(require-threaded below-floor)))))
@@ -487,6 +519,74 @@
    ((10 4 1) 1)
    ((10 5 0) 1)
    ((11 0 0) 3)))
+
+;; --- the floor of packaging/floors.sexp -----------------------------------------------
+;; These rows take the floor from the file, so they move with it, and a refusal
+;; that still holds another floor fails them. The rows above name 10.4.0.
+
+;; dotted : (Listof Natural) -> String
+(define (dotted version)
+  (let loop ((rest (cdr version)) (text (number->string (car version))))
+    (if (null? rest)
+        text
+        (loop (cdr rest) (string-append text "." (number->string (car rest)))))))
+
+;; floor-after : Natural -> (U (Listof Natural) Symbol)
+;; The floor with its number at INDEX one higher and the numbers after it
+;; zero: the nearest version after the floor that changes that number. A
+;; symbol when the floors file is unreadable.
+(define (floor-after index)
+  (if (list? chez-floor)
+      (let loop ((rest chez-floor) (i 0))
+        (cond ((null? rest) '())
+              ((< i index) (cons (car rest) (loop (cdr rest) (+ i 1))))
+              ((= i index) (cons (+ (car rest) 1) (loop (cdr rest) (+ i 1))))
+              (else (cons 0 (loop (cdr rest) (+ i 1))))))
+      'floors-file-unreadable))
+
+;; floor-major-below : (U (Listof Natural) Symbol)
+;; The floor with its major number one lower, and the rest as it is. A symbol
+;; when the floors file is unreadable, or the major number is zero.
+(define floor-major-below
+  (if (and (list? chez-floor) (> (car chez-floor) 0))
+      (cons (- (car chez-floor) 1) (cdr chez-floor))
+      'no-version-below))
+
+;; expand-at : (U (Listof Natural) Symbol) (U Natural #f) (Listof Symbol) -> Any
+;; expand-refusal for a Chez that reports VERSION, or a symbol when VERSION is
+;; no version.
+(define (expand-at version pre name)
+  (if (and (list? version) (= (length version) 3) (for-all integer? version))
+      (expand-refusal (and refusal-form (as-version refusal-form version pre)) name)
+      'no-such-version))
+
+(test-equal "where Chez is the floor of packaging/floors.sexp, the refusal lets its library load"
+  'loaded
+  (expand-at chez-floor #f '(require-threaded at-file-floor)))
+
+(for-each
+ (lambda (pre)
+   (test-equal (string-append "where Chez is a pre-release of the floor of packaging/floors.sexp, number "
+                              (number->string pre) ", the refusal raises its message naming the floor")
+     (refused-below-floor
+      (if (string? chez-floor-text)
+          (string-append chez-floor-text "-pre-release." (number->string pre))
+          'floors-file-unreadable))
+     (expand-at chez-floor pre '(require-threaded pre-release-of-file-floor))))
+ '(1 7 12))
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append "where Chez is one step after the floor of packaging/floors.sexp, in its "
+                              (cadr row) " number, the refusal lets its library load")
+     'loaded
+     (expand-at (floor-after (car row)) #f '(require-threaded after-file-floor))))
+ '((0 "major") (1 "minor") (2 "patch")))
+
+(test-equal "where Chez's major number is one below the floor of packaging/floors.sexp, the refusal raises its message naming the floor"
+  (refused-below-floor
+   (if (list? floor-major-below) (dotted floor-major-below) 'no-such-version))
+  (expand-at floor-major-below #f '(require-threaded below-file-floor)))
 
 (test-end "require-threaded")
 
