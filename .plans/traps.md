@@ -314,3 +314,11 @@ it should not be a comment. (chez-cmark-gfm)
   was a trailing space lost it when written, and the mutation driver's empty-diff refusal
   caught it. Measured: two trailing spaces and a trailing tab were both dropped. Build such
   a file in code, and check its bytes. (chez-curl)
+* **A bare `mktemp -d` honours `TMPDIR` on Linux and ignores it on macOS.** The first
+  macOS run (2026-10-16: Homebrew's Chez 10.4.1, Apple's libcurl 8.7.1) failed 11 tests in
+  `test-curl-testing` and `test-library-loading`, which had passed on Linux since slice 2.
+  Each test that set `TMPDIR` found its directory elsewhere, and a newline in `TMPDIR`
+  never reached the answer. `make-temp-directory` now hands `mktemp` a template under
+  `$TMPDIR`, which GNU and BSD `mktemp` read alike. On Linux, a fake `mktemp` that ignores
+  `TMPDIR` when given no template reproduced the 11 failures by name, and the Mac then
+  passed every suite. (chez-curl)

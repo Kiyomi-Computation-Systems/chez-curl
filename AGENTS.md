@@ -60,7 +60,8 @@
 * Prefer a check to a comment.
 * **Do not** write tests that rely on reading code comments
 * `make test` runs every suite under GNU `timeout`. On macOS, run
-  `brew install coreutils`, and make finds its `gtimeout`.
+  `brew install coreutils`, and make finds its `gtimeout`. Homebrew installs
+  Chez as `chez`, which make also finds.
 
 ## Traps the family has already hit
 
@@ -153,6 +154,8 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   status.
 * Loading GnuTLS's libcurl leaks a block in p11-kit's constructor, so
   Valgrind's gate fails on any suite that loads it. It is not chez-curl's leak.
+* A bare `mktemp -d` ignores `TMPDIR` on macOS. Give `mktemp` a template
+  under `$TMPDIR`.
 * A constants check says nothing about a library whose headers it did not
   compile against. `test-constants` requires the headers to be no newer than
   the library it loads, so a floor lane points both `C_INCLUDE_PATH` and

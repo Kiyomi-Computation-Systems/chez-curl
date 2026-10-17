@@ -211,7 +211,8 @@ nothing else.
     7.85.0.
   - On macOS, `cc` finds the SDK's headers, and the library is the system's dylib. An SDK
     newer than the running OS fails this rule. Point `CC` at the matching SDK with
-    `-isysroot`, or set `C_INCLUDE_PATH`. Not yet run.
+    `-isysroot`, or set `C_INCLUDE_PATH`. On the maintainer's Mac (Apple's libcurl
+    8.7.1), the SDK's headers were no newer, and the suite passed.
   - The compile is judged by its exit status alone. `_Generic` needs C11, which gcc and
     clang default to.
 - **The feature list is checked from Scheme to C,** not against the headers for
