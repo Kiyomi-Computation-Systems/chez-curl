@@ -84,6 +84,20 @@
   (string-append "imports " name " from (chezscheme), but allowed-chez-names in"
                  " tests/check-seam.sps does not list it"))
 
+;; library-only : String -> String
+;; The words the program ends a complaint about a library-only-chez-names entry with.
+(define (library-only name where)
+  (string-append "imports " name " from (chezscheme), but library-only-chez-names in"
+                 " tests/check-seam.sps allows it only in " where))
+
+;; re-exports : String String -> String
+;; The words the program ends a complaint about an export with: WHAT is the
+;; name, or the internal name and " as " the external one, and NAME the one
+;; imported.
+(define (re-exports what name)
+  (string-append "exports " what ", but it imports " name " from (chezscheme), and no"
+                 " library under src/ may export a name it imports from (chezscheme)"))
+
 (define unlisted-tail
   (string-append "but a library under src/ may import only the (rnrs ...) libraries"
                  " except (rnrs eval), (only (chezscheme) name ...), and (curl ...)"
@@ -197,6 +211,63 @@
                                  ": (curl e1) imports (rnrs eval), but no library under src/ may import (rnrs eval)")
                   (string-append (at "rnrs-eval" "curl/e2.sls")
                                  ": (curl e2) imports (rnrs eval), but no library under src/ may import (rnrs eval)")))
+
+   ;; --- rule (f): names only some libraries may import ---
+   (list "ftype-listed"
+         "rule (f), passing: define-ftype imported by (curl private layouts), the one library library-only-chez-names lists for it"
+         (holds 2 2))
+   (list "ftype-elsewhere"
+         "rule (f): define-ftype imported by a library that is not listed, in either family, or by names that only look like the listed one; the listed library beside them is not named"
+         (refused 4
+                  (string-append (at "ftype-elsewhere" "curl/f.sls") ": (curl f) "
+                                 (library-only "define-ftype" "(curl private layouts)"))
+                  (string-append (at "ftype-elsewhere" "curl/layouts.sls") ": (curl layouts) "
+                                 (library-only "define-ftype" "(curl private layouts)"))
+                  (string-append (at "ftype-elsewhere" "curl/private/layouts-extra.sls")
+                                 ": (curl private layouts extra) "
+                                 (library-only "define-ftype" "(curl private layouts)"))
+                  (string-append (at "ftype-elsewhere" "http-client/h.sls") ": (http-client h) "
+                                 (library-only "define-ftype" "(curl private layouts)"))))
+   (list "ftype-with-unlisted"
+         "rule (f) and rule (c) in one import set: each name outside its list is named, in the order the import set holds them"
+         (refused 3
+                  (string-append (at "ftype-with-unlisted" "curl/m.sls") ": (curl m) " (not-listed "eval"))
+                  (string-append (at "ftype-with-unlisted" "curl/m.sls") ": (curl m) "
+                                 (library-only "define-ftype" "(curl private layouts)"))
+                  (string-append (at "ftype-with-unlisted" "curl/m.sls") ": (curl m) " (not-listed "$primitive"))))
+
+   ;; --- rule (g): no library exports a name it imports from (chezscheme) ---
+   (list "export-chez"
+         "rule (g): a name imported from (chezscheme) exported, plain or as a rename spec's internal name, in either family, each in export order; a name from (rnrs), a rename of a library's own definition to a (chezscheme) name, and a definition named like a (chezscheme) binding are not named"
+         (refused 4
+                  (string-append (at "export-chez" "curl/private/layouts.sls") ": (curl private layouts) "
+                                 (re-exports "define-ftype" "define-ftype"))
+                  (string-append (at "export-chez" "curl/r.sls") ": (curl r) " (re-exports "format" "format"))
+                  (string-append (at "export-chez" "curl/r.sls") ": (curl r) "
+                                 (re-exports "getenv as curl-getenv" "getenv"))
+                  (string-append (at "export-chez" "http-client/h.sls") ": (http-client h) "
+                                 (re-exports "format" "format"))))
+   (list "export-unreadable"
+         "rule (g) fails closed: each export spec that is neither an identifier nor (rename (internal external) ...) is named, in order, a cyclic one included"
+         (apply refused 9
+                (append
+                 (map (lambda (spec)
+                        (string-append (at "export-unreadable" "curl/x.sls") ": (curl x) has an export it cannot read: " spec))
+                      '("42" "\"s\"" "(car)" "(foo car)" "(rename car kar)" "(rename (car))"
+                        "(rename (car kar kaar))" "(rename (car 1))"))
+                 (list (string-append (at "export-unreadable" "curl/y.sls")
+                                      ": (curl y) has an export it cannot read: (rename #0=(a #0#))")))))
+   (list "export-wrapped-chez"
+         "rule (g) and a wrapper over (only (chezscheme) ...): except, for, prefix and rename are each refused by rule (c), so none can rename a name imported from (chezscheme) unseen"
+         (refused 4
+                  (string-append (at "export-wrapped-chez" "curl/e.sls")
+                                 ": (curl e) imports (except (only (chezscheme) format getenv) getenv), " chez-only)
+                  (string-append (at "export-wrapped-chez" "curl/f.sls")
+                                 ": (curl f) imports (for (only (chezscheme) format) run), " chez-only)
+                  (string-append (at "export-wrapped-chez" "curl/p.sls")
+                                 ": (curl p) imports (prefix (only (chezscheme) format) c:), " chez-only)
+                  (string-append (at "export-wrapped-chez" "curl/r.sls")
+                                 ": (curl r) imports (rename (only (chezscheme) format) (format fmt)), " chez-only)))
 
    ;; --- the import allowlist ---
    (list "unlisted-libraries"
@@ -316,9 +387,13 @@
 ;; --- the lists the program holds are exact ------------------------------------------------
 ;; allowed-chez-names is "exactly the names src/ imports from (chezscheme)": a
 ;; name in it that no library uses is a permission nobody exercises, and a
-;; name a library uses that is not in it fails check-seam. rnrs-libraries is
-;; the standard libraries but (rnrs eval). Each list is read from the program
-;; as data, never from its output.
+;; name a library uses that is not in it fails check-seam. Each entry of
+;; library-only-chez-names is a name in allowed-chez-names and the libraries
+;; that alone may import it: exactly the libraries under src/ that do, so a
+;; library listed that no longer imports the name is a stale permission, and one
+;; that imports it unlisted fails check-seam. rnrs-libraries is the standard
+;; libraries but (rnrs eval). Each list is read from the program as data, never
+;; from its output.
 
 ;; read-forms : String -> (Listof Any)
 (define (read-forms path)
@@ -355,27 +430,36 @@
                         (else '()))))
               (directory-list dir))))
 
+;; chez-imports : -> (Listof (Pair (Listof Symbol) (Listof Symbol)))
+;; Each library form under src/ as its name and the names it imports from
+;; (chezscheme), through (only (chezscheme) name ...) in its import clause. No
+;; duplicate name in a pair. A name that carries a version reference would not
+;; equal its entry in library-only-chez-names, and fail the test below.
+;; Raises when src/ cannot be read.
+(define (chez-imports)
+  (apply append
+         (map (lambda (path)
+                (map (lambda (form)
+                       (cons (cadr form)
+                             (fold-left
+                              (lambda (found spec)
+                                (if (and (pair? spec) (eq? (car spec) 'only)
+                                         (pair? (cdr spec)) (equal? (cadr spec) '(chezscheme)))
+                                    (fold-left (lambda (found id) (if (memq id found) found (cons id found)))
+                                               found (cddr spec))
+                                    found))
+                              '() (cdr (cadddr form)))))
+                     (filter (lambda (form)
+                               (and (pair? form) (eq? (car form) 'library) (list? form) (> (length form) 3)))
+                             (read-forms path))))
+              (sls-files "src"))))
+
 ;; imported-names : (Listof Symbol)
-;; The names the libraries under src/ import from (chezscheme), through
-;; (only (chezscheme) name ...) in a library's import clause. No duplicate.
+;; The names the libraries under src/ import from (chezscheme). No duplicate.
 (define imported-names
   (guard (e (#t (list 'unreadable (describe e))))
-    (fold-left
-     (lambda (found path)
-       (fold-left
-        (lambda (found form)
-          (if (and (pair? form) (eq? (car form) 'library) (list? form) (> (length form) 3))
-              (fold-left
-               (lambda (found spec)
-                 (if (and (pair? spec) (eq? (car spec) 'only)
-                          (pair? (cdr spec)) (equal? (cadr spec) '(chezscheme)))
-                     (fold-left (lambda (found id) (if (memq id found) found (cons id found)))
-                                found (cddr spec))
-                     found))
-               found (cdr (cadddr form)))
-              found))
-        found (read-forms path)))
-     '() (sls-files "src"))))
+    (fold-left (lambda (found id) (if (memq id found) found (cons id found)))
+               '() (apply append (map cdr (chez-imports))))))
 
 (define (symbols<? a b) (string<? (symbol->string a) (symbol->string b)))
 
@@ -404,6 +488,46 @@
 (define (sorted-libraries names)
   (guard (e (#t (list 'unsortable names)))
     (list-sort (lambda (a b) (string<? (written a) (written b))) names)))
+
+(define declared-library-only (declared 'library-only-chez-names))
+
+;; library-name? : Any -> Boolean
+(define (library-name? x) (and (pair? x) (list? x) (for-all symbol? x)))
+
+;; entry? : Any -> Boolean
+;; Whether X is (name library-name ...), with at least one library: an entry
+;; that lists none would let no library import the name, which leaving the name
+;; out of allowed-chez-names does as well.
+(define (entry? x)
+  (and (pair? x) (list? x) (symbol? (car x)) (pair? (cdr x)) (for-all library-name? (cdr x))))
+
+(test-equal "library-only-chez-names is a list of (name library ...) entries"
+  'entries
+  (if (and (list? declared-library-only) (for-all entry? declared-library-only))
+      'entries
+      declared-library-only))
+
+(test-equal "every name in library-only-chez-names is in allowed-chez-names"
+  '()
+  (guard (e (#t (list 'unreadable (describe e))))
+    (remp (lambda (id) (memq id declared-names))
+          (map car declared-library-only))))
+
+;; SRFI-64 does not catch a raise in the expected expression. Each side is
+;; built under a guard of its own, with a sentinel of its own, so that a
+;; malformed list or a src/ that cannot be read fails this test, and cannot
+;; make the two sides equal.
+(test-equal "each library-only-chez-names entry lists exactly the libraries under src/ that import its name"
+  (guard (e (#t (list 'unreadable (describe e))))
+    (let ((scan (chez-imports)))
+      (map (lambda (entry)
+             (cons (car entry)
+                   (sorted-libraries
+                    (map car (filter (lambda (library) (memq (car entry) (cdr library))) scan)))))
+           declared-library-only)))
+  (guard (e (#t (list 'malformed (describe e))))
+    (map (lambda (entry) (cons (car entry) (sorted-libraries (cdr entry))))
+         declared-library-only)))
 
 (test-equal "rnrs-libraries is the (rnrs ...) libraries this Chez has, but (rnrs eval)"
   (sorted-libraries

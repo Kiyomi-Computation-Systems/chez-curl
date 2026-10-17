@@ -174,6 +174,26 @@ it should not be a comment. (chez-cmark-gfm)
   and 0 for an empty program. It is not chez-curl's leak, but ADR-0014's gate
   fails on it. (chez-curl, M0 slice 3)
 
+* **A layout check by offset alone passes a field that is too narrow.** In slice 4, a
+  mutation declared `curl_version_info_data`'s `ssl_version_num` as `int`, where C has
+  `long`. The next field is a pointer, aligned to 8, so padding kept every offset the same.
+  Only the size check failed, and `test-native` still passed. The review then showed that a
+  `double` written for a pointer passes offset and size together. `test-constants` now
+  compares each field's offset, size and kind. (chez-curl)
+* **A function ftype binds C without `foreign-procedure`.**
+  `(define-ftype F (function (int) int))` and `(ftype-ref F () (make-ftype-pointer F "abs"))`
+  call libc's `abs`, and `make-ftype-pointer` given a lambda makes a callable. Slice 4's
+  review used this in `native.sls`: it bound `curl_easy_perform` as a plain call and made a
+  write callback. `check-seam`, `test-collect-safe` and `test-constants` all passed. The
+  first fix let only `(curl private layouts)` import `define-ftype`. The review of that fix
+  reached it from another library anyway, with `make test` green, three ways:
+  - layouts re-exported it;
+  - a macro in layouts took it as an argument;
+  - layouts exported a macro that expands to it.
+
+  Now no library may re-export a Chez name, and layouts is held to struct `define-ftype`
+  forms alone. A rule on who imports a keyword is not a rule on who can use it. (chez-curl)
+
 ## Checks and environment
 
 * **A check that reads a library's import form does not see everything the
@@ -283,3 +303,14 @@ it should not be a comment. (chez-cmark-gfm)
   `make test` and `make check-guix` then failed in every worktree, with
   `fatal: not a git repository: (null)`, where slice 1 had worked. The container
   has no git again, and `check-pins` runs on the host and in CI. (chez-curl)
+* **A constants check says nothing about a library whose headers it did not compile
+  against.** Found by slice 4's review, not by an incident. CI's floor lane will load curl
+  7.85.0 through the override, while the runner's 8.5.0 headers sit on the compiler's
+  default path. The review appended a field that 7.85.0 lacks to `curl-version-info-data`,
+  and it passed against 8.20.0's headers. `test-constants` now requires the headers to be
+  no newer than the library chez-curl loads. Measured: with a decoy that reports 7.85.0 as
+  the override, it fails, naming headers `0x081400` against library `0x075500`. (chez-curl)
+* **Claude Code's Write tool drops trailing whitespace.** In slice 4, a fixture whose point
+  was a trailing space lost it when written, and the mutation driver's empty-diff refusal
+  caught it. Measured: two trailing spaces and a trailing tab were both dropped. Build such
+  a file in code, and check its bytes. (chez-curl)

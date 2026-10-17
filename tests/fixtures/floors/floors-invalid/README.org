@@ -1,0 +1,6 @@
+* A fixture README
+
+** Requirements
+
+- Chez Scheme 10.9 or later, built with threads
+- libcurl 8.1.2 or later, built with TLS

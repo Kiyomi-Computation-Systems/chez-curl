@@ -1,7 +1,8 @@
 # ADR-0013: Calls that can block are `__collect_safe`, and so is every callback they can invoke
 
 - **Status:** Proposed. It binds as written until spike E1 (M3) records its measurements.
-  It is then accepted, or amended to fit them.
+  It is then accepted, or amended to fit them. Amended 2026-10-16 with the attribute suite
+  (M0 slice 4).
 - **Date:** 2026-10-04
 - **Corrected:** 2026-10-04. The E5 series is chez-http-server's, not chez-libuv's. Its
   figures are restated from that spike report, which ran on macOS only.
@@ -102,3 +103,43 @@ Provisional until E1.
 - **Contradicting findings get raised, not worked around.** A finding during M2 or M3 that
   contradicts this record is raised and ruled on, not quietly worked around.
 - **`global-constraints.md` marks these rules provisional** until E1 lands.
+
+## Amendment, 2026-10-16: the attribute suite (M0 slice 4)
+
+- **`make test` checks these rules.** `tests/test-collect-safe.sps` reads `src/` as data
+  and holds every `foreign-procedure` and `foreign-callable` to the table in
+  `tests/foreign-conventions.sls`.
+  - Each row names an entry point, or a callable by the name it is defined as.
+  - It gives the conventions, compared as a set, and quotes a sentence of a decision record.
+    The suite finds that sentence in the record, so a row goes stale when its sentence
+    changes. When E1 amends this record, the rows that quote it must be revisited.
+- **Every occurrence of the two names is accounted for.** Each must be one of these:
+  - in the `(only (chezscheme) ...)` import;
+  - the head of a form whose entry is a string literal;
+  - the head of the template of a known wrapper, today `bind-required`.
+
+  Anything else fails, quoted occurrences included. A callable must be the whole right-hand
+  side of `(define name ...)`. A new binding macro joins `known-wrappers`, and every binding
+  needs a row.
+- **Rows exist before their bindings.** `curl_easy_perform` and `curl_multi_poll` are
+  `__collect_safe`, and `curl_multi_perform` and `memcpy` are plain. So if M2 binds
+  `perform` plain, the suite fails at once.
+- **`curl_easy_cleanup` is plain for now.** The load's header probe cleans up a fresh handle
+  that never connected. Its row quotes decision 1's open question, which E1 settles.
+- **Function ftypes would bind outside this check,** through `make-ftype-pointer` with an
+  entry point's name or a procedure. Three checks keep `define-ftype` out of every other
+  library (ADR-0007, amended):
+  - `check-seam` lets only `(curl private layouts)` import it, and no library re-export a
+    Chez name;
+  - `test-constants` holds layouts to struct `define-ftype` forms alone, with no macro;
+  - `test-constants` also holds the rule's entry to that one library.
+- **Out of reach:** a name built at expansion, through `string->symbol` and
+  `datum->syntax`. `src/` uses neither for this.
+- **Chez checks decision 4 for strings only.** Measured on the pinned Chez 10.4.0, a
+  `__collect_safe` foreign procedure with a `string` or `utf-8` parameter is refused at
+  expansion, with `string argument not allowed with __collect_safe procedure`. `u8*` and
+  `scheme-object` parameters, and a `string` result, are accepted without complaint. So a
+  bytevector passed to a blocking call would get past Chez. Extending the table to
+  parameter types would close that gap.
+- **M2 must add `foreign-callable` to `check-seam`'s `allowed-chez-names`.** It is not on
+  the list today.

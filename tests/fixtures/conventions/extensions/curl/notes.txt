@@ -1,0 +1,2 @@
+(define notes 'foreign-procedure)
+Chez loads no library from a .txt file, so the reader does not read this one.

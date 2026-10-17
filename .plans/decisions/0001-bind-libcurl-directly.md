@@ -1,7 +1,8 @@
 # ADR-0001: Bind libcurl directly, with no C shim; the floor is Chez 10.4.0, threaded
 
-- **Status:** Accepted; amended 2026-10-16 with what M0 slice 3 built
-  ([amendment](#amendment-2026-10-16-what-slice-3-built))
+- **Status:** Accepted; amended 2026-10-16 with what M0 slices 3 and 4 built
+  ([slice 3](#amendment-2026-10-16-what-slice-3-built),
+  [slice 4](#amendment-2026-10-16-what-slice-4-built))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D6. That decision was raised on 2026-10-04, after the brief was written.
@@ -168,3 +169,51 @@ nothing else.
   refusal that answer as an older, pre-release or non-threaded Chez. By hand, Guix's
   Chez 10.2.0 was refused by name. A real non-threaded one is measured only by CI's
   non-threaded lane.
+
+## Amendment, 2026-10-16: what slice 4 built
+
+- **`tests/test-constants.sps` checks decisions 3 and 4.** It reads `constants.sls` and
+  `layouts.sls` as data, and generates one C program from what it finds.
+  - Every export of `(curl private constants)` has a row naming its C expression, and
+    every row is an export. A missing side fails, naming it. `curl-version-features` is
+    checked entry by entry: `ntlm-wb` is `CURL_VERSION_NTLM_WB`.
+  - A row's C name is the export's name, upcased, with `-` as `_`. A list row's prefix is
+    the export's name without its last word: `curl-version-features` gives
+    `CURL_VERSION_`. A row may name something else only through an entry in
+    `c-name-aliases`, which is empty now. An alias that changes nothing, or names no row,
+    fails. Adding one is a reviewed change. Otherwise a row could name any constant that
+    happens to have the same value.
+  - The structs Scheme reads live in `(curl private layouts)`, which never loads libcurl.
+    Each `define-ftype` has a row naming its C type, and each row is a `define-ftype`.
+  - Each must be a struct of primitive-typed fields, each type one the suite's
+    `field-kinds` maps. Any other shape fails by name, so `CURLMsg`'s `data` union, and a
+    bit-field such as `curl_hstsentry`'s, will need the check extended when their slices
+    add them.
+- **Every field is checked by offset, size and kind,** not offsets alone as the slice 3
+  amendment said.
+  - An `int` written for `ssl_version_num`'s `long` kept every offset, since padding filled
+    the gap, and only the size check failed. A `double` written for a pointer passed offset
+    and size together, and only the kind check fails it.
+  - The C side reports each member's kind with C11's `_Generic`: integer, floating, or
+    other. `uptr` and `void*` must be other, `iptr` and the sized types integer, so an
+    integer member is written `size_t` or `long`, never `uptr`. Signedness is not compared:
+    `features` is `unsigned-int` against C's `int` on purpose.
+  - "Other" covers pointers, arrays, structs and unions alike, so an array or aggregate the
+    size of a pointer, written as `uptr`, passes.
+  - The total size is not compared: `curl-version-info-data` stops at `gsasl_version`.
+- **The headers must be no newer than the library chez-curl loads.** The program prints
+  `LIBCURL_VERSION_NUM`, and the suite loads `(curl)` in its own process to read the
+  library's `version_num`. So a floor lane that compiled against the runner's newer headers
+  fails, rather than checking fields its library lacks.
+  - The program is compiled with `$CC`, with no `-I` and no `-l`, so the compiler's own
+    search path must find `curl/curl.h`. In the container, that is `C_INCLUDE_PATH`.
+  - CI's floor lane must point both `C_INCLUDE_PATH` and `CHEZ_CURL_LIBCURL` at its curl
+    7.85.0.
+  - On macOS, `cc` finds the SDK's headers, and the library is the system's dylib. An SDK
+    newer than the running OS fails this rule. Point `CC` at the matching SDK with
+    `-isysroot`, or set `C_INCLUDE_PATH`. Not yet run.
+  - The compile is judged by its exit status alone. `_Generic` needs C11, which gcc and
+    clang default to.
+- **The feature list is checked from Scheme to C,** not against the headers for
+  completeness. A bit the headers have and the list lacks goes unchecked here.
+  `test-verify` holds the list as it is.

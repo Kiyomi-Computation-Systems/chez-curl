@@ -91,6 +91,8 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * An assertion passes whenever *another* rule can produce its expected value.
   Assert whole outputs, not substrings, and build a test's base from
   non-default values.
+* Claude Code's Write tool drops trailing whitespace. Build a fixture whose
+  point is a trailing space in code, and check its bytes.
 
 **Chez and the FFI**
 
@@ -107,6 +109,14 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * A value that must outlive a failed load, such as the `libcurl-info` record,
   lives outside `native.sls`: any reference into native after a refusal raises
   again.
+* A layout check by offset passes a field that is too narrow when padding keeps
+  the next offset, and one by offset and size passes a `double` for a pointer.
+  `test-constants` checks each field's offset, size and kind.
+* A function ftype binds C without `foreign-procedure`: `make-ftype-pointer`
+  takes an entry point's name, or a procedure. A rule on who may import a
+  keyword loses to a re-export, or to a macro that takes the keyword as an
+  argument. So layouts alone imports `define-ftype`, no library re-exports a
+  Chez name, and layouts is held to struct forms alone.
 
 **Checks and environment**
 
@@ -143,6 +153,10 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   status.
 * Loading GnuTLS's libcurl leaks a block in p11-kit's constructor, so
   Valgrind's gate fails on any suite that loads it. It is not chez-curl's leak.
+* A constants check says nothing about a library whose headers it did not
+  compile against. `test-constants` requires the headers to be no newer than
+  the library it loads, so a floor lane points both `C_INCLUDE_PATH` and
+  `CHEZ_CURL_LIBCURL` at the floor.
 
 ## Closing ritual
 

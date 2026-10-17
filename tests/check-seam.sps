@@ -1,8 +1,8 @@
 #!r6rs
 ;;; make check-seam: reads every .sls file under the directory named on the
 ;;; command line (make passes src) as data, with Chez's reader, and evaluates
-;;; nothing. It names, with the file and the import, each library that breaks
-;;; one of these rules (ADR-0007):
+;;; nothing. It names, with the file and the import or the export, each
+;;; library that breaks one of these rules (ADR-0007):
 ;;;
 ;;;   (a) a (curl ...) library imports an (http-client ...) library;
 ;;;   (b) an (http-client ...) library imports a (curl ...) library that is not
@@ -19,14 +19,43 @@
 ;;;       the (rnrs ...) libraries but (rnrs eval), (only (chezscheme) name
 ;;;       ...), and the (curl ...) and (http-client ...) libraries. Any other,
 ;;;       (chezscheme csv7) and a third-party library among them, could reach
-;;;       a library by a route this check does not read.
+;;;       a library by a route this check does not read;
+;;;   (f) a library imports, from (chezscheme), a name that only some libraries
+;;;       may import, and is not one of them. library-only-chez-names holds
+;;;       each such name with the libraries that alone may import it. At first
+;;;       that is define-ftype, for (curl private layouts) alone. A function
+;;;       ftype, (define-ftype F (function (int) int)), binds a C entry point or
+;;;       makes a callable without foreign-procedure or foreign-callable, so it
+;;;       would dodge the conventions table (tests/foreign-conventions.sls) and
+;;;       the load's foreign-entry? check. define-ftype is the only way to one:
+;;;       an anonymous (function ...) in make-ftype-pointer or ftype-ref is
+;;;       invalid syntax, so those two need no rule. tests/test-constants.sps
+;;;       holds (curl private layouts) to define-ftype forms of structs of
+;;;       primitive-typed fields alone, exporting just their names, and
+;;;       requires this rule's entry to name that library alone, so no
+;;;       function ftype, and no macro that makes one, exists under src/;
+;;;   (g) a library exports a name it imports from (chezscheme), as an
+;;;       identifier or as the internal name of a (rename (internal
+;;;       external)) spec. Otherwise a library rule (f) lets import a name
+;;;       could hand it on to one that may not, and any library could hand
+;;;       allowed-chez-names past the seam to a consumer. The names a library
+;;;       imports from (chezscheme) are those of its (only (chezscheme) name
+;;;       ...) import sets: rule (c) refuses every other import set of
+;;;       (chezscheme), each wrapper among them, so no prefix or rename makes
+;;;       a local name this rule does not see. An export spec that is neither
+;;;       an identifier nor (rename (internal external) ...), the only two
+;;;       Chez accepts, is an export it cannot read. This rule does not see a
+;;;       macro that a library exports and whose template uses the name: for
+;;;       define-ftype, tests/test-constants.sps leaves its one library no
+;;;       macro.
 ;;;
 ;;; The lists are allowlists: a name or a library that is not on one fails,
 ;;; so a route nobody thought of is closed until a reviewer opens it.
 ;;; allowed-chez-names holds exactly the names src/ imports from (chezscheme),
-;;; public-curl the (curl ...) libraries an (http-client ...) library may
-;;; import, and rnrs-libraries the standard libraries. tests/test-check-seam.sps
-;;; runs this program on a tree for each rule.
+;;; library-only-chez-names the names among them that only some libraries may
+;;; import, public-curl the (curl ...) libraries an (http-client ...) library
+;;; may import, and rnrs-libraries the standard libraries.
+;;; tests/test-check-seam.sps runs this program on a tree for each rule.
 ;;;
 ;;; A library is a (curl ...) library when the first identifier of its name is
 ;;; curl, so (curl) is one and (curl-testing) is not. Imports are found
@@ -48,7 +77,8 @@
 ;;;     form, the file's first or any later one: every library form in a file
 ;;;     is checked;
 ;;;   - an import it cannot read, which includes one nested deeper than
-;;;     max-depth.
+;;;     max-depth;
+;;;   - an export it cannot read.
 ;;;
 ;;; A name starting with .# is skipped when it is a dangling symbolic link:
 ;;; Emacs leaves one, a lock file, beside a source it has open. A regular file
@@ -88,6 +118,19 @@
     foreign-free foreign-procedure foreign-ref foreign-sizeof format
     format-condition? ftype-ref getenv load-shared-object machine-type
     make-ftype-pointer scheme-version scheme-version-number threaded?))
+
+;; library-only-chez-names : (Listof (Pairof Symbol (Listof (Listof Symbol))))
+;; Rule (f). Each entry is a name in allowed-chez-names, then one or more
+;; libraries that alone may import it from (chezscheme): any other library that
+;; does fails.
+;; define-ftype is the only way to a function ftype (see the header), so only
+;; (curl private layouts), whose define-ftypes tests/test-constants.sps holds
+;; to structs, may import it. Adding a name or a library is a reviewed change
+;; to the seam (ADR-0007). tests/test-check-seam.sps requires each name to be in
+;; allowed-chez-names, and each entry's libraries to be exactly the libraries
+;; under src/ that import the name, so no permission stays unused.
+(define library-only-chez-names
+  '((define-ftype (curl private layouts))))
 
 ;; rnrs-libraries : (Listof (Listof Symbol))
 ;; The standard libraries a library under src/ may import: R6RS's, but for
@@ -273,10 +316,30 @@
   (string-append path ": " (written name)
                  " has an import it cannot read: " (abbreviated spec)))
 
+;; name-complaints : String (Listof Symbol) Symbol -> (Listof String)
+;; What is wrong with the library NAME importing ID from (chezscheme): none, or
+;; one. ID is not in allowed-chez-names, or it is in library-only-chez-names
+;; and NAME is not among the libraries listed with it.
+(define (name-complaints path name id)
+  (let ((only (assq id library-only-chez-names)))
+    (cond
+      ((not (memq id allowed-chez-names))
+       (list (string-append path ": " (written name) " imports "
+                            (symbol->string id)
+                            " from (chezscheme), but allowed-chez-names in"
+                            " tests/check-seam.sps does not list it")))
+      ((and only (not (member name (cdr only))))
+       (list (string-append path ": " (written name) " imports "
+                            (symbol->string id)
+                            " from (chezscheme), but library-only-chez-names in"
+                            " tests/check-seam.sps allows it only in "
+                            (joined ", " (map written (cdr only))))))
+      (else '()))))
+
 ;; chez-complaints : String (Listof Symbol) Any -> (Listof String)
 ;; What is wrong with SPEC, an import set of (chezscheme) or (scheme), in the
 ;; library NAME: its shape, or else each name in it that is not in
-;; allowed-chez-names, in order.
+;; allowed-chez-names, or that library-only-chez-names keeps from NAME, in order.
 (define (chez-complaints path name spec)
   (let ((names (chez-only-names spec)))
     (cond
@@ -288,12 +351,7 @@
       ((not (for-all symbol? names))
        (list (cannot-read path name spec)))
       (else
-       (map (lambda (id)
-              (string-append path ": " (written name) " imports "
-                             (symbol->string id)
-                             " from (chezscheme), but allowed-chez-names in"
-                             " tests/check-seam.sps does not list it"))
-            (remp (lambda (id) (memq id allowed-chez-names)) names))))))
+       (apply append (map (lambda (id) (name-complaints path name id)) names))))))
 
 ;; import-complaints : String (Listof Symbol) Any -> (Listof String)
 ;; What is wrong with the import set SPEC of the library NAME.
@@ -334,9 +392,66 @@
                             " (only (chezscheme) name ...), and (curl ...)"
                             " and (http-client ...) libraries"))))))
 
+;; chez-imported : (Listof Any) -> (Listof Symbol)
+;; The names SPECS, a library's import sets, take from (chezscheme): each
+;; identifier in each (only (chezscheme) name ...) among them. Rule (c)
+;; refuses any other import set of (chezscheme), so these are the local
+;; names (chezscheme) binds in the library.
+(define (chez-imported specs)
+  (apply append
+         (map (lambda (spec)
+                (let ((names (and (member (spec-name spec 0) chez-names)
+                                  (chez-only-names spec))))
+                  (if names (filter symbol? names) '())))
+              specs)))
+
+;; export-pairs : Any -> (U (Listof (Pair Symbol Symbol)) #f)
+;; The (internal . external) names the export spec SPEC exports: an
+;; identifier exports itself, and (rename (internal external) ...) each
+;; pair. #f when SPEC is neither, the only two Chez accepts.
+(define (export-pairs spec)
+  (cond
+    ((symbol? spec) (list (cons spec spec)))
+    ((and (list? spec) (pair? spec) (eq? (car spec) 'rename)
+          (for-all (lambda (pair)
+                     (and (list? pair) (= (length pair) 2)
+                          (symbol? (car pair)) (symbol? (cadr pair))))
+                   (cdr spec)))
+     (map (lambda (pair) (cons (car pair) (cadr pair))) (cdr spec)))
+    (else #f)))
+
+;; export-complaints : String (Listof Symbol) Any -> (Listof String)
+;; Rule (g): what is wrong with the export clause of the library form FORM,
+;; named NAME, in export order. Each spec it cannot read, and each name
+;; exported that the library imports from (chezscheme).
+(define (export-complaints path name form)
+  (let ((chez (chez-imported (cdr (cadddr form)))))
+    (apply append
+           (map (lambda (spec)
+                  (let ((pairs (export-pairs spec)))
+                    (if (not pairs)
+                        (list (string-append path ": " (written name)
+                                             " has an export it cannot read: "
+                                             (abbreviated spec)))
+                        (apply append
+                               (map (lambda (pair)
+                                      (if (memq (car pair) chez)
+                                          (list (string-append
+                                                 path ": " (written name) " exports "
+                                                 (symbol->string (car pair))
+                                                 (if (eq? (car pair) (cdr pair))
+                                                     ""
+                                                     (string-append " as " (symbol->string (cdr pair))))
+                                                 ", but it imports " (symbol->string (car pair))
+                                                 " from (chezscheme), and no library under src/"
+                                                 " may export a name it imports from (chezscheme)"))
+                                          '()))
+                                    pairs)))))
+                (cdr (caddr form))))))
+
 ;; library-complaints : String Any -> (Listof String)
 ;; What is wrong with the library form FORM, read from PATH: its family, then
-;; its imports, in import order.
+;; its imports, in import order, then its exports, in export order.
 (define (library-complaints path form)
   (let ((name (reference-name (cadr form))))
     (append
@@ -348,7 +463,8 @@
                               (joined " or " (map symbol->string families)))))
      (apply append
             (map (lambda (spec) (import-complaints path name spec))
-                 (cdr (cadddr form)))))))
+                 (cdr (cadddr form))))
+     (export-complaints path name form))))
 
 ;; data-complaints : String (Listof Any) -> (Listof String)
 (define (data-complaints path data)

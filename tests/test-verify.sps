@@ -10,6 +10,13 @@
 ;;; The numbers are written out from curl/curl.h and curl/header.h, never
 ;;; taken from (curl private constants), so a wrong constant fails here.
 ;;;
+;;; The floor is also held to packaging/floors.sexp, the one file that writes
+;;; it: libcurl-floor must equal that file's libcurl floor as a version_num,
+;;; and check-version must accept it and refuse the version one below it. A
+;;; file and a library that disagree fail here, by name. The literal rows
+;;; stay, so a floor changed in both places at once is a decision a reader of
+;;; this suite sees.
+;;;
 ;;; Both checks run after curl_version_info is read, so each takes the
 ;;; library's report as well, and every refusal carries it.
 ;;;
@@ -22,7 +29,8 @@
         (curl-testing)
         (curl private conditions)
         (curl private libcurl-info)
-        (curl private verify))
+        (curl private verify)
+        (floors))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
 ;; counts into one.
@@ -88,6 +96,42 @@
 
 (define path "/usr/lib/aarch64-linux-gnu/libcurl.so.4")
 
+;; --- the floor, from packaging/floors.sexp -----------------------------------
+
+;; Each value is computed under a guard, and is a symbol when the file cannot
+;; give it: a raise at top level would end the suite with no test named, and
+;; one in an expected expression would escape SRFI-64.
+
+;; floor-text-of-file : String or Symbol
+;; The libcurl floor of packaging/floors.sexp, as text.
+(define floor-text-of-file
+  (guard (e (#t 'floors-file-unreadable))
+    (floor-text (read-floors) 'libcurl)))
+
+;; floor-num : Natural or Symbol
+;; That floor as curl_version_info's version_num, #xMMmmpp: three numbers
+;; of at most 255 each.
+(define floor-num
+  (guard (e (#t 'floors-file-unreadable))
+    (let ((parts (floor-numbers (read-floors) 'libcurl)))
+      (if (and (= (length parts) 3) (for-all (lambda (n) (<= n 255)) parts))
+          (+ (* 65536 (car parts)) (* 256 (cadr parts)) (caddr parts))
+          'not-a-version-num))))
+
+;; below-num : Natural or Symbol
+;; The version_num one below the floor.
+(define below-num
+  (if (and (integer? floor-num) (> floor-num 0)) (- floor-num 1) 'no-version-below))
+
+;; num->text : (U Natural Symbol) -> (U String Symbol)
+;; A version_num as M.m.p.
+(define (num->text num)
+  (if (integer? num)
+      (string-append (number->string (bitwise-arithmetic-shift-right num 16)) "."
+                     (number->string (bitwise-and (bitwise-arithmetic-shift-right num 8) 255)) "."
+                     (number->string (bitwise-and num 255)))
+      num))
+
 (test-begin "verify")
 
 ;; --- check-version: the floor, then SSL --------------------------------------
@@ -95,6 +139,20 @@
 (test-equal "the floor is 7.85.0, #x075500"
   #x075500
   libcurl-floor)
+
+(test-equal "the floor is the libcurl floor of packaging/floors.sexp, as a version_num"
+  floor-num
+  libcurl-floor)
+
+(test-equal "check-version: the floor of packaging/floors.sexp is accepted"
+  '(returned #t)
+  (outcome (lambda ()
+             (check-version floor-text-of-file floor-num all-features path 'system report))))
+
+(test-equal "check-version: one below the floor of packaging/floors.sexp is below-floor, with that version"
+  `(refused below-floor ,path system ,(num->text below-num) () the-report)
+  (outcome (lambda ()
+             (check-version (num->text below-num) below-num all-features path 'system report))))
 
 ;; Every feature is set, so only the version can refuse.
 (test-equal "check-version: the floor itself, #x075500, is accepted"
