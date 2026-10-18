@@ -1,6 +1,6 @@
 # ADR-0005: The test origin server is one Node file, standard library only
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-18: the byte probe checks the instrument, and CI tests the Node floor (M1)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl's test instrument (brief §7, milestone M1) and every test lane
   after it
@@ -84,3 +84,49 @@ runtime in its test lanes, so there is no house precedent.
 - **The instrument is tested before any client exists** (brief §7, M1). Each scenario gets
   a check of its own, so a fixture that has stopped producing what its name claims fails
   there, and not as a mysterious client bug later.
+
+## Amendment, 2026-10-18: how the instrument is checked, and the Node floor in CI (M1)
+
+The maintainer settled two questions for M1 ([M1 plan](../2026-10-18-m1-plan.md)).
+
+- **What checks the instrument, with no client: a byte probe and `openssl`.**
+  - Chez has no sockets. No name with `socket`, `tcp` or `connect` in it is in Chez
+    10.4.0's `(scheme-environment)` (measured 2026-10-18). So a Chez suite reaches the
+    origin only through another process.
+  - That process is `tests/wire-probe.mjs`, a second Node file confined to `tests/`. It
+    connects, sends the bytes it is given, and prints every byte it receives, with timings,
+    as Scheme data. It has no HTTP code, so nothing normalises framing between the origin
+    and the suite.
+  - The suites hold their own copy of each scenario's expected bytes, and assert whole
+    outputs.
+  - Certificates are checked by `openssl`'s verify codes.
+  - No check uses libcurl or the `curl` command line. The instrument is not judged by the
+    library it will test.
+  - Rejected: the `curl` command line as the checker. Its verdicts change between 7.85 and
+    8.20, a malformed response would show only as an exit code, and the instrument would be
+    checked by the thing it tests.
+- **The Node floor is tested in CI, not only on the Mac.** That replaces this record's
+  consequence "The floor of 20 is tested only on the Mac".
+  - CI's `floor` lane installs Node at `packaging/floors.sexp`'s version through a pinned
+    `actions/setup-node`, reading it with `scripts/ci/floor.sh node`.
+  - CI has never run, so M1's builder also runs the origin's suite under Node 20.10.0 in
+    Docker, with Chez built by `scripts/ci/build-chez.sh`.
+- **The contract is made exact.**
+  - Each face listens on `127.0.0.1`.
+  - The announcement is one flat JSON object: `node`, `pid`, then each face as
+    `ADDRESS:PORT`. Each address is read back from the listening socket.
+  - Nothing else is written to stdout.
+  - A client that misbehaves ends only its own connection.
+- **Measured for the TLS material** (2026-10-18). One script, with EC keys and a config
+  file, worked unchanged on three implementations:
+
+  | Implementation | Where |
+  |---|---|
+  | OpenSSL 3.5.7 | the container |
+  | OpenSSL 3.0.13 | Docker `ubuntu:24.04` |
+  | LibreSSL 3.3.6 | Docker `alpine:3.14` |
+
+  It made a CA, a good leaf, a wrong-host leaf, and an expired leaf through
+  `ca -startdate/-enddate`. `openssl verify` gave the same verdicts on all three, except for
+  a self-signed leaf: error 18 on OpenSSL, 20 on LibreSSL. So the untrusted leaf is signed
+  by a second CA that is never trusted. The Mac's own `openssl` is not measured.

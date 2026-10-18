@@ -6,7 +6,16 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **Milestone:** M0 (brief §8) is built. M1, the test instrument (brief §7), is next.
+- **Milestone:** M1, the test instrument (brief §7), per the
+  [M1 plan](2026-10-18-m1-plan.md). Slice 1 is built on `m1/origin-and-drift`, with its
+  [mutation log](instrument-mutation-log.md):
+  - the plaintext origin, the byte probe and their helpers;
+  - the drift guard (ADR-0017);
+  - Node in CI (ADR-0005, amended).
+
+  Slice 2 adds TLS and HTTP/2. M0 (brief §8) is built.
+- **The Mac owes one run** for M1 too. Its drift row must be added: `make test` fails there
+  until it is. Node 20.10.0 and the drip's own-arrival check have not run on macOS.
 - **Done:** slices 1 to 6 of the [harness plan](2026-10-04-harness-plan.md) (§6):
   - slice 1, the container and the Makefile skeleton;
   - slice 2, the test harness
@@ -47,6 +56,57 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency` (ADR-0002's amendment).
 
 ## Close-outs
+
+### 2026-10-17 — M0 slice 6: the variadic bindings, `make dev` and `make clean` (PR #9, `83b6835`)
+
+- **Binds the variadic entry points once per value type.** `curl_easy_setopt` gets a `long`,
+  a pointer and a `curl_off_t` binding, and `curl_easy_getinfo` a pointer one, each through
+  `bind-variadic`, whose template carries `(__varargs_after 2)`. `curl-easy-option` reads an
+  option's id and type from the loaded library.
+- **`test-variadic` round-trips values through libcurl without a transfer:**
+  - a pointer through `CURLOPT_PRIVATE`;
+  - a `long` through `RTSP_CLIENT_CSEQ`;
+  - -1 and other signs through `MAXFILESIZE` (`long`) and `MAXFILESIZE_LARGE` (`curl_off_t`).
+
+  Each round trip gets its own sentinel, and every return code is asserted.
+- **`make check-variadic`** plants five unannotated bindings. On every platform
+  `test-collect-safe` must refuse each, by name. On Apple arm64, the only ABI where a
+  missing annotation fails, `test-variadic` must fail too.
+- **Closed the binding-macro routes.** The review found that a macro could change what the
+  convention reader reads, a hole dating from slice 4. Now:
+  - every macro `src/` defines is a row of `known-macros`;
+  - plain macros may not take their input apart or be handed a head;
+  - `check-seam` rules (h) and (i) hold each library to its path under `src/`.
+- **`make dev` and `make clean`,** with `check-dev` and `check-clean`, which run in a fresh
+  copy of the tree. That closes M0's Makefile.
+- **Measured at the floor first,** in C, on 7.85.0, 8.5.0 and 8.20.0. 8.20.0 clamps
+  `RTSP_CLIENT_CSEQ` and refuses a negative one, keeping the old value. That is why each
+  round trip has its own sentinel.
+- **Built with subagents,** four in all, about 1.77M tokens:
+  - the builder on Opus, in a worktree;
+  - an adversarial review on Opus;
+  - an Opus fixer resumed for five rounds;
+  - a scoped review of the fixes on Opus, which found one more route.
+
+  I forecast one builder and one review. The reader's hole took five rounds, because each
+  closed the shapes the last probe used. The design that held named the mechanism, and
+  could have been the first brief.
+- **Evidence:** the [mutation log](variadic-mutation-log.md). Every check has a red run, and
+  every mutation fails its check by name. One known limit is recorded: a phantom binding
+  from a quoted operand (PH1).
+- **Carried forward:**
+  - **The Apple arm64 run gates M2** (the maintainer's decision, 2026-10-17). M2 binds no
+    setopt or getinfo option until `make test` and `make check-variadic` pass on the M1.
+  - For M2:
+    - a check of binding types against libcurl's prototypes;
+    - `curlot-types` completeness;
+    - `curl-easyoption`'s size;
+    - `test-variadic`'s need for RTSP;
+    - callables only as a define's whole right-hand side;
+    - no nested-pattern helper macros;
+    - a `__collect_safe` binder for `curl_easy_perform`.
+  - Nothing checks that `src/` comes first in `LIBDIRS`.
+  - CI has still never run.
 
 ### 2026-10-17 — M0 slice 5: the memory gate and CI (PR #8, `eda03a2`)
 

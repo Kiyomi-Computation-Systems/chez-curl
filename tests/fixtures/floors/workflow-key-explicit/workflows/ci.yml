@@ -1,0 +1,16 @@
+# Test fixture: setup-node given a literal under a key written as check-floors cannot read it: explicit.
+name: Fixture
+on:
+  pull_request:
+jobs:
+  floor:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Name the Node floor
+        id: node
+        run: echo "version=$(scripts/ci/floor.sh node)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@0000000000000000000000000000000000000000 # v0.0.0
+        with:
+          ? "node\x2Dversion"
+          : 22.3
+      - run: make test

@@ -10,6 +10,13 @@
 CHEZ ?= $(or $(if $(shell command -v scheme 2>/dev/null),scheme),$(if $(shell command -v chez 2>/dev/null),chez),scheme)
 export CHEZ
 
+# Node, for the test origin and the byte probe, tests/origin.mjs and
+# tests/wire-probe.mjs (ADR-0005): the node on PATH unless NODE names another.
+# Exported, so that (curl-testing) spawns this one, and make test and
+# test-memory name it in require-tools.
+NODE ?= node
+export NODE
+
 # The make target to name in a missing-tool hint (scripts/require-tools):
 # what the user typed, $(MAKECMDGOALS), or, when that is empty, the
 # recipe's own target, $@. Recursively expanded (=, not :=), so each
@@ -229,7 +236,7 @@ check-dev: ## Fail unless make dev runs build, then a REPL that imports (curl) a
 # checks come first: check-help, check-suites, check-seam and check-floors
 # each stop it.
 test: deps check-help check-suites check-seam check-floors ## Run every tests/test-*.sps under timeout; fail if one fails or hangs, or none exists
-	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ)
+	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ) $(NODE)
 	@if [ -z "$(SUITES)" ]; then \
 	  echo "test: no suites: nothing matches tests/test-*.sps" >&2; \
 	  exit 1; \
@@ -284,9 +291,13 @@ check-seam: ## Fail unless the imports keep (curl ...) and (http-client ...) apa
 # data and fails, naming each problem, when the floors file is not exactly the
 # datum (floors) describes, when README.org's "** Requirements" section does
 # not hold the three list lines the file calls for, or when any line of a
-# workflow file writes either floor's version or names CHEZ_VERSION or
-# CURL_FLOOR_VERSION: CI's build scripts read the floors from the file through
-# scripts/ci/floor.sh (tests/floors.sls, tests/check-floors.sps).
+# workflow file writes either floor's version, names CHEZ_VERSION or
+# CURL_FLOOR_VERSION, names node-version, in any case, in any form but
+# "node-version: ${{ steps.ID.outputs.NAME }}", or holds a double-quoted key
+# with an escape, which YAML reads and this check does not: CI's build scripts
+# read the floors from the file through scripts/ci/floor.sh, and so does the
+# step that gives setup-node its version (tests/floors.sls,
+# tests/check-floors.sps).
 # tests/test-check-floors.sps holds each rule on texts and fixtures. The
 # Scheme code that enforces a floor is held to the file by tests/test-verify.sps
 # and tests/test-require-threaded.sps, which read it. It imports only (rnrs),
@@ -393,7 +404,7 @@ check-variadic: deps ## Remove (__varargs_after 2) from bind-variadic's template
 # hands Valgrind --command-line-only=yes, so that no .valgrindrc a suite
 # writes reaches the next. `make check-memory-gate` proves each rule fails.
 test-memory: deps ## Run every MEMORY_SUITES suite under Valgrind; fail on any error or definite leak, a hang, or no suite
-	@scripts/require-tools "$(GOAL)" $(firstword $(VALGRIND)) $(TIMEOUT) $(CHEZ)
+	@scripts/require-tools "$(GOAL)" $(firstword $(VALGRIND)) $(TIMEOUT) $(CHEZ) $(NODE)
 	@if [ -z "$(strip $(MEMORY_SUITES))" ]; then \
 	  echo "test-memory: no suites: MEMORY_SUITES is empty" >&2; \
 	  exit 1; \

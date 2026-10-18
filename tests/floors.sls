@@ -71,11 +71,39 @@
 ;;;     redefines one fails, whatever version it gives, and so does a reference
 ;;;     to one, ${{ env.CHEZ_VERSION }} or $CHEZ_VERSION.
 ;;;
+;;;   - node-version in any case, anywhere, but in the one form that takes the
+;;;     version from a step's output, which a step fills from
+;;;     scripts/ci/floor.sh node:
+;;;
+;;;       node-version: ${{ steps.ID.outputs.NAME }}
+;;;
+;;;     with any indent, an optional "- " before it, and nothing after it.
+;;;     GitHub reads a step's input keys ignoring case, so Node-Version is the
+;;;     same key. So a literal fails, whatever version it gives, and so do an
+;;;     expression from anywhere else (env, matrix), the key in another case,
+;;;     a quoted key, a flow mapping, a comment after it, node-version-file,
+;;;     and the word in a comment;
+;;;   - anything that would let YAML or GitHub read a key other than as it is
+;;;     written, since this check reads text, line by line, and fails closed:
+;;;     - a backslash after a double quote, in a key or a value, closed or
+;;;       not: YAML reads escapes there ("node\x2Dversion" is node-version),
+;;;       and a quoted key may go on over lines;
+;;;     - an explicit key, ? where a key goes, whose colon may be on the next
+;;;       line;
+;;;     - an alias or an anchor where a key goes: *, or &, then a letter,
+;;;       digit, _ or -. Narrowed so: a shell case pattern *) and a && in a
+;;;       run block are no alias, and ci.yml holds the first;
+;;;     - any character beyond ASCII: GitHub folds keys' case beyond it (long
+;;;       s is S, dotless i is I);
+;;;     - a tab, which YAML may read as white space before a key's colon.
+;;;     "Where a key goes" is after the indent and any "- ", or after {, [ or
+;;;     , and any spaces.
+;;;
 ;;; The text is searched, not parsed as YAML, so a version inside a longer
 ;;; number is also the floor's text, and a key inside a longer name is also the
 ;;; key's. A value that is no floor's text, as a matrix of other versions, is
-;;; not seen here: nothing reads it. The Node floor is not held: no step of any
-;;; workflow uses Node yet.
+;;; not seen here: nothing reads it. The Node floor's version text is not
+;;; held: a node-version line cannot write it, and nothing else reads it.
 (library (floors)
   (export floors-path check-floors floors-problems parse-floors read-floors file-text
           floor-text floor-numbers requirement-lines workflows-problems ci-workflow)
@@ -458,6 +486,118 @@
               ((string=? (substring text i (+ i m)) piece) #t)
               (else (loop (+ i 1)))))))
 
+  ;; node-version-word : String
+  ;; The text that marks a line that sets the Node version setup-node installs.
+  (define node-version-word "node-version")
+
+  ;; word-char? : Char -> Boolean
+  ;; A character of a step id or an output name: a letter, digit, _ or -.
+  (define (word-char? c)
+    (or (char<=? #\a c #\z) (char<=? #\A c #\Z) (char<=? #\0 c #\9)
+        (char=? c #\_) (char=? c #\-)))
+
+  ;; index-of : String Char Natural -> (U Natural #f)
+  ;; Where CHAR first is in TEXT at or after START.
+  (define (index-of text char start)
+    (let loop ((i start))
+      (cond ((>= i (string-length text)) #f)
+            ((char=? (string-ref text i) char) i)
+            (else (loop (+ i 1))))))
+
+  ;; backslash-after-quote? : String -> Boolean
+  ;; Whether LINE holds a backslash anywhere after its first double quote.
+  (define (backslash-after-quote? line)
+    (let ((quote (index-of line #\" 0)))
+      (and quote (index-of line #\\ (+ quote 1)) #t)))
+
+  ;; key-places : String -> (Listof Natural)
+  ;; Where a key may start in LINE: after the indent and any "- ", and after
+  ;; each {, [ or , and the spaces after it.
+  (define (key-places line)
+    (let* ((n (string-length line))
+           (skip (lambda (i) (let loop ((i i))
+                               (if (and (< i n) (char=? (string-ref line i) #\space)) (loop (+ i 1)) i))))
+           (first (let loop ((i (skip 0)))
+                    (if (and (< (+ i 1) n) (char=? (string-ref line i) #\-)
+                             (char=? (string-ref line (+ i 1)) #\space))
+                        (loop (skip (+ i 2)))
+                        i))))
+      (let loop ((i 0) (places (list first)))
+        (cond ((>= i n) (reverse places))
+              ((memv (string-ref line i) '(#\{ #\[ #\,)) (loop (+ i 1) (cons (skip (+ i 1)) places)))
+              (else (loop (+ i 1) places))))))
+
+  ;; at-key-place? : String (Natural -> Boolean) -> Boolean
+  ;; Whether OK? holds at one of LINE's key-places.
+  (define (at-key-place? line ok?)
+    (exists (lambda (i) (and (< i (string-length line)) (ok? i))) (key-places line)))
+
+  ;; explicit-key? : String -> Boolean
+  ;; ? where a key goes, then a space or the line's end.
+  (define (explicit-key? line)
+    (let ((n (string-length line)))
+      (at-key-place? line (lambda (i) (and (char=? (string-ref line i) #\?)
+                                           (or (= (+ i 1) n) (char=? (string-ref line (+ i 1)) #\space)))))))
+
+  ;; alias-key? : String -> Boolean
+  ;; * or & where a key goes, then a letter, digit, _ or -.
+  (define (alias-key? line)
+    (let ((n (string-length line)))
+      (at-key-place? line (lambda (i) (and (memv (string-ref line i) '(#\* #\&))
+                                           (< (+ i 1) n)
+                                           (word-char? (string-ref line (+ i 1))))))))
+
+  ;; beyond-ascii? : String -> Boolean
+  (define (beyond-ascii? line)
+    (exists (lambda (c) (char>? c #\x7e)) (string->list line)))
+
+  ;; tab? : String -> Boolean
+  (define (tab? line) (and (index-of line #\tab 0) #t))
+
+  ;; unread-key-rules : (Listof (Pair (String -> Boolean) String))
+  ;; Each rule that fails a line closed, and what its complaint says.
+  (define unread-key-rules
+    (list (cons backslash-after-quote?
+                " holds a backslash after a double quote, which YAML may read as an escape, and check-floors does not")
+          (cons explicit-key?
+                " writes an explicit key, with ?, whose colon check-floors does not look for")
+          (cons alias-key?
+                " puts an alias or an anchor where a key goes, which check-floors does not resolve")
+          (cons beyond-ascii?
+                " holds a character beyond ASCII, which GitHub may fold into a key's letters, and check-floors does not")
+          (cons tab?
+                " holds a tab, which YAML may read beside a key, and check-floors does not")))
+
+  ;; step-output-line? : String -> Boolean
+  ;; Whether LINE is exactly "node-version: ${{ steps.ID.outputs.NAME }}",
+  ;; after any indent and an optional "- ", with at least one space after the
+  ;; colon, ID and NAME each a word, and nothing but spaces after it.
+  (define (step-output-line? line)
+    (let* ((n (string-length line))
+           (skip (lambda (i) (let loop ((i i))
+                               (if (and (< i n) (char=? (string-ref line i) #\space)) (loop (+ i 1)) i))))
+           (word (lambda (i) (let loop ((j i))
+                               (if (and (< j n) (word-char? (string-ref line j))) (loop (+ j 1)) j))))
+           (at? (lambda (i text)
+                  (and (<= (+ i (string-length text)) n)
+                       (string=? (substring line i (+ i (string-length text))) text)))))
+      (let* ((i (skip 0))
+             (i (if (at? i "- ") (skip (+ i 2)) i)))
+        (and (at? i "node-version:")
+             (let ((j (+ i (string-length "node-version:"))))
+               (and (< j n) (char=? (string-ref line j) #\space)
+                    (let ((j (skip j)))
+                      (and (at? j "${{ steps.")
+                           (let* ((id (+ j (string-length "${{ steps.")))
+                                  (id-end (word id)))
+                             (and (> id-end id)
+                                  (at? id-end ".outputs.")
+                                  (let* ((name (+ id-end (string-length ".outputs.")))
+                                         (name-end (word name)))
+                                    (and (> name-end name)
+                                         (at? name-end " }}")
+                                         (= (skip (+ name-end 3)) n)))))))))))))
+
   ;; ci-workflow : String
   ;; The name of the file, directly in the workflow directory, that it must
   ;; hold.
@@ -466,8 +606,10 @@
   ;; line-problems : String String (Listof String) (Listof (List String String)) -> (Listof String)
   ;; Each complaint about the lines LINES of the file at PATH, in line order:
   ;; for a line, the floors whose version text it contains, the Chez floor
-  ;; first, then the keys it names, the Chez key first. FPATH is the floors
-  ;; file's path, FLOORS (name version) for each floor.
+  ;; first, then the keys it names, the Chez key first, then a node-version,
+  ;; in any case, that is not a step's output, then each of unread-key-rules
+  ;; it breaks, in that list's order. FPATH is the floors file's path, FLOORS
+  ;; (name version) for each floor.
   (define (line-problems path fpath lines floors)
     (let loop ((rest lines) (n 1))
       (if (null? rest)
@@ -492,6 +634,19 @@
                                     fpath))
                              '()))
                        workflow-keys))
+           (if (and (contains? (string-downcase (car rest)) node-version-word)
+                    (not (step-output-line? (car rest))))
+               (list (string-append
+                      path ": line " (number->string n) " names " node-version-word
+                      ", but is not \"node-version: ${{ steps.ID.outputs.NAME }}\": the Node floor comes from "
+                      fpath ", through a step that runs scripts/ci/floor.sh node"))
+               '())
+           (apply append
+                  (map (lambda (rule)
+                         (if ((car rule) (car rest))
+                             (list (string-append path ": line " (number->string n) (cdr rule)))
+                             '()))
+                       unread-key-rules))
            (loop (cdr rest) (+ n 1))))))
 
   ;; workflows-problems : String String (Listof (List String (U String #f))) Floors -> (Listof String)
@@ -501,8 +656,9 @@
   ;; names: it is not compared. In order: a directory with no file, named
   ;; alone; one with no ci.yml, WDIR/ci.yml; and then, file by file in the
   ;; order of their paths, whatever order they come in, each line that
-  ;; contains a floor's version text or names a floor's env key
-  ;; (line-problems).
+  ;; contains a floor's version text, names a floor's env key, names
+  ;; node-version in any case and any form but a step's output, or breaks one
+  ;; of unread-key-rules (line-problems).
   (define (workflows-problems fpath wdir workflows floors)
     (let* ((ci-path (string-append wdir "/" ci-workflow))
            ;; (name version) for each floor.
