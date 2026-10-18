@@ -115,6 +115,13 @@ it should not be a comment. (chez-cmark-gfm)
   code, reads the first value back after the second never arrived. Slice 6 planted a refused
   second value: with the sentinel reused, the round trip passed; with two distinct
   sentinels, it failed. Give each call its own sentinel, and assert every code. (chez-curl)
+* **SRFI-64 keeps one result per runner.** A test run inside another test's actual
+  expression overwrites the outer test's name and expected value. The outer verdict is then
+  reported under the inner test's name. In M1's first lifecycle run, a failing check came
+  out as a FAIL of a test that had passed. A four-line suite reproduces it:
+  `(test-equal "outer, which fails" 2 (begin (test-equal "inner, which passes" 1 1) 1))`
+  prints `FAIL inner, which passes`. Do the work in a definition, and test its outcome
+  after. (chez-curl)
 
 ## Chez and the FFI
 
@@ -219,6 +226,46 @@ it should not be a comment. (chez-cmark-gfm)
   -1 through the `curl_off_t` binding does. (chez-curl)
 
 ## Checks and environment
+
+* **Node's `socket.destroy()` closes with a FIN, not a reset.** M1's plan had the byte
+  probe "reset mid-request" with it. A server sees that as a clean end, so a test of how it
+  survives a reset would have passed without one ever being sent. Measured on Node 24.18.0:
+  `destroy()` reaches the peer as `end`, and `resetAndDestroy()` as `ECONNRESET`. The
+  probe's `--reset` uses the second, and `test-curl-testing` checks what the peer saw.
+  (chez-curl)
+* **curl's `./configure` turns on every optional library it finds.**
+  - In 7.85.0, brotli's default is `off`, and only `no` skips the search
+    (`configure.ac`).
+  - In Docker `ubuntu:24.04`, the floor build's features word was 1361625749 with the
+    prereqs alone, and 1975043741 with ten more `-dev` packages installed. With the prereqs
+    alone it also had no zlib and no HTTP/2: `libcurl4-openssl-dev` only suggests their
+    headers.
+  - `configure` only warns about an option it doesn't know, so a misspelt `--without-…`
+    does nothing.
+  - IPv6 is decided by running a socket test, unless `--enable-ipv6` is given.
+
+  `build-curl.sh` now names every library, passes `--enable-option-checking=fatal`, and
+  checks what the install lists (ADR-0017). (chez-curl)
+* **A shell's `wait` may print `Killed` on stderr when the child it waits for died of a
+  signal.** Measured with `sleep 5 & p=$!; kill -9 $p; wait $p`, which gives status 137 in
+  every case:
+  - Ubuntu 24.04's dash prints `Killed`;
+  - bash 5 run as `bash -c` prints it too;
+  - bash 3.2 in POSIX mode, macOS's `/bin/sh`, prints `Killed` (and `Terminated` for
+    SIGTERM), per the second review.
+
+  Only bash 5 run as `sh`, the container's `/bin/sh`, prints nothing, so no check run in
+  the container sees it. The origin's runner sends its own stderr to `/dev/null`. The
+  Debian Docker run caught it. (chez-curl)
+* **A child of `open-process-ports` stays a zombie until Chez's next collection.**
+  Measured at 10.4.0: one second after the child exited, `/proc/PID/status` said `Z
+  (zombie)`; after a `(collect)`, the pid was gone. Until then `kill -0 PID` succeeds on a
+  dead process, so liveness is never judged by the pid alone. (chez-curl)
+* **`nm` cannot show a curl API that was configured out.** curl compiles a stub in its
+  place: with `CURL_DISABLE_GETOPTIONS`, `curl_easy_option_by_name` returns NULL, and with
+  the header API off, `curl_easy_header` answers "not built in" (7.85.0's source). Both
+  symbols were exported in every disabled-API build. Only a call shows the difference,
+  which is why the load probes them. (chez-curl)
 
 * **A check that reads a library's import form does not see everything the
   library can import.** Each of these reached `(http-client session)` from a

@@ -14,12 +14,16 @@ provisional. They bind until that record is accepted or amended.
 - **libcurl:** 7.85.0 or later, meaning `version_num` ≥ `0x075500` (ADR-0003).
 - **Anything newer than the floor is optional, one feature at a time.** Options are
   looked up by name. Functions are bound only if `foreign-entry?` finds them (ADR-0003).
-- **Node:** 20 or later, for the test origin only (ADR-0005).
+- **Node:** 20 or later, for the test origin and the probe only. CI's `floor` lane runs the
+  suites at the floor, Node 20 (ADR-0005, amended).
 - **The floors have one source, `packaging/floors.sexp`.** `make check-floors`, which
   `make test` runs, holds the list lines of README.org's `** Requirements` to it. CI states no
   floor: its build scripts read the file through `scripts/ci/floor.sh`, and no workflow line
   may write a floor's version or name a floor key. `test-verify` and
-  `test-require-threaded` hold the code to it by behaviour. To change a floor, edit the file,
+  `test-require-threaded` hold the code to it by behaviour. Every `node-version:` takes a
+  step's output, matched in any case. A workflow line `check-floors` cannot read as text
+  fails: a `\` after a `"`, an explicit key, an alias or anchor as a key, a character
+  beyond ASCII, or a tab. To change a floor, edit the file,
   the README, `libcurl-floor` or `minimum`, and the literal rows that name the old floor
   (ADR-0016).
 
@@ -221,11 +225,31 @@ provisional. They bind until that record is accepted or amended.
     container's git could read nothing.
 
   (ADR-0006)
-- **The test origin is `tests/origin.mjs`.** It uses Node's standard library only and
-  binds loopback only. It announces OS-chosen ports as one JSON line on stdout and exits
-  when its stdin closes. Exact bytes come from its raw `node:net` face (ADR-0005).
+- **The test origin is `tests/origin.mjs`.** It uses Node's standard library only, and
+  each face listens on `127.0.0.1`.
+  - It announces one flat JSON line on stdout: `node`, `pid`, then each face as
+    `ADDRESS:PORT`, read back from the listening socket. Nothing else goes to stdout.
+  - It exits 0 when its stdin closes, and a misbehaving client ends only its own
+    connection.
+  - `call-with-origin` holds it to a clean stop: stdout ended, nothing on stderr, and exit
+    status 0. Every wait on a pipe in the helpers is bounded by a monotonic clock.
+  - Its stdin closes once every process holding it has gone, so a suite killed mid-probe
+    leaves it serving until that probe's own deadline.
+  - Exact bytes come from its raw `node:net` face (ADR-0005, amended).
+- **The instrument is checked by a byte probe,** `tests/wire-probe.mjs`, which has no HTTP
+  code, and by `openssl`'s verify codes.
+  - The suites hold their own copy of each scenario's expected bytes, never read from the
+    origin, and assert whole outputs.
+  - No check of the instrument uses libcurl or the `curl` command line (ADR-0005, amended).
 - **TLS test material is generated per run** with the `openssl` command line. None is
   checked in (ADR-0005).
+- **The drift guard:** `test-drift` passes only when the loaded libcurl's `version`,
+  `version-num`, `features`, `ssl-version` and `host` equal exactly one row of
+  `tests/known-libcurls.sexp`.
+  - A libcurl with no row fails wherever it runs, printing its row. A new row is a reviewed
+    change.
+  - The floor lane's curl names every optional library explicitly, so its feature word
+    does not depend on the build machine (ADR-0017).
 - **CI is `.github/workflows/ci.yml`, on a pinned `ubuntu-24.04`, Linux only.** It builds Chez
   from the release tarball, with a pinned sha256, and caches it.
   - `main` runs every check, `make build` and the suites.

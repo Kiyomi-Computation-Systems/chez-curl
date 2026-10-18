@@ -8,8 +8,14 @@ name: CI
 #   - The Guix container. Nothing in CI runs it (ADR-0006): the toolchain here
 #     is Chez built from its release tarball (ADR-0001), the runner's libcurl
 #     and its packages (packaging/debian-prereqs.txt).
-#   - Node. No suite uses it until M1 adds the test origin (ADR-0005).
 #   - A GnuTLS lane. It comes with M2 (ADR-0002).
+#
+# Node runs the test origin and the byte probe, tests/origin.mjs and
+# tests/wire-probe.mjs (ADR-0005, amended), so every lane that runs the suites
+# needs it. main and memory use the runner's own Node. floor installs Node at
+# its floor with actions/setup-node, which takes its version from a step that
+# runs scripts/ci/floor.sh node: check-floors refuses any other way of giving
+# it one.
 #
 # The jobs, all independent, and every one of them on every event below: each
 # pull request, each push to main or a v* tag, and each run asked for from the
@@ -67,7 +73,9 @@ concurrency:
 # Every cache below is keyed by what it holds: the floors file, which names the
 # version, the build script, the build flags (a threaded Chez and a
 # --nothreads Chez are two entries; the rest of each configure line is in the
-# build script), and the runner image. A changed floor or build is never
+# build script), and the runner image. A curl cache is keyed by
+# packaging/debian-prereqs.txt too: the libraries curl is built with come
+# from the packages it lists (ADR-0017). A changed floor or build is never
 # served stale. Each cache is restored and saved in two steps, so a build is
 # banked even when a later step fails. Every job builds what it needs: a cold
 # cache costs each job a build, once, and the first to save wins.
@@ -129,6 +137,7 @@ jobs:
           "$RUNNER_TEMP/chez-threads/bin/scheme" --version
           cc --version | head -n 1
           valgrind --version
+          node --version
           echo "image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
 
       # CHEZ is the real binary, not a symlink or a wrapper. No
@@ -195,7 +204,7 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/curl-floor
-          key: curl-openssl-${{ steps.flags.outputs.key }}-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-curl.sh') }}-${{ steps.image.outputs.id }}
+          key: curl-openssl-${{ steps.flags.outputs.key }}-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-curl.sh', 'packaging/debian-prereqs.txt') }}-${{ steps.image.outputs.id }}
 
       - name: Build libcurl at its floor
         if: steps.curl.outputs.cache-hit != 'true'
@@ -209,6 +218,17 @@ jobs:
         with:
           path: ${{ runner.temp }}/curl-floor
           key: ${{ steps.curl.outputs.cache-primary-key }}
+
+      # The suites run the test origin under Node at its floor. The version is
+      # the floors file's, read by scripts/ci/floor.sh, never written here.
+      - name: Name the Node floor
+        id: node
+        run: echo "version=$(scripts/ci/floor.sh node)" >> "$GITHUB_OUTPUT"
+
+      - name: Install Node at its floor
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ steps.node.outputs.version }}
 
       # The preflight names the library it loaded: the lane is only worth
       # anything if that is the floor's, not the runner's. The floor is the
@@ -229,6 +249,21 @@ jobs:
             echo "::error::make build did not load libcurl at its floor ($floor): this lane tests nothing"
             exit 1
           fi
+          # The same for Node: setup-node installs a release of the floor's
+          # major version, and the suites must run under that, not under the
+          # runner's own Node.
+          # make test runs $NODE, so that is the Node checked. A floor may be
+          # a whole version, so it matches exactly or as a prefix.
+          node_floor=$(scripts/ci/floor.sh node)
+          node_version=$("${NODE:-node}" --version)
+          echo "node: $node_version"
+          case $node_version in
+            "v$node_floor" | "v$node_floor".*) ;;
+            *)
+              echo "::error::node is $node_version, not Node $node_floor: this lane tests nothing"
+              exit 1
+              ;;
+          esac
           make test
 
   # One lane per API that ADR-0003 probes at load, each with its own libcurl,
@@ -300,7 +335,7 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/curl-floor-no-${{ matrix.api }}-api
-          key: curl-openssl-${{ steps.flags.outputs.key }}-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-curl.sh') }}-${{ steps.image.outputs.id }}
+          key: curl-openssl-${{ steps.flags.outputs.key }}-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-curl.sh', 'packaging/debian-prereqs.txt') }}-${{ steps.image.outputs.id }}
 
       - name: Build libcurl at its floor, with the ${{ matrix.api }} API disabled
         if: steps.curl.outputs.cache-hit != 'true'

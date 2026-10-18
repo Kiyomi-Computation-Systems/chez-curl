@@ -64,6 +64,9 @@
 * `make test` runs every suite under GNU `timeout`. On macOS, run
   `brew install coreutils`, and make finds its `gtimeout`. Homebrew installs
   Chez as `chez`, which make also finds.
+* `make test` runs the test origin under Node (`NODE`, default `node`), and
+  `test-drift` fails on any libcurl with no row in `tests/known-libcurls.sexp`.
+  It prints the row: review it, and add it (ADR-0017).
 * `make check-variadic` can watch a variadic binding fail only on Apple arm64.
   Run it on the Mac whenever a variadic binding changes. Elsewhere it checks
   only the static half: `test-collect-safe` must refuse each planted binding.
@@ -99,6 +102,8 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * An assertion passes whenever *another* rule can produce its expected value.
   Assert whole outputs, not substrings, and build a test's base from
   non-default values.
+* SRFI-64 keeps one result per runner. Never run a test inside another test's
+  actual expression: the outer verdict is reported under the inner test's name.
 * Claude Code's Write tool drops trailing whitespace. Build a fixture whose
   point is a trailing space in code, and check its bytes.
 
@@ -147,6 +152,19 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 
 **Checks and environment**
 
+* Node's `socket.destroy()` closes with a FIN, not a reset. `resetAndDestroy()`
+  sends the RST. A test of a reset checks what the peer saw.
+* curl's `./configure` turns on every optional library it finds, and only warns
+  about an option it doesn't know. A reproducible curl build names every
+  library, passes `--enable-option-checking=fatal`, and checks what the install
+  lists.
+* A shell's `wait` may print `Killed` on stderr for a child killed by a signal:
+  dash, `bash -c` and macOS's `/bin/sh` do. Only bash run as `sh`, the
+  container's, prints nothing, so a check run only there won't see it.
+* A child of `open-process-ports` stays a zombie until Chez's next collection, so
+  `kill -0` succeeds on a dead pid. Never judge liveness by the pid alone.
+* `nm` cannot show a curl API that was configured out: curl compiles a stub in
+  its place. Only a call shows the difference.
 * Deleting a subsystem disarms the checks built around it, and they stay
   green. On any deletion, ask of every surviving check "what would make this
   fail now?"; "nothing" is a defect.

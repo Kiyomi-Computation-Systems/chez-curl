@@ -11,18 +11,43 @@
 # scripts/ci/floor.sh, which fails closed on a file that does not give exactly
 # one well-formed libcurl version. Nothing a workflow says, an env key or a
 # matrix value, can change it. The tarball is checked against the sha256
-# pinned below before anything is unpacked. Afterwards it asks the installed
-# curl-config for the version and the TLS backend, and fails unless they are
-# the floor and OpenSSL, and unless the library and the header the lanes name
-# are there.
+# pinned below before anything is unpacked.
 #
-# EXTRA-CONFIGURE-FLAGS go to ./configure after --prefix, --with-openssl and
-# --disable-static. PREFIX must be an absolute path. Nothing is installed
-# outside PREFIX.
+# The libcurl it builds does not depend on what libraries the machine has
+# installed (ADR-0017). One thing ./configure still finds for itself: the
+# default CA bundle and CA path, which change no feature bit but matter to
+# TLS. ./configure turns on every optional library it finds, so a build that left
+# it to look would answer a different curl_version_info on a machine with
+# libbrotli-dev than on one without, and tests/test-drift.sps compares that
+# answer with a row of tests/known-libcurls.sexp. So every optional library
+# is named. OpenSSL, zlib and nghttp2 are on, and their -dev packages are in
+# packaging/debian-prereqs.txt. Every other library ./configure finds, or can
+# be told of, is off. RTSP stays on: tests/test-variadic.sps needs it.
+#
+# Three checks hold that:
+#   - --enable-option-checking=fatal stops ./configure at a flag it does not
+#     know, here or in EXTRA-CONFIGURE-FLAGS. It only warns otherwise, and a
+#     misspelt --without-... would leave the library to be found.
+#   - --with-zlib and --with-nghttp2, given bare, only look: a machine
+#     without the library builds without it and says nothing. So the
+#     install's curl-config --features must list libz and HTTP2, and IPv6,
+#     which --enable-ipv6 sets rather than leaving to a run-time probe.
+#   - It must list none of what is off: brotli, zstd, IDN, PSL, GSS-API,
+#     Kerberos, SPNEGO, GSASL and HTTP3 among its features, and LDAP, LDAPS,
+#     RTMP, SCP and SFTP among its protocols, which the features word the
+#     drift guard compares does not show.
+# Afterwards it also asks curl-config for the version and the TLS backend, and
+# fails unless they are the floor and OpenSSL, and unless the library and the
+# header the lanes name are there.
+#
+# EXTRA-CONFIGURE-FLAGS go to ./configure after --prefix and the flags above,
+# so they win. PREFIX must be an absolute path. Nothing is installed outside
+# PREFIX.
 #
 # Changing the floor is a reviewed change: fetch the release tarball, verify
 # its signature, and add its sha256 to tarball_sha256 below. A floor with no
-# sha256 here fails.
+# sha256 here fails. A new floor also needs its ./configure --help read again,
+# for each optional library it lists.
 set -eu
 
 usage() {
@@ -86,7 +111,28 @@ fi
 tar xJf "$tarball" -C "$work"
 cd "$work/curl-$version"
 
-./configure --prefix="$prefix" --with-openssl --disable-static "$@"
+# The flags. $flags is split into words on purpose: none holds a space.
+flags="--enable-option-checking=fatal --disable-static"
+# On: the TLS backend, and the two libraries HTTP and its compression need.
+flags="$flags --with-openssl --with-zlib --with-nghttp2"
+# On: IPv6. Left to itself, ./configure decides it by trying an AF_INET6
+# socket while it runs, so a build host with IPv6 sockets off would answer
+# another features word.
+flags="$flags --enable-ipv6"
+# Off: libraries ./configure finds by itself. Each one found changes
+# curl_version_info's features word (brotli, zstd, libidn2, libpsl, libgsasl)
+# or its protocols (LDAP, LDAPS, librtmp, libssh2, libssh, wolfssh).
+flags="$flags --without-brotli --without-zstd --without-libidn2 --without-libpsl"
+flags="$flags --without-libgsasl --without-gssapi --disable-ldap --disable-ldaps"
+flags="$flags --without-librtmp --without-libssh2 --without-libssh --without-wolfssh"
+# Off: the ones 7.85.0's ./configure uses only when asked (--without-gssapi
+# is on the line above): c-ares, hyper and the HTTP/3 stacks. Named anyway,
+# so that a later curl that looks for one stays off.
+flags="$flags --disable-ares --without-hyper --without-quiche --without-msh3"
+flags="$flags --without-ngtcp2 --without-nghttp3"
+
+# shellcheck disable=SC2086
+./configure --prefix="$prefix" $flags "$@"
 jobs=$(nproc 2>/dev/null || echo 2)
 make -j"$jobs"
 make install
@@ -106,6 +152,21 @@ case $backends in
     exit 1
     ;;
 esac
+# What the install holds, one word per line: features, then protocols.
+words=$("$config" --features; "$config" --protocols)
+for needed in libz HTTP2 IPv6; do
+  if ! printf '%s\n' "$words" | grep -qxF "$needed"; then
+    echo "build-curl.sh: $config does not list $needed, which this build needs (is its -dev package installed? see packaging/debian-prereqs.txt)" >&2
+    exit 1
+  fi
+done
+for unwanted in brotli zstd IDN PSL GSS-API Kerberos SPNEGO GSASL HTTP3 \
+                LDAP LDAPS RTMP SCP SFTP; do
+  if printf '%s\n' "$words" | grep -qxF "$unwanted"; then
+    echo "build-curl.sh: $config lists $unwanted, which this build turns off" >&2
+    exit 1
+  fi
+done
 for needed in "$prefix/lib/libcurl.so.4" "$prefix/include/curl/curl.h"; do
   if [ ! -e "$needed" ]; then
     echo "build-curl.sh: the install holds no $needed" >&2

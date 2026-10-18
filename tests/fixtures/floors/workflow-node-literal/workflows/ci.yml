@@ -1,0 +1,12 @@
+# Test fixture: a workflow that hands setup-node a literal version.
+name: Fixture
+on:
+  pull_request:
+jobs:
+  floor:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/setup-node@0000000000000000000000000000000000000000 # v0.0.0
+        with:
+          node-version: 22
+      - run: make test

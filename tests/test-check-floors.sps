@@ -18,7 +18,8 @@
 ;;;
 ;;;   - the pure procedures, on texts held in this suite: every rule of the
 ;;;     floors file, every rule of the README comparison and every rule of the
-;;;     workflows comparison, one fault in an otherwise legal text;
+;;;     workflows comparison, the node-version rule among them, one fault in
+;;;     an otherwise legal text;
 ;;;   - the program, on the fixture directories under tests/fixtures/floors/,
 ;;;     each with its workflows in a directory of their own, and on an empty
 ;;;     directory it makes, since git keeps none: its exit status, whole
@@ -157,6 +158,36 @@
 ;; The same for a workflow file but ci.yml.
 (define (elsewhere path n which version) (wrote path n which version fp))
 (define (keyed-in path n key) (named path n key fp))
+
+;; named-node : String Natural String -> String
+;; The complaint about line N of the workflow file PATH, which names
+;; node-version in a form other than a step's output. FLOORS is the floors
+;; file's path.
+(define (named-node path n floors)
+  (string-append path ": line " (number->string n) " names node-version, but is not "
+                 "\"node-version: ${{ steps.ID.outputs.NAME }}\": the Node floor comes from "
+                 floors ", through a step that runs scripts/ci/floor.sh node"))
+
+;; unread : String Natural Symbol -> String
+;; The complaint about line N of the workflow file PATH, which breaks the
+;; fail-closed rule WHICH: backslash, explicit, alias, beyond-ascii or tab.
+(define (unread path n which)
+  (string-append path ": line " (number->string n)
+                 (case which
+                   ((backslash) " holds a backslash after a double quote, which YAML may read as an escape, and check-floors does not")
+                   ((explicit) " writes an explicit key, with ?, whose colon check-floors does not look for")
+                   ((alias) " puts an alias or an anchor where a key goes, which check-floors does not resolve")
+                   ((beyond-ascii) " holds a character beyond ASCII, which GitHub may fold into a key's letters, and check-floors does not")
+                   ((tab) " holds a tab, which YAML may read beside a key, and check-floors does not"))))
+
+;; escaped-key : String Natural -> String
+;; The complaint about a double-quoted key with an escape, as the backslash
+;; rule words it.
+(define (escaped-key path n) (unread path n 'backslash))
+
+;; node-at, node-in : the same against f.sexp, in ci.yml and in another file.
+(define (node-at n) (named-node wp n fp))
+(define (node-in path n) (named-node path n fp))
 
 ;; no-files, no-ci : String
 ;; The complaints about a workflow directory that holds no file, and one that
@@ -721,6 +752,102 @@
   (workflow "env:" "  other: $CHEZ_VERSION" "jobs:" "      - run: echo 10.9.1")
   (list (keyed 2 "CHEZ_VERSION") (literal 4 "Chez" "10.9.1")))
 
+;; --- the workflow: the Node version setup-node installs --------------------------------
+;; It comes from a step's output, which a step fills from scripts/ci/floor.sh
+;; node. node-version written any other way is named, whatever it gives.
+
+(workflow-row "node-version from a step's output: nothing to report"
+  (workflow-with "        with:" "          node-version: ${{ steps.node.outputs.version }}")
+  '())
+
+(workflow-row "node-version from a step's output, as a list item, with words of digits, - and _"
+  (workflow-with "      - node-version: ${{ steps.floor-2.outputs.node_version }}")
+  '())
+
+(for-each
+ (lambda (row)
+   (workflow-row (string-append "node-version " (car row) ": named")
+     (workflow-with "        with:" (cadr row))
+     (list (node-at (+ body-line 1)))))
+ '(("as a literal" "          node-version: 20")
+   ("as the Node floor itself, quoted" "          node-version: \"22.3\"")
+   ("from a matrix" "          node-version: ${{ matrix.node }}")
+   ("from env" "          node-version: ${{ env.NODE_FLOOR }}")
+   ("from a step's output, with a comment after it"
+    "          node-version: ${{ steps.node.outputs.version }} # the floor")
+   ("with no space after its colon" "          node-version:${{ steps.node.outputs.version }}")
+   ("with two spaces inside the braces" "          node-version: ${{  steps.node.outputs.version }}")
+   ("from a step with no id" "          node-version: ${{ steps..outputs.version }}")
+   ("from a step, but not its outputs" "          node-version: ${{ steps.node.version }}")
+   ("from a step's outputs, with no name" "          node-version: ${{ steps.node.outputs. }}")
+   ("with its value on the next line" "          node-version:")
+   ("as a quoted key" "          \"node-version\": ${{ steps.node.outputs.version }}")
+   ("in a flow mapping" "        with: { node-version: ${{ steps.node.outputs.version }} }")
+   ("as node-version-file" "          node-version-file: .nvmrc")
+   ("in a comment" "        # node-version: 20 is the floor")
+   ("with its key in title case, as GitHub reads it all the same" "          Node-Version: 20")
+   ("with its key in upper case" "          NODE-VERSION: ${{ steps.node.outputs.version }}")
+   ("with its key single-quoted, in title case" "          'Node-Version': 20")
+   ("in title case, from a step's output" "          Node-Version: ${{ steps.node.outputs.version }}")))
+
+(for-each
+ (lambda (row)
+   (workflow-row (string-append "a double-quoted key with an escape " (car row) ": named")
+     (workflow-with "        with:" (cadr row))
+     (list (escaped-key wp (+ body-line 1)))))
+ '(("that spells node-version" "          \"node\\x2Dversion\": 20")
+   ("that spells another key" "          \"name\\x2D2\": 20")
+   ("after spaces, before its colon" "          \"n\\u006fde-x\"  : 20")))
+
+(workflow-row "a double-quoted value with an escape: named too, since a quoted key may go on over lines"
+  (workflow-with "      - run: printf \"a\\nb\"" "        env:" "          X: \"a\\tb\"")
+  (list (unread wp body-line 'backslash) (unread wp (+ body-line 2) 'backslash)))
+
+(workflow-row "node-version on two lines: each named, in line order"
+  (workflow-with "          node-version: 20" "      - run: echo fine" "          node-version: ${{ matrix.node }}")
+  (list (node-at body-line) (node-at (+ body-line 2))))
+
+(workflow-row "node-version holding the Chez floor: the floor first, then node-version"
+  (workflow-with "          node-version: 10.9.1")
+  (list (literal body-line "Chez" "10.9.1") (node-at body-line)))
+
+;; --- the workflow: what check-floors cannot read, it fails closed on ---------------
+;; A key YAML or GitHub would read other than as written: a backslash after a
+;; double quote, an explicit key, an alias or anchor where a key goes, a
+;; character beyond ASCII, a tab. Each rule, alone, on a line of its own.
+
+(for-each
+ (lambda (row)
+   (workflow-row (string-append "unread: " (car row) ": named")
+     (workflow-with (cadr row))
+     (map (lambda (which) (unread wp body-line which)) (caddr row))))
+ (list (list "a backslash after a double quote, in a value" "      - run: printf \"a\\nb\"" '(backslash))
+       (list "a backslash after a double quote that is never closed" "      - run: echo \"a\\" '(backslash))
+       (list "an explicit key" "          ? x" '(explicit))
+       (list "an explicit key with nothing after it" "          ?" '(explicit))
+       (list "an explicit key in a sequence item" "      - ? x" '(explicit))
+       (list "an explicit key in a flow mapping" "        with: { ? x : 1 }" '(explicit))
+       (list "an alias as a key" "          *k : 22.3" '(alias))
+       (list "an anchor on a key" "          &a x: 1" '(alias))
+       (list "an alias as a key in a flow mapping" "        with: { a: 1, *k : 2 }" '(alias))
+       (list "a character beyond ASCII, in a comment" (string-append "          # caf" (string #\xe9)) '(beyond-ascii))
+       (list "a long s in a key" (string-append "          node-ver" (string #\x17f) "ion: 22.3") '(beyond-ascii))
+       (list "a tab before a colon" (string-append "          x" (string #\tab) ": 1") '(tab))
+       (list "a backslash after a double quote and a tab" (string-append "          \"a\\x2D\"" (string #\tab) ": 1")
+             '(backslash tab))))
+
+(for-each
+ (lambda (row)
+   (workflow-row (string-append "unread, narrowed: " (car row) ": nothing to report")
+     (workflow-with (cadr row))
+     '()))
+ '(("a shell case pattern *) in a run block" "            *)")
+   ("a && at the start of a line of a run block" "            && make test")
+   ("a glob *.txt) in a run block" "            *.txt) echo text ;;")
+   ("an anchor on a value" "          K: &k plain")
+   ("a backslash in single quotes, with no double quote before it" "          pkgs=$(tr '\\n' ' ')")
+   ("a question mark inside a value" "          name: what? this")))
+
 ;; --- the workflows: every file under the directory -----------------------------------
 
 (define (workflows-row name workflows problems)
@@ -772,6 +899,10 @@
   (list (list wp good-workflow)
         (list release (release-with "      - run: make build" "      - run: echo $CHEZ_VERSION")))
   (list (keyed-in release (+ release-line 1) "CHEZ_VERSION")))
+
+(workflows-row "node-version as a literal in a second workflow: named, by its own path and line"
+  (list (list wp good-workflow) (list release (release-with "          node-version: 20")))
+  (list (node-in release release-line)))
 
 (workflows-row "the old env block in a second workflow: each line's floor and key"
   (list (list wp good-workflow) (list release the-old-env))
@@ -993,6 +1124,68 @@
          (both "workflow-matrix")
          (holds (at "workflow-matrix" "README.org") (at "workflow-matrix" "workflows") "ci.yml"
                 (at "workflow-matrix" "floors.sexp") "chez 10.9.1, libcurl 8.1.2, node 22.3"))
+   (list "workflow-node-literal"
+         "ci.yml hands setup-node a literal version"
+         (both "workflow-node-literal")
+         (refused 1 (named-node (at "workflow-node-literal" "workflows/ci.yml") 11
+                                (at "workflow-node-literal" "floors.sexp"))))
+   (list "workflow-node-key-title"
+         "ci.yml hands setup-node a literal under Node-Version, which GitHub reads as node-version"
+         (both "workflow-node-key-title")
+         (refused 1 (named-node (at "workflow-node-key-title" "workflows/ci.yml") 14
+                                (at "workflow-node-key-title" "floors.sexp"))))
+   (list "workflow-node-key-upper"
+         "ci.yml hands setup-node a literal under NODE-VERSION"
+         (both "workflow-node-key-upper")
+         (refused 1 (named-node (at "workflow-node-key-upper" "workflows/ci.yml") 14
+                                (at "workflow-node-key-upper" "floors.sexp"))))
+   (list "workflow-node-key-single-quoted"
+         "ci.yml hands setup-node a literal under 'Node-Version', single-quoted"
+         (both "workflow-node-key-single-quoted")
+         (refused 1 (named-node (at "workflow-node-key-single-quoted" "workflows/ci.yml") 14
+                                (at "workflow-node-key-single-quoted" "floors.sexp"))))
+   (list "workflow-node-key-escaped"
+         "ci.yml hands setup-node a literal under \"node\\x2Dversion\", a key YAML reads as node-version"
+         (both "workflow-node-key-escaped")
+         (refused 1 (escaped-key (at "workflow-node-key-escaped" "workflows/ci.yml") 14)))
+   (list "workflow-key-explicit"
+         "ci.yml hands setup-node a literal under an explicit key, ? \"node\\x2Dversion\", its colon on the next line"
+         (both "workflow-key-explicit")
+         (refused 2 (unread (at "workflow-key-explicit" "workflows/ci.yml") 14 'backslash)
+                  (unread (at "workflow-key-explicit" "workflows/ci.yml") 14 'explicit)))
+   (list "workflow-key-tab"
+         "ci.yml hands setup-node a literal under a quoted key with a tab before its colon"
+         (both "workflow-key-tab")
+         (refused 2 (unread (at "workflow-key-tab" "workflows/ci.yml") 14 'backslash)
+                  (unread (at "workflow-key-tab" "workflows/ci.yml") 14 'tab)))
+   (list "workflow-key-multiline"
+         "ci.yml hands setup-node a literal under a double-quoted key that goes on over two lines"
+         (both "workflow-key-multiline")
+         (refused 2 (unread (at "workflow-key-multiline" "workflows/ci.yml") 14 'backslash)
+                  (unread (at "workflow-key-multiline" "workflows/ci.yml") 14 'explicit)))
+   (list "workflow-key-alias"
+         "ci.yml hands setup-node a literal under an alias of an anchored \"node\\x2Dversion\""
+         (both "workflow-key-alias")
+         (refused 2 (unread (at "workflow-key-alias" "workflows/ci.yml") 14 'backslash)
+                  (unread (at "workflow-key-alias" "workflows/ci.yml") 16 'alias)))
+   (list "workflow-key-flow-explicit"
+         "ci.yml hands setup-node a literal under an explicit key in a flow mapping"
+         (both "workflow-key-flow-explicit")
+         (refused 2 (unread (at "workflow-key-flow-explicit" "workflows/ci.yml") 13 'backslash)
+                  (unread (at "workflow-key-flow-explicit" "workflows/ci.yml") 13 'explicit)))
+   (list "workflow-key-long-s"
+         "ci.yml hands setup-node a literal under node-verſion, which GitHub folds to NODE-VERSION"
+         (both "workflow-key-long-s")
+         (refused 1 (unread (at "workflow-key-long-s" "workflows/ci.yml") 14 'beyond-ascii)))
+   (list "workflow-key-dotless-i"
+         "ci.yml hands setup-node a literal under node-versıon, which GitHub folds to NODE-VERSION"
+         (both "workflow-key-dotless-i")
+         (refused 1 (unread (at "workflow-key-dotless-i" "workflows/ci.yml") 14 'beyond-ascii)))
+   (list "workflow-node-step"
+         "ci.yml hands setup-node a step's output: nothing to report"
+         (both "workflow-node-step")
+         (holds (at "workflow-node-step" "README.org") (at "workflow-node-step" "workflows") "ci.yml"
+                (at "workflow-node-step" "floors.sexp") "chez 10.9.1, libcurl 8.1.2, node 22.3"))
    (list "no-workflow"
          "a floors file and a README, and no workflow directory beside them"
          (both "no-workflow")

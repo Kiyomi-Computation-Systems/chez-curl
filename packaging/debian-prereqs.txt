@@ -48,11 +48,26 @@ xz-utils
 # --- to build the floor lanes' libcurl ---------------------------------------
 # The floor lanes (ADR-0003) build curl at the floor from its release tarball,
 # with OpenSSL, through scripts/ci/build-curl.sh. ./configure --with-openssl
-# wants OpenSSL's headers. libcurl4-openssl-dev below depends on this package,
-# so it would be installed anyway; it is named here for the lanes that need it:
-# the floor lane, and the two floor-disabled-api lanes, each of which disables
-# one API.
+# wants OpenSSL's headers. libcurl4-openssl-dev below only suggests this
+# package (apt-cache depends, noble, 2026-10-18), so nothing else installs it;
+# it is named here for the lanes that need it: the floor lane, and the two
+# floor-disabled-api lanes, each of which disables one API.
 libssl-dev
+
+# --- for the floor lanes' libcurl: compression --------------------------------
+# scripts/ci/build-curl.sh builds with --with-zlib (ADR-0017), which wants the
+# zlib headers. Given bare, that flag only looks: without this package curl
+# builds without zlib and says nothing, so the script also requires libz in
+# the install's curl-config --features. libcurl4-openssl-dev below only
+# suggests this package, so nothing else installs it.
+zlib1g-dev
+
+# --- for the floor lanes' libcurl: HTTP/2 -------------------------------------
+# HTTP/2 is part of v1's surface, so the floor build has it:
+# scripts/ci/build-curl.sh passes --with-nghttp2 (ADR-0017). Without the
+# headers, curl builds without HTTP/2 and says nothing, so the script also
+# requires HTTP2 in the install's curl-config --features.
+libnghttp2-dev
 
 # --- to check constants against libcurl's headers ----------------------------
 # ADR-0001: a C program compiled at test time checks every constant, and the

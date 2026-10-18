@@ -5,11 +5,15 @@
 ;;; each problem, unless README.org's Requirements section states the floors in
 ;;; packaging/floors.sexp (the lines (floors)'s requirement-lines writes from
 ;;; the file, whole, as one list), and no line of any file in the workflow
-;;; directory contains either floor's version text or names the keys
-;;; CHEZ_VERSION or CURL_FLOOR_VERSION: CI states no floor, and the build
-;;; scripts read theirs from the file. The rules are in (floors); this program
-;;; reads the files, prints, and exits. tests/test-check-floors.sps holds each
-;;; rule on texts and runs this program on fixture directories.
+;;; directory contains either floor's version text, names the keys
+;;; CHEZ_VERSION or CURL_FLOOR_VERSION, names node-version, in any case, but
+;;; as "node-version: ${{ steps.ID.outputs.NAME }}", or holds a double-quoted
+;;; key with an escape: CI states no floor, the build scripts read theirs from
+;;; the file, and the Node floor reaches setup-node from a step that runs
+;;; scripts/ci/floor.sh node. The rules are in (floors); this program reads
+;;; the files, prints, and exits.
+;;; tests/test-check-floors.sps holds each rule on texts and runs this program
+;;; on fixture directories.
 ;;;
 ;;; The workflow directory is read whole: every file in it and in its
 ;;; subdirectories, whatever its name, in the order of their paths. A symbolic
@@ -18,9 +22,10 @@
 ;;; It fails closed, because a check that passes on nothing is vacuous. It
 ;;; names, and exits 1 on, a file or directory it cannot read, a floors file
 ;;; with a problem, a README with no "** Requirements" section or the wrong list
-;;; in it, a workflow directory that holds no file or no ci.yml, and a floor or
-;;; one of the two keys written anywhere in it. A file it cannot read does not
-;;; stop it comparing the others.
+;;; in it, a workflow directory that holds no file or no ci.yml, a floor or
+;;; one of the two keys written anywhere in it, and a node-version that is no
+;;; step's output. A file it cannot read does not stop it comparing the
+;;; others.
 ;;;
 ;;; It prints one line on a pass, to stdout, naming the files it read under the
 ;;; workflow directory and the floors it found, or each problem and then a
