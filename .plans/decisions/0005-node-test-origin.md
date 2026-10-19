@@ -1,6 +1,6 @@
 # ADR-0005: The test origin server is one Node file, standard library only
 
-- **Status:** Accepted; amended 2026-10-18: the byte probe checks the instrument, and CI tests the Node floor (M1)
+- **Status:** Accepted; amended 2026-10-18: the byte probe checks the instrument, and CI tests the Node floor (M1); amended again 2026-10-18: `openssl` checks certificates portably, with no hostname code (M1 slice 2)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl's test instrument (brief §7, milestone M1) and every test lane
   after it
@@ -130,3 +130,59 @@ The maintainer settled two questions for M1 ([M1 plan](../2026-10-18-m1-plan.md)
   `ca -startdate/-enddate`. `openssl verify` gave the same verdicts on all three, except for
   a self-signed leaf: error 18 on OpenSSL, 20 on LibreSSL. So the untrusted leaf is signed
   by a second CA that is never trusted. The Mac's own `openssl` is not measured.
+
+## Amendment, 2026-10-18: how `openssl` checks the TLS faces (M1 slice 2)
+
+The maintainer chose portable checks only ([M1 plan](../2026-10-18-m1-plan.md), §8).
+
+- **Measured.** Node served each leaf, and `openssl` checked it. The same commands ran on
+  OpenSSL 3.5.7 (the container), 3.0.13 (Docker `ubuntu:24.04`, as on CI's runner) and
+  3.0.11 (Docker `node:20.10.0-bookworm`). They ran on LibreSSL 3.3.6 twice: built from its
+  tarball in that image, and on Alpine 3.14.
+  - All of them agreed on `s_client`'s exit status, verify errors, final code and ALPN
+    line, on the served leaf, and on `x509 -text`'s SAN line.
+  - **LibreSSL 3.3.6, the Mac's `/usr/bin/openssl`, cannot check a hostname.** It has no
+    `-verify_hostname`, `-verify_ip`, `-checkhost` or `-ext`. So OpenSSL's code 62, hostname
+    mismatch, cannot be had on the Mac.
+  - LibreSSL's `s_client -verify_return_error` exits 0 when verification fails.
+- **So each TLS face is checked by three portable facts:**
+  - `s_client`'s verify errors and final code against the run CA: none and 0 for a good
+    leaf, 10 and 10 expired, 20 and 21 untrusted;
+  - the leaf it serves, compared with its file;
+  - that leaf's SAN line.
+
+  The code is the first `Verify return code` line. OpenSSL 3 prints one more for each
+  TLS 1.3 session ticket it reads before stdin ends, a number that depends on timing. So
+  each later line must sit under its own ticket header and agree with the first. It did on
+  every face, measured on OpenSSL 3.5.7 and 3.0.11, and LibreSSL printed only one.
+
+  The wrong-host leaf verifies (0) and names only `wrong-host.invalid`. Each failing leaf
+  has one fault the good one lacks, and every leaf has the same subject, which names no
+  host. No check reads a hostname code, an exit status
+  under `-verify_return_error`, or the `-subject` line, whose format differs between
+  OpenSSL and LibreSSL. Names are read from `x509 -text`'s `Subject:` and `Issuer:`
+  lines instead, once ` = ` is folded to `=`: OpenSSL 3.0 writes `CN = x`, and 3.5.7 and
+  LibreSSL write `CN=x`.
+- **The untrusted leaf is signed by a second CA,** as the first amendment found: a
+  self-signed leaf is error 18 on OpenSSL and 20 on LibreSSL. That leaf verifies against
+  the second CA, so trust is its only fault.
+- **`OPENSSL` names the checker,** else `openssl`, as `NODE` names Node.
+- **Rejected:**
+  - **`-verify_hostname` where it exists, skipped by name on LibreSSL.** That means two paths,
+    and the Mac would run fewer checks.
+  - **Requiring an OpenSSL checker on the Mac,** through Homebrew's `openssl@3`. That adds
+    a dependency, and the check could not run on stock macOS.
+- **Measured for the faces** (Node 20.10.0 and 24.18.0 alike):
+  - an `https` server accepts `http/1.1` by ALPN by default;
+  - an HTTP/2 server with no HTTP/1.1 answers a client that does not choose `h2` with an
+    `HTTP/1.0 403 Forbidden` text, unless an `unknownProtocol` listener takes the socket.
+    So the origin destroys that socket at once, and no client reads the text as a
+    response. This record first said Node would wait 10 s. That came from a measurement
+    with a listener attached, and the slice's review corrected it;
+  - `resetAndDestroy()` on a TLS socket throws `ERR_INVALID_HANDLE_TYPE`. A server resets
+    the TCP socket it wrapped. A client that resets its TCP socket that way still reaches
+    the server as a FIN, so the probe has no TLS reset.
+  - Both versions send an empty SETTINGS frame by default, and write the same HTTP/2 bytes.
+  - **One difference:** after an HTTP/2 connection error the origin sent, Node 24.18.0
+    emits `sessionError` and closes. Node 20.10.0 emits nothing and leaves the connection
+    open until the client goes (M1 plan, §8.8).

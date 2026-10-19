@@ -15,10 +15,9 @@
 # each package alone on its line, because a trailing comment would be
 # installed as a package.
 #
-# Not listed, because nothing here could check them: Node and the openssl
-# command line (ADR-0005), and the GnuTLS lane's libcurl (from M2). Nor git,
-# which `make check-pins` needs: the runner checks the repository out with its
-# own.
+# Not listed: Node, which the workflow installs or the runner carries
+# (ADR-0005), and the GnuTLS lane's libcurl (from M2). Nor git, which
+# `make check-pins` needs: the runner checks the repository out with its own.
 
 # --- to build Chez Scheme at the floor in packaging/floors.sexp --------------
 # CI builds Chez itself because noble's chezscheme is 9.5.8, below the floor
@@ -76,6 +75,15 @@ libnghttp2-dev
 # depends on libcurl4t64, the runtime libcurl.so.4 that discovery loads
 # (ADR-0002). The compiler is build-essential's.
 libcurl4-openssl-dev
+
+# --- for the test origin's TLS material and its checks ------------------------
+# tests/make-test-pki.sh makes the TLS faces' certificates per run, and
+# test-origin-tls checks each face with s_client and x509 (ADR-0005, amended
+# 2026-10-18). make test and make test-memory name OPENSSL, else openssl, in
+# require-tools, so a machine without it fails there by name. Noble's package
+# is OpenSSL 3.0.13, installed and measured in Docker ubuntu:24.04
+# (2026-10-18).
+openssl
 
 # --- for the memory gate ------------------------------------------------------
 # ADR-0014: on Linux, every suite runs under Valgrind, and the gate must be

@@ -30,11 +30,33 @@
 ;;;                      the same, half-closing once it has sent
 ;;;   wire-probe-deadline
 ;;;                      how long any probe may run in all, a parameter
+;;;   wire-probe-tls     #f, or the SNI and ALPN every probe speaks TLS with,
+;;;                      a parameter
 ;;;   parse-wire-probe   the probe's output as a Probe
-;;;   probe-bytes, probe-end, probe-arrivals, probe-connected
+;;;   probe-bytes, probe-end, probe-arrivals, probe-connected, probe-ended
 ;;;                      what a Probe holds
+;;;   bounded            capture-command under GNU timeout's 10 s
 ;;;
-;;; Node is NODE from the environment, else node.
+;;; The TLS material and its checker, openssl (M1 plan, section 8):
+;;;
+;;;   origin-pki         #f, or the PKI directory call-with-origin hands the
+;;;                      origin as --pki, a parameter
+;;;   make-test-pki      a fresh PKI, from tests/make-test-pki.sh
+;;;   test-pki-script    the script it runs, a parameter
+;;;   openssl-program    OPENSSL from the environment, else openssl
+;;;   s-client           openssl s_client against a face, as a Peer
+;;;   parse-s-client     s_client's stdout and stderr as a Peer
+;;;   peer-verify-errors, peer-verify-code, peer-alpn, peer-leaf, peer-chain
+;;;                      what a Peer holds
+;;;   certificate-text   a certificate file's x509 -text, as trimmed lines
+;;;   certificate-values what those lines say after a label
+;;;   certificate-names  a Subject or Issuer line's names, read portably
+;;;   certificate-time   an x509 -text date, as seconds since 1970, UTC
+;;;   certificate-san    a certificate file's subjectAltName, from x509 -text
+;;;   pem-certificate    a PEM file's first certificate, as its base64 text
+;;;
+;;; Node is NODE from the environment, else node, and openssl is OPENSSL,
+;;; else openssl.
 ;;;
 ;;; Test-only: it lives in tests/, which make test puts on Chez's library
 ;;; path, not in src/. Its own suite is tests/test-curl-testing.sps.
@@ -44,14 +66,19 @@
           remove-temp-directory run-until seeded-bytes describe
           call-with-origin origin-node origin-pid origin-face origin-script origin-timeout
           read-announcement read-within wire-probe wire-probe-reset wire-probe-half-close
-          wire-probe-deadline
-          parse-wire-probe probe-bytes probe-end probe-arrivals probe-connected)
+          wire-probe-deadline wire-probe-tls
+          parse-wire-probe probe-bytes probe-end probe-arrivals probe-connected probe-ended
+          bounded origin-pki make-test-pki test-pki-script openssl-program
+          s-client parse-s-client peer-verify-errors peer-verify-code peer-alpn peer-leaf
+          peer-chain certificate-text certificate-values certificate-names certificate-time
+          certificate-san
+          pem-certificate)
   (import (rnrs)
           (srfi :64)
-          (only (chezscheme) base-exception-handler current-time display-condition
-                exit-handler file-directory? get-process-id getenv input-port-ready?
-                make-parameter make-time open-process-ports sleep system time-nanosecond
-                time-second))
+          (only (chezscheme) base-exception-handler current-time directory-list
+                display-condition exit-handler file-directory? get-process-id getenv
+                input-port-ready? make-parameter make-time open-process-ports sleep system
+                time-nanosecond time-second))
 
   ;; --- the shared exit form ------------------------------------------------
 
@@ -358,8 +385,23 @@
   ;; costs no memory. The announcement must come within them.
   (define origin-evidence-bytes 4096)
 
-  ;; The keys of an announcement, in order: node, pid, then each face.
-  (define origin-faces-named '(http raw))
+  ;; origin-faces-named : Boolean -> (Listof Symbol)
+  ;; The faces an announcement names, in order, after node and pid: the
+  ;; plaintext ones, and, with a PKI, the TLS ones after them.
+  (define (origin-faces-named pki?)
+    (append '(http raw h2c)
+            (if pki? '(https https-expired https-wrong-host https-untrusted raw-tls h2) '())))
+
+  ;; origin-pki : (Parameter (U String #f))
+  ;; #f, or a directory, as make-test-pki makes one. With a directory,
+  ;; call-with-origin runs the origin with --pki DIR, and requires the TLS
+  ;; faces in its announcement.
+  (define origin-pki
+    (make-parameter #f
+      (lambda (dir)
+        (unless (or (not dir) (and (string? dir) (positive? (string-length dir))))
+          (assertion-violation 'origin-pki "not #f, nor a directory's path" dir))
+        dir)))
 
   ;; An Origin is what its announcement said: its Node's version, its pid, and
   ;; each face's address and port, as ((http "127.0.0.1" . 40001) ...).
@@ -456,7 +498,8 @@
 
   ;; origin-runner : String
   ;; The shell that runs Node, as sh -c RUNNER sh NODE SCRIPT STATUS PID
-  ;; STDERR. Chez has no wait, so the shell waits: it starts Node in the
+  ;; STDERR ARG..., each ARG an argument of the script's. Chez has no wait,
+  ;; so the shell waits: it starts Node in the
   ;; background, on its own stdin (fd 3, since a background command's stdin
   ;; is /dev/null) and with its stderr in STDERR, records Node's pid in PID,
   ;; waits for it, and writes its exit status to STATUS, 128 plus the signal
@@ -468,23 +511,25 @@
   ;; is not found is reported by the background command, into STDERR.
   (define origin-runner
     (string-append "exec 3<&0\n"
-                   "\"$1\" \"$2\" <&3 3<&- 2>\"$5\" &\n"
-                   "echo $! >\"$4\"\n"
+                   "node=$1 script=$2 status=$3 pid=$4 stderr=$5\n"
+                   "shift 5\n"
+                   "\"$node\" \"$script\" \"$@\" <&3 3<&- 2>\"$stderr\" &\n"
+                   "echo $! >\"$pid\"\n"
                    "exec 3<&- </dev/null\n"
                    "wait $!\n"
-                   "echo $? >\"$3\"\n"))
+                   "echo $? >\"$status\"\n"))
 
   ;; A spawned origin: its stdin, its stdout, the runner's pid, and the files
   ;; for its stderr, its exit status and Node's pid.
   (define-record-type (running make-running running?)
     (fields to from pid stderr-path status-path pid-path))
 
-  ;; spawn-origin : String -> Running
-  ;; origin-runner, through exec, running $NODE (origin-script), with Node's
-  ;; stderr in a file in DIR, where reading it never blocks, and the shell's
-  ;; own in /dev/null. open-process-ports closes every other fd in its child
-  ;; (measured), so the origin holds no pipe of another.
-  (define (spawn-origin dir)
+  ;; spawn-origin : String (Listof String) -> Running
+  ;; origin-runner, through exec, running $NODE (origin-script) ARGS, with
+  ;; Node's stderr in a file in DIR, where reading it never blocks, and the
+  ;; shell's own in /dev/null. open-process-ports closes every other fd in
+  ;; its child (measured), so the origin holds no pipe of another.
+  (define (spawn-origin dir args)
     (let ((stderr-path (string-append dir "/stderr"))
           (status-path (string-append dir "/status"))
           (pid-path (string-append dir "/pid")))
@@ -493,7 +538,10 @@
                      (string-append "exec sh -c " (shell-quote origin-runner) " sh "
                                     (shell-quote (node-program)) " " (shell-quote (origin-script)) " "
                                     (shell-quote status-path) " " (shell-quote pid-path) " "
-                                    (shell-quote stderr-path) " 2>/dev/null")
+                                    (shell-quote stderr-path)
+                                    (apply string-append
+                                           (map (lambda (arg) (string-append " " (shell-quote arg))) args))
+                                    " 2>/dev/null")
                      (buffer-mode block) #f)))
         (close-port err)
         (make-running to from pid stderr-path status-path pid-path))))
@@ -567,11 +615,11 @@
                       (cons 'stderr (latin-1 (ending-stderr ending)))
                       (cons 'status (ending-status ending))))))
 
-  ;; start-origin : Running Integer (-> Ending) -> Origin
-  ;; The origin's announcement, read within BOUND ms, as an Origin. On any
-  ;; failure it stops the origin with STOP!, then raises, with all it wrote
-  ;; and its exit status.
-  (define (start-origin running bound stop!)
+  ;; start-origin : Running Integer Boolean (-> Ending) -> Origin
+  ;; The origin's announcement, read within BOUND ms, as an Origin, with the
+  ;; TLS faces when PKI?. On any failure it stops the origin with STOP!, then
+  ;; raises, with all it wrote and its exit status.
+  (define (start-origin running bound pki? stop!)
     (let* ((deadline (+ (now-ms) bound)))
       (let-values (((how bytes) (read-until (running-from running) newline-in? deadline #t)))
         (let ((found
@@ -592,7 +640,8 @@
                                          (read-announcement line)))
                                (made (if (string? parsed)
                                          parsed
-                                         (announcement->origin parsed (recorded-pid running deadline)))))
+                                         (announcement->origin parsed (recorded-pid running deadline)
+                                                               pki?))))
                           (if (string? made)
                               (string-append "the origin's announcement is malformed: " made)
                               made))))))))
@@ -619,15 +668,17 @@
           (bytes-prefix bytes i)
           (loop (+ i 1)))))
 
-  ;; announcement->origin : (Listof (Pair String (U String Natural))) (U Natural #f)
+  ;; announcement->origin : (Listof (Pair String (U String Natural))) (U Natural #f) Boolean
   ;;                        -> (U Origin String)
   ;; The Origin an announcement describes, or what is wrong with it: its
-  ;; keys must be node, pid, http and raw, in that order, with node a string,
-  ;; pid a positive natural, each face ADDRESS:PORT, and then pid the pid of
-  ;; the Node process the runner started, SPAWNED.
-  (define (announcement->origin entries spawned)
-    (let ((keys (map car entries))
-          (wanted (append '("node" "pid") (map symbol->string origin-faces-named))))
+  ;; keys must be node, pid, and then each face origin-faces-named names for
+  ;; PKI?, in that order, with node a string, pid a positive natural, each
+  ;; face ADDRESS:PORT, and then pid the pid of the Node process the runner
+  ;; started, SPAWNED.
+  (define (announcement->origin entries spawned pki?)
+    (let* ((named (origin-faces-named pki?))
+           (keys (map car entries))
+           (wanted (append '("node" "pid") (map symbol->string named))))
       (cond
         ((not (equal? keys wanted))
          (string-append "its keys are " (join-words* keys) ", not " (join-words* wanted)))
@@ -638,7 +689,7 @@
         (else
          (let ((faces (map (lambda (name)
                              (cons name (address-and-port (cdr (assoc (symbol->string name) entries)))))
-                           origin-faces-named)))
+                           named)))
            (let ((bad (find (lambda (face) (not (cdr face))) faces)))
              (cond (bad (string-append "its " (symbol->string (car bad)) " face is not ADDRESS:PORT"))
                    ((not (eqv? (cdr (assoc "pid" entries)) spawned))
@@ -706,7 +757,9 @@
 
   ;; call-with-origin : (Origin -> Any) -> Any
   ;; Spawns $NODE (origin-script), NODE from the environment or else node,
-  ;; under origin-runner, reads its announcement, and answers (PROC origin).
+  ;; with --pki DIR when origin-pki is DIR, under origin-runner, reads its
+  ;; announcement, and answers (PROC origin). With a PKI, the announcement
+  ;; must name the TLS faces too.
   ;; Then, whether PROC returns, raises or escapes, it closes the origin's
   ;; stdin and waits up to (origin-timeout) ms for its stdout to end, and
   ;; kills it with SIGKILL if it does not. It never waits on a reap: the
@@ -729,6 +782,7 @@
     (unless (procedure? proc)
       (assertion-violation 'call-with-origin "not a procedure" proc))
     (let ((bound (origin-timeout))
+          (pki (origin-pki))
           (dir (make-temp-directory))
           (running #f)
           (ended #f)
@@ -751,8 +805,8 @@
                  (dynamic-wind
                    (lambda () #f)
                    (lambda ()
-                     (set! running (spawn-origin dir))
-                     (proc (start-origin running bound stop!)))
+                     (set! running (spawn-origin dir (if pki (list "--pki" pki) '())))
+                     (proc (start-origin running bound (and pki #t) stop!)))
                    clean-up!))
                list)))
         (let ((problem (ending-problem ended removal bound)))
@@ -831,12 +885,14 @@
   (define probe-script "tests/wire-probe.mjs")
 
   ;; A Probe is what tests/wire-probe.mjs saw: every byte it received, joined;
-  ;; how the connection ended; each chunk's arrival; and when it connected.
+  ;; how the connection ended; each chunk's arrival; when it connected; and
+  ;; when it ended.
   (define-record-type (probe-answer make-probe-answer probe-answer?)
     (fields (immutable bytes probe-bytes)
             (immutable end probe-end)
             (immutable arrivals probe-arrivals)
-            (immutable connected probe-connected)))
+            (immutable connected probe-connected)
+            (immutable ended probe-ended)))
 
   ;; probe-bytes : Probe -> Bytevector
   ;; probe-end : Probe -> (U 'eof 'reset 'timeout 'deadline 'reset-sent
@@ -848,6 +904,11 @@
   ;;   the milliseconds since the probe started when it connected, taken
   ;;   before it sent a byte; #f when it was refused. So no reply's arrival
   ;;   can be earlier than it plus the time the origin took.
+  ;; probe-ended : Probe -> Natural
+  ;;   the milliseconds since the probe started when it ended: its end,
+  ;;   reset-sent or refused line's MS. A refusal before the handshake is done
+  ;;   is bounded by nothing but wire-probe-deadline, so a test that claims a
+  ;;   time asserts it here.
 
   ;; probe-argument-bytes : Natural
   ;; The most bytes that travel to the probe as hex in its argument: 16 KiB,
@@ -870,8 +931,14 @@
   ;; wire-probe-reset : Origin Symbol Bytevector -> Probe
   ;; As wire-probe, with --reset: once BYTES are handed to the kernel, the
   ;; probe resets the connection, a client that vanishes with a RST mid-
-  ;; request. Its end is reset-sent, unless the connection ended first.
+  ;; request. Its end is reset-sent, unless the connection ended first. The
+  ;; probe has no reset over TLS, so under wire-probe-tls it raises, before
+  ;; running one.
   (define (wire-probe-reset origin face bytes)
+    (when (wire-probe-tls)
+      (assertion-violation 'wire-probe-reset
+                           "the probe has no reset over TLS, and wire-probe-tls is set"
+                           (wire-probe-tls)))
     (run-probe 'wire-probe-reset origin face bytes 2000 '("--reset")))
 
   ;; wire-probe-half-close : Origin Symbol Bytevector Positive-Integer -> Probe
@@ -890,6 +957,38 @@
         (unless (and (integer? ms) (exact? ms) (positive? ms))
           (assertion-violation 'wire-probe-deadline "not a positive exact integer" ms))
         ms)))
+
+  ;; wire-probe-tls : (Parameter (U #f (Pair String (Listof String))))
+  ;; #f, or a list of SERVERNAME and then the ALPN protocols. While it is a
+  ;; list, every probe speaks TLS, with --tls SERVERNAME, a DNS name, and,
+  ;; when protocols follow it, --alpn and them, joined by commas. Each is a
+  ;; string with no comma, not empty, and no protocol comes twice, as the
+  ;; probe requires. The probe judges no certificate.
+  (define wire-probe-tls
+    (make-parameter #f
+      (lambda (tls)
+        (unless (or (not tls)
+                    (and (list? tls) (pair? tls)
+                         (for-all (lambda (word)
+                                    (and (string? word) (positive? (string-length word))
+                                         (not (memv #\, (string->list word)))))
+                                  tls)
+                         (let distinct ((rest (cdr tls)))
+                           (or (null? rest) (and (not (member (car rest) (cdr rest))) (distinct (cdr rest)))))))
+          (assertion-violation 'wire-probe-tls
+                               "not #f, nor a list of SERVERNAME and then ALPN protocols, each a string with no comma, each once"
+                               tls))
+        tls)))
+
+  ;; tls-options : -> (Listof String)
+  ;; The probe's options for wire-probe-tls.
+  (define (tls-options)
+    (let ((tls (wire-probe-tls)))
+      (cond ((not tls) '())
+            ((null? (cdr tls)) (list "--tls" (car tls)))
+            (else (list "--tls" (car tls) "--alpn"
+                        (fold-left (lambda (joined word) (string-append joined "," word))
+                                   (cadr tls) (cddr tls)))))))
 
   ;; hex-files : Natural
   ;; How many hex files this process has written: part of each file's name.
@@ -917,7 +1016,7 @@
                 (lambda (p) (put-string p hex)))))
           (lambda ()
             (let ((answer (capture-command
-                           (append (list (node-program) probe-script) options
+                           (append (list (node-program) probe-script) options (tls-options)
                                    (list "--deadline" (number->string (wire-probe-deadline)))
                                    (list (car address) (number->string (cdr address))
                                          (if file (string-append "@" file) hex)
@@ -981,7 +1080,7 @@
              (refuse "a refused line is (refused \"CODE\" MS)" line))
            (unless (null? (cdr data))
              (refuse "nothing follows a refused line" (cadr data)))
-           (make-probe-answer (make-bytevector 0) (list 'refused (cadr line)) '() #f)))
+           (make-probe-answer (make-bytevector 0) (list 'refused (cadr line)) '() #f (caddr line))))
         ((not (and (list? (car data)) (= (length (car data)) 2)
                    (eq? (caar data) 'connected) (ms? (cadar data))))
          (refuse "the first line is (connected MS) or (refused \"CODE\" MS)" (car data)))
@@ -1013,7 +1112,8 @@
                   (unless (null? (cdr rest))
                     (refuse "nothing follows the end line" (cadr rest)))
                   (make-probe-answer (bytes-join (reverse chunks)) end (reverse arrivals)
-                                     (cadar data))))
+                                     (cadar data)
+                                     (if (eq? end 'reset-sent) (cadr line) (caddr line)))))
                (else (refuse "a line is (data ...), (end ...) or (reset-sent MS)" line)))))))))
 
   ;; end-kind : Any -> (U 'eof 'reset 'timeout 'reset-sent (List 'error String) #f)
@@ -1031,6 +1131,475 @@
                      (string? (cadddr line)))
                 (list 'error (cadddr line)))
                (else #f))))
+
+  ;; --- bounded -------------------------------------------------------------
+
+  ;; bounded-script : String
+  ;; sh -c BOUNDED-SCRIPT sh COMMAND...: COMMAND, with stdin at its end, under
+  ;; GNU timeout (gtimeout on macOS), killed with SIGKILL after 10 s, exit
+  ;; 137. timeout waits for COMMAND and exits with it, so nothing it started
+  ;; outlives the call: a sleep in a subshell, its first form, did (ppid 1),
+  ;; holding the caller's pipes for its 10 s. With neither found, it exits
+  ;; 125, saying so on stderr.
+  ;;
+  ;; The shell's own stderr is not COMMAND's. timeout's KILL reaches timeout
+  ;; too, and dash, Debian's sh, then prints "Killed" on the stderr of the
+  ;; shell that waited, with that command's own redirections still in force
+  ;; (measured in node:20.10.0-bookworm); bash as sh prints nothing. So the
+  ;; shell's stderr is /dev/null, timeout runs in a subshell that takes the
+  ;; caller's stderr from fd 3 as it execs it, and an exit after it keeps
+  ;; dash from execing the subshell in the shell's place, where the shell
+  ;; that ran this one would print the message instead.
+  (define bounded-script
+    (string-append
+     "t=$(command -v timeout || command -v gtimeout) || { echo 'bounded: no timeout' >&2; exit 125; }\n"
+     "exec 3>&2 2>/dev/null\n"
+     "( exec \"$t\" -s KILL 10 \"$@\" </dev/null 2>&3 3>&- )\n"
+     "exit $?\n"))
+
+  ;; bounded : String String ... -> (List Integer String String)
+  ;; capture-command on PROGRAM and ARGS under bounded-script: the command,
+  ;; and all it started, end within 10 s, killed with SIGKILL then, exit
+  ;; status 137. So a command that hangs, or an origin that ignores its
+  ;; stdin's end, fails by status and does not hang the suite. Nothing it
+  ;; started holds a pipe of this process's after it returns.
+  (define (bounded program . args)
+    (capture-command (append (list "sh" "-c" bounded-script "sh" program) args)))
+
+  ;; --- the TLS material ----------------------------------------------------
+
+  ;; openssl-program : -> String
+  ;; OPENSSL from the environment, else openssl, an empty OPENSSL included:
+  ;; the checker s-client and certificate-san run, and the program
+  ;; tests/make-test-pki.sh runs, which reads OPENSSL alike.
+  (define (openssl-program)
+    (let ((openssl (getenv "OPENSSL")))
+      (if (and openssl (not (string=? openssl ""))) openssl "openssl")))
+
+  ;; test-pki-script : (Parameter String)
+  ;; The script make-test-pki runs with sh, from the working directory:
+  ;; tests/make-test-pki.sh. A test points it at a stand-in.
+  (define test-pki-script
+    (make-parameter "tests/make-test-pki.sh"
+      (lambda (path)
+        (unless (and (string? path) (positive? (string-length path)))
+          (assertion-violation 'test-pki-script "not a path" path))
+        path)))
+
+  ;; pki-files : (Listof String)
+  ;; The ten files tests/make-test-pki.sh makes, sorted.
+  (define pki-files
+    '("ca.pem" "expired.key" "expired.pem" "good.key" "good.pem" "other-ca.pem"
+      "untrusted.key" "untrusted.pem" "wrong-host.key" "wrong-host.pem"))
+
+  ;; make-test-pki : -> String
+  ;; A fresh PKI: a process temp directory, into which it runs sh
+  ;; (test-pki-script) DIR under bounded. It requires exit status 0, nothing
+  ;; on stdout or stderr, and exactly the script's ten files, by name, and
+  ;; answers DIR. Otherwise it removes DIR and raises, naming each thing
+  ;; wrong, with the script, its exit status, stdout and stderr, and the
+  ;; files it left, sorted.
+  (define (make-test-pki)
+    (let* ((script (test-pki-script))
+           (dir (make-process-temp-directory))
+           (made (bounded "sh" script dir))
+           (files (list-sort string<? (directory-list dir)))
+           (wrong (append
+                   (if (zero? (car made)) '() (list (string-append "it exited " (number->string (car made)))))
+                   (if (string=? (cadr made) "") '() '("it wrote to stdout"))
+                   (if (string=? (caddr made) "") '() '("it wrote to stderr"))
+                   (if (equal? files pki-files) '() '("it did not leave exactly the ten files")))))
+      (if (null? wrong)
+          dir
+          (begin
+            (remove-quietly dir)
+            (raise (condition (make-error)
+                              (make-who-condition 'make-test-pki)
+                              (make-message-condition
+                               (string-append "the PKI script did not make the PKI: " (join-with "; " wrong)))
+                              (make-irritants-condition
+                               (list (cons 'script script) (cons 'status (car made)) (cons 'stdout (cadr made))
+                                     (cons 'stderr (caddr made)) (cons 'files files)))))))))
+
+  ;; join-with : String (Listof String) -> String
+  (define (join-with separator words)
+    (if (null? words)
+        ""
+        (fold-left (lambda (text word) (string-append text separator word)) (car words) (cdr words))))
+
+  ;; checker-failure : Symbol String (List Integer String String) -> Condition
+  ;; The raise for an openssl command that did not exit 0: WHO, MESSAGE, and
+  ;; RAN's status, stdout and stderr, as (status . N) (stdout . TEXT)
+  ;; (stderr . TEXT).
+  (define (checker-failure who message ran)
+    (condition (make-error) (make-who-condition who) (make-message-condition message)
+               (make-irritants-condition
+                (list (cons 'status (car ran)) (cons 'stdout (cadr ran)) (cons 'stderr (caddr ran))))))
+
+  ;; A Peer is what openssl s_client said of a face: the verify errors, in
+  ;; order, the final verify code, the protocol ALPN chose, or #f for none,
+  ;; and the chain it was served, each certificate as its base64 text.
+  (define-record-type (peer make-peer peer?)
+    (fields (immutable verify-errors peer-verify-errors)
+            (immutable verify-code peer-verify-code)
+            (immutable alpn peer-alpn)
+            (immutable chain peer-chain)))
+
+  ;; peer-verify-errors : Peer -> (Listof Natural)
+  ;; peer-verify-code : Peer -> Natural
+  ;; peer-alpn : Peer -> (U String #f)
+  ;; peer-chain : Peer -> (Pair String (Listof String))
+  ;;   every certificate the face served, in order, the leaf first: -showcerts
+  ;;   prints each, and no other.
+
+  ;; peer-leaf : Peer -> String
+  ;; The leaf the face served: its chain's first certificate.
+  (define (peer-leaf p)
+    (unless (peer? p)
+      (assertion-violation 'peer-leaf "not a Peer" p))
+    (car (peer-chain p)))
+
+  ;; s-client : Origin Symbol (U String #f) String (U String #f) -> Peer
+  ;; Runs, under bounded, with stdin at its end, so that it closes once
+  ;; connected:
+  ;;   $OPENSSL s_client -connect ADDRESS:PORT [-servername SERVERNAME]
+  ;;     -CAfile CA -showcerts [-alpn ALPN]
+  ;; against ORIGIN's face FACE, -servername only when SERVERNAME is a
+  ;; string, -alpn only when ALPN is. With no -servername, to an IP address,
+  ;; s_client sends no SNI, as libcurl does to an IP URL: OpenSSL 3.5.7 and
+  ;; 3.0.11 and LibreSSL 3.3.6 all sent none, by a face's log. It
+  ;; requires exit status 0, and answers parse-s-client of its stdout and
+  ;; stderr. Otherwise it raises, with the status, stdout and stderr. It
+  ;; asks for no hostname check: LibreSSL 3.3.6 has none (ADR-0005, amended).
+  ;; Stdin's end does not stop OpenSSL 3 reading the server's TLS 1.3
+  ;; session tickets first: by timing, it sometimes prints a block for each,
+  ;; with a Verify return code of its own, which parse-s-client reads.
+  (define (s-client origin face servername ca alpn)
+    (let ((address (origin-face origin face)))
+      (unless (or (not servername) (and (string? servername) (positive? (string-length servername))))
+        (assertion-violation 's-client "the server name is not #f nor a string" servername))
+      (unless (and (string? ca) (positive? (string-length ca)))
+        (assertion-violation 's-client "the CA file is not a path" ca))
+      (unless (or (not alpn) (and (string? alpn) (positive? (string-length alpn))))
+        (assertion-violation 's-client "the ALPN list is not #f nor a string" alpn))
+      (let ((ran (apply bounded (openssl-program) "s_client"
+                        "-connect" (string-append (car address) ":" (number->string (cdr address)))
+                        (append (if servername (list "-servername" servername) '())
+                                (list "-CAfile" ca "-showcerts")
+                                (if alpn (list "-alpn" alpn) '())))))
+        (unless (zero? (car ran))
+          (raise (checker-failure 's-client "openssl s_client did not exit 0" ran)))
+        (parse-s-client (cadr ran) (caddr ran)))))
+
+  ;; parse-s-client : String String -> Peer
+  ;; openssl s_client's STDOUT and STDERR as a Peer, read as OpenSSL 3 and
+  ;; LibreSSL 3.3.6 write them (measured on 3.5.7, 3.0.13, 3.0.11 and
+  ;; 3.3.6):
+  ;;   - peer-verify-errors: N of each stderr line verify error:num=N:TEXT,
+  ;;     in order;
+  ;;   - peer-verify-code: N of stdout's first line Verify return code: N
+  ;;     (TEXT), the handshake's, which LibreSSL indents with spaces;
+  ;;   - peer-alpn: X of stdout's one line ALPN protocol: X, or #f for its
+  ;;     one line No ALPN negotiated: one of the two, once;
+  ;;   - peer-chain: the base64 text of each of stdout's blocks from
+  ;;     -----BEGIN CERTIFICATE----- to -----END CERTIFICATE-----, in order,
+  ;;     each block's lines joined; peer-leaf is the first.
+  ;; A later Verify return code line is a TLS 1.3 session ticket's. OpenSSL
+  ;; 3 prints a block for each ticket it reads before stdin's end, which it
+  ;; does or not by timing: a line Post-Handshake New Session Ticket
+  ;; arrived:, then the session, its code indented. Node sends two. Their
+  ;; codes are the handshake's (measured on every TLS face). LibreSSL prints
+  ;; none. So each later code line must have a ticket line of its own after
+  ;; the code line before it, and the same N, and every ticket line a code
+  ;; line after it. A ticket's block can follow bytes of the server's that
+  ;; s_client copied to stdout, binary ones on h2, but those end up on the
+  ;; --- line s_client writes before the ticket line, which stays whole.
+  ;; It raises, naming the rule, with the line or text at fault, on a
+  ;; malformed verify error or Verify return code line; no Verify return
+  ;; code line; a later one with no ticket line of its own, or another N; a
+  ;; ticket line before the handshake's code line, one with no code line
+  ;; after it, or two before one code line; no ALPN line or more than one;
+  ;; and no certificate block, or any empty or not closed. Every other line
+  ;; is ignored.
+  (define (parse-s-client stdout stderr)
+    (unless (string? stdout)
+      (assertion-violation 'parse-s-client "stdout is not a string" stdout))
+    (unless (string? stderr)
+      (assertion-violation 'parse-s-client "stderr is not a string" stderr))
+    (let ((out (text-lines stdout))
+          (err (text-lines stderr)))
+      (define (refuse message . irritants) (apply error 'parse-s-client message irritants))
+      ;; handshake-code : -> Natural
+      ;; The first code line's N, once every later one is held to its ticket.
+      (define (handshake-code)
+        (let loop ((rest out) (code #f) (ticket #f))
+          (cond
+            ((null? rest)
+             (cond ((not code) (refuse "stdout has no Verify return code line" stdout))
+                   (ticket (refuse "a Post-Handshake New Session Ticket arrived: line has no Verify return code line after it"
+                                   ticket))
+                   (else code)))
+            ((string=? (car rest) ticket-line)
+             (cond ((not code)
+                    (refuse "a Post-Handshake New Session Ticket arrived: line comes before the handshake's Verify return code line"
+                            (car rest)))
+                   (ticket
+                    (refuse "two Post-Handshake New Session Ticket arrived: lines come before one Verify return code line"
+                            (car rest)))
+                   (else (loop (cdr rest) code (car rest)))))
+            ((prefix? "Verify return code:" (trim-left (car rest)))
+             (let ((n (verify-code-number (trim-left (car rest)))))
+               (cond ((not n) (refuse "a Verify return code line is Verify return code: N (TEXT)" (car rest)))
+                     ((not code) (loop (cdr rest) n #f))
+                     ((not ticket)
+                      (refuse "a Verify return code line after the handshake's has no Post-Handshake New Session Ticket arrived: line of its own before it"
+                              (car rest)))
+                     ((not (= n code))
+                      (refuse "a ticket's Verify return code is not the handshake's" code (car rest)))
+                     (else (loop (cdr rest) code #f)))))
+            (else (loop (cdr rest) code ticket)))))
+      (let* ((errors
+              (map (lambda (line)
+                     (or (verify-error-number line)
+                         (refuse "a verify error line is verify error:num=N:TEXT" line)))
+                   (filter (lambda (line) (prefix? "verify error:num=" line)) err)))
+             (code (handshake-code))
+             (alpn-lines (filter (lambda (line)
+                                   (or (prefix? "ALPN protocol:" line) (string=? line "No ALPN negotiated")))
+                                 out)))
+        (cond ((null? alpn-lines) (refuse "stdout has no ALPN protocol or No ALPN negotiated line" stdout))
+              ((pair? (cdr alpn-lines))
+               (refuse "stdout has more than one ALPN protocol or No ALPN negotiated line" alpn-lines)))
+        (let ((alpn (alpn-protocol (car alpn-lines))))
+          (unless alpn
+            (refuse "an ALPN line is ALPN protocol: X, or No ALPN negotiated" (car alpn-lines)))
+          (make-peer errors code (and (string? alpn) alpn) (certificate-blocks 'parse-s-client stdout))))))
+
+  ;; ticket-line : String
+  ;; The line OpenSSL 3's s_client writes before each TLS 1.3 session
+  ;; ticket's block.
+  (define ticket-line "Post-Handshake New Session Ticket arrived:")
+
+  ;; verify-error-number : String -> (U Natural #f)
+  ;; N of verify error:num=N:TEXT.
+  (define (verify-error-number line)
+    (let* ((rest (substring line 17 (string-length line)))
+           (n (digits-before #\: rest)))
+      (and n (car n))))
+
+  ;; verify-code-number : String -> (U Natural #f)
+  ;; N of Verify return code: N (TEXT).
+  (define (verify-code-number line)
+    (and (prefix? "Verify return code: " line)
+         (let* ((rest (substring line 20 (string-length line)))
+                (n (digits-before #\space rest)))
+           (and n
+                (let ((after (cdr n)))
+                  (and (>= (string-length after) 2)
+                       (char=? (string-ref after 0) #\()
+                       (char=? (string-ref after (- (string-length after) 1)) #\))
+                       (car n)))))))
+
+  ;; alpn-protocol : String -> (U String 'none #f)
+  ;; X of ALPN protocol: X, X not empty; none for No ALPN negotiated.
+  (define (alpn-protocol line)
+    (cond ((string=? line "No ALPN negotiated") 'none)
+          ((and (prefix? "ALPN protocol: " line) (> (string-length line) 15))
+           (substring line 15 (string-length line)))
+          (else #f)))
+
+  ;; digits-before : Char String -> (U (Pair Natural String) #f)
+  ;; The natural TEXT starts with, written in one or more digits, and what
+  ;; follows the character STOP right after them; #f when TEXT does not start
+  ;; so.
+  (define (digits-before stop text)
+    (let loop ((i 0))
+      (cond ((and (< i (string-length text)) (char<=? #\0 (string-ref text i) #\9)) (loop (+ i 1)))
+            ((and (> i 0) (< i (string-length text)) (char=? (string-ref text i) stop))
+             (cons (string->number (substring text 0 i)) (substring text (+ i 1) (string-length text))))
+            (else #f))))
+
+  ;; run-x509 : Symbol String -> (List Integer String String)
+  ;; $OPENSSL x509 -in FILE -noout -text under bounded, its status 0, or WHO
+  ;; raises with the status, stdout and stderr.
+  (define (run-x509 who file)
+    (unless (and (string? file) (positive? (string-length file)))
+      (assertion-violation who "not a path" file))
+    (let ((ran (bounded (openssl-program) "x509" "-in" file "-noout" "-text")))
+      (unless (zero? (car ran))
+        (raise (checker-failure who "openssl x509 did not exit 0" ran)))
+      ran))
+
+  ;; certificate-text : String -> (Listof String)
+  ;; What $OPENSSL x509 -in FILE -noout -text writes, run under bounded, as
+  ;; its lines, each trimmed of spaces and tabs at both ends. OpenSSL 3 and
+  ;; LibreSSL 3.3.6 indent the text differently, and agree on the trimmed
+  ;; lines the checks read: Signature Algorithm, Public-Key, ASN1 OID, Not
+  ;; Before and Not After (measured on 3.5.7, 3.0.11 and 3.3.6). They differ
+  ;; on Subject and Issuer, CN=x or CN = x, which no check reads. It raises,
+  ;; with the status, stdout and stderr, when the status is not 0.
+  (define (certificate-text file)
+    (map trim (text-lines (cadr (run-x509 'certificate-text file)))))
+
+  ;; certificate-values : (Listof String) String -> (Listof String)
+  ;; For each of LINES that starts with LABEL, what follows LABEL, trimmed,
+  ;; in order: "Signature Algorithm:" gives two, the copy inside the signed
+  ;; part and the copy outside it, of the one signature the issuer made.
+  ;; LABEL is matched whole, its spacing included: x509 writes "Not After :".
+  (define (certificate-values lines label)
+    (unless (and (list? lines) (for-all string? lines))
+      (assertion-violation 'certificate-values "not a list of lines" lines))
+    (unless (and (string? label) (positive? (string-length label)))
+      (assertion-violation 'certificate-values "not a label" label))
+    (map (lambda (line) (trim (substring line (string-length label) (string-length line))))
+         (filter (lambda (line) (prefix? label line)) lines)))
+
+  ;; certificate-names : (Listof String) String -> (Listof String)
+  ;; certificate-values for LABEL, "Subject:" or "Issuer:" alone, each value
+  ;; with every " = " written "=": OpenSSL 3.0 writes CN = x there, and 3.5
+  ;; and LibreSSL 3.3.6 write CN=x (measured on 3.0.11, 3.5.7 and 3.3.6). It
+  ;; folds nothing else, and refuses any other label: no other line differs
+  ;; that way.
+  (define (certificate-names lines label)
+    (unless (member label '("Subject:" "Issuer:"))
+      (assertion-violation 'certificate-names "a name's label is Subject: or Issuer:" label))
+    (map (lambda (value)
+           (let loop ((i 0) (acc '()))
+             (cond ((>= i (string-length value)) (list->string (reverse acc)))
+                   ((and (<= (+ i 3) (string-length value)) (string=? (substring value i (+ i 3)) " = "))
+                    (loop (+ i 3) (cons #\= acc)))
+                   (else (loop (+ i 1) (cons (string-ref value i) acc))))))
+         (certificate-values lines label)))
+
+  ;; certificate-time : String -> Integer
+  ;; A date as x509 -text writes one, MMM DD HH:MM:SS YYYY GMT, its day
+  ;; padded with a space to two places ("Jan  1 00:00:00 2000 GMT"), as
+  ;; seconds since 1970-01-01 00:00:00 UTC. It raises on any other text: a
+  ;; day not padded, or not in its month, a zone other than GMT, a field out
+  ;; of range.
+  (define (certificate-time text)
+    (define (refuse) (assertion-violation 'certificate-time "not a date as x509 -text writes one" text))
+    (unless (and (string? text) (= (string-length text) 24)) (refuse))
+    (let* ((field (lambda (from to) (substring text from to)))
+           (number (lambda (from to)
+                     (let ((digits (field from to)))
+                       (if (for-all (lambda (c) (char<=? #\0 c #\9)) (string->list digits))
+                           (string->number digits)
+                           (refuse)))))
+           (months '("Jan" "Feb" "Mar" "Apr" "May" "Jun" "Jul" "Aug" "Sep" "Oct" "Nov" "Dec"))
+           (month (let ((m (member (field 0 3) months))) (if m (- 13 (length m)) (refuse))))
+           (day (if (char=? (string-ref text 4) #\space) (number 5 6) (number 4 6))))
+      (unless (and (char=? (string-ref text 3) #\space) (char=? (string-ref text 6) #\space)
+                   (char=? (string-ref text 9) #\:) (char=? (string-ref text 12) #\:)
+                   (char=? (string-ref text 15) #\space) (char=? (string-ref text 20) #\space)
+                   (string=? (field 21 24) "GMT")
+                   (not (char=? (string-ref text 4) #\0)))
+        (refuse))
+      (let ((hour (number 7 9)) (minute (number 10 12)) (second (number 13 15)) (year (number 16 20)))
+        (unless (and (<= 1 day (days-in-month year month)) (<= hour 23) (<= minute 59) (<= second 59))
+          (refuse))
+        (+ (* 86400 (days-from-civil year month day)) (* 3600 hour) (* 60 minute) second))))
+
+  ;; days-in-month : Integer Integer -> Integer
+  (define (days-in-month year month)
+    (case month
+      ((4 6 9 11) 30)
+      ((2) (if (and (zero? (mod year 4)) (or (not (zero? (mod year 100))) (zero? (mod year 400)))) 29 28))
+      (else 31)))
+
+  ;; days-from-civil : Integer Integer Integer -> Integer
+  ;; The days from 1970-01-01 to YEAR-MONTH-DAY in the proleptic Gregorian
+  ;; calendar: Howard Hinnant's days_from_civil.
+  (define (days-from-civil year month day)
+    (let* ((y (if (<= month 2) (- year 1) year))
+           (era (div y 400))
+           (yoe (- y (* era 400)))
+           (doy (+ (div (+ (* 153 (+ month (if (> month 2) -3 9))) 2) 5) (- day 1)))
+           (doe (+ (* yoe 365) (div yoe 4) (- (div yoe 100)) doy)))
+      (+ (* era 146097) doe -719468)))
+
+  ;; certificate-san : String -> String
+  ;; The subjectAltName of the certificate in FILE: the line after X509v3
+  ;; Subject Alternative Name: in certificate-text's lines. OpenSSL 3 and
+  ;; LibreSSL 3.3.6 write it alike, the heading with a space after its colon
+  ;; (measured). It raises, with the status, stdout and stderr, when the
+  ;; status is not 0, and when that heading is missing, there more than once,
+  ;; or the last line.
+  (define (certificate-san file)
+    (let* ((ran (run-x509 'certificate-san file))
+           (fail (lambda (message) (raise (checker-failure 'certificate-san message ran)))))
+      (let loop ((lines (map trim (text-lines (cadr ran)))) (found #f))
+        (cond ((null? lines)
+               (or found (fail "openssl x509 wrote no X509v3 Subject Alternative Name: heading")))
+              ((prefix? "X509v3 Subject Alternative Name:" (car lines))
+               (cond (found (fail "openssl x509 wrote the X509v3 Subject Alternative Name: heading more than once"))
+                     ((null? (cdr lines)) (fail "openssl x509 wrote no line after the X509v3 Subject Alternative Name: heading"))
+                     (else (loop (cddr lines) (cadr lines)))))
+              (else (loop (cdr lines) found))))))
+
+  ;; pem-certificate : String -> String
+  ;; The first certificate in the PEM file FILE, as its base64 text, its
+  ;; lines joined, read in Scheme: what s-client's peer-leaf is for a face
+  ;; that serves it. It raises when FILE holds no certificate block, or one
+  ;; is empty or not closed.
+  (define (pem-certificate file)
+    (unless (and (string? file) (positive? (string-length file)))
+      (assertion-violation 'pem-certificate "not a path" file))
+    (car (certificate-blocks 'pem-certificate
+                             (latin-1 (call-with-port (open-file-input-port file)
+                                        (lambda (p)
+                                          (let ((bytes (get-bytevector-all p)))
+                                            (if (eof-object? bytes) (make-bytevector 0) bytes))))))))
+
+  ;; certificate-blocks : Symbol String -> (Pair String (Listof String))
+  ;; The base64 text of every block in TEXT from a line
+  ;; -----BEGIN CERTIFICATE----- to a line -----END CERTIFICATE-----, in
+  ;; order, each block's lines joined. WHO raises, with TEXT, when there is
+  ;; none, or one is empty or not closed.
+  (define (certificate-blocks who text)
+    (let find ((rest (text-lines text)) (blocks '()))
+      (cond ((null? rest)
+             (if (null? blocks)
+                 (error who "no -----BEGIN CERTIFICATE----- line" text)
+                 (reverse blocks)))
+            ((string=? (car rest) "-----BEGIN CERTIFICATE-----")
+             (let collect ((rest (cdr rest)) (pieces '()))
+               (cond ((null? rest) (error who "a certificate has no -----END CERTIFICATE----- line" text))
+                     ((string=? (car rest) "-----END CERTIFICATE-----")
+                      (if (null? pieces)
+                          (error who "a certificate is empty" text)
+                          (find (cdr rest) (cons (apply string-append (reverse pieces)) blocks))))
+                     (else (collect (cdr rest) (cons (car rest) pieces))))))
+            (else (find (cdr rest) blocks)))))
+
+  ;; text-lines : String -> (Listof String)
+  ;; TEXT's lines, each without its newline. A last line with no newline is
+  ;; a line; the empty text has none.
+  (define (text-lines text)
+    (let loop ((chars (string->list text)) (line '()) (lines '()))
+      (cond ((null? chars)
+             (reverse (if (null? line) lines (cons (list->string (reverse line)) lines))))
+            ((char=? (car chars) #\newline)
+             (loop (cdr chars) '() (cons (list->string (reverse line)) lines)))
+            (else (loop (cdr chars) (cons (car chars) line) lines)))))
+
+  ;; prefix? : String String -> Boolean
+  (define (prefix? start s)
+    (and (<= (string-length start) (string-length s))
+         (string=? start (substring s 0 (string-length start)))))
+
+  ;; trim-left, trim : String -> String
+  ;; S without its leading spaces, or its leading and trailing spaces and
+  ;; tabs.
+  (define (blank? c) (memv c '(#\space #\tab)))
+  (define (trim-left s)
+    (let loop ((i 0))
+      (if (and (< i (string-length s)) (blank? (string-ref s i))) (loop (+ i 1)) (substring s i (string-length s)))))
+  (define (trim s)
+    (let* ((t (trim-left s))
+           (end (let loop ((end (string-length t)))
+                  (if (and (> end 0) (blank? (string-ref t (- end 1)))) (loop (- end 1)) end))))
+      (substring t 0 end)))
 
   ;; read-all : String -> (Listof Any)
   ;; Every datum in TEXT. It raises on text that is not Scheme data.

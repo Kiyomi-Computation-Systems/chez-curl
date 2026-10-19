@@ -1,22 +1,29 @@
 // tests/origin.mjs: chez-curl's test origin (ADR-0005, amended; M1 plan,
-// sections 3 and 4). One ES module, Node's standard library only, for Node 20
-// and later (measured on 20.10.0 and 24.18.0).
+// sections 3, 4 and 8). One ES module, Node's standard library only, for Node
+// 20 and later (measured on 20.10.0 and 24.18.0).
 //
 // The contract:
-//   - `node tests/origin.mjs` takes no arguments. Any argument exits 2, with
-//     a message on stderr.
+//   - `node tests/origin.mjs [--pki DIR]`. With no argument it serves the
+//     plaintext faces. --pki DIR adds the TLS faces, which read their leaves
+//     from DIR, as tests/make-test-pki.sh makes it. Any other argument, or a
+//     PKI file it cannot read or use, exits 2, naming it on stderr.
 //   - Each face listens on 127.0.0.1, port 0, so the OS picks the port.
 //   - Once every face listens, it writes one line on stdout, a flat JSON
 //     object, and nothing else ever goes there:
-//       {"node":"v24.18.0","pid":12345,"http":"127.0.0.1:40001","raw":"127.0.0.1:40002"}
+//       {"node":"v24.18.0","pid":12345,"http":"127.0.0.1:40001","raw":"127.0.0.1:40002","h2c":"127.0.0.1:40003"}
 //     node is process.version and pid process.pid. Each face is ADDRESS:PORT,
-//     both read back from server.address() once it listens.
+//     both read back from server.address() once it listens. The keys come in
+//     this order: node, pid, http, raw, h2c, then, with --pki, https,
+//     https-expired, https-wrong-host, https-untrusted, raw-tls and h2.
 //   - It exits 0 when its stdin ends, after closing every listener and
-//     destroying every open socket. Its stdin ends once every process holding
-//     the pipe's write end has gone: its suite, and, when the suite dies, any
-//     probe or command the suite was running, each ended by its own bound.
-//   - A client that misbehaves ends only its own connection. Any other error
-//     goes to stderr and exits 1, so a suite sees the origin die, not hang.
+//     destroying every open socket and HTTP/2 session, of every face. Its
+//     stdin ends once every process holding the pipe's write end has gone:
+//     its suite, and, when the suite dies, any probe or command the suite was
+//     running, each ended by its own bound.
+//   - A client that misbehaves ends only its own connection: a reset, a
+//     half-close, garbage, a TLS error, an HTTP/2 session or stream error.
+//     Any other error goes to stderr and exits 1, so a suite sees the origin
+//     die, not hang.
 //
 // The faces:
 //   http  node:http. Deterministic: no Date, headers in a fixed order, and
@@ -35,15 +42,46 @@
 //         or parameter, or one out of range, gets the fixed 400. A client
 //         that half-closes after its request still gets its whole script
 //         (allowHalfOpen); once the script has ended or stalls, the client's
-//         FIN closes the connection.
+//         FIN closes the connection. /raw/pause-mid-body?ms=N, 1 to 60000,
+//         writes a head with Content-Length: 11 and hello, waits N ms, then
+//         writes " world" and ends: a script still playing, between two of
+//         its writes, for as long as a check needs.
+//   h2c   node:http2, plaintext, by prior knowledge: the HTTP/2 routes.
+//   With --pki DIR:
+//   https, https-expired, https-wrong-host, https-untrusted
+//         node:https, serving DIR's good, expired, wrong-host and untrusted
+//         leaf, with ALPN http/1.1 alone: http's routes and bytes.
+//   raw-tls
+//         node:net, each socket wrapped in a server tls.TLSSocket with the
+//         good leaf and ALPN http/1.1: raw's scripts. A reset resets the TCP
+//         socket under the TLS one: resetAndDestroy() on a TLS socket throws
+//         ERR_INVALID_HANDLE_TYPE (measured).
+//   h2    node:http2, secure, with the good leaf, ALPN h2 alone and no
+//         HTTP/1.1: the HTTP/2 routes. A client that does not choose h2 has
+//         its socket destroyed at once, with no byte written. Without the
+//         unknownProtocol listener, Node 20.10.0 and 24.18.0 write
+//         "HTTP/1.0 403 Forbidden ... Missing ALPN Protocol ..." to it, then
+//         close (measured), and a client would read that as a response.
 //
-// The suites (tests/test-origin.sps) hold their own copy of each scenario's
-// bytes, written separately from these. They never read them from here, so
-// changing a script here fails them.
+// The HTTP/2 routes follow http's, with the same paths, ranges and bodies:
+// /status/CODE answers :status, then content-length; /redirect/CODE?to=TARGET
+// answers :status, location, content-length; /echo's body is each rawHeaders
+// pair as "name: value\n", pseudo-headers included, in order, then "\n", then
+// the request body. 204 and 304 send no content-length and no body, 205
+// content-length: 0. Anything else, /chunked included, is 404, "not found\n".
+// No date, and no header beyond these.
+//
+// The suites (tests/test-origin.sps, tests/test-origin-tls.sps) hold their
+// own copy of each scenario's bytes, written separately from these. They
+// never read them from here, so changing a script here fails them.
 
+import { readFileSync } from 'node:fs';
 import http from 'node:http';
+import http2 from 'node:http2';
+import https from 'node:https';
 import net from 'node:net';
 import process from 'node:process';
+import tls from 'node:tls';
 
 const HOST = '127.0.0.1';
 
@@ -56,23 +94,99 @@ function fatal(what, err) {
 process.on('uncaughtException', (err) => fatal('uncaught exception', err));
 process.on('unhandledRejection', (err) => fatal('unhandled rejection', err));
 
-if (process.argv.length > 2) {
-  process.stderr.write(
-    `origin: it takes no arguments, and was given ${JSON.stringify(process.argv.slice(2))}\n`);
+// refuse: a wrong argument or PKI file: stderr, exit 2.
+function refuse(problem) {
+  process.stderr.write(`origin: ${problem}\nusage: node tests/origin.mjs [--pki DIR]\n`);
   process.exit(2);
 }
 
-// Every open socket, of either face, so that stdin's end can destroy them.
+const args = process.argv.slice(2);
+let pki = null;
+if (args.length === 2 && args[0] === '--pki') {
+  if (args[1] === '') refuse('--pki takes DIR, a directory, and was given an empty one');
+  pki = args[1];
+} else if (args.length !== 0) {
+  refuse(`it takes no argument, or --pki DIR, and was given ${JSON.stringify(args)}`);
+}
+
+// leaf: NAME's certificate and key from the PKI directory, as a server's
+// options and as a secure context. Exits 2 on a file it cannot read, or a
+// pair that is no certificate and its key.
+function leaf(name) {
+  const read = (file) => {
+    const path = `${pki}/${file}`;
+    try {
+      return readFileSync(path);
+    } catch (err) {
+      return refuse(`cannot read the PKI file ${path}: ${err.code || err.message}`);
+    }
+  };
+  const options = { cert: read(`${name}.pem`), key: read(`${name}.key`) };
+  try {
+    return { options, context: tls.createSecureContext(options) };
+  } catch (err) {
+    return refuse(`the PKI files ${pki}/${name}.pem and ${pki}/${name}.key are not a certificate and its key: ${err.code || err.message}`);
+  }
+}
+
+// Every open socket and HTTP/2 session, of every face, so that stdin's end
+// can destroy them. A TLS face's sockets are tracked twice: the TCP socket,
+// and the TLS socket over it.
 const sockets = new Set();
 function track(socket) {
   sockets.add(socket);
   socket.on('close', () => sockets.delete(socket));
 }
+const sessions = new Set();
+function trackSession(session) {
+  sessions.add(session);
+  session.on('close', () => sessions.delete(session));
+  // An HTTP/2 error ends this session only.
+  session.on('error', () => session.destroy());
+}
 
-// --- the well-formed face -------------------------------------------------
+// --- the routes -----------------------------------------------------------
+
+// route: what the well-formed faces answer for the request target URL.
+// TARGET must decode to printable ASCII with no space, which is what a header
+// value can carry unchanged.
+function route(url) {
+  if (typeof url !== 'string') return { kind: 'not-found' };
+  const at = url.indexOf('?');
+  const path = at < 0 ? url : url.slice(0, at);
+  const query = at < 0 ? undefined : url.slice(at + 1);
+  let m;
+  if ((m = /^\/status\/([2-5][0-9][0-9])$/.exec(path)) && query === undefined) {
+    return { kind: 'status', code: Number(m[1]) };
+  }
+  if ((m = /^\/redirect\/(30[0-8])$/.exec(path))) {
+    const target = redirectTarget(query);
+    return target === null ? { kind: 'not-found' } : { kind: 'redirect', code: Number(m[1]), target };
+  }
+  if (path === '/chunked' && query === undefined) return { kind: 'chunked' };
+  if (path === '/echo') return { kind: 'echo' };
+  return { kind: 'not-found' };
+}
+
+// redirectTarget: the decoded TARGET of a query that is exactly to=TARGET,
+// or null.
+function redirectTarget(query) {
+  if (query === undefined || !query.startsWith('to=')) return null;
+  const raw = query.slice(3);
+  if (raw === '' || raw.includes('&')) return null;
+  let target;
+  try {
+    target = decodeURIComponent(raw);
+  } catch {
+    return null;
+  }
+  return /^[\x21-\x7e]+$/.test(target) ? target : null;
+}
 
 // noBody: the statuses that carry no body.
 const noBody = new Set([204, 304]);
+
+// --- the well-formed HTTP/1.1 faces: http and the https faces -------------
 
 // send: writes one whole response, its headers in the order given, then
 // Connection, from Node's own decision whether to keep the connection.
@@ -96,71 +210,135 @@ function text(res, status, body, headers = []) {
   }
 }
 
-function notFound(res) {
-  text(res, 404, 'not found\n');
-}
-
-// redirectTarget: the decoded TARGET of a query that is exactly to=TARGET,
-// or null. TARGET must decode to printable ASCII with no space, which is
-// what a header value can carry unchanged.
-function redirectTarget(query) {
-  if (query === undefined || !query.startsWith('to=')) return null;
-  const raw = query.slice(3);
-  if (raw === '' || raw.includes('&')) return null;
-  let target;
-  try {
-    target = decodeURIComponent(raw);
-  } catch {
-    return null;
-  }
-  return /^[\x21-\x7e]+$/.test(target) ? target : null;
-}
-
 function respond(req, res, body) {
-  const at = req.url.indexOf('?');
-  const path = at < 0 ? req.url : req.url.slice(0, at);
-  const query = at < 0 ? undefined : req.url.slice(at + 1);
-  let m;
-  if ((m = /^\/status\/([2-5][0-9][0-9])$/.exec(path)) && query === undefined) {
-    const code = Number(m[1]);
-    text(res, code, `status ${code}\n`);
-  } else if ((m = /^\/redirect\/(30[0-8])$/.exec(path))) {
-    const code = Number(m[1]);
-    const target = redirectTarget(query);
-    if (target === null) return notFound(res);
-    text(res, code, `redirect ${code}\n`, ['Location', target]);
-  } else if (path === '/chunked' && query === undefined) {
-    res.sendDate = false;
-    const connection = res.shouldKeepAlive ? 'keep-alive' : 'close';
-    res.writeHead(200, ['Transfer-Encoding', 'chunked', 'Connection', connection]);
-    res.write('alpha\n');
-    res.write('beta\n');
-    res.write('gamma\n');
-    res.end();
-  } else if (path === '/echo') {
-    let lines = `${req.method} ${req.url} HTTP/${req.httpVersion}\n`;
-    for (let i = 0; i < req.rawHeaders.length; i += 2) {
-      lines += `${req.rawHeaders[i]}: ${req.rawHeaders[i + 1]}\n`;
+  const r = route(req.url);
+  switch (r.kind) {
+    case 'status':
+      return text(res, r.code, `status ${r.code}\n`);
+    case 'redirect':
+      return text(res, r.code, `redirect ${r.code}\n`, ['Location', r.target]);
+    case 'chunked': {
+      res.sendDate = false;
+      const connection = res.shouldKeepAlive ? 'keep-alive' : 'close';
+      res.writeHead(200, ['Transfer-Encoding', 'chunked', 'Connection', connection]);
+      res.write('alpha\n');
+      res.write('beta\n');
+      res.write('gamma\n');
+      return res.end();
     }
-    lines += '\n';
-    const bytes = Buffer.concat([Buffer.from(lines, 'latin1'), body]);
-    send(res, 200, ['Content-Length', String(bytes.length)], bytes);
-  } else {
-    notFound(res);
+    case 'echo': {
+      let lines = `${req.method} ${req.url} HTTP/${req.httpVersion}\n`;
+      for (let i = 0; i < req.rawHeaders.length; i += 2) {
+        lines += `${req.rawHeaders[i]}: ${req.rawHeaders[i + 1]}\n`;
+      }
+      lines += '\n';
+      const bytes = Buffer.concat([Buffer.from(lines, 'latin1'), body]);
+      return send(res, 200, ['Content-Length', String(bytes.length)], bytes);
+    }
+    default:
+      return text(res, 404, 'not found\n');
   }
 }
 
-const httpServer = http.createServer((req, res) => {
+function wellFormed(req, res) {
   const chunks = [];
   req.on('error', () => res.destroy());
   req.on('data', (chunk) => chunks.push(chunk));
   req.on('end', () => respond(req, res, Buffer.concat(chunks)));
-});
+}
+
+const httpServer = http.createServer(wellFormed);
 httpServer.on('connection', track);
 
-// --- the raw face ---------------------------------------------------------
+// httpsServer: an https face serving LEAF, with ALPN http/1.1 alone. A TLS
+// error ends that connection only.
+function httpsServer(leafOf) {
+  const server = https.createServer({ ...leafOf.options, ALPNProtocols: ['http/1.1'] }, wellFormed);
+  server.on('connection', track);
+  server.on('secureConnection', track);
+  server.on('tlsClientError', (err, socket) => socket.destroy());
+  return server;
+}
 
-// The longest request head the raw face reads, its CRLF CRLF included.
+// --- the HTTP/2 faces: h2c and h2 -----------------------------------------
+
+// h2Send: one whole HTTP/2 response, :status then HEADERS' pairs in order,
+// and BODY in DATA, or none, ending the stream on the HEADERS frame.
+function h2Send(stream, status, headers, body) {
+  if (stream.destroyed) return;
+  const head = { ':status': status };
+  for (let i = 0; i < headers.length; i += 2) head[headers[i]] = headers[i + 1];
+  if (body === undefined) {
+    stream.respond(head, { endStream: true, sendDate: false });
+  } else {
+    stream.respond(head, { sendDate: false });
+    stream.end(body);
+  }
+}
+
+function h2Text(stream, status, body, headers = []) {
+  if (noBody.has(status)) {
+    h2Send(stream, status, headers, undefined);
+  } else if (status === 205) {
+    h2Send(stream, status, [...headers, 'content-length', '0'], undefined);
+  } else {
+    const bytes = Buffer.from(body, 'latin1');
+    h2Send(stream, status, [...headers, 'content-length', String(bytes.length)], bytes);
+  }
+}
+
+function h2Respond(stream, headers, rawHeaders, body) {
+  const r = route(headers[':path']);
+  switch (r.kind) {
+    case 'status':
+      return h2Text(stream, r.code, `status ${r.code}\n`);
+    case 'redirect':
+      return h2Text(stream, r.code, `redirect ${r.code}\n`, ['location', r.target]);
+    case 'echo': {
+      let lines = '';
+      for (let i = 0; i < rawHeaders.length; i += 2) lines += `${rawHeaders[i]}: ${rawHeaders[i + 1]}\n`;
+      lines += '\n';
+      const bytes = Buffer.concat([Buffer.from(lines, 'latin1'), body]);
+      return h2Send(stream, 200, ['content-length', String(bytes.length)], bytes);
+    }
+    default:
+      // /chunked is an HTTP/1.1 route.
+      return h2Text(stream, 404, 'not found\n');
+  }
+}
+
+function h2Stream(stream, headers, flags, rawHeaders) {
+  const chunks = [];
+  // A stream error ends this stream only.
+  stream.on('error', () => stream.destroy());
+  stream.on('data', (chunk) => chunks.push(chunk));
+  stream.on('end', () => h2Respond(stream, headers, rawHeaders, Buffer.concat(chunks)));
+}
+
+// h2Face: SERVER, with the listeners every HTTP/2 face shares.
+function h2Face(server) {
+  server.on('connection', track);
+  server.on('session', trackSession);
+  server.on('sessionError', (err, session) => session.destroy());
+  server.on('stream', h2Stream);
+  return server;
+}
+
+const h2cServer = h2Face(http2.createServer());
+
+function h2Server(leafOf) {
+  const server = h2Face(http2.createSecureServer({ ...leafOf.options, allowHTTP1: false }));
+  server.on('secureConnection', track);
+  server.on('tlsClientError', (err, socket) => socket.destroy());
+  // A client that did not choose h2: destroyed with nothing written. With
+  // no listener, Node writes it an HTTP/1.0 403 first (measured).
+  server.on('unknownProtocol', (socket) => socket.destroy());
+  return server;
+}
+
+// --- the raw faces: raw and raw-tls ---------------------------------------
+
+// The longest request head the raw faces read, its CRLF CRLF included.
 const HEAD_LIMIT = 64 * 1024;
 
 const ascii = (s) => Buffer.from(s, 'latin1');
@@ -212,6 +390,12 @@ const scripts = {
     },
   },
   'stall-after-head': { play: () => [write('HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\n'), STALL] },
+  // A script still playing, between two of its writes, for as long as ms
+  // says: the stop checks hold a connection there for 60 s.
+  'pause-mid-body': {
+    params: { ms: [1, 60000] },
+    play: ({ ms }) => [write('HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello'), wait(ms), write(' world'), END],
+  },
   'stall-before-head': { play: () => [STALL] },
 
   // oversized
@@ -316,9 +500,10 @@ function pause(socket, ms) {
 
 // play: runs STEPS on SOCKET, whose STATE says whether the client has
 // half-closed. A write waits until its bytes are handed to the kernel. It
-// stops as soon as the socket can take no more. A stall writes nothing more,
-// and leaves the connection to the client's FIN.
-async function play(socket, state, steps) {
+// stops as soon as the socket can take no more. A reset is RESET's: the TCP
+// socket's resetAndDestroy(). A stall writes nothing more, and leaves the
+// connection to the client's FIN.
+async function play(socket, reset, state, steps) {
   state.playing = true;
   try {
     for (const s of steps) {
@@ -334,7 +519,7 @@ async function play(socket, state, steps) {
           socket.end();
           return;
         case 'reset':
-          socket.resetAndDestroy();
+          reset();
           return;
         case 'stall':
           return;
@@ -348,13 +533,9 @@ async function play(socket, state, steps) {
   }
 }
 
-const rawServer = net.createServer({ allowHalfOpen: true }, (socket) => {
-  track(socket);
-  // Each write goes out as written: Nagle's algorithm may hold a small write
-  // back while one is unacknowledged, which would join a drip's bytes.
-  socket.setNoDelay(true);
-  // A reset, or a write after the client went, ends this connection only.
-  socket.on('error', () => socket.destroy());
+// serveRaw: reads a request head from SOCKET, and plays its script, with
+// RESET as the script's reset.
+function serveRaw(socket, reset) {
   // With allowHalfOpen, the client's FIN leaves this side open: a script that
   // is playing goes on; otherwise this side ends too.
   const state = { playing: false, clientEnded: false };
@@ -372,16 +553,67 @@ const rawServer = net.createServer({ allowHalfOpen: true }, (socket) => {
       started = true;
       const request = Buffer.from(head.subarray(0, end + 4));
       head = null;
-      play(socket, state, scriptFor(request)).catch((err) => fatal('a script failed', err));
+      play(socket, reset, state, scriptFor(request)).catch((err) => fatal('a script failed', err));
     } else if (head.length >= HEAD_LIMIT) {
       started = true;
       head = null;
-      play(socket, state, badRequest).catch((err) => fatal('a script failed', err));
+      play(socket, reset, state, badRequest).catch((err) => fatal('a script failed', err));
     }
   });
+}
+
+// rawSocket: a raw face's TCP socket, set up: tracked, each write sent as
+// written (Nagle's algorithm may hold a small write back while one is
+// unacknowledged, which would join a drip's bytes), and an error, a reset or
+// a write after the client went, ending this connection only.
+function rawSocket(socket) {
+  track(socket);
+  socket.setNoDelay(true);
+  socket.on('error', () => socket.destroy());
+  return socket;
+}
+
+const rawServer = net.createServer({ allowHalfOpen: true }, (socket) => {
+  rawSocket(socket);
+  serveRaw(socket, () => socket.resetAndDestroy());
 });
 
+// rawTlsServer: raw's scripts over TLS, with LEAF and ALPN http/1.1 alone.
+// The TLS socket is half-open as the TCP socket under it is. Its error, a
+// TLS one among them, ends both.
+function rawTlsServer(leafOf) {
+  return net.createServer({ allowHalfOpen: true }, (raw) => {
+    rawSocket(raw);
+    const socket = new tls.TLSSocket(raw, {
+      isServer: true,
+      secureContext: leafOf.context,
+      ALPNProtocols: ['http/1.1'],
+    });
+    track(socket);
+    socket.on('error', () => {
+      socket.destroy();
+      raw.destroy();
+    });
+    serveRaw(socket, () => raw.resetAndDestroy());
+  });
+}
+
 // --- the lifecycle --------------------------------------------------------
+
+// The faces, by name, in the announcement's order.
+const faces = [['http', httpServer], ['raw', rawServer], ['h2c', h2cServer]];
+if (pki !== null) {
+  const good = leaf('good');
+  const expired = leaf('expired');
+  const wrongHost = leaf('wrong-host');
+  const untrusted = leaf('untrusted');
+  faces.push(['https', httpsServer(good)],
+             ['https-expired', httpsServer(expired)],
+             ['https-wrong-host', httpsServer(wrongHost)],
+             ['https-untrusted', httpsServer(untrusted)],
+             ['raw-tls', rawTlsServer(good)],
+             ['h2', h2Server(good)]);
+}
 
 function listen(server, name) {
   return new Promise((resolve) => {
@@ -390,32 +622,31 @@ function listen(server, name) {
   });
 }
 
-function face(server) {
-  const { address, port } = server.address();
-  return `${address}:${port}`;
+function address(server) {
+  const { address: host, port } = server.address();
+  return `${host}:${port}`;
 }
 
 let stopping = false;
 function stop(code) {
   if (stopping) return;
   stopping = true;
-  let open = 2;
+  let open = faces.length;
   const closed = () => {
     open -= 1;
     if (open === 0) process.exit(code);
   };
-  httpServer.close(closed);
-  rawServer.close(closed);
+  for (const [, server] of faces) server.close(closed);
+  for (const session of sessions) session.destroy();
   for (const socket of sockets) socket.destroy();
 }
 
-await Promise.all([listen(httpServer, 'http'), listen(rawServer, 'raw')]);
+await Promise.all(faces.map(([name, server]) => listen(server, name)));
 
 const announcement = JSON.stringify({
   node: process.version,
   pid: process.pid,
-  http: face(httpServer),
-  raw: face(rawServer),
+  ...Object.fromEntries(faces.map(([name, server]) => [name, address(server)])),
 });
 
 // stdin is read only once the announcement is out, so its end cannot come
