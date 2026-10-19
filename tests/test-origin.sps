@@ -21,7 +21,8 @@
 ;;; Every wait here is bounded by the monotonic clock, checked before each
 ;;; read. Every process it spawns ends with its call: probes and commands
 ;;; through capture-command, which waits for them; the origin's own runs under
-;;; GNU timeout, which kills its command and leaves nothing behind; and the two
+;;; (curl-testing)'s bounded, GNU timeout, which kills its command and leaves
+;;; nothing behind; and the two
 ;;; it leaves running, a probe and a child Chez, through open-process-ports,
 ;;; which hands them no pipe of an origin's (measured), each killed after.
 ;;;
@@ -149,12 +150,6 @@
            (let loop ((i 0))
              (if (char=? (string-ref text i) #\newline) (substring text 0 i) (loop (+ i 1))))))))
 
-;; read-to-end-within : Binary-Input-Port Natural -> (U String #f)
-;; All PORT gives until its end, within MS milliseconds, or #f.
-(define (read-to-end-within port ms)
-  (let-values (((how bytes) (read-within port ms (lambda (b) #f) #t)))
-    (and (eq? how 'eof) (latin-1 bytes))))
-
 ;; probe-at : String Natural Natural -> End
 ;; How a connection to HOST:PORT ends, sending nothing, through the probe
 ;; program itself, for an address or an origin no Origin of this process
@@ -165,23 +160,6 @@
     (if (= (car answer) 0)
         (probe-end (parse-wire-probe (cadr answer)))
         (list 'probe-failed answer))))
-
-;; bounded-script : String
-;; sh -c BOUNDED-SCRIPT sh COMMAND...: COMMAND, with stdin at its end, under
-;; GNU timeout (gtimeout on macOS), killed with SIGKILL after 10 s, exit
-;; 137. timeout waits for COMMAND and exits with it, so nothing it started
-;; outlives the call: a sleep in a subshell, its first form, did (ppid 1),
-;; holding the caller's pipes for its 10 s.
-(define bounded-script
-  (string-append
-   "t=$(command -v timeout || command -v gtimeout) || { echo 'bounded: no timeout' >&2; exit 125; }\n"
-   "exec \"$t\" -s KILL 10 \"$@\" </dev/null\n"))
-
-;; bounded : String ... -> (List Integer String String)
-;; capture-command on ARGS under bounded-script, so an origin that ignores
-;; stdin's end fails here, by status, and does not hang the suite.
-(define (bounded . args)
-  (capture-command (append (list "sh" "-c" bounded-script "sh") args)))
 
 ;; The fixed 400 the raw face writes, by hand.
 (define bad-request
@@ -290,6 +268,19 @@
      (28 2 "HTTP/1.1 200 OK\r\nContent-Length: 28\r\n\r\n" "abcdefghijklmnopqrstuvwxyzab")))
   (raw-row o "/raw/drip?bytes=4096&gap=5000" "HTTP/1.1 200 OK\r\nContent-Length: 4096\r\n\r\n" 'timeout 300)
   (raw-row o "/raw/stall-after-head" "HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\n" 'timeout 150)
+
+  ;; --- the raw face: a script that pauses mid-body for ms, 1 to 60000
+  (test-equal "raw /raw/pause-mid-body?ms=50: the whole bytes, then eof, \" world\" at least 50 ms after connecting"
+    (list "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello world" 'eof 'late-enough)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((p (wire-probe o 'raw (octets (get "/raw/pause-mid-body?ms=50")) 2000))
+             (at (arrival (probe-arrivals p) (string-length "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello"))))
+        (list (latin-1 (probe-bytes p)) (probe-end p)
+              (if (and at (probe-connected p) (>= (- at (probe-connected p)) 50))
+                  'late-enough
+                  (list 'world-at at 'connected (probe-connected p)))))))
+  (raw-row o "/raw/pause-mid-body?ms=1" "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello world" 'eof)
+  (raw-row o "/raw/pause-mid-body?ms=60000" "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello" 'timeout 300)
   (raw-row o "/raw/stall-before-head" "" 'timeout 150)
 
   ;; --- the raw face: oversized
@@ -375,6 +366,9 @@
          (list "big-header bytes=1048577" (get "/raw/big-header?bytes=1048577"))
          (list "many-headers count=0" (get "/raw/many-headers?count=0"))
          (list "many-headers count=100001" (get "/raw/many-headers?count=100001"))
+         (list "pause-mid-body ms=0" (get "/raw/pause-mid-body?ms=0"))
+         (list "pause-mid-body ms=60001" (get "/raw/pause-mid-body?ms=60001"))
+         (list "pause-mid-body without ms" (get "/raw/pause-mid-body"))
          (list "a path outside /raw/" (get "/content-length"))
          (list "a request line of two words" "GET /raw/content-length\r\n\r\n")
          (list "a request line of four words" "GET /raw/content-length HTTP/1.1 x\r\n\r\n")
@@ -463,8 +457,8 @@
 
   ;; --- lifecycle: loopback faces, and what the announcement says
   (test-equal "loopback only: every face's announced address is 127.0.0.1"
-    '("127.0.0.1" "127.0.0.1")
-    (map (lambda (face) (car (origin-face o face))) '(http raw)))
+    '("127.0.0.1" "127.0.0.1" "127.0.0.1")
+    (map (lambda (face) (car (origin-face o face))) '(http raw h2c)))
   (test-equal "the announcement's node is the version the Node that ran it reports"
     (list 0 (string-append (origin-node o) "\n") "")
     (capture-command (list node "--version")))
@@ -474,8 +468,8 @@
   ;; nothing there.
   (unless linux? (test-skip 1))
   (test-equal "loopback by connection, on Linux: each face refuses 127.0.0.2, so it listens on 127.0.0.1 alone (skipped elsewhere, where 127.0.0.2 is no loopback address by default)"
-    '((refused "ECONNREFUSED") (refused "ECONNREFUSED"))
-    (map (lambda (face) (probe-at "127.0.0.2" (cdr (origin-face o face)) 200)) '(http raw)))
+    '((refused "ECONNREFUSED") (refused "ECONNREFUSED") (refused "ECONNREFUSED"))
+    (map (lambda (face) (probe-at "127.0.0.2" (cdr (origin-face o face)) 200)) '(http raw h2c)))
 
   ;; --- lifecycle: bad clients end only their own connection. The probe,
   ;; with --reset, sends part of a request head, then resets: a destroy()
@@ -568,20 +562,10 @@
 
 ;; --- lifecycle: the exit on stdin's end -----------------------------------------
 
-(define refused '(("" (refused "ECONNREFUSED")) ("" (refused "ECONNREFUSED"))))
+(define refused '(("" (refused "ECONNREFUSED")) ("" (refused "ECONNREFUSED")) ("" (refused "ECONNREFUSED"))))
 
 ;; bounded* : (Listof String) -> (List Integer String String)
 (define (bounded* args) (apply bounded args))
-
-(test-equal "bounded leaves nothing running: run with a pipe as its stdout, the pipe ends within 2000 ms of a command that ends at once"
-  'ended
-  (guard (e (#t (list 'raised (describe e))))
-    (let-values (((to from err pid)
-                  (open-process-ports (string-append "exec sh -c " (shell-word bounded-script) " sh true")
-                                      (buffer-mode block) #f)))
-      (let ((got (read-to-end-within from 2000)))
-        (close-port to) (close-port from) (close-port err)
-        (if got 'ended 'still-open-after-2000-ms)))))
 
 (test-equal "the announcement's pid is the Node process the call started: alive during the call, gone after it"
   '(returned (0 1))
@@ -594,49 +578,234 @@
                   o))))
        (list during (car (capture-command (list "kill" "-0" (number->string (origin-pid o))))))))))
 
-;; open-at-stop : -> (List Symbol Symbol End)
-;; A probe on stall-before-head, spawned with open-process-ports so it holds
-;; no pipe of the origin's, still connected when PROC returns: whether it had
-;; connected, whether call-with-origin returned within 2000 ms of PROC, and
-;; how the probe's connection ended, read within 2000 ms after.
-(define (open-at-stop)
-  (let ((spawned #f) (returned-at #f))
+;; --- lifecycle: the stop ---------------------------------------------------------
+;; An end proves the stop only when nothing but the origin's stop can
+;; explain it: its destroy, or its exit, which closes every socket alike at
+;; the TCP level, so no check here tells the two apart. Three other things
+;; end connections, and the check rules out each by its mechanism:
+;;
+;; - Node's own server.close(). It ends some waiting states with nothing
+;;   tracked, so an end there proves nothing; each face here also waits in
+;;   states it does not end. Untracked, close() ends, by face (measured on
+;;   Node 24.18.0 and 20.10.0, build/verify/m1s2/measure5/close-untracked-*):
+;;     http   idle after a whole keep-alive response, within 1 ms, on both;
+;;            never a connection with nothing sent, a partial head, or a body
+;;            still to come
+;;     raw    nothing, on both: a net.Server's close() ends no connection
+;;     h2c    on 24, every session within 3 ms: nothing sent, a partial
+;;            preface, the preface done; on 20, nothing; on both, never a
+;;            stream open with its request body still to come
+;;   tests/test-origin-tls.sps holds the TLS faces to the same.
+;; - An idle timer of the face's own: it ends a connection some L ms after
+;;   its last activity. So every probe must still hold its state, (connected
+;;   ...) and exactly that state's bytes and no end, when it is read once
+;;   more just before PROC returns. And the call must return within B, 500
+;;   ms, of PROC's return, by this process's monotonic clock: the origin
+;;   exits only once every face's close() has seen each of its connections
+;;   end, so every connection ended within B of the stop. Two sets of
+;;   probes, the second opened 700 ms, more than B, after the first holds its
+;;   states, then leave no L that ends both sets inside that window: one set
+;;   would end before the stop, or the other more than B after it.
+;;
+;; - One schedule that ends every connection at once: a reap at a phase
+;;   fixed from the origin's start, or a shed once enough are open. The two
+;;   sets do not rule it out, so the check runs twice, each time on a fresh
+;;   origin, the second holding both sets 700 ms, more than B, longer before
+;;   the stop: a schedule fixed to the origin's start, or to the sets'
+;;   opening, cannot fall inside both windows.
+;;
+;; B is three times the slowest measured, 150 ms under 24 busy loops; idle it
+;; was 35 to 43 ms, and 49 to 76 ms with Chez under Valgrind
+;; (build/verify/m1s2/measure5/stop-spread-*). The stop ends a connection
+;; with a FIN, or with a reset when the client's bytes are still unread, as
+;; a starved origin can leave them: both are the stop's.
+;;
+;; The states held are those the table below names. Some a client can leave
+;; a face in are not held by any check: an HTTP/2 response its client's
+;; flow-control window holds back, a TLS handshake whose whole ClientHello
+;; came but not the client's Finished, and a response the client does not
+;; read.
+
+;; The plaintext faces' waiting states: a name, the face, the probe's
+;; options, none, and the bytes it sends and gets before the stop, both as
+;; hex. h2c sends its SETTINGS, empty, at once, and its ACK of the client's
+;; once they come.
+(define h2-preface "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n")
+(define empty-settings (string #\nul #\nul #\nul #\x4 #\nul #\nul #\nul #\nul #\nul))
+(define plaintext-waiting-states
+  (list (list "connected, nothing sent" 'http '() "" "")
+        (list "a partial request head" 'http '() (hex "GET /status/200 HTTP/1.1\r\nHost: 127.0.0.1\r\n") "")
+        (list "idle after a whole keep-alive response" 'http '() (hex (get "/status/200"))
+              (hex "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: keep-alive\r\n\r\nstatus 200\n"))
+        (list "a request head sent, its body still to come" 'http '()
+              (hex "POST /echo HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Length: 10\r\n\r\nhello") "")
+        (list "connected, nothing sent" 'raw '() "" "")
+        (list "a partial request head" 'raw '() (hex "GET /raw/content-length HTTP/1.1\r\n") "")
+        (list "a stalled script, before its head" 'raw '() (hex (get "/raw/stall-before-head")) "")
+        (list "a stalled script, after its head" 'raw '() (hex (get "/raw/stall-after-head"))
+              (hex "HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\n"))
+        ;; pause-mid-body waits 60 s between its writes: longer than any stop,
+        ;; on a slow machine too (2.9 to 5 s on one or two CPUs with Valgrind,
+        ;; measured by the review).
+        (list "a script playing, between two of its writes" 'raw '() (hex (get "/raw/pause-mid-body?ms=60000"))
+              (hex "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello"))
+        (list "a script playing, between two of its writes, the client half-closed" 'raw '("--half-close")
+              (hex (get "/raw/pause-mid-body?ms=60000"))
+              (hex "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello"))
+        (list "connected, nothing sent" 'h2c '() "" "000000040000000000")
+        (list "a partial connection preface" 'h2c '() (hex "PRI * HTTP/2.0\r\n") "000000040000000000")
+        (list "the connection preface done, nothing more" 'h2c '()
+              (hex (string-append h2-preface empty-settings))
+              "000000040000000000000000040100000000")
+        ;; HEADERS for POST /echo, END_HEADERS alone: :method POST, :scheme
+        ;; http, then :path and :authority as literals.
+        (list "a stream open, its request body still to come" 'h2c '()
+              (hex (string-append h2-preface empty-settings
+                                  (string #\nul #\nul #\x14 #\x1 #\x4 #\nul #\nul #\nul #\x1 #\x83 #\x86 #\x4 #\x5)
+                                  "/echo" (string #\x1 #\x9) "localhost"))
+              "000000040000000000000000040100000000")))
+
+;; A Probe here is a vector: #(STATE TO FROM ERR PID TEXT PIPE-ENDED)
+(define (probe-state p) (vector-ref p 0))
+(define (probe-from p) (vector-ref p 2))
+(define (probe-pid p) (vector-ref p 4))
+(define (probe-text p) (vector-ref p 5))
+
+;; spawn : Origin State -> Probe
+(define (spawn o state)
+  (let-values (((to from err pid)
+                (open-process-ports
+                 (apply string-append
+                        "exec " (shell-word node) " tests/wire-probe.mjs"
+                        (append (map (lambda (w) (string-append " " (shell-word w))) (caddr state))
+                                (list " 127.0.0.1 " (number->string (cdr (origin-face o (cadr state))))
+                                      " " (shell-word (cadddr state)) " 20000")))
+                 (buffer-mode block) #f)))
+    (vector state to from err pid "" #f)))
+
+;; drain! : Probe -> Unit
+;; Appends to the probe's text all its pipe holds now, never waiting.
+(define (drain! p)
+  (let loop ()
+    (when (and (not (vector-ref p 6)) (input-port-ready? (probe-from p)))
+      (let ((bytes (get-bytevector-some (probe-from p))))
+        (if (eof-object? bytes)
+            (vector-set! p 6 #t)
+            (begin (vector-set! p 5 (string-append (probe-text p) (latin-1 bytes))) (loop)))))))
+
+;; lines-of : String -> (U (Listof Any) #f)
+;; TEXT's whole lines read as data; #f when its last line is not whole.
+(define (lines-of text)
+  (and (or (zero? (string-length text)) (char=? (string-ref text (- (string-length text) 1)) #\newline))
+       (guard (e (#t #f))
+         (let ((port (open-string-input-port text)))
+           (let loop ((found '()))
+             (let ((d (read port))) (if (eof-object? d) (reverse found) (loop (cons d found)))))))))
+
+;; held : Probe -> (U 'waiting 'settling List)
+;; Whether the probe holds its state: (connected MS), then data lines that
+;; hold exactly its BEFORE bytes, and no end. settling when its lines so far
+;; are a start of that; anything else, as evidence.
+(define (held p)
+  (let* ((text (probe-text p))
+         (want (list-ref (probe-state p) 4))
+         (data (lines-of text)))
+    (cond ((not data) 'settling)
+          ((null? data) 'settling)
+          ((not (and (pair? (car data)) (eq? (caar data) 'connected))) (list 'not-connected text))
+          ((not (for-all (lambda (d) (and (list? d) (= (length d) 4) (eq? (car d) 'data))) (cdr data)))
+           (list 'ended text))
+          (else
+           (let ((got (apply string-append (map cadddr (cdr data)))))
+             (cond ((string=? got want) 'waiting)
+                   ((and (< (string-length got) (string-length want))
+                         (string=? got (substring want 0 (string-length got))))
+                    'settling)
+                   (else (list 'received text))))))))
+
+;; open-set : Origin (Listof State) -> (Listof Probe)
+;; One probe per state, from open-process-ports, so that it holds no pipe
+;; of the origin's, each read until it holds its state, within 10000 ms.
+(define (open-set o states)
+  (let ((probes '()))
+    (for-each (lambda (state) (set! probes (append probes (list (spawn o state))))) states)
+    (let ((deadline (+ (now-ms) 10000)))
+      (let loop ()
+        (for-each drain! probes)
+        (when (and (< (now-ms) deadline)
+                   (exists (lambda (p) (eq? (held p) 'settling)) probes))
+          (pause-ms 5)
+          (loop))))
+    probes))
+
+;; kill-probes : (Listof Probe) -> Unit
+(define (kill-probes probes)
+  (for-each (lambda (p)
+              (capture-command (list "kill" "-9" (number->string (probe-pid p))))
+              (for-each (lambda (port) (guard (e (#t #f)) (close-port port)))
+                        (list (vector-ref p 1) (vector-ref p 2) (vector-ref p 3))))
+            probes))
+
+;; stop-check : (Listof State) ((Origin -> Any) -> Any) Natural Natural -> (List Natural (Listof List))
+;; Set A, then, GAP ms after set A holds its states, set B, against the
+;; origin CALL starts; HOLD ms after set B holds its states, each probe read
+;; once more, and PROC returns. The answer: the ms from PROC's return to the
+;; call's, and, for each probe, set A's then set B's, its state's name and
+;; face, whether it held its state then, and how its connection ended.
+(define (stop-check states call gap hold)
+  (let ((all '()) (stopped-at #f))
     (dynamic-wind
       (lambda () #f)
       (lambda ()
-        (let* ((first-line
-                (call-with-origin
+        (let* ((before
+                (call
                  (lambda (o)
-                   (let-values (((to from err pid)
-                                 (open-process-ports
-                                  (string-append "exec " (shell-word node) " tests/wire-probe.mjs 127.0.0.1 "
-                                                 (number->string (cdr (origin-face o 'raw))) " "
-                                                 (hex (get "/raw/stall-before-head")) " 20000")
-                                  (buffer-mode block) #f)))
-                     (set! spawned (list to from err pid))
-                     (let ((line (read-line-within from 5000)))
-                       ;; Time for the request to reach the stall.
-                       (pause-ms 200)
-                       (set! returned-at (now-ms))
-                       line)))))
-               (took (- (now-ms) returned-at))
-               (rest (read-to-end-within (cadr spawned) 2000)))
-          (list (if (and first-line (> (string-length first-line) 11)
-                         (string=? (substring first-line 0 11) "(connected "))
-                    'connected
-                    (list 'first-line first-line))
-                (if (<= took 2000) 'returned-within-2000-ms (list 'took took))
-                (if rest
-                    (probe-end (parse-wire-probe (string-append first-line "\n" rest)))
-                    'probe-still-open-after-2000-ms))))
-      (lambda ()
-        (when spawned
-          (capture-command (list "kill" "-9" (number->string (cadddr spawned))))
-          (for-each (lambda (port) (guard (e (#t #f)) (close-port port))) (list (car spawned) (cadr spawned) (caddr spawned))))))))
+                   (let* ((a (open-set o states))
+                          (a-held (now-ms)))
+                     (set! all a)
+                     (pause-ms (max 0 (- (+ a-held gap) (now-ms))))
+                     (let ((b (open-set o states)))
+                       (set! all (append a b))
+                       (pause-ms hold)
+                       (for-each drain! all)
+                       (let ((verdicts (map held all)))
+                         (set! stopped-at (now-ms))
+                         verdicts))))))
+               (took (- (now-ms) stopped-at))
+               (deadline (+ (now-ms) 2000)))
+          (let loop ()
+            (for-each drain! all)
+            (when (and (< (now-ms) deadline) (exists (lambda (p) (not (vector-ref p 6))) all))
+              (pause-ms 5)
+              (loop)))
+          (list took
+                (map (lambda (p held-then)
+                       (list (car (probe-state p)) (cadr (probe-state p)) held-then
+                             (guard (e (#t (list 'unparsed (describe e))))
+                               (probe-end (parse-wire-probe (probe-text p))))))
+                     all before))))
+      (lambda () (kill-probes all)))))
 
-(test-equal "stopping destroys open connections: a probe still connected on stall-before-head when PROC returns sees eof, and call-with-origin returns within 2000 ms"
-  '(returned (connected returned-within-2000-ms eof))
-  (outcome open-at-stop))
+;; stop-verdict : (List Natural (Listof List)) -> List
+(define (stop-verdict result)
+  (list (if (<= (car result) 500) 'within-500-ms (list 'took (car result)))
+        (map (lambda (row)
+               (list (car row) (cadr row) (caddr row)
+                     (if (memq (cadddr row) '(eof reset)) 'ended-by-the-stop (cadddr row))))
+             (cadr result))))
+
+(for-each
+ (lambda (hold name)
+   (test-equal (string-append "stopping ends every connection to a plaintext face, in each waiting state its table names: " name
+                              ", each still holding its state as PROC returns, the call returning within 500 ms of PROC, and each probe's end the stop's")
+     (list 'returned
+           (list 'within-500-ms
+                 (map (lambda (state) (list (car state) (cadr state) 'waiting 'ended-by-the-stop))
+                      (append plaintext-waiting-states plaintext-waiting-states))))
+     (outcome (lambda () (stop-verdict (stop-check plaintext-waiting-states call-with-origin 700 hold))))))
+ '(0 700)
+ '("two sets of probes, the second opened 700 ms after the first holds its states, the stop at once"
+   "the same on a fresh origin, both sets held 700 ms longer before the stop"))
 
 (test-equal "exits on stdin's end: once call-with-origin returns, every face refuses connections"
   (list 'returned refused)
@@ -644,10 +813,11 @@
    (lambda ()
      (let ((o (call-with-origin (lambda (o) o))))
        (list (exchange o 'http (get "/status/200" close) 2000)
-             (exchange o 'raw (get "/raw/content-length") 2000))))))
+             (exchange o 'raw (get "/raw/content-length") 2000)
+             (exchange o 'h2c "" 2000))))))
 
-(test-equal "with stdin at its end from the start, it announces its four keys, then exits 0, writing nothing to stderr"
-  '(0 ("node" "pid" "http" "raw") "")
+(test-equal "with stdin at its end from the start, it announces its five keys, then exits 0, writing nothing to stderr"
+  '(0 ("node" "pid" "http" "raw" "h2c") "")
   (guard (e (#t (list 'raised (describe e))))
     (let* ((answer (bounded node "tests/origin.mjs"))
            (out (cadr answer))
@@ -661,7 +831,7 @@
 ;; --- the probe's own refusals ---------------------------------------------------
 
 (define probe-usage
-  "usage: node tests/wire-probe.mjs [--reset | --half-close] [--deadline MS] HOST PORT HEX IDLE-MS\n")
+  "usage: node tests/wire-probe.mjs [--reset | --half-close] [--tls SERVERNAME [--alpn LIST]] [--deadline MS] HOST PORT HEX IDLE-MS\n")
 
 (test-equal "the probe refuses a usage error with exit 2, its problem and its usage on stderr"
   (list (list 2 "" (string-append "wire-probe: it takes 4 arguments after its options, and was given 3\n"
@@ -694,9 +864,20 @@
                     '("127.0.0.1" "1" "@/no/such/file.hex" "100")
                     (list "127.0.0.1" "1" (string-append "@" upper) "100"))))))))
 
-(test-equal "it takes no arguments: one exits 2, naming it on stderr, and nothing on stdout"
-  '(2 "" "origin: it takes no arguments, and was given [\"--pki\",\"dir\"]\n")
-  (bounded node "tests/origin.mjs" "--pki" "dir"))
+(define origin-usage "usage: node tests/origin.mjs [--pki DIR]\n")
+
+(test-equal "it takes no argument, or --pki DIR: any other exits 2, naming them on stderr, and nothing on stdout"
+  (list (list 2 "" (string-append "origin: it takes no argument, or --pki DIR, and was given [\"--nope\"]\n"
+                                  origin-usage))
+        (list 2 "" (string-append "origin: it takes no argument, or --pki DIR, and was given [\"--pki\"]\n"
+                                  origin-usage))
+        (list 2 "" (string-append "origin: it takes no argument, or --pki DIR, and was given [\"--pki\",\"a\",\"b\"]\n"
+                                  origin-usage))
+        (list 2 "" (string-append "origin: it takes no argument, or --pki DIR, and was given [\"--PKI\",\"a\"]\n"
+                                  origin-usage))
+        (list 2 "" (string-append "origin: --pki takes DIR, a directory, and was given an empty one\n" origin-usage)))
+  (map (lambda (args) (bounded* (append (list node "tests/origin.mjs") args)))
+       '(("--nope") ("--pki") ("--pki" "a" "b") ("--PKI" "a") ("--pki" ""))))
 
 ;; --- lifecycle: how long the origin outlives a suite killed with SIGKILL -----
 ;; Its stdin ends once every process holding the pipe's write end has gone:
@@ -750,11 +931,11 @@
              (close-port to) (close-port from) (close-port err))))))))
 
 (test-equal "a suite killed with SIGKILL while idle: within 5 s every face of its origin refuses connections"
-  '(returned ((timeout timeout) refused-within-the-bound))
+  '(returned ((timeout timeout timeout) refused-within-the-bound))
   (outcome (lambda () (sigkill-check '() 5000))))
 
 (test-equal "a suite killed with SIGKILL during a probe: its origin lives until the probe's wire-probe-deadline, 2000 ms, ends the probe; within 2000 ms of it plus 2000 ms of slack every face refuses connections"
-  '(returned ((timeout timeout) refused-within-the-bound))
+  '(returned ((timeout timeout timeout) refused-within-the-bound))
   (outcome (lambda () (sigkill-check '("probe") 4000))))
 
 (test-end "origin")

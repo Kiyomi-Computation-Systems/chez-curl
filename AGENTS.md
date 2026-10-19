@@ -67,6 +67,10 @@
 * `make test` runs the test origin under Node (`NODE`, default `node`), and
   `test-drift` fails on any libcurl with no row in `tests/known-libcurls.sexp`.
   It prints the row: review it, and add it (ADR-0017).
+* `make test` makes TLS material per run and checks the TLS faces with
+  `openssl` (`OPENSSL`, default `openssl`). On the Mac that is LibreSSL 3.3.6,
+  which cannot check a hostname, so no check reads a hostname code
+  (ADR-0005, amended).
 * `make check-variadic` can watch a variadic binding fail only on Apple arm64.
   Run it on the Mac whenever a variadic binding changes. Elsewhere it checks
   only the static half: `test-collect-safe` must refuse each planted binding.
@@ -96,7 +100,8 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   `suite-exit-status` must also exit 1 on its own failures, before the
   shared form.
 * Chez evaluates arguments right to left in compiled library code, left to
-  right when interpreted. No assertion may depend on argument order.
+  right when interpreted, and `map` calls its procedure in no fixed order. No
+  assertion may depend on either order; use `for-each` for effects.
 * A setter that refuses a value keeps the one it had. Give each round trip
   its own sentinel, and assert every return code.
 * An assertion passes whenever *another* rule can produce its expected value.
@@ -153,14 +158,34 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 **Checks and environment**
 
 * Node's `socket.destroy()` closes with a FIN, not a reset. `resetAndDestroy()`
-  sends the RST. A test of a reset checks what the peer saw.
+  sends the RST, but throws on a TLS socket: reset the `net` socket it wraps. A
+  client's reset that way still arrives as a FIN. A test of a reset checks what
+  the peer saw.
+* LibreSSL, the Mac's `openssl`, exits 0 from `s_client -verify_return_error` on
+  a failed verify, and its `req` prefers a `prompt = no` config's subject to
+  `-subj`. Read verify codes, never that exit status, and give the config no
+  subject.
 * curl's `./configure` turns on every optional library it finds, and only warns
   about an option it doesn't know. A reproducible curl build names every
   library, passes `--enable-option-checking=fatal`, and checks what the install
   lists.
 * A shell's `wait` may print `Killed` on stderr for a child killed by a signal:
-  dash, `bash -c` and macOS's `/bin/sh` do. Only bash run as `sh`, the
-  container's, prints nothing, so a check run only there won't see it.
+  dash, `bash -c` and macOS's `/bin/sh` do, dash onto the stderr the killed
+  command's own redirections set. Only bash run as `sh`, the container's,
+  prints nothing, so a check run only there won't see it.
+* OpenSSL 3's `s_client` prints one more `Verify return code` line per TLS 1.3
+  session ticket it reads before stdin ends, so how many it prints depends on
+  timing. A rule of one line per output fails only under load.
+* Over TLS each record arrives as its own chunk, even when TCP joined them, so
+  "each byte arrives alone" says nothing there. Judge timing between arrivals.
+* TLS picks ALPN by the server's preference, so the chosen protocol hides a
+  client that reorders its list. A server reports the offered list instead.
+* An end seen after a stop proves the stop only if nothing but the stop can
+  explain it: not an idle timer, nor Node's own `close()`, which ends some
+  states on Node 24 and none on Node 20. Cover the states `close()` never ends,
+  require silence right up to the stop and an end within a tight bound after
+  it, open two sets of probes further apart than that bound, and stop twice,
+  held apart by more than it.
 * A child of `open-process-ports` stays a zombie until Chez's next collection, so
   `kill -0` succeeds on a dead pid. Never judge liveness by the pid alone.
 * `nm` cannot show a curl API that was configured out: curl compiles a stub in

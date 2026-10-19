@@ -3,7 +3,7 @@
 ;;; checks on how long the origin outlives a suite killed with SIGKILL (M1
 ;;; plan, section 7), which runs none of call-with-origin's cleanup. It starts
 ;;; an origin with call-with-origin and prints one line, (ORIGIN-PID HTTP-PORT
-;;; RAW-PORT). Then:
+;;; RAW-PORT H2C-PORT). Then:
 ;;;
 ;;;   with no argument   it waits to be killed;
 ;;;   with "probe"       it runs a probe on stall-before-head, idle bound
@@ -32,7 +32,8 @@
  (lambda (origin)
    (write (list (origin-pid origin)
                 (cdr (origin-face origin 'http))
-                (cdr (origin-face origin 'raw))))
+                (cdr (origin-face origin 'raw))
+                (cdr (origin-face origin 'h2c))))
    (newline)
    (flush-output-port (current-output-port))
    (when (equal? mode '("probe"))

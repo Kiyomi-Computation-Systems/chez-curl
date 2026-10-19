@@ -1,10 +1,11 @@
-// tests/wire-probe.mjs: the byte probe (M1 plan, section 5; ADR-0005,
-// amended). It knows no HTTP: it sends the bytes it is given and reports every
-// byte it receives, so nothing between the origin and a suite normalises
-// framing. Node's standard library only, for Node 20 and later (measured on
-// 20.10.0 and 24.18.0).
+// tests/wire-probe.mjs: the byte probe (M1 plan, sections 5 and 8.3;
+// ADR-0005, amended). It knows no HTTP: it sends the bytes it is given and
+// reports every byte it receives, so nothing between the origin and a suite
+// normalises framing. Node's standard library only, for Node 20 and later
+// (measured on 20.10.0 and 24.18.0).
 //
-//   node tests/wire-probe.mjs [--reset | --half-close] [--deadline MS] HOST PORT HEX IDLE-MS
+//   node tests/wire-probe.mjs [--reset | --half-close] [--tls SERVERNAME [--alpn LIST]]
+//                             [--deadline MS] HOST PORT HEX IDLE-MS
 //
 // It connects to HOST:PORT and sends HEX's bytes once (none for an empty
 // HEX). HEX is pairs of lower-case hex digits, or @FILE: a file holding
@@ -14,7 +15,8 @@
 // cannot keep it waiting. On stdout it prints Scheme data, one datum per
 // line; each MS is whole milliseconds since it started:
 //
-//   (connected MS)
+//   (connected MS)             taken before it sends a byte: once connected,
+//                              or, with --tls, once the handshake is done
 //   (data OFFSET MS "HEX")     one per chunk it reads; OFFSET is the chunk's
 //                              first byte's place in the stream. Chunk
 //                              boundaries are not part of any contract.
@@ -28,24 +30,35 @@
 //                              (resetAndDestroy), in place of any end line.
 //                              A destroy() reaches the peer as a FIN, never
 //                              a reset (measured).
-//   (refused "CODE" MS)        the connection failed, in place of all the
-//                              lines above
+//   (refused "CODE" MS)        the connection, or with --tls the handshake,
+//                              failed, in place of all the lines above; CODE
+//                              is EOF for a TLS peer that closed before the
+//                              handshake was done
 //
-// With --half-close it ends its side (a FIN) once its bytes are handed to the
-// kernel, and goes on reading. Without it, it never half-closes.
+// With --half-close it ends its side (a FIN, after TLS's close_notify with
+// --tls) once its bytes are handed to the kernel, and goes on reading: over
+// TLS too, on Node 20.10.0 and 24.18.0 (measured). Without it, it never
+// half-closes.
+//
+// With --tls SERVERNAME it speaks TLS, with SNI SERVERNAME, a DNS name, never
+// an IP address, and judges no certificate: it verifies nothing. With
+// --alpn LIST it offers LIST's protocols, separated by commas, each once, in
+// LIST's order, by ALPN, and only with --tls. --reset cannot be given with --tls: resetting the TCP
+// socket under a client TLS socket reached the server as a FIN (measured).
 //
 // It exits 0 when it ran, and 2 on a usage error, with a message on stderr.
 
 import { readFileSync } from 'node:fs';
 import net from 'node:net';
 import process from 'node:process';
+import tls from 'node:tls';
 
 const started = performance.now();
 const ms = () => Math.floor(performance.now() - started);
 
 function usage(problem) {
   process.stderr.write(
-    `wire-probe: ${problem}\nusage: node tests/wire-probe.mjs [--reset | --half-close] [--deadline MS] HOST PORT HEX IDLE-MS\n`);
+    `wire-probe: ${problem}\nusage: node tests/wire-probe.mjs [--reset | --half-close] [--tls SERVERNAME [--alpn LIST]] [--deadline MS] HOST PORT HEX IDLE-MS\n`);
   process.exit(2);
 }
 
@@ -54,9 +67,17 @@ const code = (err) => String((err && err.code) || 'UNKNOWN').replace(/[^A-Za-z0-
 
 const positive = /^[1-9][0-9]*$/;
 
+// A DNS name: labels of letters, digits and inner hyphens, joined by dots.
+const dnsName = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/;
+
+// An ALPN list: protocols of printable ASCII but the comma, joined by commas.
+const alpnList = /^[\x21-\x2b\x2d-\x7e]+(?:,[\x21-\x2b\x2d-\x7e]+)*$/;
+
 let args = process.argv.slice(2);
 let reset = false;
 let halfClose = false;
+let servername = null;
+let alpn = null;
 let deadline = 30000;
 for (;;) {
   if (args[0] === '--reset' && !reset) {
@@ -65,6 +86,14 @@ for (;;) {
   } else if (args[0] === '--half-close' && !halfClose) {
     halfClose = true;
     args = args.slice(1);
+  } else if (args[0] === '--tls' && servername === null) {
+    if (args.length < 2) usage('--tls takes SERVERNAME, a DNS name');
+    servername = args[1];
+    args = args.slice(2);
+  } else if (args[0] === '--alpn' && alpn === null) {
+    if (args.length < 2) usage('--alpn takes LIST, protocols separated by commas');
+    alpn = args[1];
+    args = args.slice(2);
   } else if (args[0] === '--deadline') {
     if (args.length < 2 || !positive.test(args[1])) usage('--deadline takes a positive natural, its milliseconds');
     deadline = Number(args[1]);
@@ -74,6 +103,22 @@ for (;;) {
   }
 }
 if (reset && halfClose) usage('--reset and --half-close cannot both be given');
+if (reset && servername !== null) {
+  usage('--reset and --tls cannot both be given: a reset under a TLS socket reaches the server as a FIN');
+}
+if (alpn !== null && servername === null) usage('--alpn is given only with --tls');
+if (servername !== null && net.isIP(servername) !== 0) {
+  usage(`--tls takes a DNS name, and ${JSON.stringify(servername)} is an IP address, which SNI cannot carry`);
+}
+if (servername !== null && !dnsName.test(servername)) {
+  usage(`--tls takes a DNS name, and was given ${JSON.stringify(servername)}`);
+}
+if (alpn !== null && !alpnList.test(alpn)) {
+  usage(`--alpn takes protocols separated by commas, and was given ${JSON.stringify(alpn)}`);
+}
+if (alpn !== null && new Set(alpn.split(',')).size !== alpn.split(',').length) {
+  usage(`--alpn names a protocol twice, in ${JSON.stringify(alpn)}`);
+}
 if (args.length !== 4) usage(`it takes 4 arguments after its options, and was given ${args.length}`);
 const [host, portText, hexArg, idleText] = args;
 if (host === '') usage('HOST is empty');
@@ -99,7 +144,19 @@ let done = false;
 let offset = 0;
 let timer = null;
 
-const socket = net.connect({ host, port: Number(portText), allowHalfOpen: true });
+// The socket: TCP, or TLS over it, verifying nothing, with SNI SERVERNAME and
+// ALPN's protocols when given. Either way half-open, so that its own end does
+// not end its reading.
+const socket = servername === null
+  ? net.connect({ host, port: Number(portText), allowHalfOpen: true })
+  : tls.connect({
+    host,
+    port: Number(portText),
+    servername,
+    rejectUnauthorized: false,
+    ...(alpn === null ? {} : { ALPNProtocols: alpn.split(',') }),
+    allowHalfOpen: true,
+  });
 
 // finish: prints LINE, the last, and ends the connection: with a reset when
 // RESETTING, else with destroy().
@@ -130,7 +187,7 @@ function sent() {
   else if (halfClose && !done) socket.end();
 }
 
-socket.on('connect', () => {
+socket.on(servername === null ? 'connect' : 'secureConnect', () => {
   connected = true;
   say(`(connected ${ms()})`);
   const bytes = Buffer.from(hex, 'hex');
@@ -146,7 +203,12 @@ socket.on('data', (chunk) => {
   arm();
 });
 
-socket.on('end', () => finish(`(end eof ${ms()})`, false));
+// A TLS peer that closes before the handshake is done is a refusal: there
+// was no connection to end.
+socket.on('end', () => {
+  if (!connected) finish(`(refused "EOF" ${ms()})`, false);
+  else finish(`(end eof ${ms()})`, false);
+});
 
 socket.on('error', (err) => {
   if (!connected) finish(`(refused "${code(err)}" ${ms()})`, false);

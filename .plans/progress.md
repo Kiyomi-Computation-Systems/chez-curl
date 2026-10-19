@@ -7,15 +7,21 @@ close-out under **Close-outs**, newest first.
 ## Now
 
 - **Milestone:** M1, the test instrument (brief §7), per the
-  [M1 plan](2026-10-18-m1-plan.md). Slice 1 is built on `m1/origin-and-drift`, with its
-  [mutation log](instrument-mutation-log.md):
-  - the plaintext origin, the byte probe and their helpers;
-  - the drift guard (ADR-0017);
-  - Node in CI (ADR-0005, amended).
+  [M1 plan](2026-10-18-m1-plan.md).
+  - **Slice 1 is merged** (PR #10): the plaintext origin, the byte probe, their helpers, the
+    drift guard (ADR-0017), and Node in CI.
+  - **Slice 2 is built** on `m1/tls-and-h2`, per the plan's §8, with its
+    [mutation log](tls-mutation-log.md). It adds the per-run TLS material, the TLS faces,
+    HTTP/2, the probe's TLS mode, and `openssl` as the checker. The maintainer chose
+    portable checks only: LibreSSL 3.3.6, the Mac's `openssl`, cannot check a hostname
+    (ADR-0005, amended). Its close-out goes in on the next branch, once it merges.
 
-  Slice 2 adds TLS and HTTP/2. M0 (brief §8) is built.
-- **The Mac owes one run** for M1 too. Its drift row must be added: `make test` fails there
-  until it is. Node 20.10.0 and the drip's own-arrival check have not run on macOS.
+  M0 (brief §8) is built.
+- **The Mac owes one run** for M1 too:
+  - its drift row must be added, since `make test` fails there until it is;
+  - Node 20.10.0 and the drip's own-arrival check have not run on macOS;
+  - nor has LibreSSL as the checker on the Mac itself. Docker ran it, built from its
+    tarball, under Node 20.10.0 (plan §8.7).
 - **Done:** slices 1 to 6 of the [harness plan](2026-10-04-harness-plan.md) (§6):
   - slice 1, the container and the Makefile skeleton;
   - slice 2, the test harness
@@ -56,6 +62,61 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency` (ADR-0002's amendment).
 
 ## Close-outs
+
+### 2026-10-18 — M1 slice 1: the test origin, the byte probe and the drift guard (PR #10, `79c6df1`)
+
+- **The plaintext origin, `tests/origin.mjs`,** on Node's standard library only.
+  - Two faces listen on `127.0.0.1`, port 0.
+  - `http` serves `/status`, `/redirect`, `/chunked`, `/echo` and 404, with no `Date` and
+    headers in a fixed order.
+  - `raw` plays about 30 scripted byte streams: framings, drips, oversized heads and
+    protocol errors.
+  - It announces one flat JSON line and exits 0 when its stdin closes. A bad client ends
+    only its own connection.
+- **The byte probe, `tests/wire-probe.mjs`.** It has no HTTP code: it sends the bytes it is
+  given and prints every byte it receives, with timings, as Scheme data. `--reset` resets
+  through `resetAndDestroy()`, since `destroy()` sends a FIN (measured).
+- **The helpers in `(curl-testing)`.** `call-with-origin` holds every origin to a clean stop:
+  stdout ended, nothing on stderr, and exit status 0. An `sh` runner records the status,
+  since Chez has no `wait`. The announcement reader, `read-within` and the probes are each
+  strict.
+- **`test-origin`, 110 tests.** Each scenario's whole bytes, in the suite's own copy, and the
+  lifecycle:
+  - loopback only, and OS-chosen ports;
+  - a clean stop, with open connections destroyed;
+  - a stated bound on outliving a killed suite, measured at 19.3 s after a SIGKILL
+    mid-probe;
+  - bad clients, drip timing, every range's edges, and the 64 KiB head limit.
+- **The drift guard (ADR-0017).** `test-drift` passes only when the loaded libcurl's five
+  fields equal one row of `tests/known-libcurls.sexp`. The rows are Guix's 8.20.0,
+  Ubuntu 24.04's 8.5.0, and the 7.85.0 floor. The floor build now names every optional
+  library and checks what it installed.
+- **Node in CI.** The floor lane installs Node 20 through a pinned `setup-node`.
+  `check-floors` holds every `node-version:` to a step's output, and fails closed on YAML
+  it cannot read. Node 20.10.0 passed in Docker.
+- **Measured first:**
+  - Chez has no sockets;
+  - Node 20.10.0 and 24.18.0 write the same bytes;
+  - `openssl`'s portability, for slice 2.
+- **Built with subagents,** four in all, about 1.58M tokens:
+
+  | Agent | Model | Tokens | Time |
+  |---|---|---|---|
+  | drift builder, in a worktree | Sonnet | 270k | 20 min |
+  | origin builder, 4 rounds by SendMessage | Opus | 714k | about 2.5 h |
+  | review | Opus | 306k | 31 min |
+  | scoped review | Opus | 287k | 25 min |
+
+  The review's blocker was in my plan. `call-with-origin` took stdout's end as a clean
+  stop, so an origin that crashed after answering passed. Slice 5's rule, "passes only on
+  positive evidence", had not been applied to a process. The `sh` runner's exit status
+  closed it.
+- **Evidence:** the [mutation log](instrument-mutation-log.md).
+- **Carried forward:**
+  - slice 2, TLS and HTTP/2;
+  - the Mac's run: its drift row, Node 20.10.0, the drip's own-arrival check, and how
+    macOS orders data then a reset;
+  - CI has still never run.
 
 ### 2026-10-17 — M0 slice 6: the variadic bindings, `make dev` and `make clean` (PR #9, `83b6835`)
 

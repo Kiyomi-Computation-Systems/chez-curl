@@ -17,6 +17,14 @@ export CHEZ
 NODE ?= node
 export NODE
 
+# openssl, which makes the test origin's TLS material, tests/make-test-pki.sh,
+# and checks its certificates (ADR-0005, amended): the openssl on PATH unless
+# OPENSSL names another, such as LibreSSL's. Exported, so that the script and
+# (curl-testing) run this one, and make test and test-memory name it in
+# require-tools.
+OPENSSL ?= openssl
+export OPENSSL
+
 # The make target to name in a missing-tool hint (scripts/require-tools):
 # what the user typed, $(MAKECMDGOALS), or, when that is empty, the
 # recipe's own target, $@. Recursively expanded (=, not :=), so each
@@ -236,7 +244,7 @@ check-dev: ## Fail unless make dev runs build, then a REPL that imports (curl) a
 # checks come first: check-help, check-suites, check-seam and check-floors
 # each stop it.
 test: deps check-help check-suites check-seam check-floors ## Run every tests/test-*.sps under timeout; fail if one fails or hangs, or none exists
-	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ) $(NODE)
+	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ) $(NODE) $(OPENSSL)
 	@if [ -z "$(SUITES)" ]; then \
 	  echo "test: no suites: nothing matches tests/test-*.sps" >&2; \
 	  exit 1; \
@@ -404,7 +412,7 @@ check-variadic: deps ## Remove (__varargs_after 2) from bind-variadic's template
 # hands Valgrind --command-line-only=yes, so that no .valgrindrc a suite
 # writes reaches the next. `make check-memory-gate` proves each rule fails.
 test-memory: deps ## Run every MEMORY_SUITES suite under Valgrind; fail on any error or definite leak, a hang, or no suite
-	@scripts/require-tools "$(GOAL)" $(firstword $(VALGRIND)) $(TIMEOUT) $(CHEZ) $(NODE)
+	@scripts/require-tools "$(GOAL)" $(firstword $(VALGRIND)) $(TIMEOUT) $(CHEZ) $(NODE) $(OPENSSL)
 	@if [ -z "$(strip $(MEMORY_SUITES))" ]; then \
 	  echo "test-memory: no suites: MEMORY_SUITES is empty" >&2; \
 	  exit 1; \

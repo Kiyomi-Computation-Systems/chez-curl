@@ -226,7 +226,9 @@ provisional. They bind until that record is accepted or amended.
 
   (ADR-0006)
 - **The test origin is `tests/origin.mjs`.** It uses Node's standard library only, and
-  each face listens on `127.0.0.1`.
+  each face listens on `127.0.0.1`. The plaintext faces, `http`, `raw` and `h2c`, are
+  always there. `--pki DIR` adds the TLS faces, `h2` among them, which serves HTTP/2 by
+  ALPN only (M1 plan, §8).
   - It announces one flat JSON line on stdout: `node`, `pid`, then each face as
     `ADDRESS:PORT`, read back from the listening socket. Nothing else goes to stdout.
   - It exits 0 when its stdin closes, and a misbehaving client ends only its own
@@ -237,12 +239,22 @@ provisional. They bind until that record is accepted or amended.
     leaves it serving until that probe's own deadline.
   - Exact bytes come from its raw `node:net` face (ADR-0005, amended).
 - **The instrument is checked by a byte probe,** `tests/wire-probe.mjs`, which has no HTTP
-  code, and by `openssl`'s verify codes.
+  code, and by `openssl`.
+  - Each TLS face is checked by three portable facts: `s_client`'s verify errors and code
+    against the run CA, the leaf it serves compared with its file, and that leaf's SAN
+    line.
+  - The code is the first `Verify return code` line. Each later one, from a TLS 1.3
+    session ticket, must sit under its own ticket header and agree with it.
+  - No check reads a hostname code, which LibreSSL 3.3.6 cannot give. Nor an exit status
+    under `-verify_return_error`, which LibreSSL gives as 0 on a failed verify. Nor the
+    `-subject` line. Names come from `x509 -text`'s `Subject:` and `Issuer:` lines, with
+    ` = ` folded to `=` (ADR-0005, amended).
   - The suites hold their own copy of each scenario's expected bytes, never read from the
     origin, and assert whole outputs.
   - No check of the instrument uses libcurl or the `curl` command line (ADR-0005, amended).
-- **TLS test material is generated per run** with the `openssl` command line. None is
-  checked in (ADR-0005).
+- **TLS test material is generated per run** with the `openssl` command line, by
+  `tests/make-test-pki.sh`, running `OPENSSL` or else `openssl`. None is checked in, not
+  even in a test's fixtures (ADR-0005).
 - **The drift guard:** `test-drift` passes only when the loaded libcurl's `version`,
   `version-num`, `features`, `ssl-version` and `host` equal exactly one row of
   `tests/known-libcurls.sexp`.

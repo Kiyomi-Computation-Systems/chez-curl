@@ -1,7 +1,12 @@
 #!r6rs
 ;;; The suite for (curl-testing), the helpers every suite shares (ADR-0015):
 ;;; the verdict behind the shared exit form, then capture-command, the
-;;; temporary directories, run-until, seeded-bytes and describe.
+;;; temporary directories, run-until, seeded-bytes and describe; the test
+;;; origin's lifecycle, its announcement and the byte probe; and bounded, the
+;;; TLS material and its openssl checker. The parsers are held to synthetic
+;;; outputs in OpenSSL 3.5.7's and LibreSSL 3.3.6's formats, their
+;;; certificates' base64 made here: no real certificate or key is checked in
+;;; (ADR-0005).
 ;;;
 ;;; Each expected value is one the code under test cannot produce by failing.
 ;;; SRFI-64 turns a raise in the actual expression into #f, so no expected
@@ -539,6 +544,14 @@
     (thunk)
     'no-raise))
 
+;; timed : (-> Any) -> (List Any Natural)
+;; THUNK's answer, and the milliseconds it took by the monotonic clock.
+(define (timed thunk)
+  (let* ((start (current-time 'time-monotonic))
+         (answer (thunk))
+         (took (time-difference (current-time 'time-monotonic) start)))
+    (list answer (+ (* 1000 (time-second took)) (div (time-nanosecond took) 1000000)))))
+
 ;; --- read-announcement
 
 (test-equal "read-announcement: the origin's announcement, its entries in order"
@@ -601,7 +614,7 @@
 ;; --- call-with-origin, with the real origin
 
 (test-equal "call-with-origin: PROC's answer, and an origin whose node is NODE's version and whose faces are on loopback"
-  (list 'answer (list 0 "" "") #t '("127.0.0.1" "127.0.0.1") #t)
+  (list 'answer (list 0 "" "") #t '("127.0.0.1" "127.0.0.1" "127.0.0.1") #t)
   (guard (e (#t (list 'raised (describe e))))
     (call-with-origin
      (lambda (o)
@@ -611,8 +624,8 @@
                      (if (string=? (cadr version) (string-append (origin-node o) "\n")) "" (cadr version))
                      (caddr version))
                (and (integer? (origin-pid o)) (positive? (origin-pid o)))
-               (map (lambda (face) (car (origin-face o face))) '(http raw))
-               (for-all (lambda (face) (< 0 (cdr (origin-face o face)) 65536)) '(http raw))))))))
+               (map (lambda (face) (car (origin-face o face))) '(http raw h2c))
+               (for-all (lambda (face) (< 0 (cdr (origin-face o face)) 65536)) '(http raw h2c))))))))
 
 (test-equal "origin-face: an unknown face raises, by name"
   '(assertion-violation origin-face (https))
@@ -760,17 +773,17 @@
 
 ;; announced : String -> String
 ;; JavaScript that writes a good announcement, with the stand-in's own pid
-;; and two faces nothing serves, then runs AT-END when its stdin ends.
+;; and three faces nothing serves, then runs AT-END when its stdin ends.
 (define (announced at-end)
   (string-append
    "process.stdout.write(JSON.stringify({ node: process.version, pid: process.pid,"
-   " http: '127.0.0.1:1', raw: '127.0.0.1:2' }) + '\\n');\n"
+   " http: '127.0.0.1:1', raw: '127.0.0.1:2', h2c: '127.0.0.1:3' }) + '\\n');\n"
    "process.stdin.resume();\n"
    "process.stdin.on('end', () => { " at-end " });\n"))
 
 ;; good-faces : String
-;; A stand-in's two faces, which nothing serves.
-(define good-faces "\"http\":\"127.0.0.1:1\",\"raw\":\"127.0.0.1:2\"")
+;; A stand-in's three faces, which nothing serves.
+(define good-faces "\"http\":\"127.0.0.1:1\",\"raw\":\"127.0.0.1:2\",\"h2c\":\"127.0.0.1:3\"")
 
 ;; no-proc : -> Any
 ;; The refusal call-with-origin raises with a PROC that never runs.
@@ -794,23 +807,27 @@
        (list 'call-with-origin (string-append "the origin's announcement is malformed: " problem)
              (list (cons 'stdout (string-append line "\n")) (cons 'stderr "") (cons 'status 0)))
        (with-stand-in (announcing (string-append line "\n")) no-proc))))
- (list (list "{\"node\":\"v1\",\"pid\":1,\"http\":\"127.0.0.1:1\"}"
-             "its keys are node, pid, http, not node, pid, http, raw")
+ (list (list "{\"node\":\"v1\",\"pid\":1,\"http\":\"127.0.0.1:1\",\"raw\":\"127.0.0.1:2\"}"
+             "its keys are node, pid, http, raw, not node, pid, http, raw, h2c")
        (list (string-append "{\"pid\":1,\"node\":\"v1\"," good-faces "}")
-             "its keys are pid, node, http, raw, not node, pid, http, raw")
+             "its keys are pid, node, http, raw, h2c, not node, pid, http, raw, h2c")
+       (list (string-append "{\"node\":\"v1\",\"pid\":1," good-faces ",\"https\":\"127.0.0.1:4\"}")
+             "its keys are node, pid, http, raw, h2c, https, not node, pid, http, raw, h2c")
        (list (string-append "{\"node\":5,\"pid\":1," good-faces "}") "its node is not a string")
        (list (string-append "{\"node\":\"v1\",\"pid\":0," good-faces "}") "its pid is not a positive natural")
        (list (string-append "{\"node\":\"v1\",\"pid\":\"1\"," good-faces "}") "its pid is not a positive natural")
-       (list "{\"node\":\"v1\",\"pid\":1,\"http\":\"127.0.0.1\",\"raw\":\"127.0.0.1:2\"}"
+       (list "{\"node\":\"v1\",\"pid\":1,\"http\":\"127.0.0.1\",\"raw\":\"127.0.0.1:2\",\"h2c\":\"127.0.0.1:3\"}"
              "its http face is not ADDRESS:PORT")
-       (list "{\"node\":\"v1\",\"pid\":1,\"http\":\"127.0.0.1:1\",\"raw\":\"127.0.0.1:65536\"}"
+       (list "{\"node\":\"v1\",\"pid\":1,\"http\":\"127.0.0.1:1\",\"raw\":\"127.0.0.1:65536\",\"h2c\":\"127.0.0.1:3\"}"
              "its raw face is not ADDRESS:PORT")
-       (list "{\"node\":\"v1\",\"pid\":1,\"http\":\":1\",\"raw\":\"127.0.0.1:2\"}"
+       (list "{\"node\":\"v1\",\"pid\":1,\"http\":\":1\",\"raw\":\"127.0.0.1:2\",\"h2c\":\"127.0.0.1:3\"}"
              "its http face is not ADDRESS:PORT")
-       (list "{\"node\":\"v1\",\"pid\":1,\"http\":\"127.0.0.1:01\",\"raw\":\"127.0.0.1:2\"}"
+       (list "{\"node\":\"v1\",\"pid\":1,\"http\":\"127.0.0.1:01\",\"raw\":\"127.0.0.1:2\",\"h2c\":\"127.0.0.1:3\"}"
              "its http face is not ADDRESS:PORT")
-       (list "{\"node\":\"v1\",\"pid\":1,\"http\":1,\"raw\":\"127.0.0.1:2\"}"
+       (list "{\"node\":\"v1\",\"pid\":1,\"http\":1,\"raw\":\"127.0.0.1:2\",\"h2c\":\"127.0.0.1:3\"}"
              "its http face is not ADDRESS:PORT")
+       (list "{\"node\":\"v1\",\"pid\":1,\"http\":\"127.0.0.1:1\",\"raw\":\"127.0.0.1:2\",\"h2c\":\"h2c\"}"
+             "its h2c face is not ADDRESS:PORT")
        (list (string-append "{\"node\":\"v1\",\"pid\":1," good-faces "}")
              "its pid is not that of the Node process call-with-origin started")))
 
@@ -821,11 +838,14 @@
   (with-stand-in (announcing (string-append "{\"node\":\"v1\",\"pid\":1," good-faces "}\nmore\n"))
     no-proc))
 
-(test-equal "call-with-origin raises when no announcement comes within origin-timeout"
-  '(call-with-origin "the origin wrote no announcement within 500 ms"
-                     ((stdout . "") (stderr . "") (status . 0)))
+(test-equal "call-with-origin raises when no announcement comes within origin-timeout, 500 ms: not before them, and within 2000 ms"
+  '((call-with-origin "the origin wrote no announcement within 500 ms"
+                      ((stdout . "") (stderr . "") (status . 0)))
+    waited-500-to-2000-ms)
   (with-stand-in "process.stdin.resume();\nprocess.stdin.on('end', () => process.exit(0));\n"
-    (lambda () (parameterize ((origin-timeout 500)) (no-proc)))))
+    (lambda ()
+      (let ((got (timed (lambda () (parameterize ((origin-timeout 500)) (no-proc))))))
+        (list (car got) (if (<= 500 (cadr got) 2000) 'waited-500-to-2000-ms (list 'took (cadr got))))))))
 
 ;; --- call-with-origin: once PROC returns, a clean ending, by evidence
 
@@ -869,7 +889,7 @@
    "  s.on('data', () => s.end('hello\\n', () => { process.stderr.write('died\\n'); process.exit(7); }));\n"
    "}).listen(0, '127.0.0.1', () => {\n"
    "  const face = `127.0.0.1:${server.address().port}`;\n"
-   "  process.stdout.write(JSON.stringify({ node: process.version, pid: process.pid, http: face, raw: face }) + '\\n');\n"
+   "  process.stdout.write(JSON.stringify({ node: process.version, pid: process.pid, http: face, raw: face, h2c: face }) + '\\n');\n"
    "  process.stdin.resume();\n"
    "  process.stdin.on('end', () => process.exit(0));\n"
    "});\n"))
@@ -897,28 +917,36 @@
    "import net from 'node:net';\n"
    "const server = net.createServer((s) => s.end('deaf\\n')).listen(0, '127.0.0.1', () => {\n"
    "  const face = `127.0.0.1:${server.address().port}`;\n"
-   "  process.stdout.write(JSON.stringify({ node: process.version, pid: process.pid, http: face, raw: face }) + '\\n');\n"
+   "  process.stdout.write(JSON.stringify({ node: process.version, pid: process.pid, http: face, raw: face, h2c: face }) + '\\n');\n"
    "  process.stdin.resume();\n"
    "});\n"))
 
-(test-equal "call-with-origin: an origin that ignores stdin's end is killed after origin-timeout, and the raise says so; until then it served"
+(test-equal "call-with-origin: an origin that ignores stdin's end is killed after origin-timeout, 1000 ms, not before them and within 3000 ms, and the raise says so; until then it served"
   '((call-with-origin "the origin's stdout did not end within 1000 ms of its stdin closing, so it was killed"
                       ((stdout . "") (stderr . "") (status . 137)))
     ("deaf\n" eof)
-    ((refused "ECONNREFUSED") (refused "ECONNREFUSED")))
+    ((refused "ECONNREFUSED") (refused "ECONNREFUSED"))
+    killed-1000-to-3000-ms-after-proc)
   (with-stand-in deaf-origin
     (lambda ()
       (parameterize ((origin-timeout 1000))
         (let* ((kept #f)
                (served #f)
-               (raised (refusal-of
-                        (lambda ()
-                          (call-with-origin
-                           (lambda (o)
-                             (set! kept o)
-                             (set! served (let ((p (wire-probe o 'raw (make-bytevector 0) 2000)))
-                                            (list (utf8->string (probe-bytes p)) (probe-end p))))))))))
-          (list raised served (if kept (ends kept) 'no-origin)))))))
+               (returned-at #f)
+               (got (timed (lambda ()
+                             (refusal-of
+                              (lambda ()
+                                (call-with-origin
+                                 (lambda (o)
+                                   (set! kept o)
+                                   (set! served (let ((p (wire-probe o 'raw (make-bytevector 0) 2000)))
+                                                  (list (utf8->string (probe-bytes p)) (probe-end p))))
+                                   (set! returned-at (current-time 'time-monotonic)))))))))
+               (since (and returned-at
+                           (let ((d (time-difference (current-time 'time-monotonic) returned-at)))
+                             (+ (* 1000 (time-second d)) (div (time-nanosecond d) 1000000))))))
+          (list (car got) served (if kept (ends kept) 'no-origin)
+                (if (and since (<= 1000 since 3000)) 'killed-1000-to-3000-ms-after-proc (list 'since-proc since))))))))
 
 (for-each
  (lambda (row)
@@ -938,7 +966,7 @@
               "import net from 'node:net';\n"
               "const server = net.createServer((s) => s.end('x\\n')).listen(0, '127.0.0.1', () => {\n"
               "  const face = `127.0.0.1:${server.address().port}`;\n"
-              "  process.stdout.write(JSON.stringify({ node: process.version, pid: process.pid, http: face, raw: face }) + '\\n');\n"
+              "  process.stdout.write(JSON.stringify({ node: process.version, pid: process.pid, http: face, raw: face, h2c: face }) + '\\n');\n"
               "  process.stdin.resume();\n"
               "  process.stdin.on('end', () => process.stderr.write('bye\\n', () => process.exit(1)));\n"
               "});\n"))
@@ -962,13 +990,6 @@
 (define flood-before
   (string-append "import { writeSync } from 'node:fs';\n" flood-loop "\n"))
 
-;; timed : (-> Any) -> (List Any Natural)
-;; THUNK's answer, and the milliseconds it took by the monotonic clock.
-(define (timed thunk)
-  (let* ((start (current-time 'time-monotonic))
-         (answer (thunk))
-         (took (time-difference (current-time 'time-monotonic) start)))
-    (list answer (+ (* 1000 (time-second took)) (div (time-nanosecond took) 1000000)))))
 
 (for-each
  (lambda (row)
@@ -1008,7 +1029,7 @@
    "  });\n"
    "}).listen(0, '127.0.0.1', () => {\n"
    "  const face = `127.0.0.1:${server.address().port}`;\n"
-   "  process.stdout.write(JSON.stringify({ node: process.version, pid: process.pid, http: face, raw: face }) + '\\n');\n"
+   "  process.stdout.write(JSON.stringify({ node: process.version, pid: process.pid, http: face, raw: face, h2c: face }) + '\\n');\n"
    "  process.stdin.resume();\n"
    "  process.stdin.on('end', () => process.exit(0));\n"
    "});\n"))
@@ -1040,7 +1061,7 @@
    "  s.on('end', () => s.end('saw FIN\\n'));\n"
    "}).listen(0, '127.0.0.1', () => {\n"
    "  const face = `127.0.0.1:${server.address().port}`;\n"
-   "  process.stdout.write(JSON.stringify({ node: process.version, pid: process.pid, http: face, raw: face }) + '\\n');\n"
+   "  process.stdout.write(JSON.stringify({ node: process.version, pid: process.pid, http: face, raw: face, h2c: face }) + '\\n');\n"
    "  process.stdin.resume();\n"
    "  process.stdin.on('end', () => process.exit(0));\n"
    "});\n"))
@@ -1151,26 +1172,28 @@
 
 ;; --- parse-wire-probe
 
-(test-equal "parse-wire-probe: the probe's lines, as the bytes joined, the end, each arrival and when it connected"
-  '(#vu8(104 105 33) eof ((0 . 8) (2 . 9)) 7)
+(test-equal "parse-wire-probe: the probe's lines, as the bytes joined, the end, each arrival, when it connected and when it ended"
+  '(#vu8(104 105 33) eof ((0 . 8) (2 . 9)) 7 10)
   (guard (e (#t (list 'raised (describe e))))
     (let ((p (parse-wire-probe "(connected 7)\n(data 0 8 \"6869\")\n(data 2 9 \"21\")\n(end eof 10)\n")))
-      (list (probe-bytes p) (probe-end p) (probe-arrivals p) (probe-connected p)))))
+      (list (probe-bytes p) (probe-end p) (probe-arrivals p) (probe-connected p) (probe-ended p)))))
 
-(test-equal "parse-wire-probe: a refused probe never connected"
-  '((refused "ECONNREFUSED") #f)
+(test-equal "parse-wire-probe: a refused probe never connected, and ended when it was refused"
+  '((refused "ECONNREFUSED") #f 3)
   (guard (e (#t (list 'raised (describe e))))
     (let ((p (parse-wire-probe "(refused \"ECONNREFUSED\" 3)\n")))
-      (list (probe-end p) (probe-connected p)))))
+      (list (probe-end p) (probe-connected p) (probe-ended p)))))
 
-(test-equal "parse-wire-probe: each other end: reset, timeout, a deadline, an error with its code, a reset sent, and a refusal"
-  '(reset timeout deadline (error "EPIPE") reset-sent (refused "ECONNREFUSED"))
-  (map (lambda (text) (guard (e (#t (list 'raised (describe e)))) (probe-end (parse-wire-probe text))))
+(test-equal "parse-wire-probe: each other end, and when: reset, timeout, a deadline, an error with its code, a reset sent, and a refusal"
+  '((reset 1) (timeout 200) (deadline 300) ((error "EPIPE") 5) (reset-sent 4) ((refused "ECONNREFUSED") 3))
+  (map (lambda (text)
+         (guard (e (#t (list 'raised (describe e))))
+           (let ((p (parse-wire-probe text))) (list (probe-end p) (probe-ended p)))))
        '("(connected 0)\n(data 0 1 \"00\")\n(end reset 1)\n"
          "(connected 0)\n(end timeout 200)\n"
          "(connected 0)\n(end deadline 300)\n"
          "(connected 0)\n(end error 5 \"EPIPE\")\n"
-         "(connected 0)\n(reset-sent 1)\n"
+         "(connected 0)\n(reset-sent 4)\n"
          "(refused \"ECONNREFUSED\" 3)\n")))
 
 (for-each
@@ -1223,6 +1246,896 @@
 (test-equal "parse-wire-probe: its argument is a string"
   '(assertion-violation parse-wire-probe (5))
   (refusal-of (lambda () (parse-wire-probe 5))))
+
+;; --- bounded: capture-command under GNU timeout ----------------------------
+
+(test-equal "bounded: the command's exit status, stdout and stderr, with stdin at its end"
+  '(3 "out\n" "err\n")
+  (bounded "sh" "-c" "cat; echo out; echo err >&2; exit 3"))
+
+(test-equal "bounded: a command still running after 10 s is killed with SIGKILL, exit 137, within 12000 ms"
+  '((137 "started\n" "") within-12000-ms)
+  (let ((got (timed (lambda () (bounded "sh" "-c" "echo started; exec sleep 30")))))
+    (list (car got) (if (<= (cadr got) 12000) 'within-12000-ms (list 'took (cadr got))))))
+
+;; Children of system hold this process's pipe ends, an origin's stdin among
+;; them, so anything bounded left running would hold that stdin open: the
+;; origin would not see its end, and would be killed after origin-timeout.
+(test-equal "bounded leaves nothing running: an origin whose call ran a bounded command stops cleanly"
+  '(ran within-3000-ms)
+  (guard (e (#t (list 'raised (describe e))))
+    (parameterize ((origin-timeout 2000))
+      (let ((got (timed (lambda () (call-with-origin (lambda (o) (bounded "true") 'ran))))))
+        (list (car got) (if (<= (cadr got) 3000) 'within-3000-ms (list 'took (cadr got))))))))
+
+(test-equal "bounded: with neither timeout nor gtimeout on PATH, it exits 125, saying so"
+  '(125 "" "bounded: no timeout\n")
+  (call-with-temp-directory
+   (lambda (dir)
+     (let ((sh (cadr (capture-command '("sh" "-c" "command -v sh")))))
+       (capture-command (list "ln" "-s" (substring sh 0 (- (string-length sh) 1)) (string-append dir "/sh")))
+       (call-with-env "PATH" dir (lambda () (bounded "true")))))))
+
+(test-equal "bounded: every argument is a string"
+  '(assertion-violation capture-command (5))
+  (refusal-of (lambda () (bounded "echo" 5))))
+
+;; --- openssl-program -----------------------------------------------------
+
+;; with-openssl : String (-> Any) -> Any
+;; THUNK with OPENSSL set to VALUE. Afterwards OPENSSL is put back, or set to
+;; the empty string, which openssl-program reads as unset, when it was unset.
+(define (with-openssl value thunk)
+  (let ((old (getenv "OPENSSL")))
+    (dynamic-wind
+      (lambda () (putenv "OPENSSL" value))
+      thunk
+      (lambda () (putenv "OPENSSL" (or old ""))))))
+
+(test-equal "openssl-program: OPENSSL from the environment, else openssl, an empty one included"
+  '("/some/where/openssl" "openssl")
+  (list (with-openssl "/some/where/openssl" openssl-program)
+        (with-openssl "" openssl-program)))
+
+;; --- make-test-pki and test-pki-script ------------------------------------
+
+(define pki-ten
+  '("ca.pem" "expired.key" "expired.pem" "good.key" "good.pem" "other-ca.pem"
+    "untrusted.key" "untrusted.pem" "wrong-host.key" "wrong-host.pem"))
+
+;; The real PKI, made once: the TLS checks below use it.
+(define pki-made (guard (e (#t (list 'raised (describe e)))) (list 'made (make-test-pki))))
+(define pki (and (eq? (car pki-made) 'made) (cadr pki-made)))
+(define (pki-file name) (string-append pki "/" name))
+
+(test-equal "make-test-pki: tests/make-test-pki.sh makes a directory of exactly the ten files"
+  (list 'made pki-ten)
+  (guard (e (#t (list 'raised (describe e))))
+    (list (car pki-made) (list-sort string<? (directory-list pki)))))
+
+;; stand-in-pki : String -> Any
+;; make-test-pki's answer, the ten names or what it raised, with
+;; test-pki-script naming a script that runs BODY in DIR, and TMPDIR a fresh
+;; directory, whose listing after the call comes last: make-test-pki removes
+;; the directory it refuses.
+(define (stand-in-pki body)
+  (call-with-temp-directory
+   (lambda (base)
+     (let ((script (string-append base "/stand-in-pki.sh"))
+           (tmp (string-append base "/tmp")))
+       (write-file script (string-append "cd \"$1\" || exit 9\n" body "\n"))
+       (capture-command (list "mkdir" tmp))
+       (let ((answer (call-with-env "TMPDIR" tmp
+                       (lambda ()
+                         (parameterize ((test-pki-script script))
+                           (guard (e ((and (who-condition? e) (message-condition? e) (irritants-condition? e))
+                                      (list (condition-who e) (condition-message e)
+                                            (map (lambda (pair)
+                                                   (if (and (eq? (car pair) 'script) (equal? (cdr pair) script))
+                                                       (cons 'script 'the-stand-in)
+                                                       pair))
+                                                 (condition-irritants e))))
+                                     (#t (list 'other (describe e))))
+                             (let ((dir (make-test-pki)))
+                               (list 'made (list-sort string<? (directory-list dir))))))))))
+         (list answer (map (lambda (name) (if (prefix? "curl-testing." name) 'a-temp-directory name))
+                           (directory-list tmp))))))))
+
+(define touch-ten
+  "touch ca.pem other-ca.pem good.pem good.key expired.pem expired.key wrong-host.pem wrong-host.key untrusted.pem untrusted.key")
+(define touch-nine
+  "touch ca.pem other-ca.pem good.pem good.key expired.pem expired.key wrong-host.pem wrong-host.key untrusted.pem")
+(define pki-nine (filter (lambda (name) (not (string=? name "untrusted.key"))) pki-ten))
+
+;; refused-pki : String Integer String String (Listof String) -> List
+(define (refused-pki wrong status stdout stderr files)
+  (list (list 'make-test-pki (string-append "the PKI script did not make the PKI: " wrong)
+              (list (cons 'script 'the-stand-in) (cons 'status status) (cons 'stdout stdout)
+                    (cons 'stderr stderr) (cons 'files files)))
+        '()))
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append "make-test-pki, with a stand-in script that " (car row))
+     (caddr row)
+     (stand-in-pki (cadr row))))
+ (list (list "makes the ten files and says nothing: their directory, which is not removed"
+             touch-ten (list (list 'made pki-ten) '(a-temp-directory)))
+       (list "exits 1: a raise, with all it saw, and the directory removed"
+             (string-append touch-ten "\nexit 1") (refused-pki "it exited 1" 1 "" "" pki-ten))
+       (list "writes to stderr: a raise"
+             (string-append touch-ten "\necho 'openssl said something' >&2")
+             (refused-pki "it wrote to stderr" 0 "" "openssl said something\n" pki-ten))
+       (list "writes to stdout: a raise"
+             (string-append touch-ten "\necho hello")
+             (refused-pki "it wrote to stdout" 0 "hello\n" "" pki-ten))
+       (list "leaves out a file: a raise"
+             touch-nine (refused-pki "it did not leave exactly the ten files" 0 "" "" pki-nine))
+       (list "leaves an eleventh file: a raise"
+             (string-append touch-ten "\ntouch extra")
+             (refused-pki "it did not leave exactly the ten files" 0 "" "" (list-sort string<? (cons "extra" pki-ten))))
+       (list "does all of those at once: a raise naming each"
+             (string-append touch-nine "\necho out\necho err >&2\nexit 3")
+             (refused-pki "it exited 3; it wrote to stdout; it wrote to stderr; it did not leave exactly the ten files"
+                          3 "out\n" "err\n" pki-nine))))
+
+(test-equal "test-pki-script refuses what is not a path"
+  '((assertion-violation test-pki-script ("")) (assertion-violation test-pki-script (5)))
+  (list (refusal-of (lambda () (parameterize ((test-pki-script "")) 'set)))
+        (refusal-of (lambda () (parameterize ((test-pki-script 5)) 'set)))))
+
+;; --- origin-pki: call-with-origin with the TLS faces ------------------------
+
+(define tls-face-names '(https https-expired https-wrong-host https-untrusted raw-tls h2))
+
+(test-equal "origin-pki: with a PKI, the origin serves every TLS face too, each on loopback"
+  (map (lambda (face) "127.0.0.1") (append '(http raw h2c) tls-face-names))
+  (guard (e (#t (list 'raised (describe e))))
+    (parameterize ((origin-pki pki))
+      (call-with-origin
+       (lambda (o) (map (lambda (face) (car (origin-face o face))) (append '(http raw h2c) tls-face-names)))))))
+
+;; announced-tls : String -> String
+;; A stand-in announcing every face, the TLS ones too, none served, that
+;; runs AT-END when its stdin ends.
+(define (announced-tls at-end)
+  (string-append
+   "process.stdout.write(JSON.stringify({ node: process.version, pid: process.pid,"
+   " http: '127.0.0.1:1', raw: '127.0.0.1:2', h2c: '127.0.0.1:3', https: '127.0.0.1:4',"
+   " 'https-expired': '127.0.0.1:5', 'https-wrong-host': '127.0.0.1:6', 'https-untrusted': '127.0.0.1:7',"
+   " 'raw-tls': '127.0.0.1:8', h2: '127.0.0.1:9' }) + '\\n');\n"
+   "process.stdin.resume();\n"
+   "process.stdin.on('end', () => { " at-end " });\n"))
+
+(test-equal "origin-pki: call-with-origin hands the origin --pki DIR, its only arguments"
+  '(call-with-origin "the origin did not end cleanly: it wrote to stderr"
+                     ((stdout . "") (stderr . "[\"--pki\",\"/the pki's dir\"]\n") (status . 0)))
+  (with-stand-in (announced-tls "process.stderr.write(JSON.stringify(process.argv.slice(2)) + '\\n', () => process.exit(0));")
+    (lambda ()
+      (parameterize ((origin-pki "/the pki's dir"))
+        (refusal-of (lambda () (call-with-origin (lambda (o) 'returned))))))))
+
+(test-equal "origin-pki: with a PKI, an announcement without the TLS faces is malformed"
+  (list 'call-with-origin
+        "the origin's announcement is malformed: its keys are node, pid, http, raw, h2c, not node, pid, http, raw, h2c, https, https-expired, https-wrong-host, https-untrusted, raw-tls, h2"
+        (list (cons 'stdout (string-append "{\"node\":\"v1\",\"pid\":1," good-faces "}\n")) (cons 'stderr "")
+              (cons 'status 0)))
+  (with-stand-in (announcing (string-append "{\"node\":\"v1\",\"pid\":1," good-faces "}\n"))
+    (lambda () (parameterize ((origin-pki "/a/pki")) (no-proc)))))
+
+(test-equal "origin-pki refuses what is neither #f nor a path"
+  '((assertion-violation origin-pki ("")) (assertion-violation origin-pki (5)))
+  (list (refusal-of (lambda () (parameterize ((origin-pki "")) 'set)))
+        (refusal-of (lambda () (parameterize ((origin-pki 5)) 'set)))))
+
+;; --- wire-probe-tls --------------------------------------------------------
+
+(test-equal "wire-probe-tls refuses what is not #f, nor a list of SERVERNAME and then protocols, each a string with no comma, each once"
+  '((assertion-violation wire-probe-tls (tls))
+    (assertion-violation wire-probe-tls (()))
+    (assertion-violation wire-probe-tls ((5)))
+    (assertion-violation wire-probe-tls (("" "h2")))
+    (assertion-violation wire-probe-tls (("localhost" "")))
+    (assertion-violation wire-probe-tls (("localhost" "h2,http/1.1")))
+    (assertion-violation wire-probe-tls (("localhost" "h2" "http/1.1" "h2"))))
+  (map (lambda (tls) (refusal-of (lambda () (parameterize ((wire-probe-tls tls)) 'set))))
+       '(tls () (5) ("" "h2") ("localhost" "") ("localhost" "h2,http/1.1") ("localhost" "h2" "http/1.1" "h2"))))
+
+;; An origin whose raw face is TLS, with the good leaf, and that tells each
+;; client the SNI it sent, the protocol ALPN chose, and the protocols it
+;; offered, in its order, or none: its ALPNCallback sees the client's list
+;; (Node 20.10.0 and 24.18.0, measured), and chooses the first of yy and zz
+;; the client offered, or refuses. The probes run one at a time, so one
+;; variable carries each list to its connection.
+(define (sni-reporter)
+  (string-append
+   "import tls from 'node:tls';\n"
+   "import { readFileSync } from 'node:fs';\n"
+   "let offered = 'none';\n"
+   "const server = tls.createServer({ key: readFileSync(" (write-text (pki-file "good.key"))
+   "), cert: readFileSync(" (write-text (pki-file "good.pem"))
+   "), ALPNCallback: ({ protocols }) => { offered = protocols.join(','); return ['yy', 'zz'].find((p) => protocols.includes(p)); } }, (s) => {\n"
+   "  s.on('error', () => s.destroy());\n"
+   "  s.end(`${s.servername} ${s.alpnProtocol} ${offered}\\n`);\n"
+   "  offered = 'none';\n"
+   "}).listen(0, '127.0.0.1', () => {\n"
+   "  const face = `127.0.0.1:${server.address().port}`;\n"
+   "  process.stdout.write(JSON.stringify({ node: process.version, pid: process.pid, http: face, raw: face, h2c: face }) + '\\n');\n"
+   "  process.stdin.resume();\n"
+   "  process.stdin.on('end', () => process.exit(0));\n"
+   "});\n"))
+
+(test-equal "wire-probe-tls: each probe speaks TLS with its SNI, offering its protocols, joined, in order, or none; #f speaks none"
+  '(("sni.example zz xx,zz\n" eof) ("sni.example yy yy,xx\n" eof) ("localhost false none\n" eof)
+    ("sni.example zz xx,zz\n" eof) ("" timeout))
+  (guard (e (#t (list 'raised (describe e))))
+    (with-stand-in (sni-reporter)
+      (lambda ()
+        (call-with-origin
+         (lambda (o)
+           (let ((seen (lambda (p) (list (utf8->string (probe-bytes p)) (probe-end p)))))
+             (list (parameterize ((wire-probe-tls '("sni.example" "xx" "zz")))
+                     (seen (wire-probe o 'raw (make-bytevector 0) 2000)))
+                   (parameterize ((wire-probe-tls '("sni.example" "yy" "xx")))
+                     (seen (wire-probe o 'raw (make-bytevector 0) 2000)))
+                   (parameterize ((wire-probe-tls '("localhost")))
+                     (seen (wire-probe o 'raw (make-bytevector 0) 2000)))
+                   (parameterize ((wire-probe-tls '("sni.example" "xx" "zz")))
+                     (seen (wire-probe-half-close o 'raw (make-bytevector 0) 2000)))
+                   (seen (wire-probe o 'raw (make-bytevector 0) 200))))))))))
+
+(test-equal "wire-probe-reset refuses to run under wire-probe-tls, before running a probe"
+  '(assertion-violation wire-probe-reset (("localhost" "h2")))
+  (parameterize ((wire-probe-tls '("localhost" "h2")))
+    (refusal-of (lambda () (wire-probe-reset 'no-origin 'raw (make-bytevector 0))))))
+
+;; --- parse-s-client: synthetic outputs in both implementations' formats ----
+
+;; base64 : Bytevector -> String
+(define (base64 bytes)
+  (let ((alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+        (n (bytevector-length bytes)))
+    (call-with-string-output-port
+     (lambda (p)
+       (let loop ((i 0))
+         (when (< i n)
+           (let* ((b1 (if (< (+ i 1) n) (bytevector-u8-ref bytes (+ i 1)) 0))
+                  (b2 (if (< (+ i 2) n) (bytevector-u8-ref bytes (+ i 2)) 0))
+                  (w (+ (* (bytevector-u8-ref bytes i) 65536) (* b1 256) b2)))
+             (put-char p (string-ref alphabet (div w 262144)))
+             (put-char p (string-ref alphabet (mod (div w 4096) 64)))
+             (put-char p (if (< (+ i 1) n) (string-ref alphabet (mod (div w 64) 64)) #\=))
+             (put-char p (if (< (+ i 2) n) (string-ref alphabet (mod w 64)) #\=))
+             (loop (+ i 3)))))))))
+
+;; Two certificates' base64 text, made here, for no real certificate is
+;; checked in (ADR-0005).
+(define cert-a (base64 (seeded-bytes 300 11)))
+(define cert-b (base64 (seeded-bytes 200 12)))
+
+;; pem-block : String String -> String
+;; TEXT as a PEM block of LABEL, its base64 in lines of 64.
+(define (pem-block label text)
+  (string-append "-----BEGIN " label "-----\n"
+                 (let loop ((i 0) (acc ""))
+                   (if (>= i (string-length text))
+                       acc
+                       (loop (+ i 64)
+                             (string-append acc (substring text i (min (string-length text) (+ i 64))) "\n"))))
+                 "-----END " label "-----\n"))
+
+;; The chain s_client -showcerts prints, its leaf cert-a, then cert-b.
+(define openssl-chain
+  (string-append " 0 s:CN=good\n   i:CN=chez-curl test CA\n"
+                 "   a:PKEY: EC, (prime256v1); sigalg: ecdsa-with-SHA256\n"
+                 "   v:NotBefore: Oct 18 16:47:30 2026 GMT; NotAfter: Oct 20 16:47:30 2026 GMT\n"
+                 (pem-block "CERTIFICATE" cert-a)
+                 " 1 s:CN=chez-curl test CA\n   i:CN=chez-curl test CA\n"
+                 (pem-block "CERTIFICATE" cert-b)))
+(define libressl-chain
+  (string-append " 0 s:/CN=good\n   i:/CN=chez-curl test CA\n" (pem-block "CERTIFICATE" cert-a)
+                 " 1 s:/CN=chez-curl test CA\n   i:/CN=chez-curl test CA\n" (pem-block "CERTIFICATE" cert-b)))
+
+;; openssl-stdout, libressl-stdout : String String String -> String
+;; s_client's stdout as OpenSSL 3.5.7 and LibreSSL 3.3.6 write it (measured),
+;; with CHAIN, an ALPN line and a verify code line.
+(define (openssl-stdout chain alpn code)
+  (string-append "CONNECTED(00000004)\n---\nCertificate chain\n" chain
+                 "---\nServer certificate\nsubject=CN=good\nissuer=CN=chez-curl test CA\n---\n"
+                 "No client certificate CA names sent\nPeer signing digest: SHA256\n"
+                 "Peer signature type: ecdsa_secp256r1_sha256\nNegotiated TLS1.3 group: X25519MLKEM768\n---\n"
+                 "SSL handshake has read 1919 bytes and written 1640 bytes\nVerification: OK\n---\n"
+                 "New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384\nProtocol: TLSv1.3\nServer public key is 256 bit\n"
+                 "This TLS version forbids renegotiation.\nCompression: NONE\nExpansion: NONE\n"
+                 alpn "Early data was not sent\n" code "---\n"))
+(define (libressl-stdout chain alpn code)
+  (string-append "CONNECTED(00000004)\nwrite W BLOCK\n---\nCertificate chain\n" chain
+                 "---\nServer certificate\nsubject=/CN=good\nissuer=/CN=chez-curl test CA\n---\n"
+                 "No client certificate CA names sent\nServer Temp Key: ECDH, X25519, 253 bits\n---\n"
+                 "SSL handshake has read 801 bytes and written 403 bytes\n---\n"
+                 "New, TLSv1/SSLv3, Cipher is AEAD-AES256-GCM-SHA384\nServer public key is 256 bit\n"
+                 "Secure Renegotiation IS NOT supported\nCompression: NONE\nExpansion: NONE\n"
+                 alpn "SSL-Session:\n    Protocol  : TLSv1.3\n    Cipher    : AEAD-AES256-GCM-SHA384\n"
+                 "    Session-ID: \n    Session-ID-ctx: \n    Master-Key: \n    Start Time: 1792342050\n"
+                 "    Timeout   : 7200 (sec)\n" code "---\n"))
+
+(define openssl-untrusted-stderr
+  (string-append "Connecting to 127.0.0.1\ndepth=0 CN=untrusted\n"
+                 "verify error:num=20:unable to get local issuer certificate\nverify return:1\n"
+                 "depth=0 CN=untrusted\nverify error:num=21:unable to verify the first certificate\n"
+                 "verify return:1\ndepth=0 CN=untrusted\nverify return:1\nDONE\n"))
+(define libressl-untrusted-stderr
+  (string-append "depth=0 CN = untrusted\nverify error:num=20:unable to get local issuer certificate\n"
+                 "verify return:1\ndepth=0 CN = untrusted\nverify error:num=21:unable to verify the first certificate\n"
+                 "verify return:1\nDONE\n"))
+(define openssl-good-stderr
+  "Connecting to 127.0.0.1\ndepth=1 CN=chez-curl test CA\nverify return:1\ndepth=0 CN=good\nverify return:1\nDONE\n")
+(define libressl-good-stderr
+  "depth=1 CN = chez-curl test CA\nverify return:1\ndepth=0 CN = good\nverify return:1\nDONE\n")
+(define openssl-expired-stderr
+  "Connecting to 127.0.0.1\ndepth=0 CN=expired\nverify error:num=10:certificate has expired\nverify return:1\nDONE\n")
+
+(define code-21 "Verify return code: 21 (unable to verify the first certificate)\n")
+(define code-0 "Verify return code: 0 (ok)\n")
+
+;; peer : Peer -> List
+;; Each field, #f written as no-alpn: SRFI-64 makes a raise #f.
+(define (peer-fields p)
+  (list (peer-verify-errors p) (peer-verify-code p) (or (peer-alpn p) 'no-alpn) (peer-leaf p)))
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append "parse-s-client: " (car row))
+     (cadr row)
+     (guard (e (#t (list 'raised (describe e))))
+       (peer-fields (parse-s-client (caddr row) (cadddr row))))))
+ (list (list "OpenSSL 3.5.7, an untrusted leaf, ALPN h2, two certificates: the errors from stderr in order, the code, the protocol and the first certificate"
+             (list '(20 21) 21 "h2" cert-a)
+             (openssl-stdout openssl-chain "ALPN protocol: h2\n" code-21) openssl-untrusted-stderr)
+       (list "LibreSSL 3.3.6, the same, its code line indented"
+             (list '(20 21) 21 "h2" cert-a)
+             (libressl-stdout libressl-chain "ALPN protocol: h2\n" (string-append "    " code-21))
+             libressl-untrusted-stderr)
+       (list "OpenSSL 3.5.7, a good leaf, no ALPN: no errors, code 0, no protocol"
+             (list '() 0 'no-alpn cert-a)
+             (openssl-stdout openssl-chain "No ALPN negotiated\n" code-0) openssl-good-stderr)
+       (list "LibreSSL 3.3.6, the same"
+             (list '() 0 'no-alpn cert-a)
+             (libressl-stdout libressl-chain "No ALPN negotiated\n" (string-append "    " code-0))
+             libressl-good-stderr)
+       (list "an expired leaf, ALPN http/1.1, one certificate"
+             (list '(10) 10 "http/1.1" cert-b)
+             (openssl-stdout (pem-block "CERTIFICATE" cert-b) "ALPN protocol: http/1.1\n"
+                             "Verify return code: 10 (certificate has expired)\n")
+             openssl-expired-stderr)
+       (list "a verify error line on stdout is not one of stderr's, nor an indented one on stderr"
+             (list '(21) 21 "h2" cert-a)
+             (openssl-stdout (string-append "verify error:num=20:on stdout\n" openssl-chain) "ALPN protocol: h2\n" code-21)
+             (string-append " verify error:num=20:indented\nverify error:num=21:unable to verify the first certificate\n"))
+       (list "a key block before the first certificate is not it"
+             (list '() 0 "h2" cert-b)
+             (openssl-stdout (string-append (pem-block "EC PRIVATE KEY" cert-a) (pem-block "CERTIFICATE" cert-b))
+                             "ALPN protocol: h2\n" code-0)
+             "")))
+
+;; s-client-refusal : String String -> Any
+(define (s-client-refusal stdout stderr) (refusal-of (lambda () (parse-s-client stdout stderr))))
+
+(let* ((good (lambda (alpn code) (openssl-stdout openssl-chain alpn code)))
+       (no-code (good "ALPN protocol: h2\n" ""))
+       (two-codes (good "ALPN protocol: h2\n" (string-append code-0 "    " code-0)))
+       (no-alpn-line (good "" code-0))
+       (two-alpn (good "ALPN protocol: h2\nNo ALPN negotiated\n" code-0))
+       (no-cert (openssl-stdout "" "ALPN protocol: h2\n" code-0))
+       (empty-cert (openssl-stdout "-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----\n" "ALPN protocol: h2\n" code-0))
+       (open-cert (string-append (good "ALPN protocol: h2\n" code-0) "-----BEGIN CERTIFICATE-----\nAAAA\n"))
+       (open-cert-stdout (openssl-stdout (string-append "-----BEGIN CERTIFICATE-----\n" cert-a "\n")
+                                         "ALPN protocol: h2\n" code-0)))
+  (for-each
+   (lambda (row)
+     (test-equal (string-append "parse-s-client refuses " (car row))
+       (cadr row)
+       (s-client-refusal (caddr row) (cadddr row))))
+   (list (list "a verify error line with no number"
+               '(parse-s-client "a verify error line is verify error:num=N:TEXT" ("verify error:num=x:bad"))
+               (good "ALPN protocol: h2\n" code-0) "verify error:num=x:bad\n")
+         (list "a verify error line with no colon after its number"
+               '(parse-s-client "a verify error line is verify error:num=N:TEXT" ("verify error:num=20"))
+               (good "ALPN protocol: h2\n" code-0) "verify error:num=20\n")
+         (list "no Verify return code line"
+               (list 'parse-s-client "stdout has no Verify return code line" (list no-code))
+               no-code "")
+         (list "a second Verify return code line with no ticket line before it"
+               '(parse-s-client "a Verify return code line after the handshake's has no Post-Handshake New Session Ticket arrived: line of its own before it"
+                                ("    Verify return code: 0 (ok)"))
+               two-codes "")
+         (list "a Verify return code line with no number"
+               '(parse-s-client "a Verify return code line is Verify return code: N (TEXT)" ("Verify return code: ok"))
+               (good "ALPN protocol: h2\n" "Verify return code: ok\n") "")
+         (list "a Verify return code line with no text after its number"
+               '(parse-s-client "a Verify return code line is Verify return code: N (TEXT)" ("Verify return code: 0"))
+               (good "ALPN protocol: h2\n" "Verify return code: 0\n") "")
+         (list "a Verify return code line whose text is not in brackets"
+               '(parse-s-client "a Verify return code line is Verify return code: N (TEXT)" ("Verify return code: 0 ok"))
+               (good "ALPN protocol: h2\n" "Verify return code: 0 ok\n") "")
+         (list "no ALPN line"
+               (list 'parse-s-client "stdout has no ALPN protocol or No ALPN negotiated line" (list no-alpn-line))
+               no-alpn-line "")
+         (list "an ALPN protocol line and a No ALPN negotiated line"
+               (list 'parse-s-client "stdout has more than one ALPN protocol or No ALPN negotiated line"
+                     (list (list "ALPN protocol: h2" "No ALPN negotiated")))
+               two-alpn "")
+         (list "two ALPN protocol lines"
+               (list 'parse-s-client "stdout has more than one ALPN protocol or No ALPN negotiated line"
+                     (list (list "ALPN protocol: h2" "ALPN protocol: h2")))
+               (good "ALPN protocol: h2\nALPN protocol: h2\n" code-0) "")
+         (list "an ALPN protocol line with no protocol"
+               '(parse-s-client "an ALPN line is ALPN protocol: X, or No ALPN negotiated" ("ALPN protocol:"))
+               (good "ALPN protocol:\n" code-0) "")
+         (list "no certificate"
+               (list 'parse-s-client "no -----BEGIN CERTIFICATE----- line" (list no-cert))
+               no-cert "")
+         (list "an empty certificate"
+               (list 'parse-s-client "a certificate is empty" (list empty-cert))
+               empty-cert "")
+         (list "a first certificate that is not closed"
+               (list 'parse-s-client "a certificate has no -----END CERTIFICATE----- line" (list open-cert-stdout))
+               open-cert-stdout "")
+         (list "stdout that is not a string"
+               '(assertion-violation parse-s-client (5)) 5 "")
+         (list "stderr that is not a string"
+               '(assertion-violation parse-s-client (5)) "" 5))))
+
+;; --- parse-s-client: TLS 1.3 session tickets ------------------------------
+;; OpenSSL 3 prints a block for each session ticket it reads before stdin's
+;; end, by timing, with a Verify return code of its own: the handshake's.
+
+(define ticket-line "Post-Handshake New Session Ticket arrived:")
+
+;; ticket-block : String -> String
+;; A ticket's block as OpenSSL 3.5.7 prints it after the handshake's lines
+;; (measured), its session's Verify return code line CODE indented, its
+;; session's bytes made up here.
+(define (ticket-block code)
+  (string-append "---\n" ticket-line "\nSSL-Session:\n    Protocol  : TLSv1.3\n"
+                 "    Cipher    : TLS_AES_256_GCM_SHA384\n    Session-ID: 0F1E2D3C4B5A6978\n    Session-ID-ctx: \n"
+                 "    Resumption PSK: 8796A5B4C3D2E1F0\n    PSK identity: None\n    PSK identity hint: None\n"
+                 "    SRP username: None\n    TLS session ticket lifetime hint: 7200 (seconds)\n    TLS session ticket:\n"
+                 "    0000 - 01 02 03 04 05 06 07 08-09 0a 0b 0c 0d 0e 0f 10   ................\n\n"
+                 "    Start Time: 1792346241\n    Timeout   : 7200 (sec)\n    " code
+                 "    Extended master secret: no\n    Max Early Data: 0\n---\nread R BLOCK\n"))
+
+;; with-tickets : String (Listof String) -> String
+;; OpenSSL 3.5.7's stdout, ALPN h2, the handshake's code line CODE, then a
+;; ticket block for each of TICKETS, its code line.
+(define (with-tickets code tickets)
+  (apply string-append (openssl-stdout openssl-chain "ALPN protocol: h2\n" code) (map ticket-block tickets)))
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append "parse-s-client, with ticket blocks: " (car row))
+     (cadr row)
+     (guard (e (#t (list 'raised (describe e))))
+       (peer-fields (parse-s-client (caddr row) (cadddr row))))))
+ (list (list "none: the handshake's code"
+             (list '() 0 "h2" cert-a) (with-tickets code-0 '()) openssl-good-stderr)
+       (list "one, its code the handshake's: the handshake's code"
+             (list '() 0 "h2" cert-a) (with-tickets code-0 (list code-0)) openssl-good-stderr)
+       (list "two, as Node sends, each code the handshake's: the handshake's code"
+             (list '() 0 "h2" cert-a) (with-tickets code-0 (list code-0 code-0)) openssl-good-stderr)
+       (list "two, the handshake's code 21 and each ticket's 21: 21, and the errors from stderr"
+             (list '(20 21) 21 "h2" cert-a) (with-tickets code-21 (list code-21 code-21)) openssl-untrusted-stderr)
+       (list "two, the first after the server's bytes, binary ones as on h2, at the start of its --- line"
+             (list '() 0 "h2" cert-a)
+             (string-append (openssl-stdout openssl-chain "ALPN protocol: h2\n" code-0)
+                            (string #\nul #\nul #\nul #\x4 #\nul #\nul #\nul #\nul #\nul)
+                            (ticket-block code-0) (ticket-block code-0))
+             openssl-good-stderr)))
+
+(let* ((stray-code (string-append (with-tickets code-0 (list code-0)) "    " code-0))
+       (no-code-after (string-append (with-tickets code-0 '()) "---\n" ticket-line "\nSSL-Session:\n---\n"))
+       (two-lines (string-append (with-tickets code-0 '()) "---\n" ticket-line "\n" (ticket-block code-0)))
+       (before (string-append (ticket-block code-0) (openssl-stdout openssl-chain "ALPN protocol: h2\n" code-0)))
+       (malformed (with-tickets code-0 (list "Verify return code: x (ok)\n"))))
+  (for-each
+   (lambda (row)
+     (test-equal (string-append "parse-s-client refuses " (car row))
+       (cadr row)
+       (s-client-refusal (caddr row) openssl-good-stderr)))
+   (list (list "a ticket block followed by a second code line with no ticket line of its own"
+               '(parse-s-client "a Verify return code line after the handshake's has no Post-Handshake New Session Ticket arrived: line of its own before it"
+                                ("    Verify return code: 0 (ok)"))
+               stray-code)
+         (list "a ticket line with no Verify return code line after it"
+               (list 'parse-s-client "a Post-Handshake New Session Ticket arrived: line has no Verify return code line after it"
+                     (list ticket-line))
+               no-code-after)
+         (list "two ticket lines before one Verify return code line"
+               (list 'parse-s-client "two Post-Handshake New Session Ticket arrived: lines come before one Verify return code line"
+                     (list ticket-line))
+               two-lines)
+         (list "a ticket's code that is not the handshake's: 21, then 0"
+               '(parse-s-client "a ticket's Verify return code is not the handshake's" (21 "    Verify return code: 0 (ok)"))
+               (with-tickets code-21 (list code-0)))
+         (list "a ticket's code that is not the handshake's, in the second ticket: 0, 0, then 21"
+               '(parse-s-client "a ticket's Verify return code is not the handshake's"
+                                (0 "    Verify return code: 21 (unable to verify the first certificate)"))
+               (with-tickets code-0 (list code-0 code-21)))
+         (list "a ticket line before the handshake's Verify return code line"
+               (list 'parse-s-client "a Post-Handshake New Session Ticket arrived: line comes before the handshake's Verify return code line"
+                     (list ticket-line))
+               before)
+         (list "a ticket's malformed Verify return code line"
+               '(parse-s-client "a Verify return code line is Verify return code: N (TEXT)" ("    Verify return code: x (ok)"))
+               malformed))))
+
+;; --- parse-s-client: the chain ---------------------------------------------
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append "parse-s-client: peer-chain is every certificate block, in order, and peer-leaf the first: " (car row))
+     (cadr row)
+     (guard (e (#t (list 'raised (describe e))))
+       (let ((p (parse-s-client (caddr row) "")))
+         (list (map (lambda (c) (cond ((string=? c cert-a) 'cert-a) ((string=? c cert-b) 'cert-b) (else c)))
+                    (peer-chain p))
+               (cond ((string=? (peer-leaf p) cert-a) 'cert-a) ((string=? (peer-leaf p) cert-b) 'cert-b)
+                     (else (peer-leaf p))))))))
+ (list (list "OpenSSL 3.5.7, two" '((cert-a cert-b) cert-a)
+             (openssl-stdout openssl-chain "ALPN protocol: h2\n" code-0))
+       (list "LibreSSL 3.3.6, two" '((cert-a cert-b) cert-a)
+             (libressl-stdout libressl-chain "ALPN protocol: h2\n" (string-append "    " code-0)))
+       (list "OpenSSL 3.5.7, one" '((cert-b) cert-b)
+             (openssl-stdout (string-append " 0 s:CN=chez-curl test leaf\n   i:CN=chez-curl test CA\n"
+                                            (pem-block "CERTIFICATE" cert-b))
+                             "ALPN protocol: h2\n" code-0))
+       (list "LibreSSL 3.3.6, one" '((cert-a) cert-a)
+             (libressl-stdout (string-append " 0 s:/CN=chez-curl test leaf\n   i:/CN=chez-curl test CA\n"
+                                             (pem-block "CERTIFICATE" cert-a))
+                              "ALPN protocol: h2\n" (string-append "    " code-0)))
+       (list "a key block among them is none of them" '((cert-a cert-b) cert-a)
+             (openssl-stdout (string-append (pem-block "CERTIFICATE" cert-a) (pem-block "EC PRIVATE KEY" cert-b)
+                                            (pem-block "CERTIFICATE" cert-b))
+                             "ALPN protocol: h2\n" code-0))))
+
+(let ((second-open (openssl-stdout (string-append (pem-block "CERTIFICATE" cert-a) "-----BEGIN CERTIFICATE-----\n" cert-b "\n")
+                                   "ALPN protocol: h2\n" code-0))
+      (second-empty (openssl-stdout (string-append (pem-block "CERTIFICATE" cert-a)
+                                                   "-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----\n")
+                                    "ALPN protocol: h2\n" code-0)))
+  (test-equal "parse-s-client refuses a chain whose second certificate is not closed, or empty"
+    (list (list 'parse-s-client "a certificate has no -----END CERTIFICATE----- line" (list second-open))
+          (list 'parse-s-client "a certificate is empty" (list second-empty)))
+    (list (s-client-refusal second-open "") (s-client-refusal second-empty ""))))
+
+(test-equal "peer-leaf refuses what is not a Peer"
+  '(assertion-violation peer-leaf (5))
+  (refusal-of (lambda () (peer-leaf 5))))
+
+;; --- s-client ---------------------------------------------------------------
+
+(test-equal "s-client against the origin's https and h2 faces: the good leaf, as good.pem holds it, by ALPN http/1.1 and h2, and none offered"
+  '((() 0 "http/1.1" same) (() 0 "h2" same) (() 0 no-alpn same) ((10) 10 "http/1.1" expired-same))
+  (guard (e (#t (list 'raised (describe e))))
+    (parameterize ((origin-pki pki))
+      (call-with-origin
+       (lambda (o)
+         (let ((row (lambda (face alpn leaf)
+                      (let ((p (s-client o face "localhost" (pki-file "ca.pem") alpn)))
+                        (list (peer-verify-errors p) (peer-verify-code p) (or (peer-alpn p) 'no-alpn)
+                              (if (string=? (peer-leaf p) (pem-certificate (pki-file leaf)))
+                                  (if (string=? leaf "good.pem") 'same 'expired-same)
+                                  'differs))))))
+           (list (row 'https "h2,http/1.1" "good.pem")
+                 (row 'h2 "h2,http/1.1" "good.pem")
+                 (row 'https #f "good.pem")
+                 (row 'https-expired "http/1.1" "expired.pem"))))))))
+
+;; with-openssl-stand-in : String String Integer (String -> Any) -> Any
+;; (PROC DIR) with OPENSSL naming a stand-in in DIR that records each of its
+;; arguments as a line of DIR/argv, writes STDOUT and STDERR, and exits
+;; STATUS.
+(define (with-openssl-stand-in stdout stderr status proc)
+  (call-with-temp-directory
+   (lambda (dir)
+     (write-file (string-append dir "/stdout") stdout)
+     (write-file (string-append dir "/stderr") stderr)
+     (write-file (string-append dir "/openssl")
+                 (string-append "#!/bin/sh\nfor a in \"$@\"; do printf '%s\\n' \"$a\"; done > \"$(dirname \"$0\")/argv\"\n"
+                                "cat \"$(dirname \"$0\")/stdout\"\ncat \"$(dirname \"$0\")/stderr\" >&2\nexit "
+                                (number->string status) "\n"))
+     (capture-command (list "chmod" "+x" (string-append dir "/openssl")))
+     (with-openssl (string-append dir "/openssl") (lambda () (proc dir))))))
+
+;; argv-of : String -> (Listof String)
+(define (argv-of dir)
+  (let ((text (cadr (capture-command (list "cat" (string-append dir "/argv"))))))
+    (let loop ((chars (string->list text)) (line '()) (lines '()))
+      (cond ((null? chars) (reverse lines))
+            ((char=? (car chars) #\newline) (loop (cdr chars) '() (cons (list->string (reverse line)) lines)))
+            (else (loop (cdr chars) (cons (car chars) line) lines))))))
+
+(test-equal "s-client runs $OPENSSL s_client -connect ADDRESS:PORT, -servername SERVERNAME when given, -CAfile CA -showcerts, then -alpn LIST when given"
+  '((("s_client" "-connect" "ADDRESS:PORT" "-servername" "localhost" "-CAfile" "the/ca.pem" "-showcerts"
+      "-alpn" "h2,http/1.1")
+     ((20 21) 21 "h2" "cert-a"))
+    (("s_client" "-connect" "ADDRESS:PORT" "-servername" "sni.example" "-CAfile" "the/ca.pem" "-showcerts")
+     ((20 21) 21 "h2" "cert-a"))
+    (("s_client" "-connect" "ADDRESS:PORT" "-CAfile" "the/ca.pem" "-showcerts" "-alpn" "h2")
+     ((20 21) 21 "h2" "cert-a"))
+    (("s_client" "-connect" "ADDRESS:PORT" "-CAfile" "the/ca.pem" "-showcerts")
+     ((20 21) 21 "h2" "cert-a")))
+  (guard (e (#t (list 'raised (describe e))))
+    (call-with-origin
+     (lambda (o)
+       (let ((address (string-append "127.0.0.1:" (number->string (cdr (origin-face o 'raw))))))
+         (map (lambda (servername alpn)
+                (with-openssl-stand-in (openssl-stdout openssl-chain "ALPN protocol: h2\n" code-21)
+                                       openssl-untrusted-stderr 0
+                  (lambda (dir)
+                    (let ((p (s-client o 'raw servername "the/ca.pem" alpn)))
+                      (list (map (lambda (a) (if (string=? a address) "ADDRESS:PORT" a)) (argv-of dir))
+                            (list (peer-verify-errors p) (peer-verify-code p) (peer-alpn p)
+                                  (if (string=? (peer-leaf p) cert-a) "cert-a" (peer-leaf p))))))))
+              '("localhost" "sni.example" #f #f) '("h2,http/1.1" #f "h2" #f)))))))
+
+(test-equal "s-client raises, with its status, stdout and stderr, when openssl does not exit 0"
+  '(s-client "openssl s_client did not exit 0" ((status . 1) (stdout . "partial\n") (stderr . "connect: refused\n")))
+  (guard (e (#t (list 'raised (describe e))))
+    (call-with-origin
+     (lambda (o)
+       (with-openssl-stand-in "partial\n" "connect: refused\n" 1
+         (lambda (dir) (refusal-of (lambda () (s-client o 'raw "localhost" "the/ca.pem" "h2")))))))))
+
+(test-equal "s-client refuses an unknown face, a server name that is neither #f nor a string, a CA that is no path and an ALPN list that is neither #f nor a string"
+  '((assertion-violation origin-face (https))
+    (assertion-violation s-client (5))
+    (assertion-violation s-client (""))
+    (assertion-violation s-client (""))
+    (assertion-violation s-client (h2)))
+  (guard (e (#t (list 'raised (describe e))))
+    (call-with-origin
+     (lambda (o)
+       (list (refusal-of (lambda () (s-client o 'https "localhost" "ca.pem" #f)))
+             (refusal-of (lambda () (s-client o 'raw 5 "ca.pem" #f)))
+             (refusal-of (lambda () (s-client o 'raw "" "ca.pem" #f)))
+             (refusal-of (lambda () (s-client o 'raw "localhost" "" #f)))
+             (refusal-of (lambda () (s-client o 'raw "localhost" "ca.pem" 'h2))))))))
+
+;; --- certificate-san ------------------------------------------------------
+
+(test-equal "certificate-san: the good leaf names localhost, 127.0.0.1 and ::1, and the wrong-host leaf wrong-host.invalid alone"
+  '("DNS:localhost, IP Address:127.0.0.1, IP Address:0:0:0:0:0:0:0:1" "DNS:wrong-host.invalid")
+  (guard (e (#t (list 'raised (describe e))))
+    (list (certificate-san (pki-file "good.pem")) (certificate-san (pki-file "wrong-host.pem")))))
+
+;; x509-text : Boolean String -> String
+;; x509 -noout -text's output around the extensions, as OpenSSL 3.5.7, or
+;; with LIBRESSL? LibreSSL 3.3.6, writes it (measured), with SAN-LINES after
+;; the extensions' first one.
+(define (x509-text libressl? san-lines)
+  (string-append "Certificate:\n    Data:\n        Version: 3 (0x2)\n        Serial Number: 1 (0x1)\n"
+                 (if libressl? "    Signature Algorithm: ecdsa-with-SHA256\n" "        Signature Algorithm: ecdsa-with-SHA256\n")
+                 "        Issuer: CN=chez-curl test CA\n        Validity\n"
+                 "            Not Before: Oct 18 16:47:30 2026 GMT\n            Not After : Oct 20 16:47:30 2026 GMT\n"
+                 "        Subject: CN=good\n        X509v3 extensions:\n"
+                 "            X509v3 Basic Constraints: critical\n                CA:FALSE\n"
+                 san-lines
+                 "            X509v3 Authority Key Identifier: \n"
+                 (if libressl?
+                     "                keyid:0F:39:3C:6A:C7:13:D1:65:C7:88:07:34:B1:00:E8:EA:75:57:AA:62\n\n"
+                     "                4D:64:58:03:D3:63:B8:D9:4F:DF:EF:84:E7:2A:75:D3:7A:4F:48:F3\n")
+                 "    Signature Algorithm: ecdsa-with-SHA256\n"))
+
+(define san-heading "            X509v3 Subject Alternative Name: \n")
+(define san-value "                DNS:localhost, IP Address:127.0.0.1, IP Address:0:0:0:0:0:0:0:1  \n")
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append "certificate-san, on " (car row))
+     (cadr row)
+     (with-openssl-stand-in (caddr row) "" 0
+       (lambda (dir)
+         (guard (e (#t (list 'raised (describe e))))
+           (list (certificate-san "the/cert.pem") (argv-of dir)))))))
+ (list (list "OpenSSL 3.5.7's text: the line after the heading, trimmed, from x509 -in FILE -noout -text"
+             '("DNS:localhost, IP Address:127.0.0.1, IP Address:0:0:0:0:0:0:0:1"
+               ("x509" "-in" "the/cert.pem" "-noout" "-text"))
+             (x509-text #f (string-append san-heading san-value)))
+       (list "LibreSSL 3.3.6's text"
+             '("DNS:localhost, IP Address:127.0.0.1, IP Address:0:0:0:0:0:0:0:1"
+               ("x509" "-in" "the/cert.pem" "-noout" "-text"))
+             (x509-text #t (string-append san-heading san-value)))
+       (list "a critical SAN"
+             '("DNS:a.invalid" ("x509" "-in" "the/cert.pem" "-noout" "-text"))
+             (x509-text #f "            X509v3 Subject Alternative Name: critical\n                DNS:a.invalid\n"))))
+
+(let ((no-heading (x509-text #f ""))
+      (twice (x509-text #f (string-append san-heading san-value san-heading san-value)))
+      (last (string-append (x509-text #f "") san-heading)))
+  (for-each
+   (lambda (row)
+     (test-equal (string-append "certificate-san refuses " (car row))
+       (cadr row)
+       (with-openssl-stand-in (caddr row) (cadddr row) (list-ref row 4)
+         (lambda (dir) (refusal-of (lambda () (certificate-san "the/cert.pem")))))))
+   (list (list "a status other than 0"
+               (list 'certificate-san "openssl x509 did not exit 0"
+                     (list (cons 'status 1) (cons 'stdout "") (cons 'stderr "unable to load certificate\n")))
+               "" "unable to load certificate\n" 1)
+         (list "text with no SAN heading"
+               (list 'certificate-san "openssl x509 wrote no X509v3 Subject Alternative Name: heading"
+                     (list (cons 'status 0) (cons 'stdout no-heading) (cons 'stderr "")))
+               no-heading "" 0)
+         (list "text with the SAN heading twice"
+               (list 'certificate-san "openssl x509 wrote the X509v3 Subject Alternative Name: heading more than once"
+                     (list (cons 'status 0) (cons 'stdout twice) (cons 'stderr "")))
+               twice "" 0)
+         (list "text whose last line is the SAN heading"
+               (list 'certificate-san "openssl x509 wrote no line after the X509v3 Subject Alternative Name: heading"
+                     (list (cons 'status 0) (cons 'stdout last) (cons 'stderr "")))
+               last "" 0))))
+
+(test-equal "certificate-san refuses what is not a path"
+  '(assertion-violation certificate-san (5))
+  (refusal-of (lambda () (certificate-san 5))))
+
+;; --- certificate-text, certificate-values, certificate-time -----------------
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append "certificate-text: x509 -in FILE -noout -text's lines, trimmed at both ends, from " (car row))
+     (cadr row)
+     (with-openssl-stand-in (caddr row) "" 0
+       (lambda (dir)
+         (guard (e (#t (list 'raised (describe e))))
+           (list (certificate-text "the/cert.pem") (argv-of dir)))))))
+ (list (list "OpenSSL 3.5.7's indentation"
+             '(("Certificate:" "Data:" "Signature Algorithm: ecdsa-with-SHA256" "Public-Key: (256 bit)" ""
+                "ASN1 OID: prime256v1" "Not After : Oct 20 16:47:30 2026 GMT")
+               ("x509" "-in" "the/cert.pem" "-noout" "-text"))
+             "Certificate:\n    Data:\n        Signature Algorithm: ecdsa-with-SHA256\n            Public-Key: (256 bit)  \n\n\t\tASN1 OID: prime256v1\n            Not After : Oct 20 16:47:30 2026 GMT\n")
+       (list "LibreSSL 3.3.6's"
+             '(("Certificate:" "Data:" "Signature Algorithm: ecdsa-with-SHA256" "Public-Key: (256 bit)" "")
+               ("x509" "-in" "the/cert.pem" "-noout" "-text"))
+             "Certificate:\n    Data:\n    Signature Algorithm: ecdsa-with-SHA256\n                Public-Key: (256 bit)\n\n")))
+
+(test-equal "certificate-text raises, with its status, stdout and stderr, when openssl does not exit 0, and refuses what is not a path"
+  '((certificate-text "openssl x509 did not exit 0" ((status . 1) (stdout . "") (stderr . "unable to load certificate\n")))
+    (assertion-violation certificate-text (5)))
+  (list (with-openssl-stand-in "" "unable to load certificate\n" 1
+          (lambda (dir) (refusal-of (lambda () (certificate-text "the/cert.pem")))))
+        (refusal-of (lambda () (certificate-text 5)))))
+
+(test-equal "certificate-text: the good leaf's file, read by $OPENSSL, names P-256 and ECDSA with SHA-256"
+  '(("prime256v1") ("(256 bit)") ("ecdsa-with-SHA256" "ecdsa-with-SHA256"))
+  (guard (e (#t (list 'raised (describe e))))
+    (let ((lines (certificate-text (pki-file "good.pem"))))
+      (list (certificate-values lines "ASN1 OID:") (certificate-values lines "Public-Key:")
+            (certificate-values lines "Signature Algorithm:")))))
+
+(test-equal "certificate-values: what follows the label, trimmed, on every line that starts with it, in order, its spacing matched whole"
+  '(("ecdsa-with-SHA256" "sha256WithRSAEncryption") ("Oct 20 16:47:30 2026 GMT") () () ())
+  (let ((lines '("Signature Algorithm: ecdsa-with-SHA256" "Not After : Oct 20 16:47:30 2026 GMT"
+                 "Signature Algorithm:   sha256WithRSAEncryption  " "X Signature Algorithm: other")))
+    (list (certificate-values lines "Signature Algorithm:")
+          (certificate-values lines "Not After :")
+          (certificate-values lines "Not After:")
+          (certificate-values lines "Public-Key:")
+          (certificate-values '() "Signature Algorithm:"))))
+
+(test-equal "certificate-values refuses what is not a list of lines, or not a label"
+  '((assertion-violation certificate-values (lines))
+    (assertion-violation certificate-values (("a" 5)))
+    (assertion-violation certificate-values (""))
+    (assertion-violation certificate-values (5)))
+  (list (refusal-of (lambda () (certificate-values 'lines "A:")))
+        (refusal-of (lambda () (certificate-values '("a" 5) "A:")))
+        (refusal-of (lambda () (certificate-values '("a") "")))
+        (refusal-of (lambda () (certificate-values '("a") 5)))))
+
+(test-equal "certificate-names: a Subject or Issuer line's names, each \" = \" written \"=\": OpenSSL 3.0's CN = x as 3.5's and LibreSSL's CN=x, and nothing else folded"
+  '(("CN=chez-curl test leaf") ("CN=chez-curl test leaf") ("C=XX, O=a = b, CN=c=d") ("CN=chez-curl test CA") ())
+  (let ((lines '("Subject: CN = chez-curl test leaf" "Subject: CN=chez-curl test leaf"
+                 "Subject: C = XX, O = a  =  b, CN = c=d" "Issuer: CN = chez-curl test CA"
+                 "X Subject: CN = other" "subject: CN = other")))
+    (list (list (car (certificate-names lines "Subject:")))
+          (list (cadr (certificate-names lines "Subject:")))
+          (list (caddr (certificate-names lines "Subject:")))
+          (certificate-names lines "Issuer:")
+          (certificate-names '() "Subject:"))))
+
+(test-equal "certificate-names: from $OPENSSL's own text, the good leaf's Subject and Issuer"
+  '(("CN=chez-curl test leaf") ("CN=chez-curl test CA"))
+  (guard (e (#t (list 'raised (describe e))))
+    (let ((lines (certificate-text (pki-file "good.pem"))))
+      (list (certificate-names lines "Subject:") (certificate-names lines "Issuer:")))))
+
+(test-equal "certificate-names refuses any label but Subject: and Issuer:, and what certificate-values refuses"
+  '((assertion-violation certificate-names ("Signature Algorithm:"))
+    (assertion-violation certificate-names ("Subject"))
+    (assertion-violation certificate-values (lines)))
+  (list (refusal-of (lambda () (certificate-names '("a") "Signature Algorithm:")))
+        (refusal-of (lambda () (certificate-names '("a") "Subject")))
+        (refusal-of (lambda () (certificate-names 'lines "Subject:")))))
+
+;; The seconds below are date -u's, run outside Chez: date -u -d "2000-01-01
+;; 00:00:00" +%s and so on. 2000 is a leap year by the 400-year rule, and
+;; 2100 is none by the 100-year one, so the day after its Feb 28 is Mar 1.
+(test-equal "certificate-time: x509 -text's dates as seconds since 1970-01-01 UTC, its padded day, a leap day and the centuries' rules"
+  '(946684800 946771200 946684799 1792349997 1792522797 1709208000 951782400 951868800 4107542400 0)
+  (map (lambda (text) (guard (e (#t (list 'raised (describe e)))) (certificate-time text)))
+       '("Jan  1 00:00:00 2000 GMT" "Jan  2 00:00:00 2000 GMT" "Dec 31 23:59:59 1999 GMT"
+         "Oct 18 18:59:57 2026 GMT" "Oct 20 18:59:57 2026 GMT" "Feb 29 12:00:00 2024 GMT"
+         "Feb 29 00:00:00 2000 GMT" "Mar  1 00:00:00 2000 GMT"
+         "Mar  1 00:00:00 2100 GMT" "Jan  1 00:00:00 1970 GMT")))
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append "certificate-time refuses " (car row))
+     (list 'assertion-violation 'certificate-time (list (cadr row)))
+     (refusal-of (lambda () (certificate-time (cadr row))))))
+ '(("a day not padded" "Jan 1 00:00:00 2000 GMT")
+   ("a day padded with a zero" "Jan 01 00:00:00 2000 GMT")
+   ("a day its month lacks" "Feb 29 00:00:00 2023 GMT")
+   ("the 29th of February 2100, no leap year" "Feb 29 00:00:00 2100 GMT")
+   ("a day 0" "Jan  0 00:00:00 2000 GMT")
+   ("an hour 24" "Jan  1 24:00:00 2000 GMT")
+   ("a minute 60" "Jan  1 00:60:00 2000 GMT")
+   ("a second 60" "Jan  1 00:00:60 2000 GMT")
+   ("another zone" "Jan  1 00:00:00 2000 UTC")
+   ("a month of no name" "Foo  1 00:00:00 2000 GMT")
+   ("a month in capitals" "JAN  1 00:00:00 2000 GMT")
+   ("a time with no colons" "Jan  1 00.00.00 2000 GMT")
+   ("a sign in a number" "Jan  1 -0:00:00 2000 GMT")
+   ("an empty text" "")))
+
+(test-equal "certificate-time refuses what is not a string"
+  '(assertion-violation certificate-time (5))
+  (refusal-of (lambda () (certificate-time 5))))
+
+;; --- pem-certificate --------------------------------------------------------
+
+;; pem-of : String -> Any
+;; pem-certificate's answer, or its raise, for a file holding TEXT.
+(define (pem-of text)
+  (call-with-temp-directory
+   (lambda (dir)
+     (let ((path (string-append dir "/f.pem")))
+       (write-file path text)
+       (guard (e ((and (who-condition? e) (message-condition? e) (irritants-condition? e))
+                  (list (condition-who e) (condition-message e) (condition-irritants e)))
+                 (#t (list 'other (describe e))))
+         (pem-certificate path))))))
+
+(test-equal "pem-certificate: the first certificate's base64 text, its lines joined, past a key block and before another certificate"
+  cert-a
+  (pem-of (string-append (pem-block "EC PRIVATE KEY" cert-b) (pem-block "CERTIFICATE" cert-a)
+                         (pem-block "CERTIFICATE" cert-b))))
+
+(test-equal "pem-certificate: the good leaf's file holds what the https face serves"
+  'same
+  (guard (e (#t (list 'raised (describe e))))
+    (parameterize ((origin-pki pki))
+      (call-with-origin
+       (lambda (o)
+         (if (string=? (pem-certificate (pki-file "good.pem"))
+                       (peer-leaf (s-client o 'https "localhost" (pki-file "ca.pem") #f)))
+             'same
+             'differs))))))
+
+(let ((key-only (pem-block "EC PRIVATE KEY" cert-b))
+      (open (string-append "-----BEGIN CERTIFICATE-----\n" cert-a "\n"))
+      (empty "-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----\n"))
+  (test-equal "pem-certificate refuses a file with no certificate, an empty one, and one not closed"
+    (list (list 'pem-certificate "no -----BEGIN CERTIFICATE----- line" (list key-only))
+          (list 'pem-certificate "a certificate is empty" (list empty))
+          (list 'pem-certificate "a certificate has no -----END CERTIFICATE----- line" (list open)))
+    (map pem-of (list key-only empty open))))
+
+(test-equal "pem-certificate refuses what is not a path"
+  '(assertion-violation pem-certificate (5))
+  (refusal-of (lambda () (pem-certificate 5))))
 
 (test-end "curl-testing")
 

@@ -74,6 +74,12 @@ it should not be a comment. (chez-cmark-gfm)
   which argument runs first: one named "rejected before anything is allocated"
   was in fact satisfied by the *last* argument's accessor raising.
   (chez-cmark-gfm and chez-libuv)
+
+  `map` is the same: R6RS leaves the order of its calls open. In Chez 10.4.0, a `set!`
+  inside the procedure saw `(map f '(1 2 3 4 5 6))` call f on 5 6 3 4 1 2, compiled and
+  interpreted alike. M1 slice 2's stop check recorded its probes out of order that way.
+  It uses `for-each`, which goes in order (`build/verify/m1s2/map-order.sps`).
+  (chez-curl)
 * **An assertion passes whenever some *other* rule can produce the value it
   expects.** `AGENTS.md` gives the rule; here is what it looked like four times
   in one stage of chez-cmark-gfm, each one green and each one empty. A
@@ -233,6 +239,29 @@ it should not be a comment. (chez-cmark-gfm)
   `destroy()` reaches the peer as `end`, and `resetAndDestroy()` as `ECONNRESET`. The
   probe's `--reset` uses the second, and `test-curl-testing` checks what the peer saw.
   (chez-curl)
+
+  Over TLS it is worse. Measured on Node 20.10.0 and 24.18.0 alike:
+  - `resetAndDestroy()` on a TLS socket throws `ERR_INVALID_HANDLE_TYPE`;
+  - a server that wraps a `net` socket in `tls.TLSSocket` and resets the `net` socket sends
+    the reset, and the client sees its data, then `ECONNRESET`;
+  - a client that hands `tls.connect` its own `net` socket and resets that one still
+    reaches the server as an `end`.
+
+  So `raw-tls` resets the socket it wrapped, and the probe refuses `--reset` with `--tls`
+  (`build/verify/m1s2/measure/node-tls.mjs`). (chez-curl)
+* **LibreSSL 3.3.6, the Mac's `/usr/bin/openssl`, differs from OpenSSL where a check
+  would not notice.** Measured in Docker, on Alpine 3.14's package and on one built from
+  its tarball:
+  - **`s_client -verify_return_error` exits 0 when verification fails,** where OpenSSL
+    exits 1. A check that reads the exit status passes on the Mac against an expired leaf.
+  - **`req` takes the config's subject over `-subj` when the config says `prompt = no`.**
+    The first PKI script made every leaf `CN=placeholder`, and each still verified,
+    because nothing checks a leaf's subject.
+  - **It has no `-verify_hostname`, `-verify_ip`, `-checkhost` or `-ext`.** This one is
+    loud: it prints its usage and exits 1.
+
+  The checks read verify codes, the served leaf and its SAN line, and the PKI script's
+  config has no subject (ADR-0005, amended 2026-10-18). (chez-curl)
 * **curl's `./configure` turns on every optional library it finds.**
   - In 7.85.0, brotli's default is `off`, and only `no` skips the search
     (`configure.ac`).
@@ -257,6 +286,79 @@ it should not be a comment. (chez-cmark-gfm)
   Only bash 5 run as `sh`, the container's `/bin/sh`, prints nothing, so no check run in
   the container sees it. The origin's runner sends its own stderr to `/dev/null`. The
   Debian Docker run caught it. (chez-curl)
+
+  dash writes `Killed` to the stderr the killed command's own redirections set. In
+  `node:20.10.0-bookworm`, `timeout -s KILL 1 sleep 5 2>/tmp/e` left `Killed` in `/tmp/e`.
+  So slice 1's `bounded` put `Killed` into the stderr it captured, on Debian and macOS but
+  not in Guix. M1 slice 2's Node 20 run caught it. `bounded` now runs `timeout` in a
+  subshell, sends the shell's own stderr to `/dev/null`, and exits with the subshell's
+  status. (chez-curl)
+* **Over TLS, every record reaches the reader as its own chunk, even when TCP joined
+  them.** M1 slice 2's review kept Nagle's algorithm on `raw-tls`'s TCP socket, and every
+  suite stayed green. Slice 1's drip rules are lower bounds from the connect, plus "each
+  byte arrives alone", and over TLS each byte still arrived alone. Yet two bytes came 0 ms
+  apart: with Nagle on, the first gap of a 20 ms drip was 0 to 2 ms in every run. The
+  suite now judges TLS timing between arrivals: each body byte at least half the drip's
+  gap after the one before it. Its gaps were measured over 10 runs, idle and under 24
+  busy loops (`build/verify/m1s2/measure4/gaps-8x20.txt`). The suite then passed 20 of 20
+  runs under that load (`final/suite-under-load-r2.txt`). (chez-curl)
+* **TLS picks ALPN by the server's preference, so the chosen protocol cannot show a client
+  that reorders its list.** The review's probe mutants offered only the last protocol, or
+  the list reversed. Both passed, because every multi-protocol row overlapped the server
+  only in its last entry. The stand-in servers now report the whole offered list through
+  `ALPNCallback`, which Node 20.10.0 and 24.18.0 both have, and rows overlap only first,
+  and only last. (chez-curl)
+* **An end seen after a stop proves the stop only if nothing but the stop can explain it.**
+  M1 slice 2 took three tries.
+  - **First,** one waiting state per face, and any eof taken as the stop's. A mutant that
+    closed idle connections after 100 ms passed, since its eof came first. So did one that
+    stopped tracking a face's TCP sockets: no connection was held mid-handshake, where an
+    untracked one makes `server.close()` wait. That origin exited 14 s after its stdin
+    ended, against 57 ms.
+  - **Second,** every waiting state, and each probe silent 300 ms after it opened. Two
+    other causes still passed:
+    - **Node's own `server.close()`.** Node 24 ends idle HTTP/2 sessions within 3 ms,
+      where Node 20 ends none. So a face that tracked nothing passed on Node 24, the
+      container's, and failed only on Node 20.
+    - **Idle timers.** The silence was checked long before the stop, and ends were
+      accepted for 2000 ms after it, so a 1200 ms handshake timeout passed.
+  - **Third,** that rule, with two sets of probes more than B apart and a bound B. The
+    third review found two more causes:
+    - **a state left out:** a raw script still playing between writes. A stop that spared
+      it took 9.8 s, and passed;
+    - **one schedule for every connection:** a watchdog or a load shedder ended both sets
+      at once, after the stop. Two sets rule out only timers keyed to each connection.
+  - **The rule that held:**
+    - cover the states `close()` never ends: a stream with its body to come, a TLS state
+      before the handshake, a script still playing;
+    - require silence right up to the stop;
+    - bound the call's return by B = 500 ms after the stop;
+    - open two sets of probes more than B apart;
+    - run it all twice on fresh origins, the second held 700 ms longer before the stop.
+
+    Every face, untracked and closed at each of 100 ms to 5 s or never, failed on both
+    Node versions. So did the watchdog, the shedder and the spared player.
+
+  (chez-curl)
+* **A mutation harness that runs `A; B` reports only B's status.** M1 slice 2's harness
+  ran two suites for some cases, and a failure in the first counted as caught only when
+  the second failed too. Such cases now fail if either suite fails, and the six were
+  rerun. (chez-curl)
+* **OpenSSL 3's `s_client` prints a `Verify return code` line for each TLS 1.3 session
+  ticket it reads before stdin ends, and how many it reads depends on timing.**
+  - **Measured:** Node sends two tickets. On OpenSSL 3.5.7 and 3.0.11, with stdin at its
+    end at once (`</dev/null`), three of 200 runs had three code lines while other jobs
+    ran. So did 73 of 200 under 24 busy loops, and none of 80 on an idle machine. Ending
+    stdin 300 ms late gives three every time, and LibreSSL 3.3.6 still prints only one.
+  - **What the extra lines look like:** each sits in a `Post-Handshake New Session Ticket
+    arrived:` block, indented. LibreSSL indents its only line the same way, so indentation
+    tells nothing. `-no_ticket` changes nothing.
+  - **The first rule broke:** "exactly one code line" passed on an idle machine and failed
+    by chance under load. The first `make test-memory` of slice 2 caught it.
+  - **The rule now:** the first code line is the handshake's. Each later one needs its own
+    ticket header, and must agree with the first. Every ticket's code matched the
+    handshake's on every face (`build/verify/m1s2/measure3/tickets.sh`,
+    `measure/ticket-codes.sh`). (chez-curl)
 * **A child of `open-process-ports` stays a zombie until Chez's next collection.**
   Measured at 10.4.0: one second after the child exited, `/proc/PID/status` said `Z
   (zombie)`; after a `(collect)`, the pid was gone. Until then `kill -0 PID` succeeds on a
