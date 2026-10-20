@@ -1,6 +1,8 @@
 # ADR-0008: URLs are parsed, checked and resolved by libcurl's own URL API
 
-- **Status:** Accepted; amended 2026-10-17: the measured verdicts become M2's tests
+- **Status:** Accepted; amended 2026-10-17: the measured verdicts become M2's tests; amended
+  2026-10-19: the verdicts vary by version, so the suite holds shared answers and version
+  rows
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D2 (brief §10)
@@ -99,3 +101,49 @@ resolution examples in RFC 3986 §5.4.
   (decision 1), and its suite starts from this table.
 - **Floor:** the table was measured on 8.20.0. M2's suite runs at the floor too, in CI's
   floor lane, so a verdict that differs at 7.85.0 fails there, naming the verdict.
+
+## Amendment, 2026-10-19: the verdicts vary by version, so the suite holds shared answers and version rows
+
+- **Measured** (2026-10-19), through `curl_url_set` and `curl_url_get` with no flags: this
+  record's 16 cases, and RFC 3986 §5.4's 42 examples against the base `http://a/b/c/d;p?q`.
+  The libcurls:
+  - 7.85.0, the floor, built by `scripts/ci/build-curl.sh` in Docker `ubuntu:24.04`;
+  - 7.88.1, Debian 12's, in Docker `node:20.10.0-bookworm`;
+  - 8.5.0, Ubuntu 24.04's OpenSSL and GnuTLS builds, which agreed on every case;
+  - 8.20.0, the container's.
+- **51 of the 58 cases agree on every version. This record's table holds on 8.20.0 alone.**
+  The 7 that vary:
+
+  | Case | 7.85.0 | 7.88.1 | 8.5.0 | 8.20.0 |
+  |---|---|---|---|---|
+  | `#s` (RFC) | `http://a/b/c/#s` | the same | the same | `http://a/b/c/d;p?q#s` |
+  | the empty reference (RFC) | `http://a/b/c/` | the same | refused, 3 | `http://a/b/c/d;p?q` |
+  | `g:h` (RFC) | `http://a/b/c/g:h` | refused, 5 | refused, 5 | refused, 5 |
+  | `http:g` (RFC) | `http://a/b/c/http:g` | refused, 28 | refused, 28 | refused, 28 |
+  | `#frag` (this record) | `http://example.com/a/b/#frag` | the same | the same | `http://example.com/a/b/c?q=1#frag` |
+  | a space in the path | refused, 25 | refused, 25 | refused, 3 | refused, 3 |
+  | a space in the host | refused, 21 | refused, 21 | refused, 3 | refused, 3 |
+
+  - Only 8.20.0 resolves a fragment-only reference, and the empty one, as RFC 3986 does.
+    Which release changed them was not measured.
+  - Every version writes `//g` as `http://g/`, not RFC 3986's `http://g`.
+  - 7.85.0's `curl_url_strerror` text for code 5 differs from the others'.
+- **So the suite holds shared answers and version rows,** as the maintainer chose
+  (2026-10-19).
+  - A case on which every recorded libcurl agrees has one answer, for every lane.
+  - The 7 above have one row per libcurl version, in a reviewed file. A libcurl with no row
+    fails, printing the row it would need, as the drift guard does (ADR-0017).
+  - Each answer is asserted whole: the URL `curl_url_get` gives back, or the refusal's
+    `CURLUcode`. No message is compared.
+  - A libcurl that answers a shared case differently fails. Moving that case into the rows
+    is a reviewed change.
+  - Rows are recorded for the libcurls a lane runs: 7.85.0, 8.5.0 and 8.20.0. The Mac's
+    8.7.1 prints its row on its first run. 7.88.1 has no lane, so it gets no row.
+- **This replaces the 2026-10-17 amendment's "a verdict that differs at 7.85.0 fails
+  there".** It would fail on 3 of this record's cases.
+- **The documentation lists curl's leniencies by version,** from these rows.
+- **Rejected:**
+  - **Any measured answer passes.** No rows to add, but a libcurl that moved between known
+    answers would pass unseen.
+  - **Agreed cases only,** with the 7 in the documentation alone. A change in them would
+    never be seen.
