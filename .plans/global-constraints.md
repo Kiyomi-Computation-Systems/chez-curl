@@ -166,6 +166,10 @@ provisional. They bind until that record is accepted or amended.
 - **Origins are compared by** scheme, lowercased host and effective port, never as strings
   (ADR-0008).
 - **No dependency on uriparse** (ADR-0008).
+- **curl's URL verdicts vary by version,** so the URL suite holds a shared answer for each
+  case every recorded libcurl agrees on, and a row per libcurl version for the cases that
+  vary. A libcurl with no row fails, printing its row. Answers are asserted whole, as a URL
+  or a `CURLUcode`, never a message (ADR-0008, amended).
 
 ## The escape hatch
 
