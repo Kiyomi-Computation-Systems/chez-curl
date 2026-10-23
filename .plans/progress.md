@@ -26,12 +26,15 @@ close-out under **Close-outs**, newest first.
     `test-variadic`, `test-check-nothreads`, Node 20.10.0, and the drip's own-arrival check;
   - it needed `NODE="$(asdf which node)"`, because asdf 0.15's shim writes to stderr on every
     call (`traps.md`).
-  - **Still owed there:**
-    - a `make test` with the two rows;
-    - PR #14's probe read and stop/continue checks, since macOS's libuv waits with kqueue,
-      not epoll;
-    - which `openssl` the TLS checks ran, which the run did not show. LibreSSL 3.3.6 is
-      `/usr/bin/openssl`.
+  - **Then `make test` on `mac/arm64-gate`** (PR #15, on top of #14): 20 of 20. So the two
+    rows pass there, and so do #14's probe read and stop/continue checks under macOS's
+    kqueue.
+  - **The TLS checks there ran OpenSSL 3.6.3,** the first `openssl` on its `PATH`, not
+    `/usr/bin/openssl`'s LibreSSL 3.3.6.
+  - **With `OPENSSL=/usr/bin/openssl`, 17 checks failed:** LibreSSL's `s_client` polls
+    stdin, and macOS's poll does not support `/dev/null`, so it exited 1, `poll error`.
+    `s-client` now hands it an empty pipe (ADR-0005, amended). It passed on Linux with
+    OpenSSL 3.5.7 and 3.0.13 and LibreSSL 3.3.6. **Still owed on the Mac:** that run again.
 - **Done:** slices 1 to 6 of the [harness plan](2026-10-04-harness-plan.md) (§6):
   - slice 1, the container and the Makefile skeleton;
   - slice 2, the test harness

@@ -638,3 +638,13 @@ it should not be a comment. (chez-cmark-gfm)
   wants an origin or a probe to write nothing to stderr failed, 68 tests across
   `test-curl-testing`, `test-origin` and `test-origin-tls`. With `NODE="$(asdf which
   node)"`, the real binary, all three passed. (chez-curl)
+* **macOS's poll(2) does not support devices, and LibreSSL's `s_client` polls stdin.** Every
+  TLS check was measured on LibreSSL 3.3.6, but built on Linux, where poll reads
+  `/dev/null` as at its end. On the maintainer's Mac, `/usr/bin/openssl s_client` with
+  stdin at `/dev/null` completed each handshake and printed the right codes, then wrote
+  `poll error` and exited 1. That failed 17 tests across `test-origin-tls` and
+  `test-curl-testing`. With an empty pipe, `: | openssl s_client`, it printed `DONE` and
+  exited 0. OpenSSL 3.6.3 passed on that Mac because its `s_client` waits with select().
+  `s-client` now hands `openssl` an empty pipe, and `test-curl-testing` holds it to one
+  through a stand-in that reports its stdin, so a `/dev/null` fails on Linux too.
+  (chez-curl)

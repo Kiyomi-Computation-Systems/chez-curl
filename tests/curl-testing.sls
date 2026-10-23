@@ -1278,8 +1278,8 @@
     (car (peer-chain p)))
 
   ;; s-client : Origin Symbol (U String #f) String (U String #f) -> Peer
-  ;; Runs, under bounded, with stdin at its end, so that it closes once
-  ;; connected:
+  ;; Runs, under bounded, with stdin an empty pipe, at its end, so that it
+  ;; closes once connected:
   ;;   $OPENSSL s_client -connect ADDRESS:PORT [-servername SERVERNAME]
   ;;     -CAfile CA -showcerts [-alpn ALPN]
   ;; against ORIGIN's face FACE, -servername only when SERVERNAME is a
@@ -1292,6 +1292,10 @@
   ;; Stdin's end does not stop OpenSSL 3 reading the server's TLS 1.3
   ;; session tickets first: by timing, it sometimes prints a block for each,
   ;; with a Verify return code of its own, which parse-s-client reads.
+  ;; The pipe is no /dev/null: LibreSSL 3.3.6's s_client polls stdin with
+  ;; poll(2), and macOS's poll does not support devices. There, with stdin at
+  ;; /dev/null, it printed "poll error" and exited 1 once connected; with an
+  ;; empty pipe, DONE and 0 (measured on the maintainer's Mac, 2026-10-23).
   (define (s-client origin face servername ca alpn)
     (let ((address (origin-face origin face)))
       (unless (or (not servername) (and (string? servername) (positive? (string-length servername))))
@@ -1300,7 +1304,7 @@
         (assertion-violation 's-client "the CA file is not a path" ca))
       (unless (or (not alpn) (and (string? alpn) (positive? (string-length alpn))))
         (assertion-violation 's-client "the ALPN list is not #f nor a string" alpn))
-      (let ((ran (apply bounded (openssl-program) "s_client"
+      (let ((ran (apply bounded "sh" "-c" ": | exec \"$0\" \"$@\"" (openssl-program) "s_client"
                         "-connect" (string-append (car address) ":" (number->string (cdr address)))
                         (append (if servername (list "-servername" servername) '())
                                 (list "-CAfile" ca "-showcerts")
