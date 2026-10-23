@@ -66,13 +66,18 @@
 * `make test` runs every suite under GNU `timeout`. On macOS, run
   `brew install coreutils`, and make finds its `gtimeout`. Homebrew installs
   Chez as `chez`, which make also finds.
+* A version manager's shim may write to stderr on every call, which fails
+  every check that wants a quiet origin. asdf 0.15's does: run
+  `make test NODE="$(asdf which node)"`.
 * `make test` runs the test origin under Node (`NODE`, default `node`), and
   `test-drift` fails on any libcurl with no row in `tests/known-libcurls.sexp`.
   It prints the row: review it, and add it (ADR-0017).
 * `make test` makes TLS material per run and checks the TLS faces with
-  `openssl` (`OPENSSL`, default `openssl`). On the Mac that is LibreSSL 3.3.6,
-  which cannot check a hostname, so no check reads a hostname code
-  (ADR-0005, amended).
+  `openssl` (`OPENSSL`, default `openssl`). The Mac's `/usr/bin/openssl` is
+  LibreSSL 3.3.6, which cannot check a hostname, so no check reads a hostname
+  code (ADR-0005, amended). An `openssl` earlier on `PATH` takes its place:
+  the maintainer's Mac found OpenSSL 3.6.3. To check with LibreSSL there, pass
+  `OPENSSL=/usr/bin/openssl`.
 * `make check-variadic` can watch a variadic binding fail only on Apple arm64.
   Run it on the Mac whenever a variadic binding changes. Elsewhere it checks
   only the static half: `test-collect-safe` must refuse each planted binding.
@@ -172,6 +177,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   a failed verify, and its `req` prefers a `prompt = no` config's subject to
   `-subj`. Read verify codes, never that exit status, and give the config no
   subject.
+* macOS's poll(2) does not support devices. LibreSSL's `s_client` polls stdin,
+  so with stdin at `/dev/null` it exits 1, `poll error`, once connected. Give
+  it an empty pipe, as `s-client` does.
 * curl's `./configure` turns on every optional library it finds, and only warns
   about an option it doesn't know. A reproducible curl build names every
   library, passes `--enable-option-checking=fatal`, and checks what the install

@@ -43,3 +43,11 @@
  (features 1361691293)
  (ssl-version "OpenSSL/3.0.13")
  (host "x86_64-pc-linux-gnu"))
+
+(libcurl
+ (where "Apple's libcurl 8.7.1, /usr/lib/libcurl.4.dylib, on the maintainer's Mac: Apple M1, macOS 26.7.1, loaded by Homebrew's Chez as tarm64osx. Its host names x86_64, though the process is arm64 (ADR-0001, amended 2026-10-23). Printed by test-drift there on 2026-10-23.")
+ (version "8.7.1")
+ (version-num 526081)
+ (features 1364132765)
+ (ssl-version "SecureTransport (LibreSSL/3.3.6)")
+ (host "x86_64-apple-darwin25.0"))

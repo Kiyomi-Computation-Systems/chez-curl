@@ -632,3 +632,19 @@ it should not be a comment. (chez-cmark-gfm)
   fd once on each end. Each origin suite stops the probe across a script's last write and
   its reset: on Node 20.10.0 that failed without the fix, and on 24.18.0 it passes either
   way (ADR-0005, amended). (chez-curl)
+* **A version manager's shim can write to stderr on every call.** On the maintainer's Mac,
+  `node` was asdf 0.15's Bash shim, which prints a notice about upgrading to asdf 0.16 to
+  stderr each time it runs. Node itself ran: it reported v20.10.0. But every check that
+  wants an origin or a probe to write nothing to stderr failed, 68 tests across
+  `test-curl-testing`, `test-origin` and `test-origin-tls`. With `NODE="$(asdf which
+  node)"`, the real binary, all three passed. (chez-curl)
+* **macOS's poll(2) does not support devices, and LibreSSL's `s_client` polls stdin.** Every
+  TLS check was measured on LibreSSL 3.3.6, but built on Linux, where poll reads
+  `/dev/null` as at its end. On the maintainer's Mac, `/usr/bin/openssl s_client` with
+  stdin at `/dev/null` completed each handshake and printed the right codes, then wrote
+  `poll error` and exited 1. That failed 17 tests across `test-origin-tls` and
+  `test-curl-testing`. With an empty pipe, `: | openssl s_client`, it printed `DONE` and
+  exited 0. OpenSSL 3.6.3 passed on that Mac because its `s_client` waits with select().
+  `s-client` now hands `openssl` an empty pipe, and `test-curl-testing` holds it to one
+  through a stand-in that reports its stdin, so a `/dev/null` fails on Linux too.
+  (chez-curl)

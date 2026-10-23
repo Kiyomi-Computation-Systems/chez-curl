@@ -39,8 +39,8 @@ provisional. They bind until that record is accepted or amended.
   - x86-64 runs a binding without the convention correctly, so only Apple arm64 can show
     one failing. `make check-variadic` must be run on an Apple arm64 Mac whenever a
     variadic binding changes (ADR-0001, amended).
-  - **It has not run there yet.** M2 binds no setopt or getinfo option until it has passed
-    on Apple arm64, and its result is recorded in ADR-0001.
+  - **It passed there on 2026-10-23,** on the maintainer's M1 (ADR-0001, amended). So M2
+    may bind setopt and getinfo options.
 - **`CURLOPT_*` ids and types come from the loaded library,** through
   `curl_easy_option_by_name`. They are never written in Scheme (ADR-0001).
 - **Every other constant is a Scheme definition** in `(curl private constants)`. A C program

@@ -1887,7 +1887,8 @@
 
 ;; with-openssl-stand-in : String String Integer (String -> Any) -> Any
 ;; (PROC DIR) with OPENSSL naming a stand-in in DIR that records each of its
-;; arguments as a line of DIR/argv, writes STDOUT and STDERR, and exits
+;; arguments as a line of DIR/argv, and in DIR/stdin whether its stdin is a
+;; pipe and how many bytes it held, writes STDOUT and STDERR, and exits
 ;; STATUS.
 (define (with-openssl-stand-in stdout stderr status proc)
   (call-with-temp-directory
@@ -1896,6 +1897,8 @@
      (write-file (string-append dir "/stderr") stderr)
      (write-file (string-append dir "/openssl")
                  (string-append "#!/bin/sh\nfor a in \"$@\"; do printf '%s\\n' \"$a\"; done > \"$(dirname \"$0\")/argv\"\n"
+                                "if [ -p /dev/stdin ]; then kind=pipe; else kind=other; fi\n"
+                                "printf '%s %s\\n' \"$kind\" \"$(wc -c | tr -d ' ')\" > \"$(dirname \"$0\")/stdin\"\n"
                                 "cat \"$(dirname \"$0\")/stdout\"\ncat \"$(dirname \"$0\")/stderr\" >&2\nexit "
                                 (number->string status) "\n"))
      (capture-command (list "chmod" "+x" (string-append dir "/openssl")))
@@ -1932,6 +1935,23 @@
                             (list (peer-verify-errors p) (peer-verify-code p) (peer-alpn p)
                                   (if (string=? (peer-leaf p) cert-a) "cert-a" (peer-leaf p))))))))
               '("localhost" "sni.example" #f #f) '("h2,http/1.1" #f "h2" #f)))))))
+
+;; LibreSSL 3.3.6's s_client polls its stdin with poll(2), and macOS's poll
+;; does not support devices. On the maintainer's Mac, with stdin at /dev/null
+;; it printed "poll error" and exited 1 once connected; with an empty pipe it
+;; printed DONE and exited 0 (measured 2026-10-23).
+(test-equal "s-client gives openssl an empty pipe as its stdin, never a device such as /dev/null"
+  '("pipe 0\n" "pipe 0\n")
+  (guard (e (#t (list 'raised (describe e))))
+    (call-with-origin
+     (lambda (o)
+       (map (lambda (alpn)
+              (with-openssl-stand-in (openssl-stdout openssl-chain "ALPN protocol: h2\n" code-21)
+                                     openssl-untrusted-stderr 0
+                (lambda (dir)
+                  (s-client o 'raw "localhost" "the/ca.pem" alpn)
+                  (cadr (capture-command (list "cat" (string-append dir "/stdin")))))))
+            '("h2" #f))))))
 
 (test-equal "s-client raises, with its status, stdout and stderr, when openssl does not exit 0"
   '(s-client "openssl s_client did not exit 0" ((status . 1) (stdout . "partial\n") (stderr . "connect: refused\n")))

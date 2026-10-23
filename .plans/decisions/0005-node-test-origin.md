@@ -1,6 +1,6 @@
 # ADR-0005: The test origin server is one Node file, standard library only
 
-- **Status:** Accepted; amended 2026-10-18: the byte probe checks the instrument, and CI tests the Node floor (M1); amended again 2026-10-18: `openssl` checks certificates portably, with no hostname code (M1 slice 2); amended 2026-10-23: the probe asks the kernel whether an end was a reset
+- **Status:** Accepted; amended 2026-10-18: the byte probe checks the instrument, and CI tests the Node floor (M1); amended again 2026-10-18: `openssl` checks certificates portably, with no hostname code (M1 slice 2); amended 2026-10-23: the probe asks the kernel whether an end was a reset; amended again 2026-10-23: `s_client` reads an empty pipe, for the Mac's LibreSSL
 - **Date:** 2026-10-04
 - **Scope:** chez-curl's test instrument (brief §7, milestone M1) and every test lane
   after it
@@ -248,3 +248,34 @@ The maintainer chose this over raising the Node floor or recording a known flake
     Node 20 and 22.
   - **Recording a known flake.** About one probe run in three of that row read `eof` on
     Node 20.10.0.
+
+## Amendment, 2026-10-23: `s_client` reads an empty pipe, for the Mac's LibreSSL
+
+- **The second amendment's LibreSSL was Linux's.** It ran LibreSSL 3.3.6 built from its
+  tarball in Docker, and on Alpine 3.14. Neither was the Mac's own `/usr/bin/openssl`. On the
+  maintainer's Mac, the first `openssl` on `PATH` is OpenSSL 3.6.3, and the TLS checks passed
+  with it.
+- **On the Mac, with `OPENSSL=/usr/bin/openssl`, 17 checks failed.** Each `s_client` call
+  completed its handshake and printed the right verify errors, code and ALPN. Then it wrote
+  `poll error` and exited 1, and `s-client` requires exit 0.
+  - Everything else passed with that LibreSSL: `tests/make-test-pki.sh` made the run's
+    material, and `test-verify` passed all 21 checks.
+  - The cause: LibreSSL 3.3.6's `s_client` polls stdin with poll(2) once connected, and
+    exits 1 on `POLLNVAL`. `s-client` ran it with stdin at `/dev/null`, and macOS's poll does
+    not support devices.
+  - Measured on that Mac against example.com:
+    - with stdin at `/dev/null`: exit 1, `poll error`;
+    - with an empty pipe: exit 0, `DONE`.
+  - Linux's poll reads `/dev/null` as at its end, which is why Docker passed. OpenSSL's
+    `s_client` waits with select(), which is why 3.6.3 passed.
+- **So `s-client` hands `openssl` an empty pipe** (`: | exec openssl s_client ...`), at its
+  end at once as before.
+  - With it, `test-verify`, `test-origin-tls` and `test-curl-testing` passed with OpenSSL
+    3.5.7 in the container, and with OpenSSL 3.0.13 and LibreSSL 3.3.6 (built from its
+    checksummed tarball) on Ubuntu 24.04 under Node 20.10.0.
+  - `test-curl-testing` holds it there: a stand-in `openssl` reports whether its stdin is a
+    pipe and how many bytes it held. With `/dev/null` back, that test fails on Linux too, and
+    it did, before the fix.
+- **Then on the Mac, with `OPENSSL=/usr/bin/openssl`:** `test-verify`, `test-origin-tls` and
+  `test-curl-testing` passed: 21, 88 and 276 checks, with `test-origin-tls`'s one Linux-only
+  skip. So the checks hold on the Mac's own LibreSSL.

@@ -1,6 +1,6 @@
 # ADR-0001: Bind libcurl directly, with no C shim; the floor is Chez 10.4.0, threaded
 
-- **Status:** Accepted; amended 2026-10-16 with what M0 slices 3 to 5 built
+- **Status:** Accepted; amended 2026-10-16 with what M0 slices 3 to 5 built; 2026-10-17, the variadic bindings (M0 slice 6); 2026-10-23, the checked copies and the carried checks (M2 slice 1); 2026-10-23, the Apple arm64 run, which passed
   ([slice 3](#amendment-2026-10-16-what-slice-3-built),
   [slice 4](#amendment-2026-10-16-what-slice-4-built),
   [slice 5](#amendment-2026-10-16-the-non-threaded-check-m0-slice-5),
@@ -383,3 +383,41 @@ nothing else.
 - **Still carried:** `test-variadic` needs a libcurl with RTSP.
 - **Apple's SDK headers have not been read by the prototype check.** The Mac's run shows it.
 - **Evidence:** the [foundations mutation log](../foundations-mutation-log.md).
+
+## Amendment, 2026-10-23: the Apple arm64 run passed
+
+The maintainer ran `make test` and `make check-variadic` on their Mac:
+- Apple M1, macOS 26.7.1;
+- Homebrew's Chez, machine type `tarm64osx`, so native arm64, not Rosetta;
+- Apple's libcurl 8.7.1, `/usr/lib/libcurl.4.dylib`, SecureTransport (LibreSSL/3.3.6).
+
+- **`make check-variadic`: all 19 steps ok, on `tarm64osx`.**
+  - Both controls passed on the unchanged copy.
+  - On each of the five mutants, `test-collect-safe` failed, naming exactly the bindings it
+    changed.
+  - On each of the five, `test-variadic` failed on arm64:
+
+    | Mutant | Failing tests | Through |
+    |---|---|---|
+    | the template's annotation removed | 8 | every binding |
+    | setopt `long` through `bind-required` | 4 | `curl-easy-setopt-long` alone |
+    | setopt pointer | 2 | `curl-easy-setopt-pointer` alone |
+    | setopt `curl_off_t` | 2 | `curl-easy-setopt-off-t` alone |
+    | getinfo | 4 | the `PRIVATE` and `RTSP_CLIENT_CSEQ` read-backs |
+
+    Without the annotation, a pointer set through setopt did not read back, and -1 through
+    `MAXFILESIZE` or `MAXFILESIZE_LARGE` drew no `CURLE_BAD_FUNCTION_ARGUMENT`. No mutant
+    died: the template and getinfo mutants also failed by name.
+  - So on Apple arm64 the annotation is what makes the values arrive, and `test-variadic`
+    sees them fail to. The decision holds.
+- **`make test`: 18 of 20 suites passed.** `test-drift` and `test-url` failed only for want of
+  rows for 8.7.1. The two rows are added in the same change.
+  - `test-constants` passed, so the prototype check read Apple's SDK headers.
+  - `test-variadic` passed on the unchanged tree. Apple's libcurl has RTSP.
+  - The run needed `NODE` pointed past an asdf shim, which writes to stderr on every call
+    (`traps.md`).
+- **The libcurl names its host `x86_64-apple-darwin25.0`, on arm64.** An arm64 process
+  loads only arm64 code, so that string describes Apple's build, not the slice that ran.
+- **The gate is met.** M2's slices 2 and 3 may bind setopt and getinfo options.
+  `make check-variadic` still runs on an Apple arm64 Mac whenever a variadic binding changes.
+- **Still carried:** `test-variadic` needs a libcurl with RTSP.

@@ -13,8 +13,8 @@
 ;;;   - shared-answers holds the answer every recorded libcurl gives, for 60
 ;;;     of them;
 ;;;   - tests/known-url-verdicts.sexp holds a row per libcurl version a lane
-;;;     runs, 7.85.0, 8.5.0 and 8.20.0, with that version's answer to each of
-;;;     the 10 others, the varying cases.
+;;;     runs, 7.85.0, 8.5.0 and 8.20.0, and for Apple's 8.7.1, with that
+;;;     version's answer to each of the 10 others, the varying cases.
 ;;;
 ;;; The non-ASCII cases hold the decoding to UTF-8: curl_url_get hands back
 ;;; the bytes it was given, and 9 of their answers carry them raw, where
@@ -387,8 +387,8 @@
   'read
   (if (eq? (car file-result) 'data) 'read file-result))
 
-(test-equal "it holds rows for 7.85.0, 8.5.0 and 8.20.0, the libcurls the lanes run"
-  '("7.85.0" "8.5.0" "8.20.0")
+(test-equal "it holds rows for 7.85.0, 8.5.0 and 8.20.0, the libcurls the lanes run, and 8.7.1, Apple's"
+  '("7.85.0" "8.5.0" "8.20.0" "8.7.1")
   (map (lambda (row) (if (eq? (row-problem row) 'ok) (row-version row) row)) rows))
 
 (let loop ((i 1) (rest rows))
