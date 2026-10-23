@@ -5,10 +5,10 @@
 ;; and a callable's u8* parameter copy C's bytes into a fresh bytevector, and
 ;; hand C none.
 (library (curl c)
-  (export memcpy wide copied on-bytes on-copy)
+  (export copy-in wide copied on-bytes on-copy)
   (import (rnrs) (only (chezscheme) foreign-procedure foreign-callable))
 
-  (define memcpy (foreign-procedure "memcpy" (u8* uptr size_t) uptr))
+  (define copy-in (foreign-procedure "fixture_copy" (u8* uptr size_t) uptr))
 
   (define wide (foreign-procedure "fixture_wide" (uptr u16* int u32*) int))
 

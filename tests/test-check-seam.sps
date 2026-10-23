@@ -270,6 +270,30 @@
                                  (library-only "define-ftype" "(curl private layouts)"))
                   (string-append (at "ftype-with-unlisted" "curl/m.sls") ": (curl m) " (not-listed "$primitive"))))
 
+   (list "memory-native-listed"
+         "rule (f), passing: foreign-alloc and foreign-free imported by (curl private memory), and foreign-procedure and load-shared-object by (curl private native), the one library listed for each, with make-mutex and with-mutex beside them"
+         (holds 3 3))
+   (list "memory-native-elsewhere"
+         "rule (f): foreign-alloc, foreign-free, foreign-procedure and load-shared-object each imported by a library not listed for it, in either family, or by a name that only looks like the listed one; each listed library's own name is not named"
+         (refused 7
+                  (string-append (at "memory-native-elsewhere" "curl/private/memory.sls")
+                                 ": (curl private memory) "
+                                 (library-only "foreign-procedure" "(curl private native)"))
+                  (string-append (at "memory-native-elsewhere" "curl/private/memory/extra.sls")
+                                 ": (curl private memory extra) "
+                                 (library-only "foreign-alloc" "(curl private memory)"))
+                  (string-append (at "memory-native-elsewhere" "curl/private/native.sls")
+                                 ": (curl private native) "
+                                 (library-only "foreign-alloc" "(curl private memory)"))
+                  (string-append (at "memory-native-elsewhere" "curl/x.sls") ": (curl x) "
+                                 (library-only "foreign-free" "(curl private memory)"))
+                  (string-append (at "memory-native-elsewhere" "curl/x.sls") ": (curl x) "
+                                 (library-only "load-shared-object" "(curl private native)"))
+                  (string-append (at "memory-native-elsewhere" "http-client/h.sls") ": (http-client h) "
+                                 (library-only "foreign-procedure" "(curl private native)"))
+                  (string-append (at "memory-native-elsewhere" "http-client/h.sls") ": (http-client h) "
+                                 (library-only "load-shared-object" "(curl private native)"))))
+
    ;; --- rule (g): no library exports a name it imports from (chezscheme) ---
    (list "export-chez"
          "rule (g): a name imported from (chezscheme) exported, plain or as a rename spec's internal name, in either family, each in export order; a name from (rnrs), a rename of a library's own definition to a (chezscheme) name, and a definition named like a (chezscheme) binding are not named"

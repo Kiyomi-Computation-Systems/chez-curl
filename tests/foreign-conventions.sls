@@ -11,11 +11,18 @@
 ;;;   known-wrappers      its binders, the macros whose template binds an
 ;;;                       entry point
 ;;;   scan-conventions    every binding under a directory, read as data, and
-;;;                       every occurrence the reader cannot account for
+;;;                       every occurrence the reader cannot account for;
+;;;                       scan-signatures gives each binding's types, which
+;;;                       tests/test-constants.sps holds to the headers'
+;;;                       prototypes
 ;;;   table-violations    each binding held against the table
 ;;;   check-conventions   both: what a suite asserts
 ;;;   table-problems      the table's own shape, and its citations checked
 ;;;                       against the decision records
+;;;   readable-types      every type the reader reads, for a tree whose
+;;;                       layouts define the given ftypes: what a binding
+;;;                       can write, the universe tests/test-constants.sps
+;;;                       holds its map against
 ;;;
 ;;; The reader evaluates nothing, and it fails closed. Every occurrence of
 ;;; the symbols foreign-procedure and foreign-callable in a source file must
@@ -252,7 +259,8 @@
 (library (foreign-conventions)
   (export conventions-table known-macros known-wrappers
           scan-conventions scan? scan-bindings scan-violations scan-wrappers
-          scan-macros table-violations check-conventions table-problems)
+          scan-macros scan-signatures table-violations check-conventions
+          table-problems readable-types)
   (import (rnrs)
           (only (chezscheme) box? unbox directory-list display-condition
                 file-directory? file-regular? file-symbolic-link?
@@ -278,6 +286,10 @@
     (cite adr-0013 "E1 classifies the rest, starting with the cleanup paths `CURLOPT_QUICK_EXIT` describes: `curl_multi_remove_handle` and `curl_easy_cleanup`."))
   (define memcpy-plain
     (cite adr-0001 "Bulk byte moves use libc's `memcpy`, bound directly, as a plain call."))
+  ;; memcpy's two bindings hand C a bytevector's data: the checked copies'
+  ;; own, in (curl private native), which assert the span first.
+  (define one-checked-wrapper
+    (cite adr-0001 "One checked wrapper owns every copy between a bytevector and foreign memory."))
   (define name-not-kept
     (cite adr-0013 "`curl_easy_option_by_name` and `curl_easy_header` read their name argument during the call, and keep no pointer to it."))
   ;; The four variadic entries, each bound once per value type with
@@ -303,8 +315,8 @@
   ;; bytevector's data, or a string its callee keeps no pointer to. Its
   ;; citation quotes a decision record, checked as the row's own is, and a
   ;; marked row is never __collect_safe (ADR-0013's decision 4). A row has
-  ;; one mark at most. Two rows are marked string-not-kept; M2's checked
-  ;; wrapper adds the first bytevector-crossing.
+  ;; one mark at most. Two rows are marked string-not-kept, and memcpy's,
+  ;; the checked copies', bytevector-crossing.
   ;;
   ;; A binder names the one way the row's entry may be bound: a known
   ;; wrapper, foreign-procedure or foreign-callable. The four variadic rows
@@ -326,7 +338,14 @@
           (list "curl_easy_perform" '(__collect_safe) can-block)
           (list "curl_multi_poll" '(__collect_safe) can-block)
           (list "curl_multi_perform" '() multi-perform-plain)
-          (list "memcpy" '() memcpy-plain)))
+          (list "memcpy" '() memcpy-plain (list 'bytevector-crossing one-checked-wrapper))
+          (list "strlen" '() cannot-block)
+          (list "curl_url" '() cannot-block)
+          (list "curl_url_cleanup" '() cannot-block)
+          (list "curl_url_set" '() cannot-block)
+          (list "curl_url_get" '() cannot-block)
+          (list "curl_url_strerror" '() cannot-block)
+          (list "curl_free" '() cannot-block)))
 
   ;; known-macros : (Listof (List Symbol Kind String))
   ;; Every macro src/ may define: its name, its kind, and the file below
@@ -369,8 +388,14 @@
   ;; scan-macros : Scan -> (Listof (List Symbol String))
   ;;   each define-syntax at a library body's top level: its name, and its
   ;;   file below the root, in the order read
+  ;; scan-signatures : Scan -> (Listof Signature)
+  ;;   each binding's types, in the order of scan-bindings. A Signature is
+  ;;   (List (U String Symbol) Symbol (Listof Any) Any String): its key, how
+  ;;   it was bound, its parameter types and its result type as written, a
+  ;;   known wrapper's use's as its template and the use give them, and its
+  ;;   file
   (define-record-type scan
-    (fields bindings violations wrappers macros))
+    (fields bindings violations wrappers macros signatures))
 
   ;; --- text ------------------------------------------------------------------------
 
@@ -543,6 +568,16 @@
   (define bytevector-types '(u8* u16* u32*))
   (define string-types '(string utf-8 utf-16le utf-16be utf-32le utf-32be wstring))
   (define object-types '(scheme-object))
+
+  ;; readable-types : (Listof Symbol) -> (Listof Any)
+  ;; Every type type-kind reads, for a tree whose layouts define FTYPES: the
+  ;; immediate types, void, the crossing types of each kind, and (* NAME)
+  ;; and (& NAME) for each NAME in FTYPES. Any other type is unreadable, so
+  ;; this is the whole set a binding can write.
+  (define (readable-types ftypes)
+    (append immediate-types '(void) bytevector-types string-types object-types
+            (map (lambda (name) (list '* name)) ftypes)
+            (map (lambda (name) (list '& name)) ftypes)))
 
   ;; type-shaped? : Any -> Boolean
   ;; A symbol, or (* name) or (& name): what a known wrapper's template may
@@ -1342,7 +1377,7 @@
                    (if (eq? crossings 'unreadable)
                        (violation! 'types-unreadable path (abbreviated form))
                        (emit! (list 'binding (cadr parts) (car parts) path 'foreign-procedure
-                                    crossings))))))))
+                                    crossings (caddr parts) (cadddr parts)))))))))
 
       ;; A callable's result is what it hands C; its parameters it is handed.
       ;; A type it cannot read names the define, so the binding.
@@ -1360,7 +1395,7 @@
                      (if (eq? crossings 'unreadable)
                          (violation! 'types-unreadable path (abbreviated form))
                          (emit! (list 'binding name (car parts) path 'foreign-callable
-                                      crossings)))))))
+                                      crossings (caddr parts) (cadddr parts))))))))
           (walk-elements callable 1 #f)))
 
       (define (wrapper-definition! form)
@@ -1508,7 +1543,9 @@
                           (else
                            (loop (cdr rest)
                                  (cons (list (list-ref form index) conventions file name
-                                             (use-crossings form reading result ftypes))
+                                             (use-crossings form reading result ftypes)
+                                             (use-types form reading)
+                                             (use-result form result))
                                        bindings)
                                  violations defined))))))))))))))
 
@@ -1529,12 +1566,19 @@
                            '() files))
            (findings (filter (lambda (f) (not (eq? (car f) 'macro))) all))
            (resolved (resolve findings ftypes)))
-      (make-scan (car resolved)
+      ;; Each binding resolve answers carries its types after its five
+      ;; fields: scan-bindings drops them, and scan-signatures keeps them.
+      (make-scan (map (lambda (b) (list (list-ref b 0) (list-ref b 1) (list-ref b 2)
+                                        (list-ref b 3) (list-ref b 4)))
+                      (car resolved))
                  (append (if (null? files) (list (list 'no-sources root)) '())
                          (map (lambda (link) (list 'directory-link link)) links)
                          (cadr resolved))
                  (caddr resolved)
-                 (map cdr (filter (lambda (f) (eq? (car f) 'macro)) all)))))
+                 (map cdr (filter (lambda (f) (eq? (car f) 'macro)) all))
+                 (map (lambda (b) (list (list-ref b 0) (list-ref b 3) (list-ref b 5)
+                                        (list-ref b 6) (list-ref b 2)))
+                      (car resolved)))))
 
   ;; --- the table's verdicts ----------------------------------------------------------
 

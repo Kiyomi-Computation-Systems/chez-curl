@@ -2,7 +2,8 @@
 ;;; (curl-testing): what every suite shares (ADR-0015).
 ;;;
 ;;;   suite-exit-form    the last datum of every tests/test-*.sps
-;;;   suite-exit-status  the verdict that form exits with
+;;;   suite-exit-status  the verdict that form exits with: the runner's
+;;;                      counts, and (curl private counters)' native counts
 ;;;   capture-command    run a command; its exit status, stdout and stderr
 ;;;   call-with-temp-directory
 ;;;                      a fresh mktemp -d directory, removed after a call
@@ -75,6 +76,7 @@
           pem-certificate)
   (import (rnrs)
           (srfi :64)
+          (curl private counters)
           (only (chezscheme) base-exception-handler current-time directory-list
                 display-condition exit-handler file-directory? get-process-id getenv
                 input-port-ready? make-parameter make-time open-process-ports sleep system
@@ -90,27 +92,43 @@
   (define suite-exit-form '(exit (suite-exit-status runner)))
 
   ;; suite-exit-status : Test-Runner -> (U 0 1)
-  ;; 0 when RUNNER saw a pass, and no failure and no unexpected pass.
-  ;; Otherwise 1, after one line on the error port giving the counts.
-  ;; Expected failures and skips count neither way. SRFI-64 sets no exit
-  ;; status of its own. The answer is 0 or 1, never a count: exit statuses
-  ;; wrap at 256, so 256 failures would exit 0.
+  ;; 0 when RUNNER saw a pass, and no failure and no unexpected pass, and
+  ;; every count of (curl private counters) is zero. Otherwise 1, after a
+  ;; line on the error port for each rule broken: the runner's counts, then
+  ;; each native count that is not zero, in native-kinds order (ADR-0014,
+  ;; decision 7, amended: a native object a suite made and never freed is a
+  ;; leak, which Valgrind sees as still reachable when a Chez object held
+  ;; its address). Expected failures and skips count neither way. SRFI-64
+  ;; sets no exit status of its own. The answer is 0 or 1, never a count:
+  ;; exit statuses wrap at 256, so 256 failures would exit 0.
   (define (suite-exit-status runner)
     (unless (test-runner? runner)
       (assertion-violation 'suite-exit-status "not a SRFI-64 test runner" runner))
-    (let ((pass (test-runner-pass-count runner))
-          (fail (test-runner-fail-count runner))
-          (xpass (test-runner-xpass-count runner)))
-      (if (and (> pass 0) (= fail 0) (= xpass 0))
+    (let* ((pass (test-runner-pass-count runner))
+           (fail (test-runner-fail-count runner))
+           (xpass (test-runner-xpass-count runner))
+           (runner-ok? (and (> pass 0) (= fail 0) (= xpass 0)))
+           (left (filter (lambda (entry) (not (eqv? (cdr entry) 0))) (native-counts))))
+      (if (and runner-ok? (null? left))
           0
           (let ((err (current-error-port)))
             ;; The runner's own summary, on stdout, comes first.
             (flush-output-port (current-output-port))
-            (put-string err
-              (string-append "suite-exit-status: exit 1 (pass " (number->string pass)
-                             ", fail " (number->string fail)
-                             ", xpass " (number->string xpass)
-                             "): a suite needs a pass, and no fail or xpass\n"))
+            (unless runner-ok?
+              (put-string err
+                (string-append "suite-exit-status: exit 1 (pass " (number->string pass)
+                               ", fail " (number->string fail)
+                               ", xpass " (number->string xpass)
+                               "): a suite needs a pass, and no fail or xpass\n")))
+            (unless (null? left)
+              (put-string err
+                (string-append "suite-exit-status: exit 1 (native objects left: "
+                               (join-words*
+                                (map (lambda (entry)
+                                       (string-append (symbol->string (car entry)) " "
+                                                      (number->string (cdr entry))))
+                                     left))
+                               "): every native object a suite makes must be freed by its end\n")))
             (flush-output-port err)
             1))))
 

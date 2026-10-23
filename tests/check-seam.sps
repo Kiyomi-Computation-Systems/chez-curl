@@ -23,7 +23,10 @@
 ;;;   (f) a library imports, from (chezscheme), a name that only some libraries
 ;;;       may import, and is not one of them. library-only-chez-names holds
 ;;;       each such name with the libraries that alone may import it. At first
-;;;       that is define-ftype, for (curl private layouts) alone. A function
+;;;       that was define-ftype, for (curl private layouts) alone; M2 adds
+;;;       foreign-alloc and foreign-free, for (curl private memory) alone, and
+;;;       foreign-procedure and load-shared-object, for (curl private native)
+;;;       alone. A function
 ;;;       ftype, (define-ftype F (function (int) int)), binds a C entry point or
 ;;;       makes a callable without foreign-procedure or foreign-callable, so it
 ;;;       would dodge the conventions table (tests/foreign-conventions.sls) and
@@ -131,7 +134,8 @@
   '(define-ftype display-condition file-regular? foreign-alloc foreign-entry?
     foreign-free foreign-procedure foreign-ref foreign-sizeof format
     format-condition? ftype-ref getenv load-shared-object machine-type
-    make-ftype-pointer scheme-version scheme-version-number threaded?))
+    make-ftype-pointer make-mutex scheme-version scheme-version-number threaded?
+    with-mutex))
 
 ;; library-only-chez-names : (Listof (Pairof Symbol (Listof (Listof Symbol))))
 ;; Rule (f). Each entry is a name in allowed-chez-names, then one or more
@@ -139,12 +143,23 @@
 ;; does fails.
 ;; define-ftype is the only way to a function ftype (see the header), so only
 ;; (curl private layouts), whose define-ftypes tests/test-constants.sps holds
-;; to structs, may import it. Adding a name or a library is a reviewed change
-;; to the seam (ADR-0007). tests/test-check-seam.sps requires each name to be in
-;; allowed-chez-names, and each entry's libraries to be exactly the libraries
-;; under src/ that import the name, so no permission stays unused.
+;; to structs, may import it. foreign-alloc and foreign-free belong to
+;; (curl private memory), whose blocks are counted (M2 plan, section 3.6):
+;; a block allocated anywhere else is one the counters cannot see.
+;; foreign-procedure belongs to (curl private native), the only library that
+;; calls into libcurl, and the one whose load checks each entry point with
+;; foreign-entry? before binding it; and so does load-shared-object, so no
+;; other library can load a second libcurl, or anything else, into the
+;; process (ADR-0002, decision 3). Adding a name or a library is a reviewed
+;; change to the seam (ADR-0007). tests/test-check-seam.sps requires each name
+;; to be in allowed-chez-names, and each entry's libraries to be exactly the
+;; libraries under src/ that import the name, so no permission stays unused.
 (define library-only-chez-names
-  '((define-ftype (curl private layouts))))
+  '((define-ftype (curl private layouts))
+    (foreign-alloc (curl private memory))
+    (foreign-free (curl private memory))
+    (foreign-procedure (curl private native))
+    (load-shared-object (curl private native))))
 
 ;; rnrs-libraries : (Listof (Listof Symbol))
 ;; The standard libraries a library under src/ may import: R6RS's, but for

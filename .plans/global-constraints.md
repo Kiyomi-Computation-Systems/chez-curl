@@ -99,11 +99,20 @@ provisional. They bind until that record is accepted or amended.
 - **Bulk copies use libc's `memcpy`,** bound directly as a plain call, never
   `__collect_safe`. One checked wrapper owns every copy between a bytevector and foreign
   memory, and asserts the bound in Scheme first: Valgrind cannot see an overrun into a
-  bytevector.
+  bytevector. It is native's `copy-foreign->bytevector!` and `copy-bytevector->foreign!`, and
+  the two `memcpy` bindings behind it are not exported (ADR-0001, amended).
+- **Every string chez-curl hands libcurl is a counted, NUL-terminated UTF-8 copy in foreign
+  memory,** made by `call-with-c-string`, which refuses a string holding U+0000. Chez's own
+  `string` type would cut it at the NUL without a word. Strings libcurl hands back are read
+  as bytes, through `strlen` and the checked copy (ADR-0001, amended).
+- **Every entry point `src/` binds has a prototype row in `tests/test-constants.sps`,** written
+  in the header's own spelling and checked against it. The suite holds each binding's Chez types
+  to its row through `c-type-map`, which it writes out, with the enum names and the variadic
+  lists. A new binding needs a row (ADR-0001, amended).
 - **`test-collect-safe` reads every binding's types as an allowlist,** and refuses a
   crossing, a type that hands C a pointer into Chez's heap, unless its row is marked.
   - A bytevector's data (`u8*`, `u16*`, `u32*`) needs `(bytevector-crossing CITATION)`:
-    M2's checked wrapper only.
+    `memcpy`'s row, the checked copies', only.
   - A string type needs `(string-not-kept CITATION)`, citing that its callee keeps no
     pointer. A string libcurl keeps, like `CURLOPT_POSTFIELDS`, goes through foreign memory.
   - `scheme-object` is never allowed.
@@ -132,9 +141,10 @@ provisional. They bind until that record is accepted or amended.
 - **The load runs at most once per process.** `(curl private load-state)` records its first
   failure, and every later reference raises that failure again. Every load step runs
   inside `load-step`, so only serious conditions are raised (ADR-0002, amended).
-- **Binding order.** `curl_version_info` is bound and checked first. Every other entry
-  point is then bound eagerly, in the same library body. Nothing binds lazily (ADR-0001,
-  ADR-0002).
+- **Binding order.** `curl_version_info` is bound and checked first. Only libc's `memcpy`,
+  both ways, and `strlen` come between it and the floor check, to read its strings. Every other
+  entry point is then bound eagerly, in the same library body. Nothing binds lazily (ADR-0001,
+  ADR-0002, both amended).
 - **Checks at load:**
   - `CURL_VERSION_SSL` is set;
   - `curl_easy_option_by_name("URL")` returns non-NULL;
@@ -203,7 +213,9 @@ provisional. They bind until that record is accepted or amended.
     (chezscheme) name ...)` with names from `allowed-chez-names`, and the two families.
     Adding to a list is a reviewed change.
   - A name in `library-only-chez-names` is imported only by the libraries listed with it:
-    `define-ftype` by `(curl private layouts)` alone.
+    `define-ftype` by `(curl private layouts)`, `foreign-alloc` and `foreign-free` by
+    `(curl private memory)`, and `foreign-procedure` and `load-shared-object` by
+    `(curl private native)`, each alone (ADR-0007, amended).
   - No file under `src/` may be one Chez loads as a library that the check doesn't read.
   - Every `(curl ...)` or `(http-client ...)` library a `src/` library imports is defined
     under `src/` (rule (h)). `tests/` is on the suites' library path too.
@@ -309,10 +321,13 @@ provisional. They bind until that record is accepted or amended.
   (ADR-0014, amended)
 - **When the gate runs:** CI runs it on every pull request, on `main` and on tags. Locally it
   runs in the container (ADR-0014, amended).
-- **Counters:** every native object is counted, always on, per engine. Suites assert that the
-  counts move and return to zero, and a suite fails if any count is not zero at its end.
-  They are the leak gate for foreign memory a Chez object has held. Valgrind treats such a
-  block as reachable, even once the object is dropped (ADR-0014, amended).
+- **Counters:** every native object is counted, always on: per process in M2, per engine from
+  M3. `(curl private counters)` holds them, with no reset, and `(curl private memory)` alone
+  makes and frees foreign blocks. Suites assert that the counts move and return to zero.
+  `suite-exit-status` fails a suite whose counts are not all zero at its end, and every child a
+  suite spawns that reaches native prints its counts, which the suite asserts zero. They are
+  the leak gate for foreign memory a Chez object has held. Valgrind treats such a block as
+  reachable, even once the object is dropped (ADR-0014, amended).
 - **SRFI-64 comes from `vendor/chez-srfi`,** at the commit `Akku.lock` pins.
   - `make check-pins` holds `Akku.lock`, the recorded gitlink and the checkout equal. It
     runs on the host and in CI.

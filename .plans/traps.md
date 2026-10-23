@@ -78,7 +78,7 @@ it should not be a comment. (chez-cmark-gfm)
   `map` is the same: R6RS leaves the order of its calls open. In Chez 10.4.0, a `set!`
   inside the procedure saw `(map f '(1 2 3 4 5 6))` call f on 5 6 3 4 1 2, compiled and
   interpreted alike. M1 slice 2's stop check recorded its probes out of order that way.
-  It uses `for-each`, which goes in order (`build/verify/m1s2/map-order.sps`).
+  It uses `for-each`, which goes in order.
   (chez-curl)
 * **An assertion passes whenever some *other* rule can produce the value it
   expects.** `AGENTS.md` gives the rule; here is what it looked like four times
@@ -104,6 +104,19 @@ it should not be a comment. (chez-cmark-gfm)
   on stderr. The refusal it meant to find never ran. dash's own error,
   `cannot open …/scripts/guix-env-enter`, contains that string. The check now
   compares the whole of stderr. (chez-curl)
+
+  In M2 slice 1, five rules passed with a narrower rule in their place. The builder's own 58
+  mutants had all been caught, and a review's and the lead's mutants found these:
+  - `require-http-scheme` was tested only on `file:///etc/passwd`, so a check that refused only
+    `file` passed. The libcurl lists 19 other schemes;
+  - the NUL refusal was tested at one position, so a scan that skipped the first or the last
+    character passed, and C read `"abc\x0;"` as `abc`;
+  - every URL was ASCII, so decoding as Latin-1 passed;
+  - the prototype check's tables could be loosened along with a binding, so getinfo's
+    destination bound `int` passed once more.
+
+  Each is now tested on inputs a narrower rule gets wrong: every position, bytes where the
+  encodings differ, the whole complement, and tables written out. (chez-curl)
 
 * **An exit status is taken modulo 256.** Chez's `(exit 256)` exits 0, and
   `(exit #t)` exits 1 (both measured at the pin). An exit form that reported its
@@ -248,7 +261,7 @@ it should not be a comment. (chez-cmark-gfm)
     reaches the server as an `end`.
 
   So `raw-tls` resets the socket it wrapped, and the probe refuses `--reset` with `--tls`
-  (`build/verify/m1s2/measure/node-tls.mjs`). (chez-curl)
+  ([TLS mutation log](tls-mutation-log.md), §1.4). (chez-curl)
 * **LibreSSL 3.3.6, the Mac's `/usr/bin/openssl`, differs from OpenSSL where a check
   would not notice.** Measured in Docker, on Alpine 3.14's package and on one built from
   its tarball:
@@ -300,8 +313,8 @@ it should not be a comment. (chez-cmark-gfm)
   apart: with Nagle on, the first gap of a 20 ms drip was 0 to 2 ms in every run. The
   suite now judges TLS timing between arrivals: each body byte at least half the drip's
   gap after the one before it. Its gaps were measured over 10 runs, idle and under 24
-  busy loops (`build/verify/m1s2/measure4/gaps-8x20.txt`). The suite then passed 20 of 20
-  runs under that load (`final/suite-under-load-r2.txt`). (chez-curl)
+  busy loops ([TLS mutation log](tls-mutation-log.md), §3.3). The suite then passed 20
+  of 20 runs under that load. (chez-curl)
 * **TLS picks ALPN by the server's preference, so the chosen protocol cannot show a client
   that reorders its list.** The review's probe mutants offered only the last protocol, or
   the list reversed. Both passed, because every multi-protocol row overlapped the server
@@ -357,8 +370,8 @@ it should not be a comment. (chez-cmark-gfm)
     by chance under load. The first `make test-memory` of slice 2 caught it.
   - **The rule now:** the first code line is the handshake's. Each later one needs its own
     ticket header, and must agree with the first. Every ticket's code matched the
-    handshake's on every face (`build/verify/m1s2/measure3/tickets.sh`,
-    `measure/ticket-codes.sh`). (chez-curl)
+    handshake's on every face ([TLS mutation log](tls-mutation-log.md), §2.2).
+    (chez-curl)
 * **A child of `open-process-ports` stays a zombie until Chez's next collection.**
   Measured at 10.4.0: one second after the child exited, `/proc/PID/status` said `Z
   (zombie)`; after a `(collect)`, the pid was gone. Until then `kill -0 PID` succeeds on a
@@ -590,3 +603,23 @@ it should not be a comment. (chez-cmark-gfm)
   getinfo's destination typed `int`, `test-variadic` passed, since `foreign-alloc`'s slot
   lies below 2^31 here and Chez's range check never fires. A `long` typed `int` passed too,
   until slice 6's fix round added negative `long` cases. (chez-curl)
+
+  M2 slice 1 built the check: each binding is held to a prototype row, and each row to the
+  header. The review then loosened getinfo's row to `int` together with its binding, and
+  every suite passed, since the row was the check's only record of what is right. Now the
+  type map, the enum names and the variadic lists are written out in the suite. Even then, the
+  C side alone could not tell an enum from `unsigned int`: gcc 16.2, gcc 13.3 and clang 18.1.3
+  each accept one for the other. So each row's spelling is held to the preprocessed headers'
+  own. (chez-curl)
+* **The counters gate counts per process.** The decoys' refusals run in child probes, which
+  neither `suite-exit-status` nor Valgrind reads. The review kept the header probe's counted
+  block on a refused load, and every suite passed. Every child that reaches native now prints
+  its counts, and its suite asserts them zero. (chez-curl)
+* **`pgrep -f` finds the shell that runs it.** An agent waited for its mutation run with
+  `until ! pgrep -f "mut/run.py"; do sleep 10; done`, through `bash -c`. That shell's own
+  command line holds the pattern, so `pgrep` always found it, and the wait never ended. M2
+  slice 1's builder sat on it for about 14 hours before reporting, and kept waking after.
+  Three loops of the same shape from M0 slice 5, waiting on `mutate.py run`, had run every 5
+  seconds for six days, holding that slice's agent open. Reproduced: `bash -c 'pgrep -f
+  "zz-other-marker"'` matches itself. Wait on a PID, with `wait` or `kill -0`, or on a file
+  the job writes when it ends. (chez-curl)

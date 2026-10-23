@@ -1,7 +1,8 @@
 # ADR-0002: Find libcurl at runtime: an override, else one candidate list per world, loaded once by absolute path
 
 - **Status:** Accepted; amended 2026-10-16 with what M0 slice 3 built and measured
-  ([amendment](#amendment-2026-10-16-what-slice-3-built-and-measured))
+  ([amendment](#amendment-2026-10-16-what-slice-3-built-and-measured)); amended 2026-10-23: libc's
+  `memcpy` and `strlen` follow `curl_version_info` ([amendment](#amendment-2026-10-23-libcs-memcpy-and-strlen-follow-curl_version_info-m2-slice-1))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1. Linux distributions, Guix environments and macOS.
 - **Settles:** D7. That decision was raised on 2026-10-04, after the brief was written.
@@ -217,3 +218,11 @@ settled what the text above left open, and measured four things the text did not
   decision, not something it can check.
 - **The install check with the override unset is partial.** `tests/test-library-loading.sps`
   loads by discovery alone from the working tree. An installed tree waits for packaging.
+
+## Amendment, 2026-10-23: libc's `memcpy` and `strlen` follow `curl_version_info` (M2 slice 1)
+
+Decision 3's order has one exception. libc's `memcpy`, bound once each way, and `strlen` are
+bound right after `curl_version_info` and its NULL check, before the floor check, since they
+read `curl_version_info_data`'s strings. They are libc's, present once the library loads, and no
+refusal changes (ADR-0001, amended 2026-10-23). Every other entry point is still bound after the
+floor check, eagerly.

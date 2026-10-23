@@ -3,7 +3,8 @@
 - **Status:** Accepted; amended 2026-10-16: one suppression, for Guix's glibc, in the
   container only ([amendment](#amendment-2026-10-16-one-suppression-for-guixs-glibc-in-the-container-only)),
   what slice 5 built ([amendment](#amendment-2026-10-16-what-slice-5-built)), and the gate on
-  every pull request ([amendment](#amendment-2026-10-16-the-gate-runs-on-every-pull-request-and-cannot-see-chezs-heap))
+  every pull request ([amendment](#amendment-2026-10-16-the-gate-runs-on-every-pull-request-and-cannot-see-chezs-heap)),
+  and the counters ([amendment](#amendment-2026-10-23-the-counters-are-built-m2-slice-1))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl: every suite that touches native memory, locally and in CI
 - **Related:**
@@ -207,3 +208,25 @@ Both were settled by the maintainer.
   - Leaks of foreign memory that a Chez object held are caught by decision 7's counters,
     now a gate: a suite fails if any count is not zero at its end. The counters arrive
     with M2's engine, with a plant that proves they fail: an ftype-wrapped block, dropped.
+
+## Amendment, 2026-10-23: the counters are built (M2 slice 1)
+
+- **Decision 7 is built,** per process until M3 brings engines.
+  - `(curl private counters)` counts six kinds: `block`, `easy`, `url`, `slist`, `curl-string`
+    and `transfer`. It sits behind a mutex, has no reset, and never loads libcurl. A count-down
+    below zero raises, as a double free.
+  - `(curl private memory)` makes and frees every foreign block, counted, with a table of the
+    live ones. Freeing an address that is not live raises before anything reaches `free`.
+  - native counts every easy handle, `CURLU` handle and `curl_url_get` string.
+- **`suite-exit-status` fails any suite whose counts are not all zero at its end,** naming each.
+  `check-test-fails` plants a suite whose tests all pass, but which drops a counted block in an
+  ftype pointer, as decision 7 asked. It fails through the counters' line.
+- **The gate counts per process.** A counted block leaked on a refused load passed every suite,
+  since the decoys' refusals run in child probes (the review's mutant). So every child a suite
+  spawns that reaches native prints its counts, and the suite asserts them zero. The
+  preflight's output is its own contract and stays whole. Each refusal path it reaches is also
+  run through `refusal-probe`, which reports counts.
+- **Valgrind, under the slice's mutants:** skipping `curl_free` was `definitely lost: 1,973 bytes
+  in 62 blocks`, and leaving the NUL terminator out an uninitialised read. `make test-memory`
+  passed all 20 suites in the container, and in the Docker stand-in of CI's memory lane, under
+  Valgrind 3.22.

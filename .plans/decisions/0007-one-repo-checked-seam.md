@@ -4,7 +4,9 @@
   closed ([amendment](#amendment-2026-10-16-the-routes-round-the-seam)), and with slice 4's
   one-library names ([amendment](#amendment-2026-10-16-some-names-are-for-one-library-only-m0-slice-4));
   amended 2026-10-17 with where a library may be defined
-  ([amendment](#amendment-2026-10-17-a-library-is-defined-under-src-at-its-names-path-m0-slice-6))
+  ([amendment](#amendment-2026-10-17-a-library-is-defined-under-src-at-its-names-path-m0-slice-6));
+  amended 2026-10-23 with M2 slice 1's names
+  ([amendment](#amendment-2026-10-23-memory-loading-and-binding-each-have-one-library-m2-slice-1))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1 layout
 - **Settles:** D1 (brief §10)
@@ -175,3 +177,19 @@ honour.
   `(curl private layouts)`, in another file, now fails by name.
 - **What both rely on:** `src/` comes first on every library path the suites use, the
   Makefile's `LIBDIRS` and `check-variadic`'s `--libdirs`. Nothing checks that order.
+
+## Amendment, 2026-10-23: memory, loading and binding each have one library (M2 slice 1)
+
+- **`allowed-chez-names` gains `make-mutex` and `with-mutex`,** for the counters and the live
+  blocks' table.
+- **`library-only-chez-names` gains three entries:**
+  - `foreign-alloc` and `foreign-free`: `(curl private memory)` alone, so every foreign block is
+    counted (ADR-0014, amended 2026-10-23);
+  - `foreign-procedure` and `load-shared-object`: `(curl private native)` alone, the one library
+    that loads libcurl and binds C.
+- `test-check-seam` holds each entry on two new fixture trees. In one, each name is imported by
+  its listed library, and the check passes. In the other, each is imported by another library of
+  either family, or by one whose name only extends the listed one's, `(curl private memory
+  extra)`, and each import is refused by name.
+- `src/` now holds 13 libraries in 13 files: `(curl private counters)`, `(curl private memory)`
+  and `(curl private url)` are new.

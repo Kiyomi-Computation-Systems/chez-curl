@@ -3,7 +3,8 @@
 - **Date:** 2026-10-18, branch `m1/tls-and-h2`, on top of `79c6df1`.
 - **Plan:** [M1 plan](2026-10-18-m1-plan.md) §8. **Records:** ADR-0005, amended a second time
   on 2026-10-18.
-- **Scratch:** everything named here lives under `build/verify/m1s2/`:
+- **Scratch:** everything named here lived under `build/verify/m1s2/`, which is not kept: it
+  was deleted on 2026-10-19. This log holds what each file showed. Its parts were:
   - `measure/`: the measurement scripts and their outputs;
   - `samples/`: raw `openssl` outputs;
   - `libressl-3.3.6-node20/`: LibreSSL, built in the Node 20.10.0 image.

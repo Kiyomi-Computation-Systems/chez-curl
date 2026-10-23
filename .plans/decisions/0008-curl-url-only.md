@@ -2,7 +2,7 @@
 
 - **Status:** Accepted; amended 2026-10-17: the measured verdicts become M2's tests; amended
   2026-10-19: the verdicts vary by version, so the suite holds shared answers and version
-  rows
+  rows; amended 2026-10-23 with what M2 slice 1 built
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D2 (brief §10)
@@ -147,3 +147,30 @@ resolution examples in RFC 3986 §5.4.
     answers would pass unseen.
   - **Agreed cases only,** with the 7 in the documentation alone. A change in them would
     never be seen.
+
+## Amendment, 2026-10-23: what M2 slice 1 built
+
+- **`(curl private url)`** holds decisions 1, 2 and 4: `url-normalize`, `url-resolve`,
+  `call-with-parsed-url` and `require-http-scheme`. Every `CURLU` handle is made and freed in one
+  call, every `curl_url_get` string is freed with `curl_free`, and both are counted (ADR-0014,
+  amended 2026-10-23).
+- **A refusal raises `&curl-url-error`,** with the string refused, a reason, a code and a
+  message. The reason is the code's name, from `curlue-codes`, the floor's 30 codes. A later code
+  has reason `#f`, with its number. chez-curl's own reasons are `scheme-not-http` and
+  `embedded-nul`, with no code. The condition is private until M4.
+- **A NUL is refused before libcurl reads the string,** wherever it sits. Chez's `string` type
+  cuts at an embedded NUL without a word, so `"http://a/\x0;b"` would reach libcurl as
+  `http://a/`.
+- **The scheme check is held against the whole complement:** every protocol the loaded libcurl
+  lists, but http and https, must parse and then be refused. That is 18 others on 7.85.0, 28 on
+  8.5.0 and 19 on 8.20.0, and each parsed.
+- **The suite has 70 cases:** this record's 16, RFC 3986 §5.4's 42, and 12 non-ASCII ones, added
+  because only ASCII had been tested. They cover characters of two, three and four UTF-8 bytes.
+  60 are shared answers and 10 are version rows.
+- **Measured for the non-ASCII cases,** on 7.85.0, 8.5.0 (OpenSSL and GnuTLS alike) and 8.20.0:
+  - curl hands back the UTF-8 it was given, raw, in an absolute URL and in a host, with or
+    without IDN;
+  - it percent-encodes a relative reference's non-ASCII bytes, in lower case before 8.20.0
+    (`%c3%a9`) and in upper case on 8.20.0 (`%C3%A9`).
+- **The floor lane's stand-in passed with the 7.85.0 row,** in Docker, since CI has not run.
+- **The documentation's list of curl's leniencies gains these,** by version.
