@@ -10,7 +10,8 @@
   (export curl-version-features curl-version-ssl
           curlhe-not-built-in curlh-header curl-global-default curle-ok
           curle-bad-function-argument curlversion-tenth
-          curlinfo-private curlinfo-rtsp-client-cseq curlot-types)
+          curlinfo-private curlinfo-rtsp-client-cseq curlot-types
+          curlue-ok curlue-codes curlupart-url curlupart-scheme)
   (import (curl private require-threaded)
           (rnrs))
 
@@ -113,4 +114,56 @@
       (slist    . 5)     ; CURLOT_SLIST     a struct curl_slist *
       (cbptr    . 6)     ; CURLOT_CBPTR     a void *, handed to a callback
       (blob     . 7)     ; CURLOT_BLOB      a struct curl_blob *
-      (function . 8))))  ; CURLOT_FUNCTION  a function pointer
+      (function . 8)))   ; CURLOT_FUNCTION  a function pointer
+
+  ;; curlue-ok : Natural
+  ;; curl/urlapi.h: CURLUE_OK, the first CURLUcode, 0. What the URL API's
+  ;; calls answer when they succeed.
+  (define curlue-ok 0)
+
+  ;; curlue-codes : (Listof (Pairof Symbol Natural))
+  ;; Every CURLUcode in the floor's curl/urlapi.h (7.85.0), in its order,
+  ;; each named for its CURLUE_* name without the prefix. A URL refusal's
+  ;; reason is its code's name here (M2 plan, section 3.7). A later
+  ;; libcurl's codes, CURLUE_LACKS_IDN (30) and CURLUE_TOO_LARGE (31) in
+  ;; 8.20.0, are not here: the floor lane's headers lack them, and such a
+  ;; code is reported by its number.
+  (define curlue-codes
+    '((ok                  . 0)     ; CURLUE_OK
+      (bad-handle          . 1)     ; CURLUE_BAD_HANDLE
+      (bad-partpointer     . 2)     ; CURLUE_BAD_PARTPOINTER
+      (malformed-input     . 3)     ; CURLUE_MALFORMED_INPUT
+      (bad-port-number     . 4)     ; CURLUE_BAD_PORT_NUMBER
+      (unsupported-scheme  . 5)     ; CURLUE_UNSUPPORTED_SCHEME
+      (urldecode           . 6)     ; CURLUE_URLDECODE
+      (out-of-memory       . 7)     ; CURLUE_OUT_OF_MEMORY
+      (user-not-allowed    . 8)     ; CURLUE_USER_NOT_ALLOWED
+      (unknown-part        . 9)     ; CURLUE_UNKNOWN_PART
+      (no-scheme           . 10)    ; CURLUE_NO_SCHEME
+      (no-user             . 11)    ; CURLUE_NO_USER
+      (no-password         . 12)    ; CURLUE_NO_PASSWORD
+      (no-options          . 13)    ; CURLUE_NO_OPTIONS
+      (no-host             . 14)    ; CURLUE_NO_HOST
+      (no-port             . 15)    ; CURLUE_NO_PORT
+      (no-query            . 16)    ; CURLUE_NO_QUERY
+      (no-fragment         . 17)    ; CURLUE_NO_FRAGMENT
+      (no-zoneid           . 18)    ; CURLUE_NO_ZONEID
+      (bad-file-url        . 19)    ; CURLUE_BAD_FILE_URL
+      (bad-fragment        . 20)    ; CURLUE_BAD_FRAGMENT
+      (bad-hostname        . 21)    ; CURLUE_BAD_HOSTNAME
+      (bad-ipv6            . 22)    ; CURLUE_BAD_IPV6
+      (bad-login           . 23)    ; CURLUE_BAD_LOGIN
+      (bad-password        . 24)    ; CURLUE_BAD_PASSWORD
+      (bad-path            . 25)    ; CURLUE_BAD_PATH
+      (bad-query           . 26)    ; CURLUE_BAD_QUERY
+      (bad-scheme          . 27)    ; CURLUE_BAD_SCHEME
+      (bad-slashes         . 28)    ; CURLUE_BAD_SLASHES
+      (bad-user            . 29)))  ; CURLUE_BAD_USER
+
+  ;; curlupart-url : Natural
+  ;; curl/urlapi.h: CURLUPART_URL, the first CURLUPart, 0: the whole URL.
+  (define curlupart-url 0)
+
+  ;; curlupart-scheme : Positive-Integer
+  ;; curl/urlapi.h: CURLUPART_SCHEME, the second CURLUPart, 1.
+  (define curlupart-scheme 1))

@@ -166,6 +166,12 @@
 ;; very object the first did: the info record, or the refusal raised again.
 (define once '(again . (same same)))
 
+;; What the probe prints next: its native counts, every one zero, whatever
+;; the load decided (tests/refusal-probe.sps). The counters gate counts per
+;; process, and this suite's own never loads libcurl.
+(define no-native-objects
+  '(counts . ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0))))
+
 ;; A report is what a loaded library says about itself: (FIELD . VALUE) for
 ;; each of oracle-fields, in order, as the probe prints them after the path
 ;; and source, and as tests/libcurl-oracle.c prints them.
@@ -198,14 +204,16 @@
 (define (control path)
   (report-of path 'override (decoy-report "DecoyTLS/1.0" "decoy-host")))
 
-;; loaded : String Symbol Report (U (Listof String) #f) -> Expected
-;; The probe's whole answer when it loads PATH. CALLS is the decoy's call
-;; log, as entries, or #f for a library without one.
-(define (loaded path source report calls)
+;; loaded : String Symbol Report (Listof String) (U (Listof String) #f) -> Expected
+;; The probe's whole answer when it loads PATH. PROTOCOLS is what
+;; loaded-protocols answers there: () for a decoy whose array is NULL.
+;; CALLS is the decoy's call log, as entries, or #f for a library without
+;; one.
+(define (loaded path source report protocols calls)
   (list 0
         (append (list (cons 'loaded path) (cons 'source source))
                 report
-                (list once)
+                (list (cons 'protocols protocols) once no-native-objects)
                 (if calls (list (cons 'calls (join calls))) '()))
         ""))
 
@@ -218,7 +226,7 @@
         (append (list (cons 'reason reason) (cons 'path path) (cons 'source source)
                       (cons 'detail detail) (cons 'candidates candidates)
                       (cons 'library library)
-                      once)
+                      once no-native-objects)
                 (if calls (list (cons 'calls (join calls))) '()))
         ""))
 
@@ -289,15 +297,28 @@
 
 (decoy-case "accepted" '()
   "the control loads, calling curl_global_init exactly once, after the version"
-  (lambda (so) (loaded so 'override (decoy-report "DecoyTLS/1.0" "decoy-host") every-call)))
+  (lambda (so) (loaded so 'override (decoy-report "DecoyTLS/1.0" "decoy-host") '() every-call)))
 
 (decoy-case "ssl-null" '("-DDECOY_SSL_VERSION_NULL")
   "a NULL ssl_version is reported as #f"
-  (lambda (so) (loaded so 'override (decoy-report #f "decoy-host") every-call)))
+  (lambda (so) (loaded so 'override (decoy-report #f "decoy-host") '() every-call)))
 
 (decoy-case "host-null" '("-DDECOY_HOST_NULL")
   "a NULL host is reported as #f"
-  (lambda (so) (loaded so 'override (decoy-report "DecoyTLS/1.0" #f) every-call)))
+  (lambda (so) (loaded so 'override (decoy-report "DecoyTLS/1.0" #f) '() every-call)))
+
+;; curl_version_info_data's strings are UTF-8: é is two bytes, λ two and €
+;; three, and a reading as Latin-1 would report seven characters for them.
+(decoy-case "host-utf8" '("-DDECOY_HOST_UTF8")
+  "a host past ASCII is read as UTF-8: d\xE9;coy-\x3BB;\x20AC;"
+  (lambda (so) (loaded so 'override (decoy-report "DecoyTLS/1.0" "d\xE9;coy-\x3BB;\x20AC;") '() every-call)))
+
+;; The protocol list, read entry by entry, in its order: every other decoy's
+;; array is NULL, and answers ().
+(decoy-case "protocols" '("-DDECOY_PROTOCOLS")
+  "a protocol list is read whole, in its order: https, dict, http"
+  (lambda (so) (loaded so 'override (decoy-report "DecoyTLS/1.0" "decoy-host")
+                       '("https" "dict" "http") every-call)))
 
 ;; The record's version is a string, and the floor's refusal names it: a
 ;; NULL there is refused before the floor is checked.
@@ -367,7 +388,7 @@
                 (cons 'detail "curl_easy_option_by_name") (cons 'candidates '())
                 (cons 'library (control first))
                 (cons 'then-override second)
-                once (cons 'marker 'absent) (cons 'calls (join every-call)))
+                once no-native-objects (cons 'marker 'absent) (cons 'calls (join every-call)))
           "")
     (let* ((compiled-first (compile-decoy "sticks" '("-DDECOY_OPTIONS_OFF")))
            (compiled-second (compile-decoy "sticks-then" '("-DDECOY_MARKER"))))
@@ -380,7 +401,8 @@
   (test-equal "decoy marked: a build with DECOY_MARKER, once loaded, shows its marker to foreign-entry?"
     (list 0 (cons* (cons 'loaded marked) (cons 'source 'override)
                    (append (decoy-report "DecoyTLS/1.0" "decoy-host")
-                           (list once (cons 'marker 'present) (cons 'calls (join every-call)))))
+                           (list (cons 'protocols '()) once no-native-objects
+                                 (cons 'marker 'present) (cons 'calls (join every-call)))))
           "")
     (let ((compiled (compile-decoy "marked" '("-DDECOY_MARKER"))))
       (if (eqv? compiled 0)
@@ -401,6 +423,12 @@
        (cons "curl_easy_init" (list version-call init-call))
        (cons "curl_easy_header" (list version-call init-call))
        (cons "curl_easy_cleanup" (list version-call init-call))
+       (cons "curl_url" (list version-call init-call))
+       (cons "curl_url_cleanup" (list version-call init-call))
+       (cons "curl_url_set" (list version-call init-call))
+       (cons "curl_url_get" (list version-call init-call))
+       (cons "curl_url_strerror" (list version-call init-call))
+       (cons "curl_free" (list version-call init-call))
        (cons "curl_easy_setopt" (list version-call init-call))
        (cons "curl_easy_getinfo" (list version-call init-call))))
 
@@ -411,6 +439,13 @@
 (define (oracle-of path)
   (if (string? path)
       (libcurl-oracle getenv path)
+      (list 'no-oracle 'no-path path)))
+
+;; protocols-of : (U String #f) -> (U (Listof String) (List 'no-oracle Symbol Any))
+;; The protocol list tests/libcurl-oracle.c reads from the library at PATH.
+(define (protocols-of path)
+  (if (string? path)
+      (libcurl-protocols-oracle getenv path)
       (list 'no-oracle 'no-path path)))
 
 ;; The probe, in this process's own environment: the libcurl a program here
@@ -519,7 +554,7 @@
          (list (car answer) (cadr answer) (length seen) (directory-list base)))))))
 
 (test-equal "the real libcurl through the override: loaded, with the C oracle's report"
-  (loaded real-libcurl 'override real-report #f)
+  (loaded real-libcurl 'override real-report (protocols-of real-libcurl) #f)
   (probe (list (override (or real-libcurl "/the-probe-loaded-nothing")))))
 
 ;; --- refusals no decoy reaches ---------------------------------------------------------
@@ -564,7 +599,8 @@
 
 (test-equal "a raise that is not a refusal: the probe prints it as raised, and exits 2"
   (list 2 (list (cons 'raised fixture-raise)
-                (cons 'again (list (list 'raised fixture-raise) (list 'raised fixture-raise))))
+                (cons 'again (list (list 'raised fixture-raise) (list 'raised fixture-raise)))
+                no-native-objects)
         "")
   (as-data (spawn-in raising-libdirs '() "tests/refusal-probe.sps" '())))
 
@@ -602,7 +638,8 @@
   ((macos)
    ;; Apple's, the one candidate, lives in the dyld shared cache.
    (test-equal "macos: with the override unset, discovery loads Apple's /usr/lib/libcurl.4.dylib"
-     (loaded "/usr/lib/libcurl.4.dylib" 'macos-system (oracle-of "/usr/lib/libcurl.4.dylib") #f)
+     (loaded "/usr/lib/libcurl.4.dylib" 'macos-system (oracle-of "/usr/lib/libcurl.4.dylib")
+             (protocols-of "/usr/lib/libcurl.4.dylib") #f)
      (probe unset-override)))
   ((linux)
    (case world
@@ -611,7 +648,8 @@
              (string-append (or (getenv "GUIX_ENVIRONMENT") "<GUIX_ENVIRONMENT unset>")
                             "/lib/libcurl.so.4")))
         (test-equal "guix: with the override unset, discovery finds $GUIX_ENVIRONMENT/lib/libcurl.so.4"
-          (loaded environment-libcurl 'guix-environment (oracle-of environment-libcurl) #f)
+          (loaded environment-libcurl 'guix-environment (oracle-of environment-libcurl)
+                  (protocols-of environment-libcurl) #f)
           (probe unset-override))
 
         ;; Only the three candidates no variable names are left, and none
@@ -648,7 +686,7 @@
       (let ((first-standard
              (find file-exists? (map car (libcurl-candidates 'fhs (machine-type) getenv)))))
         (test-equal "fhs: with the override unset, discovery loads the first standard candidate that exists, source system"
-          (loaded first-standard 'system (oracle-of first-standard) #f)
+          (loaded first-standard 'system (oracle-of first-standard) (protocols-of first-standard) #f)
           (probe unset-override))))))
   (else
    (test-equal "another platform: with the override unset, not-found, having no candidate"

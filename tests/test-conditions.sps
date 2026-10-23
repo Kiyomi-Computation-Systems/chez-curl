@@ -8,6 +8,11 @@
 ;;;                               the library's own report once it was read
 ;;;   &curl-wrong-thread          an engine-owned handle used from another
 ;;;                               thread (ADR-0012)
+;;;   &curl-embedded-nul          a string C would read short, holding U+0000
+;;;   &curl-url-error             a URL refused, by libcurl or by chez-curl
+;;;                               (ADR-0008), with its reason: the CURLUcode's
+;;;                               name, by curl-url-code-reason, or #f for a
+;;;                               code the floor's headers lack
 ;;;
 ;;; Each expected value is one the code under test cannot produce by failing.
 ;;; SRFI-64 turns a raise in the actual expression into #f, so no expected
@@ -148,6 +153,50 @@
     (list (curl-wrong-thread-who c)
           (curl-wrong-thread-expected c)
           (curl-wrong-thread-actual c))))
+
+;; --- &curl-embedded-nul ----------------------------------------------------------
+
+(test-equal "embedded-nul: an error and a curl-error, not a library-unavailable nor a wrong-thread, carrying its string"
+  '(#t #t #f #f #t "a\x0;b")
+  (let ((c (make-curl-embedded-nul "a\x0;b")))
+    (append (kinds c) (list (curl-embedded-nul? c) (curl-embedded-nul-string c)))))
+
+;; --- &curl-url-error ---------------------------------------------------------------
+
+(test-equal "url-error: an error and a curl-error, nothing else, carrying input, reason, code and message"
+  '(#t #t #f #f #f #t "http://x:99999/" bad-port-number 4 "Port number was not a decimal number")
+  (let ((c (make-curl-url-error "http://x:99999/" 'bad-port-number 4
+                                "Port number was not a decimal number")))
+    (append (kinds c) (list (curl-embedded-nul? c) (curl-url-error? c)
+                            (curl-url-error-input c) (curl-url-error-reason c)
+                            (curl-url-error-code c) (curl-url-error-message c)))))
+
+(test-equal "the url-error constructor checks nothing, so a later libcurl's refusal always reaches the caller: odd values come back as given"
+  '(no-input-string #f 31 #f)
+  (let ((c (make-curl-url-error 'no-input-string #f 31 #f)))
+    (list (curl-url-error-input c) (curl-url-error-reason c) (curl-url-error-code c)
+          (curl-url-error-message c))))
+
+;; Written out here, from 7.85.0's curl/urlapi.h, not read from
+;; curlue-codes: a list shifted by one would shift the names the other
+;; side reads too.
+(test-equal "curl-url-code-reason names each of the floor's 30 CURLUcodes, 0 to 29"
+  '(ok bad-handle bad-partpointer malformed-input bad-port-number unsupported-scheme
+    urldecode out-of-memory user-not-allowed unknown-part no-scheme no-user no-password
+    no-options no-host no-port no-query no-fragment no-zoneid bad-file-url bad-fragment
+    bad-hostname bad-ipv6 bad-login bad-password bad-path bad-query bad-scheme
+    bad-slashes bad-user)
+  (let loop ((code 29) (names '()))
+    (if (< code 0)
+        names
+        (loop (- code 1) (cons (or (curl-url-code-reason code) (list 'unnamed code)) names)))))
+
+(test-equal "curl-url-code-reason: a code the floor lacks, 30 and 31 in 8.20.0, and what is no code, have no name, and raise nothing"
+  '(unnamed unnamed unnamed unnamed unnamed unnamed)
+  (map (lambda (code)
+         (guard (e (#t (list 'raised (describe e))))
+           (or (curl-url-code-reason code) 'unnamed)))
+       (list 30 31 -1 'malformed-input "3" 3.0)))
 
 (test-end "conditions")
 

@@ -3,7 +3,8 @@
 ;;; (curl) and calls loaded-libcurl here, so the whole load runs in this
 ;;; process. The memory gate (ADR-0014) runs every suite under Valgrind,
 ;;; and this is the one that runs the load there, the header probe's
-;;; foreign-alloc and foreign-free included.
+;;; counted easy handle and slot included, each freed before the load
+;;; returns.
 ;;;
 ;;; Importing (curl) runs the load before this suite's first line, so a
 ;;; refused libcurl kills it with Chez's message and exit 255, which make
@@ -19,6 +20,8 @@
         (only (chezscheme) getenv)
         (curl-testing)
         (libcurl-oracle)
+        (curl private counters)
+        (only (curl private native) loaded-protocols)
         (curl))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
@@ -40,6 +43,10 @@
         (newline)))))
 
 (define info (loaded-libcurl))
+
+;; The counts once the load has returned: its header probe's easy handle
+;; and slot are counted, and freed before it returns (M2 plan, section 4.2).
+(define counts-after-load (native-counts))
 
 ;; reported : Symbol -> Pair
 ;; The record's (FIELD . VALUE), for each of oracle-fields.
@@ -73,6 +80,10 @@
   'libcurl-info
   (if (libcurl-info? info) 'libcurl-info info))
 
+(test-equal "every native count is zero once the load has returned: the header probe freed its handle and its slot"
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0))
+  counts-after-load)
+
 (test-equal "loaded-libcurl answers the same record at every call"
   'same
   (if (eq? (loaded-libcurl) info) 'same 'different))
@@ -98,6 +109,24 @@
      (read-by-oracle field)
      (reported field)))
  oracle-fields)
+
+;; The protocol list native reads, every entry in its place, against the
+;; list C reads from the same file: a reading that skipped the first entry,
+;; or the last, would still hold http and https.
+(define protocols-oracle
+  (if (libcurl-info? info)
+      (libcurl-protocols-oracle getenv (libcurl-info-path info))
+      (list 'no-oracle 'not-a-record info)))
+
+(test-equal "loaded-protocols is the protocol list the C oracle reads, in order, every entry"
+  (list 'protocols protocols-oracle)
+  (list 'protocols (loaded-protocols)))
+
+(test-equal "the C oracle read a protocol list with http and https in it"
+  'read
+  (if (and (list? protocols-oracle) (member "http" protocols-oracle) (member "https" protocols-oracle))
+      'read
+      protocols-oracle))
 
 (test-end "native")
 

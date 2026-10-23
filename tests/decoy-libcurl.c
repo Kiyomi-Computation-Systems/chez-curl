@@ -25,6 +25,11 @@
  *   DECOY_SSL_VERSION_NULL     ssl_version is NULL
  *   DECOY_VERSION_NULL         version is NULL
  *   DECOY_HOST_NULL            host is NULL
+ *   DECOY_HOST_UTF8            host is "décoy-λ€", in UTF-8: two- and
+ *                              three-byte sequences, which only a UTF-8
+ *                              reading reports as written
+ *   DECOY_PROTOCOLS            protocols is {"https", "dict", "http",
+ *                              NULL}; every other build leaves it NULL
  *   DECOY_VERSION_INFO_NULL    curl_version_info returns NULL
  *   DECOY_INIT_FAILS           curl_global_init returns CURLE_FAILED_INIT
  *   DECOY_OPTIONS_OFF          curl_easy_option_by_name returns NULL, as
@@ -41,8 +46,12 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+/* curl_url_get's declaration differs by version (below), so the headers
+   declare it under another name, and this file defines it with none. */
+#define curl_url_get decoy_header_curl_url_get
 #include <curl/curl.h>
 #include <curl/header.h>
+#undef curl_url_get
 
 /* With gcc, curl/curl.h makes curl_easy_setopt and curl_easy_getinfo
    type-checking macros, as its typecheck-gcc.h does for a caller. This
@@ -96,6 +105,8 @@ int decoy_marker(void)
 
 #ifdef DECOY_HOST_NULL
 #define DECOY_HOST NULL
+#elif defined(DECOY_HOST_UTF8)
+#define DECOY_HOST "d\xc3\xa9" "coy-\xce\xbb" "\xe2\x82\xac"
 #else
 #define DECOY_HOST "decoy-host"
 #endif
@@ -119,6 +130,13 @@ static int easy_handle;
 #define HANDLE_NAME(easy) ((easy) == (CURL *)&easy_handle ? "handle" : "other")
 
 #ifndef DECOY_LACKS_curl_version_info
+#ifdef DECOY_PROTOCOLS
+static const char *const decoy_protocols[] = {"https", "dict", "http", NULL};
+#define DECOY_PROTOCOL_LIST decoy_protocols
+#else
+#define DECOY_PROTOCOL_LIST NULL
+#endif
+
 static curl_version_info_data info = {
   .age = CURLVERSION_TENTH,
   .version = DECOY_VERSION,
@@ -126,6 +144,7 @@ static curl_version_info_data info = {
   .host = DECOY_HOST,
   .features = DECOY_FEATURES,
   .ssl_version = DECOY_SSL_VERSION,
+  .protocols = DECOY_PROTOCOL_LIST,
 };
 
 curl_version_info_data *curl_version_info(CURLversion stamp)
@@ -223,6 +242,64 @@ CURLcode curl_easy_getinfo(CURL *easy, CURLINFO info, ...)
 {
   called("curl_easy_getinfo(%s,%d)", HANDLE_NAME(easy), (int)info);
   return CURLE_OK;
+}
+#endif
+
+/* The URL API (ADR-0008), which the load binds and never calls, as with
+   the variadic pair above. Each answers as a library with no memory
+   would. */
+#ifndef DECOY_LACKS_curl_url
+CURLU *curl_url(void)
+{
+  called("curl_url()");
+  return NULL;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_url_cleanup
+void curl_url_cleanup(CURLU *handle)
+{
+  called("curl_url_cleanup(%s)", handle ? "handle" : "NULL");
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_url_set
+CURLUcode curl_url_set(CURLU *handle, CURLUPart what, const char *part,
+                       unsigned int flags)
+{
+  called("curl_url_set(%s,%d,%s,%u)", handle ? "handle" : "NULL", (int)what,
+         part ? "part" : "NULL", flags);
+  return CURLUE_OUT_OF_MEMORY;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_url_get
+/* The header's own declaration was renamed away above: its handle is
+   CURLU * at the floor, 7.85.0, and const CURLU * in 8.x, and a definition
+   that disagrees with it does not compile. Defined with no declaration in
+   scope, either way, it compiles against whichever headers the lane
+   names. */
+CURLUcode curl_url_get(CURLU *handle, CURLUPart what, char **part,
+                       unsigned int flags)
+{
+  called("curl_url_get(%s,%d,%s,%u)", handle ? "handle" : "NULL", (int)what,
+         part ? "part" : "NULL", flags);
+  return CURLUE_OUT_OF_MEMORY;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_url_strerror
+const char *curl_url_strerror(CURLUcode error)
+{
+  called("curl_url_strerror(%d)", (int)error);
+  return "decoy";
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_free
+void curl_free(void *p)
+{
+  called("curl_free(%s)", p ? "p" : "NULL");
 }
 #endif
 

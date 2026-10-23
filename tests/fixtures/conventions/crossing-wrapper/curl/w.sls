@@ -4,7 +4,7 @@
 ;; whose template's own parameter list holds u8*. A use whose result is u8*
 ;; hands C nothing; one whose result is scheme-object is never allowed.
 (library (curl w)
-  (export memcpy copied bytes object-back)
+  (export copy-in copied bytes object-back)
   (import (rnrs) (only (chezscheme) foreign-procedure foreign-entry?))
 
   (define (required-entry name library) (foreign-entry? name))
@@ -20,7 +20,7 @@
     (syntax-rules ()
       ((_ entry) (foreign-procedure entry (u8* uptr size_t) uptr))))
 
-  (define memcpy (bind-required "memcpy" (u8* uptr size_t) uptr #f))
+  (define copy-in (bind-required "fixture_copy" (u8* uptr size_t) uptr #f))
 
   (define copied (bind-required "fixture_result" (uptr) u8* #f))
 

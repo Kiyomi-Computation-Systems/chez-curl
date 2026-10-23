@@ -5,7 +5,8 @@
   [slice 4](#amendment-2026-10-16-what-slice-4-built),
   [slice 5](#amendment-2026-10-16-the-non-threaded-check-m0-slice-5),
   [bytevector copies](#amendment-2026-10-16-bytevector-copies-go-through-one-checked-wrapper-m0-slice-5));
-  amended 2026-10-17 with [what slice 6 built](#amendment-2026-10-17-the-variadic-bindings-m0-slice-6)
+  amended 2026-10-17 with [what slice 6 built](#amendment-2026-10-17-the-variadic-bindings-m0-slice-6);
+  amended 2026-10-23 with [what M2 slice 1 built](#amendment-2026-10-23-the-checked-copies-and-the-carried-checks-m2-slice-1)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D6. That decision was raised on 2026-10-04, after the brief was written.
@@ -330,3 +331,55 @@ nothing else.
   - `test-variadic` needs a libcurl built with RTSP. One built with `--disable-rtsp` fails
     it, though chez-curl itself needs only HTTP and HTTPS.
 - **Evidence:** the [mutation log](../variadic-mutation-log.md).
+
+## Amendment, 2026-10-23: the checked copies and the carried checks (M2 slice 1)
+
+- **Decision 5's copies are built** in `(curl private native)`.
+  - `memcpy` is bound twice, once each way, and neither binding is exported.
+  - The exports are `copy-foreign->bytevector!` and `copy-bytevector->foreign!`. Each asserts
+    its bound before calling C: the offset and the count are exact non-negative integers,
+    their sum is at most the bytevector's length, and the address is a positive exact
+    integer. A count of 0 calls nothing.
+  - **Chez's `u8*` hands C a whole bytevector, from its first byte.** A pair, a list, a
+    vector or a raw address in its place is refused (measured). chez-curl has no shim to add
+    an offset, as chez-libuv's does. So a copy at a non-zero offset goes through a fresh
+    bytevector of the count's length, and `bytevector-copy!`.
+  - Their row is the only one marked `bytevector-crossing`.
+- **Every string chez-curl hands libcurl goes through foreign memory** (M2 plan, §3.3).
+  `call-with-c-string` makes a counted, NUL-terminated UTF-8 copy, refuses a string holding
+  U+0000 before allocating, and frees the copy under `dynamic-wind`. Re-entering it after the
+  free raises. Strings come back as bytes, through `strlen` and the checked copy, and native's
+  byte-at-a-time reader is gone.
+- **The binding order gains one exception.** libc's `memcpy`, both ways, and `strlen` are bound
+  right after `curl_version_info` and its NULL check, before the floor check. Step 3 reads
+  `curl_version_info_data`'s strings with them, and the floor's refusals carry those strings.
+  They are libc's, present once the library loads. Every refusal still names what it named:
+  `test-library-loading`'s decoys passed unchanged, a library with no `curl_*` function is still
+  `missing-api` for `curl_version_info`, and `below-floor` and `no-ssl` still name the version.
+- **The non-threaded check has run on a real `--nothreads` Chez,** built by
+  `scripts/ci/build-chez.sh` in Docker, since CI has not. `make check-nothreads` refused `(curl)`
+  by name. `(curl private counters)` imports `make-mutex`, the first thread primitive in `src/`,
+  and the refusal still came first.
+- **The carried checks are built, in `test-constants`:**
+  - **Prototypes.** Every entry point `src/` binds has a row: the header's own declaration,
+    with the header's own spellings.
+    - The C side compiles `_Static_assert(_Generic(ENTRY, TYPE: 1, default: 0), "ENTRY: ...")`
+      per row. It needs no link to libcurl and no warning flag, and a wrong row fails naming its
+      entry. A must-fail row is compiled each run, to show the check can fail.
+    - A row's spelling is checked against the preprocessed headers, so an enum must be written by
+      its name: gcc 16.2, gcc 13.3 and clang 18.1.3 each accept `unsigned int` for these enums,
+      so the C side alone cannot tell (measured on 18 cases; `_Generic` on gcc 16.2 only).
+    - The Scheme side holds each binding's Chez types to its row through `c-type-map`. The map,
+      the enum names, and the variadic rows' lists are written out in the suite. Setopt may pass
+      `long`, `integer-64` and `uptr`, and getinfo `uptr` alone. Only `curl_url_get`'s row has
+      two declarations: 7.85.0's and Debian 7.88.1's headers take `CURLU *`, and Ubuntu 8.5.0's
+      and 8.20.0's take `const CURLU *`. Both must give the same Chez types. `(* F)` fits only
+      the pointer type F's layout row names, and `string` only `const char *`.
+  - **`curlot-types` is complete:** the `CURLOT_` names in `$CC -E` of `curl/options.h` must be
+    exactly its names.
+  - **A whole layout's size is checked.** A layout row says whether its ftype is the whole
+    struct. `curl-easyoption` is, and its `sizeof` must equal its `ftype-sizeof`;
+    `curl-version-info-data` stays a prefix.
+- **Still carried:** `test-variadic` needs a libcurl with RTSP.
+- **Apple's SDK headers have not been read by the prototype check.** The Mac's run shows it.
+- **Evidence:** the [foundations mutation log](../foundations-mutation-log.md).

@@ -33,9 +33,29 @@
 ;;;              and kind are compared with offsetof, sizeof and _Generic.
 ;;;              Offset alone misses an int written for C's long when
 ;;;              padding keeps the next field's offset; offset and size
-;;;              miss a double written for C's char *. Total size is not
-;;;              compared: an ftype may stop before the struct's end, as
-;;;              curl-version-info-data does.
+;;;              miss a double written for C's char *. A row says whether
+;;;              its ftype is the whole struct or a prefix of it. A whole
+;;;              one's ftype-sizeof must equal sizeof, so a field dropped
+;;;              from its end fails; a prefix, as curl-version-info-data
+;;;              is, stops before the struct's end on purpose.
+;;;   curlot-types
+;;;              complete: the CURLOT_ names in $CC -E of curl/curl.h,
+;;;              which includes curl/options.h, must be exactly
+;;;              curlot-types' names, prefixed and upcased, - as _. Its
+;;;              values are checked as a list row's are; this check sees a
+;;;              type the list leaves out (ADR-0001, amended 2026-10-17).
+;;;   prototypes every entry point src/ binds has a row in prototype-rows,
+;;;              and every row is bound: the header's declaration, its
+;;;              result and parameter types in the header's own spelling.
+;;;              The C side: a program asserts, for each row, that the
+;;;              entry has one of the row's types, with
+;;;              _Static_assert(_Generic(...)), compiled with no link. A
+;;;              type the header writes otherwise, an enum written int
+;;;              among them, fails the compile. The Scheme side: each
+;;;              binding's Chez types, read by (foreign-conventions)'
+;;;              scan of src/, must be ones c-type-map allows for the
+;;;              row's C types. A variadic declaration ends in "...", and
+;;;              names the Chez types a binding may pass there.
 ;;;   versions   the headers the program compiled against must be no newer
 ;;;              than the libcurl chez-curl itself loads, which this suite
 ;;;              loads in its own process through (curl). Headers newer than
@@ -57,6 +77,7 @@
         (rnrs eval)
         (srfi :64)
         (only (chezscheme) getenv foreign-sizeof)
+        (foreign-conventions)
         (only (curl private conditions)
               curl-library-unavailable? curl-library-unavailable-reason
               curl-library-unavailable-path)
@@ -112,7 +133,11 @@
     (curlversion-tenth . "CURLVERSION_TENTH")
     (curlinfo-private . "CURLINFO_PRIVATE")
     (curlinfo-rtsp-client-cseq . "CURLINFO_RTSP_CLIENT_CSEQ")
-    (curlot-types . (each "CURLOT_"))))
+    (curlot-types . (each "CURLOT_"))
+    (curlue-ok . "CURLUE_OK")
+    (curlue-codes . (each "CURLUE_"))
+    (curlupart-url . "CURLUPART_URL")
+    (curlupart-scheme . "CURLUPART_SCHEME")))
 
 ;; c-name-aliases : (Listof (Pairof Symbol String))
 ;; Each export whose row names a C constant other than the export's own
@@ -126,11 +151,16 @@
 ;; expression.
 (define c-name-aliases '())
 
-;; layout-rows : (Listof (Pairof Symbol String))
-;; Each define-ftype of (curl private layouts), with the C type it lays out.
+;; layout-rows : (Listof (List Symbol String Extent))
+;; Each define-ftype of (curl private layouts), with the C type it lays
+;; out, and its extent: whole, when it lays out every field, so its
+;; ftype-sizeof must be the struct's sizeof; prefix, when it stops before
+;; the struct's end on purpose.
 (define layout-rows
-  '((curl-version-info-data . "curl_version_info_data")
-    (curl-easyoption . "struct curl_easyoption")))
+  '((curl-version-info-data "curl_version_info_data" prefix)
+    (curl-easyoption "struct curl_easyoption" whole)))
+
+(define extents '(whole prefix))
 
 ;; field-kinds : (Listof (Pairof Symbol (Listof Kind)))
 ;; Each Chez primitive type a layout field may have, with the kinds of C
@@ -502,23 +532,39 @@
              '())))
       (else '()))))
 
+;; scheme-size : Symbol -> (U Natural (List 'no-value String))
+;; FTYPE's ftype-sizeof.
+(define (scheme-size ftype)
+  (guard (e (#t (list 'no-value (describe e))))
+    (eval `(ftype-sizeof ,ftype) layouts-environment)))
+
 ;; layout-checks : Pair -> (Listof Check)
 ;; Every field's, when FORM is a struct this suite handles and a row names
-;; its C type.
+;; its C type; then, for a row whose extent is whole, the struct's size.
 (define (layout-checks form)
   (let ((shape (ftype-shape form))
         (row (assq (ftype-name form) layout-rows)))
-    (if (and (eq? (car shape) 'struct) row)
-        (map (lambda (field)
-               (let ((c-type (cdr row))
-                     (c-member (underscored (symbol->string (car field)))))
-                 (list (car row)
-                       (string-append c-type "." c-member
-                                      " has the header's offset, size and kind")
-                       (list 'member c-type c-member)
-                       (scheme-layout (car row) (car field) (cadr field))
-                       (cadr field))))
-             (cadr shape))
+    (if (and (eq? (car shape) 'struct) row (list? row) (= (length row) 3))
+        (append
+         (map (lambda (field)
+                (let ((c-type (cadr row))
+                      (c-member (underscored (symbol->string (car field)))))
+                  (list (car row)
+                        (string-append c-type "." c-member
+                                       " has the header's offset, size and kind")
+                        (list 'member c-type c-member)
+                        (scheme-layout (car row) (car field) (cadr field))
+                        (cadr field))))
+              (cadr shape))
+         (if (eq? (caddr row) 'whole)
+             (list (list (car row)
+                         (string-append (symbol->string (car row)) " is the whole of "
+                                        (cadr row) ": its ftype-sizeof is sizeof("
+                                        (cadr row) ")")
+                         (list 'sizeof (cadr row))
+                         (scheme-size (car row))
+                         #f))
+             '()))
         '())))
 
 ;; checks : (U (Listof Check) (List 'raised String))
@@ -540,6 +586,7 @@
   (case (car question)
     ((header-version) "  HEADER_VERSION();\n")
     ((constant) (string-append "  CONSTANT(" (cadr question) ");\n"))
+    ((sizeof) (string-append "  SIZEOF(" (cadr question) ");\n"))
     (else (string-append "  MEMBER(" (cadr question) ", " (caddr question) ");\n"))))
 
 ;; c-program : (Listof Question) -> String
@@ -566,6 +613,7 @@
    "#define HEADER_VERSION() \\\n"
    "  printf(\"(header-version %lld)\\n\", (long long)LIBCURL_VERSION_NUM)\n"
    "#define CONSTANT(e) printf(\"(constant \\\"%s\\\" %lld)\\n\", #e, (long long)(e))\n"
+   "#define SIZEOF(t) printf(\"(sizeof \\\"%s\\\" %lld)\\n\", #t, (long long)sizeof(t))\n"
    "#define MEMBER(t, m) printf(\"(member \\\"%s\\\" \\\"%s\\\" %lld %lld %s)\\n\", #t, #m, \\\n"
    "  (long long)offsetof(t, m), (long long)sizeof(((t *)0)->m), KIND(((t *)0)->m))\n"
    "\n"
@@ -576,11 +624,13 @@
    "}\n"))
 
 ;; answer? : Any -> Boolean
-;; (header-version N), (constant NAME VALUE) or
+;; (header-version N), (constant NAME VALUE), (sizeof TYPE N) or
 ;; (member TYPE MEMBER OFFSET SIZE KIND).
 (define (answer? d)
   (and (list? d)
        (or (and (= (length d) 2) (eq? (car d) 'header-version) (natural? (cadr d)))
+           (and (= (length d) 3) (eq? (car d) 'sizeof) (string? (cadr d))
+                (natural? (caddr d)))
            (and (= (length d) 3) (eq? (car d) 'constant) (string? (cadr d))
                 (integer? (caddr d)) (exact? (caddr d)))
            (and (= (length d) 6) (eq? (car d) 'member) (string? (cadr d))
@@ -633,7 +683,7 @@
 (define (answer-question a)
   (case (car a)
     ((header-version) (list (car a)))
-    ((constant) (list (car a) (cadr a)))
+    ((constant sizeof) (list (car a) (cadr a)))
     (else (list (car a) (cadr a) (caddr a)))))
 
 ;; header-answer : Question -> (U Answer #f)
@@ -641,12 +691,12 @@
   (find (lambda (a) (equal? (answer-question a) question)) answers))
 
 ;; header-value : Question -> Any
-;; The program's answer: a constant's value, or (offset N size N kind K);
-;; else (no-answer . QUESTION).
+;; The program's answer: a constant's value, a struct's size, or
+;; (offset N size N kind K); else (no-answer . QUESTION).
 (define (header-value question)
   (let ((a (header-answer question)))
     (cond ((not a) (cons 'no-answer question))
-          ((eq? (car a) 'constant) (caddr a))
+          ((memq (car a) '(constant sizeof)) (caddr a))
           (else (list 'offset (cadddr a) 'size (car (cddddr a))
                       'kind (cadr (cddddr a)))))))
 
@@ -713,6 +763,507 @@
     (if (and (eq? (car header-version) 'version) (eq? (car library-version) 'version))
         (version-verdict (cadr header-version) (cadr library-version))
         (list 'headers (shown header-version) 'library (shown library-version)))))
+
+;; --- curlot-types, complete ---------------------------------------------------------
+
+;; c-identifiers : String String -> (Listof String)
+;; Each distinct identifier in TEXT that starts with PREFIX, in the order
+;; first met: a C identifier is letters, digits and _.
+(define (c-identifiers text prefix)
+  (let ((n (string-length text)) (m (string-length prefix)))
+    (define (ident-char? c) (or (char-alphabetic? c) (char-numeric? c) (char=? c #\_)))
+    (let loop ((i 0) (found '()))
+      (cond
+        ((>= i n) (reverse found))
+        ((and (or (= i 0) (not (ident-char? (string-ref text (- i 1)))))
+              (<= (+ i m) n)
+              (string=? (substring text i (+ i m)) prefix))
+         (let scan ((j (+ i m)))
+           (if (and (< j n) (ident-char? (string-ref text j)))
+               (scan (+ j 1))
+               (let ((word (substring text i j)))
+                 (loop j (if (member word found) found (cons word found)))))))
+        (else (loop (+ i 1) found))))))
+
+;; preprocessed : (U (List 'text String) (Pairof Symbol Any))
+;; $CC -E of a file that includes curl/curl.h, which includes
+;; curl/options.h, and string.h: the headers as the compiler reads them,
+;; comments and macros gone, so CURLOT_FLAG_ALIAS, a macro, is not there.
+;; The curlot check and the spelling check both read it.
+(define preprocessed
+  (guard (e (#t (list 'raised (describe e))))
+    (call-with-temp-directory
+     (lambda (dir)
+       (let ((source (string-append dir "/options.c")))
+         (write-text source "#include <curl/curl.h>\n#include <string.h>\n")
+         (let ((ran (capture-command (append (c-compiler getenv) (list "-E" source)))))
+           (if (= (car ran) 0)
+               (list 'text (cadr ran))
+               (cons 'preprocess ran))))))))
+
+;; curlot-names-in-headers : (U (Listof String) (List 'no-text Any))
+(define curlot-names-in-headers
+  (if (eq? (car preprocessed) 'text)
+      (c-identifiers (cadr preprocessed) "CURLOT_")
+      (list 'no-text preprocessed)))
+
+;; curlot-names-in-scheme : (Listof String)
+;; curlot-types' names as C writes them: CURLOT_, then the name upcased, -
+;; as _. Not a list of entries: (malformed VALUE), which no header holds.
+(define curlot-names-in-scheme
+  (let ((value (constant-value 'curlot-types)))
+    (if (entries? value)
+        (map (lambda (entry)
+               (string-append "CURLOT_" (underscored (string-upcase (symbol->string (car entry))))))
+             value)
+        (list 'malformed value))))
+
+;; --- prototypes -------------------------------------------------------------------------
+
+;; prototype-rows : (Listof (Pairof String (Listof Declaration)))
+;; One row per entry point src/ binds: its C name, then the declarations
+;; of it the headers may hold, in the headers' own spelling. A Declaration
+;; is (RESULT (PARAMETER ...)), or (RESULT (PARAMETER ... "...")
+;; (variadic CHEZ-TYPE ...)) for a variadic entry, naming the Chez types a
+;; binding may pass after its named parameters. Most entries have one
+;; declaration. curl_url_get has two: 7.85.0's curl/urlapi.h takes a
+;; CURLU *, and 8.x's a const CURLU *, and the floor lane compiles against
+;; the first. Every row's declarations are checked against the headers,
+;; by the C program, and every binding's types against them, by
+;; c-type-map.
+(define prototype-rows
+  '(("curl_version_info" ("curl_version_info_data *" ("CURLversion")))
+    ("curl_global_init" ("CURLcode" ("long")))
+    ("curl_easy_option_by_name" ("const struct curl_easyoption *" ("const char *")))
+    ("curl_easy_init" ("CURL *" ()))
+    ("curl_easy_header"
+     ("CURLHcode" ("CURL *" "const char *" "size_t" "unsigned int" "int" "struct curl_header **")))
+    ("curl_easy_cleanup" ("void" ("CURL *")))
+    ("curl_easy_setopt" ("CURLcode" ("CURL *" "CURLoption" "...") (variadic long integer-64 uptr)))
+    ("curl_easy_getinfo" ("CURLcode" ("CURL *" "CURLINFO" "...") (variadic uptr)))
+    ("curl_url" ("CURLU *" ()))
+    ("curl_url_cleanup" ("void" ("CURLU *")))
+    ("curl_url_set" ("CURLUcode" ("CURLU *" "CURLUPart" "const char *" "unsigned int")))
+    ("curl_url_get"
+     ("CURLUcode" ("CURLU *" "CURLUPart" "char **" "unsigned int"))
+     ("CURLUcode" ("const CURLU *" "CURLUPart" "char **" "unsigned int")))
+    ("curl_url_strerror" ("const char *" ("CURLUcode")))
+    ("curl_free" ("void" ("void *")))
+    ("memcpy" ("void *" ("void *" "const void *" "size_t")))
+    ("strlen" ("size_t" ("const char *")))))
+
+;; c-type-map : (Listof (Pairof String (Listof Symbol)))
+;; The one fixed map from a C type, as a header spells it, to the Chez types
+;; a binding may write for it. An enum is int, never unsigned-int: gcc and
+;; clang take an enum's compatible type to be unsigned int, so the C side
+;; would pass a row that wrote one so; the rows must spell each enum as the
+;; header does, which the spelling check holds. A pointer, any type ending
+;; in *, is uptr or void*; (* F) only where F's layout-rows C type, then
+;; " *", is that pointer type; and u8* only on the checked copies' row,
+;; memcpy's (bytevector-rows). A const char * may also be Chez's string,
+;; which hands C a NUL-terminated copy: test-collect-safe holds each such
+;; binding to a string-not-kept mark. curl_off_t is 64 bits on every platform
+;; chez-curl supports. A C type in no entry here, and no pointer, fails its
+;; row by name.
+(define c-type-map
+  '(("void" void)
+    ("int" int)
+    ("unsigned int" unsigned-int)
+    ("long" long)
+    ("size_t" size_t)
+    ("curl_off_t" integer-64)
+    ("CURLcode" int)
+    ("CURLversion" int)
+    ("CURLoption" int)
+    ("CURLINFO" int)
+    ("CURLHcode" int)
+    ("CURLUcode" int)
+    ("CURLUPart" int)))
+
+;; bytevector-rows : (Listof String)
+;; The rows whose pointers may be bound u8*: the checked copies' memcpy.
+(define bytevector-rows '("memcpy"))
+
+;; pointer-type? : String -> Boolean
+(define (pointer-type? c-type)
+  (let ((n (string-length c-type)))
+    (and (> n 0) (char=? (string-ref c-type (- n 1)) #\*))))
+
+;; ftype-pointer-fits? : Any String -> Boolean
+;; Whether CHEZ is (* F) for an F whose layout-rows C type, then " *", is
+;; C-TYPE: (* curl-version-info-data) for curl_version_info_data *, and for
+;; no other pointer.
+(define (ftype-pointer-fits? chez c-type)
+  (and (list? chez) (= (length chez) 2) (eq? (car chez) '*)
+       (let ((row (assq (cadr chez) layout-rows)))
+         (and row (pair? (cdr row)) (string? (cadr row))
+              (string=? (string-append (cadr row) " *") c-type)))))
+
+;; chez-fits? : String Any String -> Boolean
+;; Whether the Chez type CHEZ may stand for the C type C-TYPE in the row
+;; for ENTRY.
+(define (chez-fits? entry chez c-type)
+  (cond ((pointer-type? c-type)
+         (or (and (memq chez '(uptr void*)) #t)
+             (and (eq? chez 'u8*) (member entry bytevector-rows) #t)
+             (and (eq? chez 'string) (string=? c-type "const char *"))
+             (ftype-pointer-fits? chez c-type)))
+        ((assoc c-type c-type-map) => (lambda (entry) (and (memq chez (cdr entry)) #t)))
+        (else #f)))
+
+;; declaration-fits? : String Declaration (Listof Any) Any -> Boolean
+;; Whether a binding of ENTRY with PARAMETERS and RESULT fits DECLARATION:
+;; its result, and each named parameter, by chez-fits?; for a variadic
+;; declaration, exactly one more parameter, one of the Chez types it names.
+(define (declaration-fits? entry declaration parameters result)
+  (let* ((c-result (car declaration))
+         (c-params (cadr declaration))
+         (variadic? (and (pair? c-params) (equal? (list-ref c-params (- (length c-params) 1)) "...")))
+         (named (if variadic? (reverse (cdr (reverse c-params))) c-params))
+         (extra (if (= (length declaration) 3) (cdr (caddr declaration)) '())))
+    (and (list? parameters)
+         (chez-fits? entry result c-result)
+         (= (length parameters) (+ (length named) (if variadic? 1 0)))
+         (for-all (lambda (chez c-type) (chez-fits? entry chez c-type))
+                  (if variadic? (reverse (cdr (reverse parameters))) parameters)
+                  named)
+         (or (not variadic?)
+             (and (memq (list-ref parameters (- (length parameters) 1)) extra) #t)))))
+
+;; declaration-shaped? : Any -> Boolean
+(define (declaration-shaped? d)
+  (and (list? d)
+       (memv (length d) '(2 3))
+       (string? (car d))
+       (list? (cadr d))
+       (for-all string? (cadr d))
+       (let* ((ps (cadr d))
+              (variadic? (and (pair? ps) (equal? (list-ref ps (- (length ps) 1)) "..."))))
+         (if variadic?
+             (and (= (length d) 3)
+                  (let ((v (caddr d)))
+                    (and (list? v) (pair? v) (eq? (car v) 'variadic) (pair? (cdr v))
+                         (for-all symbol? (cdr v)))))
+             (= (length d) 2)))
+       (not (member "..." (if (pair? (cadr d)) (reverse (cdr (reverse (cadr d)))) '())))
+       #t))
+
+;; row-shaped? : Any -> Boolean
+(define (prototype-row-shaped? row)
+  (and (list? row) (>= (length row) 2) (string? (car row))
+       (for-all declaration-shaped? (cdr row))))
+
+;; c-function-type : Declaration -> String
+;; DECLARATION as a C pointer-to-function type: RESULT (*)(PARAMETERS), void
+;; for none.
+(define (c-function-type declaration)
+  (let ((params (cadr declaration)))
+    (string-append (car declaration) " (*)("
+                   (if (null? params)
+                       "void"
+                       (fold-left (lambda (acc p) (string-append acc ", " p)) (car params) (cdr params)))
+                   ")")))
+
+;; prototype-assertion : Row -> String
+;; The C line that holds ENTRY to its row's declarations: a static
+;; assertion that _Generic finds the entry's type among them. _Generic
+;; does not evaluate its operand, so nothing is referenced, and the program
+;; needs no -l. The entry is written in parentheses, so a function-like
+;; macro of its name, such as gcc's curl_easy_setopt, is not expanded.
+(define (prototype-assertion row)
+  (string-append
+   "_Static_assert(_Generic((" (car row) "), "
+   (apply string-append (map (lambda (d) (string-append (c-function-type d) ": 1, ")) (cdr row)))
+   "default: 0), \"" (car row) ": the headers declare it otherwise than each declaration its row gives\");\n"))
+
+;; prototype-program : (Listof Row) -> String
+(define (prototype-program rows)
+  (string-append
+   "#include <curl/curl.h>\n"
+   "#include <string.h>\n"
+   "\n"
+   (apply string-append (map prototype-assertion rows))))
+
+;; compile-prototypes : (Listof Row) -> (U 'compiled (Pairof Symbol Any))
+;; Compiles PROTOTYPE-PROGRAM of ROWS with $CC -c, in a fresh directory:
+;; compiled, or (compile STATUS STDOUT STDERR), or (raised TEXT).
+(define (compile-prototypes rows)
+  (guard (e (#t (list 'raised (describe e))))
+    (call-with-temp-directory
+     (lambda (dir)
+       (let ((source (string-append dir "/prototypes.c")))
+         (write-text source (prototype-program rows))
+         (let ((compiled (capture-command
+                          (append (c-compiler getenv)
+                                  (list "-c" "-o" (string-append dir "/prototypes.o") source)))))
+           (if (= (car compiled) 0) 'compiled (cons 'compile compiled))))))))
+
+(define prototypes-compiled
+  (if (for-all prototype-row-shaped? prototype-rows)
+      (compile-prototypes prototype-rows)
+      '(rows-malformed)))
+
+;; signatures : (U (Listof Signature) (List 'raised String))
+;; Every binding under src/, with its types, from (foreign-conventions)'
+;; scan: (KEY VIA PARAMETERS RESULT FILE).
+(define signatures
+  (guard (e (#t (list 'raised (describe e))))
+    (scan-signatures (scan-conventions "src" known-macros))))
+
+(define signature-list
+  (if (and (pair? signatures) (eq? (car signatures) 'raised)) '() signatures))
+
+;; bound-entries : (Listof String)
+;; The entries src/ binds, each once, in scan order. A callable has a
+;; symbol key, and no prototype.
+(define bound-entries
+  (fold-left (lambda (found sig)
+               (if (and (string? (car sig)) (not (member (car sig) found)))
+                   (append found (list (car sig)))
+                   found))
+             '() signature-list))
+
+;; string-sorted : (Listof String) -> (Listof String)
+(define (string-sorted strings) (list-sort string<? strings))
+
+;; --- the headers' own spelling ------------------------------------------------------------
+;; The C side cannot tell an enum from unsigned int, its compatible type, so
+;; a row that wrote unsigned int for CURLUPart would compile. This reads each
+;; entry's declaration from the preprocessed headers, as text, and requires
+;; the row to spell its result and parameters as the header does.
+
+;; c-tokens : String -> (Listof String)
+;; TEXT as C tokens: identifiers, numbers, "...", and each other character
+;; that is not white space alone. A string literal is one token.
+(define (c-tokens text)
+  (let ((n (string-length text)))
+    (define (ident-char? c) (or (char-alphabetic? c) (char-numeric? c) (char=? c #\_)))
+    (let loop ((i 0) (found '()))
+      (cond
+        ((>= i n) (reverse found))
+        ((char-whitespace? (string-ref text i)) (loop (+ i 1) found))
+        ((ident-char? (string-ref text i))
+         (let scan ((j i))
+           (if (and (< j n) (ident-char? (string-ref text j)))
+               (scan (+ j 1))
+               (loop j (cons (substring text i j) found)))))
+        ((and (<= (+ i 3) n) (string=? (substring text i (+ i 3)) "..."))
+         (loop (+ i 3) (cons "..." found)))
+        ((char=? (string-ref text i) #\")
+         (let scan ((j (+ i 1)))
+           (cond ((>= j n) (loop n (cons (substring text i n) found)))
+                 ((char=? (string-ref text j) #\\) (scan (+ j 2)))
+                 ((char=? (string-ref text j) #\") (loop (+ j 1) (cons (substring text i (+ j 1)) found)))
+                 (else (scan (+ j 1))))))
+        (else (loop (+ i 1) (cons (string (string-ref text i)) found)))))))
+
+;; without-directives : String -> String
+;; TEXT less the lines $CC -E writes for the preprocessor: those that start
+;; with #.
+(define (without-directives text)
+  (call-with-string-output-port
+    (lambda (p)
+      (let loop ((lines (split-lines text)))
+        (unless (null? lines)
+          (let ((line (car lines)))
+            (unless (and (> (string-length line) 0) (char=? (string-ref line 0) #\#))
+              (put-string p line)
+              (put-char p #\newline)))
+          (loop (cdr lines)))))))
+
+;; split-lines : String -> (Listof String)
+(define (split-lines text)
+  (let loop ((i 0) (start 0) (found '()))
+    (cond ((= i (string-length text)) (reverse (cons (substring text start i) found)))
+          ((char=? (string-ref text i) #\newline)
+           (loop (+ i 1) (+ i 1) (cons (substring text start i) found)))
+          (else (loop (+ i 1) start found)))))
+
+;; balanced-end : (Listof String) -> (U (Pairof (Listof String) (Listof String)) #f)
+;; TOKENS, which start with "(", cut after the ")" that closes it: the group,
+;; and what follows.
+(define (balanced-end tokens)
+  (let loop ((rest tokens) (depth 0) (taken '()))
+    (cond ((null? rest) #f)
+          ((string=? (car rest) "(") (loop (cdr rest) (+ depth 1) (cons (car rest) taken)))
+          ((string=? (car rest) ")")
+           (if (= depth 1)
+               (cons (reverse (cons (car rest) taken)) (cdr rest))
+               (loop (cdr rest) (- depth 1) (cons (car rest) taken))))
+          (else (loop (cdr rest) depth (cons (car rest) taken))))))
+
+;; without-attributes : (Listof String) -> (Listof String)
+;; TOKENS less each __attribute__, __attribute, __asm__ or __asm and the
+;; group after it.
+(define (without-attributes tokens)
+  (let loop ((rest tokens) (found '()))
+    (cond ((null? rest) (reverse found))
+          ((and (member (car rest) '("__attribute__" "__attribute" "__asm__" "__asm"))
+                (pair? (cdr rest)) (string=? (cadr rest) "(")
+                (balanced-end (cdr rest)))
+           => (lambda (cut) (loop (cdr cut) found)))
+          (else (loop (cdr rest) (cons (car rest) found))))))
+
+;; qualifier-noise : (Listof String)
+;; Words a header's declaration may hold that name no type: storage;
+;; restrict, which glibc writes as __restrict; and Clang's nullability
+;; qualifiers, which Apple's SDK headers write on pointers, in both
+;; spellings.
+(define qualifier-noise
+  '("extern" "__extension__" "__inline" "inline" "restrict" "__restrict" "__restrict__"
+    "_Nonnull" "_Nullable" "_Null_unspecified" "__nonnull" "__nullable" "__null_unspecified"))
+
+(define type-keywords
+  '("void" "char" "short" "int" "long" "float" "double" "signed" "unsigned" "_Bool"
+    "const" "volatile" "struct" "union" "enum"))
+
+(define (c-identifier? token)
+  (and (> (string-length token) 0)
+       (let ((c (string-ref token 0))) (or (char-alphabetic? c) (char=? c #\_)))))
+
+;; spelled : (Listof String) -> String
+;; TOKENS of a type as the rows write it: words one space apart, and each
+;; * after a space, or after another *: "const char *", "char **".
+(define (spelled tokens)
+  (let loop ((rest tokens) (previous #f) (text ""))
+    (cond ((null? rest) text)
+          ((string=? text "") (loop (cdr rest) (car rest) (car rest)))
+          ((and (string=? (car rest) "*") previous (string=? previous "*"))
+           (loop (cdr rest) (car rest) (string-append text "*")))
+          (else (loop (cdr rest) (car rest) (string-append text " " (car rest)))))))
+
+;; parameter-type : (Listof String) -> String
+;; A parameter's tokens, its name dropped, spelled: the last token, when it
+;; is an identifier that is no type keyword, follows another token, and
+;; does not follow struct, union or enum, is the name.
+(define (parameter-type tokens)
+  (let* ((tokens (remp (lambda (t) (member t qualifier-noise)) tokens))
+         (n (length tokens)))
+    (spelled
+     (if (and (>= n 2)
+              (c-identifier? (list-ref tokens (- n 1)))
+              (not (member (list-ref tokens (- n 1)) type-keywords))
+              (not (member (list-ref tokens (- n 2)) '("struct" "union" "enum"))))
+         (reverse (cdr (reverse tokens)))
+         tokens))))
+
+;; split-parameters : (Listof String) -> (Listof (Listof String))
+;; The tokens between a parameter list's parentheses, cut at each comma at
+;; depth 0.
+(define (split-parameters tokens)
+  (let loop ((rest tokens) (depth 0) (current '()) (found '()))
+    (cond ((null? rest) (reverse (if (null? current) found (cons (reverse current) found))))
+          ((and (string=? (car rest) ",") (= depth 0))
+           (loop (cdr rest) depth '() (cons (reverse current) found)))
+          ((string=? (car rest) "(") (loop (cdr rest) (+ depth 1) (cons (car rest) current) found))
+          ((string=? (car rest) ")") (loop (cdr rest) (- depth 1) (cons (car rest) current) found))
+          (else (loop (cdr rest) depth (cons (car rest) current) found)))))
+
+;; header-tokens : (U (Listof String) (List 'no-text Any))
+;; The preprocessed headers as tokens, attributes gone.
+(define header-tokens
+  (if (eq? (car preprocessed) 'text)
+      (without-attributes (c-tokens (without-directives (cadr preprocessed))))
+      (list 'no-text preprocessed)))
+
+;; header-tokens-read? : Boolean
+;; Whether the headers gave tokens to read: none from a $CC -E that printed
+;; nothing, and a failure's sentinel is no token list. Every reader below
+;; asks this first, so neither kills the suite before a test is named.
+(define header-tokens-read?
+  (and (pair? header-tokens) (string? (car header-tokens))))
+
+;; declaration-in : (Listof String) String -> (U (List String (Listof String)) (List 'no-declaration String))
+;; NAME's first declaration in TOKENS: a statement, from after the last ;,
+;; { or } before NAME, whose NAME is followed by a parameter list and then
+;; ;. Its result and its parameters, spelled; () for (void).
+(define (declaration-in tokens name)
+  (let loop ((rest tokens) (statement '()))
+    (cond
+      ((null? rest) (list 'no-declaration name))
+      ((member (car rest) '(";" "{" "}")) (loop (cdr rest) '()))
+      ((and (string=? (car rest) name) (pair? (cdr rest)) (string=? (cadr rest) "(")
+            (balanced-end (cdr rest)))
+       => (lambda (cut)
+            (if (and (pair? (cdr cut)) (string=? (cadr cut) ";"))
+                (let* ((inner (reverse (cdr (reverse (cdr (car cut))))))
+                       (parameters (map parameter-type (split-parameters inner))))
+                  (list (spelled (remp (lambda (t) (member t qualifier-noise)) (reverse statement)))
+                        (if (equal? parameters '("void")) '() parameters)))
+                (loop (cdr rest) (cons (car rest) statement)))))
+      (else (loop (cdr rest) (cons (car rest) statement))))))
+
+;; header-declaration : String -> (U (List String (Listof String)) (List 'no-declaration String))
+;; NAME's first declaration in the preprocessed headers.
+(define (header-declaration name)
+  (declaration-in (if header-tokens-read? header-tokens '()) name))
+
+;; row-spelling : Declaration -> (List String (Listof String))
+;; A row's declaration as the spelling check compares it: its result and
+;; parameters, each respelled from its tokens, so spacing does not count.
+(define (row-spelling declaration)
+  (list (spelled (c-tokens (car declaration)))
+        (map (lambda (p) (spelled (c-tokens p))) (cadr declaration))))
+
+;; --- enums ----------------------------------------------------------------------------------
+
+;; enum-names : (Listof String)
+;; Written out: every enum a prototype row names, each a typedef the headers
+;; define with typedef enum. c-type-map maps each to int, and nothing else.
+(define enum-names
+  '("CURLcode" "CURLversion" "CURLoption" "CURLINFO" "CURLHcode" "CURLUcode" "CURLUPart"))
+
+;; enums-in : (Listof String) -> (Listof String)
+;; The names TOKENS give a typedef enum: typedef enum [TAG] { ... } NAME ;
+(define (enums-in tokens)
+      (let loop ((rest tokens) (found '()))
+        (cond
+          ((null? rest) (reverse found))
+          ((and (string=? (car rest) "typedef") (pair? (cdr rest)) (string=? (cadr rest) "enum"))
+           (let* ((after (cddr rest))
+                  (after (if (and (pair? after) (c-identifier? (car after))) (cdr after) after)))
+             (if (and (pair? after) (string=? (car after) "{"))
+                 (let skip ((r (cdr after)) (depth 1))
+                   (cond ((null? r) (reverse found))
+                         ((string=? (car r) "{") (skip (cdr r) (+ depth 1)))
+                         ((string=? (car r) "}")
+                          (if (= depth 1)
+                              (if (and (pair? (cdr r)) (c-identifier? (cadr r)))
+                                  (loop (cddr r) (cons (cadr r) found))
+                                  (loop (cdr r) found))
+                              (skip (cdr r) (- depth 1))))
+                         (else (skip (cdr r) depth))))
+                 (loop (cdr rest) found))))
+          (else (loop (cdr rest) found)))))
+
+;; header-enums : (U (Listof String) (List 'no-text Any))
+;; The names the preprocessed headers give a typedef enum.
+(define header-enums
+  (if header-tokens-read? (enums-in header-tokens) (list 'no-tokens header-tokens)))
+
+;; prototype-c-types : (Listof String)
+;; Every C type a row writes, each once, in row order, "..." aside.
+(define prototype-c-types
+  (fold-left (lambda (found type) (if (or (member type found) (string=? type "...")) found (append found (list type))))
+             '()
+             (apply append
+                    (map (lambda (row)
+                           (apply append (map (lambda (d) (cons (car d) (cadr d))) (cdr row))))
+                         prototype-rows))))
+
+;; --- the map, against every type a binding can write --------------------------------------
+
+;; universe : (Listof Any)
+;; Every type the conventions reader reads, for src/'s layouts: what a
+;; binding can write at all. Plus (* not-a-layout), an ftype layouts does
+;; not define, which no row may take.
+(define universe
+  (append (readable-types (map car layout-rows)) '((* not-a-layout))))
+
+;; fits : String String -> (Listof Any)
+;; The types of the universe chez-fits? lets stand for C-TYPE in ENTRY's row.
+(define (fits entry c-type)
+  (filter (lambda (chez) (chez-fits? entry chez c-type)) universe))
 
 (test-begin "constants")
 
@@ -906,6 +1457,292 @@
 (test-equal "the headers the C program compiled against are no newer than the libcurl chez-curl loads"
   'no-newer
   headers-against-library)
+
+;; --- complete layouts --------------------------------------------------------------------
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append "layout-rows' row " (written (if (pair? row) (car row) row))
+                              " is (name C-type extent), its extent whole or prefix")
+     'shaped
+     (if (and (list? row) (= (length row) 3) (symbol? (car row)) (string? (cadr row))
+              (memq (caddr row) extents))
+         'shaped
+         row)))
+ layout-rows)
+
+;; Written out here, not read from the table: a row turned to prefix would
+;; drop its size check with it.
+(test-equal "curl-easyoption is laid out whole, and curl-version-info-data as a prefix"
+  '((curl-version-info-data prefix) (curl-easyoption whole))
+  (map (lambda (row) (list (car row) (caddr row))) layout-rows))
+
+;; --- curlot-types is complete ---------------------------------------------------------------
+
+(test-equal "curl/options.h, preprocessed with $CC -E, names CURLOT_ types"
+  'found
+  (if (and (pair? curlot-names-in-headers) (string? (car curlot-names-in-headers)))
+      'found
+      curlot-names-in-headers))
+
+(test-equal "curlot-types names exactly the CURLOT_ names in the preprocessed headers, each once"
+  (if (for-all string? curlot-names-in-headers)
+      (string-sorted curlot-names-in-headers)
+      curlot-names-in-headers)
+  (if (for-all string? curlot-names-in-scheme)
+      (let ((sorted (string-sorted curlot-names-in-scheme)))
+        (if (= (length sorted) (length (c-identifiers (fold-left (lambda (a b) (string-append a " " b)) "" sorted) "CURLOT_")))
+            sorted
+            (list 'duplicates sorted)))
+      curlot-names-in-scheme))
+
+;; The reader on fixed text: a check that found nothing would agree with an
+;; empty list.
+(test-equal "c-identifiers: whole identifiers with the prefix, each once, in order, the text's first and last word among them; one inside another word is not one"
+  '("CURLOT_FIRST" "CURLOT_LONG" "CURLOT_OFF_T" "CURLOT_FLAG" "CURLOT_LAST")
+  (c-identifiers "CURLOT_FIRST typedef enum { CURLOT_LONG, CURLOT_OFF_T, XCURLOT_NO, CURLOT_LONG } t; int CURLOT_FLAG;CURLOT_LAST" "CURLOT_"))
+
+;; --- prototypes -----------------------------------------------------------------------------
+
+(test-equal "prototype-rows: each row is an entry's C name and its declarations, each well formed"
+  '()
+  (remp prototype-row-shaped? prototype-rows))
+
+(test-equal "the scan of src/ read the bindings' types"
+  'read
+  (if (and (pair? signature-list) (pair? bound-entries)) 'read signatures))
+
+(test-equal "prototype-rows has a row for every entry point src/ binds, and src/ binds every row's entry"
+  (string-sorted bound-entries)
+  (string-sorted (map car prototype-rows)))
+
+(test-equal "prototype-rows has one row per entry"
+  (length prototype-rows)
+  (length (fold-left (lambda (found row) (if (member (car row) found) found (cons (car row) found)))
+                     '() prototype-rows)))
+
+(test-equal "the headers declare each entry as one of its row's declarations: the C program's static assertions compile, with no link"
+  'compiled
+  prototypes-compiled)
+
+;; The C side's control: the same program, with one type written as the
+;; measurements showed gcc refuses, an enum written int, must not compile;
+;; and with it written right, it must. Only that type differs, so only the
+;; assertion can refuse it.
+(test-equal "the prototype check refuses a row that writes an enum as int: curl_url_set's CURLUPart written int fails to compile, and written CURLUPart compiles"
+  '(compiled refused)
+  (let ((right '("curl_url_set" ("CURLUcode" ("CURLU *" "CURLUPart" "const char *" "unsigned int"))))
+        (wrong '("curl_url_set" ("CURLUcode" ("CURLU *" "int" "const char *" "unsigned int")))))
+    (list (compile-prototypes (list right))
+          (let ((answer (compile-prototypes (list wrong))))
+            (if (and (pair? answer) (eq? (car answer) 'compile)) 'refused answer)))))
+
+(for-each
+ (lambda (sig)
+   (let ((row (assoc (car sig) prototype-rows)))
+     (test-equal (string-append "prototype: " (written (car sig)) " bound through "
+                                (symbol->string (cadr sig)) " as " (written (caddr sig)) " -> "
+                                (written (cadddr sig)) " fits a declaration its row gives")
+       'fits
+       (cond ((not row) 'no-row)
+             ((exists (lambda (d) (declaration-fits? (car sig) d (caddr sig) (cadddr sig)))
+                      (cdr row))
+              'fits)
+             (else (list 'fits-none-of (cdr row)))))))
+ (filter (lambda (sig) (string? (car sig))) signature-list))
+
+;; --- the map and the rows, pinned as written-out data ------------------------------------
+;; A table loosened together with the binding it holds passes every live
+;; check above: getinfo's row taking int with getinfo bound int, long mapped
+;; to int with curl_global_init bound int. So each table is written out
+;; here, and held both ways.
+
+(define (type<? a b) (string<? (written a) (written b)))
+(define (type-sorted types) (list-sort type<? types))
+
+(test-equal "c-type-map is exactly, written out here: void, int, unsigned int, long, size_t and curl_off_t each to its one Chez type, and each of the seven enums to int"
+  '(("void" void) ("int" int) ("unsigned int" unsigned-int) ("long" long) ("size_t" size_t)
+    ("curl_off_t" integer-64)
+    ("CURLcode" int) ("CURLversion" int) ("CURLoption" int) ("CURLINFO" int)
+    ("CURLHcode" int) ("CURLUcode" int) ("CURLUPart" int))
+  c-type-map)
+
+;; expected-fits : (Listof (Pairof (List String String) (Listof Type)))
+;; For an entry and a C type, every type a binding may write there, out of
+;; everything the reader reads: exactly these, and every other type of the
+;; universe refused. "x" is any entry but memcpy.
+(define expected-fits
+  '((("x" "void") void)
+    (("x" "int") int)
+    (("x" "unsigned int") unsigned-int)
+    (("x" "long") long)
+    (("x" "size_t") size_t)
+    (("x" "curl_off_t") integer-64)
+    (("x" "CURLcode") int)
+    (("x" "CURLversion") int)
+    (("x" "CURLoption") int)
+    (("x" "CURLINFO") int)
+    (("x" "CURLHcode") int)
+    (("x" "CURLUcode") int)
+    (("x" "CURLUPart") int)
+    (("x" "double"))
+    (("x" "CURL *") uptr void*)
+    (("x" "CURLU *") uptr void*)
+    (("x" "const CURLU *") uptr void*)
+    (("x" "char **") uptr void*)
+    (("x" "void *") uptr void*)
+    (("x" "const void *") uptr void*)
+    (("x" "struct curl_header **") uptr void*)
+    (("x" "const char *") uptr void* string)
+    (("x" "curl_version_info_data *") uptr void* (* curl-version-info-data))
+    (("x" "struct curl_easyoption *") uptr void* (* curl-easyoption))
+    (("x" "const struct curl_easyoption *") uptr void*)
+    (("memcpy" "void *") uptr void* u8*)
+    (("memcpy" "const void *") uptr void* u8*)
+    (("memcpy" "const char *") uptr void* u8* string)))
+
+(test-equal "the universe the map is held against: every type the conventions reader reads, for src/'s two layouts, and an ftype no layout defines"
+  (+ 33 1 3 7 1 4 1)
+  (length universe))
+
+(for-each
+ (lambda (entry)
+   (let ((key (car entry)))
+     (test-equal (string-append "the map, in " (car key) "'s row: for " (cadr key)
+                                " exactly " (written (cdr entry)) " fit, and every other type a binding can write is refused")
+       (type-sorted (cdr entry))
+       (type-sorted (fits (car key) (cadr key))))))
+ expected-fits)
+
+(test-equal "every C type a prototype row writes is one expected-fits pins"
+  '()
+  (filter (lambda (type) (not (assoc (list "x" type) expected-fits))) prototype-c-types))
+
+;; The variadic rows: which types each may pass after its named parameters.
+(define (variadic-list row)
+  (let ((d (cadr row)))
+    (and (= (length d) 3) (cdr (caddr d)))))
+
+(test-equal "the variadic rows are curl_easy_setopt's and curl_easy_getinfo's alone: setopt passes exactly long, integer-64 and uptr, and getinfo exactly uptr, its destination, never int"
+  '(("curl_easy_setopt" (long integer-64 uptr)) ("curl_easy_getinfo" (uptr)))
+  (map (lambda (row) (list (car row) (variadic-list row)))
+       (filter (lambda (row) (and (pair? (cdr row)) (variadic-list row))) prototype-rows)))
+
+(test-equal "only curl_url_get's row gives more than one declaration, and it gives two"
+  '(("curl_url_get" 2))
+  (map (lambda (row) (list (car row) (length (cdr row))))
+       (filter (lambda (row) (> (length (cdr row)) 1)) prototype-rows)))
+
+;; declaration-fits-sets : String Declaration -> (Listof (Listof Type))
+;; What may stand at each place of DECLARATION, its result first.
+(define (declaration-fits-sets entry declaration)
+  (map (lambda (c-type) (type-sorted (fits entry c-type)))
+       (cons (car declaration) (cadr declaration))))
+
+(test-equal "curl_url_get's two declarations, CURLU * and const CURLU *, let a binding write the same Chez types at every place"
+  'same
+  (let ((row (assoc "curl_url_get" prototype-rows)))
+    (if (and row (= (length (cdr row)) 2))
+        (let ((a (declaration-fits-sets (car row) (cadr row)))
+              (b (declaration-fits-sets (car row) (caddr row))))
+          (if (equal? a b) 'same (list a b)))
+        (list 'no-two-declarations row))))
+
+;; --- the enums --------------------------------------------------------------------------------
+
+(test-equal "the headers, preprocessed, define typedef enums"
+  'found
+  (if (and (list? header-enums) (pair? header-enums) (string? (car header-enums))) 'found header-enums))
+
+(test-equal "the enum names, written out, are exactly c-type-map's C types that map to int, but int itself"
+  (string-sorted enum-names)
+  (string-sorted (map car (filter (lambda (entry) (and (equal? (cdr entry) '(int))
+                                                       (not (string=? (car entry) "int"))))
+                                  c-type-map))))
+
+(test-equal "each enum name is a typedef enum in the headers, and every C type a row writes that the headers define so is one of them"
+  (list '() '())
+  (if (and (list? header-enums) (for-all string? header-enums))
+      (list (filter (lambda (name) (not (member name header-enums))) enum-names)
+            (filter (lambda (type) (and (member type header-enums) (not (member type enum-names))))
+                    prototype-c-types))
+      header-enums))
+
+;; The reader on fixed text, at each place a scan can miss: the first
+;; statement, a tag, braces inside, the last statement, and a struct and an
+;; enum with no typedef, which name no enum type.
+(test-equal "enums-in: typedef enum, with a tag or without, its braces nested or not, first and last in the text; a typedef struct and an untyped enum are none"
+  '("A" "B" "C" "D")
+  (enums-in (c-tokens (string-append
+                       "typedef enum { A1, A2 } A;"
+                       "typedef struct { int x; } S;"
+                       "typedef enum tag { B1 = (1 << 2) } B;"
+                       "enum untyped { U1 };"
+                       "typedef enum { C1 = sizeof(struct { int y; }) } C;"
+                       "typedef enum { D1 } D;"))))
+
+;; --- the headers' own spelling -------------------------------------------------------------
+
+(test-equal "the preprocessed headers hold tokens to read"
+  'tokens
+  (if header-tokens-read? 'tokens (list 'no-tokens header-tokens)))
+
+;; Positive evidence for the comparison below, apart from it: each row's
+;; entry is declared in the headers it compiles against.
+(test-equal "the preprocessed headers declare every entry a prototype row names"
+  '()
+  (filter (lambda (row) (eq? (car (header-declaration (car row))) 'no-declaration))
+          prototype-rows))
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append "prototype: the headers declare " (car row)
+                              " in one of its row's spellings, an enum by its own name")
+     'spelled-so
+     (let ((header (header-declaration (car row))))
+       (cond ((eq? (car header) 'no-declaration) header)
+             ((member header (map row-spelling (cdr row))) 'spelled-so)
+             (else (list 'header-spells header 'row-spells (map row-spelling (cdr row))))))))
+ prototype-rows)
+
+;; The reader on fixed text, at each place a scan can miss: the first
+;; statement, one after a brace, a parameter list of void, names dropped
+;; and kept, restrict, an attribute before and after, and a definition
+;; skipped for the declaration after it.
+(test-equal "header-declaration's reading: names dropped, type keywords and struct and enum tags kept, restrict, nullability and attributes ignored, (void) empty, a definition passed over, a statement just after {"
+  '(("CURLUcode" ("CURLU *" "CURLUPart" "const char *" "unsigned int"))
+    ("void *" ("void *" "const void *" "size_t"))
+    ("CURL *" ())
+    ("CURLHcode" ("CURL *" "struct curl_header **" "unsigned int"))
+    ("int" ("int"))
+    ("int" ("enum CURLUPart"))
+    ("const char *" ("void *" "const char *" "CURL *"))
+    ("int" ("char *")))
+  (let ((tokens (without-attributes
+                 (c-tokens (string-append
+                            "CURLUcode first(CURLU *u, CURLUPart what, const char *part, unsigned int flags);\n"
+                            "struct s { int x; };\n"
+                            "extern void *second (void *__restrict __dest, const void *__restrict __src, size_t __n) __attribute__ ((__nothrow__ , __leaf__));\n"
+                            "__attribute__ ((visibility (\"default\"))) CURL *third(void);\n"
+                            "CURLHcode fourth(CURL *easy, struct curl_header **, unsigned int);\n"
+                            "int fifth(int a) { return a; }\n"
+                            "int fifth(int);\n"
+                            "{int sixth(enum CURLUPart);}\n"
+                            "const char * _Nullable seventh(void * _Nonnull p, const char *__nullable s, CURL * _Null_unspecified e) __attribute((availability(macos,introduced=10.0)));\n"
+                            "__attribute((visibility(\"default\"))) int eighth(char *__nonnull __null_unspecified);\n")))))
+    (map (lambda (name) (declaration-in tokens name))
+         '("first" "second" "third" "fourth" "fifth" "sixth" "seventh" "eighth"))))
+
+(test-equal "a variadic declaration: its named parameters by the map, then exactly one of the types it names; getinfo's destination is a pointer, never int"
+  '(#t #t #t #f #f #f)
+  (let ((setopt '("CURLcode" ("CURL *" "CURLoption" "...") (variadic long integer-64 uptr)))
+        (getinfo '("CURLcode" ("CURL *" "CURLINFO" "...") (variadic uptr))))
+    (list (declaration-fits? "curl_easy_setopt" setopt '(uptr int long) 'int)
+          (declaration-fits? "curl_easy_setopt" setopt '(uptr int integer-64) 'int)
+          (declaration-fits? "curl_easy_getinfo" getinfo '(uptr int uptr) 'int)
+          (declaration-fits? "curl_easy_getinfo" getinfo '(uptr int int) 'int)
+          (declaration-fits? "curl_easy_setopt" setopt '(uptr int) 'int)
+          (declaration-fits? "curl_easy_setopt" setopt '(uptr int long long) 'int))))
 
 ;; --- each constant and each field, against the headers -------------------------------------
 

@@ -20,6 +20,7 @@
         ;; Chez's own current-error-port is a parameter; (rnrs)'s takes no
         ;; argument, and reads the same port.
         (prefix (only (chezscheme) current-error-port) chez:)
+        (curl private counters)
         (curl-testing))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
@@ -112,6 +113,59 @@
 (test-equal "no test at all: exit 1"
   '(1 "suite-exit-status: exit 1 (pass 0, fail 0, xpass 0): a suite needs a pass, and no fail or xpass\n")
   (verdict (runner-after (lambda () 'no-tests))))
+
+;; --- the counters' rule (ADR-0014, decision 7, amended) ---
+;; Each raises counts on purpose, and lowers them again under dynamic-wind,
+;; so this suite's own exit, which reads the same counts, sees zero.
+
+;; with-counts : (Listof Symbol) (-> Any) -> Any
+;; THUNK's answer, with one more of each kind in KINDS counted while it runs.
+(define (with-counts kinds thunk)
+  (dynamic-wind
+    (lambda () (for-each count-up! kinds))
+    thunk
+    (lambda () (for-each count-down! kinds))))
+
+(define counts-tail "): every native object a suite makes must be freed by its end\n")
+
+(test-equal "a pass, and native objects left: exit 1, one line naming each count not zero, in the counters' order"
+  (list 1 (string-append "suite-exit-status: exit 1 (native objects left: block 1, easy 2"
+                         counts-tail))
+  (with-counts '(easy block easy)
+    (lambda () (verdict (runner-after (lambda () (test-assert "passes" #t)))))))
+
+;; Each kind alone fails a suite that passed: a gate that read some kinds
+;; only passes a test of two. Written out here, not read from native-kinds.
+(for-each
+ (lambda (kind)
+   (test-equal (string-append "a pass, and one " (symbol->string kind)
+                              " left alone: exit 1, the line naming it")
+     (list 1 (string-append "suite-exit-status: exit 1 (native objects left: "
+                            (symbol->string kind) " 1" counts-tail))
+     (with-counts (list kind)
+       (lambda () (verdict (runner-after (lambda () (test-assert "passes" #t))))))))
+ '(block easy url slist curl-string transfer))
+
+(test-equal "every kind left is named, each with its count"
+  (list 1 (string-append "suite-exit-status: exit 1 (native objects left: block 1, easy 1, url 1, slist 1, curl-string 1, transfer 3"
+                         counts-tail))
+  (with-counts '(transfer curl-string slist url easy block transfer transfer)
+    (lambda () (verdict (runner-after (lambda () (test-assert "passes" #t)))))))
+
+(test-equal "a failure, and a native object left: both lines, the runner's first"
+  (list 1 (string-append
+           "suite-exit-status: exit 1 (pass 1, fail 1, xpass 0): a suite needs a pass, and no fail or xpass\n"
+           "suite-exit-status: exit 1 (native objects left: url 1" counts-tail))
+  (with-counts '(url)
+    (lambda () (verdict (runner-after (lambda ()
+                                        (test-assert "passes" #t)
+                                        (test-assert "fails" #f)))))))
+
+(test-equal "the counts are back at zero once with-counts returns: a pass exits 0, and nothing is said"
+  (list '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0))
+        '(0 ""))
+  (list (native-counts)
+        (verdict (runner-after (lambda () (test-assert "passes" #t))))))
 
 (test-equal "suite-exit-status refuses what is not a runner"
   '(assertion-violation suite-exit-status ("not a runner"))
@@ -380,7 +434,7 @@
                                (if (memq 'fake-rm options)
                                    (list (string-append "PATH=" bin ":" (getenv "PATH")))
                                    '())
-                               (list chez "--libdirs" "tests:build/scheme-libs"
+                               (list chez "--libdirs" "src:tests:build/scheme-libs"
                                      "--program" program))))
               (lines (let loop ((chars (string->list (cadr answer))) (line '()) (found '()))
                        (cond ((null? chars) (reverse found))
@@ -1168,7 +1222,7 @@
        (capture-command
         (list "sh" "-c"
               "t=$(command -v timeout || command -v gtimeout) || exit 125; exec \"$t\" -s KILL 10 \"$@\""
-              "sh" chez "--libdirs" "tests:build/scheme-libs" "--program" program))))))
+              "sh" chez "--libdirs" "src:tests:build/scheme-libs" "--program" program))))))
 
 ;; --- parse-wire-probe
 

@@ -371,7 +371,7 @@
 ;; from its stdout and stderr. A face with no TLS at all also gives a
 ;; refusal, No ALPN negotiated, and no certificate; only a TLS refusal
 ;; writes "alert number 120" on stderr, OpenSSL 3.5.7 and 3.0.11 and
-;; LibreSSL 3.3.6 alike (measured: build/verify/m1s2/measure6).
+;; LibreSSL 3.3.6 alike (measured: .plans/tls-mutation-log.md, section 5.2).
 (define (alpn-outcome o face offer)
   (guard (e ((and (who-condition? e) (eq? (condition-who e) 's-client) (irritants-condition? e)
                   (assq 'status (condition-irritants e)))
@@ -559,7 +559,7 @@
   ;; ALPN negotiated and no certificate, and "alert number 120" on stderr,
   ;; which a face with no TLS, or a refusal without that alert, does not. Node 20.10.0 and 24.18.0 alike,
   ;; every face, with OpenSSL 3.5.7 and 3.0.11 and LibreSSL 3.3.6 (measured:
-  ;; build/verify/m1s2/measure5/alpn-sets-*).
+  ;; .plans/tls-mutation-log.md, section 4.2).
   (for-each
    (lambda (face)
      (test-equal (string-append (symbol->string face) ": its ALPN set pinned, offered each of h2, http/1.1 and an unknown protocol alone")
@@ -630,8 +630,8 @@
   ;; arrives alone says nothing here. With Nagle's algorithm on raw-tls's
   ;; TCP socket, the first two body bytes of this drip arrived 0 to 2 ms
   ;; apart, every other gap about 20 ms; without it, no gap was under 19 ms,
-  ;; idle or under 24 busy loops (measured: build/verify/m1s2/measure4). So
-  ;; each gap must be at least half the drip's.
+  ;; idle or under 24 busy loops (measured: .plans/tls-mutation-log.md,
+  ;; section 3.3). So each gap must be at least half the drip's.
   ;; And, as on raw, body byte i comes at least (i+1) x 20 ms after the probe
   ;; connected: the origin waits the gap before each byte, and the request
   ;; goes only once the handshake is done.
@@ -927,7 +927,7 @@
 ;; - Node's own server.close(). It ends some waiting states with nothing
 ;;   tracked, so an end there proves nothing; each face here also waits in
 ;;   states it does not end. Untracked, close() ends, by face (measured on
-;;   Node 24.18.0 and 20.10.0, build/verify/m1s2/measure5/close-untracked-*):
+;;   Node 24.18.0 and 20.10.0, .plans/tls-mutation-log.md, section 4.2):
 ;;     https*   idle after a whole keep-alive response, within 1 ms, on both;
 ;;              never TCP with nothing sent, a partial ClientHello, the
 ;;              handshake done, a partial head, a body still to come
@@ -958,7 +958,7 @@
 ;;
 ;; B is three times the slowest measured, 150 ms under 24 busy loops; idle it
 ;; was 35 to 43 ms, and 49 to 76 ms with Chez under Valgrind
-;; (build/verify/m1s2/measure5/stop-spread-*). The stop ends a connection
+;; (.plans/tls-mutation-log.md, section 4.2). The stop ends a connection
 ;; with a FIN, or with a reset when the client's bytes are still unread, as
 ;; a starved origin can leave them: both are the stop's.
 ;;

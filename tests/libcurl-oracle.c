@@ -3,6 +3,7 @@
  * chez-curl itself compiles no C (ADR-0001).
  *
  *   libcurl-oracle PATH
+ *   libcurl-oracle PATH protocols
  *
  * It dlopens PATH, exactly as given, finds curl_version_info with dlsym,
  * calls it with CURLVERSION_TENTH, the age (curl private native) asks for,
@@ -14,6 +15,11 @@
  *   (ssl-version . "GnuTLS/3.8.13")
  *   (host . "x86_64-unknown-linux-gnu")
  *
+ * With protocols, it prints one datum instead, the list of protocol names
+ * curl_version_info_data's protocols holds, in order, as strings:
+ *
+ *   ("dict" "file" "ftp" ...)
+ *
  * A NULL string is #f. The struct is libcurl's own, from its headers, so
  * the fields are read at the offsets C gives them, not the ones the
  * native layer's ftype gives them. It exits 0, or 1 with a message on
@@ -23,6 +29,7 @@
  */
 #include <dlfcn.h>
 #include <stdio.h>
+#include <string.h>
 #include <curl/curl.h>
 
 typedef curl_version_info_data *(*version_info_fn)(CURLversion);
@@ -50,8 +57,8 @@ int main(int argc, char **argv)
   version_info_fn version_info;
   curl_version_info_data *data;
 
-  if (argc != 2) {
-    fprintf(stderr, "usage: libcurl-oracle PATH\n");
+  if (argc != 2 && !(argc == 3 && strcmp(argv[2], "protocols") == 0)) {
+    fprintf(stderr, "usage: libcurl-oracle PATH [protocols]\n");
     return 1;
   }
   library = dlopen(argv[1], RTLD_NOW | RTLD_LOCAL);
@@ -68,6 +75,22 @@ int main(int argc, char **argv)
   if (!data) {
     fprintf(stderr, "libcurl-oracle: curl_version_info returned NULL\n");
     return 1;
+  }
+  if (argc == 3) {
+    const char *const *p;
+    printf("(");
+    for (p = data->protocols; p && *p; p++) {
+      const char *c;
+      printf("%s\"", p == data->protocols ? "" : " ");
+      for (c = *p; *c; c++) {
+        if (*c == '"' || *c == '\\')
+          putchar('\\');
+        putchar(*c);
+      }
+      printf("\"");
+    }
+    printf(")\n");
+    return 0;
   }
   put_string("version", data->version);
   printf("(version-num . %u)\n", data->version_num);

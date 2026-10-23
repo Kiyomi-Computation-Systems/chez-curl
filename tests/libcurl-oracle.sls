@@ -6,6 +6,8 @@
 ;;; own process).
 ;;;
 ;;;   libcurl-oracle   the five fields, read from the library at a path
+;;;   libcurl-protocols-oracle
+;;;                    its protocol list, likewise
 ;;;   oracle-fields    their names, in the order both sides print them
 ;;;   c-compiler       $CC as a command's words, for every compile
 ;;;   split-words      a string cut at whitespace
@@ -13,7 +15,7 @@
 ;;; Test-only: it lives in tests/, which make test puts on Chez's library
 ;;; path, not in src/.
 (library (libcurl-oracle)
-  (export libcurl-oracle oracle-fields c-compiler split-words)
+  (export libcurl-oracle libcurl-protocols-oracle oracle-fields c-compiler split-words)
   (import (rnrs)
           (curl-testing))
 
@@ -55,6 +57,31 @@
       (call-with-temp-directory
        (lambda (dir)
          (run-oracle getenv (string-append dir "/libcurl-oracle") path)))))
+
+;; libcurl-protocols-oracle : (String -> (U String #f)) String
+  ;;                            -> (U (Listof String) (List 'no-oracle Symbol Any))
+  ;; The protocol names curl_version_info_data's protocols holds, in order,
+  ;; read in C from the library at PATH: tests/libcurl-oracle.c PATH
+  ;; protocols. Anything else is (no-oracle STEP EVIDENCE), as for
+  ;; libcurl-oracle. It never raises.
+  (define (libcurl-protocols-oracle getenv path)
+    (guard (e (#t (list 'no-oracle 'raised (describe e))))
+      (call-with-temp-directory
+       (lambda (dir)
+         (let* ((program (string-append dir "/libcurl-oracle"))
+                (compiled (capture-command
+                           (append (c-compiler getenv)
+                                   (list "-o" program "tests/libcurl-oracle.c" "-ldl")))))
+           (if (not (= (car compiled) 0))
+               (list 'no-oracle 'compile compiled)
+               (let ((ran (capture-command (list program path "protocols"))))
+                 (if (not (= (car ran) 0))
+                     (list 'no-oracle 'run ran)
+                     (let ((data (read-all (cadr ran))))
+                       (if (and (list? data) (= (length data) 1) (list? (car data))
+                                (for-all string? (car data)))
+                           (car data)
+                           (list 'no-oracle 'output (cadr ran))))))))))))
 
   (define (run-oracle getenv program path)
     (let ((compiled (capture-command

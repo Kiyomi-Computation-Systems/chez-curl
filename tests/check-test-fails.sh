@@ -14,6 +14,10 @@
 #                inside a when                 no suite runs
 #   empty        an empty file (Chez fails     check-suites names it, and
 #                it, exit 255, unexplained)    no suite runs
+#   leaks        a suite whose tests pass,     make test names it FAIL, and
+#                but which drops a counted     suite-exit-status names the
+#                block wrapped in an ftype     count left (ADR-0014)
+#                pointer
 #   seam         a (curl ...) library that     check-seam names the import,
 #                imports (http-client ...)     and no suite runs
 #   floors       README's Chez line says       check-floors names the line,
@@ -29,15 +33,20 @@
 #
 # A case requires a non-zero exit, and compares the lines starting
 # "check-suites: " or "test: " as a whole: check-suites' verdict, the plant's
-# outcome, the after-suite's pass line, and the count. The seam case also
-# compares the lines starting "check-seam: ", and the floors case those
-# starting "check-floors: ".
+# outcome, the after-suite's pass line, and the count. The leaks case also
+# compares the lines starting "suite-exit-status: ", the seam case those
+# starting "check-seam: ", and the floors case those starting
+# "check-floors: ".
 #
 # The copy is the working tree without .git and build/, and with the
 # chez-srfi checkout, so make deps works there and nothing is fetched.
 # Nothing in the copy runs git. make deps relinks build/ in the copy. Its
 # src/ is the script's own, two libraries with legal imports, whatever the
-# tree holds, so check-seam passes in every case but seam. README.org and
+# tree holds, and three of the tree's own: (curl private counters), which
+# every suite's (curl-testing) imports, (curl private memory), which the
+# leaks plant takes its block from, and (curl private require-threaded),
+# which both import first. Each import is legal, so check-seam passes in
+# every case but seam. README.org and
 # packaging/floors.sexp are the tree's own, and agree, so check-floors passes
 # in every case but floors.
 #
@@ -95,6 +104,12 @@ cat >"$copy/src/http-client.sls" <<'EOF'
   (import (rnrs) (curl))
   (define client-version curl-version))
 EOF
+# The tree's own counters, and what they and the leaks plant need.
+mkdir -p "$copy/src/curl/private"
+for lib in require-threaded counters memory; do
+  cp "$root/src/curl/private/$lib.sls" "$copy/src/curl/private/$lib.sls" ||
+    { echo "check-test-fails: could not copy (curl private $lib)" >&2; exit 2; }
+done
 
 # ---- the plants ----
 plant_dir=$tmp/plants
@@ -178,6 +193,24 @@ cat >"$plant_dir/nested-exit" <<'EOF'
 (test-end "plant-nested-exit")
 (when (positive? (test-runner-fail-count runner))
   (exit 0))
+(exit (suite-exit-status runner))
+EOF
+
+cat >"$plant_dir/leaks" <<'EOF'
+#!r6rs
+;;; Planted by tests/check-test-fails.sh: a suite whose tests all pass, but
+;;; which drops a counted block wrapped in an ftype pointer (ADR-0014).
+;;; Valgrind calls such a block still reachable; only the counters see it.
+(import (rnrs) (srfi :64)
+        (only (chezscheme) define-ftype make-ftype-pointer ftype-pointer?)
+        (curl private memory) (curl-testing))
+(define-ftype slot (struct (value uptr)))
+(define runner (test-runner-simple))
+(test-runner-current runner)
+(test-begin "plant-leaks")
+(test-assert "passes, so only the dropped block can fail this suite"
+  (ftype-pointer? (make-ftype-pointer slot (foreign-block 8))))
+(test-end "plant-leaks")
 (exit (suite-exit-status runner))
 EOF
 
@@ -287,16 +320,26 @@ run_case "nested-exit: check-suites names an exit inside a form before the verdi
 run_case "empty: check-suites names a suite with no datum, and no suite runs" \
   "check-suites: $plant: it holds no datum, so it cannot end with (exit (suite-exit-status runner))"
 
-# The plant is gone, so only the after-suite is left to check.
-rm -f "$copy/$plant"
-mkdir "$copy/src/curl"
+cp "$plant_dir/leaks" "$copy/$plant"
+run_case "leaks: a suite whose tests pass, but which drops a counted block, is named FAIL through the counters' line, and the suites after it run" \
+  "$(checked 2
+     echo 'suite-exit-status: exit 1 (native objects left: block 1): every native object a suite makes must be freed by its end'
+     echo "test: FAIL $plant (exit 1)"
+     echo "test: pass $after"
+     echo 'test: ran 2, passed 1, failed 1, hung 0')" \
+  '^(check-suites|test|suite-exit-status): '
+
+# The plant is gone, so only the after-suite is left to check. src/curl/
+# holds the copied private libraries, so the seam plant goes beside them,
+# and only it is removed after.
+rm -f "${copy:?}/${plant:?}"
 cp "$plant_dir/seam" "$copy/src/curl/planted.sls"
 run_case "seam: check-seam names a (curl ...) library that imports (http-client ...), and no suite runs" \
   "$(checked 1
      echo 'check-seam: src/curl/planted.sls: (curl planted) imports (http-client session), but no (curl ...) library may import an (http-client ...) library'
      echo 'check-seam: FAILED (problems: 1)')" \
   '^(check-suites|check-seam|test): '
-rm -rf "$copy/src/curl"
+rm -f "${copy:?}/src/curl/planted.sls"
 
 # The floors case: the copy's README states an older Chez than the floors
 # file does. The file's floor is read from the file, so this script is no

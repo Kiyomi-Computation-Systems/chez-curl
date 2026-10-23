@@ -280,10 +280,11 @@ check-suites: deps ## Fail unless every tests/test-*.sps ends with the shared ex
 # not public: only (curl) is (ADR-0007, tests/check-seam.sps). A library may
 # import only allowlists: the (rnrs ...) libraries but (rnrs eval), (only
 # (chezscheme) name ...) with each name in allowed-chez-names, and (curl ...)
-# and (http-client ...) libraries. A name in library-only-chez-names, at first
-# define-ftype, may be imported only by the libraries listed with it, at first
-# (curl private layouts), and no library may export a name it imports from
-# (chezscheme). Any other import fails, (scheme) and
+# and (http-client ...) libraries. A name in library-only-chez-names may be
+# imported only by the libraries listed with it: define-ftype by (curl private
+# layouts), foreign-alloc and foreign-free by (curl private memory), and
+# foreign-procedure by (curl private native). No library may export a name it
+# imports from (chezscheme). Any other import fails, (scheme) and
 # (chezscheme csv7) included, as does a library in neither family, a file Chez
 # could load as a library but this check does not read (.ss, .scm, .sch, .so,
 # ...), no library under src/, and a file it cannot read as data. It skips a
@@ -329,9 +330,9 @@ check-nothreads: ## Fail unless every public library refuses to import, by name,
 	@scripts/require-tools "$(GOAL)" $(CHEZ)
 	@$(CHEZ) --program tests/check-nothreads.sps src
 
-# Plants bad suites, a bad import across the seam and a README that disagrees
-# with the floors file, one at a time, in a copy of the tree, and requires
-# make test to fail on each by name. tests/check-test-fails.sh lists the
+# Plants bad suites, a leaking one among them, a bad import across the seam
+# and a README that disagrees with the floors file, one at a time, in a copy
+# of the tree, and requires make test to fail on each by name. tests/check-test-fails.sh lists the
 # plants. The copy has no .git, so nothing in it runs git.
 check-test-fails: ## Plant bad suites, none at all, a bad import and a stale README, in a copy; make test must fail on each, by name
 	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ)

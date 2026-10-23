@@ -587,7 +587,7 @@
 ;; - Node's own server.close(). It ends some waiting states with nothing
 ;;   tracked, so an end there proves nothing; each face here also waits in
 ;;   states it does not end. Untracked, close() ends, by face (measured on
-;;   Node 24.18.0 and 20.10.0, build/verify/m1s2/measure5/close-untracked-*):
+;;   Node 24.18.0 and 20.10.0, .plans/tls-mutation-log.md, section 4.2):
 ;;     http   idle after a whole keep-alive response, within 1 ms, on both;
 ;;            never a connection with nothing sent, a partial head, or a body
 ;;            still to come
@@ -616,7 +616,7 @@
 ;;
 ;; B is three times the slowest measured, 150 ms under 24 busy loops; idle it
 ;; was 35 to 43 ms, and 49 to 76 ms with Chez under Valgrind
-;; (build/verify/m1s2/measure5/stop-spread-*). The stop ends a connection
+;; (.plans/tls-mutation-log.md, section 4.2). The stop ends a connection
 ;; with a FIN, or with a reset when the client's bytes are still unread, as
 ;; a starved origin can leave them: both are the stop's.
 ;;
@@ -897,7 +897,7 @@
      (let-values (((to from err pid)
                    (open-process-ports
                     (apply string-append "exec env TMPDIR=" (shell-word dir) " " (shell-word chez)
-                           " --libdirs tests:build/scheme-libs --program tests/origin-child.sps"
+                           " --libdirs src:tests:build/scheme-libs --program tests/origin-child.sps"
                            (map (lambda (arg) (string-append " " (shell-word arg))) args))
                     (buffer-mode block) #f)))
        (let ((line #f) (killed #f))

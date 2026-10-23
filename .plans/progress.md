@@ -6,22 +6,32 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **Milestone:** M1, the test instrument (brief §7), per the
-  [M1 plan](2026-10-18-m1-plan.md).
-  - **Slice 1 is merged** (PR #10): the plaintext origin, the byte probe, their helpers, the
-    drift guard (ADR-0017), and Node in CI.
-  - **Slice 2 is built** on `m1/tls-and-h2`, per the plan's §8, with its
-    [mutation log](tls-mutation-log.md). It adds the per-run TLS material, the TLS faces,
-    HTTP/2, the probe's TLS mode, and `openssl` as the checker. The maintainer chose
-    portable checks only: LibreSSL 3.3.6, the Mac's `openssl`, cannot check a hostname
-    (ADR-0005, amended). Its close-out goes in on the next branch, once it merges.
+- **Milestone:** M2, one blocking request, plaintext and TLS (brief §8), per the
+  [M2 plan](2026-10-19-m2-plan.md).
+  - **Slice 1 is built** on `m2/foundations` (§4), not yet merged, with its
+    [mutation log](foundations-mutation-log.md). It binds no setopt or getinfo option:
+    - the counters, as a gate, with every child that reaches native reporting its counts;
+    - counted foreign blocks;
+    - the checked copy and C strings;
+    - the URL API: 70 cases as shared answers and version rows, and the scheme check against
+      every protocol the libcurl lists;
+    - the checks carried from M0: prototypes, `curlot-types` complete, and a whole layout's
+      size.
 
-  M0 (brief §8) is built.
-- **The Mac owes one run** for M1 too:
-  - its drift row must be added, since `make test` fails there until it is;
-  - Node 20.10.0 and the drip's own-arrival check have not run on macOS;
-  - nor has LibreSSL as the checker on the Mac itself. Docker ran it, built from its
-    tarball, under Node 20.10.0 (plan §8.7).
+    ADR-0001, ADR-0002, ADR-0007, ADR-0008, ADR-0013 and ADR-0014 are amended. Its close-out
+    goes in on the next branch, once it merges.
+  - **Slices 2 and 3,** the plaintext transfer and TLS, wait for the Apple arm64 run.
+
+  M1 (brief §7) is built: PRs #10 and #11. M0 (brief §8) is built.
+- **The Mac owes one run for M0 and M1, and it gates M2's slices 2 and 3:**
+  - `make check-variadic` on Apple arm64, whose result ADR-0001 records;
+  - its drift row for Apple's libcurl 8.7.1, since `make test` fails there until it is
+    added. Once slice 1 merges, its URL row too, for the 10 cases that vary;
+  - the prototype check reading Apple's SDK headers. It fails closed on what it can't read;
+    the list is in the mutation log, §7.1;
+  - Node 20.10.0 and the drip's own-arrival check, which have not run on macOS;
+  - LibreSSL as the checker on the Mac itself. Docker ran it, built from its tarball, under
+    Node 20.10.0 (M1 plan, §8.7).
 - **Done:** slices 1 to 6 of the [harness plan](2026-10-04-harness-plan.md) (§6):
   - slice 1, the container and the Makefile skeleton;
   - slice 2, the test harness
@@ -44,12 +54,18 @@ close-out under **Close-outs**, newest first.
   fix: a bare `mktemp -d` ignored `TMPDIR` there (`traps.md`). So macOS has run on arm64;
   Linux on arm64 and macOS on amd64 have not. The two suites added since,
   `test-check-nothreads` and `test-variadic`, have not run there.
-- **CI has never run.** Every job of PR #8 was "not started because recent account payments
+- **A flaky test in M1's `test-origin`:** `raw /raw/reset-mid-body` saw `eof` where it expects
+  `reset`, once. That was in the Docker floor lane, run beside a mutation run and the main lane,
+  on 2026-10-23. A rerun with nothing else running passed. How often it happens is not
+  measured.
+- **CI has never run.** Every job of PRs #8 to #12 was "not started because recent account payments
   have failed or your spending limit needs to be increased". GitHub parsed the workflow and
   listed all six jobs, so the file is valid. What only CI can show is still unshown: Chez
   built from its tarball on the runner, a real `--nothreads` Chez, the suites under Ubuntu's
   Valgrind 3.22, the floor lane at 7.85.0, and the jobs' times.
 - **Decided for M2,** by the maintainer:
+  - curl's URL verdicts vary by version, so the URL suite holds shared answers and a row
+    per libcurl version (ADR-0008, amended 2026-10-19);
   - one checked wrapper owns every copy between a bytevector and foreign memory;
   - the counters become the leak gate, since Valgrind cannot see Chez's heap (ADR-0001,
     ADR-0014, amended).
@@ -62,6 +78,57 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency` (ADR-0002's amendment).
 
 ## Close-outs
+
+### 2026-10-19 — M1 slice 2: TLS and HTTP/2 for the test origin (PR #11, `bd215d8`)
+
+- **Per-run TLS material, `tests/make-test-pki.sh DIR`.** It makes ten files: two CAs, and
+  four leaves, `good`, `expired`, `wrong-host` and `untrusted`. Each failing leaf has one
+  fault the good one lacks. The same commands ran unchanged on OpenSSL 3.5.7, 3.0.13 and
+  3.0.11, and on LibreSSL 3.3.6. Nothing is checked in (ADR-0005).
+- **The TLS faces.** `h2c` is always on. `--pki DIR` adds:
+  - `https`, `https-expired`, `https-wrong-host` and `https-untrusted`, each offering only
+    `http/1.1` by ALPN;
+  - `raw-tls`, the raw scripts over TLS;
+  - `h2`, HTTP/2 by ALPN only.
+- **The probe gains `--tls SERVERNAME` and `--alpn LIST`.**
+- **`openssl` checks each face, portably,** as the maintainer chose. LibreSSL 3.3.6, the
+  Mac's `openssl`, cannot check a hostname. So the checks are three facts (ADR-0005,
+  amended):
+  - `s_client`'s verify errors and code against the run CA;
+  - the leaf it serves, against its file;
+  - that leaf's SAN line.
+
+  The code is the first `Verify return code` line, and each TLS 1.3 ticket's later line
+  must agree with it.
+- **`test-origin-tls`, 87 tests;** `test-origin` grew to 116 and `test-curl-testing` to 265.
+- **The stop check holds that nothing but the stop explains an end.** It covers the states
+  Node's `close()` never ends, and requires silence right up to the stop and an end within
+  500 ms after it. It opens two sets of probes 700 ms apart, and stops twice. A 90-case
+  sweep of idle-close mutants failed it on Node 24.18.0 and 20.10.0 alike.
+- **Node 20.10.0 passed in Docker,** with OpenSSL 3.0.11 and with LibreSSL 3.3.6 as the
+  checker.
+- **Limits, measured:**
+  - Node 20.10.0 leaves an HTTP/2 connection open after a protocol error the origin sent;
+  - the stop check cannot tell a destroy from an exit.
+- **Built with subagents,** four in all, about 1.81M tokens:
+
+  | Agent | Model | Tokens | Time |
+  |---|---|---|---|
+  | builder, then 4 fix rounds by SendMessage | Opus | 874k | about 4 h |
+  | review | Opus | 348k | 30 min |
+  | scoped review of rounds 1 and 2 | Opus | 317k | 28 min |
+  | scoped review of round 3 | Opus | 272k | 38 min |
+
+  The stop check took three reviews, and the cause was my plan. It never said what proves an
+  end was the stop's, so each brief fixed the instances found. The check held once briefed
+  by mechanism and checked by the sweep.
+- **Evidence:** the [TLS mutation log](tls-mutation-log.md): 159 mutations, 150 caught, and
+  the 9 left judged equivalent.
+- **Carried forward:**
+  - for M2 (M1 plan, §8.8): the good face accepted on each TLS backend, as the control, and
+    a face offering both `h2` and `http/1.1`;
+  - the Mac's run;
+  - CI has still never run.
 
 ### 2026-10-18 — M1 slice 1: the test origin, the byte probe and the drift guard (PR #10, `79c6df1`)
 

@@ -11,8 +11,10 @@
 ;;;
 ;;;   loaded:   (loaded . PATH) (source . SYMBOL) (version . STRING)
 ;;;             (version-num . N) (features . N) (ssl-version . STRING-OR-#F)
-;;;             (host . STRING-OR-#F), and the exit status is 0: what
-;;;             tests/libcurl-oracle.c prints, after the path and source
+;;;             (host . STRING-OR-#F), what tests/libcurl-oracle.c prints,
+;;;             after the path and source; then (protocols . LIST), (curl
+;;;             private native)'s loaded-protocols, what the oracle prints
+;;;             with protocols; and the exit status is 0
 ;;;   refused:  (reason . SYMBOL) (path . P) (source . S) (detail . D)
 ;;;             (candidates . LIST) (library . L), and the exit status is
 ;;;             1. L is #f, or the report read before the refusal: its
@@ -26,6 +28,13 @@
 ;;; the first one did (eq?), else (loaded PATH), (refused REASON) or
 ;;; (raised TEXT). A load that ran once answers `same` twice; a load that
 ;;; ran again answers a fresh object.
+;;;
+;;; Then (counts . ALIST): (curl private counters)' native-counts, read once
+;;; the three references are done. The counters gate counts per process, and
+;;; a suite's suite-exit-status reads only its own, so this process reports
+;;; its counts, and tests/test-library-loading.sps requires every one zero,
+;;; refusals included: a native object a refused load left behind shows here
+;;; and nowhere else.
 ;;;
 ;;; With --marker, (marker . present) or (marker . absent) follows: whether
 ;;; this process has the entry point NAME, as foreign-entry? answers.
@@ -43,7 +52,8 @@
 (import (rnrs)
         (only (chezscheme) eval environment foreign-entry? foreign-procedure
               display-condition putenv getenv)
-        (curl private conditions))
+        (curl private conditions)
+        (curl private counters))
 
 ;; show : Symbol Any -> Void
 ;; One datum, (KEY . VALUE), on a line of its own.
@@ -109,6 +119,7 @@
        (show 'features (list-ref fields 4))
        (show 'ssl-version (list-ref fields 5))
        (show 'host (list-ref fields 6))
+       (show 'protocols (eval '(loaded-protocols) (environment '(curl private native))))
        0))
     ((refused)
      (let ((e (cdr first)))
@@ -132,6 +143,8 @@
 (let* ((second (reference))
        (third (reference)))
   (show 'again (list (later first second) (later first third))))
+
+(show 'counts (native-counts))
 
 (let ((marker (option "--marker")))
   (when marker

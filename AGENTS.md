@@ -61,6 +61,8 @@
 * **Do not** write tests that rely on reading code comments
 * `make check-nothreads` fails on a threaded Chez by design, so `make test`
   doesn't run it. CI runs it on a `--nothreads` Chez.
+* `suite-exit-status` reads `(curl private counters)`, so a program that
+  imports `(curl-testing)` needs `src` on its library path.
 * `make test` runs every suite under GNU `timeout`. On macOS, run
   `brew install coreutils`, and make finds its `gtimeout`. Homebrew installs
   Chez as `chez`, which make also finds.
@@ -106,7 +108,8 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   its own sentinel, and assert every return code.
 * An assertion passes whenever *another* rule can produce its expected value.
   Assert whole outputs, not substrings, and build a test's base from
-  non-default values.
+  non-default values. Test a scan at every position, an encoding on bytes
+  where encodings differ, and an allowlist against its whole complement.
 * SRFI-64 keeps one result per runner. Never run a test inside another test's
   actual expression: the outer verdict is reported under the inner test's name.
 * Claude Code's Write tool drops trailing whitespace. Build a fixture whose
@@ -207,6 +210,13 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   Valgrind's own. Read Valgrind's evidence only from its `--log-file`.
 * A check whose empty output means pass, passes when the checker itself fails.
   Require a positive `ok` line, and the checker's exit status.
+* A check held by a table of its own passes when the table is loosened along
+  with the code it checks. Write the table out in the check's suite.
+* The counters gate counts per process. A child a suite spawns that reaches
+  native must print its counts, and the suite must assert them zero.
+* `pgrep -f PATTERN` matches the shell running it when PATTERN is in that
+  shell's own command line, so `until ! pgrep -f PATTERN` never ends. Wait on
+  a PID or a done-file instead.
 * An allowlist of type names still passes a macro's pattern variable spelt as
   one of them. `test-collect-safe` counts every pattern symbol as no type.
 * Valgrind cannot see into Chez's heap: an overrun into a bytevector, and a

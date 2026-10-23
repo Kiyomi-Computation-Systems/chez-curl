@@ -6,6 +6,10 @@
 ;;;   &curl-library-unavailable   libcurl was refused (ADR-0002, ADR-0003)
 ;;;   &curl-wrong-thread          an engine-owned handle used from another
 ;;;                               thread (ADR-0012)
+;;;   &curl-embedded-nul          a string C would read short: it holds
+;;;                               U+0000 (M2 plan, section 3.3)
+;;;   &curl-url-error             a URL refused: by libcurl's URL API, or by
+;;;                               chez-curl's own checks (ADR-0008)
 ;;;
 ;;; A raise may compound one with &who, &message and &irritants, so that
 ;;; the default handler prints readable text. Tests assert the reason symbol
@@ -23,10 +27,18 @@
 
           &curl-wrong-thread make-curl-wrong-thread curl-wrong-thread?
           curl-wrong-thread-who curl-wrong-thread-expected
-          curl-wrong-thread-actual)
+          curl-wrong-thread-actual
+
+          &curl-embedded-nul make-curl-embedded-nul curl-embedded-nul?
+          curl-embedded-nul-string
+
+          &curl-url-error make-curl-url-error curl-url-error?
+          curl-url-error-input curl-url-error-reason curl-url-error-code
+          curl-url-error-message curl-url-code-reason)
   (import (curl private require-threaded)
           (rnrs)
-          (curl private libcurl-info))
+          (curl private libcurl-info)
+          (curl private constants))
 
   ;; make-curl-error : -> &curl-error
   ;; curl-error? : Any -> Boolean
@@ -116,4 +128,59 @@
     make-curl-wrong-thread curl-wrong-thread?
     (who curl-wrong-thread-who)
     (expected curl-wrong-thread-expected)
-    (actual curl-wrong-thread-actual)))
+    (actual curl-wrong-thread-actual))
+
+  ;; --- &curl-embedded-nul ----------------------------------------------------
+
+  ;; make-curl-embedded-nul : String -> &curl-embedded-nul
+  ;; curl-embedded-nul? : Any -> Boolean
+  ;; curl-embedded-nul-string : &curl-embedded-nul -> String
+  ;; STRING holds U+0000, so C, which reads a string to its first NUL, would
+  ;; read it short. Refused before anything is allocated (M2 plan, section
+  ;; 3.3).
+  (define-condition-type &curl-embedded-nul &curl-error
+    make-curl-embedded-nul curl-embedded-nul?
+    (string curl-embedded-nul-string))
+
+  ;; --- &curl-url-error ---------------------------------------------------------
+
+  ;; The fields:
+  ;;
+  ;;   input    the string refused
+  ;;   reason   (U Symbol #f): for libcurl's refusal, its CURLUcode's name in
+  ;;            (curl private constants)'s curlue-codes, ok and the floor's
+  ;;            others, or #f for a code that list lacks, a later libcurl's;
+  ;;            for chez-curl's own, one of its two reasons:
+  ;;              scheme-not-http  the URL parsed, but its scheme is neither
+  ;;                               http nor https (ADR-0008, decision 2)
+  ;;              embedded-nul     the input holds U+0000, which libcurl
+  ;;                               would read as its end
+  ;;   code     (U Integer #f): libcurl's CURLUcode, or #f for chez-curl's
+  ;;            own refusals
+  ;;   message  (U String #f): curl_url_strerror's text, or chez-curl's own
+  ;;
+  ;; Tests assert the reason and the code, never the message.
+  ;;
+  ;; make-curl-url-error : Any Any Any Any -> &curl-url-error
+  ;; curl-url-error? : Any -> Boolean
+  ;; curl-url-error-input : &curl-url-error -> String
+  ;; curl-url-error-reason : &curl-url-error -> (U Symbol #f)
+  ;; curl-url-error-code : &curl-url-error -> (U Integer #f)
+  ;; curl-url-error-message : &curl-url-error -> (U String #f)
+  ;; The constructor checks nothing, so building a refusal never raises: a
+  ;; code a later libcurl answers must still reach the caller.
+  (define-condition-type &curl-url-error &curl-error
+    make-curl-url-error curl-url-error?
+    (input curl-url-error-input)
+    (reason curl-url-error-reason)
+    (code curl-url-error-code)
+    (message curl-url-error-message))
+
+  ;; curl-url-code-reason : Any -> (U Symbol #f)
+  ;; CODE's name in curlue-codes, or #f for anything else: a later
+  ;; libcurl's code, or no code at all. It never raises.
+  (define (curl-url-code-reason code)
+    (let loop ((codes curlue-codes))
+      (cond ((null? codes) #f)
+            ((eqv? (cdar codes) code) (caar codes))
+            (else (loop (cdr codes)))))))

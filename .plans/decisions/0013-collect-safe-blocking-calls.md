@@ -3,7 +3,8 @@
 - **Status:** Proposed. It binds as written until spike E1 (M3) records its measurements.
   It is then accepted, or amended to fit them. Amended 2026-10-16 with the attribute suite
   (M0 slice 4), and with what a binding may hand C from Chez's heap (M0 slice 5). Amended
-  2026-10-17 with what the reader holds the binding macros to (M0 slice 6).
+  2026-10-17 with what the reader holds the binding macros to (M0 slice 6). Amended
+  2026-10-23 with M2 slice 1's rows.
 - **Date:** 2026-10-04
 - **Corrected:** 2026-10-04. The E5 series is chez-http-server's, not chez-libuv's. Its
   figures are restated from that spike report, which ran on macOS only.
@@ -282,3 +283,17 @@ Provisional until E1.
   [variadic mutation log](../variadic-mutation-log.md): 74 cases on a snapshot identical to
   the tree. Its 72 mutations are each killed by name, PH1 shows the phantom above, and the
   unchanged tree passes.
+
+## Amendment, 2026-10-23: M2 slice 1's rows
+
+- **New `cannot-block` rows:** `strlen`, and the URL API's six, `curl_url`, `curl_url_set`,
+  `curl_url_get`, `curl_url_cleanup`, `curl_url_strerror` and `curl_free`. Decision 3 names the
+  `curl_url` family as calls that cannot block.
+- **`memcpy`'s row carries the first `bytevector-crossing` mark,** quoting ADR-0001: "One checked
+  wrapper owns every copy between a bytevector and foreign memory." It stays plain. Two
+  conventions fixtures that had used `memcpy` as an unmarked crossing now bind a fixture entry of
+  their own.
+- **`test-collect-safe` writes out what it holds:** the reader's whole type universe, and this
+  slice's rows, each in full. A row and the binding it holds can no longer be loosened together.
+- **No new string crossing.** Every string chez-curl hands libcurl from M2 on goes through foreign
+  memory (ADR-0001, amended 2026-10-23), so the two `string-not-kept` rows stay the only ones.

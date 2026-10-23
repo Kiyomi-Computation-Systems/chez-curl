@@ -117,9 +117,7 @@
 ;; Rows for the fixture trees alone: two conventions, to compare as sets, two
 ;; callables, entries the crossing and type trees bind, rows marked as the
 ;; reviewed bytevector crossing or string-not-kept, marks that quote
-;; nothing, and rows that name their binder. src/ has no callable yet, so the real table has no row for one;
-;; nor has it a row marked as the bytevector crossing, which M2's checked
-;; wrapper adds.
+;; nothing, and rows that name their binder. src/ has no callable yet, so the real table has no row for one.
 (define fixture-rows
   '(("fixture_two_conventions" (__collect_safe (__varargs_after 2)) "a fixture row")
     (on-write (__collect_safe) "a fixture row")
@@ -127,6 +125,7 @@
     ("fixture_wide" () "a fixture row")
     ("fixture_result" () "a fixture row")
     ("fixture_bytes" () "a fixture row")
+    ("fixture_copy" () "a fixture row")
     (on-bytes () "a fixture row")
     (on-copy () "a fixture row")
     ("fixture_object" () "a fixture row")
@@ -621,7 +620,7 @@
            `((mismatch "curl_easy_init" () (__collect_safe) ,x)
              (mismatch on-write (__collect_safe) () ,x)))
      (list "blocking-plain"
-           "ADR-0013's rows: curl_easy_perform and curl_multi_poll bound plain, curl_multi_perform and memcpy bound __collect_safe, and memcpy's u8* unmarked"
+           "ADR-0013's rows: curl_easy_perform and curl_multi_poll bound plain, curl_multi_perform and memcpy bound __collect_safe; memcpy's u8*, which its row marks, is no crossing violation, and its convention mismatches"
            (listed 'binder "curl/p.sls" 'bind-required)
            `(("curl_easy_perform" () ,p bind-required ())
              ("curl_multi_poll" () ,p foreign-procedure ())
@@ -630,8 +629,7 @@
            `((mismatch "curl_easy_perform" (__collect_safe) () ,p)
              (mismatch "curl_multi_poll" (__collect_safe) () ,p)
              (mismatch "curl_multi_perform" () (__collect_safe) ,p)
-             (mismatch "memcpy" () (__collect_safe) ,p)
-             (bytevector-crossing "memcpy" (u8*) ,p)))
+             (mismatch "memcpy" () (__collect_safe) ,p)))
      (list "variadic"
            "ADR-0001's variadic rows: (__varargs_after 2) through the variadic wrapper holds; directly, with it, is the wrong binder; through the plain wrapper, with no convention, (__varargs_after 1) and __varargs alone each mismatch, and is the wrong binder"
            (listed 'binder "curl/v.sls" 'bind-required 'bind-variadic)
@@ -691,12 +689,12 @@
      (list "crossing-unmarked"
            "bindings that hand C a bytevector's data, none marked: u8*, u16* and u32* parameters, and a callable's u8* result; a procedure's u8* result and a callable's u8* parameter hand C none"
            '()
-           `(("memcpy" () ,cu foreign-procedure (u8*))
+           `(("fixture_copy" () ,cu foreign-procedure (u8*))
              ("fixture_wide" () ,cu foreign-procedure (u16* u32*))
              ("fixture_result" () ,cu foreign-procedure ())
              (on-bytes () ,cu foreign-callable (u8*))
              (on-copy () ,cu foreign-callable ()))
-           `((bytevector-crossing "memcpy" (u8*) ,cu)
+           `((bytevector-crossing "fixture_copy" (u8*) ,cu)
              (bytevector-crossing "fixture_wide" (u16* u32*) ,cu)
              (bytevector-crossing on-bytes (u8*) ,cu)))
      (list "crossing-object"
@@ -717,11 +715,11 @@
      (list "crossing-wrapper"
            "crossings through known wrappers: a use's parameter list, a template's own, and a use's result; a use's u8* result hands C none, and its scheme-object result is never allowed"
            (listed 'binder "curl/w.sls" 'bind-required 'bind-bytes)
-           `(("memcpy" () ,cw bind-required (u8*))
+           `(("fixture_copy" () ,cw bind-required (u8*))
              ("fixture_result" () ,cw bind-required ())
              ("fixture_bytes" () ,cw bind-bytes (u8*))
              ("fixture_object_result" () ,cw bind-required (scheme-object)))
-           `((bytevector-crossing "memcpy" (u8*) ,cw)
+           `((bytevector-crossing "fixture_copy" (u8*) ,cw)
              (bytevector-crossing "fixture_bytes" (u8*) ,cw)
              (scheme-object "fixture_object_result" (scheme-object) ,cw)))
      (list "crossing-marked"
@@ -1104,6 +1102,82 @@
   '()
   src-violations)
 
+;; ADR-0001's sentence on the checked copies, written out here, not read
+;; from the table.
+(define one-wrapper-citation
+  ".plans/decisions/0001-bind-libcurl-directly.md: One checked wrapper owns every copy between a bytevector and foreign memory.")
+
+;; scan-signatures: each binding's types, as tests/test-constants.sps reads
+;; them for its prototype check. The legal tree binds through a known
+;; wrapper, directly, and as callables, so each way of reading types is
+;; here, and a reader that dropped or mixed them fails by name.
+(test-equal "scan-signatures: the legal tree's bindings, each with how it was bound, its parameter and result types as written, and its file, in scan order"
+  (let ((a (at "legal" "curl/a.sls")) (b (at "legal" "curl/b.sls")))
+    `(returned
+      (("curl_easy_init" bind-required () uptr ,a)
+       ("curl_global_init" bind-required (long) int ,a)
+       ("curl_easy_cleanup" bind-required (uptr) void ,a)
+       ("curl_easy_perform" foreign-procedure (uptr) int ,a)
+       ("memcpy" foreign-procedure (uptr uptr size_t) uptr ,a)
+       ("fixture_two_conventions" foreign-procedure (uptr int long) int ,a)
+       ("curl_multi_poll" foreign-procedure (uptr uptr unsigned int uptr) int ,a)
+       (on-write foreign-callable (uptr size_t size_t uptr) size_t ,a)
+       ("curl_multi_perform" foreign-procedure (uptr uptr) int ,b)
+       (on-plain foreign-callable (int) int ,b))))
+  (outcome (lambda ()
+             (scan-signatures
+              (scan-conventions (string-append fixtures "/legal")
+                                (append (listed 'binder "curl/a.sls" 'bind-required)
+                                        (listed 'plain "curl/a.sls" 'step 'checked)
+                                        (listed 'any "curl/a.sls" 'bind-poll)))))))
+
+;; A known wrapper's template may write its own types, or take the use's,
+;; for its parameters and for its result: each place read where it is.
+(test-equal "scan-signatures: through known wrappers, a use's parameter list and result, and a template's own parameter list, each read from where it is written"
+  (let ((w (at "crossing-wrapper" "curl/w.sls")))
+    `(returned
+      (("fixture_copy" bind-required (u8* uptr size_t) uptr ,w)
+       ("fixture_result" bind-required (uptr) u8* ,w)
+       ("fixture_bytes" bind-bytes (u8* uptr size_t) uptr ,w)
+       ("fixture_object_result" bind-required (uptr) scheme-object ,w))))
+  (outcome (lambda ()
+             (scan-signatures
+              (scan-conventions (string-append fixtures "/crossing-wrapper")
+                                (listed 'binder "curl/w.sls" 'bind-required 'bind-bytes))))))
+
+;; readable-types: the universe tests/test-constants.sps holds its map
+;; against. Written out, so the reader's allowlist and this list move
+;; together or fail.
+(test-equal "readable-types: CSUG's 33 immediate types, void, the three bytevector types, the seven string types, scheme-object, and (* F) and (& F) for each ftype given"
+  (list 'returned
+        '(integer-8 unsigned-8 integer-16 unsigned-16 integer-32 unsigned-32
+          integer-64 unsigned-64 double-float single-float double float
+          short unsigned-short int unsigned unsigned-int long unsigned-long
+          long-long unsigned-long-long ptrdiff_t size_t ssize_t iptr uptr void*
+          fixnum boolean stdbool char wchar_t wchar
+          void u8* u16* u32* string utf-8 utf-16le utf-16be utf-32le utf-32be wstring
+          scheme-object (* f) (* g) (& f) (& g)))
+  (outcome (lambda () (readable-types '(f g)))))
+
+;; The rows this slice adds, written out here, not read from the table: a
+;; row loosened along with its binding, curl_url_set made __collect_safe or
+;; memcpy's mark removed, would otherwise pass.
+(define cannot-block-citation
+  ".plans/decisions/0013-collect-safe-blocking-calls.md: Calls that cannot block stay plain.")
+
+(test-equal "the table's rows for strlen and the URL API are each plain, citing ADR-0013's cannot-block sentence, with no mark and no binder; memcpy's is plain, cites ADR-0001's decision 5, and is marked as the one checked wrapper's crossing"
+  (append
+   (map (lambda (key) (list key '() cannot-block-citation))
+        '("strlen" "curl_url" "curl_url_cleanup" "curl_url_set" "curl_url_get"
+          "curl_url_strerror" "curl_free"))
+   (list (list "memcpy" '()
+               ".plans/decisions/0001-bind-libcurl-directly.md: Bulk byte moves use libc's `memcpy`, bound directly, as a plain call."
+               (list 'bytevector-crossing one-wrapper-citation))))
+  (guard (e (#t (list 'unreadable (describe e))))
+    (map (lambda (key) (find (lambda (row) (equal? (car row) key)) conventions-table))
+         '("strlen" "curl_url" "curl_url_cleanup" "curl_url_set" "curl_url_get"
+           "curl_url_strerror" "curl_free" "memcpy"))))
+
 ;; ADR-0001's decision 1, written out here, not read from the table: a row
 ;; loosened along with the binding it holds would otherwise pass.
 (define variadic-citation
@@ -1137,11 +1211,11 @@
 (define not-kept-citation
   ".plans/decisions/0013-collect-safe-blocking-calls.md: `curl_easy_option_by_name` and `curl_easy_header` read their name argument during the call, and keep no pointer to it.")
 
-;; M2's checked wrapper adds the first bytevector-crossing mark, and changes
-;; this test with it.
-(test-equal "the table marks exactly curl_easy_option_by_name and curl_easy_header, each string-not-kept, citing what their callees keep"
+;; M2's checked copies add the first bytevector-crossing mark, memcpy's.
+(test-equal "the table marks exactly curl_easy_option_by_name and curl_easy_header, each string-not-kept, citing what their callees keep, and memcpy, the bytevector crossing, citing the one checked wrapper"
   `(("curl_easy_option_by_name" (string-not-kept ,not-kept-citation))
-    ("curl_easy_header" (string-not-kept ,not-kept-citation)))
+    ("curl_easy_header" (string-not-kept ,not-kept-citation))
+    ("memcpy" (bytevector-crossing ,one-wrapper-citation)))
   (guard (e (#t (list 'unreadable (describe e))))
     (fold-left (lambda (found row)
                  (append found
@@ -1152,8 +1226,9 @@
                                       (cdddr row)))))
                '() conventions-table)))
 
-(test-equal "the scan of src/ finds two crossings, a string each: curl_easy_option_by_name's name and curl_easy_header's"
-  '(("curl_easy_option_by_name" (string)) ("curl_easy_header" (string)))
+(test-equal "the scan of src/ finds four crossings: memcpy's bytevector, once in each binding, then a string each, curl_easy_option_by_name's name and curl_easy_header's"
+  '(("memcpy" (u8*)) ("memcpy" (u8*))
+    ("curl_easy_option_by_name" (string)) ("curl_easy_header" (string)))
   (guard (e (#t (list 'unreadable (describe e))))
     (if (eq? (car src-check) 'returned)
         (map (lambda (b) (list (car b) (list-ref b 4)))
