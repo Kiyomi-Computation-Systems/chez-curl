@@ -11,20 +11,27 @@ close-out under **Close-outs**, newest first.
   - **Slice 1 is merged** (PR #13, `ed217dc`): the counters gate, counted foreign blocks,
     the checked copy, C strings, the URL API, and the checks carried from M0. It binds no
     setopt or getinfo option.
-  - **Slices 2 and 3,** the plaintext transfer and TLS, wait for the Apple arm64 run.
+  - **Slices 2 and 3,** the plaintext transfer and TLS, may start: the Apple arm64 run
+    passed (ADR-0001, amended 2026-10-23).
 
   M1 (brief §7) is built: PRs #10 and #11. M0 (brief §8) is built.
-- **The Mac owes one run for M0, M1 and M2's slice 1, and it gates slices 2 and 3:**
-  - `make check-variadic` on Apple arm64, whose result ADR-0001 records;
-  - its drift row for Apple's libcurl 8.7.1, since `make test` fails there until it is
-    added, and its URL row, for the 10 cases that vary;
-  - the prototype check reading Apple's SDK headers. It fails closed on what it can't read;
-    the list is in the mutation log, §7.1;
-  - Node 20.10.0 and the drip's own-arrival check, which have not run on macOS;
-  - LibreSSL as the checker on the Mac itself. Docker ran it, built from its tarball, under
-    Node 20.10.0 (M1 plan, §8.7).
-  - the probe's read of its fd on each end, and the stop/continue checks: macOS's libuv
-    waits with kqueue, not epoll.
+- **The Mac's run, 2026-10-23,** on the maintainer's M1:
+  - the setup: macOS 26.7.1, Homebrew's Chez as `tarm64osx`, Apple's libcurl 8.7.1, and
+    Node 20.10.0 through asdf;
+  - `make check-variadic`: all 19 steps ok, and every arm64 step failed on its planted
+    binding, by name (ADR-0001, amended);
+  - `make test` on `main` at `ed217dc`: 18 of 20. `test-drift` and `test-url` lacked rows for
+    8.7.1, which are now added;
+  - so these have now run on macOS: the prototype check on Apple's SDK headers,
+    `test-variadic`, `test-check-nothreads`, Node 20.10.0, and the drip's own-arrival check;
+  - it needed `NODE="$(asdf which node)"`, because asdf 0.15's shim writes to stderr on every
+    call (`traps.md`).
+  - **Still owed there:**
+    - a `make test` with the two rows;
+    - PR #14's probe read and stop/continue checks, since macOS's libuv waits with kqueue,
+      not epoll;
+    - which `openssl` the TLS checks ran, which the run did not show. LibreSSL 3.3.6 is
+      `/usr/bin/openssl`.
 - **Done:** slices 1 to 6 of the [harness plan](2026-10-04-harness-plan.md) (§6):
   - slice 1, the container and the Makefile skeleton;
   - slice 2, the test harness
@@ -38,15 +45,9 @@ close-out under **Close-outs**, newest first.
   - slice 6, which closes M0: the variadic bindings, the binding-macro routes closed,
     `make dev` and `make clean` (ADR-0001, ADR-0007, ADR-0008 and ADR-0013 amended), with
     its [mutation log](variadic-mutation-log.md).
-- **M0's one open item: the Apple arm64 run.** `make test` and `make check-variadic` on the
-  maintainer's M1, the only ABI where a missing `(__varargs_after 2)` fails. The Mac was out
-  of reach when slice 6 merged, so the maintainer made the run a gate: M2 binds no setopt or
-  getinfo option until it passes and ADR-0001 records it. M1 binds no variadic entry point.
-- **First macOS run,** 2026-10-16, on the maintainer's Mac: Apple silicon (M1, so arm64),
-  Homebrew's Chez 10.4.1, Apple's libcurl 8.7.1. `make test` passes all 13 suites, after a
-  fix: a bare `mktemp -d` ignored `TMPDIR` there (`traps.md`). So macOS has run on arm64;
-  Linux on arm64 and macOS on amd64 have not. The two suites added since,
-  `test-check-nothreads` and `test-variadic`, have not run there.
+- **macOS runs:** on 2026-10-16, the first, with 13 suites, after a fix: a bare `mktemp -d`
+  ignored `TMPDIR` there (`traps.md`). On 2026-10-23, the run above. Both were on Apple
+  arm64. Linux on arm64 and macOS on amd64 have not run.
 - **The flaky `reset-mid-body` row was the probe, not the origin** (ADR-0005, amended
   2026-10-23). libuv before 1.52, which Node 20.10.0 bundles, reports a reset as an end when
   it arrives with the last data. The probe now reads its socket's fd once on each

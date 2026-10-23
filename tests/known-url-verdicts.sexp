@@ -64,3 +64,18 @@
   ((resolve "http://example.com/a/b/c?q=1" "\xE9;") "http://example.com/a/b/%C3%A9")
   ((resolve "http://example.com/a/b/c?q=1" "?q=\x3BB;") "http://example.com/a/b/c?q=%CE%BB")
   ((resolve "http://example.com/a/b/c?q=1" "?q=\x1F600;") "http://example.com/a/b/c?q=%F0%9F%98%80")))
+
+(libcurl
+ (where "Apple's libcurl 8.7.1, /usr/lib/libcurl.4.dylib, on the maintainer's Mac: Apple M1, macOS 26.7.1, SecureTransport (LibreSSL/3.3.6). Printed by test-url there on 2026-10-23; the same answers as 8.5.0's.")
+ (version "8.7.1")
+ (answers
+  ((resolve "http://example.com/a/b/c?q=1" "#frag") "http://example.com/a/b/#frag")
+  ((normalize "http://example.com/a b") (refused 3))
+  ((normalize "http://exa mple.com/") (refused 3))
+  ((resolve "http://a/b/c/d;p?q" "g:h") (refused 5))
+  ((resolve "http://a/b/c/d;p?q" "#s") "http://a/b/c/#s")
+  ((resolve "http://a/b/c/d;p?q" "") (refused 3))
+  ((resolve "http://a/b/c/d;p?q" "http:g") (refused 28))
+  ((resolve "http://example.com/a/b/c?q=1" "\xE9;") "http://example.com/a/b/%c3%a9")
+  ((resolve "http://example.com/a/b/c?q=1" "?q=\x3BB;") "http://example.com/a/b/c?q=%ce%bb")
+  ((resolve "http://example.com/a/b/c?q=1" "?q=\x1F600;") "http://example.com/a/b/c?q=%f0%9f%98%80")))

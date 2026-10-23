@@ -66,6 +66,9 @@
 * `make test` runs every suite under GNU `timeout`. On macOS, run
   `brew install coreutils`, and make finds its `gtimeout`. Homebrew installs
   Chez as `chez`, which make also finds.
+* A version manager's shim may write to stderr on every call, which fails
+  every check that wants a quiet origin. asdf 0.15's does: run
+  `make test NODE="$(asdf which node)"`.
 * `make test` runs the test origin under Node (`NODE`, default `node`), and
   `test-drift` fails on any libcurl with no row in `tests/known-libcurls.sexp`.
   It prints the row: review it, and add it (ADR-0017).
