@@ -276,4 +276,6 @@ The maintainer chose this over raising the Node floor or recording a known flake
   - `test-curl-testing` holds it there: a stand-in `openssl` reports whether its stdin is a
     pipe and how many bytes it held. With `/dev/null` back, that test fails on Linux too, and
     it did, before the fix.
-- **Still owed:** the same run on the Mac with `OPENSSL=/usr/bin/openssl`.
+- **Then on the Mac, with `OPENSSL=/usr/bin/openssl`:** `test-verify`, `test-origin-tls` and
+  `test-curl-testing` passed: 21, 88 and 276 checks, with `test-origin-tls`'s one Linux-only
+  skip. So the checks hold on the Mac's own LibreSSL.

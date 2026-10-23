@@ -34,7 +34,8 @@ close-out under **Close-outs**, newest first.
   - **With `OPENSSL=/usr/bin/openssl`, 17 checks failed:** LibreSSL's `s_client` polls
     stdin, and macOS's poll does not support `/dev/null`, so it exited 1, `poll error`.
     `s-client` now hands it an empty pipe (ADR-0005, amended). It passed on Linux with
-    OpenSSL 3.5.7 and 3.0.13 and LibreSSL 3.3.6. **Still owed on the Mac:** that run again.
+    OpenSSL 3.5.7 and 3.0.13 and LibreSSL 3.3.6. Then on the Mac, with its LibreSSL,
+    `test-verify`, `test-origin-tls` and `test-curl-testing` passed: 21, 88 and 276 checks.
 - **Done:** slices 1 to 6 of the [harness plan](2026-10-04-harness-plan.md) (§6):
   - slice 1, the container and the Makefile skeleton;
   - slice 2, the test harness
