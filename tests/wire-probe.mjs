@@ -23,7 +23,14 @@
 //   (end KIND MS)              KIND is eof; reset; timeout, IDLE-MS passed
 //                              with no data; or deadline, the run reached
 //                              --deadline. On the last two it destroys the
-//                              socket
+//                              socket. An end Node reports is a reset when
+//                              one read(2) of the socket's fd, then, fails
+//                              with ECONNRESET: libuv before 1.52 reports an
+//                              end, never reading the reset, when the last
+//                              data and a reset are read in one wakeup
+//                              (measured on Node 20.10.0, TCP and TLS). Node
+//                              24 bundles 1.52.1 from 24.16.0; Node 20 up to
+//                              20.19.0 and 22 up to 22.22.0 bundle older ones
 //   (end error MS "CODE")      any other error, with its code
 //   (reset-sent MS)            with --reset: once its bytes are handed to the
 //                              kernel, it resets the connection
@@ -48,7 +55,7 @@
 //
 // It exits 0 when it ran, and 2 on a usage error, with a message on stderr.
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, readSync } from 'node:fs';
 import net from 'node:net';
 import process from 'node:process';
 import tls from 'node:tls';
@@ -203,10 +210,23 @@ socket.on('data', (chunk) => {
   arm();
 });
 
+// heldReset: whether the kernel still holds a reset for the socket, by one
+// read(2) of its fd: ECONNRESET. A FIN reads 0 bytes. Over TLS the fd is the
+// TCP socket's, under the TLS one.
+function heldReset() {
+  try {
+    readSync(socket._handle.fd, Buffer.alloc(1));
+    return false;
+  } catch (err) {
+    return err.code === 'ECONNRESET';
+  }
+}
+
 // A TLS peer that closes before the handshake is done is a refusal: there
 // was no connection to end.
 socket.on('end', () => {
   if (!connected) finish(`(refused "EOF" ${ms()})`, false);
+  else if (heldReset()) finish(`(end reset ${ms()})`, false);
   else finish(`(end eof ${ms()})`, false);
 });
 

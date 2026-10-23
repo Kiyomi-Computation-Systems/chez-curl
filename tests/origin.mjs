@@ -46,6 +46,10 @@
 //         writes a head with Content-Length: 11 and hello, waits N ms, then
 //         writes " world" and ends: a script still playing, between two of
 //         its writes, for as long as a check needs.
+//         /raw/reset-after-pause?ms=N, 1 to 60000, writes the same head and
+//         hello, waits N ms, then writes " wor" and resets: its last write
+//         and its reset come together, after a pause long enough for a
+//         check to stop the client across both.
 //   h2c   node:http2, plaintext, by prior knowledge: the HTTP/2 routes.
 //   With --pki DIR:
 //   https, https-expired, https-wrong-host, https-untrusted
@@ -395,6 +399,13 @@ const scripts = {
   'pause-mid-body': {
     params: { ms: [1, 60000] },
     play: ({ ms }) => [write('HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello'), wait(ms), write(' world'), END],
+  },
+  // Its last write and its reset come together, after a pause long enough
+  // for a check to stop the client across both: that client's reader then
+  // finds the last bytes and the reset waiting at once.
+  'reset-after-pause': {
+    params: { ms: [1, 60000] },
+    play: ({ ms }) => [write('HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello'), wait(ms), write(' wor'), RESET],
   },
   'stall-before-head': { play: () => [STALL] },
 

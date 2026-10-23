@@ -281,6 +281,7 @@
                   (list 'world-at at 'connected (probe-connected p)))))))
   (raw-row o "/raw/pause-mid-body?ms=1" "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello world" 'eof)
   (raw-row o "/raw/pause-mid-body?ms=60000" "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello" 'timeout 300)
+  (raw-row o "/raw/reset-after-pause?ms=1" "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello wor" 'reset)
   (raw-row o "/raw/stall-before-head" "" 'timeout 150)
 
   ;; --- the raw face: oversized
@@ -369,6 +370,9 @@
          (list "pause-mid-body ms=0" (get "/raw/pause-mid-body?ms=0"))
          (list "pause-mid-body ms=60001" (get "/raw/pause-mid-body?ms=60001"))
          (list "pause-mid-body without ms" (get "/raw/pause-mid-body"))
+         (list "reset-after-pause ms=0" (get "/raw/reset-after-pause?ms=0"))
+         (list "reset-after-pause ms=60001" (get "/raw/reset-after-pause?ms=60001"))
+         (list "reset-after-pause without ms" (get "/raw/reset-after-pause"))
          (list "a path outside /raw/" (get "/content-length"))
          (list "a request line of two words" "GET /raw/content-length\r\n\r\n")
          (list "a request line of four words" "GET /raw/content-length HTTP/1.1 x\r\n\r\n")
@@ -806,6 +810,57 @@
  '(0 700)
  '("two sets of probes, the second opened 700 ms after the first holds its states, the stop at once"
    "the same on a fresh origin, both sets held 700 ms longer before the stop"))
+
+;; --- the probe: a reset that arrives with the last bytes ----------------------
+
+;; signal-probe : Probe String -> Integer
+;; kill's exit status, sending the probe SIGNAL, as -STOP or -CONT.
+(define (signal-probe p signal)
+  (car (capture-command (list "kill" signal (number->string (probe-pid p))))))
+
+;; stopped-across : Origin -> List
+;; What the probe saw of raw's reset-after-pause?ms=1000 when it is stopped
+;; (SIGSTOP) from the moment it holds the script's first write until 3000 ms
+;; later, then continued: the bytes, its end, and whether the last bytes were
+;; read at least 2000 ms after the first, so only after the stop. The script's
+;; last write and its reset both come during the stop, so the probe wakes to
+;; find them waiting at once. libuv before 1.52 then reports an end and never
+;; reads the reset; on Node 20.10.0 it did in 50 runs of 50 (measured).
+(define (stopped-across o)
+  (let ((probes '())
+        (first-write "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello"))
+    (dynamic-wind
+      (lambda () #f)
+      (lambda ()
+        (set! probes (open-set o (list (list "reset after a pause" 'raw '()
+                                             (hex (get "/raw/reset-after-pause?ms=1000"))
+                                             (hex first-write)))))
+        (let ((p (car probes)))
+          (if (not (eq? (held p) 'waiting))
+              (list 'not-held (probe-text p))
+              (let* ((stopped (signal-probe p "-STOP"))
+                     (continued (begin (pause-ms 3000) (signal-probe p "-CONT")))
+                     (deadline (+ (now-ms) 10000)))
+                (let loop ()
+                  (drain! p)
+                  (when (and (not (vector-ref p 6)) (< (now-ms) deadline))
+                    (pause-ms 5)
+                    (loop)))
+                (if (not (and (eqv? stopped 0) (eqv? continued 0)))
+                    (list 'kill stopped continued)
+                    (let* ((answer (parse-wire-probe (probe-text p)))
+                           (n (string-length first-write))
+                           (first (arrival (probe-arrivals answer) (- n 1)))
+                           (last (arrival (probe-arrivals answer) n)))
+                      (list (latin-1 (probe-bytes answer)) (probe-end answer)
+                            (if (and first last (>= (- last first) 2000))
+                                'read-after-the-stop
+                                (list 'first first 'last last)))))))))
+      (lambda () (kill-probes probes)))))
+
+(test-equal "the probe, stopped across raw /raw/reset-after-pause?ms=1000's last write and reset, then continued: the whole bytes, then reset, the last bytes read only after the stop"
+  (list 'returned (list "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello wor" 'reset 'read-after-the-stop))
+  (outcome (lambda () (call-with-origin stopped-across))))
 
 (test-equal "exits on stdin's end: once call-with-origin returns, every face refuses connections"
   (list 'returned refused)
