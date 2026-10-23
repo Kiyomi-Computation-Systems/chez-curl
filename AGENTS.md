@@ -164,6 +164,10 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   sends the RST, but throws on a TLS socket: reset the `net` socket it wraps. A
   client's reset that way still arrives as a FIN. A test of a reset checks what
   the peer saw.
+* libuv before 1.52, which Node 20.10.0 bundles, reports a reset that arrives
+  with the last data as an end. The probe reads the socket's fd once on each
+  end. A test of that path stops the probe across the last write and the reset,
+  so that the two arrive together.
 * LibreSSL, the Mac's `openssl`, exits 0 from `s_client -verify_return_error` on
   a failed verify, and its `req` prefers a `prompt = no` config's subject to
   `-subj`. Read verify codes, never that exit status, and give the config no

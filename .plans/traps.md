@@ -623,3 +623,12 @@ it should not be a comment. (chez-cmark-gfm)
   seconds for six days, holding that slice's agent open. Reproduced: `bash -c 'pgrep -f
   "zz-other-marker"'` matches itself. Wait on a PID, with `wait` or `kill -0`, or on a file
   the job writes when it ends. (chez-curl)
+* **libuv before 1.52 reads a reset as an end.** `test-origin`'s `reset-mid-body` row read
+  `eof` in one of four floor-lane runs, where the origin had reset. libuv 1.46.0, Node
+  20.10.0's, ends a read on HUP after a partial read, without reading again, and a reset
+  brings HUP. So a probe that reads the last data and the reset in one wakeup reports the
+  end of a FIN. A client that blocked its loop for 200 ms read an end in 50 runs of 50, plain
+  and over TLS, while one read(2) of its fd still threw `ECONNRESET`. The probe now reads the
+  fd once on each end. Each origin suite stops the probe across a script's last write and
+  its reset: on Node 20.10.0 that failed without the fix, and on 24.18.0 it passes either
+  way (ADR-0005, amended). (chez-curl)

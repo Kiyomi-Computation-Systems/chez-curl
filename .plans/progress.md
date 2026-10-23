@@ -8,30 +8,23 @@ close-out under **Close-outs**, newest first.
 
 - **Milestone:** M2, one blocking request, plaintext and TLS (brief §8), per the
   [M2 plan](2026-10-19-m2-plan.md).
-  - **Slice 1 is built** on `m2/foundations` (§4), not yet merged, with its
-    [mutation log](foundations-mutation-log.md). It binds no setopt or getinfo option:
-    - the counters, as a gate, with every child that reaches native reporting its counts;
-    - counted foreign blocks;
-    - the checked copy and C strings;
-    - the URL API: 70 cases as shared answers and version rows, and the scheme check against
-      every protocol the libcurl lists;
-    - the checks carried from M0: prototypes, `curlot-types` complete, and a whole layout's
-      size.
-
-    ADR-0001, ADR-0002, ADR-0007, ADR-0008, ADR-0013 and ADR-0014 are amended. Its close-out
-    goes in on the next branch, once it merges.
+  - **Slice 1 is merged** (PR #13, `ed217dc`): the counters gate, counted foreign blocks,
+    the checked copy, C strings, the URL API, and the checks carried from M0. It binds no
+    setopt or getinfo option.
   - **Slices 2 and 3,** the plaintext transfer and TLS, wait for the Apple arm64 run.
 
   M1 (brief §7) is built: PRs #10 and #11. M0 (brief §8) is built.
-- **The Mac owes one run for M0 and M1, and it gates M2's slices 2 and 3:**
+- **The Mac owes one run for M0, M1 and M2's slice 1, and it gates slices 2 and 3:**
   - `make check-variadic` on Apple arm64, whose result ADR-0001 records;
   - its drift row for Apple's libcurl 8.7.1, since `make test` fails there until it is
-    added. Once slice 1 merges, its URL row too, for the 10 cases that vary;
+    added, and its URL row, for the 10 cases that vary;
   - the prototype check reading Apple's SDK headers. It fails closed on what it can't read;
     the list is in the mutation log, §7.1;
   - Node 20.10.0 and the drip's own-arrival check, which have not run on macOS;
   - LibreSSL as the checker on the Mac itself. Docker ran it, built from its tarball, under
     Node 20.10.0 (M1 plan, §8.7).
+  - the probe's read of its fd on each end, and the stop/continue checks: macOS's libuv
+    waits with kqueue, not epoll.
 - **Done:** slices 1 to 6 of the [harness plan](2026-10-04-harness-plan.md) (§6):
   - slice 1, the container and the Makefile skeleton;
   - slice 2, the test harness
@@ -54,11 +47,12 @@ close-out under **Close-outs**, newest first.
   fix: a bare `mktemp -d` ignored `TMPDIR` there (`traps.md`). So macOS has run on arm64;
   Linux on arm64 and macOS on amd64 have not. The two suites added since,
   `test-check-nothreads` and `test-variadic`, have not run there.
-- **A flaky test in M1's `test-origin`:** `raw /raw/reset-mid-body` saw `eof` where it expects
-  `reset`, once. That was in the Docker floor lane, run beside a mutation run and the main lane,
-  on 2026-10-23. A rerun with nothing else running passed. How often it happens is not
-  measured.
-- **CI has never run.** Every job of PRs #8 to #12 was "not started because recent account payments
+- **The flaky `reset-mid-body` row was the probe, not the origin** (ADR-0005, amended
+  2026-10-23). libuv before 1.52, which Node 20.10.0 bundles, reports a reset as an end when
+  it arrives with the last data. The probe now reads its socket's fd once on each
+  end, and both origin suites stop the probe across a last write and a reset. Without the
+  fix, that check failed on Node 20.10.0 in 2 runs of 2.
+- **CI has never run.** Every job of PRs #8 to #13 was "not started because recent account payments
   have failed or your spending limit needs to be increased". GitHub parsed the workflow and
   listed all six jobs, so the file is valid. What only CI can show is still unshown: Chez
   built from its tarball on the runner, a real `--nothreads` Chez, the suites under Ubuntu's
@@ -78,6 +72,77 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency` (ADR-0002's amendment).
 
 ## Close-outs
+
+### 2026-10-23 — M2 slice 1: the counters, checked copies and libcurl's URL API (PR #13, `ed217dc`)
+
+- **The counters are the leak gate.**
+  - `(curl private counters)` counts each kind of native object, per process, behind a
+    mutex, with no reset.
+  - `suite-exit-status` fails a suite whose counts are not all zero.
+  - Each child that reaches native prints its counts, and its suite asserts them zero.
+  - `check-test-fails` plants a leak.
+- **`(curl private memory)` alone calls `foreign-alloc` and `foreign-free`.** Each block is
+  counted, and freeing a dead one raises before `foreign-free`.
+- **The checked copies.** `memcpy` is bound both ways and not exported, and bounds are
+  asserted first. Chez's `u8*` takes no offset, so a copy at an offset bounces through a
+  fresh bytevector.
+- **C strings.** Strings reach libcurl as counted, NUL-terminated UTF-8 copies, and a NUL
+  inside one is refused.
+- **`(curl private url)`.**
+  - It provides normalize, resolve, a parsed handle for one call, and the http/https check.
+    Each refusal raises `&curl-url-error`.
+  - `test-url` holds 70 cases: 60 shared answers, and rows for 7.85.0, 8.5.0 and 8.20.0 for
+    the 10 that vary (ADR-0008).
+  - The scheme check is held against every protocol the libcurl lists.
+- **The checks carried from M0:**
+  - each binding is held to a prototype row in the header's own spelling, by
+    `_Static_assert(_Generic(...))` with no link, its tables written out in the suite;
+  - `curlot-types` is complete;
+  - a whole layout's size is checked.
+- **Checks:**
+  - in the container: `make test` 20/20, `check-test-fails` 11/11, `check-suites`,
+    `check-seam` (13 libraries), and `test-memory` 20/20;
+  - Docker stand-ins for CI's main, floor (7.85.0, Node 20.10.0), memory and nothreads
+    lanes passed.
+- **Built with subagents,** three in all, about 1.33M tokens:
+
+  | Agent | Model | Tokens | Time |
+  |---|---|---|---|
+  | builder, then 2 fix rounds by SendMessage | Opus | 740k | about 14 h of it stalled on a wait loop (`traps.md`) |
+  | review | Opus | 272k | 18 min |
+  | scoped review of fix round 1 | Opus | 318k | 22 min |
+
+  The builder's 58 mutants were all caught. Then the two reviews found 16 more that passed,
+  all of one class: a rule tested on one example, where a narrower rule gives the same answer.
+  So briefs now name the class up front:
+  - a scan, tested at every position;
+  - an encoding, tested on bytes where encodings differ;
+  - an allowlist, tested against its whole complement;
+  - a table-driven check, with its tables written out.
+- **Evidence:** the [foundations mutation log](foundations-mutation-log.md): 109 mutations
+  caught. I reran the reviews' 16 with their own harnesses, and each is caught.
+- **Carried forward:**
+  - the Mac's run: its URL row, and the prototype check on Apple's SDK headers;
+  - slices 2 and 3;
+  - CI has still never run.
+
+### 2026-10-22 — the M2 plan, and curl's URL verdicts by version (PR #12, `afd7951`)
+
+- **The [M2 plan](2026-10-19-m2-plan.md):** one blocking request, plaintext and TLS, in
+  three slices.
+  - Slice 1 binds no setopt or getinfo option, so it can go before the Apple arm64 run.
+  - Slices 2 and 3 follow that run.
+  - M2 adds nothing public.
+- **Measured before planning:**
+  - a `__collect_safe` `curl_easy_perform` with a write callable delivered every byte while
+    another thread forced 145,512 collections;
+  - without `lock-object` that probe crashed in 6 runs of 6, and with it passed in 6 of 6;
+  - Chez's `string` type cuts at an embedded NUL without a word;
+  - the TLS faces gave the same verdicts on GnuTLS under 8.20.0 and on OpenSSL under 7.88.1.
+- **ADR-0008 amended:** curl's URL verdicts vary by version. 51 of 58 cases agree across
+  7.85.0, 7.88.1, 8.5.0 and 8.20.0. The maintainer chose shared answers plus a row per
+  libcurl version for the rest.
+- **No subagents.**
 
 ### 2026-10-19 — M1 slice 2: TLS and HTTP/2 for the test origin (PR #11, `bd215d8`)
 

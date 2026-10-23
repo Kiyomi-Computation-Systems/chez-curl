@@ -623,6 +623,7 @@
      ("/raw/stall-after-head" "HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\n" timeout)
      ("/raw/short-body" "HTTP/1.1 200 OK\r\nContent-Length: 10\r\n\r\nhello" eof)
      ("/raw/reset-mid-body" "HTTP/1.1 200 OK\r\nContent-Length: 10\r\n\r\nhello" reset)
+     ("/raw/reset-after-pause?ms=1" "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello wor" reset)
      ("/raw/bare-lf" "HTTP/1.1 200 OK\nContent-Length: 6\n\nhello\n" eof)
      ("/raw/nope" "HTTP/1.1 400 Bad Request\r\nContent-Length: 12\r\nConnection: close\r\n\r\nbad request\n" eof)))
   ;; Timing over TLS is judged between arrivals. TLS hands the reader each
@@ -1167,6 +1168,58 @@
  '(0 700)
  '("two sets of probes, the second opened 700 ms after the first holds its states, the stop at once"
    "the same on a fresh origin, both sets held 700 ms longer before the stop"))
+
+;; --- the probe: a reset that arrives with the last bytes, over TLS ------------
+
+;; signal-probe : Probe String -> Integer
+;; kill's exit status, sending the probe SIGNAL, as -STOP or -CONT.
+(define (signal-probe p signal)
+  (car (capture-command (list "kill" signal (number->string (probe-pid p))))))
+
+;; stopped-across : Origin -> List
+;; What the probe saw of raw-tls's reset-after-pause?ms=1000 when it is
+;; stopped (SIGSTOP) from the moment it holds the script's first write until
+;; 3000 ms later, then continued: the bytes, its end, and whether the last
+;; bytes were read at least 2000 ms after the first, so only after the stop.
+;; The script's last record and the reset under it both come during the
+;; stop, so the probe wakes to find them waiting at once. libuv before 1.52
+;; then reports an end and never reads the reset; on Node 20.10.0 it did in
+;; 50 runs of 50 (measured).
+(define (stopped-across o)
+  (let ((probes '())
+        (first-write "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello"))
+    (dynamic-wind
+      (lambda () #f)
+      (lambda ()
+        (set! probes (open-set o (list (list "reset after a pause" 'raw-tls tls1
+                                             (hex (octets (get "/raw/reset-after-pause?ms=1000")))
+                                             (hex (octets first-write))))))
+        (let ((p (car probes)))
+          (if (not (eq? (held p) 'waiting))
+              (list 'not-held (probe-text p))
+              (let* ((stopped (signal-probe p "-STOP"))
+                     (continued (begin (pause-ms 3000) (signal-probe p "-CONT")))
+                     (deadline (+ (now-ms) 10000)))
+                (let loop ()
+                  (drain! p)
+                  (when (and (not (vector-ref p 6)) (< (now-ms) deadline))
+                    (pause-ms 5)
+                    (loop)))
+                (if (not (and (eqv? stopped 0) (eqv? continued 0)))
+                    (list 'kill stopped continued)
+                    (let* ((answer (parse-wire-probe (probe-text p)))
+                           (n (string-length first-write))
+                           (first (arrival (probe-arrivals answer) (- n 1)))
+                           (last (arrival (probe-arrivals answer) n)))
+                      (list (latin-1 (probe-bytes answer)) (probe-end answer)
+                            (if (and first last (>= (- last first) 2000))
+                                'read-after-the-stop
+                                (list 'first first 'last last)))))))))
+      (lambda () (kill-probes probes)))))
+
+(test-equal "the probe, stopped across raw-tls /raw/reset-after-pause?ms=1000's last write and reset, then continued: the whole bytes, then reset, the last bytes read only after the stop"
+  (list 'returned (list "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nhello wor" 'reset 'read-after-the-stop))
+  (outcome (lambda () (parameterize ((origin-pki pki)) (call-with-origin stopped-across)))))
 
 (test-equal "exits on stdin's end: once call-with-origin returns, every face refuses connections"
   (list 'returned (map (lambda (face) '("" (refused "ECONNREFUSED"))) every-face))

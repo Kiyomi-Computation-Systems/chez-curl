@@ -1,6 +1,6 @@
 # ADR-0005: The test origin server is one Node file, standard library only
 
-- **Status:** Accepted; amended 2026-10-18: the byte probe checks the instrument, and CI tests the Node floor (M1); amended again 2026-10-18: `openssl` checks certificates portably, with no hostname code (M1 slice 2)
+- **Status:** Accepted; amended 2026-10-18: the byte probe checks the instrument, and CI tests the Node floor (M1); amended again 2026-10-18: `openssl` checks certificates portably, with no hostname code (M1 slice 2); amended 2026-10-23: the probe asks the kernel whether an end was a reset
 - **Date:** 2026-10-04
 - **Scope:** chez-curl's test instrument (brief §7, milestone M1) and every test lane
   after it
@@ -186,3 +186,65 @@ The maintainer chose portable checks only ([M1 plan](../2026-10-18-m1-plan.md), 
   - **One difference:** after an HTTP/2 connection error the origin sent, Node 24.18.0
     emits `sessionError` and closes. Node 20.10.0 emits nothing and leaves the connection
     open until the client goes (M1 plan, §8.8).
+
+## Amendment, 2026-10-23: the probe asks the kernel whether an end was a reset
+
+The maintainer chose this over raising the Node floor or recording a known flake.
+
+- **The flake.** `test-origin`'s `raw /raw/reset-mid-body` read `eof` once in four Docker
+  floor-lane runs during M2 slice 1, where the origin had reset. The origin did reset, but
+  the probe never saw the reset.
+  - libuv before 1.52 ends a read in `uv__stream_io` whenever epoll reports HUP and the read
+    before it was partial: it filled less than its buffer. It does not read again. On
+    Linux a reset brings HUP. So when the last data and a reset are read in one wakeup,
+    Node emits `'end'`, while the kernel still holds `ECONNRESET`.
+  - libuv 1.52.0 ends the read only on HUP without IN. A reset brings both, so libuv reads
+    again and gets the error.
+- **Measured** (Node 20.10.0 bundles libuv 1.46.0; Node 24.18.0 bundles 1.52.1):
+  - **The mechanism, made certain.** A client blocked its own event loop for 200 ms after
+    its request, so all of the origin's reply had arrived before Node read any of it.
+    - On Node 20.10.0, Node reported an end in 50 runs of 50, plain and over TLS. One
+      read(2) of the socket's fd then threw `ECONNRESET` in every run.
+    - A FIN read 0 bytes.
+    - On Node 24.18.0, Node reported `ECONNRESET` in 50 runs of 50.
+  - **The probe, unchanged, against `reset-mid-body`,** in 300 runs each on Node 20.10.0 in
+    Docker:
+    - `eof` in 98 plain runs and 28 TLS runs;
+    - plain, between 43 and 120, depending on how it was run and on the CPUs it had;
+    - the two origin suites failed none of 10 idle runs, and 1 of 4 loaded runs;
+    - Node 24.18.0: none of 300.
+  - **Node's sources:**
+    - Node 20.10.0 to 20.19.0 bundle libuv 1.46.0;
+    - Node 22.0.0 to 22.22.0, Node 24.0.0 to 24.15.0 and Node 25.0.0 bundle 1.48.0 to
+      1.51.0, which also end on HUP;
+    - Node 24 bundles 1.52.1 from 24.16.0.
+- **Decision: on each end Node reports, the probe reads the socket's fd once.**
+  - If that read fails with `ECONNRESET`, the end is `reset`. Anything else leaves it `eof`.
+  - Over TLS, the socket's `_handle.fd` is that of the TCP socket under it.
+  - **Measured, with the fix:**
+    - Node 20.10.0 read `reset` in 300 runs of 300, plain and over TLS, and `eof` for a FIN in
+      300 of 300;
+    - Node 24.18.0 did the same in 200 of 200.
+  - `socket._handle.fd` is not documented. It held on Node 20.10.0 and 24.18.0, for TCP and
+    TLS sockets alike.
+- **A check that fails without the fix,** on a Node whose libuv ends on HUP:
+  - The origin's new script, `reset-after-pause?ms=N`, writes a head and `hello`, waits N
+    ms, writes ` wor`, then resets.
+  - Each origin suite stops the probe (SIGSTOP) once it holds `hello`. The stop lasts 3000 ms,
+    across the script's 1000 ms pause, and then the suite continues the probe.
+  - The suite expects `reset`, and the last bytes read at least 2000 ms after the first.
+  - Without the fix, on Node 20.10.0, both suites read `eof` in 2 runs of 2.
+  - On Node 24.18.0 the check passes either way. There it guards against a later libuv.
+  - **Mutants, all in `build/verify/m2-flake/mut/`, which is scratch.**
+    - Caught on Node 20.10.0: dropping the read, and reading 0 bytes, which returns 0
+      without the error.
+    - Caught on Node 24.18.0: taking every end as a reset. Also caught there, in the
+      script: ending with a FIN, writing ` world`, and dropping the pause.
+    - **One survives: taking any error from the read as a reset.** Only an end with no FIN
+      yet tells it apart: a TLS close_notify read before its FIN, when the read throws
+      `EAGAIN`. No run produced one.
+- **Rejected:**
+  - **Raising the Node floor to 24.16.0,** the first Node with libuv 1.52. That drops every
+    Node 20 and 22.
+  - **Recording a known flake.** About one probe run in three of that row read `eof` on
+    Node 20.10.0.
