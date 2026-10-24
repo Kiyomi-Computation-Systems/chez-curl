@@ -268,6 +268,16 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   checks a followed URL against both. Hold each pin by reading the options.
 * An ambient `http_proxy` and the like divert every transfer, so
   `test-transfer` fails first, naming the variable, when one is set.
+* Guix's libcurl writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over a transfer's
+  `CAINFO` and `CAPATH` when it starts, after every setopt. The container
+  passes neither; `test-transfer-tls` fails first when either is set.
+* Ubuntu's libcurl trusts its default `CAPATH` beside `CAINFO`, so a CA file
+  alone also trusts the system store. No lane's store trusts the run CA, so
+  no behavioural test can see it: the transfer clears `CAPATH`, and its TLS
+  settings are held as data.
+* Apple's LibreSSL checks the keychain when a CA file fails; a library
+  process on the Mac selects SecureTransport, and no test can show the
+  fallback.
 * libcurl's cleanup reads nothing a transfer handed it, so freeing the
   `CURLU`, the header list or the error buffer before `curl_easy_cleanup`
   passes every behavioural check, Valgrind's too. A check reads the

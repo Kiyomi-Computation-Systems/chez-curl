@@ -724,3 +724,28 @@ it should not be a comment. (chez-cmark-gfm)
   answered 7, and a proxy that answered would have fed the suite its answers. So
   `test-transfer`'s first test fails, naming the variable, when one is set. chez-curl's
   proxy policy is M4's. (chez-curl)
+* **Guix's libcurl writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over a transfer's CA
+  settings.** Guix patches libcurl (`curl-use-ssl-cert-env.patch`) to read both at
+  `curl_global_init`. For 8.20.0 it then sets them as `CAINFO` and `CAPATH` in
+  `Curl_ssl_easy_config_complete`, which runs when a transfer starts, after every setopt.
+  In M2 slice 3's measurement, a request whose CA file was the run CA was refused, 60, with
+  `SSL_CERT_FILE` at another CA. One naming the other CA passed with `SSL_CERT_DIR` at a
+  directory holding the run CA. A Guix profile with `nss-certs` exports both, and so does
+  the maintainer's host. The container passes neither, so only a shell outside it, or a
+  child given one, shows it. `test-transfer-tls` fails first when either is set (ADR-0018).
+  (chez-curl)
+* **Ubuntu's libcurl trusts its default `CAPATH` beside `CAINFO`.** It is built with
+  `/etc/ssl/certs` as its CA directory, and setting `CAINFO` leaves that in place. So a
+  request naming one CA file also trusts the whole system store. No test lane's store
+  trusts the run CA, so every behavioural case passed either way. Only a throwaway
+  container with the run CA installed in its store showed it: a CA file naming the other
+  CA passed on Ubuntu's 8.5.0, with OpenSSL and with GnuTLS, until `CAPATH` was cleared.
+  The transfer clears it, and `test-transfer-tls` holds the settings as data (ADR-0018).
+  (chez-curl)
+* **Apple's LibreSSL checks the keychain when a CA file fails.** Reported as curl issue
+  12604 (2024), and called intended by Apple: with `--cacert`, a server the CA file does not
+  verify still passes if the keychain trusts it. It is in Apple's LibreSSL, not curl. The
+  Mac's libcurl is MultiSSL, and its drift row reads `SecureTransport (LibreSSL/3.3.6)`, so a
+  library process selects SecureTransport. curl's documentation says `CURL_SSL_BACKEND`
+  selects another; that is unmeasured on the Mac. No test can show the fallback without
+  adding a CA to the keychain. (curl, chez-curl)

@@ -8,7 +8,6 @@ name: CI
 #   - The Guix container. Nothing in CI runs it (ADR-0006): the toolchain here
 #     is Chez built from its release tarball (ADR-0001), the runner's libcurl
 #     and its packages (packaging/debian-prereqs.txt).
-#   - A GnuTLS lane. It comes with M2 (ADR-0002).
 #
 # Node runs the test origin and the byte probe, tests/origin.mjs and
 # tests/wire-probe.mjs (ADR-0005, amended), so every lane that runs the suites
@@ -22,6 +21,10 @@ name: CI
 # Actions tab.
 #   main        every action pinned to a commit, every check, then the
 #               suites, against the runner's libcurl.
+#   gnutls      the suites against Ubuntu's libcurl-gnutls.so.4, the same
+#               version as the runner's OpenSSL libcurl, through
+#               CHEZ_CURL_LIBCURL: a second TLS backend (brief, section 9,
+#               risk 3; ADR-0018).
 #   floor       the suites against libcurl at its floor, built from source.
 #   floor-disabled-api
 #               two lanes, one per API that ADR-0003 probes at load: a libcurl
@@ -146,6 +149,72 @@ jobs:
         env:
           CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
         run: make check-help check-suites check-pins check-seam check-floors build test check-test-fails check-variadic check-dev check-clean
+
+  # A second TLS backend (brief, section 9, risk 3). libcurl3t64-gnutls, in
+  # packaging/debian-prereqs.txt, is the same curl version as the runner's
+  # libcurl4t64, so libcurl4-openssl-dev's headers describe it: test-constants
+  # needs headers no newer than the library it loads (ADR-0001). Discovery
+  # would choose libcurl.so.4 first, so CHEZ_CURL_LIBCURL names this one.
+  gnutls:
+    name: gnutls (the suites against the runner's GnuTLS libcurl)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Install the packages in packaging/debian-prereqs.txt
+        run: |
+          pkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')
+          if [ -z "$pkgs" ]; then
+            echo "::error::packaging/debian-prereqs.txt yielded no packages: a broken step, not an empty list"
+            exit 1
+          fi
+          sudo apt-get update -qq
+          # shellcheck disable=SC2086
+          sudo apt-get install -y --no-install-recommends $pkgs
+
+      - name: Identify the runner image
+        id: image
+        run: |
+          . /etc/os-release
+          echo "id=${ID}-${VERSION_ID}-${RUNNER_ARCH}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Chez
+        id: chez
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: chez-threads-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-chez.sh') }}-${{ steps.image.outputs.id }}
+
+      - name: Build Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        run: scripts/ci/build-chez.sh "$RUNNER_TEMP/chez-threads"
+
+      - name: Save Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: ${{ steps.chez.outputs.cache-primary-key }}
+
+      # The preflight names the backend it loaded: the lane is only worth
+      # anything if that is GnuTLS, not the runner's OpenSSL. The library sits
+      # in the runner's multiarch directory, which cc names.
+      - name: Build and test against the GnuTLS libcurl
+        env:
+          CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
+        run: |
+          set -o pipefail
+          CHEZ_CURL_LIBCURL="/usr/lib/$(cc -dumpmachine)/libcurl-gnutls.so.4"
+          export CHEZ_CURL_LIBCURL
+          make build | tee "$RUNNER_TEMP/build.log"
+          if ! grep -q '^  TLS:      GnuTLS/' "$RUNNER_TEMP/build.log"; then
+            echo "::error::make build did not load a GnuTLS libcurl: this lane tests nothing"
+            exit 1
+          fi
+          make test
 
   floor:
     name: floor (the suites against libcurl at its floor)
