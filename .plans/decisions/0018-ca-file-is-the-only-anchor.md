@@ -157,5 +157,6 @@ and the container's 8.20.0 with GnuTLS (M2 plan, §6.1):
   `OPENSSL_CONF` that narrows the ciphers can change a verdict too, as the review's control
   showed, 35.
 - **The Mac measures SecureTransport.** `test-transfer-tls` there shows its verdicts, its
-  answer to `CAPATH`, and whether it reads `SSL_CERT_FILE`. A refusal there is a finding,
-  settled before slice 3 merges (M2 plan, §6).
+  answer to `CAPATH`, and whether it reads `SSL_CERT_FILE`. The Mac was out of reach when
+  slice 3 was ready, and the maintainer chose to merge first: that run is owed before M2 is
+  done, and a refusal there is a finding for its own branch (M2 plan, §6 and §7).

@@ -41,9 +41,11 @@ close-out under **Close-outs**, newest first.
         lane (8.5.0, OpenSSL), `check-variadic` and `check-dev` among its checks, and the
         memory lane (Valgrind 3.22, 33 gate cases, 22/22), each with `test-transfer-tls` at
         53 checks.
-    - **Owed before merge:** the Mac's `make test`, the first run of `test-transfer-tls` on
-      SecureTransport. Its verdicts, its answer to clearing `CAPATH`, and whether it reads
-      `SSL_CERT_FILE` are unmeasured.
+    - **Owed before M2 is done:** the Mac's `make test`, the first run of `test-transfer-tls`
+      on SecureTransport. Its verdicts, its answer to clearing `CAPATH`, and whether it reads
+      `SSL_CERT_FILE` are unmeasured. The Mac was out of reach, and the maintainer chose on
+      2026-10-24 to merge slice 3 first (M2 plan, §6 and §7). A finding there gets its own
+      branch.
 
   M1 (brief §7) is built: PRs #10 and #11. M0 (brief §8) is built.
 - **The Mac's run, 2026-10-23,** on the maintainer's M1:
