@@ -1,6 +1,6 @@
 # ADR-0009: A typed escape hatch for unwrapped options, in the low level only
 
-- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2)
+- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, `(curl ...)` only
 - **Settles:** D3 (brief §10)
@@ -140,4 +140,25 @@ Two of the safe types still need guarding:
     decision 3 alone would pass it. **M4's public hatch must refuse twins too.**
   - The seam stays private, in `(curl private transfer)`. The public hatch,
     `(curl unsupported)`, is still M4's.
+
+## Amendment, 2026-10-24: the TLS fields' options and twins (M2 slice 3)
+
+- **The request's two TLS fields set four options** ([ADR-0018](0018-ca-file-is-the-only-anchor.md)).
+  The CA file sets `CAINFO` and clears `CAPATH`. Verification sets `SSL_VERIFYPEER` and
+  `SSL_VERIFYHOST` on every transfer. All four are field options, so the deny-list holds them
+  through the field table, and a field may now name more than one option.
+- **The CA file's twins are `CAINFO_BLOB` and `SSL_OPTIONS`,** decided by the maintainer.
+  Measured beside a CA file with `CAPATH` cleared:
+  - `CAINFO_BLOB` added its CA, on 7.85.0 and Ubuntu's 8.5.0 with OpenSSL;
+  - `SSL_OPTIONS` with `CURLSSLOPT_NATIVE_CA` added the system store, on Ubuntu's 8.5.0 with
+    GnuTLS.
+
+  The seam's type rule already refuses `CAINFO_BLOB`. `SSL_OPTIONS` is an enumerated-value
+  option, so before this amendment the seam took it. Its other bits are closed with it. M4
+  can wrap any that are wanted as fields.
+- **Verification has no twin among the options the hatch's types allow.** `PROXY_SSL_VERIFYPEER`,
+  `PROXY_SSL_VERIFYHOST`, `DOH_SSL_VERIFYPEER` and `DOH_SSL_VERIFYHOST` verify other
+  connections: a proxy's, whose policy is M4's, and a DNS-over-HTTPS server's. Each still
+  reaches the seam. `SSL_CTX_FUNCTION` could replace OpenSSL's verification, and is a
+  function, which no hatch takes.
 

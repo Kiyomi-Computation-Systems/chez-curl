@@ -11,39 +11,41 @@ close-out under **Close-outs**, newest first.
   - **Slice 1 is merged** (PR #13, `ed217dc`): the counters gate, counted foreign blocks,
     the checked copy, C strings, the URL API, and the checks carried from M0. It binds no
     setopt or getinfo option.
-  - **Slice 2, the blocking plaintext transfer, is built** on `m2/blocking-transfer`:
-    `(curl private transfer)`, its bindings, `test-transfer` with its version rows, and the
-    `header-bytes` script. The maintainer chose Latin-1 header strings both ways, the test
-    seam held to ADR-0009, and escapes from perform allowed and counted. Three reviews and
-    three fix rounds closed what they found (M2 plan, §5.3 and §5.4).
-    - In the container: `make test` 21/21, `check-test-fails` 11/11, `check-suites`,
-      `check-seam` (14 libraries), `test-memory` 21/21, and `check-variadic` 25 steps.
-    - In Docker: the floor lane (7.85.0, Node 20.10.0) and the main lane (Ubuntu's 8.5.0,
-      OpenSSL) passed, and `test-transfer` passed on 8.5.0 with GnuTLS.
-    - **The Mac, 2026-10-24:** `make test` passed 20 of 21. `test-transfer` held all its
-      shared answers on Apple's 8.7.1, and failed only for want of its row, which is now
-      added: `big-header` 100, `many-headers` 56, `bad-status-code` refused, and both
-      `Content-Length`s kept. Its two socket counts read `/proc`, so they skip on macOS.
-      Then `make check-variadic`, run before the row reached the branch, stopped at its
-      control step with the no-row message, as built: the path works on `tarm64osx`.
-    - **With the row, `make check-variadic` passed all 25 steps on `tarm64osx`.** On each
-      mutant, `test-transfer` failed:
-
-      | Mutant | `test-transfer` on arm64 |
-      |---|---|
-      | the template's annotation removed | 104 tests, by name |
-      | setopt `long` | timed out at 180 s, exit 124 |
-      | setopt pointer | 104 tests, by name |
-      | setopt `off_t` | 6 tests, by name: the `MAXFILESIZE_LARGE` ones and `MAX_RECV_SPEED_LARGE` |
-      | getinfo | 50 tests, by name |
-
-      So each setopt binding is observed in a real transfer on Apple arm64 (ADR-0001). Nothing
-      more is owed on the Mac for slice 2.
-    - **Carried forward:** the `long` mutant shows only as a hang, which names no test. Its
-      likely cause is `TIMEOUT_MS` reaching libcurl as garbage, so the stall tests never
-      return. Running them in a bounded child would turn it into a named failure.
-  - **Slice 3, TLS,** follows slice 2. Its verify field's options, `SSL_VERIFYPEER` and
-    `SSL_VERIFYHOST`, join the seam's deny-list through the request's field table.
+  - **Slice 2, the blocking plaintext transfer, is merged** (PR #16, `6600dfb`), and the Mac
+    has run it. Its close-out is below.
+  - **Slice 3, TLS, is built** on `m2/tls-transfer` (M2 plan, §6), draft PR #17.
+    - **Measured first** (§6.1): the plan's verdicts agree on 7.85.0, Ubuntu's 8.5.0 with
+      OpenSSL and with GnuTLS, and 8.20.0. But a CA file is not exclusive on Ubuntu's
+      libcurl, whose default `CAPATH` stays trusted beside it. And Guix's libcurl 8.20.0
+      writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over `CAINFO` and `CAPATH` (ADR-0018).
+    - **Decided by the maintainer** (§6.2, ADR-0018, ADR-0009 amended):
+      - a CA file is the only anchor, with `CAPATH` cleared;
+      - `CAINFO_BLOB` and `SSL_OPTIONS` are its twins;
+      - Guix's override is pinned by a test, and its policy is M4's;
+      - the memory gate's Guix count is our entry's own, not the summary's total
+        (ADR-0014, amended): an HTTPS handshake on GnuTLS uses Valgrind's own
+        `dtv-addr-tail`.
+    - **Built:** the request's `ca-file` and `verify` fields, `tls-settings` and
+      `set-tls-options!`, and `test-transfer-tls`, 53 checks, with its child,
+      `transfer-tls-env`.
+    - **The review** found one test hole: `set-option!` was not held whole, so a mutant that
+      skipped the `CAPATH` clear passed `make test`. It is held now, and both its mutants
+      fail. It also found that Guix's 8.6.0 lets a request's settings win, so the pin is
+      keyed on world and version. And it measured `SSLKEYLOGFILE`, `OPENSSL_CONF` and GnuTLS's
+      `pkcs11:` CA files, which ADR-0018 hands M4.
+    - **Checks, after the fix round:**
+      - in the container: `make test` 22/22, 2212 checks, `check-test-fails` 11/11,
+        `check-suites`, `check-seam` (14 libraries), `check-memory-gate` 39 cases and
+        `test-memory` 22/22;
+      - in Docker: the floor lane (7.85.0, OpenSSL), the `gnutls` lane (8.5.0), the main
+        lane (8.5.0, OpenSSL), `check-variadic` and `check-dev` among its checks, and the
+        memory lane (Valgrind 3.22, 33 gate cases, 22/22), each with `test-transfer-tls` at
+        53 checks.
+    - **Owed before M2 is done:** the Mac's `make test`, the first run of `test-transfer-tls`
+      on SecureTransport. Its verdicts, its answer to clearing `CAPATH`, and whether it reads
+      `SSL_CERT_FILE` are unmeasured. The Mac was out of reach, and the maintainer chose on
+      2026-10-24 to merge slice 3 first (M2 plan, §6 and §7). A finding there gets its own
+      branch.
 
   M1 (brief §7) is built: PRs #10 and #11. M0 (brief §8) is built.
 - **The Mac's run, 2026-10-23,** on the maintainer's M1:
@@ -108,6 +110,72 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency` (ADR-0002's amendment).
 
 ## Close-outs
+
+### 2026-10-24 — M2 slice 2: the blocking plaintext transfer (PR #16, `6600dfb`)
+
+- **`(curl private transfer)`: one blocking request, on the calling thread.**
+  - `curl_easy_perform` is bound through `bind-blocking`, `__collect_safe`. The one write
+    callable, `write-body`, is locked, and keyed by an integer through `WRITEDATA`.
+  - The request holds a URL, a method (`get` or `head`), headers, a user agent, a timeout,
+    a body limit and a test hook. It is checked when made, and again at perform, on a
+    private snapshot, which is what is sent.
+  - The response holds the status, the HTTP version, the effective URL, every header of the
+    last request, and the body.
+  - Options are named, typed by the loaded library, and each `CURLOT` type is held to its
+    setopt binding. The pins are set first, from one table.
+- **Decided by the maintainer:**
+  - header strings are Latin-1, both ways (ADR-0001);
+  - the test seam, `perform-transfer-with`, is held to ADR-0009's rules, narrowed: long,
+    values and `off_t` options alone, by id, twins refused (ADR-0009);
+  - an escape from perform is allowed and counted. A critical section around perform was
+    measured and reversed: it deferred collections and Ctrl-C (ADR-0013).
+- **Seven request refusals,** each a `&curl-request-error`: `not-a-token`, `embedded-nul`,
+  `line-break`, `not-latin-1`, `surrounding-whitespace`, `duplicates-field` and
+  `framing-header`.
+- **`test-transfer`** asserts each plaintext scenario whole. It has shared answers, and rows
+  for 7.85.0, 8.5.0, 8.7.1 and 8.20.0 for the five that vary. `transfer-escapes`, a child,
+  runs the asynchronous escapes under a bound.
+- **The Mac, 2026-10-24:** `make test` passed with its 8.7.1 row, and `make check-variadic`
+  passed all 25 steps on `tarm64osx`. On each mutant, `test-transfer` failed:
+
+  | Mutant | `test-transfer` on arm64 |
+  |---|---|
+  | the template's annotation removed | 104 tests, by name |
+  | setopt `long` | timed out at 180 s, exit 124 |
+  | setopt pointer | 104 tests, by name |
+  | setopt `off_t` | 6 tests, by name |
+  | getinfo | 50 tests, by name |
+
+  So each setopt binding is observed in a real transfer on Apple arm64 (ADR-0001).
+- **Checks:**
+  - in the container: `make test` 21/21, `check-test-fails` 11/11, `check-suites`,
+    `check-seam` (14 libraries), `test-memory` 21/21 and `check-variadic`, 25 steps;
+  - in Docker: the floor lane (7.85.0, Node 20.10.0) and the main lane (8.5.0, OpenSSL),
+    and `test-transfer` on 8.5.0 with GnuTLS.
+- **Built with subagents,** eight runs in all, about 3.28M tokens, all Opus:
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | builder | 639k | 49 min |
+  | fix round 1, by SendMessage | 869k | 86 min |
+  | fix round 2 | 210k | about 2 h 16 min |
+  | fix round 3 | 327k | 21 min |
+  | socket and child-bound fix | 378k | 32 min |
+  | adversarial review | 311k | 20 min |
+  | scoped review of round 1 | 273k | 21 min |
+  | scoped review of round 2 | 273k | 43 min |
+
+  Each review found a sibling of what the last fix closed: the hook's escape, then the
+  engine's; the pins removed, then rewritten; User-Agent duplicated, then Host. The floor
+  lane caught what the container could not: 7.85.0 leaks about three sockets per abandoned
+  handle, and 8.20.0 one.
+- **Evidence:** the [transfer mutation log](transfer-mutation-log.md), 99 mutations, each
+  caught by a named test, across the build and three fix rounds.
+- **Carried forward:**
+  - the `long` mutant fails on arm64 only as a hang, which names no test. Running the stall
+    tests in a bounded child would make it a named failure;
+  - the proxy policy is M4's;
+  - CI has still never run.
 
 ### 2026-10-23 — M2 slice 1: the counters, checked copies and libcurl's URL API (PR #13, `ed217dc`)
 

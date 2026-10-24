@@ -4,7 +4,9 @@
   container only ([amendment](#amendment-2026-10-16-one-suppression-for-guixs-glibc-in-the-container-only)),
   what slice 5 built ([amendment](#amendment-2026-10-16-what-slice-5-built)), and the gate on
   every pull request ([amendment](#amendment-2026-10-16-the-gate-runs-on-every-pull-request-and-cannot-see-chezs-heap)),
-  and the counters ([amendment](#amendment-2026-10-23-the-counters-are-built-m2-slice-1))
+  and the counters ([amendment](#amendment-2026-10-23-the-counters-are-built-m2-slice-1));
+  amended 2026-10-24: the Guix count is the entry's own
+  ([amendment](#amendment-2026-10-24-the-guix-count-is-the-entrys-own-m2-slice-3))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl: every suite that touches native memory, locally and in CI
 - **Related:**
@@ -230,3 +232,36 @@ Both were settled by the maintainer.
   in 62 blocks`, and leaving the NUL terminator out an uninitialised read. `make test-memory`
   passed all 20 suites in the container, and in the Docker stand-in of CI's memory lane, under
   Valgrind 3.22.
+
+## Amendment, 2026-10-24: the Guix count is the entry's own (M2 slice 3)
+
+- **What failed.** In the container, `test-memory` failed `test-transfer-tls`, the first
+  suite to make an HTTPS transfer: "Valgrind suppressed 2 blocks, and guix-glibc-locpath
+  covers exactly one". Valgrind's own log showed:
+  - `guix-glibc-locpath`, this record's entry, used on 1 block, 171 bytes;
+  - `dtv-addr-tail`, from Valgrind 3.27.0's own `default.supp`, used on 1 block, 80 bytes,
+    still reachable: `malloc` under `tls_get_addr_tail` and `__tls_get_addr`, under
+    `gnutls_handshake`. That is GnuTLS's thread-local storage, set up by the first
+    handshake;
+  - nothing definitely lost, and 0 errors.
+
+  The rule read the leak summary's total, which counts every suppression, Valgrind's own
+  among them. A program making one HTTPS GET showed the same two blocks, and
+  `test-transfer`, plaintext only, one.
+- **Decided by the maintainer: the count is the entry's own.** The gate reads
+  `guix-glibc-locpath`'s `used_suppression` line, from our suppression file, and requires
+  exactly 1 block when the run read `libp11-kit`, and none otherwise. Valgrind's
+  `default.supp` is then trusted in Guix as it already is on CI, where no count runs.
+  - The rule's purpose holds: the entry matches every block lost under `newlocale`, and
+    only its own count keeps it to the one p11-kit's constructor loses.
+    `check-memory-gate`'s `d more` and `d alone` still fail, through that line.
+  - A suppressions file the gate does not pass, one named `default.supp` among them, was
+    named in Guix by the options and files rules, and by the count too. Now only the
+    options and files rules name it, as outside Guix.
+- **Rejected: allowing `dtv-addr-tail` by name,** in runs that read `libgnutls`. It would
+  keep the total, but name one `default.supp` entry, and the next backend or Valgrind
+  version that uses another would fail the same way.
+- **No standing plant shows a `default.supp` block left out of the count.**
+  `test-transfer-tls` under `test-memory` is the evidence: with the total rule restored, it
+  fails.
+

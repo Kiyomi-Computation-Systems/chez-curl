@@ -9,7 +9,7 @@
 (library (curl private constants)
   (export curl-version-features curl-version-ssl
           curlhe-not-built-in curlh-header curl-global-default curle-ok
-          curle-bad-function-argument curlversion-tenth
+          curle-bad-function-argument curle-not-built-in curlversion-tenth
           curlinfo-private curlinfo-rtsp-client-cseq curlot-types
           curlue-ok curlue-codes curlupart-url curlupart-scheme
           curlinfo-response-code curlinfo-http-version curlinfo-effective-url
@@ -88,6 +88,13 @@
   ;; curl_easy_setopt answers for a value its option refuses, such as a
   ;; negative MAXFILESIZE_LARGE.
   (define curle-bad-function-argument 43)
+
+  ;; curle-not-built-in : Positive-Integer
+  ;; curl/curl.h: CURLE_NOT_BUILT_IN, the CURLcode 4, there since 7.21.5.
+  ;; What curl_easy_setopt answers for an option the build left out, such
+  ;; as CAPATH on a TLS backend with no CA directory: a clear of it is
+  ;; taken all the same (ADR-0018).
+  (define curle-not-built-in 4)
 
   ;; curlversion-tenth : Natural
   ;; curl/curl.h: CURLVERSION_TENTH, the tenth CURLversion, 9. The age to

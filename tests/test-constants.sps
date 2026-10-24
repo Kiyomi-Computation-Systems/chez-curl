@@ -130,6 +130,7 @@
     (curl-global-default . "CURL_GLOBAL_DEFAULT")
     (curle-ok . "CURLE_OK")
     (curle-bad-function-argument . "CURLE_BAD_FUNCTION_ARGUMENT")
+    (curle-not-built-in . "CURLE_NOT_BUILT_IN")
     (curlversion-tenth . "CURLVERSION_TENTH")
     (curlinfo-private . "CURLINFO_PRIVATE")
     (curlinfo-rtsp-client-cseq . "CURLINFO_RTSP_CLIENT_CSEQ")

@@ -398,13 +398,17 @@ check-variadic: deps ## Remove (__varargs_after 2) from bind-variadic's template
 #   - the suppressions files it read are exactly its own default.supp and,
 #     in a Guix environment, MEMORY_SUPPRESSION_FILE. Its own default.supp
 #     is the one it names in a run on true, with VALGRIND_LIB unset;
-#   - in a Guix environment, it suppressed exactly one block if it read
-#     libp11-kit, which libcurl loads, and none if not: the entry matches
-#     every block lost under newlocale, and each call that searches the
-#     locale path loses one (measured: six from one program), so only the
-#     count keeps it to the one block p11-kit's constructor loses. Its
-#     lower bound fails closed, and no plant can fail it: every run that
-#     loads libp11-kit loses the block.
+#   - in a Guix environment, its entry, guix-glibc-locpath, suppressed
+#     exactly one block if it read libp11-kit, which libcurl loads, and
+#     none if not: the entry matches every block lost under newlocale, and
+#     each call that searches the locale path loses one (measured: six from
+#     one program), so only the count keeps it to the one block p11-kit's
+#     constructor loses. Its lower bound fails closed, and no plant can fail
+#     it: every run that loads libp11-kit loses the block. The count is the
+#     entry's own, from Valgrind's used_suppression line for it, not the
+#     leak summary's total: Valgrind's default.supp is trusted here as on
+#     CI, and an HTTPS handshake on GnuTLS uses its dtv-addr-tail, on a
+#     still-reachable block (ADR-0014, amended 2026-10-24).
 # A FAIL also prints, from Valgrind's log, its first error, the definite
 # loss, the suppressed total and its error summary, and, unless the exit
 # was Valgrind's, the suite's last lines, so a CI log says why. It fails if
@@ -479,10 +483,11 @@ test-memory: deps ## Run every MEMORY_SUITES suite under Valgrind; fail on any e
 	  if [ $$rc -eq 0 ] && [ ! -f "$$vlog" ]; then \
 	    why="Valgrind wrote no log, $$vlog"; \
 	  elif [ $$rc -eq 0 ]; then \
-	    evidence=$$(options=$$(printf '%s\n' "$$@") awk -v cmd="$(CHEZ) --libdirs $(LIBDIRS) --program $$t" -v chez="$$chez" -v allowed="$$allowed" -v guix="$(GUIX_ENVIRONMENT)" \
+	    evidence=$$(options=$$(printf '%s\n' "$$@") awk -v cmd="$(CHEZ) --libdirs $(LIBDIRS) --program $$t" -v chez="$$chez" -v allowed="$$allowed" -v guix="$(GUIX_ENVIRONMENT)" -v supp="$(MEMORY_SUPPRESSION_FILE)" \
 	      'pid == "" && /^==[0-9]+== Command: / { pid = $$0; sub(/^==/, "", pid); sub(/==.*/, "", pid); \
 	          got = $$0; sub(/^==[0-9]+== Command: /, "", got); syms = "--" pid "-- Reading syms from "; \
 	          supps = "--" pid "-- Reading suppressions file: "; mine = "==" pid "== "; \
+	          used = "--" pid "-- used_suppression: "; \
 	          head = "--" pid "-- Valgrind options:"; option = "--" pid "--    "; next } \
 	        pid == "" { next } \
 	        listing && index($$0, option) == 1 { opts[++nopts] = substr($$0, length(option) + 1); next } \
@@ -492,8 +497,9 @@ test-memory: deps ## Run every MEMORY_SUITES suite under Valgrind; fail on any e
 	        index($$0, syms) == 1 && $$0 ~ /\/libp11-kit\.so[^\/]*$$/ { p11 = 1 } \
 	        index($$0, supps) == 1 { f = substr($$0, length(supps) + 1); read = (read == "" ? f : read ", " f) } \
 	        index($$0, mine "ERROR SUMMARY: ") == 1 { summary = substr($$0, length(mine) + 1) } \
-	        index($$0, mine) == 1 && $$0 ~ /== +suppressed: [0-9,]+ bytes in [0-9,]+ blocks$$/ { \
-	          blocks = $$0; sub(/ blocks$$/, "", blocks); sub(/.* in /, "", blocks); gsub(/,/, "", blocks) } \
+	        index($$0, used) == 1 && $$4 == "guix-glibc-locpath" && index($$5, supp ":") == 1 && \
+	          $$0 ~ / suppressed: [0-9,]+ bytes in [0-9,]+ blocks$$/ { \
+	          b = $$0; sub(/ blocks$$/, "", b); sub(/.* in /, "", b); gsub(/,/, "", b); blocks += b } \
 	        END { if (pid == "") { print "the log has no Valgrind \"Command:\" line"; exit } \
 	          if (got != cmd) why[++n] = "Valgrind\047s Command: line is \"" got "\", not \"" cmd "\""; \
 	          nwant = split(ENVIRON["options"], want, "\n"); same = (nopts == nwant); \
@@ -507,9 +513,9 @@ test-memory: deps ## Run every MEMORY_SUITES suite under Valgrind; fail on any e
 	            why[++n] = "Valgrind reported no \"ERROR SUMMARY: 0 errors from 0 contexts\""; \
 	          if (read != allowed) why[++n] = "Valgrind read the suppressions files [" read "], and the gate allows exactly [" allowed "]"; \
 	          if (guix != "" && p11 && blocks + 0 != 1) \
-	            why[++n] = "Valgrind suppressed " (blocks + 0) " blocks, and guix-glibc-locpath covers exactly one, lost when libp11-kit loads"; \
+	            why[++n] = "guix-glibc-locpath suppressed " (blocks + 0) " blocks, and covers exactly one, lost when libp11-kit loads"; \
 	          if (guix != "" && !p11 && blocks + 0 != 0) \
-	            why[++n] = "Valgrind suppressed " (blocks + 0) " blocks, and guix-glibc-locpath covers none in a run that loads no libp11-kit"; \
+	            why[++n] = "guix-glibc-locpath suppressed " (blocks + 0) " blocks, and covers none in a run that loads no libp11-kit"; \
 	          for (i = 1; i <= n; i++) printf "%s%s", (i > 1 ? "; " : ""), why[i]; \
 	          if (n) print ""; else print "ok" }' "$$vlog"); \
 	    checked=$$?; \

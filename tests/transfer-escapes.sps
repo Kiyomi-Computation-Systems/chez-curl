@@ -117,7 +117,7 @@
               (lambda ()
                 (answer (lambda ()
                           (perform-transfer
-                           (make-transfer-request (url-of o 'raw "/raw/drip?bytes=20&gap=50") 'get '() #f 20000 #f
+                           (make-transfer-request (url-of o 'raw "/raw/drip?bytes=20&gap=50") 'get '() #f 20000 #f #f #t
                                                   (lambda (chunk)
                                                     (set! chunks (+ chunks (bytevector-length chunk)))
                                                     (when (and (>= chunks 3) (not armed)) (set! armed #t) (set-timer 1))))))))
@@ -155,12 +155,12 @@
 (call-with-origin
   (lambda (o)
     (let ((fields (lambda (url)
-                    (make-transfer-request url 'get '(("X-A" . "1") ("X-B" . "2")) "agent" 20000 100 #f))))
+                    (make-transfer-request url 'get '(("X-A" . "1") ("X-B" . "2")) "agent" 20000 100 #f #t #f))))
       (sweep "whole" (fields (url-of o 'http "/chunked")))
       (sweep "refused" (fields "http://127.0.0.1:1/"))
       (for-each (lambda (ticks)
                   (timer-case ticks (make-transfer-request (url-of o 'raw "/raw/drip?bytes=40&gap=5")
-                                                           'get '() #f 20000 #f #f)))
+                                                           'get '() #f 20000 #f #f #t #f)))
                 '(300 700 1100 1300 1500 1700))
       (interrupt-case o)
       (show (list 'after (live-transfer-count)

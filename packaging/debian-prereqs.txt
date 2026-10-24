@@ -16,8 +16,8 @@
 # installed as a package.
 #
 # Not listed: Node, which the workflow installs or the runner carries
-# (ADR-0005), and the GnuTLS lane's libcurl (from M2). Nor git, which
-# `make check-pins` needs: the runner checks the repository out with its own.
+# (ADR-0005). Nor git, which `make check-pins` needs: the runner checks the
+# repository out with its own.
 
 # --- to build Chez Scheme at the floor in packaging/floors.sexp --------------
 # CI builds Chez itself because noble's chezscheme is 9.5.8, below the floor
@@ -75,6 +75,16 @@ libnghttp2-dev
 # depends on libcurl4t64, the runtime libcurl.so.4 that discovery loads
 # (ADR-0002). The compiler is build-essential's.
 libcurl4-openssl-dev
+
+# --- for the GnuTLS lane: a second TLS backend --------------------------------
+# Brief section 9, risk 3: the TLS suites must pass on two backends. This is
+# Ubuntu's GnuTLS libcurl, libcurl-gnutls.so.4, the same curl version as
+# libcurl4t64, so libcurl4-openssl-dev's headers describe it. The gnutls job
+# loads it through CHEZ_CURL_LIBCURL (ADR-0002); discovery would find
+# libcurl.so.4 first. Measured in Docker ubuntu:24.04 (2026-10-24): 8.5.0 with
+# GnuTLS 3.8.3. test-drift printed the row tests/known-libcurls.sexp now
+# holds, and with it every suite passed, test-transfer-tls among them.
+libcurl3t64-gnutls
 
 # --- for the test origin's TLS material and its checks ------------------------
 # tests/make-test-pki.sh makes the TLS faces' certificates per run, and

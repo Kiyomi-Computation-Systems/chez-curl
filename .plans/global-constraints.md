@@ -207,6 +207,26 @@ provisional. They bind until that record is accepted or amended.
   vary. A libcurl with no row fails, printing its row. Answers are asserted whole, as a URL
   or a `CURLUcode`, never a message (ADR-0008, amended).
 
+## TLS
+
+- **TLS is whatever the loaded libcurl provides** (brief §2 item 5). The suites must pass on
+  two backends at least: GnuTLS and OpenSSL on Linux, and SecureTransport on the Mac
+  (ADR-0003, brief §9 risk 3).
+- **A request's CA file is its only trust anchor.** The field sets `CAINFO` to it and clears
+  `CAPATH`, since Ubuntu's libcurl trusts its default `/etc/ssl/certs` beside `CAINFO`. A
+  `CURLE_NOT_BUILT_IN` answer to `CAPATH` is accepted: that backend has no CA directory. `#f`
+  is libcurl's system store, as built, and sets neither (ADR-0018).
+- **Every transfer sets verification:** `SSL_VERIFYPEER` and `SSL_VERIFYHOST` at 1 and 2, or
+  both 0 when the request turns verification off (ADR-0018).
+- **The TLS settings are data,** computed from the request and applied exactly, and
+  `test-transfer-tls` holds them whole (ADR-0018).
+- **Guix's libcurl 8.20.0 writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over `CAINFO` and
+  `CAPATH`** when a transfer starts, after every setopt. Guix's 8.6.0, an older patch, lets the
+  request's settings win. `test-transfer-tls` fails first when either is set, and a child test
+  pins the override by world and version, from a table in the suite: a Guix libcurl of an
+  unrecorded version fails it. The policy, with `SSLKEYLOGFILE`, `OPENSSL_CONF` and GnuTLS's
+  `pkcs11:` CA files, is M4's (ADR-0018).
+
 ## The escape hatch
 
 - **It lives in `(curl unsupported)` only.** It attaches named options to a request record,
@@ -221,11 +241,12 @@ provisional. They bind until that record is accepted or amended.
 
   (ADR-0009)
 - **Owned options:** `URL`, `CURLU`, `PROTOCOLS_STR`, `REDIR_PROTOCOLS_STR`, `PROTOCOLS`,
-  `REDIR_PROTOCOLS`, `NOSIGNAL`, and every option a request field sets (ADR-0009). Each owned
-  setting's **twin** is refused too, an option with an id of its own that sets the same thing:
-  `MAXFILESIZE`, `TIMEOUT`, `HTTPGET`, `POST`, `UPLOAD` and `PUT` today, and with them the
-  transfer's callable and data, `WRITEFUNCTION`, `WRITEDATA` and `ERRORBUFFER` (ADR-0009,
-  amended 2026-10-23).
+  `REDIR_PROTOCOLS`, `NOSIGNAL`, and every option a request field sets, among them `CAINFO`,
+  `CAPATH`, `SSL_VERIFYPEER` and `SSL_VERIFYHOST` (ADR-0009). Each owned setting's **twin** is
+  refused too, an option with an id of its own that sets the same thing: `MAXFILESIZE`,
+  `TIMEOUT`, `HTTPGET`, `POST`, `UPLOAD`, `PUT`, `CAINFO_BLOB` and `SSL_OPTIONS` today, and
+  with them the transfer's callable and data, `WRITEFUNCTION`, `WRITEDATA` and `ERRORBUFFER`
+  (ADR-0009, amended 2026-10-23 and 2026-10-24).
 - **M2's test seam, `perform-transfer-with`, is held to these rules, narrowed:** long,
   enumerated-value and `off_t` options alone, so no address can pass. It stays private
   (ADR-0009, amended 2026-10-23).
@@ -341,9 +362,11 @@ provisional. They bind until that record is accepted or amended.
 - **One suppression, used only when `GUIX_ENVIRONMENT` is set.** It covers the block Guix's
   glibc loses under `compute_locale_search_path` when libcurl loads p11-kit. CI passes no
   suppression. `make check-memory-gate` holds the file to that one entry. In a Guix
-  environment, a suite must have exactly one block suppressed if it read `libp11-kit`, and
-  none if it did not. `--undef-value-errors=no` is added only with a recorded run that
-  needed it (ADR-0014, amended).
+  environment, that entry must have suppressed exactly one block in a suite that read
+  `libp11-kit`, and none in one that did not, counted from Valgrind's `used_suppression`
+  line for it. Valgrind's own `default.supp` is trusted, in Guix as on CI.
+  `--undef-value-errors=no` is added only with a recorded run that needed it (ADR-0014,
+  amended 2026-10-24).
 - **Valgrind checks exactly the gate's command.** `make test-memory` refuses every
   `VALGRIND_*` variable and both `.valgrindrc` files, and passes `--command-line-only=yes`.
   Valgrind writes its own `--log-file`, and every piece of evidence is read from it alone.

@@ -37,6 +37,14 @@
  (host "x86_64-pc-linux-gnu"))
 
 (libcurl
+ (where "Ubuntu 24.04's libcurl3t64-gnutls 8.5.0-2ubuntu10.16 with libgnutls30t64 3.8.3-1.1ubuntu3.6, the library CI's GnuTLS lane loads through CHEZ_CURL_LIBCURL, against libcurl4-openssl-dev's headers. Printed by test-drift in Docker ubuntu:24.04 on 2026-10-24, against /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4.")
+ (version "8.5.0")
+ (version-num 525568)
+ (features 1438599069)
+ (ssl-version "GnuTLS/3.8.3")
+ (host "x86_64-pc-linux-gnu"))
+
+(libcurl
  (where "The floor, curl 7.85.0 built by scripts/ci/build-curl.sh on Ubuntu 24.04 with OpenSSL 3.0.13 (libssl-dev 3.0.13-0ubuntu3.16), zlib1g-dev 1:1.3.dfsg-3.1ubuntu2.2 and libnghttp2-dev 1.59.0-1ubuntu0.4: the library the floor lanes load. Measured in Docker ubuntu:24.04 on 2026-10-18 with tests/libcurl-oracle.c, with only packaging/debian-prereqs.txt installed, and again with ten more -dev packages installed: the same five fields.")
  (version "7.85.0")
  (version-num 480512)
