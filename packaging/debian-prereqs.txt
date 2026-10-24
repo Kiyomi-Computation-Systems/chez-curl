@@ -82,8 +82,8 @@ libcurl4-openssl-dev
 # libcurl4t64, so libcurl4-openssl-dev's headers describe it. The gnutls job
 # loads it through CHEZ_CURL_LIBCURL (ADR-0002); discovery would find
 # libcurl.so.4 first. Measured in Docker ubuntu:24.04 (2026-10-24): 8.5.0 with
-# GnuTLS 3.8.3. Every suite but test-drift passed against it, and test-drift
-# printed the row tests/known-libcurls.sexp now holds.
+# GnuTLS 3.8.3. test-drift printed the row tests/known-libcurls.sexp now
+# holds, and with it every suite passed, test-transfer-tls among them.
 libcurl3t64-gnutls
 
 # --- for the test origin's TLS material and its checks ------------------------

@@ -34,11 +34,13 @@
 ;;;   - the lock: a drip beside a thread that collects every 2 ms;
 ;;;   - the option table and its bindings, written out here, since on
 ;;;     x86-64 a long sent through the off_t binding arrives all the same;
+;;;     the field table and the record's fields, written out too;
 ;;;   - the test seam, perform-transfer-with, held to ADR-0009's rules,
 ;;;     narrowed (amended 2026-10-23): long, enumerated-value and off_t
-;;;     options alone, none the transfer owns, compared by id; through it,
-;;;     the last request's headers after a redirect followed, and the
-;;;     redirect pin observed;
+;;;     options alone, none the transfer owns, compared by id, the TLS
+;;;     fields' four and the CA file's twins written out (amended
+;;;     2026-10-24); through it, the last request's headers after a
+;;;     redirect followed, and the redirect pin observed;
 ;;;   - the request's snapshot: a request changed after it was made is
 ;;;     refused at the transfer, and a value another thread changes is
 ;;;     sent whole or refused, never otherwise;
@@ -162,14 +164,16 @@
 
 ;; request : String . (Listof Any) -> Request
 ;; A request for TARGET with the suite's defaults: a GET, no headers, no
-;; user agent, default-timeout, no body limit and no hook. OPTIONS are
-;; keyword and value: method, headers, user-agent, timeout, limit, hook.
+;; user agent, default-timeout, no body limit, libcurl's system store,
+;; verification on, and no hook. OPTIONS are keyword and value: method,
+;; headers, user-agent, timeout, limit, ca-file, verify, hook.
 (define (request target . options)
   (let ((given (lambda (key default)
                  (let ((at (memq key options))) (if at (cadr at) default)))))
     (make-transfer-request target (given 'method 'get) (given 'headers '())
                            (given 'user-agent #f) (given 'timeout default-timeout)
-                           (given 'limit #f) (given 'hook #f))))
+                           (given 'limit #f) (given 'ca-file #f) (given 'verify #t)
+                           (given 'hook #f))))
 
 ;; answer-of : (-> Response) -> Answer
 ;; What THUNK's transfer answers, whole: (response STATUS VERSION HEADERS
@@ -486,11 +490,11 @@
 
 ;; header-request : String String -> (-> Request)
 (define (header-request name value)
-  (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get (list (cons name value)) #f #f #f #f)))
+  (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get (list (cons name value)) #f #f #f #f #t #f)))
 
 ;; agent-request : String -> (-> Request)
 (define (agent-request agent)
-  (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '() agent #f #f #f)))
+  (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '() agent #f #f #f #t #f)))
 
 ;; at-each-place : Char -> (Listof String)
 ;; "abcde" with C in place of each of its five chars, and C alone.
@@ -601,12 +605,12 @@
   (append
    (map (lambda (name)
           (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get (list (cons name "x"))
-                                                          "agent" #f #f #f)))))
+                                                          "agent" #f #f #f #t #f)))))
         '("User-Agent" "user-agent" "USER-AGENT" "uSeR-aGeNt"))
    (list (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '(("User-Agent" . "x"))
-                                                         #f #f #f #f))))
+                                                         #f #f #f #f #t #f))))
          (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '(("User-Agents" . "x"))
-                                                         "agent" #f #f #f)))))))
+                                                         "agent" #f #f #f #t #f)))))))
 
 (test-equal "a second Host header, in any case, is refused as duplicates-field, naming it: libcurl sends only the first, and RFC 9112 has a server answer 400 to two; one Host is a header like any other"
   '((request-refused header-name "Host" duplicates-field)
@@ -614,7 +618,7 @@
     (request-refused header-name "host" duplicates-field)
     no-raise)
   (map (lambda (headers)
-         (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get headers #f #f #f #f)))))
+         (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get headers #f #f #f #f #t #f)))))
        '((("Host" . "a.example") ("Host" . "b.example"))
          (("host" . "a.example") ("X-B" . "2") ("HOST" . "c.example"))
          (("Host" . "a.example") ("host" . "b.example"))
@@ -632,7 +636,7 @@
     no-raise no-raise no-raise no-raise)
   (map (lambda (name)
          (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get (list (cons "X-A" "1") (cons name "0"))
-                                                         #f #f #f #f)))))
+                                                         #f #f #f #f #t #f)))))
        '("Content-Length" "content-length" "CONTENT-LENGTH" "cOnTeNt-LeNgTh"
          "Transfer-Encoding" "transfer-encoding" "TRANSFER-ENCODING" "tRaNsFeR-eNcOdInG"
          "Content-Type" "TE" "X-Content-Length" "Transfer-Encodings")))
@@ -641,7 +645,7 @@
   (list '(request-refused header-name framing-header) '(request-refused header-name framing-header) zero-counts)
   (let* ((changed (lambda (spelt at char)
                     (let* ((name (string-copy spelt))
-                           (r (make-transfer-request "http://127.0.0.1:1/" 'get (list (cons name "0")) #f #f #f #f)))
+                           (r (make-transfer-request "http://127.0.0.1:1/" 'get (list (cons name "0")) #f #f #f #f #t #f)))
                       (string-set! name at char)
                       (answer-of (lambda () (perform-transfer r))))))
          (framed-length (changed "Content-Lengtx" 13 #\h))
@@ -723,7 +727,7 @@
          (other (string-copy "other"))
          (headers (list header (cons (string-copy "X-Other") other)))
          (agent (string-copy "an-agent"))
-         (r (make-transfer-request url 'get headers agent #f #f #f)))
+         (r (make-transfer-request url 'get headers agent #f #f #f #t #f)))
     (change url name value header headers agent other)
     (refusal (lambda () (perform-transfer r)))))
 
@@ -784,62 +788,64 @@
     (request-refused header-value "a\nb" line-break)
     (request-refused user-agent "a\x0;b" embedded-nul))
   (map (lambda (args) (car (refusal (lambda () (apply make-transfer-request args)))))
-       (list (list "http://127.0.0.1:1/" 'get '(("X-A" . "1") ("X-B" . "2") ("X:" . "3")) #f #f #f #f)
-             (list "http://127.0.0.1:1/" 'get '(("X-A" . "1") ("X-B" . "2") ("X-C" . "a\nb")) #f #f #f #f)
-             (list "http://127.0.0.1:1/" 'get '(("X-A" . "1") ("X-B" . "2")) "a\x0;b" #f #f #f))))
+       (list (list "http://127.0.0.1:1/" 'get '(("X-A" . "1") ("X-B" . "2") ("X:" . "3")) #f #f #f #f #t #f)
+             (list "http://127.0.0.1:1/" 'get '(("X-A" . "1") ("X-B" . "2") ("X-C" . "a\nb")) #f #f #f #f #t #f)
+             (list "http://127.0.0.1:1/" 'get '(("X-A" . "1") ("X-B" . "2")) "a\x0;b" #f #f #f #t #f))))
 
 (test-equal "a header's name is checked before its value, and headers in order: the first header's fault is the one named"
   '((request-refused header-name "X:" not-a-token)
     (request-refused header-value "a\rb" line-break)
     (request-refused header-name "X:" not-a-token))
-  (list (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '(("X:" . "a\rb")) #f #f #f #f))))
+  (list (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '(("X:" . "a\rb")) #f #f #f #f #t #f))))
         (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get
-                                                        '(("X-Ok" . "a\rb") ("X:" . "v")) #f #f #f #f))))
+                                                        '(("X-Ok" . "a\rb") ("X:" . "v")) #f #f #f #f #t #f))))
         (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get
-                                                        '(("X:" . "v")) "a\rb" #f #f #f))))))
+                                                        '(("X:" . "v")) "a\rb" #f #f #f #t #f))))))
 
 (test-equal "wrong types are assertion violations from make-transfer-request, with nothing native made"
   (map (lambda (x) (list '(assertion-violation make-transfer-request) zero-counts zero-counts))
        (iota-from 0 21))
   (map (lambda (args) (refusal (lambda () (apply make-transfer-request args))))
-       (list (list 'not-a-url 'get '() #f #f #f #f)
-             (list "http://a/" 'post '() #f #f #f #f)
-             (list "http://a/" "get" '() #f #f #f #f)
-             (list "http://a/" 'get 'none #f #f #f #f)
-             (list "http://a/" 'get '(("X" . 1)) #f #f #f #f)
-             (list "http://a/" 'get '((x . "v")) #f #f #f #f)
-             (list "http://a/" 'get '(("X" "v")) #f #f #f #f)
-             (list "http://a/" 'get '(("X" . "v") . tail) #f #f #f #f)
-             (list "http://a/" 'get '() 'agent #f #f #f)
-             (list "http://a/" 'get '() #f 0 #f #f)
-             (list "http://a/" 'get '() #f -1 #f #f)
-             (list "http://a/" 'get '() #f 1.5 #f #f)
-             (list "http://a/" 'get '() #f (expt 2 63) #f #f)
-             (list "http://a/" 'get '() #f "300" #f #f)
-             (list "http://a/" 'get '() #f #f -1 #f)
-             (list "http://a/" 'get '() #f #f 1.0 #f)
-             (list "http://a/" 'get '() #f #f (- (expt 2 63) 1) #f)
-             (list "http://a/" 'get '() #f #f (expt 2 63) #f)
-             (list "http://a/" 'get '() #f #f "10" #f)
-             (list "http://a/" 'get '() #f #f #f 'hook)
-             (list "http://a/" 'get '() #f #f #f "hook"))))
+       (list (list 'not-a-url 'get '() #f #f #f #f #t #f)
+             (list "http://a/" 'post '() #f #f #f #f #t #f)
+             (list "http://a/" "get" '() #f #f #f #f #t #f)
+             (list "http://a/" 'get 'none #f #f #f #f #t #f)
+             (list "http://a/" 'get '(("X" . 1)) #f #f #f #f #t #f)
+             (list "http://a/" 'get '((x . "v")) #f #f #f #f #t #f)
+             (list "http://a/" 'get '(("X" "v")) #f #f #f #f #t #f)
+             (list "http://a/" 'get '(("X" . "v") . tail) #f #f #f #f #t #f)
+             (list "http://a/" 'get '() 'agent #f #f #f #t #f)
+             (list "http://a/" 'get '() #f 0 #f #f #t #f)
+             (list "http://a/" 'get '() #f -1 #f #f #t #f)
+             (list "http://a/" 'get '() #f 1.5 #f #f #t #f)
+             (list "http://a/" 'get '() #f (expt 2 63) #f #f #t #f)
+             (list "http://a/" 'get '() #f "300" #f #f #t #f)
+             (list "http://a/" 'get '() #f #f -1 #f #t #f)
+             (list "http://a/" 'get '() #f #f 1.0 #f #t #f)
+             (list "http://a/" 'get '() #f #f (- (expt 2 63) 1) #f #t #f)
+             (list "http://a/" 'get '() #f #f (expt 2 63) #f #t #f)
+             (list "http://a/" 'get '() #f #f "10" #f #t #f)
+             (list "http://a/" 'get '() #f #f #f #f #t 'hook)
+             (list "http://a/" 'get '() #f #f #f #f #t "hook"))))
 
 (test-equal "the edges a request takes: a timeout of 1 and of the largest long, a body limit of 0 and of 2^63 - 2, method head"
   '(no-raise no-raise no-raise no-raise no-raise)
   (map (lambda (args) (car (refusal (lambda () (apply make-transfer-request args)))))
-       (list (list "http://a/" 'get '() #f 1 #f #f)
-             (list "http://a/" 'get '() #f (- (expt 2 63) 1) #f #f)
-             (list "http://a/" 'get '() #f #f 0 #f)
-             (list "http://a/" 'get '() #f #f (- (expt 2 63) 2) #f)
-             (list "http://a/" 'head '() #f #f #f #f))))
+       (list (list "http://a/" 'get '() #f 1 #f #f #t #f)
+             (list "http://a/" 'get '() #f (- (expt 2 63) 1) #f #f #t #f)
+             (list "http://a/" 'get '() #f #f 0 #f #t #f)
+             (list "http://a/" 'get '() #f #f (- (expt 2 63) 2) #f #t #f)
+             (list "http://a/" 'head '() #f #f #f #f #t #f))))
 
 (test-equal "a request's fields read back as given"
-  (list "http://a/b" 'head '(("X-A" . "1") ("X-A" . "2")) "agent" 300 10 'the-hook)
+  (list "http://a/b" 'head '(("X-A" . "1") ("X-A" . "2")) "agent" 300 10 "/a/ca.pem" 'verify-off 'the-hook)
   (let* ((hook (lambda (chunk) #f))
-         (r (make-transfer-request "http://a/b" 'head '(("X-A" . "1") ("X-A" . "2")) "agent" 300 10 hook)))
+         (r (make-transfer-request "http://a/b" 'head '(("X-A" . "1") ("X-A" . "2")) "agent" 300 10
+                                   "/a/ca.pem" #f hook)))
     (list (transfer-request-url r) (transfer-request-method r) (transfer-request-headers r)
           (transfer-request-user-agent r) (transfer-request-timeout-ms r)
-          (transfer-request-body-limit r)
+          (transfer-request-body-limit r) (transfer-request-ca-file r)
+          (if (eq? (transfer-request-verify r) #f) 'verify-off (transfer-request-verify r))
           (if (eq? (transfer-request-chunk-hook r) hook) 'the-hook (transfer-request-chunk-hook r)))))
 
 ;; --- the option table, written out here ---------------------------------------------------
@@ -894,21 +900,30 @@
 
 ;; --- the test seam's deny-list (ADR-0009, amended 2026-10-23) ---------------------------
 
-(test-equal "owned-option-names, written out: the options the transfer always sets and the pins' bitmasks, then each request field's, then the owned settings' twins"
+(test-equal "owned-option-names, written out: the options the transfer always sets and the pins' bitmasks, then each request field's, then the owned settings' twins, the CA file's CAINFO_BLOB and SSL_OPTIONS among them"
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL"
     "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
     "CURLU" "NOBODY" "HTTPHEADER" "USERAGENT" "TIMEOUT_MS" "MAXFILESIZE_LARGE"
-    "TIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "UPLOAD" "PUT")
+    "CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST"
+    "TIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "UPLOAD" "PUT" "CAINFO_BLOB" "SSL_OPTIONS")
   owned-option-names)
 
-(test-equal "request-field-options, written out: url's CURLU, method's NOBODY, headers' HTTPHEADER, user-agent's USERAGENT, timeout-ms's TIMEOUT_MS and body-limit's MAXFILESIZE_LARGE"
-  '((url . "CURLU") (method . "NOBODY") (headers . "HTTPHEADER") (user-agent . "USERAGENT")
-    (timeout-ms . "TIMEOUT_MS") (body-limit . "MAXFILESIZE_LARGE"))
+(test-equal "request-field-options, written out: url's CURLU, method's NOBODY, headers' HTTPHEADER, user-agent's USERAGENT, timeout-ms's TIMEOUT_MS, body-limit's MAXFILESIZE_LARGE, ca-file's CAINFO and CAPATH, and verify's SSL_VERIFYPEER and SSL_VERIFYHOST"
+  '((url "CURLU") (method "NOBODY") (headers "HTTPHEADER") (user-agent "USERAGENT")
+    (timeout-ms "TIMEOUT_MS") (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
+    (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST"))
   request-field-options)
 
-(test-equal "every request field's option is an owned option, so the test seam refuses it"
+(test-equal "every option of every request field is an owned option, so the test seam refuses it"
   '()
-  (filter (lambda (entry) (not (member (cdr entry) owned-option-names))) request-field-options))
+  (filter (lambda (name) (not (member name owned-option-names)))
+          (apply append (map cdr request-field-options))))
+
+(test-equal "a request's fields, written out, in the record's order: url, method, headers, user-agent, timeout-ms, body-limit, ca-file, verify and chunk-hook"
+  '(url method headers user-agent timeout-ms body-limit ca-file verify chunk-hook)
+  (guard (e (#t (list 'raised (describe e))))
+    (vector->list (record-type-field-names
+                   (record-rtd (make-transfer-request "http://a/" 'get '() #f #f #f #f #t #f))))))
 
 ;; The record's own fields, read from its record type: a field added later
 ;; needs a row, or its place here among the fields that set no option.
@@ -917,7 +932,7 @@
   (guard (e (#t (list 'raised (describe e))))
     (filter (lambda (field) (not (or (assq field request-field-options) (memq field '(chunk-hook)))))
             (vector->list (record-type-field-names
-                           (record-rtd (make-transfer-request "http://a/" 'get '() #f #f #f #f)))))))
+                           (record-rtd (make-transfer-request "http://a/" 'get '() #f #f #f #f #t #f)))))))
 
 ;; seam-refusal : (Listof Pair) -> Refusal
 ;; What refusal says of the test seam given OPTIONS, on a URL nothing
@@ -934,6 +949,15 @@
                zero-counts zero-counts))
        owned-option-names)
   (map (lambda (name) (seam-refusal (list (cons name 1)))) owned-option-names))
+
+;; The TLS fields' options and the CA file's twins, written out here: the
+;; loop above is held by owned-option-names, the table it loops over, so a
+;; name dropped from both would pass it (ADR-0009, amended 2026-10-24).
+(test-equal "the test seam refuses CAINFO, CAPATH, SSL_VERIFYPEER and SSL_VERIFYHOST, the TLS fields' options, and CAINFO_BLOB and SSL_OPTIONS, the CA file's twins, each by id, as owned-option, naming it, before anything native"
+  (map (lambda (name) (list (list 'request-refused 'options name 'owned-option) zero-counts zero-counts))
+       '("CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST" "CAINFO_BLOB" "SSL_OPTIONS"))
+  (map (lambda (name) (seam-refusal (list (cons name 1))))
+       '("CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST" "CAINFO_BLOB" "SSL_OPTIONS")))
 
 (test-equal "an alias of an owned option is refused as owned-option: FILE is WRITEDATA's id, and RTSPHEADER HTTPHEADER's"
   (list '(same same)
@@ -1733,7 +1757,7 @@
   (test-equal "a user agent another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the agent whole, never the CR, both seen; the counts back at zero"
     (list '() '(refused whole) zero-counts)
     (let* ((agent (string-copy "abcdef"))
-           (r (make-transfer-request (url-of o 'raw "/raw/echo") 'get '() agent default-timeout #f #f))
+           (r (make-transfer-request (url-of o 'raw "/raw/echo") 'get '() agent default-timeout #f #f #t #f))
            (clean (echoed (raw-echo-body o '("User-Agent: abcdef\r\n" "Accept: */*\r\n"))))
            (stop #f)
            (flip (lambda ()
@@ -1938,7 +1962,7 @@
     (list '() '(refused whole) zero-counts)
     (let* ((value (string-copy "abcdef"))
            (r (make-transfer-request (url-of o 'raw "/raw/echo") 'get (list (cons "X-Race" value))
-                                     #f default-timeout #f #f))
+                                     #f default-timeout #f #f #t #f))
            (clean (echoed (raw-echo-body o '("Accept: */*\r\n" "X-Race: abcdef\r\n"))))
            (stop #f)
            (flip (lambda ()

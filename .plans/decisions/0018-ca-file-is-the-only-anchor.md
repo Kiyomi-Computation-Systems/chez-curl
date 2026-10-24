@@ -32,8 +32,8 @@ and the container's 8.20.0 with GnuTLS (M2 plan, §6.1):
     clear it. The floor's build has no default `CAPATH`, and refused, 60.
   - Setting `CAPATH` to NULL made the CA file exclusive on all three.
 - **Beside `CAINFO`, with `CAPATH` cleared, two more options widen trust:**
-  - `CAINFO_BLOB` added its CA on both OpenSSL builds. Ubuntu's GnuTLS 8.5.0 answers it
-    `CURLE_NOT_BUILT_IN` (4).
+  - `CAINFO_BLOB` added its CA on both OpenSSL builds, and on 8.20.0, which has no default
+    `CAPATH`. Ubuntu's GnuTLS 8.5.0 answers it `CURLE_NOT_BUILT_IN` (4).
   - `SSL_OPTIONS` with `CURLSSLOPT_NATIVE_CA` added the system store on Ubuntu's GnuTLS 8.5.0.
     On the OpenSSL builds it changed nothing.
 - **Guix's libcurl reads `SSL_CERT_FILE` and `SSL_CERT_DIR`.** Guix's
@@ -48,6 +48,19 @@ and the container's 8.20.0 with GnuTLS (M2 plan, §6.1):
   Ubuntu's 8.5.0, with both backends, and the floor ignore both. `CURL_CA_BUNDLE` is read
   only by the curl command line, and no libcurl read it. A Guix profile with `nss-certs`
   exports all three, and the maintainer's host does. The container passes none of them.
+
+  **Guix's 8.6.0 behaves the other way.** Its older patch sets the two variables as an easy
+  handle's defaults, when the handle is made, so the request's own setopts win. The
+  adversarial review measured it, loading Guix's `curl-8.6.0` from the store with its
+  closure, and the lead reran it:
+
+  | Case | Guix 8.6.0 | Guix 8.20.0 |
+  |---|---|---|
+  | `SSL_CERT_FILE` at the other CA, CA file the run CA | 200 | 60 |
+  | `SSL_CERT_FILE` at the run CA, CA file the other CA | 60 | 200 |
+  | `SSL_CERT_DIR` at the run CA's directory, CA file the other CA | 60 | 200 |
+
+  So the override depends on the patch's version, not on Guix alone.
 - **Other answers, the same on all four:**
   - a CA file that does not exist, or a directory, answers 77,
     `CURLE_SSL_CACERT_BADFILE`, never a fallback to the system store;
@@ -56,6 +69,19 @@ and the container's 8.20.0 with GnuTLS (M2 plan, §6.1):
     still checks the chain;
   - with no CA store installed, the OpenSSL builds answer 77 for the system store, since
     their default `CAINFO` names a missing file. GnuTLS answers 60.
+- **Three more things a transfer reads, measured by the review** on all four libcurls unless
+  named:
+  - `SSLKEYLOGFILE` makes libcurl write each transfer's TLS secrets to the file it names:
+    five lines for one GET, its handshake and traffic secrets among them.
+  - `OPENSSL_CONF` can weaken what an OpenSSL build verifies. A config setting
+    `CipherString = DEFAULT:@SECLEVEL=0` let a leaf with a 1024-bit RSA key, signed by the
+    request's own CA file, pass on Ubuntu's 8.5.0 with OpenSSL and on the floor, where it
+    answered 60 without the variable. Trust anchors were not changed by it. Ubuntu's
+    GnuTLS 8.5.0 accepted that leaf with no variable at all.
+  - On GnuTLS, a CA file that starts `pkcs11:` is read as a PKCS#11 URL, not a path: it
+    answered 60, not the 77 of a missing file, on 8.20.0 and Ubuntu's 8.5.0. No widening was
+    shown: with the run CA in Ubuntu's store and `p11-kit-modules` installed, it still
+    answered 60. The OpenSSL builds answered 77.
 - **Apple's libcurl is MultiSSL.** Apple's LibreSSL checks the keychain when a CA file fails
   to verify (curl issue 12604, 2024), and Apple called that intended. But the Mac's drift
   row reads `SecureTransport (LibreSSL/3.3.6)`, so a library process selects SecureTransport.
@@ -71,7 +97,8 @@ and the container's 8.20.0 with GnuTLS (M2 plan, §6.1):
      `setopt-failed`.
    - The path reaches libcurl as given, as a counted UTF-8 copy. A path holding U+0000 is
      refused before anything native, as `&curl-request-error`, `embedded-nul`. A missing
-     file is libcurl's to refuse: 77.
+     file is libcurl's to refuse: 77. On GnuTLS, a path starting `pkcs11:` is a PKCS#11 URL,
+     and is M4's to document or refuse.
 2. **`#f` is libcurl's system store, as that library was built.** Neither option is set.
 3. **Every transfer sets verification.** `SSL_VERIFYPEER` and `SSL_VERIFYHOST` are 1 and 2
    unless the request turns verification off, and then both are 0. A CA file beside
@@ -83,9 +110,17 @@ and the container's 8.20.0 with GnuTLS (M2 plan, §6.1):
 5. **Guix's environment override is pinned, and its policy is M4's.**
    - `test-transfer-tls` fails first when `SSL_CERT_FILE` or `SSL_CERT_DIR` is set,
      naming it, as `test-transfer` does for the proxy variables.
-   - A child test pins the override by ADR-0002's world. On a Guix libcurl, `SSL_CERT_FILE`
-     replaces the CA file and `SSL_CERT_DIR` adds to it. Elsewhere both are ignored.
-   - M4, which makes the CA field public, decides what chez-curl does about it.
+   - A child test pins the override by ADR-0002's world and the loaded libcurl's version,
+     from a table written out in the suite. On Guix's 8.20.0, `SSL_CERT_FILE` replaces the CA
+     file and `SSL_CERT_DIR` adds a directory. Outside Guix both are ignored. A Guix libcurl
+     of any other version fails the pin, naming its version, until its verdicts are
+     measured and added. That replaces keying on the world alone, which the review showed
+     wrong for Guix's 8.6.0.
+   - Each variable is tried both ways, so "ignored" is told from "added": `SSL_CERT_FILE` at
+     the other CA with the run CA as the CA file, and at the run CA with the other CA as the
+     CA file.
+   - M4, which makes the CA field public, decides what chez-curl does about it, with the
+     table above.
 
 ### Rejected
 
@@ -107,11 +142,20 @@ and the container's 8.20.0 with GnuTLS (M2 plan, §6.1):
   `test-transfer-tls` fails first anywhere else that sets them.
 - **Clearing `CAPATH` has no behavioural test in any lane.** No lane's system store trusts
   the run CA, so a transfer that left `CAPATH` set would pass every case. The settings are
-  computed as data by the transfer and held whole by `test-transfer-tls`, as the pins are.
-  The Docker measurement above is the behavioural evidence.
+  computed as data by the transfer and held whole by `test-transfer-tls`, as the pins are,
+  and so is `set-option!`, which sends the clear as NULL and judges its answer. Until it was,
+  the review's mutant that skipped the clear passed `make test`, and in Docker, with the run
+  CA in Ubuntu's store, it trusted the other CA's file: 200 where the tree answers 60. The
+  Docker measurement above is the behavioural evidence.
 - **The system-store control needs a system store:** `ca-certificates`
   (`packaging/debian-prereqs.txt` lists it), Guix's GnuTLS store, or the keychain. Without
   one, the OpenSSL builds answer 77, and the suite names the missing store.
+- **M4 owns what a transfer reads from the environment:** the proxy variables, Guix's
+  `SSL_CERT_FILE` and `SSL_CERT_DIR` with the table above, `SSLKEYLOGFILE`, `OPENSSL_CONF`,
+  and the `pkcs11:` prefix on GnuTLS. `test-transfer-tls` fails first on the proxy
+  variables, `SSL_CERT_FILE` and `SSL_CERT_DIR`. The rest are recorded here, not checked: an
+  `OPENSSL_CONF` that narrows the ciphers can change a verdict too, as the review's control
+  showed, 35.
 - **The Mac measures SecureTransport.** `test-transfer-tls` there shows its verdicts, its
   answer to `CAPATH`, and whether it reads `SSL_CERT_FILE`. A refusal there is a finding,
   settled before slice 3 merges (M2 plan, §6).

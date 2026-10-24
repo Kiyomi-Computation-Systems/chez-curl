@@ -555,7 +555,7 @@ ran_other() { printf 'Valgrind ran %s, not %s, the file CHEZ names' "$1" "$2"; }
 other_command() { printf 'Valgrind'"'"'s Command: line is "%s", not "%s"' "$1" "$2"; }
 other_options() { printf 'Valgrind'"'"'s options are [%s], not the gate'"'"'s [%s]' "$1" "$2"; }
 other_files() { printf 'Valgrind read the suppressions files [%s], and the gate allows exactly [%s]' "$1" "$2"; }
-no_p11() { printf 'Valgrind suppressed %s blocks, and guix-glibc-locpath covers none in a run that loads no libp11-kit' "$1"; }
+no_p11() { printf 'guix-glibc-locpath suppressed %s blocks, and covers none in a run that loads no libp11-kit' "$1"; }
 
 # The suppressions files test-memory allows, as other_files lists them.
 if [ -n "${GUIX_ENVIRONMENT:-}" ]; then
@@ -693,7 +693,7 @@ $(count_line 1 0 1 0)"
   gate MEMORY_SUITES="$more"
   status=$?
   want_status nonzero "$status"
-  want_lines "test-memory: FAIL $more (exit 0, but Valgrind suppressed 2 blocks, and guix-glibc-locpath covers exactly one, lost when libp11-kit loads)
+  want_lines "test-memory: FAIL $more (exit 0, but guix-glibc-locpath suppressed 2 blocks, and covers exactly one, lost when libp11-kit loads)
 $(count_line 1 0 1 0)"
   want_in "$out" "more: newlocale answered 0" "test-memory's own output, the program's last lines"
   want_in "$out" " bytes in 2 blocks" "test-memory's own output, the suppressed total"
@@ -851,9 +851,9 @@ verdict "h options: a \$HOME/.valgrindrc that a suite writes mid-run hides nothi
 # ---- i: suppressions files the gate does not pass ----
 # Each is named default.supp, as Valgrind's own is, and hides every leak:
 # first beside Valgrind's own, then in its place. The options that pass it
-# come through VALGRIND, so the options rule names them first. In a Guix
-# environment the block it hides is one more than a run without p11-kit may
-# have suppressed, so that rule names it too.
+# come through VALGRIND, so the options rule names them first. The block it
+# hides is its own entry's, not guix-glibc-locpath's, so in a Guix
+# environment the count rule does not name it: the files rule does.
 for arm in beside instead; do
   case $arm in
     beside)  extra="--suppressions=$vglib/default.supp"
@@ -868,11 +868,7 @@ for arm in beside instead; do
   esac
   want_status nonzero "$status"
   options=$(other_options "$extra $(gate_options "$leak")" "$(gate_options "$leak")")
-  if [ -n "${GUIX_ENVIRONMENT:-}" ]; then
-    wanted=$(zero_line "$leak" "$options" "$(other_files "$read_files" "$allowed")" "$(no_p11 1)")
-  else
-    wanted=$(zero_line "$leak" "$options" "$(other_files "$read_files" "$allowed")")
-  fi
+  wanted=$(zero_line "$leak" "$options" "$(other_files "$read_files" "$allowed")")
   want_lines "$wanted
 $(count_line 1 0 1 0)"
   case $arm in

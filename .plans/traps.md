@@ -732,8 +732,10 @@ it should not be a comment. (chez-cmark-gfm)
   `SSL_CERT_FILE` at another CA. One naming the other CA passed with `SSL_CERT_DIR` at a
   directory holding the run CA. A Guix profile with `nss-certs` exports both, and so does
   the maintainer's host. The container passes neither, so only a shell outside it, or a
-  child given one, shows it. `test-transfer-tls` fails first when either is set (ADR-0018).
-  (chez-curl)
+  child given one, shows it. Guix's 8.6.0 carried an older version of the patch, which set
+  them as a handle's defaults, so a request's settings won there: the override is the
+  patch version's, not Guix's. `test-transfer-tls` fails first when either is set, and pins
+  the override by world and version (ADR-0018). (chez-curl)
 * **Ubuntu's libcurl trusts its default `CAPATH` beside `CAINFO`.** It is built with
   `/etc/ssl/certs` as its CA directory, and setting `CAINFO` leaves that in place. So a
   request naming one CA file also trusts the whole system store. No test lane's store

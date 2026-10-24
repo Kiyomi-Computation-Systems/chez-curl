@@ -231,7 +231,7 @@
   ;; The fields:
   ;;
   ;;   field   Symbol: the field refused, header-name, header-value,
-  ;;           user-agent, or options, the test seam's
+  ;;           user-agent, ca-file, or options, the test seam's
   ;;   value   the string refused, whole, or the option's name
   ;;   reason  one of curl-request-error-reasons
   (define-condition-type &curl-request-error &curl-error

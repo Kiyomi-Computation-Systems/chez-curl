@@ -220,9 +220,12 @@ provisional. They bind until that record is accepted or amended.
   both 0 when the request turns verification off (ADR-0018).
 - **The TLS settings are data,** computed from the request and applied exactly, and
   `test-transfer-tls` holds them whole (ADR-0018).
-- **Guix's libcurl writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over `CAINFO` and `CAPATH`** when
-  a transfer starts, after every setopt. `test-transfer-tls` fails first when either is set,
-  and a child test pins the override by world. Its policy is M4's (ADR-0018).
+- **Guix's libcurl 8.20.0 writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over `CAINFO` and
+  `CAPATH`** when a transfer starts, after every setopt. Guix's 8.6.0, an older patch, lets the
+  request's settings win. `test-transfer-tls` fails first when either is set, and a child test
+  pins the override by world and version, from a table in the suite: a Guix libcurl of an
+  unrecorded version fails it. The policy, with `SSLKEYLOGFILE`, `OPENSSL_CONF` and GnuTLS's
+  `pkcs11:` CA files, is M4's (ADR-0018).
 
 ## The escape hatch
 
@@ -359,9 +362,11 @@ provisional. They bind until that record is accepted or amended.
 - **One suppression, used only when `GUIX_ENVIRONMENT` is set.** It covers the block Guix's
   glibc loses under `compute_locale_search_path` when libcurl loads p11-kit. CI passes no
   suppression. `make check-memory-gate` holds the file to that one entry. In a Guix
-  environment, a suite must have exactly one block suppressed if it read `libp11-kit`, and
-  none if it did not. `--undef-value-errors=no` is added only with a recorded run that
-  needed it (ADR-0014, amended).
+  environment, that entry must have suppressed exactly one block in a suite that read
+  `libp11-kit`, and none in one that did not, counted from Valgrind's `used_suppression`
+  line for it. Valgrind's own `default.supp` is trusted, in Guix as on CI.
+  `--undef-value-errors=no` is added only with a recorded run that needed it (ADR-0014,
+  amended 2026-10-24).
 - **Valgrind checks exactly the gate's command.** `make test-memory` refuses every
   `VALGRIND_*` variable and both `.valgrindrc` files, and passes `--command-line-only=yes`.
   Valgrind writes its own `--log-file`, and every piece of evidence is read from it alone.

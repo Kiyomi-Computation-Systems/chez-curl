@@ -5,18 +5,20 @@
 ;;;
 ;;; A request is a record whose fields are checked when it is made, before
 ;;; anything native: wrong types are assertion violations, and a header or
-;;; a user agent libcurl would send otherwise than asked is a
-;;; &curl-request-error. Header strings are Latin-1, both ways (ADR-0001,
-;;; amended 2026-10-23). The URL is checked when the transfer runs, by
-;;; call-with-parsed-url and require-http-scheme (ADR-0008).
+;;; a user agent libcurl would send otherwise than asked, or a CA file's
+;;; path holding U+0000, is a &curl-request-error. Header strings are
+;;; Latin-1, both ways (ADR-0001, amended 2026-10-23); a CA file's path is
+;;; UTF-8, as every other string. The URL is checked when the transfer
+;;; runs, by call-with-parsed-url and require-http-scheme (ADR-0008).
 ;;;
 ;;; A request holds the caller's strings and lists, which stay mutable. So
 ;;; perform-transfer checks nothing it does not own: it first takes a
-;;; snapshot, fresh pairs and fresh strings for the headers and the user
-;;; agent, checks the snapshot by the constructor's rules, and sends only
-;;; the snapshot. A request changed after it was made is refused then,
-;;; before anything native. The URL takes the same path inside
-;;; call-with-parsed-url, and every C string inside native.
+;;; snapshot, fresh pairs and fresh strings for the headers, the user agent
+;;; and the CA file, checks the snapshot by the constructor's rules, and
+;;; sends only the snapshot. A request changed after it was made is refused
+;;; then, before anything native; a change it takes is sent as changed. The
+;;; URL takes the same path inside call-with-parsed-url, and every C string
+;;; inside native.
 ;;;
 ;;; perform-transfer makes, on this thread, and frees before it returns,
 ;;; raises or escapes, under dynamic-wind (plan, section 3.1), but for the
@@ -77,8 +79,24 @@
 ;;; the loaded library, through curl-easy-option, cached once per process
 ;;; behind a mutex (ADR-0001, decision 2). Setting one checks the value
 ;;; against its type, sends it through the binding option-bindings names
-;;; for that type, and asserts the code libcurl answers. Every option a
-;;; request field sets is named once, in request-field-options.
+;;; for that type, and judges the code libcurl answers by setopt-accepted?:
+;;; CURLE_OK, or CURLE_NOT_BUILT_IN for a clear. Every option a request
+;;; field sets is named once, in request-field-options, where a field may
+;;; name several.
+;;;
+;;; TLS (ADR-0018). Every transfer, an http:// one too, makes the settings
+;;; tls-settings computes from its snapshot's CA file and verification, as
+;;; data, by one call, set-tls-options!, after the request's other settings
+;;; and before the test seam's: SSL_VERIFYPEER and SSL_VERIFYHOST at 1 and
+;;; 2, or both 0 with verification off; then, with a CA file, CAINFO at its
+;;; path and CAPATH cleared, so the CA file is the request's only trust
+;;; anchor, whatever CA directory the build defaults to. A backend with no
+;;; CA directory answers the clear CURLE_NOT_BUILT_IN, which is taken. A CA
+;;; file of #f is libcurl's system store, as built, and sets neither. The
+;;; four names stand in this file only in request-field-options. Guix's
+;;; libcurl writes SSL_CERT_FILE and SSL_CERT_DIR over CAINFO and CAPATH
+;;; when a transfer starts, after every setopt; what chez-curl does about
+;;; that is M4's.
 ;;;
 ;;; write-body is the one callable (plan, section 3.5): __collect_safe,
 ;;; since curl_easy_perform is (ADR-0013), locked where it is defined and
@@ -98,7 +116,9 @@
 ;;;
 ;;; perform-transfer-with is a test seam held to ADR-0009's rules, narrowed
 ;;; (ADR-0009, amended 2026-10-23): long, enumerated-value and off_t options
-;;; alone, none chez-curl owns, compared by id.
+;;; alone, none chez-curl owns, nor an owned setting's twin, the CA file's
+;;; CAINFO_BLOB and SSL_OPTIONS among them (amended 2026-10-24), compared by
+;;; id.
 ;;;
 ;;; The pins, ADR-0003's PROTOCOLS_STR and REDIR_PROTOCOLS_STR at
 ;;; "http,https" and NOSIGNAL at 1, are pinned-options, set by one call,
@@ -113,12 +133,13 @@
   (export make-transfer-request transfer-request?
           transfer-request-url transfer-request-method transfer-request-headers
           transfer-request-user-agent transfer-request-timeout-ms transfer-request-body-limit
-          transfer-request-chunk-hook
+          transfer-request-ca-file transfer-request-verify transfer-request-chunk-hook
           perform-transfer perform-transfer-with
           transfer-response? transfer-response-status transfer-response-http-version
           transfer-response-effective-url transfer-response-headers transfer-response-body
           option-bindings option-binding option-setter http-version-symbol bytes->latin-1 pinned-options
-          request-field-options owned-option-names live-transfer-count cached-option-names)
+          request-field-options owned-option-names live-transfer-count cached-option-names
+          tls-settings setopt-accepted?)
   (import (curl private require-threaded)
           (except (rnrs) dynamic-wind)
           (rnrs mutable-strings)
@@ -275,6 +296,39 @@
           (when problem (refuse-field who 'user-agent agent problem))))
       (cons copies agent)))
 
+  ;; ca-file? : Any -> Boolean
+  ;; X is a CA file: #f, libcurl's system store, or a non-empty string, its
+  ;; path.
+  (define (ca-file? x)
+    (or (not x) (and (string? x) (> (string-length x) 0))))
+
+  ;; refuse-ca-file : Symbol String -> Nothing
+  ;; The refusal of a CA file whose path PATH holds U+0000, as WHO.
+  (define (refuse-ca-file who path)
+    (raise (condition (make-curl-request-error 'ca-file path 'embedded-nul)
+                      (make-who-condition who)
+                      (make-message-condition
+                       "a CA file's path holds U+0000, where C would end it, and libcurl would open another file")
+                      (make-irritants-condition (list path)))))
+
+  ;; ca-file-copy : Symbol (U String #f) -> (U String #f)
+  ;; CA-FILE, a ca-file?, as a fresh string, checked: what WHO may send as
+  ;; CAINFO; #f for #f. A path holding U+0000 is refused as embedded-nul, a
+  ;; &curl-request-error naming ca-file. No other char is refused: a path
+  ;; may hold CR or LF. The copy is made before the check, so what is
+  ;; checked is what is sent. It is scanned by index, allocating nothing:
+  ;; a path may be megabytes long, and libcurl refuses one past 8000000
+  ;; bytes itself.
+  (define (ca-file-copy who ca-file)
+    (and ca-file
+         (let ((copy (string-copy ca-file)))
+           (let scan ((i 0))
+             (when (< i (string-length copy))
+               (when (char=? (string-ref copy i) #\nul)
+                 (refuse-ca-file who copy))
+               (scan (+ i 1))))
+           copy)))
+
   ;; body-limit-bound : Positive-Integer
   ;; A body limit is below 2^63 - 1, so the limit plus one, which
   ;; MAXFILESIZE_LARGE gets, is a curl_off_t.
@@ -282,7 +336,7 @@
 
   ;; make-transfer-request : String (U 'get 'head) (Listof (Pairof String String))
   ;;                         (U String #f) (U Positive-Integer #f) (U Natural #f)
-  ;;                         (U (Bytevector -> Any) #f) -> Request
+  ;;                         (U String #f) Boolean (U (Bytevector -> Any) #f) -> Request
   ;; transfer-request? : Any -> Boolean
   ;; transfer-request-url : Request -> String
   ;; transfer-request-method : Request -> (U 'get 'head)
@@ -290,6 +344,8 @@
   ;; transfer-request-user-agent : Request -> (U String #f)
   ;; transfer-request-timeout-ms : Request -> (U Positive-Integer #f)
   ;; transfer-request-body-limit : Request -> (U Natural #f)
+  ;; transfer-request-ca-file : Request -> (U String #f)
+  ;; transfer-request-verify : Request -> Boolean
   ;; transfer-request-chunk-hook : Request -> (U (Bytevector -> Any) #f)
   ;;
   ;; URL, a string, parsed when the transfer runs. METHOD, get or head.
@@ -303,12 +359,17 @@
   ;; USER-AGENT, a non-empty string, or #f for none. TIMEOUT-MS, a positive
   ;; exact integer a long holds, or #f for libcurl's default, none.
   ;; BODY-LIMIT, an exact natural below 2^63 - 1, or #f for none.
+  ;; CA-FILE, a CA file's path, a non-empty string, sent as given, relative
+  ;; or absolute: the request's only trust anchor (ADR-0018); or #f for
+  ;; libcurl's system store, as built. VERIFY, #t to verify the peer's
+  ;; chain and its name, #f to verify neither: libcurl then reads no CA.
   ;; CHUNK-HOOK, #f, or a procedure handed a fresh copy of each chunk,
   ;; inside the callable, after the limit check: a test seam, private. It
   ;; must return: an exit any other way is refused, as a raise.
   ;;
-  ;; A wrong type is an assertion violation. Then, in order, snapshot's
-  ;; rules for the headers and the user agent, each refusal a
+  ;; A wrong type is an assertion violation, the empty string as a CA file
+  ;; among them. Then, in order, snapshot's rules for the headers and the
+  ;; user agent, and ca-file-copy's for the CA file, each refusal a
   ;; &curl-request-error naming the field. The record keeps the caller's
   ;; objects; perform-transfer checks them again, as a snapshot.
   (define-record-type (transfer-request make-transfer-request transfer-request?)
@@ -318,10 +379,12 @@
             (immutable user-agent transfer-request-user-agent)
             (immutable timeout-ms transfer-request-timeout-ms)
             (immutable body-limit transfer-request-body-limit)
+            (immutable ca-file transfer-request-ca-file)
+            (immutable verify transfer-request-verify)
             (immutable chunk-hook transfer-request-chunk-hook))
     (protocol
      (lambda (new)
-       (lambda (url method headers user-agent timeout-ms body-limit chunk-hook)
+       (lambda (url method headers user-agent timeout-ms body-limit ca-file verify chunk-hook)
          (define (wrong message irritant)
            (assertion-violation 'make-transfer-request message irritant))
          (unless (string? url) (wrong "a URL is a string" url))
@@ -332,10 +395,14 @@
                      (and (integer? body-limit) (exact? body-limit) (<= 0 body-limit)
                           (< body-limit body-limit-bound)))
            (wrong "a body limit is an exact natural below 2^63 - 1, or #f" body-limit))
+         (unless (ca-file? ca-file)
+           (wrong "a CA file is a non-empty string, its path, or #f" ca-file))
+         (unless (boolean? verify) (wrong "verify is #t or #f" verify))
          (unless (or (not chunk-hook) (procedure? chunk-hook))
            (wrong "a chunk hook is a procedure or #f" chunk-hook))
          (snapshot 'make-transfer-request headers user-agent)
-         (new url method headers user-agent timeout-ms body-limit chunk-hook)))))
+         (ca-file-copy 'make-transfer-request ca-file)
+         (new url method headers user-agent timeout-ms body-limit ca-file verify chunk-hook)))))
 
   ;; --- the response -----------------------------------------------------------------
 
@@ -446,29 +513,44 @@
       ((pointer) curl-easy-setopt-pointer)
       (else (assertion-violation 'option-setter "not a setopt binding's name" binding))))
 
-  ;; request-field-options : (Listof (Pairof Symbol String))
-  ;; Each request field that sets an option, with that option's name: the
-  ;; one place the transfer reads it from, and part of owned-option-names,
-  ;; so a field's option is closed to the test seam by being a field's
-  ;; (ADR-0009, consequences).
+  ;; request-field-options : (Listof (Pairof Symbol (Listof String)))
+  ;; Each request field that sets options, with their names, (FIELD NAME
+  ;; ...): the one place the transfer reads them from, and part of
+  ;; owned-option-names, so a field's options are closed to the test seam by
+  ;; being a field's (ADR-0009, consequences). The TLS fields set two each,
+  ;; in the order tls-settings makes them: ca-file CAINFO, its path, then
+  ;; CAPATH, cleared; verify SSL_VERIFYPEER, then SSL_VERIFYHOST (ADR-0018).
   (define request-field-options
-    '((url . "CURLU") (method . "NOBODY") (headers . "HTTPHEADER") (user-agent . "USERAGENT")
-      (timeout-ms . "TIMEOUT_MS") (body-limit . "MAXFILESIZE_LARGE")))
+    '((url "CURLU") (method "NOBODY") (headers "HTTPHEADER") (user-agent "USERAGENT")
+      (timeout-ms "TIMEOUT_MS") (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
+      (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST")))
+
+  ;; field-options : Symbol -> (Listof String)
+  ;; FIELD's options, in request-field-options' order.
+  (define (field-options field) (cdr (assq field request-field-options)))
 
   ;; field-option : Symbol -> String
-  (define (field-option field) (cdr (assq field request-field-options)))
+  ;; The option of FIELD, a field that sets one; a field that sets several
+  ;; is an assertion violation.
+  (define (field-option field)
+    (let ((names (field-options field)))
+      (unless (= (length names) 1)
+        (assertion-violation 'field-option "this field sets more than one option" field))
+      (car names)))
 
   ;; owned-option-names : (Listof String)
   ;; The options the test seam refuses, by name (ADR-0009, amended
-  ;; 2026-10-23): those the transfer always sets, and the protocol pins'
-  ;; deprecated bitmasks; then each request field's; then each owned
-  ;; setting's twin, an option with an id of its own that sets the same
-  ;; thing. They are compared by id, so an alias name is refused too.
+  ;; 2026-10-23 and 2026-10-24): those the transfer always sets, and the
+  ;; protocol pins' deprecated bitmasks; then every option of each request
+  ;; field; then each owned setting's twin, an option with an id of its own
+  ;; that sets the same thing: the CA file's are CAINFO_BLOB, which adds a
+  ;; CA, and SSL_OPTIONS, whose NATIVE_CA adds the system store. They are
+  ;; compared by id, so an alias name is refused too.
   (define owned-option-names
     (append '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS"
               "NOSIGNAL" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER")
-            (map cdr request-field-options)
-            '("TIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "UPLOAD" "PUT")))
+            (apply append (map cdr request-field-options))
+            '("TIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "UPLOAD" "PUT" "CAINFO_BLOB" "SSL_OPTIONS")))
 
   ;; pinned-options : (Listof (Pairof String (U String Integer)))
   ;; The settings every transfer makes, before its own: ADR-0003's protocol
@@ -532,22 +614,33 @@
           (locked option-lock (lambda () (unless owned-ids (set! owned-ids ids))))
           owned-ids)))
 
-  ;; set-option! : Positive-Integer String Integer (U Positive-Integer #f) -> Void
+  ;; setopt-accepted? : (U String Integer #f) Integer -> Boolean
+  ;; Whether CODE, curl_easy_setopt's answer to a setting of VALUE, is
+  ;; taken: CURLE_OK, always; CURLE_NOT_BUILT_IN too when VALUE is #f, a
+  ;; clear, since a build without the option holds nothing to clear, as a
+  ;; TLS backend with no CA directory answers CAPATH (ADR-0018). Any other
+  ;; code, and CURLE_NOT_BUILT_IN for a string or a number, is refused.
+  (define (setopt-accepted? value code)
+    (or (eqv? code curle-ok)
+        (and (not value) (eqv? code curle-not-built-in))))
+
+  ;; set-option! : Positive-Integer String (U Integer #f) (U Positive-Integer #f) -> Void
   ;; Sets the option NAME on EASY to VALUE, through the binding its CURLOT
   ;; type takes, once VALUE is checked against that type: a long or an
-  ;; off_t in range, or a pointer, an exact natural. A value that does not
-  ;; fit is an assertion violation. A code other than CURLE_OK raises
-  ;; setopt-failed, naming NAME, with BUFFER's text.
+  ;; off_t in range, or a pointer, an exact natural, or #f, sent as NULL,
+  ;; which clears it. A value that does not fit is an assertion violation.
+  ;; A code setopt-accepted? refuses raises setopt-failed, naming NAME,
+  ;; with BUFFER's text.
   (define (set-option! easy name value buffer)
     (let* ((option (option-named name))
            (binding (option-binding (cdr option))))
       (unless (case binding
                 ((long) (long? value))
                 ((off-t) (off-t? value))
-                (else (pointer? value)))
+                (else (or (not value) (pointer? value))))
         (assertion-violation 'set-option! "the value does not fit the option's type" name value))
-      (let ((code ((option-setter binding) easy (car option) value)))
-        (unless (eqv? code curle-ok)
+      (let ((code ((option-setter binding) easy (car option) (or value 0))))
+        (unless (setopt-accepted? value code)
           (fail 'setopt-failed code name buffer #f)))))
 
   ;; set-string-option! : Positive-Integer String String (U Positive-Integer #f) -> Void
@@ -565,6 +658,36 @@
                     (set-string-option! easy (car pin) (cdr pin) buffer)
                     (set-option! easy (car pin) (cdr pin) buffer)))
               pinned-options))
+
+  ;; tls-settings : (U String #f) Boolean -> (Listof (Pairof String (U String Integer #f)))
+  ;; The TLS settings for a snapshot's CA-FILE and VERIFY (ADR-0018), in
+  ;; order: verify's options, SSL_VERIFYPEER at 1 and SSL_VERIFYHOST at 2,
+  ;; or both at 0 when VERIFY is #f; then, with a CA file alone, ca-file's,
+  ;; CAINFO at its path and CAPATH at #f, a clear, so that no CA directory
+  ;; the build defaults to is trusted beside it. A CA-FILE of #f is
+  ;; libcurl's system store, as built, and sets neither. The names are
+  ;; request-field-options', in its order. tests/test-transfer-tls.sps
+  ;; writes out all four answers.
+  (define (tls-settings ca-file verify)
+    (let ((verify-names (field-options 'verify))
+          (ca-file-names (field-options 'ca-file)))
+      (append (list (cons (car verify-names) (if verify 1 0))
+                    (cons (cadr verify-names) (if verify 2 0)))
+              (if ca-file
+                  (list (cons (car ca-file-names) ca-file) (cons (cadr ca-file-names) #f))
+                  '()))))
+
+  ;; set-tls-options! : Positive-Integer (U String #f) Boolean (U Positive-Integer #f) -> Void
+  ;; Each of tls-settings' answer for CA-FILE and VERIFY set on EASY, in
+  ;; order: a string through set-string-option!, a counted UTF-8 copy, and
+  ;; a number, or #f as NULL, through set-option!, which judges each code
+  ;; by setopt-accepted?. tests/test-transfer-tls.sps holds it whole.
+  (define (set-tls-options! easy ca-file verify buffer)
+    (for-each (lambda (setting)
+                (if (string? (cdr setting))
+                    (set-string-option! easy (car setting) (cdr setting) buffer)
+                    (set-option! easy (car setting) (cdr setting) buffer)))
+              (tls-settings ca-file verify)))
 
   ;; checked-settings : Any -> (Listof (Pairof String Integer))
   ;; OPTIONS, the test seam's (NAME . VALUE) pairs, as fresh pairs, in
@@ -881,13 +1004,15 @@
   ;; perform-transfer-with : Request (Listof (Pairof String Integer)) -> Response
   ;; REQUEST's transfer, run on this thread, with OPTIONS, each (NAME .
   ;; VALUE), checked by checked-settings: a test seam, private, held to
-  ;; ADR-0009's rules, narrowed (amended 2026-10-23), so no option it takes
-  ;; is one the transfer sets. Before anything native, it takes the
-  ;; request's snapshot and checks it, and checks OPTIONS. Then it always
-  ;; sets pinned-options first, then ERRORBUFFER, CURLU, WRITEFUNCTION and
-  ;; WRITEDATA; and as the
-  ;; request asks, NOBODY for head, HTTPHEADER, USERAGENT, TIMEOUT_MS and
-  ;; MAXFILESIZE_LARGE at the body limit plus one; then OPTIONS. It follows
+  ;; ADR-0009's rules, narrowed (amended 2026-10-23 and 2026-10-24), so no
+  ;; option it takes is one the transfer sets, nor such an option's twin.
+  ;; Before anything native, it takes the request's snapshot, the headers,
+  ;; the user agent and the CA file, and checks it, and checks OPTIONS. Then
+  ;; it always sets pinned-options first, then ERRORBUFFER, CURLU,
+  ;; WRITEFUNCTION and WRITEDATA; and as the request asks, NOBODY for head,
+  ;; HTTPHEADER, USERAGENT, TIMEOUT_MS and MAXFILESIZE_LARGE at the body
+  ;; limit plus one; then, always, tls-settings' for the snapshot's CA file
+  ;; and verification, through set-tls-options!; then OPTIONS. It follows
   ;; no redirect unless OPTIONS say so. A non-zero code, or anything the
   ;; callable recorded, raises &curl-transfer-error: the recorded reason,
   ;; else perform-failed. Every native object it made is freed before it
@@ -900,6 +1025,8 @@
                              (transfer-request-user-agent request)))
            (headers (car fields))
            (agent (cdr fields))
+           (ca-file (ca-file-copy 'perform-transfer (transfer-request-ca-file request)))
+           (verify (transfer-request-verify request))
            (settings (checked-settings options)))
       (call-with-parsed-url (transfer-request-url request)
         (lambda (url)
@@ -931,6 +1058,7 @@
                           (let ((limit (transfer-request-body-limit request)))
                             (when limit
                               (set-option! easy (field-option 'body-limit) (+ limit 1) buffer)))
+                          (set-tls-options! easy ca-file verify buffer)
                           (for-each (lambda (setting)
                                       (set-option! easy (car setting) (cdr setting) buffer))
                                     settings)

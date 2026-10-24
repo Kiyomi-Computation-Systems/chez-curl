@@ -13,20 +13,37 @@ close-out under **Close-outs**, newest first.
     setopt or getinfo option.
   - **Slice 2, the blocking plaintext transfer, is merged** (PR #16, `6600dfb`), and the Mac
     has run it. Its close-out is below.
-  - **Slice 3, TLS, is in progress** on `m2/tls-transfer` (M2 plan, §6).
+  - **Slice 3, TLS, is built** on `m2/tls-transfer` (M2 plan, §6), draft PR #17.
     - **Measured first** (§6.1): the plan's verdicts agree on 7.85.0, Ubuntu's 8.5.0 with
       OpenSSL and with GnuTLS, and 8.20.0. But a CA file is not exclusive on Ubuntu's
-      libcurl, whose default `CAPATH` stays trusted beside it. And Guix's libcurl writes
-      `SSL_CERT_FILE` and `SSL_CERT_DIR` over `CAINFO` and `CAPATH` (ADR-0018).
+      libcurl, whose default `CAPATH` stays trusted beside it. And Guix's libcurl 8.20.0
+      writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over `CAINFO` and `CAPATH` (ADR-0018).
     - **Decided by the maintainer** (§6.2, ADR-0018, ADR-0009 amended):
       - a CA file is the only anchor, with `CAPATH` cleared;
       - `CAINFO_BLOB` and `SSL_OPTIONS` are its twins;
-      - Guix's override is pinned by a test, and its policy is M4's.
-    - **Committed so far:** the records, CI's `gnutls` job, `libcurl3t64-gnutls` in the
-      package list, and that library's drift row.
-    - **Owed before merge:** the transfer's TLS fields and `test-transfer-tls`, still being
-      built; the Docker lanes on them, the GnuTLS one among them; an adversarial review; and
-      the Mac's run of `test-transfer-tls` on SecureTransport.
+      - Guix's override is pinned by a test, and its policy is M4's;
+      - the memory gate's Guix count is our entry's own, not the summary's total
+        (ADR-0014, amended): an HTTPS handshake on GnuTLS uses Valgrind's own
+        `dtv-addr-tail`.
+    - **Built:** the request's `ca-file` and `verify` fields, `tls-settings` and
+      `set-tls-options!`, and `test-transfer-tls`, 53 checks, with its child,
+      `transfer-tls-env`.
+    - **The review** found one test hole: `set-option!` was not held whole, so a mutant that
+      skipped the `CAPATH` clear passed `make test`. It is held now, and both its mutants
+      fail. It also found that Guix's 8.6.0 lets a request's settings win, so the pin is
+      keyed on world and version. And it measured `SSLKEYLOGFILE`, `OPENSSL_CONF` and GnuTLS's
+      `pkcs11:` CA files, which ADR-0018 hands M4.
+    - **Checks, after the fix round:**
+      - in the container: `make test` 22/22, 2212 checks, `check-test-fails` 11/11,
+        `check-suites`, `check-seam` (14 libraries), `check-memory-gate` 39 cases and
+        `test-memory` 22/22;
+      - in Docker: the floor lane (7.85.0, OpenSSL), the `gnutls` lane (8.5.0), the main
+        lane (8.5.0, OpenSSL), `check-variadic` and `check-dev` among its checks, and the
+        memory lane (Valgrind 3.22, 33 gate cases, 22/22), each with `test-transfer-tls` at
+        53 checks.
+    - **Owed before merge:** the Mac's `make test`, the first run of `test-transfer-tls` on
+      SecureTransport. Its verdicts, its answer to clearing `CAPATH`, and whether it reads
+      `SSL_CERT_FILE` are unmeasured.
 
   M1 (brief §7) is built: PRs #10 and #11. M0 (brief §8) is built.
 - **The Mac's run, 2026-10-23,** on the maintainer's M1:
