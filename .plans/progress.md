@@ -20,8 +20,14 @@ close-out under **Close-outs**, newest first.
       `check-seam` (14 libraries), `test-memory` 21/21, and `check-variadic` 25 steps.
     - In Docker: the floor lane (7.85.0, Node 20.10.0) and the main lane (Ubuntu's 8.5.0,
       OpenSSL) passed, and `test-transfer` passed on 8.5.0 with GnuTLS.
-    - **The Mac owes a run:** `make test`, which prints Apple's 8.7.1 transfer rows to add,
-      then `make check-variadic`, whose arm64 steps now run `test-transfer` on each mutant.
+    - **The Mac, 2026-10-24:** `make test` passed 20 of 21. `test-transfer` held all its
+      shared answers on Apple's 8.7.1, and failed only for want of its row, which is now
+      added: `big-header` 100, `many-headers` 56, `bad-status-code` refused, and both
+      `Content-Length`s kept. Its two socket counts read `/proc`, so they skip on macOS.
+      Then `make check-variadic`, run before the row reached the branch, stopped at its
+      control step with the no-row message, as built: the path works on `tarm64osx`.
+      **Still owed there:** `make check-variadic` with the row, whose arm64 steps now run
+      `test-transfer` on each mutant.
   - **Slice 3, TLS,** follows slice 2. Its verify field's options, `SSL_VERIFYPEER` and
     `SSL_VERIFYHOST`, join the seam's deny-list through the request's field table.
 

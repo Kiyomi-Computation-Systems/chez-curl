@@ -48,6 +48,17 @@
    (response 200 http/1.1 (("Content-Length" "5") ("Content-Length" "6")) "hello\n"))))
 
 (libcurl
+ (where "Apple's libcurl 8.7.1, /usr/lib/libcurl.4.dylib with SecureTransport (LibreSSL/3.3.6), on the maintainer's M1: macOS 26.7.1, Homebrew's Chez as tarm64osx, Node 20.10.0 through asdf. Printed by test-transfer there on 2026-10-24, whose shared answers all passed.")
+ (version "8.7.1")
+ (answers
+  ((get raw "/raw/big-header?bytes=102400") (refused perform-failed 100))
+  ((get raw "/raw/big-header?bytes=1048576") (refused perform-failed 100))
+  ((get raw "/raw/many-headers?count=100000") (refused perform-failed 56))
+  ((get raw "/raw/bad-status-code") (refused perform-failed 1))
+  ((get raw "/raw/conflicting-content-length")
+   (response 200 http/1.1 (("Content-Length" "5") ("Content-Length" "6")) "hello\n"))))
+
+(libcurl
  (where "The pinned Guix container (scripts/guix-env, ADR-0006): the profile's curl 8.20.0 with GnuTLS 3.8.13. Measured through C in the container, Node 24.18.0, on 2026-10-23 (M2 plan, section 5.1.1).")
  (version "8.20.0")
  (answers

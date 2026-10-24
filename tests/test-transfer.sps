@@ -10,7 +10,8 @@
 ;;; 5.1.1), so, as test-url does:
 ;;;
 ;;;   - shared answers hold what every recorded libcurl answers, 7.85.0,
-;;;     8.5.0 (OpenSSL and GnuTLS) and 8.20.0, measured through C;
+;;;     8.5.0 (OpenSSL and GnuTLS) and 8.20.0, measured through C, and
+;;;     Apple's 8.7.1, through this suite on the Mac;
 ;;;   - tests/known-transfer-verdicts.sexp holds a row per libcurl version
 ;;;     for the scenarios that vary. A libcurl with no row fails, and the
 ;;;     suite prints the row it would need on the error port.
@@ -2073,8 +2074,8 @@
   'read
   (if (eq? (car file-result) 'data) 'read file-result))
 
-(test-equal "it holds rows for 7.85.0, 8.5.0 and 8.20.0, the libcurls the lanes run"
-  '("7.85.0" "8.5.0" "8.20.0")
+(test-equal "it holds rows for 7.85.0, 8.5.0 and 8.20.0, the libcurls the lanes run, and 8.7.1, Apple's"
+  '("7.85.0" "8.5.0" "8.7.1" "8.20.0")
   (map (lambda (row) (if (eq? (row-problem row) 'ok) (row-version row) row)) rows))
 
 (let loop ((i 1) (rest rows))
