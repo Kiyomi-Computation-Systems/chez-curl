@@ -26,8 +26,22 @@ close-out under **Close-outs**, newest first.
       `Content-Length`s kept. Its two socket counts read `/proc`, so they skip on macOS.
       Then `make check-variadic`, run before the row reached the branch, stopped at its
       control step with the no-row message, as built: the path works on `tarm64osx`.
-      **Still owed there:** `make check-variadic` with the row, whose arm64 steps now run
-      `test-transfer` on each mutant.
+    - **With the row, `make check-variadic` passed all 25 steps on `tarm64osx`.** On each
+      mutant, `test-transfer` failed:
+
+      | Mutant | `test-transfer` on arm64 |
+      |---|---|
+      | the template's annotation removed | 104 tests, by name |
+      | setopt `long` | timed out at 180 s, exit 124 |
+      | setopt pointer | 104 tests, by name |
+      | setopt `off_t` | 6 tests, by name: the `MAXFILESIZE_LARGE` ones and `MAX_RECV_SPEED_LARGE` |
+      | getinfo | 50 tests, by name |
+
+      So each setopt binding is observed in a real transfer on Apple arm64 (ADR-0001). Nothing
+      more is owed on the Mac for slice 2.
+    - **Carried forward:** the `long` mutant shows only as a hang, which names no test. Its
+      likely cause is `TIMEOUT_MS` reaching libcurl as garbage, so the stall tests never
+      return. Running them in a bounded child would turn it into a named failure.
   - **Slice 3, TLS,** follows slice 2. Its verify field's options, `SSL_VERIFYPEER` and
     `SSL_VERIFYHOST`, join the seam's deny-list through the request's field table.
 

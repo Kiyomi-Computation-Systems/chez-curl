@@ -483,6 +483,10 @@ every byte kept.
   `make check-variadic` now runs `test-transfer` on each mutant too. On Apple arm64 any
   non-zero exit counts as the mutant failing: a FAIL line, a crash, or a timeout under
   `TRANSFER_TIMEOUT`. The Mac must first run `make test`, which prints the 8.7.1 rows to add.
+  **On the maintainer's M1, on 2026-10-24, it passed all 25 steps on `tarm64osx`.** On each
+  mutant `test-transfer` failed: the template's 104 tests, the pointer's 104, the `off_t`'s 6,
+  exactly its `MAXFILESIZE_LARGE` and `MAX_RECV_SPEED_LARGE` tests, and getinfo's 50, each by
+  name. The `long` mutant timed out at 180 s, which counts as failing but names no test.
 - **Option ids come from the loaded libcurl, once per process,** and a value goes through the
   binding its `CURLOT` type names. `test-transfer` holds both the type table and each binding's
   procedure, by `eq?`: on x86-64, a long sent through the `off_t` binding arrives all the same,
