@@ -16,7 +16,7 @@
 ;;; It never loads libcurl. (curl private native) does, and reads these
 ;;; through ftype pointers.
 (library (curl private layouts)
-  (export curl-version-info-data curl-easyoption)
+  (export curl-version-info-data curl-easyoption curl-header)
   (import (curl private require-threaded)
           (rnrs)
           (only (chezscheme) define-ftype))
@@ -71,4 +71,20 @@
       (name uptr)
       (id int)
       (type unsigned-int)
-      (flags unsigned-int))))
+      (flags unsigned-int)))
+
+  ;; curl-header : Ftype
+  ;; struct curl_header, curl/header.h (7.83.0), every field: what
+  ;; curl_easy_nextheader answers a pointer to. name and value are C
+  ;; strings libcurl keeps until the handle is reused or cleaned up; amount
+  ;; is how many headers share the name, and index this one's place among
+  ;; them; origin holds CURLH_ bits; anchor is libcurl's own. The suite
+  ;; checks every field and the struct's size.
+  (define-ftype curl-header
+    (struct
+      (name uptr)
+      (value uptr)
+      (amount size_t)
+      (index size_t)
+      (origin unsigned-int)
+      (anchor uptr))))

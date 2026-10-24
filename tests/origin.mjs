@@ -446,6 +446,18 @@ const scripts = {
   'nul-in-header': {
     play: () => [write('HTTP/1.1 200 OK\r\nContent-Length: 6\r\nX-Nul: a\0b\r\n\r\nhello\n'), END],
   },
+  // One header whose value holds every byte from 0x01 to 0xFF but CR and LF,
+  // in order, between an a and a z: where Latin-1 and UTF-8 part, and the
+  // control bytes. libcurl hands each back as sent (ADR-0001, amended
+  // 2026-10-23).
+  'header-bytes': {
+    play: () => {
+      const bytes = [];
+      for (let b = 0x01; b <= 0xff; b++) if (b !== 0x0a && b !== 0x0d) bytes.push(b);
+      return [write(Buffer.concat([ascii('HTTP/1.1 200 OK\r\nX-Bytes: a'), Buffer.from(bytes),
+                                   ascii('z\r\nContent-Length: 0\r\n\r\n')])), END];
+    },
+  },
   'close-before-response': { play: () => [END] },
   'http09': { play: () => [write('hello\n'), END] },
 

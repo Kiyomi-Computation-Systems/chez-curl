@@ -2,7 +2,7 @@
 
 - **Status:** Accepted; amended 2026-10-17: the measured verdicts become M2's tests; amended
   2026-10-19: the verdicts vary by version, so the suite holds shared answers and version
-  rows; amended 2026-10-23 with what M2 slice 1 built
+  rows; amended 2026-10-23 with what M2 slice 1 built, and with what M2 slice 2 changed
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D2 (brief §10)
@@ -174,3 +174,18 @@ resolution examples in RFC 3986 §5.4.
     (`%c3%a9`) and in upper case on 8.20.0 (`%C3%A9`).
 - **The floor lane's stand-in passed with the 7.85.0 row,** in Docker, since CI has not run.
 - **The documentation's list of curl's leniencies gains these,** by version.
+
+## Amendment, 2026-10-23: one copy is checked and parsed (M2 slice 2)
+
+- **`call-with-parsed-url` checks a private copy of its string, and hands libcurl that copy.**
+  It used to check the caller's string, then encode it again. A thread that changed it in
+  between could put U+0000 past the check, and libcurl would read the URL short. The same
+  holds for `url-resolve`'s reference (global-constraints, "Every check of a caller's string").
+- **The transfer takes the parsed handle through `CURLOPT_CURLU`,** and pins every transfer
+  with `PROTOCOLS_STR` and `REDIR_PROTOCOLS_STR`, as decision 3 asks. Both pins are held by a
+  test that reads the transfer's options as data. A redirect test cannot: libcurl checks a
+  followed URL against both, so either one alone hides the other's removal.
+- **The version-rows rule gains a check.** Each case in the rows must answer differently in
+  at least two of them. Otherwise it belongs among the shared answers, and a rows file could
+  hide a shared case. `test-url` and `test-transfer` both hold it.
+

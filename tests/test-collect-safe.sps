@@ -117,9 +117,11 @@
 ;; Rows for the fixture trees alone: two conventions, to compare as sets, two
 ;; callables, entries the crossing and type trees bind, rows marked as the
 ;; reviewed bytevector crossing or string-not-kept, marks that quote
-;; nothing, and rows that name their binder. src/ has no callable yet, so the real table has no row for one.
+;; nothing, and rows that name their binder. The real table's one callable
+;; row is write-body's.
 (define fixture-rows
   '(("fixture_two_conventions" (__collect_safe (__varargs_after 2)) "a fixture row")
+    ("fixture_blocking" (__collect_safe) "a fixture row")
     (on-write (__collect_safe) "a fixture row")
     (on-plain () "a fixture row")
     ("fixture_wide" () "a fixture row")
@@ -270,7 +272,7 @@
            `(("curl_easy_init" () ,a bind-required ())
              ("curl_global_init" () ,a bind-required ())
              ("curl_easy_cleanup" () ,a bind-required ())
-             ("curl_easy_perform" (__collect_safe) ,a foreign-procedure ())
+             ("fixture_blocking" (__collect_safe) ,a foreign-procedure ())
              ("memcpy" () ,a foreign-procedure ())
              ("fixture_two_conventions" ((__varargs_after 2) __collect_safe) ,a foreign-procedure ())
              ("curl_multi_poll" (__collect_safe) ,a foreign-procedure ())
@@ -620,13 +622,14 @@
            `((mismatch "curl_easy_init" () (__collect_safe) ,x)
              (mismatch on-write (__collect_safe) () ,x)))
      (list "blocking-plain"
-           "ADR-0013's rows: curl_easy_perform and curl_multi_poll bound plain, curl_multi_perform and memcpy bound __collect_safe; memcpy's u8*, which its row marks, is no crossing violation, and its convention mismatches"
+           "ADR-0013's rows: curl_easy_perform and curl_multi_poll bound plain, curl_easy_perform through bind-required, not its row's bind-blocking, curl_multi_perform and memcpy bound __collect_safe; memcpy's u8*, which its row marks, is no crossing violation, and its convention mismatches"
            (listed 'binder "curl/p.sls" 'bind-required)
            `(("curl_easy_perform" () ,p bind-required ())
              ("curl_multi_poll" () ,p foreign-procedure ())
              ("curl_multi_perform" (__collect_safe) ,p foreign-procedure ())
              ("memcpy" (__collect_safe) ,p foreign-procedure (u8*)))
            `((mismatch "curl_easy_perform" (__collect_safe) () ,p)
+             (wrong-binder "curl_easy_perform" bind-blocking bind-required ,p)
              (mismatch "curl_multi_poll" (__collect_safe) () ,p)
              (mismatch "curl_multi_perform" () (__collect_safe) ,p)
              (mismatch "memcpy" () (__collect_safe) ,p)))
@@ -811,7 +814,7 @@
            "__collect_safe in the known wrapper's template: every use gets it"
            (listed 'binder "curl/w.sls" 'bind-required)
            `(("curl_easy_init" (__collect_safe) ,ws bind-required ())
-             ("curl_easy_perform" (__collect_safe) ,ws bind-required ()))
+             ("curl_multi_poll" (__collect_safe) ,ws bind-required ()))
            `((mismatch "curl_easy_init" () (__collect_safe) ,ws)))
      (list "wrapper-pattern-conventions"
            "the known wrapper's conventions come from a pattern variable"
@@ -1117,7 +1120,7 @@
       (("curl_easy_init" bind-required () uptr ,a)
        ("curl_global_init" bind-required (long) int ,a)
        ("curl_easy_cleanup" bind-required (uptr) void ,a)
-       ("curl_easy_perform" foreign-procedure (uptr) int ,a)
+       ("fixture_blocking" foreign-procedure (uptr) int ,a)
        ("memcpy" foreign-procedure (uptr uptr size_t) uptr ,a)
        ("fixture_two_conventions" foreign-procedure (uptr int long) int ,a)
        ("curl_multi_poll" foreign-procedure (uptr uptr unsigned int uptr) int ,a)
@@ -1195,7 +1198,7 @@
 ;; whose template carries the convention: a direct binding with it is the
 ;; wrong binder, and make check-variadic's mutation reaches only the
 ;; template.
-(test-equal "the table requires exactly (__varargs_after 2) of the four variadic entries ADR-0001 names, citing its decision 1, each bound through bind-variadic, and of no other entry, nor names a binder for any other"
+(test-equal "the table requires exactly (__varargs_after 2) of the four variadic entries ADR-0001 names, citing its decision 1, each bound through bind-variadic, and of no other entry, nor names bind-variadic for any other"
   (map (lambda (key) (list key '((__varargs_after 2)) variadic-citation '(bound-by bind-variadic)))
        variadic-entries)
   (guard (e (#t (list 'unreadable (describe e))))
@@ -1203,8 +1206,61 @@
               (or (member (car row) variadic-entries)
                   (exists (tagged? '__varargs_after) (cadr row))
                   (memq '__varargs (cadr row))
-                  (exists (tagged? 'bound-by) (cdddr row))))
+                  (member '(bound-by bind-variadic) (cdddr row))))
             conventions-table)))
+
+;; ADR-0013's decision 1, written out here, not read from the table: the
+;; row loosened along with its binding, perform made plain or its binder
+;; dropped, would otherwise pass.
+(define can-block-citation
+  ".plans/decisions/0013-collect-safe-blocking-calls.md: Known now: `curl_multi_poll` and `curl_easy_perform`.")
+
+(test-equal "the table's rows that name a binder are the four variadic ones, through bind-variadic, and curl_easy_perform's, __collect_safe, citing ADR-0013's decision 1, through bind-blocking"
+  (append (map (lambda (key) (list key '(bound-by bind-variadic))) variadic-entries)
+          (list (list "curl_easy_perform" '(__collect_safe) can-block-citation '(bound-by bind-blocking))))
+  (guard (e (#t (list 'unreadable (describe e))))
+    (append
+     (map (lambda (row) (list (car row) (list-ref row (- (length row) 1))))
+          (filter (lambda (row) (and (member (car row) variadic-entries)
+                                     (exists (tagged? 'bound-by) (cdddr row))))
+                  conventions-table))
+     (filter (lambda (row) (and (not (member (car row) variadic-entries))
+                                (exists (tagged? 'bound-by) (cdddr row))))
+             conventions-table))))
+
+(test-equal "the scan of src/ finds curl_easy_perform bound once, through bind-blocking, with __collect_safe"
+  '(((__collect_safe) bind-blocking))
+  (bound-via "curl_easy_perform"))
+
+;; ADR-0013's decision 2, written out here.
+(define callback-citation
+  ".plans/decisions/0013-collect-safe-blocking-calls.md: M2's transfer callbacks run inside `curl_easy_perform`, so they are.")
+
+(test-equal "the table's one callable row is write-body's: __collect_safe, citing ADR-0013's decision 2, with no mark and no binder"
+  `((write-body (__collect_safe) ,callback-citation))
+  (guard (e (#t (list 'unreadable (describe e))))
+    (filter (lambda (row) (symbol? (car row))) conventions-table)))
+
+(test-equal "the scan of src/ finds write-body defined once, a foreign-callable with __collect_safe, in (curl private transfer)"
+  '(((__collect_safe) foreign-callable "src/curl/private/transfer.sls"))
+  (guard (e (#t (list 'unreadable (describe e))))
+    (if (eq? (car src-check) 'returned)
+        (map (lambda (b) (list (cadr b) (list-ref b 3) (caddr b)))
+             (filter (lambda (b) (eq? (car b) 'write-body)) (car (cadr src-check))))
+        src-check)))
+
+(test-equal "the table's rows for slice 2's other entries, curl_easy_strerror, curl_easy_nextheader, curl_slist_append and curl_slist_free_all, are each plain, citing ADR-0013's cannot-block sentence, with no mark and no binder"
+  (map (lambda (key) (list key '() cannot-block-citation))
+       '("curl_easy_strerror" "curl_easy_nextheader" "curl_slist_append" "curl_slist_free_all"))
+  (guard (e (#t (list 'unreadable (describe e))))
+    (map (lambda (key) (find (lambda (row) (equal? (car row) key)) conventions-table))
+         '("curl_easy_strerror" "curl_easy_nextheader" "curl_slist_append" "curl_slist_free_all"))))
+
+(test-equal "the scan of src/ finds slice 2's plain entries each bound once, through bind-required, with no convention"
+  (map (lambda (key) (list key '((() bind-required))))
+       '("curl_easy_strerror" "curl_easy_nextheader" "curl_slist_append" "curl_slist_free_all"))
+  (map (lambda (key) (list key (bound-via key)))
+       '("curl_easy_strerror" "curl_easy_nextheader" "curl_slist_append" "curl_slist_free_all")))
 
 ;; ADR-0013's sentence on what the two callees keep, written out here, not
 ;; read from the table.
@@ -1241,9 +1297,10 @@
 
 ;; Written out here, not read from the table: a row loosened along with the
 ;; macro it holds, say load-step made any, would otherwise pass.
-(test-equal "known-macros is src/'s four macros: two binders in native.sls, and load-step and require-supported-chez, plain, each in its own library"
+(test-equal "known-macros is src/'s five macros: three binders in native.sls, and load-step and require-supported-chez, plain, each in its own library"
   '((bind-required binder "curl/private/native.sls")
     (bind-variadic binder "curl/private/native.sls")
+    (bind-blocking binder "curl/private/native.sls")
     (load-step plain "curl/private/load-state.sls")
     (require-supported-chez plain "curl/private/require-threaded.sls"))
   known-macros)

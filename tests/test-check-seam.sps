@@ -294,6 +294,28 @@
                   (string-append (at "memory-native-elsewhere" "http-client/h.sls") ": (http-client h) "
                                  (library-only "load-shared-object" "(curl private native)"))))
 
+   (list "callable-listed"
+         "rule (f), passing: foreign-callable, foreign-callable-entry-point and lock-object imported by (curl private transfer), the one library listed for each, with make-mutex and with-mutex beside them"
+         (holds 2 2))
+   (list "callable-elsewhere"
+         "rule (f): foreign-callable, foreign-callable-entry-point and lock-object each imported by a library not listed for it, in either family, or by a name that only looks like the listed one; the listed library's own names are not named"
+         (refused 6
+                  (string-append (at "callable-elsewhere" "curl/private/native.sls")
+                                 ": (curl private native) "
+                                 (library-only "foreign-callable" "(curl private transfer)"))
+                  (string-append (at "callable-elsewhere" "curl/private/transfer.sls")
+                                 ": (curl private transfer) "
+                                 (library-only "foreign-alloc" "(curl private memory)"))
+                  (string-append (at "callable-elsewhere" "curl/private/transfer/extra.sls")
+                                 ": (curl private transfer extra) "
+                                 (library-only "foreign-callable-entry-point" "(curl private transfer)"))
+                  (string-append (at "callable-elsewhere" "curl/x.sls") ": (curl x) "
+                                 (library-only "lock-object" "(curl private transfer)"))
+                  (string-append (at "callable-elsewhere" "http-client/h.sls") ": (http-client h) "
+                                 (library-only "foreign-callable" "(curl private transfer)"))
+                  (string-append (at "callable-elsewhere" "http-client/h.sls") ": (http-client h) "
+                                 (library-only "lock-object" "(curl private transfer)"))))
+
    ;; --- rule (g): no library exports a name it imports from (chezscheme) ---
    (list "export-chez"
          "rule (g): a name imported from (chezscheme) exported, plain or as a rename spec's internal name, in either family, each in export order; a name from (rnrs), a rename of a library's own definition to a (chezscheme) name, and a definition named like a (chezscheme) binding are not named"

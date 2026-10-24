@@ -65,14 +65,16 @@ provisional. They bind until that record is accepted or amended.
   `tests/foreign-conventions.sls`'s table,** and `test-collect-safe` checks its conventions
   against it.
   - An entry is a string literal, given directly or to a known wrapper (today
-    `bind-required` and `bind-variadic`). A wrapper's conventions are its template's own,
+    `bind-required`, `bind-variadic` and `bind-blocking`). A wrapper's conventions are its template's own,
     never a use's, and its pattern takes no operand apart.
   - A wrapper's name may stand only at the head of a use in code, or as the name its one
     `define-syntax` defines. Anywhere else it is stray: as an argument, in data, in a
     macro, bound as a name, or in an export or import. So no library exports a wrapper.
   - A row may name the one wrapper its entry must be bound through, `(bound-by NAME)`.
-    The four variadic rows name `bind-variadic`.
-  - A callable is the whole right-hand side of `(define name ...)`.
+    The four variadic rows name `bind-variadic`, and `curl_easy_perform`'s names
+    `bind-blocking`, whose template carries `__collect_safe` (ADR-0013, amended).
+  - A callable is the whole right-hand side of `(define name ...)`. The one callable,
+    `write-body`, is locked with `lock-object` where it is defined, and never unlocked.
 - **Every macro `src/` defines is a row of `known-macros`,** in
   `tests/foreign-conventions.sls`: a binder (a known wrapper) or a plain macro, defined at
   a library body's top level in the file its row names. Any other `define-syntax`, and every `let-syntax` and `letrec-syntax`, fails.
@@ -105,10 +107,31 @@ provisional. They bind until that record is accepted or amended.
   memory,** made by `call-with-c-string`, which refuses a string holding U+0000. Chez's own
   `string` type would cut it at the NUL without a word. Strings libcurl hands back are read
   as bytes, through `strlen` and the checked copy (ADR-0001, amended).
+- **Header strings are Latin-1, both ways:** one char per byte. A response header's name and
+  value become strings that way. A request header's name and value, and the user agent, reach
+  libcurl as counted Latin-1 copies, and a char above U+00FF is refused, as U+0000 is. That
+  is the UTF-8 rule's one exception (ADR-0001, amended 2026-10-23).
+- **Every check of a caller's string or list runs on a private copy, and the copy is what is
+  used.** Scheme strings and pairs are mutable, so a check, then a use, of the caller's own
+  checks something else. That covers the transfer's snapshot of its request, the C-string
+  helpers, URL checking and option names (ADR-0001, amended).
+- **A request header is refused, before anything native, as `&curl-request-error`:**
+  - a name that is no RFC 9110 token, `not-a-token`;
+  - a value or user agent whose first offending char is U+0000, CR or LF, or above U+00FF:
+    `embedded-nul`, `line-break` or `not-latin-1`;
+  - then one that starts or ends with SP, HTAB, VT or FF, `surrounding-whitespace`, since
+    libcurl drops a blank value, and libcurl's own header of that name with it;
+  - a second Host, or a User-Agent beside the user-agent field, `duplicates-field`. libcurl
+    keeps one Host, and sends it first;
+  - `Content-Length` or `Transfer-Encoding`, `framing-header`: M2 sends no body, and libcurl
+    owns the framing. M4 revisits it with bodies.
+
+  (M2 plan, §5.3)
 - **Every entry point `src/` binds has a prototype row in `tests/test-constants.sps`,** written
   in the header's own spelling and checked against it. The suite holds each binding's Chez types
   to its row through `c-type-map`, which it writes out, with the enum names and the variadic
-  lists. A new binding needs a row (ADR-0001, amended).
+  lists. A new binding needs a row (ADR-0001, amended). A callable has one too: `write-body`
+  is held to `curl_write_callback`'s typedef.
 - **`test-collect-safe` reads every binding's types as an allowlist,** and refuses a
   crossing, a type that hands C a pointer into Chez's heap, unless its row is marked.
   - A bytevector's data (`u8*`, `u16*`, `u32*`) needs `(bytevector-crossing CITATION)`:
@@ -168,7 +191,10 @@ provisional. They bind until that record is accepted or amended.
 - **Only `http` and `https`.** The scheme is checked on the parsed handle before
   submission. Every transfer is also pinned with `CURLOPT_PROTOCOLS_STR` and
   `CURLOPT_REDIR_PROTOCOLS_STR`. The deprecated bitmask options are never used (ADR-0003,
-  ADR-0008).
+  ADR-0008). The pins, with `NOSIGNAL`, are `pinned-options`, the first thing the transfer sets
+  on its handle; their names appear in `transfer.sls` only as data, and `test-transfer` holds
+  both. A redirect test cannot: libcurl checks a followed URL against both pins, so either
+  hides the other's removal.
 - **Relative references** resolve with `curl_url_set` against the current URL's handle
   (ADR-0008).
 - **A `CURLU` handle is used by one thread at a time.** Ownership passes to the engine with
@@ -195,7 +221,14 @@ provisional. They bind until that record is accepted or amended.
 
   (ADR-0009)
 - **Owned options:** `URL`, `CURLU`, `PROTOCOLS_STR`, `REDIR_PROTOCOLS_STR`, `PROTOCOLS`,
-  `REDIR_PROTOCOLS`, `NOSIGNAL`, and every option a request field sets (ADR-0009).
+  `REDIR_PROTOCOLS`, `NOSIGNAL`, and every option a request field sets (ADR-0009). Each owned
+  setting's **twin** is refused too, an option with an id of its own that sets the same thing:
+  `MAXFILESIZE`, `TIMEOUT`, `HTTPGET`, `POST`, `UPLOAD` and `PUT` today, and with them the
+  transfer's callable and data, `WRITEFUNCTION`, `WRITEDATA` and `ERRORBUFFER` (ADR-0009,
+  amended 2026-10-23).
+- **M2's test seam, `perform-transfer-with`, is held to these rules, narrowed:** long,
+  enumerated-value and `off_t` options alone, so no address can pass. It stays private
+  (ADR-0009, amended 2026-10-23).
 - **Lifetimes.** Blobs are passed with `CURL_BLOB_COPY`. String lists are built by the
   binding and freed only after the transfer completes (ADR-0009).
 
@@ -214,8 +247,9 @@ provisional. They bind until that record is accepted or amended.
     Adding to a list is a reviewed change.
   - A name in `library-only-chez-names` is imported only by the libraries listed with it:
     `define-ftype` by `(curl private layouts)`, `foreign-alloc` and `foreign-free` by
-    `(curl private memory)`, and `foreign-procedure` and `load-shared-object` by
-    `(curl private native)`, each alone (ADR-0007, amended).
+    `(curl private memory)`, `foreign-procedure` and `load-shared-object` by
+    `(curl private native)`, and `foreign-callable`, `foreign-callable-entry-point` and
+    `lock-object` by `(curl private transfer)`, each alone (ADR-0007, amended).
   - No file under `src/` may be one Chez loads as a library that the check doesn't read.
   - Every `(curl ...)` or `(http-client ...)` library a `src/` library imports is defined
     under `src/` (rule (h)). `tests/` is on the suites' library path too.
@@ -366,6 +400,17 @@ provisional. They bind until that record is accepted or amended.
   (ADR-0012)
 - **Concurrency costs no threads.** Many requests share one engine, and the high level
   never starts a thread per request (ADR-0012).
+- **Every native object is made, or freed, in one critical section with its record:** its
+  count, its table entry, and the variable its free reads. An escape between the two, by an
+  engine's expiry or an interrupt handler, leaked it for good. Every mutex is held through
+  `locked`, `critical-section` around `with-mutex`, which takes its mutex before its own
+  `dynamic-wind` (ADR-0013, amended 2026-10-23).
+- **An escape from `curl_easy_perform` is allowed, and counted.** chez-curl never calls
+  libcurl on a handle whose perform was left without its return, and that handle stays
+  counted as `easy`. Caller code inside the callable, M2's test hook alone, runs in a
+  `dynamic-wind` that turns a continuation's exit into a raise. `curl_easy_perform` itself runs
+  in no critical section, which would defer the thread's collections and Ctrl-C until it
+  returns (ADR-0013, amended 2026-10-23).
 - **Provisional until spike E1 at M3** (ADR-0013, Proposed):
   - A libcurl call that can block is `__collect_safe`: `curl_multi_poll`,
     `curl_easy_perform`, and whatever else E1 finds blocks. So is every callback it can

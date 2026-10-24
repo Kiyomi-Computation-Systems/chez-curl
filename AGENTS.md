@@ -107,8 +107,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   `suite-exit-status` must also exit 1 on its own failures, before the
   shared form.
 * Chez evaluates arguments right to left in compiled library code, left to
-  right when interpreted, and `map` calls its procedure in no fixed order. No
-  assertion may depend on either order; use `for-each` for effects.
+  right when interpreted, and `map` calls its procedure in no fixed order. A
+  `let`'s inits are arguments too. No assertion may depend on either order;
+  use `for-each` for effects, and `let*` when one init must follow another.
 * A setter that refuses a value keeps the one it had. Give each round trip
   its own sentinel, and assert every return code.
 * An assertion passes whenever *another* rule can produce its expected value.
@@ -243,6 +244,34 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * In an empty submodule directory, `git -C` answers for the superproject.
   Compare `git -C <dir> rev-parse --show-toplevel` with the directory itself
   before trusting anything else it says.
+* Scheme strings and pairs are mutable, so a check on a caller's string or
+  list, then a use of it, checks something else. Check a private copy, and
+  use that copy.
+* A continuation out of a foreign callable abandons its C caller: libcurl
+  then leaks its connection while the counts read zero. Caller code inside a
+  callable runs in a `dynamic-wind` that turns any exit but a return into a
+  raise. An engine's expiry or an interrupt handler escapes at any safe point:
+  each native object is made or freed in one critical section with its count
+  and its record, and a handle whose perform was escaped is never touched again
+  and stays counted. A critical section around perform defers collections and
+  Ctrl-C until the transfer ends, so it was reversed.
+* An after thunk that raises during an engine's expiry kills the engine: `no
+  engine active`. A refusal there holds against a caller's continuation only.
+* A sweep's evidence that it reached a place needs a control run that cannot
+  reach it, or a narrower reach passes too.
+* `with-mutex` takes its mutex before its own `dynamic-wind`, so an escape
+  between them leaves the mutex held. Hold a mutex through `critical-section`
+  around `with-mutex`.
+* Valgrind runs one thread at a time, so a thread that never sleeps starves
+  the rest. Pace a collecting or racing thread.
+* One protocol pin hides the other's removal in a redirect test: libcurl
+  checks a followed URL against both. Hold each pin by reading the options.
+* An ambient `http_proxy` and the like divert every transfer, so
+  `test-transfer` fails first, naming the variable, when one is set.
+* libcurl's cleanup reads nothing a transfer handed it, so freeing the
+  `CURLU`, the header list or the error buffer before `curl_easy_cleanup`
+  passes every behavioural check, Valgrind's too. A check reads the
+  transfer's nesting instead.
 * In a git worktree, `.git` points outside the working directory, so a
   container that shares only the working directory sees no repository. Keep
   git on the host.

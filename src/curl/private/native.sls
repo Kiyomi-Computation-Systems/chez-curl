@@ -25,9 +25,20 @@
 ;;;   6. bind     every other entry point, eagerly
 ;;;   7. probe    the options API and the header API, then check-apis
 ;;;
+;;; An interrupt that escapes, an engine's expiry, a timer or keyboard
+;;; handler that invokes a continuation, may land at any safe point. So
+;;; making a native object and recording it where its free will find it, its
+;;; count and the variable an after thunk reads, happen in one critical
+;;; section, with no safe point between, and so does freeing it: each counted
+;;; wrapper's call and count share a critical-section, and each extent is a
+;;; dynamic-wind whose critical? argument is #t, which runs its before thunk,
+;;; and its after thunk, in one critical section with the record that the
+;;; extent was entered, or left (M2 fix round 2).
+;;;
 ;;; Every native object it makes is counted, in (curl private counters):
 ;;; each foreign block, through (curl private memory), each easy handle,
-;;; each CURLU handle, and each string curl_url_get hands back. The load's
+;;; each CURLU handle, each string curl_url_get hands back, and each string
+;;; list curl_slist_append starts. The load's
 ;;; own, the header probe's handle and its slot, are freed before it
 ;;; returns, so every count is zero after it.
 ;;;
@@ -43,7 +54,15 @@
 ;;; C strings go through them too (M2 plan, section 3.3): call-with-c-string
 ;;; hands C a counted, NUL-terminated UTF-8 copy, refusing a string that
 ;;; holds U+0000, which C would read as its end; c-string->bytevector reads
-;;; one back as bytes.
+;;; one back as bytes. Header strings and the user agent are the one
+;;; exception (ADR-0001, amended 2026-10-23): call-with-latin-1-c-string
+;;; hands C one byte per char, refusing U+0000 and any char above U+00FF.
+;;;
+;;; The blocking transfer's bindings (M2 plan, section 5.2) are step 6's:
+;;; curl_easy_perform, through bind-blocking, whose template carries
+;;; __collect_safe (ADR-0013), and curl_easy_strerror, curl_easy_nextheader,
+;;; curl_slist_append and curl_slist_free_all, plain. Their counted
+;;; wrappers count a string list as slist while it is not NULL.
 ;;;
 ;;; The load runs once per process, whatever it decides. Chez runs a
 ;;; library body that raised again at every later reference, so each step
@@ -74,14 +93,16 @@
   (export loaded-libcurl curl-easy-option
           curl-easy-init curl-easy-cleanup
           curl-easy-setopt-long curl-easy-setopt-pointer curl-easy-setopt-off-t
-          curl-easy-getinfo
+          curl-easy-getinfo curl-easy-getinfo-long curl-easy-getinfo-string
           copy-foreign->bytevector! copy-bytevector->foreign!
-          call-with-c-string c-string->bytevector
+          call-with-c-string call-with-latin-1-c-string c-string->bytevector
           curl-url curl-url-cleanup curl-url-set curl-url-get curl-url-strerror
-          curl-free loaded-protocols)
+          curl-free loaded-protocols
+          curl-easy-perform curl-easy-strerror curl-easy-nextheader curl-header-bytes
+          curl-slist-append curl-slist-free-all)
   (import (curl private require-threaded)
-          (rnrs)
-          (only (chezscheme) ftype-ref make-ftype-pointer
+          (except (rnrs) dynamic-wind)
+          (only (chezscheme) critical-section dynamic-wind ftype-ref make-ftype-pointer
                 foreign-procedure foreign-entry? load-shared-object
                 foreign-ref foreign-sizeof
                 format format-condition? display-condition
@@ -183,6 +204,20 @@
          (required-entry entry library)
          (foreign-procedure (__varargs_after 2) entry (arg ...) result)))))
 
+  ;; (bind-blocking ENTRY (ARG-TYPE ...) RESULT-TYPE LIBRARY): ENTRY, a C
+  ;; function that can block, bound with foreign-procedure and
+  ;; __collect_safe, after required-entry has found it (ADR-0013, decision
+  ;; 1). The convention is the template's own, never a use's: a thread
+  ;; blocked in a plain call stays active, and every other thread's
+  ;; collection waits for it. tests/foreign-conventions.sls holds
+  ;; curl_easy_perform's row to this binder.
+  (define-syntax bind-blocking
+    (syntax-rules ()
+      ((_ entry (arg ...) result library)
+       (begin
+         (required-entry entry library)
+         (foreign-procedure __collect_safe entry (arg ...) result)))))
+
   ;; --- the checked copies (ADR-0001, amended 2026-10-16) -------------------------
   ;; Their memcpy bindings, memcpy->bytevector and memcpy->foreign, are bound
   ;; in step 3, and referenced nowhere but here.
@@ -260,34 +295,27 @@
       (and (< i (string-length s))
            (or (char=? (string-ref s i) #\nul) (loop (+ i 1))))))
 
-  ;; call-with-c-string : String (Positive-Integer -> Any) -> Any
-  ;; PROC's answer, PROC given the address of STRING as C reads it: its
-  ;; UTF-8 bytes and a NUL, in a counted block freed once PROC returns,
-  ;; raises or escapes. A STRING that holds U+0000 raises
-  ;; &curl-embedded-nul, before anything is allocated: C would read the
-  ;; NUL as the string's end, as Chez's string type does without a word.
-  ;; Re-entering PROC through a continuation, once the block is freed,
-  ;; raises an assertion violation, so the address is never used after.
-  (define (call-with-c-string string proc)
-    (unless (string? string)
-      (assertion-violation 'call-with-c-string "not a string" string))
-    (unless (procedure? proc)
-      (assertion-violation 'call-with-c-string "not a procedure" proc))
-    (when (holds-nul? string)
-      (raise (condition (make-curl-embedded-nul string)
-                        (make-who-condition 'call-with-c-string)
-                        (make-message-condition "a string C reads ends at its first NUL, and this one holds one"))))
-    (let* ((utf8 (string->utf8 string))
-           (n (+ (bytevector-length utf8) 1))
-           (bytes (make-bytevector n 0))
-           (block #f)
-           (freed #f))
-      (bytevector-copy! utf8 0 bytes 0 (- n 1))
-      (dynamic-wind
+  ;; refuse-nul : Symbol String -> Nothing
+  ;; WHO's refusal of STRING, which holds U+0000.
+  (define (refuse-nul who string)
+    (raise (condition (make-curl-embedded-nul string)
+                      (make-who-condition who)
+                      (make-message-condition "a string C reads ends at its first NUL, and this one holds one"))))
+
+  ;; call-with-c-bytes : Symbol String Bytevector (Positive-Integer -> Any) -> Any
+  ;; PROC's answer, PROC given the address of a counted block holding
+  ;; BYTES, which end in the NUL, the copy of STRING that WHO makes. The
+  ;; block is freed once PROC returns, raises or escapes, and re-entering
+  ;; PROC through a continuation after that raises an assertion violation
+  ;; from WHO, so the address is never used after.
+  (define (call-with-c-bytes who string bytes proc)
+    (let ((n (bytevector-length bytes))
+          (block #f)
+          (freed #f))
+      (dynamic-wind #t
         (lambda ()
           (when freed
-            (assertion-violation 'call-with-c-string
-                                 "re-entered after its string was freed" string))
+            (assertion-violation who "re-entered after its string was freed" string))
           (set! block (foreign-block n)))
         (lambda ()
           (copy-bytevector->foreign! bytes 0 block n)
@@ -295,6 +323,65 @@
         (lambda ()
           (set! freed #t)
           (free-foreign-block! block)))))
+
+  ;; call-with-c-string : String (Positive-Integer -> Any) -> Any
+  ;; PROC's answer, PROC given the address of STRING as C reads it: its
+  ;; UTF-8 bytes and a NUL, in a counted block freed once PROC returns,
+  ;; raises or escapes. A STRING that holds U+0000 raises
+  ;; &curl-embedded-nul, before anything is allocated: C would read the
+  ;; NUL as the string's end, as Chez's string type does without a word.
+  ;; STRING is the caller's, and mutable, so it is copied first, and the
+  ;; copy alone is checked and encoded: a check of STRING, then an encoding
+  ;; of it, would let another thread change it between the two.
+  ;; Re-entering PROC through a continuation, once the block is freed,
+  ;; raises an assertion violation, so the address is never used after.
+  (define (call-with-c-string string proc)
+    (unless (string? string)
+      (assertion-violation 'call-with-c-string "not a string" string))
+    (unless (procedure? proc)
+      (assertion-violation 'call-with-c-string "not a procedure" proc))
+    (let ((copy (string-copy string)))
+      (when (holds-nul? copy)
+        (refuse-nul 'call-with-c-string copy))
+      (let* ((utf8 (string->utf8 copy))
+             (n (+ (bytevector-length utf8) 1))
+             (bytes (make-bytevector n 0)))
+        (bytevector-copy! utf8 0 bytes 0 (- n 1))
+        (call-with-c-bytes 'call-with-c-string copy bytes proc))))
+
+  ;; call-with-latin-1-c-string : String (Positive-Integer -> Any) -> Any
+  ;; call-with-c-string's twin for header strings and the user agent
+  ;; (ADR-0001, amended 2026-10-23): PROC given the address of STRING as one
+  ;; byte per char, U+00nn as the byte nn, and a NUL, in a counted block
+  ;; freed once PROC returns, raises or escapes. STRING is scanned left to
+  ;; right, before anything is allocated, and its first offending char
+  ;; decides: U+0000 raises &curl-embedded-nul, and a char above U+00FF,
+  ;; which has no byte, an assertion violation. A request's validation
+  ;; refuses both before this is reached; this is the backstop. As
+  ;; call-with-c-string does, it copies STRING first, and checks and
+  ;; encodes the copy alone. Re-entering PROC through a continuation, once
+  ;; the block is freed, raises an assertion violation.
+  (define (call-with-latin-1-c-string string proc)
+    (unless (string? string)
+      (assertion-violation 'call-with-latin-1-c-string "not a string" string))
+    (unless (procedure? proc)
+      (assertion-violation 'call-with-latin-1-c-string "not a procedure" proc))
+    (let* ((string (string-copy string))
+           (n (string-length string)))
+      (let scan ((i 0))
+        (when (< i n)
+          (let ((code (char->integer (string-ref string i))))
+            (cond ((= code 0) (refuse-nul 'call-with-latin-1-c-string string))
+                  ((> code 255)
+                   (assertion-violation 'call-with-latin-1-c-string
+                                        "a char above U+00FF has no Latin-1 byte" string))
+                  (else (scan (+ i 1)))))))
+      (let ((bytes (make-bytevector (+ n 1) 0)))
+        (let fill ((i 0))
+          (when (< i n)
+            (bytevector-u8-set! bytes i (char->integer (string-ref string i)))
+            (fill (+ i 1))))
+        (call-with-c-bytes 'call-with-latin-1-c-string string bytes proc))))
 
   ;; --- 1. choose -----------------------------------------------------------------
 
@@ -459,6 +546,39 @@
   ;; void curl_free(void *p)
   (define raw-curl-free (load-step (bind-required "curl_free" (uptr) void info)))
 
+  ;; The blocking transfer's (M2 plan, section 5.2). curl_easy_nextheader is
+  ;; 7.83.0, below the floor; the rest are older still. All required.
+
+  ;; CURLcode curl_easy_perform(CURL *curl)
+  ;; curl-easy-perform : Positive-Integer -> Integer
+  ;; The whole transfer EASY is set up for, write callbacks included, on
+  ;; this thread: its CURLcode. __collect_safe, so the thread is inactive
+  ;; while it blocks, and the callable reactivates it (ADR-0013).
+  (define curl-easy-perform
+    (load-step (bind-blocking "curl_easy_perform" (uptr) int info)))
+
+  ;; const char *curl_easy_strerror(CURLcode error)
+  (define raw-curl-easy-strerror
+    (load-step (bind-required "curl_easy_strerror" (int) uptr info)))
+
+  ;; struct curl_header *curl_easy_nextheader(CURL *curl, unsigned int origin,
+  ;;                                          int request, struct curl_header *prev)
+  ;; curl-easy-nextheader : Positive-Integer Natural Integer Natural -> Natural
+  ;; The header after PREV, or the first for 0, of EASY's response REQUEST
+  ;; (-1, the last), among those whose origin is in ORIGIN's CURLH_ bits: a
+  ;; struct curl_header libcurl owns until the handle is reused or cleaned
+  ;; up, or 0 when there is none. curl-header-bytes reads it.
+  (define curl-easy-nextheader
+    (load-step (bind-required "curl_easy_nextheader" (uptr unsigned-int int uptr) uptr info)))
+
+  ;; struct curl_slist *curl_slist_append(struct curl_slist *list, const char *data)
+  (define raw-curl-slist-append
+    (load-step (bind-required "curl_slist_append" (uptr uptr) uptr info)))
+
+  ;; void curl_slist_free_all(struct curl_slist *list)
+  (define raw-curl-slist-free-all
+    (load-step (bind-required "curl_slist_free_all" (uptr) void info)))
+
   ;; CURLcode curl_easy_setopt(CURL *handle, CURLoption option, ...),
   ;; variadic after option: bound once per value type. curl_off_t is 64
   ;; bits on every platform chez-curl supports. Bound last, so a library
@@ -492,63 +612,139 @@
   ;; A fresh easy handle's address, counted as easy; 0, counted as
   ;; nothing, when libcurl could make none.
   (define (curl-easy-init)
-    (let ((easy (raw-curl-easy-init)))
-      (unless (eqv? easy 0)
-        (count-up! 'easy))
-      easy))
+    (critical-section
+     (let ((easy (raw-curl-easy-init)))
+       (unless (eqv? easy 0)
+         (count-up! 'easy))
+       easy)))
 
   ;; curl-easy-cleanup : Positive-Integer -> Void
   ;; Frees the easy handle EASY, counting it down first: a count already
   ;; at zero raises there, before C, as a double free.
   (define (curl-easy-cleanup easy)
-    (count-down! 'easy)
-    (raw-curl-easy-cleanup easy))
+    (critical-section
+     (count-down! 'easy)
+     (raw-curl-easy-cleanup easy)))
 
   ;; curl-url : -> Natural
   ;; A fresh CURLU handle's address, counted as url; 0, counted as
   ;; nothing, when libcurl could make none.
   (define (curl-url)
-    (let ((handle (raw-curl-url)))
-      (unless (eqv? handle 0)
-        (count-up! 'url))
-      handle))
+    (critical-section
+     (let ((handle (raw-curl-url)))
+       (unless (eqv? handle 0)
+         (count-up! 'url))
+       handle)))
 
   ;; curl-url-cleanup : Positive-Integer -> Void
   ;; Frees the CURLU handle HANDLE, counting it down first, as
   ;; curl-easy-cleanup does.
   (define (curl-url-cleanup handle)
-    (count-down! 'url)
-    (raw-curl-url-cleanup handle))
+    (critical-section
+     (count-down! 'url)
+     (raw-curl-url-cleanup handle)))
 
   ;; curl-url-get : Positive-Integer Integer Natural -> (Values Integer Natural)
   ;; The CURLUcode, and the address of the string curl_url_get wrote for
   ;; PART of HANDLE: counted as curl-string, for curl-free; 0 unless the
   ;; code is CURLUE_OK. The slot it writes through is a counted block,
-  ;; freed before this returns.
+  ;; freed before this returns. libcurl's string and its count come in one
+  ;; critical section; a caller records the address in its own, as url's
+  ;; get-part does.
   (define (curl-url-get handle part flags)
-    (let ((slot (foreign-block (foreign-sizeof 'void*))))
-      (dynamic-wind
-        (lambda () #f)
+    (let ((slot #f))
+      (dynamic-wind #t
+        (lambda () (set! slot (foreign-block (foreign-sizeof 'void*))))
         (lambda ()
-          (let ((code (raw-curl-url-get handle part slot flags)))
-            (if (eqv? code curlue-ok)
-                (let ((address (foreign-ref 'uptr slot 0)))
-                  (unless (eqv? address 0)
-                    (count-up! 'curl-string))
-                  (values code address))
-                (values code 0))))
+          (critical-section
+           (let ((code (raw-curl-url-get handle part slot flags)))
+             (if (eqv? code curlue-ok)
+                 (let ((address (foreign-ref 'uptr slot 0)))
+                   (unless (eqv? address 0)
+                     (count-up! 'curl-string))
+                   (values code address))
+                 (values code 0)))))
         (lambda () (free-foreign-block! slot)))))
 
   ;; curl-free : Positive-Integer -> Void
   ;; Frees ADDRESS, a string curl-url-get answered, counting it down first.
   (define (curl-free address)
-    (count-down! 'curl-string)
-    (raw-curl-free address))
+    (critical-section
+     (count-down! 'curl-string)
+     (raw-curl-free address)))
 
   ;; curl-url-strerror : Integer -> (U String #f)
   ;; libcurl's text for the CURLUcode CODE, copied; #f for NULL.
   (define (curl-url-strerror code)
     (c-text (raw-curl-url-strerror code)))
+
+  ;; curl-easy-strerror : Integer -> (U String #f)
+  ;; libcurl's text for the CURLcode CODE, read as bytes and copied, as
+  ;; curl-url-strerror's is; #f for NULL.
+  (define (curl-easy-strerror code)
+    (c-text (raw-curl-easy-strerror code)))
+
+  ;; curl-easy-getinfo-long : Positive-Integer Integer -> (Values Integer Integer)
+  ;; The CURLcode of curl_easy_getinfo of INFO, a CURLINFO_ long, on EASY,
+  ;; and the long it wrote; 0 unless the code is CURLE_OK. The slot it
+  ;; writes through is a counted block, freed before this returns.
+  (define (curl-easy-getinfo-long easy info)
+    (let ((slot #f))
+      (dynamic-wind #t
+        (lambda () (set! slot (foreign-block (foreign-sizeof 'long))))
+        (lambda ()
+          (let ((code (curl-easy-getinfo easy info slot)))
+            (values code (if (eqv? code curle-ok) (foreign-ref 'long slot 0) 0))))
+        (lambda () (free-foreign-block! slot)))))
+
+  ;; curl-easy-getinfo-string : Positive-Integer Integer -> (Values Integer (U Bytevector #f))
+  ;; The CURLcode of curl_easy_getinfo of INFO, a CURLINFO_ string, on
+  ;; EASY, and the bytes of the string it wrote, copied, which libcurl owns;
+  ;; #f for NULL, or unless the code is CURLE_OK. Whoever reads them
+  ;; decodes them. The slot is a counted block, freed before this returns.
+  (define (curl-easy-getinfo-string easy info)
+    (let ((slot #f))
+      (dynamic-wind #t
+        (lambda () (set! slot (foreign-block (foreign-sizeof 'void*))))
+        (lambda ()
+          (let ((code (curl-easy-getinfo easy info slot)))
+            (values code (and (eqv? code curle-ok)
+                              (c-string->bytevector (foreign-ref 'uptr slot 0))))))
+        (lambda () (free-foreign-block! slot)))))
+
+  ;; curl-header-bytes : Positive-Integer -> (Pairof Bytevector Bytevector)
+  ;; The name's bytes and the value's, copied, of the struct curl_header at
+  ;; ADDRESS, as curl-easy-nextheader answered it. curl_easy_nextheader
+  ;; never hands back a NUL inside either (ADR-0001, amended 2026-10-23), so
+  ;; each string's strlen is the whole of it. Whoever reads them decodes
+  ;; them.
+  (define (curl-header-bytes address)
+    (let ((header (make-ftype-pointer curl-header address)))
+      (cons (or (c-string->bytevector (ftype-ref curl-header (name) header)) (make-bytevector 0))
+            (or (c-string->bytevector (ftype-ref curl-header (value) header)) (make-bytevector 0)))))
+
+  ;; curl-slist-append : Natural Positive-Integer -> Natural
+  ;; LIST, a string list or 0 for none, with a copy of the C string at
+  ;; ADDRESS appended: curl_slist_append "copies the string", so ADDRESS may
+  ;; be freed once this returns. Its answer is the list, counted as slist
+  ;; when it was 0 before. 0 means libcurl could not append: LIST is left as
+  ;; it was, still valid, and still the caller's to free, and nothing is
+  ;; counted.
+  (define (curl-slist-append list address)
+    (critical-section
+     (let ((appended (raw-curl-slist-append list address)))
+       (when (and (eqv? list 0) (not (eqv? appended 0)))
+         (count-up! 'slist))
+       appended)))
+
+  ;; curl-slist-free-all : Positive-Integer -> Void
+  ;; Frees the string list LIST and every string in it, counting it down
+  ;; first: a count already at zero raises there, before C, as a double
+  ;; free.
+  (define (curl-slist-free-all list)
+    (critical-section
+     (count-down! 'slist)
+     (raw-curl-slist-free-all list)))
 
 
   ;; --- 7. the two API probes, then check-apis --------------------------------------------
@@ -561,18 +757,20 @@
   ;; What curl_easy_header answers on a fresh handle: CURLHE_NOHEADERS
   ;; with the API built in, CURLHE_NOT_BUILT_IN without (ADR-0003). hout
   ;; points at a counted block of our own, freed with the handle, so the
-  ;; counts are zero once the load returns.
+  ;; counts are zero once the load returns. The whole probe is one critical
+  ;; section, so no escape leaves either made.
   (define header-code
     (load-step
-     (let ((easy (curl-easy-init)))
-       (when (zero? easy)
-         (refuse 'load-failed libcurl-path libcurl-source info "curl_easy_init returned NULL"
-                 "curl_easy_init returned NULL, so the header API could not be probed; name another libcurl with CHEZ_CURL_LIBCURL"))
-       (let* ((hout (foreign-block (foreign-sizeof 'void*)))
-              (code (curl-easy-header easy "Content-Type" 0 curlh-header -1 hout)))
-         (free-foreign-block! hout)
-         (curl-easy-cleanup easy)
-         code))))
+     (critical-section
+      (let ((easy (curl-easy-init)))
+        (when (zero? easy)
+          (refuse 'load-failed libcurl-path libcurl-source info "curl_easy_init returned NULL"
+                  "curl_easy_init returned NULL, so the header API could not be probed; name another libcurl with CHEZ_CURL_LIBCURL"))
+        (let* ((hout (foreign-block (foreign-sizeof 'void*)))
+               (code (curl-easy-header easy "Content-Type" 0 curlh-header -1 hout)))
+          (free-foreign-block! hout)
+          (curl-easy-cleanup easy)
+          code)))))
 
   (define apis-checked
     (load-step
@@ -598,9 +796,18 @@
   ;; curl_easy_option_by_name answers; #f when that is NULL, a name this
   ;; libcurl does not know. Raw codes: (curl private constants)'s
   ;; curlot-types names them. Ids come from here alone, never from Scheme
-  ;; (ADR-0001, decision 2).
+  ;; (ADR-0001, decision 2). NAME is copied, the copy checked, and the copy
+  ;; passed: Chez's string type would cut a name at U+0000, so "URL" then
+  ;; anything would find URL, and a caller's string could change between a
+  ;; check and the call. A NAME holding U+0000 is an assertion violation.
   (define (curl-easy-option name)
-    (let ((address (curl-easy-option-by-name name)))
+    (unless (string? name)
+      (assertion-violation 'curl-easy-option "an option's name is a string" name))
+    (let* ((name (string-copy name))
+           (address (begin
+                      (when (memv #\nul (string->list name))
+                        (assertion-violation 'curl-easy-option "an option's name holds U+0000" name))
+                      (curl-easy-option-by-name name))))
       (and (not (zero? address))
            (let ((option (make-ftype-pointer curl-easyoption address)))
              (cons (ftype-ref curl-easyoption (id) option)

@@ -5,7 +5,11 @@
 ;;; Every CURLU handle here is made and freed within one call, under
 ;;; dynamic-wind, on the calling thread: nothing native outlives the call
 ;;; that made it (M2 plan, section 3.1), and re-entering a finished call
-;;; through a continuation raises. Each string curl_url_get hands back is
+;;; through a continuation raises. Each dynamic-wind is critical, its
+;;; critical? argument #t: a handle, or a string libcurl made, is made in
+;;; the before thunk and recorded where the after thunk frees it in one
+;;; critical section, so an interrupt that escapes, an engine's expiry say,
+;;; cannot fall between (M2 fix round 2). Each string curl_url_get hands back is
 ;;; copied, then freed with curl_free. Each string handed to libcurl is a
 ;;; counted, NUL-terminated UTF-8 copy, freed as soon as curl_url_set
 ;;; returns: libcurl "does not have to keep content around after a
@@ -23,7 +27,8 @@
 (library (curl private url)
   (export url-normalize url-resolve call-with-parsed-url require-http-scheme)
   (import (curl private require-threaded)
-          (rnrs)
+          (except (rnrs) dynamic-wind)
+          (only (chezscheme) dynamic-wind)
           (curl private conditions)
           (curl private constants)
           (curl private native))
@@ -48,15 +53,19 @@
            (or (char=? (string-ref s i) #\nul) (loop (+ i 1))))))
 
   ;; checked-input : Symbol Any -> String
-  ;; INPUT, a string without U+0000: an assertion violation from WHO for
-  ;; what is no string, and embedded-nul for one that holds it.
+  ;; A copy of INPUT, a string without U+0000: an assertion violation from
+  ;; WHO for what is no string, and embedded-nul for one that holds it. The
+  ;; copy is what is checked, and what the caller hands libcurl: INPUT is
+  ;; the caller's, and another thread could change it between a check of
+  ;; it and a use of it.
   (define (checked-input who input)
     (unless (string? input)
       (assertion-violation who "a URL is a string" input))
-    (when (holds-nul? input)
-      (refuse input 'embedded-nul #f
-              "a URL holds U+0000, which libcurl would read as its end"))
-    input)
+    (let ((copy (string-copy input)))
+      (when (holds-nul? copy)
+        (refuse copy 'embedded-nul #f
+                "a URL holds U+0000, which libcurl would read as its end"))
+      copy))
 
   ;; set-url! : Positive-Integer String -> Void
   ;; curl_url_set of the whole URL on HANDLE: INPUT parsed, or resolved
@@ -69,28 +78,38 @@
 
   ;; get-part : Positive-Integer Natural String -> String
   ;; PART of HANDLE, as curl_url_get writes it, copied and then freed with
-  ;; curl_free; INPUT names the refusal, if any.
+  ;; curl_free; INPUT names the refusal, if any. The string is made, and its
+  ;; address recorded for the after thunk, in the critical before thunk.
   (define (get-part handle part input)
-    (let-values (((code address) (curl-url-get handle part 0)))
-      (unless (eqv? code curlue-ok)
-        (refuse-code input code))
-      (dynamic-wind
-        (lambda () #f)
-        (lambda () (utf8->string (c-string->bytevector address)))
-        (lambda () (curl-free address)))))
+    (let ((code #f) (address 0) (freed #f))
+      (dynamic-wind #t
+        (lambda ()
+          (when freed
+            (assertion-violation 'get-part "re-entered after its string was freed" input))
+          (let-values (((c a) (curl-url-get handle part 0)))
+            (set! code c)
+            (set! address a)))
+        (lambda ()
+          (unless (eqv? code curlue-ok)
+            (refuse-code input code))
+          (utf8->string (c-string->bytevector address)))
+        (lambda ()
+          (set! freed #t)
+          (unless (eqv? address 0)
+            (curl-free address))))))
 
   ;; call-with-parsed-url : String (Positive-Integer -> Any) -> Any
-  ;; PROC's answer, PROC given a CURLU handle that holds STRING, parsed by
-  ;; curl_url_set with no flags. The handle is freed once PROC returns,
+  ;; PROC's answer, PROC given a CURLU handle that holds INPUT, parsed by
+  ;; curl_url_set with no flags: a copy of INPUT, checked, then parsed. The handle is freed once PROC returns,
   ;; raises or escapes. STRING's refusal raises &curl-url-error before PROC
   ;; runs. Re-entering PROC through a continuation, once the handle is
   ;; freed, raises an assertion violation.
-  (define (call-with-parsed-url string proc)
-    (checked-input 'call-with-parsed-url string)
+  (define (call-with-parsed-url input proc)
+    (define string (checked-input 'call-with-parsed-url input))
     (unless (procedure? proc)
       (assertion-violation 'call-with-parsed-url "not a procedure" proc))
     (let ((handle #f) (freed #f))
-      (dynamic-wind
+      (dynamic-wind #t
         (lambda ()
           (when freed
             (assertion-violation 'call-with-parsed-url
@@ -118,8 +137,8 @@
   ;; REFERENCE resolved against BASE, by curl_url_set on BASE's handle
   ;; (ADR-0008, decision 4), as curl_url_get gives it back. A refusal of
   ;; either raises, naming the string refused.
-  (define (url-resolve base reference)
-    (checked-input 'url-resolve reference)
+  (define (url-resolve base input)
+    (define reference (checked-input 'url-resolve input))
     (call-with-parsed-url base
       (lambda (handle)
         (set-url! handle reference)

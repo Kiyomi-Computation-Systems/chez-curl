@@ -332,6 +332,17 @@
            "HTTP/1.1 200 OK\r\nContent-Length: 6\r\nX-No-Colon\r\n\r\nhello\n" 'eof)
   (raw-row o "/raw/nul-in-header"
            "HTTP/1.1 200 OK\r\nContent-Length: 6\r\nX-Nul: a\x0;b\r\n\r\nhello\n" 'eof)
+  ;; Every byte a header value can hold but CR and LF, 0x01 to 0xFF in
+  ;; order, between an a and a z: the bytes where Latin-1 and UTF-8 part, and
+  ;; the control bytes, written out here from their codes.
+  (raw-row o "/raw/header-bytes"
+           (string-append "HTTP/1.1 200 OK\r\nX-Bytes: a"
+                          (list->string
+                           (map integer->char
+                                (filter (lambda (b) (not (memv b '(10 13))))
+                                        (map (lambda (i) (+ i 1)) (iota 255)))))
+                          "z\r\nContent-Length: 0\r\n\r\n")
+           'eof)
   (raw-row o "/raw/close-before-response" "" 'eof)
   (raw-row o "/raw/http09" "hello\n" 'eof)
 

@@ -19,7 +19,9 @@
 ;;;                Chez's u8* hands C a bytevector's first byte. memcpy's
 ;;;                two bindings are held unexported
 ;;;   C strings    call-with-c-string and c-string->bytevector: UTF-8 and a
-;;;                NUL, U+0000 refused
+;;;                NUL, U+0000 refused; call-with-latin-1-c-string, one byte
+;;;                per char and a NUL, U+0000 and every char above U+00FF
+;;;                refused (ADR-0001, amended 2026-10-23)
 ;;;
 ;;; The foreign side of each copy is read and written here with Chez's own
 ;;; foreign-ref and foreign-set!, never through the copies under test, and
@@ -43,9 +45,10 @@
 ;;; test-memory runs it under Valgrind.
 (import (rnrs)
         (rnrs eval)
+        (rnrs mutable-strings)
         (srfi :64)
         (only (chezscheme) foreign-ref foreign-set! fork-thread thread-join getenv
-              library-exports)
+              library-exports sleep make-time make-engine)
         (curl-testing)
         (curl private counters)
         (curl private memory)
@@ -71,6 +74,7 @@
 (define copy-bytevector->foreign! (native-procedure 'copy-bytevector->foreign!))
 (define call-with-c-string (native-procedure 'call-with-c-string))
 (define c-string->bytevector (native-procedure 'c-string->bytevector))
+(define call-with-latin-1-c-string (native-procedure 'call-with-latin-1-c-string))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
 ;; counts into one.
@@ -641,6 +645,309 @@
   (let* ((a (raised (lambda () (call-with-c-string 'abc (lambda (address) address)))))
          (b (raised (lambda () (call-with-c-string "abc" 'not-a-procedure)))))
     (list a b (native-counts))))
+
+;; --- Latin-1 C strings (ADR-0001, amended 2026-10-23) ------------------------------------
+
+;; latin-1-bytes : String -> Any
+;; What call-with-latin-1-c-string hands C for STRING, read with foreign-ref
+;; up to and with its NUL; c-string->bytevector's answer for the same
+;; address; and the counts while PROC runs. Or what was raised.
+(define (latin-1-bytes string)
+  (guard (e ((curl-embedded-nul? e) (list 'embedded-nul (curl-embedded-nul-string e)))
+            ((and (assertion-violation? e) (who-condition? e) (irritants-condition? e))
+             (list 'assertion-violation (condition-who e) (condition-irritants e)))
+            (#t (list 'other (describe e))))
+    (call-with-latin-1-c-string string
+      (lambda (address)
+        (let loop ((i 0) (found '()))
+          (let ((b (foreign-ref 'unsigned-8 address i)))
+            (if (= b 0)
+                (list (reverse (cons 0 found))
+                      (bytevector->u8-list (c-string->bytevector address))
+                      (native-counts))
+                (loop (+ i 1) (cons b found)))))))))
+
+;; every-latin-1 : String
+;; Every char from U+0001 to U+00FF, in order: each byte but NUL, where
+;; Latin-1 and UTF-8 differ from 0x80 on.
+(define every-latin-1
+  (list->string (map integer->char (iota-from 1 255))))
+
+(test-equal "call-with-latin-1-c-string hands C one byte per char and a NUL: every char from U+0001 to U+00FF as its own code, é as 233, never UTF-8's 195 169; c-string->bytevector reads them back without the NUL; one block is counted while PROC runs"
+  (list (list (append (iota-from 1 255) '(0)) (iota-from 1 255) (counts-with '((block . 1))))
+        (list '(233 0) '(233) (counts-with '((block . 1))))
+        (list '(97 255 98 0) '(97 255 98) (counts-with '((block . 1))))
+        (list '(0) '() (counts-with '((block . 1))))
+        zero-counts)
+  (let* ((a (latin-1-bytes every-latin-1))
+         (b (latin-1-bytes "\xE9;"))
+         (c (latin-1-bytes "a\xFF;b"))
+         (d (latin-1-bytes "")))
+    (list a b c d (native-counts))))
+
+;; U+0000 at every place a scan can miss, beside chars past ASCII.
+(for-each
+ (lambda (string)
+   (test-equal (string-append "call-with-latin-1-c-string refuses " (call-with-string-output-port (lambda (p) (write string p)))
+                              " as &curl-embedded-nul, naming it, with nothing allocated at the raise, and PROC not run")
+     (list (list (list 'embedded-nul string) zero-counts) 'proc-not-run zero-counts)
+     (let* ((ran #f)
+            (r (at-raise (lambda () (call-with-latin-1-c-string string (lambda (address) (set! ran #t) 'ran)))
+                         (lambda (e)
+                           (if (curl-embedded-nul? e)
+                               (list 'embedded-nul (curl-embedded-nul-string e))
+                               (list 'other (describe e)))))))
+       (list r (if ran 'proc-ran 'proc-not-run) (native-counts)))))
+ '("\x0;abc" "a\x0;b" "abc\x0;" "\x0;" "\xE9;\x0;\xFF;"))
+
+;; A char above U+00FF at every place, U+0100, the first, among them; and
+;; which refusal comes first when the string holds both: its first
+;; offending char's.
+(for-each
+ (lambda (string)
+   (test-equal (string-append "call-with-latin-1-c-string refuses " (call-with-string-output-port (lambda (p) (write string p)))
+                              ", a char above U+00FF, with an assertion violation naming the string, nothing allocated at the raise, and PROC not run")
+     (list (list (list 'assertion-violation 'call-with-latin-1-c-string (list string)) zero-counts)
+           'proc-not-run zero-counts)
+     (let* ((ran #f)
+            (r (at-raise (lambda () (call-with-latin-1-c-string string (lambda (address) (set! ran #t) 'ran)))
+                         (lambda (e)
+                           (if (and (assertion-violation? e) (who-condition? e) (irritants-condition? e))
+                               (list 'assertion-violation (condition-who e) (condition-irritants e))
+                               (list 'other (describe e)))))))
+       (list r (if ran 'proc-ran 'proc-not-run) (native-counts)))))
+ '("\x100;abc" "a\x100;b" "abc\x100;" "\x100;" "\xFF;\x20AC;" "\x1F600;" "\x100;\x0;"))
+
+(test-equal "call-with-latin-1-c-string: a NUL before a char above U+00FF is refused as the NUL"
+  (list 'embedded-nul "a\x0;\x100;")
+  (latin-1-bytes "a\x0;\x100;"))
+
+(test-equal "call-with-latin-1-c-string writes the NUL itself: a fresh block that held #xFF reads the string's bytes, then 0"
+  (append (iota-from 160 39) '(0))
+  (let ((string (list->string (map integer->char (iota-from 160 39)))))
+    (with-block 40 (lambda (block) (poke! block (make-list-of 40 #xFF))))
+    (call-with-latin-1-c-string string
+      (lambda (address) (peek address 40)))))
+
+(test-equal "call-with-latin-1-c-string: a raise from PROC frees the block, and reaches the caller"
+  (list 'proc-raised zero-counts)
+  (let ((r (guard (e ((eq? e 'from-proc) 'proc-raised))
+             (call-with-latin-1-c-string "abc" (lambda (address) (raise 'from-proc))))))
+    (list r (native-counts))))
+
+(test-equal "call-with-latin-1-c-string: re-entering PROC through a continuation, once the block is freed, raises, and PROC runs once"
+  (list '(assertion-violation call-with-latin-1-c-string) 1 zero-counts)
+  (let ((k #f) (runs 0))
+    (let ((r (guard (e ((and (assertion-violation? e) (who-condition? e))
+                        (list 'assertion-violation (condition-who e)))
+                       (#t (list 'other (describe e))))
+               (call-with-latin-1-c-string "abc"
+                 (lambda (address)
+                   (call/cc (lambda (c) (set! k c)))
+                   (set! runs (+ runs 1))))
+               (if (= runs 1) (k #f) (list 'reentered runs)))))
+      (list r runs (native-counts)))))
+
+(test-equal "call-with-latin-1-c-string refuses what is no string, and a PROC that is no procedure"
+  (list '(assertion-violation call-with-latin-1-c-string (abc))
+        '(assertion-violation call-with-latin-1-c-string (not-a-procedure))
+        zero-counts)
+  (let* ((a (raised (lambda () (call-with-latin-1-c-string 'abc (lambda (address) address)))))
+         (b (raised (lambda () (call-with-latin-1-c-string "abc" 'not-a-procedure)))))
+    (list a b (native-counts))))
+
+;; --- check-then-use: a string another thread changes -------------------------------------
+;; Each C string is a copy that is checked, then encoded: the one copy. A
+;; check of the caller's string, then an encoding of it, lets a second
+;; thread change it between the two, so C could read a NUL that was never
+;; refused. Here a thread flips one char between a and U+0000, or a char
+;; past Latin-1, as fast as it can, while this one makes C strings of the
+;; string: each is refused, or reaches C whole, never cut.
+
+;; yield : -> Unit
+;; A sleep of no time: a system call, at which Valgrind, which runs one
+;; thread at a time, lets another thread run. Natively the threads run on
+;; cores of their own throughout.
+(define (yield) (sleep (make-time 'time-duration 0 0)))
+
+;; while-flipping : String Natural Char Char (-> Any) -> Any
+;; THUNK's answer, while another thread sets STRING's char at INDEX to A,
+;; then B, 100000 times as fast as it can, then yields with it B; does so
+;; again, then yields with it A; and over again. It is stopped, and joined,
+;; after. Natively it spins most of the time; under Valgrind it yields once
+;; in each state, so both reach THUNK's calls, and holds no thread up long.
+(define (while-flipping string index a b thunk)
+  (let* ((stop #f)
+         (flip (lambda ()
+                 (let loop ((i 0))
+                   (when (< i 100000)
+                     (string-set! string index a)
+                     (string-set! string index b)
+                     (loop (+ i 1))))))
+         (flipper (fork-thread
+                   (lambda ()
+                     (let loop ()
+                       (unless stop
+                         (flip)
+                         (yield)
+                         (flip)
+                         (string-set! string index a)
+                         (yield)
+                         (loop)))))))
+    (dynamic-wind
+      (lambda () #f)
+      thunk
+      (lambda () (set! stop #t) (thread-join flipper)))))
+
+;; c-length : Natural -> Natural
+;; The C string at ADDRESS's length, read with foreign-ref.
+(define (c-length address)
+  (let loop ((i 0)) (if (= (foreign-ref 'unsigned-8 address i) 0) i (loop (+ i 1)))))
+
+;; race-outcomes : Procedure Char -> (List (Listof Any) (Listof Symbol))
+;; 2000 calls of MAKE on "xax", its a flipped with BAD, with a yield before
+;; every tenth: the outcomes that are neither a refusal nor the whole
+;; string, and which of refused and whole were seen. Natively each call
+;; races the flipper on another core. Under Valgrind, which runs one thread
+;; at a time, the flipper runs only at the yields, which leave the string in
+;; either state, and the calls never race it.
+(define (race-outcomes make bad)
+  (let ((s (string #\x #\a #\x)))
+    (while-flipping s 1 bad #\a
+      (lambda ()
+        (let loop ((i 0) (odd '()) (seen '()))
+          (if (= i 2000)
+              (list (reverse odd) (filter (lambda (k) (memq k seen)) '(refused whole)))
+              (let ((o (begin
+                         (when (= (mod i 10) 0) (yield))
+                         (guard (e ((curl-embedded-nul? e) 'refused)
+                                 ((and (assertion-violation? e) (who-condition? e)
+                                       (eq? (condition-who e) 'call-with-latin-1-c-string))
+                                  'refused)
+                                 (#t (list 'raised (describe e))))
+                         (make s (lambda (address)
+                                   (let ((n (c-length address)))
+                                     (if (= n 3) 'whole (list 'cut n)))))))))
+                (loop (+ i 1)
+                      (if (memq o '(refused whole)) odd (cons o odd))
+                      (if (memq o seen) seen (cons o seen))))))))))
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append (car row) ", while another thread flips a char of its string to "
+                              (cadddr row) ": 2000 calls each refused or whole, none cut, both seen, and nothing left")
+     (list '() '(refused whole) zero-counts)
+     (let ((r (race-outcomes (cadr row) (caddr row))))
+       (append r (list (native-counts))))))
+ (list (list "call-with-c-string" call-with-c-string #\nul "U+0000")
+       (list "call-with-latin-1-c-string" call-with-latin-1-c-string #\nul "U+0000")
+       (list "call-with-latin-1-c-string" call-with-latin-1-c-string (integer->char #x100) "U+0100")))
+
+
+;; --- asynchronous escapes: an engine's fuel running out anywhere ------------------------
+;; An engine that runs out of fuel leaves through a continuation at its next
+;; safe point, running the after thunks; an abandoned one is never resumed.
+;; Each sweep runs THUNK in a fresh engine with fuel 1, 1+STEP, 1+2 STEP and
+;; so on, abandoning each that runs out, until one completes: a native
+;; object made but not yet recorded where its free finds it, at any of those
+;; points, would stay made, and counted or not.
+
+;; engine-sweep : (-> Any) Natural -> (List Symbol Natural)
+;; (completed EXPIRED), EXPIRED the engines that ran out first; or
+;; (never-completed EXPIRED) past 100000 fuel.
+(define (engine-sweep thunk step)
+  (let loop ((fuel 1) (expired 0))
+    (cond ((> fuel 100000) (list 'never-completed expired))
+          (((make-engine thunk) fuel (lambda (ticks v) #t) (lambda (e) #f)) (list 'completed expired))
+          (else (loop (+ fuel step) (+ expired 1))))))
+
+;; swept : (List Symbol Natural) -> Any
+;; completed-after-expiries when the sweep completed after more than ten
+;; engines ran out, its positive evidence; else the sweep itself.
+(define (swept result)
+  (if (and (eq? (car result) 'completed) (> (cadr result) 10)) 'completed-after-expiries result))
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append (car row) " in an engine that runs out at every tick, each abandoned, until one completes: it completes, and no native object is left")
+     (list 'completed-after-expiries zero-counts)
+     (list (swept (engine-sweep (cadr row) 1)) (native-counts))))
+ (list (list "call-with-c-string" (lambda () (call-with-c-string "abc" (lambda (address) address))))
+       (list "call-with-latin-1-c-string" (lambda () (call-with-latin-1-c-string "abc" (lambda (address) address))))))
+
+;; --- a mutex held across an asynchronous escape ----------------------------------------
+;; Chez's with-mutex is a dynamic-wind whose before thunk takes the mutex,
+;; so an engine that runs out between the take and the wind leaves it
+;; held, with no after thunk to release it, and every other thread then
+;; blocks on it. The sweeps above ran out at every tick of a block made
+;; and freed, under the blocks' mutex and the counts'; this one runs out at
+;; every tick of native-counts, under the counts'.
+
+;; other-thread-can : (-> Any) -> Symbol
+;; other-thread-ran when THUNK, run in a fresh thread, returns within 10 s;
+;; other-thread-raised when it raises; other-thread-blocked when it does
+;; neither. A mutex this thread left held blocks another thread, never this
+;; one: Chez's mutexes are recursive. A blocked thread is left blocked.
+(define (other-thread-can thunk)
+  (let ((done #f))
+    (fork-thread (lambda () (guard (e (#t (set! done 'raised))) (thunk) (set! done 'ran))))
+    (let loop ((i 0))
+      (cond ((eq? done 'ran) 'other-thread-ran)
+            ((eq? done 'raised) 'other-thread-raised)
+            ((= i 1000) 'other-thread-blocked)
+            (else (sleep (make-time 'time-duration 10000000 0)) (loop (+ i 1)))))))
+
+(test-equal "an engine that runs out at every tick of native-counts, each abandoned, until one completes: it completes, and after every sweep another thread reads the counts, and makes and frees a block: no mutex is left held"
+  '((completed expired-first) other-thread-ran)
+  (let ((r (engine-sweep native-counts 1)))
+    (list (if (and (eq? (car r) 'completed) (> (cadr r) 0)) '(completed expired-first) r)
+          (other-thread-can (lambda () (native-counts) (free-foreign-block! (foreign-block 1)))))))
+
+;; --- the mutexes, read from the libraries as data ---------------------------------------
+;; counters.sls and memory.sls each hold their mutex through locked, inside
+;; a critical section, so no engine's expiry, nor timer, falls between the
+;; take and its dynamic-wind, nor abandons an update half made. The limit:
+;; this holds a with-mutex added by accident, not a rewrite made to pass,
+;; such as a mutex reached under another name.
+
+;; library-form : String -> Any
+;; The library form in the file at PATH, or what went wrong.
+(define (library-form path)
+  (guard (e (#t (list 'unreadable (describe e))))
+    (call-with-port (open-file-input-port path (file-options) (buffer-mode block)
+                                          (make-transcoder (utf-8-codec)))
+      read)))
+
+;; definition-of : Any Symbol -> Any
+;; The (define (NAME ...) ...) form in LIBRARY's body, or (no-definition NAME).
+(define (definition-of library name)
+  (or (and (list? library) (> (length library) 4)
+           (find (lambda (f) (and (pair? f) (eq? (car f) 'define) (pair? (cdr f))
+                                  (pair? (cadr f)) (eq? (car (cadr f)) name)))
+                 (cddddr library)))
+      (list 'no-definition name)))
+
+;; symbol-count : Symbol Any -> Natural
+(define (symbol-count name x)
+  (cond ((eq? x name) 1)
+        ((pair? x) (+ (symbol-count name (car x)) (symbol-count name (cdr x))))
+        (else 0)))
+
+(for-each
+ (lambda (path)
+   (let ((library (library-form path)))
+     (test-equal (string-append "locked, read from " path ", holds its mutex inside a critical section; with-mutex stands twice there, in its import and in locked, and mutex-acquire and mutex-release nowhere")
+       '((define (locked lock thunk) (critical-section (with-mutex lock (thunk)))) 2 0 0)
+       (list (definition-of library 'locked)
+             (symbol-count 'with-mutex library)
+             (symbol-count 'mutex-acquire library)
+             (symbol-count 'mutex-release library)))))
+ '("src/curl/private/counters.sls" "src/curl/private/memory.sls"))
+
+(test-equal "the reader: a definition found by name, a symbol counted at any depth, and a missing definition named"
+  '((define (b x) (f x x)) 4 (no-definition c))
+  (let ((library '(library (x) (export) (import (only (y) f)) (define (a) 1) (define (b x) (f x x)))))
+    (list (definition-of library 'b) (symbol-count 'x library) (definition-of library 'c))))
 
 (test-end "memory-safety")
 

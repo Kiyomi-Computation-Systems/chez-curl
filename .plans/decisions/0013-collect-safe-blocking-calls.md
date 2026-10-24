@@ -4,7 +4,7 @@
   It is then accepted, or amended to fit them. Amended 2026-10-16 with the attribute suite
   (M0 slice 4), and with what a binding may hand C from Chez's heap (M0 slice 5). Amended
   2026-10-17 with what the reader holds the binding macros to (M0 slice 6). Amended
-  2026-10-23 with M2 slice 1's rows.
+  2026-10-23 with M2 slice 1's rows, and with how control leaves the write callable (M2 slice 2).
 - **Date:** 2026-10-04
 - **Corrected:** 2026-10-04. The E5 series is chez-http-server's, not chez-libuv's. Its
   figures are restated from that spike report, which ran on macOS only.
@@ -297,3 +297,63 @@ Provisional until E1.
   slice's rows, each in full. A row and the binding it holds can no longer be loosened together.
 - **No new string crossing.** Every string chez-curl hands libcurl from M2 on goes through foreign
   memory (ADR-0001, amended 2026-10-23), so the two `string-not-kept` rows stay the only ones.
+
+## Amendment, 2026-10-23: how control leaves the write callable (M2 slice 2)
+
+M2 slice 2 binds `curl_easy_perform` through `bind-blocking`, a binder whose template
+carries `__collect_safe`. Its row reads `(bound-by bind-blocking)`. The transfer's one
+callable, `write-body`, is `__collect_safe` too, and locked. Without the lock, the suite's
+paced collector failed it 3 runs of 3. The reviews then found three ways control can leave
+the callable other than by its return.
+
+- **Caller code's continuations.** A raise inside the callable is caught by its guard. But
+  an outer continuation invoked from the test hook, or a stale one from an earlier chunk,
+  left the callable. `curl_easy_cleanup` then ran while libcurl was still inside its
+  callback. 744 bytes were definitely lost under the gate's Valgrind, with a socket left
+  open, and every count read zero. **Now the hook runs in a `dynamic-wind`** whose after
+  thunk turns any exit but a return into a raise, which the guard records.
+- **Asynchronous handlers.** An engine's expiry inside the callable did the same. So does
+  a timer-interrupt handler, or a keyboard interrupt followed by `reset`.
+  - **First fix, measured, then reversed:** `curl_easy_perform` in a `critical-section`. It
+    moved the expiry to after perform returned. But then the thread put off its own collect
+    requests until the transfer ended:
+    - an 80 MB body in 4 KiB writes grew the peak heap by 472 MB, against 344 MB without it;
+    - Ctrl-C went unanswered until the transfer ended, which with no timeout may be never.
+  - **Decided, by the maintainer: escapes are allowed, and counted.** chez-curl never
+    calls libcurl on a handle whose perform was left without its return:
+    `curl_easy_cleanup` must not run while a call on the same handle is still running. That
+    handle stays counted as `easy`, so a suite fails on it. libcurl's connection leaks with
+    it: about 8 KB, and its sockets, one per escape on 8.20.0 and nearer three on 7.85.0
+    (98 for 35 escapes). What libcurl can no longer read, the header list, the error
+    buffer, the `CURLU` and the key, is freed.
+  - **Why:** the critical section's costs fall on every transfer, and an escape needs a
+    handler that escapes. M3 moves transfers to an engine thread that runs no caller code and
+    no handlers, so this covers only M2's blocking path.
+- **The windows around every native object.** An escape between making an object and
+  recording it, its count, a table entry, or the variable its free reads, leaked it for good.
+  So did one between taking a mutex and entering `with-mutex`'s own `dynamic-wind`: that
+  mutex stays held, and every other thread blocks on it. So each make-and-record, and each
+  free-and-unrecord, is one critical section: a `(dynamic-wind #t ...)` extent or a
+  `critical-section`. Every mutex is held through `locked`, which is `critical-section`
+  around `with-mutex`. These sections are short, and make no foreign call that can block.
+- **How the escapes are tested.** A deliberate escape leaks, and the gate's Valgrind would
+  fail on it, so a child Chez process, `tests/transfer-escapes.sps`, runs them and prints each
+  case. `test-transfer` requires each one to have completed with zero counts, expired outside
+  perform with zero counts, or escaped inside it with one `easy` counted. Both kinds of expiry
+  must occur, and a whole transfer must escape inside more often than one refused at
+  connect, which has no callback. Without that last rule, the sweep passed with the critical
+  section put back, on the two escapes that fall around the call itself. A test in the child
+  arms a timer inside a drip and requires its handler to run before the transfer ends, so the
+  critical section cannot come back unseen.
+- **An escape between setting the performing mark and entering C, or between returning and
+  clearing it, counts as inside.** It leaks a handle that cleanup could have freed, the
+  conservative side.
+- **Limits, stated rather than fixed:**
+  - a transfer cannot be paused by an engine and resumed: its extents refuse re-entry;
+  - an engine that expires inside the test hook dies, `no engine active`: the hook's refusal
+    raises during the engine's own unwind. The hook is a private test seam, and M3's callable
+    runs no caller code;
+  - an escape during the library body's load wedges `(curl private native)` for the
+    process, since `load-step` records raises, not escapes. A program that imports `(curl)`
+    loads it before its body runs.
+

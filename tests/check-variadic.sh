@@ -6,13 +6,14 @@
 # use loses at once, and then each of the four uses alone bound through
 # bind-required. The steps, in order, each named ok or FAILED:
 #
-#   copy     the copy holds src/, tests/ and .plans/decisions/, all the two
-#            suites read; SRFI-64 comes from the tree's own build/scheme-libs
+#   copy     the copy holds src/, tests/ and .plans/decisions/, all the
+#            three suites read; SRFI-64 comes from the tree's own
+#            build/scheme-libs, and test-transfer's origin runs under NODE
 #   machine  Chez's (machine-type), which decides the ABI: arm64osx and
 #            tarm64osx are Apple arm64. Not uname: a Chez under Rosetta is
 #            ta6osx, and runs x86-64's ABI
-#   control  the unchanged copy passes test-collect-safe and test-variadic,
-#            so a failure below is the mutation's doing
+#   control  the unchanged copy passes test-collect-safe, test-variadic and
+#            test-transfer, so a failure below is the mutation's doing
 #
 # For the template, then for each use (long, pointer, off-t, getinfo):
 #
@@ -42,6 +43,21 @@
 #            and its result is reported, never failed: x86-64 and Linux
 #            arm64 pass variadic arguments as they pass named ones, so a
 #            binding without the convention works there
+#   transfer test-transfer runs on the mutant, every setopt and getinfo
+#            binding observed in a real transfer (ADR-0001's FFI test; M2
+#            plan, section 5.2), under a bound of its own, TRANSFER_TIMEOUT
+#            seconds, 180 by default: the long mutant can hand TIMEOUT_MS
+#            garbage, and a stall could then wait for ever. On Apple arm64 it
+#            must fail, and any non-zero exit counts: a FAIL line, a crash, or
+#            the bound, 124, reported as timed out. The step names which. On
+#            any other machine type its result is reported, never failed, as
+#            test-variadic's is
+#
+# The control needs test-transfer to pass, and that needs a row in
+# tests/known-transfer-verdicts.sexp for the libcurl it runs against. When it
+# fails for want of one, the control's line says so: add the row
+# test-transfer printed, then rerun. On the Mac: make test, add the rows it
+# printed, then make check-variadic.
 #
 # Every step needs positive evidence: a run's exit status, and the lines
 # it must print, never an empty output. The script exits 0 only when every
@@ -59,6 +75,7 @@ root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 CHEZ=${CHEZ:-scheme}
 TIMEOUT=${TIMEOUT:-timeout}
 TEST_TIMEOUT=${TEST_TIMEOUT:-300}
+TRANSFER_TIMEOUT=${TRANSFER_TIMEOUT:-180}
 LC_ALL=C
 export LC_ALL
 
@@ -114,6 +131,15 @@ run() {
   status=$?
 }
 
+# run_transfer: test-transfer in the copy, as run does it, under
+# TRANSFER_TIMEOUT.
+run_transfer() {
+  ( cd "$copy" &&
+      "$TIMEOUT" --foreground "$TRANSFER_TIMEOUT" "$CHEZ" --libdirs "src:tests:$srfi" --program "$transfer" ) \
+    >"$tmp/out" 2>&1
+  status=$?
+}
+
 # show: the last run's whole output, indented.
 show() { sed 's/^/  | /' "$tmp/out" >&2; }
 
@@ -157,12 +183,17 @@ ok "machine: Chez's machine type is $machine"
 
 collect=tests/test-collect-safe.sps
 variadic=tests/test-variadic.sps
+transfer=tests/test-transfer.sps
 
 # ---- control ----
-for suite in "$collect" "$variadic"; do
+norow='test-transfer: no row of tests/known-transfer-verdicts.sexp is for libcurl'
+for suite in "$collect" "$variadic" "$transfer"; do
   run "$suite"
   if [ "$status" -eq 0 ]; then
     ok "control: $suite passes on the unchanged copy"
+  elif [ "$suite" = "$transfer" ] && grep -q -F -- "$norow" "$tmp/out"; then
+    show
+    stop "control: $suite found no row for this libcurl in tests/known-transfer-verdicts.sexp: add the row it printed above to that file, then rerun make check-variadic (on the Mac: make test, add the rows it prints, then make check-variadic)"
   else
     show
     stop "control: $suite exited $status on the unchanged copy, so nothing below would say anything about the mutation"
@@ -294,6 +325,39 @@ fails_by_name() {
   fi
 }
 
+# transfer_how: what the last run of test-transfer did, in words: how, but
+# for the bound, which is TRANSFER_TIMEOUT's.
+transfer_how() {
+  if [ "$status" -eq 124 ]; then
+    printf 'timed out: no exit within %ss, which counts as failing' "$TRANSFER_TIMEOUT"
+  else
+    how
+  fi
+}
+
+# transferred LABEL: test-transfer on the mutant, under TRANSFER_TIMEOUT. On
+# Apple arm64 it must fail, and any non-zero exit counts: a FAIL line, a
+# crash or the bound, each named. Anywhere else its result is reported.
+transferred() {
+  label=$1
+  run_transfer
+  got_named=$(named)
+  if [ "$apple_arm64" -eq 1 ]; then
+    if [ "$status" -ne 0 ]; then
+      ok "$label transfer: on $machine, $transfer fails on the mutant (exit $status), $(transfer_how)"
+      list
+    else
+      bad "$label transfer: on $machine, $transfer must fail on the mutant, by a FAIL line, a crash or its bound; it exited 0, naming no test"
+      show
+    fi
+  elif [ "$status" -eq 0 ]; then
+    ok "$label transfer other: on $machine, $transfer passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation"
+  else
+    ok "$label transfer other: on $machine, $transfer fails on the mutant (exit $status), $(transfer_how): this ABI showed the mutation too"
+    list
+  fi
+}
+
 file='"src/curl/private/native.sls"'
 setopt='"curl_easy_setopt"'
 getinfo='"curl_easy_getinfo"'
@@ -315,6 +379,7 @@ if [ "$apple_arm64" -eq 1 ]; then
 else
   other template
 fi
+transferred template
 
 # ---- each use alone ----
 # use LABEL KEY TYPES BINDING VIA: the use of bind-variadic binding KEY
@@ -335,6 +400,7 @@ use() {
   else
     fails_by_name "$label" "$binding"
   fi
+  transferred "$label"
 }
 
 use long curl_easy_setopt '(uptr int long)' curl-easy-setopt-long \

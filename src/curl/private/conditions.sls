@@ -10,6 +10,11 @@
 ;;;                               U+0000 (M2 plan, section 3.3)
 ;;;   &curl-url-error             a URL refused: by libcurl's URL API, or by
 ;;;                               chez-curl's own checks (ADR-0008)
+;;;   &curl-request-error         a request's field refused, before anything
+;;;                               native is made (M2 plan, section 5.3)
+;;;   &curl-transfer-error        a blocking transfer that failed: libcurl's
+;;;                               code and texts, and what the write callable
+;;;                               recorded (M2 plan, sections 3.7 and 5.3)
 ;;;
 ;;; A raise may compound one with &who, &message and &irritants, so that
 ;;; the default handler prints readable text. Tests assert the reason symbol
@@ -34,7 +39,16 @@
 
           &curl-url-error make-curl-url-error curl-url-error?
           curl-url-error-input curl-url-error-reason curl-url-error-code
-          curl-url-error-message curl-url-code-reason)
+          curl-url-error-message curl-url-code-reason
+
+          &curl-request-error make-curl-request-error curl-request-error?
+          curl-request-error-field curl-request-error-value curl-request-error-reason
+          curl-request-error-reasons
+
+          &curl-transfer-error make-curl-transfer-error curl-transfer-error?
+          curl-transfer-error-reason curl-transfer-error-code curl-transfer-error-option
+          curl-transfer-error-strerror curl-transfer-error-error-buffer
+          curl-transfer-error-recorded curl-transfer-error-reasons)
   (import (curl private require-threaded)
           (rnrs)
           (curl private libcurl-info)
@@ -175,6 +189,130 @@
     (reason curl-url-error-reason)
     (code curl-url-error-code)
     (message curl-url-error-message))
+
+  ;; --- &curl-request-error -------------------------------------------------------
+
+  ;; curl-request-error-reasons : (Listof Symbol)
+  ;; Why a request's field is refused (M2 plan, section 5.3):
+  ;;
+  ;;   embedded-nul  a value holds U+0000, which C would read as its end
+  ;;   line-break    a value holds CR or LF, which would end its header line
+  ;;   not-latin-1   a value holds a char above U+00FF, which has no byte:
+  ;;                 header strings are Latin-1, both ways (ADR-0001,
+  ;;                 amended 2026-10-23)
+  ;;   not-a-token   a header name is empty, or holds a char that is no
+  ;;                 tchar (RFC 9110, section 5.6.2)
+  ;;   surrounding-whitespace
+  ;;                 a value's first or last char is SP, HTAB, VT or FF:
+  ;;                 RFC 9110 field values have none, and libcurl drops a
+  ;;                 value of whitespace alone, and trims what it reads
+  ;;   duplicates-field
+  ;;                 a header named User-Agent, in any case, beside a user
+  ;;                 agent given as its own field: libcurl lets the header
+  ;;                 win; or a second header named Host, in any case:
+  ;;                 libcurl sends only the first
+  ;;   framing-header
+  ;;                 a header named Content-Length or Transfer-Encoding, in
+  ;;                 any case: libcurl frames the message, and M2 sends no
+  ;;                 body, so a server would wait for one
+  ;;   owned-option  an option the test seam may not set: chez-curl sets it,
+  ;;                 a request field sets it, or it is the twin of one that
+  ;;                 does, compared by id (ADR-0009, amended 2026-10-23)
+  ;;   unsupported-type
+  ;;                 an option the test seam may not set for its type: only
+  ;;                 long, enumerated values and off_t, so no address passes
+  ;;
+  ;; A value is scanned left to right, and its first offending char decides;
+  ;; only when none offends are its ends checked.
+  (define curl-request-error-reasons
+    '(embedded-nul line-break not-latin-1 not-a-token surrounding-whitespace duplicates-field
+      framing-header owned-option unsupported-type))
+
+  ;; The fields:
+  ;;
+  ;;   field   Symbol: the field refused, header-name, header-value,
+  ;;           user-agent, or options, the test seam's
+  ;;   value   the string refused, whole, or the option's name
+  ;;   reason  one of curl-request-error-reasons
+  (define-condition-type &curl-request-error &curl-error
+    unchecked-make-curl-request-error curl-request-error?
+    (field curl-request-error-field)
+    (value curl-request-error-value)
+    (reason curl-request-error-reason))
+
+  ;; make-curl-request-error : Symbol Any Symbol -> &curl-request-error
+  ;; Refuses a REASON that is not one of the eight with an assertion
+  ;; violation, as make-curl-library-unavailable does.
+  (define (make-curl-request-error field value reason)
+    (unless (memq reason curl-request-error-reasons)
+      (assertion-violation 'make-curl-request-error
+                           "not a reason chez-curl refuses a request's field for"
+                           reason))
+    (unchecked-make-curl-request-error field value reason))
+
+  ;; curl-request-error? : Any -> Boolean
+  ;; curl-request-error-field : &curl-request-error -> Symbol
+  ;; curl-request-error-value : &curl-request-error -> Any
+  ;; curl-request-error-reason : &curl-request-error -> Symbol
+
+  ;; --- &curl-transfer-error ------------------------------------------------------
+
+  ;; curl-transfer-error-reasons : (Listof Symbol)
+  ;; Why a blocking transfer failed (M2 plan, section 5.3):
+  ;;
+  ;;   perform-failed   curl_easy_perform answered a code, and the write
+  ;;                    callable recorded nothing
+  ;;   body-limit       the callable refused a chunk past the body limit
+  ;;   callback-raised  something raised inside the callable, which recorded it
+  ;;   setopt-failed    curl_easy_setopt answered a code, for the option named
+  ;;   unknown-option   the loaded libcurl does not know the option named
+  ;;   no-handle        curl_easy_init answered NULL
+  (define curl-transfer-error-reasons
+    '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle))
+
+  ;; The fields:
+  ;;
+  ;;   reason        one of curl-transfer-error-reasons
+  ;;   code          (U Integer #f): the CURLcode, a number, since codes
+  ;;                 past the floor's have no name; #f when libcurl answered
+  ;;                 none (unknown-option, no-handle)
+  ;;   option        (U String #f): the option's name, without CURLOPT_
+  ;;   strerror      (U String #f): curl_easy_strerror's text for the code
+  ;;   error-buffer  (U String #f): CURLOPT_ERRORBUFFER's text, read as
+  ;;                 Latin-1, or #f when it is empty
+  ;;   recorded      what the callable recorded: the raised object for
+  ;;                 callback-raised, else #f
+  ;;
+  ;; Tests assert the reason, the code, the option and the recorded object,
+  ;; never the texts.
+  (define-condition-type &curl-transfer-error &curl-error
+    unchecked-make-curl-transfer-error curl-transfer-error?
+    (reason curl-transfer-error-reason)
+    (code curl-transfer-error-code)
+    (option curl-transfer-error-option)
+    (strerror curl-transfer-error-strerror)
+    (error-buffer curl-transfer-error-error-buffer)
+    (recorded curl-transfer-error-recorded))
+
+  ;; make-curl-transfer-error : Symbol (U Integer #f) (U String #f) (U String #f)
+  ;;                            (U String #f) Any -> &curl-transfer-error
+  ;; Refuses a REASON that is not one of the six with an assertion violation.
+  ;; It checks nothing else, so a code a later libcurl answers still reaches
+  ;; the caller.
+  (define (make-curl-transfer-error reason code option strerror error-buffer recorded)
+    (unless (memq reason curl-transfer-error-reasons)
+      (assertion-violation 'make-curl-transfer-error
+                           "not a reason a chez-curl transfer fails for"
+                           reason))
+    (unchecked-make-curl-transfer-error reason code option strerror error-buffer recorded))
+
+  ;; curl-transfer-error? : Any -> Boolean
+  ;; curl-transfer-error-reason : &curl-transfer-error -> Symbol
+  ;; curl-transfer-error-code : &curl-transfer-error -> (U Integer #f)
+  ;; curl-transfer-error-option : &curl-transfer-error -> (U String #f)
+  ;; curl-transfer-error-strerror : &curl-transfer-error -> (U String #f)
+  ;; curl-transfer-error-error-buffer : &curl-transfer-error -> (U String #f)
+  ;; curl-transfer-error-recorded : &curl-transfer-error -> Any
 
   ;; curl-url-code-reason : Any -> (U Symbol #f)
   ;; CODE's name in curlue-codes, or #f for anything else: a later
