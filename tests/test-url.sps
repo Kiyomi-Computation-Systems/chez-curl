@@ -50,7 +50,9 @@
         (curl private url)
         (curl private conditions)
         (curl private counters)
-        (only (curl private native) loaded-protocols))
+        (only (curl private native) loaded-protocols)
+        (rnrs mutable-strings)
+        (only (chezscheme) fork-thread thread-join sleep make-time make-engine))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
 ;; counts into one.
@@ -407,6 +409,14 @@
             (if (eq? (row-problem row) 'ok) (map car (row-answers row)) row))))
     (loop (+ i 1) (cdr rest))))
 
+(test-equal "each varying case has different answers in two rows at least: one all rows answer alike is a shared answer"
+  '()
+  (filter (lambda (a-case)
+            (let ((answers (map (lambda (row) (let ((p (assoc a-case (row-answers row)))) (and p (cadr p))))
+                                (filter (lambda (row) (eq? (row-problem row) 'ok)) rows))))
+              (< (length (fold-left (lambda (seen a) (if (member a seen) seen (cons a seen))) '() answers)) 2)))
+          varying-cases))
+
 (test-equal "no two rows share a version"
   'distinct
   (let ((versions (map (lambda (row) (if (eq? (row-problem row) 'ok) (row-version row) row)) rows)))
@@ -651,6 +661,96 @@
                    (set! runs (+ runs 1))))
                (if (= runs 1) (k #f) (list 'reentered runs)))))
       (list r runs (native-counts)))))
+
+;; --- check-then-use: a URL another thread changes ----------------------------------------
+;; call-with-parsed-url checks a copy of its input, and hands libcurl that
+;; same copy. Checking the caller's string, then handing libcurl the
+;; caller's string, lets a second thread put a NUL in between: the check
+;; passes, and the NUL reaches the C string, refused there, as
+;; call-with-c-string's &curl-embedded-nul, or not at all. Here a thread
+;; flips one char between a and U+0000 while this one normalizes the URL:
+;; each answer is the URL refused as embedded-nul, or the URL, whole.
+
+;; flipped-normalize : Natural -> (List (Listof Any) (Listof Symbol) Counts)
+;; N normalizations of http://a/xax, its a flipped: the answers that are
+;; neither, which of the two were seen, and the counts after.
+(define (flipped-normalize n)
+  (let* ((s (string-copy "http://a/xax"))
+         (stop #f)
+         (yield (lambda () (sleep (make-time 'time-duration 0 0))))
+         (flip (lambda ()
+                 (let loop ((i 0))
+                   (when (< i 100000)
+                     (string-set! s 10 #\nul)
+                     (string-set! s 10 #\a)
+                     (loop (+ i 1))))))
+         ;; It flips 100000 times as fast as it can, then yields once in
+         ;; each state: natively it spins most of the time, and under
+         ;; Valgrind both states reach the calls.
+         (flipper (fork-thread (lambda ()
+                                 (let loop ()
+                                   (unless stop
+                                     (flip)
+                                     (yield)
+                                     (flip)
+                                     (string-set! s 10 #\nul)
+                                     (yield)
+                                     (loop)))))))
+    (dynamic-wind
+      (lambda () #f)
+      (lambda ()
+        (let loop ((i 0) (odd '()) (seen '()))
+          (if (= i n)
+              (list (reverse odd) (filter (lambda (k) (memq k seen)) '(refused whole)) (native-counts))
+              ;; Before every tenth, a sleep of no time: a system call, where
+              ;; Valgrind, which runs one thread at a time, lets the flipper
+              ;; run, leaving the URL in either state. Natively the flipper
+              ;; races each call from another core.
+              (let ((o (let ((a (begin (when (= (mod i 10) 0) (yield))
+                                       (answer (list 'normalize s)))))
+                         (cond ((equal? a '(refused-by-chez-curl embedded-nul)) 'refused)
+                               ((equal? a "http://a/xax") 'whole)
+                               (else a)))))
+                (loop (+ i 1)
+                      (if (memq o '(refused whole)) odd (cons o odd))
+                      (if (memq o seen) seen (cons o seen)))))))
+      (lambda () (set! stop #t) (thread-join flipper)))))
+
+(test-equal "url-normalize, while another thread flips a char of its URL to U+0000: 1000 answers each the URL refused as embedded-nul, or the URL whole, both seen, and nothing left"
+  (list '() '(refused whole) zero-counts)
+  (flipped-normalize 1000))
+
+
+;; --- asynchronous escapes: an engine's fuel running out anywhere ------------------------
+;; An engine that runs out of fuel leaves through a continuation at its next
+;; safe point, running the after thunks; an abandoned one is never resumed.
+;; Each sweep runs THUNK in a fresh engine with fuel 1, 1+STEP, 1+2 STEP and
+;; so on, abandoning each that runs out, until one completes: a native
+;; object made but not yet recorded where its free finds it, at any of those
+;; points, would stay made, and counted or not.
+
+;; engine-sweep : (-> Any) Natural -> (List Symbol Natural)
+;; (completed EXPIRED), EXPIRED the engines that ran out first; or
+;; (never-completed EXPIRED) past 100000 fuel.
+(define (engine-sweep thunk step)
+  (let loop ((fuel 1) (expired 0))
+    (cond ((> fuel 100000) (list 'never-completed expired))
+          (((make-engine thunk) fuel (lambda (ticks v) #t) (lambda (e) #f)) (list 'completed expired))
+          (else (loop (+ fuel step) (+ expired 1))))))
+
+;; swept : (List Symbol Natural) -> Any
+;; completed-after-expiries when the sweep completed after more than ten
+;; engines ran out, its positive evidence; else the sweep itself.
+(define (swept result)
+  (if (and (eq? (car result) 'completed) (> (cadr result) 10)) 'completed-after-expiries result))
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append (car row) " in an engine that runs out at every tick, each abandoned, until one completes: it completes, and no native object is left, no CURLU and no string libcurl made")
+     (list 'completed-after-expiries zero-counts)
+     (list (swept (engine-sweep (cadr row) 1)) (native-counts))))
+ (list (list "url-normalize" (lambda () (url-normalize "http://a/b/../c")))
+       (list "url-resolve" (lambda () (url-resolve "http://a/b/c" "../d")))))
 
 (test-end "url")
 

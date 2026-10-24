@@ -137,7 +137,24 @@
     (curlue-ok . "CURLUE_OK")
     (curlue-codes . (each "CURLUE_"))
     (curlupart-url . "CURLUPART_URL")
-    (curlupart-scheme . "CURLUPART_SCHEME")))
+    (curlupart-scheme . "CURLUPART_SCHEME")
+    (curlinfo-response-code . "CURLINFO_RESPONSE_CODE")
+    (curlinfo-http-version . "CURLINFO_HTTP_VERSION")
+    (curlinfo-effective-url . "CURLINFO_EFFECTIVE_URL")
+    (curl-error-size . "CURL_ERROR_SIZE")
+    (curl-http-version-1-0 . "CURL_HTTP_VERSION_1_0")
+    (curl-http-version-1-1 . "CURL_HTTP_VERSION_1_1")
+    (curl-http-version-2-0 . "CURL_HTTP_VERSION_2_0")
+    (curl-http-version-3 . "CURL_HTTP_VERSION_3")
+    (curle-unsupported-protocol . "CURLE_UNSUPPORTED_PROTOCOL")
+    (curle-weird-server-reply . "CURLE_WEIRD_SERVER_REPLY")
+    (curle-partial-file . "CURLE_PARTIAL_FILE")
+    (curle-write-error . "CURLE_WRITE_ERROR")
+    (curle-out-of-memory . "CURLE_OUT_OF_MEMORY")
+    (curle-operation-timedout . "CURLE_OPERATION_TIMEDOUT")
+    (curle-got-nothing . "CURLE_GOT_NOTHING")
+    (curle-recv-error . "CURLE_RECV_ERROR")
+    (curle-filesize-exceeded . "CURLE_FILESIZE_EXCEEDED")))
 
 ;; c-name-aliases : (Listof (Pairof Symbol String))
 ;; Each export whose row names a C constant other than the export's own
@@ -158,7 +175,8 @@
 ;; the struct's end on purpose.
 (define layout-rows
   '((curl-version-info-data "curl_version_info_data" prefix)
-    (curl-easyoption "struct curl_easyoption" whole)))
+    (curl-easyoption "struct curl_easyoption" whole)
+    (curl-header "struct curl_header" whole)))
 
 (define extents '(whole prefix))
 
@@ -849,8 +867,24 @@
      ("CURLUcode" ("const CURLU *" "CURLUPart" "char **" "unsigned int")))
     ("curl_url_strerror" ("const char *" ("CURLUcode")))
     ("curl_free" ("void" ("void *")))
+    ("curl_easy_perform" ("CURLcode" ("CURL *")))
+    ("curl_easy_strerror" ("const char *" ("CURLcode")))
+    ("curl_easy_nextheader"
+     ("struct curl_header *" ("CURL *" "unsigned int" "int" "struct curl_header *")))
+    ("curl_slist_append" ("struct curl_slist *" ("struct curl_slist *" "const char *")))
+    ("curl_slist_free_all" ("void" ("struct curl_slist *")))
     ("memcpy" ("void *" ("void *" "const void *" "size_t")))
     ("strlen" ("size_t" ("const char *")))))
+
+;; callable-rows : (Listof (List Symbol String Declaration))
+;; One row per callable src/ defines: the name it is defined as, the typedef
+;; of the function pointer libcurl calls it through, and that typedef's
+;; declaration, in the header's own spelling, as a prototype row gives one.
+;; The C side asserts the typedef is that function pointer type, with the
+;; same _Static_assert(_Generic(...)) as an entry's; the Scheme side holds
+;; the callable's Chez types to it through c-type-map, as a binding's.
+(define callable-rows
+  '((write-body "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *")))))
 
 ;; c-type-map : (Listof (Pairof String (Listof Symbol)))
 ;; The one fixed map from a C type, as a header spells it, to the Chez types
@@ -976,31 +1010,51 @@
    (apply string-append (map (lambda (d) (string-append (c-function-type d) ": 1, ")) (cdr row)))
    "default: 0), \"" (car row) ": the headers declare it otherwise than each declaration its row gives\");\n"))
 
-;; prototype-program : (Listof Row) -> String
-(define (prototype-program rows)
+;; callable-assertion : CallableRow -> String
+;; The C line that holds a callable's typedef to its row's declaration: the
+;; same static assertion, on a null pointer of the typedef's type, which
+;; _Generic does not evaluate.
+(define (callable-assertion row)
+  (string-append
+   "_Static_assert(_Generic(((" (cadr row) ")0), " (c-function-type (caddr row)) ": 1, "
+   "default: 0), \"" (symbol->string (car row)) ": the headers declare " (cadr row)
+   " otherwise than its row gives\");\n"))
+
+;; prototype-program : (Listof Row) (Listof CallableRow) -> String
+(define (prototype-program rows callables)
   (string-append
    "#include <curl/curl.h>\n"
    "#include <string.h>\n"
    "\n"
-   (apply string-append (map prototype-assertion rows))))
+   (apply string-append (map prototype-assertion rows))
+   (apply string-append (map callable-assertion callables))))
 
-;; compile-prototypes : (Listof Row) -> (U 'compiled (Pairof Symbol Any))
-;; Compiles PROTOTYPE-PROGRAM of ROWS with $CC -c, in a fresh directory:
-;; compiled, or (compile STATUS STDOUT STDERR), or (raised TEXT).
-(define (compile-prototypes rows)
+;; compile-prototypes : (Listof Row) [(Listof CallableRow)] -> (U 'compiled (Pairof Symbol Any))
+;; Compiles PROTOTYPE-PROGRAM of ROWS and CALLABLES, none by default, with
+;; $CC -c, in a fresh directory: compiled, or (compile STATUS STDOUT
+;; STDERR), or (raised TEXT).
+(define (compile-prototypes rows . callables)
   (guard (e (#t (list 'raised (describe e))))
     (call-with-temp-directory
      (lambda (dir)
        (let ((source (string-append dir "/prototypes.c")))
-         (write-text source (prototype-program rows))
+         (write-text source (prototype-program rows (if (null? callables) '() (car callables))))
          (let ((compiled (capture-command
                           (append (c-compiler getenv)
                                   (list "-c" "-o" (string-append dir "/prototypes.o") source)))))
            (if (= (car compiled) 0) 'compiled (cons 'compile compiled))))))))
 
+;; callable-row-shaped? : Any -> Boolean
+;; (NAME TYPEDEF DECLARATION): a symbol, a string, and a declaration with
+;; no variadic part.
+(define (callable-row-shaped? row)
+  (and (list? row) (= (length row) 3) (symbol? (car row)) (string? (cadr row))
+       (declaration-shaped? (caddr row)) (= (length (caddr row)) 2)))
+
 (define prototypes-compiled
-  (if (for-all prototype-row-shaped? prototype-rows)
-      (compile-prototypes prototype-rows)
+  (if (and (for-all prototype-row-shaped? prototype-rows)
+           (for-all callable-row-shaped? callable-rows))
+      (compile-prototypes prototype-rows callable-rows)
       '(rows-malformed)))
 
 ;; signatures : (U (Listof Signature) (List 'raised String))
@@ -1019,6 +1073,16 @@
 (define bound-entries
   (fold-left (lambda (found sig)
                (if (and (string? (car sig)) (not (member (car sig) found)))
+                   (append found (list (car sig)))
+                   found))
+             '() signature-list))
+
+;; bound-callables : (Listof Symbol)
+;; The callables src/ defines, each once, in scan order: the signatures
+;; with a symbol key.
+(define bound-callables
+  (fold-left (lambda (found sig)
+               (if (and (symbol? (car sig)) (not (memq (car sig) found)))
                    (append found (list (car sig)))
                    found))
              '() signature-list))
@@ -1198,6 +1262,36 @@
 (define (header-declaration name)
   (declaration-in (if header-tokens-read? header-tokens '()) name))
 
+;; typedef-in : (Listof String) String -> (U (List String (Listof String)) (List 'no-declaration String))
+;; NAME's first typedef of a function pointer in TOKENS: typedef RESULT
+;; (*NAME)(PARAMETERS); its result and its parameters, spelled, as
+;; declaration-in answers.
+(define (typedef-in tokens name)
+  (let loop ((rest tokens) (statement '()))
+    (cond
+      ((null? rest) (list 'no-declaration name))
+      ((member (car rest) '(";" "{" "}")) (loop (cdr rest) '()))
+      ((and (string=? (car rest) "(")
+            (pair? (cdr rest)) (string=? (cadr rest) "*")
+            (pair? (cddr rest)) (string=? (caddr rest) name)
+            (pair? (cdddr rest)) (string=? (cadddr rest) ")")
+            (pair? (cddddr rest)) (string=? (car (cddddr rest)) "(")
+            (balanced-end (cddddr rest)))
+       => (lambda (cut)
+            (let ((head (reverse statement)))
+              (if (and (pair? (cdr cut)) (string=? (cadr cut) ";")
+                       (pair? head) (string=? (car head) "typedef"))
+                  (let* ((inner (reverse (cdr (reverse (cdr (car cut))))))
+                         (parameters (map parameter-type (split-parameters inner))))
+                    (list (spelled (remp (lambda (t) (member t qualifier-noise)) (cdr head)))
+                          (if (equal? parameters '("void")) '() parameters)))
+                  (loop (cdr rest) (cons (car rest) statement))))))
+      (else (loop (cdr rest) (cons (car rest) statement))))))
+
+;; header-typedef : String -> (U (List String (Listof String)) (List 'no-declaration String))
+(define (header-typedef name)
+  (typedef-in (if header-tokens-read? header-tokens '()) name))
+
 ;; row-spelling : Declaration -> (List String (Listof String))
 ;; A row's declaration as the spelling check compares it: its result and
 ;; parameters, each respelled from its tokens, so spacing does not count.
@@ -1242,14 +1336,19 @@
   (if header-tokens-read? (enums-in header-tokens) (list 'no-tokens header-tokens)))
 
 ;; prototype-c-types : (Listof String)
-;; Every C type a row writes, each once, in row order, "..." aside.
+;; Every C type a row writes, a callable row's among them, each once, in row
+;; order, "..." aside.
 (define prototype-c-types
   (fold-left (lambda (found type) (if (or (member type found) (string=? type "...")) found (append found (list type))))
              '()
-             (apply append
-                    (map (lambda (row)
-                           (apply append (map (lambda (d) (cons (car d) (cadr d))) (cdr row))))
-                         prototype-rows))))
+             (append
+              (apply append
+                     (map (lambda (row)
+                            (apply append (map (lambda (d) (cons (car d) (cadr d))) (cdr row))))
+                          prototype-rows))
+              (apply append
+                     (map (lambda (row) (cons (car (caddr row)) (cadr (caddr row))))
+                          callable-rows)))))
 
 ;; --- the map, against every type a binding can write --------------------------------------
 
@@ -1473,8 +1572,8 @@
 
 ;; Written out here, not read from the table: a row turned to prefix would
 ;; drop its size check with it.
-(test-equal "curl-easyoption is laid out whole, and curl-version-info-data as a prefix"
-  '((curl-version-info-data prefix) (curl-easyoption whole))
+(test-equal "curl-easyoption and curl-header are laid out whole, and curl-version-info-data as a prefix"
+  '((curl-version-info-data prefix) (curl-easyoption whole) (curl-header whole))
   (map (lambda (row) (list (car row) (caddr row))) layout-rows))
 
 ;; --- curlot-types is complete ---------------------------------------------------------------
@@ -1521,7 +1620,7 @@
   (length (fold-left (lambda (found row) (if (member (car row) found) found (cons (car row) found)))
                      '() prototype-rows)))
 
-(test-equal "the headers declare each entry as one of its row's declarations: the C program's static assertions compile, with no link"
+(test-equal "the headers declare each entry as one of its row's declarations, and each callable's typedef as its row's: the C program's static assertions compile, with no link"
   'compiled
   prototypes-compiled)
 
@@ -1536,6 +1635,42 @@
     (list (compile-prototypes (list right))
           (let ((answer (compile-prototypes (list wrong))))
             (if (and (pair? answer) (eq? (car answer) 'compile)) 'refused answer)))))
+
+;; The callable's control, likewise: curl_write_callback written with void *
+;; for its char * must not compile, and written right, it must.
+(test-equal "the prototype check refuses a callable row that writes curl_write_callback's char * as void *, and compiles it written right"
+  '(compiled refused)
+  (let ((right '(write-body "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *"))))
+        (wrong '(write-body "curl_write_callback" ("size_t" ("void *" "size_t" "size_t" "void *")))))
+    (list (compile-prototypes '() (list right))
+          (let ((answer (compile-prototypes '() (list wrong))))
+            (if (and (pair? answer) (eq? (car answer) 'compile)) 'refused answer)))))
+
+(test-equal "callable-rows: each row is a callable's name, its typedef, and the typedef's declaration, well formed"
+  '()
+  (remp callable-row-shaped? callable-rows))
+
+(test-equal "callable-rows has a row for every callable src/ defines, and src/ defines every row's callable"
+  (list-sort symbol-before? bound-callables)
+  (list-sort symbol-before? (map car callable-rows)))
+
+;; Written out here, not read from the table: a row loosened along with the
+;; callable it holds would otherwise pass.
+(test-equal "callable-rows is exactly write-body, held to curl_write_callback: size_t (char *, size_t, size_t, void *)"
+  '((write-body "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *"))))
+  callable-rows)
+
+(for-each
+ (lambda (sig)
+   (let ((row (assq (car sig) callable-rows)))
+     (test-equal (string-append "callable: " (written (car sig)) " defined through "
+                                (symbol->string (cadr sig)) " as " (written (caddr sig)) " -> "
+                                (written (cadddr sig)) " fits its typedef's declaration")
+       'fits
+       (cond ((not row) 'no-row)
+             ((declaration-fits? (cadr row) (caddr row) (caddr sig) (cadddr sig)) 'fits)
+             (else (list 'fits-not (caddr row)))))))
+ (filter (lambda (sig) (symbol? (car sig))) signature-list))
 
 (for-each
  (lambda (sig)
@@ -1593,6 +1728,9 @@
     (("x" "void *") uptr void*)
     (("x" "const void *") uptr void*)
     (("x" "struct curl_header **") uptr void*)
+    (("x" "struct curl_header *") uptr void* (* curl-header))
+    (("x" "struct curl_slist *") uptr void*)
+    (("x" "char *") uptr void*)
     (("x" "const char *") uptr void* string)
     (("x" "curl_version_info_data *") uptr void* (* curl-version-info-data))
     (("x" "struct curl_easyoption *") uptr void* (* curl-easyoption))
@@ -1601,8 +1739,8 @@
     (("memcpy" "const void *") uptr void* u8*)
     (("memcpy" "const char *") uptr void* u8* string)))
 
-(test-equal "the universe the map is held against: every type the conventions reader reads, for src/'s two layouts, and an ftype no layout defines"
-  (+ 33 1 3 7 1 4 1)
+(test-equal "the universe the map is held against: every type the conventions reader reads, for src/'s three layouts, and an ftype no layout defines"
+  (+ 33 1 3 7 1 6 1)
   (length universe))
 
 (for-each
@@ -1704,6 +1842,34 @@
              ((member header (map row-spelling (cdr row))) 'spelled-so)
              (else (list 'header-spells header 'row-spells (map row-spelling (cdr row))))))))
  prototype-rows)
+
+(for-each
+ (lambda (row)
+   (test-equal (string-append "callable: the headers declare " (cadr row)
+                              ", " (symbol->string (car row)) "'s typedef, in its row's spelling")
+     'spelled-so
+     (let ((header (header-typedef (cadr row))))
+       (cond ((eq? (car header) 'no-declaration) header)
+             ((equal? header (row-spelling (caddr row))) 'spelled-so)
+             (else (list 'header-spells header 'row-spells (row-spelling (caddr row))))))))
+ callable-rows)
+
+;; The typedef reader on fixed text: a decoy whose name only begins like
+;; the one asked for, a struct with no pointer, the typedef itself, and a
+;; second typedef of the name after it, which is never read.
+(test-equal "typedef-in: the first typedef of a function pointer by its whole name, its parameter names dropped; a longer name, a non-typedef and a later one are passed over"
+  '(("size_t" ("char *" "size_t" "size_t" "void *"))
+    ("int" ())
+    (no-declaration "absent"))
+  (let ((tokens (without-attributes
+                 (c-tokens (string-append
+                            "typedef int (*cb_longer)(void);\n"
+                            "struct s { int (*cb)(char *); };\n"
+                            "size_t (*cb)(int);\n"
+                            "typedef size_t (*cb)(char *buffer, size_t size, size_t nitems, void *outstream);\n"
+                            "typedef int (*cb)(void);\n"
+                            "typedef int (*other)(void);\n")))))
+    (list (typedef-in tokens "cb") (typedef-in tokens "other") (typedef-in tokens "absent"))))
 
 ;; The reader on fixed text, at each place a scan can miss: the first
 ;; statement, one after a brace, a parameter list of void, names dropped

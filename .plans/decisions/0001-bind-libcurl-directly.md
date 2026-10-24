@@ -1,6 +1,6 @@
 # ADR-0001: Bind libcurl directly, with no C shim; the floor is Chez 10.4.0, threaded
 
-- **Status:** Accepted; amended 2026-10-16 with what M0 slices 3 to 5 built; 2026-10-17, the variadic bindings (M0 slice 6); 2026-10-23, the checked copies and the carried checks (M2 slice 1); 2026-10-23, the Apple arm64 run, which passed
+- **Status:** Accepted; amended 2026-10-16 with what M0 slices 3 to 5 built; 2026-10-17, the variadic bindings (M0 slice 6); 2026-10-23, the checked copies and the carried checks (M2 slice 1); 2026-10-23, the Apple arm64 run, which passed; 2026-10-23, header strings are Latin-1 both ways, and the transfer's bindings (M2 slice 2)
   ([slice 3](#amendment-2026-10-16-what-slice-3-built),
   [slice 4](#amendment-2026-10-16-what-slice-4-built),
   [slice 5](#amendment-2026-10-16-the-non-threaded-check-m0-slice-5),
@@ -421,3 +421,70 @@ The maintainer ran `make test` and `make check-variadic` on their Mac:
 - **The gate is met.** M2's slices 2 and 3 may bind setopt and getinfo options.
   `make check-variadic` still runs on an Apple arm64 Mac whenever a variadic binding changes.
 - **Still carried:** `test-variadic` needs a libcurl with RTSP.
+
+## Amendment, 2026-10-23: header strings are Latin-1, both ways (M2 slice 2)
+
+The M2 plan (§3.3) left one question to slice 2: how a header's bytes become a string, with
+every byte kept.
+
+- **Measured** on libcurl 7.85.0, 8.5.0 with OpenSSL, 8.5.0 with GnuTLS, and 8.20.0. The
+  measurements went through C, in the container for 8.20.0 and in Docker `ubuntu:24.04` for
+  the rest, against the origin and a scratch server.
+  - **`curl_easy_nextheader` never hands back a NUL.** All four refuse `nul-in-header` with
+    8, `CURLE_WEIRD_SERVER_REPLY`, and `header-no-colon` too.
+  - **Every other byte inside a value reaches the caller as the server sent it:** 0x80 to
+    0xFF, the control bytes 0x01 and 0x7F, and a name's case. Leading and trailing SP and
+    HTAB are trimmed, on all four: `"   padded value  "` read back as `"padded value"`.
+  - **libcurl's own handling varies by version, and chez-curl changes none of it:**
+    - an empty value reads as `"\r"` on 8.5.0, and as `""` on 7.85.0 and 8.20.0;
+    - a folded line's tab is kept on 7.85.0 and 8.5.0, and becomes a space on 8.20.0;
+    - a CR inside a value cuts it there on 7.85.0 and 8.5.0, and is kept on 8.20.0.
+- **Decided, by the maintainer: Latin-1, both ways.**
+  - **Responses:** a header's name and value become strings with one char per byte, so byte
+    n is U+00nn.
+  - **Requests:** a header's name and value, and the user agent, go to libcurl with one byte
+    per char. A char above U+00FF is refused before anything is allocated, as U+0000 is.
+  - So ASCII reads as itself, and a header that is read and then sent back keeps its bytes,
+    unless libcurl's reading changed them. Two of the variations above do, and both are
+    refused on sending, as `line-break`: 8.5.0's empty value, read as `"\r"`, and 8.20.0's CR
+    kept inside a value. Node and Python's `http.client` treat header text the same way.
+- **The UTF-8 rule gains its one exception.** Header strings and the user agent reach libcurl
+  as Latin-1 copies. Every other string, URLs included, stays UTF-8 (ADR-0008).
+- **Rejected:**
+  - **Latin-1 in, UTF-8 out.** A non-ASCII header that is read and then sent back would
+    change bytes.
+  - **Bytevectors in responses.** Nothing is lost, but every caller would convert, and M4
+    would face the same choice.
+  - **UTF-8 decoding** (not offered). It either loses bytes that are not UTF-8, or refuses
+    servers that send Latin-1, such as a `Content-Disposition` filename.
+
+## Amendment, 2026-10-23: the transfer's bindings (M2 slice 2)
+
+- **Bound, each required at load and so `missing-api` when absent:**
+  - `curl_easy_perform`, through `bind-blocking`, `__collect_safe` (ADR-0013, amended);
+  - `curl_easy_strerror`, `curl_easy_nextheader`, `curl_slist_append` and
+    `curl_slist_free_all`, plain.
+
+  The decoy libcurl defines each, and `test-library-loading` names each one missing.
+- **`curl_easy_strerror` returns `uptr`, read as bytes,** as `curl_url_strerror` does. The plan
+  said a `string` result, and the rule that strings libcurl hands back are read as bytes won.
+- **`call-with-latin-1-c-string`** is `call-with-c-string`'s twin for header strings, one byte
+  per char. Both copy their string first, check the copy, then encode it, so a caller changing
+  the string meanwhile changes nothing C reads.
+- **`curl-header` is a whole layout,** its size checked against `sizeof(struct curl_header)`.
+- **The prototype check covers the callable.** `write-body`'s row holds it to
+  `curl_write_callback`'s typedef, spelt as the header spells it.
+- **Each setopt binding is observed in a transfer, by `test-transfer`:**
+  - the pointer one by `USERAGENT`'s bytes in `/raw/echo`;
+  - the long one by `TIMEOUT_MS` against a stall, 28 within [300, 600) ms, and by `NOBODY`;
+  - the `off_t` one by `MAXFILESIZE_LARGE`, at the body limit plus one, refusing a longer
+    `Content-Length` with 63.
+
+  `make check-variadic` now runs `test-transfer` on each mutant too. On Apple arm64 any
+  non-zero exit counts as the mutant failing: a FAIL line, a crash, or a timeout under
+  `TRANSFER_TIMEOUT`. The Mac must first run `make test`, which prints the 8.7.1 rows to add.
+- **Option ids come from the loaded libcurl, once per process,** and a value goes through the
+  binding its `CURLOT` type names. `test-transfer` holds both the type table and each binding's
+  procedure, by `eq?`: on x86-64, a long sent through the `off_t` binding arrives all the same,
+  so only the table shows it.
+

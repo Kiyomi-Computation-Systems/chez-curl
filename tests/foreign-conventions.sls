@@ -279,9 +279,10 @@
   (define can-block (cite adr-0013 "Known now: `curl_multi_poll` and `curl_easy_perform`."))
   (define multi-perform-plain
     (cite adr-0013 "It covers `curl_multi_perform` too, which curl documents as non-blocking, until E1 says otherwise."))
-  ;; curl_easy_cleanup is bound plain for the load's header probe, which
-  ;; cleans up a fresh handle that never made a connection. Whether cleanup
-  ;; can block is E1's to settle (M3).
+  ;; curl_easy_cleanup is bound plain. It cleans up the load's header
+  ;; probe's fresh handle, and each transfer's, which made a connection, so
+  ;; it may close one. Whether it can block is E1's to settle (M3): it stays
+  ;; plain until E1 decides.
   (define cleanup-open
     (cite adr-0013 "E1 classifies the rest, starting with the cleanup paths `CURLOPT_QUICK_EXIT` describes: `curl_multi_remove_handle` and `curl_easy_cleanup`."))
   (define memcpy-plain
@@ -298,6 +299,11 @@
   ;; what makes them arrive there.
   (define variadic-after-2
     (cite adr-0001 "Variadic entry points are bound once per value type, with `(__varargs_after 2)`."))
+  ;; write-body, (curl private transfer)'s one callable, is invoked from
+  ;; inside curl_easy_perform, a __collect_safe call, so it reactivates the
+  ;; thread (CSUG).
+  (define callback-in-perform
+    (cite adr-0013 "M2's transfer callbacks run inside `curl_easy_perform`, so they are."))
 
   ;; conventions-table : (Listof Row)
   ;; A Row is (List (U String Symbol) (Listof Convention) String), then
@@ -323,7 +329,8 @@
   ;; name bind-variadic, whose template carries the convention, so a
   ;; binding made any other way, directly with the convention included, is
   ;; the wrong binder, and make check-variadic's mutation of that template
-  ;; reaches every binding of them.
+  ;; reaches every binding of them. curl_easy_perform's names bind-blocking,
+  ;; whose template carries __collect_safe, likewise.
   (define conventions-table
     (list (list "curl_version_info" '() cannot-block)
           (list "curl_global_init" '() cannot-block)
@@ -335,7 +342,7 @@
           (list "curl_easy_getinfo" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
           (list "curl_multi_setopt" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
           (list "curl_share_setopt" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
-          (list "curl_easy_perform" '(__collect_safe) can-block)
+          (list "curl_easy_perform" '(__collect_safe) can-block '(bound-by bind-blocking))
           (list "curl_multi_poll" '(__collect_safe) can-block)
           (list "curl_multi_perform" '() multi-perform-plain)
           (list "memcpy" '() memcpy-plain (list 'bytevector-crossing one-checked-wrapper))
@@ -345,7 +352,12 @@
           (list "curl_url_set" '() cannot-block)
           (list "curl_url_get" '() cannot-block)
           (list "curl_url_strerror" '() cannot-block)
-          (list "curl_free" '() cannot-block)))
+          (list "curl_free" '() cannot-block)
+          (list "curl_easy_strerror" '() cannot-block)
+          (list "curl_easy_nextheader" '() cannot-block)
+          (list "curl_slist_append" '() cannot-block)
+          (list "curl_slist_free_all" '() cannot-block)
+          (list 'write-body '(__collect_safe) callback-in-perform)))
 
   ;; known-macros : (Listof (List Symbol Kind String))
   ;; Every macro src/ may define: its name, its kind, and the file below
@@ -353,10 +365,11 @@
   ;; a known wrapper; plain, a macro that neither builds a binding nor takes
   ;; its operands apart; or any, which only a fixture tree's table may name.
   ;; The suite holds it equal, both ways, to what src/ defines, and to
-  ;; these four rows written out by hand.
+  ;; these five rows written out by hand.
   (define known-macros
     '((bind-required binder "curl/private/native.sls")
       (bind-variadic binder "curl/private/native.sls")
+      (bind-blocking binder "curl/private/native.sls")
       (load-step plain "curl/private/load-state.sls")
       (require-supported-chez plain "curl/private/require-threaded.sls")))
 
@@ -368,8 +381,8 @@
 
   ;; known-wrappers : (Listof Symbol)
   ;; The macros whose template binds an entry point: known-macros' binders,
-  ;; src/curl/private/native.sls's bind-required and bind-variadic. The
-  ;; suite holds it equal to the wrappers src/ defines.
+  ;; src/curl/private/native.sls's bind-required, bind-variadic and
+  ;; bind-blocking. The suite holds it equal to the wrappers src/ defines.
   (define known-wrappers (binders known-macros))
 
   ;; --- the scan's answer ----------------------------------------------------------

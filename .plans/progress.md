@@ -11,8 +11,19 @@ close-out under **Close-outs**, newest first.
   - **Slice 1 is merged** (PR #13, `ed217dc`): the counters gate, counted foreign blocks,
     the checked copy, C strings, the URL API, and the checks carried from M0. It binds no
     setopt or getinfo option.
-  - **Slices 2 and 3,** the plaintext transfer and TLS, may start: the Apple arm64 run
-    passed (ADR-0001, amended 2026-10-23).
+  - **Slice 2, the blocking plaintext transfer, is built** on `m2/blocking-transfer`:
+    `(curl private transfer)`, its bindings, `test-transfer` with its version rows, and the
+    `header-bytes` script. The maintainer chose Latin-1 header strings both ways, the test
+    seam held to ADR-0009, and escapes from perform allowed and counted. Three reviews and
+    three fix rounds closed what they found (M2 plan, §5.3 and §5.4).
+    - In the container: `make test` 21/21, `check-test-fails` 11/11, `check-suites`,
+      `check-seam` (14 libraries), `test-memory` 21/21, and `check-variadic` 25 steps.
+    - In Docker: the floor lane (7.85.0, Node 20.10.0) and the main lane (Ubuntu's 8.5.0,
+      OpenSSL) passed, and `test-transfer` passed on 8.5.0 with GnuTLS.
+    - **The Mac owes a run:** `make test`, which prints Apple's 8.7.1 transfer rows to add,
+      then `make check-variadic`, whose arm64 steps now run `test-transfer` on each mutant.
+  - **Slice 3, TLS,** follows slice 2. Its verify field's options, `SSL_VERIFYPEER` and
+    `SSL_VERIFYHOST`, join the seam's deny-list through the request's field table.
 
   M1 (brief §7) is built: PRs #10 and #11. M0 (brief §8) is built.
 - **The Mac's run, 2026-10-23,** on the maintainer's M1:
@@ -57,7 +68,7 @@ close-out under **Close-outs**, newest first.
   it arrives with the last data. The probe now reads its socket's fd once on each
   end, and both origin suites stop the probe across a last write and a reset. Without the
   fix, that check failed on Node 20.10.0 in 2 runs of 2.
-- **CI has never run.** Every job of PRs #8 to #13 was "not started because recent account payments
+- **CI has never run.** Every job of PRs #8 to #15 was "not started because recent account payments
   have failed or your spending limit needs to be increased". GitHub parsed the workflow and
   listed all six jobs, so the file is valid. What only CI can show is still unshown: Chez
   built from its tarball on the runner, a real `--nothreads` Chez, the suites under Ubuntu's

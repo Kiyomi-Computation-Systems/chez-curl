@@ -430,7 +430,12 @@
        (cons "curl_url_strerror" (list version-call init-call))
        (cons "curl_free" (list version-call init-call))
        (cons "curl_easy_setopt" (list version-call init-call))
-       (cons "curl_easy_getinfo" (list version-call init-call))))
+       (cons "curl_easy_getinfo" (list version-call init-call))
+       (cons "curl_easy_perform" (list version-call init-call))
+       (cons "curl_easy_strerror" (list version-call init-call))
+       (cons "curl_easy_nextheader" (list version-call init-call))
+       (cons "curl_slist_append" (list version-call init-call))
+       (cons "curl_slist_free_all" (list version-call init-call))))
 
 ;; --- the real libcurl ---------------------------------------------------------------
 

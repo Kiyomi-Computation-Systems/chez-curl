@@ -303,4 +303,48 @@ void curl_free(void *p)
 }
 #endif
 
+/* The blocking transfer's entry points (M2 slice 2), which the load binds
+   and never calls, as with the variadic pair above. Each answers as a
+   library that can do nothing would. */
+#ifndef DECOY_LACKS_curl_easy_perform
+CURLcode curl_easy_perform(CURL *easy)
+{
+  called("curl_easy_perform(%s)", HANDLE_NAME(easy));
+  return CURLE_FAILED_INIT;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_easy_strerror
+const char *curl_easy_strerror(CURLcode error)
+{
+  called("curl_easy_strerror(%d)", (int)error);
+  return "decoy";
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_easy_nextheader
+struct curl_header *curl_easy_nextheader(CURL *easy, unsigned int origin, int request,
+                                         struct curl_header *prev)
+{
+  called("curl_easy_nextheader(%s,%u,%d,%s)", HANDLE_NAME(easy), origin, request,
+         prev ? "prev" : "NULL");
+  return NULL;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_slist_append
+struct curl_slist *curl_slist_append(struct curl_slist *list, const char *data)
+{
+  called("curl_slist_append(%s,%s)", list ? "list" : "NULL", data ? "data" : "NULL");
+  return NULL;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_slist_free_all
+void curl_slist_free_all(struct curl_slist *list)
+{
+  called("curl_slist_free_all(%s)", list ? "list" : "NULL");
+}
+#endif
+
 #endif /* DECOY_NOT_CURL */

@@ -39,7 +39,7 @@
   (define curl-easy-cleanup (step (bind-required "curl_easy_cleanup" (uptr) void #f)))
 
   ;; Direct bindings: the conventions are what precedes the entry.
-  (define curl-easy-perform (foreign-procedure __collect_safe "curl_easy_perform" (uptr) int))
+  (define fixture-blocking (foreign-procedure __collect_safe "fixture_blocking" (uptr) int))
   (define memcpy (foreign-procedure "memcpy" (uptr uptr size_t) uptr))
 
   ;; Two conventions, in the other order from the row's: compared as sets.

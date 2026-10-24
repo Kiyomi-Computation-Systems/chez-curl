@@ -24,9 +24,10 @@
 ;;;       may import, and is not one of them. library-only-chez-names holds
 ;;;       each such name with the libraries that alone may import it. At first
 ;;;       that was define-ftype, for (curl private layouts) alone; M2 adds
-;;;       foreign-alloc and foreign-free, for (curl private memory) alone, and
+;;;       foreign-alloc and foreign-free, for (curl private memory) alone,
 ;;;       foreign-procedure and load-shared-object, for (curl private native)
-;;;       alone. A function
+;;;       alone, and foreign-callable, foreign-callable-entry-point and
+;;;       lock-object, for (curl private transfer) alone. A function
 ;;;       ftype, (define-ftype F (function (int) int)), binds a C entry point or
 ;;;       makes a callable without foreign-procedure or foreign-callable, so it
 ;;;       would dodge the conventions table (tests/foreign-conventions.sls) and
@@ -130,12 +131,17 @@
 ;; time, load a file. Adding a name is a reviewed change to the seam
 ;; (ADR-0007), as adding to public-curl is. tests/test-check-seam.sps requires
 ;; the list to equal the names src/ imports, so an unused name cannot stay.
+;; critical-section, and dynamic-wind for its critical? argument, keep an
+;; interrupt that escapes from falling between a native object's making and
+;; its record, or its free and its record (M2 fix round 2): they run no code
+;; built at run time, and reach no library.
 (define allowed-chez-names
-  '(define-ftype display-condition file-regular? foreign-alloc foreign-entry?
-    foreign-free foreign-procedure foreign-ref foreign-sizeof format
-    format-condition? ftype-ref getenv load-shared-object machine-type
-    make-ftype-pointer make-mutex scheme-version scheme-version-number threaded?
-    with-mutex))
+  '(critical-section define-ftype display-condition dynamic-wind file-regular? foreign-alloc
+    foreign-callable
+    foreign-callable-entry-point foreign-entry? foreign-free foreign-procedure
+    foreign-ref foreign-sizeof format format-condition? ftype-ref getenv
+    load-shared-object lock-object machine-type make-ftype-pointer make-mutex
+    scheme-version scheme-version-number threaded? with-mutex))
 
 ;; library-only-chez-names : (Listof (Pairof Symbol (Listof (Listof Symbol))))
 ;; Rule (f). Each entry is a name in allowed-chez-names, then one or more
@@ -150,7 +156,12 @@
 ;; calls into libcurl, and the one whose load checks each entry point with
 ;; foreign-entry? before binding it; and so does load-shared-object, so no
 ;; other library can load a second libcurl, or anything else, into the
-;; process (ADR-0002, decision 3). Adding a name or a library is a reviewed
+;; process (ADR-0002, decision 3). foreign-callable,
+;; foreign-callable-entry-point and lock-object belong to (curl private
+;; transfer), whose one callable, write-body, is locked where it is defined
+;; and held to its row in tests/foreign-conventions.sls (M2 plan, sections
+;; 3.5 and 3.6): a callable made anywhere else is one no lock and no row
+;; covers. Adding a name or a library is a reviewed
 ;; change to the seam (ADR-0007). tests/test-check-seam.sps requires each name
 ;; to be in allowed-chez-names, and each entry's libraries to be exactly the
 ;; libraries under src/ that import the name, so no permission stays unused.
@@ -159,7 +170,10 @@
     (foreign-alloc (curl private memory))
     (foreign-free (curl private memory))
     (foreign-procedure (curl private native))
-    (load-shared-object (curl private native))))
+    (load-shared-object (curl private native))
+    (foreign-callable (curl private transfer))
+    (foreign-callable-entry-point (curl private transfer))
+    (lock-object (curl private transfer))))
 
 ;; rnrs-libraries : (Listof (Listof Symbol))
 ;; The standard libraries a library under src/ may import: R6RS's, but for

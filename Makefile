@@ -350,10 +350,16 @@ check-test-fails: ## Plant bad suites, none at all, a bad import and a stale REA
 # else it runs that suite on each mutant and reports what it did: x86-64
 # and Linux arm64 pass variadic arguments as they pass named ones, so only
 # Apple arm64 can show a binding without the convention failing
-# (ADR-0001). The unchanged copy must pass both first.
-# tests/check-variadic.sh holds the steps. The copy has no .git.
-check-variadic: deps ## Remove (__varargs_after 2) from bind-variadic's template, then from each use alone, in a copy; test-collect-safe must fail on each, and on Apple arm64 test-variadic too
-	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ)
+# (ADR-0001). tests/test-transfer.sps, which observes every setopt and
+# getinfo binding in a real transfer, runs on each mutant too, under a bound
+# of its own, TRANSFER_TIMEOUT, 180 seconds: on Apple arm64 it must fail, a
+# FAIL line, a crash or the bound all counting, and elsewhere its result is
+# reported. The unchanged copy must pass all three first, test-transfer's
+# origin under NODE; test-transfer needs a row for the libcurl, and the
+# control says so when it lacks one. tests/check-variadic.sh holds the
+# steps. The copy has no .git.
+check-variadic: deps ## Remove (__varargs_after 2) from bind-variadic's template, then from each use alone, in a copy; test-collect-safe must fail on each, and on Apple arm64 test-variadic and test-transfer too
+	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ) $(NODE)
 	@TIMEOUT='$(TIMEOUT)' CHEZ='$(CHEZ)' TEST_TIMEOUT='$(TEST_TIMEOUT)' sh tests/check-variadic.sh
 
 # Runs every MEMORY_SUITES suite under Valgrind, in order, each under

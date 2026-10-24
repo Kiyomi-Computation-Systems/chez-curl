@@ -10,6 +10,10 @@
 ;;; all zero at its end. They are the leak gate for foreign memory a Chez
 ;;; object held, which Valgrind sees as still reachable.
 ;;;
+;;; Each count is read and written under the mutex, inside a critical
+;;; section (locked, below): no interrupt that escapes can leave the mutex
+;;; held (M2 fix round 2).
+;;;
 ;;; It never loads libcurl, so any suite can import it. R6RS forbids
 ;;; assigning an exported variable, so the counts are reached through
 ;;; procedures.
@@ -17,7 +21,7 @@
   (export native-kinds count-up! count-down! native-counts)
   (import (curl private require-threaded)
           (rnrs)
-          (only (chezscheme) make-mutex with-mutex))
+          (only (chezscheme) critical-section make-mutex with-mutex))
 
   ;; native-kinds : (Listof Symbol)
   ;; The kinds of native object counted, in the order native-counts
@@ -36,6 +40,15 @@
   (define counts (make-vector (length native-kinds) 0))
   (define lock (make-mutex))
 
+  ;; locked : Mutex (-> Any) -> Any
+  ;; THUNK's value, run holding LOCK, in a critical section. Chez's
+  ;; with-mutex is a dynamic-wind whose before thunk takes the mutex, so an
+  ;; interrupt that escapes, an engine's expiry say, between the take and
+  ;; the wind would leave it held, with no after thunk to release it, and
+  ;; block every other thread. Every mutex here is held through locked.
+  (define (locked lock thunk)
+    (critical-section (with-mutex lock (thunk))))
+
   ;; kind-index : Symbol Symbol -> Natural
   ;; Where KIND's count stands; an assertion violation from WHO for a
   ;; symbol that is not a kind.
@@ -50,8 +63,8 @@
   ;; One more object of KIND.
   (define (count-up! kind)
     (let ((i (kind-index 'count-up! kind)))
-      (with-mutex lock
-        (vector-set! counts i (+ (vector-ref counts i) 1)))))
+      (locked lock
+        (lambda () (vector-set! counts i (+ (vector-ref counts i) 1))))))
 
   ;; count-down! : Symbol -> Void
   ;; One object of KIND fewer. A count at zero stays at zero, and the call
@@ -59,11 +72,12 @@
   ;; a double free.
   (define (count-down! kind)
     (let* ((i (kind-index 'count-down! kind))
-           (was (with-mutex lock
-                  (let ((n (vector-ref counts i)))
-                    (when (> n 0)
-                      (vector-set! counts i (- n 1)))
-                    n))))
+           (was (locked lock
+                  (lambda ()
+                    (let ((n (vector-ref counts i)))
+                      (when (> n 0)
+                        (vector-set! counts i (- n 1)))
+                      n)))))
       (when (= was 0)
         (assertion-violation 'count-down!
                              "more objects of this kind freed than made: a double free"
@@ -72,5 +86,5 @@
   ;; native-counts : -> (Listof (Pairof Symbol Natural))
   ;; Every kind with its count, in native-kinds order, read at one moment.
   (define (native-counts)
-    (let ((now (with-mutex lock (vector->list counts))))
+    (let ((now (locked lock (lambda () (vector->list counts)))))
       (map cons native-kinds now))))

@@ -80,6 +80,13 @@ it should not be a comment. (chez-cmark-gfm)
   interpreted alike. M1 slice 2's stop check recorded its probes out of order that way.
   It uses `for-each`, which goes in order.
   (chez-curl)
+
+  A `let`'s inits are arguments too: `let` is a lambda applied to them. M2 slice 2's
+  transfer read `(let ((code (curl-easy-perform easy)) (recorded (sink-recorded sink))) ...)`,
+  and `recorded` was read before the transfer ran, so every body-limit and callback-raised
+  case came back `perform-failed`. The suite caught it, and `let*` fixed it. A probe library
+  ran `(let ((a (note! 'first)) (b (note! 'second))) ...)` second first, on Chez 10.4.0.
+  (chez-curl)
 * **An assertion passes whenever some *other* rule can produce the value it
   expects.** `AGENTS.md` gives the rule; here is what it looked like four times
   in one stage of chez-cmark-gfm, each one green and each one empty. A
@@ -141,6 +148,20 @@ it should not be a comment. (chez-cmark-gfm)
   `(test-equal "outer, which fails" 2 (begin (test-equal "inner, which passes" 1 1) 1))`
   prints `FAIL inner, which passes`. Do the work in a definition, and test its outcome
   after. (chez-curl)
+
+* **A check on a caller's string or list, then a use of it, checks something else.** Scheme
+  strings and pairs are mutable. M2 slice 2's request was checked when it was made, and
+  held the caller's strings. A `string-set!` after `make-transfer-request` put CR LF into a
+  header value and the user agent, and the transfer sent `X-Injected: yes`, both ways. Now
+  every check of caller data runs on a private copy, and the copy is what is used: the
+  transfer's snapshot, the C-string helpers, URL checking and the option cache. Tests flip
+  chars from another thread while the strings are in use. (chez-curl)
+
+* **A sweep's evidence of reaching a place needs a control that cannot reach it.** M2 slice
+  2's engine sweep required some expiry to land inside `curl_easy_perform`. With a critical
+  section put back around perform, two expiries still landed "inside", around the call
+  itself, and the test passed. It now also sweeps a transfer refused at connect, which never
+  calls back, and requires the whole transfer to land inside more often. (chez-curl)
 
 ## Chez and the FFI
 
@@ -243,6 +264,46 @@ it should not be a comment. (chez-cmark-gfm)
   check refuses only values beyond 32 bits. So a test of a 64-bit binding must pass a
   negative value whose answer differs from its zero-extended twin's, as `test-variadic`'s
   -1 through the `curl_off_t` binding does. (chez-curl)
+
+* **libcurl's cleanup reads nothing a transfer handed it, so a wrong free order passes.**
+  M2 slice 2 freed the `CURLU`, the header list and the error buffer before
+  `curl_easy_cleanup`, in a mutant. Transfers with headers, a user agent and a body limit
+  answered correctly, every count came back to zero, and Valgrind under the gate's options
+  found 0 errors, on libcurl 8.20.0. A later libcurl may read them there. So the order is
+  held by a check that reads the transfer's nesting, not by behaviour. (chez-curl)
+
+* **A continuation out of a foreign callable abandons its C caller.** M2 slice 2's review
+  invoked an outer continuation from inside `write-body`, through the test hook. The
+  transfer's extents then ran `curl_easy_cleanup` while libcurl was still inside its
+  callback: 744 bytes were definitely lost under the gate's Valgrind, with a socket left
+  open each time, while every count read zero. A continuation saved in one chunk's call and
+  invoked in a later one raised `attempt to return to stale foreign context`, outside the
+  callable's guard. Now caller code inside the callable runs in a `dynamic-wind` whose
+  after thunk turns any exit but a return into a raise, which the guard records. (chez-curl)
+
+  An asynchronous handler escapes the same way, at any safe point. The scoped review of the
+  fix ran a transfer inside a Chez engine: when its fuel ran out inside `write-body`, but
+  outside the hook, a socket was left open and 744 bytes were definitely lost, with every
+  count at zero. A timer-interrupt handler, or a keyboard interrupt and then `reset`, does
+  the same. And at fuel 300 an expiry between `curl_url_get` and its `dynamic-wind` left a
+  `curl-string` counted for good. A `critical-section` around `curl_easy_perform` moved the
+  expiry to after it returned, but deferred the thread's own collections and Ctrl-C until the
+  transfer ended: an 80 MB body grew the peak heap by 472 MB against 344 MB. So that was
+  reversed (ADR-0013, amended 2026-10-23): an escape from perform is allowed, chez-curl
+  never calls libcurl on that handle again, and it stays counted. Each native object is
+  made, or freed, in one short critical section with the record of it: its count, and the
+  variable its free reads. (chez-curl)
+* **`with-mutex` takes its mutex before its own `dynamic-wind`.** An engine's expiry between
+  the two left the mutex held. Chez's mutexes are recursive, so the thread that held it never
+  noticed, but every other thread then blocked on it: 4 of 11 mutants hung in the two-thread
+  test, every thread in a futex wait. So every mutex is held through `critical-section`
+  around `with-mutex`. (chez-curl)
+* **An after thunk that raises during an engine's expiry kills the engine.** The test hook's
+  refusal of a continuation exit raises in its `dynamic-wind`'s after thunk. When an engine's
+  fuel ran out inside the hook, that raise came during the engine's own unwind, and the call
+  failed with `Exception in raise: no engine active`, in the first scoped review and again
+  in fix round 3. A refusal in an after thunk is safe against a caller's continuation, not
+  against an engine. (chez-curl)
 
 ## Checks and environment
 
@@ -648,3 +709,18 @@ it should not be a comment. (chez-cmark-gfm)
   `s-client` now hands `openssl` an empty pipe, and `test-curl-testing` holds it to one
   through a stand-in that reports its stdin, so a `/dev/null` fails on Linux too.
   (chez-curl)
+* **Valgrind runs one thread at a time, so a thread that never sleeps starves the rest.**
+  In M2's planning, a collecting thread with no pause ran 92,297 collections under
+  Valgrind while the transfer beside it timed out with no callback. M2 slice 2's race tests,
+  a thread flipping a string's chars, then held the gate over 10 minutes with a flipper
+  that spun. Pace such a thread: the lock test sleeps 2 ms between collections, and the
+  flippers yield in each state. (chez-curl)
+* **One protocol pin hides the other's removal.** libcurl checks a followed URL against both
+  `PROTOCOLS_STR` and `REDIR_PROTOCOLS_STR`, so a redirect to `ftp://` is refused with
+  either one alone. M2 slice 2's redirect test caught only both removed. Each pin is held by
+  a test that reads the transfer's options as data. (chez-curl)
+* **An ambient proxy variable diverts every transfer.** libcurl reads `http_proxy` and the
+  rest from the environment. With `http_proxy=http://127.0.0.1:9`, a transfer to the origin
+  answered 7, and a proxy that answered would have fed the suite its answers. So
+  `test-transfer`'s first test fails, naming the variable, when one is set. chez-curl's
+  proxy policy is M4's. (chez-curl)

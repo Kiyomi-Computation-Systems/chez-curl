@@ -5,7 +5,7 @@
   one-library names ([amendment](#amendment-2026-10-16-some-names-are-for-one-library-only-m0-slice-4));
   amended 2026-10-17 with where a library may be defined
   ([amendment](#amendment-2026-10-17-a-library-is-defined-under-src-at-its-names-path-m0-slice-6));
-  amended 2026-10-23 with M2 slice 1's names
+  amended 2026-10-23 with M2 slice 1's names, and with M2 slice 2's
   ([amendment](#amendment-2026-10-23-memory-loading-and-binding-each-have-one-library-m2-slice-1))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1 layout
@@ -193,3 +193,19 @@ honour.
   extra)`, and each import is refused by name.
 - `src/` now holds 13 libraries in 13 files: `(curl private counters)`, `(curl private memory)`
   and `(curl private url)` are new.
+
+## Amendment, 2026-10-23: the callable and the critical sections (M2 slice 2)
+
+- **`allowed-chez-names` gains:**
+  - `foreign-callable`, `foreign-callable-entry-point` and `lock-object`, for the transfer's
+    write callable;
+  - `critical-section` and `dynamic-wind`, Chez's own, whose critical form,
+    `(dynamic-wind #t ...)`, runs its before and after thunks with interrupts off (ADR-0013,
+    amended 2026-10-23).
+- **`library-only-chez-names` gains one entry:** `foreign-callable`,
+  `foreign-callable-entry-point` and `lock-object`, for `(curl private transfer)` alone. So
+  the one callable is the transfer's, and no other library can make or lock one.
+- `test-check-seam` holds the entry on two fixture trees, `callable-listed` and
+  `callable-elsewhere`, as slice 1's entries are held.
+- `src/` now holds 14 libraries in 14 files: `(curl private transfer)` is new.
+

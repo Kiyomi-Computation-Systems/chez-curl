@@ -11,7 +11,14 @@
           curlhe-not-built-in curlh-header curl-global-default curle-ok
           curle-bad-function-argument curlversion-tenth
           curlinfo-private curlinfo-rtsp-client-cseq curlot-types
-          curlue-ok curlue-codes curlupart-url curlupart-scheme)
+          curlue-ok curlue-codes curlupart-url curlupart-scheme
+          curlinfo-response-code curlinfo-http-version curlinfo-effective-url
+          curl-error-size
+          curl-http-version-1-0 curl-http-version-1-1 curl-http-version-2-0
+          curl-http-version-3
+          curle-unsupported-protocol curle-weird-server-reply curle-partial-file
+          curle-write-error curle-out-of-memory curle-operation-timedout
+          curle-got-nothing curle-recv-error curle-filesize-exceeded)
   (import (curl private require-threaded)
           (rnrs))
 
@@ -166,4 +173,62 @@
 
   ;; curlupart-scheme : Positive-Integer
   ;; curl/urlapi.h: CURLUPART_SCHEME, the second CURLUPart, 1.
-  (define curlupart-scheme 1))
+  (define curlupart-scheme 1)
+
+  ;; --- the blocking transfer (M2 plan, section 5) -----------------------------
+
+  ;; curlinfo-response-code : Positive-Integer
+  ;; curl/curl.h: CURLINFO_RESPONSE_CODE, CURLINFO_LONG + 2, 0x200000 + 2.
+  ;; curl_easy_getinfo writes the last response's status code, a long.
+  (define curlinfo-response-code 2097154)
+
+  ;; curlinfo-http-version : Positive-Integer
+  ;; curl/curl.h: CURLINFO_HTTP_VERSION, CURLINFO_LONG + 46, 0x200000 + 46.
+  ;; curl_easy_getinfo writes the last response's version, a long: one of
+  ;; the CURL_HTTP_VERSION_ values below, or 0.
+  (define curlinfo-http-version 2097198)
+
+  ;; curlinfo-effective-url : Positive-Integer
+  ;; curl/curl.h: CURLINFO_EFFECTIVE_URL, CURLINFO_STRING + 1, 0x100000 + 1.
+  ;; curl_easy_getinfo writes a char * libcurl keeps until cleanup.
+  (define curlinfo-effective-url 1048577)
+
+  ;; curl-error-size : Positive-Integer
+  ;; curl/curl.h: CURL_ERROR_SIZE, 256: the bytes CURLOPT_ERRORBUFFER needs.
+  (define curl-error-size 256)
+
+  ;; curl-http-version-1-0 : Positive-Integer
+  ;; curl-http-version-1-1 : Positive-Integer
+  ;; curl-http-version-2-0 : Positive-Integer
+  ;; curl-http-version-3 : Positive-Integer
+  ;; curl/curl.h: CURL_HTTP_VERSION_1_0 1L, _1_1 2L, _2_0 3L and _3 30L:
+  ;; what CURLINFO_HTTP_VERSION answers for each version.
+  (define curl-http-version-1-0 1)
+  (define curl-http-version-1-1 2)
+  (define curl-http-version-2-0 3)
+  (define curl-http-version-3 30)
+
+  ;; The CURLcodes the transfer's tests name, each a curl/curl.h CURLcode,
+  ;; all in the floor's headers. CURLE_TOO_LARGE, 100, came in 8.6.0, after
+  ;; the floor, so it is no constant here; tests/known-transfer-verdicts.sexp
+  ;; writes it, as every code, as a number.
+  ;;
+  ;; curle-unsupported-protocol : Positive-Integer   CURLE_UNSUPPORTED_PROTOCOL, 1
+  ;; curle-weird-server-reply : Positive-Integer     CURLE_WEIRD_SERVER_REPLY, 8
+  ;; curle-partial-file : Positive-Integer           CURLE_PARTIAL_FILE, 18
+  ;; curle-write-error : Positive-Integer            CURLE_WRITE_ERROR, 23: a write
+  ;;                                                 callback refused a chunk
+  ;; curle-out-of-memory : Positive-Integer          CURLE_OUT_OF_MEMORY, 27
+  ;; curle-operation-timedout : Positive-Integer     CURLE_OPERATION_TIMEDOUT, 28
+  ;; curle-got-nothing : Positive-Integer            CURLE_GOT_NOTHING, 52
+  ;; curle-recv-error : Positive-Integer             CURLE_RECV_ERROR, 56
+  ;; curle-filesize-exceeded : Positive-Integer      CURLE_FILESIZE_EXCEEDED, 63
+  (define curle-unsupported-protocol 1)
+  (define curle-weird-server-reply 8)
+  (define curle-partial-file 18)
+  (define curle-write-error 23)
+  (define curle-out-of-memory 27)
+  (define curle-operation-timedout 28)
+  (define curle-got-nothing 52)
+  (define curle-recv-error 56)
+  (define curle-filesize-exceeded 63))

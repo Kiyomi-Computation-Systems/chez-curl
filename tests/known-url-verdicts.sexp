@@ -17,8 +17,10 @@
 ;; curl_url_get; or (resolve BASE REFERENCE), BASE set, then REFERENCE, then
 ;; curl_url_get. An ANSWER is the URL curl_url_get gives back, or
 ;; (refused CODE), the CURLUcode of the curl_url_set that refused. A row's
-;; cases are exactly test-url's varying cases, each once. `where` is a note
-;; for the reader and is not compared. Two rows may not share a version.
+;; cases are exactly test-url's varying cases, each once, and each case has
+;; different answers in two rows at least: one every row answers alike
+;; belongs to the shared answers. `where` is a note for the reader and is
+;; not compared. Two rows may not share a version.
 
 (libcurl
  (where "The floor, curl 7.85.0 built by scripts/ci/build-curl.sh on Ubuntu 24.04 with OpenSSL 3.0.13: the library the floor lanes load. Measured through C in Docker ubuntu:24.04 on 2026-10-19 (ADR-0008, amended 2026-10-19); the last three, on 2026-10-23.")

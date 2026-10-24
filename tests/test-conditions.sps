@@ -13,6 +13,12 @@
 ;;;                               (ADR-0008), with its reason: the CURLUcode's
 ;;;                               name, by curl-url-code-reason, or #f for a
 ;;;                               code the floor's headers lack
+;;;   &curl-request-error         a request's field refused before anything
+;;;                               native is made, with one of four reasons
+;;;   &curl-transfer-error        a blocking transfer failed, with one of six
+;;;                               reasons, its code, option, libcurl's texts
+;;;                               and what the write callable recorded
+;;;                               (M2 plan, section 5.3)
 ;;;
 ;;; Each expected value is one the code under test cannot produce by failing.
 ;;; SRFI-64 turns a raise in the actual expression into #f, so no expected
@@ -197,6 +203,84 @@
          (guard (e (#t (list 'raised (describe e))))
            (or (curl-url-code-reason code) 'unnamed)))
        (list 30 31 -1 'malformed-input "3" 3.0)))
+
+;; --- &curl-request-error ---------------------------------------------------------------
+
+;; Written out here, not read from the export: a reason dropped from the
+;; exported list must fail these tests, not shrink them.
+(define request-reasons
+  '(embedded-nul line-break not-latin-1 not-a-token surrounding-whitespace duplicates-field
+    framing-header owned-option unsupported-type))
+
+(test-equal "request-error: an error and a curl-error, and none of the other kinds, carrying its field, value and reason"
+  '(#t #t #f #f #f #f #t #f header-value "a\rb" line-break)
+  (let ((c (make-curl-request-error 'header-value "a\rb" 'line-break)))
+    (append (kinds c)
+            (list (curl-embedded-nul? c) (curl-url-error? c) (curl-request-error? c)
+                  (curl-transfer-error? c)
+                  (curl-request-error-field c) (curl-request-error-value c)
+                  (curl-request-error-reason c)))))
+
+(test-equal "the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option and unsupported-type, in order"
+  request-reasons
+  curl-request-error-reasons)
+
+(test-equal "the request-error constructor takes each of the nine reasons"
+  request-reasons
+  (map (lambda (reason)
+         (curl-request-error-reason (make-curl-request-error 'user-agent "x" reason)))
+       request-reasons))
+
+(test-equal "the request-error constructor refuses a symbol that is no reason, a reason spelled as a string, and #f"
+  '((assertion-violation make-curl-request-error (scheme-not-http))
+    (assertion-violation make-curl-request-error ("line-break"))
+    (assertion-violation make-curl-request-error (#f)))
+  (map (lambda (reason)
+         (raised (lambda () (make-curl-request-error 'header-name "x" reason))))
+       (list 'scheme-not-http "line-break" #f)))
+
+;; --- &curl-transfer-error --------------------------------------------------------------
+
+(define transfer-reasons
+  '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle))
+
+;; A recorded object no field could hand back by another route.
+(define the-raised (list 'raised-in-the-callable))
+
+(test-equal "transfer-error: an error and a curl-error, and none of the other kinds, carrying its reason, code, option, strerror, error buffer and recorded object"
+  '(#t #t #f #f #f #f #f #t callback-raised 23 "MAXFILESIZE_LARGE" "Failed writing received data to disk/application" "Failure writing output to destination" the-raised)
+  (let ((c (make-curl-transfer-error 'callback-raised 23 "MAXFILESIZE_LARGE"
+                                     "Failed writing received data to disk/application"
+                                     "Failure writing output to destination" the-raised)))
+    (append (kinds c)
+            (list (curl-embedded-nul? c) (curl-url-error? c) (curl-request-error? c)
+                  (curl-transfer-error? c)
+                  (curl-transfer-error-reason c) (curl-transfer-error-code c)
+                  (curl-transfer-error-option c) (curl-transfer-error-strerror c)
+                  (curl-transfer-error-error-buffer c)
+                  (let ((r (curl-transfer-error-recorded c))) (if (eq? r the-raised) 'the-raised r))))))
+
+(test-equal "the transfer-error reasons are exactly perform-failed, body-limit, callback-raised, setopt-failed, unknown-option and no-handle, in order"
+  transfer-reasons
+  curl-transfer-error-reasons)
+
+(test-equal "the transfer-error constructor takes each of the six reasons, with #f in every other field"
+  (map (lambda (reason) (list reason #f #f #f #f 'no-recorded)) transfer-reasons)
+  (map (lambda (reason)
+         (let ((c (make-curl-transfer-error reason #f #f #f #f #f)))
+           (list (curl-transfer-error-reason c) (curl-transfer-error-code c)
+                 (curl-transfer-error-option c) (curl-transfer-error-strerror c)
+                 (curl-transfer-error-error-buffer c)
+                 (if (eq? (curl-transfer-error-recorded c) #f) 'no-recorded 'recorded))))
+       transfer-reasons))
+
+(test-equal "the transfer-error constructor refuses a symbol that is no reason, a reason spelled as a string, and #f"
+  '((assertion-violation make-curl-transfer-error (timed-out))
+    (assertion-violation make-curl-transfer-error ("body-limit"))
+    (assertion-violation make-curl-transfer-error (#f)))
+  (map (lambda (reason)
+         (raised (lambda () (make-curl-transfer-error reason 28 #f #f #f #f))))
+       (list 'timed-out "body-limit" #f)))
 
 (test-end "conditions")
 

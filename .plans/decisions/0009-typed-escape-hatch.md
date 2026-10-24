@@ -1,6 +1,6 @@
 # ADR-0009: A typed escape hatch for unwrapped options, in the low level only
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, `(curl ...)` only
 - **Settles:** D3 (brief §10)
@@ -113,3 +113,31 @@ Two of the safe types still need guarding:
   option, and a string carrying CR, LF or NUL.
 - **The CR, LF and NUL refusal also blocks strings that legitimately contain them.** That is
   accepted for an HTTP-only hatch: a wrapped option is the way to set one.
+
+## Amendment, 2026-10-23: a private test seam is held to these rules (M2 slice 2)
+
+- **What was built.** M2 slice 2's builder added `perform-transfer-with` to
+  `(curl private transfer)`. It sets options after the request's own, for tests no request
+  field can reach:
+  - an unknown option's refusal;
+  - a setopt libcurl refuses;
+  - a followed redirect, which shows that the headers come from the last request.
+- **As built, it was the raw setopt this record rejects.** It took any option and any
+  integer. The review showed what that allowed:
+  - it set `PROTOCOLS` and `REDIR_PROTOCOLS` to -1, followed a redirect to
+    `file:///etc/passwd`, and read the file;
+  - it passed `WRITEFUNCTION` as 0, which ended in `invalid memory reference`.
+- **Decided, by the maintainer: the seam is held to this record's rules, narrowed.**
+  - It takes only long, enumerated-value and `off_t` options, with each value checked
+    against its type. M2 needs no string, blob or string list option, so no address can pass.
+  - Its deny-list is compared by id. It holds decision 3's options. It also holds the
+    callable and its data, `WRITEFUNCTION` and `WRITEDATA`, plus `ERRORBUFFER`, and every
+    option a request field sets.
+  - **It also refuses each owned setting's twin:** an option with an id of its own that sets
+    the same thing. `MAXFILESIZE` would undo the body limit's `MAXFILESIZE_LARGE`, `TIMEOUT`
+    would undo `TIMEOUT_MS`, and `HTTPGET`, `POST`, `UPLOAD` and `PUT` would change the
+    method that `NOBODY` sets. Decision 3 compares ids, and a twin has its own id, so
+    decision 3 alone would pass it. **M4's public hatch must refuse twins too.**
+  - The seam stays private, in `(curl private transfer)`. The public hatch,
+    `(curl unsupported)`, is still M4's.
+
