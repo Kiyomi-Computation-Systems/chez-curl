@@ -1,7 +1,7 @@
 # ADR-0013: Calls that can block are `__collect_safe`, and so is every callback they can invoke
 
-- **Status:** Proposed. It binds as written until spike E1 (M3) records its measurements.
-  It is then accepted, or amended to fit them. Amended 2026-10-16 with the attribute suite
+- **Status:** Accepted 2026-10-24, from spike E1 (M3 slice 1), with the amendment that ends
+  this record. Proposed from 2026-10-04 until then. Amended 2026-10-16 with the attribute suite
   (M0 slice 4), and with what a binding may hand C from Chez's heap (M0 slice 5). Amended
   2026-10-17 with what the reader holds the binding macros to (M0 slice 6). Amended
   2026-10-23 with M2 slice 1's rows, and with how control leaves the write callable (M2 slice 2).
@@ -10,7 +10,7 @@
 - **Corrected:** 2026-10-04. The E5 series is chez-http-server's, not chez-libuv's. Its
   figures are restated from that spike report, which ran on macOS only.
 - **Scope:** chez-curl v1: every foreign procedure and foreign callable
-- **Settles:** the brief's §5 rule, provisionally
+- **Settles:** the brief's §5 rule, provisionally until spike E1, and then as amended
 - **Related:**
   - brief §5 and §8 (M2, M3 and spike E1);
   - chez-libuv ADR-0019, whose first decision this mirrors, and ADR-0002, which was held
@@ -60,7 +60,8 @@ measured it". That is spike E1, carried by M3.
 
 ## Decision
 
-Provisional until E1.
+Provisional until E1. E1 accepted it on 2026-10-24, with the amendment that ends this record:
+read each decision below with it.
 
 1. **A libcurl call that can block is a `__collect_safe` foreign procedure.** Known now:
    `curl_multi_poll` and `curl_easy_perform`. E1 classifies the rest, starting with the
@@ -71,8 +72,8 @@ Provisional until E1.
    so they are.
 3. **Calls that cannot block stay plain.** That covers setopt, getinfo, the `curl_url`
    family and `memcpy` (ADR-0001). It covers `curl_multi_perform` too, which curl documents
-   as non-blocking, until E1 says otherwise. A callback fired only from plain calls stays
-   plain.
+   as non-blocking, until E1 says otherwise. (E1 said otherwise: `curl_multi_perform` can
+   block.) A callback fired only from plain calls stays plain.
 4. **A call that can block, or can invoke a callback, never receives a Scheme object as an
    argument.** It gets handles, foreign memory and immediate values. For example,
    `curl_multi_poll`'s `numfds` and `curl_multi_perform`'s `running_handles` point to
@@ -388,3 +389,60 @@ finding.
 - **This record stays Proposed.** Spike E1, M3's first slice, reruns each of these from
   committed programs, and accepts or amends this record from its findings. The rows that
   quote decision 3 move then.
+
+## Amendment, 2026-10-24: accepted, from spike E1 (M3 slice 1)
+
+Spike E1 ran decision 5's four questions from programs committed under
+[`.plans/research/e1/`](../research/e1/), twice on each of the four Linux libcurls: Guix's
+8.20.0 in the container, the floor's 7.85.0, and Ubuntu's 8.5.0 with OpenSSL and with
+GnuTLS. The container cannot stall a name lookup, so the lookups also ran on Guix's 8.20.0
+from the store, in Docker. A read-only review then sent `lookup`, `interrupt` and the load
+race back for two more runs on each lane. The [findings](../research/e1/findings.md) decide
+this record. It is accepted, with these amendments.
+
+- **`curl_multi_perform`, `curl_multi_remove_handle` and `curl_multi_cleanup` can block, so
+  each is `__collect_safe`.** While a name lookup stalled, each returned 9 to 10 s after the
+  transfer began. libcurl documents the wait as its resolver thread's
+  (`CURLOPT_QUICK_EXIT(3)`, quoted in ADR-0019); E1 saw no thread itself:
+  - `curl_multi_remove_handle`, taking the transfer apart, on 7.85.0 and 8.5.0;
+  - one `curl_multi_perform`, at the transfer's own timeout, on the same libcurls;
+  - `curl_multi_cleanup` on 8.20.0.
+
+  With `curl_multi_poll` and `curl_easy_perform`, these are decision 1's calls. Decision 3's
+  sentence on `curl_multi_perform` no longer holds, and its row moves.
+- **These stay plain: `curl_multi_init`, `curl_multi_add_handle`, `curl_multi_wakeup`,
+  `curl_multi_info_read`, and `curl_easy_cleanup` of a handle removed from a multi handle the
+  caller made.** None took a millisecond in any run, stalled or not. That settles decision 1's
+  open question on `curl_easy_cleanup` for the engine, which removes every handle before it
+  cleans it up: the wait `CURLOPT_QUICK_EXIT` describes is in the removal, or in the multi
+  handle's cleanup. ADR-0019 sets both quick-exit options where libcurl knows them.
+- **`curl_easy_cleanup` after `curl_easy_perform` can block.** On 8.20.0, during a stalled
+  lookup, it waited 9,045–9,046 ms, 2 runs of 2, and none with `QUICK_EXIT` set. On the other
+  libcurls the wait was inside `curl_easy_perform`. M2's blocking path binds
+  `curl_easy_cleanup` plain, inside a critical section, and sets no `QUICK_EXIT`, so on 8.20.0
+  it breaks decision 1 there. Slice 2 deletes that path (the M3 plan, §5.4), and with it the
+  only cleanup of a handle `curl_easy_perform` ran. The maintainer chose on 2026-10-25 to
+  leave it until then, rather than set `QUICK_EXIT` on M2's transfers now: the path is
+  private, nothing is released, and no suite can stall a lookup before slice 3.
+- **Decision 2 holds.** A transfer's write callback fired inside `curl_multi_perform` and
+  nowhere else: 352 of 352 callbacks in each run, none inside `curl_multi_poll`, and all on
+  the engine's thread. So the engine's write callable is `__collect_safe`, as its perform is.
+- **One callable may serve a `__collect_safe` call and a plain one** (decision 5's last
+  question). A `__collect_safe` callable's entry saves the thread's state from
+  `S_activate_thread`, and its exit restores exactly that, so inside an active thread both are
+  no-ops (Chez 10.4.0's `c/thread.c`, `s/x86_64.ss`, `s/arm64.ss`). Four transfers delivered
+  every byte, while another thread collected about 1,000 times a run, with a `__collect_safe`
+  callable inside a plain `curl_multi_perform`, with both plain, and with both
+  `__collect_safe`. The control CSUG rules out, a plain callable inside a `__collect_safe`
+  perform, crashed Chez in 8 invocations of 8 ("nonrecoverable invalid memory reference"), so
+  the runs can tell a pairing that fails.
+- **A plain wait holds a collection for up to about 500 waits** (decision 5's first
+  question), whatever each wait's length. Chez reads a pending collection only when a thread's
+  1000-tick event counter runs out, and a loop round a plain `curl_multi_poll` spent about 2
+  ticks a turn, so about every 500 polls. A lone collection waited 51 to 466 polls, by when it
+  was asked. Collections close together waited nearly all of it: beside a plain poll of 1 ms, a
+  worker's 15 ms of allocation, 11 collections, took 5.4 s. Spending more ticks per turn of
+  the loop shortened the wait in proportion. Beside a `__collect_safe` poll, the worker took
+  what it took with no engine thread.
+- **Not measured:** macOS, Linux on arm64, Valgrind, TLS transfers, a slow connect, and every
+  callback but the write callback.

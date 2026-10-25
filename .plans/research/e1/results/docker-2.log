@@ -1,0 +1,257 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libssl3t64 3.0.13-0ubuntu3.16
+stall check: getent hosts slow-name.example.com found no after 20104 ms
+[floor] chez 10.4.0
+[floor, run 1] lookup teardown, libcurl 7.85.0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 15.0) (multi_remove_handle . 9721.0) (multi_wakeup . 0.0))
+[floor, run 1] lookup teardown, libcurl 7.85.0, QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 31.0) (multi_remove_handle . 9724.0) (multi_wakeup . 0.0))
+[floor, run 1] lookup teardown, libcurl 7.85.0, CURLMOPT_QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 15.0) (multi_remove_handle . 9746.0) (multi_wakeup . 0.0))
+[floor, run 1] lookup teardown, libcurl 7.85.0, QUICK_EXIT unknown, CURLMOPT_QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 15.0) (multi_remove_handle . 9736.0) (multi_wakeup . 0.0))
+[floor, run 1] lookup timeout, libcurl 7.85.0: (code 28 10050.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 9050.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[floor, run 1] lookup timeout, libcurl 7.85.0, QUICK_EXIT unknown: (code 28 10051.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 9050.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[floor, run 1] lookup timeout, libcurl 7.85.0, QUICK_EXIT unknown, CURLMOPT_QUICK_EXIT unknown: (code 28 10050.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 9050.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[floor, run 1] lookup easy, libcurl 7.85.0: (code 28 10051.0); longest ((easy_cleanup . 0.0) (easy_perform . 10051.0))
+[floor, run 1] lookup easy, libcurl 7.85.0, QUICK_EXIT unknown: (code 28 10018.0); longest ((easy_cleanup . 0.0) (easy_perform . 10018.0))
+[floor, run 1] (2 threads) interrupt wait, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3001 ms
+[floor, run 1] (2 threads) interrupt timed, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[floor, run 1] (2 threads) interrupt sectioned, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 1100 ms
+[floor, run 1] (2 threads) interrupt poll, signal to main, other in sleep: wait ended at 1019 ms, other's at 3000 ms, handler ran at 1019 ms
+[floor, run 1] (2 threads) interrupt sectioned, signal to other, other in sleep: wait ended at 1017 ms, other's at 1017 ms, handler ran never
+[floor, run 1] (2 threads) interrupt sectioned, signal to other, other in wait: wait ended at 3000 ms, other's at 3000 ms, handler ran never
+[floor, run 1] (2 threads) interrupt sectioned, signal to other, other in poll: wait ended at 1059 ms, other's at 1059 ms, handler ran never
+[floor, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[floor, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[floor, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 1] load-race invoke: ((forked . loaded) (main . "cyclic dependency involving invocation of library ~s"))
+[floor, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 1] collect once plain, poll 1 ms, ticks 0, libcurl 7.85.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (465 408 350 292 235 177 119 61 53 445)
+[floor, run 1] collect once safe, poll 1 ms, ticks 0, libcurl 7.85.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (0 0 0 0 0 0 0 0 1 0)
+[floor, run 2] lookup teardown, libcurl 7.85.0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 31.0) (multi_remove_handle . 9726.0) (multi_wakeup . 0.0))
+[floor, run 2] lookup teardown, libcurl 7.85.0, QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 15.0) (multi_remove_handle . 9745.0) (multi_wakeup . 0.0))
+[floor, run 2] lookup teardown, libcurl 7.85.0, CURLMOPT_QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 15.0) (multi_remove_handle . 9738.0) (multi_wakeup . 0.0))
+[floor, run 2] lookup teardown, libcurl 7.85.0, QUICK_EXIT unknown, CURLMOPT_QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 7.0) (multi_remove_handle . 9746.0) (multi_wakeup . 0.0))
+[floor, run 2] lookup timeout, libcurl 7.85.0: (code 28 10051.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 9051.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[floor, run 2] lookup timeout, libcurl 7.85.0, QUICK_EXIT unknown: (code 28 10051.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 9051.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[floor, run 2] lookup timeout, libcurl 7.85.0, QUICK_EXIT unknown, CURLMOPT_QUICK_EXIT unknown: (code 28 10050.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 9050.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[floor, run 2] lookup easy, libcurl 7.85.0: (code 28 10031.0); longest ((easy_cleanup . 0.0) (easy_perform . 10031.0))
+[floor, run 2] lookup easy, libcurl 7.85.0, QUICK_EXIT unknown: (code 28 10051.0); longest ((easy_cleanup . 0.0) (easy_perform . 10051.0))
+[floor, run 2] (2 threads) interrupt wait, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[floor, run 2] (2 threads) interrupt timed, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[floor, run 2] (2 threads) interrupt sectioned, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 1100 ms
+[floor, run 2] (2 threads) interrupt poll, signal to main, other in sleep: wait ended at 1024 ms, other's at 3000 ms, handler ran at 1024 ms
+[floor, run 2] (2 threads) interrupt sectioned, signal to other, other in sleep: wait ended at 1026 ms, other's at 1026 ms, handler ran never
+[floor, run 2] (2 threads) interrupt sectioned, signal to other, other in wait: wait ended at 3000 ms, other's at 3000 ms, handler ran never
+[floor, run 2] (2 threads) interrupt sectioned, signal to other, other in poll: wait ended at 1043 ms, other's at 1043 ms, handler ran never
+[floor, run 2] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[floor, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 2] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[floor, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[floor, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 2] load-race invoke: ((forked . loaded) (main . "cyclic dependency involving invocation of library ~s"))
+[floor, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[floor, run 2] collect once plain, poll 1 ms, ticks 0, libcurl 7.85.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (466 408 350 292 234 176 118 60 52 445)
+[floor, run 2] collect once safe, poll 1 ms, ticks 0, libcurl 7.85.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (0 0 0 0 0 0 0 0 0 0)
+[ubuntu-openssl] chez 10.4.0
+[ubuntu-openssl, run 1] lookup teardown, libcurl 8.5.0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 9744.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 1] lookup teardown, libcurl 8.5.0, QUICK_EXIT 0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 1] lookup teardown, libcurl 8.5.0, CURLMOPT_QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 9743.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 1] lookup teardown, libcurl 8.5.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 1] lookup timeout, libcurl 8.5.0: (code 28 10036.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 9035.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 1] lookup timeout, libcurl 8.5.0, QUICK_EXIT 0: (code 28 1001.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 1] lookup timeout, libcurl 8.5.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT unknown: (code 28 1001.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 1] lookup easy, libcurl 8.5.0: (code 28 10013.0); longest ((easy_cleanup . 0.0) (easy_perform . 10013.0))
+[ubuntu-openssl, run 1] lookup easy, libcurl 8.5.0, QUICK_EXIT 0: (code 28 1002.0); longest ((easy_cleanup . 0.0) (easy_perform . 1002.0))
+[ubuntu-openssl, run 1] (2 threads) interrupt wait, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[ubuntu-openssl, run 1] (2 threads) interrupt timed, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[ubuntu-openssl, run 1] (2 threads) interrupt sectioned, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 1100 ms
+[ubuntu-openssl, run 1] (2 threads) interrupt poll, signal to main, other in sleep: wait ended at 1021 ms, other's at 3000 ms, handler ran at 1021 ms
+[ubuntu-openssl, run 1] (2 threads) interrupt sectioned, signal to other, other in sleep: wait ended at 1020 ms, other's at 1020 ms, handler ran never
+[ubuntu-openssl, run 1] (2 threads) interrupt sectioned, signal to other, other in wait: wait ended at 3000 ms, other's at 3000 ms, handler ran never
+[ubuntu-openssl, run 1] (2 threads) interrupt sectioned, signal to other, other in poll: wait ended at 1015 ms, other's at 1015 ms, handler ran never
+[ubuntu-openssl, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[ubuntu-openssl, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[ubuntu-openssl, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[ubuntu-openssl, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[ubuntu-openssl, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 1] collect once plain, poll 1 ms, ticks 0, libcurl 8.5.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (465 407 349 292 234 176 118 60 51 444)
+[ubuntu-openssl, run 1] collect once safe, poll 1 ms, ticks 0, libcurl 8.5.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (0 0 0 0 0 0 1 0 0 0)
+[ubuntu-openssl, run 2] lookup teardown, libcurl 8.5.0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 9733.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 2] lookup teardown, libcurl 8.5.0, QUICK_EXIT 0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 2] lookup teardown, libcurl 8.5.0, CURLMOPT_QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 9744.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 2] lookup teardown, libcurl 8.5.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 2] lookup timeout, libcurl 8.5.0: (code 28 10051.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 9050.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 2] lookup timeout, libcurl 8.5.0, QUICK_EXIT 0: (code 28 1001.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 2] lookup timeout, libcurl 8.5.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT unknown: (code 28 1000.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-openssl, run 2] lookup easy, libcurl 8.5.0: (code 28 10029.0); longest ((easy_cleanup . 0.0) (easy_perform . 10029.0))
+[ubuntu-openssl, run 2] lookup easy, libcurl 8.5.0, QUICK_EXIT 0: (code 28 1002.0); longest ((easy_cleanup . 0.0) (easy_perform . 1002.0))
+[ubuntu-openssl, run 2] (2 threads) interrupt wait, signal to main, other in sleep: wait ended at 3001 ms, other's at 3000 ms, handler ran at 3001 ms
+[ubuntu-openssl, run 2] (2 threads) interrupt timed, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[ubuntu-openssl, run 2] (2 threads) interrupt sectioned, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 1100 ms
+[ubuntu-openssl, run 2] (2 threads) interrupt poll, signal to main, other in sleep: wait ended at 1019 ms, other's at 3000 ms, handler ran at 1019 ms
+[ubuntu-openssl, run 2] (2 threads) interrupt sectioned, signal to other, other in sleep: wait ended at 1022 ms, other's at 1022 ms, handler ran never
+[ubuntu-openssl, run 2] (2 threads) interrupt sectioned, signal to other, other in wait: wait ended at 3000 ms, other's at 3000 ms, handler ran never
+[ubuntu-openssl, run 2] (2 threads) interrupt sectioned, signal to other, other in poll: wait ended at 1023 ms, other's at 1023 ms, handler ran never
+[ubuntu-openssl, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-openssl, run 2] collect once plain, poll 1 ms, ticks 0, libcurl 8.5.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (465 407 350 292 234 176 118 60 51 444)
+[ubuntu-openssl, run 2] collect once safe, poll 1 ms, ticks 0, libcurl 8.5.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (0 0 0 0 0 0 0 0 0 0)
+[ubuntu-gnutls] chez 10.4.0
+[ubuntu-gnutls, run 1] lookup teardown, libcurl 8.5.0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 9721.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 1] lookup teardown, libcurl 8.5.0, QUICK_EXIT 0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 1] lookup teardown, libcurl 8.5.0, CURLMOPT_QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 9740.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 1] lookup teardown, libcurl 8.5.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 1] lookup timeout, libcurl 8.5.0: (code 28 10042.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 9042.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 1] lookup timeout, libcurl 8.5.0, QUICK_EXIT 0: (code 28 1001.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 1] lookup timeout, libcurl 8.5.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT unknown: (code 28 1001.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 1] lookup easy, libcurl 8.5.0: (code 28 10047.0); longest ((easy_cleanup . 0.0) (easy_perform . 10047.0))
+[ubuntu-gnutls, run 1] lookup easy, libcurl 8.5.0, QUICK_EXIT 0: (code 28 1003.0); longest ((easy_cleanup . 0.0) (easy_perform . 1003.0))
+[ubuntu-gnutls, run 1] (2 threads) interrupt wait, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[ubuntu-gnutls, run 1] (2 threads) interrupt timed, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[ubuntu-gnutls, run 1] (2 threads) interrupt sectioned, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 1101 ms
+[ubuntu-gnutls, run 1] (2 threads) interrupt poll, signal to main, other in sleep: wait ended at 1016 ms, other's at 3000 ms, handler ran at 1016 ms
+[ubuntu-gnutls, run 1] (2 threads) interrupt sectioned, signal to other, other in sleep: wait ended at 1025 ms, other's at 1025 ms, handler ran never
+[ubuntu-gnutls, run 1] (2 threads) interrupt sectioned, signal to other, other in wait: wait ended at 3000 ms, other's at 3000 ms, handler ran never
+[ubuntu-gnutls, run 1] (2 threads) interrupt sectioned, signal to other, other in poll: wait ended at 1024 ms, other's at 1024 ms, handler ran never
+[ubuntu-gnutls, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving invocation of library ~s"))
+[ubuntu-gnutls, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[ubuntu-gnutls, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[ubuntu-gnutls, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[ubuntu-gnutls, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[ubuntu-gnutls, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 1] collect once plain, poll 1 ms, ticks 0, libcurl 8.5.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (465 408 350 292 235 177 119 61 54 446)
+[ubuntu-gnutls, run 1] collect once safe, poll 1 ms, ticks 0, libcurl 8.5.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (0 0 0 0 0 0 0 0 0 0)
+[ubuntu-gnutls, run 2] lookup teardown, libcurl 8.5.0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 9728.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 2] lookup teardown, libcurl 8.5.0, QUICK_EXIT 0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 2] lookup teardown, libcurl 8.5.0, CURLMOPT_QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 9729.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 2] lookup teardown, libcurl 8.5.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT unknown: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 2] lookup timeout, libcurl 8.5.0: (code 28 10051.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 9050.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 2] lookup timeout, libcurl 8.5.0, QUICK_EXIT 0: (code 28 1001.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 2] lookup timeout, libcurl 8.5.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT unknown: (code 28 1001.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[ubuntu-gnutls, run 2] lookup easy, libcurl 8.5.0: (code 28 10049.0); longest ((easy_cleanup . 0.0) (easy_perform . 10049.0))
+[ubuntu-gnutls, run 2] lookup easy, libcurl 8.5.0, QUICK_EXIT 0: (code 28 1001.0); longest ((easy_cleanup . 0.0) (easy_perform . 1001.0))
+[ubuntu-gnutls, run 2] (2 threads) interrupt wait, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[ubuntu-gnutls, run 2] (2 threads) interrupt timed, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[ubuntu-gnutls, run 2] (2 threads) interrupt sectioned, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 1100 ms
+[ubuntu-gnutls, run 2] (2 threads) interrupt poll, signal to main, other in sleep: wait ended at 1022 ms, other's at 3000 ms, handler ran at 1022 ms
+[ubuntu-gnutls, run 2] (2 threads) interrupt sectioned, signal to other, other in sleep: wait ended at 1020 ms, other's at 1020 ms, handler ran never
+[ubuntu-gnutls, run 2] (2 threads) interrupt sectioned, signal to other, other in wait: wait ended at 3000 ms, other's at 3000 ms, handler ran never
+[ubuntu-gnutls, run 2] (2 threads) interrupt sectioned, signal to other, other in poll: wait ended at 1025 ms, other's at 1025 ms, handler ran never
+[ubuntu-gnutls, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race import: ((forked . loaded) (main . loaded))
+[ubuntu-gnutls, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[ubuntu-gnutls, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[ubuntu-gnutls, run 2] collect once plain, poll 1 ms, ticks 0, libcurl 8.5.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (465 408 350 292 234 176 119 61 52 445)
+[ubuntu-gnutls, run 2] collect once safe, poll 1 ms, ticks 0, libcurl 8.5.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (0 0 0 0 0 0 0 0 0 0)
+[guix-store] chez 10.4.0
+[guix-store, run 1] lookup teardown, libcurl 8.20.0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 9749.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 1] lookup teardown, libcurl 8.20.0, QUICK_EXIT 0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 9749.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 1] lookup teardown, libcurl 8.20.0, CURLMOPT_QUICK_EXIT 0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 1] lookup teardown, libcurl 8.20.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT 0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 1] lookup timeout, libcurl 8.20.0: (code 28 1002.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 9049.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 1] lookup timeout, libcurl 8.20.0, QUICK_EXIT 0: (code 28 1000.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 9051.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 1] lookup timeout, libcurl 8.20.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT 0: (code 28 1000.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 1] lookup easy, libcurl 8.20.0: (code 28 1005.0); longest ((easy_cleanup . 9046.0) (easy_perform . 1005.0))
+[guix-store, run 1] lookup easy, libcurl 8.20.0, QUICK_EXIT 0: (code 28 1005.0); longest ((easy_cleanup . 0.0) (easy_perform . 1005.0))
+[guix-store, run 2] lookup teardown, libcurl 8.20.0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 9749.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 2] lookup teardown, libcurl 8.20.0, QUICK_EXIT 0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 9748.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 2] lookup teardown, libcurl 8.20.0, CURLMOPT_QUICK_EXIT 0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 2] lookup teardown, libcurl 8.20.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT 0: (running 1); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 50.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 2] lookup timeout, libcurl 8.20.0: (code 28 1001.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 9051.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 2] lookup timeout, libcurl 8.20.0, QUICK_EXIT 0: (code 28 1003.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 9048.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 2] lookup timeout, libcurl 8.20.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT 0: (code 28 1000.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 101.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[guix-store, run 2] lookup easy, libcurl 8.20.0: (code 28 1005.0); longest ((easy_cleanup . 9045.0) (easy_perform . 1005.0))
+[guix-store, run 2] lookup easy, libcurl 8.20.0, QUICK_EXIT 0: (code 28 1005.0); longest ((easy_cleanup . 0.0) (easy_perform . 1005.0))
+exit 0

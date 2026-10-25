@@ -277,14 +277,17 @@
 
   (define cannot-block (cite adr-0013 "Calls that cannot block stay plain."))
   (define can-block (cite adr-0013 "Known now: `curl_multi_poll` and `curl_easy_perform`."))
-  (define multi-perform-plain
-    (cite adr-0013 "It covers `curl_multi_perform` too, which curl documents as non-blocking, until E1 says otherwise."))
-  ;; curl_easy_cleanup is bound plain. It cleans up the load's header
-  ;; probe's fresh handle, and each transfer's, which made a connection, so
-  ;; it may close one. Whether it can block is E1's to settle (M3): it stays
-  ;; plain until E1 decides.
-  (define cleanup-open
-    (cite adr-0013 "E1 classifies the rest, starting with the cleanup paths `CURLOPT_QUICK_EXIT` describes: `curl_multi_remove_handle` and `curl_easy_cleanup`."))
+  ;; What spike E1 measured (M3 slice 1; ADR-0013, accepted): the multi
+  ;; calls that waited 9 to 10 s while a name lookup stalled, and those that
+  ;; never took a millisecond. curl_easy_cleanup is plain for a handle taken
+  ;; out of the engine's multi handle, and for the load's header probe's,
+  ;; which never ran a transfer. After curl_easy_perform it waited about 9 s
+  ;; on 8.20.0: M2's blocking path, which slice 2 deletes, is the one place
+  ;; the plain binding is wrong.
+  (define e1-can-block
+    (cite adr-0013 "`curl_multi_perform`, `curl_multi_remove_handle` and `curl_multi_cleanup` can block, so each is `__collect_safe`."))
+  (define e1-plain
+    (cite adr-0013 "These stay plain: `curl_multi_init`, `curl_multi_add_handle`, `curl_multi_wakeup`, `curl_multi_info_read`, and `curl_easy_cleanup` of a handle removed from a multi handle the caller made."))
   (define memcpy-plain
     (cite adr-0001 "Bulk byte moves use libc's `memcpy`, bound directly, as a plain call."))
   ;; memcpy's two bindings hand C a bytevector's data: the checked copies'
@@ -314,8 +317,8 @@
   ;; callable, keyed by the name it is defined as, a symbol. A convention is
   ;; a symbol, __collect_safe, or a list, (__varargs_after 2). Rows for
   ;; entries not bound yet hold M2 to ADR-0013 the moment it binds them,
-  ;; and M3 to ADR-0001 for curl_multi_setopt and curl_share_setopt.
-  ;; ADR-0013 is Proposed: spike E1 (M3) may move a row.
+  ;; and M3 to ADR-0001 for curl_multi_setopt and curl_share_setopt, and
+  ;; to ADR-0013's acceptance for the multi calls spike E1 measured.
   ;;
   ;; A mark clears the row's bindings of one kind of crossing: a
   ;; bytevector's data, or a string its callee keeps no pointer to. Its
@@ -337,14 +340,20 @@
           (list "curl_easy_option_by_name" '() cannot-block (list 'string-not-kept name-not-kept))
           (list "curl_easy_init" '() cannot-block)
           (list "curl_easy_header" '() cannot-block (list 'string-not-kept name-not-kept))
-          (list "curl_easy_cleanup" '() cleanup-open)
+          (list "curl_easy_cleanup" '() e1-plain)
           (list "curl_easy_setopt" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
           (list "curl_easy_getinfo" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
           (list "curl_multi_setopt" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
           (list "curl_share_setopt" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
           (list "curl_easy_perform" '(__collect_safe) can-block '(bound-by bind-blocking))
           (list "curl_multi_poll" '(__collect_safe) can-block)
-          (list "curl_multi_perform" '() multi-perform-plain)
+          (list "curl_multi_perform" '(__collect_safe) e1-can-block)
+          (list "curl_multi_remove_handle" '(__collect_safe) e1-can-block)
+          (list "curl_multi_cleanup" '(__collect_safe) e1-can-block)
+          (list "curl_multi_init" '() e1-plain)
+          (list "curl_multi_add_handle" '() e1-plain)
+          (list "curl_multi_wakeup" '() e1-plain)
+          (list "curl_multi_info_read" '() e1-plain)
           (list "memcpy" '() memcpy-plain (list 'bytevector-crossing one-checked-wrapper))
           (list "strlen" '() cannot-block)
           (list "curl_url" '() cannot-block)

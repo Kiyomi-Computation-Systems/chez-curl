@@ -1,0 +1,95 @@
+[container, run 1] collect none, poll 300 ms, ticks 0, libcurl 8.20.0: worker 13.4 ms, 11 collections, 0 polls
+[container, run 1] collect safe, poll 300 ms, ticks 0, libcurl 8.20.0: worker 14.1 ms, 11 collections, 0 polls
+[container, run 1] collect safe, poll 1 ms, ticks 0, libcurl 8.20.0: worker 15.1 ms, 11 collections, 10 polls
+[container, run 1] collect plain, poll 1 ms, ticks 0, libcurl 8.20.0: worker 5348.9 ms, 11 collections, 5049 polls
+[container, run 1] collect plain, poll 3 ms, ticks 0, libcurl 8.20.0: worker 15909.9 ms, 11 collections, 5172 polls
+[container, run 1] collect plain, poll 1 ms, ticks 9, libcurl 8.20.0: worker 1034.0 ms, 11 collections, 960 polls
+[container, run 1] collect plain, poll 1 ms, ticks 99, libcurl 8.20.0: worker 125.3 ms, 11 collections, 101 polls
+[container, run 1] collect plain, poll 1 ms, ticks 999, libcurl 8.20.0: worker 24.3 ms, 11 collections, 12 polls
+[container, run 1] collect plain, poll 10 ms, ticks 0, libcurl 8.20.0: worker 54428.0 ms, 11 collections, 5397 polls
+[container, run 1] collect.sps plain 300 0: exit 124, its limit 60 s
+[container, run 1] wake 1, libcurl 8.20.0: 20 wakeups of a waiting poll, latency min 0.074 ms, max 0.152 ms
+[container, run 1] wake 2, libcurl 8.20.0: one wakeup sent with no poll running, then a poll of 5000 ms: (0 0.0)
+[container, run 1] wake 3, libcurl 8.20.0: two wakeups, then a poll of 5000 ms: (0 0.0), and another of 300 ms: (0 301.0)
+[container, run 1] deliver, callable safe, perform plain, libcurl 8.20.0, run 1: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1027; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.2) (multi_poll . 7.2) (multi_remove_handle . 0.0))
+[container, run 1] deliver, callable safe, perform plain, libcurl 8.20.0, run 2: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1031; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.4) (multi_poll . 7.2) (multi_remove_handle . 0.0))
+[container, run 1] deliver, callable safe, perform plain, libcurl 8.20.0, run 3: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1018; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.4) (multi_poll . 7.1) (multi_remove_handle . 0.0))
+[container, run 1] deliver, callable plain, perform plain, libcurl 8.20.0, run 1: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1013; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.5) (multi_poll . 7.6) (multi_remove_handle . 0.0))
+[container, run 1] deliver, callable plain, perform plain, libcurl 8.20.0, run 2: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1027; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.4) (multi_poll . 7.1) (multi_remove_handle . 0.0))
+[container, run 1] deliver, callable plain, perform plain, libcurl 8.20.0, run 3: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1012; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.5) (multi_poll . 7.1) (multi_remove_handle . 0.0))
+[container, run 1] deliver, callable safe, perform safe, libcurl 8.20.0, run 1: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1031; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 6.4) (multi_poll . 7.2) (multi_remove_handle . 0.0))
+[container, run 1] deliver, callable safe, perform safe, libcurl 8.20.0, run 2: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1018; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.4) (multi_poll . 7.1) (multi_remove_handle . 0.0))
+[container, run 1] deliver, callable safe, perform safe, libcurl 8.20.0, run 3: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1023; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.4) (multi_poll . 7.1) (multi_remove_handle . 0.0))
+[container, run 1] nonrecoverable invalid memory reference
+[container, run 1] timeout: the monitored command dumped core
+[container, run 1] deliver.sps plain safe 3: exit 134, its limit 120 s
+[container, run 1] lookup teardown, libcurl 8.20.0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] lookup teardown, libcurl 8.20.0, QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] lookup teardown, libcurl 8.20.0, CURLMOPT_QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] lookup teardown, libcurl 8.20.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] lookup timeout, libcurl 8.20.0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] lookup timeout, libcurl 8.20.0, QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] lookup timeout, libcurl 8.20.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] (2 threads) interrupt wait, signal to main: wait ended at 3000 ms, handler ran at 3000 ms
+[container, run 1] (2 threads) interrupt timed, signal to main: wait ended at 3000 ms, handler ran at 3000 ms
+[container, run 1] (2 threads) interrupt sectioned, signal to main: wait ended at 3000 ms, handler ran at 1101 ms
+[container, run 1] (2 threads) interrupt poll, signal to main: wait ended at 1026 ms, handler ran at 1026 ms
+[container, run 1] (2 threads) interrupt sectioned, signal to other: wait ended at 1030 ms, handler ran never
+[container, run 1] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] collect none, poll 300 ms, ticks 0, libcurl 8.20.0: worker 13.8 ms, 11 collections, 0 polls
+[container, run 2] collect safe, poll 300 ms, ticks 0, libcurl 8.20.0: worker 15.2 ms, 11 collections, 0 polls
+[container, run 2] collect safe, poll 1 ms, ticks 0, libcurl 8.20.0: worker 14.5 ms, 11 collections, 9 polls
+[container, run 2] collect plain, poll 1 ms, ticks 0, libcurl 8.20.0: worker 5354.3 ms, 11 collections, 5050 polls
+[container, run 2] collect plain, poll 3 ms, ticks 0, libcurl 8.20.0: worker 15896.8 ms, 11 collections, 5172 polls
+[container, run 2] collect plain, poll 1 ms, ticks 9, libcurl 8.20.0: worker 1038.1 ms, 11 collections, 962 polls
+[container, run 2] collect plain, poll 1 ms, ticks 99, libcurl 8.20.0: worker 125.5 ms, 11 collections, 104 polls
+[container, run 2] collect plain, poll 1 ms, ticks 999, libcurl 8.20.0: worker 26.4 ms, 11 collections, 12 polls
+[container, run 2] collect plain, poll 10 ms, ticks 0, libcurl 8.20.0: worker 54395.4 ms, 11 collections, 5397 polls
+[container, run 2] collect.sps plain 300 0: exit 124, its limit 60 s
+[container, run 2] wake 1, libcurl 8.20.0: 20 wakeups of a waiting poll, latency min 0.015 ms, max 0.156 ms
+[container, run 2] wake 2, libcurl 8.20.0: one wakeup sent with no poll running, then a poll of 5000 ms: (0 0.0)
+[container, run 2] wake 3, libcurl 8.20.0: two wakeups, then a poll of 5000 ms: (0 0.0), and another of 300 ms: (0 302.0)
+[container, run 2] deliver, callable safe, perform plain, libcurl 8.20.0, run 1: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1025; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.5) (multi_poll . 8.0) (multi_remove_handle . 0.0))
+[container, run 2] deliver, callable safe, perform plain, libcurl 8.20.0, run 2: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1030; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.4) (multi_poll . 7.2) (multi_remove_handle . 0.0))
+[container, run 2] deliver, callable safe, perform plain, libcurl 8.20.0, run 3: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1013; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.4) (multi_poll . 7.2) (multi_remove_handle . 0.0))
+[container, run 2] deliver, callable plain, perform plain, libcurl 8.20.0, run 1: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1027; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.2) (multi_poll . 7.3) (multi_remove_handle . 0.0))
+[container, run 2] deliver, callable plain, perform plain, libcurl 8.20.0, run 2: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1026; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.4) (multi_poll . 7.1) (multi_remove_handle . 0.0))
+[container, run 2] deliver, callable plain, perform plain, libcurl 8.20.0, run 3: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1019; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.4) (multi_poll . 7.1) (multi_remove_handle . 0.0))
+[container, run 2] deliver, callable safe, perform safe, libcurl 8.20.0, run 1: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1023; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.2) (multi_poll . 7.2) (multi_remove_handle . 0.0))
+[container, run 2] deliver, callable safe, perform safe, libcurl 8.20.0, run 2: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1018; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.2) (multi_poll . 7.2) (multi_remove_handle . 0.0))
+[container, run 2] deliver, callable safe, perform safe, libcurl 8.20.0, run 3: ((0 0 200 200) (1 0 200 150) (2 0 200 11) (3 0 200 54)); callbacks in perform 352, in poll 0, elsewhere 0, off the engine thread 0; collections 1024; longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.1) (multi_info_read . 0.0) (multi_init . 0.1) (multi_perform . 0.2) (multi_poll . 7.2) (multi_remove_handle . 0.0))
+[container, run 2] nonrecoverable invalid memory reference
+[container, run 2] timeout: the monitored command dumped core
+[container, run 2] deliver.sps plain safe 3: exit 134, its limit 120 s
+[container, run 2] lookup teardown, libcurl 8.20.0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] lookup teardown, libcurl 8.20.0, QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] lookup teardown, libcurl 8.20.0, CURLMOPT_QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 0.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] lookup teardown, libcurl 8.20.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] lookup timeout, libcurl 8.20.0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] lookup timeout, libcurl 8.20.0, QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] lookup timeout, libcurl 8.20.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] (2 threads) interrupt wait, signal to main: wait ended at 3000 ms, handler ran at 3000 ms
+[container, run 2] (2 threads) interrupt timed, signal to main: wait ended at 3000 ms, handler ran at 3000 ms
+[container, run 2] (2 threads) interrupt sectioned, signal to main: wait ended at 3000 ms, handler ran at 1100 ms
+[container, run 2] (2 threads) interrupt poll, signal to main: wait ended at 1024 ms, handler ran at 1024 ms
+[container, run 2] (2 threads) interrupt sectioned, signal to other: wait ended at 1026 ms, handler ran never
+[container, run 2] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+exit 0

@@ -16,7 +16,8 @@
         (srfi :64)
         (only (chezscheme) parameterize record-writer getenv putenv directory-list
               file-directory? make-time sleep current-time time-difference time-second
-              time-nanosecond)
+              time-nanosecond fork-thread make-mutex with-mutex make-condition
+              condition-wait condition-broadcast real-time iota get-process-id mkdir)
         ;; Chez's own current-error-port is a parameter; (rnrs)'s takes no
         ;; argument, and reads the same port.
         (prefix (only (chezscheme) current-error-port) chez:)
@@ -236,6 +237,160 @@
 
 ;; sorted-names : String -> (Listof String)
 (define (sorted-names dir) (list-sort string<? (directory-list dir)))
+
+;; --- capture-command from many threads (M3 plan, section 4.2) -------------
+;; Each capture writes its two files into a directory of its own, which
+;; Chez's mkdir makes with mode 700 and refuses to make over a name that is
+;; taken. These rows hold that, and what the directory costs: none left
+;; behind, however the call ends, and a raise before the command runs when
+;; none can be made.
+
+;; captures-in-threads : Natural Natural
+;;                       -> (List (Listof (List Natural (Listof Answer))) Natural)
+;; THREADS threads, each running PER-THREAD captures at once with the
+;; others, of a command that prints its token on stdout, sleeps 10 ms, and
+;; prints it again on stderr. An Answer is (TOKEN RESULT), RESULT what
+;; capture-command answered, or what it raised. The answers come by thread,
+;; in order, and then how many pairs of captures from different threads ran
+;; at the same time, by the clock: without some, nothing here ran at once.
+(define (captures-in-threads threads per-thread)
+  (let ((mx (make-mutex)) (cv (make-condition)) (by-thread '()) (spans '()))
+    (do ((t 0 (+ t 1))) ((= t threads))
+      (let ((t t))
+        (fork-thread
+         (lambda ()
+           (let loop ((i 0) (answers '()) (mine '()))
+             (if (= i per-thread)
+                 (with-mutex mx
+                   (set! by-thread (cons (list t (reverse answers)) by-thread))
+                   (set! spans (cons (cons t mine) spans))
+                   (condition-broadcast cv))
+                 (let* ((token (string-append "t" (number->string t) "-" (number->string i)))
+                        (start (real-time))
+                        (result (guard (e (#t (list 'raised (describe e))))
+                                  (capture-command
+                                   (list "sh" "-c"
+                                         "printf %s \"$1\"; sleep 0.01; printf %s \"$1\" >&2"
+                                         "sh" token))))
+                        (end (real-time)))
+                   (loop (+ i 1) (cons (list token result) answers)
+                         (cons (cons start end) mine)))))))))
+    (with-mutex mx
+      (let wait () (unless (= (length by-thread) threads) (condition-wait cv mx) (wait))))
+    (list (list-sort (lambda (a b) (< (car a) (car b))) by-thread)
+          (overlapping-pairs spans))))
+
+;; overlapping-pairs : (Listof (Pairof Natural (Listof (Pairof Ms Ms)))) -> Natural
+;; How many pairs of spans, from different threads, overlap in time.
+(define (overlapping-pairs spans)
+  (define (overlap? a b) (and (< (car a) (cdr b)) (< (car b) (cdr a))))
+  (define (across mine theirs)
+    (fold-left (lambda (n a) (+ n (length (filter (lambda (b) (overlap? a b)) theirs))))
+               0 mine))
+  (let loop ((rest spans) (n 0))
+    (if (null? rest)
+        n
+        (loop (cdr rest)
+              (fold-left (lambda (n other) (+ n (across (cdr (car rest)) (cdr other))))
+                         n (cdr rest))))))
+
+(test-equal "capture-command: two threads capturing at once, 50 times each, each capture answers its own command's output, the calls overlapped in time, and nothing is left behind"
+  (list (map (lambda (t)
+               (list t (map (lambda (i)
+                              (let ((token (string-append "t" (number->string t) "-" (number->string i))))
+                                (list token (list 0 token token))))
+                            (iota 50))))
+             '(0 1))
+        'overlapped
+        '())
+  (call-with-temp-directory
+   (lambda (dir)
+     (let ((ran (call-with-env "TMPDIR" dir (lambda () (captures-in-threads 2 50)))))
+       (list (car ran)
+             (if (> (cadr ran) 0) 'overlapped (list 'never-overlapped (cadr ran)))
+             (directory-list dir))))))
+
+;; capture-name : Natural -> String
+;; The name of capture N's directory, below the scratch directory.
+(define (capture-name n)
+  (string-append "curl-testing-" (number->string (get-process-id)) "-" (number->string n)))
+
+;; current-capture : String -> Natural
+;; The N of the capture that lists DIR, with TMPDIR at DIR: the one capture
+;; directory its command sees there is its own.
+(define (current-capture dir)
+  (let* ((answer (call-with-env "TMPDIR" dir (lambda () (capture-command (list "ls" dir)))))
+         (line (cadr answer))
+         (prefix (capture-name 0)))
+    (string->number (substring line (- (string-length prefix) 1) (- (string-length line) 1)))))
+
+(test-equal "capture-command: names taken by a directory and by a symbolic link to one are skipped, and nothing is written into either"
+  '((0 "hi\n" "") () () same-names)
+  (call-with-temp-directory
+   (lambda (dir)
+     (let* ((n (current-capture dir))
+            (victim (string-append dir "/victim"))
+            (planted (string-append dir "/" (capture-name (+ n 2))))
+            (link (string-append dir "/" (capture-name (+ n 3)))))
+       (mkdir victim)
+       ;; This capture is n + 1, so the next tries n + 2, then n + 3.
+       (call-with-env "TMPDIR" dir (lambda () (capture-command (list "ln" "-s" victim link))))
+       (mkdir planted)
+       (let ((answer (call-with-env "TMPDIR" dir (lambda () (capture-command '("echo" "hi"))))))
+         (list answer (directory-list planted) (directory-list victim)
+               (if (equal? (sorted-names dir)
+                           (list-sort string<? (list "victim" (capture-name (+ n 2))
+                                                     (capture-name (+ n 3)))))
+                   'same-names
+                   (sorted-names dir))))))))
+
+(test-equal "capture-command: when the next 100 names are taken, it raises before the command runs"
+  '((other-raise "could not make a directory for the command's output") absent)
+  (call-with-temp-directory
+   (lambda (dir)
+     (let ((n (current-capture dir))
+           (marker (string-append dir "/ran")))
+       (for-each (lambda (i) (mkdir (string-append dir "/" (capture-name (+ n 1 i))))) (iota 100))
+       (let ((answer (call-with-env "TMPDIR" dir
+                                    (lambda () (raised (lambda () (capture-command (list "touch" marker))))))))
+         (list answer (if (file-exists? marker) 'ran 'absent)))))))
+
+(test-equal "capture-command: its directory's mode is 700"
+  '(0 "drwx------")
+  (call-with-temp-directory
+   (lambda (dir)
+     (let ((answer (call-with-env "TMPDIR" dir
+                                  (lambda ()
+                                    (capture-command
+                                     (list "sh" "-c" "ls -ld \"$1\"/curl-testing-*" "sh" dir))))))
+       (list (car answer) (substring (cadr answer) 0 (min 10 (string-length (cadr answer)))))))))
+
+(test-equal "capture-command: a raise after its directory is made still removes it"
+  '((other-raise "the shell did not create a capture file") ())
+  (call-with-temp-directory
+   (lambda (dir)
+     (let ((answer (call-with-env "TMPDIR" dir
+                                  (lambda ()
+                                    (raised (lambda ()
+                                              (capture-command
+                                               (list "sh" "-c" "rm \"$1\"/curl-testing-*/out" "sh" dir))))))))
+       (list answer (directory-list dir))))))
+
+(test-equal "capture-command: it leaves nothing behind in the scratch directory"
+  '((0 "x\n" "") ())
+  (call-with-temp-directory
+   (lambda (dir)
+     (let ((answer (call-with-env "TMPDIR" dir (lambda () (capture-command '("sh" "-c" "echo x"))))))
+       (list answer (directory-list dir))))))
+
+(test-equal "capture-command: with no scratch directory to write in, it raises before the command runs"
+  '((other-raise "could not make a directory for the command's output") absent)
+  (call-with-temp-directory
+   (lambda (dir)
+     (let* ((marker (string-append dir "/ran"))
+            (answer (call-with-env "TMPDIR" (string-append dir "/missing")
+                                   (lambda () (raised (lambda () (capture-command (list "touch" marker))))))))
+       (list answer (if (file-exists? marker) 'ran 'absent))))))
 
 (test-equal "call-with-temp-directory: PROC gets the path of an empty directory, and the directory is gone after"
   '((#t #t ()) removed)

@@ -441,18 +441,21 @@ provisional. They bind until that record is accepted or amended.
   `dynamic-wind` that turns a continuation's exit into a raise. `curl_easy_perform` itself runs
   in no critical section, which would defer the thread's collections and Ctrl-C until it
   returns (ADR-0013, amended 2026-10-23).
-- **Provisional until spike E1 at M3** (ADR-0013, Proposed):
-  - A libcurl call that can block is `__collect_safe`: `curl_multi_poll`,
-    `curl_easy_perform`, and whatever else E1 finds blocks. So is every callback it can
-    invoke.
-  - `curl_multi_perform`, `curl_multi_remove_handle` and `curl_multi_cleanup` can block,
-    measured before the M3 plan: about 9.7 s during a stalled name lookup. They are
-    `__collect_safe`, through `bind-blocking` (ADR-0013, amended 2026-10-24; ADR-0019).
-  - Calls that cannot block stay plain.
-  - A call that can block, or can invoke a callback, never receives a Scheme string or
+- **Calls that can block are `__collect_safe`** (ADR-0013, accepted 2026-10-24 from spike E1):
+  - they are `curl_multi_poll`, `curl_multi_perform`, `curl_multi_remove_handle`,
+    `curl_multi_cleanup` and `curl_easy_perform`. The middle three each waited 9 to 10 s
+    while a name lookup stalled. They are bound through `bind-blocking` (ADR-0019);
+  - so is every callback a `__collect_safe` call can invoke. The write callback fires inside
+    `curl_multi_perform` alone;
+  - one callable may serve a `__collect_safe` call and a plain one;
+  - `curl_multi_init`, `curl_multi_add_handle`, `curl_multi_wakeup`, `curl_multi_info_read`,
+    and `curl_easy_cleanup` of a handle removed from the engine's multi handle, stay plain,
+    as does every call that cannot block. After `curl_easy_perform`, `curl_easy_cleanup`
+    waited 9 s on 8.20.0: M2's plain binding there stands until slice 2 deletes that path;
+  - a call that can block, or can invoke a callback, never receives a Scheme string or
     bytevector. Pass it foreign memory instead.
 - **The engine's loop never waits in a plain call.** A plain wait stalls every other thread's
-  collection about 500 times its length: Chez checks a pending collection only when a
+  collection up to about 500 times its length: Chez checks a pending collection only when a
   thread's 1000-tick event counter runs out (ADR-0013, amended 2026-10-24).
 - **A stalled name lookup does not stall the engine** (ADR-0019):
   - every engine transfer sets `QUICK_EXIT` to 1 when the loaded libcurl knows it, looked up

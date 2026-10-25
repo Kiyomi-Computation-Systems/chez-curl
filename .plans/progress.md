@@ -6,28 +6,43 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **Milestone:** M3, the engine (brief §8), per the [M3 plan](2026-10-24-m3-plan.md), a
-  draft on `m3/plan`.
-  - **Measured before planning** (plan, §2):
-    - **A plain wait stalls other threads' collections about 500 times its length,** through
-      Chez's 1000-tick event counter. Beside a plain 300 ms poll, a worker's 14 ms of
-      allocation never finished;
-    - wakeups are race-free for a queue;
-    - a `__collect_safe` callable is safe from a plain call;
-    - only the main thread gets Ctrl-C;
-    - **a stalled name lookup blocks teardown, and a timeout, for about 9.7 s** on every
-      recorded Linux libcurl.
-  - **Decided by the maintainer, 2026-10-24:**
-    - `QUICK_EXIT` where the libcurl knows it, and `CURLMOPT_QUICK_EXIT` on the multi handle
-      ([ADR-0019](decisions/0019-a-stalled-lookup-does-not-stall-the-engine.md), new; ADR-0009
-      amended). The multi option was measured after the question, and follows its answer;
-    - the caller checks the URL, and the engine parses it again (ADR-0008, amended);
-    - an engine loads libcurl before its thread starts (ADR-0002, amended);
-    - stop cancels what is in flight, then joins (ADR-0012, amended).
-  - **ADR-0013 is amended:** `curl_multi_perform`, `curl_multi_remove_handle` and
-    `curl_multi_cleanup` can block, so they are `__collect_safe`. It stays Proposed until E1.
-  - **Next: slice 1,** spike E1 from committed programs, and `capture-command` made safe for
-    threads (plan, §4).
+- **Milestone:** M3, the engine (brief §8), per the [M3 plan](2026-10-24-m3-plan.md),
+  merged in PR #18. Its close-out is below.
+  - **Slice 1, on `m3/e1`:** spike E1 and a harness safe for threads (plan, §4).
+    - **[Spike E1](research/e1/findings.md)** reran the plan's measurements from programs
+      committed under `research/e1/`, twice on each of the four Linux libcurls, and on
+      Guix's 8.20.0 from the store for the stalled lookups. A read-only Opus review sent
+      three sets back for two more runs, with cases the first runs missed. The plan's
+      findings held, but for three it had worded too broadly: the collection stall, Ctrl-C
+      on another thread, and the load race.
+    - **[ADR-0013](decisions/0013-collect-safe-blocking-calls.md) is accepted.**
+      `curl_multi_perform`, `curl_multi_remove_handle` and `curl_multi_cleanup` can block.
+      `curl_multi_init`, `curl_multi_add_handle`, `curl_multi_wakeup`,
+      `curl_multi_info_read`, and `curl_easy_cleanup` of a handle removed from our multi
+      handle, stay plain. One callable may serve a `__collect_safe` call and a plain one.
+      `tests/foreign-conventions.sls` has their rows, and `test-collect-safe` writes them
+      out.
+    - **New in E1:**
+      - a plain wait holds a collection until the waiting thread's next event check, every
+        1,000 ticks, about every 500 polls: a lone collection waited 51 to 466 polls, by when
+        it was asked. Collections close together wait nearly all of it, 459. More ticks per
+        turn shrank it to 87, 9 and 1;
+      - a plain write callable inside a `__collect_safe` perform crashed Chez in 8
+        invocations of 8, so the delivery runs can tell a pairing that fails;
+      - a SIGINT sent to a thread other than the main one is dropped, and ends that
+        thread's `sleep` or `curl_multi_poll` early, but not its `condition-wait`;
+      - the engine's own load race, two first references to a loaded library, raised
+        "involving invocation" 80 times of 80;
+      - **on 8.20.0, `curl_easy_cleanup` after `curl_easy_perform` waited 9 s during a
+        stalled lookup.** M2's blocking path binds it plain, so on `main` it can hold
+        other threads' collections that long. Slice 2 deletes that path. The maintainer
+        chose on 2026-10-25 to leave it until then, not to set `QUICK_EXIT` on M2's
+        transfers now (ADR-0013, amended).
+    - **`capture-command` is safe for threads.** Each capture writes into a directory of its
+      own, which Chez's `mkdir` makes, mode 700, refusing a name that is taken. Its counter is
+      under a mutex. Seven mutants each fail a named row; the old counter's race never
+      showed, so the concurrency row's red runs come from mutants alone.
+  - **Next: slice 2, the engine** (plan, §5).
 - **M2, one blocking request, plaintext and TLS:** its three slices are merged (PRs #13, #16
   and #17). Slice 3's close-out is below.
   - **Owed before M2 is done:** the Mac's `make test`, the first run of `test-transfer-tls` on
@@ -93,12 +108,34 @@ close-out under **Close-outs**, newest first.
 - **Settled before slice 5:** the leak in the container. Loading libcurl there loses one
   block in Guix's glibc, and Ubuntu 24.04 loses nothing (`traps.md`). ADR-0014 now allows
   one suppression for it, passed in the container only.
-- **Waiting on evidence:** ADR-0013 (`__collect_safe`) stays Proposed until spike E1
-  at M3, M3's slice 1. Until then its rules bind as written, with the M3 plan's amendment.
+- **No record is Proposed.** ADR-0013, the last, was accepted from spike E1 (M3 slice 1).
 - **Settled for M3:** a first reference to `(curl)` from a second thread, made while the load
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-24 — the M3 plan, and a stalled lookup that must not stall the engine (PR #18, `bf9cae1`)
+
+- **The [M3 plan](2026-10-24-m3-plan.md):** the engine, in three slices: spike E1 and a
+  harness safe for threads, then the engine, then stalled lookups. M3 adds nothing public,
+  and M2's blocking path retires.
+- **Measured before planning** (plan, §2), from scratch programs:
+  - a plain wait stalls other threads' collections hundreds of times its length, through
+    Chez's event counter;
+  - wakeups are race-free for a queue;
+  - a `__collect_safe` callable is safe from a plain call;
+  - only the main thread gets Ctrl-C;
+  - two threads' first references to the library race;
+  - a stalled name lookup blocks teardown, and a timeout, for 9 to 10 s.
+- **Decided by the maintainer:**
+  - `QUICK_EXIT` where libcurl knows it ([ADR-0019](decisions/0019-a-stalled-lookup-does-not-stall-the-engine.md),
+    new). `CURLMOPT_QUICK_EXIT` on the multi handle was measured after the question, and
+    follows its answer;
+  - the caller checks the URL, and the engine parses it again (ADR-0008, amended);
+  - an engine loads libcurl before its thread starts (ADR-0002, amended);
+  - stop cancels what is in flight, then joins (ADR-0012, amended).
+- **ADR-0009 and ADR-0013 amended:** `QUICK_EXIT` is owned, and `curl_multi_perform` can block.
+- **No subagents.**
 
 ### 2026-10-24 — M2 slice 3: the blocking request over TLS (PR #17, `c14419f`)
 
