@@ -205,7 +205,9 @@ it should not be a comment. (chez-cmark-gfm)
 
   So the load records its first failure in `(curl private load-state)`, whose
   own body cannot raise, and raises only serious conditions. The two-thread
-  case is open until M3. (chez-curl, M0 slice 3)
+  case is settled for M3: Chez locks no library's invocation, so an engine
+  loads libcurl before its thread starts (ADR-0002, amended 2026-10-24).
+  (chez-curl, M0 slice 3)
 * **Chez's `system` stops silently at a NUL.** The command goes to C as a
   NUL-terminated string, so whatever follows the NUL is dropped. Measured at the
   pin: `echo before`, then a NUL, then `> /tmp/nul-out` printed `before` to
@@ -304,6 +306,24 @@ it should not be a comment. (chez-cmark-gfm)
   failed with `Exception in raise: no engine active`, in the first scoped review and again
   in fix round 3. A refusal in an after thunk is safe against a caller's continuation, not
   against an engine. (chez-curl)
+
+* **A loop that waits in a plain foreign call stalls every other thread's
+  collection about 500 times the wait.** Chez checks for a pending event only
+  when a thread's event counter runs out, and `default-timer-ticks` is 1000. A
+  loop round a plain `curl_multi_poll` spends about one tick per poll, so a
+  collection another thread asks for waits about 500 polls. Beside a plain poll
+  of 1 ms, a worker's 14 ms of allocation took 5.4 s, and beside one of 300 ms
+  it never finished. That looks like a deadlock, and isn't. `__collect_safe`
+  deactivates the thread, so a collection need not wait: 14 ms. The E5 series
+  measured 10 s behind a 300 ms timer; why it was shorter there is unmeasured.
+  (chez-curl, the M3 plan)
+* **Chez gives Ctrl-C to the main thread alone, and a waiting thread answers
+  it late.** `c/schsig.c` drops SIGINT in any thread but the main one. A main
+  thread in `condition-wait` ran its keyboard-interrupt handler only when the
+  wait ended, 3 s later, even with timed waits of 100 ms in a loop: the event
+  counter again. Leaving a critical section runs pending events at once, so
+  timed waits each inside their own `critical-section` answered within one
+  wait. (chez-curl, the M3 plan)
 
 ## Checks and environment
 
@@ -751,3 +771,15 @@ it should not be a comment. (chez-cmark-gfm)
   library process selects SecureTransport. curl's documentation says `CURL_SSL_BACKEND`
   selects another; that is unmeasured on the Mac. No test can show the fallback without
   adding a CA to the keychain. (curl, chez-curl)
+* **A stalled name lookup blocks libcurl's teardown, and a timeout, for about
+  10 s.** libcurl resolves on a thread, and by default waits for it. With a DNS
+  server that never answers:
+  - on 7.85.0 and Ubuntu's 8.5.0, a cancel blocked in `curl_multi_remove_handle`
+    for 9.7 s, and a 1 s timeout arrived at 10 s, from inside one
+    `curl_multi_perform` call;
+  - on 8.20.0, `curl_multi_cleanup` blocked as long.
+
+  An engine thread would hold every transfer for that time. `QUICK_EXIT` and
+  `CURLMOPT_QUICK_EXIT` make libcurl leave the thread behind instead. The
+  container cannot stall a lookup, since it has no `/etc/resolv.conf`, so only
+  Docker, or a stand-in `getaddrinfo`, shows it (ADR-0019). (curl, the M3 plan)

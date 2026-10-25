@@ -2,7 +2,7 @@
 
 - **Status:** Accepted; amended 2026-10-16 with what M0 slice 3 built and measured
   ([amendment](#amendment-2026-10-16-what-slice-3-built-and-measured)); amended 2026-10-23: libc's
-  `memcpy` and `strlen` follow `curl_version_info` ([amendment](#amendment-2026-10-23-libcs-memcpy-and-strlen-follow-curl_version_info-m2-slice-1))
+  `memcpy` and `strlen` follow `curl_version_info` ([amendment](#amendment-2026-10-23-libcs-memcpy-and-strlen-follow-curl_version_info-m2-slice-1)); amended 2026-10-24: an engine loads libcurl before its thread starts ([amendment](#amendment-2026-10-24-an-engine-loads-libcurl-before-its-thread-starts-the-m3-plan))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1. Linux distributions, Guix environments and macOS.
 - **Settles:** D7. That decision was raised on 2026-10-04, after the brief was written.
@@ -226,3 +226,23 @@ bound right after `curl_version_info` and its NULL check, before the floor check
 read `curl_version_info_data`'s strings. They are libc's, present once the library loads, and no
 refusal changes (ADR-0001, amended 2026-10-23). Every other entry point is still bound after the
 floor check, eagerly.
+
+## Amendment, 2026-10-24: an engine loads libcurl before its thread starts (the M3 plan)
+
+The 2026-10-16 amendment left the second thread's first reference open for M3. The M3 plan
+measured it again, and the maintainer chose on 2026-10-24.
+
+- **Chez locks no library's invocation.** In Chez 10.4.0's `s/syntax.ss`, a library's invoke
+  code is set to `pending` while its body runs, and so is its import while it is imported.
+  Any reference that meets `pending` raises `cyclic dependency`, from any thread, and nothing
+  waits. Two threads that made their first reference to `(curl private native)` together,
+  each through `eval` in an `environment` as the probes do, raised `cyclic dependency
+  involving import of library` on the second, 10 runs of 10.
+- **So a load at first use under a mutex would narrow the window, not close it.** The library
+  holding the mutex has an invocation of its own, which races the same way.
+- **Decided:** the load stays in native's body, and decision 3's "nothing binds lazily" stands.
+  Making an engine references the loaded libcurl on the caller's thread before it starts the
+  engine's thread. So no engine thread ever makes a first reference.
+- **A limit, recorded:** a program whose own threads make their first references to `(curl)`
+  together can still meet `cyclic dependency`. M8's documentation says to reference `(curl)`
+  once before starting threads that use it.

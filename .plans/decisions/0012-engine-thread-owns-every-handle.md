@@ -1,6 +1,6 @@
 # ADR-0012: One engine thread owns every transfer handle, and caller code never runs on it
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-24: stopping an engine (the M3 plan)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, from M3 (the engine)
 - **Settles:** the brief's §2 items 1 to 3 and the caller-code rule of its §5. The brief
@@ -94,3 +94,31 @@ calling thread (brief §8). From M3 on, only engines own transfer handles.
   caller's thread.
 - **A caller pays only its own thread to wait,** however many requests are in flight.
 - **The central check costs one thread-id comparison** per handle operation.
+
+## Amendment, 2026-10-24: stopping an engine (the M3 plan)
+
+The maintainer chose on 2026-10-24 what a stop does with transfers still in flight.
+
+- **Stop is a message, like the others.** On its own thread, the engine cancels every live
+  transfer, and each completes as `stopped`. Then it takes apart and frees every handle it
+  holds, cleans up the multi handle, and its thread exits.
+- **The caller's stop returns once that thread has exited.** A later stop returns at once. A
+  submit after stop raises a named refusal, before anything is queued.
+- **A drain is the caller's to ask for:** await what is in flight, then stop. That is policy,
+  M5's session's, and the low level has none.
+- **Rejected:**
+  - draining in stop itself, since a transfer with no timeout could hold stop forever;
+  - a mode argument choosing between the two, which puts policy in the low level.
+
+**Measured for the M3 plan, on Chez 10.4.0's source and in the container:**
+
+- **Chez delivers Ctrl-C to the main thread alone.** `c/schsig.c`'s SIGINT handler acts only
+  in the main thread's context. In any other thread it drops the signal ("disable keyboard
+  interrupts in subordinate threads"). The engine's thread is always a forked one, so a
+  keyboard interrupt never runs there.
+- **A caller waiting in `condition-wait` does not answer Ctrl-C until the wait ends,** even
+  with timed waits of 100 ms in a loop. Chez notices a pending event only when its event
+  counter, 1000 ticks, runs out. But leaving a critical section runs `$event` at once:
+  `enable-interrupts` does it as its count returns to 0. A loop of timed waits, each inside
+  its own `critical-section`, answered Ctrl-C at 1,100 ms, against 3,000 ms without, 2 runs
+  of 2. The M3 plan builds the caller's wait that way (§3.4).

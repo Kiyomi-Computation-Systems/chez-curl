@@ -1,6 +1,6 @@
 # ADR-0009: A typed escape hatch for unwrapped options, in the low level only
 
-- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3)
+- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, `(curl ...)` only
 - **Settles:** D3 (brief §10)
@@ -162,3 +162,12 @@ Two of the safe types still need guarding:
   reaches the seam. `SSL_CTX_FUNCTION` could replace OpenSSL's verification, and is a
   function, which no hatch takes.
 
+
+## Amendment, 2026-10-24: `QUICK_EXIT` is owned (the M3 plan)
+
+- **Every engine transfer sets `QUICK_EXIT` to 1 where the loaded libcurl knows it**
+  ([ADR-0019](0019-a-stalled-lookup-does-not-stall-the-engine.md)). Turned off, a stalled
+  name lookup holds the engine for up to 10 s on Ubuntu's 8.5.0. So it is an owned option,
+  set with the pins, and the test seam refuses it, by id, like the rest of decision 3's list.
+- **The multi handle's `CURLMOPT_QUICK_EXIT` is out of every hatch's reach.** The hatch
+  attaches options to a request, never to a handle, and a multi option is no easy option.

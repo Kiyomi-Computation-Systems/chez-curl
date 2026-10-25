@@ -6,46 +6,35 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **Milestone:** M2, one blocking request, plaintext and TLS (brief §8), per the
-  [M2 plan](2026-10-19-m2-plan.md).
-  - **Slice 1 is merged** (PR #13, `ed217dc`): the counters gate, counted foreign blocks,
-    the checked copy, C strings, the URL API, and the checks carried from M0. It binds no
-    setopt or getinfo option.
-  - **Slice 2, the blocking plaintext transfer, is merged** (PR #16, `6600dfb`), and the Mac
-    has run it. Its close-out is below.
-  - **Slice 3, TLS, is built** on `m2/tls-transfer` (M2 plan, §6), draft PR #17.
-    - **Measured first** (§6.1): the plan's verdicts agree on 7.85.0, Ubuntu's 8.5.0 with
-      OpenSSL and with GnuTLS, and 8.20.0. But a CA file is not exclusive on Ubuntu's
-      libcurl, whose default `CAPATH` stays trusted beside it. And Guix's libcurl 8.20.0
-      writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over `CAINFO` and `CAPATH` (ADR-0018).
-    - **Decided by the maintainer** (§6.2, ADR-0018, ADR-0009 amended):
-      - a CA file is the only anchor, with `CAPATH` cleared;
-      - `CAINFO_BLOB` and `SSL_OPTIONS` are its twins;
-      - Guix's override is pinned by a test, and its policy is M4's;
-      - the memory gate's Guix count is our entry's own, not the summary's total
-        (ADR-0014, amended): an HTTPS handshake on GnuTLS uses Valgrind's own
-        `dtv-addr-tail`.
-    - **Built:** the request's `ca-file` and `verify` fields, `tls-settings` and
-      `set-tls-options!`, and `test-transfer-tls`, 53 checks, with its child,
-      `transfer-tls-env`.
-    - **The review** found one test hole: `set-option!` was not held whole, so a mutant that
-      skipped the `CAPATH` clear passed `make test`. It is held now, and both its mutants
-      fail. It also found that Guix's 8.6.0 lets a request's settings win, so the pin is
-      keyed on world and version. And it measured `SSLKEYLOGFILE`, `OPENSSL_CONF` and GnuTLS's
-      `pkcs11:` CA files, which ADR-0018 hands M4.
-    - **Checks, after the fix round:**
-      - in the container: `make test` 22/22, 2212 checks, `check-test-fails` 11/11,
-        `check-suites`, `check-seam` (14 libraries), `check-memory-gate` 39 cases and
-        `test-memory` 22/22;
-      - in Docker: the floor lane (7.85.0, OpenSSL), the `gnutls` lane (8.5.0), the main
-        lane (8.5.0, OpenSSL), `check-variadic` and `check-dev` among its checks, and the
-        memory lane (Valgrind 3.22, 33 gate cases, 22/22), each with `test-transfer-tls` at
-        53 checks.
-    - **Owed before M2 is done:** the Mac's `make test`, the first run of `test-transfer-tls`
-      on SecureTransport. Its verdicts, its answer to clearing `CAPATH`, and whether it reads
-      `SSL_CERT_FILE` are unmeasured. The Mac was out of reach, and the maintainer chose on
-      2026-10-24 to merge slice 3 first (M2 plan, §6 and §7). A finding there gets its own
-      branch.
+- **Milestone:** M3, the engine (brief §8), per the [M3 plan](2026-10-24-m3-plan.md), a
+  draft on `m3/plan`.
+  - **Measured before planning** (plan, §2):
+    - **A plain wait stalls other threads' collections about 500 times its length,** through
+      Chez's 1000-tick event counter. Beside a plain 300 ms poll, a worker's 14 ms of
+      allocation never finished;
+    - wakeups are race-free for a queue;
+    - a `__collect_safe` callable is safe from a plain call;
+    - only the main thread gets Ctrl-C;
+    - **a stalled name lookup blocks teardown, and a timeout, for about 9.7 s** on every
+      recorded Linux libcurl.
+  - **Decided by the maintainer, 2026-10-24:**
+    - `QUICK_EXIT` where the libcurl knows it, and `CURLMOPT_QUICK_EXIT` on the multi handle
+      ([ADR-0019](decisions/0019-a-stalled-lookup-does-not-stall-the-engine.md), new; ADR-0009
+      amended). The multi option was measured after the question, and follows its answer;
+    - the caller checks the URL, and the engine parses it again (ADR-0008, amended);
+    - an engine loads libcurl before its thread starts (ADR-0002, amended);
+    - stop cancels what is in flight, then joins (ADR-0012, amended).
+  - **ADR-0013 is amended:** `curl_multi_perform`, `curl_multi_remove_handle` and
+    `curl_multi_cleanup` can block, so they are `__collect_safe`. It stays Proposed until E1.
+  - **Next: slice 1,** spike E1 from committed programs, and `capture-command` made safe for
+    threads (plan, §4).
+- **M2, one blocking request, plaintext and TLS:** its three slices are merged (PRs #13, #16
+  and #17). Slice 3's close-out is below.
+  - **Owed before M2 is done:** the Mac's `make test`, the first run of `test-transfer-tls` on
+    SecureTransport. Its verdicts, its answer to clearing `CAPATH`, and whether it reads
+    `SSL_CERT_FILE` are unmeasured. The maintainer chose on 2026-10-24 to merge slice 3
+    first (M2 plan, §6 and §7). A finding there gets its own branch. M3's Mac run covers it
+    (M3 plan, §7).
 
   M1 (brief §7) is built: PRs #10 and #11. M0 (brief §8) is built.
 - **The Mac's run, 2026-10-23,** on the maintainer's M1:
@@ -105,11 +94,71 @@ close-out under **Close-outs**, newest first.
   block in Guix's glibc, and Ubuntu 24.04 loses nothing (`traps.md`). ADR-0014 now allows
   one suppression for it, passed in the container only.
 - **Waiting on evidence:** ADR-0013 (`__collect_safe`) stays Proposed until spike E1
-  at M3. Until then its rules bind as written.
-- **Open for M3:** a first reference to `(curl)` from a second thread, made while the load
-  runs, raises `cyclic dependency` (ADR-0002's amendment).
+  at M3, M3's slice 1. Until then its rules bind as written, with the M3 plan's amendment.
+- **Settled for M3:** a first reference to `(curl)` from a second thread, made while the load
+  runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-24 — M2 slice 3: the blocking request over TLS (PR #17, `c14419f`)
+
+- **The request gains two TLS fields** ([ADR-0018](decisions/0018-ca-file-is-the-only-anchor.md)):
+  a CA file, or `#f` for the system store, and whether to verify.
+  - **A CA file is the only trust anchor.** It sets `CAINFO` and clears `CAPATH`, and a
+    `CURLE_NOT_BUILT_IN` answer to the clear is accepted.
+  - **Every transfer sets `SSL_VERIFYPEER` and `SSL_VERIFYHOST`:** 1 and 2, or both 0.
+  - **The settings are data.** `tls-settings` computes them, `set-tls-options!` applies
+    exactly that list, and `test-transfer-tls` holds them whole. No lane's system store
+    trusts the run CA, so no transfer could show `CAPATH` left set.
+  - **A CA file's path holding U+0000 is refused** as `&curl-request-error`, `embedded-nul`,
+    when the request is made and again on perform's copy.
+- **Measured first, on four Linux libcurls** (M2 plan, §6.1):
+  - **Ubuntu's 8.5.0 trusts its default `CAPATH` beside `CAINFO`,** with either backend.
+    With the run CA in a throwaway container's store, a CA file naming the other CA passed;
+  - **Guix's 8.20.0 writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over `CAINFO` and `CAPATH`**
+    when a transfer starts. The review found that Guix's 8.6.0 lets the request win.
+- **Decided by the maintainer:**
+  - the CA file is exclusive;
+  - `CAINFO_BLOB` and `SSL_OPTIONS` are its twins (ADR-0009, amended);
+  - Guix's override is pinned by a test, by world and version, and its policy is M4's;
+  - the memory gate's Guix count is our suppression's own blocks, read from Valgrind's
+    `used_suppression` line (ADR-0014, amended). An HTTPS handshake on GnuTLS uses
+    Valgrind's own `dtv-addr-tail`.
+- **`test-transfer-tls`, 53 checks,** and its child, `transfer-tls-env`. They cover:
+  - the faces, `h2`, verification off, the system-store control, other-CA, missing and
+    directory paths;
+  - a CR/LF path and a UTF-8 path;
+  - the refusals, a change after the request was made, and a 300-transfer race;
+  - the settings held whole, and the Guix pin.
+- **CI gains a `gnutls` job,** loading Ubuntu's `libcurl-gnutls.so.4`. `known-libcurls.sexp`
+  gains its row, and `debian-prereqs.txt` gains `libcurl3t64-gnutls`.
+- **Checks:**
+  - in the container: `make test` 22/22, 2212 checks, `check-test-fails` 11/11,
+    `check-suites`, `check-seam` (14 libraries), `check-memory-gate` 39 cases and
+    `test-memory` 22/22;
+  - in Docker: the floor, `gnutls`, main and memory lanes, each with `test-transfer-tls` at
+    53.
+- **Built with subagents,** three runs, about 776k tokens, all Opus:
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | builder | 392k | 34 min |
+  | fix round | about 46k | 11 min |
+  | adversarial review | 338k | 24 min |
+
+  - **The review's main find was my brief's.** It held `set-tls-options!` whole, but not
+    `set-option!` beneath it. So a mutant that skipped the `CAPATH` clear passed `make test`.
+    In Docker, with the run CA in Ubuntu's store, that mutant trusted the other CA's file.
+    The fix holds `set-option!` whole, and both of the review's passing mutants now fail.
+  - **The review also measured** `SSLKEYLOGFILE`, `OPENSSL_CONF` and GnuTLS's `pkcs11:` CA
+    files, which ADR-0018 hands to M4.
+- **Evidence:** the builder's 39 mutants each failed a named test, in scratch under
+  `build/verify/m2s3/`. Unlike earlier slices, no mutation log was committed.
+- **Carried forward:**
+  - the Mac's run on SecureTransport, owed before M2 is done;
+  - a CI step that installs the run CA, to show the `CAPATH` clear by behaviour, offered
+    and not yet decided;
+  - CI has still never run.
 
 ### 2026-10-24 — M2 slice 2: the blocking plaintext transfer (PR #16, `6600dfb`)
 
