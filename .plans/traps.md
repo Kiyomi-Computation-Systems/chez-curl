@@ -308,22 +308,33 @@ it should not be a comment. (chez-cmark-gfm)
   against an engine. (chez-curl)
 
 * **A loop that waits in a plain foreign call stalls every other thread's
-  collection about 500 times the wait.** Chez checks for a pending event only
-  when a thread's event counter runs out, and `default-timer-ticks` is 1000. A
-  loop round a plain `curl_multi_poll` spends about one tick per poll, so a
-  collection another thread asks for waits about 500 polls. Beside a plain poll
-  of 1 ms, a worker's 14 ms of allocation took 5.4 s, and beside one of 300 ms
-  it never finished. That looks like a deadlock, and isn't. `__collect_safe`
-  deactivates the thread, so a collection need not wait: 14 ms. The E5 series
-  measured 10 s behind a 300 ms timer; why it was shorter there is unmeasured.
-  (chez-curl, the M3 plan)
+  collection up to about 500 times the wait.** Chez checks for a pending event
+  only when a thread's event counter runs out, and `default-timer-ticks` is
+  1000. A loop round a plain `curl_multi_poll` spends about two ticks per poll,
+  so it checks about every 500 polls, and a collection another thread asks for
+  waits until the next check: a lone one 51 to 466 polls in spike E1, by when it
+  was asked. The worker's collections, close together, each waited 459. Beside a plain poll of 1 ms, its 15 ms of
+  allocation took 5.4 s, and beside one of 300 ms it never finished. That looks
+  like a deadlock, and isn't. `__collect_safe` deactivates the thread, so a
+  collection need not wait: 15 ms. Spike E1 spent more ticks per turn, and the
+  wait shrank to match: 87 polls with 9 more, 9 with 99, 1 with 999. A check
+  that times one collection can pass by luck; ask for them back to back. The E5
+  series measured 10 s behind a 300 ms timer, whose callback ran Scheme each
+  turn; how many ticks that spent is unmeasured. (chez-curl, the M3 plan and
+  spike E1)
 * **Chez gives Ctrl-C to the main thread alone, and a waiting thread answers
   it late.** `c/schsig.c` drops SIGINT in any thread but the main one. A main
   thread in `condition-wait` ran its keyboard-interrupt handler only when the
   wait ended, 3 s later, even with timed waits of 100 ms in a loop: the event
   counter again. Leaving a critical section runs pending events at once, so
   timed waits each inside their own `critical-section` answered within one
-  wait. (chez-curl, the M3 plan)
+  wait. Spike E1 sent SIGINT to the other thread's id instead: the handler never
+  ran. On Linux, Chez installs its handler without `SA_RESTART`, so the signal
+  ended that thread's `sleep` and `curl_multi_poll` at about 1 s, but not its
+  `condition-wait`. So a signal the kernel hands an engine's thread is lost,
+  and ends its poll early. glibc's `system` also ignores SIGINT in the whole
+  process while its command runs (`system(3)`): a Ctrl-C test captures nothing
+  while it waits. (chez-curl, the M3 plan and spike E1)
 
 ## Checks and environment
 
@@ -777,7 +788,9 @@ it should not be a comment. (chez-cmark-gfm)
   - on 7.85.0 and Ubuntu's 8.5.0, a cancel blocked in `curl_multi_remove_handle`
     for 9.7 s, and a 1 s timeout arrived at 10 s, from inside one
     `curl_multi_perform` call;
-  - on 8.20.0, `curl_multi_cleanup` blocked as long.
+  - on 8.20.0, `curl_multi_cleanup` blocked as long, and so did
+    `curl_easy_cleanup` after `curl_easy_perform`, which M2's blocking path
+    binds plain: 9 s, until slice 2 deletes it (spike E1).
 
   An engine thread would hold every transfer for that time. `QUICK_EXIT` and
   `CURLMOPT_QUICK_EXIT` make libcurl leave the thread behind instead. The

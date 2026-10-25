@@ -277,7 +277,7 @@
              ("fixture_two_conventions" ((__varargs_after 2) __collect_safe) ,a foreign-procedure ())
              ("curl_multi_poll" (__collect_safe) ,a foreign-procedure ())
              (on-write (__collect_safe) ,a foreign-callable ())
-             ("curl_multi_perform" () ,b foreign-procedure ())
+             ("curl_multi_wakeup" () ,b foreign-procedure ())
              (on-plain () ,b foreign-callable ()))
            '())
 
@@ -622,16 +622,16 @@
            `((mismatch "curl_easy_init" () (__collect_safe) ,x)
              (mismatch on-write (__collect_safe) () ,x)))
      (list "blocking-plain"
-           "ADR-0013's rows: curl_easy_perform and curl_multi_poll bound plain, curl_easy_perform through bind-required, not its row's bind-blocking, curl_multi_perform and memcpy bound __collect_safe; memcpy's u8*, which its row marks, is no crossing violation, and its convention mismatches"
+           "ADR-0013's rows: curl_easy_perform, curl_multi_poll and curl_multi_perform bound plain, curl_easy_perform through bind-required, not its row's bind-blocking, and memcpy bound __collect_safe; memcpy's u8*, which its row marks, is no crossing violation, and its convention mismatches"
            (listed 'binder "curl/p.sls" 'bind-required)
            `(("curl_easy_perform" () ,p bind-required ())
              ("curl_multi_poll" () ,p foreign-procedure ())
-             ("curl_multi_perform" (__collect_safe) ,p foreign-procedure ())
+             ("curl_multi_perform" () ,p foreign-procedure ())
              ("memcpy" (__collect_safe) ,p foreign-procedure (u8*)))
            `((mismatch "curl_easy_perform" (__collect_safe) () ,p)
              (wrong-binder "curl_easy_perform" bind-blocking bind-required ,p)
              (mismatch "curl_multi_poll" (__collect_safe) () ,p)
-             (mismatch "curl_multi_perform" () (__collect_safe) ,p)
+             (mismatch "curl_multi_perform" (__collect_safe) () ,p)
              (mismatch "memcpy" () (__collect_safe) ,p)))
      (list "variadic"
            "ADR-0001's variadic rows: (__varargs_after 2) through the variadic wrapper holds; directly, with it, is the wrong binder; through the plain wrapper, with no convention, (__varargs_after 1) and __varargs alone each mismatch, and is the wrong binder"
@@ -1125,7 +1125,7 @@
        ("fixture_two_conventions" foreign-procedure (uptr int long) int ,a)
        ("curl_multi_poll" foreign-procedure (uptr uptr unsigned int uptr) int ,a)
        (on-write foreign-callable (uptr size_t size_t uptr) size_t ,a)
-       ("curl_multi_perform" foreign-procedure (uptr uptr) int ,b)
+       ("curl_multi_wakeup" foreign-procedure (uptr) int ,b)
        (on-plain foreign-callable (int) int ,b))))
   (outcome (lambda ()
              (scan-signatures
@@ -1261,6 +1261,35 @@
        '("curl_easy_strerror" "curl_easy_nextheader" "curl_slist_append" "curl_slist_free_all"))
   (map (lambda (key) (list key (bound-via key)))
        '("curl_easy_strerror" "curl_easy_nextheader" "curl_slist_append" "curl_slist_free_all")))
+
+;; Spike E1's rows (M3 slice 1; ADR-0013, accepted), written out here, not
+;; read from the table: a row loosened along with its binding, a call E1
+;; measured blocking made plain, would otherwise pass.
+(define e1-can-block-citation
+  ".plans/decisions/0013-collect-safe-blocking-calls.md: `curl_multi_perform`, `curl_multi_remove_handle` and `curl_multi_cleanup` can block, so each is `__collect_safe`.")
+(define e1-plain-citation
+  ".plans/decisions/0013-collect-safe-blocking-calls.md: These stay plain: `curl_multi_init`, `curl_multi_add_handle`, `curl_multi_wakeup`, `curl_multi_info_read`, and `curl_easy_cleanup` of a handle removed from a multi handle the caller made.")
+
+(test-equal "the table's rows for what spike E1 measured: curl_multi_perform, curl_multi_remove_handle and curl_multi_cleanup __collect_safe, and curl_multi_init, curl_multi_add_handle, curl_multi_wakeup, curl_multi_info_read and curl_easy_cleanup plain, each citing ADR-0013's acceptance, with no mark and no binder"
+  (append (map (lambda (key) (list key '(__collect_safe) e1-can-block-citation))
+               '("curl_multi_perform" "curl_multi_remove_handle" "curl_multi_cleanup"))
+          (map (lambda (key) (list key '() e1-plain-citation))
+               '("curl_multi_init" "curl_multi_add_handle" "curl_multi_wakeup"
+                 "curl_multi_info_read" "curl_easy_cleanup")))
+  (guard (e (#t (list 'unreadable (describe e))))
+    (map (lambda (key) (find (lambda (row) (equal? (car row) key)) conventions-table))
+         '("curl_multi_perform" "curl_multi_remove_handle" "curl_multi_cleanup"
+           "curl_multi_init" "curl_multi_add_handle" "curl_multi_wakeup"
+           "curl_multi_info_read" "curl_easy_cleanup"))))
+
+(test-equal "the table's __collect_safe entries are exactly the calls that can block: curl_easy_perform, curl_multi_poll, and the three E1 measured"
+  (list-sort string<? '("curl_easy_perform" "curl_multi_poll" "curl_multi_perform"
+                        "curl_multi_remove_handle" "curl_multi_cleanup"))
+  (guard (e (#t (list 'unreadable (describe e))))
+    (list-sort string<?
+               (map car (filter (lambda (row) (and (string? (car row))
+                                                   (memq '__collect_safe (cadr row))))
+                                conventions-table)))))
 
 ;; ADR-0013's sentence on what the two callees keep, written out here, not
 ;; read from the table.

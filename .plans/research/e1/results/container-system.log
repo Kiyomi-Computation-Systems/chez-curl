@@ -1,0 +1,4 @@
+[container, run 1] system plain: worker 20.4 ms, 11 collections
+[container, run 1] system section: worker 921.5 ms, 11 collections
+[container, run 2] system plain: worker 20.9 ms, 11 collections
+[container, run 2] system section: worker 922.9 ms, 11 collections

@@ -258,11 +258,15 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * An after thunk that raises during an engine's expiry kills the engine: `no
   engine active`. A refusal there holds against a caller's continuation only.
 * A loop that waits in a plain foreign call stalls every other thread's
-  collection about 500 times the wait: Chez checks pending events only when its
-  1000-tick counter runs out. Wait in `__collect_safe` calls.
+  collection up to about 500 times the wait: Chez checks pending events only
+  when its 1000-tick counter runs out. Wait in `__collect_safe` calls. A check
+  of it asks for collections back to back: a lone one can wait far less.
 * Chez gives Ctrl-C to the main thread alone, and a thread in `condition-wait`
   answers it only when the wait ends. Leaving a critical section runs pending
   events at once, so wait in timed waits, each in its own `critical-section`.
+  A SIGINT the kernel hands another thread is dropped, and ends that thread's
+  `sleep` or `curl_multi_poll` early. glibc's `system` ignores SIGINT
+  process-wide while its command runs.
 * A sweep's evidence that it reached a place needs a control run that cannot
   reach it, or a narrower reach passes too.
 * `with-mutex` takes its mutex before its own `dynamic-wind`, so an escape
@@ -275,7 +279,8 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * An ambient `http_proxy` and the like divert every transfer, so
   `test-transfer` fails first, naming the variable, when one is set.
 * A stalled name lookup blocks libcurl's teardown, and a timeout inside
-  `curl_multi_perform`, for about 10 s: it waits for its resolver thread.
+  `curl_multi_perform`, for about 10 s: it waits for its resolver thread. On
+  8.20.0, so does `curl_easy_cleanup` after `curl_easy_perform`.
   `QUICK_EXIT` and `CURLMOPT_QUICK_EXIT` leave the thread behind. The container
   cannot stall a lookup; Docker or a stand-in `getaddrinfo` can (ADR-0019).
 * Guix's libcurl 8.20.0 writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over a

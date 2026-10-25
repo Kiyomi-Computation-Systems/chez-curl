@@ -1,0 +1,78 @@
+[container] chez 10.4.0
+[container, run 1] lookup teardown, libcurl 8.20.0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] lookup teardown, libcurl 8.20.0, QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] lookup teardown, libcurl 8.20.0, CURLMOPT_QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] lookup teardown, libcurl 8.20.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] lookup timeout, libcurl 8.20.0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 0.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] lookup timeout, libcurl 8.20.0, QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] lookup timeout, libcurl 8.20.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 1] lookup easy, libcurl 8.20.0: (code 6 1.0); longest ((easy_cleanup . 0.0) (easy_perform . 1.0))
+[container, run 1] lookup easy, libcurl 8.20.0, QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (easy_perform . 1.0))
+[container, run 1] (2 threads) interrupt wait, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[container, run 1] (2 threads) interrupt timed, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[container, run 1] (2 threads) interrupt sectioned, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 1100 ms
+[container, run 1] (2 threads) interrupt poll, signal to main, other in sleep: wait ended at 1024 ms, other's at 3000 ms, handler ran at 1024 ms
+[container, run 1] (2 threads) interrupt sectioned, signal to other, other in sleep: wait ended at 1029 ms, other's at 1029 ms, handler ran never
+[container, run 1] (2 threads) interrupt sectioned, signal to other, other in wait: wait ended at 3000 ms, other's at 3000 ms, handler ran never
+[container, run 1] (2 threads) interrupt sectioned, signal to other, other in poll: wait ended at 1030 ms, other's at 1030 ms, handler ran never
+[container, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[container, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[container, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[container, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[container, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 1] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 1] collect once plain, poll 1 ms, ticks 0, libcurl 8.20.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (465 408 350 292 234 176 118 60 51 444)
+[container, run 1] collect once safe, poll 1 ms, ticks 0, libcurl 8.20.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (0 0 0 0 0 0 0 0 0 0)
+[container, run 2] lookup teardown, libcurl 8.20.0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] lookup teardown, libcurl 8.20.0, QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] lookup teardown, libcurl 8.20.0, CURLMOPT_QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] lookup teardown, libcurl 8.20.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] lookup timeout, libcurl 8.20.0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 0.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] lookup timeout, libcurl 8.20.0, QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 1.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] lookup timeout, libcurl 8.20.0, QUICK_EXIT 0, CURLMOPT_QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (multi_add_handle . 0.0) (multi_cleanup . 0.0) (multi_info_read . 0.0) (multi_init . 0.0) (multi_perform . 0.0) (multi_poll . 0.0) (multi_remove_handle . 0.0) (multi_wakeup . 0.0))
+[container, run 2] lookup easy, libcurl 8.20.0: (code 6 1.0); longest ((easy_cleanup . 0.0) (easy_perform . 1.0))
+[container, run 2] lookup easy, libcurl 8.20.0, QUICK_EXIT 0: (code 6 1.0); longest ((easy_cleanup . 0.0) (easy_perform . 1.0))
+[container, run 2] (2 threads) interrupt wait, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[container, run 2] (2 threads) interrupt timed, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 3000 ms
+[container, run 2] (2 threads) interrupt sectioned, signal to main, other in sleep: wait ended at 3000 ms, other's at 3000 ms, handler ran at 1100 ms
+[container, run 2] (2 threads) interrupt poll, signal to main, other in sleep: wait ended at 1025 ms, other's at 3000 ms, handler ran at 1025 ms
+[container, run 2] (2 threads) interrupt sectioned, signal to other, other in sleep: wait ended at 1032 ms, other's at 1032 ms, handler ran never
+[container, run 2] (2 threads) interrupt sectioned, signal to other, other in wait: wait ended at 3000 ms, other's at 3000 ms, handler ran never
+[container, run 2] (2 threads) interrupt sectioned, signal to other, other in poll: wait ended at 1029 ms, other's at 1029 ms, handler ran never
+[container, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race import: ((forked . loaded) (main . "cyclic dependency involving import of library ~s"))
+[container, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race import: ((forked . "cyclic dependency involving import of library ~s") (main . loaded))
+[container, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 2] load-race invoke: ((forked . "cyclic dependency involving invocation of library ~s") (main . loaded))
+[container, run 2] collect once plain, poll 1 ms, ticks 0, libcurl 8.20.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (465 407 350 291 234 177 119 61 52 445)
+[container, run 2] collect once safe, poll 1 ms, ticks 0, libcurl 8.20.0: after sleeps of (37 98 159 220 281 342 403 464 525 586) ms, polls during each collection (0 0 0 0 0 0 0 0 0 0)
+exit 0

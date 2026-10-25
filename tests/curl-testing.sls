@@ -77,10 +77,14 @@
   (import (rnrs)
           (srfi :64)
           (curl private counters)
-          (only (chezscheme) base-exception-handler current-time directory-list
-                display-condition exit-handler file-directory? get-process-id getenv
-                input-port-ready? make-parameter make-time open-process-ports sleep system
-                time-nanosecond time-second))
+          (only (chezscheme) base-exception-handler critical-section current-time
+                delete-directory directory-list display-condition exit-handler
+                file-directory? get-process-id getenv input-port-ready? make-mutex
+                make-parameter make-time mkdir open-process-ports sleep system
+                time-nanosecond time-second with-mutex)
+          ;; Chez's file-exists? takes a second argument, #f not to follow a
+          ;; symbolic link; (rnrs)'s takes one.
+          (prefix (only (chezscheme) file-exists?) chez:))
 
   ;; --- the shared exit form ------------------------------------------------
 
@@ -144,26 +148,69 @@
   ;; expects.
   ;;
   ;; A NUL is refused: `system` takes a C string, which would end there and
-  ;; run whatever came before it. The two streams go through files in
-  ;; $TMPDIR, or /tmp, named for this process and call, removed after.
+  ;; run whatever came before it. The two streams go through two files in a
+  ;; directory of the call's own (make-capture-directory), removed after,
+  ;; however the call ends. Any thread may call it, and calls on several at
+  ;; once share no file. `system` lets other threads collect while the
+  ;; command runs, except inside a critical section, where it holds them
+  ;; all until the command ends (Chez 10.4.0's c/prim5.c; measured in spike
+  ;; E1, .plans/research/e1/findings.md).
   (define (capture-command argv)
     (check-command argv)
-    (set! captures (+ captures 1))
-    (let* ((base (string-append (scratch-directory) "/curl-testing-"
-                                (number->string (get-process-id)) "-"
-                                (number->string captures)))
-           (out (string-append base ".out"))
-           (err (string-append base ".err")))
-      (remove-files out err)
-      (let ((status (system (string-append (join-words (map shell-quote argv))
-                                           " </dev/null >" (shell-quote out)
-                                           " 2>" (shell-quote err)))))
-        (let* ((stdout (file->string out))
-               (stderr (file->string err)))
-          (remove-files out err)
-          (list status stdout stderr)))))
+    (let ((dir #f))
+      (dynamic-wind
+        (lambda () #f)
+        (lambda ()
+          ;; Made and recorded in one critical section, so that no escape
+          ;; leaves a directory the after thunk cannot see.
+          (critical-section (set! dir (make-capture-directory)))
+          (let* ((out (string-append dir "/out"))
+                 (err (string-append dir "/err"))
+                 (status (system (string-append (join-words (map shell-quote argv))
+                                                " </dev/null >" (shell-quote out)
+                                                " 2>" (shell-quote err)))))
+            (let* ((stdout (file->string out))
+                   (stderr (file->string err)))
+              (list status stdout stderr))))
+        (lambda ()
+          (when dir
+            (for-each (lambda (name)
+                        (guard (e (#t #f)) (remove-files (string-append dir "/" name))))
+                      '("out" "err"))
+            (delete-directory dir))))))
 
-  ;; How many commands this process has captured: part of each file's name.
+  ;; make-capture-directory : -> String
+  ;; A fresh directory for one capture's files: the scratch directory, then
+  ;; curl-testing-PID-N, N counted for this process under a mutex. Chez's
+  ;; mkdir makes it with mode 700, and refuses a name that anything already
+  ;; holds, a dangling symbolic link included (measured at 10.4.0). So no
+  ;; two captures share a file, in this process or any other, and none
+  ;; writes through a name someone else planted. A name that is taken costs
+  ;; the next N, up to 100 tries; any other failure raises, before the
+  ;; command runs. The mutex keeps this process's numbers distinct, so a
+  ;; name is taken only by another process or what one left behind.
+  (define (make-capture-directory)
+    (let ((base (string-append (scratch-root) "/curl-testing-"
+                               (number->string (get-process-id)) "-")))
+      (let try ((tries 1))
+        (let ((dir (string-append base (number->string (next-capture)))))
+          (cond
+            ((guard (e (#t #f)) (mkdir dir #o700) #t) dir)
+            ((and (< tries 100) (chez:file-exists? dir #f)) (try (+ tries 1)))
+            (else (error 'capture-command "could not make a directory for the command's output"
+                         dir)))))))
+
+  ;; next-capture : -> Positive-Integer
+  ;; How many captures this process has begun, this one included. The
+  ;; mutex is held through critical-section around with-mutex, so no
+  ;; escape can leave it held (traps.md).
+  (define (next-capture)
+    (critical-section
+     (with-mutex capture-mutex
+       (set! captures (+ captures 1))
+       captures)))
+
+  (define capture-mutex (make-mutex))
   (define captures 0)
 
   (define (check-command argv)
@@ -292,11 +339,17 @@
   ;; mktemp's template: the scratch directory, without the slash macOS's
   ;; TMPDIR ends with, then curl-testing.XXXXXX.
   (define (temp-template)
+    (string-append (scratch-root) "/curl-testing.XXXXXX"))
+
+  ;; scratch-root : -> String
+  ;; The scratch directory without the slashes it may end with, as macOS's
+  ;; TMPDIR does: a name is appended to it after one slash.
+  (define (scratch-root)
     (let loop ((dir (scratch-directory)))
       (let ((n (string-length dir)))
         (if (and (> n 0) (char=? (string-ref dir (- n 1)) #\/))
             (loop (substring dir 0 (- n 1)))
-            (string-append dir "/curl-testing.XXXXXX")))))
+            dir))))
 
   ;; single-line : String -> (U String #f)
   ;; TEXT without its one final newline, when that leaves a line: not empty,
