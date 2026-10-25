@@ -5,6 +5,7 @@
   (M0 slice 4), and with what a binding may hand C from Chez's heap (M0 slice 5). Amended
   2026-10-17 with what the reader holds the binding macros to (M0 slice 6). Amended
   2026-10-23 with M2 slice 1's rows, and with how control leaves the write callable (M2 slice 2).
+  Amended 2026-10-24: `curl_multi_perform` can block (the M3 plan).
 - **Date:** 2026-10-04
 - **Corrected:** 2026-10-04. The E5 series is chez-http-server's, not chez-libuv's. Its
   figures are restated from that spike report, which ran on macOS only.
@@ -357,3 +358,33 @@ the callable other than by its return.
     process, since `load-step` records raises, not escapes. A program that imports `(curl)`
     loads it before its body runs.
 
+
+## Amendment, 2026-10-24: `curl_multi_perform` can block (the M3 plan)
+
+Decision 3 kept `curl_multi_perform` plain "until E1 says otherwise". The M3 plan measured
+otherwise before planning, and it is raised here, as this record asks of a contradicting
+finding.
+
+- **A transfer's own timeout during a stalled name lookup blocks inside one
+  `curl_multi_perform` call for about 9 s,** on 7.85.0 and Ubuntu's 8.5.0, with OpenSSL and
+  with GnuTLS. `curl_multi_remove_handle` blocks as long on a cancel there, and on 8.20.0
+  `curl_multi_cleanup` does ([ADR-0019](0019-a-stalled-lookup-does-not-stall-the-engine.md)).
+  Under decision 1 all three are `__collect_safe`, through `bind-blocking`, with
+  `curl_multi_poll`. That is ADR-0019's decision 3.
+- **A plain wait costs far more than the E5 series showed.** Chez checks a pending collection
+  only when a thread's event counter, 1000 ticks, runs out, and a loop that waits in a plain
+  `curl_multi_poll` spends about one tick per wait. So another thread's collection waited
+  about 500 polls. Beside a plain poll of 1, 3 and 10 ms, a worker's 14 ms of allocation took
+  5.4 s, 15.9 s and 54.4 s. At 300 ms, E5c's timer, that extrapolates to about 27 minutes,
+  against 10.3 s in E5c; those runs were killed at 30 to 120 s, 6 of 6. With the poll
+  `__collect_safe`, it took 14.1–15.5 ms. The safe poll and the plain 1 ms poll measured the
+  same on the four Linux libcurls, and the rest ran on 8.20.0.
+- **A `__collect_safe` callable may be entered from a plain call.** Chez 10.4.0's callable
+  entry saves the thread's state from `S_activate_thread` and restores exactly it on exit, so
+  inside an active thread both are no-ops (`c/thread.c`, `s/x86_64.ss`, `s/arm64.ss`). In the
+  container, on 8.20.0, a `__collect_safe` write callable fired from a plain
+  `curl_multi_perform` delivered every byte, 3 runs of 3, beside a thread that collected about 1,000 times a run. Write callbacks
+  fired inside `curl_multi_perform` only, never inside `curl_multi_poll`.
+- **This record stays Proposed.** Spike E1, M3's first slice, reruns each of these from
+  committed programs, and accepts or amends this record from its findings. The rows that
+  quote decision 3 move then.

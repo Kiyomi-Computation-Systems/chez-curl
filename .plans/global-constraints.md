@@ -161,6 +161,10 @@ provisional. They bind until that record is accepted or amended.
   - **macOS:** `/usr/lib/libcurl.4.dylib` only.
 - **One load, then verify.** After a failure, chez-curl never tries another candidate
   (ADR-0002).
+- **An engine loads libcurl before its thread starts.** `make-engine` references the load on
+  the caller's thread, then forks, so no engine thread makes a first reference. Chez locks no
+  library's invocation, and two threads' first references together raise `cyclic
+  dependency` (ADR-0002, amended 2026-10-24).
 - **The load runs at most once per process.** `(curl private load-state)` records its first
   failure, and every later reference raises that failure again. Every load step runs
   inside `load-step`, so only serious conditions are raised (ADR-0002, amended).
@@ -197,8 +201,10 @@ provisional. They bind until that record is accepted or amended.
   hides the other's removal.
 - **Relative references** resolve with `curl_url_set` against the current URL's handle
   (ADR-0008).
-- **A `CURLU` handle is used by one thread at a time.** Ownership passes to the engine with
-  the request (ADR-0008).
+- **Every `CURLU` lives and dies on one thread.** Submit checks a request's URL on the
+  caller's thread, on its snapshot, and frees that handle before it returns, so a refused URL
+  raises there. The engine parses the same snapshot again on its own thread (ADR-0008,
+  amended 2026-10-24).
 - **Origins are compared by** scheme, lowercased host and effective port, never as strings
   (ADR-0008).
 - **No dependency on uriparse** (ADR-0008).
@@ -242,7 +248,8 @@ provisional. They bind until that record is accepted or amended.
   (ADR-0009)
 - **Owned options:** `URL`, `CURLU`, `PROTOCOLS_STR`, `REDIR_PROTOCOLS_STR`, `PROTOCOLS`,
   `REDIR_PROTOCOLS`, `NOSIGNAL`, and every option a request field sets, among them `CAINFO`,
-  `CAPATH`, `SSL_VERIFYPEER` and `SSL_VERIFYHOST` (ADR-0009). Each owned setting's **twin** is
+  `CAPATH`, `SSL_VERIFYPEER` and `SSL_VERIFYHOST` (ADR-0009), and `QUICK_EXIT`, which every
+  engine transfer sets (ADR-0009, amended 2026-10-24). Each owned setting's **twin** is
   refused too, an option with an id of its own that sets the same thing: `MAXFILESIZE`,
   `TIMEOUT`, `HTTPGET`, `POST`, `UPLOAD`, `PUT`, `CAINFO_BLOB` and `SSL_OPTIONS` today, and
   with them the transfer's callable and data, `WRITEFUNCTION`, `WRITEDATA` and `ERRORBUFFER`
@@ -438,7 +445,22 @@ provisional. They bind until that record is accepted or amended.
   - A libcurl call that can block is `__collect_safe`: `curl_multi_poll`,
     `curl_easy_perform`, and whatever else E1 finds blocks. So is every callback it can
     invoke.
-  - Calls that cannot block stay plain. That includes `curl_multi_perform` until E1 says
-    otherwise.
+  - `curl_multi_perform`, `curl_multi_remove_handle` and `curl_multi_cleanup` can block,
+    measured before the M3 plan: about 9.7 s during a stalled name lookup. They are
+    `__collect_safe`, through `bind-blocking` (ADR-0013, amended 2026-10-24; ADR-0019).
+  - Calls that cannot block stay plain.
   - A call that can block, or can invoke a callback, never receives a Scheme string or
     bytevector. Pass it foreign memory instead.
+- **The engine's loop never waits in a plain call.** A plain wait stalls every other thread's
+  collection about 500 times its length: Chez checks a pending collection only when a
+  thread's 1000-tick event counter runs out (ADR-0013, amended 2026-10-24).
+- **A stalled name lookup does not stall the engine** (ADR-0019):
+  - every engine transfer sets `QUICK_EXIT` to 1 when the loaded libcurl knows it, looked up
+    by name, with the pins;
+  - every engine's multi handle sets `CURLMOPT_QUICK_EXIT` to 1 when it is made, through
+    `curl_multi_setopt`. `CURLM_UNKNOWN_OPTION` is accepted;
+  - the floor, 7.85.0 to 7.86.x, keeps the stall, up to glibc's resolver timeout.
+- **Stopping an engine cancels what is in flight** (ADR-0012, amended 2026-10-24). Each queued
+  and live transfer completes as `stopped`. The engine frees every handle and cleans up the
+  multi handle, and the caller's stop returns once its thread has signalled its end. A later
+  submit raises, and a later stop returns at once. A drain is the caller's: await, then stop.

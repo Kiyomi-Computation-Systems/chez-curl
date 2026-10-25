@@ -2,7 +2,8 @@
 
 - **Status:** Accepted; amended 2026-10-17: the measured verdicts become M2's tests; amended
   2026-10-19: the verdicts vary by version, so the suite holds shared answers and version
-  rows; amended 2026-10-23 with what M2 slice 1 built, and with what M2 slice 2 changed
+  rows; amended 2026-10-23 with what M2 slice 1 built, and with what M2 slice 2 changed; amended
+  2026-10-24: the caller checks, the engine parses (M3)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D2 (brief §10)
@@ -189,3 +190,21 @@ resolution examples in RFC 3986 §5.4.
   at least two of them. Otherwise it belongs among the shared answers, and a rows file could
   hide a shared case. `test-url` and `test-transfer` both hold it.
 
+
+## Amendment, 2026-10-24: the caller checks, the engine parses (the M3 plan)
+
+Decision 3 left M3 to settle which thread parses a request's URL. The maintainer chose on
+2026-10-24.
+
+- **Submit checks the URL on the caller's thread.** It runs `call-with-parsed-url` and the
+  scheme check on the request's snapshot, the private copy the transfer sends, and frees that
+  handle before submit returns. A refused URL raises there, before anything is queued.
+- **The engine parses the same snapshot again,** on its own thread, and the transfer takes
+  that handle through `CURLOPT_CURLU`. It frees it once the transfer is taken apart.
+- **So every `CURLU` lives and dies on one thread,** and no native handle crosses between
+  threads. Both parses read the same immutable copy with the same libcurl. The cost is a
+  second parse per request.
+- **Rejected:** handing the caller's `CURLU` to the engine, which saves the parse but moves a
+  native handle across threads, and leaves a submit that fails after the parse to free it.
+  Also rejected: parsing on the engine alone, which turns a bad URL from a raise at submit
+  into a failed completion.

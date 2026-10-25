@@ -257,6 +257,12 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   Ctrl-C until the transfer ends, so it was reversed.
 * An after thunk that raises during an engine's expiry kills the engine: `no
   engine active`. A refusal there holds against a caller's continuation only.
+* A loop that waits in a plain foreign call stalls every other thread's
+  collection about 500 times the wait: Chez checks pending events only when its
+  1000-tick counter runs out. Wait in `__collect_safe` calls.
+* Chez gives Ctrl-C to the main thread alone, and a thread in `condition-wait`
+  answers it only when the wait ends. Leaving a critical section runs pending
+  events at once, so wait in timed waits, each in its own `critical-section`.
 * A sweep's evidence that it reached a place needs a control run that cannot
   reach it, or a narrower reach passes too.
 * `with-mutex` takes its mutex before its own `dynamic-wind`, so an escape
@@ -268,6 +274,10 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   checks a followed URL against both. Hold each pin by reading the options.
 * An ambient `http_proxy` and the like divert every transfer, so
   `test-transfer` fails first, naming the variable, when one is set.
+* A stalled name lookup blocks libcurl's teardown, and a timeout inside
+  `curl_multi_perform`, for about 10 s: it waits for its resolver thread.
+  `QUICK_EXIT` and `CURLMOPT_QUICK_EXIT` leave the thread behind. The container
+  cannot stall a lookup; Docker or a stand-in `getaddrinfo` can (ADR-0019).
 * Guix's libcurl 8.20.0 writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over a
   transfer's `CAINFO` and `CAPATH` when it starts, after every setopt; its
   8.6.0 did not. The container passes neither; `test-transfer-tls` fails
