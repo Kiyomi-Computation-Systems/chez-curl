@@ -52,9 +52,9 @@
              (list 'request-refused (curl-request-error-field e) (curl-request-error-reason e)))
             (#t (list 'raised (describe e))))
     (let ((r (thunk)))
-      (list 'response (transfer-response-status r) (transfer-response-http-version r)
-            (map (lambda (h) (list (car h) (cdr h))) (transfer-response-headers r))
-            (latin-1 (transfer-response-body r))))))
+      (list 'response (curl-response-status r) (curl-response-http-version r)
+            (map (lambda (h) (list (car h) (cdr h))) (curl-response-headers r))
+            (latin-1 (curl-response-body r))))))
 
 (let ((args (cdr (command-line))))
   (unless (and (= (length args) 2) (for-all string? args))
@@ -69,8 +69,8 @@
                   (lambda ()
                     (curl-token-await
                      (curl-engine-submit engine
-                                         (make-transfer-request (car args) 'get '() #f 20000 #f (cadr args)
-                                                                #t #f)))))))
+                                         (make-curl-request (car args) 'timeout-ms 20000
+                                                            'ca-file (cadr args))))))))
     (curl-engine-stop engine)
     (show (list 'transfer answer (native-counts))))
   (show '(done))

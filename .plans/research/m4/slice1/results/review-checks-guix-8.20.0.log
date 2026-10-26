@@ -1,0 +1,4 @@
+(raised Exception in curl-engine-submit-with: chez-curl sets this option, or its twin, itself with irritant "HEADER")
+(refused perform-failed 28 100)
+(refused perform-failed 28 100100)
+(((name-lookup . 72) (connect . 257) (tls-handshake . 5430) (first-byte . 8274) (total . 8297)) ((name-lookup . 0) (connect . 0) (tls-handshake . 0) (first-byte . 498) (total . 510)))

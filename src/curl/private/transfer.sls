@@ -1,27 +1,56 @@
 #!r6rs
 ;;; (curl private transfer): a request, and its transfer on an engine's
-;;; thread (M2 plan, sections 3 and 5; M3 plan, sections 3.1 and 5.2).
-;;; Private: (curl) exports nothing of it, and (curl private engine) runs
-;;; it.
+;;; thread (M2 plan, sections 3 and 5; M3 plan, sections 3.1 and 5.2; M4
+;;; plan, sections 3.2 to 3.4). (curl) exports the request and the
+;;; response; (curl private engine) runs the transfer.
 ;;;
-;;; A request is a record whose fields are checked when it is made, before
-;;; anything native: wrong types are assertion violations, and a header or
-;;; a user agent libcurl would send otherwise than asked, or a CA file's
-;;; path holding U+0000, is a &curl-request-error. Header strings are
-;;; Latin-1, both ways (ADR-0001, amended 2026-10-23); a CA file's path is
-;;; UTF-8, as every other string. A request holds no procedure: its last
-;;; field, a private fault, is data (M3 plan, section 3.6).
+;;; A request is made from a property list, (make-curl-request URL KEY
+;;; VALUE ...), and curl-request-with makes a new one with keys replaced
+;;; (ADR-0023). An unknown key, a key with no value and a repeated key are
+;;; refused by name before anything else is checked. Then its fields are
+;;; checked, before anything native: wrong types are assertion violations,
+;;; and a body with get or head, a header or a user agent libcurl would
+;;; send otherwise than asked, or a CA file's path holding U+0000, is a
+;;; &curl-request-error. Header strings are Latin-1, both ways (ADR-0001,
+;;; amended 2026-10-23); a CA file's path is UTF-8, as every other string.
+;;; A request holds no procedure: its private fields, a fault and whether
+;;; to follow redirects, are data, set by private constructors alone (M3
+;;; plan, section 3.6; M4 plan, section 3.2).
 ;;;
-;;; A request holds the caller's strings and lists, which stay mutable. So
-;;; a submit, on the caller's thread, checks nothing it does not own:
-;;; prepare-transfer takes a plan, fresh pairs and fresh strings for the
-;;; URL, the headers, the user agent and the CA file, checks the plan by
-;;; the constructor's rules, checks the test seam's settings, and parses
-;;; the plan's URL and checks its scheme, freeing that CURLU before it
-;;; returns (ADR-0008, amended 2026-10-24). Every refusal raises there,
-;;; before anything is queued. A request changed after it was made is
-;;; refused then; a change it takes is sent as changed. The engine sends
-;;; only the plan.
+;;; A request holds the caller's strings, lists and body, which stay
+;;; mutable. So a submit, on the caller's thread, checks nothing it does
+;;; not own: prepare-transfer takes a plan, fresh pairs and fresh strings
+;;; for the URL, the headers, the user agent and the CA file, and a fresh
+;;; copy of the body, checks the plan by the constructor's rules, checks
+;;; the test seam's settings, and parses the plan's URL and checks its
+;;; scheme, freeing that CURLU before it returns (ADR-0008, amended
+;;; 2026-10-24). Every refusal raises there, before anything is queued. A
+;;; request changed after it was made is refused then; a change it takes is
+;;; sent as changed. The engine sends only the plan.
+;;;
+;;; A body (M4 plan, section 3.2). post, put and patch always send one,
+;;; empty when the request has none, and delete sends one only when it has
+;;; one: POSTFIELDSIZE_LARGE at its length, then COPYPOSTFIELDS at a counted
+;;; copy of it, which libcurl copies and which is freed once setopt
+;;; returns. An empty body is a block of one byte, never NULL, as a
+;;; defence: with a size of 0 libcurl reads nothing either way, but NULL
+;;; tells its setopt to send the body through its read callback, whose
+;;; default reads stdin, and its setopt allocates a byte for a size of 0
+;;; "to mark that postfields is used rather than read function"
+;;; (lib/setopt.c, 7.85.0).
+;;; put, patch and delete set CUSTOMREQUEST to their names. libcurl adds
+;;; Content-Type: application/x-www-form-urlencoded to every body, and
+;;; Expect: 100-continue past 1 MiB, then waits a second for a server that
+;;; never answers it; so a request that sends a body also sends "Content-Type:"
+;;; and "Expect:", which take libcurl's own away, unless it names a header
+;;; of that name itself, which replaces libcurl's (measured on five
+;;; libcurls, the M4 plan, section 4.1). Nothing follows a redirect:
+;;; FOLLOWLOCATION is owned, and set only for the private follow field.
+;;;
+;;; A finished transfer's response carries its timings, read as curl_off_t
+;;; microseconds through native's off_t reader. A failed one carries its
+;;; request size, CURLINFO_REQUEST_SIZE, and raises its code's class
+;;; (ADR-0022, amended 2026-10-26).
 ;;;
 ;;; On the engine's thread (ADR-0012), start-transfer! makes, in order:
 ;;;
@@ -106,15 +135,18 @@
 ;;; lock-object, which check-seam lets this library alone import (ADR-0007,
 ;;; M2 plan, section 3.6).
 (library (curl private transfer)
-  (export make-transfer-request transfer-request?
-          transfer-request-url transfer-request-method transfer-request-headers
-          transfer-request-user-agent transfer-request-timeout-ms transfer-request-body-limit
-          transfer-request-ca-file transfer-request-verify transfer-request-fault
+  (export make-curl-request curl-request-with curl-request?
+          curl-request-url curl-request-method curl-request-headers curl-request-body
+          curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
+          curl-request-body-limit curl-request-ca-file curl-request-verify
+          curl-request-fault curl-request-follow curl-request-with-fault curl-request-following
+          request-keys request-methods sent-header-lines timing-infos
           prepare-transfer start-transfer! finish-transfer free-transfer!
           live-transfer-easy live-transfer-chunks transfer-ended planted-fault transfers-started
           abandon-transfer-easy!
-          transfer-response? transfer-response-status transfer-response-http-version
-          transfer-response-effective-url transfer-response-headers transfer-response-body
+          curl-response? curl-response-status curl-response-http-version
+          curl-response-effective-url curl-response-headers curl-response-body
+          curl-response-timings
           option-bindings option-binding option-setter http-version-symbol bytes->latin-1 pinned-options
           request-field-options owned-option-names live-transfer-count cached-option-names
           tls-settings setopt-accepted? quick-exit-pin pinned-settings quick-exit-known?
@@ -211,9 +243,13 @@
                          ((not-latin-1) "a header string holds a char above U+00FF, which has no Latin-1 byte")
                          ((surrounding-whitespace) "a header string starts or ends with whitespace, which libcurl trims")
                          ((duplicates-field) "a User-Agent header beside the user agent field, which libcurl would let win, or a second Host header, which libcurl would drop")
-                         ((framing-header) "a Content-Length or Transfer-Encoding header: libcurl frames the message, and M2 sends no body")
+                         ((framing-header) "a Content-Length or Transfer-Encoding header: libcurl frames the message, from the body it is handed")
                          ((owned-option) "chez-curl sets this option, or its twin, itself")
-                         (else "the test seam takes long, enumerated-value and off_t options alone")))
+                         ((unsupported-type) "the test seam takes long, enumerated-value and off_t options alone")
+                         ((unknown-key) "not a key a request takes")
+                         ((repeated-key) "a key given twice")
+                         ((missing-value) "a key given last, with no value after it")
+                         (else "a body with get or head, which send none")))
                       (make-irritants-condition (list value)))))
 
   ;; snapshot : Symbol Any Any -> (Pairof (Listof (Pairof String String)) (U String #f))
@@ -226,8 +262,8 @@
   ;; duplicates-field: libcurl would send the header, and drop the field;
   ;; and a second name Host, in any case, duplicates-field too: libcurl
   ;; sends only the first; and a name Content-Length or Transfer-Encoding,
-  ;; in any case, framing-header: M2 sends no body, and libcurl frames the
-  ;; message itself.
+  ;; in any case, framing-header: libcurl frames the message, from the body
+  ;; it is handed.
   ;; Then the user agent, value-problem's rules. Each refusal is a
   ;; &curl-request-error naming the field. The copies are made before any
   ;; check, so what is checked is what is sent, whatever the caller's
@@ -313,97 +349,250 @@
   ;; MAXFILESIZE_LARGE gets, is a curl_off_t.
   (define body-limit-bound (- (expt 2 63) 1))
 
-  ;; make-transfer-request : String (U 'get 'head) (Listof (Pairof String String))
-  ;;                         (U String #f) (U Positive-Integer #f) (U Natural #f)
-  ;;                         (U String #f) Boolean (U Positive-Integer #f) -> Request
-  ;; transfer-request? : Any -> Boolean
-  ;; transfer-request-url : Request -> String
-  ;; transfer-request-method : Request -> (U 'get 'head)
-  ;; transfer-request-headers : Request -> (Listof (Pairof String String))
-  ;; transfer-request-user-agent : Request -> (U String #f)
-  ;; transfer-request-timeout-ms : Request -> (U Positive-Integer #f)
-  ;; transfer-request-body-limit : Request -> (U Natural #f)
-  ;; transfer-request-ca-file : Request -> (U String #f)
-  ;; transfer-request-verify : Request -> Boolean
-  ;; transfer-request-fault : Request -> (U Positive-Integer #f)
+  ;; request-methods : (Listof Symbol)
+  ;; The methods a request may have, the M4 plan's fixed set (ADR-0023,
+  ;; decision 4). post, put, patch and delete may carry a body.
+  (define request-methods '(get head post put patch delete))
+
+  ;; request-keys : (Listof Symbol)
+  ;; The keys make-curl-request and curl-request-with take, in the record's
+  ;; order. tests/test-request.sps writes it out.
+  (define request-keys
+    '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify))
+
+  ;; timeout? : Any -> Boolean
+  ;; X is a timeout: #f, none, or a positive exact integer a long holds.
+  (define (timeout? x)
+    (or (not x) (and (long? x) (positive? x))))
+
+  ;; request-settings : Symbol List -> (Listof (Pairof Symbol Any))
+  ;; PLIST, KEY VALUE ..., as (KEY . VALUE) pairs, in its order, each key
+  ;; refused by name, as WHO, before anything else is checked: one
+  ;; request-keys lacks, unknown-key; one with no value after it,
+  ;; missing-value; one given twice, repeated-key. Each is a
+  ;; &curl-request-error, field key, whose value is the key as given.
+  (define (request-settings who plist)
+    (let loop ((rest plist) (found '()))
+      (if (null? rest)
+          (reverse found)
+          (let ((key (car rest)))
+            (unless (memq key request-keys) (refuse-field who 'key key 'unknown-key))
+            (when (null? (cdr rest)) (refuse-field who 'key key 'missing-value))
+            (when (assq key found) (refuse-field who 'key key 'repeated-key))
+            (loop (cddr rest) (cons (cons key (cadr rest)) found))))))
+
+  ;; make-curl-request : String Symbol Any ... -> Request
+  ;; curl-request-with : Request Symbol Any ... -> Request
+  ;; curl-request? : Any -> Boolean
+  ;; curl-request-url : Request -> String
+  ;; curl-request-method : Request -> (U 'get 'head 'post 'put 'patch 'delete)
+  ;; curl-request-headers : Request -> (Listof (Pairof String String))
+  ;; curl-request-body : Request -> (U Bytevector #f)
+  ;; curl-request-user-agent : Request -> (U String #f)
+  ;; curl-request-timeout-ms : Request -> (U Positive-Integer #f)
+  ;; curl-request-connect-timeout-ms : Request -> (U Positive-Integer #f)
+  ;; curl-request-body-limit : Request -> (U Natural #f)
+  ;; curl-request-ca-file : Request -> (U String #f)
+  ;; curl-request-verify : Request -> Boolean
+  ;; curl-request-fault : Request -> (U Positive-Integer #f)   private
+  ;; curl-request-follow : Request -> Boolean                  private
   ;;
-  ;; URL, a string, parsed at submit, and again on the engine's thread. METHOD, get or head.
-  ;; HEADERS, (NAME . VALUE) strings, in the order sent, repeats kept, but
-  ;; for Host: libcurl sends a Host header in place of its own, first,
-  ;; before every other header, and spelt Host, whatever its case here; and
-  ;; a second Host header, in any case, is refused as duplicates-field
-  ;; (RFC 9112, section 3.2, has a server answer 400 to more than one); and
-  ;; a Content-Length or Transfer-Encoding header, in any case, as
-  ;; framing-header: a server would wait for a body chez-curl never sends.
-  ;; USER-AGENT, a non-empty string, or #f for none. TIMEOUT-MS, a positive
-  ;; exact integer a long holds, or #f for libcurl's default, none.
-  ;; BODY-LIMIT, an exact natural below 2^63 - 1, or #f for none.
-  ;; CA-FILE, a CA file's path, a non-empty string, sent as given, relative
-  ;; or absolute: the request's only trust anchor (ADR-0018); or #f for
-  ;; libcurl's system store, as built. VERIFY, #t to verify the peer's
-  ;; chain and its name, #f to verify neither: libcurl then reads no CA.
-  ;; FAULT, #f, or a positive exact integer: a planted fault, private, the
-  ;; test seam's, that makes the callable raise (planted-fault FAULT) at the
-  ;; chunk of that number, counting from 1, before its limit check (M3
-  ;; plan, section 3.6). It is data, never a procedure: a request holds no
-  ;; caller code (ADR-0012, decision 4).
+  ;; (make-curl-request URL KEY VALUE ...): URL, a string, parsed at
+  ;; submit, and again on the engine's thread. The keys, each once at most,
+  ;; in any order (ADR-0023), each left out taking its default:
   ;;
-  ;; A wrong type is an assertion violation, the empty string as a CA file
-  ;; among them. Then, in order, snapshot's rules for the headers and the
-  ;; user agent, and ca-file-copy's for the CA file, each refusal a
+  ;;   method              get (the default), head, post, put, patch or delete
+  ;;   headers             (NAME . VALUE) strings, in the order sent, repeats
+  ;;                       kept, but for Host: libcurl sends a Host header in
+  ;;                       place of its own, first, spelt Host, whatever its
+  ;;                       case here; and a second Host header, in any case,
+  ;;                       is refused as duplicates-field (RFC 9112, section
+  ;;                       3.2, has a server answer 400 to more than one); and
+  ;;                       a Content-Length or Transfer-Encoding header, in
+  ;;                       any case, as framing-header: libcurl frames the
+  ;;                       message. Default ()
+  ;;   body                a bytevector, sent whole, or #f, none, the default.
+  ;;                       With get or head it is refused as body-not-allowed.
+  ;;                       post, put and patch send an empty one when it is
+  ;;                       #f; delete sends none
+  ;;   user-agent          a non-empty string, or #f for none, the default
+  ;;   timeout-ms          the whole transfer's bound: a positive exact integer
+  ;;                       a long holds, or #f, libcurl's default, none
+  ;;   connect-timeout-ms  the connection phase's bound, its TLS handshake
+  ;;                       among it, as timeout-ms; #f is libcurl's default
+  ;;   body-limit          an exact natural below 2^63 - 1, or #f for none
+  ;;   ca-file             a CA file's path, a non-empty string, sent as
+  ;;                       given, relative or absolute: the request's only
+  ;;                       trust anchor (ADR-0018); or #f, the default, for
+  ;;                       libcurl's system store, as built
+  ;;   verify              #t, the default, to verify the peer's chain and
+  ;;                       its name; #f to verify neither: libcurl then reads
+  ;;                       no CA
+  ;;
+  ;; The defaults set no policy: libcurl's own stand (ADR-0023, decision 3).
+  ;; The keys are refused first, by request-settings' rules, then a URL
+  ;; that is not a string, then a wrong type for method, body, timeout-ms,
+  ;; connect-timeout-ms, body-limit, ca-file or verify, each an assertion
+  ;; violation, the empty string as a CA file among them; then a body with
+  ;; get or head, body-not-allowed; then snapshot's rules for the headers
+  ;; and the user agent, their types first, as assertion violations; then
+  ;; ca-file-copy's for the CA file. Each refusal of a value is a
   ;; &curl-request-error naming the field. The record keeps the caller's
   ;; objects; a submit checks them again, as a plan.
-  (define-record-type (transfer-request make-transfer-request transfer-request?)
-    (fields (immutable url transfer-request-url)
-            (immutable method transfer-request-method)
-            (immutable headers transfer-request-headers)
-            (immutable user-agent transfer-request-user-agent)
-            (immutable timeout-ms transfer-request-timeout-ms)
-            (immutable body-limit transfer-request-body-limit)
-            (immutable ca-file transfer-request-ca-file)
-            (immutable verify transfer-request-verify)
-            (immutable fault transfer-request-fault))
-    (protocol
-     (lambda (new)
-       (lambda (url method headers user-agent timeout-ms body-limit ca-file verify fault)
-         (define (wrong message irritant)
-           (assertion-violation 'make-transfer-request message irritant))
-         (unless (string? url) (wrong "a URL is a string" url))
-         (unless (memq method '(get head)) (wrong "a method is get or head" method))
-         (unless (or (not timeout-ms) (and (long? timeout-ms) (positive? timeout-ms)))
-           (wrong "a timeout is a positive exact integer a long holds, or #f" timeout-ms))
-         (unless (or (not body-limit)
-                     (and (integer? body-limit) (exact? body-limit) (<= 0 body-limit)
-                          (< body-limit body-limit-bound)))
-           (wrong "a body limit is an exact natural below 2^63 - 1, or #f" body-limit))
-         (unless (ca-file? ca-file)
-           (wrong "a CA file is a non-empty string, its path, or #f" ca-file))
-         (unless (boolean? verify) (wrong "verify is #t or #f" verify))
-         (unless (or (not fault) (and (integer? fault) (exact? fault) (positive? fault)))
-           (wrong "a fault is a positive exact integer, the chunk it raises at, or #f: a request holds no procedure"
-                  fault))
-         (snapshot 'make-transfer-request headers user-agent)
-         (ca-file-copy 'make-transfer-request ca-file)
-         (new url method headers user-agent timeout-ms body-limit ca-file verify fault)))))
+  ;;
+  ;; (curl-request-with REQUEST KEY VALUE ...): a new request, with the
+  ;; keys given replaced and the rest kept, its private fields among them,
+  ;; checked as make-curl-request checks a new one.
+  ;;
+  ;; The private fields are no keys, and (curl) exports neither: FAULT, #f,
+  ;; or a positive exact integer, a planted fault that makes the callable
+  ;; raise (planted-fault FAULT) at the chunk of that number, counting from
+  ;; 1, before its limit check (M3 plan, section 3.6); and FOLLOW, a
+  ;; boolean, FOLLOWLOCATION at 1 when #t, for the tests that follow a
+  ;; redirect, which nothing public may (M4 plan, section 3.2). Each is
+  ;; data, never a procedure: a request holds no caller code (ADR-0012,
+  ;; decision 4).
+  (define-record-type (curl-request new-curl-request curl-request?)
+    (fields (immutable url curl-request-url)
+            (immutable method curl-request-method)
+            (immutable headers curl-request-headers)
+            (immutable body curl-request-body)
+            (immutable user-agent curl-request-user-agent)
+            (immutable timeout-ms curl-request-timeout-ms)
+            (immutable connect-timeout-ms curl-request-connect-timeout-ms)
+            (immutable body-limit curl-request-body-limit)
+            (immutable ca-file curl-request-ca-file)
+            (immutable verify curl-request-verify)
+            (immutable fault curl-request-fault)
+            (immutable follow curl-request-follow)))
+
+  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any -> Request
+  ;; A request of these fields, checked as WHO by make-curl-request's rules,
+  ;; after the keys.
+  (define (checked-request who url method headers body user-agent timeout-ms
+                           connect-timeout-ms body-limit ca-file verify fault follow)
+    (define (wrong message irritant) (assertion-violation who message irritant))
+    (unless (string? url) (wrong "a URL is a string" url))
+    (unless (memq method request-methods)
+      (wrong "a method is get, head, post, put, patch or delete" method))
+    (unless (or (not body) (bytevector? body)) (wrong "a body is a bytevector or #f" body))
+    (unless (timeout? timeout-ms)
+      (wrong "a timeout is a positive exact integer a long holds, or #f" timeout-ms))
+    (unless (timeout? connect-timeout-ms)
+      (wrong "a connect timeout is a positive exact integer a long holds, or #f"
+             connect-timeout-ms))
+    (unless (or (not body-limit)
+                (and (integer? body-limit) (exact? body-limit) (<= 0 body-limit)
+                     (< body-limit body-limit-bound)))
+      (wrong "a body limit is an exact natural below 2^63 - 1, or #f" body-limit))
+    (unless (ca-file? ca-file)
+      (wrong "a CA file is a non-empty string, its path, or #f" ca-file))
+    (unless (boolean? verify) (wrong "verify is #t or #f" verify))
+    (unless (or (not fault) (and (integer? fault) (exact? fault) (positive? fault)))
+      (wrong "a fault is a positive exact integer, the chunk it raises at, or #f: a request holds no procedure"
+             fault))
+    (unless (boolean? follow) (wrong "follow is #t or #f" follow))
+    (when (and body (memq method '(get head)))
+      (refuse-field who 'body method 'body-not-allowed))
+    (snapshot who headers user-agent)
+    (ca-file-copy who ca-file)
+    (new-curl-request url method headers body user-agent timeout-ms connect-timeout-ms
+                      body-limit ca-file verify fault follow))
+
+  ;; request-like : Symbol Request (Listof (Pairof Symbol Any)) String Any Any -> Request
+  ;; REQUEST with SETTINGS' keys replaced, URL, FAULT and FOLLOW given, the
+  ;; rest kept, checked as WHO.
+  (define (request-like who request settings url fault follow)
+    (define (given key accessor)
+      (let ((hit (assq key settings))) (if hit (cdr hit) (accessor request))))
+    (checked-request who url
+                     (given 'method curl-request-method)
+                     (given 'headers curl-request-headers)
+                     (given 'body curl-request-body)
+                     (given 'user-agent curl-request-user-agent)
+                     (given 'timeout-ms curl-request-timeout-ms)
+                     (given 'connect-timeout-ms curl-request-connect-timeout-ms)
+                     (given 'body-limit curl-request-body-limit)
+                     (given 'ca-file curl-request-ca-file)
+                     (given 'verify curl-request-verify)
+                     fault follow))
+
+  ;; default-request : Request
+  ;; Every key at its default, for a URL nothing reads: what
+  ;; make-curl-request replaces keys in.
+  (define default-request
+    (new-curl-request "" 'get '() #f #f #f #f #f #f #t #f #f))
+
+  (define (make-curl-request url . plist)
+    (request-like 'make-curl-request default-request
+                  (request-settings 'make-curl-request plist) url #f #f))
+
+  (define (curl-request-with request . plist)
+    (unless (curl-request? request)
+      (assertion-violation 'curl-request-with "not a request" request))
+    (request-like 'curl-request-with request (request-settings 'curl-request-with plist)
+                  (curl-request-url request) (curl-request-fault request)
+                  (curl-request-follow request)))
+
+  ;; curl-request-with-fault : Request (U Positive-Integer #f) -> Request
+  ;; REQUEST with its private fault FAULT, the test seam's (M3 plan, section
+  ;; 3.6). (curl) does not export it.
+  (define (curl-request-with-fault request fault)
+    (unless (curl-request? request)
+      (assertion-violation 'curl-request-with-fault "not a request" request))
+    (request-like 'curl-request-with-fault request '() (curl-request-url request) fault
+                  (curl-request-follow request)))
+
+  ;; curl-request-following : Request -> Request
+  ;; REQUEST, following redirects: FOLLOWLOCATION at 1, for the tests of a
+  ;; followed redirect and of ADR-0003's redirect pin. Nothing public
+  ;; follows one: through a 301, 302 or 303, libcurl resends a custom
+  ;; method without its body (ADR-0023, amended 2026-10-26). (curl) does
+  ;; not export it.
+  (define (curl-request-following request)
+    (unless (curl-request? request)
+      (assertion-violation 'curl-request-following "not a request" request))
+    (request-like 'curl-request-following request '() (curl-request-url request)
+                  (curl-request-fault request) #t))
 
   ;; --- the response -----------------------------------------------------------------
 
-  ;; transfer-response? : Any -> Boolean
-  ;; transfer-response-status : Response -> Integer
-  ;; transfer-response-http-version : Response -> (U Symbol Integer #f)
-  ;; transfer-response-effective-url : Response -> (U String #f)
-  ;; transfer-response-headers : Response -> (Listof (Pairof String String))
-  ;; transfer-response-body : Response -> Bytevector
+  ;; curl-response? : Any -> Boolean
+  ;; curl-response-status : Response -> Integer
+  ;; curl-response-http-version : Response -> (U Symbol Integer #f)
+  ;; curl-response-effective-url : Response -> (U String #f)
+  ;; curl-response-headers : Response -> (Listof (Pairof String String))
+  ;; curl-response-body : Response -> Bytevector
+  ;; curl-response-timings : Response -> (Listof (Pairof Symbol Natural))
   ;; What a transfer answered: RESPONSE_CODE; HTTP_VERSION, by
   ;; http-version-symbol; EFFECTIVE_URL, read as UTF-8; every header of the
   ;; last request, CURLH_HEADER's, as Latin-1 strings in libcurl's order;
-  ;; and the body.
-  (define-record-type (transfer-response make-transfer-response transfer-response?)
-    (fields (immutable status transfer-response-status)
-            (immutable http-version transfer-response-http-version)
-            (immutable effective-url transfer-response-effective-url)
-            (immutable headers transfer-response-headers)
-            (immutable body transfer-response-body)))
+  ;; the body; and its timings, timing-infos' names in its order, each the
+  ;; microseconds from the transfer's start to that phase's end, as libcurl
+  ;; reports them (M4 plan, section 3.3).
+  (define-record-type (curl-response make-curl-response curl-response?)
+    (fields (immutable status curl-response-status)
+            (immutable http-version curl-response-http-version)
+            (immutable effective-url curl-response-effective-url)
+            (immutable headers curl-response-headers)
+            (immutable body curl-response-body)
+            (immutable timings curl-response-timings)))
+
+  ;; timing-infos : (Listof (Pairof Symbol Positive-Integer))
+  ;; Each timing a response carries, in its order, with the CURLINFO_ it is
+  ;; read from, a curl_off_t of microseconds: name-lookup, NAMELOOKUP_TIME_T;
+  ;; connect, CONNECT_TIME_T; tls-handshake, APPCONNECT_TIME_T, 0 without
+  ;; TLS; first-byte, STARTTRANSFER_TIME_T; total, TOTAL_TIME_T. On a
+  ;; success every libcurl measured reports them in that order (M4 plan,
+  ;; section 4.1), and a phase the transfer skipped as 0: on a connection
+  ;; reused, name-lookup, connect and tls-handshake are all 0 (8.20.0, the
+  ;; slice's review). tests/test-request.sps writes it out.
+  (define timing-infos
+    `((name-lookup . ,curlinfo-namelookup-time-t)
+      (connect . ,curlinfo-connect-time-t)
+      (tls-handshake . ,curlinfo-appconnect-time-t)
+      (first-byte . ,curlinfo-starttransfer-time-t)
+      (total . ,curlinfo-total-time-t)))
 
   ;; http-version-symbol : Integer -> (U Symbol Integer #f)
   ;; CURLINFO_HTTP_VERSION's answer N as a symbol: http/1.0, http/1.1,
@@ -446,13 +635,16 @@
                            (bytes->latin-1 text))))
                    (else (loop (+ i 1))))))))
 
-  ;; failure : Symbol (U Integer #f) (U String #f) (U Positive-Integer #f) Any -> Condition
-  ;; &curl-transfer-error for REASON, with CODE's strerror and the error
-  ;; buffer's text, read now, while the buffer lives.
-  (define (failure reason code option buffer recorded)
+  ;; failure : Symbol (U Integer #f) (U String #f) (U Positive-Integer #f) Any (U Natural #f)
+  ;;           -> Condition
+  ;; What a transfer that failed for REASON raises: the class of CODE, by
+  ;; make-classed-transfer-error's rule (ADR-0022, amended 2026-10-26), with
+  ;; CODE's strerror, the error buffer's text, read now, while the buffer
+  ;; lives, and REQUEST-SIZE, the bytes of request sent.
+  (define (failure reason code option buffer recorded request-size)
     (let ((strerror (and code (curl-easy-strerror code))))
-      (condition (make-curl-transfer-error reason code option strerror
-                                           (error-buffer-text buffer) recorded)
+      (condition (make-classed-transfer-error reason code option strerror
+                                              (error-buffer-text buffer) recorded request-size)
                  (make-who-condition 'curl-transfer)
                  (make-message-condition
                   (or strerror
@@ -465,17 +657,19 @@
                  (make-irritants-condition (if option (list option) '())))))
 
   ;; fail : Symbol (U Integer #f) (U String #f) (U Positive-Integer #f) Any -> Nothing
-  ;; Raises failure's condition.
+  ;; Raises failure's condition for a transfer refused while it was set up,
+  ;; before anything was sent: its request size is 0.
   (define (fail reason code option buffer recorded)
-    (raise (failure reason code option buffer recorded)))
+    (raise (failure reason code option buffer recorded 0)))
 
   ;; transfer-ended : (U 'cancelled 'stopped) -> Condition
   ;; The outcome of a transfer cancelled, or whose engine stopped, before
-  ;; it ended: &curl-transfer-error with that reason and no code.
+  ;; it ended: &curl-transfer-error with that reason, no code, and no
+  ;; request size: it is taken apart unread.
   (define (transfer-ended reason)
     (unless (memq reason '(cancelled stopped))
       (assertion-violation 'transfer-ended "a transfer ends early cancelled or stopped" reason))
-    (failure reason #f #f #f #f))
+    (failure reason #f #f #f #f #f))
 
   ;; --- options ----------------------------------------------------------------------
 
@@ -514,13 +708,19 @@
   ;; Each request field that sets options, with their names, (FIELD NAME
   ;; ...): the one place the transfer reads them from, and part of
   ;; owned-option-names, so a field's options are closed to the test seam by
-  ;; being a field's (ADR-0009, consequences). The TLS fields set two each,
-  ;; in the order tls-settings makes them: ca-file CAINFO, its path, then
-  ;; CAPATH, cleared; verify SSL_VERIFYPEER, then SSL_VERIFYHOST (ADR-0018).
+  ;; being a field's (ADR-0009, consequences). method sets NOBODY for head
+  ;; and CUSTOMREQUEST for put, patch and delete; body, POSTFIELDSIZE_LARGE
+  ;; then COPYPOSTFIELDS, in that order, since libcurl copies the size the
+  ;; first set. The TLS fields set two each, in the order tls-settings makes
+  ;; them: ca-file CAINFO, its path, then CAPATH, cleared; verify
+  ;; SSL_VERIFYPEER, then SSL_VERIFYHOST (ADR-0018). follow is the private
+  ;; field's (M4 plan, section 3.2).
   (define request-field-options
-    '((url "CURLU") (method "NOBODY") (headers "HTTPHEADER") (user-agent "USERAGENT")
-      (timeout-ms "TIMEOUT_MS") (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
-      (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST")))
+    '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST") (headers "HTTPHEADER")
+      (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS") (user-agent "USERAGENT")
+      (timeout-ms "TIMEOUT_MS") (connect-timeout-ms "CONNECTTIMEOUT_MS")
+      (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
+      (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (follow "FOLLOWLOCATION")))
 
   ;; field-options : Symbol -> (Listof String)
   ;; FIELD's options, in request-field-options' order.
@@ -535,20 +735,52 @@
         (assertion-violation 'field-option "this field sets more than one option" field))
       (car names)))
 
+  ;; proxy-tls-option-names : (Listof String)
+  ;; Every option that sets a proxy's TLS, in the options tables of the five
+  ;; libcurls the M4 plan measured, 7.85.0 to 8.23.0: each PROXY_SSL_* and
+  ;; PROXY_CA* option, and the rest of the PROXY_ TLS settings, which could
+  ;; loosen it too, its version, ciphers and TLS-SRP among them. A proxy's
+  ;; TLS stays libcurl's verified default until M7 (ADR-0024, amended
+  ;; 2026-10-26, decided by the maintainer).
+  (define proxy-tls-option-names
+    '("PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
+      "PROXY_CAINFO" "PROXY_CAINFO_BLOB" "PROXY_CAPATH" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
+      "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
+      "PROXY_SSLCERT" "PROXY_SSLCERT_BLOB" "PROXY_SSLCERTTYPE" "PROXY_SSLKEY" "PROXY_SSLKEY_BLOB"
+      "PROXY_SSLKEYTYPE" "PROXY_KEYPASSWD" "PROXY_TLSAUTH_TYPE" "PROXY_TLSAUTH_USERNAME"
+      "PROXY_TLSAUTH_PASSWORD"))
+
   ;; owned-option-names : (Listof String)
   ;; The options the test seam refuses, by name (ADR-0009, amended
-  ;; 2026-10-23, 2026-10-24 and 2026-10-25): those the transfer always sets,
-  ;; QUICK_EXIT among them where the libcurl knows it, and the protocol
-  ;; pins' deprecated bitmasks; then every option of each request
-  ;; field; then each owned setting's twin, an option with an id of its own
-  ;; that sets the same thing: the CA file's are CAINFO_BLOB, which adds a
-  ;; CA, and SSL_OPTIONS, whose NATIVE_CA adds the system store. They are
-  ;; compared by id, so an alias name is refused too.
+  ;; 2026-10-23 to 2026-10-26): those the transfer always sets, QUICK_EXIT
+  ;; among them where the libcurl knows it, and the protocol pins'
+  ;; deprecated bitmasks; then every option of each request field; then
+  ;; each owned setting's twin, an option with an id of its own that sets
+  ;; the same thing:
+  ;;   - the timeouts' and the body limit's: TIMEOUT, CONNECTTIMEOUT and
+  ;;     MAXFILESIZE, in seconds or as a long;
+  ;;   - the method's and the body's: HTTPGET, POST, PUT and UPLOAD, which
+  ;;     set the method; POSTFIELDS, POSTFIELDSIZE, HTTPPOST and MIMEPOST,
+  ;;     another body, size or form; INFILESIZE and INFILESIZE_LARGE, an
+  ;;     upload's size;
+  ;;   - the URL's: PORT, which replaces its port, and REQUEST_TARGET, its
+  ;;     target on the request line (the options tables, M4 slice 1);
+  ;;   - the body's and the response's, found by the slice's review: CRLF,
+  ;;     which rewrites each LF in what libcurl sends as CRLF, the body's too,
+  ;;     and HEADER, which hands the response's head to WRITEFUNCTION with
+  ;;     its body, against the body limit;
+  ;;   - the CA file's: CAINFO_BLOB, which adds a CA, and SSL_OPTIONS, whose
+  ;;     NATIVE_CA adds the system store;
+  ;; then proxy-tls-option-names. They are compared by id, so an alias name
+  ;; is refused too.
   (define owned-option-names
     (append '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS"
               "NOSIGNAL" "QUICK_EXIT" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER")
             (apply append (map cdr request-field-options))
-            '("TIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "UPLOAD" "PUT" "CAINFO_BLOB" "SSL_OPTIONS")))
+            '("TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "PUT" "UPLOAD"
+              "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE" "INFILESIZE_LARGE"
+              "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS")
+            proxy-tls-option-names))
 
   ;; pinned-options : (Listof (Pairof String (U String Integer)))
   ;; The settings every transfer makes, before its own: ADR-0003's protocol
@@ -848,12 +1080,13 @@
   ;; --- the plan, on the caller's thread -------------------------------------------------
 
   ;; A plan is what a submit checked: fresh copies of the request's URL,
-  ;; headers, user agent and CA file, its other fields, the test seam's
-  ;; settings, and its fault.
+  ;; headers, user agent, CA file and body, its other fields, the test
+  ;; seam's settings, and its private fields.
   (define-record-type plan
     (fields (immutable url) (immutable method) (immutable headers) (immutable agent)
-            (immutable timeout-ms) (immutable body-limit) (immutable ca-file)
-            (immutable verify) (immutable settings) (immutable fault)))
+            (immutable body) (immutable timeout-ms) (immutable connect-timeout-ms)
+            (immutable body-limit) (immutable ca-file) (immutable verify)
+            (immutable settings) (immutable fault) (immutable follow)))
 
   ;; prepare-transfer : Request (Listof (Pairof String Integer)) -> Plan
   ;; REQUEST's plan, with OPTIONS, the test seam's (NAME . VALUE) pairs,
@@ -862,20 +1095,58 @@
   ;; the headers and the user agent, the CA file's copy, OPTIONS, then the
   ;; URL's copy, parsed by call-with-parsed-url and checked by
   ;; require-http-scheme, its CURLU freed before this returns (ADR-0008,
-  ;; amended 2026-10-24). Each refusal raises here.
+  ;; amended 2026-10-24). Each refusal raises here. The body is copied, so
+  ;; the caller's bytevector may change once this returns (ADR-0023,
+  ;; decision 4); a request's method and the presence of its body cannot
+  ;; change, so body-not-allowed needs no second check.
   (define (prepare-transfer request options)
-    (unless (transfer-request? request)
-      (assertion-violation 'curl-engine-submit "not a transfer request" request))
-    (let* ((url (string-copy (transfer-request-url request)))
-           (fields (snapshot 'curl-engine-submit (transfer-request-headers request)
-                             (transfer-request-user-agent request)))
-           (ca-file (ca-file-copy 'curl-engine-submit (transfer-request-ca-file request)))
+    (unless (curl-request? request)
+      (assertion-violation 'curl-engine-submit "not a request" request))
+    (let* ((url (string-copy (curl-request-url request)))
+           (fields (snapshot 'curl-engine-submit (curl-request-headers request)
+                             (curl-request-user-agent request)))
+           (ca-file (ca-file-copy 'curl-engine-submit (curl-request-ca-file request)))
+           (body (let ((body (curl-request-body request))) (and body (bytevector-copy body))))
            (settings (checked-settings options)))
       (call-with-parsed-url url require-http-scheme)
-      (make-plan url (transfer-request-method request) (car fields) (cdr fields)
-                 (transfer-request-timeout-ms request) (transfer-request-body-limit request)
-                 ca-file (transfer-request-verify request) settings
-                 (transfer-request-fault request))))
+      (make-plan url (curl-request-method request) (car fields) (cdr fields) body
+                 (curl-request-timeout-ms request) (curl-request-connect-timeout-ms request)
+                 (curl-request-body-limit request) ca-file (curl-request-verify request)
+                 settings (curl-request-fault request) (curl-request-follow request))))
+
+  ;; sends-body? : Symbol (U Bytevector #f) -> Boolean
+  ;; Whether a transfer of METHOD with BODY sets the body's options: post,
+  ;; put and patch always, empty with no body, and delete with one alone
+  ;; (M4 plan, section 3.2).
+  (define (sends-body? method body)
+    (or (and (memq method '(post put patch)) #t)
+        (and (eq? method 'delete) (bytevector? body))))
+
+  ;; header-line : (Pairof String String) -> String
+  ;; "Name: value", or "Name;" for an empty value: libcurl's form for a
+  ;; header sent with no value, where "Name:" would remove it.
+  (define (header-line header)
+    (if (string=? (cdr header) "")
+        (string-append (car header) ";")
+        (string-append (car header) ": " (cdr header))))
+
+  ;; sent-header-lines : (Listof (Pairof String String)) Symbol (U Bytevector #f) -> (Listof String)
+  ;; The lines a transfer of METHOD and BODY hands HTTPHEADER, in order:
+  ;; header-line of each of HEADERS; then, when it sends a body, "Content-Type:"
+  ;; and "Expect:", each unless HEADERS name one of that name, in any case.
+  ;; "Name:" takes away libcurl's own header of that name, which it adds to
+  ;; every body, its form type, and past 1 MiB, its Expect, after which it
+  ;; waits a second for a server that never answers; a header the request
+  ;; names replaces libcurl's (measured on five libcurls, the M4 plan,
+  ;; section 4.1). tests/test-request.sps writes out its answers.
+  (define (sent-header-lines headers method body)
+    (define (named? name)
+      (exists (lambda (header) (string-ci=? (car header) name)) headers))
+    (append (map header-line headers)
+            (if (sends-body? method body)
+                (append (if (named? "Content-Type") '() '("Content-Type:"))
+                        (if (named? "Expect") '() '("Expect:")))
+                '())))
 
   ;; --- the transfer, on the engine's thread ---------------------------------------------
 
@@ -905,30 +1176,54 @@
     (let ((sink (live-transfer-sink live)))
       (if sink (reverse (sink-log sink)) '())))
 
-  ;; header-line : (Pairof String String) -> String
-  ;; "Name: value", or "Name;" for an empty value: libcurl's form for a
-  ;; header sent with no value, where "Name:" would remove it.
-  (define (header-line header)
-    (if (string=? (cdr header) "")
-        (string-append (car header) ";")
-        (string-append (car header) ": " (cdr header))))
+  ;; method-settings : Symbol (U Bytevector #f) -> (Listof (Pairof String (U Integer String Bytevector)))
+  ;; The settings METHOD and BODY make, in order, as data: NOBODY at 1 for
+  ;; head; CUSTOMREQUEST at the method's name, upcased, for put, patch and
+  ;; delete; then, when sends-body? says so, POSTFIELDSIZE_LARGE at the
+  ;; body's length and COPYPOSTFIELDS at the body, an empty one for #f. get
+  ;; makes none, and post none but the body's: libcurl's own POST.
+  ;; tests/test-request.sps reads each method's head and body as the origin
+  ;; received them.
+  (define (method-settings method body)
+    (let ((method-names (field-options 'method))
+          (body-names (field-options 'body)))
+      (append (case method
+                ((head) (list (cons (car method-names) 1)))
+                ((put) (list (cons (cadr method-names) "PUT")))
+                ((patch) (list (cons (cadr method-names) "PATCH")))
+                ((delete) (list (cons (cadr method-names) "DELETE")))
+                (else '()))
+              (if (sends-body? method body)
+                  (let ((bytes (or body (make-bytevector 0))))
+                    (list (cons (car body-names) (bytevector-length bytes))
+                          (cons (cadr body-names) bytes)))
+                  '()))))
 
   ;; set-transfer-options! : Positive-Integer Plan Positive-Integer Positive-Integer Natural Positive-Integer Boolean -> Void
   ;; Every setting PLAN's transfer makes on EASY, in order: the pins first,
-  ;; QUICK_EXIT among them as QUICK-EXIT says, then ERRORBUFFER at BUFFER, CURLU at URL, WRITEFUNCTION and
-  ;; WRITEDATA at KEY; and as the request asks, NOBODY for head, HTTPHEADER
-  ;; at HEADER-LIST, USERAGENT, TIMEOUT_MS and MAXFILESIZE_LARGE at the body
-  ;; limit plus one; then, always, tls-settings' for the plan's CA file and
-  ;; verification, through set-tls-options!; then the test seam's settings.
-  ;; It follows no redirect unless they say so.
+  ;; QUICK_EXIT among them as QUICK-EXIT says, then ERRORBUFFER at BUFFER,
+  ;; CURLU at URL, WRITEFUNCTION and WRITEDATA at KEY; then method-settings'
+  ;; for the plan's method and body, a string through a C string and the
+  ;; body through a counted copy, call-with-foreign-bytes'; and as the
+  ;; request asks, HTTPHEADER at HEADER-LIST, USERAGENT, TIMEOUT_MS,
+  ;; CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE at the body limit plus one; then,
+  ;; always, tls-settings' for the plan's CA file and verification, through
+  ;; set-tls-options!; then FOLLOWLOCATION at 1 for the private follow
+  ;; field; then the test seam's settings.
   (define (set-transfer-options! easy plan key buffer header-list url quick-exit)
     (set-pinned-options! easy buffer quick-exit)
     (set-option! easy "ERRORBUFFER" buffer #f)
     (set-option! easy (field-option 'url) url buffer)
     (set-option! easy "WRITEFUNCTION" write-body-entry buffer)
     (set-option! easy "WRITEDATA" key buffer)
-    (when (eq? (plan-method plan) 'head)
-      (set-option! easy (field-option 'method) 1 buffer))
+    (for-each (lambda (setting)
+                (let ((value (cdr setting)))
+                  (cond ((string? value) (set-string-option! easy (car setting) value buffer))
+                        ((bytevector? value)
+                         (call-with-foreign-bytes value
+                           (lambda (address) (set-option! easy (car setting) address buffer))))
+                        (else (set-option! easy (car setting) value buffer)))))
+              (method-settings (plan-method plan) (plan-body plan)))
     (unless (eqv? header-list 0)
       (set-option! easy (field-option 'headers) header-list buffer))
     (let ((agent (plan-agent plan)))
@@ -939,10 +1234,15 @@
     (let ((timeout (plan-timeout-ms plan)))
       (when timeout
         (set-option! easy (field-option 'timeout-ms) timeout buffer)))
+    (let ((timeout (plan-connect-timeout-ms plan)))
+      (when timeout
+        (set-option! easy (field-option 'connect-timeout-ms) timeout buffer)))
     (let ((limit (plan-body-limit plan)))
       (when limit
         (set-option! easy (field-option 'body-limit) (+ limit 1) buffer)))
     (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
+    (when (plan-follow plan)
+      (set-option! easy (field-option 'follow) 1 buffer))
     (for-each (lambda (setting)
                 (set-option! easy (car setting) (cdr setting) buffer))
               (plan-settings plan)))
@@ -975,8 +1275,8 @@
         (copy-bytevector->foreign! (make-bytevector curl-error-size 0) 0
                                    (live-transfer-buffer live) curl-error-size)
         (for-each
-         (lambda (header)
-           (call-with-latin-1-c-string (header-line header)
+         (lambda (line)
+           (call-with-latin-1-c-string line
              (lambda (address)
                ;; The list and its record, where free-transfer! frees it, in
                ;; one critical section.
@@ -984,9 +1284,9 @@
                 (let ((appended (curl-slist-append (live-transfer-header-list live) address)))
                   (when (eqv? appended 0)
                     (error 'start-transfer! "curl_slist_append returned NULL: no memory for a header"
-                           (car header)))
+                           line))
                   (live-transfer-header-list-set! live appended))))))
-         (plan-headers plan))
+         (sent-header-lines (plan-headers plan) (plan-method plan) (plan-body plan)))
         (critical-section
          (let ((easy (curl-easy-init)))
            (when (eqv? easy 0) (fail 'no-handle #f #f #f #f))
@@ -1052,6 +1352,14 @@
         (error 'finish-transfer "curl_easy_getinfo refused a CURLINFO" info code))
       value))
 
+  ;; info-off-t : Positive-Integer Integer -> Integer
+  ;; The CURLINFO curl_off_t INFO, through native's off_t reader.
+  (define (info-off-t easy info)
+    (let-values (((code value) (curl-easy-getinfo-off-t easy info)))
+      (unless (eqv? code curle-ok)
+        (error 'finish-transfer "curl_easy_getinfo refused a CURLINFO" info code))
+      value))
+
   ;; info-text : Positive-Integer Integer -> (U String #f)
   ;; The CURLINFO string INFO, read as UTF-8.
   (define (info-text easy info)
@@ -1088,9 +1396,11 @@
   ;; curl_multi_info_read gave for it, read on this thread, the engine's,
   ;; before anything is freed: what the callable recorded, as a
   ;; &curl-transfer-error with that reason, the raised object for
-  ;; callback-raised; else, for a CODE but CURLE_OK, perform-failed; else
-  ;; the response. The answer is data: the engine completes the token with
-  ;; it, and an awaiting thread raises a condition.
+  ;; callback-raised; else, for a CODE but CURLE_OK, perform-failed; each
+  ;; failure of its class, with its request size, REQUEST_SIZE; else the
+  ;; response, with its timings, timing-infos', each read as a curl_off_t.
+  ;; The answer is data: the engine completes the token with it, and an
+  ;; awaiting thread raises a condition.
   (define (finish-transfer live code)
     (let* ((sink (live-transfer-sink live))
            (buffer (live-transfer-buffer live))
@@ -1099,13 +1409,16 @@
       (cond
         (recorded
          (failure (car recorded) code #f buffer
-                  (and (eq? (car recorded) 'callback-raised) (cdr recorded))))
+                  (and (eq? (car recorded) 'callback-raised) (cdr recorded))
+                  (info-long easy curlinfo-request-size)))
         ((not (eqv? code curle-ok))
-         (failure 'perform-failed code #f buffer #f))
+         (failure 'perform-failed code #f buffer #f (info-long easy curlinfo-request-size)))
         (else
          ;; let*: what each part reads, it reads in this order.
          (let* ((status (info-long easy curlinfo-response-code))
                 (version (http-version-symbol (info-long easy curlinfo-http-version)))
                 (effective (info-text easy curlinfo-effective-url))
-                (headers (response-headers easy)))
-           (make-transfer-response status version effective headers (sink-body sink))))))))
+                (headers (response-headers easy))
+                (timings (map (lambda (timing) (cons (car timing) (info-off-t easy (cdr timing))))
+                              timing-infos)))
+           (make-curl-response status version effective headers (sink-body sink) timings)))))))

@@ -805,7 +805,7 @@
     (environment '(curl))
     (list-sort symbol<? (library-exports '(curl)))))
 
-(test-equal "(curl) exports loaded-libcurl, the info record's accessors and the conditions"
+(test-equal "(curl) exports loaded-libcurl, the info record's accessors, the request and the response, and the conditions, a failed transfer's classes among them; none of their constructors, nor the request's private fields"
   (list-sort symbol<?
              '(loaded-libcurl
                libcurl-info? libcurl-info-path libcurl-info-source libcurl-info-version
@@ -818,7 +818,26 @@
                curl-library-unavailable-candidates curl-library-unavailable-library
                curl-library-unavailable-reasons
                &curl-wrong-thread curl-wrong-thread?
-               curl-wrong-thread-who curl-wrong-thread-expected curl-wrong-thread-actual))
+               curl-wrong-thread-who curl-wrong-thread-expected curl-wrong-thread-actual
+               make-curl-request curl-request-with curl-request?
+               curl-request-url curl-request-method curl-request-headers curl-request-body
+               curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
+               curl-request-body-limit curl-request-ca-file curl-request-verify
+               curl-response? curl-response-status curl-response-http-version
+               curl-response-effective-url curl-response-headers curl-response-body
+               curl-response-timings
+               &curl-embedded-nul curl-embedded-nul? curl-embedded-nul-string
+               &curl-url-error curl-url-error? curl-url-error-input curl-url-error-reason
+               curl-url-error-code curl-url-error-message
+               &curl-request-error curl-request-error? curl-request-error-field
+               curl-request-error-value curl-request-error-reason curl-request-error-reasons
+               &curl-transfer-error curl-transfer-error? curl-transfer-error-reason
+               curl-transfer-error-code curl-transfer-error-option curl-transfer-error-strerror
+               curl-transfer-error-error-buffer curl-transfer-error-recorded
+               curl-transfer-error-request-size curl-transfer-error-reasons
+               &curl-timeout curl-timeout? &curl-connect-error curl-connect-error?
+               &curl-send-receive-error curl-send-receive-error? &curl-tls-error curl-tls-error?
+               &curl-protocol-error curl-protocol-error? &curl-too-large curl-too-large?))
   curl-exports)
 
 ;; Re-exported, not redefined: each is (curl private conditions)'s own, so
@@ -830,9 +849,20 @@
     curl-library-unavailable-library
     curl-library-unavailable-reasons curl-wrong-thread? curl-wrong-thread-who
     curl-wrong-thread-expected curl-wrong-thread-actual
+    curl-embedded-nul? curl-embedded-nul-string curl-url-error? curl-url-error-reason
+    curl-request-error? curl-request-error-reason curl-request-error-reasons
+    curl-transfer-error? curl-transfer-error-reason curl-transfer-error-request-size
+    curl-timeout? curl-connect-error? curl-send-receive-error? curl-tls-error?
+    curl-protocol-error? curl-too-large?
     (record-type-descriptor &curl-error)
     (record-type-descriptor &curl-library-unavailable)
-    (record-type-descriptor &curl-wrong-thread)))
+    (record-type-descriptor &curl-wrong-thread)
+    (record-type-descriptor &curl-embedded-nul)
+    (record-type-descriptor &curl-url-error)
+    (record-type-descriptor &curl-request-error)
+    (record-type-descriptor &curl-transfer-error)
+    (record-type-descriptor &curl-timeout)
+    (record-type-descriptor &curl-too-large)))
 
 (test-equal "(curl)'s conditions are (curl private conditions)'s own"
   (map (lambda (form) 'same) re-exported)

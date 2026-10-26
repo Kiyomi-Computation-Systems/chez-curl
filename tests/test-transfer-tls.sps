@@ -218,8 +218,8 @@
 (define (request target . options)
   (let ((given (lambda (key default)
                  (let ((at (memq key options))) (if at (cadr at) default)))))
-    (make-transfer-request target 'get '() #f default-timeout #f
-                           (given 'ca-file #f) (given 'verify #t) #f)))
+    (make-curl-request target 'timeout-ms default-timeout
+                       'ca-file (given 'ca-file #f) 'verify (given 'verify #t))))
 
 ;; answer-of : (-> Response) -> Answer
 ;; What THUNK's transfer answers, whole: (response STATUS VERSION HEADERS
@@ -233,9 +233,9 @@
              (list 'request-refused (curl-request-error-field e) (curl-request-error-reason e)))
             (#t (list 'raised (describe e))))
     (let ((r (thunk)))
-      (list 'response (transfer-response-status r) (transfer-response-http-version r)
-            (map (lambda (h) (list (car h) (cdr h))) (transfer-response-headers r))
-            (latin-1 (transfer-response-body r))))))
+      (list 'response (curl-response-status r) (curl-response-http-version r)
+            (map (lambda (h) (list (car h) (cdr h))) (curl-response-headers r))
+            (latin-1 (curl-response-body r))))))
 
 ;; with-counts : Any -> (List Any (Listof (Pairof Symbol Natural)))
 ;; ANSWER, and the native counts once it was answered.
@@ -405,11 +405,11 @@
 (define nul-paths
   (append (map with-nul-at (iota-from 0 (+ (string-length a-path) 1))) (list (string #\nul))))
 
-(test-equal "a CA file with U+0000 at each of its places, and alone, is refused by make-transfer-request as embedded-nul, naming ca-file and the path, with nothing native at the raise"
+(test-equal "a CA file with U+0000 at each of its places, and alone, is refused by make-curl-request as embedded-nul, naming ca-file and the path, with nothing native at the raise"
   (map (lambda (path) (list (list 'request-refused 'ca-file path 'embedded-nul) running-counts running-counts))
        nul-paths)
   (map (lambda (path)
-         (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '() #f #f #f path #t #f))))
+         (refusal (lambda () (make-curl-request "http://127.0.0.1:1/" 'ca-file path))))
        nul-paths))
 
 ;; set-nul-at : Natural -> String
@@ -422,17 +422,17 @@
        (iota-from 0 (string-length a-path)))
   (map (lambda (i)
          (let* ((path (string-copy a-path))
-                (r (make-transfer-request "http://127.0.0.1:1/" 'get '() #f #f #f path #t #f)))
+                (r (make-curl-request "http://127.0.0.1:1/" 'ca-file path)))
            (string-set! path i #\nul)
            (refusal (lambda () (curl-engine-submit engine r)))))
        (iota-from 0 (string-length a-path))))
 
-(test-equal "wrong types are assertion violations from make-transfer-request, with nothing native made: a CA file that is a number, the empty string, a symbol, #t or a list; verification that is 1, 0, a symbol, a string or the empty list"
-  (map (lambda (i) (list '(assertion-violation make-transfer-request) running-counts running-counts))
+(test-equal "wrong types are assertion violations from make-curl-request, with nothing native made: a CA file that is a number, the empty string, a symbol, #t or a list; verification that is 1, 0, a symbol, a string or the empty list"
+  (map (lambda (i) (list '(assertion-violation make-curl-request) running-counts running-counts))
        (iota-from 0 10))
   (map (lambda (fields)
-         (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '() #f #f #f
-                                                    (car fields) (cadr fields) #f))))
+         (refusal (lambda () (make-curl-request "http://127.0.0.1:1/"
+                                                'ca-file (car fields) 'verify (cadr fields)))))
        '((1 #t) ("" #t) (ca.pem #t) (#t #t) (("ca.pem") #t)
          ("/x/ca.pem" 1) ("/x/ca.pem" 0) ("/x/ca.pem" yes) ("/x/ca.pem" "true") ("/x/ca.pem" ()))))
 
@@ -441,8 +441,8 @@
   (apply append
          (map (lambda (ca-file)
                 (map (lambda (verify)
-                       (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '() #f #f #f
-                                                                       ca-file verify #f)))))
+                       (car (refusal (lambda () (make-curl-request "http://127.0.0.1:1/"
+                                                                   'ca-file ca-file 'verify verify)))))
                      '(#t #f)))
               (list #f "c" "certs/ca.pem"
                     (string #\/ #\a #\return #\b #\newline #\c #\tab (integer->char #xE9)
@@ -451,9 +451,9 @@
 (test-equal "a request's CA file and verification read back as given: the caller's very string, and #f"
   '(the-string verify-off)
   (let* ((path (string-copy "/x/ca.pem"))
-         (r (make-transfer-request "http://127.0.0.1:1/" 'get '() #f #f #f path #f #f)))
-    (list (if (eq? (transfer-request-ca-file r) path) 'the-string (transfer-request-ca-file r))
-          (if (eq? (transfer-request-verify r) #f) 'verify-off (transfer-request-verify r)))))
+         (r (make-curl-request "http://127.0.0.1:1/" 'ca-file path 'verify #f)))
+    (list (if (eq? (curl-request-ca-file r) path) 'the-string (curl-request-ca-file r))
+          (if (eq? (curl-request-verify r) #f) 'verify-off (curl-request-verify r)))))
 
 ;; --- the settings, as data ---------------------------------------------------------------
 
@@ -619,33 +619,34 @@
     (if d (cdr (or (assq 'fields (cddr d)) '(fields no-fields))) (list 'no-plan-record transfer-library))))
 
 ;; The way from a request to set-tls-options!: prepare-transfer copies the
-;; CA file, on the caller's thread, into the plan's seventh field, and the
-;; verification into its eighth; set-transfer-options! hands set-tls-options!
+;; CA file, on the caller's thread, into the plan's ninth field, and the
+;; verification into its tenth; set-transfer-options! hands set-tls-options!
 ;; those two fields. A plan handed the caller's own string would be sent
 ;; whatever another thread made it after the check.
-(test-equal "prepare-transfer hands the plan its snapshot: its let* binds ca-file to (ca-file-copy 'curl-engine-submit (transfer-request-ca-file request)), make-plan takes ca-file and (transfer-request-verify request) as its seventh and eighth arguments, the plan's seventh and eighth fields are ca-file and verify, and ca-file stands twice in prepare-transfer, that binding and that argument"
-  '((ca-file (ca-file-copy 'curl-engine-submit (transfer-request-ca-file request)))
-    (ca-file (transfer-request-verify request))
+(test-equal "prepare-transfer hands the plan its snapshot: its let* binds ca-file to (ca-file-copy 'curl-engine-submit (curl-request-ca-file request)), make-plan takes ca-file and (curl-request-verify request) as its ninth and tenth arguments, the plan's ninth and tenth fields are ca-file and verify, and ca-file stands twice in prepare-transfer, that binding and that argument"
+  '((ca-file (ca-file-copy 'curl-engine-submit (curl-request-ca-file request)))
+    (ca-file (curl-request-verify request))
     ((immutable ca-file) (immutable verify))
     2)
   (let* ((d (transfer-definition 'prepare-transfer))
          (bindings (or (let*-bindings d) '()))
          (made (form-headed 'make-plan d)))
     (list (assq 'ca-file bindings)
-          (if (and made (> (length made) 8)) (list (list-ref made 7) (list-ref made 8)) (list 'make-plan made))
-          (if (and (list? plan-fields) (> (length plan-fields) 7))
-              (list (list-ref plan-fields 6) (list-ref plan-fields 7))
+          (if (and made (> (length made) 10)) (list (list-ref made 9) (list-ref made 10)) (list 'make-plan made))
+          (if (and (list? plan-fields) (> (length plan-fields) 9))
+              (list (list-ref plan-fields 8) (list-ref plan-fields 9))
               plan-fields)
           (symbol-count 'ca-file d))))
 
 ;; form-kind : Any -> Symbol
 ;; A form of set-transfer-options!, by what it does: pins, the pins' call;
 ;; tls, set-tls-options!'s, handed the plan's CA file and verification;
-;; seam, the loop over the test seam's settings; else request, one of the
-;; request's other settings.
+;; follow, the private follow field's setting; seam, the loop over the test
+;; seam's settings; else request, one of the request's other settings.
 (define (form-kind form)
   (cond ((equal? form '(set-pinned-options! easy buffer quick-exit)) 'pins)
         ((equal? form '(set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)) 'tls)
+        ((holds? form '(plan-follow plan)) 'follow)
         ((holds? form '(plan-settings plan)) 'seam)
         (else 'request)))
 
@@ -655,18 +656,19 @@
   (fold-right (lambda (k found) (if (and (pair? found) (eq? (car found) k)) found (cons k found)))
               '() kinds))
 
-(test-equal "set-transfer-options!, form by form: the pins first, then the request's other settings, then set-tls-options! once, as (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer), then the test seam's settings; and set-tls-options! stands twice in transfer.sls, its definition and that call"
-  '((pins request tls seam) 2)
+(test-equal "set-transfer-options!, form by form: the pins first, then the request's other settings, then set-tls-options! once, as (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer), then the private follow field's setting, then the test seam's settings; and set-tls-options! stands twice in transfer.sls, its definition and that call"
+  '((pins request tls follow seam) 2)
   (let ((d (transfer-definition 'set-transfer-options!)))
     (if (and (list? d) (eq? (car d) 'define))
         (list (runs (map form-kind (cddr d))) (symbol-count 'set-tls-options! transfer-library))
         (list 'no-definition d))))
 
 (test-equal "the form reader: kinds by form, and a run of one kind written once"
-  '(pins request tls seam)
+  '(pins request tls follow seam)
   (runs (map form-kind '((set-pinned-options! easy buffer quick-exit) (set-option! easy "A" 1 buffer)
                          (when x (set-option! easy "B" 2 buffer))
                          (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
+                         (when (plan-follow plan) (set-option! easy "C" 1 buffer))
                          (for-each f (plan-settings plan))))))
 
 ;; tls-names : (Listof String)
@@ -892,11 +894,11 @@
   ;; --- a setopt libcurl refuses: a string past CURL_MAX_INPUT_LENGTH,
   ;; 8000000 bytes, is CURLE_BAD_FUNCTION_ARGUMENT on all four recorded
   ;; Linux libcurls (measured in M2 slice 3's review)
-  (test-equal "a CA file of 8000001 bytes, past libcurl's string limit of 8000000, is refused by curl_easy_setopt: setopt-failed, 43, CURLE_BAD_FUNCTION_ARGUMENT, naming CAINFO, and the counts back to the engine's alone"
-    (list '(setopt-failed 43 "CAINFO") running-counts)
+  (test-equal "a CA file of 8000001 bytes, past libcurl's string limit of 8000000, is refused by curl_easy_setopt: setopt-failed, 43, CURLE_BAD_FUNCTION_ARGUMENT, naming CAINFO, with a request size of 0, and the counts back to the engine's alone"
+    (list '(setopt-failed 43 "CAINFO" 0) running-counts)
     (list (guard (e ((curl-transfer-error? e)
                      (list (curl-transfer-error-reason e) (curl-transfer-error-code e)
-                           (curl-transfer-error-option e)))
+                           (curl-transfer-error-option e) (curl-transfer-error-request-size e)))
                     (#t (list 'raised (describe e))))
             (perform (request (url-of o 'https "/status/200")
                               'ca-file (string-append "/" (make-string 8000000 #\a))))

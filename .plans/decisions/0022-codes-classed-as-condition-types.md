@@ -1,6 +1,6 @@
 # ADR-0022: libcurl's codes are classed as condition types
 
-- **Status:** Accepted; amended 2026-10-26: after the plan's review
+- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: a failure carries its request size, and the table as built (M4 slice 1)
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, what a failed transfer raises, from M4
 - **Settles:** the brief's "error taxonomy mapping `CURLE_*` to conditions" (§8, M4); the
@@ -115,3 +115,58 @@ classes by code, stands. Revised:
 - **A class alone does not say whether a request was sent,** which M5's retry policy needs: 28
   covers a connect and a whole transfer. So a failed transfer's condition carries the timings
   the response would have, as far as the transfer got (the M4 plan, §3.3).
+
+## Amendment, 2026-10-26: a failure carries its request size, not its timings, and the table as built (M4 slice 1)
+
+The amendment above had a failed transfer carry its timings, so that M5's retry policy could
+tell whether a request was sent. M4 slice 1 measured them first
+([research](../research/m4/slice1/)): a C probe read the six `*_TIME_T` infos, as `curl_off_t`,
+with `CURLINFO_REQUEST_SIZE` and `CURLINFO_HEADER_SIZE`, against the test origin, on 7.85.0,
+Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, Guix's 8.20.0 and 8.23.0.
+
+- **On a failure, the timings move with the version.** For a connect that was refused,
+  8.20.0 reports a total of 0, 7.85.0 and 8.5.0 the time it took, and 8.23.0 fills
+  pretransfer and starttransfer too, 95 µs, though nothing was sent. For a TLS handshake the
+  server never answered, ended by the connect timeout, 8.23.0's pretransfer is 301 ms, and
+  8.20.0 reports every timing but the name lookup 0. For a server that closed before answering, 52, starttransfer
+  is set on 7.85.0 and 8.5.0 and 0 on 8.20.0 and 8.23.0.
+- **`CURLINFO_REQUEST_SIZE` says it, on all five alike.** It is 0 on every failure that sent
+  nothing: a refused connect, a name or a proxy that did not resolve, a proxy that refused, a
+  TLS failure, 60 or 77, and a stalled handshake. Once the request is sent it is the head's
+  length exactly, 75 bytes for `/raw/stall-before-head`, whether the transfer then timed out,
+  got nothing, 52, or broke off, 18 and 56.
+- **On a success, the timings agree:** every libcurl reports namelookup, connect, appconnect
+  (0 over plaintext), pretransfer, starttransfer and total in that order, and a pause of
+  300 ms mid-body puts total at least 300 ms past starttransfer.
+
+**Decided by the maintainer, 2026-10-26:** a failed transfer's condition carries its request
+size, `CURLINFO_REQUEST_SIZE`, the bytes of request libcurl sent, 0 when it sent none, and no
+timings. M5's retry policy reads it to tell whether a request was sent. The timings stay on the
+response alone.
+
+**The table, settled as built.** Slice 1 read curl's description of every code in 8.23.0's
+`libcurl-errors` against the plan's table (§3.4), and kept it whole. One note: curl describes 1,
+`CURLE_UNSUPPORTED_PROTOCOL`, as a protocol this libcurl does not support. A submit refuses
+every scheme but `http` and `https` (ADR-0008), so libcurl answers 1 only for a reply it cannot
+speak, an HTTP/0.9 one or a bad status line, and 1 stays a protocol error. `(curl private
+conditions)` holds the table, `curl-code-classes`, keyed by the constants' names, and
+`make-classed-transfer-error` the reasons' rule; each class's constructor refuses a reason, or a
+code, it does not take. `test-conditions` writes out every code from 0 to 101, and 102 and 999;
+`test-transfer` derives each answer's class through a table of its own.
+
+**After the slice's review** (Opus, read-only), which predicted, from libcurl's source, a
+failure the `current` lane then showed:
+- **The request size is the sum over every attempt libcurl made, the body's bytes among
+  them.** The measurement above used a fresh handle per transfer. Through one engine, curl
+  8.23.0 reused a raw-face connection that had gone back to its pool dead, sent the head on
+  it, then again on a fresh one, and reported 150 for a 75-byte head
+  ([`current-lane-request-size.log`](../research/m4/slice1/results/current-lane-request-size.log)).
+  `Curl_initinfo`, which resets it, runs once per transfer, and every send adds to it (the
+  review's reading of 8.23.0's `transfer.c`). On 8.20.0 a POST of 5 bytes that timed out
+  before any answer reported 100, its 95-byte head and its body, and one of 100,000 bytes
+  100,100 ([`review-checks-guix-8.20.0.log`](../research/m4/slice1/results/review-checks-guix-8.20.0.log)).
+  So it is 0 exactly when nothing was sent, which is what M5's retry policy reads, and no more:
+  not the head's length, nor the bytes the server got. `test-request` runs each request-size
+  check on an engine of its own, its pool empty.
+- **On a connection reused, the timings of the phases it skipped are 0:** a second GET over one
+  https connection reported name-lookup, connect and tls-handshake 0, on 8.20.0 (the same log).

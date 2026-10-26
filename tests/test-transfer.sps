@@ -18,6 +18,15 @@
 ;;;     for the scenarios that vary. A libcurl with no row fails, and the
 ;;;     suite prints the row it would need on the error port.
 ;;;
+;;; Each answer that raises a &curl-transfer-error, a shared answer's, this
+;;; libcurl's row's or a test's own, is also asserted of its class
+;;; (ADR-0022; M4 plan, section 3.4): the rows stay codes, and the suite
+;;; derives each one's class through a table of its own, code-classes, and
+;;; the rule for reasons written out beside it, then asserts the raised
+;;; condition is of that class, by the six predicates, and of no other. A
+;;; cancelled and a stopped transfer, and a refusal while a transfer was
+;;; set up, are of none.
+;;;
 ;;; Then what the binding itself does:
 ;;;
 ;;;   - the setopt bindings, each observed in a transfer (ADR-0001's FFI
@@ -43,8 +52,10 @@
 ;;;     narrowed (amended 2026-10-23): long, enumerated-value and off_t
 ;;;     options alone, none the transfer owns, compared by id, the TLS
 ;;;     fields' four and the CA file's twins written out (amended
-;;;     2026-10-24), each refused at submit; through it, the last request's
-;;;     headers after a redirect followed, and the redirect pin observed;
+;;;     2026-10-24), each refused at submit, FOLLOWLOCATION among them;
+;;;     through the private follow field, curl-request-following, the last
+;;;     request's headers after a redirect followed, and the redirect pin
+;;;     observed;
 ;;;   - the request's snapshot, taken at submit: a request changed after it
 ;;;     was made is refused there, in prepare-transfer's order, and a value
 ;;;     another thread changes is sent whole or refused, never otherwise;
@@ -193,14 +204,17 @@
 ;; A request for TARGET with the suite's defaults: a GET, no headers, no
 ;; user agent, default-timeout, no body limit, libcurl's system store,
 ;; verification on, and no fault. OPTIONS are keyword and value: method,
-;; headers, user-agent, timeout, limit, ca-file, verify, fault.
+;; headers, user-agent, timeout, limit, ca-file, verify, fault; a fault is
+;; set by the private curl-request-with-fault.
 (define (request target . options)
-  (let ((given (lambda (key default)
-                 (let ((at (memq key options))) (if at (cadr at) default)))))
-    (make-transfer-request target (given 'method 'get) (given 'headers '())
-                           (given 'user-agent #f) (given 'timeout default-timeout)
-                           (given 'limit #f) (given 'ca-file #f) (given 'verify #t)
-                           (given 'fault #f))))
+  (let* ((given (lambda (key default)
+                  (let ((at (memq key options))) (if at (cadr at) default))))
+         (r (make-curl-request target 'method (given 'method 'get) 'headers (given 'headers '())
+                               'user-agent (given 'user-agent #f)
+                               'timeout-ms (given 'timeout default-timeout)
+                               'body-limit (given 'limit #f) 'ca-file (given 'ca-file #f)
+                               'verify (given 'verify #t))))
+    (if (given 'fault #f) (curl-request-with-fault r (given 'fault #f)) r)))
 
 ;; await-bound-ms : Positive-Integer
 ;; The longest this suite awaits a token: past every transfer's own
@@ -263,9 +277,97 @@
              (list 'url-refused (curl-url-error-reason e) (curl-url-error-code e)))
             (#t (list 'raised (describe e))))
     (let ((r (thunk)))
-      (list 'response (transfer-response-status r) (transfer-response-http-version r)
-            (map (lambda (h) (list (car h) (cdr h))) (transfer-response-headers r))
-            (latin-1 (transfer-response-body r))))))
+      (list 'response (curl-response-status r) (curl-response-http-version r)
+            (map (lambda (h) (list (car h) (cdr h))) (curl-response-headers r))
+            (latin-1 (curl-response-body r))))))
+
+;; --- the classes (ADR-0022), by the suite's own table ------------------------------------
+
+;; code-classes : (Listof (Pairof Natural Symbol))
+;; Each CURLcode a transfer in this suite answers, in a shared answer, a
+;; version row of any libcurl, or a test's own, with the class ADR-0022
+;; gives it, none for a code no class names: written out here, never read
+;; from the library, whose table is the thing checked. A perform-failed code
+;; with no row here is (no-row CODE), which no raise matches.
+(define code-classes
+  '((1 . protocol)        ; CURLE_UNSUPPORTED_PROTOCOL: bad-status-line, http09, the redirect pin, bad-status-code to 8.7.1
+    (8 . protocol)        ; CURLE_WEIRD_SERVER_REPLY: header-no-colon, nul-in-header, conflicting-content-length from 8.20.0
+    (18 . send-receive)   ; CURLE_PARTIAL_FILE: short-body
+    (23 . none)           ; CURLE_WRITE_ERROR: the callable's answer, for body-limit and callback-raised
+    (27 . none)           ; CURLE_OUT_OF_MEMORY: big-header past CURL_MAX_HTTP_HEADER on 7.85.0 and 8.5.0
+    (28 . timeout)        ; CURLE_OPERATION_TIMEDOUT: TIMEOUT_MS
+    (43 . none)           ; CURLE_BAD_FUNCTION_ARGUMENT: setopt-failed
+    (52 . send-receive)   ; CURLE_GOT_NOTHING: close-before-response
+    (56 . send-receive)   ; CURLE_RECV_ERROR: the resets, bad-chunk-size, many-headers on 8.5.0 and 8.7.1
+    (63 . too-large)      ; CURLE_FILESIZE_EXCEEDED: MAXFILESIZE_LARGE below a Content-Length
+    (100 . too-large)))   ; CURLE_TOO_LARGE: big-header from 8.7.1, many-headers from 8.20.0
+
+;; table-class : Symbol (U Integer #f) -> Any
+;; The class a failure of REASON and CODE is raised as, by the suite's
+;; table and ADR-0022's rule for reasons, written out: body-limit,
+;; too-large, whatever its code; perform-failed, its code's row in
+;; code-classes, or (no-row CODE); every other reason, none.
+(define (table-class reason code)
+  (case reason
+    ((body-limit) 'too-large)
+    ((perform-failed) (let ((row (assv code code-classes))) (if row (cdr row) (list 'no-row code))))
+    (else 'none)))
+
+;; class-predicates : (Listof (Pairof Symbol (Any -> Boolean)))
+;; Each class, by its name in code-classes, with its predicate.
+(define class-predicates
+  (list (cons 'timeout curl-timeout?) (cons 'connect curl-connect-error?)
+        (cons 'send-receive curl-send-receive-error?) (cons 'tls curl-tls-error?)
+        (cons 'protocol curl-protocol-error?) (cons 'too-large curl-too-large?)))
+
+;; class-of : Any -> Any
+;; The class E was raised as, by the six predicates: the name of the one
+;; that holds; none when none holds; (several CLASS ...) when more than one
+;; does.
+(define (class-of e)
+  (let ((held (map car (filter (lambda (p) ((cdr p) e)) class-predicates))))
+    (cond ((null? held) 'none)
+          ((null? (cdr held)) (car held))
+          (else (cons 'several held)))))
+
+;; classing : &curl-transfer-error -> (List Symbol (U Integer #f) Any)
+;; E as (REASON CODE CLASS), CLASS by class-of.
+(define (classing e)
+  (list (curl-transfer-error-reason e) (curl-transfer-error-code e) (class-of e)))
+
+;; refused-answer? : Any -> Boolean
+;; ANSWER is (refused REASON CODE ...): a &curl-transfer-error's.
+(define (refused-answer? answer)
+  (and (list? answer) (>= (length answer) 3) (eq? (car answer) 'refused)))
+
+;; expected-classing : Answer -> Any
+;; What a transfer that answers ANSWER raises, by the suite's table:
+;; (REASON CODE CLASS) for (refused REASON CODE ...), CLASS table-class's;
+;; no-transfer-error for any other answer.
+(define (expected-classing answer)
+  (if (refused-answer? answer)
+      (list (cadr answer) (caddr answer) (table-class (cadr answer) (caddr answer)))
+      'no-transfer-error))
+
+;; classed : ((-> Any) -> Any) (-> Any) -> (List Any Any)
+;; What NAME-ANSWER, answer-of or error-text-of, names THUNK's answer, and
+;; what THUNK raised: its classing for a &curl-transfer-error, raised on to
+;; NAME-ANSWER; no-transfer-error for anything else, or nothing.
+(define (classed name-answer thunk)
+  (let* ((seen 'no-transfer-error)
+         (answer (name-answer
+                  (lambda ()
+                    (guard (e ((curl-transfer-error? e) (set! seen (classing e)) (raise e)))
+                      (thunk))))))
+    (list answer seen)))
+
+;; class-text : String Case Answer -> String
+;; The name of the check that CASE, answering ANSWER, a refusal, raises
+;; the class the suite's table gives it, WHERE saying whose answer it is.
+(define (class-text where a-case answer)
+  (string-append "class, " where ": " (case-text a-case) " raises " (written (cadr answer)) " "
+                 (written (caddr answer)) ", as the class the suite's table gives it, "
+                 (written (table-class (cadr answer) (caddr answer))) ", and no other"))
 
 ;; with-counts : Any -> (List Any (Listof (Pairof Symbol Natural)))
 ;; ANSWER, and the native counts once it was answered.
@@ -284,15 +386,22 @@
           (list 'not-refused-at-submit
                 (if (curl-token? token) (answer-of (lambda () (await-token token))) token))))))
 
-;; run : Request -> (List Answer Any)
-;; What R answers through the suite's engine, as answer-of names it, and its
-;; token's log, by log-of; refused-at-submit for the log of a submit that
-;; raised.
-(define (run r)
+;; run-classed : Request -> (List Answer Any Any)
+;; What R answers through the suite's engine, as answer-of names it, its
+;; token's log, by log-of, and what it raised, as classed names it;
+;; refused-at-submit for the log and the classing of a submit that raised.
+(define (run-classed r)
   (let ((token (guard (e (#t (cons 'raised-at-submit e))) (curl-engine-submit engine r))))
     (if (curl-token? token)
-        (list (answer-of (lambda () (await-token token))) (log-of token))
-        (list (answer-of (lambda () (raise (cdr token)))) 'refused-at-submit))))
+        (let ((answered (classed answer-of (lambda () (await-token token)))))
+          (list (car answered) (log-of token) (cadr answered)))
+        (list (answer-of (lambda () (raise (cdr token)))) 'refused-at-submit 'refused-at-submit))))
+
+;; run : Request -> (List Answer Any)
+;; run-classed's answer and log.
+(define (run r)
+  (let ((answered (run-classed r)))
+    (list (car answered) (cadr answered))))
 
 ;; numbered : String Natural String -> (Listof (List String String))
 ;; COUNT headers PREFIX1 to PREFIXCOUNT, each VALUE.
@@ -331,14 +440,13 @@
   (let ((f (origin-face o face)))
     (string-append (car f) ":" (number->string (cdr f)))))
 
-;; case-answer : Origin Case -> Answer
+;; case-classed : Origin Case -> (List Answer Any)
 ;; What CASE answers against O, through perform: for (get FACE PATH), what
-;; answer-of names; for (error-text FACE PATH), what error-text-of does.
-(define (case-answer o a-case)
+;; answer-of names; for (error-text FACE PATH), what error-text-of does;
+;; and what it raised, as classed names it.
+(define (case-classed o a-case)
   (let ((thunk (lambda () (perform (request (url-of o (cadr a-case) (caddr a-case)))))))
-    (if (eq? (car a-case) 'error-text)
-        (error-text-of thunk)
-        (answer-of thunk))))
+    (classed (if (eq? (car a-case) 'error-text) error-text-of answer-of) thunk)))
 
 ;; error-text-of : (-> Any) -> Any
 ;; The error buffer of THUNK's &curl-transfer-error, as (error-text TEXT);
@@ -581,11 +689,12 @@
 ;; --- the request's refusals --------------------------------------------------------------
 
 ;; refusal : (-> Any) -> (List Any (Listof (Pairof Symbol Natural)) (Listof (Pairof Symbol Natural)))
-;; What THUNK raised, as answer-of names it, or (assertion-violation WHO);
-;; the native counts at the raise, read by a handler before any
-;; dynamic-wind's after thunk; and the counts after. no-raise when nothing
-;; was raised: a token THUNK answered, a submit not refused, is settled
-;; first.
+;; What THUNK raised: (request-refused FIELD VALUE REASON), (url-refused
+;; REASON), (transfer-refused REASON OPTION REQUEST-SIZE), or
+;; (assertion-violation WHO); the native counts at the raise, read by a
+;; handler before any dynamic-wind's after thunk; and the counts after.
+;; no-raise when nothing was raised: a token THUNK answered, a submit not
+;; refused, is settled first.
 (define (refusal thunk)
   (let* ((seen 'no-raise)
          (r (guard (e ((curl-request-error? e)
@@ -594,7 +703,7 @@
                       ((curl-url-error? e) (list 'url-refused (curl-url-error-reason e)))
                       ((curl-transfer-error? e)
                        (list 'transfer-refused (curl-transfer-error-reason e)
-                             (curl-transfer-error-option e)))
+                             (curl-transfer-error-option e) (curl-transfer-error-request-size e)))
                       ((and (assertion-violation? e) (who-condition? e))
                        (list 'assertion-violation (condition-who e)))
                       (#t (list 'raised (describe e))))
@@ -620,11 +729,11 @@
 
 ;; header-request : String String -> (-> Request)
 (define (header-request name value)
-  (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get (list (cons name value)) #f #f #f #f #t #f)))
+  (lambda () (make-curl-request "http://127.0.0.1:1/" 'headers (list (cons name value)))))
 
 ;; agent-request : String -> (-> Request)
 (define (agent-request agent)
-  (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '() agent #f #f #f #t #f)))
+  (lambda () (make-curl-request "http://127.0.0.1:1/" 'user-agent agent)))
 
 ;; at-each-place : Char -> (Listof String)
 ;; "abcde" with C in place of each of its five chars, and C alone.
@@ -730,8 +839,8 @@
         (car (refusal (header-request "X-Value" " \x100;")))
         (car (refusal (agent-request "\ta\n")))))
 
-(test-equal "an empty user agent is an assertion violation from make-transfer-request: a user agent is a non-empty string or #f"
-  (list '(assertion-violation make-transfer-request) running-counts running-counts)
+(test-equal "an empty user agent is an assertion violation from make-curl-request: a user agent is a non-empty string or #f"
+  (list '(assertion-violation make-curl-request) running-counts running-counts)
   (refusal (agent-request "")))
 
 (test-equal "a header named User-Agent, in any case, beside a user agent, is refused as duplicates-field, naming header-name: libcurl would let the header win; with no user agent, or another name, it is a header like any other"
@@ -742,13 +851,12 @@
     no-raise no-raise)
   (append
    (map (lambda (name)
-          (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get (list (cons name "x"))
-                                                          "agent" #f #f #f #t #f)))))
+          (car (refusal (lambda () (make-curl-request "http://127.0.0.1:1/" 'headers (list (cons name "x"))
+                                                      'user-agent "agent")))))
         '("User-Agent" "user-agent" "USER-AGENT" "uSeR-aGeNt"))
-   (list (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '(("User-Agent" . "x"))
-                                                         #f #f #f #f #t #f))))
-         (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '(("User-Agents" . "x"))
-                                                         "agent" #f #f #f #t #f)))))))
+   (list (car (refusal (lambda () (make-curl-request "http://127.0.0.1:1/" 'headers '(("User-Agent" . "x"))))))
+         (car (refusal (lambda () (make-curl-request "http://127.0.0.1:1/" 'headers '(("User-Agents" . "x"))
+                                                     'user-agent "agent")))))))
 
 (test-equal "a second Host header, in any case, is refused as duplicates-field, naming it: libcurl sends only the first, and RFC 9112 has a server answer 400 to two; one Host is a header like any other"
   '((request-refused header-name "Host" duplicates-field)
@@ -756,13 +864,13 @@
     (request-refused header-name "host" duplicates-field)
     no-raise)
   (map (lambda (headers)
-         (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get headers #f #f #f #f #t #f)))))
+         (car (refusal (lambda () (make-curl-request "http://127.0.0.1:1/" 'headers headers)))))
        '((("Host" . "a.example") ("Host" . "b.example"))
          (("host" . "a.example") ("X-B" . "2") ("HOST" . "c.example"))
          (("Host" . "a.example") ("host" . "b.example"))
          (("X-A" . "1") ("host" . "a.example")))))
 
-(test-equal "a header named Content-Length or Transfer-Encoding, in any case, is refused as framing-header, naming it: libcurl frames the message, and M2 sends no body, so a server would wait for one; Content-Type, TE, X-Content-Length and Transfer-Encodings are headers like any other"
+(test-equal "a header named Content-Length or Transfer-Encoding, in any case, is refused as framing-header, naming it: libcurl frames the message, from the body it is handed, and a header that framed it otherwise would have a server wait, or read past it; Content-Type, TE, X-Content-Length and Transfer-Encodings are headers like any other"
   '((request-refused header-name "Content-Length" framing-header)
     (request-refused header-name "content-length" framing-header)
     (request-refused header-name "CONTENT-LENGTH" framing-header)
@@ -773,8 +881,8 @@
     (request-refused header-name "tRaNsFeR-eNcOdInG" framing-header)
     no-raise no-raise no-raise no-raise)
   (map (lambda (name)
-         (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get (list (cons "X-A" "1") (cons name "0"))
-                                                         #f #f #f #f #t #f)))))
+         (car (refusal (lambda () (make-curl-request "http://127.0.0.1:1/"
+                                                     'headers (list (cons "X-A" "1") (cons name "0")))))))
        '("Content-Length" "content-length" "CONTENT-LENGTH" "cOnTeNt-LeNgTh"
          "Transfer-Encoding" "transfer-encoding" "TRANSFER-ENCODING" "tRaNsFeR-eNcOdInG"
          "Content-Type" "TE" "X-Content-Length" "Transfer-Encodings")))
@@ -783,7 +891,7 @@
   (list '(request-refused header-name framing-header) '(request-refused header-name framing-header) running-counts)
   (let* ((changed (lambda (spelt at char)
                     (let* ((name (string-copy spelt))
-                           (r (make-transfer-request "http://127.0.0.1:1/" 'get (list (cons name "0")) #f #f #f #f #t #f)))
+                           (r (make-curl-request "http://127.0.0.1:1/" 'headers (list (cons name "0")))))
                       (string-set! name at char)
                       (submitted (lambda () (curl-engine-submit engine r))))))
          (framed-length (changed "Content-Lengtx" 13 #\h))
@@ -865,7 +973,7 @@
          (other (string-copy "other"))
          (headers (list header (cons (string-copy "X-Other") other)))
          (agent (string-copy "an-agent"))
-         (r (make-transfer-request url 'get headers agent #f #f #f #t #f)))
+         (r (make-curl-request url 'headers headers 'user-agent agent)))
     (change url name value header headers agent other)
     (refusal (lambda () (curl-engine-submit engine r)))))
 
@@ -910,8 +1018,8 @@
   (map (lambda (wrong)
          (let* ((name (string-copy "X-Name"))
                 (path (string-copy "/x/ca.pem"))
-                (r (make-transfer-request (if (memq 'url wrong) "ftp://127.0.0.1:1/x" "http://127.0.0.1:1/x")
-                                          'get (list (cons name "v")) #f #f #f path #t #f)))
+                (r (make-curl-request (if (memq 'url wrong) "ftp://127.0.0.1:1/x" "http://127.0.0.1:1/x")
+                                      'headers (list (cons name "v")) 'ca-file path)))
            (when (memq 'header wrong) (string-set! name 1 #\space))
            (when (memq 'ca-file wrong) (string-set! path 4 #\nul))
            (refusal (lambda ()
@@ -948,71 +1056,75 @@
   '((request-refused header-name "X:" not-a-token)
     (request-refused header-value "a\nb" line-break)
     (request-refused user-agent "a\x0;b" embedded-nul))
-  (map (lambda (args) (car (refusal (lambda () (apply make-transfer-request args)))))
-       (list (list "http://127.0.0.1:1/" 'get '(("X-A" . "1") ("X-B" . "2") ("X:" . "3")) #f #f #f #f #t #f)
-             (list "http://127.0.0.1:1/" 'get '(("X-A" . "1") ("X-B" . "2") ("X-C" . "a\nb")) #f #f #f #f #t #f)
-             (list "http://127.0.0.1:1/" 'get '(("X-A" . "1") ("X-B" . "2")) "a\x0;b" #f #f #f #t #f))))
+  (map (lambda (args) (car (refusal (lambda () (apply make-curl-request args)))))
+       (list (list "http://127.0.0.1:1/" 'headers '(("X-A" . "1") ("X-B" . "2") ("X:" . "3")))
+             (list "http://127.0.0.1:1/" 'headers '(("X-A" . "1") ("X-B" . "2") ("X-C" . "a\nb")))
+             (list "http://127.0.0.1:1/" 'headers '(("X-A" . "1") ("X-B" . "2")) 'user-agent "a\x0;b"))))
 
 (test-equal "a header's name is checked before its value, and headers in order: the first header's fault is the one named"
   '((request-refused header-name "X:" not-a-token)
     (request-refused header-value "a\rb" line-break)
     (request-refused header-name "X:" not-a-token))
-  (list (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '(("X:" . "a\rb")) #f #f #f #f #t #f))))
-        (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get
-                                                        '(("X-Ok" . "a\rb") ("X:" . "v")) #f #f #f #f #t #f))))
-        (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get
-                                                        '(("X:" . "v")) "a\rb" #f #f #f #t #f))))))
+  (list (car (refusal (lambda () (make-curl-request "http://127.0.0.1:1/" 'headers '(("X:" . "a\rb"))))))
+        (car (refusal (lambda () (make-curl-request "http://127.0.0.1:1/"
+                                                    'headers '(("X-Ok" . "a\rb") ("X:" . "v"))))))
+        (car (refusal (lambda () (make-curl-request "http://127.0.0.1:1/"
+                                                    'headers '(("X:" . "v")) 'user-agent "a\rb"))))))
 
-(test-equal "wrong types are assertion violations from make-transfer-request, with nothing native made: a fault that is a symbol, a string, 0, -1, 1.5 or a procedure among them, since a request holds no caller code"
-  (map (lambda (x) (list '(assertion-violation make-transfer-request) running-counts running-counts))
-       (iota-from 0 25))
-  (map (lambda (args) (refusal (lambda () (apply make-transfer-request args))))
-       (list (list 'not-a-url 'get '() #f #f #f #f #t #f)
-             (list "http://a/" 'post '() #f #f #f #f #t #f)
-             (list "http://a/" "get" '() #f #f #f #f #t #f)
-             (list "http://a/" 'get 'none #f #f #f #f #t #f)
-             (list "http://a/" 'get '(("X" . 1)) #f #f #f #f #t #f)
-             (list "http://a/" 'get '((x . "v")) #f #f #f #f #t #f)
-             (list "http://a/" 'get '(("X" "v")) #f #f #f #f #t #f)
-             (list "http://a/" 'get '(("X" . "v") . tail) #f #f #f #f #t #f)
-             (list "http://a/" 'get '() 'agent #f #f #f #t #f)
-             (list "http://a/" 'get '() #f 0 #f #f #t #f)
-             (list "http://a/" 'get '() #f -1 #f #f #t #f)
-             (list "http://a/" 'get '() #f 1.5 #f #f #t #f)
-             (list "http://a/" 'get '() #f (expt 2 63) #f #f #t #f)
-             (list "http://a/" 'get '() #f "300" #f #f #t #f)
-             (list "http://a/" 'get '() #f #f -1 #f #t #f)
-             (list "http://a/" 'get '() #f #f 1.0 #f #t #f)
-             (list "http://a/" 'get '() #f #f (- (expt 2 63) 1) #f #t #f)
-             (list "http://a/" 'get '() #f #f (expt 2 63) #f #t #f)
-             (list "http://a/" 'get '() #f #f "10" #f #t #f)
-             (list "http://a/" 'get '() #f #f #f #f #t 'hook)
-             (list "http://a/" 'get '() #f #f #f #f #t "hook")
-             (list "http://a/" 'get '() #f #f #f #f #t 0)
-             (list "http://a/" 'get '() #f #f #f #f #t -1)
-             (list "http://a/" 'get '() #f #f #f #f #t 1.5)
-             (list "http://a/" 'get '() #f #f #f #f #t (lambda (chunk) chunk)))))
+(test-equal "wrong types are assertion violations from make-curl-request, with nothing native made: a URL, a method, headers, a user agent, a timeout and a body limit"
+  (map (lambda (x) (list '(assertion-violation make-curl-request) running-counts running-counts))
+       (iota-from 0 19))
+  (map (lambda (args) (refusal (lambda () (apply make-curl-request args))))
+       (list (list 'not-a-url)
+             (list "http://a/" 'method 'options)
+             (list "http://a/" 'method "get")
+             (list "http://a/" 'headers 'none)
+             (list "http://a/" 'headers '(("X" . 1)))
+             (list "http://a/" 'headers '((x . "v")))
+             (list "http://a/" 'headers '(("X" "v")))
+             (list "http://a/" 'headers '(("X" . "v") . tail))
+             (list "http://a/" 'user-agent 'agent)
+             (list "http://a/" 'timeout-ms 0)
+             (list "http://a/" 'timeout-ms -1)
+             (list "http://a/" 'timeout-ms 1.5)
+             (list "http://a/" 'timeout-ms (expt 2 63))
+             (list "http://a/" 'timeout-ms "300")
+             (list "http://a/" 'body-limit -1)
+             (list "http://a/" 'body-limit 1.0)
+             (list "http://a/" 'body-limit (- (expt 2 63) 1))
+             (list "http://a/" 'body-limit (expt 2 63))
+             (list "http://a/" 'body-limit "10"))))
+
+(test-equal "a fault of the wrong type is an assertion violation from curl-request-with-fault, with nothing native made: a symbol, a string, 0, -1, 1.5 or a procedure, since a request holds no caller code"
+  (map (lambda (x) (list '(assertion-violation curl-request-with-fault) running-counts running-counts))
+       (iota-from 0 6))
+  (map (lambda (fault)
+         (refusal (lambda () (curl-request-with-fault (make-curl-request "http://a/") fault))))
+       (list 'hook "hook" 0 -1 1.5 (lambda (chunk) chunk))))
 
 (test-equal "the edges a request takes: a timeout of 1 and of the largest long, a body limit of 0 and of 2^63 - 2, method head, a fault at chunk 1 and at chunk 2^70"
   '(no-raise no-raise no-raise no-raise no-raise no-raise no-raise)
-  (map (lambda (args) (car (refusal (lambda () (apply make-transfer-request args)))))
-       (list (list "http://a/" 'get '() #f 1 #f #f #t #f)
-             (list "http://a/" 'get '() #f (- (expt 2 63) 1) #f #f #t #f)
-             (list "http://a/" 'get '() #f #f 0 #f #t #f)
-             (list "http://a/" 'get '() #f #f (- (expt 2 63) 2) #f #t #f)
-             (list "http://a/" 'head '() #f #f #f #f #t #f)
-             (list "http://a/" 'get '() #f #f #f #f #t 1)
-             (list "http://a/" 'get '() #f #f #f #f #t (expt 2 70)))))
+  (map (lambda (thunk) (car (refusal thunk)))
+       (list (lambda () (make-curl-request "http://a/" 'timeout-ms 1))
+             (lambda () (make-curl-request "http://a/" 'timeout-ms (- (expt 2 63) 1)))
+             (lambda () (make-curl-request "http://a/" 'body-limit 0))
+             (lambda () (make-curl-request "http://a/" 'body-limit (- (expt 2 63) 2)))
+             (lambda () (make-curl-request "http://a/" 'method 'head))
+             (lambda () (curl-request-with-fault (make-curl-request "http://a/") 1))
+             (lambda () (curl-request-with-fault (make-curl-request "http://a/") (expt 2 70))))))
 
 (test-equal "a request's fields read back as given"
   (list "http://a/b" 'head '(("X-A" . "1") ("X-A" . "2")) "agent" 300 10 "/a/ca.pem" 'verify-off 3)
-  (let ((r (make-transfer-request "http://a/b" 'head '(("X-A" . "1") ("X-A" . "2")) "agent" 300 10
-                                  "/a/ca.pem" #f 3)))
-    (list (transfer-request-url r) (transfer-request-method r) (transfer-request-headers r)
-          (transfer-request-user-agent r) (transfer-request-timeout-ms r)
-          (transfer-request-body-limit r) (transfer-request-ca-file r)
-          (if (eq? (transfer-request-verify r) #f) 'verify-off (transfer-request-verify r))
-          (transfer-request-fault r))))
+  (let ((r (curl-request-with-fault
+            (make-curl-request "http://a/b" 'method 'head 'headers '(("X-A" . "1") ("X-A" . "2"))
+                               'user-agent "agent" 'timeout-ms 300 'body-limit 10
+                               'ca-file "/a/ca.pem" 'verify #f)
+            3)))
+    (list (curl-request-url r) (curl-request-method r) (curl-request-headers r)
+          (curl-request-user-agent r) (curl-request-timeout-ms r)
+          (curl-request-body-limit r) (curl-request-ca-file r)
+          (if (eq? (curl-request-verify r) #f) 'verify-off (curl-request-verify r))
+          (curl-request-fault r))))
 
 ;; --- the option table, written out here ---------------------------------------------------
 
@@ -1068,18 +1180,29 @@
 
 ;; --- the test seam's deny-list (ADR-0009, amended 2026-10-23) ---------------------------
 
-(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT among them, and the pins' bitmasks, then each request field's, then the owned settings' twins, the CA file's CAINFO_BLOB and SSL_OPTIONS among them"
+(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT among them, and the pins' bitmasks; then each request field's, FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, and the CA file's CAINFO_BLOB and SSL_OPTIONS; then every proxy TLS option"
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
     "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
-    "CURLU" "NOBODY" "HTTPHEADER" "USERAGENT" "TIMEOUT_MS" "MAXFILESIZE_LARGE"
-    "CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST"
-    "TIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "UPLOAD" "PUT" "CAINFO_BLOB" "SSL_OPTIONS")
+    "CURLU" "NOBODY" "CUSTOMREQUEST" "HTTPHEADER" "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "USERAGENT"
+    "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "CAINFO" "CAPATH"
+    "SSL_VERIFYPEER" "SSL_VERIFYHOST" "FOLLOWLOCATION"
+    "TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "PUT" "UPLOAD"
+    "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE" "INFILESIZE_LARGE"
+    "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
+    "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
+    "PROXY_CAINFO" "PROXY_CAINFO_BLOB" "PROXY_CAPATH" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
+    "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
+    "PROXY_SSLCERT" "PROXY_SSLCERT_BLOB" "PROXY_SSLCERTTYPE" "PROXY_SSLKEY" "PROXY_SSLKEY_BLOB"
+    "PROXY_SSLKEYTYPE" "PROXY_KEYPASSWD" "PROXY_TLSAUTH_TYPE" "PROXY_TLSAUTH_USERNAME"
+    "PROXY_TLSAUTH_PASSWORD")
   owned-option-names)
 
-(test-equal "request-field-options, written out: url's CURLU, method's NOBODY, headers' HTTPHEADER, user-agent's USERAGENT, timeout-ms's TIMEOUT_MS, body-limit's MAXFILESIZE_LARGE, ca-file's CAINFO and CAPATH, and verify's SSL_VERIFYPEER and SSL_VERIFYHOST"
-  '((url "CURLU") (method "NOBODY") (headers "HTTPHEADER") (user-agent "USERAGENT")
-    (timeout-ms "TIMEOUT_MS") (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
-    (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST"))
+(test-equal "request-field-options, written out: url's CURLU; method's NOBODY and CUSTOMREQUEST; headers' HTTPHEADER; body's POSTFIELDSIZE_LARGE and COPYPOSTFIELDS; user-agent's USERAGENT; timeout-ms's TIMEOUT_MS; connect-timeout-ms's CONNECTTIMEOUT_MS; body-limit's MAXFILESIZE_LARGE; ca-file's CAINFO and CAPATH; verify's SSL_VERIFYPEER and SSL_VERIFYHOST; and follow's FOLLOWLOCATION"
+  '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST") (headers "HTTPHEADER")
+    (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS") (user-agent "USERAGENT")
+    (timeout-ms "TIMEOUT_MS") (connect-timeout-ms "CONNECTTIMEOUT_MS")
+    (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
+    (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (follow "FOLLOWLOCATION"))
   request-field-options)
 
 (test-equal "every option of every request field is an owned option, so the test seam refuses it"
@@ -1087,11 +1210,10 @@
   (filter (lambda (name) (not (member name owned-option-names)))
           (apply append (map cdr request-field-options))))
 
-(test-equal "a request's fields, written out, in the record's order: url, method, headers, user-agent, timeout-ms, body-limit, ca-file, verify and fault"
-  '(url method headers user-agent timeout-ms body-limit ca-file verify fault)
+(test-equal "a request's fields, written out, in the record's order: url, method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, then the private fault and follow"
+  '(url method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify fault follow)
   (guard (e (#t (list 'raised (describe e))))
-    (vector->list (record-type-field-names
-                   (record-rtd (make-transfer-request "http://a/" 'get '() #f #f #f #f #t #f))))))
+    (vector->list (record-type-field-names (record-rtd (make-curl-request "http://a/"))))))
 
 ;; The record's own fields, read from its record type: a field added later
 ;; needs a row, or its place here among the fields that set no option.
@@ -1099,8 +1221,7 @@
   '()
   (guard (e (#t (list 'raised (describe e))))
     (filter (lambda (field) (not (or (assq field request-field-options) (memq field '(fault)))))
-            (vector->list (record-type-field-names
-                           (record-rtd (make-transfer-request "http://a/" 'get '() #f #f #f #f #t #f)))))))
+            (vector->list (record-type-field-names (record-rtd (make-curl-request "http://a/")))))))
 
 ;; seam-refusal : (Listof Pair) -> Refusal
 ;; What refusal says of a submit through the test seam given OPTIONS, on a
@@ -1109,11 +1230,11 @@
 (define (seam-refusal options)
   (refusal (lambda () (curl-engine-submit-with engine (request "http://127.0.0.1:1/") options))))
 
-(test-equal "the test seam refuses each owned option this libcurl knows, by id, as owned-option, naming it, at submit, before anything native"
+(test-equal "the test seam refuses each owned option this libcurl knows, by id, as owned-option, naming it, at submit, before anything native; one it does not know as unknown-option, having sent nothing"
   (map (lambda (name)
          (list (if (curl-easy-option name)
                    (list 'request-refused 'options name 'owned-option)
-                   (list 'transfer-refused 'unknown-option name))
+                   (list 'transfer-refused 'unknown-option name 0))
                running-counts running-counts))
        owned-option-names)
   (map (lambda (name) (seam-refusal (list (cons name 1)))) owned-option-names))
@@ -1130,7 +1251,7 @@
 (test-equal "the test seam refuses QUICK_EXIT, which every engine transfer sets where the loaded libcurl knows it, by id, as owned-option, naming it, at submit, before anything native; a libcurl without it, the floor, refuses it as unknown-option (ADR-0009, amended 2026-10-24)"
   (list (if (curl-easy-option "QUICK_EXIT")
             '(request-refused options "QUICK_EXIT" owned-option)
-            '(transfer-refused unknown-option "QUICK_EXIT"))
+            '(transfer-refused unknown-option "QUICK_EXIT" 0))
         running-counts running-counts)
   (seam-refusal (list (cons "QUICK_EXIT" 1))))
 
@@ -1156,14 +1277,14 @@
         (map (lambda (name) (seam-refusal (list (cons name 1))))
              '("ACCEPT_ENCODING" "HTTP200ALIASES" "STDERR" "HEADERDATA" "XFERINFOFUNCTION" "SSLCERT_BLOB"))))
 
-(test-equal "the test seam's values are checked at submit, before anything native: a string for a long, a long past long's range, an off_t past its range, are assertion violations from curl-engine-submit-with; options of any other shape too; an unknown name is unknown-option"
+(test-equal "the test seam's values are checked at submit, before anything native: a string for a long, a long past long's range, an off_t past its range, are assertion violations from curl-engine-submit-with; options of any other shape too; an unknown name is unknown-option, having sent nothing"
   (map (lambda (r) (list r running-counts running-counts))
        '((assertion-violation curl-engine-submit-with)
          (assertion-violation curl-engine-submit-with)
          (assertion-violation curl-engine-submit-with)
          (assertion-violation curl-engine-submit-with)
          (assertion-violation curl-engine-submit-with)
-         (transfer-refused unknown-option "NO_SUCH_OPTION")))
+         (transfer-refused unknown-option "NO_SUCH_OPTION" 0)))
   (map seam-refusal
        (list '(("MAXREDIRS" . "3"))
              (list (cons "MAXREDIRS" (expt 2 63)))
@@ -1298,12 +1419,20 @@
         ((equal? name '(car setting)) 'seam)
         (else (list 'unread name))))
 
+;; method-loop? : Any -> Boolean
+;; FORM is a for-each over method-settings' answer for the plan's method
+;; and body, whose settings it sets by (car setting).
+(define (method-loop? form)
+  (and (list? form) (= (length form) 3) (eq? (car form) 'for-each)
+       (equal? (caddr form) '(method-settings (plan-method plan) (plan-body plan)))))
+
 ;; setting-order : Any -> Any
 ;; What each form of the definition D's body sets, in order: pins for
 ;; (set-pinned-options! easy buffer quick-exit); tls for (set-tls-options! easy
-;; (plan-ca-file plan) (plan-verify plan) buffer); else each set-option!
-;; and set-string-option! call in it, by set-name; (other FORM) for a form
-;; that sets nothing. D itself when it is no definition: what went wrong.
+;; (plan-ca-file plan) (plan-verify plan) buffer); method for the loop over
+;; method-settings' answer, by method-loop?; else each set-option! and
+;; set-string-option! call in it, by set-name; (other FORM) for a form that
+;; sets nothing. D itself when it is no definition: what went wrong.
 (define (setting-order d)
   (if (and (list? d) (pair? d) (eq? (car d) 'define))
       (apply append
@@ -1311,6 +1440,7 @@
                     (cond ((equal? form '(set-pinned-options! easy buffer quick-exit)) '(pins))
                           ((equal? form '(set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer))
                            '(tls))
+                          ((method-loop? form) '(method))
                           (else (let ((sets (option-sets form '())))
                                   (if (null? sets)
                                       (list (list 'other form))
@@ -1318,21 +1448,23 @@
                   (cddr d)))
       d))
 
-(test-equal "set-transfer-options!, read from transfer.sls, form by form: the pins first, then ERRORBUFFER, CURLU, WRITEFUNCTION and WRITEDATA, then the request's NOBODY, HTTPHEADER, USERAGENT, TIMEOUT_MS and MAXFILESIZE_LARGE, then set-tls-options!, then the test seam's settings; set-pinned-options! and set-transfer-options! each stand twice in transfer.sls, a definition and one call"
-  '((pins "ERRORBUFFER" "CURLU" "WRITEFUNCTION" "WRITEDATA" "NOBODY" "HTTPHEADER" "USERAGENT" "TIMEOUT_MS"
-          "MAXFILESIZE_LARGE" tls seam)
+(test-equal "set-transfer-options!, read from transfer.sls, form by form: the pins first, then ERRORBUFFER, CURLU, WRITEFUNCTION and WRITEDATA, then the loop over method-settings' answer, then the request's HTTPHEADER, USERAGENT, TIMEOUT_MS, CONNECTTIMEOUT_MS and MAXFILESIZE_LARGE, then set-tls-options!, then the private follow field's FOLLOWLOCATION, then the test seam's settings; set-pinned-options! and set-transfer-options! each stand twice in transfer.sls, a definition and one call"
+  '((pins "ERRORBUFFER" "CURLU" "WRITEFUNCTION" "WRITEDATA" method "HTTPHEADER" "USERAGENT" "TIMEOUT_MS"
+          "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" tls "FOLLOWLOCATION" seam)
     2 2)
   (list (setting-order (transfer-definition 'set-transfer-options!))
         (symbol-count 'set-pinned-options! transfer-library)
         (symbol-count 'set-transfer-options! transfer-library)))
 
-(test-equal "setting-order, the reader: pins, tls, each set's name at any depth, a field's through field-option, the seam's loop, a form that sets nothing, and a name it cannot read"
-  '(pins "A" "NOBODY" "B" tls seam (other (f x)) (unread n))
+(test-equal "setting-order, the reader: pins, tls, the loop over method-settings' answer, each set's name at any depth, a field's through field-option, the seam's loop, a form that sets nothing, and a name it cannot read"
+  '(pins "A" "USERAGENT" "B" tls method seam (other (f x)) (unread n))
   (setting-order '(define (g)
                     (set-pinned-options! easy buffer quick-exit)
                     (set-option! e "A" 1 b)
-                    (when h (set-option! e (field-option 'method) 1 b) (set-string-option! e "B" "x" b))
+                    (when h (set-option! e (field-option 'user-agent) 1 b) (set-string-option! e "B" "x" b))
                     (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
+                    (for-each (lambda (setting) (set-option! e (car setting) (cdr setting) b))
+                              (method-settings (plan-method plan) (plan-body plan)))
                     (for-each (lambda (setting) (set-option! e (car setting) (cdr setting) b)) s)
                     (f x)
                     (set-option! e n 1 b))))
@@ -1386,8 +1518,8 @@
               (list 'made made 'freed freed)))))
 
 (test-equal "prepare-transfer, read from transfer.sls, checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the test seam's settings, then the URL, parsed and its scheme checked; then it makes the plan"
-  '(transfer-request? snapshot ca-file-copy checked-settings call-with-parsed-url require-http-scheme make-plan)
-  (symbols-in '(transfer-request? snapshot ca-file-copy checked-settings call-with-parsed-url require-http-scheme
+  '(curl-request? snapshot ca-file-copy checked-settings call-with-parsed-url require-http-scheme make-plan)
+  (symbols-in '(curl-request? snapshot ca-file-copy checked-settings call-with-parsed-url require-http-scheme
                 make-plan)
               (transfer-definition 'prepare-transfer)))
 
@@ -1449,13 +1581,46 @@
            (pair? (cadr name)) (eq? (car (cadr name)) 'quote)
            (assq (cadr (cadr name)) request-field-options) #t)))
 
-(test-equal "every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for the test seam's own settings, set once, by (car setting)"
-  '(() 1)
+;; setting-loops : Any -> Any
+;; Each form of the definition D's body that sets by (car setting), as
+;; (LIST N): the list the form's for-each walks, or (not-a-loop FORM), and
+;; how many sets by (car setting) stand in it. D itself when it is no
+;; definition: what went wrong.
+(define (setting-loops d)
+  (if (and (list? d) (pair? d) (eq? (car d) 'define))
+      (fold-right
+       (lambda (form found)
+         (let ((n (length (filter (lambda (s) (equal? (car s) '(car setting))) (option-sets form '())))))
+           (if (= n 0)
+               found
+               (cons (list (if (and (list? form) (= (length form) 3) (eq? (car form) 'for-each))
+                               (caddr form)
+                               (list 'not-a-loop form))
+                           n)
+                     found))))
+       '() (cddr d))
+      d))
+
+;; method-settings' names are its fields' rows in request-field-options,
+;; through field-options: tests/test-request.sps writes out every method's
+;; answer, names and all.
+(test-equal "every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for those set by (car setting): three in the loop over method-settings' answer for the plan's method and body, and one in the loop over the test seam's own settings"
+  '(() (((method-settings (plan-method plan) (plan-body plan)) 3) ((plan-settings plan) 1)))
   (if (list? transfer-sets)
       (list (map car (filter (lambda (s) (not (or (owned-set? (car s)) (equal? (car s) '(car setting)))))
                              transfer-sets))
-            (length (filter (lambda (s) (equal? (car s) '(car setting))) transfer-sets)))
+            (setting-loops (transfer-definition 'set-transfer-options!)))
       transfer-sets))
+
+(test-equal "setting-loops, the reader: a loop's list and its sets by (car setting) at any depth, a form setting by (car setting) outside a loop, and forms that set by name alone passed over"
+  '((m 2) ((not-a-loop (when x (set-option! e (car setting) 1 b))) 1) ((plan-settings plan) 1))
+  (setting-loops '(define (g)
+                    (set-option! e "A" 1 b)
+                    (for-each (lambda (setting)
+                                (if y (set-option! e (car setting) 1 b) (f (set-string-option! e (car setting) "v" b))))
+                              m)
+                    (when x (set-option! e (car setting) 1 b))
+                    (for-each (lambda (setting) (set-option! e (car setting) (cdr setting) b)) (plan-settings plan)))))
 
 (test-equal "option-sets, the reader: a set at any depth, a form's head among them, with the heads around it, and its name and value as written"
   '(("A" 1 (begin)) ("B" "x" (begin when)) ((field-option 'url) u (begin)))
@@ -1549,19 +1714,23 @@
               (else (list 'odd log))))
       (list 'odd log)))
 
-;; recorded-run : Request -> (List Any Any)
+;; recorded-run : Request -> (List Any Any Any)
 ;; What R answers through the suite's engine, a &curl-transfer-error as
 ;; (refused REASON CODE RECORDED), RECORDED the object it recorded, else as
-;; answer-of names it; and its token's log, by log-of.
+;; answer-of names it; its token's log, by log-of; and what it raised, as
+;; classed names it.
 (define (recorded-run r)
-  (guard (e (#t (list (list 'raised-at-submit (describe e)) 'no-log)))
-    (let ((token (curl-engine-submit engine r)))
-      (list (guard (e ((curl-transfer-error? e)
-                       (list 'refused (curl-transfer-error-reason e) (curl-transfer-error-code e)
-                             (curl-transfer-error-recorded e))))
-              (let ((response (await-token token)))
-                (answer-of (lambda () response))))
-            (log-of token)))))
+  (guard (e (#t (list (list 'raised-at-submit (describe e)) 'no-log 'no-classing)))
+    (let* ((token (curl-engine-submit engine r))
+           (answered (classed (lambda (thunk)
+                                (guard (e ((curl-transfer-error? e)
+                                           (list 'refused (curl-transfer-error-reason e)
+                                                 (curl-transfer-error-code e)
+                                                 (curl-transfer-error-recorded e))))
+                                  (let ((response (thunk)))
+                                    (answer-of (lambda () response)))))
+                              (lambda () (await-token token)))))
+      (list (car answered) (log-of token) (cadr answered)))))
 
 ;; texts-of : (-> Any) -> Any
 ;; For THUNK's &curl-transfer-error: whether its strerror is
@@ -1595,23 +1764,41 @@
     "Header without colon" "Empty reply from server" "Maximum file size exceeded"))
 
 (define (scenarios o)
-  ;; --- every shared scenario, whole
+  ;; --- every shared scenario, whole; and each refusal's class, by the
+  ;; suite's table
   (for-each
    (lambda (pair)
-     (test-equal (string-append "shared: " (case-text (car pair)) ", whole, and the counts back to the engine's alone")
-       (list (expanded (cadr pair)) running-counts)
-       (with-counts (case-answer o (car pair)))))
+     (let* ((answered (case-classed o (car pair)))
+            (counts (native-counts)))
+       (test-equal (string-append "shared: " (case-text (car pair)) ", whole, and the counts back to the engine's alone")
+         (list (expanded (cadr pair)) running-counts)
+         (list (car answered) counts))
+       (when (refused-answer? (cadr pair))
+         (test-equal (class-text "shared" (car pair) (cadr pair))
+           (expected-classing (cadr pair))
+           (cadr answered)))))
    shared-answers)
 
-  ;; --- the varying scenarios, against this libcurl's row
+  ;; --- the varying scenarios, against this libcurl's row; and each of its
+  ;; refusals' class, by the suite's table. Each entry is (CASE ANSWER
+  ;; COUNTS CLASSING), in varying-cases' order.
   (set! varying-answered
-        (map (lambda (a-case) (list a-case (case-answer o a-case) (native-counts))) varying-cases))
+        (let loop ((rest varying-cases) (found '()))
+          (if (null? rest)
+              (reverse found)
+              (let* ((answered (case-classed o (car rest)))
+                     (counts (native-counts)))
+                (loop (cdr rest) (cons (list (car rest) (car answered) counts (cadr answered)) found))))))
   (for-each
    (lambda (entry)
      (let ((want (and the-row (assoc (car entry) (row-answers the-row)))))
        (test-equal (string-append "varying: " (case-text (car entry)) ", as this libcurl's row says, and the counts back to the engine's alone")
          (list (if want (expanded (cadr want)) (list 'no-row-for version)) running-counts)
-         (list (cadr entry) (caddr entry)))))
+         (list (cadr entry) (caddr entry)))
+       (when (and want (refused-answer? (cadr want)))
+         (test-equal (class-text (string-append "by the row for " (written version)) (car entry) (cadr want))
+           (expected-classing (cadr want))
+           (cadddr entry)))))
    varying-answered)
 
   ;; --- the echoes, whose Host holds the origin's port
@@ -1642,12 +1829,14 @@
      ;; Measured, 8 runs each: 301 to 304 ms natively, 303 to 386 under the
      ;; memory gate's Valgrind, the first the slowest. 600 catches a timeout
      ;; that arrived doubled.
-     (test-equal (string-append "TIMEOUT_MS 300 against " path ": 28, no sooner than 300 ms and sooner than 600")
-       (list (list 'refused 'perform-failed curle-operation-timedout) 'within running-counts)
+     (test-equal (string-append "TIMEOUT_MS 300 against " path ": 28, of the class the suite's table gives it, and no other, no sooner than 300 ms and sooner than 600")
+       (let ((want (list 'refused 'perform-failed curle-operation-timedout)))
+         (list want (expected-classing want) 'within running-counts))
        (let* ((start (now-ms))
-              (a (answer-of (lambda () (perform (request (url-of o 'raw path) 'timeout 300)))))
+              (a (classed answer-of (lambda () (perform (request (url-of o 'raw path) 'timeout 300)))))
               (took (- (now-ms) start)))
-         (list a (if (and (>= took 300) (< took 600)) 'within (list 'took took)) (native-counts)))))
+         (list (car a) (cadr a) (if (and (>= took 300) (< took 600)) 'within (list 'took took))
+               (native-counts)))))
    '("/raw/stall-after-head" "/raw/stall-before-head"))
   ;; A long: NOBODY, for head. /echo's Content-Length is the length of the
   ;; head Node read, so it shows the method sent was HEAD.
@@ -1664,9 +1853,10 @@
     (with-counts (answer-of (lambda () (perform (request (url-of o 'http "/status/200") 'method 'head))))))
   ;; An off_t: MAXFILESIZE_LARGE, at the body limit plus one, below a
   ;; Content-Length: refused before any body.
-  (test-equal "MAXFILESIZE_LARGE below a Content-Length: a body limit of 9 against /status/200's 11 is 63, perform-failed, before any chunk: the chunk log is empty"
-    (list (list (list 'refused 'perform-failed curle-filesize-exceeded) '()) running-counts)
-    (with-counts (run (request (url-of o 'http "/status/200") 'limit 9))))
+  (test-equal "MAXFILESIZE_LARGE below a Content-Length: a body limit of 9 against /status/200's 11 is 63, perform-failed, of the class the suite's table gives it, and no other, before any chunk: the chunk log is empty"
+    (let ((want (list 'refused 'perform-failed curle-filesize-exceeded)))
+      (list (list want '() (expected-classing want)) running-counts))
+    (with-counts (run-classed (request (url-of o 'http "/status/200") 'limit 9))))
 
   ;; --- Latin-1, both ways
   (test-equal "a request header whose value holds every char U+0001 to U+00FF but CR and LF arrives in /raw/echo byte for byte, after Accept"
@@ -1697,23 +1887,24 @@
           running-counts)
     (let ((effective (lambda (path)
                        (guard (e (#t (list 'raised (describe e))))
-                         (transfer-response-effective-url (perform (request (url-of o 'http path))))))))
+                         (curl-response-effective-url (perform (request (url-of o 'http path))))))))
       (list (effective "/a/../status/200")
             (effective "/redirect/302?to=/status/200")
             (effective "/caf\xE9;")
             (native-counts))))
 
-  ;; --- the last request's headers: a redirect followed, through the test
-  ;; seam, makes two requests, and the first one's headers are not the
-  ;; response's
-  (test-equal "with FOLLOWLOCATION set through the test seam, a followed redirect answers the last request's status, headers and body, and its effective URL"
+  ;; --- the last request's headers: a redirect followed, through the
+  ;; private follow field, makes two requests, and the first one's headers
+  ;; are not the response's. FOLLOWLOCATION is owned: the test seam refuses
+  ;; it.
+  (test-equal "with FOLLOWLOCATION set by the private follow field, curl-request-following, a followed redirect answers the last request's status, headers and body, and its effective URL"
     (list (list '(response 200 http/1.1 (("Content-Length" "11") ("Connection" "keep-alive")) "status 200\n")
                 (url-of o 'http "/status/200"))
           running-counts)
     (list (guard (e (#t (list 'raised (describe e))))
-            (let ((r (perform-with (request (url-of o 'http "/redirect/302?to=/status/200"))
-                                   '(("FOLLOWLOCATION" . 1)))))
-              (list (answer-of (lambda () r)) (transfer-response-effective-url r))))
+            (let ((r (perform (curl-request-following
+                               (request (url-of o 'http "/redirect/302?to=/status/200"))))))
+              (list (answer-of (lambda () r)) (curl-response-effective-url r))))
           (native-counts)))
 
   ;; --- the URL, checked at submit, on this thread
@@ -1786,10 +1977,11 @@
        (test-equal (string-append "body limit " (number->string limit) " against " (symbol->string face) " " path
                                   ": " (written want) ", the callable having accepted " (written accepted)
                                   (if (eq? (cadr want) 'body-limit) ", then refused the next chunk" ", and refused none")
-                                  ", each chunk on the engine's thread")
-         (list want (list (string-length accepted) (if (eq? (cadr want) 'body-limit) 'refused 'none)) running-counts)
-         (let ((r (run (request (url-of o face path) 'limit limit))))
-           (list (car r) (log-shape (cadr r)) (native-counts))))))
+                                  ", each chunk on the engine's thread; a refusal of the class the suite's table gives it, and no other")
+         (list want (list (string-length accepted) (if (eq? (cadr want) 'body-limit) 'refused 'none))
+               (expected-classing want) running-counts)
+         (let ((r (run-classed (request (url-of o face path) 'limit limit))))
+           (list (car r) (log-shape (cadr r)) (caddr r) (native-counts))))))
    (let ((limit `(refused body-limit ,curle-write-error))
          (size `(refused perform-failed ,curle-filesize-exceeded))
          (status-200 `(response 200 http/1.1 (("Content-Length" "11") ("Connection" "keep-alive")) ,ok))
@@ -1820,10 +2012,10 @@
   ;; never a procedure (M3 plan, section 3.6)
   (for-each
    (lambda (row)
-     (test-equal (string-append "a fault " (car row) ", each chunk logged on the engine's thread")
-       (list (caddr row) running-counts)
+     (test-equal (string-append "a fault " (car row) ", each chunk logged on the engine's thread; a refusal of the class the suite's table gives it, and no other")
+       (list (append (caddr row) (list (expected-classing (car (caddr row))))) running-counts)
        (let ((r (recorded-run (cadr row))))
-         (with-counts (if (null? (cdddr row)) r (list (car r) (log-shape (cadr r))))))))
+         (with-counts (list (car r) (if (null? (cdddr row)) (cadr r) (log-shape (cadr r))) (caddr r))))))
    (list (list "at chunk 1 of /status/200's one: the callable raises (planted-fault 1), so the transfer is callback-raised, 23, recording it, the chunk logged raised"
                (request (url-of o 'http "/status/200") 'fault 1)
                `((refused callback-raised ,curle-write-error ,(planted-fault 1)) ((11 raised))))
@@ -1848,7 +2040,7 @@
   (test-equal "a user agent another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the agent whole, never the CR, both seen; the counts back to the engine's alone"
     (list '() '(refused whole) running-counts)
     (let* ((agent (string-copy "abcdef"))
-           (r (make-transfer-request (url-of o 'raw "/raw/echo") 'get '() agent default-timeout #f #f #t #f))
+           (r (make-curl-request (url-of o 'raw "/raw/echo") 'user-agent agent 'timeout-ms default-timeout))
            (clean (echoed (raw-echo-body o '("User-Agent: abcdef\r\n" "Accept: */*\r\n"))))
            (stop #f)
            (flip (lambda ()
@@ -1933,23 +2125,27 @@
       'no-raise))
 
   ;; --- options through the test seam, curl-engine-submit-with
-  (test-equal "an option the loaded libcurl does not know raises unknown-option, naming it, with no code, and the counts back to the engine's alone"
-    (list '(unknown-option #f "NO_SUCH_OPTION") running-counts)
+  (test-equal "an option the loaded libcurl does not know raises unknown-option, naming it, with no code and a request size of 0, of no class, and the counts back to the engine's alone"
+    (list (list 'unknown-option #f "NO_SUCH_OPTION" 0 (table-class 'unknown-option #f)) running-counts)
     (list (guard (e ((curl-transfer-error? e)
                      (list (curl-transfer-error-reason e) (curl-transfer-error-code e)
-                           (curl-transfer-error-option e)))
+                           (curl-transfer-error-option e) (curl-transfer-error-request-size e)
+                           (class-of e)))
                     (#t (list 'raised (describe e))))
             (perform-with (request (url-of o 'http "/status/200")) '(("NO_SUCH_OPTION" . 1)))
             'no-raise)
           (native-counts)))
-  (test-equal "an option libcurl refuses raises setopt-failed, naming it, with its code, through each integer binding: MAXREDIRS -2 through the long one and MAX_RECV_SPEED_LARGE -1 through the off_t one are 43, never taken zero-extended, as 4294967294 and 4294967295 would be; the counts back to the engine's alone"
-    (list (list 'setopt-failed curle-bad-function-argument "MAXREDIRS")
-          (list 'setopt-failed curle-bad-function-argument "MAX_RECV_SPEED_LARGE")
+  (test-equal "an option libcurl refuses raises setopt-failed, naming it, with its code and a request size of 0, of no class, through each integer binding: MAXREDIRS -2 through the long one and MAX_RECV_SPEED_LARGE -1 through the off_t one are 43, never taken zero-extended, as 4294967294 and 4294967295 would be; the counts back to the engine's alone"
+    (list (list 'setopt-failed curle-bad-function-argument "MAXREDIRS" 0
+                (table-class 'setopt-failed curle-bad-function-argument))
+          (list 'setopt-failed curle-bad-function-argument "MAX_RECV_SPEED_LARGE" 0
+                (table-class 'setopt-failed curle-bad-function-argument))
           running-counts)
     (append (map (lambda (option)
                    (guard (e ((curl-transfer-error? e)
                               (list (curl-transfer-error-reason e) (curl-transfer-error-code e)
-                                    (curl-transfer-error-option e)))
+                                    (curl-transfer-error-option e) (curl-transfer-error-request-size e)
+                                    (class-of e)))
                              (#t (list 'raised (describe e))))
                      (perform-with (request (url-of o 'http "/status/200")) (list option))
                      'no-raise))
@@ -1958,13 +2154,32 @@
 
   ;; --- the redirect pin, observed: without REDIR_PROTOCOLS_STR, libcurl
   ;; would follow to FTP, and answer 7, connection refused
-  (test-equal "REDIR_PROTOCOLS_STR, observed: FOLLOWLOCATION through the test seam, to ftp://127.0.0.1:1/, a protocol this libcurl lists, is refused as 1, CURLE_UNSUPPORTED_PROTOCOL, never tried; the counts back to the engine's alone"
-    (list 'ftp-listed (list 'refused 'perform-failed curle-unsupported-protocol) running-counts)
+  (test-equal "REDIR_PROTOCOLS_STR, observed: FOLLOWLOCATION by the private follow field, to ftp://127.0.0.1:1/, a protocol this libcurl lists, is refused as 1, CURLE_UNSUPPORTED_PROTOCOL, never tried, of the class the suite's table gives it, and no other; the counts back to the engine's alone"
+    (let ((want (list 'refused 'perform-failed curle-unsupported-protocol)))
+      (list 'ftp-listed (list want (expected-classing want)) running-counts))
     (list (if (member "ftp" (loaded-protocols)) 'ftp-listed (list 'no-ftp-in (loaded-protocols)))
-          (answer-of (lambda ()
-                       (perform-with (request (url-of o 'http "/redirect/302?to=ftp://127.0.0.1:1/"))
-                                     '(("FOLLOWLOCATION" . 1)))))
+          (classed answer-of
+                   (lambda ()
+                     (perform (curl-request-following
+                               (request (url-of o 'http "/redirect/302?to=ftp://127.0.0.1:1/"))))))
           (native-counts)))
+
+  ;; --- the outcomes of no class: a transfer cancelled, and one whose
+  ;; engine stopped, before either ended. Each drip takes a second; the
+  ;; stopped one runs on an engine of its own.
+  (test-equal "class: a drip cancelled before it ended, and one whose engine stopped before it ended, each raise the base type alone, of no class, with no code; the counts back to the engine's alone"
+    (list (list 'cancelled #f (table-class 'cancelled #f)) (list 'stopped #f (table-class 'stopped #f))
+          running-counts)
+    (let* ((cancelled
+            (let ((t (curl-engine-submit engine (request (url-of o 'raw "/raw/drip?bytes=20&gap=50")))))
+              (curl-token-cancel t)
+              (cadr (classed answer-of (lambda () (await-token t))))))
+           (stopped
+            (let* ((own (make-curl-engine))
+                   (t (curl-engine-submit own (request (url-of o 'raw "/raw/drip?bytes=20&gap=50")))))
+              (curl-engine-stop own)
+              (cadr (classed answer-of (lambda () (await-token t)))))))
+      (list cancelled stopped (native-counts))))
 
   ;; --- the option cache keeps its own copy of a name
   (test-equal "the option cache keeps a copy of each name: a caller's name, changed after its transfer, leaves the cache's key as it was"
@@ -1980,8 +2195,8 @@
   (test-equal "a header value another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the value whole, never the CR, both seen; the counts back to the engine's alone"
     (list '() '(refused whole) running-counts)
     (let* ((value (string-copy "abcdef"))
-           (r (make-transfer-request (url-of o 'raw "/raw/echo") 'get (list (cons "X-Race" value))
-                                     #f default-timeout #f #f #t #f))
+           (r (make-curl-request (url-of o 'raw "/raw/echo") 'headers (list (cons "X-Race" value))
+                                 'timeout-ms default-timeout))
            (clean (echoed (raw-echo-body o '("Accept: */*\r\n" "X-Race: abcdef\r\n"))))
            (stop #f)
            (flip (lambda ()
@@ -2152,6 +2367,39 @@
   '(() distinct)
   (list (filter (lambda (a-case) (assoc a-case shared-answers)) varying-cases)
         (if (distinct? (append varying-cases (map car shared-answers))) 'distinct 'repeated)))
+
+;; --- the suite's class table -----------------------------------------------------------------
+
+(test-equal "the suite's class table has a row for each code a perform-failed refusal answers, among the shared answers and in every version row, so each lane classes its own answers by it"
+  '()
+  (let ((answers (append (map cadr shared-answers)
+                         (apply append (map (lambda (row) (map cadr (row-answers row)))
+                                            (filter (lambda (row) (eq? (row-problem row) 'ok)) rows))))))
+    (filter (lambda (code) (not (assv code code-classes)))
+            (map caddr (filter (lambda (a) (and (refused-answer? a) (eq? (cadr a) 'perform-failed)))
+                               answers)))))
+
+(test-equal "table-class, the rule written out: body-limit is too-large whatever its code; perform-failed takes its code's row, and a code with no row is (no-row CODE); every other reason is of no class, whatever its code"
+  '(too-large too-large send-receive none (no-row 7) none none none none none none)
+  (list (table-class 'body-limit 23) (table-class 'body-limit 56) (table-class 'perform-failed 56)
+        (table-class 'perform-failed 23) (table-class 'perform-failed 7)
+        (table-class 'callback-raised 23) (table-class 'setopt-failed 1)
+        (table-class 'unknown-option #f) (table-class 'no-handle #f)
+        (table-class 'cancelled #f) (table-class 'stopped #f)))
+
+(test-equal "class-of, the reader: each class's condition by its own name, the base type and a non-condition as none, and a condition of two classes as several"
+  '(timeout connect send-receive tls protocol too-large none none (several timeout tls))
+  (guard (e (#t (list 'raised (describe e))))
+    (list (class-of (make-curl-timeout 'perform-failed 28 #f #f #f #f 0))
+          (class-of (make-curl-connect-error 'perform-failed 7 #f #f #f #f 0))
+          (class-of (make-curl-send-receive-error 'perform-failed 56 #f #f #f #f 0))
+          (class-of (make-curl-tls-error 'perform-failed 60 #f #f #f #f 0))
+          (class-of (make-curl-protocol-error 'perform-failed 1 #f #f #f #f 0))
+          (class-of (make-curl-too-large 'body-limit 23 #f #f #f #f 0))
+          (class-of (make-curl-transfer-error 'perform-failed 28 #f #f #f #f 0))
+          (class-of 'not-a-condition)
+          (class-of (condition (make-curl-timeout 'perform-failed 28 #f #f #f #f 0)
+                               (make-curl-tls-error 'perform-failed 60 #f #f #f #f 0))))))
 
 (define made-up-row
   `(libcurl (where "made up") (version "9.9.9")

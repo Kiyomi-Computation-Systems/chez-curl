@@ -353,6 +353,15 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   compile against. `test-constants` requires the headers to be no newer than
   the library it loads, so a floor lane points both `C_INCLUDE_PATH` and
   `CHEZ_CURL_LIBCURL` at the floor.
+* A failed transfer's timings move with the version: 8.20.0 reports a total
+  of 0 for a refused connect, and 8.23.0 fills pretransfer though nothing was
+  sent. Whether a request was sent is whether `CURLINFO_REQUEST_SIZE` is 0,
+  alike on five libcurls, never a timing. The size sums every attempt, a
+  resend on 8.23.0's dead reused connections and the body included, so a
+  check of its value runs on an engine of its own (ADR-0022, amended).
+* A command that reads stdin, `scripts/guix-env` among them, inside a
+  `while read` loop eats the rest of the loop's list. Give it `< /dev/null`,
+  and count the results against the list.
 
 ## Closing ritual
 

@@ -2,12 +2,17 @@
 ;;; (curl): chez-curl's low-level library, the one public (curl ...) library
 ;;; (ADR-0007, ADR-0010).
 ;;;
-;;; So far it reports the libcurl it loaded, and carries chez-curl's
-;;; conditions. libcurl is loaded the first time a program reaches a binding
-;;; of (curl private native), loaded-libcurl: in a program that imports
-;;; (curl) and calls it, before the program's own body runs. A refused
-;;; libcurl raises &curl-library-unavailable there, and again at every
-;;; later reference: the load runs once per process (ADR-0002, ADR-0003).
+;;; It reports the libcurl it loaded, makes requests and reads responses
+;;; (ADR-0023), and carries chez-curl's conditions, a failed transfer's
+;;; classes among them (ADR-0022). The engine that runs a request is M4
+;;; slice 2's. libcurl is loaded the first time a program reaches a binding
+;;; that needs it: loaded-libcurl, or the request's and the response's,
+;;; whose library imports (curl private native); in a program that imports
+;;; (curl) and references one, before the program's own body runs, so a
+;;; guard in the program cannot catch its refusal. The conditions'
+;;; bindings load nothing. A refused libcurl raises
+;;; &curl-library-unavailable there, and again at every later reference:
+;;; the load runs once per process (ADR-0002, ADR-0003).
 ;;; The report's accessors live apart, in (curl private libcurl-info), so a
 ;;; refusal's report can be read after the refusal.
 (library (curl)
@@ -61,9 +66,118 @@
    ;; curl-wrong-thread-expected : &curl-wrong-thread -> Integer
    ;; curl-wrong-thread-actual : &curl-wrong-thread -> Integer
    &curl-wrong-thread curl-wrong-thread?
-   curl-wrong-thread-who curl-wrong-thread-expected curl-wrong-thread-actual)
+   curl-wrong-thread-who curl-wrong-thread-expected curl-wrong-thread-actual
+
+   ;; --- the request (ADR-0023) ---------------------------------------------
+   ;; make-curl-request : String Symbol Any ... -> Request
+   ;; (make-curl-request URL KEY VALUE ...): a request for URL, http:// or
+   ;; https://, with these keys, each once at most, each left out taking its
+   ;; default, libcurl's own:
+   ;;   method              get, head, post, put, patch or delete; get
+   ;;   headers             (Listof (Pairof String String)), Latin-1; ()
+   ;;   body                Bytevector, or #f; #f. post, put and patch send an
+   ;;                       empty one for #f; get and head refuse one
+   ;;   user-agent          a non-empty Latin-1 string, or #f; #f
+   ;;   timeout-ms          the whole transfer's bound, or #f; #f
+   ;;   connect-timeout-ms  the connection phase's bound, its TLS handshake
+   ;;                       among it, or #f; #f
+   ;;   body-limit          the body's bound in bytes, or #f; #f
+   ;;   ca-file             the only CA file to trust, or #f for the system
+   ;;                       store; #f
+   ;;   verify              whether to verify the peer; #t
+   ;; A key it does not take, one given twice, and one with no value are
+   ;; refused by name, as &curl-request-error, before anything else.
+   ;; curl-request-with : Request Symbol Any ... -> Request
+   ;; A new request, with the keys given replaced and the rest kept.
+   ;; curl-request? : Any -> Boolean
+   ;; curl-request-url : Request -> String
+   ;; curl-request-method : Request -> Symbol
+   ;; curl-request-headers : Request -> (Listof (Pairof String String))
+   ;; curl-request-body : Request -> (U Bytevector #f)
+   ;; curl-request-user-agent : Request -> (U String #f)
+   ;; curl-request-timeout-ms : Request -> (U Positive-Integer #f)
+   ;; curl-request-connect-timeout-ms : Request -> (U Positive-Integer #f)
+   ;; curl-request-body-limit : Request -> (U Natural #f)
+   ;; curl-request-ca-file : Request -> (U String #f)
+   ;; curl-request-verify : Request -> Boolean
+   make-curl-request curl-request-with curl-request?
+   curl-request-url curl-request-method curl-request-headers curl-request-body
+   curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
+   curl-request-body-limit curl-request-ca-file curl-request-verify
+
+   ;; --- the response -------------------------------------------------------
+   ;; curl-response? : Any -> Boolean
+   ;; curl-response-status : Response -> Integer
+   ;; curl-response-http-version : Response -> (U 'http/1.0 'http/1.1 'http/2 'http/3 Integer #f)
+   ;; curl-response-effective-url : Response -> (U String #f)
+   ;; curl-response-headers : Response -> (Listof (Pairof String String))
+   ;; curl-response-body : Response -> Bytevector
+   ;; curl-response-timings : Response -> (Listof (Pairof Symbol Natural))
+   ;; The timings are name-lookup, connect, tls-handshake, first-byte and
+   ;; total, in that order, each the microseconds from the transfer's start
+   ;; to that phase's end, and 0 for a phase the transfer skipped: the
+   ;; handshake without TLS, and the first three on a connection reused.
+   curl-response? curl-response-status curl-response-http-version
+   curl-response-effective-url curl-response-headers curl-response-body
+   curl-response-timings
+
+   ;; --- what a caller can meet ---------------------------------------------
+   ;; &curl-embedded-nul: a string C would read short, holding U+0000.
+   ;; curl-embedded-nul? : Any -> Boolean
+   ;; curl-embedded-nul-string : &curl-embedded-nul -> String
+   &curl-embedded-nul curl-embedded-nul? curl-embedded-nul-string
+
+   ;; &curl-url-error: a URL refused (ADR-0008).
+   ;; curl-url-error? : Any -> Boolean
+   ;; curl-url-error-input : &curl-url-error -> String
+   ;; curl-url-error-reason : &curl-url-error -> (U Symbol #f)
+   ;; curl-url-error-code : &curl-url-error -> (U Integer #f)
+   ;; curl-url-error-message : &curl-url-error -> (U String #f)
+   &curl-url-error curl-url-error? curl-url-error-input curl-url-error-reason
+   curl-url-error-code curl-url-error-message
+
+   ;; &curl-request-error: a request's key or field refused.
+   ;; curl-request-error? : Any -> Boolean
+   ;; curl-request-error-field : &curl-request-error -> Symbol
+   ;; curl-request-error-value : &curl-request-error -> Any
+   ;; curl-request-error-reason : &curl-request-error -> Symbol
+   ;; curl-request-error-reasons : (Listof Symbol)
+   ;; See (curl private conditions) for each field and reason.
+   &curl-request-error curl-request-error? curl-request-error-field
+   curl-request-error-value curl-request-error-reason curl-request-error-reasons
+
+   ;; &curl-transfer-error: a transfer that failed (ADR-0022).
+   ;; curl-transfer-error? : Any -> Boolean
+   ;; curl-transfer-error-reason : &curl-transfer-error -> Symbol
+   ;; curl-transfer-error-code : &curl-transfer-error -> (U Integer #f)
+   ;; curl-transfer-error-option : &curl-transfer-error -> (U String #f)
+   ;; curl-transfer-error-strerror : &curl-transfer-error -> (U String #f)
+   ;; curl-transfer-error-error-buffer : &curl-transfer-error -> (U String #f)
+   ;; curl-transfer-error-recorded : &curl-transfer-error -> Any
+   ;; curl-transfer-error-request-size : &curl-transfer-error -> (U Natural #f)
+   ;;   the bytes of request sent: 0 when none was
+   ;; curl-transfer-error-reasons : (Listof Symbol)
+   ;; See (curl private conditions) for each field and reason.
+   &curl-transfer-error curl-transfer-error? curl-transfer-error-reason
+   curl-transfer-error-code curl-transfer-error-option curl-transfer-error-strerror
+   curl-transfer-error-error-buffer curl-transfer-error-recorded
+   curl-transfer-error-request-size curl-transfer-error-reasons
+
+   ;; Its classes, each a &curl-transfer-error, by libcurl's code, for
+   ;; perform-failed: a code no class names raises the base type.
+   ;; curl-timeout? : Any -> Boolean            28
+   ;; curl-connect-error? : Any -> Boolean      5, 6, 7, 45, 96, 97
+   ;; curl-send-receive-error? : Any -> Boolean 18, 52, 55, 56
+   ;; curl-tls-error? : Any -> Boolean          35, 53, 54, 58, 59, 60, 64, 66,
+   ;;                                           77, 80, 82, 83, 90, 91, 98, 101
+   ;; curl-protocol-error? : Any -> Boolean     1, 8, 16, 61, 92, 95
+   ;; curl-too-large? : Any -> Boolean          63, 100, and the body limit
+   &curl-timeout curl-timeout? &curl-connect-error curl-connect-error?
+   &curl-send-receive-error curl-send-receive-error? &curl-tls-error curl-tls-error?
+   &curl-protocol-error curl-protocol-error? &curl-too-large curl-too-large?)
   (import (curl private require-threaded)
           (rnrs)
           (curl private conditions)
           (curl private libcurl-info)
-          (curl private native)))
+          (curl private native)
+          (curl private transfer)))

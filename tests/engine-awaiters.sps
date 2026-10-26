@@ -46,7 +46,7 @@
 (define finished 0)
 (define stop #f)
 
-(define (request) (make-transfer-request url 'get '() #f 20000 #f #f #t #f))
+(define (request) (make-curl-request url 'timeout-ms 20000))
 
 ;; refusal-who : (-> Any) -> Any
 ;; The who of THUNK's assertion violation, or (answered).
@@ -129,7 +129,7 @@
            (with-mutex mx (set! finished (+ finished 1)))
            (begin
              (let ((answered (guard (e (#t #f))
-                               (transfer-response-status
+                               (curl-response-status
                                 (curl-token-await (curl-engine-submit engine (request)))))))
                (when (eqv? answered 200)
                  (with-mutex mx (set! done (+ done 1)))))

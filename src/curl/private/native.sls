@@ -110,9 +110,10 @@
   (export loaded-libcurl curl-easy-option
           curl-easy-init curl-easy-cleanup
           curl-easy-setopt-long curl-easy-setopt-pointer curl-easy-setopt-off-t
-          curl-easy-getinfo curl-easy-getinfo-long curl-easy-getinfo-string
+          curl-easy-getinfo curl-easy-getinfo-long curl-easy-getinfo-off-t curl-easy-getinfo-string
           copy-foreign->bytevector! copy-bytevector->foreign!
-          call-with-c-string call-with-latin-1-c-string c-string->bytevector
+          call-with-c-string call-with-latin-1-c-string call-with-foreign-bytes
+          c-string->bytevector
           curl-url curl-url-cleanup curl-url-set curl-url-get curl-url-strerror
           curl-free loaded-protocols
           curl-easy-strerror curl-easy-nextheader curl-header-bytes
@@ -399,6 +400,22 @@
         (lambda ()
           (set! freed #t)
           (free-foreign-block! block)))))
+
+  ;; call-with-foreign-bytes : Bytevector (Positive-Integer -> Any) -> Any
+  ;; PROC's answer, PROC given the address of a counted block holding
+  ;; BYTES, freed once PROC returns, raises or escapes, as call-with-c-bytes
+  ;; frees it: for a body libcurl copies when it is set (the M4 plan,
+  ;; section 3.2). The address is never NULL: an empty BYTES gets a block
+  ;; of one byte, 0, which libcurl copies none of. BYTES is read once, by
+  ;; the checked copy, so no check comes between a read and a use.
+  (define (call-with-foreign-bytes bytes proc)
+    (unless (bytevector? bytes)
+      (assertion-violation 'call-with-foreign-bytes "not a bytevector" bytes))
+    (unless (procedure? proc)
+      (assertion-violation 'call-with-foreign-bytes "not a procedure" proc))
+    (call-with-c-bytes 'call-with-foreign-bytes bytes
+                       (if (= (bytevector-length bytes) 0) (make-bytevector 1 0) bytes)
+                       proc))
 
   ;; call-with-c-string : String (Positive-Integer -> Any) -> Any
   ;; PROC's answer, PROC given the address of STRING as C reads it: its
@@ -852,6 +869,21 @@
         (lambda ()
           (let ((code (curl-easy-getinfo easy info slot)))
             (values code (if (eqv? code curle-ok) (foreign-ref 'long slot 0) 0))))
+        (lambda () (free-foreign-block! slot)))))
+
+  ;; curl-easy-getinfo-off-t : Positive-Integer Integer -> (Values Integer Integer)
+  ;; The CURLcode of curl_easy_getinfo of INFO, a CURLINFO_ curl_off_t, on
+  ;; EASY, and the curl_off_t it wrote, 64 bits on every platform chez-curl
+  ;; supports; 0 unless the code is CURLE_OK. Never the long reader: a long
+  ;; is 64 bits only on LP64. The slot is a counted block, freed before
+  ;; this returns.
+  (define (curl-easy-getinfo-off-t easy info)
+    (let ((slot #f))
+      (dynamic-wind #t
+        (lambda () (set! slot (foreign-block (foreign-sizeof 'integer-64))))
+        (lambda ()
+          (let ((code (curl-easy-getinfo easy info slot)))
+            (values code (if (eqv? code curle-ok) (foreign-ref 'integer-64 slot 0) 0))))
         (lambda () (free-foreign-block! slot)))))
 
   ;; curl-easy-getinfo-string : Positive-Integer Integer -> (Values Integer (U Bytevector #f))

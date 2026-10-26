@@ -7,38 +7,44 @@ close-out under **Close-outs**, newest first.
 ## Now
 
 - **Milestone:** M4, the public records and the asynchronous API (brief §8), per the
-  [M4 plan](2026-10-26-m4-plan.md), merged in PR #23 and revised after its review on
-  `docs/m4-plan-review`, not yet merged.
-  - **The plan's review,** an adversarial one, Opus, read-only: 420k tokens, 103 tool calls,
-    about 30 minutes. One blocker, thirteen majors, ten minors. I checked its cited lines and
-    reran its redirect probe in the container, which matched its log line for line; the probe
-    and its logs are kept in [`research/m4/redirect/`](research/m4/redirect/). Each finding is
-    answered in the plan and the records, amended "after the plan's review":
-    - **the blocker:** a take that escapes, at the critical section's end, loses its token's
-      notice. A take loses a notice, never an outcome, which stays on the token, and a caller
-      whose handlers can escape keeps its tokens (ADR-0021, amended);
-    - **redirects:** through a 301, 302 or 303, libcurl resends a `CUSTOMREQUEST` method without
-      its body, on all four libcurls measured. `FOLLOWLOCATION` is owned and left off, and M5
-      follows redirects itself (ADR-0023, amended). libcurl adds a form `Content-Type` to every
-      method's body;
-    - **the classes,** described in curl's words, not by cause: 56 also answers a bad chunk
-      size, and a short body is 18 or 56 by how the server closed, so 18 joins 52, 55 and 56.
-      The redirects class is dropped; the class follows the code for `perform-failed` alone;
-      the classed codes are named constants, 100 and 101 gated (ADR-0022, amended);
-    - **Guix's override:** keyed by the library's path under `/gnu/store`, an empty variable
-      unset, 8.6.0 taken to override, and refused only with verification on (ADR-0024,
-      amended);
-    - the rest: `CUSTOMREQUEST` owned; the bodiless methods framed; deliver answers the token;
-      the hatch copies what it attaches; a check-seam rule that `(curl)` cannot import the
-      hatch; `ftype-set!` for the blob; `&curl-embedded-nul` exported, since native raises it,
-      which my edit to the plan had denied; tests that would pass on a mutant tightened; and
-      ADR-0012's stale "condition variable".
-  - **Decided by the maintainer, 2026-10-26, from the review:** a proxy's TLS stays libcurl's
-    verified default until M7, and every `PROXY_SSL_*` and `PROXY_CA*` option is owned
-    (ADR-0024, amended; ADR-0009 amended).
-  - **Four slices:** the request, its body and the classes; the asynchronous API; the
-    environment; the hatch, `(curl unsupported)`.
-  - **Carried into M4:** whether the engine's thread blocks SIGINT, now slice 2's first
+  [M4 plan](2026-10-26-m4-plan.md), merged in PRs #23 and #24. Four slices: the request, its
+  body and the classes; the asynchronous API; the environment; the hatch, `(curl unsupported)`.
+  - **Slice 1, the request, its body and the classes:** built on `feat/m4-slice-1`, not yet
+    merged.
+    - **Measured first** ([`research/m4/slice1/`](research/m4/slice1/)), on 7.85.0, Ubuntu's
+      8.5.0 with OpenSSL and with GnuTLS, Guix's 8.20.0 and 8.23.0: what each method's body
+      sends, byte for byte; what takes libcurl's own `Content-Type` and `Expect` away; that the
+      connect timeout ends a TLS handshake the server never answers; the codes the scenarios
+      reach; the timings; and the options tables (the plan, §4.1).
+    - **Decided by the maintainer, 2026-10-26:** a failed transfer carries its request size,
+      `CURLINFO_REQUEST_SIZE`, not its timings, which on a failure move with the version
+      (ADR-0022, amended).
+    - **Built:** `make-curl-request` and `curl-request-with` from a property list, and the
+      response with its timings, exported from `(curl)` with every condition a caller can meet
+      and the six classes (ADR-0022, ADR-0023, amended); bodies for `post`, `put`, `patch` and
+      `delete`, an empty one a block of one byte, never NULL; `Content-Type:` and `Expect:`
+      beside a body; the connect timeout; `FOLLOWLOCATION` owned, with a private `follow` field
+      for the redirect tests; the owned options and their twins, read from the options tables,
+      `PORT`, `REQUEST_TARGET` and the 23 proxy TLS options among them (ADR-0009, amended);
+      every classed code a constant, 100 and 101 gated.
+    - **The slice's review** (Opus, read-only) predicted, from libcurl's source, the one
+      failure the `current` lane then showed: the request size sums every attempt, and 8.23.0
+      resends a head after a dead reused connection, 150 for 75. Each request-size check now
+      runs on an engine of its own (ADR-0022, amended). It also found `CRLF` and `HEADER`
+      unowned, now owned, and ten minors, each answered in the code or the records.
+    - **Checks:** in the container, `make test` and `make test-memory` 24 of 24; in Docker, the
+      main (8.5.0), gnutls, floor (7.85.0) and current (8.23.0) lanes 24 of 24 each, and the
+      memory lane 24 of 24 with `check-memory-gate` 33 of 33, after the connect timeout's
+      bound was widened for Valgrind, which took 990 ms there; the
+      [mutation log](request-mutation-log.md), 38 mutants, each failing a named check.
+    - **Two subagents, both Opus:**
+
+      | Agent | Tokens | Time |
+      |---|---|---|
+      | the transfer and engine suites moved to the request, in a tree copy | 339k | 20 min |
+      | adversarial review | 396k | 23 min |
+
+  - **Carried into M4:** whether the engine's thread blocks SIGINT, slice 2's first
     measurement; why a timeout's 28 came 1,014 ms late once (ADR-0019, amended 2026-10-25);
     CI has still never run.
 - **M3, the engine:** **done on 2026-10-26.** Its three slices are merged (PRs #19, #20 and
@@ -113,6 +119,26 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-26 — the M4 plan, revised after its review (PR #24, `73a536c`)
+
+- **An adversarial review of the plan,** Opus, read-only: 420k tokens, 103 tool calls, about 30
+  minutes. One blocker, thirteen majors, ten minors, each answered in the plan and its records,
+  amended "after the plan's review":
+  - **the blocker:** a take that escapes loses a notice, never an outcome (ADR-0021, amended);
+  - **redirects:** through a 301, 302 or 303 libcurl resends a custom method without its body;
+    `FOLLOWLOCATION` is owned and left off (ADR-0023, amended);
+  - **the classes** described in curl's words, 18 with 52, 55 and 56, the redirects class
+    dropped (ADR-0022, amended);
+  - **Guix's override** keyed by the store path (ADR-0024, amended).
+- **Decided by the maintainer:** a proxy's TLS stays libcurl's verified default until M7, and
+  every proxy TLS option is owned (ADR-0024 and ADR-0009, amended).
+- **Checked:** I read its cited lines and reran its redirect probe in the container, which
+  matched its log line for line; the probe is kept in
+  [`research/m4/redirect/`](research/m4/redirect/).
+- **Checks:** docs only. `test-collect-safe`, 120 of 120.
+- **Learned:** the plan merged before its review, so two PRs carried one plan; a claim that a
+  condition was raised nowhere came from a search cut short by `head`.
 
 ### 2026-10-26 — the M4 plan, and the four records it rests on (PR #23, `d9bbb56`)
 

@@ -74,19 +74,20 @@
 
 ;; request : String Natural -> Request
 (define (request target timeout-ms)
-  (make-transfer-request target 'get '() #f timeout-ms #f #f #t #f))
+  (make-curl-request target 'timeout-ms timeout-ms))
 
 ;; outcome : (-> Response) -> Outcome
 ;; What THUNK answers, whole: (response STATUS BODY), the body as Latin-1;
-;; (transfer-error REASON CODE RECORDED); (raised TEXT) for anything else.
+;; (transfer-error REASON CODE RECORDED REQUEST-SIZE); (raised TEXT) for
+;; anything else.
 (define (outcome thunk)
   (guard (e ((curl-transfer-error? e)
              (list 'transfer-error (curl-transfer-error-reason e) (curl-transfer-error-code e)
-                   (curl-transfer-error-recorded e)))
+                   (curl-transfer-error-recorded e) (curl-transfer-error-request-size e)))
             (#t (list 'raised (if (message-condition? e) (condition-message e) e))))
     (let ((r (thunk)))
-      (list 'response (transfer-response-status r)
-            (list->string (map integer->char (bytevector->u8-list (transfer-response-body r))))))))
+      (list 'response (curl-response-status r)
+            (list->string (map integer->char (bytevector->u8-list (curl-response-body r))))))))
 
 ;; log-text : -> String
 (define (log-text)
