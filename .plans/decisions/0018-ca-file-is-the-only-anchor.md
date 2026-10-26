@@ -176,7 +176,11 @@ The policy this record handed to M4 is [ADR-0024](0024-what-a-transfer-reads-fro
 chosen by the maintainer on 2026-10-26:
 - where Guix's override would replace a request's CA file, the request is refused at submit,
   naming the variable. The variables are read when libcurl loads, beside `curl_global_init`, and
-  the table above moves into `src/`, a Guix libcurl with no row taken to override;
+  a table moves into `src/`: Guix's 8.20.0 overrides, and every other Guix libcurl is taken to,
+  8.6.0 among them, whose row above came from a measurement that was not kept. As amended after
+  the plan's review, it is keyed by the loaded library's path under `/gnu/store`, an empty
+  variable counts as unset, and only a request with verification on is refused (ADR-0024,
+  amended 2026-10-26);
 - `SSLKEYLOGFILE` and `OPENSSL_CONF` are documented, not refused;
 - a CA file's path that begins `pkcs11:`, in any ASCII case, is refused when the request is made,
   on every backend;

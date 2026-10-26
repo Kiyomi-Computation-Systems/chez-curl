@@ -7,25 +7,35 @@ close-out under **Close-outs**, newest first.
 ## Now
 
 - **Milestone:** M4, the public records and the asynchronous API (brief §8), per the
-  [M4 plan](2026-10-26-m4-plan.md), a draft on `docs/m4-plan`, not yet merged.
-  - **Decided by the maintainer, 2026-10-26:**
-    - completions reach callers through a mailbox the caller drains: the engine's thread
-      appends a finished token as data, and a caller's thread runs its callback
-      ([ADR-0021](decisions/0021-completions-through-a-mailbox.md), new; ADR-0012 amended);
-    - libcurl's codes are classed as condition types under `&curl-transfer-error`, the class
-      following the code ([ADR-0022](decisions/0022-codes-classed-as-condition-types.md),
-      new);
-    - the public request is made from a property list, by chez-cmark-gfm's convention, and
-      carries a whole body ([ADR-0023](decisions/0023-the-public-request.md), new);
-    - a transfer honours the proxy variables, and a request field turns them off; where Guix's
-      override would replace a request's CA file, the request is refused at submit;
-      `SSLKEYLOGFILE` and `OPENSSL_CONF` are documented; a `pkcs11:` CA path is refused
-      ([ADR-0024](decisions/0024-what-a-transfer-reads-from-its-environment.md), new;
-      ADR-0018 amended).
-  - **Measured before planning** (plan, §2): the codes the floor's and 8.23.0's headers name;
-    two scenarios and a proxy's refused CONNECT whose codes move with the version; and the
-    proxy variables on five Linux libcurls, all alike
-    ([research](research/m4/proxy/)).
+  [M4 plan](2026-10-26-m4-plan.md), merged in PR #23 and revised after its review on
+  `docs/m4-plan-review`, not yet merged.
+  - **The plan's review,** an adversarial one, Opus, read-only: 420k tokens, 103 tool calls,
+    about 30 minutes. One blocker, thirteen majors, ten minors. I checked its cited lines and
+    reran its redirect probe in the container, which matched its log line for line; the probe
+    and its logs are kept in [`research/m4/redirect/`](research/m4/redirect/). Each finding is
+    answered in the plan and the records, amended "after the plan's review":
+    - **the blocker:** a take that escapes, at the critical section's end, loses its token's
+      notice. A take loses a notice, never an outcome, which stays on the token, and a caller
+      whose handlers can escape keeps its tokens (ADR-0021, amended);
+    - **redirects:** through a 301, 302 or 303, libcurl resends a `CUSTOMREQUEST` method without
+      its body, on all four libcurls measured. `FOLLOWLOCATION` is owned and left off, and M5
+      follows redirects itself (ADR-0023, amended). libcurl adds a form `Content-Type` to every
+      method's body;
+    - **the classes,** described in curl's words, not by cause: 56 also answers a bad chunk
+      size, and a short body is 18 or 56 by how the server closed, so 18 joins 52, 55 and 56.
+      The redirects class is dropped; the class follows the code for `perform-failed` alone;
+      the classed codes are named constants, 100 and 101 gated (ADR-0022, amended);
+    - **Guix's override:** keyed by the library's path under `/gnu/store`, an empty variable
+      unset, 8.6.0 taken to override, and refused only with verification on (ADR-0024,
+      amended);
+    - the rest: `CUSTOMREQUEST` owned; the bodiless methods framed; deliver answers the token;
+      the hatch copies what it attaches; a check-seam rule that `(curl)` cannot import the
+      hatch; `ftype-set!` for the blob; `&curl-embedded-nul` exported, since native raises it,
+      which my edit to the plan had denied; tests that would pass on a mutant tightened; and
+      ADR-0012's stale "condition variable".
+  - **Decided by the maintainer, 2026-10-26, from the review:** a proxy's TLS stays libcurl's
+    verified default until M7, and every `PROXY_SSL_*` and `PROXY_CA*` option is owned
+    (ADR-0024, amended; ADR-0009 amended).
   - **Four slices:** the request, its body and the classes; the asynchronous API; the
     environment; the hatch, `(curl unsupported)`.
   - **Carried into M4:** whether the engine's thread blocks SIGINT, now slice 2's first
@@ -103,6 +113,31 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-26 — the M4 plan, and the four records it rests on (PR #23, `d9bbb56`)
+
+- **The [M4 plan](2026-10-26-m4-plan.md):** M4 makes the low level public, in four slices: the
+  request, its body and the classes; the asynchronous API; the environment; the hatch.
+- **Decided by the maintainer,** each the recommended option:
+  - completions reach callers through a mailbox the caller drains
+    ([ADR-0021](decisions/0021-completions-through-a-mailbox.md), new; ADR-0012 amended);
+  - libcurl's codes are classed as condition types, the class following the code
+    ([ADR-0022](decisions/0022-codes-classed-as-condition-types.md), new);
+  - the public request is made from a property list, after chez-cmark-gfm's options, and
+    carries a whole body ([ADR-0023](decisions/0023-the-public-request.md), new);
+  - the environment: proxy variables honoured, with a field to turn them off; a CA-file request
+    refused where Guix's override would replace it; `SSLKEYLOGFILE` and `OPENSSL_CONF`
+    documented; a `pkcs11:` CA path refused
+    ([ADR-0024](decisions/0024-what-a-transfer-reads-from-its-environment.md), new; ADR-0018
+    amended).
+- **Measured first:** the proxy variables on five Linux libcurls, all alike
+  ([research](research/m4/proxy/)); a refused CONNECT, 56 on 7.85.0 and 8.5.0 and 7 from
+  8.20.0; and the codes the floor's and 8.23.0's headers name.
+- **Also:** PR #22's close-out; M4's rules in global-constraints; the brief's status line.
+- **Checks:** docs only. `test-collect-safe`, which quotes the records, 120 of 120, with
+  `check-suites`, `check-seam` and `check-floors`.
+- **No subagents.** The plan's review came after the merge, at the maintainer's request, and
+  its revisions are on the next branch.
 
 ### 2026-10-26 — the `current` lane moves to curl 8.23.0, and M3 is done (PR #22, `907d524`)
 

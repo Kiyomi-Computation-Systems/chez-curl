@@ -65,8 +65,10 @@ the first forked one, measured here.
      a caller supplied.
    - **A full buffer pauses its transfer** (`CURL_WRITEFUNC_PAUSE`). The consumer resumes
      it by message, and the engine calls `curl_easy_pause` itself.
-   - **Completions reach callers through a mutex and a Chez condition variable.** Any
-     completion callback the low level offers (M4) runs on a caller's thread.
+   - **Completions reach callers through a mutex,** as data. No condition variable is used:
+     every wait polls (ADR-0013, amended 2026-10-25), and from M4 a mailbox the caller drains
+     carries them (ADR-0021). Any completion callback the low level offers (M4) runs on a
+     caller's thread.
    - **A test enforces this.** It asserts, inside a body consumer and inside completion
      delivery, that the current thread is not the engine's. Like every check here, it
      counts only after it has been watched failing.
@@ -132,3 +134,6 @@ engine's thread appends the finished token to it as data, and a caller's thread 
 its callback ([ADR-0021](0021-completions-through-a-mailbox.md)). The engine still runs no caller
 code. The test decision 4 asks for gains its delivery half: inside a callback, the thread is the
 delivering one, never the engine's.
+
+The plan's review found decision 4 still naming "a Chez condition variable", which ADR-0013's
+2026-10-25 amendment replaced with polling waits. The line now says so.

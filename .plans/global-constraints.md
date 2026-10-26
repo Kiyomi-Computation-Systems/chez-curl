@@ -250,13 +250,17 @@ provisional. They bind until that record is accepted or amended.
 - **What a transfer reads from its environment** (ADR-0024, from M4 slice 3):
   - it honours the proxy variables, by libcurl's own rules, and a request's `proxy` field at
     `#f` turns them off, by `CURLOPT_PROXY` `""`. A proxy given by URL is M7's;
+  - a proxy's TLS stays libcurl's verified default, against its system store, until M7: every
+    `PROXY_SSL_*` and `PROXY_CA*` option is owned (ADR-0024, amended 2026-10-26);
   - native reads `SSL_CERT_FILE` and `SSL_CERT_DIR` beside `curl_global_init`, and records
-    them. Where a table by world and version says the loaded libcurl overrides a CA file
-    (Guix's 8.20.0, and any Guix libcurl with no row), a request with a CA file is refused at
-    submit, as `&curl-request-error`, naming the variable recorded as set;
-  - a CA file's path beginning `pkcs11:`, in any ASCII case, is refused when the request is
-    made, on every backend;
-  - `SSLKEYLOGFILE` and `OPENSSL_CONF` are documented in README.org, not refused.
+    them, an empty value as unset. Where a table says the loaded libcurl overrides a CA file
+    (Guix's 8.20.0, and every other libcurl whose resolved path is under `/gnu/store`), a
+    request with a CA file and verification on is refused at submit, as
+    `&curl-request-error`, naming the variable recorded as set;
+  - a CA file's path beginning `pkcs11:`, in any ASCII case and no other fold, is refused when
+    the request is made, on every backend;
+  - `SSLKEYLOGFILE`, `OPENSSL_CONF` and `CURL_SSL_BACKEND` are documented in README.org, not
+    refused.
 
 ## The public request and its failures
 
@@ -267,11 +271,18 @@ provisional. They bind until that record is accepted or amended.
 - **A request may carry a whole body,** a bytevector, with a method beyond GET and HEAD from the
   M4 plan's fixed set. The submit's copy takes it, and libcurl copies that. `Content-Length` and
   `Transfer-Encoding` stay refused: libcurl owns the framing. Streaming is M6's (ADR-0023).
+  `put`, `patch` and `delete` are `CUSTOMREQUEST`, owned. Nothing follows a redirect:
+  `FOLLOWLOCATION` is owned and left off, since through a 301, 302 or 303 libcurl resends a
+  custom method without its body (ADR-0023, amended 2026-10-26).
 - **A failed transfer raises its code's class,** a condition type under
   `&curl-transfer-error` with every base field, or the base type for a code no class names. The
-  class follows the code, never the scenario: one failure's code moves with the version. Every
-  code from 0 to 101 has a row in one table, written out in the suite. Tests assert the type,
-  the reason and the code, never the texts (ADR-0022, from M4 slice 1).
+  class follows the code, for `perform-failed` alone, never the scenario: one failure's code
+  moves with the version. `body-limit` is too-large, and every other reason the base type. A
+  class is described in curl's words for its codes, never by a cause. Every classed code is a
+  constant in `(curl private constants)`, 100 and 101 behind their gates, and every code from 0
+  to 101 has a row in one table, written out in the suite. Tests assert the type, the reason and
+  the code, and a text only where a version row pins it (ADR-0022, amended 2026-10-26, from M4
+  slice 1).
 
 ## The escape hatch
 
@@ -295,6 +306,9 @@ provisional. They bind until that record is accepted or amended.
   `TIMEOUT`, `HTTPGET`, `POST`, `UPLOAD`, `PUT`, `CAINFO_BLOB` and `SSL_OPTIONS` today, and
   with them the transfer's callable and data, `WRITEFUNCTION`, `WRITEDATA` and `ERRORBUFFER`
   (ADR-0009, amended 2026-10-23 and 2026-10-24).
+  M4 adds, each in its slice: the body's options, `CUSTOMREQUEST`, `CONNECTTIMEOUT_MS`, `PROXY`,
+  `FOLLOWLOCATION`, and every `PROXY_SSL_*` and `PROXY_CA*` option, with their twins, among the
+  string, list and blob options too (ADR-0009, amended 2026-10-26).
 - **The test seam, `curl-engine-submit-with`, is held to these rules, narrowed:** long,
   enumerated-value and `off_t` options alone, so no address can pass, checked at submit on
   the caller's thread. It stays private (ADR-0009, amended 2026-10-23 and 2026-10-25).
@@ -488,10 +502,12 @@ provisional. They bind until that record is accepted or amended.
   (ADR-0012)
 - **Completions reach callers through a mailbox the caller drains** (ADR-0021, from M4 slice
   2). A submit may name a mailbox and a callback. The completing thread appends the finished
-  token to its mailbox, as data, under the mailbox's mutex, taken after the engine's, and never
-  applies the callback. A caller's thread takes the next token, under a bound, by polling, and
-  runs its callback. A test asserts, inside a callback, that the thread is the delivering one,
-  never the engine's.
+  token to its mailbox, as data, under the mailbox's mutex, taken after the engine's, once, on
+  its change to done, and never applies the callback. A caller's thread takes the next token,
+  under a bound, by polling, and runs its callback. A take that escapes loses the notice, never
+  the outcome, which stays on the token: a caller whose interrupt handlers can escape keeps its
+  tokens (ADR-0021, amended 2026-10-26). A test asserts, inside a callback, that the thread is
+  the delivering one, never the engine's.
 - **Concurrency costs no threads.** Many requests share one engine, and the high level
   never starts a thread per request (ADR-0012).
 - **Every native object is made, or freed, in one critical section with its record:** its
