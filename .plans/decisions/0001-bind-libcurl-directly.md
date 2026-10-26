@@ -1,6 +1,6 @@
 # ADR-0001: Bind libcurl directly, with no C shim; the floor is Chez 10.4.0, threaded
 
-- **Status:** Accepted; amended 2026-10-16 with what M0 slices 3 to 5 built; 2026-10-17, the variadic bindings (M0 slice 6); 2026-10-23, the checked copies and the carried checks (M2 slice 1); 2026-10-23, the Apple arm64 run, which passed; 2026-10-23, header strings are Latin-1 both ways, and the transfer's bindings (M2 slice 2)
+- **Status:** Accepted; amended 2026-10-16 with what M0 slices 3 to 5 built; 2026-10-17, the variadic bindings (M0 slice 6); 2026-10-23, the checked copies and the carried checks (M2 slice 1); 2026-10-23, the Apple arm64 run, which passed; 2026-10-23, header strings are Latin-1 both ways, and the transfer's bindings (M2 slice 2); 2026-10-25, `curl_multi_setopt`, and how Apple arm64 shows it (M3 slice 3)
   ([slice 3](#amendment-2026-10-16-what-slice-3-built),
   [slice 4](#amendment-2026-10-16-what-slice-4-built),
   [slice 5](#amendment-2026-10-16-the-non-threaded-check-m0-slice-5),
@@ -491,4 +491,69 @@ every byte kept.
   binding its `CURLOT` type names. `test-transfer` holds both the type table and each binding's
   procedure, by `eq?`: on x86-64, a long sent through the `off_t` binding arrives all the same,
   so only the table shows it.
+
+## Amendment, 2026-10-25: `curl_multi_setopt`, and how Apple arm64 shows it (M3 slice 3)
+
+ADR-0019 sets `CURLMOPT_QUICK_EXIT` on every engine's multi handle, so M3 slice 3 binds
+`curl_multi_setopt` once, for a `long`, through `bind-variadic`. Its conventions row has
+named that binder since M0 slice 6. `make check-variadic` gains a sixth mutant, that use
+alone through `bind-required`, and needs a test that fails by name on Apple arm64 without
+the annotation. The maintainer chose on 2026-10-25 how it does.
+
+- **Measured: no long multi option answers by its value before 8.20.0.** A probe set each
+  long `CURLMOPT_` of 8.20.0's `multi.h` to -1, 0 to 4, 100, 2^31-1, 2^31, 2^32, 2^40,
+  -(2^40) and -(2^62), each on a fresh multi handle. 7.85.0, the floor, and Ubuntu's 8.5.0
+  with OpenSSL and with GnuTLS took every value of every option they know, answering
+  `CURLM_OK`, and `CURLM_UNKNOWN_OPTION`, 6, for the rest. Only 8.20.0 refused a value:
+  `MAX_HOST_CONNECTIONS` and `MAX_TOTAL_CONNECTIONS` refused each negative one with
+  `CURLM_BAD_FUNCTION_ARGUMENT`, 10, and `RESOLVE_THREADS_MAX` refused 0, each negative one and
+  2^32 and above. So a check by code can fail only on 8.20.0, and the Mac's 8.7.1 is not
+  8.20.0.
+- **Measured: `MAX_TOTAL_CONNECTIONS` at 1 serialises two transfers on the four Linux
+  libcurls;** Apple's 8.7.1, which the check exists for, is the Mac's run to show. Two
+  drips of 10 bytes, 100 ms apart, to one origin, in one multi handle. At 1 the second waited
+  for the first: the first was done at 1,010 to 1,013 ms, and the second at 2,020 to 2,024 ms.
+  At 0, 2, -1 or 2^40 they ran together, and both were done at 1,007 to 1,013 ms. That held
+  twice on each of the four Linux libcurls, and on 8.20.0 under Valgrind, twice: the first at
+  1,115 and 1,116 ms, the second at 2,125 and 2,126 ms, and together at 1,009 to 1,010 ms
+  (`.plans/research/stall/results/container-2.log`). Each time is when its
+  transfer's message was read. The probe's "both done" line read about 100 ms later, since it
+  polled once more before it stopped its clock. Fixed, and run twice more on each Linux
+  libcurl from `.plans/research/stall/`, it read 2,018 to 2,020 ms serial and 1,007 to
+  1,010 ms together. The option dates from 7.30.0.
+- **Decided: a behavioural check.** `test-variadic` gains the two-drip check through
+  `curl-multi-setopt-long`: at 1 the drips run one after the other, at 2 together. A value
+  that did not arrive gives both settings the same answer, unless it differs between the two
+  calls, so one of them fails. Where libcurl answers by sign, as 8.20.0 does, -1 must be refused
+  too. `test-variadic` then starts the test origin, about 5 s a run. `check-variadic`'s sixth
+  mutant must fail by name on Apple arm64, with a failing test through that binding.
+- **Rejected:**
+  - checking only by code, with the Mac's `check-variadic` pointed at a libcurl of 8.20.0
+    or later, such as Homebrew's keg-only one, which would need its own rows;
+  - the static half alone on Apple arm64, with this use's own failure recorded as a gap.
+- **As built:**
+  - `test-variadic` runs the two drips on the test origin, each in a multi handle of its own,
+    and judges them by the gap between the two transfers: the second done 500 ms or more
+    after the first is serial. An absolute bound failed: under the gate's Valgrind a
+    process's first transfer runs late, and with the run together first and the machine
+    loaded, together ended as late as 1,863 ms, past the 1,600 ms first used. Gaps together
+    were 0 to 54 ms, and one after the other 1,008 to 1,036 ms, over the slice's review's
+    runs and four of mine, natively and under Valgrind, idle and loaded. Each check holds every call's code, both transfers'
+    codes, and the bodies, which go to a file in a temporary directory that the suite reads
+    back. With `/dev/null` as the sink, a mutant that dropped `WRITEDATA` printed the bodies
+    and passed;
+  - the drips run only once both `PRIVATE` round trips read back exactly, since they hand
+    libcurl a URL and a `FILE *` through the pointer binding: on Apple arm64 the pointer,
+    template and getinfo mutants would otherwise send libcurl through a garbage pointer;
+  - `minus-one-rows` holds what -1 answers by version, 0 on 7.85.0 and 8.5.0 and 10 on
+    8.20.0. A libcurl with no row fails by name and prints the row it needs, and
+    `check-variadic`'s control stops there, as it does for `test-transfer`'s rows;
+  - `check-variadic` has six mutants and 29 steps. On the multi mutant, `test-transfer` is
+    reported on every machine and never failed: no transfer shows a multi option on 8.7.1,
+    which lacks `CURLMOPT_QUICK_EXIT` and answers any value of it alike. It exports `NODE`;
+  - in the container, `test-variadic`'s own clock read 1,008 to 1,012 ms together and 2,018
+    to 2,029 ms serial, and under the gate's Valgrind 1,010 and 2,127 ms.
+- **Apple arm64 is still to run it,** when the Mac runs M3 (the M3 plan, §7). Its `make test`
+  first prints the 8.7.1 row for `minus-one-rows`. Its template, pointer and getinfo mutants
+  now also fail the two drips, as not run, so their failing counts will rise.
 

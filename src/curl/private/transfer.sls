@@ -92,9 +92,15 @@
 ;;;
 ;;; The pins, ADR-0003's PROTOCOLS_STR and REDIR_PROTOCOLS_STR at
 ;;; "http,https" and NOSIGNAL at 1, are pinned-options, set by one call,
-;;; set-pinned-options!, the first form of set-transfer-options!. Their
-;;; names, and the deprecated bitmasks', stand in this file only as data,
-;;; in pinned-options and owned-option-names.
+;;; set-pinned-options!, the first form of set-transfer-options!. With
+;;; them, ADR-0019's QUICK_EXIT at 1, quick-exit-pin, where the loaded
+;;; libcurl knows it, from 7.87.0: a transfer taken apart while its name
+;;; lookup stalls then leaves the resolver thread behind, rather than wait
+;;; for it, up to 10 s, holding the engine. pinned-settings computes the
+;;; whole list as data. An engine made without it, a private test seam,
+;;; passes start-transfer! #f, and the pins are set alone. Their names, and
+;;; the deprecated bitmasks', stand in this file only as data, in
+;;; pinned-options, quick-exit-pin and owned-option-names.
 ;;;
 ;;; It imports foreign-callable, foreign-callable-entry-point and
 ;;; lock-object, which check-seam lets this library alone import (ADR-0007,
@@ -111,7 +117,8 @@
           transfer-response-effective-url transfer-response-headers transfer-response-body
           option-bindings option-binding option-setter http-version-symbol bytes->latin-1 pinned-options
           request-field-options owned-option-names live-transfer-count cached-option-names
-          tls-settings setopt-accepted?)
+          tls-settings setopt-accepted? quick-exit-pin pinned-settings quick-exit-known?
+          quick-exits-set)
   (import (curl private require-threaded)
           (rnrs)
           (rnrs mutable-strings)
@@ -530,15 +537,16 @@
 
   ;; owned-option-names : (Listof String)
   ;; The options the test seam refuses, by name (ADR-0009, amended
-  ;; 2026-10-23 and 2026-10-24): those the transfer always sets, and the
-  ;; protocol pins' deprecated bitmasks; then every option of each request
+  ;; 2026-10-23, 2026-10-24 and 2026-10-25): those the transfer always sets,
+  ;; QUICK_EXIT among them where the libcurl knows it, and the protocol
+  ;; pins' deprecated bitmasks; then every option of each request
   ;; field; then each owned setting's twin, an option with an id of its own
   ;; that sets the same thing: the CA file's are CAINFO_BLOB, which adds a
   ;; CA, and SSL_OPTIONS, whose NATIVE_CA adds the system store. They are
   ;; compared by id, so an alias name is refused too.
   (define owned-option-names
     (append '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS"
-              "NOSIGNAL" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER")
+              "NOSIGNAL" "QUICK_EXIT" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER")
             (apply append (map cdr request-field-options))
             '("TIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "UPLOAD" "PUT" "CAINFO_BLOB" "SSL_OPTIONS")))
 
@@ -549,6 +557,26 @@
   ;; runs threads. tests/test-transfer.sps writes it out.
   (define pinned-options
     '(("PROTOCOLS_STR" . "http,https") ("REDIR_PROTOCOLS_STR" . "http,https") ("NOSIGNAL" . 1)))
+
+  ;; quick-exit-pin : (Pairof String Integer)
+  ;; ADR-0019's setting, QUICK_EXIT at 1: taken apart during a stalled name
+  ;; lookup, or timed out in one, the transfer leaves libcurl's resolver
+  ;; thread behind rather than wait for it. libcurl has it from 7.87.0.
+  ;; tests/test-transfer.sps writes it out.
+  (define quick-exit-pin '("QUICK_EXIT" . 1))
+
+  ;; pinned-settings : Boolean -> (Listof (Pairof String (U String Integer)))
+  ;; The settings a transfer makes before its own, in order: pinned-options,
+  ;; then quick-exit-pin when QUICK-EXIT. tests/test-transfer.sps writes out
+  ;; both answers.
+  (define (pinned-settings quick-exit)
+    (if quick-exit (append pinned-options (list quick-exit-pin)) pinned-options))
+
+  ;; quick-exit-known? : -> Boolean
+  ;; Whether the loaded libcurl knows quick-exit-pin's option, by name: the
+  ;; floor, 7.85.0, does not (ADR-0019, decision 1).
+  (define (quick-exit-known?)
+    (and (curl-easy-option (car quick-exit-pin)) #t))
 
   ;; locked : Mutex (-> Any) -> Any
   ;; THUNK's value, run holding LOCK, in a critical section. Chez's
@@ -639,15 +667,20 @@
   (define (set-string-option! easy name text buffer)
     (call-with-c-string text (lambda (address) (set-option! easy name address buffer))))
 
-  ;; set-pinned-options! : Positive-Integer (U Positive-Integer #f) -> Void
-  ;; Each of pinned-options set on EASY, in order: a string through a C
-  ;; string, a number as it is.
-  (define (set-pinned-options! easy buffer)
-    (for-each (lambda (pin)
-                (if (string? (cdr pin))
-                    (set-string-option! easy (car pin) (cdr pin) buffer)
-                    (set-option! easy (car pin) (cdr pin) buffer)))
-              pinned-options))
+  ;; set-pinned-options! : Positive-Integer (U Positive-Integer #f) Boolean -> Void
+  ;; Each of pinned-settings' answer set on EASY, in order: a string through
+  ;; a C string, a number as it is. QUICK_EXIT is among them when
+  ;; QUICK-EXIT, the engine's say, and the loaded libcurl knows it; once
+  ;; libcurl has taken it, it is counted, for quick-exits-set.
+  (define (set-pinned-options! easy buffer quick-exit)
+    (let ((settings (pinned-settings (and quick-exit (quick-exit-known?)))))
+      (for-each (lambda (pin)
+                  (if (string? (cdr pin))
+                      (set-string-option! easy (car pin) (cdr pin) buffer)
+                      (set-option! easy (car pin) (cdr pin) buffer)))
+                settings)
+      (when (member quick-exit-pin settings)
+        (locked sinks-lock (lambda () (set! quick-exit-count (+ quick-exit-count 1)))))))
 
   ;; tls-settings : (U String #f) Boolean -> (Listof (Pairof String (U String Integer #f)))
   ;; The TLS settings for a snapshot's CA-FILE and VERIFY (ADR-0018), in
@@ -728,6 +761,17 @@
   ;; test that it is empty once they have ended.
   (define (live-transfer-count)
     (locked sinks-lock (lambda () (hashtable-size sinks))))
+
+  ;; How many transfers have set QUICK_EXIT, ever, under sinks-lock.
+  (define quick-exit-count 0)
+
+  ;; quick-exits-set : -> Natural
+  ;; How many transfers have set QUICK_EXIT in this process, ever, each
+  ;; counted once libcurl took it: a private accessor, for the test that an
+  ;; engine's transfers set it, or leave it out, as the engine says
+  ;; (ADR-0019).
+  (define (quick-exits-set)
+    (locked sinks-lock (lambda () quick-exit-count)))
 
   ;; transfers-started : -> Natural
   ;; How many transfers start-transfer! has registered in this process, ever:
@@ -869,16 +913,16 @@
         (string-append (car header) ";")
         (string-append (car header) ": " (cdr header))))
 
-  ;; set-transfer-options! : Positive-Integer Plan Positive-Integer Positive-Integer Natural Positive-Integer -> Void
-  ;; Every setting PLAN's transfer makes on EASY, in order: pinned-options
-  ;; first, then ERRORBUFFER at BUFFER, CURLU at URL, WRITEFUNCTION and
+  ;; set-transfer-options! : Positive-Integer Plan Positive-Integer Positive-Integer Natural Positive-Integer Boolean -> Void
+  ;; Every setting PLAN's transfer makes on EASY, in order: the pins first,
+  ;; QUICK_EXIT among them as QUICK-EXIT says, then ERRORBUFFER at BUFFER, CURLU at URL, WRITEFUNCTION and
   ;; WRITEDATA at KEY; and as the request asks, NOBODY for head, HTTPHEADER
   ;; at HEADER-LIST, USERAGENT, TIMEOUT_MS and MAXFILESIZE_LARGE at the body
   ;; limit plus one; then, always, tls-settings' for the plan's CA file and
   ;; verification, through set-tls-options!; then the test seam's settings.
   ;; It follows no redirect unless they say so.
-  (define (set-transfer-options! easy plan key buffer header-list url)
-    (set-pinned-options! easy buffer)
+  (define (set-transfer-options! easy plan key buffer header-list url quick-exit)
+    (set-pinned-options! easy buffer quick-exit)
     (set-option! easy "ERRORBUFFER" buffer #f)
     (set-option! easy (field-option 'url) url buffer)
     (set-option! easy "WRITEFUNCTION" write-body-entry buffer)
@@ -903,15 +947,16 @@
                 (set-option! easy (car setting) (cdr setting) buffer))
               (plan-settings plan)))
 
-  ;; start-transfer! : Plan -> Live
+  ;; start-transfer! : Plan Boolean -> Live
   ;; PLAN's transfer, made on this thread, the engine's, ready for its
   ;; multi handle: its key and sink, its URL parsed again and its scheme
   ;; checked again, its error buffer, zeroed, its header list, and its easy
-  ;; handle, set by set-transfer-options!. Each object is made, and recorded
+  ;; handle, set by set-transfer-options!, with QUICK_EXIT where the libcurl
+  ;; knows it, unless QUICK-EXIT is #f, an engine made without it. Each object is made, and recorded
   ;; in the live record, in one critical section. A raise frees what was
   ;; made, by free-transfer!, then raises again: the URL's refusal, or a
   ;; &curl-transfer-error, setopt-failed, unknown-option or no-handle.
-  (define (start-transfer! plan)
+  (define (start-transfer! plan quick-exit)
     (let ((live (make-live-transfer plan #f #f #f #f 0 #f)))
       (guard (e (#t (free-transfer! live) (raise e)))
         (critical-section
@@ -948,7 +993,7 @@
            (live-transfer-easy-set! live easy)))
         (set-transfer-options! (live-transfer-easy live) plan (live-transfer-key live)
                                (live-transfer-buffer live) (live-transfer-header-list live)
-                               (live-transfer-url live))
+                               (live-transfer-url live) quick-exit)
         live)))
 
   ;; abandon-transfer-easy! : Live -> Void

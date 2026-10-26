@@ -1,6 +1,6 @@
 # ADR-0016: The floors have one source, `packaging/floors.sexp`
 
-- **Status:** Accepted; amended 2026-10-16: CI reads the floors from the file (M0 slice 5)
+- **Status:** Accepted; amended 2026-10-16: CI reads the floors from the file (M0 slice 5); amended 2026-10-26: the current libcurl is no floor
 - **Date:** 2026-10-16
 - **Scope:** every statement of the Chez, libcurl and Node floors
 - **Settles:** the harness plan's §3 item 5
@@ -89,3 +89,13 @@ supports.
 - **Not caught:** a step that builds a version without the scripts. A matrix value of
   another version reaches nothing, since the scripts take no version.
 - **The Node floor is still unchecked:** nothing in CI uses Node until M1.
+
+## Amendment, 2026-10-26: the current libcurl is no floor
+
+CI gained a lane on the current libcurl, 8.20.0, built from source
+([ADR-0020](0020-a-ci-lane-on-the-current-libcurl.md)). That version is pinned in
+`scripts/ci/build-curl.sh` itself, as `current_version`, beside its sha256, and built with
+`--current`. It is not a floor, so it is not in `packaging/floors.sexp`, and this record's
+rules do not hold it: the file keeps its three keys, and `check-floors` the floors' versions
+out of the workflows. The workflow states the current version nowhere either. The lane reads
+it back from what it built.

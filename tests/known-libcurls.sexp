@@ -53,6 +53,14 @@
  (host "x86_64-pc-linux-gnu"))
 
 (libcurl
+ (where "The current libcurl, curl 8.20.0 built by scripts/ci/build-curl.sh --current on Ubuntu 24.04 with OpenSSL 3.0.13 (libssl3t64 3.0.13-0ubuntu3.16): the library CI's current lane loads (ADR-0020). Printed by test-drift in Docker ubuntu:24.04 on 2026-10-26, against that build's lib/libcurl.so.4.")
+ (version "8.20.0")
+ (version-num 529408)
+ (features 1361658509)
+ (ssl-version "OpenSSL/3.0.13")
+ (host "x86_64-pc-linux-gnu"))
+
+(libcurl
  (where "Apple's libcurl 8.7.1, /usr/lib/libcurl.4.dylib, on the maintainer's Mac: Apple M1, macOS 26.7.1, loaded by Homebrew's Chez as tarm64osx. Its host names x86_64, though the process is arm64 (ADR-0001, amended 2026-10-23). Printed by test-drift there on 2026-10-23.")
  (version "8.7.1")
  (version-num 526081)

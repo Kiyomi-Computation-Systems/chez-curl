@@ -1036,8 +1036,8 @@
 
 ;; --- the test seam's deny-list (ADR-0009, amended 2026-10-23) ---------------------------
 
-(test-equal "owned-option-names, written out: the options the transfer always sets and the pins' bitmasks, then each request field's, then the owned settings' twins, the CA file's CAINFO_BLOB and SSL_OPTIONS among them"
-  '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL"
+(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT among them, and the pins' bitmasks, then each request field's, then the owned settings' twins, the CA file's CAINFO_BLOB and SSL_OPTIONS among them"
+  '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
     "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
     "CURLU" "NOBODY" "HTTPHEADER" "USERAGENT" "TIMEOUT_MS" "MAXFILESIZE_LARGE"
     "CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST"
@@ -1094,6 +1094,13 @@
        '("CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST" "CAINFO_BLOB" "SSL_OPTIONS"))
   (map (lambda (name) (seam-refusal (list (cons name 1))))
        '("CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST" "CAINFO_BLOB" "SSL_OPTIONS")))
+
+(test-equal "the test seam refuses QUICK_EXIT, which every engine transfer sets where the loaded libcurl knows it, by id, as owned-option, naming it, at submit, before anything native; a libcurl without it, the floor, refuses it as unknown-option (ADR-0009, amended 2026-10-24)"
+  (list (if (curl-easy-option "QUICK_EXIT")
+            '(request-refused options "QUICK_EXIT" owned-option)
+            '(transfer-refused unknown-option "QUICK_EXIT"))
+        running-counts running-counts)
+  (seam-refusal (list (cons "QUICK_EXIT" 1))))
 
 (test-equal "an alias of an owned option is refused as owned-option: FILE is WRITEDATA's id, and RTSPHEADER HTTPHEADER's"
   (list '(same same)
@@ -1201,14 +1208,40 @@
   '(("PROTOCOLS_STR" . "http,https") ("REDIR_PROTOCOLS_STR" . "http,https") ("NOSIGNAL" . 1))
   pinned-options)
 
-(test-equal "set-pinned-options!, read from transfer.sls, is exactly the loop that sets each pinned option, a string through set-string-option!, a number through set-option!"
-  '(define (set-pinned-options! easy buffer)
-     (for-each (lambda (pin)
-                 (if (string? (cdr pin))
-                     (set-string-option! easy (car pin) (cdr pin) buffer)
-                     (set-option! easy (car pin) (cdr pin) buffer)))
-               pinned-options))
+(test-equal "quick-exit-pin, written out: QUICK_EXIT at 1 (ADR-0019)"
+  '("QUICK_EXIT" . 1)
+  quick-exit-pin)
+
+(test-equal "pinned-settings, written out for each answer: the pins alone, or the pins and then QUICK_EXIT at 1"
+  '((("PROTOCOLS_STR" . "http,https") ("REDIR_PROTOCOLS_STR" . "http,https") ("NOSIGNAL" . 1))
+    (("PROTOCOLS_STR" . "http,https") ("REDIR_PROTOCOLS_STR" . "http,https") ("NOSIGNAL" . 1)
+     ("QUICK_EXIT" . 1)))
+  (list (pinned-settings #f) (pinned-settings #t)))
+
+;; CURLOPT_QUICK_EXIT(3), 8.20.0: "Added in curl 7.87.0", 0x075700.
+(test-equal "quick-exit-known? answers whether the loaded libcurl is 7.87.0 or later, where QUICK_EXIT came in, and curl-easy-option agrees"
+  (let ((at-least (and (string? version) (>= (libcurl-info-version-number (loaded-libcurl)) #x075700))))
+    (list at-least at-least))
+  (list (quick-exit-known?) (and (curl-easy-option "QUICK_EXIT") #t)))
+
+(test-equal "set-pinned-options!, read from transfer.sls, is exactly the loop that sets each of pinned-settings' answer, QUICK_EXIT among them when the engine says so and the libcurl knows it, a string through set-string-option!, a number through set-option!, then counts QUICK_EXIT once libcurl has taken it"
+  '(define (set-pinned-options! easy buffer quick-exit)
+     (let ((settings (pinned-settings (and quick-exit (quick-exit-known?)))))
+       (for-each (lambda (pin)
+                   (if (string? (cdr pin))
+                       (set-string-option! easy (car pin) (cdr pin) buffer)
+                       (set-option! easy (car pin) (cdr pin) buffer)))
+                 settings)
+       (when (member quick-exit-pin settings)
+         (locked sinks-lock (lambda () (set! quick-exit-count (+ quick-exit-count 1)))))))
   (transfer-definition 'set-pinned-options!))
+
+(test-equal "pinned-settings and quick-exit-known?, read from transfer.sls, held whole: pinned-options then quick-exit-pin, and the lookup of quick-exit-pin's name by curl-easy-option"
+  '((define (pinned-settings quick-exit)
+      (if quick-exit (append pinned-options (list quick-exit-pin)) pinned-options))
+    (define (quick-exit-known?)
+      (and (curl-easy-option (car quick-exit-pin)) #t)))
+  (list (transfer-definition 'pinned-settings) (transfer-definition 'quick-exit-known?)))
 
 ;; holds? : Any Any -> Boolean
 (define (holds? x datum)
@@ -1235,7 +1268,7 @@
 
 ;; setting-order : Any -> Any
 ;; What each form of the definition D's body sets, in order: pins for
-;; (set-pinned-options! easy buffer); tls for (set-tls-options! easy
+;; (set-pinned-options! easy buffer quick-exit); tls for (set-tls-options! easy
 ;; (plan-ca-file plan) (plan-verify plan) buffer); else each set-option!
 ;; and set-string-option! call in it, by set-name; (other FORM) for a form
 ;; that sets nothing. D itself when it is no definition: what went wrong.
@@ -1243,7 +1276,7 @@
   (if (and (list? d) (pair? d) (eq? (car d) 'define))
       (apply append
              (map (lambda (form)
-                    (cond ((equal? form '(set-pinned-options! easy buffer)) '(pins))
+                    (cond ((equal? form '(set-pinned-options! easy buffer quick-exit)) '(pins))
                           ((equal? form '(set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer))
                            '(tls))
                           (else (let ((sets (option-sets form '())))
@@ -1264,7 +1297,7 @@
 (test-equal "setting-order, the reader: pins, tls, each set's name at any depth, a field's through field-option, the seam's loop, a form that sets nothing, and a name it cannot read"
   '(pins "A" "NOBODY" "B" tls seam (other (f x)) (unread n))
   (setting-order '(define (g)
-                    (set-pinned-options! easy buffer)
+                    (set-pinned-options! easy buffer quick-exit)
                     (set-option! e "A" 1 b)
                     (when h (set-option! e (field-option 'method) 1 b) (set-string-option! e "B" "x" b))
                     (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
@@ -1327,7 +1360,7 @@
               (transfer-definition 'prepare-transfer)))
 
 ;; pin-names : (Listof String)
-(define pin-names '("PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL"))
+(define pin-names '("PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"))
 
 ;; pin-name-places : Any -> (Listof (List String Any Symbol))
 ;; Each of pin-names as a string in the library form's body: the name, the
@@ -1346,13 +1379,13 @@
                       #f))
               (cddddr library))))
 
-(test-equal "the names PROTOCOLS_STR, REDIR_PROTOCOLS_STR, PROTOCOLS, REDIR_PROTOCOLS and NOSIGNAL stand in transfer.sls only as quoted data: five in owned-option-names, three in pinned-options"
+(test-equal "the names PROTOCOLS_STR, REDIR_PROTOCOLS_STR, PROTOCOLS, REDIR_PROTOCOLS, NOSIGNAL and QUICK_EXIT stand in transfer.sls only as quoted data: six in owned-option-names, three in pinned-options, and QUICK_EXIT in quick-exit-pin"
   (list-sort (lambda (a b) (string<? (written a) (written b)))
              '(("PROTOCOLS_STR" owned-option-names quoted) ("REDIR_PROTOCOLS_STR" owned-option-names quoted)
                ("PROTOCOLS" owned-option-names quoted) ("REDIR_PROTOCOLS" owned-option-names quoted)
-               ("NOSIGNAL" owned-option-names quoted)
+               ("NOSIGNAL" owned-option-names quoted) ("QUICK_EXIT" owned-option-names quoted)
                ("PROTOCOLS_STR" pinned-options quoted) ("REDIR_PROTOCOLS_STR" pinned-options quoted)
-               ("NOSIGNAL" pinned-options quoted)))
+               ("NOSIGNAL" pinned-options quoted) ("QUICK_EXIT" quick-exit-pin quoted)))
   (guard (e (#t (list 'unreadable (describe e))))
     (list-sort (lambda (a b) (string<? (written a) (written b))) (pin-name-places transfer-library))))
 

@@ -54,11 +54,13 @@
 #undef curl_url_get
 
 /* With gcc, curl/curl.h makes curl_easy_setopt and curl_easy_getinfo
-   type-checking macros, as its typecheck-gcc.h does for a caller. This
-   file defines the functions themselves, as libcurl's own sources do after
-   the same #undef. */
+   type-checking macros, as its typecheck-gcc.h does for a caller, and
+   8.20.0's makes curl_multi_setopt one too. This file defines the
+   functions themselves, as libcurl's own sources do after the same
+   #undef. */
 #undef curl_easy_setopt
 #undef curl_easy_getinfo
+#undef curl_multi_setopt
 
 static char calls[2048];
 
@@ -415,6 +417,15 @@ const char *curl_multi_strerror(CURLMcode code)
 {
   called("curl_multi_strerror(%d)", (int)code);
   return "decoy";
+}
+#endif
+
+/* Variadic, bound by the load and never called, as curl_easy_setopt. */
+#ifndef DECOY_LACKS_curl_multi_setopt
+CURLMcode curl_multi_setopt(CURLM *multi, CURLMoption option, ...)
+{
+  called("curl_multi_setopt(%s,%d)", multi ? "multi" : "NULL", (int)option);
+  return CURLM_BAD_HANDLE;
 }
 #endif
 

@@ -1,0 +1,15 @@
+[container] chez 10.4.0, Linux x86_64
+guile: warning: failed to install locale
+[container, none] start 1 threads
+[container, none] after 5 engines (last code 6): 11 threads
+[container, none] after 10 engines (last code 6): 21 threads
+[container, none] after 15 engines (last code 6): 31 threads
+[container, none] after 20 engines (last code 6): 41 threads
+[container, none] 3 s later: 1 threads; counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[container, multi] start 1 threads
+[container, multi] after 5 engines (last code 6): 1 threads
+[container, multi] after 10 engines (last code 6): 1 threads
+[container, multi] after 15 engines (last code 6): 1 threads
+[container, multi] after 20 engines (last code 6): 1 threads
+[container, multi] 3 s later: 1 threads; counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+exit 0

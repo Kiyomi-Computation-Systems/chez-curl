@@ -59,7 +59,9 @@
 ;;; What the workflows must be. CI states no floor: scripts/ci/build-chez.sh
 ;;; and build-curl.sh take no version, and read theirs from the floors file, so
 ;;; nothing a workflow says, an env value or a matrix value, changes what they
-;;; build. Every file under the workflow directory is held, in subdirectories
+;;; build. build-curl.sh --current builds the one other version it pins
+;;; itself, the current libcurl, which is no floor and so not held here
+;;; (ADR-0020); the flag takes no value. Every file under the workflow directory is held, in subdirectories
 ;;; too, so a second workflow cannot say one unseen. The directory must hold a
 ;;; file, and ci.yml, directly in it. And no line of any file there may
 ;;; contain, as text:

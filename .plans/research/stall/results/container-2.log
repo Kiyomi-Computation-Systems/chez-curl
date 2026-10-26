@@ -1,0 +1,25 @@
+[container] chez 10.4.0, Linux x86_64
+guile: warning: failed to install locale
+[container, run 1] timeout-late fresh 40: codes (28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28), latest 8 ms, above 50 ms ()
+[container, run 1] timeout-late shared 40: codes (28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28), latest 9 ms, above 50 ms ()
+[container, run 2] timeout-late fresh 40: codes (28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28), latest 8 ms, above 50 ms ()
+[container, run 2] timeout-late shared 40: codes (28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28), latest 10 ms, above 50 ms ()
+[container, run 3] timeout-late fresh 40: codes (28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28), latest 7 ms, above 50 ms ()
+[container, run 3] timeout-late shared 40: codes (28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28), latest 12 ms, above 50 ms ()
+[container, valgrind, run 1] libcurl 8.20.0
+[container, valgrind, run 1]   value 1: setopt 0, both done at 2126.0 ms, results ((0 1115.0) (0 2125.0))
+[container, valgrind, run 1]   value 2: setopt 0, both done at 1010.0 ms, results ((0 1010.0) (0 1010.0))
+[container, valgrind, run 1]   value 0: setopt 0, both done at 1010.0 ms, results ((0 1010.0) (0 1010.0))
+[container, valgrind, run 1]   value -1: setopt 10, both done at 1010.0 ms, results ((0 1009.0) (0 1010.0))
+[container, valgrind, run 1]   value 1099511627776: setopt 0, both done at 1009.0 ms, results ((0 1009.0) (0 1009.0))
+[container, valgrind, run 1] counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[container, valgrind, run 1] Valgrind wrote 0 bytes of report
+[container, valgrind, run 2] libcurl 8.20.0
+[container, valgrind, run 2]   value 1: setopt 0, both done at 2127.0 ms, results ((0 1116.0) (0 2126.0))
+[container, valgrind, run 2]   value 2: setopt 0, both done at 1010.0 ms, results ((0 1010.0) (0 1010.0))
+[container, valgrind, run 2]   value 0: setopt 0, both done at 1009.0 ms, results ((0 1009.0) (0 1009.0))
+[container, valgrind, run 2]   value -1: setopt 10, both done at 1010.0 ms, results ((0 1010.0) (0 1010.0))
+[container, valgrind, run 2]   value 1099511627776: setopt 0, both done at 1009.0 ms, results ((0 1009.0) (0 1009.0))
+[container, valgrind, run 2] counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[container, valgrind, run 2] Valgrind wrote 0 bytes of report
+exit 0

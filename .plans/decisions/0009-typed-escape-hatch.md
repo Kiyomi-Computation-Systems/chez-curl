@@ -1,6 +1,6 @@
 # ADR-0009: A typed escape hatch for unwrapped options, in the low level only
 
-- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3)
+- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, `(curl ...)` only
 - **Settles:** D3 (brief §10)
@@ -181,3 +181,16 @@ Two of the safe types still need guarding:
   request's own, as `perform-transfer-with` did.
 - **`QUICK_EXIT` is not yet among the owned options.** Slice 3 sets it on every engine
   transfer, and adds it to the list the seam refuses, by id.
+
+## Amendment, 2026-10-25: `QUICK_EXIT` is owned, as built (M3 slice 3)
+
+- **`QUICK_EXIT` is in `owned-option-names`,** after `NOSIGNAL`, among the options every
+  transfer sets. Where the loaded libcurl knows it, the seam refuses it by id, as
+  `owned-option`. The floor does not know it, so there it is `unknown-option`, as any name
+  the library lacks. `test-transfer` writes out both answers.
+- **No request turns it off.** A private constructor,
+  `make-curl-engine-without-quick-exit`, makes an engine that leaves it out, or leaves out its
+  multi handle's `CURLMOPT_QUICK_EXIT`, so `test-engine` can show the stall each prevents
+  (ADR-0019, amended 2026-10-25). It is a test seam, as `make-faulty-curl-engine` is: no
+  request, option or hatch reaches it.
+

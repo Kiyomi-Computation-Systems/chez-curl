@@ -79,7 +79,8 @@
   the maintainer's Mac found OpenSSL 3.6.3. To check with LibreSSL there, pass
   `OPENSSL=/usr/bin/openssl`.
 * `make check-variadic` can watch a variadic binding fail only on Apple arm64.
-  Run it on the Mac whenever a variadic binding changes. Elsewhere it checks
+  Run it on the Mac whenever a variadic binding changes. It needs `NODE` too:
+  `test-variadic`'s drips run on the test origin. Elsewhere it checks
   only the static half: `test-collect-safe` must refuse each planted binding.
 
 ## Traps the family has already hit
@@ -186,7 +187,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * curl's `./configure` turns on every optional library it finds, and only warns
   about an option it doesn't know. A reproducible curl build names every
   library, passes `--enable-option-checking=fatal`, and checks what the install
-  lists.
+  lists. A newer curl drops options an older one's line names, and the fatal
+  check stops at each: curl 8 has no `librtmp`, `wolfssh`, `hyper` or `msh3`.
+  Each pinned version gets a line read against its own `./configure --help`.
 * A shell's `wait` may print `Killed` on stderr for a child killed by a signal:
   dash, `bash -c` and macOS's `/bin/sh` do, dash onto the stderr the killed
   command's own redirections set. Only bash run as `sh`, the container's,
@@ -289,9 +292,20 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   `test-transfer` fails first, naming the variable, when one is set.
 * A stalled name lookup blocks libcurl's teardown, and a timeout inside
   `curl_multi_perform`, for about 10 s: it waits for its resolver thread. On
-  8.20.0, so does `curl_easy_cleanup` after `curl_easy_perform`.
-  `QUICK_EXIT` and `CURLMOPT_QUICK_EXIT` leave the thread behind. The container
-  cannot stall a lookup; Docker or a stand-in `getaddrinfo` can (ADR-0019).
+  8.20.0, so does `curl_multi_cleanup`. `QUICK_EXIT` and `CURLMOPT_QUICK_EXIT`
+  leave the thread behind, and every engine sets both where libcurl knows them.
+  The container cannot stall a lookup itself: `tests/stall-getaddrinfo.c`,
+  preloaded, stalls one on Linux, and `test-engine` runs it. macOS has no
+  `LD_PRELOAD`, so the checks run on Linux alone (ADR-0019).
+* libcurl 7.85.0 and 8.5.0 take every value of every long multi option, so
+  `curl_multi_setopt`'s answer cannot show a value arriving; Apple's 8.7.1 is
+  unmeasured. `test-variadic`
+  watches it by behaviour: two drips, serialised at `MAX_TOTAL_CONNECTIONS` 1.
+* A probe that polls once more before it reads its clock reports late, by up to
+  that poll's timeout. Stop the clock where the condition is first seen.
+* In the Guix container, `C_INCLUDE_PATH` set to another curl's headers alone
+  drops glibc's and the kernel's, and every compile fails. Prepend them:
+  `C_INCLUDE_PATH=DIR:$C_INCLUDE_PATH`.
 * Guix's libcurl 8.20.0 writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over a
   transfer's `CAINFO` and `CAPATH` when it starts, after every setopt; its
   8.6.0 did not. The container passes neither; `test-transfer-tls` fails

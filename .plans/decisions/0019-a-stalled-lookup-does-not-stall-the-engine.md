@@ -1,6 +1,6 @@
 # ADR-0019: A stalled name lookup does not stall the engine
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-25, the stand-in measured, and the Mac's probe (M3 slice 3); amended 2026-10-25, what slice 3 built; amended 2026-10-25, after the slice's review; amended 2026-10-26, a CI lane on 8.20.0
 - **Date:** 2026-10-24
 - **Scope:** M3's engine and every transfer it runs (the [M3 plan](../2026-10-24-m3-plan.md))
 - **Settles:** what the engine does about libcurl's resolver thread, which blocks teardown
@@ -117,3 +117,134 @@ Each probe ran one easy handle for `http://slow-name.example.com/` in one multi 
 - **Apple's libcurl is unmeasured.** Its 8.7.1 has `QUICK_EXIT` but not the multi option, and
   macOS has no `LD_PRELOAD`. Whether the stand-in reaches Apple's resolver is the Mac run's
   to show.
+
+## Amendment, 2026-10-25: the stand-in, measured, and the Mac (M3 slice 3)
+
+- **A stand-in `getaddrinfo` under `LD_PRELOAD` stalls libcurl's resolver as a silent DNS
+  server did.** It stalls one name for a set time, then answers `EAI_NONAME`, and hands every
+  other name to the real `getaddrinfo`, found by `dlsym(RTLD_NEXT, ...)`. It logs each lookup
+  it stalls. Spike E1's `lookup.sps` ran under it, each of its nine cases four times per
+  stall, with stalls of 10,000 and 3,000 ms: twice from scratch copies, then twice from the
+  committed programs, `.plans/research/stall/` with its `results/`:
+  - in the container, on 8.20.0;
+  - in Docker `ubuntu:24.04`, on the floor's 7.85.0 and Ubuntu's 8.5.0 with OpenSSL and with
+    GnuTLS, under the floor's Chez.
+
+  Each case gave the shape of E1's tables, in ms:
+
+  | libcurl | blocks without its option | at a 10,000 ms stall | at 3,000 | with the option |
+  |---|---|---|---|---|
+  | 7.85.0 | `remove_handle` on teardown | 9,667–9,698 | 2,655–2,700 | none to set |
+  | 7.85.0 | one `perform` on timeout; 28 at the stall's end | 9,001–9,002 | 1,999–2,002 | none to set |
+  | 8.5.0, both | `remove_handle` on teardown | 9,692–9,694 | 2,692–2,695 | `QUICK_EXIT`: 0 |
+  | 8.5.0, both | one `perform` on timeout; 28 at the stall's end | 8,999–9,001 | 2,000–2,001 | `QUICK_EXIT`: 0, and 28 at 999–1,003 |
+  | 8.20.0 | `multi_cleanup` after a teardown | 9,698–9,703 | 2,699 | `CURLMOPT_QUICK_EXIT`: 0 |
+  | 8.20.0 | `multi_cleanup` after a timeout | 8,999–9,010 | 1,998–2,001 | `CURLMOPT_QUICK_EXIT`: 0 |
+
+  Each wait is the stall less the time already spent: 300 ms of driving, or the 1,000 ms
+  timeout. So it is the stand-in that holds them. On 8.20.0, `curl_easy_cleanup` after
+  `curl_easy_perform` waited 8,996–9,002 and 1,995–1,999 ms, and none with `QUICK_EXIT`, as E1
+  found. With no stand-in, the same lookup failed at once on every lane, code 6 within 43 ms.
+  The stand-in saw two lookups per transfer on 8.20.0, and one on the others.
+- **The maintainer chose on 2026-10-25: the stall checks run on Linux alone.** macOS has no
+  `LD_PRELOAD`. A stand-in there needs `DYLD_INSERT_LIBRARIES` and an `__interpose` section,
+  and whether that reaches the resolver Apple's 8.7.1 uses is unmeasured. So on macOS
+  `test-engine` prints that the stall checks did not run, and holds no test there. The
+  stand-in's source carries a macOS half, and a probe for the Mac's M3 run shows whether it
+  stalls Apple's lookups. Its answer is recorded here, and decides whether a later change
+  runs the checks on macOS. Rejected: running the checks on macOS now, which would fail the
+  Mac's `make test` if interposition cannot reach the resolver; and no probe, leaving the Mac
+  unmeasured.
+
+## Amendment, 2026-10-25: what slice 3 built
+
+- **Decisions 1 and 2, as built.** `pinned-settings` adds `QUICK_EXIT` at 1 to the pins when
+  the engine asks for it and `curl_easy_option_by_name` finds it, and `set-pinned-options!`
+  sets the list, first, as data. The engine's thread sets `CURLMOPT_QUICK_EXIT` to 1 right
+  after `curl_multi_init`. `multi-quick-exit-verdict` judges the answer: `CURLM_OK` is set,
+  `CURLM_UNKNOWN_OPTION` unknown, and any other refuses the engine before its first turn.
+  `curl-engine-quick-exit` reads which, privately.
+- **The test seam:** `make-curl-engine-without-quick-exit` takes a list of `transfer` and
+  `multi`, the settings its engine leaves out. It is private, as `make-faulty-curl-engine`
+  is (ADR-0009, amended 2026-10-25).
+- **The test** (decision 5) is `test-engine`'s, on Linux. It compiles
+  `tests/stall-getaddrinfo.c` with `$CC`, and runs `tests/engine-stall.sps` under it, preloaded,
+  with each lookup of a name ending `.stall.invalid` stalled 3,000 ms:
+  - three scenarios, each on an engine of its own: a cancel, sent the moment the stand-in logs
+    the lookup stalling, beside a 1 s drip that must answer whole; a 500 ms timeout; and a
+    stop, sent the moment the lookup stalls;
+  - each event is judged against the stand-in's log, so the two share no clock: prompt, done
+    before the stand-in answered, and within 1,000 ms of its cause, or 2,000 ms for the
+    timeout and the drip; stalled, done once the stand-in had answered; anything else fails;
+  - the child also reports the cancel engine's `CURLMOPT_QUICK_EXIT` and how many of its four
+    transfers set `QUICK_EXIT`, counted once libcurl took it, so a switch is held by what
+    the engine did, not what the child asked;
+  - `stall-verdicts` holds each libcurl's verdicts, by version, written out in the suite.
+    7.85.0 stalls each event, the recorded limit, and runs with both settings alone. 8.5.0
+    is prompt, and stalls each event without `QUICK_EXIT`, its control. 8.20.0 is prompt,
+    and its stop stalls without `CURLMOPT_QUICK_EXIT`, its control. A libcurl with no row
+    fails by name, and the suite prints the row it measured;
+  - `linux?`, from Chez's machine type, decides whether the checks run, and must agree with
+    `uname -s`, so they cannot quietly not run on Linux.
+- **The memory gate does not reach the child.** `make test-memory` runs `test-engine` under
+  Valgrind, which does not follow its children, so the child runs natively, and no lookup
+  stalls under the gate, as this record's consequences say.
+- **Found:** once, among about 80 runs of the child, a 500 ms timeout's code 28 came 1,014 ms after
+  it fell due, while two agents ran heavy suites on the machine. That run's log was overwritten
+  when the sweep reran its mutant, so only this record keeps it. 240 more, 40 at a time on fresh
+  engines and on one, came within 12 ms (`results/container-2.log`), and the slice's review's 80
+  under three times the load within 22 ms. 1,014 ms is about the engine's 1,000 ms poll, so
+  the timeout's bound is 2,000 ms, still short of the stand-in's answer, about 2,500 ms after
+  it fell due. The cause is not known.
+
+## Amendment, 2026-10-25: after the slice's review
+
+A read-only Opus review of the slice found these, each shown by a mutant it ran or a probe;
+I reproduced each before acting on it.
+
+- **No test held decision 2's refusal.** Every libcurl answers `CURLMOPT_QUICK_EXIT` with
+  `CURLM_OK` or `CURLM_UNKNOWN_OPTION`, and the decoy libcurl makes no multi handle, so a
+  mutant that took any other answer as unknown passed. A private constructor,
+  `make-curl-engine-answering-quick-exit`, now takes a given code for libcurl's answer, after
+  making the call. `test-engine` requires 1 and 10 to refuse the engine, as `failed`,
+  carrying the code, with the counts unchanged, and 0 and 6 to run it, set and unknown.
+- **Two stops were not judged.** The child stopped its cancel's and its timeout's engines
+  without timing them, so 8.20.0's wait in `curl_multi_cleanup` after either, a row of this
+  record's first table, was checked by nothing. Each stop is now an event, and each event is
+  judged by whether the stand-in had answered as it started and as it returned: stalled when
+  the answer came during it. So a stop after a cancel that waited for the lookup is prompt.
+  The rows gained both stops: stalled on 8.20.0 without `CURLMOPT_QUICK_EXIT`, prompt
+  elsewhere. Without the start's reading, those stops are stalled on the floor and on 8.5.0
+  without `QUICK_EXIT`, which only those lanes show: a mutant passed in the container and
+  failed in Docker on both.
+- **8.20.0 leaves resolver threads behind after every stop, stall or none.** With
+  `CURLMOPT_QUICK_EXIT`, each stopped engine left two threads, whose lookups had answered at
+  once: 41 in all after 20 engines, 1 again within 3 s, and 2,002 ms after a stop by the
+  review's measure. Without it, there was 1 throughout (`results/container-threads.log`).
+  The review ran it under Valgrind, and the stall child held open 6 s so that left threads
+  woke after their multi handle's cleanup: no errors, nothing lost, in both. A program that makes many engines
+  briefly holds two threads for each. M8's documentation says so.
+- **No CI lane loads 8.20.0 or later.** CI's lanes load Ubuntu's 8.5.0 and the floor's 7.85.0.
+  So `CURLMOPT_QUICK_EXIT`'s value and number, its constant's check, the `multi` control and
+  the refusal of an engine whose libcurl knows the option are shown only in the Guix
+  container, which runs 8.20.0. On 8.5.0 a mutant that sets the option to 0 passes, and on
+  the floor every mutant that keeps transfers working passes. A CI lane that builds a current
+  curl, as the floor lane builds 7.85.0, would close it; that is the maintainer's to decide.
+- **The Mac probe could not tell its failures apart.** The stand-in now logs `loaded PID` as
+  it loads, and the probe has a `control` set: which preload variable reached Chez, and
+  `gai-control.c`, an ordinary program's own `getaddrinfo` call on the stalled name, which must
+  take the stall. A call from Chez proves nothing: Chez finds an entry through libcurl's own
+  dependencies, which skip `LD_PRELOAD` on Linux, so a call from Chez under the stand-in
+  answered at once. The probe also refuses to run with a proxy variable set. Whether dyld
+  applies the interposition to a call from the shared cache is still the Mac's to show.
+- **Small things:** the stand-in's path goes through `LD_PRELOAD`, which splits on spaces and
+  colons, so a `TMPDIR` holding either fails every stall check by name. The record's context
+  reads the `AsynchDNS` bit as "resolves on a thread", but a c-ares build sets it too.
+
+## Amendment, 2026-10-26: a CI lane on 8.20.0
+
+The maintainer asked for the lane this record's review found missing. CI's `current` job
+builds vanilla 8.20.0 with OpenSSL and runs every suite against it
+([ADR-0020](0020-a-ci-lane-on-the-current-libcurl.md)), so `CURLMOPT_QUICK_EXIT`'s setting
+and its `set` verdict, its constant's check, and 8.20.0's row of `stall-verdicts`, the
+`multi` control among them, run in CI, once CI runs.

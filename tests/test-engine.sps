@@ -19,7 +19,15 @@
 ;;;   - in children, each under a bound: the collection bound, beside an
 ;;;     idle engine and beside a caller awaiting a slow transfer; four
 ;;;     caller threads awaiting at once while collections run; and Ctrl-C
-;;;     while a caller awaits.
+;;;     while a caller awaits;
+;;;   - a stalled name lookup (ADR-0019), on Linux: a child under a
+;;;     stand-in getaddrinfo, tests/stall-getaddrinfo.c, compiled here and
+;;;     preloaded, cancels, times out and stops transfers whose lookups
+;;;     stall, beside a transfer that must go on. Each libcurl's verdicts,
+;;;     by version, are a row of stall-verdicts, with a control for each
+;;;     QUICK_EXIT setting, which an engine made without it shows stalling;
+;;;     the floor, which has neither, stalls, the recorded limit. And the
+;;;     engine's judgement of CURLMOPT_QUICK_EXIT's answer, over its domain.
 ;;;
 ;;; The plan's load check, a child whose first reference to the library is
 ;;; make-curl-engine, is not here: a top-level program invokes the
@@ -36,15 +44,18 @@
         (rnrs mutable-strings)
         (only (chezscheme) fork-thread make-mutex with-mutex make-condition condition-wait
               condition-broadcast sleep make-time current-time time-second time-nanosecond
-              getenv get-thread-id library-directories make-list iota)
+              getenv get-thread-id library-directories make-list iota machine-type)
         (curl-testing)
+        (only (libcurl-oracle) c-compiler)
         (curl)
         (curl private engine)
         (curl private transfer)
         (curl private conditions)
         (curl private counters)
         (curl private memory)
-        (only (curl private native) curl-multi-perform curl-multi-poll curl-multi-info-read))
+        (only (curl private native) curl-multi-perform curl-multi-poll curl-multi-info-read
+              curl-multi-setopt-long)
+        (only (curl private constants) curlmopt-max-total-connections))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
 ;; counts into one.
@@ -295,10 +306,10 @@
     (thunk)
     'no-raise))
 
-(test-equal "the engine's multi handle, used from this thread, raises &curl-wrong-thread from curl-multi-perform, curl-multi-poll and curl-multi-info-read, each carrying the engine's thread as expected and this one as actual"
+(test-equal "the engine's multi handle, used from this thread, raises &curl-wrong-thread from curl-multi-perform, curl-multi-poll, curl-multi-info-read and curl-multi-setopt, each carrying the engine's thread as expected and this one as actual"
   (if engine-made?
       (map (lambda (who) (list who (curl-engine-thread engine) main-thread))
-           '(curl-multi-perform curl-multi-poll curl-multi-info-read))
+           '(curl-multi-perform curl-multi-poll curl-multi-info-read curl-multi-setopt))
       engine)
   ;; A slot of this suite's own: without the check, the calls would run, and
   ;; write through it.
@@ -307,9 +318,11 @@
             (slot (foreign-block 8)))
         (let* ((perform (wrong-thread (lambda () (curl-multi-perform multi slot))))
                (poll (wrong-thread (lambda () (curl-multi-poll multi 0))))
-               (read (wrong-thread (lambda () (curl-multi-info-read multi slot)))))
+               (read (wrong-thread (lambda () (curl-multi-info-read multi slot))))
+               ;; 0 is the option's default: through, it would change nothing.
+               (setopt (wrong-thread (lambda () (curl-multi-setopt-long multi curlmopt-max-total-connections 0)))))
           (free-foreign-block! slot)
-          (list perform poll read)))
+          (list perform poll read setopt)))
       engine))
 
 ;; refused-at-submit : (-> Any) (Listof (Pairof String Integer)) -> (List Outcome Counts Natural Natural Natural)
@@ -325,6 +338,168 @@
 ;; --- against the origin ----------------------------------------------------------------
 
 (define started-before (transfers-started))
+
+;; --- a stalled name lookup: the stand-in, the child and the verdicts (ADR-0019) ----------
+
+;; linux? : Boolean
+;; Whether this Chez runs on Linux: its machine type ends in le, as ta6le
+;; and tarm64le do. The stall checks need LD_PRELOAD, which macOS lacks
+;; (ADR-0019, amended 2026-10-25).
+(define linux?
+  (let* ((m (symbol->string (machine-type))) (n (string-length m)))
+    (and (> n 2) (string=? (substring m (- n 2) n) "le"))))
+
+;; stall-ms : Positive-Integer
+;; How long the stand-in stalls each lookup: well above every bound the
+;; child judges by, 1000 and 2000 ms, so that a wait for the lookup looks
+;; nothing like a prompt return.
+(define stall-ms 3000)
+
+;; stall-verdicts : (Listof (Pairof String (Listof Entry)))
+;; Each recorded libcurl's verdicts, by version, measured (ADR-0019,
+;; amended 2026-10-25). An Entry is (WITHOUT MULTI TRANSFER CANCEL OTHER
+;; CANCEL-STOP TIMEOUT TIMEOUT-STOP STOP): the QUICK_EXIT setting the
+;; child's engines leave out, none, transfer or multi; what
+;; tests/engine-stall.sps must then print of the cancel engine's
+;; CURLMOPT_QUICK_EXIT, set, unknown or off, and whether its transfers set
+;; QUICK_EXIT, all four of them or none; then the verdict, prompt or
+;; stalled, of the cancel, of the transfer beside it, of that engine's stop,
+;; of a 500 ms timeout, of that engine's stop, and of a stop during the
+;; lookup. A stop after an event that waited for the lookup comes after the
+;; lookup, and is prompt.
+;; With both settings kept, 7.87.0 on returns promptly, and the floor
+;; stalls, the recorded limit. Each prompt row has a control that stalls:
+;; 8.5.0 without each transfer's QUICK_EXIT; 8.20.0's three stops without
+;; CURLMOPT_QUICK_EXIT. On 8.20.0 a transfer's QUICK_EXIT changes no stall,
+;; so only the count holds it there. The floor knows neither option, so its switches
+;; change nothing, and its row runs none alone.
+(define stall-verdicts
+  '(("7.85.0" (none unknown #f stalled stalled prompt stalled prompt stalled))
+    ("8.5.0" (none unknown #t prompt prompt prompt prompt prompt prompt)
+             (transfer unknown #f stalled stalled prompt stalled prompt stalled)
+             (multi off #t prompt prompt prompt prompt prompt prompt))
+    ("8.20.0" (none set #t prompt prompt prompt prompt prompt prompt)
+              (transfer set #f prompt prompt prompt prompt prompt prompt)
+              (multi off #t prompt prompt stalled prompt stalled stalled))))
+
+;; stall-expected : Entry -> (Listof Any)
+;; All the child prints for ENTRY: each outcome as a transfer ends that way,
+;; the three names stalled, and the counts zero.
+(define (stall-expected entry)
+  (let ((v (cdddr entry)))
+    (list (list 'settings (cadr entry) (if (caddr entry) 4 0))
+          (list 'cancel (list-ref v 0) '(transfer-error cancelled #f #f))
+          (list 'other (list-ref v 1) '(response 200 "abcdefghij"))
+          (list 'cancel-stop (list-ref v 2))
+          (list 'timeout (list-ref v 3) '(transfer-error perform-failed 28 #f))
+          (list 'timeout-stop (list-ref v 4))
+          (list 'stop (list-ref v 5) '(transfer-error stopped #f #f))
+          '(stalled "cancel.stall.invalid" "stop.stall.invalid" "timeout.stall.invalid")
+          (list 'counts zero-counts))))
+
+;; stall-entry-of : Symbol (Listof Any) -> (U Entry #f)
+;; The Entry for WITHOUT that the child's printed DATA show, when they have
+;; stall-expected's shape: for a libcurl with no row, the row it needs.
+(define (stall-entry-of without data)
+  (and (list? data) (= (length data) 9)
+       (let ((entry (list without
+                          (guard (e (#t #f)) (cadr (list-ref data 0)))
+                          (guard (e (#t #f)) (eqv? (caddr (list-ref data 0)) 4))
+                          (guard (e (#t #f)) (cadr (list-ref data 1)))
+                          (guard (e (#t #f)) (cadr (list-ref data 2)))
+                          (guard (e (#t #f)) (cadr (list-ref data 3)))
+                          (guard (e (#t #f)) (cadr (list-ref data 4)))
+                          (guard (e (#t #f)) (cadr (list-ref data 5)))
+                          (guard (e (#t #f)) (cadr (list-ref data 6))))))
+         (and (equal? (stall-expected entry) data) entry))))
+
+;; stall-name : String Entry -> String
+(define (stall-name version entry)
+  (let ((v (cdddr entry)))
+    (string-append
+     "under the stand-in getaddrinfo, each lookup stalled " (number->string stall-ms)
+     " ms, on libcurl " version ", engines "
+     (case (car entry)
+       ((none) "with both QUICK_EXIT settings")
+       ((transfer) "without each transfer's QUICK_EXIT")
+       (else "without CURLMOPT_QUICK_EXIT"))
+     " (multi " (symbol->string (cadr entry)) ", transfer " (if (caddr entry) "set" "not set")
+     "): the cancel is " (written (list-ref v 0)) ", the transfer beside it " (written (list-ref v 1))
+     ", that engine's stop " (written (list-ref v 2)) ", a 500 ms timeout " (written (list-ref v 3))
+     ", that engine's stop " (written (list-ref v 4)) " and a stop during the lookup " (written (list-ref v 5))
+     "; every outcome whole, in a child bounded at 60 s, its counts zero")))
+
+;; compile-stand-in : String -> (U String (List 'compile-failed Any))
+;; tests/stall-getaddrinfo.c, compiled into DIR as a shared object: its
+;; path, or what the compiler answered. Judged by exit status alone: Guix's
+;; gcc warns on stderr at every link.
+(define (compile-stand-in dir)
+  (let* ((so (string-append dir "/stall-getaddrinfo.so"))
+         (r (guard (e (#t (list 'raised (describe e) "")))
+              (capture-command (append (c-compiler getenv)
+                                       (list "-shared" "-fPIC" "-o" so "tests/stall-getaddrinfo.c" "-ldl"))))))
+    (if (eqv? (car r) 0) so (list 'compile-failed r))))
+
+;; run-stall-child : String String Symbol String -> (List Integer (Listof Any) String)
+;; tests/engine-stall.sps WITHOUT URL, in a child Chez under child-script's
+;; 60 s, with the stand-in at SO preloaded, stalling each name ending
+;; .stall.invalid for stall-ms and logging to LOG: its exit status, what it
+;; printed, read as data, and its stderr.
+(define (run-stall-child so log without url)
+  (guard (e (#t (list 'raised (describe e) "")))
+    (let ((r (capture-command
+              (list "sh" "-c" (child-script 60) "sh" "env"
+                    (string-append "LD_PRELOAD=" so) "STALL_SUFFIX=.stall.invalid"
+                    (string-append "STALL_MS=" (number->string stall-ms))
+                    (string-append "STALL_LOG=" log)
+                    (getenv "CHEZ") "--libdirs" (library-path)
+                    "--program" "tests/engine-stall.sps" (symbol->string without) url))))
+      (list (car r) (read-all (cadr r)) (caddr r)))))
+
+;; linux? decides whether the stall checks run, so a wrong answer on Linux
+;; would pass the suite with none run: it must agree with uname.
+(test-equal "linux?, from Chez's machine type, agrees with uname -s: Linux, where the stall checks run, or another system, where none does"
+  (let ((r (guard (e (#t (list 'raised (describe e) ""))) (capture-command '("uname" "-s")))))
+    (list (car r) (if (equal? (cadr r) "Linux\n") 'linux 'other)))
+  (list 0 (if linux? 'linux 'other)))
+
+(test-equal "multi-quick-exit-verdict: CURLM_OK is set, CURLM_UNKNOWN_OPTION is unknown, and every other CURLMcode, -1 to 13, refuses the engine, #f"
+  (list 'set 'unknown (make-list 13 #f))
+  (list (multi-quick-exit-verdict 0) (multi-quick-exit-verdict 6)
+        (map multi-quick-exit-verdict '(-1 1 2 3 4 5 7 8 9 10 11 12 13))))
+
+;; answered : Integer -> Any
+;; What make-curl-engine-answering-quick-exit CODE does: (running VERDICT),
+;; the engine's CURLMOPT_QUICK_EXIT, once it is stopped again; or the
+;; refusal it raised, (engine-error REASON MESSAGE CODE), from the condition
+;; it carries.
+(define (answered code)
+  (guard (e ((curl-engine-error? e)
+             (let ((c (curl-engine-error-condition e)))
+               (list 'engine-error (curl-engine-error-reason e)
+                     (and (message-condition? c) (condition-message c))
+                     (and (irritants-condition? c) (pair? (condition-irritants c))
+                          (car (condition-irritants c))))))
+            (#t (list 'raised (describe e))))
+    (let* ((e (make-curl-engine-answering-quick-exit code))
+           (verdict (curl-engine-quick-exit e)))
+      (stop-within e)
+      (list 'running verdict))))
+
+;; The refusal no libcurl gives (ADR-0019, decision 2): every recorded one
+;; answers CURLMOPT_QUICK_EXIT with CURLM_OK or CURLM_UNKNOWN_OPTION.
+(test-equal "an answer to CURLMOPT_QUICK_EXIT but CURLM_OK or CURLM_UNKNOWN_OPTION refuses the engine: make-curl-engine raises &curl-engine-error, reason failed, carrying curl_multi_setopt's code, for CURLM_BAD_HANDLE, 1, and CURLM_BAD_FUNCTION_ARGUMENT, 10, its multi handle and slot freed; given 0 or 6 it runs, set or unknown"
+  (list '(engine-error failed "curl_multi_setopt answered a CURLMcode" 1)
+        '(engine-error failed "curl_multi_setopt answered a CURLMcode" 10)
+        '(running set) '(running unknown) running-counts)
+  (let* ((one (answered 1)) (ten (answered 10)) (ok (answered 0)) (unknown (answered 6)))
+    (list one ten ok unknown (native-counts))))
+
+(test-equal "make-curl-engine-without-quick-exit refuses anything but a list of transfer and multi, an assertion violation from its name, before any engine is made"
+  (list (make-list 4 '(assertion-violation make-curl-engine-without-quick-exit)) running-counts)
+  (list (map (lambda (without) (outcome (lambda () (make-curl-engine-without-quick-exit without))))
+             (list '(bogus) 'transfer '(transfer . multi) '(multi "transfer")))
+        (native-counts)))
 
 (call-with-origin
  (lambda (o)
@@ -737,6 +912,49 @@
                        a)
                    (cadr (cadr r)) (caddr r)))
            r)))
+
+   ;; A stalled name lookup (ADR-0019, amended 2026-10-25): the stand-in,
+   ;; compiled here, then tests/engine-stall.sps under it for each entry of
+   ;; this libcurl's row of stall-verdicts. A libcurl with no row runs all
+   ;; three, fails by name, and prints the row it would need. On macOS,
+   ;; which has no LD_PRELOAD, nothing runs, and the suite says so.
+   (if (not linux?)
+       (begin
+         (display "test-engine: the stalled-lookup checks run on Linux alone, so none ran here (ADR-0019, amended 2026-10-25)")
+         (newline))
+       (call-with-temp-directory
+        (lambda (dir)
+          (let ((so (compile-stand-in dir))
+                (row (and (string? version) (assoc version stall-verdicts))))
+            (test-equal "tests/stall-getaddrinfo.c compiles with $CC as a shared object, for LD_PRELOAD"
+              (string-append dir "/stall-getaddrinfo.so")
+              so)
+            (test-equal (string-append "the stall verdicts have a row for this libcurl, " (written version))
+              (list version)
+              (if row (list (car row)) (list 'no-row version)))
+            (if row
+                (for-each
+                 (lambda (entry)
+                   (test-equal (stall-name version entry)
+                     (list 0 (stall-expected entry) "")
+                     (if (string? so)
+                         (run-stall-child so (string-append dir "/" (symbol->string (car entry)) ".log")
+                                          (car entry) (drip 10 100))
+                         (list 'no-stand-in so))))
+                 (cdr row))
+                (when (string? so)
+                  (let ((measured
+                         (map (lambda (without)
+                                (let ((r (run-stall-child so (string-append dir "/" (symbol->string without) ".log")
+                                                          without (drip 10 100))))
+                                  (or (and (eqv? (car r) 0) (equal? (caddr r) "")
+                                           (stall-entry-of without (cadr r)))
+                                      (list without 'unreadable r))))
+                              '(none transfer multi))))
+                    (display "test-engine: no row of stall-verdicts for this libcurl; measured, it would be:\n"
+                             (current-error-port))
+                    (write (cons version measured) (current-error-port))
+                    (newline (current-error-port)))))))))
 
    ;; Ctrl-C (section 3.4): the child's main thread awaits a 2 s drip, and
    ;; gets SIGINT 500 ms after it says it is ready. Its handler must run

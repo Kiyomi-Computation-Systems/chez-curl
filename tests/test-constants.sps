@@ -15,6 +15,19 @@
 ;;;              last word, upcased, - as _, then _, unless c-name-aliases
 ;;;              names another: curl-version-features's is CURL_VERSION_.
 ;;;              Each alias must change what its row's export derives.
+;;;   gates      a constant newer than the libcurl floor, which older
+;;;              headers lack, has a row in gated-rows: the curl release
+;;;              that added it, as text and as LIBCURL_VERSION_NUM, newer
+;;;              than packaging/floors.sexp's floor. An enum member is no
+;;;              macro, so the C program reads it only under #if
+;;;              LIBCURL_VERSION_NUM >= that gate, and else answers
+;;;              (unchecked NAME); against those older headers the suite
+;;;              names it unchecked, and checks its value everywhere else.
+;;;              A compile of the constant alone, beside a control that must
+;;;              compile and one that must not, says whether the headers
+;;;              declare it: they must exactly when they are at or above its
+;;;              gate, so a gate set too high fails where the headers have
+;;;              it, and one too low fails where they lack it.
 ;;;   layouts    src/curl/private/layouts.sls, read as data. It is one
 ;;;              datum, the library (curl private layouts), whose imports
 ;;;              are exactly (curl private require-threaded), (rnrs) and
@@ -82,6 +95,7 @@
               curl-library-unavailable? curl-library-unavailable-reason
               curl-library-unavailable-path)
         (curl-testing)
+        (only (floors) read-floors floor-numbers)
         (libcurl-oracle))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
@@ -158,7 +172,9 @@
     (curle-filesize-exceeded . "CURLE_FILESIZE_EXCEEDED")
     (curlm-ok . "CURLM_OK")
     (curlm-unknown-option . "CURLM_UNKNOWN_OPTION")
-    (curlmsg-done . "CURLMSG_DONE")))
+    (curlmsg-done . "CURLMSG_DONE")
+    (curlmopt-max-total-connections . "CURLMOPT_MAX_TOTAL_CONNECTIONS")
+    (curlmopt-quick-exit . "CURLMOPT_QUICK_EXIT")))
 
 ;; c-name-aliases : (Listof (Pairof Symbol String))
 ;; Each export whose row names a C constant other than the export's own
@@ -171,6 +187,17 @@
 ;; value happens to match, and a prefix such as "0|CURL_VERSION_" any C
 ;; expression.
 (define c-name-aliases '())
+
+;; gated-rows : (Listof (List Symbol String Natural))
+;; Each constant-rows row whose constant came after the libcurl floor, with
+;; the curl release that added it, as text and as LIBCURL_VERSION_NUM: its
+;; gate. Headers older than the gate lack the constant, and the C program
+;; reads it only from headers at or above it. A released constant's value
+;; never changes, so the check where the headers have it holds it.
+;; CURLMOPT_QUICK_EXIT came in 8.20.0, per its man page; the container's
+;; headers are 8.20.0's, and the floor's, 7.85.0's, lack it.
+(define gated-rows
+  '((curlmopt-quick-exit "8.20.0" #x081400)))
 
 ;; layout-rows : (Listof (List Symbol String Extent))
 ;; Each define-ftype of (curl private layouts), with the C type it lays
@@ -335,6 +362,81 @@
 (define (entries? x)
   (and (list? x) (pair? x)
        (for-all (lambda (entry) (and (pair? entry) (symbol? (car entry)))) x)))
+
+;; --- the gates: constants newer than the floor ----------------------------------
+
+;; dot-split : String -> (Listof String)
+;; S cut at each ., empty parts kept.
+(define (dot-split s)
+  (let loop ((i 0) (start 0) (found '()))
+    (cond ((= i (string-length s)) (reverse (cons (substring s start i) found)))
+          ((char=? (string-ref s i) #\.)
+           (loop (+ i 1) (+ i 1) (cons (substring s start i) found)))
+          (else (loop (+ i 1) start found)))))
+
+;; version-num-of-text : String -> (U Natural (List 'not-a-version Any))
+;; TEXT, "M.m.p", as LIBCURL_VERSION_NUM writes it, #xMMmmpp: three
+;; naturals in ASCII digits, each at most 255.
+(define (version-num-of-text text)
+  (guard (e (#t (list 'not-a-version text)))
+    (let ((parts (dot-split text)))
+      (if (and (= (length parts) 3)
+               (for-all (lambda (p)
+                          (and (> (string-length p) 0)
+                               (for-all (lambda (c) (and (char<=? #\0 c) (char<=? c #\9)))
+                                        (string->list p))))
+                        parts)
+               (for-all (lambda (p) (<= (string->number p) 255)) parts))
+          (let ((ns (map string->number parts)))
+            (+ (* 65536 (car ns)) (* 256 (cadr ns)) (caddr ns)))
+          (list 'not-a-version text)))))
+
+;; gated-row-shaped? : Any -> Boolean
+;; (NAME TEXT N): a symbol, a release as text, and that release as
+;; LIBCURL_VERSION_NUM.
+(define (gated-row-shaped? g)
+  (and (list? g) (= (length g) 3) (symbol? (car g)) (string? (cadr g)) (natural? (caddr g))
+       (eqv? (version-num-of-text (cadr g)) (caddr g))))
+
+;; gated-row-text : Any -> String
+;; G as a test names it: its name, its text and its gate in hex, when G has
+;; three parts and a natural gate; else G written.
+(define (gated-row-text g)
+  (if (and (list? g) (= (length g) 3) (natural? (caddr g)))
+      (string-append (written (car g)) " " (written (cadr g)) " " (hex (caddr g)))
+      (written g)))
+
+;; libcurl-floor-num : (U Natural Symbol)
+;; packaging/floors.sexp's libcurl floor, read through (floors) as
+;; tests/test-verify.sps reads it, as LIBCURL_VERSION_NUM writes it; a
+;; symbol when the file cannot give it.
+(define libcurl-floor-num
+  (guard (e (#t 'floors-file-unreadable))
+    (let ((parts (floor-numbers (read-floors) 'libcurl)))
+      (if (and (= (length parts) 3) (for-all (lambda (n) (<= n 255)) parts))
+          (+ (* 65536 (car parts)) (* 256 (cadr parts)) (caddr parts))
+          'not-a-version-num))))
+
+;; c-name-gates : (Listof (Pairof String GatedRow))
+;; Each gated row that is well shaped and names a constant-rows row of one
+;; C constant, keyed by that C name, each name once. The C program reads
+;; that constant only from headers at or above the row's gate, and the
+;; suite checks its value only there. Any other gated row gates nothing,
+;; and fails its tests by name.
+(define c-name-gates
+  (guard (e (#t '()))
+    (fold-left (lambda (found g)
+                 (let ((row (and (gated-row-shaped? g) (assq (car g) constant-rows))))
+                   (if (and row (string? (cdr row)) (not (assoc (cdr row) found)))
+                       (append found (list (cons (cdr row) g)))
+                       found)))
+               '()
+               gated-rows)))
+
+;; gate-of : String -> (U GatedRow #f)
+;; The gated row of the constant C-NAME, when it has one.
+(define (gate-of c-name)
+  (cond ((assoc c-name c-name-gates) => cdr) (else #f)))
 
 ;; --- layouts.sls, read as data --------------------------------------------------
 
@@ -605,10 +707,20 @@
 ;; --- the C program ----------------------------------------------------------------
 
 ;; c-line : Question -> String
+;; A gated constant is read only under #if, from headers at or above its
+;; gate; below it, the program answers (unchecked NAME).
 (define (c-line question)
   (case (car question)
     ((header-version) "  HEADER_VERSION();\n")
-    ((constant) (string-append "  CONSTANT(" (cadr question) ");\n"))
+    ((constant)
+     (let ((gate (gate-of (cadr question))))
+       (if gate
+           (string-append "#if LIBCURL_VERSION_NUM >= " (hex (caddr gate)) "\n"
+                          "  CONSTANT(" (cadr question) ");\n"
+                          "#else\n"
+                          "  UNCHECKED(" (cadr question) ");\n"
+                          "#endif\n")
+           (string-append "  CONSTANT(" (cadr question) ");\n"))))
     ((sizeof) (string-append "  SIZEOF(" (cadr question) ");\n"))
     (else (string-append "  MEMBER(" (cadr question) ", " (caddr question) ");\n"))))
 
@@ -636,6 +748,7 @@
    "#define HEADER_VERSION() \\\n"
    "  printf(\"(header-version %lld)\\n\", (long long)LIBCURL_VERSION_NUM)\n"
    "#define CONSTANT(e) printf(\"(constant \\\"%s\\\" %lld)\\n\", #e, (long long)(e))\n"
+   "#define UNCHECKED(e) printf(\"(unchecked \\\"%s\\\")\\n\", #e)\n"
    "#define SIZEOF(t) printf(\"(sizeof \\\"%s\\\" %lld)\\n\", #t, (long long)sizeof(t))\n"
    "#define MEMBER(t, m) printf(\"(member \\\"%s\\\" \\\"%s\\\" %lld %lld %s)\\n\", #t, #m, \\\n"
    "  (long long)offsetof(t, m), (long long)sizeof(((t *)0)->m), KIND(((t *)0)->m))\n"
@@ -647,11 +760,12 @@
    "}\n"))
 
 ;; answer? : Any -> Boolean
-;; (header-version N), (constant NAME VALUE), (sizeof TYPE N) or
-;; (member TYPE MEMBER OFFSET SIZE KIND).
+;; (header-version N), (constant NAME VALUE), (unchecked NAME), (sizeof
+;; TYPE N) or (member TYPE MEMBER OFFSET SIZE KIND).
 (define (answer? d)
   (and (list? d)
        (or (and (= (length d) 2) (eq? (car d) 'header-version) (natural? (cadr d)))
+           (and (= (length d) 2) (eq? (car d) 'unchecked) (string? (cadr d)))
            (and (= (length d) 3) (eq? (car d) 'sizeof) (string? (cadr d))
                 (natural? (caddr d)))
            (and (= (length d) 3) (eq? (car d) 'constant) (string? (cadr d))
@@ -703,10 +817,13 @@
 (define answers (if (eq? (car oracle) 'answers) (cadr oracle) '()))
 
 ;; answer-question : Answer -> Question
+;; (unchecked NAME) answers (constant NAME): the headers are older than
+;; its gate.
 (define (answer-question a)
   (case (car a)
     ((header-version) (list (car a)))
     ((constant sizeof) (list (car a) (cadr a)))
+    ((unchecked) (list 'constant (cadr a)))
     (else (list (car a) (cadr a) (caddr a)))))
 
 ;; header-answer : Question -> (U Answer #f)
@@ -715,10 +832,12 @@
 
 ;; header-value : Question -> Any
 ;; The program's answer: a constant's value, a struct's size, or
-;; (offset N size N kind K); else (no-answer . QUESTION).
+;; (offset N size N kind K); (unchecked NAME) itself, which equals no
+;; value; else (no-answer . QUESTION).
 (define (header-value question)
   (let ((a (header-answer question)))
     (cond ((not a) (cons 'no-answer question))
+          ((eq? (car a) 'unchecked) a)
           ((memq (car a) '(constant sizeof)) (caddr a))
           (else (list 'offset (cadddr a) 'size (car (cddddr a))
                       'kind (cadr (cddddr a)))))))
@@ -786,6 +905,69 @@
     (if (and (eq? (car header-version) 'version) (eq? (car library-version) 'version))
         (version-verdict (cadr header-version) (cadr library-version))
         (list 'headers (shown header-version) 'library (shown library-version)))))
+
+;; --- the gates, against the headers ------------------------------------------------
+
+;; shown-version : Any -> Any
+;; A (version N) as N in hex; anything else as it is.
+(define (shown-version v)
+  (if (and (pair? v) (eq? (car v) 'version) (pair? (cdr v)) (natural? (cadr v)))
+      (hex (cadr v))
+      v))
+
+;; below-gate? : GatedRow -> Boolean
+;; Whether the headers the C program compiled against are older than
+;; GATED's gate: never when their version is unknown, so the value check
+;; stands, and fails, there.
+(define (below-gate? gated)
+  (and (eq? (car header-version) 'version) (< (cadr header-version) (caddr gated))))
+
+;; probe-program : String -> String
+;; A file that compiles exactly when the headers declare C-NAME.
+(define (probe-program c-name)
+  (string-append "#include <curl/curl.h>\n\nint probe = " c-name ";\n"))
+
+;; probe : String -> (U 'declared 'undeclared (List 'raised String))
+;; Whether PROBE-PROGRAM of C-NAME compiles, with $CC -c and no link, in a
+;; fresh directory: judged by its exit status alone, since Guix's gcc warns
+;; on stderr.
+(define (probe c-name)
+  (guard (e (#t (list 'raised (describe e))))
+    (call-with-temp-directory
+     (lambda (dir)
+       (let ((source (string-append dir "/probe.c")))
+         (write-text source (probe-program c-name))
+         (let ((compiled (capture-command
+                          (append (c-compiler getenv)
+                                  (list "-c" "-o" (string-append dir "/probe.o") source)))))
+           (if (= (car compiled) 0) 'declared 'undeclared)))))))
+
+;; The probe's controls, written out: CURLMOPT_MAX_TOTAL_CONNECTIONS, since
+;; 7.30.0, below the floor, every supported header declares; no header
+;; declares CURLMOPT_NO_SUCH_OPTION. The probe's answer counts only when the
+;; first compiles and the second does not, so a probe that fails for
+;; another reason never passes as undeclared, nor one that ignores its name
+;; as declared.
+(define probe-present-control "CURLMOPT_MAX_TOTAL_CONNECTIONS")
+(define probe-absent-control "CURLMOPT_NO_SUCH_OPTION")
+
+(define probe-controls
+  (let* ((present (probe probe-present-control))
+         (absent (probe probe-absent-control)))
+    (list present absent)))
+
+;; presence : String -> (U 'declared 'undeclared (List 'controls Any))
+(define (presence c-name)
+  (if (equal? probe-controls '(declared undeclared))
+      (probe c-name)
+      (list 'controls probe-controls)))
+
+;; presences : (Listof (Pairof String Any))
+;; Each gated constant's C name, with its presence in the headers.
+(define presences
+  (fold-left (lambda (found entry)
+               (append found (list (cons (car entry) (presence (car entry))))))
+             '() c-name-gates))
 
 ;; --- curlot-types, complete ---------------------------------------------------------
 
@@ -864,6 +1046,7 @@
     ("curl_easy_cleanup" ("void" ("CURL *")))
     ("curl_easy_setopt" ("CURLcode" ("CURL *" "CURLoption" "...") (variadic long integer-64 uptr)))
     ("curl_easy_getinfo" ("CURLcode" ("CURL *" "CURLINFO" "...") (variadic uptr)))
+    ("curl_multi_setopt" ("CURLMcode" ("CURLM *" "CURLMoption" "...") (variadic long)))
     ("curl_url" ("CURLU *" ()))
     ("curl_url_cleanup" ("void" ("CURLU *")))
     ("curl_url_set" ("CURLUcode" ("CURLU *" "CURLUPart" "const char *" "unsigned int")))
@@ -927,7 +1110,8 @@
     ("CURLHcode" int)
     ("CURLUcode" int)
     ("CURLUPart" int)
-    ("CURLMcode" int)))
+    ("CURLMcode" int)
+    ("CURLMoption" int)))
 
 ;; bytevector-rows : (Listof String)
 ;; The rows whose pointers may be bound u8*: the checked copies' memcpy.
@@ -1336,7 +1520,7 @@
 ;; define with typedef enum. c-type-map maps each to int, and nothing else.
 (define enum-names
   '("CURLcode" "CURLversion" "CURLoption" "CURLINFO" "CURLHcode" "CURLUcode" "CURLUPart"
-    "CURLMcode"))
+    "CURLMcode" "CURLMoption"))
 
 ;; enums-in : (Listof String) -> (Listof String)
 ;; The names TOKENS give a typedef enum: typedef enum [TAG] { ... } NAME ;
@@ -1588,6 +1772,102 @@
   'no-newer
   headers-against-library)
 
+;; --- the gates: constants newer than the floor ------------------------------------------
+
+(test-equal "the libcurl floor is read from packaging/floors.sexp, as a LIBCURL_VERSION_NUM"
+  'read
+  (if (natural? libcurl-floor-num) 'read libcurl-floor-num))
+
+;; Written out here, not read from the table: a gate moved, or a constant
+;; gated, drops a value check on some lane, and only a lane whose headers
+;; fall between the old gate and the new would see it.
+(test-equal "gated-rows is exactly, written out here: curlmopt-quick-exit, since curl 8.20.0, 0x081400"
+  '((curlmopt-quick-exit "8.20.0" #x081400))
+  gated-rows)
+
+(for-each
+ (lambda (g)
+   (test-equal (string-append "gated-rows' row " (gated-row-text g)
+                              " is (name \"M.m.p\" N), N that release as LIBCURL_VERSION_NUM")
+     'shaped
+     (if (gated-row-shaped? g) 'shaped (list 'malformed g))))
+ (if (list? gated-rows) gated-rows (list gated-rows)))
+
+(for-each
+ (lambda (g)
+   (test-equal (string-append "gated-rows' row " (written (if (pair? g) (car g) g))
+                              " is a constant-rows row that names one C constant, and its one gate")
+     'gates
+     (let ((row (and (pair? g) (assq (car g) constant-rows))))
+       (cond ((not row) 'no-such-row)
+             ((not (string? (cdr row))) (list 'not-one-constant row))
+             ((not (eq? (assq (car g) gated-rows) g)) 'not-its-first-gate)
+             (else 'gates)))))
+ (if (list? gated-rows) gated-rows (list gated-rows)))
+
+;; A gate at or below the floor would leave the constant unchecked against
+;; headers that have it: such a row belongs among the ordinary ones.
+(for-each
+ (lambda (g)
+   (test-equal (string-append "gated-rows' row " (written (if (pair? g) (car g) g))
+                              " came after the libcurl floor: "
+                              (if (gated-row-shaped? g)
+                                  (string-append (cadr g) ", " (hex (caddr g)))
+                                  (gated-row-text g))
+                              ", is newer than packaging/floors.sexp's "
+                              (if (natural? libcurl-floor-num)
+                                  (hex libcurl-floor-num)
+                                  (written libcurl-floor-num)))
+     'newer
+     (cond ((not (gated-row-shaped? g)) (list 'malformed g))
+           ((not (natural? libcurl-floor-num)) (list 'no-floor libcurl-floor-num))
+           ((> (caddr g) libcurl-floor-num) 'newer)
+           (else (list 'not-newer (hex (caddr g)) 'floor (hex libcurl-floor-num))))))
+ (if (list? gated-rows) gated-rows (list gated-rows)))
+
+;; The generated program on fixed questions, whole: a gated constant is read
+;; under #if, and answers unchecked else; an ungated one is read plainly.
+(test-equal "c-line: CURLMOPT_QUICK_EXIT is read under #if LIBCURL_VERSION_NUM >= 0x081400, else answers unchecked; CURLMOPT_MAX_TOTAL_CONNECTIONS is read plainly"
+  (list (string-append "#if LIBCURL_VERSION_NUM >= 0x081400\n"
+                       "  CONSTANT(CURLMOPT_QUICK_EXIT);\n"
+                       "#else\n"
+                       "  UNCHECKED(CURLMOPT_QUICK_EXIT);\n"
+                       "#endif\n")
+        "  CONSTANT(CURLMOPT_MAX_TOTAL_CONNECTIONS);\n")
+  (let* ((gated (c-line '(constant "CURLMOPT_QUICK_EXIT")))
+         (plain (c-line '(constant "CURLMOPT_MAX_TOTAL_CONNECTIONS"))))
+    (list gated plain)))
+
+;; No other question is gated: each constant question's line is the plain
+;; one, but for the gated constants, written out.
+(test-equal "the C program reads CURLMOPT_QUICK_EXIT alone under a gate, every other constant plainly"
+  '("CURLMOPT_QUICK_EXIT")
+  (map cadr
+       (filter (lambda (q)
+                 (and (eq? (car q) 'constant)
+                      (not (string=? (c-line q) (string-append "  CONSTANT(" (cadr q) ");\n")))))
+               questions)))
+
+;; The probe's controls: positive evidence that it can say each answer.
+(test-equal "the presence probe tells declared from undeclared: CURLMOPT_MAX_TOTAL_CONNECTIONS, since 7.30.0, compiles alone, and CURLMOPT_NO_SUCH_OPTION does not"
+  '(declared undeclared)
+  probe-controls)
+
+;; The gate, tied to the headers: too high fails where the headers declare
+;; the constant, too low where they lack it.
+(for-each
+ (lambda (entry)
+   (let ((g (gate-of (car entry))))
+     (test-equal (string-append "the headers, " (text (shown-version header-version)) ", declare "
+                                (car entry) " exactly when they are at or above its gate, "
+                                (cadr g) ", " (hex (caddr g))
+                                ": a compile of it alone, beside the controls, says")
+       (cond ((not (eq? (car header-version) 'version)) header-version)
+             ((>= (cadr header-version) (caddr g)) 'declared)
+             (else 'undeclared))
+       (cdr entry))))
+ presences)
+
 ;; --- complete layouts --------------------------------------------------------------------
 
 (for-each
@@ -1726,11 +2006,12 @@
 (define (type<? a b) (string<? (written a) (written b)))
 (define (type-sorted types) (list-sort type<? types))
 
-(test-equal "c-type-map is exactly, written out here: void, int, unsigned int, long, size_t and curl_off_t each to its one Chez type, and each of the eight enums to int"
+(test-equal "c-type-map is exactly, written out here: void, int, unsigned int, long, size_t and curl_off_t each to its one Chez type, and each of the nine enums to int"
   '(("void" void) ("int" int) ("unsigned int" unsigned-int) ("long" long) ("size_t" size_t)
     ("curl_off_t" integer-64)
     ("CURLcode" int) ("CURLversion" int) ("CURLoption" int) ("CURLINFO" int)
-    ("CURLHcode" int) ("CURLUcode" int) ("CURLUPart" int) ("CURLMcode" int))
+    ("CURLHcode" int) ("CURLUcode" int) ("CURLUPart" int) ("CURLMcode" int)
+    ("CURLMoption" int))
   c-type-map)
 
 ;; expected-fits : (Listof (Pairof (List String String) (Listof Type)))
@@ -1752,6 +2033,7 @@
     (("x" "CURLUcode") int)
     (("x" "CURLUPart") int)
     (("x" "CURLMcode") int)
+    (("x" "CURLMoption") int)
     (("x" "double"))
     (("x" "CURL *") uptr void*)
     (("x" "CURLU *") uptr void*)
@@ -1798,8 +2080,9 @@
   (let ((d (cadr row)))
     (and (= (length d) 3) (cdr (caddr d)))))
 
-(test-equal "the variadic rows are curl_easy_setopt's and curl_easy_getinfo's alone: setopt passes exactly long, integer-64 and uptr, and getinfo exactly uptr, its destination, never int"
-  '(("curl_easy_setopt" (long integer-64 uptr)) ("curl_easy_getinfo" (uptr)))
+(test-equal "the variadic rows are curl_easy_setopt's, curl_easy_getinfo's and curl_multi_setopt's alone: setopt passes exactly long, integer-64 and uptr, getinfo exactly uptr, its destination, never int, and multi_setopt exactly long"
+  '(("curl_easy_setopt" (long integer-64 uptr)) ("curl_easy_getinfo" (uptr))
+    ("curl_multi_setopt" (long)))
   (map (lambda (row) (list (car row) (variadic-list row)))
        (filter (lambda (row) (and (pair? (cdr row)) (variadic-list row))) prototype-rows)))
 
@@ -1949,11 +2232,28 @@
 
 ;; --- each constant and each field, against the headers -------------------------------------
 
+;; A gated constant, against headers older than its gate, is named
+;; unchecked: the test passes only when the program answered so and the
+;; headers are below the gate. Everywhere else its value is checked.
 (for-each
  (lambda (check)
-   (test-equal (cadr check)
-     (header-value (caddr check))
-     (scheme-value check)))
+   (let* ((question (caddr check))
+          (gated (and (eq? (car question) 'constant) (gate-of (cadr question)))))
+     (if (and gated (below-gate? gated))
+         (test-equal (string-append (symbol->string (car check))
+                                    " is unchecked against these headers: " (cadr question)
+                                    " came in curl " (cadr gated) ", " (hex (caddr gated))
+                                    ", and these headers are "
+                                    (text (shown-version header-version)))
+           'unchecked
+           (let ((a (header-answer question)))
+             (if (and (equal? a (list 'unchecked (cadr question))) (below-gate? gated))
+                 'unchecked
+                 (list 'answered a 'headers (shown-version header-version)
+                       'gate (hex (caddr gated))))))
+         (test-equal (cadr check)
+           (header-value question)
+           (scheme-value check)))))
  check-list)
 
 (test-end "constants")

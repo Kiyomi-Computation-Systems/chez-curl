@@ -26,6 +26,8 @@ name: CI
 #               CHEZ_CURL_LIBCURL: a second TLS backend (brief, section 9,
 #               risk 3; ADR-0018).
 #   floor       the suites against libcurl at its floor, built from source.
+#   current     the suites against the current libcurl, built from source:
+#               the one lane on a libcurl of 8.20.0 or later (ADR-0020).
 #   floor-disabled-api
 #               two lanes, one per API that ADR-0003 probes at load: a libcurl
 #               at its floor built with only its options API disabled, and one
@@ -39,7 +41,9 @@ name: CI
 # This workflow states no floor. The scripts that build Chez and libcurl at
 # their floors, scripts/ci/build-chez.sh and build-curl.sh, take no version and
 # read theirs from packaging/floors.sexp (ADR-0016), and so do the steps that
-# need one, through scripts/ci/floor.sh. So nothing written here, an env value
+# need one, through scripts/ci/floor.sh. Nor does it state the current
+# libcurl's: build-curl.sh --current pins that itself (ADR-0020), and the
+# current lane reads it back from what it built. So nothing written here, an env value
 # or a matrix value, changes what is built or checked. `make check-floors`
 # holds every file in this directory: no line may contain either floor's
 # version, or name the two env keys the floors were held in before the scripts
@@ -333,6 +337,94 @@ jobs:
               exit 1
               ;;
           esac
+          make test
+
+  # The current libcurl, built from source (ADR-0020): the one lane on 8.20.0
+  # or later, so CURLMOPT_QUICK_EXIT, its constant's check and the 8.20.0 rows
+  # of every version table run in CI, on a vanilla build with OpenSSL beside
+  # the Guix container's patched one. build-curl.sh --current pins the
+  # version; this file names none. The runner's own Node runs the origin.
+  current:
+    name: current (the suites against the current libcurl, built from source)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Install the packages in packaging/debian-prereqs.txt
+        run: |
+          pkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')
+          if [ -z "$pkgs" ]; then
+            echo "::error::packaging/debian-prereqs.txt yielded no packages: a broken step, not an empty list"
+            exit 1
+          fi
+          sudo apt-get update -qq
+          # shellcheck disable=SC2086
+          sudo apt-get install -y --no-install-recommends $pkgs
+
+      - name: Identify the runner image
+        id: image
+        run: |
+          . /etc/os-release
+          echo "id=${ID}-${VERSION_ID}-${RUNNER_ARCH}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Chez
+        id: chez
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: chez-threads-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-chez.sh') }}-${{ steps.image.outputs.id }}
+
+      - name: Build Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        run: scripts/ci/build-chez.sh "$RUNNER_TEMP/chez-threads"
+
+      - name: Save Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: ${{ steps.chez.outputs.cache-primary-key }}
+
+      # The version is the build script's own, so the script is in the key.
+      - name: Restore the current libcurl
+        id: curl
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/curl-current
+          key: curl-openssl-current-${{ hashFiles('scripts/ci/build-curl.sh', 'packaging/debian-prereqs.txt') }}-${{ steps.image.outputs.id }}
+
+      - name: Build the current libcurl
+        if: steps.curl.outputs.cache-hit != 'true'
+        run: scripts/ci/build-curl.sh --current "$RUNNER_TEMP/curl-current"
+
+      - name: Save the current libcurl
+        if: steps.curl.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/curl-current
+          key: ${{ steps.curl.outputs.cache-primary-key }}
+
+      # The preflight names the library it loaded: the lane is only worth
+      # anything if that is the one built here, whose version its own
+      # curl-config reports, not the runner's. C_INCLUDE_PATH and
+      # CHEZ_CURL_LIBCURL both name it: the constants check compiles against
+      # headers that must be no newer than the library (ADR-0001).
+      - name: Build and test against the current libcurl
+        env:
+          CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
+          CHEZ_CURL_LIBCURL: ${{ runner.temp }}/curl-current/lib/libcurl.so.4
+          C_INCLUDE_PATH: ${{ runner.temp }}/curl-current/include
+        run: |
+          set -o pipefail
+          built=$("$RUNNER_TEMP/curl-current/bin/curl-config" --version)
+          make build | tee "$RUNNER_TEMP/build.log"
+          if ! grep -qxF "  version:  ${built#libcurl }" "$RUNNER_TEMP/build.log"; then
+            echo "::error::make build did not load the libcurl this lane built ($built): this lane tests nothing"
+            exit 1
+          fi
           make test
 
   # One lane per API that ADR-0003 probes at load, each with its own libcurl,

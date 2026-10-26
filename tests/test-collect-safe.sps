@@ -64,9 +64,11 @@
 ;;; so a binding without it works there; only Apple arm64 shows it failing.
 ;;; This suite is what fails on every platform: make check-variadic removes
 ;;; the convention from bind-variadic's template, in a copy, and requires
-;;; this suite to name both entries as mismatches; then from each use
-;;; alone, bound through bind-required, and requires it to name that one
-;;; binding, a mismatch and a wrong binder.
+;;; this suite to name each of its five uses as a mismatch, curl_easy_setopt
+;;; three times, curl_easy_getinfo and curl_multi_setopt once each; then
+;;; from each use alone, bound through bind-required, and requires it to
+;;; name that one binding, a mismatch and a wrong binder. curl_share_setopt
+;;; is not bound yet.
 ;;;
 ;;; Each call into the library runs under `outcome`, so a raise is a value
 ;;; to compare, never a #f from SRFI-64 nor a suite that dies unnamed.
@@ -1098,14 +1100,17 @@
         src-check)))
 
 ;; ADR-0001, decision 1: once per value type, each through bind-variadic,
-;; whose template carries the convention. make check-variadic removes it
+;; whose template carries the convention; curl_multi_setopt for a long
+;; alone (ADR-0001, amended 2026-10-25). make check-variadic removes it
 ;; there, and requires this suite to fail.
-(test-equal "the scan of src/ finds curl_easy_setopt bound three times, once per value type, and curl_easy_getinfo once, each through bind-variadic with (__varargs_after 2)"
+(test-equal "the scan of src/ finds curl_easy_setopt bound three times, once per value type, curl_easy_getinfo once, and curl_multi_setopt once, for a long, each through bind-variadic with (__varargs_after 2)"
   '(("curl_easy_setopt" ((((__varargs_after 2)) bind-variadic)
                          (((__varargs_after 2)) bind-variadic)
                          (((__varargs_after 2)) bind-variadic)))
-    ("curl_easy_getinfo" ((((__varargs_after 2)) bind-variadic))))
-  (map (lambda (key) (list key (bound-via key))) '("curl_easy_setopt" "curl_easy_getinfo")))
+    ("curl_easy_getinfo" ((((__varargs_after 2)) bind-variadic)))
+    ("curl_multi_setopt" ((((__varargs_after 2)) bind-variadic))))
+  (map (lambda (key) (list key (bound-via key)))
+       '("curl_easy_setopt" "curl_easy_getinfo" "curl_multi_setopt")))
 
 (test-equal "src/ holds to the table: no violation"
   '()

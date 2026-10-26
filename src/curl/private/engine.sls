@@ -11,6 +11,20 @@
 ;;; handle and reports that it is ready, or the refusal that stopped it,
 ;;; which make-curl-engine raises.
 ;;;
+;;; A stalled name lookup does not stall the engine (ADR-0019). The thread
+;;; sets CURLMOPT_QUICK_EXIT to 1 on its multi handle as it makes it, so
+;;; libcurl 8.20.0 and later do not join a resolver thread when the handle
+;;; is cleaned up. CURLM_UNKNOWN_OPTION is taken: that libcurl predates the
+;;; option. Any other answer refuses the engine, before it runs a transfer.
+;;; Each transfer sets QUICK_EXIT, with the pins, where the libcurl knows
+;;; it (transfer.sls), so 7.87.0 and later neither wait in the removal nor
+;;; in a timed-out perform. The floor knows neither, and keeps the stall.
+;;; make-curl-engine-without-quick-exit, a private test seam, leaves either
+;;; out, so the test can show the stall each one prevents; and
+;;; make-curl-engine-answering-quick-exit, another, takes a given answer for
+;;; libcurl's, so the test can watch an answer no libcurl gives refuse the
+;;; engine.
+;;;
 ;;; Messages cross threads; handle calls don't. A submit, a cancel and a
 ;;; stop are queued under the engine's mutex, and then curl_multi_wakeup
 ;;; wakes the poll, still under the mutex: the one libcurl call a caller's
@@ -93,7 +107,9 @@
           curl-engine-multi curl-engine-live-count curl-engine-queued-count
           curl-engine-stale-cancels call-with-engine-held
           curl-token? curl-token-await curl-token-cancel curl-token-done? curl-token-chunks
-          make-faulty-curl-engine engine-fault-steps planted-engine-fault)
+          make-faulty-curl-engine engine-fault-steps planted-engine-fault
+          make-curl-engine-without-quick-exit make-curl-engine-answering-quick-exit
+          curl-engine-quick-exit multi-quick-exit-verdict)
   (import (curl private require-threaded)
           (rnrs)
           (only (chezscheme) critical-section disable-interrupts enable-interrupts fork-thread
@@ -163,7 +179,12 @@
   ;; turn took, and its slot, the counted block curl_multi_perform and
   ;; curl_multi_info_read write their counts through, held while the multi
   ;; handle lives, so a running engine counts one block and one multi; and,
-  ;; under the mutex, how many cancels found their token done.
+  ;; under the mutex, how many cancels found their token done; the
+  ;; QUICK_EXIT settings it leaves out, a list of transfer and multi, empty
+  ;; but for the test seam; and, under the mutex, what became of its multi
+  ;; handle's CURLMOPT_QUICK_EXIT, #f until its thread sets it; and the
+  ;; CURLMcode it takes in place of libcurl's answer to that, #f but for the
+  ;; other test seam.
   (define-record-type (curl-engine make-engine-record curl-engine?)
     (fields (immutable lock curl-engine-lock)
             (mutable queue curl-engine-queue curl-engine-queue-set!)
@@ -175,7 +196,10 @@
             (immutable fault engine-fault)
             (mutable batch engine-batch engine-batch-set!)
             (mutable slot engine-slot engine-slot-set!)
-            (mutable stale engine-stale engine-stale-set!)))
+            (mutable stale engine-stale engine-stale-set!)
+            (immutable without engine-without)
+            (mutable quick-exit engine-quick-exit engine-quick-exit-set!)
+            (immutable answer engine-answer)))
 
   ;; A token: its engine and its plan; under the engine's mutex, its state,
   ;; queued, live or done, its outcome, a response or a condition, and its
@@ -208,6 +232,15 @@
   (define (curl-engine-multi engine)
     (check-engine 'curl-engine-multi engine)
     (locked (curl-engine-lock engine) (lambda () (engine-multi engine))))
+
+  ;; curl-engine-quick-exit : Engine -> (U 'set 'unknown 'off)
+  ;; What became of ENGINE's multi handle's CURLMOPT_QUICK_EXIT: set, at 1;
+  ;; unknown, refused as CURLM_UNKNOWN_OPTION by a libcurl older than
+  ;; 8.20.0; or off, left out by make-curl-engine-without-quick-exit. A
+  ;; private accessor (ADR-0019). An engine returned running has set it.
+  (define (curl-engine-quick-exit engine)
+    (check-engine 'curl-engine-quick-exit engine)
+    (locked (curl-engine-lock engine) (lambda () (engine-quick-exit engine))))
 
   ;; curl-engine-live-count : Engine -> Natural
   ;; How many transfers ENGINE's table holds now: a private accessor.
@@ -301,7 +334,7 @@
   ;; there. The load runs first, on this thread. A refusal raises here: the
   ;; load's, or the engine's &curl-engine-error, reason failed, when its
   ;; thread could make no multi handle.
-  (define (make-curl-engine) (start-engine #f))
+  (define (make-curl-engine) (start-engine #f '() #f))
 
   ;; make-faulty-curl-engine : Symbol -> Engine
   ;; make-curl-engine's, with a fault planted at STEP, one of
@@ -311,14 +344,39 @@
   (define (make-faulty-curl-engine step)
     (unless (memq step engine-fault-steps)
       (assertion-violation 'make-faulty-curl-engine "not a step of the engine's loop" step))
-    (start-engine step))
+    (start-engine step '() #f))
 
-  ;; start-engine : (U Symbol #f) -> Engine
-  (define (start-engine fault)
+  ;; make-curl-engine-without-quick-exit : (Listof (U 'transfer 'multi)) -> Engine
+  ;; make-curl-engine's, but for the QUICK_EXIT settings WITHOUT names, which
+  ;; it leaves out: transfer, each transfer's QUICK_EXIT; multi, its multi
+  ;; handle's CURLMOPT_QUICK_EXIT. A test seam, private, so the test can
+  ;; show the stall each prevents (ADR-0019; M3 plan, section 6.2). No
+  ;; request reaches it: QUICK_EXIT is owned (ADR-0009).
+  (define (make-curl-engine-without-quick-exit without)
+    ;; Checked as a copy, and the copy used: the caller's pairs may change.
+    (let ((copy (and (list? without) (fold-right cons '() without))))
+      (unless (and copy (for-all (lambda (x) (memq x '(transfer multi))) copy))
+        (assertion-violation 'make-curl-engine-without-quick-exit
+                             "a list of the QUICK_EXIT settings to leave out, transfer and multi" without))
+      (start-engine #f copy #f)))
+
+  ;; make-curl-engine-answering-quick-exit : Integer -> Engine
+  ;; make-curl-engine's, but its thread takes CODE, a CURLMcode, as libcurl's
+  ;; answer to CURLMOPT_QUICK_EXIT, after making the call: a test seam,
+  ;; private, so the test can watch an answer no libcurl gives refuse the
+  ;; engine, its multi handle freed, as multi-quick-exit-verdict says
+  ;; (ADR-0019, decision 2). No request reaches it.
+  (define (make-curl-engine-answering-quick-exit code)
+    (unless (and (integer? code) (exact? code))
+      (assertion-violation 'make-curl-engine-answering-quick-exit "a CURLMcode is an exact integer" code))
+    (start-engine #f '() code))
+
+  ;; start-engine : (U Symbol #f) (Listof (U 'transfer 'multi)) (U Integer #f) -> Engine
+  (define (start-engine fault without answer)
     (require-interrupts-on 'make-curl-engine)
     (loaded-libcurl)
     (let ((engine (make-engine-record (make-mutex) '() 'starting #f #f #f
-                                      (make-eqv-hashtable) fault '() #f 0)))
+                                      (make-eqv-hashtable) fault '() #f 0 without #f answer)))
       (fork-thread (lambda () (run-engine engine)))
       (wait-until 'make-curl-engine engine (lambda () (memq (engine-state engine) '(running failed))))
       (let ((failure (locked (curl-engine-lock engine)
@@ -441,10 +499,21 @@
 
   ;; --- the engine's thread ---------------------------------------------------------------
 
+  ;; multi-quick-exit-verdict : Integer -> (U 'set 'unknown #f)
+  ;; What curl_multi_setopt's CODE for CURLMOPT_QUICK_EXIT at 1 says: set,
+  ;; for CURLM_OK; unknown, for CURLM_UNKNOWN_OPTION, from a libcurl older
+  ;; than the option; #f for any other, which refuses the engine (ADR-0019,
+  ;; decision 2).
+  (define (multi-quick-exit-verdict code)
+    (cond ((eqv? code curlm-ok) 'set)
+          ((eqv? code curlm-unknown-option) 'unknown)
+          (else #f)))
+
   ;; run-engine : Engine -> Void
-  ;; The engine's thread: its multi handle and its slot, each made and
-  ;; recorded in one critical section, then the loop, under a guard whose
-  ;; handler fails the engine.
+  ;; The engine's thread: its multi handle, made and recorded in one
+  ;; critical section, its CURLMOPT_QUICK_EXIT set and judged, unless left
+  ;; out, then its slot, made and recorded in one critical section, then
+  ;; the loop, under a guard whose handler fails the engine.
   (define (run-engine engine)
     (guard (e (#t (fail-engine! engine e)))
       (fault-at! engine 'start)
@@ -453,6 +522,13 @@
          (when (eqv? multi 0)
            (error 'make-curl-engine "curl_multi_init returned NULL: no memory for a multi handle"))
          (locked (curl-engine-lock engine) (lambda () (engine-multi-set! engine multi)))))
+      (let ((verdict (if (memq 'multi (engine-without engine))
+                         'off
+                         (let* ((answer (curl-multi-setopt-long (engine-multi engine) curlmopt-quick-exit 1))
+                                (code (or (engine-answer engine) answer)))
+                           (or (multi-quick-exit-verdict code)
+                               (multi-failed 'curl_multi_setopt code))))))
+        (locked (curl-engine-lock engine) (lambda () (engine-quick-exit-set! engine verdict))))
       (critical-section (engine-slot-set! engine (foreign-block (foreign-sizeof 'int))))
       (locked (curl-engine-lock engine)
         (lambda ()
@@ -534,7 +610,8 @@
     (unless (curl-token-done? token)
       (fault-at! engine 'setup)
       (let ((live (guard (e (#t (complete! engine token e '()) #f))
-                    (start-transfer! (curl-token-plan token)))))
+                    (start-transfer! (curl-token-plan token)
+                                     (not (memq 'transfer (engine-without engine)))))))
         (when live
           (token-live-set! token live)
           (locked (curl-engine-lock engine)

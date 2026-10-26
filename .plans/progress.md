@@ -7,50 +7,76 @@ close-out under **Close-outs**, newest first.
 ## Now
 
 - **Milestone:** M3, the engine (brief §8), per the [M3 plan](2026-10-24-m3-plan.md),
-  merged in PR #18. Slice 1, spike E1 and a harness safe for threads, merged in PR #19. Both
-  close-outs are below.
-  - **Slice 2, on `m3/engine`:** the engine (plan, §5), built and verified, not yet merged.
-    - **`(curl private engine)`:**
-      - one Chez thread per engine, which owns a multi handle and a slot block, and runs the
-        transfers other threads submit;
-      - submit, cancel and stop as messages, then `curl_multi_wakeup`;
-      - the six-step loop;
-      - a failure that completes every token;
-      - polling waits, and planted faults at eight steps.
-    - **native** records each handle's thread, and every exported procedure that takes one
-      checks it (`&curl-wrong-thread`). The multi interface is bound, the four calls that can
-      block through `bind-blocking`. `curl_easy_perform` is gone.
-    - **transfer:** a submit takes a checked plan on the caller's thread. The engine's thread
-      starts, finishes and frees the transfer. The callable logs each chunk, and a request's
-      fault is data.
-    - **Decided by the maintainer:**
-      - first, waits whose mutex a critical `dynamic-wind` held. The slice's review found that
-        design deadlocks;
-      - then polling waits, which hold no mutex while they sleep (ADR-0013, amended
-        2026-10-25, twice).
-    - **Found, and recorded:**
-      - a wait inside a critical section stalls every collection;
-      - a program runs the load before its first line, so the plan's load check could not
-        fail and was dropped (ADR-0002, amended);
-      - a slot made per call raced the counts (ADR-0014, amended);
-      - a wait with interrupts off deadlocks, so one is refused.
-    - **Measured first** (plan, §5.1):
-      - the thread check costs 43 ns, about 1.2% of a loopback transfer for 50 checks;
-      - under the gate's Valgrind, a polling engine leaves other threads their turn;
-      - on the four Linux libcurls, `curl_multi_info_read` reads no message for a removed
-        handle, and only `curl_multi_perform` makes them.
+  merged in PR #18. Slice 1, spike E1 and a harness safe for threads, merged in PR #19, and
+  slice 2, the engine, in PR #20. Their close-outs are below.
+  - **Slice 3, on `m3/stalled-lookups`:** stalled lookups and the two `QUICK_EXIT` options
+    (plan, §6), built and verified, not yet merged.
+    - **transfer:** `QUICK_EXIT` at 1 with the pins, where the libcurl knows it, computed as
+      data by `pinned-settings` and counted once libcurl takes it. It is owned (ADR-0009,
+      amended 2026-10-25).
+    - **engine:** `CURLMOPT_QUICK_EXIT` at 1 on each multi handle as it is made;
+      `CURLM_UNKNOWN_OPTION` taken, any other answer refuses the engine. A private switch,
+      `make-curl-engine-without-quick-exit`, leaves either out, for the controls.
+    - **native:** `curl_multi_setopt`, once, for a long, through `bind-variadic`; the decoy
+      libcurl and the load test know it. **constants:** the two multi options, the newer one
+      checked behind a version gate with a presence probe.
+    - **The stall checks,** in `test-engine` on Linux: `tests/stall-getaddrinfo.c`, compiled
+      and preloaded, and `tests/engine-stall.sps`, judged against the stand-in's log, with a
+      row of verdicts per libcurl and a control per setting (ADR-0019, amended 2026-10-25).
+    - **The variadic checks:** `test-variadic`'s two drips and `minus-one-rows`;
+      `check-variadic`'s sixth mutant, 29 steps (ADR-0001, amended 2026-10-25).
+    - **Measured first** (plan, §6.1; [research](research/stall/)): a stand-in `getaddrinfo`,
+      preloaded, stalls libcurl's resolver as a silent DNS server did, on the four Linux
+      libcurls, scaled to its stall (ADR-0019, amended 2026-10-25). 7.85.0 and 8.5.0
+      answer no long multi option by its value; `MAX_TOTAL_CONNECTIONS` at 1 serialises two
+      transfers on the four Linux libcurls (ADR-0001, amended 2026-10-25).
+    - **Decided by the maintainer, 2026-10-25:**
+      - the stall checks run on Linux alone, and the Mac runs a probe (ADR-0019);
+      - `check-variadic` watches `curl_multi_setopt` fail on Apple arm64 by behaviour: two
+        drips, serialised at 1 (ADR-0001).
     - **Checks:**
-      - in the container: `make test` 23/23, `test-memory` 23/23, `check-test-fails`,
-        `check-variadic`, `check-memory-gate`, `check-dev` and `check-clean`;
-      - in Docker: the main, gnutls, floor (7.85.0, Node 20.10.0) and memory lanes;
-      - test-engine: 45 checks, 5 runs of 5.
-    - **The [mutation log](engine-mutation-log.md):** two sweeps, the second 35 mutants, each
-      failing a named check, plus the conversion agent's 23. Both reviews' finds are there.
-    - **Carried:**
-      - slice 3, stalled lookups and the two `QUICK_EXIT` options;
-      - whether the engine's thread blocks SIGINT, from slice 1;
-      - the Mac's run (plan, §7);
-      - CI has still never run.
+      - in the container: `make test` 23/23, `test-memory` 23/23, `check-variadic` 29/29,
+        `check-memory-gate` 39/39, `check-test-fails`, `check-dev`, `check-clean`,
+        `check-seam`, `check-floors`, `check-suites` and `check-help`;
+      - in Docker: the main lane with `check-variadic`, gnutls, floor (7.85.0, Node 20.10.0)
+        and memory, each 23/23; then `test-engine` alone, twice on each, 51 checks on the
+        floor's one-entry row and 53 on 8.5.0's three.
+    - **The [mutation log](stall-mutation-log.md):** my sweep of 24 mutants, each failing by
+      name once the sweep's three gaps were closed; seven more after the review, one of them
+      failing only in Docker, where its case exists; the constants agent's 18 and the
+      variadic agent's 13, with five of `check-variadic`'s own.
+    - **The slice's review** (Opus, read-only) found, and the slice fixed:
+      - the engine's refusal of an unknown `CURLMOPT_QUICK_EXIT` answer was held by nothing,
+        since no libcurl gives one: a private seam now plants the answer;
+      - the cancel's and the timeout's engines' stops were never judged, so 8.20.0's wait in
+        `curl_multi_cleanup` after either went unchecked: each is judged now, by whether the
+        lookup ended during it;
+      - the drips' absolute bound could fail under Valgrind in the other order: they are
+        judged by their gap;
+      - on 8.20.0 every stopped engine leaves two resolver threads for about 2 s;
+      - no CI lane loads 8.20.0, so only the container shows `CURLMOPT_QUICK_EXIT`;
+      - the Mac probe could not tell its failures apart; records claimed more than their
+        logs, and some text was stale (ADR-0019, amended 2026-10-25, after the review).
+    - **The Mac owes** (plan, §7): `make test`, which prints the 8.7.1 row `minus-one-rows`
+      needs; `make check-variadic`, whose multi mutant must fail the drips by name; the stall
+      probe, `.plans/research/stall/run.sh mac control`, then `mac lookup multi-setopt
+      maxconn`.
+    - **A CI lane on the current libcurl,** asked for by the maintainer on 2026-10-26
+      ([ADR-0020](decisions/0020-a-ci-lane-on-the-current-libcurl.md)):
+      - measured first: curl's newest release is 8.23.0, the container's 8.20.0; vanilla
+        8.20.0 with OpenSSL passed every suite but `test-drift`, and 8.23.0 failed four and
+        hung `test-engine`. The maintainer chose 8.20.0 now, and 8.23.0 later;
+      - `scripts/ci/build-curl.sh --current` builds the 8.20.0 it pins, with a configure
+        line of its own: curl 8 dropped four options the floor's line names. The `current`
+        job runs `make build` and `make test` against it, and fails unless `make build`
+        loaded the version the build reports;
+      - `test-drift` gained its row, and `test-check-floors` six rows for `--current`;
+      - in Docker, the job's step passed 23 of 23 on the real script's build, and stopped by
+        name on the runner's own libcurl; the floor, rebuilt by the changed script, listed
+        the same features and protocols as before; in the container, `make test` 23/23.
+    - **Carried:** whether the engine's thread blocks SIGINT, from slice 1; why a timeout's
+      28 came 1,014 ms late once (ADR-0019, amended 2026-10-25); curl 8.23.0, a slice of its
+      own, with `test-engine`'s hang there (ADR-0020); CI has still never run.
 - **M2, one blocking request, plaintext and TLS:** its three slices are merged (PRs #13, #16
   and #17). Slice 3's close-out is below.
   - **Owed before M2 is done:** the Mac's `make test`, the first run of `test-transfer-tls` on
@@ -121,6 +147,48 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-25 — M3 slice 2: the engine (PR #20, `bc53947`)
+
+- **`(curl private engine)`:** one Chez thread per engine, which owns a multi handle and a slot
+  block, and runs the transfers other threads submit. Submit, cancel and stop are messages,
+  queued under the engine's mutex, then `curl_multi_wakeup`. The loop has six steps. A raise
+  inside it fails the engine, which completes every token. Faults can be planted, as data, at
+  eight steps.
+- **native** records each handle's thread, and every exported procedure that takes one checks
+  it, raising `&curl-wrong-thread`. The multi interface is bound, the four calls that can block
+  through `bind-blocking`. `curl_easy_perform` is gone, and with it the `curl_easy_cleanup`
+  wait spike E1 found.
+- **transfer:** a submit takes a checked plan on the caller's thread, and the engine's thread
+  starts, finishes and frees the transfer. The callable logs each chunk, and a request's fault
+  is data. `test-transfer` and `test-transfer-tls` run every scenario through an engine;
+  `transfer-escapes` retired.
+- **Decided by the maintainer, twice, on the waits:** first, waits whose mutex a critical
+  `dynamic-wind` held. The slice's review hung that design with four caller threads within
+  1 s. Then polling waits, which hold no mutex while they sleep (ADR-0013, amended 2026-10-25,
+  twice).
+- **Found, and recorded:**
+  - a wait inside a critical section stalls every other thread's collection;
+  - a program runs the load before its first line, so the plan's load check could not fail,
+    and was dropped (ADR-0002, amended);
+  - a slot block made per call raced the counts, so the engine holds one (ADR-0014, amended);
+  - a wait with interrupts off deadlocks, so the engine refuses one.
+- **Measured first** (plan, §5.1): the thread check costs 43 ns; under the gate's Valgrind a
+  polling engine leaves other threads their turn; on the four Linux libcurls,
+  `curl_multi_info_read` reads no message for a removed handle.
+- **Checks:** in the container, `make test` 23/23 (2,333 checks), `test-memory` 23/23,
+  `check-test-fails`, `check-variadic`, `check-memory-gate`, `check-dev` and `check-clean`; in
+  Docker, the main, gnutls, floor (7.85.0, Node 20.10.0) and memory lanes; `test-engine` 5
+  runs of 5.
+- **The [mutation log](engine-mutation-log.md):** two sweeps, the second of 35 mutants, each
+  failing a named check, and the conversion agent's 23.
+- **Three subagents, all Opus:**
+  - the conversion of the transfer suites, 491k tokens, 43 minutes. It found the slot race;
+  - the adversarial review, 316k, 35 minutes. It found the deadlock;
+  - a scoped review of polling waits, 274k, 23 minutes. It found numbers no check held, and
+    the deadlock a wait with interrupts off makes.
+- **Carried into slice 3:** stalled lookups and the two `QUICK_EXIT` options; whether the
+  engine's thread blocks SIGINT; the Mac's run; CI has never run.
 
 ### 2026-10-25 — M3 slice 1: spike E1, and a harness safe for threads (PR #19, `8c9c427`)
 

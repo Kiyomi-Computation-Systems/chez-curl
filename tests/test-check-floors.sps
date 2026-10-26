@@ -1588,7 +1588,12 @@
                        ": fetch its release tarball, check it, and add the sum to tarball_sha256 in this script\n")))
 
 (define chez-usage (list 2 "" "usage: build-chez.sh PREFIX [--nothreads]\n"))
-(define curl-usage (list 2 "" "usage: build-curl.sh PREFIX [EXTRA-CONFIGURE-FLAGS...]\n"))
+(define curl-usage (list 2 "" "usage: build-curl.sh [--current] PREFIX [EXTRA-CONFIGURE-FLAGS...]\n"))
+
+;; current-curl : String
+;; The current libcurl build-curl.sh --current pins, written out here
+;; (ADR-0020): a change to it is a reviewed change, and shows in this diff.
+(define current-curl "8.20.0")
 
 (tree-row "build-curl.sh: the checked-in libcurl floor has a pinned sum: it reaches the download of its tarball"
           real-text '()
@@ -1670,6 +1675,36 @@
           (sh-script "build-chez.sh" "chez")
           (list 2 "" "build-chez.sh: PREFIX must be an absolute path, not 'chez'\n"))
 (tree-row "build-curl.sh: no prefix is the usage" real-text '() (sh-script "build-curl.sh") curl-usage)
+
+;; --current builds the one other version the script pins, which is no floor
+;; (ADR-0020): it reaches its tarball's download whatever the floors file
+;; holds, or with none, and no environment variable moves it.
+(tree-row "build-curl.sh: --current has a pinned sum: it reaches the download of the current libcurl's tarball, not the floor's"
+          real-text '()
+          (lambda (root) (list "env" (shimmed root) "sh" (script root "build-curl.sh") "--current" "/opt/curl"))
+          (list 7 "" (string-append "https://curl.se/download/curl-" current-curl ".tar.xz\n")))
+(tree-row "build-curl.sh: --current reads no floors file: with none, it reaches the same download"
+          #f '()
+          (lambda (root) (list "env" (shimmed root) "sh" (script root "build-curl.sh") "--current" "/opt/curl"))
+          (list 7 "" (string-append "https://curl.se/download/curl-" current-curl ".tar.xz\n")))
+(tree-row "build-curl.sh: --current with a floor that has no sum still reaches its own download"
+          unpinned '()
+          (lambda (root) (list "env" (shimmed root) "sh" (script root "build-curl.sh") "--current" "/opt/curl"))
+          (list 7 "" (string-append "https://curl.se/download/curl-" current-curl ".tar.xz\n")))
+(tree-row "build-curl.sh: the env cannot move --current's version: current_version, version and CURL_FLOOR_VERSION set to the floor change nothing"
+          real-text '()
+          (lambda (root) (list "env" (shimmed root) "current_version=7.85.0" "version=7.85.0"
+                               "CURL_FLOOR_VERSION=7.85.0" "sh" (script root "build-curl.sh") "--current" "/opt/curl"))
+          (list 7 "" (string-append "https://curl.se/download/curl-" current-curl ".tar.xz\n")))
+(tree-row "build-curl.sh: --current with no prefix is the usage" real-text '()
+          (sh-script "build-curl.sh" "--current") curl-usage)
+(tree-row "build-curl.sh: --current with a relative prefix is refused" real-text '()
+          (sh-script "build-curl.sh" "--current" "curl")
+          (list 2 "" "build-curl.sh: PREFIX must be an absolute path, not 'curl'\n"))
+(tree-row "build-curl.sh: --current after the prefix is no flag of the script's: it goes to ./configure, after the floor's download"
+          real-text '()
+          (lambda (root) (list "env" (shimmed root) "sh" (script root "build-curl.sh") "/opt/curl" "--current"))
+          (list 7 "" (string-append "https://curl.se/download/curl-" real-curl ".tar.xz\n")))
 
 ;; --- expect-missing-api.sh ------------------------------------------------------------
 
