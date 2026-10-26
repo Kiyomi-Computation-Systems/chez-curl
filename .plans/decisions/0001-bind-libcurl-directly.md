@@ -575,4 +575,8 @@ arm64, Apple's libcurl 8.7.1), on PR #22's branch. The probe's output is kept as
 - **`make test` printed `("8.7.1" 0)`** for `minus-one-rows`, now its row: 8.7.1 takes -1.
   Its two drips there ended at 1,022 and 2,051 ms at 1, 1,029 ms apart, and both at
   1,021 ms at 2.
-- **Still owed:** `make check-variadic` there, whose multi mutant must fail the drips by name.
+- **`make check-variadic` passed there, all 29 steps ok on `tarm64osx`,** on PR #22's branch at
+  `27c12ca`. On Apple arm64 its multi step is ok only when `test-variadic` fails on that
+  mutant by name, exiting 1, with a failing test through `curl-multi-setopt-long`: the
+  binding's annotation is watched failing by behaviour, as the 2026-10-25 amendment planned.
+  The maintainer sent the summary line alone, so how many tests failed is not recorded.

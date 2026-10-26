@@ -7,7 +7,8 @@ close-out under **Close-outs**, newest first.
 ## Now
 
 - **Milestone:** M3, the engine (brief §8), per the [M3 plan](2026-10-24-m3-plan.md),
-  merged in PR #18. Its three slices are merged: spike E1 and a harness safe for threads
+  merged in PR #18, **done on 2026-10-26** with the Mac's run below. Its three slices are
+  merged: spike E1 and a harness safe for threads
   (PR #19), the engine (PR #20), and stalled lookups with a CI lane on curl 8.20.0 (PR #21).
   Their close-outs are below.
   - **On `ci/curl-8.23`: the `current` lane moves to curl 8.23.0,** the newest release, as
@@ -68,8 +69,10 @@ close-out under **Close-outs**, newest first.
       (ADR-0019, amended 2026-10-26, which leaves running the checks on macOS to the
       maintainer); 8.7.1 answers no long multi option by its value, and
       `MAX_TOTAL_CONNECTIONS` 1 serialises two drips there (ADR-0001, amended 2026-10-26);
-    - **still owed:** `make check-variadic`, whose multi mutant must fail the drips by name,
-      once the rows are pushed.
+    - `make check-variadic` at `27c12ca`: all 29 steps ok on `tarm64osx`, so its multi
+      mutant failed `test-variadic` by name through `curl-multi-setopt-long` (ADR-0001,
+      amended 2026-10-26).
+    - **So M3 is done** (M3 plan, §7): slice 3 is merged, and the Mac has run both.
   - **Carried:** whether the engine's thread blocks SIGINT, from slice 1; why a timeout's 28
     came 1,014 ms late once (ADR-0019, amended 2026-10-25); CI has still never run.
 - **M2, one blocking request, plaintext and TLS:** its three slices are merged (PRs #13, #16
