@@ -19,7 +19,8 @@
           curle-unsupported-protocol curle-weird-server-reply curle-partial-file
           curle-write-error curle-out-of-memory curle-operation-timedout
           curle-got-nothing curle-recv-error curle-filesize-exceeded
-          curlm-ok curlm-unknown-option curlmsg-done)
+          curlm-ok curlm-unknown-option curlmsg-done
+          curlmopt-max-total-connections curlmopt-quick-exit)
   (import (curl private require-threaded)
           (rnrs))
 
@@ -252,4 +253,22 @@
   ;;                                     data.result
   (define curlm-ok 0)
   (define curlm-unknown-option 6)
-  (define curlmsg-done 1))
+  (define curlmsg-done 1)
+
+  ;; The multi options chez-curl sets, curl/multi.h, each CURLOPTTYPE_LONG,
+  ;; 0, plus its number. A multi option has no lookup by name, as an easy
+  ;; option has (ADR-0001, decision 2), so its id is a constant.
+  ;;
+  ;; curlmopt-max-total-connections : Positive-Integer
+  ;;                                     CURLMOPT_MAX_TOTAL_CONNECTIONS, 13, since
+  ;;                                     7.30.0: tests/test-variadic.sps sets it
+  ;;                                     through curl-multi-setopt-long, to watch a
+  ;;                                     long arrive (ADR-0001, amended 2026-10-25)
+  ;; curlmopt-quick-exit : Positive-Integer
+  ;;                                     CURLMOPT_QUICK_EXIT, 21, since 8.20.0, after
+  ;;                                     the floor: every engine sets it to 1 when it
+  ;;                                     makes its multi handle (ADR-0019). Older
+  ;;                                     headers lack it, so tests/test-constants.sps
+  ;;                                     checks it where the headers have it
+  (define curlmopt-max-total-connections 13)
+  (define curlmopt-quick-exit 21))

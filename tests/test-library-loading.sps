@@ -443,7 +443,8 @@
        (cons "curl_multi_poll" (list version-call init-call))
        (cons "curl_multi_wakeup" (list version-call init-call))
        (cons "curl_multi_info_read" (list version-call init-call))
-       (cons "curl_multi_strerror" (list version-call init-call))))
+       (cons "curl_multi_strerror" (list version-call init-call))
+       (cons "curl_multi_setopt" (list version-call init-call))))
 
 ;; --- the real libcurl ---------------------------------------------------------------
 

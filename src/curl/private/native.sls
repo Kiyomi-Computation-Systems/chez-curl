@@ -66,6 +66,8 @@
 ;;; curl_multi_remove_handle and curl_multi_cleanup, which can block, through
 ;;; bind-blocking, whose template carries __collect_safe (ADR-0013, accepted
 ;;; 2026-10-24); the rest plain. A multi handle is counted as multi.
+;;; curl_multi_setopt is bound once, for a long, through bind-variadic,
+;;; last, with the easy setopts (ADR-0019; ADR-0001, amended 2026-10-25).
 ;;;
 ;;; Each handle's thread (ADR-0012, decision 3; M3 plan, section 3.3). Each
 ;;; easy, multi and CURLU handle and each string list native makes is
@@ -117,7 +119,7 @@
           curl-slist-append curl-slist-free-all
           curl-multi-init curl-multi-cleanup curl-multi-add-handle curl-multi-remove-handle
           curl-multi-perform curl-multi-poll curl-multi-wakeup curl-multi-info-read
-          curl-multi-strerror)
+          curl-multi-strerror curl-multi-setopt-long)
   (import (curl private require-threaded)
           (except (rnrs) dynamic-wind)
           (only (chezscheme) critical-section dynamic-wind ftype-ref make-ftype-pointer
@@ -697,6 +699,13 @@
   (define raw-curl-easy-getinfo
     (load-step (bind-variadic "curl_easy_getinfo" (uptr int uptr) int info)))
 
+  ;; CURLMcode curl_multi_setopt(CURLM *multi_handle, CURLMoption option, ...),
+  ;; variadic after option: bound once, for a long, the type of every option
+  ;; chez-curl sets, CURLMOPT_QUICK_EXIT (ADR-0019; ADR-0001, amended
+  ;; 2026-10-25).
+  (define raw-curl-multi-setopt-long
+    (load-step (bind-variadic "curl_multi_setopt" (uptr int long) int info)))
+
   ;; --- the counted wrappers, exported: step 7 counts its handle through them ------
 
   ;; curl-easy-init : -> Natural
@@ -992,6 +1001,14 @@
              (list (ftype-ref curl-msg (msg) message)
                    (ftype-ref curl-msg (easy-handle) message)
                    (ftype-ref curl-msg (data.result) message))))))
+
+  ;; curl-multi-setopt-long : Positive-Integer Integer Integer -> Integer
+  ;; MULTI, this thread's, a CURLMOPT_* long option from (curl private
+  ;; constants), and a long: the CURLMcode. A libcurl older than the option
+  ;; answers CURLM_UNKNOWN_OPTION.
+  (define (curl-multi-setopt-long multi option value)
+    (check-owner 'curl-multi-setopt multi 'multi)
+    (raw-curl-multi-setopt-long multi option value))
 
   ;; curl-multi-strerror : Integer -> (U String #f)
   ;; libcurl's text for the CURLMcode CODE, copied; #f for NULL.

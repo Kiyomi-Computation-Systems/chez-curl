@@ -314,10 +314,10 @@
   ;; element.
   ;; One row per C entry point, keyed by its name, a string, or per
   ;; callable, keyed by the name it is defined as, a symbol. A convention is
-  ;; a symbol, __collect_safe, or a list, (__varargs_after 2). Rows for
-  ;; entries not bound yet hold M2 to ADR-0013 the moment it binds them,
-  ;; and M3 to ADR-0001 for curl_multi_setopt and curl_share_setopt, and
-  ;; to ADR-0013's acceptance for the multi calls spike E1 measured.
+  ;; a symbol, __collect_safe, or a list, (__varargs_after 2). A row for an
+  ;; entry not bound yet holds the binding to its convention the moment it
+  ;; is made: curl_share_setopt's, to ADR-0001. M2 and M3 bound the others
+  ;; against rows written first, curl_multi_setopt's among them.
   ;;
   ;; A mark clears the row's bindings of one kind of crossing: a
   ;; bytevector's data, or a string its callee keeps no pointer to. Its

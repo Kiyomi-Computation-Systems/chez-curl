@@ -1,5 +1,5 @@
 #!/bin/sh
-# scripts/ci/build-curl.sh PREFIX [EXTRA-CONFIGURE-FLAGS...]
+# scripts/ci/build-curl.sh [--current] PREFIX [EXTRA-CONFIGURE-FLAGS...]
 #
 # Builds curl at its floor, libcurl with OpenSSL, from its release tarball and
 # installs it into PREFIX, for the floor lanes of .github/workflows/ci.yml
@@ -12,6 +12,15 @@
 # one well-formed libcurl version. Nothing a workflow says, an env key or a
 # matrix value, can change it. The tarball is checked against the sha256
 # pinned below before anything is unpacked.
+#
+# With --current, it builds the current libcurl instead, for the current lane
+# (ADR-0020): current_version below, the one version this script pins beside
+# the floor, which is no floor and so not in packaging/floors.sexp. It reads
+# no floors file then, and still no argument or environment variable gives
+# the version: --current chooses between the two pinned builds, and changes
+# neither. Its configure flags are its own list, read against its own
+# ./configure --help: curl 8 dropped options the floor's list names, and
+# --enable-option-checking=fatal stops at each.
 #
 # The libcurl it builds does not depend on what libraries the machine has
 # installed (ADR-0017). One thing ./configure still finds for itself: the
@@ -37,24 +46,36 @@
 #     RTMP, SCP and SFTP among its protocols, which the features word the
 #     drift guard compares does not show.
 # Afterwards it also asks curl-config for the version and the TLS backend, and
-# fails unless they are the floor and OpenSSL, and unless the library and the
-# header the lanes name are there.
+# fails unless they are the version it built, the floor or the current one,
+# and OpenSSL, and unless the library and the header the lanes name are
+# there.
 #
 # EXTRA-CONFIGURE-FLAGS go to ./configure after --prefix and the flags above,
 # so they win. PREFIX must be an absolute path. Nothing is installed outside
 # PREFIX.
 #
-# Changing the floor is a reviewed change: fetch the release tarball, verify
-# its signature, and add its sha256 to tarball_sha256 below. A floor with no
-# sha256 here fails. A new floor also needs its ./configure --help read again,
-# for each optional library it lists.
+# Changing the floor, or the current version, is a reviewed change: fetch the
+# release tarball, verify its signature, and add its sha256 to tarball_sha256
+# below. A version with no sha256 here fails. A new version also needs its
+# ./configure --help read again, for each optional library it lists, and its
+# rows in every suite's version tables, which make test prints.
 set -eu
 
 usage() {
-  echo "usage: build-curl.sh PREFIX [EXTRA-CONFIGURE-FLAGS...]" >&2
+  echo "usage: build-curl.sh [--current] PREFIX [EXTRA-CONFIGURE-FLAGS...]" >&2
   exit 2
 }
 
+# current_version: the current libcurl, built with --current (ADR-0020): the
+# version the Guix container's libcurl is, so that a vanilla build of it, with
+# OpenSSL, runs every suite in CI beside Guix's patched one.
+current_version=8.20.0
+
+current=no
+if [ "${1-}" = --current ]; then
+  current=yes
+  shift 1
+fi
 [ "$#" -ge 1 ] || usage
 prefix=$1
 shift 1
@@ -65,10 +86,14 @@ case $prefix in
 esac
 
 here=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
-version=$(sh "$here/floor.sh" libcurl) || {
-  echo "build-curl.sh: no libcurl floor to build" >&2
-  exit 1
-}
+if [ "$current" = yes ]; then
+  version=$current_version
+else
+  version=$(sh "$here/floor.sh" libcurl) || {
+    echo "build-curl.sh: no libcurl floor to build" >&2
+    exit 1
+  }
+fi
 
 # tarball_sha256 VERSION: the sha256 of curl-VERSION.tar.xz, the release
 # tarball, which https://curl.se/download/ and curl's GitHub release serve
@@ -78,6 +103,7 @@ version=$(sh "$here/floor.sh" libcurl) || {
 tarball_sha256() {
   case $1 in
     7.85.0) echo 88b54a6d4b9a48cb4d873c7056dcba997ddd5b7be5a2d537a4acb55c20b04be6 ;;
+    8.20.0) echo 63fe2dc148ba0ceae89922ef838f7e5c946272c2e78b7c59fab4b79d3ce2b896 ;;
     *) return 1 ;;
   esac
 }
@@ -124,12 +150,23 @@ flags="$flags --enable-ipv6"
 # or its protocols (LDAP, LDAPS, librtmp, libssh2, libssh, wolfssh).
 flags="$flags --without-brotli --without-zstd --without-libidn2 --without-libpsl"
 flags="$flags --without-libgsasl --without-gssapi --disable-ldap --disable-ldaps"
-flags="$flags --without-librtmp --without-libssh2 --without-libssh --without-wolfssh"
-# Off: the ones 7.85.0's ./configure uses only when asked (--without-gssapi
-# is on the line above): c-ares, hyper and the HTTP/3 stacks. Named anyway,
-# so that a later curl that looks for one stays off.
-flags="$flags --disable-ares --without-hyper --without-quiche --without-msh3"
-flags="$flags --without-ngtcp2 --without-nghttp3"
+flags="$flags --without-libssh2 --without-libssh"
+if [ "$current" = yes ]; then
+  # The current version's own: curl 8 has no librtmp, wolfssh, hyper or msh3
+  # options, which the floor's list names, and two of its own that look for
+  # a library: libuv, and Apple's IDN, macOS's alone. The HTTP/3 stacks and
+  # c-ares are off, as at the floor. Read against 8.20.0's ./configure
+  # --help (ADR-0020).
+  flags="$flags --without-libuv --without-apple-idn"
+  flags="$flags --disable-ares --without-quiche --without-ngtcp2 --without-nghttp3"
+else
+  flags="$flags --without-librtmp --without-wolfssh"
+  # Off: the ones 7.85.0's ./configure uses only when asked (--without-gssapi
+  # is above): c-ares, hyper and the HTTP/3 stacks. Named anyway, so that a
+  # later floor that looks for one stays off.
+  flags="$flags --disable-ares --without-hyper --without-quiche --without-msh3"
+  flags="$flags --without-ngtcp2 --without-nghttp3"
+fi
 
 # shellcheck disable=SC2086
 ./configure --prefix="$prefix" $flags "$@"

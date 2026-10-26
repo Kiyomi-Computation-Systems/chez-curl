@@ -644,7 +644,7 @@
 ;; seam, the loop over the test seam's settings; else request, one of the
 ;; request's other settings.
 (define (form-kind form)
-  (cond ((equal? form '(set-pinned-options! easy buffer)) 'pins)
+  (cond ((equal? form '(set-pinned-options! easy buffer quick-exit)) 'pins)
         ((equal? form '(set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)) 'tls)
         ((holds? form '(plan-settings plan)) 'seam)
         (else 'request)))
@@ -664,7 +664,7 @@
 
 (test-equal "the form reader: kinds by form, and a run of one kind written once"
   '(pins request tls seam)
-  (runs (map form-kind '((set-pinned-options! easy buffer) (set-option! easy "A" 1 buffer)
+  (runs (map form-kind '((set-pinned-options! easy buffer quick-exit) (set-option! easy "A" 1 buffer)
                          (when x (set-option! easy "B" 2 buffer))
                          (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
                          (for-each f (plan-settings plan))))))

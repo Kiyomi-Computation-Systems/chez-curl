@@ -401,6 +401,11 @@ it should not be a comment. (chez-cmark-gfm)
 
   `build-curl.sh` now names every library, passes `--enable-option-checking=fatal`, and
   checks what the install lists (ADR-0017). (chez-curl)
+  - **The fatal check stops at an option a newer curl dropped.** 8.20.0's `./configure`
+    has no `librtmp`, `wolfssh`, `hyper` or `msh3` options, all on the floor's line, and
+    8.23.0 drops `smb` and `tls-srp` too. So `build-curl.sh --current` has a line of its
+    own, read against 8.20.0's `--help`, which also names two libraries curl 8 looks for:
+    libuv, and Apple's IDN (ADR-0020). (chez-curl, 2026-10-26)
 * **A shell's `wait` may print `Killed` on stderr when the child it waits for died of a
   signal.** Measured with `sleep 5 & p=$!; kill -9 $p; wait $p`, which gives status 137 in
   every case:
@@ -811,9 +816,38 @@ it should not be a comment. (chez-cmark-gfm)
     `curl_multi_perform` call;
   - on 8.20.0, `curl_multi_cleanup` blocked as long, and so did
     `curl_easy_cleanup` after `curl_easy_perform`, which M2's blocking path
-    binds plain: 9 s, until slice 2 deletes it (spike E1).
+    bound plain: 9 s, until M3 slice 2 deleted it (spike E1).
 
   An engine thread would hold every transfer for that time. `QUICK_EXIT` and
-  `CURLMOPT_QUICK_EXIT` make libcurl leave the thread behind instead. The
-  container cannot stall a lookup, since it has no `/etc/resolv.conf`, so only
-  Docker, or a stand-in `getaddrinfo`, shows it (ADR-0019). (curl, the M3 plan)
+  `CURLMOPT_QUICK_EXIT` make libcurl leave the thread behind instead, and from
+  M3 slice 3 every engine sets both where libcurl knows them. The container
+  cannot stall a lookup, since it has no `/etc/resolv.conf`. A stand-in
+  `getaddrinfo`, `tests/stall-getaddrinfo.c`, preloaded, stalls libcurl's
+  resolver as a silent DNS server did, on every Linux libcurl recorded, and
+  `test-engine` runs it, with a control per option. macOS has no `LD_PRELOAD`
+  (ADR-0019, amended 2026-10-25). (curl, the M3 plan)
+* **On 7.85.0 and 8.5.0, a multi option's answer says nothing of its value.** A probe set
+  each long `CURLMOPT_` to values from -(2^62) to 2^40. 7.85.0 and Ubuntu's 8.5.0
+  answered `CURLM_OK` to every value of every option they know; only 8.20.0 refused
+  some, a negative `MAX_TOTAL_CONNECTIONS` among them. So on the Mac's 8.7.1 a
+  `curl_multi_setopt` binding that drops its annotation might pass any check by code:
+  8.7.1 is unmeasured, and lies between them and 8.20.0.
+  `test-variadic` watches the value arrive by behaviour: at `MAX_TOTAL_CONNECTIONS`
+  1 two drips run one after the other, and at 2 together (ADR-0001, amended
+  2026-10-25). (chez-curl, M3 slice 3)
+* **A probe that polls once more before it reads its clock reports late.** The
+  two-drip probe drained the last transfer's message, polled 100 ms, and only then
+  saw that both were done and stopped its clock. Its "both done" times, 1,108 to
+  1,113 and 2,120 to 2,225 ms, went into ADR-0001 about 100 ms late; the times it
+  read as each message came, 1,007 to 1,013 and 2,017 to 2,124 ms, did not. The
+  variadic agent found it by its suite's own clock. Stop the clock where the
+  condition is first seen. (chez-curl, M3 slice 3)
+* **Setting `C_INCLUDE_PATH` drops what it held.** GCC adds the variable's
+  directories to its default search path, but in the Guix container the variable is
+  the only route to glibc's and the kernel's headers: it names the profile's include
+  directory. Set to the
+  floor curl's headers alone, `curl/system.h`'s `sys/socket.h` could not find
+  `asm/socket.h`, and every compile failed, exit 1. Prepended,
+  `C_INCLUDE_PATH=DIR:$C_INCLUDE_PATH`, the compile passed. Ubuntu keeps its system
+  headers on the compiler's default path, so CI's floor lane does not hit it.
+  (chez-curl, M3 slice 3)

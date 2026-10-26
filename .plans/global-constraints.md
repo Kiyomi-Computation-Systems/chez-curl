@@ -31,16 +31,22 @@ provisional. They bind until that record is accepted or amended.
 
 - **No C is compiled for the library: no shim** (ADR-0001).
 - **Variadic entry points are bound once per value type,** with `(__varargs_after 2)`.
-  The ones chez-curl binds are `curl_easy_setopt`, `curl_easy_getinfo`, `curl_multi_setopt`
-  and `curl_share_setopt`. libcurl has others, `curl_formadd` and the `curl_mprintf`
-  family, which chez-curl does not bind.
-  - Each of the four is bound through `bind-variadic`, whose template carries the
-    convention, and `test-collect-safe` requires both of every binding of them.
+  ADR-0001 names four: chez-curl binds `curl_easy_setopt`, `curl_easy_getinfo` and
+  `curl_multi_setopt`, and `curl_share_setopt` has a row of the conventions table but no
+  binding yet. libcurl has others, `curl_formadd` and the `curl_mprintf` family, which
+  chez-curl does not bind.
+  - Each is bound through `bind-variadic`, whose template carries the convention, and
+    `test-collect-safe` requires both of every binding of them.
   - x86-64 runs a binding without the convention correctly, so only Apple arm64 can show
     one failing. `make check-variadic` must be run on an Apple arm64 Mac whenever a
     variadic binding changes (ADR-0001, amended).
   - **It passed there on 2026-10-23,** on the maintainer's M1 (ADR-0001, amended). So M2
     may bind setopt and getinfo options.
+  - **`curl_multi_setopt` is bound once, for a `long`** (M3 slice 3). No long multi option
+    answers by its value on 7.85.0 or 8.5.0, so `test-variadic` watches the value arrive by
+    behaviour: `MAX_TOTAL_CONNECTIONS` at 1 serialises two transfers, and at 2 they run
+    together (ADR-0001, amended 2026-10-25). The Mac's `check-variadic` must show it fail
+    there before M3 is done.
 - **`CURLOPT_*` ids and types come from the loaded library,** through
   `curl_easy_option_by_name`. They are never written in Scheme (ADR-0001).
 - **Every other constant is a Scheme definition** in `(curl private constants)`. A C program
@@ -49,6 +55,12 @@ provisional. They bind until that record is accepted or amended.
   or that suite fails. Its C name is the export's name, upcased, with `-` as `_`, unless
   `c-name-aliases` names another, which is a reviewed change. A constant written anywhere
   else is checked by nothing (ADR-0001, amended).
+  - **A constant newer than the floor carries its gate,** written out in the suite: the
+    release that added it, as text and as `LIBCURL_VERSION_NUM`. The C program reads it
+    under `#if`, so headers at or above the gate check it and older ones name it unchecked.
+    A compile probe, with a control that must compile and one that must not, requires the
+    headers to declare it exactly when they are at or above the gate. The first is
+    `CURLMOPT_QUICK_EXIT`, since 8.20.0 (M3 slice 3).
 - **Structs Scheme reads are `define-ftype`s in `(curl private layouts)`,** each a struct of
   primitive-typed fields. The same program checks every field's offset, size and kind. A
   new struct needs a row in the same suite. The headers it compiles against must be no
@@ -353,6 +365,10 @@ provisional. They bind until that record is accepted or amended.
   - `main` runs every check, `make build` and the suites.
   - `floor` runs `make build` and `make test` against curl 7.85.0 built from source, with
     `CHEZ_CURL_LIBCURL` and `C_INCLUDE_PATH` both pointed at it.
+  - `current` runs the same against the current libcurl, vanilla 8.20.0 with OpenSSL, built
+    by `scripts/ci/build-curl.sh --current`, which pins that version itself: it is no floor.
+    The job names no version, and fails unless `make build` loaded the one its build's
+    `curl-config` reports (ADR-0020).
   - `floor-disabled-api` is two lanes. Each builds that curl without one API, and requires
     `make build` to refuse it as `missing-api`, naming that API's entry point, in the whole
     refusal block.
@@ -480,13 +496,23 @@ provisional. They bind until that record is accepted or amended.
 - **The engine's loop never waits in a plain call.** A plain wait stalls every other thread's
   collection up to about 500 times its length: Chez checks a pending collection only when a
   thread's 1000-tick event counter runs out (ADR-0013, amended 2026-10-24).
-- **A stalled name lookup does not stall the engine** (ADR-0019). M3 slice 3 builds these;
-  slice 2's engine sets neither option yet:
+- **A stalled name lookup does not stall the engine** (ADR-0019, amended 2026-10-25), from
+  M3 slice 3:
   - every engine transfer sets `QUICK_EXIT` to 1 when the loaded libcurl knows it, looked up
     by name, with the pins;
   - every engine's multi handle sets `CURLMOPT_QUICK_EXIT` to 1 when it is made, through
-    `curl_multi_setopt`. `CURLM_UNKNOWN_OPTION` is accepted;
-  - the floor, 7.85.0 to 7.86.x, keeps the stall, up to glibc's resolver timeout.
+    `curl_multi_setopt`. `CURLM_UNKNOWN_OPTION` is accepted, and any other answer refuses the
+    engine;
+  - the floor, 7.85.0 to 7.86.x, keeps the stall, up to glibc's resolver timeout;
+  - `test-engine` shows each on Linux, under a stand-in `getaddrinfo` it compiles and
+    preloads, with a control per setting where libcurl knows it: on 8.5.0 an engine
+    without each transfer's `QUICK_EXIT` stalls, and on 8.20.0 one without
+    `CURLMOPT_QUICK_EXIT`. On 8.20.0 a transfer's `QUICK_EXIT` changes no stall, so a count of
+    the transfers that set it holds it there. CI's `current` lane loads a vanilla 8.20.0,
+    built from source, so `CURLMOPT_QUICK_EXIT` runs there as well as in the Guix container
+    (ADR-0020). A libcurl with no
+    row of its verdicts fails by name. The checks do not run on macOS, which has no
+    `LD_PRELOAD`; the Mac runs a probe instead.
 - **Stopping an engine cancels what is in flight** (ADR-0012, amended 2026-10-24). Each queued
   and live transfer completes as `stopped`. The engine frees every handle and cleans up the
   multi handle, and the caller's stop returns once its thread has signalled its end. A later

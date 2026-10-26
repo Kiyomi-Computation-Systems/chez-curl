@@ -339,9 +339,9 @@ check-test-fails: ## Plant bad suites, none at all, a bad import and a stale REA
 	@MAKE='$(MAKE)' TIMEOUT='$(TIMEOUT)' CHEZ='$(CHEZ)' sh tests/check-test-fails.sh
 
 # Removes (__varargs_after 2) in a copy of src/, tests/ and
-# .plans/decisions/, five ways, each from the unchanged
+# .plans/decisions/, six ways, each from the unchanged
 # src/curl/private/native.sls: from bind-variadic's template, then from
-# each of its four uses alone, bound through bind-required instead. On
+# each of its five uses alone, bound through bind-required instead. On
 # every platform, tests/test-collect-safe.sps must fail on each, naming
 # exactly the mutated bindings. On Apple arm64, Chez's machine type
 # arm64osx or tarm64osx, tests/test-variadic.sps must fail too: on a setopt
@@ -354,9 +354,12 @@ check-test-fails: ## Plant bad suites, none at all, a bad import and a stale REA
 # getinfo binding in a real transfer, runs on each mutant too, under a bound
 # of its own, TRANSFER_TIMEOUT, 180 seconds: on Apple arm64 it must fail, a
 # FAIL line, a crash or the bound all counting, and elsewhere its result is
-# reported. The unchanged copy must pass all three first, test-transfer's
-# origin under NODE; test-transfer needs a row for the libcurl, and the
-# control says so when it lacks one. tests/check-variadic.sh holds the
+# reported. On the curl_multi_setopt use, test-transfer is reported on every
+# machine, never failed: no transfer shows a multi option on Apple's 8.7.1;
+# test-variadic's two drips show it instead (ADR-0001, amended 2026-10-25).
+# The unchanged copy must pass all three first, the test origin under NODE;
+# test-transfer and test-variadic each need a row for the libcurl, and the
+# control says so when one lacks it. tests/check-variadic.sh holds the
 # steps. The copy has no .git.
 check-variadic: deps ## Remove (__varargs_after 2) from bind-variadic's template, then from each use alone, in a copy; test-collect-safe must fail on each, and on Apple arm64 test-variadic and test-transfer too
 	@scripts/require-tools "$(GOAL)" $(TIMEOUT) $(CHEZ) $(NODE)
