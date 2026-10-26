@@ -1,6 +1,6 @@
 # ADR-0018: A request's CA file is its only trust anchor
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-26: SecureTransport's first run
 - **Date:** 2026-10-24
 - **Scope:** M2's private request (M2 plan, §6), and M4's public one, which inherits its
   fields
@@ -160,3 +160,11 @@ and the container's 8.20.0 with GnuTLS (M2 plan, §6.1):
   answer to `CAPATH`, and whether it reads `SSL_CERT_FILE`. The Mac was out of reach when
   slice 3 was ready, and the maintainer chose to merge first: that run is owed before M2 is
   done, and a refusal there is a finding for its own branch (M2 plan, §6 and §7).
+
+## Amendment, 2026-10-26: SecureTransport's first run
+
+The Mac's `make test`, on PR #22's branch, ran `test-transfer-tls` against Apple's libcurl 8.7.1
+for the first time: all 55 checks passed. So on SecureTransport each face answers as the shared
+verdicts say, and the transfer reads neither `SSL_CERT_FILE` nor `SSL_CERT_DIR`, as the suite's
+pin requires of every libcurl but Guix's 8.20.0. Whether SecureTransport answers the `CAPATH`
+clear with `CURLE_OK` or `CURLE_NOT_BUILT_IN`, the run does not say: the transfer takes either.

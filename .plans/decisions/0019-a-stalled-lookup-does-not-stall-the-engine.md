@@ -1,6 +1,6 @@
 # ADR-0019: A stalled name lookup does not stall the engine
 
-- **Status:** Accepted; amended 2026-10-25, the stand-in measured, and the Mac's probe (M3 slice 3); amended 2026-10-25, what slice 3 built; amended 2026-10-25, after the slice's review; amended 2026-10-26, a CI lane on 8.20.0; amended 2026-10-26, the lane on 8.23.0
+- **Status:** Accepted; amended 2026-10-25, the stand-in measured, and the Mac's probe (M3 slice 3); amended 2026-10-25, what slice 3 built; amended 2026-10-25, after the slice's review; amended 2026-10-26, a CI lane on 8.20.0; amended 2026-10-26, the lane on 8.23.0; amended 2026-10-26, the Mac's probe
 - **Date:** 2026-10-24
 - **Scope:** M3's engine and every transfer it runs (the [M3 plan](../2026-10-24-m3-plan.md))
 - **Settles:** what the engine does about libcurl's resolver thread, which blocks teardown
@@ -255,3 +255,28 @@ The `current` lane builds curl's newest release, 8.23.0, in place of 8.20.0 (ADR
 amended 2026-10-26). Measured in Docker: 8.23.0's stall verdicts are 8.20.0's, row for row,
 its `multi` control among them, so `stall-verdicts` gains an 8.23.0 row equal to 8.20.0's, and
 `CURLMOPT_QUICK_EXIT` still runs in CI. 8.20.0's row runs in the Guix container.
+
+## Amendment, 2026-10-26: the Mac's probe
+
+The maintainer ran the probe this record's 2026-10-25 amendment asked for, on their M1:
+Homebrew's Chez 10.4.1 on Darwin arm64, and Apple's libcurl 8.7.1. Its output is
+kept as `research/stall/results/mac-control.log` and `mac.log`.
+
+- **The stand-in reaches Apple's resolver.** Through `DYLD_INSERT_LIBRARIES` and its
+  `__interpose` section it loaded into Homebrew's Chez and into `gai-control`, whose
+  `getaddrinfo` call took the 3,005 ms stall. On every stalled `lookup` line it loaded once
+  and stalled once; with no stand-in, every lookup failed at once, code 6.
+- **Apple's 8.7.1 stalls as 8.5.0 does.** A 10,000 ms stall blocked `curl_multi_remove_handle`
+  9,677–9,678 ms, `curl_multi_perform` 9,001–9,003 ms inside a timeout that answered 28 at
+  10,007 ms, and `curl_easy_perform` 10,006–10,007 ms; a 3,000 ms stall, 2,676–2,681,
+  2,001 and 3,004–3,006 ms. With `QUICK_EXIT` set, none waited: the teardown at once, each
+  timeout at 1,002–1,007 ms. `CURLMOPT_QUICK_EXIT` is unknown to it, 6, and changes nothing.
+  Two runs of each.
+- **So the engine's setting protects the Mac,** as on 8.5.0: each transfer's `QUICK_EXIT`.
+- **What this decides is the maintainer's:** the checks could now run on macOS, as the
+  2026-10-25 amendment left open. `test-engine` would compile the stand-in as a dynamic
+  library and preload it with `DYLD_INSERT_LIBRARIES`, and 8.7.1's row would be 8.5.0's.
+  The probe handed the variable to Chez through `env`, as `test-engine`'s child does; System
+  Integrity Protection strips it from a protected binary's own start, such as `sh`'s, so the
+  child's path in `test-engine` itself is to be measured. Until decided, they run on Linux
+  alone.

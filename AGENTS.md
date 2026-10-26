@@ -306,9 +306,8 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   and the next transfer retries on each, then gives up with 55. A check that
   runs drips together makes an engine of its own; `test-engine` pins each
   libcurl's answer by version (ADR-0020).
-* libcurl 7.85.0 and 8.5.0 take every value of every long multi option, so
-  `curl_multi_setopt`'s answer cannot show a value arriving; Apple's 8.7.1 is
-  unmeasured. `test-variadic`
+* libcurl 7.85.0, 8.5.0 and Apple's 8.7.1 take every value of every long multi
+  option, so `curl_multi_setopt`'s answer cannot show a value arriving. `test-variadic`
   watches it by behaviour: two drips, serialised at `MAX_TOTAL_CONNECTIONS` 1.
 * A probe that polls once more before it reads its clock reports late, by up to
   that poll's timeout. Stop the clock where the condition is first seen.

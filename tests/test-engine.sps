@@ -421,14 +421,16 @@
 ;; one drip submitted the moment eight drips live together have ended, on
 ;; an engine of its own, the raw face having closed each of their
 ;; connections without saying so (ADR-0020, amended 2026-10-26). 7.85.0 to
-;; 8.20.0 check an idle connection before reusing it, and drop the dead
-;; ones. 8.23.0 checks one only when it went back to the pool, or was last
+;; 8.20.0, Apple's 8.7.1 among them (printed on the maintainer's Mac,
+;; 2026-10-26), check an idle connection before reusing it, and drop the
+;; dead ones. 8.23.0 checks one only when it went back to the pool, or was last
 ;; checked, 1 s or more before, however old it is: it reuses a dead one,
 ;; retries on the next as each dies, and after five retries gives up with
 ;; CURLE_SEND_ERROR, its error buffer saying so.
 (define reuse-verdicts
   '(("7.85.0" (response 200 "abcd"))
     ("8.5.0" (response 200 "abcd"))
+    ("8.7.1" (response 200 "abcd"))
     ("8.20.0" (response 200 "abcd"))
     ("8.23.0" (transfer-error perform-failed 55 "Connection died, tried 5 times before giving up"))))
 

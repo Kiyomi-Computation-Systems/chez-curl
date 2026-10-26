@@ -1,6 +1,6 @@
 # ADR-0001: Bind libcurl directly, with no C shim; the floor is Chez 10.4.0, threaded
 
-- **Status:** Accepted; amended 2026-10-16 with what M0 slices 3 to 5 built; 2026-10-17, the variadic bindings (M0 slice 6); 2026-10-23, the checked copies and the carried checks (M2 slice 1); 2026-10-23, the Apple arm64 run, which passed; 2026-10-23, header strings are Latin-1 both ways, and the transfer's bindings (M2 slice 2); 2026-10-25, `curl_multi_setopt`, and how Apple arm64 shows it (M3 slice 3)
+- **Status:** Accepted; amended 2026-10-16 with what M0 slices 3 to 5 built; 2026-10-17, the variadic bindings (M0 slice 6); 2026-10-23, the checked copies and the carried checks (M2 slice 1); 2026-10-23, the Apple arm64 run, which passed; 2026-10-23, header strings are Latin-1 both ways, and the transfer's bindings (M2 slice 2); 2026-10-25, `curl_multi_setopt`, and how Apple arm64 shows it (M3 slice 3); 2026-10-26, Apple's 8.7.1 multi options, measured
   ([slice 3](#amendment-2026-10-16-what-slice-3-built),
   [slice 4](#amendment-2026-10-16-what-slice-4-built),
   [slice 5](#amendment-2026-10-16-the-non-threaded-check-m0-slice-5),
@@ -557,3 +557,22 @@ the annotation. The maintainer chose on 2026-10-25 how it does.
   first prints the 8.7.1 row for `minus-one-rows`. Its template, pointer and getinfo mutants
   now also fail the two drips, as not run, so their failing counts will rise.
 
+
+## Amendment, 2026-10-26: Apple's 8.7.1 multi options, measured
+
+The Mac ran M3's probe and `make test` on the maintainer's M1 (Homebrew's Chez 10.4.1, Darwin
+arm64, Apple's libcurl 8.7.1), on PR #22's branch. The probe's output is kept as
+`research/stall/results/mac.log`.
+
+- **8.7.1 answers no long multi option by its value,** as 7.85.0 and 8.5.0 do: `CURLM_OK` to
+  every value from -(2^62) to 2^40 of the six long options it knows, and
+  `CURLM_UNKNOWN_OPTION`, 6, to `NETWORK_CHANGED`, `RESOLVE_THREADS_MAX` and `QUICK_EXIT`. So
+  on the Mac, too, only behaviour can show a multi value arriving, as the 2026-10-25 amendment
+  chose.
+- **`MAX_TOTAL_CONNECTIONS` arrives through the annotated binding on Apple arm64:** at 1 the
+  two 1 s drips ended at 1,020–1,025 and 2,045–2,053 ms, one after the other; at 2, 0, -1
+  and 2^40, together, both by 1,016–1,024 ms. Two runs.
+- **`make test` printed `("8.7.1" 0)`** for `minus-one-rows`, now its row: 8.7.1 takes -1.
+  Its two drips there ended at 1,022 and 2,051 ms at 1, 1,029 ms apart, and both at
+  1,021 ms at 2.
+- **Still owed:** `make check-variadic` there, whose multi mutant must fail the drips by name.

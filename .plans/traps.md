@@ -830,8 +830,9 @@ it should not be a comment. (chez-cmark-gfm)
   each long `CURLMOPT_` to values from -(2^62) to 2^40. 7.85.0 and Ubuntu's 8.5.0
   answered `CURLM_OK` to every value of every option they know; only 8.20.0 refused
   some, a negative `MAX_TOTAL_CONNECTIONS` among them. So on the Mac's 8.7.1 a
-  `curl_multi_setopt` binding that drops its annotation might pass any check by code:
-  8.7.1 is unmeasured, and lies between them and 8.20.0.
+  `curl_multi_setopt` binding that drops its annotation might pass any check by code.
+  Measured on the Mac on 2026-10-26, Apple's 8.7.1 answers as 7.85.0 and 8.5.0 do,
+  `CURLM_OK` to every value of every long option it knows.
   `test-variadic` watches the value arrive by behaviour: at `MAX_TOTAL_CONNECTIONS`
   1 two drips run one after the other, and at 2 together (ADR-0001, amended
   2026-10-25). (chez-curl, M3 slice 3)

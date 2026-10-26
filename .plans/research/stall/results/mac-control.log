@@ -1,0 +1,8 @@
+[mac] chez 10.4.1, Darwin arm64
+[mac] control: DYLD_INSERT_LIBRARIES "/var/folders/hh/q367ppx15fvcb_hb0zb_gp2h0000gn/T//stall-research.zK9ccy/stall-getaddrinfo.dylib", LD_PRELOAD #f
+[mac] gai-control: getaddrinfo("slow-name.example.com") answered 8 after 3005 ms
+[mac] the stand-in's log:
+[mac]   loaded 875
+[mac]   loaded 882
+[mac]   stalling slow-name.example.com
+[mac]   answered slow-name.example.com

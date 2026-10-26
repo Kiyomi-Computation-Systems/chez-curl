@@ -163,11 +163,14 @@
 ;; The multi long, by its sign: what MAX_TOTAL_CONNECTIONS set to -1
 ;; answers, by libcurl version, each measured (ADR-0001, amended
 ;; 2026-10-25). 8.20.0 and 8.23.0 refuse a negative value with
-;; CURLM_BAD_FUNCTION_ARGUMENT, 10; 7.85.0 and 8.5.0 take it. A libcurl
-;; with no row here fails by name, and the suite prints the row to add.
+;; CURLM_BAD_FUNCTION_ARGUMENT, 10; 7.85.0, 8.5.0 and Apple's 8.7.1 take
+;; it, the last printed by this suite on the maintainer's Mac on
+;; 2026-10-26. A libcurl with no row here fails by name, and the suite
+;; prints the row to add.
 (define minus-one-rows
   '(("7.85.0" 0)
     ("8.5.0" 0)
+    ("8.7.1" 0)
     ("8.20.0" 10)
     ("8.23.0" 10)))
 

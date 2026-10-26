@@ -56,20 +56,28 @@ close-out under **Close-outs**, newest first.
       without its text, the same hang's class in `test-curl-testing`, an answer shape not held
       whole, and stale records. Each is fixed (ADR-0020, amended, "After the slice's
       review").
-  - **The Mac owes** (M3 plan, §7): `make test`, which prints the 8.7.1 rows
-    `minus-one-rows` and `reuse-verdicts` need; `make check-variadic`, whose multi mutant must
-    fail the drips by name; and the stall probe, `.plans/research/stall/run.sh mac control`,
-    then `mac lookup multi-setopt maxconn`. That `make test` is also SecureTransport's first
-    `test-transfer-tls`, owed since M2.
+  - **The Mac's run, 2026-10-26,** on the maintainer's M1, on this branch (Homebrew's Chez
+    10.4.1, Apple's libcurl 8.7.1):
+    - `make test`: 21 of 23, the two failures the rows it printed, now added:
+      `("8.7.1" 0)` for `minus-one-rows` and `("8.7.1" (response 200 "abcd"))` for
+      `reuse-verdicts`. `test-transfer-tls` passed all 55 checks on SecureTransport, its
+      first run there (ADR-0018, amended 2026-10-26), and `test-transfer` its 8.7.1 row with
+      the `error-text` case;
+    - the stall probe: the stand-in reaches Apple's resolver through
+      `DYLD_INSERT_LIBRARIES`, 8.7.1 stalls as 8.5.0 does, and `QUICK_EXIT` ends it
+      (ADR-0019, amended 2026-10-26, which leaves running the checks on macOS to the
+      maintainer); 8.7.1 answers no long multi option by its value, and
+      `MAX_TOTAL_CONNECTIONS` 1 serialises two drips there (ADR-0001, amended 2026-10-26);
+    - **still owed:** `make check-variadic`, whose multi mutant must fail the drips by name,
+      once the rows are pushed.
   - **Carried:** whether the engine's thread blocks SIGINT, from slice 1; why a timeout's 28
     came 1,014 ms late once (ADR-0019, amended 2026-10-25); CI has still never run.
 - **M2, one blocking request, plaintext and TLS:** its three slices are merged (PRs #13, #16
   and #17). Slice 3's close-out is below.
-  - **Owed before M2 is done:** the Mac's `make test`, the first run of `test-transfer-tls` on
-    SecureTransport. Its verdicts, its answer to clearing `CAPATH`, and whether it reads
-    `SSL_CERT_FILE` are unmeasured. The maintainer chose on 2026-10-24 to merge slice 3
-    first (M2 plan, §6 and §7). A finding there gets its own branch. M3's Mac run covers it
-    (M3 plan, §7).
+  - **M2 is done:** its last owed item, the Mac's first `test-transfer-tls` on
+    SecureTransport, passed all 55 checks on 2026-10-26 (ADR-0018, amended). Its answer to
+    clearing `CAPATH`, `CURLE_OK` or `CURLE_NOT_BUILT_IN`, the transfer takes either, so the
+    run does not say which.
 
   M1 (brief §7) is built: PRs #10 and #11. M0 (brief §8) is built.
 - **The Mac's run, 2026-10-23,** on the maintainer's M1:
