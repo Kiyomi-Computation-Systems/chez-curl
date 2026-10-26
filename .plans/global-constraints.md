@@ -246,8 +246,32 @@ provisional. They bind until that record is accepted or amended.
   `CAPATH`** when a transfer starts, after every setopt. Guix's 8.6.0, an older patch, lets the
   request's settings win. `test-transfer-tls` fails first when either is set, and a child test
   pins the override by world and version, from a table in the suite: a Guix libcurl of an
-  unrecorded version fails it. The policy, with `SSLKEYLOGFILE`, `OPENSSL_CONF` and GnuTLS's
-  `pkcs11:` CA files, is M4's (ADR-0018).
+  unrecorded version fails it (ADR-0018).
+- **What a transfer reads from its environment** (ADR-0024, from M4 slice 3):
+  - it honours the proxy variables, by libcurl's own rules, and a request's `proxy` field at
+    `#f` turns them off, by `CURLOPT_PROXY` `""`. A proxy given by URL is M7's;
+  - native reads `SSL_CERT_FILE` and `SSL_CERT_DIR` beside `curl_global_init`, and records
+    them. Where a table by world and version says the loaded libcurl overrides a CA file
+    (Guix's 8.20.0, and any Guix libcurl with no row), a request with a CA file is refused at
+    submit, as `&curl-request-error`, naming the variable recorded as set;
+  - a CA file's path beginning `pkcs11:`, in any ASCII case, is refused when the request is
+    made, on every backend;
+  - `SSLKEYLOGFILE` and `OPENSSL_CONF` are documented in README.org, not refused.
+
+## The public request and its failures
+
+- **A request is made from a property list:** `(make-curl-request URL KEY VALUE ...)`, and
+  `curl-request-with` makes a new one with keys replaced. An unknown key, a repeated key, and a
+  key with no value are refused by name. The defaults set no policy: libcurl's own stand
+  (ADR-0023, from M4 slice 1).
+- **A request may carry a whole body,** a bytevector, with a method beyond GET and HEAD from the
+  M4 plan's fixed set. The submit's copy takes it, and libcurl copies that. `Content-Length` and
+  `Transfer-Encoding` stay refused: libcurl owns the framing. Streaming is M6's (ADR-0023).
+- **A failed transfer raises its code's class,** a condition type under
+  `&curl-transfer-error` with every base field, or the base type for a code no class names. The
+  class follows the code, never the scenario: one failure's code moves with the version. Every
+  code from 0 to 101 has a row in one table, written out in the suite. Tests assert the type,
+  the reason and the code, never the texts (ADR-0022, from M4 slice 1).
 
 ## The escape hatch
 
@@ -462,6 +486,12 @@ provisional. They bind until that record is accepted or amended.
     §3.6).
 
   (ADR-0012)
+- **Completions reach callers through a mailbox the caller drains** (ADR-0021, from M4 slice
+  2). A submit may name a mailbox and a callback. The completing thread appends the finished
+  token to its mailbox, as data, under the mailbox's mutex, taken after the engine's, and never
+  applies the callback. A caller's thread takes the next token, under a bound, by polling, and
+  runs its callback. A test asserts, inside a callback, that the thread is the delivering one,
+  never the engine's.
 - **Concurrency costs no threads.** Many requests share one engine, and the high level
   never starts a thread per request (ADR-0012).
 - **Every native object is made, or freed, in one critical section with its record:** its

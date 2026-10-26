@@ -1,0 +1,23 @@
+guile: warning: failed to install locale
+[guix-8.20.0] libcurl 8.20.0, Linux x86_64
+[guix-8.20.0] http, no variable: code 0 status 200 body "origin"; exit 0; proxy got 0
+[guix-8.20.0] http, http_proxy: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[guix-8.20.0] http, HTTP_PROXY alone: code 0 status 200 body "origin"; exit 0; proxy got 0
+[guix-8.20.0] http, all_proxy: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[guix-8.20.0] http, ALL_PROXY: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[guix-8.20.0] http, http_proxy and no_proxy: code 0 status 200 body "origin"; exit 0; proxy got 0
+[guix-8.20.0] http, http_proxy and NO_PROXY: code 0 status 200 body "origin"; exit 0; proxy got 0
+[guix-8.20.0] http, http_proxy, PROXY "": code 0 status 200 body "origin"; exit 0; proxy got 0
+[guix-8.20.0] http, all_proxy, PROXY "": code 0 status 200 body "origin"; exit 0; proxy got 0
+[guix-8.20.0] http, http_proxy, NOPROXY "*": code 0 status 200 body "origin"; exit 0; proxy got 0
+[guix-8.20.0] https, no variable: code 35 status 0 body ""; exit 0; proxy got 0
+[guix-8.20.0] https, https_proxy: code 7 status 0 body ""; exit 0; proxy got 1
+[guix-8.20.0] https, HTTPS_PROXY: code 7 status 0 body ""; exit 0; proxy got 1
+[guix-8.20.0] https, https_proxy, PROXY "": code 35 status 0 body ""; exit 0; proxy got 0
+[guix-8.20.0] https, https_proxy, NOPROXY "*": code 35 status 0 body ""; exit 0; proxy got 0
+[guix-8.20.0] the proxy's log:
+[guix-8.20.0]   GET http://127.0.0.1:44775/x
+[guix-8.20.0]   GET http://127.0.0.1:44775/x
+[guix-8.20.0]   GET http://127.0.0.1:44775/x
+[guix-8.20.0]   CONNECT 127.0.0.1:44775
+[guix-8.20.0]   CONNECT 127.0.0.1:44775

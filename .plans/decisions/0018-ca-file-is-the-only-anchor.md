@@ -1,6 +1,7 @@
 # ADR-0018: A request's CA file is its only trust anchor
 
-- **Status:** Accepted; amended 2026-10-26: SecureTransport's first run
+- **Status:** Accepted; amended 2026-10-26: SecureTransport's first run; amended 2026-10-26:
+  the environment's policy is decided (the M4 plan)
 - **Date:** 2026-10-24
 - **Scope:** M2's private request (M2 plan, §6), and M4's public one, which inherits its
   fields
@@ -168,3 +169,18 @@ for the first time: all 55 checks passed. So on SecureTransport each face answer
 verdicts say, and the transfer reads neither `SSL_CERT_FILE` nor `SSL_CERT_DIR`, as the suite's
 pin requires of every libcurl but Guix's 8.20.0. Whether SecureTransport answers the `CAPATH`
 clear with `CURLE_OK` or `CURLE_NOT_BUILT_IN`, the run does not say: the transfer takes either.
+
+## Amendment, 2026-10-26: the environment's policy is decided (the M4 plan)
+
+The policy this record handed to M4 is [ADR-0024](0024-what-a-transfer-reads-from-its-environment.md),
+chosen by the maintainer on 2026-10-26:
+- where Guix's override would replace a request's CA file, the request is refused at submit,
+  naming the variable. The variables are read when libcurl loads, beside `curl_global_init`, and
+  the table above moves into `src/`, a Guix libcurl with no row taken to override;
+- `SSLKEYLOGFILE` and `OPENSSL_CONF` are documented, not refused;
+- a CA file's path that begins `pkcs11:`, in any ASCII case, is refused when the request is made,
+  on every backend;
+- the proxy variables are honoured, by libcurl's rules, and a request field turns them off.
+
+Decision 5's "its policy is M4's" and Consequences' "does not hold until M4 decides" end when M4
+builds it.

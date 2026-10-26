@@ -1,0 +1,94 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libc6 2.39-0ubuntu8.9
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libssl3t64 3.0.13-0ubuntu3.16
+[floor] libcurl 7.85.0, Linux x86_64
+[floor] http, no variable: code 0 status 200 body "origin"; exit 0; proxy got 0
+[floor] http, http_proxy: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[floor] http, HTTP_PROXY alone: code 0 status 200 body "origin"; exit 0; proxy got 0
+[floor] http, all_proxy: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[floor] http, ALL_PROXY: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[floor] http, http_proxy and no_proxy: code 0 status 200 body "origin"; exit 0; proxy got 0
+[floor] http, http_proxy and NO_PROXY: code 0 status 200 body "origin"; exit 0; proxy got 0
+[floor] http, http_proxy, PROXY "": code 0 status 200 body "origin"; exit 0; proxy got 0
+[floor] http, all_proxy, PROXY "": code 0 status 200 body "origin"; exit 0; proxy got 0
+[floor] http, http_proxy, NOPROXY "*": code 0 status 200 body "origin"; exit 0; proxy got 0
+[floor] https, no variable: code 35 status 0 body ""; exit 0; proxy got 0
+[floor] https, https_proxy: code 56 status 0 body ""; exit 0; proxy got 1
+[floor] https, HTTPS_PROXY: code 56 status 0 body ""; exit 0; proxy got 1
+[floor] https, https_proxy, PROXY "": code 35 status 0 body ""; exit 0; proxy got 0
+[floor] https, https_proxy, NOPROXY "*": code 35 status 0 body ""; exit 0; proxy got 0
+[floor] the proxy's log:
+[floor]   GET http://127.0.0.1:39053/x
+[floor]   GET http://127.0.0.1:39053/x
+[floor]   GET http://127.0.0.1:39053/x
+[floor]   CONNECT 127.0.0.1:39053
+[floor]   CONNECT 127.0.0.1:39053
+[ubuntu-openssl] libcurl 8.5.0, Linux x86_64
+[ubuntu-openssl] http, no variable: code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-openssl] http, http_proxy: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[ubuntu-openssl] http, HTTP_PROXY alone: code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-openssl] http, all_proxy: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[ubuntu-openssl] http, ALL_PROXY: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[ubuntu-openssl] http, http_proxy and no_proxy: code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-openssl] http, http_proxy and NO_PROXY: code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-openssl] http, http_proxy, PROXY "": code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-openssl] http, all_proxy, PROXY "": code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-openssl] http, http_proxy, NOPROXY "*": code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-openssl] https, no variable: code 35 status 0 body ""; exit 0; proxy got 0
+[ubuntu-openssl] https, https_proxy: code 56 status 0 body ""; exit 0; proxy got 1
+[ubuntu-openssl] https, HTTPS_PROXY: code 56 status 0 body ""; exit 0; proxy got 1
+[ubuntu-openssl] https, https_proxy, PROXY "": code 35 status 0 body ""; exit 0; proxy got 0
+[ubuntu-openssl] https, https_proxy, NOPROXY "*": code 35 status 0 body ""; exit 0; proxy got 0
+[ubuntu-openssl] the proxy's log:
+[ubuntu-openssl]   GET http://127.0.0.1:43447/x
+[ubuntu-openssl]   GET http://127.0.0.1:43447/x
+[ubuntu-openssl]   GET http://127.0.0.1:43447/x
+[ubuntu-openssl]   CONNECT 127.0.0.1:43447
+[ubuntu-openssl]   CONNECT 127.0.0.1:43447
+[ubuntu-gnutls] libcurl 8.5.0, Linux x86_64
+[ubuntu-gnutls] http, no variable: code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-gnutls] http, http_proxy: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[ubuntu-gnutls] http, HTTP_PROXY alone: code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-gnutls] http, all_proxy: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[ubuntu-gnutls] http, ALL_PROXY: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[ubuntu-gnutls] http, http_proxy and no_proxy: code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-gnutls] http, http_proxy and NO_PROXY: code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-gnutls] http, http_proxy, PROXY "": code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-gnutls] http, all_proxy, PROXY "": code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-gnutls] http, http_proxy, NOPROXY "*": code 0 status 200 body "origin"; exit 0; proxy got 0
+[ubuntu-gnutls] https, no variable: code 35 status 0 body ""; exit 0; proxy got 0
+[ubuntu-gnutls] https, https_proxy: code 56 status 0 body ""; exit 0; proxy got 1
+[ubuntu-gnutls] https, HTTPS_PROXY: code 56 status 0 body ""; exit 0; proxy got 1
+[ubuntu-gnutls] https, https_proxy, PROXY "": code 35 status 0 body ""; exit 0; proxy got 0
+[ubuntu-gnutls] https, https_proxy, NOPROXY "*": code 35 status 0 body ""; exit 0; proxy got 0
+[ubuntu-gnutls] the proxy's log:
+[ubuntu-gnutls]   GET http://127.0.0.1:34387/x
+[ubuntu-gnutls]   GET http://127.0.0.1:34387/x
+[ubuntu-gnutls]   GET http://127.0.0.1:34387/x
+[ubuntu-gnutls]   CONNECT 127.0.0.1:34387
+[ubuntu-gnutls]   CONNECT 127.0.0.1:34387
+[current] libcurl 8.23.0, Linux x86_64
+[current] http, no variable: code 0 status 200 body "origin"; exit 0; proxy got 0
+[current] http, http_proxy: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[current] http, HTTP_PROXY alone: code 0 status 200 body "origin"; exit 0; proxy got 0
+[current] http, all_proxy: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[current] http, ALL_PROXY: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[current] http, http_proxy and no_proxy: code 0 status 200 body "origin"; exit 0; proxy got 0
+[current] http, http_proxy and NO_PROXY: code 0 status 200 body "origin"; exit 0; proxy got 0
+[current] http, http_proxy, PROXY "": code 0 status 200 body "origin"; exit 0; proxy got 0
+[current] http, all_proxy, PROXY "": code 0 status 200 body "origin"; exit 0; proxy got 0
+[current] http, http_proxy, NOPROXY "*": code 0 status 200 body "origin"; exit 0; proxy got 0
+[current] https, no variable: code 35 status 0 body ""; exit 0; proxy got 0
+[current] https, https_proxy: code 7 status 0 body ""; exit 0; proxy got 1
+[current] https, HTTPS_PROXY: code 7 status 0 body ""; exit 0; proxy got 1
+[current] https, https_proxy, PROXY "": code 35 status 0 body ""; exit 0; proxy got 0
+[current] https, https_proxy, NOPROXY "*": code 35 status 0 body ""; exit 0; proxy got 0
+[current] the proxy's log:
+[current]   GET http://127.0.0.1:41747/x
+[current]   GET http://127.0.0.1:41747/x
+[current]   GET http://127.0.0.1:41747/x
+[current]   CONNECT 127.0.0.1:41747
+[current]   CONNECT 127.0.0.1:41747
+exit 0
