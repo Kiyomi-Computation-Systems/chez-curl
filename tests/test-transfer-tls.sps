@@ -1,12 +1,15 @@
 #!r6rs
-;;; The suite for the blocking request's TLS fields (M2 plan, section 6;
-;;; ADR-0018): (curl private transfer) against the test origin's TLS faces,
-;;; with one PKI per run, made by make-test-pki, which the origin serves.
+;;; The suite for a request's TLS fields (M2 plan, section 6; ADR-0018):
+;;; (curl private transfer), each request submitted to the suite's one
+;;; engine and awaited (M3 plan, section 5.2), against the test origin's
+;;; TLS faces, with one PKI per run, made by make-test-pki, which the origin
+;;; serves.
 ;;;
 ;;; Every transfer is asserted whole: the status, the HTTP version, every
 ;;; header in libcurl's order and the body, or the &curl-transfer-error's
-;;; reason and CURLcode, with the native counts after it, which must all be
-;;; zero. The expected bytes are this suite's own copies, never read from
+;;; reason and CURLcode, with the native counts after it, which must be the
+;;; engine's multi handle alone; once the engine has stopped, at the end,
+;;; all zero. The expected bytes are this suite's own copies, never read from
 ;;; the origin. Every URL's host is 127.0.0.1, which the good leaf names.
 ;;; The four recorded Linux libcurls gave section 6's verdicts alike (plan,
 ;;; section 6.1), so the answers are shared, and there is no row file. The
@@ -33,7 +36,7 @@
 ;;;     and λ, which ls lists as UTF-8, passes https;
 ;;;   - the request's refusals: a CA file with U+0000 at every place,
 ;;;     refused as embedded-nul, naming ca-file, by the constructor and by
-;;;     perform-transfer's snapshot, with nothing native at the raise; wrong
+;;;     the snapshot a submit takes, with nothing native at the raise; wrong
 ;;;     types; a change after the request was made, sent as changed; and a
 ;;;     CA file another thread flips to U+0000 while transfers run, refused
 ;;;     or sent whole, which a transfer that checked the caller's string,
@@ -44,10 +47,11 @@
 ;;;     definition from a request's CA file and verification to the setopt
 ;;;     binding: ca-file?, ca-file-copy, field-options, tls-settings,
 ;;;     set-tls-options!, set-string-option!, set-option!, setopt-accepted?
-;;;     and option-named; what perform-transfer-with hands set-tls-options!,
-;;;     and the call's place there, after the request's other settings and
-;;;     before the test seam's; and the six TLS option names, standing in
-;;;     transfer.sls only as data in its two tables;
+;;;     and option-named; what prepare-transfer hands the plan, and
+;;;     set-transfer-options!' call of set-tls-options! with the plan's,
+;;;     after the request's other settings and before the test seam's; and
+;;;     the six TLS option names, standing in transfer.sls only as data in
+;;;     its two tables;
 ;;;   - the Guix pin, in a child, tests/transfer-tls-env.sps, given
 ;;;     SSL_CERT_FILE or SSL_CERT_DIR through its command alone, three
 ;;;     cases, the two SSL_CERT_FILE ones mirrored: by ADR-0002's world and
@@ -70,17 +74,19 @@
 ;;; held by its own suites.
 ;;;
 ;;; Importing (curl) runs the load before this suite's first line, on this
-;;; thread, and the suite's top level reaches (curl private transfer)
-;;; before any thread is forked. SRFI-64 makes #f of a raise in the actual
+;;; thread, and the suite's top level reaches (curl private transfer), then
+;;; makes its engine, before any other thread is forked. SRFI-64 makes #f of
+;;; a raise in the actual
 ;;; expression, so no expected value is #f, and each computation that can
 ;;; raise at the top level runs under a guard.
 (import (rnrs)
         (srfi :64)
         (rnrs mutable-strings)
         (only (chezscheme) parameterize getenv fork-thread thread-join sleep make-time mkdir
-              directory-list library-directories)
+              directory-list library-directories current-time time-second time-nanosecond)
         (curl-testing)
         (curl)
+        (curl private engine)
         (curl private transfer)
         (curl private conditions)
         (curl private counters)
@@ -120,7 +126,15 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+
+;; running-counts : (Listof (Pairof Symbol Natural))
+;; The counts while the suite's engine runs and no transfer is live: its
+;; multi handle and its slot, a counted block it holds while it runs, and
+;; nothing else. The child's counts, read once its own
+;; engine has stopped, are zero-counts.
+(define running-counts
+  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1)))
 
 ;; The loaded libcurl's feature names, read here, on this thread, so the
 ;; load runs before any thread is forked.
@@ -134,6 +148,48 @@
   (guard (e (#t (list 'raised (describe e))))
     (tls-settings #f #t)))
 
+;; The suite's one engine, made here, on this thread, once the load and
+;; (curl private transfer)'s body have run, and before any other thread is
+;; forked. Every transfer below runs on it. A failure to make it is a
+;; test's, below.
+(define engine
+  (guard (e (#t (list 'raised (describe e))))
+    (make-curl-engine)))
+
+(define engine-made? (curl-engine? engine))
+
+;; await-bound-ms : Positive-Integer
+;; The longest this suite awaits a token: past every transfer's own
+;; timeout, default-timeout's 20 s. An engine that never completes a token
+;; would hang an await for good, and a hang names no test: so the check
+;; that awaited it fails, by name, and the suite goes on.
+(define await-bound-ms 60000)
+
+;; await-token : Token -> Response
+;; TOKEN's response, or a raise of what it ended with, as curl-token-await
+;; answers once TOKEN is done; a raise of (never-completed MS) when it is
+;; not done within await-bound-ms.
+(define (await-token token)
+  (let ((deadline (+ (now-ms) await-bound-ms)))
+    (let wait ()
+      (cond ((curl-token-done? token) (curl-token-await token))
+            ((> (now-ms) deadline) (raise (list 'never-completed await-bound-ms)))
+            (else (pause-ms 1) (wait))))))
+
+;; perform : Request -> Response
+;; R submitted to the suite's engine, then awaited: its response, or a raise
+;; of what it ended with, at submit, on this thread, or on the engine's.
+(define (perform r) (await-token (curl-engine-submit engine r)))
+
+;; settled : Any -> Any
+;; X, as it is; a token is cancelled first, and awaited, whatever it ended
+;; with, so that a submit a check expected refused leaves nothing running.
+(define (settled x)
+  (when (curl-token? x)
+    (curl-token-cancel x)
+    (guard (e (#t #f)) (await-token x)))
+  x)
+
 ;; iota-from : Integer Natural -> (Listof Integer)
 (define (iota-from start n)
   (if (= n 0) '() (cons start (iota-from (+ start 1) (- n 1)))))
@@ -141,6 +197,11 @@
 ;; latin-1 : Bytevector -> String
 (define (latin-1 bytes)
   (list->string (map integer->char (bytevector->u8-list bytes))))
+
+;; now-ms : -> Integer
+(define (now-ms)
+  (let ((t (current-time 'time-monotonic)))
+    (+ (* (time-second t) 1000) (div (time-nanosecond t) 1000000))))
 
 ;; pause-ms : Natural -> Unit
 (define (pause-ms ms)
@@ -152,7 +213,7 @@
 
 ;; request : String . (Listof Any) -> Request
 ;; A GET of TARGET with no headers, no user agent, default-timeout and no
-;; body limit, nor hook. OPTIONS are keyword and value: ca-file, #f unless
+;; body limit, nor fault. OPTIONS are keyword and value: ca-file, #f unless
 ;; given, and verify, #t unless given.
 (define (request target . options)
   (let ((given (lambda (key default)
@@ -184,7 +245,8 @@
 ;; What THUNK raised: (request-refused FIELD VALUE REASON), or
 ;; (assertion-violation WHO), or as answer-of names it; the native counts
 ;; at the raise, read by a handler before any dynamic-wind's after thunk;
-;; and the counts after. no-raise when nothing was raised.
+;; and the counts after. no-raise when nothing was raised: a token THUNK
+;; answered, a submit not refused, is settled first.
 (define (refusal thunk)
   (let* ((seen 'no-raise)
          (r (guard (e ((curl-request-error? e)
@@ -198,7 +260,7 @@
                       (#t (list 'raised (describe e))))
               (with-exception-handler
                 (lambda (c) (set! seen (native-counts)) (raise c))
-                (lambda () (thunk) 'no-raise)))))
+                (lambda () (settled (thunk)) 'no-raise)))))
     (list r seen (native-counts))))
 
 ;; lines-of : String -> (Listof String)
@@ -245,6 +307,10 @@
 (test-equal "hermetic: none of http_proxy, HTTP_PROXY, https_proxy, HTTPS_PROXY, all_proxy, ALL_PROXY, SSL_CERT_FILE and SSL_CERT_DIR is set: libcurl would send this suite's transfers to the proxy, and Guix's would trust the CA store named, not the CA file"
   '()
   (filter (lambda (name) (getenv name)) environment-variables))
+
+(test-equal "the suite's engine is made: running, holding its multi handle and nothing else"
+  (list 'running running-counts)
+  (if engine-made? (list (curl-engine-state engine) (native-counts)) engine))
 
 ;; --- the PKI, and the copies of its CAs ------------------------------------------------
 
@@ -340,7 +406,7 @@
   (append (map with-nul-at (iota-from 0 (+ (string-length a-path) 1))) (list (string #\nul))))
 
 (test-equal "a CA file with U+0000 at each of its places, and alone, is refused by make-transfer-request as embedded-nul, naming ca-file and the path, with nothing native at the raise"
-  (map (lambda (path) (list (list 'request-refused 'ca-file path 'embedded-nul) zero-counts zero-counts))
+  (map (lambda (path) (list (list 'request-refused 'ca-file path 'embedded-nul) running-counts running-counts))
        nul-paths)
   (map (lambda (path)
          (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '() #f #f #f path #t #f))))
@@ -351,18 +417,18 @@
 (define (set-nul-at i)
   (let ((path (string-copy a-path))) (string-set! path i #\nul) path))
 
-(test-equal "a request whose CA file is changed after it was made, by string-set!, to hold U+0000 at each of its places, is refused by perform-transfer as embedded-nul, naming ca-file and the path as changed, with nothing native at the raise"
-  (map (lambda (i) (list (list 'request-refused 'ca-file (set-nul-at i) 'embedded-nul) zero-counts zero-counts))
+(test-equal "a request whose CA file is changed after it was made, by string-set!, to hold U+0000 at each of its places, is refused at submit as embedded-nul, naming ca-file and the path as changed, with nothing native at the raise"
+  (map (lambda (i) (list (list 'request-refused 'ca-file (set-nul-at i) 'embedded-nul) running-counts running-counts))
        (iota-from 0 (string-length a-path)))
   (map (lambda (i)
          (let* ((path (string-copy a-path))
                 (r (make-transfer-request "http://127.0.0.1:1/" 'get '() #f #f #f path #t #f)))
            (string-set! path i #\nul)
-           (refusal (lambda () (perform-transfer r)))))
+           (refusal (lambda () (curl-engine-submit engine r)))))
        (iota-from 0 (string-length a-path))))
 
 (test-equal "wrong types are assertion violations from make-transfer-request, with nothing native made: a CA file that is a number, the empty string, a symbol, #t or a list; verification that is 1, 0, a symbol, a string or the empty list"
-  (map (lambda (i) (list '(assertion-violation make-transfer-request) zero-counts zero-counts))
+  (map (lambda (i) (list '(assertion-violation make-transfer-request) running-counts running-counts))
        (iota-from 0 10))
   (map (lambda (fields)
          (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get '() #f #f #f
@@ -451,8 +517,8 @@
 ;; CAPATH's clear, nor CURLE_NOT_BUILT_IN taken for it, by behaviour, so a
 ;; rewrite of any of them could drop either while every transfer passes.
 ;; option-binding and option-setter are not here: test-transfer holds each
-;; over its whole domain. perform-transfer-with is held below, by what it
-;; hands set-tls-options!.
+;; over its whole domain. prepare-transfer and set-transfer-options! are
+;; held below, by what they hand set-tls-options!.
 (define held-definitions
   '((ca-file? "a CA file is #f, or a non-empty string"
      (define (ca-file? x)
@@ -535,34 +601,52 @@
         ((pair? x) (or (let*-bindings (car x)) (let*-bindings (cdr x))))
         (else #f)))
 
-(test-equal "perform-transfer-with hands set-tls-options! its snapshot: its let* binds ca-file to (ca-file-copy 'perform-transfer (transfer-request-ca-file request)) and verify to (transfer-request-verify request), and each name stands twice in its definition, that binding and the call"
-  '((ca-file (ca-file-copy 'perform-transfer (transfer-request-ca-file request)))
-    (verify (transfer-request-verify request))
-    2 2)
-  (let* ((d (transfer-definition 'perform-transfer-with))
-         (bindings (or (let*-bindings d) '())))
-    (list (assq 'ca-file bindings) (assq 'verify bindings)
-          (symbol-count 'ca-file d) (symbol-count 'verify d))))
-
-;; easy-body : Any -> (U (Listof Any) #f)
-;; The body of the lambda handed to call-with-easy in X.
-(define (easy-body x)
-  (cond ((and (list? x) (= (length x) 2) (eq? (car x) 'call-with-easy)
-              (pair? (cadr x)) (eq? (car (cadr x)) 'lambda) (list? (cadr x)))
-         (cddr (cadr x)))
-        ((pair? x) (or (easy-body (car x)) (easy-body (cdr x))))
+;; form-headed : Symbol Any -> (U (Listof Any) #f)
+;; The first form in X headed by HEAD, depth first.
+(define (form-headed head x)
+  (cond ((and (list? x) (pair? x) (eq? (car x) head)) x)
+        ((pair? x) (or (form-headed head (car x)) (form-headed head (cdr x))))
         (else #f)))
 
+;; plan-fields : Any
+;; The fields of transfer.sls's plan record, as its define-record-type
+;; writes them, or what went wrong.
+(define plan-fields
+  (let ((d (and (list? transfer-library) (> (length transfer-library) 4)
+                (find (lambda (f) (and (list? f) (> (length f) 2) (eq? (car f) 'define-record-type)
+                                       (eq? (cadr f) 'plan)))
+                      (cddddr transfer-library)))))
+    (if d (cdr (or (assq 'fields (cddr d)) '(fields no-fields))) (list 'no-plan-record transfer-library))))
+
+;; The way from a request to set-tls-options!: prepare-transfer copies the
+;; CA file, on the caller's thread, into the plan's seventh field, and the
+;; verification into its eighth; set-transfer-options! hands set-tls-options!
+;; those two fields. A plan handed the caller's own string would be sent
+;; whatever another thread made it after the check.
+(test-equal "prepare-transfer hands the plan its snapshot: its let* binds ca-file to (ca-file-copy 'curl-engine-submit (transfer-request-ca-file request)), make-plan takes ca-file and (transfer-request-verify request) as its seventh and eighth arguments, the plan's seventh and eighth fields are ca-file and verify, and ca-file stands twice in prepare-transfer, that binding and that argument"
+  '((ca-file (ca-file-copy 'curl-engine-submit (transfer-request-ca-file request)))
+    (ca-file (transfer-request-verify request))
+    ((immutable ca-file) (immutable verify))
+    2)
+  (let* ((d (transfer-definition 'prepare-transfer))
+         (bindings (or (let*-bindings d) '()))
+         (made (form-headed 'make-plan d)))
+    (list (assq 'ca-file bindings)
+          (if (and made (> (length made) 8)) (list (list-ref made 7) (list-ref made 8)) (list 'make-plan made))
+          (if (and (list? plan-fields) (> (length plan-fields) 7))
+              (list (list-ref plan-fields 6) (list-ref plan-fields 7))
+              plan-fields)
+          (symbol-count 'ca-file d))))
+
 ;; form-kind : Any -> Symbol
-;; A form of the easy handle's extent, by what it does: pins, the pins'
-;; call; tls, set-tls-options!'s; seam, the loop over the test seam's
-;; settings; perform, the form that calls (perform); else request, one of
-;; the request's other settings.
+;; A form of set-transfer-options!, by what it does: pins, the pins' call;
+;; tls, set-tls-options!'s, handed the plan's CA file and verification;
+;; seam, the loop over the test seam's settings; else request, one of the
+;; request's other settings.
 (define (form-kind form)
   (cond ((equal? form '(set-pinned-options! easy buffer)) 'pins)
-        ((equal? form '(set-tls-options! easy ca-file verify buffer)) 'tls)
-        ((holds? form '(perform)) 'perform)
-        ((holds? form 'settings) 'seam)
+        ((equal? form '(set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)) 'tls)
+        ((holds? form '(plan-settings plan)) 'seam)
         (else 'request)))
 
 ;; runs : (Listof Symbol) -> (Listof Symbol)
@@ -571,19 +655,19 @@
   (fold-right (lambda (k found) (if (and (pair? found) (eq? (car found) k)) found (cons k found)))
               '() kinds))
 
-(test-equal "perform-transfer-with's easy extent, form by form: the pins first, then the request's other settings, then set-tls-options! once, as (set-tls-options! easy ca-file verify buffer), then the test seam's settings, then (perform); and set-tls-options! stands twice in transfer.sls, its definition and that call"
-  '((pins request tls seam perform) 2)
-  (let ((body (easy-body (transfer-definition 'perform-transfer-with))))
-    (if body
-        (list (runs (map form-kind body)) (symbol-count 'set-tls-options! transfer-library))
-        (list 'no-easy-body))))
+(test-equal "set-transfer-options!, form by form: the pins first, then the request's other settings, then set-tls-options! once, as (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer), then the test seam's settings; and set-tls-options! stands twice in transfer.sls, its definition and that call"
+  '((pins request tls seam) 2)
+  (let ((d (transfer-definition 'set-transfer-options!)))
+    (if (and (list? d) (eq? (car d) 'define))
+        (list (runs (map form-kind (cddr d))) (symbol-count 'set-tls-options! transfer-library))
+        (list 'no-definition d))))
 
 (test-equal "the form reader: kinds by form, and a run of one kind written once"
-  '(pins request tls seam perform)
+  '(pins request tls seam)
   (runs (map form-kind '((set-pinned-options! easy buffer) (set-option! easy "A" 1 buffer)
                          (when x (set-option! easy "B" 2 buffer))
-                         (set-tls-options! easy ca-file verify buffer)
-                         (for-each f settings) (let* ((code (perform))) code)))))
+                         (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
+                         (for-each f (plan-settings plan))))))
 
 ;; tls-names : (Listof String)
 ;; The TLS fields' four options and the CA file's two twins.
@@ -741,17 +825,17 @@
   ;; get : Symbol . (Listof Any) -> Answer
   ;; What a GET of FACE's /status/200 answers, with OPTIONS as request's.
   (define (get face . options)
-    (answer-of (lambda () (perform-transfer (apply request (url-of o face "/status/200") options)))))
+    (answer-of (lambda () (perform (apply request (url-of o face "/status/200") options)))))
 
   ;; --- verification on, the run CA as the CA file
-  (test-equal "verification on, the run CA as the CA file: https answers 200 over HTTP/1.1, whole, and the counts back at zero"
-    (list good-answer zero-counts)
+  (test-equal "verification on, the run CA as the CA file: https answers 200 over HTTP/1.1, whole, and the counts back to the engine's alone"
+    (list good-answer running-counts)
     (with-counts (get 'https 'ca-file (pki-file "ca.pem"))))
   (for-each
    (lambda (face)
      (test-equal (string-append "verification on, the run CA as the CA file: " (symbol->string face)
-                                " is refused, 60, CURLE_PEER_FAILED_VERIFICATION, and the counts back at zero")
-       (list peer-refused zero-counts)
+                                " is refused, 60, CURLE_PEER_FAILED_VERIFICATION, and the counts back to the engine's alone")
+       (list peer-refused running-counts)
        (with-counts (get face 'ca-file (pki-file "ca.pem")))))
    '(https-expired https-wrong-host https-untrusted))
 
@@ -759,23 +843,23 @@
   (test-equal "the loaded libcurl has the http2 feature, as every recorded libcurl does"
     'http2
     (if (and (list? feature-names) (memq 'http2 feature-names)) 'http2 (list 'no-http2 feature-names)))
-  (test-equal "verification on, the run CA as the CA file: h2 answers 200 over HTTP/2, chosen by ALPN, whole: curl_easy_nextheader gives content-length alone, lower case as sent, and no :status; the counts back at zero"
-    (list h2-answer zero-counts)
+  (test-equal "verification on, the run CA as the CA file: h2 answers 200 over HTTP/2, chosen by ALPN, whole: curl_easy_nextheader gives content-length alone, lower case as sent, and no :status; the counts back to the engine's alone"
+    (list h2-answer running-counts)
     (with-counts (get 'h2 'ca-file (pki-file "ca.pem"))))
 
   ;; --- verification off
   (for-each
    (lambda (face)
      (test-equal (string-append "verification off, no CA file: " (symbol->string face)
-                                " answers 200 over HTTP/1.1, whole, and the counts back at zero")
-       (list good-answer zero-counts)
+                                " answers 200 over HTTP/1.1, whole, and the counts back to the engine's alone")
+       (list good-answer running-counts)
        (with-counts (get face 'verify #f))))
    '(https https-expired https-wrong-host https-untrusted))
   (for-each
    (lambda (face)
      (test-equal (string-append "verification off, the run CA as the CA file: " (symbol->string face)
-                                " answers 200 over HTTP/1.1, whole, and the counts back at zero")
-       (list good-answer zero-counts)
+                                " answers 200 over HTTP/1.1, whole, and the counts back to the engine's alone")
+       (list good-answer running-counts)
        (with-counts (get face 'ca-file (pki-file "ca.pem") 'verify #f))))
    '(https-expired https-wrong-host https-untrusted))
 
@@ -783,8 +867,8 @@
   ;; CA's absence, not a broken TLS stack. A machine with no system CA
   ;; store answers 77 on OpenSSL builds, whose default CA file is missing
   ;; (ADR-0018, consequences): the failure names that cause.
-  (test-equal "the control, the system store, no CA file, verification on: https is refused, 60, since no system store trusts the run CA; 77 would be a machine with no system CA store; the counts back at zero"
-    (list peer-refused zero-counts)
+  (test-equal "the control, the system store, no CA file, verification on: https is refused, 60, since no system store trusts the run CA; 77 would be a machine with no system CA store; the counts back to the engine's alone"
+    (list peer-refused running-counts)
     (let ((a (get 'https)))
       (list (if (equal? a ca-file-refused)
                 '(no-system-ca-store "libcurl answered 77, CURLE_SSL_CACERT_BADFILE, for its own CA store: this machine has none. Install one, ca-certificates on Debian and Ubuntu (ADR-0018, consequences)")
@@ -792,56 +876,57 @@
             (native-counts))))
 
   ;; --- the CA file decides, and has no fallback
-  (test-equal "the CA file decides: https with other-ca.pem as the CA file is refused, 60, and the counts back at zero"
-    (list peer-refused zero-counts)
+  (test-equal "the CA file decides: https with other-ca.pem as the CA file is refused, 60, and the counts back to the engine's alone"
+    (list peer-refused running-counts)
     (with-counts (get 'https 'ca-file (pki-file "other-ca.pem"))))
-  (test-equal "no fallback: https with a CA file that does not exist, and with a directory as the CA file, is refused, 77, CURLE_SSL_CACERT_BADFILE, never tried against the system store; the counts back at zero"
-    (list ca-file-refused ca-file-refused zero-counts)
+  (test-equal "no fallback: https with a CA file that does not exist, and with a directory as the CA file, is refused, 77, CURLE_SSL_CACERT_BADFILE, never tried against the system store; the counts back to the engine's alone"
+    (list ca-file-refused ca-file-refused running-counts)
     (list (get 'https 'ca-file (pki-file "no-such-ca.pem"))
           (get 'https 'ca-file pki)
           (native-counts)))
-  (test-equal "a path holding CR, LF and U+0100 reaches libcurl, which finds no such file: 77, and the counts back at zero"
-    (list ca-file-refused zero-counts)
+  (test-equal "a path holding CR, LF and U+0100 reaches libcurl, which finds no such file: 77, and the counts back to the engine's alone"
+    (list ca-file-refused running-counts)
     (with-counts (get 'https 'ca-file (string-append (pki-file "ca") (string #\return #\newline (integer->char #x100))
                                                      ".pem"))))
 
   ;; --- a setopt libcurl refuses: a string past CURL_MAX_INPUT_LENGTH,
   ;; 8000000 bytes, is CURLE_BAD_FUNCTION_ARGUMENT on all four recorded
   ;; Linux libcurls (measured in M2 slice 3's review)
-  (test-equal "a CA file of 8000001 bytes, past libcurl's string limit of 8000000, is refused by curl_easy_setopt: setopt-failed, 43, CURLE_BAD_FUNCTION_ARGUMENT, naming CAINFO, and the counts back at zero"
-    (list '(setopt-failed 43 "CAINFO") zero-counts)
+  (test-equal "a CA file of 8000001 bytes, past libcurl's string limit of 8000000, is refused by curl_easy_setopt: setopt-failed, 43, CURLE_BAD_FUNCTION_ARGUMENT, naming CAINFO, and the counts back to the engine's alone"
+    (list '(setopt-failed 43 "CAINFO") running-counts)
     (list (guard (e ((curl-transfer-error? e)
                      (list (curl-transfer-error-reason e) (curl-transfer-error-code e)
                            (curl-transfer-error-option e)))
                     (#t (list 'raised (describe e))))
-            (perform-transfer (request (url-of o 'https "/status/200")
-                                       'ca-file (string-append "/" (make-string 8000000 #\a))))
+            (perform (request (url-of o 'https "/status/200")
+                              'ca-file (string-append "/" (make-string 8000000 #\a))))
             'no-raise)
           (native-counts)))
 
   ;; --- the path's encoding
-  (test-equal "the path's encoding: https with a copy of ca.pem under café-λ answers 200, whole, so the path reached libcurl as the UTF-8 the file system holds; the counts back at zero"
-    (list good-answer zero-counts)
+  (test-equal "the path's encoding: https with a copy of ca.pem under café-λ answers 200, whole, so the path reached libcurl as the UTF-8 the file system holds; the counts back to the engine's alone"
+    (list good-answer running-counts)
     (with-counts (get 'https 'ca-file utf8-ca)))
 
-  ;; --- a change after the request was made is the caller's until perform
+  ;; --- a change after the request was made is the caller's until a submit
   ;; takes its copy: a.pem and b.pem, the run CA and the other, differ in
   ;; their one char
-  (test-equal "a request whose CA file is changed after it was made is sent as changed: a.pem, the run CA, made b.pem, the other CA, is refused, 60; b.pem made a.pem answers 200, whole; the counts back at zero"
-    (list peer-refused good-answer zero-counts)
+  (test-equal "a request whose CA file is changed after it was made is sent as changed: a.pem, the run CA, made b.pem, the other CA, is refused, 60; b.pem made a.pem answers 200, whole; the counts back to the engine's alone"
+    (list peer-refused good-answer running-counts)
     (let ((changed (lambda (from to)
                      (let* ((path (string-copy from))
                             (r (request (url-of o 'https "/status/200") 'ca-file path)))
                        (string-set! path (- (string-length path) 5) (string-ref to (- (string-length to) 5)))
-                       (answer-of (lambda () (perform-transfer r)))))))
+                       (answer-of (lambda () (perform r)))))))
       (list (changed run-ca-copy other-ca-copy)
             (changed other-ca-copy run-ca-copy)
             (native-counts))))
 
-  ;; --- a CA file another thread changes while transfers run. perform takes
-  ;; its own copy and checks that alone: a transfer that checked the
-  ;; caller's string, then sent it, would find U+0000 in it only once
-  ;; native objects were made, and raise call-with-c-string's refusal. The
+  ;; --- a CA file another thread changes while transfers run. A submit
+  ;; takes its own copy and checks that alone: a transfer that checked the
+  ;; caller's string, then sent it, would find U+0000 in it only on the
+  ;; engine's thread, once native objects were made, and raise
+  ;; call-with-c-string's refusal. The
   ;; http face reads no CA, yet every transfer sets CAINFO. The flipper
   ;; flips 1000000 times as fast as it can, then yields once in each
   ;; state, as test-transfer's do. Measured against that transfer: natively,
@@ -850,8 +935,8 @@
   ;; it.
   (let ((http-answer '(response 200 http/1.1 (("Content-Length" "11") ("Connection" "keep-alive"))
                                 "status 200\n")))
-    (test-equal "a CA file another thread flips between s and U+0000 while 300 transfers run against the http face: each is refused as embedded-nul, naming ca-file, or answers whole, never otherwise, both seen; the counts back at zero"
-      (list '() '(refused whole) zero-counts)
+    (test-equal "a CA file another thread flips between s and U+0000 while 300 transfers run against the http face: each is refused as embedded-nul, naming ca-file, or answers whole, never otherwise, both seen; the counts back to the engine's alone"
+      (list '() '(refused whole) running-counts)
       (let* ((path (string-copy "/no/such/ca.pem"))
              (r (request (url-of o 'http "/status/200") 'ca-file path))
              (stop #f)
@@ -876,7 +961,7 @@
             (let loop ((i 0) (odd '()) (seen '()))
               (if (= i 300)
                   (list (reverse odd) (filter (lambda (k) (memq k seen)) '(refused whole)) (native-counts))
-                  (let* ((a (answer-of (lambda () (perform-transfer r))))
+                  (let* ((a (answer-of (lambda () (perform r))))
                          (k (cond ((equal? a http-answer) 'whole)
                                   ((equal? a '(request-refused ca-file embedded-nul)) 'refused)
                                   (else #f))))
@@ -934,9 +1019,19 @@
   'done
   scenarios-outcome)
 
-(test-equal "once every transfer has ended, the live-transfer table is empty, and every count zero"
-  (list 0 zero-counts)
-  (list (live-transfer-count) (native-counts)))
+(test-equal "once every transfer has ended, the live-transfer table and the engine's are empty, and the counts the engine's alone"
+  (list 0 0 running-counts)
+  (list (live-transfer-count) (if engine-made? (curl-engine-live-count engine) engine) (native-counts)))
+
+;; The engine stops before the suite ends: suite-exit-status fails a suite
+;; whose counts are not all zero at its end.
+(test-equal "the suite's engine stops, and every count is zero after"
+  (list 'stopped 0 zero-counts 0)
+  (if engine-made?
+      (begin (curl-engine-stop engine)
+             (list (curl-engine-state engine) (curl-engine-live-count engine) (native-counts)
+                   (live-transfer-count)))
+      engine))
 
 (test-end "transfer-tls")
 

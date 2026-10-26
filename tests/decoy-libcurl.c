@@ -303,17 +303,9 @@ void curl_free(void *p)
 }
 #endif
 
-/* The blocking transfer's entry points (M2 slice 2), which the load binds
+/* The transfer's entry points (M2 slice 2), which the load binds
    and never calls, as with the variadic pair above. Each answers as a
    library that can do nothing would. */
-#ifndef DECOY_LACKS_curl_easy_perform
-CURLcode curl_easy_perform(CURL *easy)
-{
-  called("curl_easy_perform(%s)", HANDLE_NAME(easy));
-  return CURLE_FAILED_INIT;
-}
-#endif
-
 #ifndef DECOY_LACKS_curl_easy_strerror
 const char *curl_easy_strerror(CURLcode error)
 {
@@ -344,6 +336,85 @@ struct curl_slist *curl_slist_append(struct curl_slist *list, const char *data)
 void curl_slist_free_all(struct curl_slist *list)
 {
   called("curl_slist_free_all(%s)", list ? "list" : "NULL");
+}
+#endif
+
+/* The engine's multi interface (M3 slice 2), bound and never called during
+   the load, as above. */
+#ifndef DECOY_LACKS_curl_multi_init
+CURLM *curl_multi_init(void)
+{
+  called("curl_multi_init()");
+  return NULL;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_multi_cleanup
+CURLMcode curl_multi_cleanup(CURLM *multi)
+{
+  called("curl_multi_cleanup(%s)", multi ? "multi" : "NULL");
+  return CURLM_BAD_HANDLE;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_multi_add_handle
+CURLMcode curl_multi_add_handle(CURLM *multi, CURL *easy)
+{
+  called("curl_multi_add_handle(%s, %s)", multi ? "multi" : "NULL", HANDLE_NAME(easy));
+  return CURLM_BAD_HANDLE;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_multi_remove_handle
+CURLMcode curl_multi_remove_handle(CURLM *multi, CURL *easy)
+{
+  called("curl_multi_remove_handle(%s, %s)", multi ? "multi" : "NULL", HANDLE_NAME(easy));
+  return CURLM_BAD_HANDLE;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_multi_perform
+CURLMcode curl_multi_perform(CURLM *multi, int *running)
+{
+  called("curl_multi_perform(%s)", multi ? "multi" : "NULL");
+  (void)running;
+  return CURLM_BAD_HANDLE;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_multi_poll
+CURLMcode curl_multi_poll(CURLM *multi, struct curl_waitfd extra_fds[], unsigned int extra_nfds,
+                          int timeout_ms, int *ret)
+{
+  called("curl_multi_poll(%s, %u, %d)", multi ? "multi" : "NULL", extra_nfds, timeout_ms);
+  (void)extra_fds;
+  (void)ret;
+  return CURLM_BAD_HANDLE;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_multi_wakeup
+CURLMcode curl_multi_wakeup(CURLM *multi)
+{
+  called("curl_multi_wakeup(%s)", multi ? "multi" : "NULL");
+  return CURLM_BAD_HANDLE;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_multi_info_read
+CURLMsg *curl_multi_info_read(CURLM *multi, int *queued)
+{
+  called("curl_multi_info_read(%s)", multi ? "multi" : "NULL");
+  if (queued) *queued = 0;
+  return NULL;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_multi_strerror
+const char *curl_multi_strerror(CURLMcode code)
+{
+  called("curl_multi_strerror(%d)", (int)code);
+  return "decoy";
 }
 #endif
 

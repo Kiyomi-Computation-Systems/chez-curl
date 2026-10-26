@@ -170,7 +170,7 @@
 ;; the load decided (tests/refusal-probe.sps). The counters gate counts per
 ;; process, and this suite's own never loads libcurl.
 (define no-native-objects
-  '(counts . ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0))))
+  '(counts . ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))))
 
 ;; A report is what a loaded library says about itself: (FIELD . VALUE) for
 ;; each of oracle-fields, in order, as the probe prints them after the path
@@ -431,11 +431,19 @@
        (cons "curl_free" (list version-call init-call))
        (cons "curl_easy_setopt" (list version-call init-call))
        (cons "curl_easy_getinfo" (list version-call init-call))
-       (cons "curl_easy_perform" (list version-call init-call))
        (cons "curl_easy_strerror" (list version-call init-call))
        (cons "curl_easy_nextheader" (list version-call init-call))
        (cons "curl_slist_append" (list version-call init-call))
-       (cons "curl_slist_free_all" (list version-call init-call))))
+       (cons "curl_slist_free_all" (list version-call init-call))
+       (cons "curl_multi_init" (list version-call init-call))
+       (cons "curl_multi_cleanup" (list version-call init-call))
+       (cons "curl_multi_add_handle" (list version-call init-call))
+       (cons "curl_multi_remove_handle" (list version-call init-call))
+       (cons "curl_multi_perform" (list version-call init-call))
+       (cons "curl_multi_poll" (list version-call init-call))
+       (cons "curl_multi_wakeup" (list version-call init-call))
+       (cons "curl_multi_info_read" (list version-call init-call))
+       (cons "curl_multi_strerror" (list version-call init-call))))
 
 ;; --- the real libcurl ---------------------------------------------------------------
 

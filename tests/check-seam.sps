@@ -136,12 +136,13 @@
 ;; its record, or its free and its record (M2 fix round 2): they run no code
 ;; built at run time, and reach no library.
 (define allowed-chez-names
-  '(critical-section define-ftype display-condition dynamic-wind file-regular? foreign-alloc
-    foreign-callable
+  '(critical-section define-ftype disable-interrupts display-condition
+    dynamic-wind enable-interrupts file-regular? foreign-alloc foreign-callable
     foreign-callable-entry-point foreign-entry? foreign-free foreign-procedure
-    foreign-ref foreign-sizeof format format-condition? ftype-ref getenv
-    load-shared-object lock-object machine-type make-ftype-pointer make-mutex
-    scheme-version scheme-version-number threaded? with-mutex))
+    foreign-ref foreign-sizeof fork-thread format format-condition? ftype-ref get-thread-id
+    getenv load-shared-object lock-object machine-type make-ftype-pointer
+    make-mutex make-time
+    scheme-version scheme-version-number sleep threaded? with-mutex))
 
 ;; library-only-chez-names : (Listof (Pairof Symbol (Listof (Listof Symbol))))
 ;; Rule (f). Each entry is a name in allowed-chez-names, then one or more
@@ -161,7 +162,17 @@
 ;; transfer), whose one callable, write-body, is locked where it is defined
 ;; and held to its row in tests/foreign-conventions.sls (M2 plan, sections
 ;; 3.5 and 3.6): a callable made anywhere else is one no lock and no row
-;; covers. Adding a name or a library is a reviewed
+;; covers. fork-thread belongs to (curl private engine), whose one thread
+;; runs every transfer submitted to it (M3 plan, section 3.9): a thread
+;; started anywhere else is one no engine owns. So do disable-interrupts
+;; and enable-interrupts, which the engine uses only to ask whether a wait
+;; may start: interrupts held off elsewhere could hide every Ctrl-C and
+;; collection request. No library imports
+;; mutex-acquire, mutex-release, make-condition, condition-wait or
+;; condition-broadcast at all: every hold of a mutex is locked's, short and
+;; with interrupts off, and a wait polls, sleeping between holds, since a
+;; wait that held a mutex deadlocked with a collection (ADR-0013, amended
+;; 2026-10-25). Adding a name or a library is a reviewed
 ;; change to the seam (ADR-0007). tests/test-check-seam.sps requires each name
 ;; to be in allowed-chez-names, and each entry's libraries to be exactly the
 ;; libraries under src/ that import the name, so no permission stays unused.
@@ -173,7 +184,10 @@
     (load-shared-object (curl private native))
     (foreign-callable (curl private transfer))
     (foreign-callable-entry-point (curl private transfer))
-    (lock-object (curl private transfer))))
+    (lock-object (curl private transfer))
+    (fork-thread (curl private engine))
+    (disable-interrupts (curl private engine))
+    (enable-interrupts (curl private engine))))
 
 ;; rnrs-libraries : (Listof (Listof Symbol))
 ;; The standard libraries a library under src/ may import: R6RS's, but for

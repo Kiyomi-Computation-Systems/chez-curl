@@ -5,7 +5,10 @@
 ;;; Every CURLU handle here is made and freed within one call, under
 ;;; dynamic-wind, on the calling thread: nothing native outlives the call
 ;;; that made it (M2 plan, section 3.1), and re-entering a finished call
-;;; through a continuation raises. Each dynamic-wind is critical, its
+;;; through a continuation raises. The one exception is an engine's
+;;; transfer, which holds its URL's handle from its start to its end, on
+;;; the engine's thread: parse-url makes it, in its caller's critical
+;;; section, and free-parsed-url! frees it (M3 plan, section 3.1). Each dynamic-wind is critical, its
 ;;; critical? argument #t: a handle, or a string libcurl made, is made in
 ;;; the before thunk and recorded where the after thunk frees it in one
 ;;; critical section, so an interrupt that escapes, an engine's expiry say,
@@ -25,7 +28,8 @@
 ;;; tests/test-url.sps holds the shared answers, and
 ;;; tests/known-url-verdicts.sexp a row per libcurl for the rest.
 (library (curl private url)
-  (export url-normalize url-resolve call-with-parsed-url require-http-scheme)
+  (export url-normalize url-resolve call-with-parsed-url require-http-scheme
+          parse-url free-parsed-url!)
   (import (curl private require-threaded)
           (except (rnrs) dynamic-wind)
           (only (chezscheme) dynamic-wind)
@@ -124,6 +128,28 @@
         (lambda ()
           (set! freed #t)
           (curl-url-cleanup handle)))))
+
+  ;; parse-url : String -> Positive-Integer
+  ;; A fresh CURLU handle holding INPUT, parsed as call-with-parsed-url
+  ;; parses it, for a caller that frees it with free-parsed-url!: a copy of
+  ;; INPUT, checked, then parsed. A refusal frees the handle first, then
+  ;; raises. The caller makes the call, and records the handle, in one
+  ;; critical section, so no escape falls between.
+  (define (parse-url input)
+    ;; let*: a let's inits run in no fixed order, and the check must come
+    ;; before the handle is made.
+    (let* ((string (checked-input 'parse-url input))
+           (handle (curl-url)))
+      (when (eqv? handle 0)
+        (error 'parse-url "curl_url returned NULL: no memory for a handle"))
+      (guard (e (#t (curl-url-cleanup handle) (raise e)))
+        (set-url! handle string))
+      handle))
+
+  ;; free-parsed-url! : Positive-Integer -> Void
+  ;; Frees HANDLE, which parse-url made, on the thread that made it.
+  (define (free-parsed-url! handle)
+    (curl-url-cleanup handle))
 
   ;; url-normalize : String -> String
   ;; What curl_url_get gives back for STRING, parsed: libcurl's own form of

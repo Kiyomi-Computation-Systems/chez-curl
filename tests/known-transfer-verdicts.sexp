@@ -1,5 +1,5 @@
-;; The blocking transfer's verdicts that vary by version (M2 plan, sections
-;; 5.1.1 and 5.3). tests/test-transfer.sps holds the answer every recorded
+;; The transfer's verdicts that vary by version (M2 plan, sections 5.1.1 and
+;; 5.3). tests/test-transfer.sps holds the answer every recorded
 ;; libcurl agrees on for each other scenario. These are the scenarios on
 ;; which they do not agree: one row per libcurl version a lane runs, each
 ;; with that version's answer to every one of them.
@@ -14,7 +14,7 @@
 ;; The file is data: rows only, nothing else. Each is exactly
 ;;   (libcurl (where STRING) (version STRING) (answers (CASE ANSWER) ...))
 ;; A CASE is (get FACE PATH), a GET of PATH on the origin's FACE, http or
-;; raw, through perform-transfer with no body limit. An ANSWER is (refused REASON
+;; raw, submitted to an engine and awaited, with no body limit. An ANSWER is (refused REASON
 ;; CODE), the &curl-transfer-error's reason and CURLcode, a number; or
 ;; (response STATUS VERSION HEADERS BODY): the status, the HTTP version's
 ;; symbol, every header as (NAME VALUE), in libcurl's order, and the body

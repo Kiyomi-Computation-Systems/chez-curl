@@ -1,0 +1,682 @@
+#!r6rs
+;;; (curl private engine): an engine, one Chez thread that owns a multi
+;;; handle, waits in curl_multi_poll, and runs the transfers other threads
+;;; submit (ADR-0012; M3 plan, sections 3.1 to 3.8). Private: M4 builds the
+;;; public records and the asynchronous API on it.
+;;;
+;;; make-curl-engine references the load first, on the caller's thread,
+;;; and only then forks the engine's thread: Chez locks no library's
+;;; invocation, and two threads' first references together raise cyclic
+;;; dependency (ADR-0002, amended 2026-10-24). The thread makes the multi
+;;; handle and reports that it is ready, or the refusal that stopped it,
+;;; which make-curl-engine raises.
+;;;
+;;; Messages cross threads; handle calls don't. A submit, a cancel and a
+;;; stop are queued under the engine's mutex, and then curl_multi_wakeup
+;;; wakes the poll, still under the mutex: the one libcurl call a caller's
+;;; thread makes on the engine's handle. The engine's thread marks itself
+;;; stopping, stopped, failing or failed under the same mutex before it
+;;; cleans the handle up, so no caller wakes a freed one.
+;;;
+;;; Each turn of the loop, on the engine's thread:
+;;;
+;;;   1. take   the queue, marking each submitted token live;
+;;;   2. setup  each submitted transfer, by start-transfer!, added to the
+;;;             multi handle, and recorded in the engine's table of live
+;;;             transfers, by its easy handle's address;
+;;;   3. cancel each live transfer a cancel names: taken out and completed
+;;;             as cancelled; then a stop, which ends the loop;
+;;;   4. perform curl_multi_perform;
+;;;   5. read   each finished transfer, by curl_multi_info_read: what it
+;;;             ended with, read by finish-transfer, then taken out and its
+;;;             token completed;
+;;;   6. poll   curl_multi_poll, for at most 1000 ms: libcurl shortens the
+;;;             wait to its own timers, and a wakeup ends it.
+;;;
+;;; curl_multi_info_read reads none for a removed handle, and only
+;;; curl_multi_perform makes its messages (M3 slice 2, measured on four
+;;; libcurls). So a cancel, carried out before the perform, never races a
+;;; message, and a transfer that ended in a perform completes before any
+;;; cancel that came after: that cancel finds its token done, and is
+;;; stale.
+;;;
+;;; A token holds one outcome: the response, or the condition the transfer
+;;; failed with, cancelled and stopped among them, and write-body's log of
+;;; its chunks (M3 plan, section 3.6). Any thread may await it, any number
+;;; of times. A cancel of a token still queued completes it on the
+;;; caller's thread, so nothing native is made for it; of a live one, it is
+;;; a message; of a done one, nothing.
+;;;
+;;; Every wait for the engine, await's, stop's and make-curl-engine's,
+;;; polls: each read of what it waits for is a short hold of the engine's
+;;; mutex through locked, and between reads it sleeps, from 50 us doubling
+;;; to 10 ms, holding nothing. Chez's sleep deactivates the thread when
+;;; interrupts are on, so other threads' collections go on, and a pending
+;;; Ctrl-C runs as it wakes; with them off it would not, so a wait refuses
+;;; to start inside a critical section, which would deadlock with a
+;;; collection the engine's thread joins. No
+;;; hold of any mutex waits, and none has interrupts on, so a thread blocked
+;;; on the mutex waits only for a holder that cannot join a collection: a
+;;; waiter that held the mutex with interrupts on, as a condition variable
+;;; needs, deadlocked against one (ADR-0013, amended 2026-10-25, after the
+;;; slice's review).
+;;;
+;;; The loop runs under a guard. Something raised there, between libcurl
+;;; calls, or at its start, fails the engine: it marks itself failing, so no caller wakes its
+;;; handle again; every queued and live token completes with
+;;; &curl-engine-error, reason failed, carrying it; the engine frees all it
+;;; holds, cleans up its multi handle, and marks itself failed, its
+;;; thread's last act. A later submit raises that failure, and stop waits
+;;; for the last act, then returns (section 3.7). A planted fault, data
+;;; naming a step, raises there, for the test.
+;;;
+;;; Stop (ADR-0012, amended 2026-10-24) completes every queued token as
+;;; stopped, cancels every live one as stopped, frees all, cleans up the
+;;; multi handle, checks the table of live transfers empty, and signals the
+;;; stop as the thread's last act. The caller's stop returns once that
+;;; signal arrives. A later stop returns at once.
+;;;
+;;; fork-thread is this library's alone (check-seam, rule (f)): one engine
+;;; thread runs every transfer submitted to it.
+;;;
+;;; The engine's thread runs no caller code and sets no timer, so nothing
+;;; escapes there but by a raise. Its records of a transfer, the token's
+;;; and the table's, are therefore made after start-transfer! and cleared
+;;; after free-transfer!, the table's in a critical section of its own, so a
+;;; raise in the free leaves the transfer in the table, where the engine's
+;;; failure completes its token. The limit,
+;;; recorded: collect-request-handler is process-wide, so a caller's handler
+;;; that escapes could run on this thread (M3 plan, section 3.6).
+(library (curl private engine)
+  (export make-curl-engine curl-engine? curl-engine-submit curl-engine-submit-with
+          curl-engine-stop curl-engine-request-stop! curl-engine-state curl-engine-thread
+          curl-engine-multi curl-engine-live-count curl-engine-queued-count
+          curl-engine-stale-cancels call-with-engine-held
+          curl-token? curl-token-await curl-token-cancel curl-token-done? curl-token-chunks
+          make-faulty-curl-engine engine-fault-steps planted-engine-fault)
+  (import (curl private require-threaded)
+          (rnrs)
+          (only (chezscheme) critical-section disable-interrupts enable-interrupts fork-thread
+                get-thread-id make-mutex with-mutex make-time sleep foreign-sizeof)
+          (curl private conditions)
+          (curl private constants)
+          (curl private memory)
+          (curl private native)
+          (curl private transfer))
+
+  ;; --- holding the mutex ---------------------------------------------------------------
+
+  ;; locked : Mutex (-> Any) -> Any
+  ;; THUNK's value, run holding LOCK, in a critical section. Chez's
+  ;; with-mutex is a dynamic-wind whose before thunk takes the mutex, so an
+  ;; interrupt that escapes between the take and the wind would leave it
+  ;; held. Every hold of the mutex is locked's: short, with interrupts off,
+  ;; and none waits (ADR-0013, amended 2026-10-25).
+  (define (locked lock thunk)
+    (critical-section (with-mutex lock (thunk))))
+
+  ;; interrupts-on? : -> Boolean
+  ;; Whether this thread runs with interrupts on: disable-interrupts answers
+  ;; the disable count it makes, 1 when it was 0.
+  (define (interrupts-on?)
+    (let ((count (disable-interrupts)))
+      (enable-interrupts)
+      (= count 1)))
+
+  ;; require-interrupts-on : Symbol -> Void
+  ;; Returns when this thread runs with interrupts on; otherwise an
+  ;; assertion violation from WHO. Each procedure that waits asks it first,
+  ;; before it does anything, so a refusal leaves nothing behind.
+  (define (require-interrupts-on who)
+    (unless (interrupts-on?)
+      (assertion-violation who
+        "a wait needs interrupts on: inside a critical section it would hold every collection, and the engine's thread with them")))
+
+  ;; wait-until : Symbol Engine (-> Any) -> Any
+  ;; READY's first true answer, each read a hold of ENGINE's mutex through
+  ;; locked, and between reads a sleep, holding nothing: 50 us, then twice
+  ;; the last, up to 10 ms. Chez's sleep deactivates this thread when
+  ;; interrupts are on, so other threads' collections go on while it
+  ;; sleeps, and sets its trap, so a pending Ctrl-C runs as it wakes
+  ;; (ADR-0013, amended 2026-10-25). With interrupts off, a sleep keeps the
+  ;; thread active: a collection would wait for it, the engine's thread
+  ;; with it, and the wait would never end. So a wait inside a critical
+  ;; section is an assertion violation from WHO, before it starts.
+  (define (wait-until who engine ready)
+    (require-interrupts-on who)
+    (let ((lock (curl-engine-lock engine)))
+      (let loop ((pause 50000))
+        (or (locked lock ready)
+            (begin
+              (sleep (make-time 'time-duration pause 0))
+              (loop (min (* pause 2) 10000000)))))))
+
+  ;; --- the records -----------------------------------------------------------------------
+
+  ;; An engine: its mutex; under the mutex, its queue of
+  ;; messages, newest first, its state, starting, running, stopping,
+  ;; stopped, failing or failed, its multi handle's address, #f once freed,
+  ;; its thread's
+  ;; get-thread-id, the &curl-engine-error it failed with, and its table of
+  ;; live transfers, by easy handle, each (TOKEN . LIVE); its planted fault,
+  ;; a step or #f; and, on its own thread alone, the batch of messages its
+  ;; turn took, and its slot, the counted block curl_multi_perform and
+  ;; curl_multi_info_read write their counts through, held while the multi
+  ;; handle lives, so a running engine counts one block and one multi; and,
+  ;; under the mutex, how many cancels found their token done.
+  (define-record-type (curl-engine make-engine-record curl-engine?)
+    (fields (immutable lock curl-engine-lock)
+            (mutable queue curl-engine-queue curl-engine-queue-set!)
+            (mutable state engine-state engine-state-set!)
+            (mutable multi engine-multi engine-multi-set!)
+            (mutable thread engine-thread engine-thread-set!)
+            (mutable failure engine-failure engine-failure-set!)
+            (immutable live engine-live)
+            (immutable fault engine-fault)
+            (mutable batch engine-batch engine-batch-set!)
+            (mutable slot engine-slot engine-slot-set!)
+            (mutable stale engine-stale engine-stale-set!)))
+
+  ;; A token: its engine and its plan; under the engine's mutex, its state,
+  ;; queued, live or done, its outcome, a response or a condition, and its
+  ;; chunks, write-body's log; and, on the engine's thread alone, its live
+  ;; transfer while it has one.
+  (define-record-type (curl-token make-token curl-token?)
+    (fields (immutable engine curl-token-engine)
+            (immutable plan curl-token-plan)
+            (mutable state token-state token-state-set!)
+            (mutable outcome token-outcome token-outcome-set!)
+            (mutable chunks token-chunks token-chunks-set!)
+            (mutable live token-live token-live-set!)))
+
+  ;; curl-engine-state : Engine -> (U 'running 'stopping 'stopped 'failing 'failed)
+  ;; stopping and failing last until the engine's thread has freed all it
+  ;; held; a stop waits for them to end.
+  (define (curl-engine-state engine)
+    (check-engine 'curl-engine-state engine)
+    (locked (curl-engine-lock engine) (lambda () (engine-state engine))))
+
+  ;; curl-engine-thread : Engine -> Integer
+  ;; The get-thread-id of ENGINE's thread.
+  (define (curl-engine-thread engine)
+    (check-engine 'curl-engine-thread engine)
+    (locked (curl-engine-lock engine) (lambda () (engine-thread engine))))
+
+  ;; curl-engine-multi : Engine -> (U Positive-Integer #f)
+  ;; ENGINE's multi handle's address, #f once freed: a private accessor, for
+  ;; the test that another thread's use of it raises &curl-wrong-thread.
+  (define (curl-engine-multi engine)
+    (check-engine 'curl-engine-multi engine)
+    (locked (curl-engine-lock engine) (lambda () (engine-multi engine))))
+
+  ;; curl-engine-live-count : Engine -> Natural
+  ;; How many transfers ENGINE's table holds now: a private accessor.
+  (define (curl-engine-live-count engine)
+    (check-engine 'curl-engine-live-count engine)
+    (locked (curl-engine-lock engine) (lambda () (hashtable-size (engine-live engine)))))
+
+  ;; curl-engine-queued-count : Engine -> Natural
+  ;; How many messages ENGINE's queue holds now: a private accessor, for the
+  ;; test that a refused submit queued nothing.
+  (define (curl-engine-queued-count engine)
+    (check-engine 'curl-engine-queued-count engine)
+    (locked (curl-engine-lock engine) (lambda () (length (curl-engine-queue engine)))))
+
+  ;; curl-engine-stale-cancels : Engine -> Natural
+  ;; How many cancel messages ENGINE has carried out on a token already
+  ;; done: its transfer ended in the turn the cancel came in, or an earlier
+  ;; cancel of it was carried out first. A private accessor, for the test
+  ;; that a stale cancel is passed over.
+  (define (curl-engine-stale-cancels engine)
+    (check-engine 'curl-engine-stale-cancels engine)
+    (locked (curl-engine-lock engine) (lambda () (engine-stale engine))))
+
+  ;; call-with-engine-held : Engine (-> Any) -> Any
+  ;; THUNK's answer, run holding ENGINE's mutex, through locked, so the
+  ;; engine's thread takes no message until it returns: a test seam,
+  ;; private, so a token can be caught queued. Chez's mutexes are
+  ;; recursive, so THUNK may submit, cancel and request a stop; it must not
+  ;; wait, nor await, nor stop, which waits.
+  (define (call-with-engine-held engine thunk)
+    (check-engine 'call-with-engine-held engine)
+    (locked (curl-engine-lock engine) thunk))
+
+  ;; curl-token-done? : Token -> Boolean
+  (define (curl-token-done? token)
+    (check-token 'curl-token-done? token)
+    (locked (curl-engine-lock (curl-token-engine token))
+      (lambda () (eq? (token-state token) 'done))))
+
+  ;; curl-token-chunks : Token -> (Listof (List Positive-Integer Integer Symbol))
+  ;; write-body's log of TOKEN's chunks, oldest first, once it is done: each
+  ;; chunk's length, the get-thread-id it ran on, and its verdict
+  ;; (live-transfer-chunks); () before, and for a token never set up.
+  (define (curl-token-chunks token)
+    (check-token 'curl-token-chunks token)
+    (locked (curl-engine-lock (curl-token-engine token)) (lambda () (token-chunks token))))
+
+  (define (check-engine who x)
+    (unless (curl-engine? x) (assertion-violation who "not an engine" x)))
+
+  (define (check-token who x)
+    (unless (curl-token? x) (assertion-violation who "not a token" x)))
+
+  ;; --- the engine's conditions ---------------------------------------------------------
+
+  ;; engine-error : Symbol Any -> Condition
+  (define (engine-error reason raised)
+    (condition (make-curl-engine-error reason raised)
+               (make-who-condition 'curl-engine)
+               (make-message-condition
+                (if (eq? reason 'stopped)
+                    "the engine was stopped, so it takes no more transfers"
+                    "something raised inside the engine's loop, so the engine failed"))
+               (make-irritants-condition (if raised (list raised) '()))))
+
+  ;; engine-fault-steps : (Listof Symbol)
+  ;; The steps a planted fault may name, each where the engine raises it:
+  ;; start, on its thread, before its multi handle is made; take, when the
+  ;; queue holds a message, before the turn takes it; setup, before a
+  ;; transfer's start-transfer!; cancel, before a live transfer's cancel;
+  ;; perform and poll, before curl_multi_perform and curl_multi_poll, while a
+  ;; transfer is live; read, before a finished transfer's finish-transfer;
+  ;; free, once a transfer is freed, its easy handle with it, and before
+  ;; the table lets it go.
+  (define engine-fault-steps '(start take setup cancel perform read poll free))
+
+  ;; planted-engine-fault : Symbol -> (List 'planted-engine-fault Symbol)
+  ;; What the loop raises at a planted fault's STEP: data, so a test can tell
+  ;; it from every other raise.
+  (define (planted-engine-fault step) (list 'planted-engine-fault step))
+
+  ;; fault-at! : Engine Symbol -> Void
+  (define (fault-at! engine step)
+    (when (eq? (engine-fault engine) step)
+      (raise (planted-engine-fault step))))
+
+  ;; --- making an engine ------------------------------------------------------------------
+
+  ;; make-curl-engine : -> Engine
+  ;; A fresh engine, running on a thread of its own, its multi handle made
+  ;; there. The load runs first, on this thread. A refusal raises here: the
+  ;; load's, or the engine's &curl-engine-error, reason failed, when its
+  ;; thread could make no multi handle.
+  (define (make-curl-engine) (start-engine #f))
+
+  ;; make-faulty-curl-engine : Symbol -> Engine
+  ;; make-curl-engine's, with a fault planted at STEP, one of
+  ;; engine-fault-steps: the engine raises (planted-engine-fault STEP) the
+  ;; first time it reaches it, so a fault at start raises here, as the
+  ;; refusal. A test seam, private (section 3.7).
+  (define (make-faulty-curl-engine step)
+    (unless (memq step engine-fault-steps)
+      (assertion-violation 'make-faulty-curl-engine "not a step of the engine's loop" step))
+    (start-engine step))
+
+  ;; start-engine : (U Symbol #f) -> Engine
+  (define (start-engine fault)
+    (require-interrupts-on 'make-curl-engine)
+    (loaded-libcurl)
+    (let ((engine (make-engine-record (make-mutex) '() 'starting #f #f #f
+                                      (make-eqv-hashtable) fault '() #f 0)))
+      (fork-thread (lambda () (run-engine engine)))
+      (wait-until 'make-curl-engine engine (lambda () (memq (engine-state engine) '(running failed))))
+      (let ((failure (locked (curl-engine-lock engine)
+                       (lambda () (and (eq? (engine-state engine) 'failed) (engine-failure engine))))))
+        (when failure (raise failure)))
+      engine))
+
+  ;; --- the caller's side ---------------------------------------------------------------
+
+  ;; curl-engine-submit : Engine Request -> Token
+  ;; REQUEST's transfer, queued on ENGINE, as curl-engine-submit-with with no
+  ;; options.
+  (define (curl-engine-submit engine request)
+    (curl-engine-submit-with engine request '()))
+
+  ;; curl-engine-submit-with : Engine Request (Listof (Pairof String Integer)) -> Token
+  ;; REQUEST's transfer, with OPTIONS, the test seam's, queued on ENGINE: its
+  ;; token. On this thread, before anything is queued, prepare-transfer
+  ;; takes and checks the plan, and every refusal raises: the request's,
+  ;; the URL's, or the seam's (ADR-0009, amended 2026-10-23). A submit to an
+  ;; engine stopping, stopped or failed raises &curl-engine-error, reason
+  ;; stopped, or failed with what it failed with.
+  (define (curl-engine-submit-with engine request options)
+    (check-engine 'curl-engine-submit engine)
+    (let* ((plan (prepare-transfer request options))
+           (token (make-token engine plan 'queued #f '() #f))
+           (refusal
+            (locked (curl-engine-lock engine)
+              (lambda ()
+                (case (engine-state engine)
+                  ((running)
+                   (curl-engine-queue-set! engine (cons (cons 'submit token) (curl-engine-queue engine)))
+                   (curl-multi-wakeup (engine-multi engine))
+                   #f)
+                  ((failing failed) (engine-failure engine))
+                  (else (engine-error 'stopped #f)))))))
+      (when refusal (raise refusal))
+      token))
+
+  ;; curl-token-await : Token -> Response
+  ;; TOKEN's response, once its transfer is done, or a raise of the
+  ;; condition it ended with, on this thread. Any thread may await a token,
+  ;; any number of times: the outcome is kept. It polls, by wait-until, so
+  ;; Ctrl-C runs as its sleep ends, and an escape from it leaves the
+  ;; transfer running: await again for its outcome (section 3.4). It must
+  ;; run with interrupts on: inside a critical section it is refused.
+  (define (curl-token-await token)
+    (check-token 'curl-token-await token)
+    (require-interrupts-on 'curl-token-await)
+    (let ((outcome (wait-until 'curl-token-await (curl-token-engine token)
+                               (lambda ()
+                                 (and (eq? (token-state token) 'done)
+                                      (list (token-outcome token)))))))
+      (if (transfer-response? (car outcome))
+          (car outcome)
+          (raise (car outcome)))))
+
+  ;; curl-token-cancel : Token -> Void
+  ;; Returns at once. A token still queued completes as cancelled, here,
+  ;; with nothing native made; a live one is a message, and the engine
+  ;; takes its transfer out and completes it as cancelled; a done one is
+  ;; left as it is, and so is one whose engine is stopping or failing, which
+  ;; completes it (section 3.5).
+  (define (curl-token-cancel token)
+    (check-token 'curl-token-cancel token)
+    (let ((engine (curl-token-engine token)))
+      (locked (curl-engine-lock engine)
+        (lambda ()
+          (case (token-state token)
+            ((queued)
+             (complete-locked! engine token (transfer-ended 'cancelled) '()))
+            ((live)
+             (when (eq? (engine-state engine) 'running)
+               (curl-engine-queue-set! engine (cons (cons 'cancel token) (curl-engine-queue engine)))
+               (curl-multi-wakeup (engine-multi engine))))
+            (else #f))))))
+
+  ;; curl-engine-request-stop! : Engine -> Void
+  ;; Queues ENGINE's stop and returns at once: from now on a submit is
+  ;; refused as stopped. An engine stopping, stopped or failed already is
+  ;; left as it is.
+  (define (curl-engine-request-stop! engine)
+    (check-engine 'curl-engine-request-stop! engine)
+    (locked (curl-engine-lock engine)
+      (lambda ()
+        (when (eq? (engine-state engine) 'running)
+          (engine-state-set! engine 'stopping)
+          (curl-engine-queue-set! engine (cons (list 'stop) (curl-engine-queue engine)))
+          (curl-multi-wakeup (engine-multi engine))))))
+
+  ;; curl-engine-stop : Engine -> Void
+  ;; Stops ENGINE: curl-engine-request-stop!, then a wait for the engine's
+  ;; thread to signal its end, which it does once every token it held is
+  ;; completed, as stopped, and everything it held is freed. A stop of an
+  ;; engine stopped or failed already returns at once; one while another
+  ;; stop runs, or while the engine is failing, waits for its end.
+  (define (curl-engine-stop engine)
+    (check-engine 'curl-engine-stop engine)
+    (require-interrupts-on 'curl-engine-stop)
+    (curl-engine-request-stop! engine)
+    (wait-until 'curl-engine-stop engine (lambda () (memq (engine-state engine) '(stopped failed))))
+    (if #f #f))
+
+  ;; --- completing a token ----------------------------------------------------------------
+
+  ;; complete-locked! : Engine Token Any (Listof Any) -> Void
+  ;; TOKEN done with OUTCOME and CHUNKS, unless it is done already: the first
+  ;; outcome stands. The caller holds ENGINE's mutex. A waiter sees it at its
+  ;; next read.
+  (define (complete-locked! engine token outcome chunks)
+    (unless (eq? (token-state token) 'done)
+      (token-outcome-set! token outcome)
+      (token-chunks-set! token chunks)
+      (token-state-set! token 'done)))
+
+  ;; complete! : Engine Token Any (Listof Any) -> Void
+  (define (complete! engine token outcome chunks)
+    (locked (curl-engine-lock engine)
+      (lambda () (complete-locked! engine token outcome chunks))))
+
+  ;; --- the engine's thread ---------------------------------------------------------------
+
+  ;; run-engine : Engine -> Void
+  ;; The engine's thread: its multi handle and its slot, each made and
+  ;; recorded in one critical section, then the loop, under a guard whose
+  ;; handler fails the engine.
+  (define (run-engine engine)
+    (guard (e (#t (fail-engine! engine e)))
+      (fault-at! engine 'start)
+      (critical-section
+       (let ((multi (curl-multi-init)))
+         (when (eqv? multi 0)
+           (error 'make-curl-engine "curl_multi_init returned NULL: no memory for a multi handle"))
+         (locked (curl-engine-lock engine) (lambda () (engine-multi-set! engine multi)))))
+      (critical-section (engine-slot-set! engine (foreign-block (foreign-sizeof 'int))))
+      (locked (curl-engine-lock engine)
+        (lambda ()
+          (engine-thread-set! engine (get-thread-id))
+          (engine-state-set! engine 'running)))
+      (turns engine (engine-multi engine))))
+
+  ;; free-slot! : Engine -> Void
+  ;; The slot freed, and its record cleared, in one critical section; none
+  ;; made, nothing freed.
+  (define (free-slot! engine)
+    (critical-section
+     (let ((slot (engine-slot engine)))
+       (when slot
+         (free-foreign-block! slot)
+         (engine-slot-set! engine #f)))))
+
+  ;; turns : Engine Positive-Integer -> Void
+  ;; The loop, steps 1 to 6, until a stop.
+  (define (turns engine multi)
+    (let turn ()
+      (let ((messages (take-queue! engine)))
+        (if (assq 'stop messages)
+            (shut-down! engine multi messages)
+            (begin
+              (for-each (lambda (message)
+                          (when (eq? (car message) 'submit) (set-up! engine multi (cdr message))))
+                        messages)
+              (for-each (lambda (message)
+                          (when (eq? (car message) 'cancel) (cancel! engine multi (cdr message))))
+                        messages)
+              (engine-batch-set! engine '())
+              (unless (live-empty? engine) (fault-at! engine 'perform))
+              (let-values (((code running) (curl-multi-perform multi (engine-slot engine))))
+                (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_perform code)))
+              (read-finished! engine multi)
+              (unless (live-empty? engine) (fault-at! engine 'poll))
+              (let ((code (curl-multi-poll multi 1000)))
+                (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_poll code)))
+              (turn))))))
+
+  ;; multi-failed : Symbol Integer -> Nothing
+  (define (multi-failed entry code)
+    (error 'curl-engine (string-append (symbol->string entry) " answered a CURLMcode")
+           code (curl-multi-strerror code)))
+
+  ;; take-queue! : Engine -> (Listof Message)
+  ;; Step 1: the queue, oldest first, emptied, each submitted token not done
+  ;; yet marked live, under the mutex. The batch is kept, on this thread,
+  ;; until the turn has dealt with it. A fault planted at take raises in the
+  ;; same hold, when the queue holds a message, before it is taken: so those
+  ;; messages stay queued, for the failure to complete.
+  (define (take-queue! engine)
+    (let ((messages
+           (locked (curl-engine-lock engine)
+             (lambda ()
+               (unless (null? (curl-engine-queue engine)) (fault-at! engine 'take))
+               (let ((messages (reverse (curl-engine-queue engine))))
+                 (curl-engine-queue-set! engine '())
+                 (for-each (lambda (message)
+                             (when (and (eq? (car message) 'submit)
+                                        (eq? (token-state (cdr message)) 'queued))
+                               (token-state-set! (cdr message) 'live)))
+                           messages)
+                 messages)))))
+      (engine-batch-set! engine messages)
+      messages))
+
+  ;; live-empty? : Engine -> Boolean
+  (define (live-empty? engine)
+    (locked (curl-engine-lock engine) (lambda () (= (hashtable-size (engine-live engine)) 0))))
+
+  ;; set-up! : Engine Positive-Integer Token -> Void
+  ;; Step 2: TOKEN's transfer started, recorded in the table, and added to
+  ;; MULTI. A token already done, cancelled while queued, is passed over. A
+  ;; raise from start-transfer!, which has freed what it made, completes the
+  ;; token with it: the transfer's own failure, not the engine's.
+  (define (set-up! engine multi token)
+    (unless (curl-token-done? token)
+      (fault-at! engine 'setup)
+      (let ((live (guard (e (#t (complete! engine token e '()) #f))
+                    (start-transfer! (curl-token-plan token)))))
+        (when live
+          (token-live-set! token live)
+          (locked (curl-engine-lock engine)
+            (lambda () (hashtable-set! (engine-live engine) (live-transfer-easy live) (cons token live))))
+          (let ((code (curl-multi-add-handle multi (live-transfer-easy live))))
+            (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_add_handle code)))))))
+
+  ;; take-out! : Engine Positive-Integer Token -> (Listof Any)
+  ;; TOKEN's live transfer removed from MULTI, freed, then taken out of the
+  ;; table: its chunks, read first. The table lets the transfer go last, so a
+  ;; raise on the way leaves it there, and the engine's failure completes
+  ;; its token.
+  (define (take-out! engine multi token)
+    (let* ((live (token-live token))
+           (easy (live-transfer-easy live))
+           (chunks (live-transfer-chunks live))
+           (code (curl-multi-remove-handle multi easy)))
+      (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_remove_handle code))
+      (free-transfer! live)
+      (fault-at! engine 'free)
+      (locked (curl-engine-lock engine) (lambda () (hashtable-delete! (engine-live engine) easy)))
+      (token-live-set! token #f)
+      chunks))
+
+  ;; cancel! : Engine Positive-Integer Token -> Void
+  ;; Step 3: TOKEN's transfer, while it is live, taken out, and TOKEN
+  ;; completed as cancelled. A token done since, its transfer having ended
+  ;; in the turn the cancel came in, is left, and counted as stale.
+  (define (cancel! engine multi token)
+    (if (token-live token)
+        (begin
+          (fault-at! engine 'cancel)
+          (let ((chunks (take-out! engine multi token)))
+            (complete! engine token (transfer-ended 'cancelled) chunks)))
+        (locked (curl-engine-lock engine)
+          (lambda () (engine-stale-set! engine (+ (engine-stale engine) 1))))))
+
+  ;; read-finished! : Engine Positive-Integer -> Void
+  ;; Step 5: every message curl_multi_info_read holds; for each transfer
+  ;; done, what it ended with, read before anything is freed, then taken
+  ;; out, and its token completed with that and its chunks. A raise while
+  ;; reading is the transfer's outcome.
+  (define (read-finished! engine multi)
+    (let drain ()
+      (let ((message (curl-multi-info-read multi (engine-slot engine))))
+        (when message
+          (when (eqv? (car message) curlmsg-done)
+            (let ((entry (locked (curl-engine-lock engine)
+                           (lambda () (hashtable-ref (engine-live engine) (cadr message) #f)))))
+              (when entry
+                (fault-at! engine 'read)
+                (let* ((token (car entry))
+                       (outcome (guard (e (#t e)) (finish-transfer (cdr entry) (caddr message))))
+                       (chunks (take-out! engine multi token)))
+                  (complete! engine token outcome chunks)))))
+          (drain)))))
+
+  ;; shut-down! : Engine Positive-Integer (Listof Message) -> Void
+  ;; A stop: every token MESSAGES submitted completed as stopped, unset up;
+  ;; each cancel carried out; every live transfer taken out and completed as
+  ;; stopped; the table checked empty; the multi handle cleaned up; and the
+  ;; stop signalled, the thread's last act.
+  (define (shut-down! engine multi messages)
+    (for-each (lambda (message)
+                (when (eq? (car message) 'submit)
+                  (complete! engine (cdr message) (transfer-ended 'stopped) '())))
+              messages)
+    (for-each (lambda (message)
+                (when (eq? (car message) 'cancel) (cancel! engine multi (cdr message))))
+              messages)
+    (engine-batch-set! engine '())
+    (for-each (lambda (keyed)
+                (let* ((token (cadr keyed))
+                       (chunks (take-out! engine multi token)))
+                  (complete! engine token (transfer-ended 'stopped) chunks)))
+              (live-entries engine))
+    (unless (live-empty? engine)
+      (error 'curl-engine-stop "the table of live transfers is not empty after a stop"))
+    (let ((code (curl-multi-cleanup multi)))
+      (locked (curl-engine-lock engine) (lambda () (engine-multi-set! engine #f)))
+      (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_cleanup code)))
+    (free-slot! engine)
+    (locked (curl-engine-lock engine)
+      (lambda ()
+        (engine-state-set! engine 'stopped))))
+
+  ;; live-entries : Engine -> (Listof (Pairof Positive-Integer (Pairof Token Live)))
+  ;; The table's entries, each with its key, the easy handle's address it was
+  ;; recorded under: a key that stays right after the live record's easy
+  ;; field is cleared.
+  (define (live-entries engine)
+    (locked (curl-engine-lock engine)
+      (lambda ()
+        (let-values (((easies entries) (hashtable-entries (engine-live engine))))
+          (map cons (vector->list easies) (vector->list entries))))))
+
+  ;; fail-engine! : Engine Any -> Void
+  ;; RAISED fails ENGINE (section 3.7): it is marked failing under the
+  ;; mutex first, so no caller wakes its multi handle again and a submit
+  ;; raises the failure; then every token queued, in the turn's batch, or
+  ;; live completes with &curl-engine-error, reason failed, carrying RAISED;
+  ;; every live transfer is taken out and freed, but an easy handle whose
+  ;; removal failed, which stays counted, and the multi handle cleaned up,
+  ;; each as far as it goes, so a free that fails leaves its count up; and
+  ;; last, the engine is marked failed.
+  ;; Nothing raised here leaves the thread.
+  (define (fail-engine! engine raised)
+    (let* ((failure (engine-error 'failed raised))
+           (lock (curl-engine-lock engine))
+           (queued (locked lock
+                     (lambda ()
+                       (engine-state-set! engine 'failing)
+                       (engine-failure-set! engine failure)
+                       (let ((messages (curl-engine-queue engine)))
+                         (curl-engine-queue-set! engine '())
+                         messages))))
+           (multi (locked lock (lambda () (engine-multi engine)))))
+      (for-each (lambda (message)
+                  (when (eq? (car message) 'submit)
+                    (complete! engine (cdr message) failure '())))
+                (append (engine-batch engine) queued))
+      (engine-batch-set! engine '())
+      (for-each (lambda (keyed)
+                  (let ((key (car keyed)) (token (cadr keyed)) (live (cddr keyed)))
+                    (let* ((chunks (guard (e (#t '())) (live-transfer-chunks live)))
+                           (easy (live-transfer-easy live))
+                           (removed (and multi easy
+                                         (guard (e (#t #f))
+                                           (eqv? (curl-multi-remove-handle multi easy) curlm-ok)))))
+                      ;; A handle still in the multi handle is not freed:
+                      ;; curl_easy_cleanup would remove it, which can
+                      ;; block. It stays counted, so a suite sees it.
+                      (unless removed (abandon-transfer-easy! live))
+                      (guard (e (#t #f)) (free-transfer! live))
+                      (locked lock (lambda () (hashtable-delete! (engine-live engine) key)))
+                      (token-live-set! token #f)
+                      (complete! engine token failure chunks))))
+                (live-entries engine))
+      (when multi
+        (guard (e (#t #f)) (curl-multi-cleanup multi)))
+      (guard (e (#t #f)) (free-slot! engine))
+      (locked lock
+        (lambda ()
+          (engine-multi-set! engine #f)
+          (engine-state-set! engine 'failed))))))

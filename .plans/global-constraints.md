@@ -71,8 +71,10 @@ provisional. They bind until that record is accepted or amended.
     `define-syntax` defines. Anywhere else it is stray: as an argument, in data, in a
     macro, bound as a name, or in an export or import. So no library exports a wrapper.
   - A row may name the one wrapper its entry must be bound through, `(bound-by NAME)`.
-    The four variadic rows name `bind-variadic`, and `curl_easy_perform`'s names
-    `bind-blocking`, whose template carries `__collect_safe` (ADR-0013, amended).
+    The four variadic rows name `bind-variadic`, and the four multi calls that can block,
+    `curl_multi_poll`, `curl_multi_perform`, `curl_multi_remove_handle` and
+    `curl_multi_cleanup`, name `bind-blocking`, whose template carries `__collect_safe`
+    (ADR-0013, amended 2026-10-25).
   - A callable is the whole right-hand side of `(define name ...)`. The one callable,
     `write-body`, is locked with `lock-object` where it is defined, and never unlocked.
 - **Every macro `src/` defines is a row of `known-macros`,** in
@@ -161,10 +163,12 @@ provisional. They bind until that record is accepted or amended.
   - **macOS:** `/usr/lib/libcurl.4.dylib` only.
 - **One load, then verify.** After a failure, chez-curl never tries another candidate
   (ADR-0002).
-- **An engine loads libcurl before its thread starts.** `make-engine` references the load on
-  the caller's thread, then forks, so no engine thread makes a first reference. Chez locks no
-  library's invocation, and two threads' first references together raise `cyclic
-  dependency` (ADR-0002, amended 2026-10-24).
+- **An engine loads libcurl before its thread starts.** `make-curl-engine` references the load
+  on the caller's thread, then forks, so no engine thread makes a first reference. Chez locks
+  no library's invocation, and two threads' first references together raise `cyclic
+  dependency` (ADR-0002, amended 2026-10-24). A top-level program has run the load before its
+  first line anyway, so only `eval` reaches that race, and no check in a program can show it
+  (ADR-0002, amended 2026-10-25).
 - **The load runs at most once per process.** `(curl private load-state)` records its first
   failure, and every later reference raises that failure again. Every load step runs
   inside `load-step`, so only serious conditions are raised (ADR-0002, amended).
@@ -249,14 +253,15 @@ provisional. They bind until that record is accepted or amended.
 - **Owned options:** `URL`, `CURLU`, `PROTOCOLS_STR`, `REDIR_PROTOCOLS_STR`, `PROTOCOLS`,
   `REDIR_PROTOCOLS`, `NOSIGNAL`, and every option a request field sets, among them `CAINFO`,
   `CAPATH`, `SSL_VERIFYPEER` and `SSL_VERIFYHOST` (ADR-0009), and `QUICK_EXIT`, which every
-  engine transfer sets (ADR-0009, amended 2026-10-24). Each owned setting's **twin** is
+  engine transfer sets from M3 slice 3 (ADR-0009, amended 2026-10-24 and 2026-10-25). Each
+  owned setting's **twin** is
   refused too, an option with an id of its own that sets the same thing: `MAXFILESIZE`,
   `TIMEOUT`, `HTTPGET`, `POST`, `UPLOAD`, `PUT`, `CAINFO_BLOB` and `SSL_OPTIONS` today, and
   with them the transfer's callable and data, `WRITEFUNCTION`, `WRITEDATA` and `ERRORBUFFER`
   (ADR-0009, amended 2026-10-23 and 2026-10-24).
-- **M2's test seam, `perform-transfer-with`, is held to these rules, narrowed:** long,
-  enumerated-value and `off_t` options alone, so no address can pass. It stays private
-  (ADR-0009, amended 2026-10-23).
+- **The test seam, `curl-engine-submit-with`, is held to these rules, narrowed:** long,
+  enumerated-value and `off_t` options alone, so no address can pass, checked at submit on
+  the caller's thread. It stays private (ADR-0009, amended 2026-10-23 and 2026-10-25).
 - **Lifetimes.** Blobs are passed with `CURL_BLOB_COPY`. String lists are built by the
   binding and freed only after the transfer completes (ADR-0009).
 
@@ -276,8 +281,11 @@ provisional. They bind until that record is accepted or amended.
   - A name in `library-only-chez-names` is imported only by the libraries listed with it:
     `define-ftype` by `(curl private layouts)`, `foreign-alloc` and `foreign-free` by
     `(curl private memory)`, `foreign-procedure` and `load-shared-object` by
-    `(curl private native)`, and `foreign-callable`, `foreign-callable-entry-point` and
-    `lock-object` by `(curl private transfer)`, each alone (ADR-0007, amended).
+    `(curl private native)`, `foreign-callable`, `foreign-callable-entry-point` and
+    `lock-object` by `(curl private transfer)`, and `fork-thread` by
+    `(curl private engine)`, each alone (ADR-0007, amended). No library imports
+    `mutex-acquire`, `mutex-release`, `make-condition`, `condition-wait` or
+    `condition-broadcast` (ADR-0013, amended 2026-10-25).
   - No file under `src/` may be one Chez loads as a library that the check doesn't read.
   - Every `(curl ...)` or `(http-client ...)` library a `src/` library imports is defined
     under `src/` (rule (h)). `tests/` is on the suites' library path too.
@@ -385,8 +393,10 @@ provisional. They bind until that record is accepted or amended.
   (ADR-0014, amended)
 - **When the gate runs:** CI runs it on every pull request, on `main` and on tags. Locally it
   runs in the container (ADR-0014, amended).
-- **Counters:** every native object is counted, always on: per process in M2, per engine from
-  M3. `(curl private counters)` holds them, with no reset, and `(curl private memory)` alone
+- **Counters:** every native object is counted, always on, per process, and an engine's
+  transfers in its table of live transfers too, which a stop empties and checks empty before
+  the engine's thread ends (ADR-0014, amended 2026-10-25). A multi handle is counted as
+  `multi`. `(curl private counters)` holds them, with no reset, and `(curl private memory)` alone
   makes and frees foreign blocks. Suites assert that the counts move and return to zero.
   `suite-exit-status` fails a suite whose counts are not all zero at its end, and every child a
   suite spawns that reaches native prints its counts, which the suite asserts zero. They are
@@ -413,19 +423,27 @@ provisional. They bind until that record is accepted or amended.
 
 - **One engine thread owns every transfer handle:** the multi handle, plus the easy,
   share and mime handles and the string lists each transfer uses. Callers submit request
-  records and never touch a transfer handle. Before M3, M2's blocking request owns its
-  handle on the calling thread (ADR-0012).
+  records and never touch a transfer handle. M2's blocking path, which owned its handle on
+  the calling thread, is gone (the M3 plan, §5.4; ADR-0012).
 - **Messages cross threads, handle calls don't.** Submit, cancel, resume and stop are
   queued under the engine's mutex, then `curl_multi_wakeup` wakes the poll. That wakeup is
-  the only libcurl call a caller's thread makes on an engine's handle (ADR-0012).
+  the only libcurl call a caller's thread makes on an engine's handle (ADR-0012). A cancel
+  of a token still queued is no message: the caller's thread completes it, under the
+  engine's mutex, and nothing native is made for it (the M3 plan, §3.5).
 - **One central check enforces it.** An operation on an engine-owned handle from any other
   thread raises `&curl-wrong-thread`, carrying who, expected and actual. The check compares
-  `get-thread-id` (ADR-0012).
+  `get-thread-id` (ADR-0012). It is native's: every easy, multi and `CURLU` handle and every
+  string list is recorded with the thread that made it, in the critical section that counts
+  it, and every exported procedure that takes one checks it first. `curl_multi_wakeup`
+  alone may be called from any thread, on a live multi handle.
 - **Caller code never runs on the engine thread.**
   - Callbacks only copy between libcurl's buffers and bounded buffers, then signal.
   - A full buffer pauses its transfer, and the consumer resumes it by message.
   - Completions are delivered on a caller's thread.
   - A test asserts thread identity inside a body consumer.
+  - A request holds no procedure: a fault the callable must survive is planted as data, and
+    the callable logs each chunk's length and thread as data on the token (the M3 plan,
+    §3.6).
 
   (ADR-0012)
 - **Concurrency costs no threads.** Many requests share one engine, and the high level
@@ -434,30 +452,36 @@ provisional. They bind until that record is accepted or amended.
   count, its table entry, and the variable its free reads. An escape between the two, by an
   engine's expiry or an interrupt handler, leaked it for good. Every mutex is held through
   `locked`, `critical-section` around `with-mutex`, which takes its mutex before its own
-  `dynamic-wind` (ADR-0013, amended 2026-10-23).
-- **An escape from `curl_easy_perform` is allowed, and counted.** chez-curl never calls
-  libcurl on a handle whose perform was left without its return, and that handle stays
-  counted as `easy`. Caller code inside the callable, M2's test hook alone, runs in a
-  `dynamic-wind` that turns a continuation's exit into a raise. `curl_easy_perform` itself runs
-  in no critical section, which would defer the thread's collections and Ctrl-C until it
-  returns (ADR-0013, amended 2026-10-23).
+  `dynamic-wind` (ADR-0013, amended 2026-10-23). No hold waits: a thread waiting inside a
+  critical section stays active, and holds every other thread's collections, and a thread
+  that holds a mutex with interrupts on can join a collection while another, blocked on that
+  mutex with interrupts off, stays active, which deadlocks. So a wait polls: each read of
+  what it waits for is a short hold through `locked`, and between reads it sleeps, from
+  50 µs doubling to 10 ms, holding nothing, and refuses to start with interrupts off, when
+  its sleep would keep its thread active. No condition variable is used (ADR-0013, amended
+  2026-10-25, after the slice's review).
+- **M2's escape rules ended with its path.** `curl_easy_perform` is bound no more, and the
+  engine's thread runs no caller code, sets no timer and gets no Ctrl-C, so nothing escapes
+  inside its perform but through `collect-request-handler`, which is process-wide: a
+  caller's handler that escapes could run there (ADR-0013, amended 2026-10-25).
 - **Calls that can block are `__collect_safe`** (ADR-0013, accepted 2026-10-24 from spike E1):
-  - they are `curl_multi_poll`, `curl_multi_perform`, `curl_multi_remove_handle`,
-    `curl_multi_cleanup` and `curl_easy_perform`. The middle three each waited 9 to 10 s
-    while a name lookup stalled. They are bound through `bind-blocking` (ADR-0019);
+  - they are `curl_multi_poll`, `curl_multi_perform`, `curl_multi_remove_handle` and
+    `curl_multi_cleanup`. The last three each waited 9 to 10 s while a name lookup stalled.
+    They are bound through `bind-blocking` (ADR-0019);
   - so is every callback a `__collect_safe` call can invoke. The write callback fires inside
     `curl_multi_perform` alone;
   - one callable may serve a `__collect_safe` call and a plain one;
   - `curl_multi_init`, `curl_multi_add_handle`, `curl_multi_wakeup`, `curl_multi_info_read`,
     and `curl_easy_cleanup` of a handle removed from the engine's multi handle, stay plain,
     as does every call that cannot block. After `curl_easy_perform`, `curl_easy_cleanup`
-    waited 9 s on 8.20.0: M2's plain binding there stands until slice 2 deletes that path;
+    waited 9 s on 8.20.0; slice 2 deleted that path;
   - a call that can block, or can invoke a callback, never receives a Scheme string or
     bytevector. Pass it foreign memory instead.
 - **The engine's loop never waits in a plain call.** A plain wait stalls every other thread's
   collection up to about 500 times its length: Chez checks a pending collection only when a
   thread's 1000-tick event counter runs out (ADR-0013, amended 2026-10-24).
-- **A stalled name lookup does not stall the engine** (ADR-0019):
+- **A stalled name lookup does not stall the engine** (ADR-0019). M3 slice 3 builds these;
+  slice 2's engine sets neither option yet:
   - every engine transfer sets `QUICK_EXIT` to 1 when the loaded libcurl knows it, looked up
     by name, with the pins;
   - every engine's multi handle sets `CURLMOPT_QUICK_EXIT` to 1 when it is made, through

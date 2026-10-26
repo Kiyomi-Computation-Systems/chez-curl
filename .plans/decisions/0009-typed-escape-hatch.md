@@ -171,3 +171,13 @@ Two of the safe types still need guarding:
   set with the pins, and the test seam refuses it, by id, like the rest of decision 3's list.
 - **The multi handle's `CURLMOPT_QUICK_EXIT` is out of every hatch's reach.** The hatch
   attaches options to a request, never to a handle, and a multi option is no easy option.
+
+## Amendment, 2026-10-25: the test seam is a submit (M3 slice 2)
+
+- **`perform-transfer-with` went with M2's blocking path** (the M3 plan, §5.4). The seam is now
+  `curl-engine-submit-with`, in `(curl private engine)`: a submit whose options
+  `prepare-transfer` checks on the caller's thread, by the 2026-10-23 rules, before anything
+  is queued, so each refusal raises at submit. The engine's thread sets them last, after the
+  request's own, as `perform-transfer-with` did.
+- **`QUICK_EXIT` is not yet among the owned options.** Slice 3 sets it on every engine
+  transfer, and adds it to the list the seam refuses, by id.
