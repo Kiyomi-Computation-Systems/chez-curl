@@ -1,0 +1,169 @@
+*   Trying 127.0.0.1:32839...
+* Established connection to 127.0.0.1 (127.0.0.1 port 32839) from 127.0.0.1 port 45146 
+* using HTTP/1.x
+> GET /status/200 HTTP/1.1
+Host: 127.0.0.1:32839
+Accept: */*
+
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Length: 11
+< Connection: keep-alive
+< 
+* Connection #0 to host 127.0.0.1:32839 left intact
+step 1, status: (response 200 11)
+*   Trying 127.0.0.1:37143...
+* Established connection to 127.0.0.1 (127.0.0.1 port 37143) from 127.0.0.1 port 52044 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:37143
+Accept: */*
+
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+* Connection #1 to host 127.0.0.1:37143 left intact
+step 2, one drip: (response 200 40)
+* Connection 1 seems to be dead
+* shutting down connection #1
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:37143...
+* Connection #2 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:37143...
+* Connection #2 is not open enough, cannot reuse
+* Connection #3 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:37143...
+* Established connection to 127.0.0.1 (127.0.0.1 port 37143) from 127.0.0.1 port 52054 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:37143
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 37143) from 127.0.0.1 port 52068 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:37143
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 37143) from 127.0.0.1 port 52074 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:37143
+Accept: */*
+
+* Request completely sent off
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:37143...
+* Connection #5 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:37143...
+* Connection #5 is not open enough, cannot reuse
+* Connection #6 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:37143...
+* Established connection to 127.0.0.1 (127.0.0.1 port 37143) from 127.0.0.1 port 52082 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:37143
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 37143) from 127.0.0.1 port 52084 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:37143
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 37143) from 127.0.0.1 port 52090 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:37143
+Accept: */*
+
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+* Connection #2 to host 127.0.0.1:37143 left intact
+* Connection #3 to host 127.0.0.1:37143 left intact
+* Connection #4 to host 127.0.0.1:37143 left intact
+* Connection #5 to host 127.0.0.1:37143 left intact
+* Connection #6 to host 127.0.0.1:37143 left intact
+* Connection pool is full, closing the oldest of 7/4
+* shutting down connection #0
+* Connection #7 to host 127.0.0.1:37143 left intact
+* Connection 2 seems to be dead
+* shutting down connection #2
+* Connection 3 seems to be dead
+* shutting down connection #3
+* Connection 4 seems to be dead
+* shutting down connection #4
+step 3, 6 drips: ((response 200 40) (response 200 40) (response 200 40) (response 200 40) (response 200 40) (response 200 40))
+* Connection 5 seems to be dead
+* shutting down connection #5
+* Connection 6 seems to be dead
+* shutting down connection #6
+* Connection 7 seems to be dead
+* shutting down connection #7
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:37143...
+* Established connection to 127.0.0.1 (127.0.0.1 port 37143) from 127.0.0.1 port 52096 
+* using HTTP/1.x
+> GET /raw/drip?bytes=30&gap=10 HTTP/1.1
+Host: 127.0.0.1:37143
+Accept: */*
+
+* Request completely sent off
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:32839...
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:37143...
+* Established connection to 127.0.0.1 (127.0.0.1 port 32839) from 127.0.0.1 port 45148 
+* using HTTP/1.x
+> GET /status/200 HTTP/1.1
+Host: 127.0.0.1:32839
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 37143) from 127.0.0.1 port 52100 
+* using HTTP/1.x
+> GET /raw/drip?bytes=20&gap=10 HTTP/1.1
+Host: 127.0.0.1:37143
+Accept: */*
+
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Length: 30
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 20
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 11
+< Connection: keep-alive
+< 
+* Connection #9 to host 127.0.0.1:32839 left intact
+* Connection #10 to host 127.0.0.1:37143 left intact
+* Connection #8 to host 127.0.0.1:37143 left intact
+step 4, shared: (response 200 30), status: (response 200 11), drip 20: (response 200 20)

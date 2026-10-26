@@ -16,8 +16,8 @@
         (srfi :64)
         (only (chezscheme) parameterize record-writer getenv putenv directory-list
               file-directory? make-time sleep current-time time-difference time-second
-              time-nanosecond fork-thread make-mutex with-mutex make-condition
-              condition-wait condition-broadcast real-time iota get-process-id mkdir)
+              time-nanosecond fork-thread make-mutex with-mutex real-time iota
+              get-process-id mkdir)
         ;; Chez's own current-error-port is a parameter; (rnrs)'s takes no
         ;; argument, and reads the same port.
         (prefix (only (chezscheme) current-error-port) chez:)
@@ -253,32 +253,41 @@
 ;; capture-command answered, or what it raised. The answers come by thread,
 ;; in order, and then how many pairs of captures from different threads ran
 ;; at the same time, by the clock: without some, nothing here ran at once.
+;; Whatever a thread raises outside a capture is its answers, as
+;; (raised-on-thread TEXT), and the wait for the threads is bounded, at
+;; 120 s: a thread that died, or hangs, fails the check that called this,
+;; by name, as (unanswered-within-120-s ANSWERS).
 (define (captures-in-threads threads per-thread)
-  (let ((mx (make-mutex)) (cv (make-condition)) (by-thread '()) (spans '()))
+  (let ((mx (make-mutex)) (by-thread '()) (spans '()))
     (do ((t 0 (+ t 1))) ((= t threads))
       (let ((t t))
         (fork-thread
          (lambda ()
-           (let loop ((i 0) (answers '()) (mine '()))
-             (if (= i per-thread)
-                 (with-mutex mx
-                   (set! by-thread (cons (list t (reverse answers)) by-thread))
-                   (set! spans (cons (cons t mine) spans))
-                   (condition-broadcast cv))
-                 (let* ((token (string-append "t" (number->string t) "-" (number->string i)))
-                        (start (real-time))
-                        (result (guard (e (#t (list 'raised (describe e))))
-                                  (capture-command
-                                   (list "sh" "-c"
-                                         "printf %s \"$1\"; sleep 0.01; printf %s \"$1\" >&2"
-                                         "sh" token))))
-                        (end (real-time)))
-                   (loop (+ i 1) (cons (list token result) answers)
-                         (cons (cons start end) mine)))))))))
-    (with-mutex mx
-      (let wait () (unless (= (length by-thread) threads) (condition-wait cv mx) (wait))))
-    (list (list-sort (lambda (a b) (< (car a) (car b))) by-thread)
-          (overlapping-pairs spans))))
+           (let ((r (guard (e (#t (list (list 'raised-on-thread (describe e)) '())))
+                      (let loop ((i 0) (answers '()) (mine '()))
+                        (if (= i per-thread)
+                            (list (reverse answers) mine)
+                            (let* ((token (string-append "t" (number->string t) "-" (number->string i)))
+                                   (start (real-time))
+                                   (result (guard (e (#t (list 'raised (describe e))))
+                                             (capture-command
+                                              (list "sh" "-c"
+                                                    "printf %s \"$1\"; sleep 0.01; printf %s \"$1\" >&2"
+                                                    "sh" token))))
+                                   (end (real-time)))
+                              (loop (+ i 1) (cons (list token result) answers)
+                                    (cons (cons start end) mine))))))))
+             (with-mutex mx
+               (set! by-thread (cons (list t (car r)) by-thread))
+               (set! spans (cons (cons t (cadr r)) spans))))))))
+    (let* ((all (let ((deadline (+ (real-time) 120000)))
+                  (let wait ()
+                    (cond ((with-mutex mx (= (length by-thread) threads)) #t)
+                          ((> (real-time) deadline) #f)
+                          (else (sleep (make-time 'time-duration 1000000 0)) (wait))))))
+           (answers (with-mutex mx (list-sort (lambda (a b) (< (car a) (car b))) by-thread))))
+      (list (if all answers (list 'unanswered-within-120-s answers))
+            (with-mutex mx (overlapping-pairs spans))))))
 
 ;; overlapping-pairs : (Listof (Pairof Natural (Listof (Pairof Ms Ms)))) -> Natural
 ;; How many pairs of spans, from different threads, overlap in time.

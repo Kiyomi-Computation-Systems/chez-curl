@@ -119,6 +119,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   where encodings differ, and an allowlist against its whole complement.
 * SRFI-64 keeps one result per runner. Never run a test inside another test's
   actual expression: the outer verdict is reported under the inner test's name.
+* A thread a suite forks dies on a raise it does not catch, and a waiter with
+  no bound then hangs the suite, naming no test. Make whatever a thread raises
+  its answer, and bound every wait for one.
 * Claude Code's Write tool drops trailing whitespace. Build a fixture whose
   point is a trailing space in code, and check its bytes.
 
@@ -297,9 +300,14 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   The container cannot stall a lookup itself: `tests/stall-getaddrinfo.c`,
   preloaded, stalls one on Linux, and `test-engine` runs it. macOS has no
   `LD_PRELOAD`, so the checks run on Linux alone (ADR-0019).
-* libcurl 7.85.0 and 8.5.0 take every value of every long multi option, so
-  `curl_multi_setopt`'s answer cannot show a value arriving; Apple's 8.7.1 is
-  unmeasured. `test-variadic`
+* curl 8.23.0 reuses, without checking it, a connection that went back to its
+  pool under 1 s before, however old. The raw face closes after each script
+  without saying so, so six drips live together leave six dead connections,
+  and the next transfer retries on each, then gives up with 55. A check that
+  runs drips together makes an engine of its own; `test-engine` pins each
+  libcurl's answer by version (ADR-0020).
+* libcurl 7.85.0, 8.5.0 and Apple's 8.7.1 take every value of every long multi
+  option, so `curl_multi_setopt`'s answer cannot show a value arriving. `test-variadic`
   watches it by behaviour: two drips, serialised at `MAX_TOTAL_CONNECTIONS` 1.
 * A probe that polls once more before it reads its clock reports late, by up to
   that poll's timeout. Stop the clock where the condition is first seen.

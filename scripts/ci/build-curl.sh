@@ -66,10 +66,12 @@ usage() {
   exit 2
 }
 
-# current_version: the current libcurl, built with --current (ADR-0020): the
-# version the Guix container's libcurl is, so that a vanilla build of it, with
-# OpenSSL, runs every suite in CI beside Guix's patched one.
-current_version=8.20.0
+# current_version: the current libcurl, built with --current (ADR-0020,
+# amended 2026-10-26): curl's newest release when it was pinned, on
+# 2026-10-26, so that CI runs every suite against it. Raising it is a reviewed change: a verified sum below, this
+# line read again against its ./configure --help, and the rows make test
+# prints for every version table.
+current_version=8.23.0
 
 current=no
 if [ "${1-}" = --current ]; then
@@ -103,7 +105,7 @@ fi
 tarball_sha256() {
   case $1 in
     7.85.0) echo 88b54a6d4b9a48cb4d873c7056dcba997ddd5b7be5a2d537a4acb55c20b04be6 ;;
-    8.20.0) echo 63fe2dc148ba0ceae89922ef838f7e5c946272c2e78b7c59fab4b79d3ce2b896 ;;
+    8.23.0) echo 8dadd7d2536a314f982ad05a651b713f426bf7d02cc2c76cffb9796f2218e6c5 ;;
     *) return 1 ;;
   esac
 }
@@ -156,7 +158,10 @@ if [ "$current" = yes ]; then
   # options, which the floor's list names, and two of its own that look for
   # a library: libuv, and Apple's IDN, macOS's alone. The HTTP/3 stacks and
   # c-ares are off, as at the floor. Read against 8.20.0's ./configure
-  # --help (ADR-0020).
+  # --help (ADR-0020), and again against 8.23.0's: its new options,
+  # apple-fast-udp, gssapi-apple, httpsig and proxy-http3, are experimental
+  # features off unless asked, and look for no library (ADR-0020, amended
+  # 2026-10-26).
   flags="$flags --without-libuv --without-apple-idn"
   flags="$flags --disable-ares --without-quiche --without-ngtcp2 --without-nghttp3"
 else

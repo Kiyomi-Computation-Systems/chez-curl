@@ -1592,8 +1592,9 @@
 
 ;; current-curl : String
 ;; The current libcurl build-curl.sh --current pins, written out here
-;; (ADR-0020): a change to it is a reviewed change, and shows in this diff.
-(define current-curl "8.20.0")
+;; (ADR-0020, amended 2026-10-26): a change to it is a reviewed change, and
+;; shows in this diff.
+(define current-curl "8.23.0")
 
 (tree-row "build-curl.sh: the checked-in libcurl floor has a pinned sum: it reaches the download of its tarball"
           real-text '()

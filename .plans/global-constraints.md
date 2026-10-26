@@ -365,10 +365,10 @@ provisional. They bind until that record is accepted or amended.
   - `main` runs every check, `make build` and the suites.
   - `floor` runs `make build` and `make test` against curl 7.85.0 built from source, with
     `CHEZ_CURL_LIBCURL` and `C_INCLUDE_PATH` both pointed at it.
-  - `current` runs the same against the current libcurl, vanilla 8.20.0 with OpenSSL, built
-    by `scripts/ci/build-curl.sh --current`, which pins that version itself: it is no floor.
-    The job names no version, and fails unless `make build` loaded the one its build's
-    `curl-config` reports (ADR-0020).
+  - `current` runs the same against the current libcurl, vanilla 8.23.0 with OpenSSL, the
+    newest release when it was pinned on 2026-10-26, built by `scripts/ci/build-curl.sh --current`, which pins that
+    version itself: it is no floor. The job names no version, and fails unless `make build`
+    loaded the one its build's `curl-config` reports (ADR-0020, amended 2026-10-26).
   - `floor-disabled-api` is two lanes. Each builds that curl without one API, and requires
     `make build` to refuse it as `missing-api`, naming that API's entry point, in the whole
     refusal block.
@@ -508,9 +508,9 @@ provisional. They bind until that record is accepted or amended.
     preloads, with a control per setting where libcurl knows it: on 8.5.0 an engine
     without each transfer's `QUICK_EXIT` stalls, and on 8.20.0 one without
     `CURLMOPT_QUICK_EXIT`. On 8.20.0 a transfer's `QUICK_EXIT` changes no stall, so a count of
-    the transfers that set it holds it there. CI's `current` lane loads a vanilla 8.20.0,
+    the transfers that set it holds it there. CI's `current` lane loads a vanilla 8.23.0,
     built from source, so `CURLMOPT_QUICK_EXIT` runs there as well as in the Guix container
-    (ADR-0020). A libcurl with no
+    (ADR-0020, amended 2026-10-26). A libcurl with no
     row of its verdicts fails by name. The checks do not run on macOS, which has no
     `LD_PRELOAD`; the Mac runs a probe instead.
 - **Stopping an engine cancels what is in flight** (ADR-0012, amended 2026-10-24). Each queued

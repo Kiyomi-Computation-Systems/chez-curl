@@ -332,13 +332,27 @@
     (string-append (car f) ":" (number->string (cdr f)))))
 
 ;; case-answer : Origin Case -> Answer
-;; What CASE, (get FACE PATH), answers against O, through perform.
+;; What CASE answers against O, through perform: for (get FACE PATH), what
+;; answer-of names; for (error-text FACE PATH), what error-text-of does.
 (define (case-answer o a-case)
-  (answer-of (lambda () (perform (request (url-of o (cadr a-case) (caddr a-case)))))))
+  (let ((thunk (lambda () (perform (request (url-of o (cadr a-case) (caddr a-case)))))))
+    (if (eq? (car a-case) 'error-text)
+        (error-text-of thunk)
+        (answer-of thunk))))
+
+;; error-text-of : (-> Any) -> Any
+;; The error buffer of THUNK's &curl-transfer-error, as (error-text TEXT);
+;; (no-raise) when it raised nothing; (raised TEXT) for anything else.
+(define (error-text-of thunk)
+  (guard (e ((curl-transfer-error? e) (list 'error-text (curl-transfer-error-error-buffer e)))
+            (#t (list 'raised (describe e))))
+    (thunk)
+    '(no-raise)))
 
 ;; case-text : Case -> String
 (define (case-text a-case)
-  (string-append "GET " (symbol->string (cadr a-case)) " " (caddr a-case)))
+  (string-append (if (eq? (car a-case) 'error-text) "the error buffer of GET " "GET ")
+                 (symbol->string (cadr a-case)) " " (caddr a-case)))
 
 ;; --- the shared answers ------------------------------------------------------------------
 
@@ -416,12 +430,15 @@
 ;; many-headers, bad-status-code and conflicting-content-length. The plan's
 ;; fifth, MAXFILESIZE_LARGE alone, is no longer reachable: the test seam
 ;; refuses it, a request field's option (ADR-0009, amended 2026-10-23).
+;; Then a text: nul-in-header's error buffer, which 8.23.0 capitalised
+;; (ADR-0020, amended 2026-10-26).
 (define varying-cases
   '((get raw "/raw/big-header?bytes=102400")
     (get raw "/raw/big-header?bytes=1048576")
     (get raw "/raw/many-headers?count=100000")
     (get raw "/raw/bad-status-code")
-    (get raw "/raw/conflicting-content-length")))
+    (get raw "/raw/conflicting-content-length")
+    (error-text raw "/raw/nul-in-header")))
 
 ;; --- the rows, read under a guard ------------------------------------------------------
 
@@ -470,18 +487,33 @@
                 (string? (car (cddddr x)))))
        #t))
 
+;; text-answer-shaped? : Any -> Boolean
+;; (error-text TEXT), TEXT a string.
+(define (text-answer-shaped? x)
+  (and (list? x) (= (length x) 2) (eq? (car x) 'error-text) (string? (cadr x))))
+
 ;; case-shaped? : Any -> Boolean
+;; (get FACE PATH) or (error-text FACE PATH), FACE http or raw.
 (define (case-shaped? x)
   (and (list? x)
        (= (length x) 3)
-       (eq? (car x) 'get)
+       (memq (car x) '(get error-text))
        (memq (cadr x) '(http raw))
        (string? (caddr x))
        #t))
 
+;; fits? : Case Any -> Boolean
+;; Whether ANSWER is the shape CASE's kind answers: a get's, by
+;; answer-shaped?; an error-text's, by text-answer-shaped?.
+(define (fits? a-case answer)
+  (if (eq? (car a-case) 'error-text)
+      (text-answer-shaped? answer)
+      (answer-shaped? answer)))
+
 ;; row-problem : Any -> (U 'ok (Listof Any))
 ;; ok when ROW is (libcurl (where S) (version S) (answers (CASE ANSWER) ...)),
-;; each CASE and ANSWER well formed; else what is wrong. Total.
+;; each CASE well formed and each ANSWER the shape its CASE's kind answers;
+;; else what is wrong. Total.
 (define (row-problem row)
   (cond
     ((not (and (list? row) (= (length row) 4) (eq? (car row) 'libcurl)))
@@ -496,7 +528,7 @@
      (list 'answers-is (cadddr row)))
     ((find (lambda (pair)
              (not (and (list? pair) (= (length pair) 2)
-                       (case-shaped? (car pair)) (answer-shaped? (cadr pair)))))
+                       (case-shaped? (car pair)) (fits? (car pair) (cadr pair)))))
            (cdr (cadddr row)))
      => (lambda (pair) (list 'not-a-case-and-an-answer pair)))
     (else 'ok)))
@@ -1555,11 +1587,12 @@
     'no-raise))
 
 ;; measured-texts : (Listof String)
-;; The error-buffer texts the four libcurls measured wrote alike.
+;; The error-buffer texts the four libcurls measured wrote alike, and
+;; 8.23.0 too. nul-in-header's is not one: 8.23.0 capitalised it, so it is
+;; a varying case's answer (ADR-0020, amended 2026-10-26).
 (define measured-texts
   '("Recv failure: Connection reset by peer" "Received HTTP/0.9 when not allowed"
-    "Header without colon" "Nul byte in header" "Empty reply from server"
-    "Maximum file size exceeded"))
+    "Header without colon" "Empty reply from server" "Maximum file size exceeded"))
 
 (define (scenarios o)
   ;; --- every shared scenario, whole
@@ -1720,7 +1753,8 @@
   ;; --- libcurl's texts, as the error carries them: strerror is
   ;; curl_easy_strerror's for the code, called here; the error buffer is
   ;; text, cut at its NUL, and where the four libcurls measured wrote the
-  ;; same text, that text whole (build/verify/m2s2/measure/out-*.txt)
+  ;; same text, that text whole (build/verify/m2s2/measure/out-*.txt).
+  ;; nul-in-header's text varies by version, so its row's answer holds it.
   (for-each
    (lambda (row)
      (test-equal (string-append "libcurl's texts for " (car row) ": strerror is curl_easy_strerror's for the code, and the error buffer "
@@ -1734,7 +1768,7 @@
            (list "bad-status-line" (get 'raw "/raw/bad-status-line") "Received HTTP/0.9 when not allowed")
            (list "http09" (get 'raw "/raw/http09") "Received HTTP/0.9 when not allowed")
            (list "header-no-colon" (get 'raw "/raw/header-no-colon") "Header without colon")
-           (list "nul-in-header" (get 'raw "/raw/nul-in-header") "Nul byte in header")
+           (list "nul-in-header, whose text is a varying case's" (get 'raw "/raw/nul-in-header") #f)
            (list "close-before-response" (get 'raw "/raw/close-before-response") "Empty reply from server")
            (list "a body limit below a Content-Length" (get 'http "/status/200" 'limit 9) "Maximum file size exceeded")
            (list "bad-chunk-size" (get 'raw "/raw/bad-chunk-size") #f)
@@ -2082,8 +2116,8 @@
   'read
   (if (eq? (car file-result) 'data) 'read file-result))
 
-(test-equal "it holds rows for 7.85.0, 8.5.0 and 8.20.0, the libcurls the lanes run, and 8.7.1, Apple's"
-  '("7.85.0" "8.5.0" "8.7.1" "8.20.0")
+(test-equal "it holds rows for 7.85.0, 8.5.0 and 8.23.0, the libcurls the lanes run, 8.20.0, the container's, and 8.7.1, Apple's"
+  '("7.85.0" "8.5.0" "8.7.1" "8.20.0" "8.23.0")
   (map (lambda (row) (if (eq? (row-problem row) 'ok) (row-version row) row)) rows))
 
 (let loop ((i 1) (rest rows))
@@ -2130,15 +2164,23 @@
         (version-verdict (list made-up-row made-up-row) "9.9.9")
         (version-verdict (list '(libcurl (version "9.9.9"))) "9.9.9")))
 
-(test-equal "the shape: a row missing where, an answer with a reason no transfer error has, or a code that is no number, or headers that are no pairs, is refused"
-  '(rejected rejected rejected rejected ok ok)
+(test-equal "the shape: a row missing where, an answer with a reason no transfer error has, or a code that is no number, or headers that are no pairs, is refused; each kind of case takes its own answer, and only it"
+  '(rejected rejected rejected rejected ok ok ok rejected rejected rejected rejected rejected rejected rejected)
   (map (lambda (row) (if (eq? (row-problem row) 'ok) 'ok 'rejected))
        (list '(libcurl (version "9.9.9") (answers ((get raw "/raw/x") (refused perform-failed 7))))
              '(libcurl (where "w") (version "9.9.9") (answers ((get raw "/raw/x") (refused timed-out 28))))
              '(libcurl (where "w") (version "9.9.9") (answers ((get raw "/raw/x") (refused perform-failed "28"))))
              '(libcurl (where "w") (version "9.9.9") (answers ((get raw "/raw/x") (response 200 http/1.1 (("A" . "b")) ""))))
              '(libcurl (where "w") (version "9.9.9") (answers ((get raw "/raw/x") (response 200 http/1.1 (numbered "X-H-" 3 "v") ""))))
-             made-up-row)))
+             made-up-row
+             '(libcurl (where "w") (version "9.9.9") (answers ((error-text raw "/raw/x") (error-text "t"))))
+             '(libcurl (where "w") (version "9.9.9") (answers ((error-text raw "/raw/x") (refused perform-failed 7))))
+             '(libcurl (where "w") (version "9.9.9") (answers ((get raw "/raw/x") (error-text "t"))))
+             '(libcurl (where "w") (version "9.9.9") (answers ((error-text raw "/raw/x") (error-text 7))))
+             '(libcurl (where "w") (version "9.9.9") (answers ((error-text tls "/raw/x") (error-text "t"))))
+             '(libcurl (where "w") (version "9.9.9") (answers ((head raw "/raw/x") (refused perform-failed 7))))
+             '(libcurl (where "w") (version "9.9.9") (answers ((error-text raw "/raw/x") (error-text "t" "u"))))
+             '(libcurl (where "w") (version "9.9.9") (answers ((error-text raw "/raw/x") (error-text)))))))
 
 (test-equal "the numbered form: compressed writes a long run of X-H- headers so, expanded writes it out, and a short list or another run is left alone"
   (list '(response 200 http/1.1 (numbered "X-H-" 60 "v") "")
@@ -2154,7 +2196,10 @@
   'ok
   (guard (e (#t (list 'raised (describe e))))
     (let ((row (read (open-string-input-port
-                      (row-text "9.9.9" (map (lambda (a-case) (list a-case '(refused perform-failed 7)))
+                      (row-text "9.9.9" (map (lambda (a-case)
+                                               (list a-case (if (eq? (car a-case) 'error-text)
+                                                                '(error-text "t")
+                                                                '(refused perform-failed 7))))
                                              varying-cases))))))
       (cond ((not (eq? (row-problem row) 'ok)) (row-problem row))
             ((not (same-cases? (map car (row-answers row)) varying-cases)) (row-answers row))

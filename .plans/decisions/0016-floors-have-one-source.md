@@ -98,4 +98,5 @@ CI gained a lane on the current libcurl, 8.20.0, built from source
 `--current`. It is not a floor, so it is not in `packaging/floors.sexp`, and this record's
 rules do not hold it: the file keeps its three keys, and `check-floors` the floors' versions
 out of the workflows. The workflow states the current version nowhere either. The lane reads
-it back from what it built.
+it back from what it built. The same day the lane moved to 8.23.0 (ADR-0020, amended
+2026-10-26), a change to `current_version` and its sum alone, as this rule allows.
