@@ -389,8 +389,8 @@
   'read
   (if (eq? (car file-result) 'data) 'read file-result))
 
-(test-equal "it holds rows for 7.85.0, 8.5.0 and 8.20.0, the libcurls the lanes run, and 8.7.1, Apple's"
-  '("7.85.0" "8.5.0" "8.20.0" "8.7.1")
+(test-equal "it holds rows for 7.85.0, 8.5.0 and 8.23.0, the libcurls the lanes run, 8.20.0, the container's, and 8.7.1, Apple's"
+  '("7.85.0" "8.5.0" "8.20.0" "8.23.0" "8.7.1")
   (map (lambda (row) (if (eq? (row-problem row) 'ok) (row-version row) row)) rows))
 
 (let loop ((i 1) (rest rows))

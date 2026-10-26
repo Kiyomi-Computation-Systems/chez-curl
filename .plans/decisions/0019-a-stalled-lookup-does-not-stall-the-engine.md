@@ -1,6 +1,6 @@
 # ADR-0019: A stalled name lookup does not stall the engine
 
-- **Status:** Accepted; amended 2026-10-25, the stand-in measured, and the Mac's probe (M3 slice 3); amended 2026-10-25, what slice 3 built; amended 2026-10-25, after the slice's review; amended 2026-10-26, a CI lane on 8.20.0
+- **Status:** Accepted; amended 2026-10-25, the stand-in measured, and the Mac's probe (M3 slice 3); amended 2026-10-25, what slice 3 built; amended 2026-10-25, after the slice's review; amended 2026-10-26, a CI lane on 8.20.0; amended 2026-10-26, the lane on 8.23.0
 - **Date:** 2026-10-24
 - **Scope:** M3's engine and every transfer it runs (the [M3 plan](../2026-10-24-m3-plan.md))
 - **Settles:** what the engine does about libcurl's resolver thread, which blocks teardown
@@ -248,3 +248,10 @@ builds vanilla 8.20.0 with OpenSSL and runs every suite against it
 ([ADR-0020](0020-a-ci-lane-on-the-current-libcurl.md)), so `CURLMOPT_QUICK_EXIT`'s setting
 and its `set` verdict, its constant's check, and 8.20.0's row of `stall-verdicts`, the
 `multi` control among them, run in CI, once CI runs.
+
+## Amendment, 2026-10-26: the lane on 8.23.0
+
+The `current` lane builds curl's newest release, 8.23.0, in place of 8.20.0 (ADR-0020,
+amended 2026-10-26). Measured in Docker: 8.23.0's stall verdicts are 8.20.0's, row for row,
+its `multi` control among them, so `stall-verdicts` gains an 8.23.0 row equal to 8.20.0's, and
+`CURLMOPT_QUICK_EXIT` still runs in CI. 8.20.0's row runs in the Guix container.

@@ -7,6 +7,11 @@
 ;;;   - concurrency: many transfers on one engine, their drips overlapping
 ;;;     in time, every chunk on the engine's thread; two caller threads
 ;;;     awaiting together, each returning on its own thread;
+;;;   - a dead pooled connection: one drip after eight whose connections the
+;;;     raw face closed unannounced, each libcurl's answer, by version, a
+;;;     row of reuse-verdicts (ADR-0020, amended 2026-10-26). Checks that
+;;;     run drips together each make an engine of their own, so the suite's
+;;;     engine never pools more than one dead connection;
 ;;;   - submit: each refusal raised at submit, with nothing queued, nothing
 ;;;     started and the counts unchanged; a submit to a stopped engine;
 ;;;   - cancel, in each of its three states, and racing a completion;
@@ -42,8 +47,8 @@
 (import (rnrs)
         (srfi :64)
         (rnrs mutable-strings)
-        (only (chezscheme) fork-thread make-mutex with-mutex make-condition condition-wait
-              condition-broadcast sleep make-time current-time time-second time-nanosecond
+        (only (chezscheme) fork-thread make-mutex with-mutex sleep make-time current-time
+              time-second time-nanosecond
               getenv get-thread-id library-directories make-list iota machine-type)
         (curl-testing)
         (only (libcurl-oracle) c-compiler)
@@ -167,6 +172,20 @@
 ;; TOKEN's outcome, within 20 s.
 (define (awaited token) (awaited-within token 20000))
 
+;; reuse-outcome : Token -> Any
+;; TOKEN's outcome within 20 s, as awaited names a response; a
+;; &curl-transfer-error as (transfer-error REASON CODE ERROR-BUFFER), the
+;; buffer's text naming how libcurl gave up; (never-completed), or
+;; (raised TEXT) for anything else.
+(define (reuse-outcome token)
+  (guard (e ((curl-transfer-error? e)
+             (list 'transfer-error (curl-transfer-error-reason e) (curl-transfer-error-code e)
+                   (curl-transfer-error-error-buffer e)))
+            ((equal? e '(never-completed)) e)
+            (#t (list 'raised (describe e))))
+    (let ((r (await-bounded token 20000)))
+      (list 'response (transfer-response-status r) (latin-1 (transfer-response-body r))))))
+
 ;; stop-within : Engine . (List (-> Any)) -> Any
 ;; curl-engine-stop of ENGINE, run on a thread of its own, waited for here
 ;; for at most 20 s: a raise of (never-stopped) if it has not returned by
@@ -185,6 +204,18 @@
       (cond ((with-mutex mx done) answer)
             ((> (now-ms) deadline) (raise '(never-stopped)))
             (else (pause-ms 1) (wait))))))
+
+;; on-own-engine : (Engine -> Any) -> Any
+;; What PROC answers, given an engine made for it alone and stopped by
+;; stop-within once PROC returns, so a check on it starts with an empty
+;; connection pool, whatever the suite's engine has pooled; (raised TEXT)
+;; for anything raised, a stop that hangs among them.
+(define (on-own-engine proc)
+  (guard (e (#t (list 'raised (describe e))))
+    (let* ((own (make-curl-engine))
+           (answer (guard (e (#t (list 'raised (describe e)))) (proc own))))
+      (stop-within own)
+      answer)))
 
 ;; url-of : Origin Symbol String -> String
 (define (url-of o face path)
@@ -380,7 +411,26 @@
              (multi off #t prompt prompt prompt prompt prompt prompt))
     ("8.20.0" (none set #t prompt prompt prompt prompt prompt prompt)
               (transfer set #f prompt prompt prompt prompt prompt prompt)
+              (multi off #t prompt prompt stalled prompt stalled stalled))
+    ("8.23.0" (none set #t prompt prompt prompt prompt prompt prompt)
+              (transfer set #f prompt prompt prompt prompt prompt prompt)
               (multi off #t prompt prompt stalled prompt stalled stalled))))
+
+;; reuse-verdicts : (Listof (List String Outcome))
+;; Each recorded libcurl's answer, by version, as reuse-outcome names it, to
+;; one drip submitted the moment eight drips live together have ended, on
+;; an engine of its own, the raw face having closed each of their
+;; connections without saying so (ADR-0020, amended 2026-10-26). 7.85.0 to
+;; 8.20.0 check an idle connection before reusing it, and drop the dead
+;; ones. 8.23.0 checks one only when it went back to the pool, or was last
+;; checked, 1 s or more before, however old it is: it reuses a dead one,
+;; retries on the next as each dies, and after five retries gives up with
+;; CURLE_SEND_ERROR, its error buffer saying so.
+(define reuse-verdicts
+  '(("7.85.0" (response 200 "abcd"))
+    ("8.5.0" (response 200 "abcd"))
+    ("8.20.0" (response 200 "abcd"))
+    ("8.23.0" (transfer-error perform-failed 55 "Connection died, tried 5 times before giving up"))))
 
 ;; stall-expected : Entry -> (Listof Any)
 ;; All the child prints for ENTRY: each outcome as a transfer ends that way,
@@ -518,53 +568,114 @@
 
    ;; Eight drips of 400 ms each, submitted together: overlapping, they end
    ;; in far less than eight times one, and every chunk ran on the engine's
-   ;; thread.
-   (let* ((one-ms (let ((t0 (now-ms)))
-                    (awaited (curl-engine-submit engine (request (drip 40 10))))
-                    (- (now-ms) t0)))
-          (t0 (now-ms))
-          (tokens (map (lambda (i) (curl-engine-submit engine (request (drip 40 10)))) (iota 8)))
-          (answers (map awaited tokens))
-          (all-ms (- (now-ms) t0))
-          (chunks (apply append (map curl-token-chunks tokens))))
+   ;; thread. On an engine of their own: the raw face closes each drip's
+   ;; connection unannounced, and libcurl 8.23.0 reuses, without checking
+   ;; it, a connection that went back to its pool under 1 s before
+   ;; (reuse-verdicts, below), so eight dead in the suite's engine's pool
+   ;; would fail its next raw transfer.
+   (let ((eight (on-own-engine
+                 (lambda (own)
+                   (let* ((one-ms (let ((t0 (now-ms)))
+                                    (awaited (curl-engine-submit own (request (drip 40 10))))
+                                    (- (now-ms) t0)))
+                          (t0 (now-ms))
+                          (tokens (map (lambda (i) (curl-engine-submit own (request (drip 40 10)))) (iota 8)))
+                          (answers (map awaited tokens))
+                          (all-ms (- (now-ms) t0))
+                          (chunks (apply append (map curl-token-chunks tokens))))
+                     (list answers
+                           (for-all (lambda (c) (and (eqv? (cadr c) (curl-engine-thread own))
+                                                     (eq? (caddr c) 'accepted)))
+                                    chunks)
+                           (if (< all-ms (* 3 one-ms)) 'under-three-times-one (list all-ms 'against one-ms))
+                           (> (length chunks) 8)))))))
      (test-equal "eight drips on one engine each answer whole, and every chunk of theirs ran on the engine's thread, accepted"
        (list (make-list 8 (list 'response 200 (drip-body 40))) #t)
-       (list answers
-             (for-all (lambda (c) (and (eqv? (cadr c) (curl-engine-thread engine))
-                                       (eq? (caddr c) 'accepted)))
-                      chunks)))
+       (if (= (length eight) 4) (list (car eight) (cadr eight)) eight))
      (test-equal "the eight drips overlapped: together they took under three times one alone, where one after another would take eight"
        (list 'under-three-times-one #t)
-       (list (if (< all-ms (* 3 one-ms)) 'under-three-times-one (list all-ms 'against one-ms))
-             (> (length chunks) 8))))
+       (if (= (length eight) 4) (list (caddr eight) (cadddr eight)) eight)))
 
-   ;; Two caller threads, each awaiting its own transfer and one they share.
+   ;; Two caller threads, each awaiting its own transfer and one they share,
+   ;; on an engine of their own, whose pool no other check has filled.
+   ;; Whatever a thread raises is its answer, as (on-thread OUTCOME), and the
+   ;; wait for both is bounded: a raise that escaped a thread once left this
+   ;; wait hanging, and a hang names no test. Each thread's awaits end within
+   ;; 40 s, so the bound is theirs.
    (test-equal "two caller threads awaiting together each get their own answer and the shared one, eq? to this thread's, and each await returns on the thread that awaited"
      (list (list '(response 200 "status 200\n") (list 'response 200 (drip-body 30)) #t #t)
            (list (list 'response 200 (drip-body 20)) (list 'response 200 (drip-body 30)) #t #t)
            #t)
-     (let* ((shared (curl-engine-submit engine (request (drip 30 10))))
-            (mx (make-mutex)) (cv (make-condition)) (results '()))
-       (for-each
-        (lambda (i target)
-          (fork-thread
-           (lambda ()
-             (let* ((me (get-thread-id))
-                    (own (awaited (curl-engine-submit engine (request target))))
-                    (theirs (await-bounded shared 20000))
-                    (after (get-thread-id)))
-               (with-mutex mx
-                 (set! results (cons (list i (list own (outcome (lambda () theirs))
-                                                   (eqv? me after)
-                                                   (not (eqv? after (curl-engine-thread engine))))
-                                           theirs)
-                                     results))
-                 (condition-broadcast cv))))))
-        '(0 1) (list status (drip 20 10)))
-       (with-mutex mx (let w () (unless (= (length results) 2) (condition-wait cv mx) (w))))
-       (let ((mine (await-bounded shared 20000)))
-         (list (cadr (assv 0 results)) (cadr (assv 1 results))
-               (for-all (lambda (r) (eq? (caddr r) mine)) results)))))
+     (on-own-engine
+      (lambda (own-engine)
+        (let* ((shared (curl-engine-submit own-engine (request (drip 30 10))))
+               (mx (make-mutex)) (results '()))
+          (for-each
+           (lambda (i target)
+             (fork-thread
+              (lambda ()
+                (let ((r (guard (e (#t (list i (list 'on-thread (outcome (lambda () (raise e)))) #f)))
+                           (let* ((me (get-thread-id))
+                                  (own (awaited (curl-engine-submit own-engine (request target))))
+                                  (theirs (await-bounded shared 20000))
+                                  (after (get-thread-id)))
+                             (list i (list own (outcome (lambda () theirs))
+                                           (eqv? me after)
+                                           (not (eqv? after (curl-engine-thread own-engine))))
+                                   theirs)))))
+                  (with-mutex mx (set! results (cons r results)))))))
+           '(0 1) (list status (drip 20 10)))
+          (let* ((both (let ((deadline (+ (now-ms) 45000)))
+                         (let w ()
+                           (cond ((with-mutex mx (= (length results) 2)) #t)
+                                 ((> (now-ms) deadline) #f)
+                                 (else (pause-ms 1) (w))))))
+                 (mine (guard (e (#t (list 'raised (describe e)))) (await-bounded shared 20000))))
+            (if both
+                (list (cadr (assv 0 results)) (cadr (assv 1 results))
+                      (for-all (lambda (r) (eq? (caddr r) mine)) results))
+                (list 'unanswered-within-45-s (with-mutex mx (map cadr results)))))))))
+
+   ;; --- a dead pooled connection (ADR-0020, amended 2026-10-26) ------------------------------
+
+   ;; The raw face closes after each script and never says so, so each
+   ;; drip's connection goes back to the pool dead. Eight drips live
+   ;; together hold eight connections, and leave eight; one more at once
+   ;; shows how this libcurl picks from its pool. Each libcurl's answer is
+   ;; its row of reuse-verdicts, and one with no row prints the row it would
+   ;; need. On an engine of its own, whose pool starts empty. The drips last
+   ;; about 200 ms, so they overlap unless their submits spread past that:
+   ;; then they would share connections, and leave fewer dead (the review's
+   ;; measurements, .plans/research/reuse/results). The check asserts that
+   ;; all eight were live together, by the engine's live count.
+   (let ((row (and (string? version) (assoc version reuse-verdicts)))
+         (measured
+          (on-own-engine
+           (lambda (own)
+             (let* ((tokens (map (lambda (i) (curl-engine-submit own (request (drip 4 50)))) (iota 8)))
+                    (most-live (let watch ((most 0) (deadline (+ (now-ms) 20000)))
+                                 (if (or (for-all curl-token-done? tokens) (> (now-ms) deadline))
+                                     most
+                                     (begin (pause-ms 1)
+                                            (watch (max most (curl-engine-live-count own)) deadline)))))
+                    (answers (map awaited tokens)))
+               (list answers
+                     (if (= most-live 8) 'live-together (list 'most-live-together most-live))
+                     (reuse-outcome (curl-engine-submit own (request (drip 4 50))))))))))
+     (test-equal (string-append "the reuse verdicts have a row for this libcurl, " (written version))
+       (list version)
+       (if row (list (car row)) (list 'no-row version)))
+     (test-equal (string-append "on an engine of its own, eight 4-byte drips live together each answer whole, and one more at once, past eight connections the raw face closed unannounced, answers as "
+                                (written version) "'s row of reuse-verdicts says")
+       (list (make-list 8 (list 'response 200 (drip-body 4))) 'live-together
+             (if row (cadr row) (list 'no-row version)))
+       measured)
+     (unless row
+       (display "test-engine: no row of reuse-verdicts for this libcurl; measured, it would be:\n"
+                (current-error-port))
+       (write (list version (if (and (list? measured) (= (length measured) 3)) (caddr measured) measured))
+              (current-error-port))
+       (newline (current-error-port))))
 
    ;; --- submit ----------------------------------------------------------------------------
 

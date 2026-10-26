@@ -53,10 +53,18 @@
  (host "x86_64-pc-linux-gnu"))
 
 (libcurl
- (where "The current libcurl, curl 8.20.0 built by scripts/ci/build-curl.sh --current on Ubuntu 24.04 with OpenSSL 3.0.13 (libssl3t64 3.0.13-0ubuntu3.16): the library CI's current lane loads (ADR-0020). Printed by test-drift in Docker ubuntu:24.04 on 2026-10-26, against that build's lib/libcurl.so.4.")
+ (where "Curl 8.20.0 built by scripts/ci/build-curl.sh --current on Ubuntu 24.04 with OpenSSL 3.0.13 (libssl3t64 3.0.13-0ubuntu3.16): the library CI's current lane loaded until 8.23.0 took its place, the same day (ADR-0020, amended 2026-10-26). Printed by test-drift in Docker ubuntu:24.04 on 2026-10-26, against that build's lib/libcurl.so.4.")
  (version "8.20.0")
  (version-num 529408)
  (features 1361658509)
+ (ssl-version "OpenSSL/3.0.13")
+ (host "x86_64-pc-linux-gnu"))
+
+(libcurl
+ (where "The current libcurl, curl 8.23.0 built by scripts/ci/build-curl.sh --current on Ubuntu 24.04 with OpenSSL 3.0.13 (libssl3t64 3.0.13-0ubuntu3.16): the library CI's current lane loads (ADR-0020, amended 2026-10-26). Its features are 8.20.0's less TLSAUTH_SRP, which 8.23.0 dropped. Printed by test-drift in Docker ubuntu:24.04 on 2026-10-26, against that build's lib/libcurl.so.4.")
+ (version "8.23.0")
+ (version-num 530176)
+ (features 1361642125)
  (ssl-version "OpenSSL/3.0.13")
  (host "x86_64-pc-linux-gnu"))
 

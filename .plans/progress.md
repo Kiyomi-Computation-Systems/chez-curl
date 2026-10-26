@@ -7,76 +7,62 @@ close-out under **Close-outs**, newest first.
 ## Now
 
 - **Milestone:** M3, the engine (brief §8), per the [M3 plan](2026-10-24-m3-plan.md),
-  merged in PR #18. Slice 1, spike E1 and a harness safe for threads, merged in PR #19, and
-  slice 2, the engine, in PR #20. Their close-outs are below.
-  - **Slice 3, on `m3/stalled-lookups`:** stalled lookups and the two `QUICK_EXIT` options
-    (plan, §6), built and verified, not yet merged.
-    - **transfer:** `QUICK_EXIT` at 1 with the pins, where the libcurl knows it, computed as
-      data by `pinned-settings` and counted once libcurl takes it. It is owned (ADR-0009,
-      amended 2026-10-25).
-    - **engine:** `CURLMOPT_QUICK_EXIT` at 1 on each multi handle as it is made;
-      `CURLM_UNKNOWN_OPTION` taken, any other answer refuses the engine. A private switch,
-      `make-curl-engine-without-quick-exit`, leaves either out, for the controls.
-    - **native:** `curl_multi_setopt`, once, for a long, through `bind-variadic`; the decoy
-      libcurl and the load test know it. **constants:** the two multi options, the newer one
-      checked behind a version gate with a presence probe.
-    - **The stall checks,** in `test-engine` on Linux: `tests/stall-getaddrinfo.c`, compiled
-      and preloaded, and `tests/engine-stall.sps`, judged against the stand-in's log, with a
-      row of verdicts per libcurl and a control per setting (ADR-0019, amended 2026-10-25).
-    - **The variadic checks:** `test-variadic`'s two drips and `minus-one-rows`;
-      `check-variadic`'s sixth mutant, 29 steps (ADR-0001, amended 2026-10-25).
-    - **Measured first** (plan, §6.1; [research](research/stall/)): a stand-in `getaddrinfo`,
-      preloaded, stalls libcurl's resolver as a silent DNS server did, on the four Linux
-      libcurls, scaled to its stall (ADR-0019, amended 2026-10-25). 7.85.0 and 8.5.0
-      answer no long multi option by its value; `MAX_TOTAL_CONNECTIONS` at 1 serialises two
-      transfers on the four Linux libcurls (ADR-0001, amended 2026-10-25).
-    - **Decided by the maintainer, 2026-10-25:**
-      - the stall checks run on Linux alone, and the Mac runs a probe (ADR-0019);
-      - `check-variadic` watches `curl_multi_setopt` fail on Apple arm64 by behaviour: two
-        drips, serialised at 1 (ADR-0001).
-    - **Checks:**
-      - in the container: `make test` 23/23, `test-memory` 23/23, `check-variadic` 29/29,
-        `check-memory-gate` 39/39, `check-test-fails`, `check-dev`, `check-clean`,
-        `check-seam`, `check-floors`, `check-suites` and `check-help`;
-      - in Docker: the main lane with `check-variadic`, gnutls, floor (7.85.0, Node 20.10.0)
-        and memory, each 23/23; then `test-engine` alone, twice on each, 51 checks on the
-        floor's one-entry row and 53 on 8.5.0's three.
-    - **The [mutation log](stall-mutation-log.md):** my sweep of 24 mutants, each failing by
-      name once the sweep's three gaps were closed; seven more after the review, one of them
-      failing only in Docker, where its case exists; the constants agent's 18 and the
-      variadic agent's 13, with five of `check-variadic`'s own.
-    - **The slice's review** (Opus, read-only) found, and the slice fixed:
-      - the engine's refusal of an unknown `CURLMOPT_QUICK_EXIT` answer was held by nothing,
-        since no libcurl gives one: a private seam now plants the answer;
-      - the cancel's and the timeout's engines' stops were never judged, so 8.20.0's wait in
-        `curl_multi_cleanup` after either went unchecked: each is judged now, by whether the
-        lookup ended during it;
-      - the drips' absolute bound could fail under Valgrind in the other order: they are
-        judged by their gap;
-      - on 8.20.0 every stopped engine leaves two resolver threads for about 2 s;
-      - no CI lane loads 8.20.0, so only the container shows `CURLMOPT_QUICK_EXIT`;
-      - the Mac probe could not tell its failures apart; records claimed more than their
-        logs, and some text was stale (ADR-0019, amended 2026-10-25, after the review).
-    - **The Mac owes** (plan, §7): `make test`, which prints the 8.7.1 row `minus-one-rows`
-      needs; `make check-variadic`, whose multi mutant must fail the drips by name; the stall
-      probe, `.plans/research/stall/run.sh mac control`, then `mac lookup multi-setopt
-      maxconn`.
-    - **A CI lane on the current libcurl,** asked for by the maintainer on 2026-10-26
-      ([ADR-0020](decisions/0020-a-ci-lane-on-the-current-libcurl.md)):
-      - measured first: curl's newest release is 8.23.0, the container's 8.20.0; vanilla
-        8.20.0 with OpenSSL passed every suite but `test-drift`, and 8.23.0 failed four and
-        hung `test-engine`. The maintainer chose 8.20.0 now, and 8.23.0 later;
-      - `scripts/ci/build-curl.sh --current` builds the 8.20.0 it pins, with a configure
-        line of its own: curl 8 dropped four options the floor's line names. The `current`
-        job runs `make build` and `make test` against it, and fails unless `make build`
-        loaded the version the build reports;
-      - `test-drift` gained its row, and `test-check-floors` six rows for `--current`;
-      - in Docker, the job's step passed 23 of 23 on the real script's build, and stopped by
-        name on the runner's own libcurl; the floor, rebuilt by the changed script, listed
-        the same features and protocols as before; in the container, `make test` 23/23.
-    - **Carried:** whether the engine's thread blocks SIGINT, from slice 1; why a timeout's
-      28 came 1,014 ms late once (ADR-0019, amended 2026-10-25); curl 8.23.0, a slice of its
-      own, with `test-engine`'s hang there (ADR-0020); CI has still never run.
+  merged in PR #18. Its three slices are merged: spike E1 and a harness safe for threads
+  (PR #19), the engine (PR #20), and stalled lookups with a CI lane on curl 8.20.0 (PR #21).
+  Their close-outs are below.
+  - **On `ci/curl-8.23`: the `current` lane moves to curl 8.23.0,** the newest release, as
+    ADR-0020 owed. Built, not yet merged.
+    - **`test-engine`'s hang there was the suite's.** "Two caller threads awaiting
+      together" let a raise kill both threads, and waited for them with no bound. Each
+      thread's raise is now its answer, and the wait polls under a bound: on 8.23.0 the check
+      failed by name, 55 on both threads, instead of hanging.
+    - **Why 55: 8.23.0 reuses, without checking it, a connection that went back to its pool
+      under 1 s before, however old** (`lib/conncache.c`). The raw face closes each drip's
+      connection unannounced; with six such connections back in the pool, the next transfer
+      retries on each dead one and gives up, "Connection died, tried 5 times before giving
+      up". Measured with a probe, 2 runs of 2: five pass, six and eight fail, and a 1.1 s
+      pause passes; 8.20.0 always passes.
+    - **Decided by the maintainer, 2026-10-26** (ADR-0020, amended):
+      - 8.23.0 replaces 8.20.0 in the lane; the container keeps 8.20.0's rows running;
+      - checks that run drips together each get an engine of their own, and `test-engine`
+        pins the reuse by version, `reuse-verdicts`: on 8.23.0, 55 and its error buffer's
+        text; an answer on 7.85.0, 8.5.0 and 8.20.0. The check asserts the eight drips were
+        live together.
+    - **The rows:** `test-drift`, `test-url` (two verdicts moved: 25 and 21, where 8.20.0
+      gave 3), `test-transfer`, `test-variadic`, and `test-engine`'s stall and reuse rows.
+      The NUL-in-header text 8.23.0 capitalised is a version row's answer now:
+      `known-transfer-verdicts.sexp` gains a second kind of case, `error-text`.
+    - **`build-curl.sh --current`** pins 8.23.0 and its sum, its configure line read again
+      against 8.23.0's `./configure --help`; `test-check-floors` holds the version.
+    - **`test-curl-testing`'s capture threads** guard their whole bodies, and its wait is
+      bounded: the hang's class, which the review found there too.
+    - **Checks,** on the final tree unless said:
+      - in the container: `make test` 23/23 (2,393 checks), `test-memory` 23/23,
+        `check-variadic` 29/29, `check-test-fails` 11/11, `check-suites`, `check-seam`,
+        `check-floors`, `check-help`, `check-dev` and `check-clean`; `check-memory-gate` 39/39
+        before the review's fixes, which touched none of its inputs;
+      - in Docker: the `current` job's step, 23/23 on 8.23.0 as the real script built it;
+        main 23/23 with `check-variadic` 29/29; memory, `check-memory-gate` 33/33 and
+        `test-memory` 23/23. Gnutls and the floor passed 23/23 before the review's fixes, and
+        `test-engine` after them, with vanilla 8.20.0 and Ubuntu's 8.5.0;
+      - the measurements and the review's probe are kept in
+        [`research/reuse/`](research/reuse/).
+    - **The [mutation log](curl-8.23-mutation-log.md):** 20 mutants, then 11 after the
+      review. Two pass, by design, each recorded with why: the two-thread check's own
+      engine, which guards against a later check, and the control for the overlap
+      assertion.
+    - **The review** (Opus, read-only, 297k tokens, 24 minutes) found the 1 s rule stated
+      wrong, a pin that needed its drips to overlap with nothing holding that, 55 pinned
+      without its text, the same hang's class in `test-curl-testing`, an answer shape not held
+      whole, and stale records. Each is fixed (ADR-0020, amended, "After the slice's
+      review").
+  - **The Mac owes** (M3 plan, §7): `make test`, which prints the 8.7.1 rows
+    `minus-one-rows` and `reuse-verdicts` need; `make check-variadic`, whose multi mutant must
+    fail the drips by name; and the stall probe, `.plans/research/stall/run.sh mac control`,
+    then `mac lookup multi-setopt maxconn`. That `make test` is also SecureTransport's first
+    `test-transfer-tls`, owed since M2.
+  - **Carried:** whether the engine's thread blocks SIGINT, from slice 1; why a timeout's 28
+    came 1,014 ms late once (ADR-0019, amended 2026-10-25); CI has still never run.
 - **M2, one blocking request, plaintext and TLS:** its three slices are merged (PRs #13, #16
   and #17). Slice 3's close-out is below.
   - **Owed before M2 is done:** the Mac's `make test`, the first run of `test-transfer-tls` on
@@ -147,6 +133,48 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-26 — M3 slice 3: stalled lookups, and a CI lane on curl 8.20.0 (PR #21, `874b3ae`)
+
+- **A stalled name lookup no longer stalls the engine** where libcurl knows the options
+  (ADR-0019, amended four times):
+  - **transfer:** `QUICK_EXIT` at 1 with the pins, computed as data by `pinned-settings`,
+    counted once libcurl takes it, and owned (ADR-0009, amended);
+  - **engine:** `CURLMOPT_QUICK_EXIT` at 1 on each multi handle; `CURLM_UNKNOWN_OPTION`
+    taken, any other answer refuses the engine. Private switches leave either out, or plant
+    the answer, for the controls;
+  - **native and constants:** `curl_multi_setopt` for a long, through `bind-variadic`; the
+    newer constant checked behind a version gate with a presence probe.
+- **The stall checks,** in `test-engine` on Linux: a stand-in `getaddrinfo`, compiled and
+  preloaded, and a child judged against its log, with a row of verdicts per libcurl and a
+  control per setting. The floor keeps its stall, the recorded limit.
+- **The variadic checks:** libcurl 7.85.0 and 8.5.0 answer no long multi option by its value,
+  so `test-variadic` watches `curl_multi_setopt` by behaviour, two drips serialised at
+  `MAX_TOTAL_CONNECTIONS` 1, judged by their gap; `check-variadic` gained its sixth mutant,
+  29 steps (ADR-0001, amended).
+- **Decided by the maintainer:** the stall checks on Linux alone, with a probe for the Mac;
+  the behavioural check for `curl_multi_setopt`; and a CI lane on vanilla 8.20.0, built by
+  `build-curl.sh --current` (ADR-0020, new), with 8.23.0 left to a slice of its own.
+- **Checks:** in the container, `make test` 23/23, `test-memory` 23/23, `check-variadic`
+  29/29, `check-memory-gate` 39/39 and the other checks; in Docker, the main, gnutls, floor
+  and memory lanes, each 23/23, and the `current` job's step, 23/23 on the real script's
+  build.
+- **The [mutation log](stall-mutation-log.md):** my sweep of 24 mutants, three of which passed
+  until their gaps were closed, the review's seven, the constants agent's 18 and the variadic
+  agent's 13, with five of `check-variadic`'s own; and four for the lane.
+- **Three subagents, all Opus:**
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | constants version gate, in a tree copy | 219k | 14 min |
+  | variadic checks, in a tree copy | 281k | 25 min |
+  | adversarial review | 365k | 32 min |
+
+  The review found the engine's refusal path held by nothing, two stops never judged, a
+  bound that failed under Valgrind, 8.20.0's leftover resolver threads, and no CI lane on
+  8.20.0, which led to the lane.
+- **Carried:** the Mac's run; whether the engine's thread blocks SIGINT; the 1,014 ms
+  timeout, unexplained; curl 8.23.0, with `test-engine`'s hang there; CI has never run.
 
 ### 2026-10-25 — M3 slice 2: the engine (PR #20, `bc53947`)
 

@@ -26,8 +26,9 @@ name: CI
 #               CHEZ_CURL_LIBCURL: a second TLS backend (brief, section 9,
 #               risk 3; ADR-0018).
 #   floor       the suites against libcurl at its floor, built from source.
-#   current     the suites against the current libcurl, built from source:
-#               the one lane on a libcurl of 8.20.0 or later (ADR-0020).
+#   current     the suites against the current libcurl, the release
+#               build-curl.sh pins, built from source: the one lane on a
+#               libcurl of 8.20.0 or later (ADR-0020, amended 2026-10-26).
 #   floor-disabled-api
 #               two lanes, one per API that ADR-0003 probes at load: a libcurl
 #               at its floor built with only its options API disabled, and one
@@ -339,11 +340,12 @@ jobs:
           esac
           make test
 
-  # The current libcurl, built from source (ADR-0020): the one lane on 8.20.0
-  # or later, so CURLMOPT_QUICK_EXIT, its constant's check and the 8.20.0 rows
-  # of every version table run in CI, on a vanilla build with OpenSSL beside
-  # the Guix container's patched one. build-curl.sh --current pins the
-  # version; this file names none. The runner's own Node runs the origin.
+  # The current libcurl, built from source (ADR-0020, amended 2026-10-26):
+  # the curl release build-curl.sh --current pins, the newest when it was
+  # pinned, with OpenSSL, and the one lane on 8.20.0 or later, so
+  # CURLMOPT_QUICK_EXIT, its constant's check and that release's rows of
+  # every version table run in CI. This file names no version. The runner's
+  # own Node runs the origin.
   current:
     name: current (the suites against the current libcurl, built from source)
     runs-on: ubuntu-24.04

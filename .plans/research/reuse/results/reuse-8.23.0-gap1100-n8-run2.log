@@ -1,0 +1,206 @@
+*   Trying 127.0.0.1:42755...
+* Established connection to 127.0.0.1 (127.0.0.1 port 42755) from 127.0.0.1 port 39936 
+* using HTTP/1.x
+> GET /status/200 HTTP/1.1
+Host: 127.0.0.1:42755
+Accept: */*
+
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Length: 11
+< Connection: keep-alive
+< 
+* Connection #0 to host 127.0.0.1:42755 left intact
+step 1, status: (response 200 11)
+*   Trying 127.0.0.1:33333...
+* Established connection to 127.0.0.1 (127.0.0.1 port 33333) from 127.0.0.1 port 44282 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:33333
+Accept: */*
+
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+* Connection #1 to host 127.0.0.1:33333 left intact
+step 2, one drip: (response 200 40)
+* Reusing existing http: connection with host 127.0.0.1
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:33333
+Accept: */*
+
+* Request completely sent off
+* Connection died, retrying a fresh connect (retry count: 1)
+* shutting down connection #1
+* Issue another request to this URL: 'http://127.0.0.1:33333/raw/drip?bytes=40&gap=10'
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:33333...
+* Established connection to 127.0.0.1 (127.0.0.1 port 33333) from 127.0.0.1 port 44290 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:33333
+Accept: */*
+
+* Request completely sent off
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:33333...
+* Connection #3 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:33333...
+* Connection #3 is not open enough, cannot reuse
+* Connection #4 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:33333...
+* Connection #3 is not open enough, cannot reuse
+* Connection #4 is not open enough, cannot reuse
+* Connection #5 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:33333...
+* Connection #3 is not open enough, cannot reuse
+* Connection #4 is not open enough, cannot reuse
+* Connection #5 is not open enough, cannot reuse
+* Connection #6 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:33333...
+* Connection #3 is not open enough, cannot reuse
+* Connection #4 is not open enough, cannot reuse
+* Connection #5 is not open enough, cannot reuse
+* Connection #6 is not open enough, cannot reuse
+* Connection #7 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:33333...
+* Connection #3 is not open enough, cannot reuse
+* Connection #4 is not open enough, cannot reuse
+* Connection #5 is not open enough, cannot reuse
+* Connection #6 is not open enough, cannot reuse
+* Connection #7 is not open enough, cannot reuse
+* Connection #8 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:33333...
+* Established connection to 127.0.0.1 (127.0.0.1 port 33333) from 127.0.0.1 port 44306 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:33333
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 33333) from 127.0.0.1 port 44322 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:33333
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 33333) from 127.0.0.1 port 44338 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:33333
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 33333) from 127.0.0.1 port 44344 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:33333
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 33333) from 127.0.0.1 port 44350 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:33333
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 33333) from 127.0.0.1 port 44362 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:33333
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 33333) from 127.0.0.1 port 44364 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:33333
+Accept: */*
+
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+* Connection #2 to host 127.0.0.1:33333 left intact
+* Connection #3 to host 127.0.0.1:33333 left intact
+* Connection #4 to host 127.0.0.1:33333 left intact
+* Connection #5 to host 127.0.0.1:33333 left intact
+* Connection pool is full, closing the oldest of 9/8
+* Connection #6 to host 127.0.0.1:33333 left intact
+* Connection pool is full, closing the oldest of 9/6
+* Connection #7 to host 127.0.0.1:33333 left intact
+* Connection pool is full, closing the oldest of 9/6
+* Connection #8 to host 127.0.0.1:33333 left intact
+* Connection pool is full, closing the oldest of 9/2
+* Connection #9 to host 127.0.0.1:33333 left intact
+step 3, 8 drips: ((response 200 40) (response 200 40) (response 200 40) (response 200 40) (response 200 40) (response 200 40) (response 200 40) (response 200 40))
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:33333...
+* Reusing existing http: connection with host 127.0.0.1
+> GET /status/200 HTTP/1.1
+Host: 127.0.0.1:42755
+Accept: */*
+
+* Request completely sent off
+* Connection #10 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:33333...
+* Established connection to 127.0.0.1 (127.0.0.1 port 33333) from 127.0.0.1 port 48764 
+* using HTTP/1.x
+> GET /raw/drip?bytes=30&gap=10 HTTP/1.1
+Host: 127.0.0.1:33333
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 33333) from 127.0.0.1 port 48770 
+* using HTTP/1.x
+> GET /raw/drip?bytes=20&gap=10 HTTP/1.1
+Host: 127.0.0.1:33333
+Accept: */*
+
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Length: 11
+< Connection: keep-alive
+< 
+* Connection #0 to host 127.0.0.1:42755 left intact
+< HTTP/1.1 200 OK
+< Content-Length: 30
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 20
+< 
+* Connection #11 to host 127.0.0.1:33333 left intact
+* Connection pool is full, closing the oldest of 3/2
+* Connection #10 to host 127.0.0.1:33333 left intact
+step 4, shared: (response 200 30), status: (response 200 11), drip 20: (response 200 20)

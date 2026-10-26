@@ -68,6 +68,21 @@
   ((resolve "http://example.com/a/b/c?q=1" "?q=\x1F600;") "http://example.com/a/b/c?q=%F0%9F%98%80")))
 
 (libcurl
+ (where "The current libcurl, curl 8.23.0 built by scripts/ci/build-curl.sh --current on Ubuntu 24.04 with OpenSSL 3.0.13: the library CI's current lane loads (ADR-0020, amended 2026-10-26). Printed by test-url in Docker ubuntu:24.04 on 2026-10-26; 8.20.0's answers but two, a space in a path refused with 25 (CURLUE_BAD_PATH) and in a host with 21 (CURLUE_BAD_HOSTNAME).")
+ (version "8.23.0")
+ (answers
+  ((resolve "http://example.com/a/b/c?q=1" "#frag") "http://example.com/a/b/c?q=1#frag")
+  ((normalize "http://example.com/a b") (refused 25))
+  ((normalize "http://exa mple.com/") (refused 21))
+  ((resolve "http://a/b/c/d;p?q" "g:h") (refused 5))
+  ((resolve "http://a/b/c/d;p?q" "#s") "http://a/b/c/d;p?q#s")
+  ((resolve "http://a/b/c/d;p?q" "") "http://a/b/c/d;p?q")
+  ((resolve "http://a/b/c/d;p?q" "http:g") (refused 28))
+  ((resolve "http://example.com/a/b/c?q=1" "\xE9;") "http://example.com/a/b/%C3%A9")
+  ((resolve "http://example.com/a/b/c?q=1" "?q=\x3BB;") "http://example.com/a/b/c?q=%CE%BB")
+  ((resolve "http://example.com/a/b/c?q=1" "?q=\x1F600;") "http://example.com/a/b/c?q=%F0%9F%98%80")))
+
+(libcurl
  (where "Apple's libcurl 8.7.1, /usr/lib/libcurl.4.dylib, on the maintainer's Mac: Apple M1, macOS 26.7.1, SecureTransport (LibreSSL/3.3.6). Printed by test-url there on 2026-10-23; the same answers as 8.5.0's.")
  (version "8.7.1")
  (answers

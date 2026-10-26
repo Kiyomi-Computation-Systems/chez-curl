@@ -851,3 +851,25 @@ it should not be a comment. (chez-cmark-gfm)
   `C_INCLUDE_PATH=DIR:$C_INCLUDE_PATH`, the compile passed. Ubuntu keeps its system
   headers on the compiler's default path, so CI's floor lane does not hit it.
   (chez-curl, M3 slice 3)
+* **A thread a suite forks must answer whatever it raises, and its waiter must be
+  bounded.** `test-engine`'s two caller threads awaited a shared transfer with no
+  `guard`, and the main thread waited for them on a `condition-wait` with no bound. On
+  curl 8.23.0 the shared transfer failed, both threads died printing "Exception in
+  curl-transfer", and the suite hung until `make test` killed it at 300 s: `HUNG`, no
+  test named. Now each thread's raise is its answer, and the wait polls under a bound,
+  so the check fails by name. (chez-curl, curl 8.23.0)
+* **curl 8.23.0 reuses, without checking it, a connection that went back to its pool
+  under 1 s before, however old.** `Curl_cpool_conn_seems_healthy` checks an idle
+  connection only when its last check is 1000 ms old, and `Curl_cpool_return` sets that
+  check each time a connection goes back to the pool; 8.20.0 checked each one before
+  reuse. I first wrote "under 1 s old": the review showed 55 with connections 1.8 s old,
+  returned at once. A server that closes a connection without `Connection: close`, as the
+  raw face does after every script, leaves it in the pool, dead. On 8.23.0 the next
+  transfer reuses it, retries on the next as each dies, and after five retries gives up
+  with `CURLE_SEND_ERROR`, 55, "Connection died, tried 5 times before giving up": six such
+  connections back in the pool within the last second fail the transfer after them.
+  Six need six transfers live together: drips whose submits spread past one drip's length
+  share connections.
+  So `test-engine`'s checks that run drips together each make an engine of their own,
+  and `reuse-verdicts` pins each libcurl's answer by version (ADR-0020, amended
+  2026-10-26). (chez-curl, curl 8.23.0)

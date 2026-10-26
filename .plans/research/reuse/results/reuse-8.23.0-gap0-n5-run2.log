@@ -1,0 +1,193 @@
+*   Trying 127.0.0.1:37873...
+* Established connection to 127.0.0.1 (127.0.0.1 port 37873) from 127.0.0.1 port 51548 
+* using HTTP/1.x
+> GET /status/200 HTTP/1.1
+Host: 127.0.0.1:37873
+Accept: */*
+
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Length: 11
+< Connection: keep-alive
+< 
+* Connection #0 to host 127.0.0.1:37873 left intact
+step 1, status: (response 200 11)
+*   Trying 127.0.0.1:36323...
+* Established connection to 127.0.0.1 (127.0.0.1 port 36323) from 127.0.0.1 port 41222 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+* Connection #1 to host 127.0.0.1:36323 left intact
+step 2, one drip: (response 200 40)
+* Reusing existing http: connection with host 127.0.0.1
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+* Connection died, retrying a fresh connect (retry count: 1)
+* shutting down connection #1
+* Issue another request to this URL: 'http://127.0.0.1:36323/raw/drip?bytes=40&gap=10'
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:36323...
+* Established connection to 127.0.0.1 (127.0.0.1 port 36323) from 127.0.0.1 port 41236 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:36323...
+* Connection #3 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:36323...
+* Connection #3 is not open enough, cannot reuse
+* Connection #4 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:36323...
+* Connection #3 is not open enough, cannot reuse
+* Connection #4 is not open enough, cannot reuse
+* Connection #5 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:36323...
+* Established connection to 127.0.0.1 (127.0.0.1 port 36323) from 127.0.0.1 port 41246 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 36323) from 127.0.0.1 port 41252 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 36323) from 127.0.0.1 port 41266 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 36323) from 127.0.0.1 port 41272 
+* using HTTP/1.x
+> GET /raw/drip?bytes=40&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 40
+< 
+* Connection #2 to host 127.0.0.1:36323 left intact
+* Connection #3 to host 127.0.0.1:36323 left intact
+* Connection #4 to host 127.0.0.1:36323 left intact
+* Connection #5 to host 127.0.0.1:36323 left intact
+* Connection #6 to host 127.0.0.1:36323 left intact
+step 3, 5 drips: ((response 200 40) (response 200 40) (response 200 40) (response 200 40) (response 200 40))
+* Reusing existing http: connection with host 127.0.0.1
+> GET /raw/drip?bytes=30&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+* Reusing existing http: connection with host 127.0.0.1
+> GET /status/200 HTTP/1.1
+Host: 127.0.0.1:37873
+Accept: */*
+
+* Request completely sent off
+* Reusing existing http: connection with host 127.0.0.1
+> GET /raw/drip?bytes=20&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+* Connection died, retrying a fresh connect (retry count: 1)
+* shutting down connection #2
+* Issue another request to this URL: 'http://127.0.0.1:36323/raw/drip?bytes=30&gap=10'
+* Reusing existing http: connection with host 127.0.0.1
+> GET /raw/drip?bytes=30&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+* Connection died, retrying a fresh connect (retry count: 1)
+* shutting down connection #3
+* Issue another request to this URL: 'http://127.0.0.1:36323/raw/drip?bytes=20&gap=10'
+* Reusing existing http: connection with host 127.0.0.1
+> GET /raw/drip?bytes=20&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+* Connection died, retrying a fresh connect (retry count: 2)
+* shutting down connection #4
+* Issue another request to this URL: 'http://127.0.0.1:36323/raw/drip?bytes=30&gap=10'
+* Reusing existing http: connection with host 127.0.0.1
+> GET /raw/drip?bytes=30&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+* Connection died, retrying a fresh connect (retry count: 2)
+* shutting down connection #5
+* Issue another request to this URL: 'http://127.0.0.1:36323/raw/drip?bytes=20&gap=10'
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:36323...
+* Connection died, retrying a fresh connect (retry count: 3)
+* shutting down connection #6
+* Issue another request to this URL: 'http://127.0.0.1:36323/raw/drip?bytes=30&gap=10'
+* Connection #7 is not open enough, cannot reuse
+* Hostname 127.0.0.1 was found in DNS cache
+*   Trying 127.0.0.1:36323...
+* Established connection to 127.0.0.1 (127.0.0.1 port 36323) from 127.0.0.1 port 41284 
+* using HTTP/1.x
+> GET /raw/drip?bytes=20&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+* Established connection to 127.0.0.1 (127.0.0.1 port 36323) from 127.0.0.1 port 41300 
+* using HTTP/1.x
+> GET /raw/drip?bytes=30&gap=10 HTTP/1.1
+Host: 127.0.0.1:36323
+Accept: */*
+
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Length: 11
+< Connection: keep-alive
+< 
+* Connection #0 to host 127.0.0.1:37873 left intact
+< HTTP/1.1 200 OK
+< Content-Length: 20
+< 
+< HTTP/1.1 200 OK
+< Content-Length: 30
+< 
+* Connection #7 to host 127.0.0.1:36323 left intact
+* Connection pool is full, closing the oldest of 3/2
+* Connection #8 to host 127.0.0.1:36323 left intact
+step 4, shared: (response 200 30), status: (response 200 11), drip 20: (response 200 20)
