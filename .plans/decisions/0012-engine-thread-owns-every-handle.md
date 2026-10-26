@@ -1,6 +1,7 @@
 # ADR-0012: One engine thread owns every transfer handle, and caller code never runs on it
 
-- **Status:** Accepted; amended 2026-10-24: stopping an engine (the M3 plan)
+- **Status:** Accepted; amended 2026-10-24: stopping an engine (the M3 plan); amended
+  2026-10-26: completions reach callers through a mailbox (the M4 plan)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, from M3 (the engine)
 - **Settles:** the brief's §2 items 1 to 3 and the caller-code rule of its §5. The brief
@@ -122,3 +123,12 @@ The maintainer chose on 2026-10-24 what a stop does with transfers still in flig
   `enable-interrupts` does it as its count returns to 0. A loop of timed waits, each inside
   its own `critical-section`, answered Ctrl-C at 1,100 ms, against 3,000 ms without, 2 runs
   of 2. The M3 plan builds the caller's wait that way (§3.4).
+
+## Amendment, 2026-10-26: completions reach callers through a mailbox (the M4 plan)
+
+Decision 4 said that any completion callback the low level offers runs on a caller's thread,
+and left which one to M4. The maintainer chose on 2026-10-26: a submit may name a mailbox, the
+engine's thread appends the finished token to it as data, and a caller's thread takes it and runs
+its callback ([ADR-0021](0021-completions-through-a-mailbox.md)). The engine still runs no caller
+code. The test decision 4 asks for gains its delivery half: inside a callback, the thread is the
+delivering one, never the engine's.

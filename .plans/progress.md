@@ -6,75 +6,34 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **Milestone:** M3, the engine (brief §8), per the [M3 plan](2026-10-24-m3-plan.md),
-  merged in PR #18, **done on 2026-10-26** with the Mac's run below. Its three slices are
-  merged: spike E1 and a harness safe for threads
-  (PR #19), the engine (PR #20), and stalled lookups with a CI lane on curl 8.20.0 (PR #21).
-  Their close-outs are below.
-  - **On `ci/curl-8.23`: the `current` lane moves to curl 8.23.0,** the newest release, as
-    ADR-0020 owed. Built, not yet merged.
-    - **`test-engine`'s hang there was the suite's.** "Two caller threads awaiting
-      together" let a raise kill both threads, and waited for them with no bound. Each
-      thread's raise is now its answer, and the wait polls under a bound: on 8.23.0 the check
-      failed by name, 55 on both threads, instead of hanging.
-    - **Why 55: 8.23.0 reuses, without checking it, a connection that went back to its pool
-      under 1 s before, however old** (`lib/conncache.c`). The raw face closes each drip's
-      connection unannounced; with six such connections back in the pool, the next transfer
-      retries on each dead one and gives up, "Connection died, tried 5 times before giving
-      up". Measured with a probe, 2 runs of 2: five pass, six and eight fail, and a 1.1 s
-      pause passes; 8.20.0 always passes.
-    - **Decided by the maintainer, 2026-10-26** (ADR-0020, amended):
-      - 8.23.0 replaces 8.20.0 in the lane; the container keeps 8.20.0's rows running;
-      - checks that run drips together each get an engine of their own, and `test-engine`
-        pins the reuse by version, `reuse-verdicts`: on 8.23.0, 55 and its error buffer's
-        text; an answer on 7.85.0, 8.5.0 and 8.20.0. The check asserts the eight drips were
-        live together.
-    - **The rows:** `test-drift`, `test-url` (two verdicts moved: 25 and 21, where 8.20.0
-      gave 3), `test-transfer`, `test-variadic`, and `test-engine`'s stall and reuse rows.
-      The NUL-in-header text 8.23.0 capitalised is a version row's answer now:
-      `known-transfer-verdicts.sexp` gains a second kind of case, `error-text`.
-    - **`build-curl.sh --current`** pins 8.23.0 and its sum, its configure line read again
-      against 8.23.0's `./configure --help`; `test-check-floors` holds the version.
-    - **`test-curl-testing`'s capture threads** guard their whole bodies, and its wait is
-      bounded: the hang's class, which the review found there too.
-    - **Checks,** on the final tree unless said:
-      - in the container: `make test` 23/23 (2,393 checks), `test-memory` 23/23,
-        `check-variadic` 29/29, `check-test-fails` 11/11, `check-suites`, `check-seam`,
-        `check-floors`, `check-help`, `check-dev` and `check-clean`; `check-memory-gate` 39/39
-        before the review's fixes, which touched none of its inputs;
-      - in Docker: the `current` job's step, 23/23 on 8.23.0 as the real script built it;
-        main 23/23 with `check-variadic` 29/29; memory, `check-memory-gate` 33/33 and
-        `test-memory` 23/23. Gnutls and the floor passed 23/23 before the review's fixes, and
-        `test-engine` after them, with vanilla 8.20.0 and Ubuntu's 8.5.0;
-      - the measurements and the review's probe are kept in
-        [`research/reuse/`](research/reuse/).
-    - **The [mutation log](curl-8.23-mutation-log.md):** 20 mutants, then 11 after the
-      review. Two pass, by design, each recorded with why: the two-thread check's own
-      engine, which guards against a later check, and the control for the overlap
-      assertion.
-    - **The review** (Opus, read-only, 297k tokens, 24 minutes) found the 1 s rule stated
-      wrong, a pin that needed its drips to overlap with nothing holding that, 55 pinned
-      without its text, the same hang's class in `test-curl-testing`, an answer shape not held
-      whole, and stale records. Each is fixed (ADR-0020, amended, "After the slice's
-      review").
-  - **The Mac's run, 2026-10-26,** on the maintainer's M1, on this branch (Homebrew's Chez
-    10.4.1, Apple's libcurl 8.7.1):
-    - `make test`: 21 of 23, the two failures the rows it printed, now added:
-      `("8.7.1" 0)` for `minus-one-rows` and `("8.7.1" (response 200 "abcd"))` for
-      `reuse-verdicts`. `test-transfer-tls` passed all 55 checks on SecureTransport, its
-      first run there (ADR-0018, amended 2026-10-26), and `test-transfer` its 8.7.1 row with
-      the `error-text` case;
-    - the stall probe: the stand-in reaches Apple's resolver through
-      `DYLD_INSERT_LIBRARIES`, 8.7.1 stalls as 8.5.0 does, and `QUICK_EXIT` ends it
-      (ADR-0019, amended 2026-10-26, which leaves running the checks on macOS to the
-      maintainer); 8.7.1 answers no long multi option by its value, and
-      `MAX_TOTAL_CONNECTIONS` 1 serialises two drips there (ADR-0001, amended 2026-10-26);
-    - `make check-variadic` at `27c12ca`: all 29 steps ok on `tarm64osx`, so its multi
-      mutant failed `test-variadic` by name through `curl-multi-setopt-long` (ADR-0001,
-      amended 2026-10-26).
-    - **So M3 is done** (M3 plan, §7): slice 3 is merged, and the Mac has run both.
-  - **Carried:** whether the engine's thread blocks SIGINT, from slice 1; why a timeout's 28
-    came 1,014 ms late once (ADR-0019, amended 2026-10-25); CI has still never run.
+- **Milestone:** M4, the public records and the asynchronous API (brief §8), per the
+  [M4 plan](2026-10-26-m4-plan.md), a draft on `docs/m4-plan`, not yet merged.
+  - **Decided by the maintainer, 2026-10-26:**
+    - completions reach callers through a mailbox the caller drains: the engine's thread
+      appends a finished token as data, and a caller's thread runs its callback
+      ([ADR-0021](decisions/0021-completions-through-a-mailbox.md), new; ADR-0012 amended);
+    - libcurl's codes are classed as condition types under `&curl-transfer-error`, the class
+      following the code ([ADR-0022](decisions/0022-codes-classed-as-condition-types.md),
+      new);
+    - the public request is made from a property list, by chez-cmark-gfm's convention, and
+      carries a whole body ([ADR-0023](decisions/0023-the-public-request.md), new);
+    - a transfer honours the proxy variables, and a request field turns them off; where Guix's
+      override would replace a request's CA file, the request is refused at submit;
+      `SSLKEYLOGFILE` and `OPENSSL_CONF` are documented; a `pkcs11:` CA path is refused
+      ([ADR-0024](decisions/0024-what-a-transfer-reads-from-its-environment.md), new;
+      ADR-0018 amended).
+  - **Measured before planning** (plan, §2): the codes the floor's and 8.23.0's headers name;
+    two scenarios and a proxy's refused CONNECT whose codes move with the version; and the
+    proxy variables on five Linux libcurls, all alike
+    ([research](research/m4/proxy/)).
+  - **Four slices:** the request, its body and the classes; the asynchronous API; the
+    environment; the hatch, `(curl unsupported)`.
+  - **Carried into M4:** whether the engine's thread blocks SIGINT, now slice 2's first
+    measurement; why a timeout's 28 came 1,014 ms late once (ADR-0019, amended 2026-10-25);
+    CI has still never run.
+- **M3, the engine:** **done on 2026-10-26.** Its three slices are merged (PRs #19, #20 and
+  #21), PR #22 moved CI's `current` lane to curl 8.23.0, and the Mac has run both
+  (M3 plan, §7). Their close-outs are below.
 - **M2, one blocking request, plaintext and TLS:** its three slices are merged (PRs #13, #16
   and #17). Slice 3's close-out is below.
   - **M2 is done:** its last owed item, the Mac's first `test-transfer-tls` on
@@ -144,6 +103,68 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-26 — the `current` lane moves to curl 8.23.0, and M3 is done (PR #22, `907d524`)
+
+- **The `current` lane builds curl 8.23.0,** the newest release, as ADR-0020 owed (amended
+  2026-10-26). `build-curl.sh --current` pins it and its sum, its configure line read again
+  against 8.23.0's `./configure --help`, and `test-check-floors` holds the version. The
+  container keeps 8.20.0's rows running.
+- **`test-engine`'s hang there was the suite's.** "Two caller threads awaiting together" let a
+  raise kill both threads, and waited for them with no bound. Each thread's raise is now its
+  answer, and the wait polls under a bound: on 8.23.0 the check failed by name, 55 on both
+  threads, instead of hanging. `test-curl-testing`'s capture threads had the same class, which
+  the review found: they now guard their whole bodies, and its wait is bounded.
+- **Why 55: 8.23.0 reuses, without checking it, a connection that went back to its pool under
+  1 s before, however old** (`lib/conncache.c`). The raw face closes each drip's connection
+  unannounced. With six such connections back in the pool, the next transfer retries on each
+  dead one and gives up, "Connection died, tried 5 times before giving up". Measured with a
+  probe, 2 runs of 2: five pass, six and eight fail, and a 1.1 s pause passes; 8.20.0 always
+  passes.
+- **Decided by the maintainer** (ADR-0020, amended 2026-10-26):
+  - 8.23.0 replaces 8.20.0 in the lane;
+  - checks that run drips together each get an engine of their own, and `test-engine` pins the
+    reuse by version, `reuse-verdicts`: on 8.23.0, 55 and its error buffer's text; an answer
+    on 7.85.0, 8.5.0, 8.7.1 and 8.20.0. The check asserts the eight drips were live together.
+- **The rows:** `test-drift`, `test-url` (two verdicts moved: 25 and 21, where 8.20.0 gave 3),
+  `test-transfer`, `test-variadic`, and `test-engine`'s stall and reuse rows. The NUL-in-header
+  text 8.23.0 capitalised is a version row's answer now: `known-transfer-verdicts.sexp` gains a
+  second kind of case, `error-text`.
+- **Checks,** on the final tree unless said:
+  - in the container: `make test` 23/23 (2,393 checks), `test-memory` 23/23, `check-variadic`
+    29/29, `check-test-fails` 11/11, `check-suites`, `check-seam`, `check-floors`,
+    `check-help`, `check-dev` and `check-clean`; `check-memory-gate` 39/39 before the review's
+    fixes, which touched none of its inputs;
+  - in Docker: the `current` job's step, 23/23 on 8.23.0 as the real script built it; main
+    23/23 with `check-variadic` 29/29; memory, `check-memory-gate` 33/33 and `test-memory`
+    23/23. Gnutls and the floor passed 23/23 before the review's fixes, and `test-engine` after
+    them, with vanilla 8.20.0 and Ubuntu's 8.5.0;
+  - the measurements and the review's probe are kept in [`research/reuse/`](research/reuse/).
+- **The [mutation log](curl-8.23-mutation-log.md):** 20 mutants, then 11 after the review. Two
+  pass, by design, each recorded with why: the two-thread check's own engine, which guards
+  against a later check, and the control for the overlap assertion.
+- **One subagent:** the read-only adversarial review, Opus, 297k tokens, 24 minutes. It found
+  the 1 s rule stated wrong, a pin that needed its drips to overlap with nothing holding that,
+  55 pinned without its text, the hang's class in `test-curl-testing`, an answer shape not held
+  whole, and stale records. Each is fixed (ADR-0020, amended, "After the slice's review").
+- **The Mac's run, 2026-10-26,** on the maintainer's M1, on the slice's branch (Homebrew's Chez
+  10.4.1, Apple's libcurl 8.7.1):
+  - `make test`: 21 of 23, the two failures the rows it printed, then added: `("8.7.1" 0)` for
+    `minus-one-rows` and `("8.7.1" (response 200 "abcd"))` for `reuse-verdicts`.
+    `test-transfer-tls` passed all 55 checks on SecureTransport, its first run there (ADR-0018,
+    amended 2026-10-26), so M2 is done too; and `test-transfer` its 8.7.1 row with the
+    `error-text` case;
+  - the stall probe: the stand-in reaches Apple's resolver through `DYLD_INSERT_LIBRARIES`,
+    8.7.1 stalls as 8.5.0 does, and `QUICK_EXIT` ends it (ADR-0019, amended 2026-10-26, which
+    leaves running the checks on macOS to the maintainer); 8.7.1 answers no long multi option
+    by its value, and `MAX_TOTAL_CONNECTIONS` 1 serialises two drips there (ADR-0001, amended
+    2026-10-26);
+  - `make check-variadic` at `27c12ca`: all 29 steps ok on `tarm64osx`, so its multi mutant
+    failed `test-variadic` by name through `curl-multi-setopt-long` (ADR-0001, amended
+    2026-10-26).
+- **So M3 is done** (M3 plan, §7): slice 3 is merged, and the Mac has run both.
+- **Carried:** whether the engine's thread blocks SIGINT; the 1,014 ms timeout; the stall checks
+  on macOS; a curl bug report on 8.23.0's reuse, offered; CI has still never run.
 
 ### 2026-10-26 — M3 slice 3: stalled lookups, and a CI lane on curl 8.20.0 (PR #21, `874b3ae`)
 
