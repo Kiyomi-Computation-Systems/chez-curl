@@ -13,9 +13,18 @@
 ;;;   &curl-request-error         a request's field refused, before anything
 ;;;                               native is made (M2 plan, section 5.3)
 ;;;   &curl-transfer-error        a transfer that failed: libcurl's code and
-;;;                               texts, and what the write callable recorded
-;;;                               (M2 plan, sections 3.7 and 5.3), or one
-;;;                               cancelled or stopped (M3 plan, section 3.4)
+;;;                               texts, what the write callable recorded,
+;;;                               and the bytes of request sent (M2 plan,
+;;;                               sections 3.7 and 5.3), or one cancelled or
+;;;                               stopped (M3 plan, section 3.4); and under
+;;;                               it, its classes (ADR-0022):
+;;;     &curl-timeout             28
+;;;     &curl-connect-error       5, 6, 7, 45, 96, 97
+;;;     &curl-send-receive-error  18, 52, 55, 56
+;;;     &curl-tls-error           35, 53, 54, 58, 59, 60, 64, 66, 77, 80, 82,
+;;;                               83, 90, 91, 98, 101
+;;;     &curl-protocol-error      1, 8, 16, 61, 92, 95
+;;;     &curl-too-large           63, 100, and the body limit
 ;;;   &curl-engine-error          an engine that has stopped, or failed, and
 ;;;                               the condition it failed with (M3 plan,
 ;;;                               sections 3.4 and 3.7)
@@ -52,7 +61,15 @@
           &curl-transfer-error make-curl-transfer-error curl-transfer-error?
           curl-transfer-error-reason curl-transfer-error-code curl-transfer-error-option
           curl-transfer-error-strerror curl-transfer-error-error-buffer
-          curl-transfer-error-recorded curl-transfer-error-reasons
+          curl-transfer-error-recorded curl-transfer-error-request-size
+          curl-transfer-error-reasons make-classed-transfer-error
+          curl-code-classes curl-code-class
+          &curl-timeout make-curl-timeout curl-timeout?
+          &curl-connect-error make-curl-connect-error curl-connect-error?
+          &curl-send-receive-error make-curl-send-receive-error curl-send-receive-error?
+          &curl-tls-error make-curl-tls-error curl-tls-error?
+          &curl-protocol-error make-curl-protocol-error curl-protocol-error?
+          &curl-too-large make-curl-too-large curl-too-large?
 
           &curl-engine-error make-curl-engine-error curl-engine-error?
           curl-engine-error-reason curl-engine-error-condition curl-engine-error-reasons)
@@ -220,26 +237,37 @@
   ;;                 libcurl sends only the first
   ;;   framing-header
   ;;                 a header named Content-Length or Transfer-Encoding, in
-  ;;                 any case: libcurl frames the message, and M2 sends no
-  ;;                 body, so a server would wait for one
+  ;;                 any case: libcurl frames the message, from the body it
+  ;;                 is handed
   ;;   owned-option  an option the test seam may not set: chez-curl sets it,
   ;;                 a request field sets it, or it is the twin of one that
   ;;                 does, compared by id (ADR-0009, amended 2026-10-23)
   ;;   unsupported-type
   ;;                 an option the test seam may not set for its type: only
   ;;                 long, enumerated values and off_t, so no address passes
+  ;;   unknown-key   a key make-curl-request or curl-request-with does not
+  ;;                 take (ADR-0023)
+  ;;   repeated-key  a key given twice to one call
+  ;;   missing-value a key given last, with no value after it
+  ;;   body-not-allowed
+  ;;                 a body with get or head, which send none (the M4 plan,
+  ;;                 section 3.2)
   ;;
   ;; A value is scanned left to right, and its first offending char decides;
   ;; only when none offends are its ends checked.
   (define curl-request-error-reasons
     '(embedded-nul line-break not-latin-1 not-a-token surrounding-whitespace duplicates-field
-      framing-header owned-option unsupported-type))
+      framing-header owned-option unsupported-type unknown-key repeated-key missing-value
+      body-not-allowed))
 
   ;; The fields:
   ;;
   ;;   field   Symbol: the field refused, header-name, header-value,
-  ;;           user-agent, ca-file, or options, the test seam's
-  ;;   value   the string refused, whole, or the option's name
+  ;;           user-agent, ca-file, or options, the test seam's; key for
+  ;;           unknown-key, repeated-key and missing-value; body for
+  ;;           body-not-allowed
+  ;;   value   the string refused, whole, or the option's name; the key, as
+  ;;           given, for a key's refusal; the method, for body-not-allowed
   ;;   reason  one of curl-request-error-reasons
   (define-condition-type &curl-request-error &curl-error
     unchecked-make-curl-request-error curl-request-error?
@@ -248,8 +276,8 @@
     (reason curl-request-error-reason))
 
   ;; make-curl-request-error : Symbol Any Symbol -> &curl-request-error
-  ;; Refuses a REASON that is not one of the eight with an assertion
-  ;; violation, as make-curl-library-unavailable does.
+  ;; Refuses a REASON that is not one of curl-request-error-reasons with an
+  ;; assertion violation, as make-curl-library-unavailable does.
   (define (make-curl-request-error field value reason)
     (unless (memq reason curl-request-error-reasons)
       (assertion-violation 'make-curl-request-error
@@ -286,7 +314,7 @@
   ;;
   ;;   reason        one of curl-transfer-error-reasons
   ;;   code          (U Integer #f): the CURLcode, a number, since codes
-  ;;                 past the floor's have no name; #f when libcurl answered
+  ;;                 past the headers' have no name; #f when libcurl answered
   ;;                 none (unknown-option, no-handle, cancelled, stopped)
   ;;   option        (U String #f): the option's name, without CURLOPT_
   ;;   strerror      (U String #f): curl_easy_strerror's text for the code
@@ -294,9 +322,21 @@
   ;;                 Latin-1, or #f when it is empty
   ;;   recorded      what the callable recorded: the raised object for
   ;;                 callback-raised, else #f
+  ;;   request-size  (U Natural #f): for a transfer that ran, perform-failed,
+  ;;                 body-limit or callback-raised, CURLINFO_REQUEST_SIZE:
+  ;;                 the bytes of request libcurl sent, its body's among
+  ;;                 them, summed over every attempt it made, a resend on a
+  ;;                 fresh connection after a dead one included, and 0 when
+  ;;                 it sent none; 0 for one refused while it was set up,
+  ;;                 setopt-failed, unknown-option or no-handle, which sent
+  ;;                 nothing; #f for one cancelled or stopped, taken apart
+  ;;                 unread. Whether it is 0 is what M5's retry policy reads
+  ;;                 to tell whether a request was sent: a failure's timings
+  ;;                 move with the version, and this does not (ADR-0022,
+  ;;                 amended 2026-10-26)
   ;;
-  ;; Tests assert the reason, the code, the option and the recorded object,
-  ;; never the texts.
+  ;; Tests assert the reason, the code, the option, the recorded object and
+  ;; the request size, and a text only where a version row pins it.
   (define-condition-type &curl-transfer-error &curl-error
     unchecked-make-curl-transfer-error curl-transfer-error?
     (reason curl-transfer-error-reason)
@@ -304,19 +344,26 @@
     (option curl-transfer-error-option)
     (strerror curl-transfer-error-strerror)
     (error-buffer curl-transfer-error-error-buffer)
-    (recorded curl-transfer-error-recorded))
+    (recorded curl-transfer-error-recorded)
+    (request-size curl-transfer-error-request-size))
+
+  ;; check-transfer-error : Symbol Symbol (Listof Symbol) -> Void
+  ;; Refuses a REASON that is not in REASONS, as WHO, with an assertion
+  ;; violation.
+  (define (check-transfer-error who reason reasons)
+    (unless (memq reason reasons)
+      (assertion-violation who "not a reason a chez-curl transfer fails for here" reason)))
 
   ;; make-curl-transfer-error : Symbol (U Integer #f) (U String #f) (U String #f)
-  ;;                            (U String #f) Any -> &curl-transfer-error
-  ;; Refuses a REASON that is not one of the eight with an assertion
-  ;; violation. It checks nothing else, so a code a later libcurl answers
-  ;; still reaches the caller.
-  (define (make-curl-transfer-error reason code option strerror error-buffer recorded)
-    (unless (memq reason curl-transfer-error-reasons)
-      (assertion-violation 'make-curl-transfer-error
-                           "not a reason a chez-curl transfer fails for"
-                           reason))
-    (unchecked-make-curl-transfer-error reason code option strerror error-buffer recorded))
+  ;;                            (U String #f) Any (U Natural #f) -> &curl-transfer-error
+  ;; The base type, unclassed. Refuses a REASON that is not one of the
+  ;; eight with an assertion violation. It checks nothing else, so a code a
+  ;; later libcurl answers still reaches the caller.
+  (define (make-curl-transfer-error reason code option strerror error-buffer recorded
+                                    request-size)
+    (check-transfer-error 'make-curl-transfer-error reason curl-transfer-error-reasons)
+    (unchecked-make-curl-transfer-error reason code option strerror error-buffer recorded
+                                        request-size))
 
   ;; curl-transfer-error? : Any -> Boolean
   ;; curl-transfer-error-reason : &curl-transfer-error -> Symbol
@@ -325,6 +372,144 @@
   ;; curl-transfer-error-strerror : &curl-transfer-error -> (U String #f)
   ;; curl-transfer-error-error-buffer : &curl-transfer-error -> (U String #f)
   ;; curl-transfer-error-recorded : &curl-transfer-error -> Any
+  ;; curl-transfer-error-request-size : &curl-transfer-error -> (U Natural #f)
+
+  ;; --- the classes (ADR-0022) ------------------------------------------------------
+
+  ;; curl-code-classes : (Listof (Pairof Symbol (Listof Positive-Integer)))
+  ;; Each class, with the CURLcodes it names, by their names in (curl
+  ;; private constants). A class is described in curl's words for its
+  ;; codes, from libcurl-errors, never by a cause: one failure's code moves
+  ;; with the version (ADR-0022, amended 2026-10-26).
+  ;;
+  ;;   timeout       the operation timed out
+  ;;   connect       a proxy or host was not resolved, connect() to the host
+  ;;                 or proxy failed, an outgoing interface could not be
+  ;;                 used, a QUIC connection failed, or a proxy's handshake
+  ;;   send-receive  sending or receiving network data failed, nothing was
+  ;;                 returned, or the transfer was shorter or larger than
+  ;;                 expected
+  ;;   tls           the TLS handshake, the server's certificate, the local
+  ;;                 client certificate, CA cert, CRL or crypto engine, the
+  ;;                 cipher, the pinned key, the certificate status, or ECH
+  ;;   protocol      a protocol this libcurl does not support, data it could
+  ;;                 not parse, the HTTP/2 or HTTP/3 layer, or an
+  ;;                 unrecognized encoding
+  ;;   too-large     a maximum file size, a value or a data field exceeded
+  ;;
+  ;; Every other code has no class, and raises the base type.
+  ;; tests/test-conditions.sps writes out every code from 0 to 101.
+  (define curl-code-classes
+    `((timeout ,curle-operation-timedout)
+      (connect ,curle-couldnt-resolve-proxy ,curle-couldnt-resolve-host ,curle-couldnt-connect
+               ,curle-interface-failed ,curle-quic-connect-error ,curle-proxy)
+      (send-receive ,curle-partial-file ,curle-got-nothing ,curle-send-error ,curle-recv-error)
+      (tls ,curle-ssl-connect-error ,curle-ssl-engine-notfound ,curle-ssl-engine-setfailed
+           ,curle-ssl-certproblem ,curle-ssl-cipher ,curle-peer-failed-verification
+           ,curle-use-ssl-failed ,curle-ssl-engine-initfailed ,curle-ssl-cacert-badfile
+           ,curle-ssl-shutdown-failed ,curle-ssl-crl-badfile ,curle-ssl-issuer-error
+           ,curle-ssl-pinnedpubkeynotmatch ,curle-ssl-invalidcertstatus ,curle-ssl-clientcert
+           ,curle-ech-required)
+      (protocol ,curle-unsupported-protocol ,curle-weird-server-reply ,curle-http2
+                ,curle-bad-content-encoding ,curle-http2-stream ,curle-http3)
+      (too-large ,curle-filesize-exceeded ,curle-too-large)))
+
+  ;; curl-code-class : Any -> (U Symbol #f)
+  ;; The class curl-code-classes names CODE in, or #f: a code no class
+  ;; names, a code past the table, or no code. It never raises.
+  (define (curl-code-class code)
+    (let loop ((classes curl-code-classes))
+      (cond ((null? classes) #f)
+            ((memv code (cdar classes)) (caar classes))
+            (else (loop (cdr classes))))))
+
+  ;; Each class is a condition type under &curl-transfer-error, with every
+  ;; field the base has, and a constructor that takes perform-failed alone,
+  ;; with a code the class names, or, for too-large, body-limit too, with
+  ;; any code.
+  ;;
+  ;; make-curl-timeout, make-curl-connect-error, make-curl-send-receive-error,
+  ;; make-curl-tls-error, make-curl-protocol-error, make-curl-too-large :
+  ;;   Symbol (U Integer #f) (U String #f) (U String #f) (U String #f) Any
+  ;;   (U Natural #f) -> &curl-transfer-error
+  ;; curl-timeout?, curl-connect-error?, curl-send-receive-error?,
+  ;; curl-tls-error?, curl-protocol-error?, curl-too-large? : Any -> Boolean
+  (define-condition-type &curl-timeout &curl-transfer-error
+    unchecked-make-curl-timeout curl-timeout?)
+  (define-condition-type &curl-connect-error &curl-transfer-error
+    unchecked-make-curl-connect-error curl-connect-error?)
+  (define-condition-type &curl-send-receive-error &curl-transfer-error
+    unchecked-make-curl-send-receive-error curl-send-receive-error?)
+  (define-condition-type &curl-tls-error &curl-transfer-error
+    unchecked-make-curl-tls-error curl-tls-error?)
+  (define-condition-type &curl-protocol-error &curl-transfer-error
+    unchecked-make-curl-protocol-error curl-protocol-error?)
+  (define-condition-type &curl-too-large &curl-transfer-error
+    unchecked-make-curl-too-large curl-too-large?)
+
+  ;; check-class : Symbol Symbol Symbol Any -> Void
+  ;; Refuses, as WHO, with an assertion violation, a REASON and CODE the
+  ;; class CLASS does not take: perform-failed with a code CLASS names, or,
+  ;; for too-large, body-limit too.
+  (define (check-class who class reason code)
+    (unless (or (and (eq? reason 'perform-failed) (eq? (curl-code-class code) class))
+                (and (eq? class 'too-large) (eq? reason 'body-limit)))
+      (assertion-violation who "not a reason and code this class takes" reason code)))
+
+  (define (make-curl-timeout reason code option strerror error-buffer recorded request-size)
+    (check-class 'make-curl-timeout 'timeout reason code)
+    (unchecked-make-curl-timeout reason code option strerror error-buffer recorded
+                                 request-size))
+
+  (define (make-curl-connect-error reason code option strerror error-buffer recorded
+                                   request-size)
+    (check-class 'make-curl-connect-error 'connect reason code)
+    (unchecked-make-curl-connect-error reason code option strerror error-buffer recorded
+                                       request-size))
+
+  (define (make-curl-send-receive-error reason code option strerror error-buffer recorded
+                                        request-size)
+    (check-class 'make-curl-send-receive-error 'send-receive reason code)
+    (unchecked-make-curl-send-receive-error reason code option strerror error-buffer recorded
+                                            request-size))
+
+  (define (make-curl-tls-error reason code option strerror error-buffer recorded request-size)
+    (check-class 'make-curl-tls-error 'tls reason code)
+    (unchecked-make-curl-tls-error reason code option strerror error-buffer recorded
+                                   request-size))
+
+  (define (make-curl-protocol-error reason code option strerror error-buffer recorded
+                                    request-size)
+    (check-class 'make-curl-protocol-error 'protocol reason code)
+    (unchecked-make-curl-protocol-error reason code option strerror error-buffer recorded
+                                        request-size))
+
+  (define (make-curl-too-large reason code option strerror error-buffer recorded request-size)
+    (check-class 'make-curl-too-large 'too-large reason code)
+    (unchecked-make-curl-too-large reason code option strerror error-buffer recorded
+                                   request-size))
+
+  ;; make-classed-transfer-error : Symbol (U Integer #f) (U String #f) (U String #f)
+  ;;                               (U String #f) Any (U Natural #f) -> &curl-transfer-error
+  ;; What a failed transfer raises (ADR-0022, amended 2026-10-26): for
+  ;; perform-failed, the class its CODE has, or the base type for a code no
+  ;; class names; for body-limit, too-large, whatever its code; for every
+  ;; other reason, the base type, a setopt-failed whose code a class names
+  ;; among them. A REASON not among the eight is an assertion violation.
+  (define (make-classed-transfer-error reason code option strerror error-buffer recorded
+                                       request-size)
+    (check-transfer-error 'make-classed-transfer-error reason curl-transfer-error-reasons)
+    (let ((make (case (if (eq? reason 'body-limit)
+                          'too-large
+                          (and (eq? reason 'perform-failed) (curl-code-class code)))
+                  ((timeout) make-curl-timeout)
+                  ((connect) make-curl-connect-error)
+                  ((send-receive) make-curl-send-receive-error)
+                  ((tls) make-curl-tls-error)
+                  ((protocol) make-curl-protocol-error)
+                  ((too-large) make-curl-too-large)
+                  (else make-curl-transfer-error))))
+      (make reason code option strerror error-buffer recorded request-size)))
 
   ;; --- &curl-engine-error -------------------------------------------------------
 

@@ -1,6 +1,6 @@
 # ADR-0023: The public request is made from a property list, and carries a whole body
 
-- **Status:** Accepted; amended 2026-10-26: after the plan's review
+- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: as built (M4 slice 1)
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, `(curl)`'s request record, from M4
 - **Settles:** the request's public shape, and whether M4's request carries a body; the
@@ -88,3 +88,35 @@ So the M4 plan, as its design (§3.2), revised:
   suppression is measured in slice 1.
 - **Decision 6:** "the test seam keeps it" means a private constructor, since the M4 plan
   retires the seam into the hatch in slice 4.
+
+## Amendment, 2026-10-26: as built (M4 slice 1)
+
+Slice 1 measured first ([research](../research/m4/slice1/)), on 7.85.0, Ubuntu's 8.5.0 with
+OpenSSL and with GnuTLS, Guix's 8.20.0 and 8.23.0, each alike:
+
+- **Decision 5's measurement.** libcurl adds `Content-Type: application/x-www-form-urlencoded`
+  to every body method's body, an empty one too, and `Expect: 100-continue` to one past 1 MiB,
+  1,048,577 bytes, then waits about a second for a server that never answers it.
+  `Content-Type:` and `Expect:` in `HTTPHEADER` take each away; a header the request names
+  replaces libcurl's, in any case.
+
+So, as the M4 plan proposed (§3.2), now built:
+- **A request that sends a body also sends `Content-Type:` and `Expect:`,** each unless the
+  request names a header of that name. `sent-header-lines` computes the list as data, and
+  `test-request` writes its answers out and reads each method's head from the raw face, byte
+  for byte.
+- **An empty body is a block of one byte, never NULL,** as a defence: with a size of 0 libcurl
+  reads nothing either way, but NULL tells it to send the body through its read callback, whose
+  default reads stdin; its setopt allocates a byte for a size of
+  0 "to mark that postfields is used rather than read function" (`lib/setopt.c`, 7.85.0).
+- **The private fault and the private `follow` field** are set by constructors `(curl)` does
+  not export, `curl-request-with-fault` and `curl-request-following`, and `curl-request-with`
+  keeps both. `follow` sets `FOLLOWLOCATION`, for the tests of a followed redirect and of
+  ADR-0003's redirect pin, which set it through the test seam until the seam refused it.
+- **The keys' refusals** are `&curl-request-error`s, field `key`, the key as given as their
+  value, in this order at each position: `unknown-key`, then `missing-value`, then
+  `repeated-key`. Then the URL's type; then the types of `method`, `body`, the timeouts,
+  `body-limit`, `ca-file` and `verify`; then `body-not-allowed`, field `body`, the method as its
+  value; then the headers and the user agent, their types first; then the CA file's path
+  (corrected after the slice's review, which found the headers' types checked after
+  `body-not-allowed`).

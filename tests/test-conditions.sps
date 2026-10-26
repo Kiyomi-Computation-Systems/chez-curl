@@ -13,13 +13,17 @@
 ;;;                               (ADR-0008), with its reason: the CURLUcode's
 ;;;                               name, by curl-url-code-reason, or #f for a
 ;;;                               code the floor's headers lack
-;;;   &curl-request-error         a request's field refused before anything
-;;;                               native is made, with one of four reasons
+;;;   &curl-request-error         a request's key or field refused before
+;;;                               anything native is made, with one of
+;;;                               thirteen reasons
 ;;;   &curl-transfer-error        a transfer failed, with one of eight
-;;;                               reasons, its code, option, libcurl's texts
-;;;                               and what the write callable recorded
-;;;                               (M2 plan, section 5.3), cancelled and
-;;;                               stopped among them (M3 plan, section 3.4)
+;;;                               reasons, its code, option, libcurl's texts,
+;;;                               what the write callable recorded and its
+;;;                               request size (M2 plan, section 5.3),
+;;;                               cancelled and stopped among them (M3 plan,
+;;;                               section 3.4); and its six classes, every
+;;;                               code from 0 to 101 written out (ADR-0022,
+;;;                               amended 2026-10-26)
 ;;;   &curl-engine-error          an engine stopped, or failed, with the
 ;;;                               condition it failed with (M3 plan,
 ;;;                               sections 3.4 and 3.7)
@@ -214,7 +218,8 @@
 ;; exported list must fail these tests, not shrink them.
 (define request-reasons
   '(embedded-nul line-break not-latin-1 not-a-token surrounding-whitespace duplicates-field
-    framing-header owned-option unsupported-type))
+    framing-header owned-option unsupported-type unknown-key repeated-key missing-value
+    body-not-allowed))
 
 (test-equal "request-error: an error and a curl-error, and none of the other kinds, carrying its field, value and reason"
   '(#t #t #f #f #f #f #t #f header-value "a\rb" line-break)
@@ -225,11 +230,11 @@
                   (curl-request-error-field c) (curl-request-error-value c)
                   (curl-request-error-reason c)))))
 
-(test-equal "the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option and unsupported-type, in order"
+(test-equal "the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option, unsupported-type, unknown-key, repeated-key, missing-value and body-not-allowed, in order"
   request-reasons
   curl-request-error-reasons)
 
-(test-equal "the request-error constructor takes each of the nine reasons"
+(test-equal "the request-error constructor takes each of the thirteen reasons"
   request-reasons
   (map (lambda (reason)
          (curl-request-error-reason (make-curl-request-error 'user-agent "x" reason)))
@@ -252,31 +257,33 @@
 ;; A recorded object no field could hand back by another route.
 (define the-raised (list 'raised-in-the-callable))
 
-(test-equal "transfer-error: an error and a curl-error, and none of the other kinds, carrying its reason, code, option, strerror, error buffer and recorded object"
-  '(#t #t #f #f #f #f #f #t callback-raised 23 "MAXFILESIZE_LARGE" "Failed writing received data to disk/application" "Failure writing output to destination" the-raised)
+(test-equal "transfer-error: an error and a curl-error, and none of the other kinds, carrying its reason, code, option, strerror, error buffer, recorded object and request size"
+  '(#t #t #f #f #f #f #f #t callback-raised 23 "MAXFILESIZE_LARGE" "Failed writing received data to disk/application" "Failure writing output to destination" the-raised 75)
   (let ((c (make-curl-transfer-error 'callback-raised 23 "MAXFILESIZE_LARGE"
                                      "Failed writing received data to disk/application"
-                                     "Failure writing output to destination" the-raised)))
+                                     "Failure writing output to destination" the-raised 75)))
     (append (kinds c)
             (list (curl-embedded-nul? c) (curl-url-error? c) (curl-request-error? c)
                   (curl-transfer-error? c)
                   (curl-transfer-error-reason c) (curl-transfer-error-code c)
                   (curl-transfer-error-option c) (curl-transfer-error-strerror c)
                   (curl-transfer-error-error-buffer c)
-                  (let ((r (curl-transfer-error-recorded c))) (if (eq? r the-raised) 'the-raised r))))))
+                  (let ((r (curl-transfer-error-recorded c))) (if (eq? r the-raised) 'the-raised r))
+                  (curl-transfer-error-request-size c)))))
 
 (test-equal "the transfer-error reasons are exactly perform-failed, body-limit, callback-raised, setopt-failed, unknown-option, no-handle, cancelled and stopped, in order"
   transfer-reasons
   curl-transfer-error-reasons)
 
 (test-equal "the transfer-error constructor takes each of the eight reasons, with #f in every other field"
-  (map (lambda (reason) (list reason #f #f #f #f 'no-recorded)) transfer-reasons)
+  (map (lambda (reason) (list reason #f #f #f #f 'no-recorded #f)) transfer-reasons)
   (map (lambda (reason)
-         (let ((c (make-curl-transfer-error reason #f #f #f #f #f)))
+         (let ((c (make-curl-transfer-error reason #f #f #f #f #f #f)))
            (list (curl-transfer-error-reason c) (curl-transfer-error-code c)
                  (curl-transfer-error-option c) (curl-transfer-error-strerror c)
                  (curl-transfer-error-error-buffer c)
-                 (if (eq? (curl-transfer-error-recorded c) #f) 'no-recorded 'recorded))))
+                 (if (eq? (curl-transfer-error-recorded c) #f) 'no-recorded 'recorded)
+                 (curl-transfer-error-request-size c))))
        transfer-reasons))
 
 (test-equal "the transfer-error constructor refuses a symbol that is no reason, a reason spelled as a string, and #f"
@@ -284,8 +291,157 @@
     (assertion-violation make-curl-transfer-error ("body-limit"))
     (assertion-violation make-curl-transfer-error (#f)))
   (map (lambda (reason)
-         (raised (lambda () (make-curl-transfer-error reason 28 #f #f #f #f))))
+         (raised (lambda () (make-curl-transfer-error reason 28 #f #f #f #f 0))))
        (list 'timed-out "body-limit" #f)))
+
+;; --- the classes (ADR-0022, amended 2026-10-26) -----------------------------------------
+
+;; code-rows : (Listof (List Integer Symbol))
+;; Every CURLcode from 0 to 101, with its class, or none: the M4 plan's table
+;; (section 3.4), settled against curl's description of each code in
+;; libcurl-errors (8.23.0). Written out here, never read from the library's
+;; table, so a code moved there fails here, by that code.
+(define code-rows
+  '((0 none) (1 protocol) (2 none) (3 none) (4 none) (5 connect) (6 connect) (7 connect)
+    (8 protocol) (9 none) (10 none) (11 none) (12 none) (13 none) (14 none) (15 none)
+    (16 protocol) (17 none) (18 send-receive) (19 none) (20 none) (21 none) (22 none) (23 none)
+    (24 none) (25 none) (26 none) (27 none) (28 timeout) (29 none) (30 none) (31 none)
+    (32 none) (33 none) (34 none) (35 tls) (36 none) (37 none) (38 none) (39 none) (40 none)
+    (41 none) (42 none) (43 none) (44 none) (45 connect) (46 none) (47 none) (48 none)
+    (49 none) (50 none) (51 none) (52 send-receive) (53 tls) (54 tls) (55 send-receive)
+    (56 send-receive) (57 none) (58 tls) (59 tls) (60 tls) (61 protocol) (62 none)
+    (63 too-large) (64 tls) (65 none) (66 tls) (67 none) (68 none) (69 none) (70 none)
+    (71 none) (72 none) (73 none) (74 none) (75 none) (76 none) (77 tls) (78 none) (79 none)
+    (80 tls) (81 none) (82 tls) (83 tls) (84 none) (85 none) (86 none) (87 none) (88 none)
+    (89 none) (90 tls) (91 tls) (92 protocol) (93 none) (94 none) (95 protocol) (96 connect)
+    (97 connect) (98 tls) (99 none) (100 too-large) (101 tls)))
+
+;; class-predicates : (Listof (Pairof Symbol (Any -> Boolean)))
+(define class-predicates
+  (list (cons 'timeout curl-timeout?) (cons 'connect curl-connect-error?)
+        (cons 'send-receive curl-send-receive-error?) (cons 'tls curl-tls-error?)
+        (cons 'protocol curl-protocol-error?) (cons 'too-large curl-too-large?)))
+
+;; classes-of : Any -> (Listof Symbol)
+;; Every class whose predicate holds for C, in class-predicates' order: one
+;; for a classed condition, none for the base type.
+(define (classes-of c)
+  (map car (filter (lambda (p) ((cdr p) c)) class-predicates)))
+
+;; class-of : Any -> Symbol
+;; C's one class, none for the base type, or (several ...) when more than
+;; one predicate holds.
+(define (class-of c)
+  (let ((found (classes-of c)))
+    (cond ((null? found) 'none)
+          ((null? (cdr found)) (car found))
+          (else (cons 'several found)))))
+
+(test-equal "code-rows is 0 to 101, each once, in order"
+  (let loop ((n 101) (found '())) (if (< n 0) found (loop (- n 1) (cons n found))))
+  (map car code-rows))
+
+(test-equal "curl-code-class answers each code's class, written out, from 0 to 101"
+  code-rows
+  (map (lambda (row) (list (car row) (or (curl-code-class (car row)) 'none))) code-rows))
+
+(test-equal "curl-code-class: a code past the table, 102 and 999, what is no code, -1, 28.0, \"28\", the symbol timeout and #f, have no class, and raise nothing"
+  '(none none none none none none none)
+  (map (lambda (code)
+         (guard (e (#t (list 'raised (describe e))))
+           (or (curl-code-class code) 'none)))
+       (list 102 999 -1 28.0 "28" 'timeout #f)))
+
+(test-equal "a perform-failed of each code from 0 to 101, and of 102 and 999, raises its class, the base type for none; every one is a transfer-error carrying its code"
+  (append code-rows '((102 none) (999 none)))
+  (map (lambda (code)
+         (let ((c (make-classed-transfer-error 'perform-failed code #f #f #f #f 0)))
+           (list (if (and (curl-transfer-error? c) (eqv? (curl-transfer-error-code c) code))
+                     code
+                     (list 'not-a-transfer-error-of code))
+                 (class-of c))))
+       (append (map car code-rows) '(102 999))))
+
+(test-equal "the class follows the code for perform-failed alone: body-limit is too-large whatever its code, 23, 28 or none; every other reason raises the base type, a setopt-failed or callback-raised whose code a class names among them"
+  '((perform-failed (timeout connect send-receive tls protocol too-large none none))
+    (body-limit (too-large too-large too-large too-large too-large too-large too-large too-large))
+    (callback-raised (none none none none none none none none))
+    (setopt-failed (none none none none none none none none))
+    (unknown-option (none none none none none none none none))
+    (no-handle (none none none none none none none none))
+    (cancelled (none none none none none none none none))
+    (stopped (none none none none none none none none)))
+  (map (lambda (reason)
+         (list reason
+               (map (lambda (code)
+                      (class-of (make-classed-transfer-error reason code #f #f #f #f 0)))
+                    (list 28 7 56 60 1 63 23 #f))))
+       transfer-reasons))
+
+(test-equal "each class is a transfer-error and a curl-error, carrying every base field, the request size among them"
+  (map (lambda (row)
+         (list (car row) #t #t #t 'perform-failed (cadr row) "OPT" "strerror" "buffer" 'the-raised 79))
+       '((timeout 28) (connect 7) (send-receive 56) (tls 60) (protocol 8) (too-large 100)))
+  (map (lambda (row)
+         (let ((c ((cadr row) 'perform-failed (caddr row) "OPT" "strerror" "buffer" the-raised 79)))
+           (list (class-of c) (error? c) (curl-error? c) (curl-transfer-error? c)
+                 (curl-transfer-error-reason c) (curl-transfer-error-code c)
+                 (curl-transfer-error-option c) (curl-transfer-error-strerror c)
+                 (curl-transfer-error-error-buffer c)
+                 (if (eq? (curl-transfer-error-recorded c) the-raised) 'the-raised 'other)
+                 (curl-transfer-error-request-size c))))
+       (list (list 'timeout make-curl-timeout 28) (list 'connect make-curl-connect-error 7)
+             (list 'send-receive make-curl-send-receive-error 56) (list 'tls make-curl-tls-error 60)
+             (list 'protocol make-curl-protocol-error 8) (list 'too-large make-curl-too-large 100))))
+
+(test-equal "each class's constructor refuses a reason it does not take, and a code it does not name; too-large alone takes body-limit, with any code"
+  '((assertion-violation make-curl-timeout (body-limit 28))
+    (assertion-violation make-curl-timeout (perform-failed 7))
+    (assertion-violation make-curl-timeout (setopt-failed 28))
+    (assertion-violation make-curl-connect-error (perform-failed 28))
+    (assertion-violation make-curl-connect-error (cancelled #f))
+    (assertion-violation make-curl-send-receive-error (perform-failed 60))
+    (assertion-violation make-curl-send-receive-error (callback-raised 56))
+    (assertion-violation make-curl-tls-error (perform-failed 56))
+    (assertion-violation make-curl-tls-error (body-limit 60))
+    (assertion-violation make-curl-protocol-error (perform-failed 102))
+    (assertion-violation make-curl-protocol-error (no-handle 1))
+    (assertion-violation make-curl-too-large (perform-failed 23))
+    (assertion-violation make-curl-too-large (callback-raised 23))
+    too-large too-large)
+  (append
+   (map (lambda (args)
+          (raised (lambda () ((car args) (cadr args) (caddr args) #f #f #f #f 0))))
+        (list (list make-curl-timeout 'body-limit 28) (list make-curl-timeout 'perform-failed 7)
+              (list make-curl-timeout 'setopt-failed 28)
+              (list make-curl-connect-error 'perform-failed 28)
+              (list make-curl-connect-error 'cancelled #f)
+              (list make-curl-send-receive-error 'perform-failed 60)
+              (list make-curl-send-receive-error 'callback-raised 56)
+              (list make-curl-tls-error 'perform-failed 56) (list make-curl-tls-error 'body-limit 60)
+              (list make-curl-protocol-error 'perform-failed 102)
+              (list make-curl-protocol-error 'no-handle 1)
+              (list make-curl-too-large 'perform-failed 23)
+              (list make-curl-too-large 'callback-raised 23)))
+   (map (lambda (code) (class-of (make-curl-too-large 'body-limit code #f #f #f #f 0)))
+        (list 23 #f))))
+
+(test-equal "make-classed-transfer-error refuses a symbol that is no reason, a reason spelled as a string, and #f"
+  '((assertion-violation make-classed-transfer-error (timed-out))
+    (assertion-violation make-classed-transfer-error ("perform-failed"))
+    (assertion-violation make-classed-transfer-error (#f)))
+  (map (lambda (reason)
+         (raised (lambda () (make-classed-transfer-error reason 28 #f #f #f #f 0))))
+       (list 'timed-out "perform-failed" #f)))
+
+(test-equal "no other kind is of a class: a request-error, an engine-error, a url-error, a curl-error and the base transfer-error are none"
+  '(none none none none none)
+  (map class-of
+       (list (make-curl-request-error 'header-value "a\rb" 'line-break)
+             (make-curl-engine-error 'stopped #f)
+             (make-curl-url-error "x" #f #f #f)
+             (make-curl-error)
+             (make-curl-transfer-error 'perform-failed 28 #f #f #f #f 0))))
 
 ;; --- &curl-engine-error ---------------------------------------------------------------
 
@@ -306,7 +462,7 @@
 
 (test-equal "no other kind is an engine-error"
   '(#f #f #f)
-  (list (curl-engine-error? (make-curl-transfer-error 'stopped #f #f #f #f #f))
+  (list (curl-engine-error? (make-curl-transfer-error 'stopped #f #f #f #f #f #f))
         (curl-engine-error? (make-curl-request-error 'header-value "a\rb" 'line-break))
         (curl-engine-error? (make-curl-error))))
 

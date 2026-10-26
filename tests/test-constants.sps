@@ -161,15 +161,49 @@
     (curl-http-version-1-1 . "CURL_HTTP_VERSION_1_1")
     (curl-http-version-2-0 . "CURL_HTTP_VERSION_2_0")
     (curl-http-version-3 . "CURL_HTTP_VERSION_3")
-    (curle-unsupported-protocol . "CURLE_UNSUPPORTED_PROTOCOL")
-    (curle-weird-server-reply . "CURLE_WEIRD_SERVER_REPLY")
-    (curle-partial-file . "CURLE_PARTIAL_FILE")
     (curle-write-error . "CURLE_WRITE_ERROR")
     (curle-out-of-memory . "CURLE_OUT_OF_MEMORY")
     (curle-operation-timedout . "CURLE_OPERATION_TIMEDOUT")
+    (curle-couldnt-resolve-proxy . "CURLE_COULDNT_RESOLVE_PROXY")
+    (curle-couldnt-resolve-host . "CURLE_COULDNT_RESOLVE_HOST")
+    (curle-couldnt-connect . "CURLE_COULDNT_CONNECT")
+    (curle-interface-failed . "CURLE_INTERFACE_FAILED")
+    (curle-quic-connect-error . "CURLE_QUIC_CONNECT_ERROR")
+    (curle-proxy . "CURLE_PROXY")
+    (curle-partial-file . "CURLE_PARTIAL_FILE")
     (curle-got-nothing . "CURLE_GOT_NOTHING")
+    (curle-send-error . "CURLE_SEND_ERROR")
     (curle-recv-error . "CURLE_RECV_ERROR")
+    (curle-ssl-connect-error . "CURLE_SSL_CONNECT_ERROR")
+    (curle-ssl-engine-notfound . "CURLE_SSL_ENGINE_NOTFOUND")
+    (curle-ssl-engine-setfailed . "CURLE_SSL_ENGINE_SETFAILED")
+    (curle-ssl-certproblem . "CURLE_SSL_CERTPROBLEM")
+    (curle-ssl-cipher . "CURLE_SSL_CIPHER")
+    (curle-peer-failed-verification . "CURLE_PEER_FAILED_VERIFICATION")
+    (curle-use-ssl-failed . "CURLE_USE_SSL_FAILED")
+    (curle-ssl-engine-initfailed . "CURLE_SSL_ENGINE_INITFAILED")
+    (curle-ssl-cacert-badfile . "CURLE_SSL_CACERT_BADFILE")
+    (curle-ssl-shutdown-failed . "CURLE_SSL_SHUTDOWN_FAILED")
+    (curle-ssl-crl-badfile . "CURLE_SSL_CRL_BADFILE")
+    (curle-ssl-issuer-error . "CURLE_SSL_ISSUER_ERROR")
+    (curle-ssl-pinnedpubkeynotmatch . "CURLE_SSL_PINNEDPUBKEYNOTMATCH")
+    (curle-ssl-invalidcertstatus . "CURLE_SSL_INVALIDCERTSTATUS")
+    (curle-ssl-clientcert . "CURLE_SSL_CLIENTCERT")
+    (curle-ech-required . "CURLE_ECH_REQUIRED")
+    (curle-unsupported-protocol . "CURLE_UNSUPPORTED_PROTOCOL")
+    (curle-weird-server-reply . "CURLE_WEIRD_SERVER_REPLY")
+    (curle-http2 . "CURLE_HTTP2")
+    (curle-bad-content-encoding . "CURLE_BAD_CONTENT_ENCODING")
+    (curle-http2-stream . "CURLE_HTTP2_STREAM")
+    (curle-http3 . "CURLE_HTTP3")
     (curle-filesize-exceeded . "CURLE_FILESIZE_EXCEEDED")
+    (curle-too-large . "CURLE_TOO_LARGE")
+    (curlinfo-namelookup-time-t . "CURLINFO_NAMELOOKUP_TIME_T")
+    (curlinfo-connect-time-t . "CURLINFO_CONNECT_TIME_T")
+    (curlinfo-appconnect-time-t . "CURLINFO_APPCONNECT_TIME_T")
+    (curlinfo-starttransfer-time-t . "CURLINFO_STARTTRANSFER_TIME_T")
+    (curlinfo-total-time-t . "CURLINFO_TOTAL_TIME_T")
+    (curlinfo-request-size . "CURLINFO_REQUEST_SIZE")
     (curlm-ok . "CURLM_OK")
     (curlm-unknown-option . "CURLM_UNKNOWN_OPTION")
     (curlmsg-done . "CURLMSG_DONE")
@@ -195,9 +229,13 @@
 ;; reads it only from headers at or above it. A released constant's value
 ;; never changes, so the check where the headers have it holds it.
 ;; CURLMOPT_QUICK_EXIT came in 8.20.0, per its man page; the container's
-;; headers are 8.20.0's, and the floor's, 7.85.0's, lack it.
+;; headers are 8.20.0's, and the floor's, 7.85.0's, lack it. CURLE_TOO_LARGE came in
+;; 8.6.0 and CURLE_ECH_REQUIRED in 8.8.0, per curl's symbols-in-versions; the
+;; floor's headers lack both, and the container's have both.
 (define gated-rows
-  '((curlmopt-quick-exit "8.20.0" #x081400)))
+  '((curlmopt-quick-exit "8.20.0" #x081400)
+    (curle-too-large "8.6.0" #x080600)
+    (curle-ech-required "8.8.0" #x080800)))
 
 ;; layout-rows : (Listof (List Symbol String Extent))
 ;; Each define-ftype of (curl private layouts), with the C type it lays
@@ -1781,8 +1819,9 @@
 ;; Written out here, not read from the table: a gate moved, or a constant
 ;; gated, drops a value check on some lane, and only a lane whose headers
 ;; fall between the old gate and the new would see it.
-(test-equal "gated-rows is exactly, written out here: curlmopt-quick-exit, since curl 8.20.0, 0x081400"
-  '((curlmopt-quick-exit "8.20.0" #x081400))
+(test-equal "gated-rows is exactly, written out here: curlmopt-quick-exit, since curl 8.20.0, 0x081400; curle-too-large, since 8.6.0, 0x080600; curle-ech-required, since 8.8.0, 0x080800"
+  '((curlmopt-quick-exit "8.20.0" #x081400) (curle-too-large "8.6.0" #x080600)
+    (curle-ech-required "8.8.0" #x080800))
   gated-rows)
 
 (for-each
@@ -1840,8 +1879,8 @@
 
 ;; No other question is gated: each constant question's line is the plain
 ;; one, but for the gated constants, written out.
-(test-equal "the C program reads CURLMOPT_QUICK_EXIT alone under a gate, every other constant plainly"
-  '("CURLMOPT_QUICK_EXIT")
+(test-equal "the C program reads CURLMOPT_QUICK_EXIT, CURLE_TOO_LARGE and CURLE_ECH_REQUIRED alone under a gate, every other constant plainly"
+  '("CURLE_ECH_REQUIRED" "CURLE_TOO_LARGE" "CURLMOPT_QUICK_EXIT")
   (map cadr
        (filter (lambda (q)
                  (and (eq? (car q) 'constant)

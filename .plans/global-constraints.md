@@ -127,8 +127,9 @@ provisional. They bind until that record is accepted or amended.
   is the UTF-8 rule's one exception (ADR-0001, amended 2026-10-23).
 - **Every check of a caller's string or list runs on a private copy, and the copy is what is
   used.** Scheme strings and pairs are mutable, so a check, then a use, of the caller's own
-  checks something else. That covers the transfer's snapshot of its request, the C-string
-  helpers, URL checking and option names (ADR-0001, amended).
+  checks something else. That covers the transfer's snapshot of its request, its body
+  among it from M4 slice 1, the C-string helpers, URL checking and option names (ADR-0001,
+  amended; ADR-0023).
 - **A request header is refused, before anything native, as `&curl-request-error`:**
   - a name that is no RFC 9110 token, `not-a-token`;
   - a value or user agent whose first offending char is U+0000, CR or LF, or above U+00FF:
@@ -137,8 +138,8 @@ provisional. They bind until that record is accepted or amended.
     libcurl drops a blank value, and libcurl's own header of that name with it;
   - a second Host, or a User-Agent beside the user-agent field, `duplicates-field`. libcurl
     keeps one Host, and sends it first;
-  - `Content-Length` or `Transfer-Encoding`, `framing-header`: M2 sends no body, and libcurl
-    owns the framing. M4 revisits it with bodies.
+  - `Content-Length` or `Transfer-Encoding`, `framing-header`: libcurl owns the framing, from
+    the body it is handed, M4's bodies too (ADR-0023).
 
   (M2 plan, §5.3)
 - **Every entry point `src/` binds has a prototype row in `tests/test-constants.sps`,** written
@@ -273,7 +274,13 @@ provisional. They bind until that record is accepted or amended.
   `Transfer-Encoding` stay refused: libcurl owns the framing. Streaming is M6's (ADR-0023).
   `put`, `patch` and `delete` are `CUSTOMREQUEST`, owned. Nothing follows a redirect:
   `FOLLOWLOCATION` is owned and left off, since through a 301, 302 or 303 libcurl resends a
-  custom method without its body (ADR-0023, amended 2026-10-26).
+  custom method without its body (ADR-0023, amended 2026-10-26); a private `follow` field sets
+  it for tests alone.
+- **A body's headers are the request's alone:** a request that sends a body also sends
+  `Content-Type:` and `Expect:`, which take libcurl's own form type and `Expect` away, unless
+  it names a header of that name, which replaces libcurl's. An empty body is a block of one
+  byte, never NULL, as a defence: NULL tells libcurl to read the body through its read callback,
+  whose default reads stdin, though with a size of 0 it reads none (ADR-0023, amended 2026-10-26, as built in M4 slice 1).
 - **A failed transfer raises its code's class,** a condition type under
   `&curl-transfer-error` with every base field, or the base type for a code no class names. The
   class follows the code, for `perform-failed` alone, never the scenario: one failure's code
@@ -283,6 +290,12 @@ provisional. They bind until that record is accepted or amended.
   to 101 has a row in one table, written out in the suite. Tests assert the type, the reason and
   the code, and a text only where a version row pins it (ADR-0022, amended 2026-10-26, from M4
   slice 1).
+- **A failed transfer's condition carries its request size,** `CURLINFO_REQUEST_SIZE`, the
+  bytes of request libcurl sent over every attempt, the body's among them, 0 when it sent none:
+  whether it is 0 is what M5's retry policy reads to tell whether a request was sent. A check
+  of its value runs on an engine of its own, since curl 8.23.0 resends a head after a dead
+  reused connection, and counts both. It carries no timings, which on a failure move with the version;
+  the response carries them (ADR-0022, amended 2026-10-26, from M4 slice 1).
 
 ## The escape hatch
 
@@ -308,7 +321,11 @@ provisional. They bind until that record is accepted or amended.
   (ADR-0009, amended 2026-10-23 and 2026-10-24).
   M4 adds, each in its slice: the body's options, `CUSTOMREQUEST`, `CONNECTTIMEOUT_MS`, `PROXY`,
   `FOLLOWLOCATION`, and every `PROXY_SSL_*` and `PROXY_CA*` option, with their twins, among the
-  string, list and blob options too (ADR-0009, amended 2026-10-26).
+  string, list and blob options too (ADR-0009, amended 2026-10-26). Slice 1 built its own, and
+  read the options tables of five libcurls for the twins: `CONNECTTIMEOUT`, `POSTFIELDS`,
+  `POSTFIELDSIZE`, `HTTPPOST`, `MIMEPOST`, `INFILESIZE`, `INFILESIZE_LARGE`, the URL's `PORT`
+  and `REQUEST_TARGET`, `CRLF` and `HEADER`, and all 23 `PROXY_` TLS options (ADR-0009,
+  amended 2026-10-26, as built).
 - **The test seam, `curl-engine-submit-with`, is held to these rules, narrowed:** long,
   enumerated-value and `off_t` options alone, so no address can pass, checked at submit on
   the caller's thread. It stays private (ADR-0009, amended 2026-10-23 and 2026-10-25).

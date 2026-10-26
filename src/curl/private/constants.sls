@@ -16,9 +16,21 @@
           curl-error-size
           curl-http-version-1-0 curl-http-version-1-1 curl-http-version-2-0
           curl-http-version-3
-          curle-unsupported-protocol curle-weird-server-reply curle-partial-file
           curle-write-error curle-out-of-memory curle-operation-timedout
-          curle-got-nothing curle-recv-error curle-filesize-exceeded
+          curle-couldnt-resolve-proxy curle-couldnt-resolve-host curle-couldnt-connect
+          curle-interface-failed curle-quic-connect-error curle-proxy
+          curle-partial-file curle-got-nothing curle-send-error curle-recv-error
+          curle-ssl-connect-error curle-ssl-engine-notfound curle-ssl-engine-setfailed
+          curle-ssl-certproblem curle-ssl-cipher curle-peer-failed-verification
+          curle-use-ssl-failed curle-ssl-engine-initfailed curle-ssl-cacert-badfile
+          curle-ssl-shutdown-failed curle-ssl-crl-badfile curle-ssl-issuer-error
+          curle-ssl-pinnedpubkeynotmatch curle-ssl-invalidcertstatus curle-ssl-clientcert
+          curle-ech-required
+          curle-unsupported-protocol curle-weird-server-reply curle-http2
+          curle-bad-content-encoding curle-http2-stream curle-http3
+          curle-filesize-exceeded curle-too-large
+          curlinfo-namelookup-time-t curlinfo-connect-time-t curlinfo-appconnect-time-t
+          curlinfo-starttransfer-time-t curlinfo-total-time-t curlinfo-request-size
           curlm-ok curlm-unknown-option curlmsg-done
           curlmopt-max-total-connections curlmopt-quick-exit)
   (import (curl private require-threaded)
@@ -217,30 +229,153 @@
   (define curl-http-version-2-0 3)
   (define curl-http-version-3 30)
 
-  ;; The CURLcodes the transfer's tests name, each a curl/curl.h CURLcode,
-  ;; all in the floor's headers. CURLE_TOO_LARGE, 100, came in 8.6.0, after
-  ;; the floor, so it is no constant here; tests/known-transfer-verdicts.sexp
-  ;; writes it, as every code, as a number.
+  ;; The CURLcodes chez-curl names, each a curl/curl.h CURLcode: every code a
+  ;; class names (ADR-0022, amended 2026-10-26), and the transfer's others.
+  ;; Each is described in curl's words, from libcurl-errors. All but the last
+  ;; two are in the floor's headers. CURLE_TOO_LARGE came in 8.6.0 and
+  ;; CURLE_ECH_REQUIRED in 8.8.0, after the floor (symbols-in-versions), so
+  ;; tests/test-constants.sps checks each only from headers at or above its
+  ;; gate.
   ;;
-  ;; curle-unsupported-protocol : Positive-Integer   CURLE_UNSUPPORTED_PROTOCOL, 1
-  ;; curle-weird-server-reply : Positive-Integer     CURLE_WEIRD_SERVER_REPLY, 8
-  ;; curle-partial-file : Positive-Integer           CURLE_PARTIAL_FILE, 18
-  ;; curle-write-error : Positive-Integer            CURLE_WRITE_ERROR, 23: a write
-  ;;                                                 callback refused a chunk
-  ;; curle-out-of-memory : Positive-Integer          CURLE_OUT_OF_MEMORY, 27
-  ;; curle-operation-timedout : Positive-Integer     CURLE_OPERATION_TIMEDOUT, 28
-  ;; curle-got-nothing : Positive-Integer            CURLE_GOT_NOTHING, 52
-  ;; curle-recv-error : Positive-Integer             CURLE_RECV_ERROR, 56
-  ;; curle-filesize-exceeded : Positive-Integer      CURLE_FILESIZE_EXCEEDED, 63
-  (define curle-unsupported-protocol 1)
-  (define curle-weird-server-reply 8)
-  (define curle-partial-file 18)
+  ;; Not classed:
+  ;;   curle-write-error : Positive-Integer          CURLE_WRITE_ERROR, 23: a write
+  ;;                                                 callback returned an error;
+  ;;                                                 body-limit and
+  ;;                                                 callback-raised end with it
+  ;;   curle-out-of-memory : Positive-Integer        CURLE_OUT_OF_MEMORY, 27: a
+  ;;                                                 memory allocation failed
+  ;; timeout:
+  ;;   curle-operation-timedout : Positive-Integer   CURLE_OPERATION_TIMEDOUT, 28:
+  ;;                                                 operation timeout
+  ;; connect:
+  ;;   curle-couldnt-resolve-proxy : Positive-Integer
+  ;;                                                 CURLE_COULDNT_RESOLVE_PROXY, 5
+  ;;   curle-couldnt-resolve-host : Positive-Integer CURLE_COULDNT_RESOLVE_HOST, 6
+  ;;   curle-couldnt-connect : Positive-Integer      CURLE_COULDNT_CONNECT, 7:
+  ;;                                                 failed to connect() to host
+  ;;                                                 or proxy
+  ;;   curle-interface-failed : Positive-Integer     CURLE_INTERFACE_FAILED, 45: an
+  ;;                                                 outgoing interface could not
+  ;;                                                 be used
+  ;;   curle-quic-connect-error : Positive-Integer   CURLE_QUIC_CONNECT_ERROR, 96
+  ;;   curle-proxy : Positive-Integer                CURLE_PROXY, 97: proxy
+  ;;                                                 handshake error
+  ;; send or receive:
+  ;;   curle-partial-file : Positive-Integer         CURLE_PARTIAL_FILE, 18: shorter
+  ;;                                                 or larger than expected
+  ;;   curle-got-nothing : Positive-Integer          CURLE_GOT_NOTHING, 52: nothing
+  ;;                                                 was returned from the server
+  ;;   curle-send-error : Positive-Integer           CURLE_SEND_ERROR, 55: failed
+  ;;                                                 sending network data
+  ;;   curle-recv-error : Positive-Integer           CURLE_RECV_ERROR, 56: failure
+  ;;                                                 with receiving network data
+  ;; TLS:
+  ;;   curle-ssl-connect-error : Positive-Integer    CURLE_SSL_CONNECT_ERROR, 35: a
+  ;;                                                 problem in the TLS handshake
+  ;;   curle-ssl-engine-notfound : Positive-Integer  CURLE_SSL_ENGINE_NOTFOUND, 53
+  ;;   curle-ssl-engine-setfailed : Positive-Integer CURLE_SSL_ENGINE_SETFAILED, 54
+  ;;   curle-ssl-certproblem : Positive-Integer      CURLE_SSL_CERTPROBLEM, 58: the
+  ;;                                                 local client certificate
+  ;;   curle-ssl-cipher : Positive-Integer           CURLE_SSL_CIPHER, 59
+  ;;   curle-peer-failed-verification : Positive-Integer
+  ;;                                                 CURLE_PEER_FAILED_VERIFICATION,
+  ;;                                                 60: the server's certificate
+  ;;                                                 was deemed not OK
+  ;;   curle-use-ssl-failed : Positive-Integer       CURLE_USE_SSL_FAILED, 64
+  ;;   curle-ssl-engine-initfailed : Positive-Integer
+  ;;                                                 CURLE_SSL_ENGINE_INITFAILED, 66
+  ;;   curle-ssl-cacert-badfile : Positive-Integer   CURLE_SSL_CACERT_BADFILE, 77: a
+  ;;                                                 problem reading the CA cert
+  ;;   curle-ssl-shutdown-failed : Positive-Integer  CURLE_SSL_SHUTDOWN_FAILED, 80
+  ;;   curle-ssl-crl-badfile : Positive-Integer      CURLE_SSL_CRL_BADFILE, 82
+  ;;   curle-ssl-issuer-error : Positive-Integer     CURLE_SSL_ISSUER_ERROR, 83
+  ;;   curle-ssl-pinnedpubkeynotmatch : Positive-Integer
+  ;;                                                 CURLE_SSL_PINNEDPUBKEYNOTMATCH, 90
+  ;;   curle-ssl-invalidcertstatus : Positive-Integer
+  ;;                                                 CURLE_SSL_INVALIDCERTSTATUS, 91
+  ;;   curle-ssl-clientcert : Positive-Integer       CURLE_SSL_CLIENTCERT, 98: a
+  ;;                                                 client certificate required
+  ;;   curle-ech-required : Positive-Integer         CURLE_ECH_REQUIRED, 101, since
+  ;;                                                 8.8.0: ECH was attempted but
+  ;;                                                 failed
+  ;; protocol:
+  ;;   curle-unsupported-protocol : Positive-Integer CURLE_UNSUPPORTED_PROTOCOL, 1:
+  ;;                                                 a protocol this libcurl does
+  ;;                                                 not support; with the scheme
+  ;;                                                 pinned, a reply it cannot
+  ;;                                                 speak, such as HTTP/0.9
+  ;;   curle-weird-server-reply : Positive-Integer   CURLE_WEIRD_SERVER_REPLY, 8:
+  ;;                                                 data libcurl could not parse
+  ;;   curle-http2 : Positive-Integer                CURLE_HTTP2, 16: the HTTP/2
+  ;;                                                 framing layer
+  ;;   curle-bad-content-encoding : Positive-Integer CURLE_BAD_CONTENT_ENCODING, 61
+  ;;   curle-http2-stream : Positive-Integer         CURLE_HTTP2_STREAM, 92
+  ;;   curle-http3 : Positive-Integer                CURLE_HTTP3, 95
+  ;; too large:
+  ;;   curle-filesize-exceeded : Positive-Integer    CURLE_FILESIZE_EXCEEDED, 63:
+  ;;                                                 maximum file size exceeded
+  ;;   curle-too-large : Positive-Integer            CURLE_TOO_LARGE, 100, since
+  ;;                                                 8.6.0: a value or data field
+  ;;                                                 grew larger than allowed
   (define curle-write-error 23)
   (define curle-out-of-memory 27)
   (define curle-operation-timedout 28)
+  (define curle-couldnt-resolve-proxy 5)
+  (define curle-couldnt-resolve-host 6)
+  (define curle-couldnt-connect 7)
+  (define curle-interface-failed 45)
+  (define curle-quic-connect-error 96)
+  (define curle-proxy 97)
+  (define curle-partial-file 18)
   (define curle-got-nothing 52)
+  (define curle-send-error 55)
   (define curle-recv-error 56)
+  (define curle-ssl-connect-error 35)
+  (define curle-ssl-engine-notfound 53)
+  (define curle-ssl-engine-setfailed 54)
+  (define curle-ssl-certproblem 58)
+  (define curle-ssl-cipher 59)
+  (define curle-peer-failed-verification 60)
+  (define curle-use-ssl-failed 64)
+  (define curle-ssl-engine-initfailed 66)
+  (define curle-ssl-cacert-badfile 77)
+  (define curle-ssl-shutdown-failed 80)
+  (define curle-ssl-crl-badfile 82)
+  (define curle-ssl-issuer-error 83)
+  (define curle-ssl-pinnedpubkeynotmatch 90)
+  (define curle-ssl-invalidcertstatus 91)
+  (define curle-ssl-clientcert 98)
+  (define curle-ech-required 101)
+  (define curle-unsupported-protocol 1)
+  (define curle-weird-server-reply 8)
+  (define curle-http2 16)
+  (define curle-bad-content-encoding 61)
+  (define curle-http2-stream 92)
+  (define curle-http3 95)
   (define curle-filesize-exceeded 63)
+  (define curle-too-large 100)
+
+  ;; What a finished transfer reports, read by curl_easy_getinfo (M4 plan,
+  ;; section 3.3; ADR-0022, amended 2026-10-26), curl/curl.h. The five
+  ;; timings are CURLINFO_OFF_T, 0x600000, plus their numbers: each a
+  ;; curl_off_t of microseconds from the transfer's start, since 7.61.0. The
+  ;; request size is CURLINFO_LONG, 0x200000, plus 12.
+  ;;
+  ;; curlinfo-namelookup-time-t : Positive-Integer     CURLINFO_NAMELOOKUP_TIME_T, + 51
+  ;; curlinfo-connect-time-t : Positive-Integer        CURLINFO_CONNECT_TIME_T, + 52
+  ;; curlinfo-appconnect-time-t : Positive-Integer     CURLINFO_APPCONNECT_TIME_T, + 56:
+  ;;                                                   the TLS handshake's end
+  ;; curlinfo-starttransfer-time-t : Positive-Integer  CURLINFO_STARTTRANSFER_TIME_T, + 54:
+  ;;                                                   the first byte received
+  ;; curlinfo-total-time-t : Positive-Integer          CURLINFO_TOTAL_TIME_T, + 50
+  ;; curlinfo-request-size : Positive-Integer          CURLINFO_REQUEST_SIZE, + 12: the
+  ;;                                                   bytes of request sent, a long
+  (define curlinfo-namelookup-time-t 6291507)
+  (define curlinfo-connect-time-t 6291508)
+  (define curlinfo-appconnect-time-t 6291512)
+  (define curlinfo-starttransfer-time-t 6291510)
+  (define curlinfo-total-time-t 6291506)
+  (define curlinfo-request-size 2097164)
 
   ;; The multi interface's (M3 plan, section 5.2), curl/multi.h.
   ;;

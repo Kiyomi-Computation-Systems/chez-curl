@@ -1,6 +1,6 @@
 # ADR-0009: A typed escape hatch for unwrapped options, in the low level only
 
-- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan)
+- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, `(curl ...)` only
 - **Settles:** D3 (brief §10)
@@ -209,3 +209,36 @@ slice:
 The hatch copies each value as it is attached, and applies the copy. `test-unsupported` writes
 every owned option and twin out. The test seam, `curl-engine-submit-with`, retires into the
 hatch in slice 4, which amends this record and global-constraints when it goes.
+
+## Amendment, 2026-10-26: M4 slice 1's owned options, as built
+
+`owned-option-names` in `(curl private transfer)` gained, as the M4 plan's amendment above
+named, each refused by the test seam by id:
+- **the new fields' options:** `method`'s `CUSTOMREQUEST`, beside its `NOBODY`; `body`'s
+  `POSTFIELDSIZE_LARGE` and `COPYPOSTFIELDS`; `connect-timeout-ms`'s `CONNECTTIMEOUT_MS`; and
+  the private `follow` field's `FOLLOWLOCATION`, which the two seam tests that set it now set
+  through that field;
+- **their twins:** `CONNECTTIMEOUT`; `POSTFIELDS`, `POSTFIELDSIZE`, `HTTPPOST` and `MIMEPOST`,
+  another body, size or form; `INFILESIZE` and `INFILESIZE_LARGE`, an upload's size; beside
+  `HTTPGET`, `POST`, `PUT` and `UPLOAD`, owned since M2;
+- **the URL's twins, found in the options tables** (the M4 plan, §4.1): `PORT`, which replaces
+  the URL's port, a long the seam took until now, and `REQUEST_TARGET`, its target on the
+  request line;
+- **every option that sets a proxy's TLS,** 23 in the tables of 7.85.0 to 8.23.0: the
+  `PROXY_SSL_*` and `PROXY_CA*` options the amendment above names, and the rest of the `PROXY_`
+  TLS settings, its version, ciphers, CRL, issuer, pinned key, client certificate and key, and
+  TLS-SRP, any of which could loosen it or replace its trust, as ADR-0024 decided it must not be
+  until M7.
+- **two more, found by the slice's review,** longs the seam took: `CRLF`, which libcurl documents
+  as converting each LF in what it sends to CRLF, a rewrite of the request's own body; and
+  `HEADER`, which hands the response's head to the write callback with its body, where the body
+  limit counts it.
+
+Not yet owned, for slice 4's twin review of the string, list and blob options the hatch takes,
+and of these the review named, unmeasured: `HTTP_TRANSFER_DECODING`, `HTTP_CONTENT_DECODING` and
+`IGNORE_CONTENT_LENGTH`, which change the body and its limit; `CONNECT_ONLY`, which sends no
+request; `TIMECONDITION`, `TIMEVALUE`, `TIMEVALUE_LARGE`, `RESUME_FROM`, `RESUME_FROM_LARGE` and
+`TRANSFER_ENCODING`, which add headers the request never named; and the rest:
+`CONNECT_TO`, `RESOLVE`, `UNIX_SOCKET_PATH` and `ABSTRACT_UNIX_SOCKET`, which send a connection
+elsewhere; `HEADEROPT` and `PROXYHEADER`, slice 3's; and `COOKIEFILE` at `"-"`, which reads
+stdin. `PROXY`, `NOPROXY` and `PRE_PROXY` come with slice 3's field.

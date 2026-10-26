@@ -430,7 +430,7 @@
                                (lambda ()
                                  (and (eq? (token-state token) 'done)
                                       (list (token-outcome token)))))))
-      (if (transfer-response? (car outcome))
+      (if (curl-response? (car outcome))
           (car outcome)
           (raise (car outcome)))))
 

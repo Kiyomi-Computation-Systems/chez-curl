@@ -119,22 +119,25 @@
 ;; request : String . (Listof Any) -> Request
 ;; A GET of TARGET, no headers, no user agent, a 20 s timeout, no limit,
 ;; the system store, verification on; OPTIONS give headers, ca-file or
-;; fault, keyword then value.
+;; fault, keyword then value, a fault set by the private
+;; curl-request-with-fault.
 (define (request target . options)
-  (let ((given (lambda (key default)
-                 (let ((at (memq key options))) (if at (cadr at) default)))))
-    (make-transfer-request target 'get (given 'headers '()) #f 20000 #f
-                           (given 'ca-file #f) #t (given 'fault #f))))
+  (let* ((given (lambda (key default)
+                  (let ((at (memq key options))) (if at (cadr at) default))))
+         (r (make-curl-request target 'headers (given 'headers '()) 'timeout-ms 20000
+                               'ca-file (given 'ca-file #f))))
+    (if (given 'fault #f) (curl-request-with-fault r (given 'fault #f)) r)))
 
 ;; outcome : (-> Response) -> Outcome
 ;; What THUNK answers, whole: (response STATUS BODY), the body as Latin-1;
-;; (transfer-error REASON CODE RECORDED); (engine-error REASON CONDITION);
+;; (transfer-error REASON CODE RECORDED REQUEST-SIZE); (engine-error REASON
+;; CONDITION);
 ;; (request-refused FIELD REASON); (url-refused REASON);
 ;; (assertion-violation WHO); (raised TEXT) for anything else.
 (define (outcome thunk)
   (guard (e ((curl-transfer-error? e)
              (list 'transfer-error (curl-transfer-error-reason e) (curl-transfer-error-code e)
-                   (curl-transfer-error-recorded e)))
+                   (curl-transfer-error-recorded e) (curl-transfer-error-request-size e)))
             ((curl-engine-error? e)
              (list 'engine-error (curl-engine-error-reason e) (curl-engine-error-condition e)))
             ((curl-request-error? e)
@@ -144,7 +147,7 @@
              (list 'assertion-violation (condition-who e)))
             (#t (list 'raised (describe e))))
     (let ((r (thunk)))
-      (list 'response (transfer-response-status r) (latin-1 (transfer-response-body r))))))
+      (list 'response (curl-response-status r) (latin-1 (curl-response-body r))))))
 
 ;; await-bounded : Token Natural -> Response
 ;; curl-token-await's answer for TOKEN, called once curl-token-done? says
@@ -184,7 +187,7 @@
             ((equal? e '(never-completed)) e)
             (#t (list 'raised (describe e))))
     (let ((r (await-bounded token 20000)))
-      (list 'response (transfer-response-status r) (latin-1 (transfer-response-body r))))))
+      (list 'response (curl-response-status r) (latin-1 (curl-response-body r))))))
 
 ;; stop-within : Engine . (List (-> Any)) -> Any
 ;; curl-engine-stop of ENGINE, run on a thread of its own, waited for here
@@ -320,10 +323,10 @@
             (and (curl-engine-multi engine) #t))
       engine))
 
-(test-equal "a request carrying a procedure is refused when it is made: a fault is data, never a procedure (ADR-0012, decision 4)"
-  '(assertion-violation make-transfer-request)
-  (outcome (lambda () (make-transfer-request "http://127.0.0.1/" 'get '() #f #f #f #f #t
-                                             (lambda (chunk) chunk)))))
+(test-equal "a request carrying a procedure is refused when it is made: a fault is data, never a procedure, refused by the private curl-request-with-fault, which alone sets one (ADR-0012, decision 4)"
+  '(assertion-violation curl-request-with-fault)
+  (outcome (lambda () (curl-request-with-fault (make-curl-request "http://127.0.0.1/")
+                                               (lambda (chunk) chunk)))))
 
 ;; --- the thread rule (ADR-0012, decision 3) ----------------------------------------------
 
@@ -440,12 +443,12 @@
 (define (stall-expected entry)
   (let ((v (cdddr entry)))
     (list (list 'settings (cadr entry) (if (caddr entry) 4 0))
-          (list 'cancel (list-ref v 0) '(transfer-error cancelled #f #f))
+          (list 'cancel (list-ref v 0) '(transfer-error cancelled #f #f #f))
           (list 'other (list-ref v 1) '(response 200 "abcdefghij"))
           (list 'cancel-stop (list-ref v 2))
-          (list 'timeout (list-ref v 3) '(transfer-error perform-failed 28 #f))
+          (list 'timeout (list-ref v 3) '(transfer-error perform-failed 28 #f 0))
           (list 'timeout-stop (list-ref v 4))
-          (list 'stop (list-ref v 5) '(transfer-error stopped #f #f))
+          (list 'stop (list-ref v 5) '(transfer-error stopped #f #f #f))
           '(stalled "cancel.stall.invalid" "stop.stall.invalid" "timeout.stall.invalid")
           (list 'counts zero-counts))))
 
@@ -712,7 +715,7 @@
                         r))
            '())
      (list "the test seam's option this libcurl does not know"
-           '(transfer-error unknown-option #f #f)
+           '(transfer-error unknown-option #f #f 0)
            (lambda () (request status))
            '(("NO_SUCH_OPTION_EVER" . 1)))
      (list "the test seam's owned option, URL"
@@ -735,7 +738,7 @@
    ;; --- cancel ----------------------------------------------------------------------------
 
    (test-equal "a cancel of a token still queued completes it as cancelled, on this thread, with nothing started and no chunk"
-     (list '(transfer-error cancelled #f #f) '() 0 running-counts)
+     (list '(transfer-error cancelled #f #f #f) '() 0 running-counts)
      (let* ((started (transfers-started))
             (t (call-with-engine-held engine
                  (lambda ()
@@ -748,7 +751,7 @@
          (list answer (curl-token-chunks t) (- (transfers-started) started 1) (native-counts)))))
 
    (test-equal "a cancel of a live drip completes it as cancelled, with the chunks it had accepted, and the engine's table empty after"
-     (list '(transfer-error cancelled #f #f) #t 0 running-counts)
+     (list '(transfer-error cancelled #f #f #f) #t 0 running-counts)
      (let ((t (curl-engine-submit engine (request (drip 200 5)))))
        (pause-ms 200)
        (curl-token-cancel t)
@@ -776,14 +779,14 @@
              (curl-token-cancel t)
              (let ((a (awaited t)))
                (loop (+ i 1)
-                     (if (member a '((response 200 "status 200\n") (transfer-error cancelled #f #f)))
+                     (if (member a '((response 200 "status 200\n") (transfer-error cancelled #f #f #f)))
                          strays
                          (cons a strays))))))))
 
    ;; A live token cancelled twice queues two messages: the second finds it
    ;; done, and must leave it so.
    (test-equal "a live drip cancelled twice while the engine is held: the first cancel ends it as cancelled, the second, finding it done, is counted stale and changes nothing"
-     (list '(transfer-error cancelled #f #f) 1 0 running-counts)
+     (list '(transfer-error cancelled #f #f #f) 1 0 running-counts)
      (let* ((t (curl-engine-submit engine (request (drip 100 10))))
             (stale (begin (pause-ms 150) (curl-engine-stale-cancels engine))))
        (call-with-engine-held engine
@@ -797,7 +800,7 @@
    ;; A token's first outcome stands: one cancelled while queued keeps it
    ;; through the stop that takes its submit.
    (test-equal "a token cancelled while queued, then stopped in the same batch, stays cancelled, and was never started"
-     (list '(transfer-error cancelled #f #f) 0 'stopped)
+     (list '(transfer-error cancelled #f #f #f) 0 'stopped)
      (let* ((stopping (make-curl-engine))
             (started (transfers-started))
             (t (call-with-engine-held stopping
@@ -822,7 +825,7 @@
    ;; A cancel and a stop wake the engine: a drip 2 s between bytes leaves
    ;; libcurl's poll waiting its whole 1000 ms otherwise.
    (test-equal "a cancel of a drip idle between bytes ends it within 300 ms, and a stop of an engine holding one returns within 300 ms: each wakes the poll"
-     (list '(transfer-error cancelled #f #f) 'within-bound 'within-bound)
+     (list '(transfer-error cancelled #f #f #f) 'within-bound 'within-bound)
      (let* ((t (curl-engine-submit engine (request (drip 3 2000))))
             (t0 (begin (pause-ms 300) (now-ms))))
        (curl-token-cancel t)
@@ -912,8 +915,8 @@
                         q))))
           (stop-answer (guard (e (#t (list 'stop-raised e))) (stop-within stopping) 'returned)))
      (test-equal "a stop completes each live transfer as stopped, with the chunks it had, and each queued one as stopped, never started"
-       (list (make-list 2 '(transfer-error stopped #f #f)) '(#t #t)
-             (make-list 2 '(transfer-error stopped #f #f)) '(() ()) 0)
+       (list (make-list 2 '(transfer-error stopped #f #f #f)) '(#t #t)
+             (make-list 2 '(transfer-error stopped #f #f #f)) '(() ()) 0)
        (list (map (lambda (t) (awaited-within t 10000)) live)
              (map (lambda (t) (pair? (curl-token-chunks t))) live)
              (map (lambda (t) (awaited-within t 10000)) queued) (map curl-token-chunks queued)

@@ -874,3 +874,24 @@ it should not be a comment. (chez-cmark-gfm)
   So `test-engine`'s checks that run drips together each make an engine of their own,
   and `reuse-verdicts` pins each libcurl's answer by version (ADR-0020, amended
   2026-10-26). (chez-curl, curl 8.23.0)
+* **A failed transfer's timings move with the version, and 8.23.0 fills pretransfer even when
+  nothing was sent.** M4's plan had a failure carry its timings, so a retry policy could tell
+  whether a request went out. Measured on five libcurls (M4 slice 1): for a connect that was
+  refused, 8.20.0 reports a total of 0, 7.85.0 and 8.5.0 the time it took, and 8.23.0
+  pretransfer and starttransfer too, 95 µs; for a TLS handshake ended by the connect timeout,
+  8.23.0's pretransfer is 301 ms. `CURLINFO_REQUEST_SIZE` was 0 on every failure that sent
+  nothing, on all five. A test of "the request was sent" by a timing passes on one libcurl
+  and lies on the next.
+
+  The request size is no head length either: it sums every send of every attempt, the
+  body's too. Measured with a fresh handle per transfer, it was the head's exact length, and
+  `test-request` asserted that. Through one engine on curl 8.23.0, which reuses a dead
+  connection unchecked, the head went out twice and the size read 150 for 75: the `current`
+  lane failed, as the slice's review had predicted from libcurl's source. A request-size
+  check runs on an engine of its own, its pool empty. (chez-curl, M4 slice 1)
+* **A `while read` loop whose body runs a command that reads stdin loses the rest of its
+  list.** The slice's mutation runner read its mutants with `while read`, and ran
+  `scripts/guix-env` in the loop's body; the container's shell read the rest of the list from
+  the same stdin, and the sweep ended after five of 27 mutants, printing `done` as if it had
+  finished. Give every command in such a loop `< /dev/null`, and check the count of results
+  against the list's. (chez-curl, M4 slice 1)
