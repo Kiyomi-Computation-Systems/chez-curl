@@ -1,6 +1,6 @@
 # ADR-0021: Completions reach callers through a mailbox the caller drains
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-26: after the plan's review
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, `(curl)`'s asynchronous API, from M4
 - **Settles:** how a completion callback runs on a caller's thread, which ADR-0012 left to M4;
@@ -70,3 +70,26 @@ thread runs them instead. Three designs were offered:
   holds while waiting.
 - **The mailbox's mutex is a new mutex,** held through `locked`, in a critical section, and
   never across a wait (ADR-0013, amended 2026-10-25).
+
+## Amendment, 2026-10-26: after the plan's review
+
+An adversarial review of the M4 plan (Opus, read-only) found two gaps in this record:
+
+- **A take that escapes.** A take removes the token inside a critical section, and leaving one
+  runs a pending interrupt at once (ADR-0012, amended 2026-10-24). So a handler that escapes
+  there, or between deliver's take and its callback, leaves a token out of the mailbox that no
+  caller holds, and its callback unrun. Decision 4's "the mailbox has moved past it" was
+  written for a callback's raise, after the callback ran.
+  - **Decided, as the plan's design: a take that escapes loses a notice, never an outcome.** The
+    outcome stays on the token, which stays done, as await's does. The mailbox carries notices,
+    and the token keeps the outcome: a caller whose interrupt handlers can escape keeps its
+    tokens and awaits them. M5's request group keeps its tokens anyway, to cancel what it
+    leaves.
+  - A test plants an escaping interrupt at the take, and then awaits the token's outcome.
+- **What deliver answers.** "What the callback answered" could not tell a callback answering
+  `#f` from a bound that passed. Deliver answers the token it handed over, or `#f` once the
+  bound passes. A token with no callback is handed over the same way, calling nothing, and
+  take never runs a callback.
+- **The delivery test** checks a cancel's completion from a thread other than the delivering
+  one, and drives a token completed twice, a cancel while queued then a stop in the same
+  batch, which must be appended once.

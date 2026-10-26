@@ -1,6 +1,6 @@
 # ADR-0009: A typed escape hatch for unwrapped options, in the low level only
 
-- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3)
+- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, `(curl ...)` only
 - **Settles:** D3 (brief §10)
@@ -194,3 +194,18 @@ Two of the safe types still need guarding:
   (ADR-0019, amended 2026-10-25). It is a test seam, as `make-faulty-curl-engine` is: no
   request, option or hatch reaches it.
 
+## Amendment, 2026-10-26: M4's owned options (the M4 plan)
+
+The M4 plan, revised after its review, adds to the owned options and twins, each built in its
+slice:
+- the body's options, `CUSTOMREQUEST`, `CONNECTTIMEOUT_MS` and `PROXY`, as request fields
+  ([ADR-0023](0023-the-public-request.md), [ADR-0024](0024-what-a-transfer-reads-from-its-environment.md));
+- `FOLLOWLOCATION`, left off: through a 301, 302 or 303, libcurl resends a custom method without
+  its body (ADR-0023, amended 2026-10-26);
+- every `PROXY_SSL_*` and `PROXY_CA*` option. The 2026-10-24 amendment left a proxy's
+  verification to M4, and the maintainer chose libcurl's verified default until M7 (ADR-0024,
+  amended 2026-10-26).
+
+The hatch copies each value as it is attached, and applies the copy. `test-unsupported` writes
+every owned option and twin out. The test seam, `curl-engine-submit-with`, retires into the
+hatch in slice 4, which amends this record and global-constraints when it goes.

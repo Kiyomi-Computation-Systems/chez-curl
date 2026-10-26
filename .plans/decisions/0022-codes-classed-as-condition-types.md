@@ -1,6 +1,6 @@
 # ADR-0022: libcurl's codes are classed as condition types
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-26: after the plan's review
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, what a failed transfer raises, from M4
 - **Settles:** the brief's "error taxonomy mapping `CURLE_*` to conditions" (§8, M4); the
@@ -80,3 +80,38 @@ Three shapes were offered:
   oversized head is a too-large failure from 8.7.1 on, and the base type before it, since 27
   also means libcurl ran out of memory.
 - **A libcurl that adds a code raises the base type with it,** until the table gains its row.
+
+## Amendment, 2026-10-26: after the plan's review
+
+An adversarial review of the M4 plan (Opus, read-only) found the proposed rows contradicted by
+scenarios `test-transfer` already asserts, and three decisions loosely worded. The decision,
+classes by code, stands. Revised:
+
+- **Decision 5's classes are described in curl's own words for their codes, never by a
+  cause.** The shared answers show why:
+  - 56 is what libcurl answers for a bad chunk size, a protocol error;
+  - `short-body` and `reset-mid-body` play the same bytes, and answer 18 after a clean close and
+    56 after a reset;
+  - and §Context's 56s, 100,000 headers and a refused CONNECT, are no lost connection either.
+
+  So "connection lost" becomes a send-or-receive class, 18, 52, 55 and 56, and 18 leaves
+  protocol. A connect error includes a proxy variable that names no proxy that answers, 5 or 7.
+  The suite's table lists the scenarios that reach each code.
+- **The redirects class is dropped.** The M4 plan owns `FOLLOWLOCATION`, after the review's
+  probe showed libcurl resending a custom method without its body through a 301, 302 or 303
+  (ADR-0023, amended). So libcurl never answers 47 in M4, nor 3, which it gives only while
+  following. M5 follows redirects itself, and raises its own failure for too many.
+- **Decision 2 holds for `perform-failed` alone.** `body-limit`'s code is 23, which no class
+  names, and decision 6 makes it too-large: so the class follows the code for `perform-failed`,
+  `body-limit` is too-large, and every other reason raises the base type, a `setopt-failed`
+  whose code a class names among them. The suite writes the rule out.
+- **Decision 4's table is keyed by name.** Every classed code is a constant in
+  `(curl private constants)`, checked against the headers, as global-constraints requires of
+  every constant. 100, `CURLE_TOO_LARGE`, carries its gate, 8.6.0, and 101,
+  `CURLE_ECH_REQUIRED`, 8.8.0 (`docs/libcurl/symbols-in-versions`).
+- **Decision 7 was wrong about texts.** Tests do assert texts where a version row pins one:
+  `test-transfer`'s `error-text` rows, and ADR-0020's 55. So: tests assert the type, the reason
+  and the code, and a text only where a version row pins it.
+- **A class alone does not say whether a request was sent,** which M5's retry policy needs: 28
+  covers a connect and a whole transfer. So a failed transfer's condition carries the timings
+  the response would have, as far as the transfer got (the M4 plan, §3.3).

@@ -1,6 +1,6 @@
 # ADR-0023: The public request is made from a property list, and carries a whole body
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-26: after the plan's review
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, `(curl)`'s request record, from M4
 - **Settles:** the request's public shape, and whether M4's request carries a body; the
@@ -60,3 +60,31 @@ streams bodies both ways.
   M4 plan names them.
 - **M5's session merges its defaults into a request with `curl-request-with`.**
 - **The request's checks run twice, as now:** when it is made, and on the submit's copy.
+
+## Amendment, 2026-10-26: after the plan's review
+
+An adversarial review of the M4 plan (Opus, read-only) measured bodies and redirects, with a C
+probe against a Node server that echoes what it got, on 7.85.0, Ubuntu's 8.5.0 with OpenSSL,
+Guix's 8.20.0 and 8.23.0, each alike, and rerun in the container
+([research](../research/m4/redirect/)):
+
+- libcurl adds `Content-Type: application/x-www-form-urlencoded` to a body on every method,
+  `PUT`, `PATCH` and `DELETE` by `CUSTOMREQUEST` as well as `POST`;
+- with `FOLLOWLOCATION`, a 301, 302 or 303 turns a `POST` into a `GET` without its body, and
+  resends a `CUSTOMREQUEST` method with no body. 307 and 308 keep both. The option that changes
+  it, `CURLFOLLOW_OBEYCODE`, arrived in 8.13.0, above the floor;
+- an empty body passed as NULL and as `""` sent the same request, `Content-Length: 0`, and a
+  `PUT` with no body sent no `Content-Length`.
+
+So the M4 plan, as its design (§3.2), revised:
+- **`FOLLOWLOCATION` is owned, and left off.** Nothing in M4 follows a redirect, and M5 follows
+  them itself, from `CURLINFO_REDIRECT_URL`.
+- **`CUSTOMREQUEST` is `method`'s own option,** owned, for `put`, `patch` and `delete`, with or
+  without a body.
+- **With no body, `post`, `put` and `patch` send an empty one,** `Content-Length: 0`, passed to
+  libcurl as NULL; a `delete` sends none. A body with `get` or `head` is refused, as
+  `&curl-request-error`, reason `body-not-allowed`.
+- **Decision 5's measurement is partly in:** the `Content-Type` above is on every method. The
+  suppression is measured in slice 1.
+- **Decision 6:** "the test seam keeps it" means a private constructor, since the M4 plan
+  retires the seam into the hatch in slice 4.

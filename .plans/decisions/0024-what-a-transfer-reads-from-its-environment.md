@@ -1,6 +1,6 @@
 # ADR-0024: What a transfer reads from its environment
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-26: a proxy's TLS, and after the plan's review
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, every transfer, from M4
 - **Settles:** the environment policy ADR-0018 handed to M4: the proxy variables, Guix's
@@ -84,3 +84,36 @@ The Mac's 8.7.1 has not run the probe.
 - **The override table moves from `test-transfer-tls` into `src/`,** and the suite holds the
   library's table to its own copy.
 - **The Mac runs the proxy probe** with its next run, and its answers join this record.
+
+## Amendment, 2026-10-26: a proxy's TLS, and after the plan's review
+
+An adversarial review of the M4 plan (Opus, read-only) found the proxy's TLS undecided, though
+ADR-0009 (amended 2026-10-24) handed it to M4, and corrected four details.
+
+- **Decided by the maintainer, 2026-10-26: a proxy's TLS stays libcurl's verified default,**
+  against its system store, until M7. Decision 1 honours `https_proxy` and `all_proxy`, which
+  can name an `https://` proxy, and the request's `ca-file` and `verify` do not reach one. So
+  every `PROXY_SSL_*` and `PROXY_CA*` option is owned, and the hatch cannot loosen a proxy's
+  verification. A proxy's own CA or verification is a request field with M7's explicit
+  proxies. Guix's patch writes the proxy's CA and CA directory from the same two variables
+  (`curl-use-ssl-cert-env.patch`): the operator's setting, recorded.
+  - **Rejected:** the request's `ca-file` and `verify` covering the proxy too, which would make
+    a CA file meant for the origin trust the proxy, and `verify #f` turn off the proxy's checks;
+    and leaving the options to the hatch, where a caller could turn a proxy's verification off.
+- **Context overclaimed the switches.** The probe ran `CURLOPT_PROXY ""` with `http_proxy`,
+  `all_proxy` and `https_proxy` set, and `CURLOPT_NOPROXY "*"` with `http_proxy` and
+  `https_proxy`. That each holds for the other variables is libcurl's source, `lib/url.c`, not
+  the measurement.
+- **Decision 2, made exact:**
+  - an empty variable counts as unset, as libcurl's `curl_getenv` reads it;
+  - the table is keyed by whether the loaded library's resolved path is under `/gnu/store`, and
+    by its version, not by libc's world: a Guix libcurl loaded through `CHEZ_CURL_LIBCURL` by a
+    Chez outside Guix is still Guix's;
+  - Guix's 8.20.0 overrides, and every other Guix libcurl is taken to. 8.6.0's "does not" came
+    from a measurement that was not kept, and `test-transfer-tls` records 8.6.0 as unrecorded;
+  - a request is refused only with verification on. With it off libcurl reads no CA, and
+    ADR-0018's decision 3 allows a CA file beside it.
+- **`CURL_SSL_BACKEND` joins decision 3's documented variables.** On Apple's MultiSSL libcurl it
+  selects the backend, and its LibreSSL falls back to the keychain when a CA file fails
+  (`traps.md`). The Mac measures whether selecting it undoes a request's CA file. If it does,
+  what to do is the maintainer's.
