@@ -1,8 +1,9 @@
 #!r6rs
 ;;; (curl private engine): an engine, one Chez thread that owns a multi
 ;;; handle, waits in curl_multi_poll, and runs the transfers other threads
-;;; submit (ADR-0012; M3 plan, sections 3.1 to 3.8). Private: M4 builds the
-;;; public records and the asynchronous API on it.
+;;; submit (ADR-0012; M3 plan, sections 3.1 to 3.8). (curl) exports the
+;;; engine, the token, the waits and the mailbox (M4 plan, section 3.1);
+;;; the rest is private: the counts, the seams and the planted faults.
 ;;;
 ;;; make-curl-engine references the load first, on the caller's thread,
 ;;; and only then forks the engine's thread: Chez locks no library's
@@ -61,9 +62,20 @@
 ;;; caller's thread, so nothing native is made for it; of a live one, it is
 ;;; a message; of a done one, nothing.
 ;;;
-;;; Every wait for the engine, await's, stop's and make-curl-engine's,
-;;; polls: each read of what it waits for is a short hold of the engine's
-;;; mutex through locked, and between reads it sleeps, from 50 us doubling
+;;; A token submitted with a mailbox goes there as it becomes done, once,
+;;; appended by the thread that completes it, holding the engine's mutex
+;;; and then the mailbox's: the engine's thread, or a caller's that
+;;; cancelled it queued (ADR-0021). The engine's is always taken first, and
+;;; no hold of the mailbox's takes it. A caller's thread takes the token
+;;; out, or delivers it, calling its callback there: the engine's thread
+;;; never calls one, so caller code never runs on it (ADR-0012, decision
+;;; 4). The outcome stays on the token, so a take that escapes loses a
+;;; notice, never an outcome (ADR-0021, amended).
+;;;
+;;; Every wait, await's, a token's bounded wait, stop's, make-curl-engine's
+;;; and a mailbox's take, polls: each read of what it waits for is a short
+;;; hold of the engine's mutex, or the mailbox's, through locked, and
+;;; between reads it sleeps, from 50 us doubling
 ;;; to 10 ms, holding nothing. Chez's sleep deactivates the thread when
 ;;; interrupts are on, so other threads' collections go on, and a pending
 ;;; Ctrl-C runs as it wakes; with them off it would not, so a wait refuses
@@ -102,18 +114,22 @@
 ;;; recorded: collect-request-handler is process-wide, so a caller's handler
 ;;; that escapes could run on this thread (M3 plan, section 3.6).
 (library (curl private engine)
-  (export make-curl-engine curl-engine? curl-engine-submit curl-engine-submit-with
+  (export make-curl-engine curl-engine? curl-submit curl-engine-submit-with
           curl-engine-stop curl-engine-request-stop! curl-engine-state curl-engine-thread
           curl-engine-multi curl-engine-live-count curl-engine-queued-count
           curl-engine-stale-cancels call-with-engine-held
-          curl-token? curl-token-await curl-token-cancel curl-token-done? curl-token-chunks
+          curl-token? curl-token-await curl-token-wait curl-token-cancel curl-token-done?
+          curl-token-chunks
+          make-curl-mailbox curl-mailbox? curl-mailbox-take curl-mailbox-deliver
+          call-with-mailbox-held
           make-faulty-curl-engine engine-fault-steps planted-engine-fault
           make-curl-engine-without-quick-exit make-curl-engine-answering-quick-exit
           curl-engine-quick-exit multi-quick-exit-verdict)
   (import (curl private require-threaded)
           (rnrs)
           (only (chezscheme) critical-section disable-interrupts enable-interrupts fork-thread
-                get-thread-id make-mutex with-mutex make-time sleep foreign-sizeof)
+                get-thread-id make-mutex with-mutex make-time sleep foreign-sizeof
+                current-time time-second time-nanosecond)
           (curl private conditions)
           (curl private constants)
           (curl private memory)
@@ -148,24 +164,40 @@
       (assertion-violation who
         "a wait needs interrupts on: inside a critical section it would hold every collection, and the engine's thread with them")))
 
-  ;; wait-until : Symbol Engine (-> Any) -> Any
-  ;; READY's first true answer, each read a hold of ENGINE's mutex through
-  ;; locked, and between reads a sleep, holding nothing: 50 us, then twice
-  ;; the last, up to 10 ms. Chez's sleep deactivates this thread when
+  ;; wait-until : Symbol Mutex (-> Any) (U Integer #f) -> Any
+  ;; READY's first true answer, each read a hold of LOCK through locked,
+  ;; and between reads a sleep, holding nothing: 50 us, then twice the
+  ;; last, up to 10 ms; or #f, once a read after DEADLINE, a monotonic time
+  ;; in ns, answers #f. A sleep never runs past DEADLINE, and #f waits for
+  ;; good. Chez's sleep deactivates this thread when
   ;; interrupts are on, so other threads' collections go on while it
   ;; sleeps, and sets its trap, so a pending Ctrl-C runs as it wakes
   ;; (ADR-0013, amended 2026-10-25). With interrupts off, a sleep keeps the
   ;; thread active: a collection would wait for it, the engine's thread
   ;; with it, and the wait would never end. So a wait inside a critical
   ;; section is an assertion violation from WHO, before it starts.
-  (define (wait-until who engine ready)
+  (define (wait-until who lock ready deadline)
     (require-interrupts-on who)
-    (let ((lock (curl-engine-lock engine)))
-      (let loop ((pause 50000))
-        (or (locked lock ready)
-            (begin
-              (sleep (make-time 'time-duration pause 0))
-              (loop (min (* pause 2) 10000000)))))))
+    (let loop ((pause 50000))
+      (or (locked lock ready)
+          (let ((left (and deadline (- deadline (monotonic-ns)))))
+            (and (or (not left) (> left 0))
+                 (begin
+                   (sleep (make-time 'time-duration (if left (min pause left) pause) 0))
+                   (loop (min (* pause 2) 10000000))))))))
+
+  ;; monotonic-ns : -> Integer
+  (define (monotonic-ns)
+    (let ((t (current-time 'time-monotonic)))
+      (+ (* (time-second t) 1000000000) (time-nanosecond t))))
+
+  ;; deadline-after : Symbol Any -> Integer
+  ;; The monotonic time, in ns, MS milliseconds from now; MS is a natural
+  ;; number, else an assertion violation from WHO.
+  (define (deadline-after who ms)
+    (unless (and (integer? ms) (exact? ms) (>= ms 0))
+      (assertion-violation who "a bound is a natural number of milliseconds" ms))
+    (+ (monotonic-ns) (* ms 1000000)))
 
   ;; --- the records -----------------------------------------------------------------------
 
@@ -203,15 +235,26 @@
 
   ;; A token: its engine and its plan; under the engine's mutex, its state,
   ;; queued, live or done, its outcome, a response or a condition, and its
-  ;; chunks, write-body's log; and, on the engine's thread alone, its live
-  ;; transfer while it has one.
+  ;; chunks, write-body's log; on the engine's thread alone, its live
+  ;; transfer while it has one; and the mailbox it goes to when done, and
+  ;; the callback a delivery calls, each #f for none (ADR-0021).
   (define-record-type (curl-token make-token curl-token?)
     (fields (immutable engine curl-token-engine)
             (immutable plan curl-token-plan)
             (mutable state token-state token-state-set!)
             (mutable outcome token-outcome token-outcome-set!)
             (mutable chunks token-chunks token-chunks-set!)
-            (mutable live token-live token-live-set!)))
+            (mutable live token-live token-live-set!)
+            (immutable mailbox token-mailbox)
+            (immutable callback token-callback)))
+
+  ;; A mailbox (ADR-0021): its mutex, and under it, its finished tokens,
+  ;; oldest first, as two lists: front, oldest first, and back, newest
+  ;; first, which a take turns round once front is empty.
+  (define-record-type (curl-mailbox make-mailbox-record curl-mailbox?)
+    (fields (immutable lock mailbox-lock)
+            (mutable front mailbox-front mailbox-front-set!)
+            (mutable back mailbox-back mailbox-back-set!)))
 
   ;; curl-engine-state : Engine -> (U 'running 'stopping 'stopped 'failing 'failed)
   ;; stopping and failing last until the engine's thread has freed all it
@@ -378,7 +421,7 @@
     (let ((engine (make-engine-record (make-mutex) '() 'starting #f #f #f
                                       (make-eqv-hashtable) fault '() #f 0 without #f answer)))
       (fork-thread (lambda () (run-engine engine)))
-      (wait-until 'make-curl-engine engine (lambda () (memq (engine-state engine) '(running failed))))
+      (wait-until 'make-curl-engine (curl-engine-lock engine) (lambda () (memq (engine-state engine) '(running failed))) #f)
       (let ((failure (locked (curl-engine-lock engine)
                        (lambda () (and (eq? (engine-state engine) 'failed) (engine-failure engine))))))
         (when failure (raise failure)))
@@ -386,23 +429,45 @@
 
   ;; --- the caller's side ---------------------------------------------------------------
 
-  ;; curl-engine-submit : Engine Request -> Token
-  ;; REQUEST's transfer, queued on ENGINE, as curl-engine-submit-with with no
-  ;; options.
-  (define (curl-engine-submit engine request)
-    (curl-engine-submit-with engine request '()))
+  ;; curl-submit : Engine Request [(U Mailbox #f) [(U (Token -> Any) #f)]] -> Token
+  ;; REQUEST's transfer, queued on ENGINE: its token, which goes to MAILBOX
+  ;; when done, if one is given, for a delivery there to hand to CALLBACK,
+  ;; if one is given (ADR-0021). On this thread, before anything is
+  ;; queued, every refusal raises:
+  ;;   - an ENGINE that is no engine, a MAILBOX neither a mailbox nor #f, a
+  ;;     CALLBACK neither a procedure nor #f, or a callback without a
+  ;;     mailbox, each an assertion violation;
+  ;;   - the request's, or the URL's, as prepare-transfer takes and checks
+  ;;     the plan, a private copy;
+  ;;   - an engine stopping, stopped or failed: &curl-engine-error, reason
+  ;;     stopped, or failed, with what it failed with.
+  (define curl-submit
+    (case-lambda
+      ((engine request) (submit engine request '() #f #f))
+      ((engine request mailbox) (submit engine request '() mailbox #f))
+      ((engine request mailbox callback) (submit engine request '() mailbox callback))))
 
-  ;; curl-engine-submit-with : Engine Request (Listof (Pairof String Integer)) -> Token
-  ;; REQUEST's transfer, with OPTIONS, the test seam's, queued on ENGINE: its
-  ;; token. On this thread, before anything is queued, prepare-transfer
-  ;; takes and checks the plan, and every refusal raises: the request's,
-  ;; the URL's, or the seam's (ADR-0009, amended 2026-10-23). A submit to an
-  ;; engine stopping, stopped or failed raises &curl-engine-error, reason
-  ;; stopped, or failed with what it failed with.
-  (define (curl-engine-submit-with engine request options)
-    (check-engine 'curl-engine-submit engine)
+  ;; curl-engine-submit-with : Engine Request (Listof (Pairof String Integer)) [(U Mailbox #f)] -> Token
+  ;; curl-submit's, with OPTIONS, the test seam's, and MAILBOX, #f unless
+  ;; given: the seam's refusals raise beside the request's (ADR-0009,
+  ;; amended 2026-10-23).
+  (define curl-engine-submit-with
+    (case-lambda
+      ((engine request options) (submit engine request options #f #f))
+      ((engine request options mailbox) (submit engine request options mailbox #f))))
+
+  ;; submit : Engine Request (Listof (Pairof String Integer)) (U Mailbox #f) (U Procedure #f) -> Token
+  (define (submit engine request options mailbox callback)
+    (define who 'curl-submit)
+    (check-engine who engine)
+    (unless (or (not mailbox) (curl-mailbox? mailbox))
+      (assertion-violation who "not a mailbox" mailbox))
+    (unless (or (not callback) (procedure? callback))
+      (assertion-violation who "a callback is a procedure of one argument, the token" callback))
+    (when (and callback (not mailbox))
+      (assertion-violation who "a callback needs a mailbox, which a delivery calls it from" callback))
     (let* ((plan (prepare-transfer request options))
-           (token (make-token engine plan 'queued #f '() #f))
+           (token (make-token engine plan 'queued #f '() #f mailbox callback))
            (refusal
             (locked (curl-engine-lock engine)
               (lambda ()
@@ -426,20 +491,101 @@
   (define (curl-token-await token)
     (check-token 'curl-token-await token)
     (require-interrupts-on 'curl-token-await)
-    (let ((outcome (wait-until 'curl-token-await (curl-token-engine token)
+    (let ((outcome (wait-until 'curl-token-await (curl-engine-lock (curl-token-engine token))
                                (lambda ()
                                  (and (eq? (token-state token) 'done)
-                                      (list (token-outcome token)))))))
+                                      (list (token-outcome token))))
+                               #f)))
       (if (curl-response? (car outcome))
           (car outcome)
           (raise (car outcome)))))
 
+  ;; curl-token-wait : Token Natural -> Boolean
+  ;; Whether TOKEN is done within MS milliseconds, waiting as await does,
+  ;; and leaving its transfer running either way.
+  (define (curl-token-wait token ms)
+    (check-token 'curl-token-wait token)
+    (let ((deadline (deadline-after 'curl-token-wait ms)))
+      (wait-until 'curl-token-wait (curl-engine-lock (curl-token-engine token))
+                  (lambda () (eq? (token-state token) 'done))
+                  deadline)))
+
+  ;; --- the mailbox (ADR-0021) ------------------------------------------------------------
+
+  ;; make-curl-mailbox : -> Mailbox
+  ;; An empty mailbox, which collects the tokens submitted to it, from any
+  ;; number of engines, as each is done.
+  (define (make-curl-mailbox) (make-mailbox-record (make-mutex) '() '()))
+
+  (define (check-mailbox who x)
+    (unless (curl-mailbox? x) (assertion-violation who "not a mailbox" x)))
+
+  ;; call-with-mailbox-held : Mailbox (-> Any) -> Any
+  ;; THUNK's answer, run holding MAILBOX's mutex, through locked, so a take
+  ;; from another thread blocks inside its critical section until THUNK
+  ;; returns: a test seam, private, as call-with-engine-held is. A token
+  ;; completing to MAILBOX meanwhile holds its engine's mutex until then,
+  ;; so THUNK must not touch an engine or a token, which would take that
+  ;; mutex second. It runs in a critical section, so it holds up every
+  ;; collection while it runs.
+  (define (call-with-mailbox-held mailbox thunk)
+    (check-mailbox 'call-with-mailbox-held mailbox)
+    (locked (mailbox-lock mailbox) thunk))
+
+  ;; mailbox-append! : Mailbox Token -> Void
+  ;; TOKEN at MAILBOX's back, under its mutex. Its one caller,
+  ;; complete-locked!, holds the engine's mutex: the engine's is taken
+  ;; first, and the mailbox's never waits.
+  (define (mailbox-append! mailbox token)
+    (locked (mailbox-lock mailbox)
+      (lambda () (mailbox-back-set! mailbox (cons token (mailbox-back mailbox))))))
+
+  ;; mailbox-pop! : Mailbox -> (U Token #f)
+  ;; MAILBOX's oldest token, taken out, or #f for none. The caller holds its
+  ;; mutex.
+  (define (mailbox-pop! mailbox)
+    (when (null? (mailbox-front mailbox))
+      (mailbox-front-set! mailbox (reverse (mailbox-back mailbox)))
+      (mailbox-back-set! mailbox '()))
+    (let ((front (mailbox-front mailbox)))
+      (and (pair? front)
+           (begin
+             (mailbox-front-set! mailbox (cdr front))
+             (car front)))))
+
+  ;; take : Symbol Mailbox Any -> (U Token #f)
+  (define (take who mailbox ms)
+    (check-mailbox who mailbox)
+    (let ((deadline (deadline-after who ms)))
+      (wait-until who (mailbox-lock mailbox) (lambda () (mailbox-pop! mailbox)) deadline)))
+
+  ;; curl-mailbox-take : Mailbox Natural -> (U Token #f)
+  ;; MAILBOX's next finished token, taken out, waiting up to MS
+  ;; milliseconds for one, or #f once they pass. It waits as await does,
+  ;; and never calls a callback. A take that escapes, by an interrupt
+  ;; handler as it ends, loses its token's notice, never its outcome,
+  ;; which the token keeps (ADR-0021, amended).
+  (define (curl-mailbox-take mailbox ms)
+    (take 'curl-mailbox-take mailbox ms))
+
+  ;; curl-mailbox-deliver : Mailbox Natural -> (U Token #f)
+  ;; As curl-mailbox-take, and then the token's callback, if it has one,
+  ;; called with the token on this thread: the token, or #f once MS
+  ;; milliseconds pass, never what the callback answered. The callback's
+  ;; raise leaves through here.
+  (define (curl-mailbox-deliver mailbox ms)
+    (let ((token (take 'curl-mailbox-deliver mailbox ms)))
+      (when token
+        (let ((callback (token-callback token)))
+          (when callback (callback token))))
+      token))
+
   ;; curl-token-cancel : Token -> Void
   ;; Returns at once. A token still queued completes as cancelled, here,
-  ;; with nothing native made; a live one is a message, and the engine
-  ;; takes its transfer out and completes it as cancelled; a done one is
-  ;; left as it is, and so is one whose engine is stopping or failing, which
-  ;; completes it (section 3.5).
+  ;; with nothing native made, whatever its engine's state; a live one is a
+  ;; message, and the engine takes its transfer out and completes it as
+  ;; cancelled, unless the engine is stopping or failing, which completes it
+  ;; as stopped or failed; a done one is left as it is (section 3.5).
   (define (curl-token-cancel token)
     (check-token 'curl-token-cancel token)
     (let ((engine (curl-token-engine token)))
@@ -477,7 +623,7 @@
     (check-engine 'curl-engine-stop engine)
     (require-interrupts-on 'curl-engine-stop)
     (curl-engine-request-stop! engine)
-    (wait-until 'curl-engine-stop engine (lambda () (memq (engine-state engine) '(stopped failed))))
+    (wait-until 'curl-engine-stop (curl-engine-lock engine) (lambda () (memq (engine-state engine) '(stopped failed))) #f)
     (if #f #f))
 
   ;; --- completing a token ----------------------------------------------------------------
@@ -485,12 +631,14 @@
   ;; complete-locked! : Engine Token Any (Listof Any) -> Void
   ;; TOKEN done with OUTCOME and CHUNKS, unless it is done already: the first
   ;; outcome stands. The caller holds ENGINE's mutex. A waiter sees it at its
-  ;; next read.
+  ;; next read. A token with a mailbox goes there as it becomes done, once.
   (define (complete-locked! engine token outcome chunks)
     (unless (eq? (token-state token) 'done)
       (token-outcome-set! token outcome)
       (token-chunks-set! token chunks)
-      (token-state-set! token 'done)))
+      (token-state-set! token 'done)
+      (let ((mailbox (token-mailbox token)))
+        (when mailbox (mailbox-append! mailbox token)))))
 
   ;; complete! : Engine Token Any (Listof Any) -> Void
   (define (complete! engine token outcome chunks)

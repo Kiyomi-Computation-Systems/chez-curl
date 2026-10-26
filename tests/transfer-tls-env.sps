@@ -68,7 +68,7 @@
          (answer (answer-of
                   (lambda ()
                     (curl-token-await
-                     (curl-engine-submit engine
+                     (curl-submit engine
                                          (make-curl-request (car args) 'timeout-ms 20000
                                                             'ca-file (cadr args))))))))
     (curl-engine-stop engine)

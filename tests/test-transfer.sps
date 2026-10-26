@@ -237,7 +237,7 @@
 ;; perform : Request -> Response
 ;; R submitted to the suite's engine, then awaited: its response, or a raise
 ;; of what it ended with, at submit, on this thread, or on the engine's.
-(define (perform r) (await-token (curl-engine-submit engine r)))
+(define (perform r) (await-token (curl-submit engine r)))
 
 ;; perform-with : Request (Listof (Pairof String Integer)) -> Response
 ;; perform's, through the test seam, curl-engine-submit-with, with OPTIONS.
@@ -391,7 +391,7 @@
 ;; token's log, by log-of, and what it raised, as classed names it;
 ;; refused-at-submit for the log and the classing of a submit that raised.
 (define (run-classed r)
-  (let ((token (guard (e (#t (cons 'raised-at-submit e))) (curl-engine-submit engine r))))
+  (let ((token (guard (e (#t (cons 'raised-at-submit e))) (curl-submit engine r))))
     (if (curl-token? token)
         (let ((answered (classed answer-of (lambda () (await-token token)))))
           (list (car answered) (log-of token) (cadr answered)))
@@ -893,7 +893,7 @@
                     (let* ((name (string-copy spelt))
                            (r (make-curl-request "http://127.0.0.1:1/" 'headers (list (cons name "0")))))
                       (string-set! name at char)
-                      (submitted (lambda () (curl-engine-submit engine r))))))
+                      (submitted (lambda () (curl-submit engine r))))))
          (framed-length (changed "Content-Lengtx" 13 #\h))
          (encoding (changed "Transfer-Encodinx" 16 #\g)))
     (list framed-length encoding (native-counts))))
@@ -975,7 +975,7 @@
          (agent (string-copy "an-agent"))
          (r (make-curl-request url 'headers headers 'user-agent agent)))
     (change url name value header headers agent other)
-    (refusal (lambda () (curl-engine-submit engine r)))))
+    (refusal (lambda () (curl-submit engine r)))))
 
 (test-equal "a request changed after it was made is refused at submit, at each field, before anything native: the URL, a header's name, its value, CR LF that would inject a header, the user agent, the list, a pair's car and cdr, the second header's value, and the list's or a name's type"
   (map (lambda (r) (list r running-counts running-counts))
@@ -988,8 +988,8 @@
          (request-refused header-name "X Y" not-a-token)
          (request-refused header-value " v" surrounding-whitespace)
          (request-refused header-value "o\x100;her" not-latin-1)
-         (assertion-violation curl-engine-submit)
-         (assertion-violation curl-engine-submit)))
+         (assertion-violation curl-submit)
+         (assertion-violation curl-submit)))
   (map made-then-changed
        (list (lambda (url name value header headers agent other) (string-set! url 7 #\nul))
              (lambda (url name value header headers agent other) (string-set! name 1 #\:))
@@ -1721,7 +1721,7 @@
 ;; classed names it.
 (define (recorded-run r)
   (guard (e (#t (list (list 'raised-at-submit (describe e)) 'no-log 'no-classing)))
-    (let* ((token (curl-engine-submit engine r))
+    (let* ((token (curl-submit engine r))
            (answered (classed (lambda (thunk)
                                 (guard (e ((curl-transfer-error? e)
                                            (list 'refused (curl-transfer-error-reason e)
@@ -1910,8 +1910,8 @@
   ;; --- the URL, checked at submit, on this thread
   (test-equal "a URL whose scheme is not http or https is refused at submit as scheme-not-http, and one curl_url refuses with its code; nothing native is left"
     (list '(url-refused scheme-not-http #f) '(url-refused bad-port-number 4) running-counts)
-    (list (submitted (lambda () (curl-engine-submit engine (request "file:///etc/passwd"))))
-          (submitted (lambda () (curl-engine-submit engine (request "http://127.0.0.1:99999/"))))
+    (list (submitted (lambda () (curl-submit engine (request "file:///etc/passwd"))))
+          (submitted (lambda () (curl-submit engine (request "http://127.0.0.1:99999/"))))
           (native-counts)))
 
   ;; --- the counts while a transfer is live, read on this thread while the
@@ -1923,7 +1923,7 @@
       (list live-counts 1 1
             '(response 200 http/1.1 (("Content-Length" "20")) "abcdefghijklmnopqrst")
             running-counts 0 0)
-      (let* ((t (curl-engine-submit engine (request (url-of o 'raw "/raw/drip?bytes=20&gap=50")
+      (let* ((t (curl-submit engine (request (url-of o 'raw "/raw/drip?bytes=20&gap=50")
                                                     'headers '(("X-A" . "1")))))
              ;; Sampled until a sample is the expected one, or the drip ends:
              ;; the engine's own slots come and go (native-counts).
@@ -2096,7 +2096,7 @@
             (lambda ()
               (guard (e ((curl-engine-error? e) (curl-engine-error-reason e))
                         (#t (list 'raised (describe e))))
-                (curl-engine-submit stopped refused)
+                (curl-submit stopped refused)
                 'queued)))
            (stopped-refuses (submit-to-stopped))
            (sweeps (map (lambda (thunk)
@@ -2171,12 +2171,12 @@
     (list (list 'cancelled #f (table-class 'cancelled #f)) (list 'stopped #f (table-class 'stopped #f))
           running-counts)
     (let* ((cancelled
-            (let ((t (curl-engine-submit engine (request (url-of o 'raw "/raw/drip?bytes=20&gap=50")))))
+            (let ((t (curl-submit engine (request (url-of o 'raw "/raw/drip?bytes=20&gap=50")))))
               (curl-token-cancel t)
               (cadr (classed answer-of (lambda () (await-token t))))))
            (stopped
             (let* ((own (make-curl-engine))
-                   (t (curl-engine-submit own (request (url-of o 'raw "/raw/drip?bytes=20&gap=50")))))
+                   (t (curl-submit own (request (url-of o 'raw "/raw/drip?bytes=20&gap=50")))))
               (curl-engine-stop own)
               (cadr (classed answer-of (lambda () (await-token t)))))))
       (list cancelled stopped (native-counts))))

@@ -57,7 +57,7 @@
     '(answered)))
 
 (when (eq? mode 'critical)
-  (let* ((t (curl-engine-submit engine (request)))
+  (let* ((t (curl-submit engine (request)))
          (await (refusal-who (lambda () (critical-section (curl-token-await t)))))
          (stop (refusal-who (lambda () (critical-section (curl-engine-stop engine)))))
          (make (refusal-who (lambda () (critical-section (make-curl-engine))))))
@@ -79,7 +79,7 @@
           (write (list 'counts (native-counts)))
           (newline)
           (exit 0))
-        (let* ((t (curl-engine-submit engine (request)))
+        (let* ((t (curl-submit engine (request)))
                (seen #f)
                (watcher-mx (make-mutex)))
           (fork-thread
@@ -98,7 +98,7 @@
 
 (when (eq? mode 'cpu)
   (let* ((c0 (cpu-time)) (t0 (now-ms)))
-    (guard (e (#t #f)) (curl-token-await (curl-engine-submit engine (request))))
+    (guard (e (#t #f)) (curl-token-await (curl-submit engine (request))))
     (let ((cpu (- (cpu-time) c0)) (wall (- (now-ms) t0)))
       (curl-engine-stop engine)
       (write (list 'cpu cpu wall))
@@ -110,7 +110,7 @@
 (when (eq? mode 'latency)
   (let ((t0 (now-ms)))
     (do ((i 0 (+ i 1))) ((= i threads))
-      (curl-token-await (curl-engine-submit engine (request))))
+      (curl-token-await (curl-submit engine (request))))
     (let ((elapsed (- (now-ms) t0)))
       (curl-engine-stop engine)
       (write (list 'latency threads elapsed))
@@ -130,7 +130,7 @@
            (begin
              (let ((answered (guard (e (#t #f))
                                (curl-response-status
-                                (curl-token-await (curl-engine-submit engine (request)))))))
+                                (curl-token-await (curl-submit engine (request)))))))
                (when (eqv? answered 200)
                  (with-mutex mx (set! done (+ done 1)))))
              (loop)))))))

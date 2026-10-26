@@ -22,7 +22,7 @@
 (define t0 (now-ms))
 (define handled #f)
 (keyboard-interrupt-handler (lambda () (unless handled (set! handled (- (now-ms) t0)))))
-(define token (curl-engine-submit engine (make-curl-request url 'timeout-ms 20000)))
+(define token (curl-submit engine (make-curl-request url 'timeout-ms 20000)))
 (set! t0 (now-ms))
 (write (list 'ready (get-process-id)))
 (newline)

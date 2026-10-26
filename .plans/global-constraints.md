@@ -525,6 +525,11 @@ provisional. They bind until that record is accepted or amended.
   the outcome, which stays on the token: a caller whose interrupt handlers can escape keeps its
   tokens (ADR-0021, amended 2026-10-26). A test asserts, inside a callback, that the thread is
   the delivering one, never the engine's.
+- **The engine's thread leaves its signal mask alone** (ADR-0012, amended 2026-10-26, decided
+  by the maintainer). On Linux every SIGINT sent to the process reached the main thread,
+  though no thread blocked any signal, libcurl's resolver threads among them: the kernel
+  offers it to the main thread first. The Mac runs `research/m4/slice2/run.sh mac sigint` on
+  slice 2's PR, and a SIGINT lost there reopens it.
 - **Concurrency costs no threads.** Many requests share one engine, and the high level
   never starts a thread per request (ADR-0012).
 - **Every native object is made, or freed, in one critical section with its record:** its

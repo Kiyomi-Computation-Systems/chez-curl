@@ -134,15 +134,18 @@
 ;; critical-section, and dynamic-wind for its critical? argument, keep an
 ;; interrupt that escapes from falling between a native object's making and
 ;; its record, or its free and its record (M2 fix round 2): they run no code
-;; built at run time, and reach no library.
+;; built at run time, and reach no library. current-time, time-second and
+;; time-nanosecond read the monotonic clock, for a bounded wait's deadline
+;; (M4 slice 2), and run no code either.
 (define allowed-chez-names
-  '(critical-section define-ftype disable-interrupts display-condition
+  '(critical-section current-time define-ftype disable-interrupts display-condition
     dynamic-wind enable-interrupts file-regular? foreign-alloc foreign-callable
     foreign-callable-entry-point foreign-entry? foreign-free foreign-procedure
     foreign-ref foreign-sizeof fork-thread format format-condition? ftype-ref get-thread-id
     getenv load-shared-object lock-object machine-type make-ftype-pointer
     make-mutex make-time
-    scheme-version scheme-version-number sleep threaded? with-mutex))
+    scheme-version scheme-version-number sleep threaded? time-nanosecond time-second
+    with-mutex))
 
 ;; library-only-chez-names : (Listof (Pairof Symbol (Listof (Listof Symbol))))
 ;; Rule (f). Each entry is a name in allowed-chez-names, then one or more

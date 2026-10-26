@@ -1,0 +1,13 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libc6 2.39-0ubuntu8.9
+package libcurl4t64 8.5.0-2ubuntu10.16
+package valgrind 1:3.22.0-0ubuntu3
+[ubuntu-8.5.0] Linux x86_64, chez 10.4.0, node v24.18.0
+[ubuntu-8.5.0] sigint take (20 sent): (masks ("3113" "0000000000000000" "0000000000001000") ("3120" "0000000000000000" "0000000000001000"))
+[ubuntu-8.5.0] sigint take (20 sent): (sigint take (354 656 958 1259 1561 1863 2164 2466 2768 3070 3372 3673 3975 4277 4579 4880 5182 5484 5786 6087) 2 (response 200) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+[ubuntu-8.5.0] sigint busy (20 sent): (masks ("3186" "0000000000000000" "0000000000001000") ("3193" "0000000000000000" "0000000000001000"))
+[ubuntu-8.5.0] sigint busy (20 sent): (sigint busy (351 653 955 1256 1558 1860 2162 2464 2766 3067 3369 3671 3973 4275 4576 4878 5179 5481 5783 6085) 2 (response 200) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+[ubuntu-8.5.0] sigint take, lookup stalled (20 sent): (masks ("3265" "0000000000000000" "0000000000001000") ("3272" "0000000000000000" "0000000000001000") ("3273" "0000000000000000" "0000000000001000"))
+[ubuntu-8.5.0] sigint take, lookup stalled (20 sent): (sigint take (347 649 951 1252 1554 1856 2158 2459 2761 3063 3364 3666 3968 4269 4571 4873 5174 5476 5778 6080) 3 (perform-failed 6) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+[ubuntu-8.5.0]   stall log: stalling stall.chez-curl.invalid;answered stall.chez-curl.invalid;
+[ubuntu-8.5.0] done

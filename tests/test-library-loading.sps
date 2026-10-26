@@ -805,7 +805,7 @@
     (environment '(curl))
     (list-sort symbol<? (library-exports '(curl)))))
 
-(test-equal "(curl) exports loaded-libcurl, the info record's accessors, the request and the response, and the conditions, a failed transfer's classes among them; none of their constructors, nor the request's private fields"
+(test-equal "(curl) exports loaded-libcurl, the info record's accessors, the request and the response, the engine, the token and the mailbox, and the conditions, a failed transfer's classes and the engine's among them; none of their constructors, nor the request's private fields, nor the engine's seams, counts and faults"
   (list-sort symbol<?
              '(loaded-libcurl
                libcurl-info? libcurl-info-path libcurl-info-source libcurl-info-version
@@ -826,6 +826,9 @@
                curl-response? curl-response-status curl-response-http-version
                curl-response-effective-url curl-response-headers curl-response-body
                curl-response-timings
+               make-curl-engine curl-engine? curl-engine-stop curl-submit
+               curl-token? curl-token-await curl-token-wait curl-token-cancel curl-token-done?
+               make-curl-mailbox curl-mailbox? curl-mailbox-take curl-mailbox-deliver
                &curl-embedded-nul curl-embedded-nul? curl-embedded-nul-string
                &curl-url-error curl-url-error? curl-url-error-input curl-url-error-reason
                curl-url-error-code curl-url-error-message
@@ -837,7 +840,9 @@
                curl-transfer-error-request-size curl-transfer-error-reasons
                &curl-timeout curl-timeout? &curl-connect-error curl-connect-error?
                &curl-send-receive-error curl-send-receive-error? &curl-tls-error curl-tls-error?
-               &curl-protocol-error curl-protocol-error? &curl-too-large curl-too-large?))
+               &curl-protocol-error curl-protocol-error? &curl-too-large curl-too-large?
+               &curl-engine-error curl-engine-error? curl-engine-error-reason
+               curl-engine-error-condition curl-engine-error-reasons))
   curl-exports)
 
 ;; Re-exported, not redefined: each is (curl private conditions)'s own, so
@@ -854,6 +859,8 @@
     curl-transfer-error? curl-transfer-error-reason curl-transfer-error-request-size
     curl-timeout? curl-connect-error? curl-send-receive-error? curl-tls-error?
     curl-protocol-error? curl-too-large?
+    curl-engine-error? curl-engine-error-reason curl-engine-error-condition
+    curl-engine-error-reasons
     (record-type-descriptor &curl-error)
     (record-type-descriptor &curl-library-unavailable)
     (record-type-descriptor &curl-wrong-thread)
@@ -862,7 +869,8 @@
     (record-type-descriptor &curl-request-error)
     (record-type-descriptor &curl-transfer-error)
     (record-type-descriptor &curl-timeout)
-    (record-type-descriptor &curl-too-large)))
+    (record-type-descriptor &curl-too-large)
+    (record-type-descriptor &curl-engine-error)))
 
 (test-equal "(curl)'s conditions are (curl private conditions)'s own"
   (map (lambda (form) 'same) re-exported)
