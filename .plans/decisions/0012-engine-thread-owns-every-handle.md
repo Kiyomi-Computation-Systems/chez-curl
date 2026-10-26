@@ -170,3 +170,11 @@ or already has a signal pending while not running (`complete_signal`, `kernel/si
 Blocking SIGINT there would change nothing on Linux, and costs a libc binding whose `sigset_t`
 differs by platform. The Mac runs `run.sh mac sigint` on slice 2's PR before it merges. A
 SIGINT lost there reopens the question.
+
+**The Mac, 2026-10-26,** on the maintainer's M1 (Darwin arm64, Homebrew's Chez 10.4.1, Node
+20.10.0; `results/mac.log`): the handler ran 20 times of 20 with the main thread in a take, and
+20 of 20 with it busy, so 40 of 40 reached the main thread there too, and the decision stands.
+The stalled lookup's case is Linux's alone, with no `LD_PRELOAD` on macOS, and the masks were
+not read, with no `/proc`. The runner then hung after its last line, in an unbounded wait for
+the origin to exit once its stdin, a FIFO, was closed; why the origin did not exit there is
+unmeasured. That wait now has a bound.

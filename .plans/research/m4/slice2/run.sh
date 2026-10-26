@@ -36,9 +36,20 @@ chez=${CHEZ:-scheme}
 t=$(command -v timeout || command -v gtimeout) || { echo "run.sh: no timeout" >&2; exit 2; }
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/slice2-research.XXXXXX") || exit 1
 origin_pid=
+# The origin exits once its stdin ends. On the maintainer's Mac it did not,
+# and an unbounded wait for it hung the run after "done": so a watchdog
+# ends it 5 s after its stdin closes, and says so.
 cleanup() {
   exec 3>&-
-  [ -z "$origin_pid" ] || wait "$origin_pid"
+  if [ -n "$origin_pid" ]; then
+    ( sleep 5; kill "$origin_pid" 2>/dev/null ) &
+    watchdog=$!
+    wait "$origin_pid"
+    origin_status=$?
+    kill "$watchdog" 2>/dev/null
+    wait "$watchdog" 2>/dev/null
+    [ "$origin_status" -eq 0 ] || echo "[$lane] the origin exited $origin_status, not 0, after its stdin closed: 143 is the watchdog's kill, 5 s on"
+  fi
   rm -rf "$tmp"
 }
 trap cleanup EXIT

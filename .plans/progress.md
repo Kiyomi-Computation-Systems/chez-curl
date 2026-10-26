@@ -19,8 +19,7 @@ close-out under **Close-outs**, newest first.
       not; and an interrupt handler that escapes as a take's critical section ends, which
       loses the notice and keeps the outcome (the plan, §5.1; ADR-0021, amended).
     - **Decided by the maintainer, 2026-10-26:** the engine's thread leaves its signal mask
-      alone; the Mac runs the SIGINT probe on the slice's PR, and a SIGINT lost there reopens
-      it (ADR-0012, amended).
+      alone, the Mac to run the SIGINT probe on the slice's PR (ADR-0012, amended).
     - **Built:** `(curl)` exports the engine, `curl-submit` with an optional mailbox and
       callback, the token with `curl-token-wait`, and the mailbox's take and delivery, with
       `&curl-engine-error`; a wait's last sleep stops at its bound; `test-mailbox`, 25 checks,
@@ -45,7 +44,10 @@ close-out under **Close-outs**, newest first.
       | Agent | Model | Tokens | Time |
       |---|---|---|---|
       | adversarial review | Opus | 287k | 17 min |
-  - **Still to run:** the Mac's `run.sh mac sigint`, on the PR (ADR-0012, amended).
+    - **The Mac** ran `run.sh mac sigint` on the PR, #26: 40 of 40 SIGINTs on the main
+      thread, so the decision stands (ADR-0012, amended). The runner then hung in its cleanup,
+      waiting with no bound for the origin, whose FIFO stdin had closed; the wait now has one,
+      watched ending a stand-in that ignores its stdin.
   - **Carried into M4:** why a timeout's 28 came 1,014 ms late once (ADR-0019, amended
     2026-10-25); CI has still never run.
 - **M3, the engine:** **done on 2026-10-26.** Its three slices are merged (PRs #19, #20 and
