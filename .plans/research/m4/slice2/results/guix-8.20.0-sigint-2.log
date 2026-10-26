@@ -1,0 +1,9 @@
+[guix-8.20.0] Linux x86_64, chez 10.4.0, node v24.18.0
+[guix-8.20.0] sigint take (20 sent): (masks ("25" "0000000000000000" "0000000000001000") ("32" "0000000000000000" "0000000000001000"))
+[guix-8.20.0] sigint take (20 sent): (sigint take (329 632 935 1237 1540 1842 2145 2447 2749 3052 3355 3657 3960 4262 4565 4867 5170 5473 5775 6077) 2 (response 200) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+[guix-8.20.0] sigint busy (20 sent): (masks ("103" "0000000000000000" "0000000000001000") ("96" "0000000000000000" "0000000000001000"))
+[guix-8.20.0] sigint busy (20 sent): (sigint busy (331 633 936 1239 1542 1845 2148 2451 2754 3057 3360 3664 3967 4270 4572 4874 5177 5480 5783 6086) 2 (response 200) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+[guix-8.20.0] sigint take, lookup stalled (20 sent): (masks ("188" "0000000000000000" "0000000000001000") ("195" "0000000000000000" "0000000000001000") ("196" "0000000000000000" "0000000000001000") ("197" "0000000000000000" "0000000000001000"))
+[guix-8.20.0] sigint take, lookup stalled (20 sent): (sigint take (332 635 937 1240 1543 1845 2148 2450 2753 3056 3358 3661 3964 4267 4569 4872 5174 5477 5779 6081) 4 (perform-failed 6) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+[guix-8.20.0]   stall log: stalling stall.chez-curl.invalid;stalling stall.chez-curl.invalid;answered stall.chez-curl.invalid;answered stall.chez-curl.invalid;
+[guix-8.20.0] done

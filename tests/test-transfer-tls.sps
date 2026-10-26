@@ -179,7 +179,7 @@
 ;; perform : Request -> Response
 ;; R submitted to the suite's engine, then awaited: its response, or a raise
 ;; of what it ended with, at submit, on this thread, or on the engine's.
-(define (perform r) (await-token (curl-engine-submit engine r)))
+(define (perform r) (await-token (curl-submit engine r)))
 
 ;; settled : Any -> Any
 ;; X, as it is; a token is cancelled first, and awaited, whatever it ended
@@ -424,7 +424,7 @@
          (let* ((path (string-copy a-path))
                 (r (make-curl-request "http://127.0.0.1:1/" 'ca-file path)))
            (string-set! path i #\nul)
-           (refusal (lambda () (curl-engine-submit engine r)))))
+           (refusal (lambda () (curl-submit engine r)))))
        (iota-from 0 (string-length a-path))))
 
 (test-equal "wrong types are assertion violations from make-curl-request, with nothing native made: a CA file that is a number, the empty string, a symbol, #t or a list; verification that is 1, 0, a symbol, a string or the empty list"
@@ -623,8 +623,8 @@
 ;; verification into its tenth; set-transfer-options! hands set-tls-options!
 ;; those two fields. A plan handed the caller's own string would be sent
 ;; whatever another thread made it after the check.
-(test-equal "prepare-transfer hands the plan its snapshot: its let* binds ca-file to (ca-file-copy 'curl-engine-submit (curl-request-ca-file request)), make-plan takes ca-file and (curl-request-verify request) as its ninth and tenth arguments, the plan's ninth and tenth fields are ca-file and verify, and ca-file stands twice in prepare-transfer, that binding and that argument"
-  '((ca-file (ca-file-copy 'curl-engine-submit (curl-request-ca-file request)))
+(test-equal "prepare-transfer hands the plan its snapshot: its let* binds ca-file to (ca-file-copy 'curl-submit (curl-request-ca-file request)), make-plan takes ca-file and (curl-request-verify request) as its ninth and tenth arguments, the plan's ninth and tenth fields are ca-file and verify, and ca-file stands twice in prepare-transfer, that binding and that argument"
+  '((ca-file (ca-file-copy 'curl-submit (curl-request-ca-file request)))
     (ca-file (curl-request-verify request))
     ((immutable ca-file) (immutable verify))
     2)

@@ -1,0 +1,8 @@
+# The maintainer's Mac, 2026-10-26, pasted from their terminal:
+#   make deps && CHEZ=chez NODE="$(asdf which node)" sh .plans/research/m4/slice2/run.sh mac sigint
+# run.sh then hung after "done", in its cleanup's unbounded wait for the origin to exit once
+# its stdin, a FIFO, was closed. The cleanup's wait now has a bound.
+[mac] Darwin arm64, chez 10.4.1, node v20.10.0
+[mac] sigint take (20 sent): (sigint take (340 654 968 1282 1596 1911 2224 2539 2852 3160 3476 3790 4103 4415 4732 5048 5361 5674 5989 6298) #f (response 200) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+[mac] sigint busy (20 sent): (sigint busy (350 657 965 1273 1581 1888 2196 2504 2811 3119 3427 3730 4038 4346 4653 4961 5269 5576 5884 6191) #f (response 200) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+[mac] done

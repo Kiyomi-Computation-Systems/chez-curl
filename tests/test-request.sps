@@ -115,7 +115,7 @@
             (else (pause-ms 1) (wait))))))
 
 ;; perform : Request -> Response
-(define (perform r) (await-token (curl-engine-submit engine r)))
+(define (perform r) (await-token (curl-submit engine r)))
 
 ;; on-own-engine : Request . (List Options) -> Answer
 ;; What R answers, through failed, on an engine of its own, made before and
@@ -126,7 +126,7 @@
     (let* ((own (make-curl-engine))
            (answer (failed (lambda ()
                              (await-token (if (null? options)
-                                              (curl-engine-submit own r)
+                                              (curl-submit own r)
                                               (curl-engine-submit-with own r (car options))))))))
       (curl-engine-stop own)
       answer)))
@@ -492,7 +492,7 @@
            (held (failed (lambda ()
                            (call-with-engine-held engine
                              (lambda ()
-                               (let ((token (curl-engine-submit
+                               (let ((token (curl-submit
                                              engine
                                              (make-curl-request (url-of o 'http "/echo")
                                                                 'method 'put 'body body
@@ -567,7 +567,7 @@
     (let ((token (failed (lambda ()
                            (call-with-engine-held engine
                              (lambda ()
-                               (let ((t (curl-engine-submit
+                               (let ((t (curl-submit
                                          engine (make-curl-request (url-of o 'raw "/raw/echo")
                                                                    'timeout-ms 20000))))
                                  (curl-token-cancel t)

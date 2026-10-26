@@ -1,7 +1,8 @@
 # ADR-0012: One engine thread owns every transfer handle, and caller code never runs on it
 
 - **Status:** Accepted; amended 2026-10-24: stopping an engine (the M3 plan); amended
-  2026-10-26: completions reach callers through a mailbox (the M4 plan)
+  2026-10-26: completions reach callers through a mailbox (the M4 plan); amended 2026-10-26:
+  the engine's thread and SIGINT (M4 slice 2)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, from M3 (the engine)
 - **Settles:** the brief's §2 items 1 to 3 and the caller-code rule of its §5. The brief
@@ -137,3 +138,43 @@ delivering one, never the engine's.
 
 The plan's review found decision 4 still naming "a Chez condition variable", which ADR-0013's
 2026-10-25 amendment replaced with polling waits. The line now says so.
+
+## Amendment, 2026-10-26: the engine's thread and SIGINT (M4 slice 2)
+
+M3 carried a question: Chez drops a SIGINT the kernel hands any thread but the main one, so
+could Ctrl-C be lost to the engine's thread, now that the engine is public? Spike E1 saw every
+process-directed SIGINT reach the main thread, 32 of 32, and left whether the engine's thread
+should block SIGINT to M4, to measure on the Mac too, and to the maintainer.
+
+**Measured on Linux** ([`research/m4/slice2/`](../research/m4/slice2/)), in the container (Guix's
+libcurl 8.20.0) and in Docker `ubuntu:24.04` (8.5.0). A program made an engine, submitted a 9 s
+transfer, and waited; the runner sent it SIGINT 20 times, 300 ms apart. Each one the main thread
+took ran the keyboard-interrupt handler once, and one handed to any other thread would run it
+never. The handler ran 20 times in every case, on both:
+
+- the main thread waiting in a take, beside the engine's thread in `curl_multi_poll`;
+- the main thread busy, never sleeping;
+- the main thread in a take during a 9 s stalled lookup, `tests/stall-getaddrinfo.c`
+  preloaded, with libcurl's resolver threads alive: 4 threads in all on 8.20.0, 3 on 8.5.0;
+- the main thread in a take under Valgrind, Guix's 3.27.0 and Ubuntu's 3.22.0, the signals
+  1 s apart, while a 30 s transfer was live.
+
+So 160 of 160 reached the main thread, and 120 of 120 again in a second run of the first three
+cases. Not for want of another taker: that run read each thread's masks from
+`/proc/self/task/*/status`, on both, and no thread, the resolver threads among them, blocked any
+signal; each ignored SIGPIPE alone. Linux's own rule explains it: the
+kernel offers a signal sent to a process to its main thread first, unless that thread blocks it
+or already has a signal pending while not running (`complete_signal`, `kernel/signal.c`).
+
+**Decided by the maintainer, 2026-10-26: the engine's thread leaves its signal mask alone.**
+Blocking SIGINT there would change nothing on Linux, and costs a libc binding whose `sigset_t`
+differs by platform. The Mac runs `run.sh mac sigint` on slice 2's PR before it merges. A
+SIGINT lost there reopens the question.
+
+**The Mac, 2026-10-26,** on the maintainer's M1 (Darwin arm64, Homebrew's Chez 10.4.1, Node
+20.10.0; `results/mac.log`): the handler ran 20 times of 20 with the main thread in a take, and
+20 of 20 with it busy, so 40 of 40 reached the main thread there too, and the decision stands.
+The stalled lookup's case is Linux's alone, with no `LD_PRELOAD` on macOS, and the masks were
+not read, with no `/proc`. The runner then hung after its last line, in an unbounded wait for
+the origin to exit once its stdin, a FIFO, was closed; why the origin did not exit there is
+unmeasured. That wait now has a bound.

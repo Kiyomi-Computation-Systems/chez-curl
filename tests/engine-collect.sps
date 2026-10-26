@@ -25,7 +25,7 @@
 (define engine (make-curl-engine))
 (define token
   (and (eq? mode 'await)
-       (curl-engine-submit engine (make-curl-request url 'timeout-ms 20000))))
+       (curl-submit engine (make-curl-request url 'timeout-ms 20000))))
 
 (define mx (make-mutex))
 (define cv (make-condition))

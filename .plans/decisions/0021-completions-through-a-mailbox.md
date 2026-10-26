@@ -1,6 +1,7 @@
 # ADR-0021: Completions reach callers through a mailbox the caller drains
 
-- **Status:** Accepted; amended 2026-10-26: after the plan's review
+- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26:
+  measured before slice 2 built on it
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, `(curl)`'s asynchronous API, from M4
 - **Settles:** how a completion callback runs on a caller's thread, which ADR-0012 left to M4;
@@ -93,3 +94,32 @@ An adversarial review of the M4 plan (Opus, read-only) found two gaps in this re
 - **The delivery test** checks a cancel's completion from a thread other than the delivering
   one, and drives a token completed twice, a cancel while queued then a stop in the same
   batch, which must be appended once.
+
+## Amendment, 2026-10-26: measured before slice 2 built on it
+
+The M4 plan's §5.1 asked for two measurements before slice 2 built this record's mailbox, each
+taken on a prototype of the take and the append, in the container (Guix's libcurl 8.20.0) and
+in Docker `ubuntu:24.04` (8.5.0, Valgrind 3.22)
+([`research/m4/slice2/`](../research/m4/slice2/)).
+
+- **A take's delay,** from a token's completion, which a watcher thread saw within its 200 us
+  pace, to the take's return: -0.2 to 9.6 ms idle, over 40 transfers on each, and 0.05 to
+  8.9 ms under Valgrind, over 20; a negative is the watcher's own lag. An await, the control,
+  gave 0 to 10.0 ms idle and -0.2 to 9.2 ms under Valgrind. So a delivery trails its completion
+  by one polling sleep at most, as the consequences above say, Valgrind or not.
+  - The first run said 0.9 to 3.2 ms, and was wrong. Each transfer paused a multiple of 10 ms,
+    and a waiter's sleeps reach 10 ms on a cadence its submit sets, so the two met at one
+    phase. The probe now spreads its pauses over every residue; the first run's log is kept.
+- **A take that escapes.** A second thread held the mailbox's mutex, through a private seam,
+  so a take blocked inside its critical section, and the runner then sent SIGINT. The
+  keyboard-interrupt handler, which escaped, ran as that section ended, after the token left
+  the mailbox: the take never returned it, and deliver never called its callback. The token was
+  done, and await answered its 200. A control, signalled while the take slept on an empty
+  mailbox, escaped before any token arrived, and the token reached the mailbox after. So the
+  first amendment's contract holds as built: a take that escapes loses a notice, never an
+  outcome.
+  - Chez's timer cannot plant this. A timer that runs out inside a critical section runs its
+    handler at a later event check, not as the section ends; a keyboard interrupt made pending
+    there runs as it ends (`timer.ss` and `keyboard.ss`, there). A sweep of the timer from 1
+    to 300 ticks escaped before the take at 1 to 6, after it had returned at 7 to 26, and never
+    between; from 27, the take and the call after it ended before the timer ran out.

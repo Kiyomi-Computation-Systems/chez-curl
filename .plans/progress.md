@@ -9,44 +9,47 @@ close-out under **Close-outs**, newest first.
 - **Milestone:** M4, the public records and the asynchronous API (brief §8), per the
   [M4 plan](2026-10-26-m4-plan.md), merged in PRs #23 and #24. Four slices: the request, its
   body and the classes; the asynchronous API; the environment; the hatch, `(curl unsupported)`.
-  - **Slice 1, the request, its body and the classes:** built on `feat/m4-slice-1`, not yet
-    merged.
-    - **Measured first** ([`research/m4/slice1/`](research/m4/slice1/)), on 7.85.0, Ubuntu's
-      8.5.0 with OpenSSL and with GnuTLS, Guix's 8.20.0 and 8.23.0: what each method's body
-      sends, byte for byte; what takes libcurl's own `Content-Type` and `Expect` away; that the
-      connect timeout ends a TLS handshake the server never answers; the codes the scenarios
-      reach; the timings; and the options tables (the plan, §4.1).
-    - **Decided by the maintainer, 2026-10-26:** a failed transfer carries its request size,
-      `CURLINFO_REQUEST_SIZE`, not its timings, which on a failure move with the version
-      (ADR-0022, amended).
-    - **Built:** `make-curl-request` and `curl-request-with` from a property list, and the
-      response with its timings, exported from `(curl)` with every condition a caller can meet
-      and the six classes (ADR-0022, ADR-0023, amended); bodies for `post`, `put`, `patch` and
-      `delete`, an empty one a block of one byte, never NULL; `Content-Type:` and `Expect:`
-      beside a body; the connect timeout; `FOLLOWLOCATION` owned, with a private `follow` field
-      for the redirect tests; the owned options and their twins, read from the options tables,
-      `PORT`, `REQUEST_TARGET` and the 23 proxy TLS options among them (ADR-0009, amended);
-      every classed code a constant, 100 and 101 gated.
-    - **The slice's review** (Opus, read-only) predicted, from libcurl's source, the one
-      failure the `current` lane then showed: the request size sums every attempt, and 8.23.0
-      resends a head after a dead reused connection, 150 for 75. Each request-size check now
-      runs on an engine of its own (ADR-0022, amended). It also found `CRLF` and `HEADER`
-      unowned, now owned, and ten minors, each answered in the code or the records.
-    - **Checks:** in the container, `make test` and `make test-memory` 24 of 24; in Docker, the
-      main (8.5.0), gnutls, floor (7.85.0) and current (8.23.0) lanes 24 of 24 each, and the
-      memory lane 24 of 24 with `check-memory-gate` 33 of 33, after the connect timeout's
-      bound was widened for Valgrind, which took 990 ms there; the
-      [mutation log](request-mutation-log.md), 38 mutants, each failing a named check.
-    - **Two subagents, both Opus:**
+  - **Slice 1, the request, its body and the classes:** merged in PR #25. Its close-out is
+    below.
+  - **Slice 2, the asynchronous API:** built on `feat/m4-slice-2`, not yet merged.
+    - **Measured first** ([`research/m4/slice2/`](research/m4/slice2/)), on a prototype of the
+      take and the append, in the container (8.20.0) and in Docker `ubuntu:24.04` (8.5.0,
+      Valgrind 3.22): where a SIGINT to the process lands, 160 of 160 on the main thread, no
+      thread blocking any signal; a take's delay from completion, 0 to 9.6 ms, Valgrind or
+      not; and an interrupt handler that escapes as a take's critical section ends, which
+      loses the notice and keeps the outcome (the plan, §5.1; ADR-0021, amended).
+    - **Decided by the maintainer, 2026-10-26:** the engine's thread leaves its signal mask
+      alone, the Mac to run the SIGINT probe on the slice's PR (ADR-0012, amended).
+    - **Built:** `(curl)` exports the engine, `curl-submit` with an optional mailbox and
+      callback, the token with `curl-token-wait`, and the mailbox's take and delivery, with
+      `&curl-engine-error`; a wait's last sleep stops at its bound; `test-mailbox`, 25 checks,
+      the escape planted in a child as the measurement planted it, through a private seam
+      that holds the mailbox's mutex.
+    - **The slice's review** (Opus, read-only) found no blocker. Its major: every wait in the
+      suite was timed only where it ran out, and a wait that slept out its whole bound after
+      one empty read passed all 24 checks, which it ran in a copy. A take, a delivery and a
+      token's wait now each return once a 300 ms transfer ends. Its eight minors were answered:
+      the escape child held a mutex as the traps forbid, in two places; the cancel and stop
+      comments overstated the code; a top-level `cdr` was unguarded; and four records
+      overstated their logs, the container's Valgrind among them, 3.27.0.
+    - **Checks:** on the final tree, in the container, `make test` 25 of 25 and
+      `test-mailbox` under Valgrind; before the review's fixes, `make test-memory` 25 of 25.
+      In Docker, the main (8.5.0), gnutls, floor (7.85.0) and current (8.23.0) lanes 25 of 25
+      each, and the memory lane 25 of 25 with `check-memory-gate` 33 of 33, before and after
+      the fixes. The [mutation log](mailbox-mutation-log.md): 25 mutants, 24 failing a named
+      check, and one wait's read after its bound, with a cancel's append, left unchecked, each
+      for its reason.
+    - **One subagent:**
 
-      | Agent | Tokens | Time |
-      |---|---|---|
-      | the transfer and engine suites moved to the request, in a tree copy | 339k | 20 min |
-      | adversarial review | 396k | 23 min |
-
-  - **Carried into M4:** whether the engine's thread blocks SIGINT, slice 2's first
-    measurement; why a timeout's 28 came 1,014 ms late once (ADR-0019, amended 2026-10-25);
-    CI has still never run.
+      | Agent | Model | Tokens | Time |
+      |---|---|---|---|
+      | adversarial review | Opus | 287k | 17 min |
+    - **The Mac** ran `run.sh mac sigint` on the PR, #26: 40 of 40 SIGINTs on the main
+      thread, so the decision stands (ADR-0012, amended). The runner then hung in its cleanup,
+      waiting with no bound for the origin, whose FIFO stdin had closed; the wait now has one,
+      watched ending a stand-in that ignores its stdin.
+  - **Carried into M4:** why a timeout's 28 came 1,014 ms late once (ADR-0019, amended
+    2026-10-25); CI has still never run.
 - **M3, the engine:** **done on 2026-10-26.** Its three slices are merged (PRs #19, #20 and
   #21), PR #22 moved CI's `current` lane to curl 8.23.0, and the Mac has run both
   (M3 plan, §7). Their close-outs are below.
@@ -119,6 +122,51 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-26 — M4 slice 1: the public request, its body and the classes (PR #25, `7629a91`)
+
+- **Measured first** ([`research/m4/slice1/`](research/m4/slice1/)), on 7.85.0, Ubuntu's
+  8.5.0 with OpenSSL and with GnuTLS, Guix's 8.20.0 and 8.23.0: what each method's body
+  sends, byte for byte; what takes libcurl's own `Content-Type` and `Expect` away; that the
+  connect timeout ends a TLS handshake the server never answers; the codes the scenarios
+  reach; the timings; and the options tables (the plan, §4.1).
+- **Decided by the maintainer, 2026-10-26:** a failed transfer carries its request size,
+  `CURLINFO_REQUEST_SIZE`, not its timings, which on a failure move with the version
+  (ADR-0022, amended).
+- **Built:** `make-curl-request` and `curl-request-with` from a property list, and the
+  response with its timings, exported from `(curl)` with every condition a caller can meet
+  and the six classes (ADR-0022, ADR-0023, amended); bodies for `post`, `put`, `patch` and
+  `delete`, an empty one a block of one byte, never NULL; `Content-Type:` and `Expect:`
+  beside a body; the connect timeout; `FOLLOWLOCATION` owned, with a private `follow` field
+  for the redirect tests; the owned options and their twins, read from the options tables,
+  `PORT`, `REQUEST_TARGET` and the 23 proxy TLS options among them (ADR-0009, amended);
+  every classed code a constant, 100 and 101 gated.
+- **The slice's review** (Opus, read-only) predicted, from libcurl's source, the one
+  failure the `current` lane then showed: the request size sums every attempt, and 8.23.0
+  resends a head after a dead reused connection, 150 for 75. Each request-size check now
+  runs on an engine of its own (ADR-0022, amended). It also found `CRLF` and `HEADER`
+  unowned, now owned, and ten minors, each answered in the code or the records.
+- **Checks:** in the container, `make test` and `make test-memory` 24 of 24; in Docker, the
+  main (8.5.0), gnutls, floor (7.85.0) and current (8.23.0) lanes 24 of 24 each, and the
+  memory lane 24 of 24 with `check-memory-gate` 33 of 33, after the connect timeout's
+  bound was widened for Valgrind, which took 990 ms there; the
+  [mutation log](request-mutation-log.md), 38 mutants, each failing a named check.
+- **Two subagents, both Opus:**
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | the transfer and engine suites moved to the request, in a tree copy | 339k | 20 min |
+  | adversarial review | 396k | 23 min |
+- **Learned:**
+  - a measurement holds under the conditions it ran in: the request size came from a fresh
+    handle per transfer, and the suites pool connections, so a value asserted from it failed
+    on 8.23.0 (`traps.md`);
+  - a timing bound from the review was taken without asking what the memory lane measures,
+    and failed there at 990 ms;
+  - the mutation runner reported `done` after 5 of 27, its list eaten by `guix-env`'s stdin
+    (`traps.md`);
+  - three of the records' statements, the empty body's reason, "copied twice" and the
+    refusals' order, came from the intent, not the code; the review caught each.
 
 ### 2026-10-26 — the M4 plan, revised after its review (PR #24, `73a536c`)
 

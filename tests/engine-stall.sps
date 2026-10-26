@@ -139,9 +139,9 @@
 (define multi-setting (curl-engine-quick-exit cancel-engine))
 (define quick-exits-before (quick-exits-set))
 (define cancel-name "cancel.stall.invalid")
-(define cancelled (curl-engine-submit cancel-engine (request (string-append "http://" cancel-name "/") 60000)))
+(define cancelled (curl-submit cancel-engine (request (string-append "http://" cancel-name "/") 60000)))
 (define other-start (now-ms))
-(define other (curl-engine-submit cancel-engine (request url 20000)))
+(define other (curl-submit cancel-engine (request url 20000)))
 (define cancel-lines
   (if (started-within cancel-name 5000)
       (begin
@@ -164,7 +164,7 @@
 (define timeout-name "timeout.stall.invalid")
 (define timeout-line
   (let* ((t0 (now-ms))
-         (token (curl-engine-submit timeout-engine (request (string-append "http://" timeout-name "/") 500)))
+         (token (curl-submit timeout-engine (request (string-append "http://" timeout-name "/") 500)))
          (o (outcome (lambda () (curl-token-await token))))
          (state (answered? timeout-name))
          (ms (- (now-ms) t0 500)))
@@ -176,7 +176,7 @@
 ;; stop: the engine stopped while the lookup stalls.
 (define stop-engine (make-engine))
 (define stop-name "stop.stall.invalid")
-(define stopped (curl-engine-submit stop-engine (request (string-append "http://" stop-name "/") 60000)))
+(define stopped (curl-submit stop-engine (request (string-append "http://" stop-name "/") 60000)))
 (define stop-line
   (if (started-within stop-name 5000)
       (begin

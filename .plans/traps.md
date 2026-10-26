@@ -895,3 +895,17 @@ it should not be a comment. (chez-cmark-gfm)
   the same stdin, and the sweep ended after five of 27 mutants, printing `done` as if it had
   finished. Give every command in such a loop `< /dev/null`, and check the count of results
   against the list's. (chez-curl, M4 slice 1)
+* **A waiter's sleeps keep the phase of its start, and a probe's events can share it.** The
+  slice's delay probe paused each transfer a multiple of 10 ms, from its submit, and a wait's
+  polling sleeps, doubling to 10 ms from the same submit, read every 10 ms after in one phase.
+  So every completion met the wait at the same point of its sleep, and the delay read 0.9 to
+  3.2 ms where it spans 0 to 10. Pauses spread over every residue modulo 10 gave 0 to 9.6. A
+  probe of a periodic waiter spreads its events over every phase of the period.
+  (chez-curl, M4 slice 2)
+* **A Chez timer cannot plant an escape where a keyboard interrupt lands.** A timer that runs
+  out inside a critical section runs its handler at a later event check, which can be the
+  1000-tick counter's whole run after the section ends; a keyboard interrupt made pending
+  inside the section runs as it ends. A sweep of `set-timer` from 1 to 300 ticks escaped
+  before the take at 1 to 6 and after it had returned at 7 to 26, never between, where a
+  SIGINT escapes between; from 27, the take ended first. To plant an escape at a section's end, hold the mutex the code blocks on, inside
+  that section, from another thread, and signal meanwhile. (chez-curl, M4 slice 2)

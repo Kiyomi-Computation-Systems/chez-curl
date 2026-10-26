@@ -362,6 +362,13 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * A command that reads stdin, `scripts/guix-env` among them, inside a
   `while read` loop eats the rest of the loop's list. Give it `< /dev/null`,
   and count the results against the list.
+* A waiter's polling sleeps keep the phase of its start, so a probe whose
+  events fall on multiples of its period meets it at one phase, and measures
+  one delay. Spread a probe's events over every phase.
+* A Chez timer that runs out inside a critical section fires at a later
+  event check, never as the section ends; a pending keyboard interrupt runs
+  as it ends. To plant an escape there, block the code inside its section on
+  a mutex another thread holds, and send SIGINT meanwhile.
 
 ## Closing ritual
 

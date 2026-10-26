@@ -568,7 +568,7 @@
    (test-equal "a /status/200 submitted and awaited answers its response, its one chunk logged on the engine's thread"
      (list '(response 200 "status 200\n")
            (list (list (string-length "status 200\n") (curl-engine-thread engine) 'accepted)))
-     (let ((t (curl-engine-submit engine (request status))))
+     (let ((t (curl-submit engine (request status))))
        (list (awaited t) (curl-token-chunks t))))
 
    ;; Eight drips of 400 ms each, submitted together: overlapping, they end
@@ -581,10 +581,10 @@
    (let ((eight (on-own-engine
                  (lambda (own)
                    (let* ((one-ms (let ((t0 (now-ms)))
-                                    (awaited (curl-engine-submit own (request (drip 40 10))))
+                                    (awaited (curl-submit own (request (drip 40 10))))
                                     (- (now-ms) t0)))
                           (t0 (now-ms))
-                          (tokens (map (lambda (i) (curl-engine-submit own (request (drip 40 10)))) (iota 8)))
+                          (tokens (map (lambda (i) (curl-submit own (request (drip 40 10)))) (iota 8)))
                           (answers (map awaited tokens))
                           (all-ms (- (now-ms) t0))
                           (chunks (apply append (map curl-token-chunks tokens))))
@@ -613,7 +613,7 @@
            #t)
      (on-own-engine
       (lambda (own-engine)
-        (let* ((shared (curl-engine-submit own-engine (request (drip 30 10))))
+        (let* ((shared (curl-submit own-engine (request (drip 30 10))))
                (mx (make-mutex)) (results '()))
           (for-each
            (lambda (i target)
@@ -621,7 +621,7 @@
               (lambda ()
                 (let ((r (guard (e (#t (list i (list 'on-thread (outcome (lambda () (raise e)))) #f)))
                            (let* ((me (get-thread-id))
-                                  (own (awaited (curl-engine-submit own-engine (request target))))
+                                  (own (awaited (curl-submit own-engine (request target))))
                                   (theirs (await-bounded shared 20000))
                                   (after (get-thread-id)))
                              (list i (list own (outcome (lambda () theirs))
@@ -657,7 +657,7 @@
          (measured
           (on-own-engine
            (lambda (own)
-             (let* ((tokens (map (lambda (i) (curl-engine-submit own (request (drip 4 50)))) (iota 8)))
+             (let* ((tokens (map (lambda (i) (curl-submit own (request (drip 4 50)))) (iota 8)))
                     (most-live (let watch ((most 0) (deadline (+ (now-ms) 20000)))
                                  (if (or (for-all curl-token-done? tokens) (> (now-ms) deadline))
                                      most
@@ -666,7 +666,7 @@
                     (answers (map awaited tokens)))
                (list answers
                      (if (= most-live 8) 'live-together (list 'most-live-together most-live))
-                     (reuse-outcome (curl-engine-submit own (request (drip 4 50))))))))))
+                     (reuse-outcome (curl-submit own (request (drip 4 50))))))))))
      (test-equal (string-append "the reuse verdicts have a row for this libcurl, " (written version))
        (list version)
        (if row (list (car row)) (list 'no-row version)))
@@ -727,13 +727,13 @@
            (lambda () (request status))
            '(("COOKIE" . 1)))
      (list "what is not a request"
-           '(assertion-violation curl-engine-submit)
+           '(assertion-violation curl-submit)
            (lambda () 'not-a-request)
            '())))
 
    (test-equal "after every refusal the engine still runs, and its next transfer answers"
      (list 'running '(response 200 "status 200\n"))
-     (list (curl-engine-state engine) (awaited (curl-engine-submit engine (request status)))))
+     (list (curl-engine-state engine) (awaited (curl-submit engine (request status)))))
 
    ;; --- cancel ----------------------------------------------------------------------------
 
@@ -742,17 +742,17 @@
      (let* ((started (transfers-started))
             (t (call-with-engine-held engine
                  (lambda ()
-                   (let ((t (curl-engine-submit engine (request status))))
+                   (let ((t (curl-submit engine (request status))))
                      (curl-token-cancel t)
                      t)))))
        (let ((answer (awaited t)))
          ;; One transfer after it, so the engine has taken the queue.
-         (awaited (curl-engine-submit engine (request status)))
+         (awaited (curl-submit engine (request status)))
          (list answer (curl-token-chunks t) (- (transfers-started) started 1) (native-counts)))))
 
    (test-equal "a cancel of a live drip completes it as cancelled, with the chunks it had accepted, and the engine's table empty after"
      (list '(transfer-error cancelled #f #f #f) #t 0 running-counts)
-     (let ((t (curl-engine-submit engine (request (drip 200 5)))))
+     (let ((t (curl-submit engine (request (drip 200 5)))))
        (pause-ms 200)
        (curl-token-cancel t)
        (let ((answer (awaited t)))
@@ -764,7 +764,7 @@
 
    (test-equal "a cancel of a done token leaves its outcome: await again answers the same response, eq?"
      (list '(response 200 "status 200\n") #t)
-     (let* ((t (curl-engine-submit engine (request status)))
+     (let* ((t (curl-submit engine (request status)))
             (first (await-bounded t 20000)))
        (curl-token-cancel t)
        (list (outcome (lambda () first)) (eq? first (await-bounded t 20000)))))
@@ -774,7 +774,7 @@
      (let loop ((i 0) (strays '()))
        (if (= i 60)
            (list strays (native-counts) (curl-engine-live-count engine))
-           (let ((t (curl-engine-submit engine (request status))))
+           (let ((t (curl-submit engine (request status))))
              (pause-ms (div i 6))
              (curl-token-cancel t)
              (let ((a (awaited t)))
@@ -787,13 +787,13 @@
    ;; done, and must leave it so.
    (test-equal "a live drip cancelled twice while the engine is held: the first cancel ends it as cancelled, the second, finding it done, is counted stale and changes nothing"
      (list '(transfer-error cancelled #f #f #f) 1 0 running-counts)
-     (let* ((t (curl-engine-submit engine (request (drip 100 10))))
+     (let* ((t (curl-submit engine (request (drip 100 10))))
             (stale (begin (pause-ms 150) (curl-engine-stale-cancels engine))))
        (call-with-engine-held engine
          (lambda () (curl-token-cancel t) (curl-token-cancel t)))
        (let ((answer (awaited-within t 10000)))
          ;; One transfer after it, so the engine has carried out both.
-         (awaited (curl-engine-submit engine (request status)))
+         (awaited (curl-submit engine (request status)))
          (list answer (- (curl-engine-stale-cancels engine) stale)
                (curl-engine-live-count engine) (native-counts)))))
 
@@ -805,7 +805,7 @@
             (started (transfers-started))
             (t (call-with-engine-held stopping
                  (lambda ()
-                   (let ((t (curl-engine-submit stopping (request status))))
+                   (let ((t (curl-submit stopping (request status))))
                      (curl-token-cancel t)
                      (curl-engine-request-stop! stopping)
                      t)))))
@@ -818,7 +818,7 @@
             (refused (call-with-engine-held stopping
                        (lambda ()
                          (curl-engine-request-stop! stopping)
-                         (outcome (lambda () (curl-engine-submit stopping (request status))))))))
+                         (outcome (lambda () (curl-submit stopping (request status))))))))
        (stop-within stopping)
        (list refused (curl-engine-state stopping) (native-counts))))
 
@@ -826,13 +826,13 @@
    ;; libcurl's poll waiting its whole 1000 ms otherwise.
    (test-equal "a cancel of a drip idle between bytes ends it within 300 ms, and a stop of an engine holding one returns within 300 ms: each wakes the poll"
      (list '(transfer-error cancelled #f #f #f) 'within-bound 'within-bound)
-     (let* ((t (curl-engine-submit engine (request (drip 3 2000))))
+     (let* ((t (curl-submit engine (request (drip 3 2000))))
             (t0 (begin (pause-ms 300) (now-ms))))
        (curl-token-cancel t)
        (let* ((answer (awaited-within t 10000))
               (cancel-ms (- (now-ms) t0))
               (stopping (make-curl-engine))
-              (s (curl-engine-submit stopping (request (drip 3 2000))))
+              (s (curl-submit stopping (request (drip 3 2000))))
               (t1 (begin (pause-ms 300) (now-ms)))
               (stop-ms (begin (stop-within stopping) (- (now-ms) t1))))
          (awaited-within s 10000)
@@ -852,14 +852,14 @@
               (list 'engine-error 'failed (planted-engine-fault step))
               'at-once 0 #f running-counts)
         (let* ((faulty (make-faulty-curl-engine step))
-               (t (curl-engine-submit faulty (request (if (memq step '(cancel poll)) (drip 100 10) status)))))
+               (t (curl-submit faulty (request (if (memq step '(cancel poll)) (drip 100 10) status)))))
           (when (eq? step 'cancel)
             (pause-ms 100)
             (curl-token-cancel t))
           ;; The first stop waits for the engine's thread to end its
           ;; cleanup; the second must return at once.
           (let* ((answer (awaited-within t 10000))
-                 (later (outcome (lambda () (curl-engine-submit faulty (request status)))))
+                 (later (outcome (lambda () (curl-submit faulty (request status)))))
                  (state (begin (stop-within faulty) (curl-engine-state faulty)))
                  (t0 (now-ms)))
             (stop-within faulty)
@@ -875,13 +875,13 @@
    (test-equal "a fault at cancel with two transfers live and one set up in the same turn fails all three"
      (make-list 3 (list 'engine-error 'failed (planted-engine-fault 'cancel)))
      (let* ((faulty (make-faulty-curl-engine 'cancel))
-            (a (curl-engine-submit faulty (request (drip 100 10))))
-            (b (curl-engine-submit faulty (request (drip 100 10)))))
+            (a (curl-submit faulty (request (drip 100 10))))
+            (b (curl-submit faulty (request (drip 100 10)))))
        (pause-ms 100)
        (let ((c (call-with-engine-held faulty
                   (lambda ()
                     (curl-token-cancel a)
-                    (curl-engine-submit faulty (request status))))))
+                    (curl-submit faulty (request status))))))
          (let ((answers (map (lambda (t) (awaited-within t 10000)) (list a b c))))
            (stop-within faulty)
            answers))))
@@ -893,7 +893,7 @@
    (test-equal "a fault while sixty transfers are live: the stop returns only once the engine's thread has freed them all, so its state is failed, and its table, its multi handle and the counts are empty, the moment it returns"
      (list 'failed 0 #f running-counts)
      (let* ((faulty (make-faulty-curl-engine 'cancel))
-            (tokens (map (lambda (i) (curl-engine-submit faulty (request (drip 100 10)))) (iota 60))))
+            (tokens (map (lambda (i) (curl-submit faulty (request (drip 100 10)))) (iota 60))))
        (pause-ms 300)
        (curl-token-cancel (car tokens))
        (let ((after (stop-within faulty
@@ -906,11 +906,11 @@
    ;; --- stop ------------------------------------------------------------------------------
 
    (let* ((stopping (make-curl-engine))
-          (live (map (lambda (i) (curl-engine-submit stopping (request (drip 100 10)))) '(0 1)))
+          (live (map (lambda (i) (curl-submit stopping (request (drip 100 10)))) '(0 1)))
           (started-live (begin (pause-ms 150) (transfers-started)))
           (queued (call-with-engine-held stopping
                     (lambda ()
-                      (let ((q (map (lambda (i) (curl-engine-submit stopping (request status))) '(0 1))))
+                      (let ((q (map (lambda (i) (curl-submit stopping (request status))) '(0 1))))
                         (curl-engine-request-stop! stopping)
                         q))))
           (stop-answer (guard (e (#t (list 'stop-raised e))) (stop-within stopping) 'returned)))
@@ -925,7 +925,7 @@
        (list 'returned 'stopped 0 #f '(engine-error stopped #f) 'at-once running-counts)
        (list stop-answer (curl-engine-state stopping) (curl-engine-live-count stopping)
              (curl-engine-multi stopping)
-             (outcome (lambda () (curl-engine-submit stopping (request status))))
+             (outcome (lambda () (curl-submit stopping (request status))))
              (let ((t0 (now-ms))) (stop-within stopping)
                (if (< (- (now-ms) t0) 50) 'at-once (- (now-ms) t0)))
              (native-counts))))

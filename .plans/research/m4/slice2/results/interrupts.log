@@ -1,0 +1,21 @@
+timer.ss, Chez 10.4.0, in the container:
+k 1 inside 50: fired (before)
+k 3 inside 50: fired (before)
+k 6 inside 50: fired (inside)
+k 10 inside 50: fired (after1)
+k 20 inside 50: fired (after2)
+k 40 inside 50: fired (after2)
+k 60 inside 50: fired (after2)
+k 100 inside 50: fired (after2)
+k 200 inside 50: fired (after2)
+k 1000 inside 50: fired (after2)
+k 5000 inside 50: fired (after3)
+k 10 inside 5000: fired (after1)
+k 100 inside 5000: fired (after2)
+k 1000 inside 5000: fired (after2)
+k 3000 inside 5000: fired (after3)
+
+keyboard.ss:
+kill inside a critical section, nothing after it inside: fired (in-end)
+kill inside a critical section, then a primitive set! after it: fired (in-end)
+kill outside any section: fired (after2)
