@@ -446,3 +446,104 @@ this record. It is accepted, with these amendments.
   what it took with no engine thread.
 - **Not measured:** macOS, Linux on arm64, Valgrind, TLS transfers, a slow connect, and every
   callback but the write callback.
+
+## Amendment, 2026-10-25: a wait holds its mutex through a critical `dynamic-wind` (M3 slice 2)
+
+The 2026-10-23 amendment holds every mutex through `locked`, `critical-section` around
+`with-mutex`. The M3 plan then had await wait in timed waits of 100 ms, each in its own
+critical section through `locked` (§3.4), from spike E1's Ctrl-C finding. Slice 2 measured
+that before building it, from scratch programs.
+
+- **A wait inside a critical section holds every other thread's collections until it ends.**
+  Chez 10.4.0's `condition-wait` deactivates its thread only when interrupts are enabled
+  (`DISABLECOUNT(tc) == 0`, `c/thread.c`), and so does a `mutex-acquire` that blocks
+  (`c/prim5.c`). A thread waiting inside `critical-section` stays active, and a collection
+  waits for every active thread. On Guix's Chez and on CI's, 2 runs each:
+  - while the main thread waited 3 s in such waits, a worker asking for a collection every
+    20 ms made 30 of them, each waiting a median 80 ms, at most 100 ms. With the waits below,
+    it made 150, a median 0.0 ms, at most 0.7 ms;
+  - in a prototype engine, 30 transfers awaited that way took 612 to 1,535 ms on the four
+    Linux libcurls, and 7.6 to 17.6 ms awaited as below. Single awaits took exactly 100 or
+    200 ms: the engine's thread was held in a collection that waited for the caller's wait.
+- **Decided, by the maintainer: a wait holds its mutex through a critical `dynamic-wind`.**
+  Its before thunk takes the mutex and its after thunk releases it, each with interrupts
+  off, and an escape runs the after thunk the same way (`cwind` and `$do-wind`, `s/4.ss`).
+  So no escape falls between taking the mutex and the record that releases it, as with
+  `locked`. The timed wait runs in the body, with interrupts on, so the thread is inactive
+  while it waits. Ctrl-C still runs within one wait, since the after thunk's end runs
+  pending events at once: the handler ran at 1,101 ms, against 1,103 to 1,104 ms in a
+  critical section, and 3,003 to 3,017 ms with no critical section at all.
+- **`locked` stays for every hold that does not wait.** Such a hold is short, and makes no
+  foreign call that can block. A thread blocked taking a mutex inside `locked` stays active
+  too, so no hold may wait.
+- **The wait is held by behaviour.** `test-engine` requires a worker's collections beside a
+  caller awaiting a slow transfer to finish within a bound, a check watched failing on the
+  critical-section wait. `check-seam` lets `(curl private engine)` import `mutex-acquire` and
+  `mutex-release`.
+
+## Amendment, 2026-10-25: M2's escapes ended with M2's path, and the engine is bound (M3 slice 2)
+
+- **The 2026-10-23 amendment's escape rules ended with M2's blocking path.** Slice 2 deleted
+  `perform-transfer`, the `curl_easy_perform` binding and its row. The engine's write callable
+  runs no procedure a caller supplied, so the hook's `dynamic-wind`, the performing mark and
+  the escape child, `tests/transfer-escapes.sps`, went with them. Chez sends Ctrl-C to the
+  main thread alone, and the engine's thread sets no timer and runs no engine, so nothing
+  escapes inside its perform but through `collect-request-handler`, which is process-wide:
+  a caller's handler that escapes could run on the engine's thread (the M3 plan, §3.6). What stays is the window rule: each native object is made, or
+  freed, in one critical section with its record, now the transfer's live record, and every
+  hold of a mutex that does not wait is `locked`'s.
+- **The four multi calls that can block are bound through `bind-blocking`,** and their rows
+  name it. `curl_multi_poll` is the engine's wait, so it is `__collect_safe`. `curl_multi_init`, `curl_multi_add_handle`,
+  `curl_multi_wakeup` and `curl_multi_info_read` are bound plain through `bind-required`, as
+  E1 classed them, and so is `curl_multi_strerror`, which cannot block. The callable's row
+  cites decision 2 as E1 held it: it fires inside `curl_multi_perform`.
+- **A blocking free may run in a critical section.** A `__collect_safe` call deactivates its
+  thread whatever its disable count (`Sdeactivate_thread`, `c/thread.c`), so the engine frees
+  its multi handle in the critical section that counts it down, and other threads' collections
+  go on while `curl_multi_cleanup` waits.
+
+## Amendment, 2026-10-25: a wait polls, and holds no mutex (M3 slice 2, after its review)
+
+The first 2026-10-25 amendment had a wait hold its mutex through a critical `dynamic-wind`.
+The slice's adversarial review found that it deadlocks, and the maintainer chose again.
+
+- **The wound wait deadlocks the process.** A critical `dynamic-wind` enables interrupts
+  once its before thunk has taken the mutex, and its body runs with them on, so a waiter
+  that holds the engine's mutex can join a collection's rendezvous holding it. A second
+  thread blocked taking that mutex with interrupts off, in `locked` or in another waiter's
+  before thunk, stays active, since a blocked `mutex-acquire` deactivates only with
+  interrupts on (`c/prim5.c`). The collection waits for it, and it waits for the holder.
+  Reproduced: four caller threads, each submitting and awaiting in a loop, hung within 1 s,
+  3 runs of 3. No check had two threads waiting while a collection ran.
+- **Decided, by the maintainer: a wait polls.** It holds no mutex while it waits, and uses
+  no condition variable. Each read of the state it waits for is a short hold through
+  `locked`, and between reads it sleeps, 50 µs at first, doubling to 10 ms. Chez's `sleep`
+  deactivates its thread when interrupts are on, and sets the thread's trap, so a pending
+  Ctrl-C runs as it wakes (`s_nanosleep`, `c/prim5.c`). So every hold of every mutex is
+  `locked`'s, short, with interrupts off, and none waits: a thread blocked taking one waits
+  only for a holder that cannot join a collection. This supersedes the wait rules of the
+  two amendments above.
+- **A wait needs interrupts on, and refuses to start without them.** With interrupts off,
+  `sleep` leaves its thread active, so a collection waits for it, the engine's thread parks
+  in that collection, and the token never completes: an await inside `critical-section`
+  hung its process, killed at 30 s (the fix's scoped review). So `curl-token-await`,
+  `curl-engine-stop` and `make-curl-engine` each raise an assertion violation before they
+  do anything when interrupts are off, read from `disable-interrupts`' count.
+  - **Measured:** no hang with 4 threads for 10 s, about 234,000 transfers, and 8 threads for
+    30 s; and the review's tight probe, an awaiter beside a thread polling the same token. In
+    the container, `test-engine` passed, its collection bound and its Ctrl-C child among its
+    checks. Under the gate's Valgrind, which runs one thread at a time, 4 threads made 5,226
+    transfers in 10 s and finished cleanly.
+  - **The alternative, rejected:** take the mutex by trying, never blocking, with pending
+    events run between tries. It kept prompt wakeups and about 20% more throughput in a
+    tight local loop, but it spins under contention. Under Valgrind the same 4-thread run
+    made 607 transfers in 10 s and never finished, killed at 600 s.
+  - **Its costs:** a completion is seen up to the current sleep late, 10 ms at most once a
+    wait has slept about 13 ms, 50 × (2^8 − 1) µs, and a waiter wakes up to 100 times a
+    second. A child holds both: five 500 ms drips each returned within 30 ms of a watcher
+    seeing them done, and a 2 s await spent under 2% of its time on the CPU. A sleep of 1 s
+    or more cannot be asked for: `make-time` refuses nanoseconds past 10^9.
+- **check-seam** no longer lets any library import `mutex-acquire`, `mutex-release`,
+  `make-condition`, `condition-wait` or `condition-broadcast`, since none is needed.
+  `(curl private engine)` imports `sleep`, and alone imports `disable-interrupts` and
+  `enable-interrupts`, to ask whether a wait may start.

@@ -33,7 +33,8 @@
   ;;   slist        a string list (M2, slice 2)
   ;;   curl-string  a string libcurl made, for curl_free
   ;;   transfer     a transfer (M2, slice 2)
-  (define native-kinds '(block easy url slist curl-string transfer))
+  ;;   multi        a multi handle, an engine's (M3, slice 2)
+  (define native-kinds '(block easy url slist curl-string transfer multi))
 
   ;; The counts, one per kind, in native-kinds order, and the mutex every
   ;; read and write holds.

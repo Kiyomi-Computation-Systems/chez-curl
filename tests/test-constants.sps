@@ -76,7 +76,7 @@
 (import (rnrs)
         (rnrs eval)
         (srfi :64)
-        (only (chezscheme) getenv foreign-sizeof)
+        (only (chezscheme) getenv foreign-sizeof list-head)
         (foreign-conventions)
         (only (curl private conditions)
               curl-library-unavailable? curl-library-unavailable-reason
@@ -155,7 +155,10 @@
     (curle-operation-timedout . "CURLE_OPERATION_TIMEDOUT")
     (curle-got-nothing . "CURLE_GOT_NOTHING")
     (curle-recv-error . "CURLE_RECV_ERROR")
-    (curle-filesize-exceeded . "CURLE_FILESIZE_EXCEEDED")))
+    (curle-filesize-exceeded . "CURLE_FILESIZE_EXCEEDED")
+    (curlm-ok . "CURLM_OK")
+    (curlm-unknown-option . "CURLM_UNKNOWN_OPTION")
+    (curlmsg-done . "CURLMSG_DONE")))
 
 ;; c-name-aliases : (Listof (Pairof Symbol String))
 ;; Each export whose row names a C constant other than the export's own
@@ -177,7 +180,8 @@
 (define layout-rows
   '((curl-version-info-data "curl_version_info_data" prefix)
     (curl-easyoption "struct curl_easyoption" whole)
-    (curl-header "struct curl_header" whole)))
+    (curl-header "struct curl_header" whole)
+    (curl-msg "struct CURLMsg" whole)))
 
 (define extents '(whole prefix))
 
@@ -868,12 +872,21 @@
      ("CURLUcode" ("const CURLU *" "CURLUPart" "char **" "unsigned int")))
     ("curl_url_strerror" ("const char *" ("CURLUcode")))
     ("curl_free" ("void" ("void *")))
-    ("curl_easy_perform" ("CURLcode" ("CURL *")))
     ("curl_easy_strerror" ("const char *" ("CURLcode")))
     ("curl_easy_nextheader"
      ("struct curl_header *" ("CURL *" "unsigned int" "int" "struct curl_header *")))
     ("curl_slist_append" ("struct curl_slist *" ("struct curl_slist *" "const char *")))
     ("curl_slist_free_all" ("void" ("struct curl_slist *")))
+    ("curl_multi_init" ("CURLM *" ()))
+    ("curl_multi_cleanup" ("CURLMcode" ("CURLM *")))
+    ("curl_multi_add_handle" ("CURLMcode" ("CURLM *" "CURL *")))
+    ("curl_multi_remove_handle" ("CURLMcode" ("CURLM *" "CURL *")))
+    ("curl_multi_perform" ("CURLMcode" ("CURLM *" "int *")))
+    ("curl_multi_poll"
+     ("CURLMcode" ("CURLM *" "struct curl_waitfd []" "unsigned int" "int" "int *")))
+    ("curl_multi_wakeup" ("CURLMcode" ("CURLM *")))
+    ("curl_multi_info_read" ("CURLMsg *" ("CURLM *" "int *")))
+    ("curl_multi_strerror" ("const char *" ("CURLMcode")))
     ("memcpy" ("void *" ("void *" "const void *" "size_t")))
     ("strlen" ("size_t" ("const char *")))))
 
@@ -913,16 +926,21 @@
     ("CURLINFO" int)
     ("CURLHcode" int)
     ("CURLUcode" int)
-    ("CURLUPart" int)))
+    ("CURLUPart" int)
+    ("CURLMcode" int)))
 
 ;; bytevector-rows : (Listof String)
 ;; The rows whose pointers may be bound u8*: the checked copies' memcpy.
 (define bytevector-rows '("memcpy"))
 
 ;; pointer-type? : String -> Boolean
+;; A type ending in *, or an array parameter's, ending in [], which C
+;; adjusts to a pointer: curl_multi_poll's struct curl_waitfd extra_fds[].
 (define (pointer-type? c-type)
   (let ((n (string-length c-type)))
-    (and (> n 0) (char=? (string-ref c-type (- n 1)) #\*))))
+    (and (> n 0)
+         (or (char=? (string-ref c-type (- n 1)) #\*)
+             (and (>= n 2) (string=? (substring c-type (- n 2) n) "[]"))))))
 
 ;; ftype-pointer-fits? : Any String -> Boolean
 ;; Whether CHEZ is (* F) for an F whose layout-rows C type, then " *", is
@@ -1204,13 +1222,24 @@
 (define (parameter-type tokens)
   (let* ((tokens (remp (lambda (t) (member t qualifier-noise)) tokens))
          (n (length tokens)))
-    (spelled
-     (if (and (>= n 2)
-              (c-identifier? (list-ref tokens (- n 1)))
-              (not (member (list-ref tokens (- n 1)) type-keywords))
-              (not (member (list-ref tokens (- n 2)) '("struct" "union" "enum"))))
-         (reverse (cdr (reverse tokens)))
-         tokens))))
+    (cond
+      ;; An array parameter, TYPE NAME [ ]: its name dropped, so it reads
+      ;; TYPE [ ], spelled as a row writes "TYPE []".
+      ((and (>= n 4)
+            (string=? (list-ref tokens (- n 2)) "[")
+            (string=? (list-ref tokens (- n 1)) "]")
+            (c-identifier? (list-ref tokens (- n 3)))
+            (not (member (list-ref tokens (- n 3)) type-keywords))
+            (not (member (list-ref tokens (- n 4)) '("struct" "union" "enum"))))
+       (spelled (append (list-head tokens (- n 3)) '("[" "]"))))
+      (else
+       (spelled
+        (if (and (>= n 2)
+                 (c-identifier? (list-ref tokens (- n 1)))
+                 (not (member (list-ref tokens (- n 1)) type-keywords))
+                 (not (member (list-ref tokens (- n 2)) '("struct" "union" "enum"))))
+            (reverse (cdr (reverse tokens)))
+            tokens))))))
 
 ;; split-parameters : (Listof String) -> (Listof (Listof String))
 ;; The tokens between a parameter list's parentheses, cut at each comma at
@@ -1306,7 +1335,8 @@
 ;; Written out: every enum a prototype row names, each a typedef the headers
 ;; define with typedef enum. c-type-map maps each to int, and nothing else.
 (define enum-names
-  '("CURLcode" "CURLversion" "CURLoption" "CURLINFO" "CURLHcode" "CURLUcode" "CURLUPart"))
+  '("CURLcode" "CURLversion" "CURLoption" "CURLINFO" "CURLHcode" "CURLUcode" "CURLUPart"
+    "CURLMcode"))
 
 ;; enums-in : (Listof String) -> (Listof String)
 ;; The names TOKENS give a typedef enum: typedef enum [TAG] { ... } NAME ;
@@ -1573,8 +1603,8 @@
 
 ;; Written out here, not read from the table: a row turned to prefix would
 ;; drop its size check with it.
-(test-equal "curl-easyoption and curl-header are laid out whole, and curl-version-info-data as a prefix"
-  '((curl-version-info-data prefix) (curl-easyoption whole) (curl-header whole))
+(test-equal "curl-easyoption, curl-header and curl-msg are laid out whole, and curl-version-info-data as a prefix"
+  '((curl-version-info-data prefix) (curl-easyoption whole) (curl-header whole) (curl-msg whole))
   (map (lambda (row) (list (car row) (caddr row))) layout-rows))
 
 ;; --- curlot-types is complete ---------------------------------------------------------------
@@ -1696,11 +1726,11 @@
 (define (type<? a b) (string<? (written a) (written b)))
 (define (type-sorted types) (list-sort type<? types))
 
-(test-equal "c-type-map is exactly, written out here: void, int, unsigned int, long, size_t and curl_off_t each to its one Chez type, and each of the seven enums to int"
+(test-equal "c-type-map is exactly, written out here: void, int, unsigned int, long, size_t and curl_off_t each to its one Chez type, and each of the eight enums to int"
   '(("void" void) ("int" int) ("unsigned int" unsigned-int) ("long" long) ("size_t" size_t)
     ("curl_off_t" integer-64)
     ("CURLcode" int) ("CURLversion" int) ("CURLoption" int) ("CURLINFO" int)
-    ("CURLHcode" int) ("CURLUcode" int) ("CURLUPart" int))
+    ("CURLHcode" int) ("CURLUcode" int) ("CURLUPart" int) ("CURLMcode" int))
   c-type-map)
 
 ;; expected-fits : (Listof (Pairof (List String String) (Listof Type)))
@@ -1721,6 +1751,7 @@
     (("x" "CURLHcode") int)
     (("x" "CURLUcode") int)
     (("x" "CURLUPart") int)
+    (("x" "CURLMcode") int)
     (("x" "double"))
     (("x" "CURL *") uptr void*)
     (("x" "CURLU *") uptr void*)
@@ -1736,12 +1767,17 @@
     (("x" "curl_version_info_data *") uptr void* (* curl-version-info-data))
     (("x" "struct curl_easyoption *") uptr void* (* curl-easyoption))
     (("x" "const struct curl_easyoption *") uptr void*)
+    (("x" "CURLM *") uptr void*)
+    (("x" "int *") uptr void*)
+    (("x" "struct curl_waitfd []") uptr void*)
+    (("x" "CURLMsg *") uptr void*)
+    (("x" "struct CURLMsg *") uptr void* (* curl-msg))
     (("memcpy" "void *") uptr void* u8*)
     (("memcpy" "const void *") uptr void* u8*)
     (("memcpy" "const char *") uptr void* u8* string)))
 
-(test-equal "the universe the map is held against: every type the conventions reader reads, for src/'s three layouts, and an ftype no layout defines"
-  (+ 33 1 3 7 1 6 1)
+(test-equal "the universe the map is held against: every type the conventions reader reads, for src/'s four layouts, and an ftype no layout defines"
+  (+ 33 1 3 7 1 8 1)
   (length universe))
 
 (for-each

@@ -12,9 +12,13 @@
 ;;;                               chez-curl's own checks (ADR-0008)
 ;;;   &curl-request-error         a request's field refused, before anything
 ;;;                               native is made (M2 plan, section 5.3)
-;;;   &curl-transfer-error        a blocking transfer that failed: libcurl's
-;;;                               code and texts, and what the write callable
-;;;                               recorded (M2 plan, sections 3.7 and 5.3)
+;;;   &curl-transfer-error        a transfer that failed: libcurl's code and
+;;;                               texts, and what the write callable recorded
+;;;                               (M2 plan, sections 3.7 and 5.3), or one
+;;;                               cancelled or stopped (M3 plan, section 3.4)
+;;;   &curl-engine-error          an engine that has stopped, or failed, and
+;;;                               the condition it failed with (M3 plan,
+;;;                               sections 3.4 and 3.7)
 ;;;
 ;;; A raise may compound one with &who, &message and &irritants, so that
 ;;; the default handler prints readable text. Tests assert the reason symbol
@@ -48,7 +52,10 @@
           &curl-transfer-error make-curl-transfer-error curl-transfer-error?
           curl-transfer-error-reason curl-transfer-error-code curl-transfer-error-option
           curl-transfer-error-strerror curl-transfer-error-error-buffer
-          curl-transfer-error-recorded curl-transfer-error-reasons)
+          curl-transfer-error-recorded curl-transfer-error-reasons
+
+          &curl-engine-error make-curl-engine-error curl-engine-error?
+          curl-engine-error-reason curl-engine-error-condition curl-engine-error-reasons)
   (import (curl private require-threaded)
           (rnrs)
           (curl private libcurl-info)
@@ -258,24 +265,29 @@
   ;; --- &curl-transfer-error ------------------------------------------------------
 
   ;; curl-transfer-error-reasons : (Listof Symbol)
-  ;; Why a blocking transfer failed (M2 plan, section 5.3):
+  ;; Why a transfer failed (M2 plan, section 5.3; M3 plan, section 3.4):
   ;;
-  ;;   perform-failed   curl_easy_perform answered a code, and the write
+  ;;   perform-failed   the transfer ended with a CURLcode, which
+  ;;                    curl_multi_info_read gave the engine, and the write
   ;;                    callable recorded nothing
   ;;   body-limit       the callable refused a chunk past the body limit
   ;;   callback-raised  something raised inside the callable, which recorded it
   ;;   setopt-failed    curl_easy_setopt answered a code, for the option named
   ;;   unknown-option   the loaded libcurl does not know the option named
   ;;   no-handle        curl_easy_init answered NULL
+  ;;   cancelled        the caller cancelled it before it ended (M3 plan,
+  ;;                    section 3.5)
+  ;;   stopped          its engine stopped before it ended
   (define curl-transfer-error-reasons
-    '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle))
+    '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle
+      cancelled stopped))
 
   ;; The fields:
   ;;
   ;;   reason        one of curl-transfer-error-reasons
   ;;   code          (U Integer #f): the CURLcode, a number, since codes
   ;;                 past the floor's have no name; #f when libcurl answered
-  ;;                 none (unknown-option, no-handle)
+  ;;                 none (unknown-option, no-handle, cancelled, stopped)
   ;;   option        (U String #f): the option's name, without CURLOPT_
   ;;   strerror      (U String #f): curl_easy_strerror's text for the code
   ;;   error-buffer  (U String #f): CURLOPT_ERRORBUFFER's text, read as
@@ -296,9 +308,9 @@
 
   ;; make-curl-transfer-error : Symbol (U Integer #f) (U String #f) (U String #f)
   ;;                            (U String #f) Any -> &curl-transfer-error
-  ;; Refuses a REASON that is not one of the six with an assertion violation.
-  ;; It checks nothing else, so a code a later libcurl answers still reaches
-  ;; the caller.
+  ;; Refuses a REASON that is not one of the eight with an assertion
+  ;; violation. It checks nothing else, so a code a later libcurl answers
+  ;; still reaches the caller.
   (define (make-curl-transfer-error reason code option strerror error-buffer recorded)
     (unless (memq reason curl-transfer-error-reasons)
       (assertion-violation 'make-curl-transfer-error
@@ -313,6 +325,41 @@
   ;; curl-transfer-error-strerror : &curl-transfer-error -> (U String #f)
   ;; curl-transfer-error-error-buffer : &curl-transfer-error -> (U String #f)
   ;; curl-transfer-error-recorded : &curl-transfer-error -> Any
+
+  ;; --- &curl-engine-error -------------------------------------------------------
+
+  ;; curl-engine-error-reasons : (Listof Symbol)
+  ;; Why an engine refused a message, or failed a transfer (M3 plan, sections
+  ;; 3.4 and 3.7):
+  ;;
+  ;;   stopped  the engine was stopped: a submit after its stop
+  ;;   failed   something raised inside the engine's loop: every transfer it
+  ;;            held, and a later submit, carries the condition
+  (define curl-engine-error-reasons '(stopped failed))
+
+  ;; The fields:
+  ;;
+  ;;   reason     one of curl-engine-error-reasons
+  ;;   condition  what the loop raised, for failed; #f for stopped
+  ;;
+  ;; Tests assert the reason and the condition, never the message.
+  (define-condition-type &curl-engine-error &curl-error
+    unchecked-make-curl-engine-error curl-engine-error?
+    (reason curl-engine-error-reason)
+    (condition curl-engine-error-condition))
+
+  ;; make-curl-engine-error : Symbol Any -> &curl-engine-error
+  ;; Refuses a REASON that is not one of the two with an assertion violation.
+  (define (make-curl-engine-error reason condition)
+    (unless (memq reason curl-engine-error-reasons)
+      (assertion-violation 'make-curl-engine-error
+                           "not a reason a chez-curl engine refuses or fails for"
+                           reason))
+    (unchecked-make-curl-engine-error reason condition))
+
+  ;; curl-engine-error? : Any -> Boolean
+  ;; curl-engine-error-reason : &curl-engine-error -> Symbol
+  ;; curl-engine-error-condition : &curl-engine-error -> Any
 
   ;; curl-url-code-reason : Any -> (U Symbol #f)
   ;; CODE's name in curlue-codes, or #f for anything else: a later

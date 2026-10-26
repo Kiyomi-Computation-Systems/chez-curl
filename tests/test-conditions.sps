@@ -15,10 +15,14 @@
 ;;;                               code the floor's headers lack
 ;;;   &curl-request-error         a request's field refused before anything
 ;;;                               native is made, with one of four reasons
-;;;   &curl-transfer-error        a blocking transfer failed, with one of six
+;;;   &curl-transfer-error        a transfer failed, with one of eight
 ;;;                               reasons, its code, option, libcurl's texts
 ;;;                               and what the write callable recorded
-;;;                               (M2 plan, section 5.3)
+;;;                               (M2 plan, section 5.3), cancelled and
+;;;                               stopped among them (M3 plan, section 3.4)
+;;;   &curl-engine-error          an engine stopped, or failed, with the
+;;;                               condition it failed with (M3 plan,
+;;;                               sections 3.4 and 3.7)
 ;;;
 ;;; Each expected value is one the code under test cannot produce by failing.
 ;;; SRFI-64 turns a raise in the actual expression into #f, so no expected
@@ -242,7 +246,8 @@
 ;; --- &curl-transfer-error --------------------------------------------------------------
 
 (define transfer-reasons
-  '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle))
+  '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle
+    cancelled stopped))
 
 ;; A recorded object no field could hand back by another route.
 (define the-raised (list 'raised-in-the-callable))
@@ -260,11 +265,11 @@
                   (curl-transfer-error-error-buffer c)
                   (let ((r (curl-transfer-error-recorded c))) (if (eq? r the-raised) 'the-raised r))))))
 
-(test-equal "the transfer-error reasons are exactly perform-failed, body-limit, callback-raised, setopt-failed, unknown-option and no-handle, in order"
+(test-equal "the transfer-error reasons are exactly perform-failed, body-limit, callback-raised, setopt-failed, unknown-option, no-handle, cancelled and stopped, in order"
   transfer-reasons
   curl-transfer-error-reasons)
 
-(test-equal "the transfer-error constructor takes each of the six reasons, with #f in every other field"
+(test-equal "the transfer-error constructor takes each of the eight reasons, with #f in every other field"
   (map (lambda (reason) (list reason #f #f #f #f 'no-recorded)) transfer-reasons)
   (map (lambda (reason)
          (let ((c (make-curl-transfer-error reason #f #f #f #f #f)))
@@ -281,6 +286,51 @@
   (map (lambda (reason)
          (raised (lambda () (make-curl-transfer-error reason 28 #f #f #f #f))))
        (list 'timed-out "body-limit" #f)))
+
+;; --- &curl-engine-error ---------------------------------------------------------------
+
+;; Written out here, not read from the export.
+(define engine-reasons '(stopped failed))
+
+;; A condition the engine failed with, which no other field could hand back.
+(define the-failure (list 'raised-in-the-loop))
+
+(test-equal "engine-error: an error and a curl-error, and none of the other kinds, carrying its reason and the condition it failed with"
+  '(#t #t #f #f #f #f #f #f #t failed the-failure)
+  (let ((c (make-curl-engine-error 'failed the-failure)))
+    (append (kinds c)
+            (list (curl-embedded-nul? c) (curl-url-error? c) (curl-request-error? c)
+                  (curl-transfer-error? c) (curl-engine-error? c)
+                  (curl-engine-error-reason c)
+                  (let ((r (curl-engine-error-condition c))) (if (eq? r the-failure) 'the-failure r))))))
+
+(test-equal "no other kind is an engine-error"
+  '(#f #f #f)
+  (list (curl-engine-error? (make-curl-transfer-error 'stopped #f #f #f #f #f))
+        (curl-engine-error? (make-curl-request-error 'header-value "a\rb" 'line-break))
+        (curl-engine-error? (make-curl-error))))
+
+(test-equal "the engine-error reasons are exactly stopped and failed, in order"
+  engine-reasons
+  curl-engine-error-reasons)
+
+(test-equal "the engine-error constructor takes each of the two reasons"
+  (list '(stopped no-condition) '(failed the-failure))
+  (map (lambda (reason condition)
+         (let ((c (make-curl-engine-error reason condition)))
+           (list (curl-engine-error-reason c)
+                 (cond ((not (curl-engine-error-condition c)) 'no-condition)
+                       ((eq? (curl-engine-error-condition c) the-failure) 'the-failure)
+                       (else (curl-engine-error-condition c))))))
+       engine-reasons (list #f the-failure)))
+
+(test-equal "the engine-error constructor refuses a symbol that is no reason, a reason spelled as a string, and #f"
+  '((assertion-violation make-curl-engine-error (cancelled))
+    (assertion-violation make-curl-engine-error ("failed"))
+    (assertion-violation make-curl-engine-error (#f)))
+  (map (lambda (reason)
+         (raised (lambda () (make-curl-engine-error reason #f))))
+       (list 'cancelled "failed" #f)))
 
 (test-end "conditions")
 

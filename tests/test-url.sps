@@ -188,7 +188,7 @@
 ;; --- answers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
 
 ;; answer : Case -> Any
 ;; What (curl private url) answers for CASE, whole: the URL, (refused CODE)
@@ -623,7 +623,7 @@
 ;; --- call-with-parsed-url's handle ----------------------------------------------------------
 
 (test-equal "call-with-parsed-url: PROC gets a handle, counted as url while it runs; PROC's answer comes back, and the count is zero after"
-  (list (list 'handle '((block . 0) (easy . 0) (url . 1) (slist . 0) (curl-string . 0) (transfer . 0)))
+  (list (list 'handle '((block . 0) (easy . 0) (url . 1) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
         'answer
         zero-counts)
   (let* ((inside #f)

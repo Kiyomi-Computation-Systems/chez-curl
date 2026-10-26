@@ -246,3 +246,23 @@ measured it again, and the maintainer chose on 2026-10-24.
 - **A limit, recorded:** a program whose own threads make their first references to `(curl)`
   together can still meet `cyclic dependency`. M8's documentation says to reference `(curl)`
   once before starting threads that use it.
+
+## Amendment, 2026-10-25: a program invokes its libraries before its first line (M3 slice 2)
+
+The M3 plan asked for a test of the decision above: a child whose first reference to the
+library is `make-curl-engine`, run many times, never meeting `cyclic dependency` (§5.3).
+Slice 2 built it, and watched it on a mutant first.
+
+- **The check could not fail.** With `make-curl-engine`'s early reference removed, the child
+  ran its engine 20 runs of 20. A top-level program invokes every library whose bindings it
+  refers to, and theirs, before its first line: in a program importing `(curl private engine)`
+  alone,
+  libcurl was already mapped in `/proc/self/maps` at its first expression. So by the time a
+  program can call `make-curl-engine`, its thread has run the load, and no engine thread can
+  make a first reference.
+- **So the check is not kept,** since a test that passes whether the code is right or wrong
+  is worse than none. `make-curl-engine` keeps its early reference, which costs nothing and
+  covers a library reached only through `eval`.
+- **The limit above stands, and only `eval` reaches it:** two threads whose first
+  references go through `eval`, in an `environment` that has loaded the library without
+  invoking it, as spike E1's `load-race.sps` does.

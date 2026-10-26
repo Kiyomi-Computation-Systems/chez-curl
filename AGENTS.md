@@ -126,7 +126,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * `foreign-procedure` resolves its entry point when evaluated, so every
   binding must follow the library's load. Mistakes fail at *import*.
 * A library body runs only when one of its bindings is *referenced*. A test of
-  load-time behaviour must call into the library.
+  load-time behaviour must call into the library. A top-level program runs every
+  body it references before its first line, so no thread of a program makes a
+  first reference: only `eval` reaches a race on one.
 * A `guard` in a program cannot catch a raise from an imported library's body.
   A probe must `eval` its call inside the guard.
 * Chez runs a library body that raised a serious condition again at every
@@ -252,9 +254,10 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   callable runs in a `dynamic-wind` that turns any exit but a return into a
   raise. An engine's expiry or an interrupt handler escapes at any safe point:
   each native object is made or freed in one critical section with its count
-  and its record, and a handle whose perform was escaped is never touched again
-  and stays counted. A critical section around perform defers collections and
-  Ctrl-C until the transfer ends, so it was reversed.
+  and its record. A critical section around perform defers collections and
+  Ctrl-C until the transfer ends, so M2 allowed its escapes and counted them.
+  M2's path is gone, and the engine's thread runs no caller code, but for a
+  process-wide `collect-request-handler`, which could escape there.
 * An after thunk that raises during an engine's expiry kills the engine: `no
   engine active`. A refusal there holds against a caller's continuation only.
 * A loop that waits in a plain foreign call stalls every other thread's
@@ -262,8 +265,14 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   when its 1000-tick counter runs out. Wait in `__collect_safe` calls. A check
   of it asks for collections back to back: a lone one can wait far less.
 * Chez gives Ctrl-C to the main thread alone, and a thread in `condition-wait`
-  answers it only when the wait ends. Leaving a critical section runs pending
-  events at once, so wait in timed waits, each in its own `critical-section`.
+  answers it only when the wait ends. A wait inside `critical-section` keeps its
+  thread active, so every other thread's collection waits for it, and a thread
+  holding a mutex with interrupts on can join a collection while another blocked
+  on it with interrupts off stays active: a deadlock. So hold no mutex while
+  waiting: poll under `locked`, and `sleep` between reads, which deactivates the
+  thread, with interrupts on alone, and runs a pending Ctrl-C as it wakes. A
+  wait inside a critical section sleeps with its thread active, and deadlocks:
+  the engine refuses one.
   A SIGINT the kernel hands another thread is dropped, and ends that thread's
   `sleep` or `curl_multi_poll` early. glibc's `system` ignores SIGINT
   process-wide while its command runs.
@@ -271,7 +280,7 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   reach it, or a narrower reach passes too.
 * `with-mutex` takes its mutex before its own `dynamic-wind`, so an escape
   between them leaves the mutex held. Hold a mutex through `critical-section`
-  around `with-mutex`.
+  around `with-mutex`, and never wait while holding one.
 * Valgrind runs one thread at a time, so a thread that never sleeps starves
   the rest. Pace a collecting or racing thread.
 * One protocol pin hides the other's removal in a redirect test: libcurl

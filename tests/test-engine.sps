@@ -1,0 +1,769 @@
+#!r6rs
+;;; The suite for (curl private engine): one Chez thread that owns a multi
+;;; handle and runs the transfers other threads submit (ADR-0012; M3 plan,
+;;; sections 3 and 5.3). Each check was watched failing on a mutant before
+;;; it counted (.plans/engine-mutation-log.md).
+;;;
+;;;   - concurrency: many transfers on one engine, their drips overlapping
+;;;     in time, every chunk on the engine's thread; two caller threads
+;;;     awaiting together, each returning on its own thread;
+;;;   - submit: each refusal raised at submit, with nothing queued, nothing
+;;;     started and the counts unchanged; a submit to a stopped engine;
+;;;   - cancel, in each of its three states, and racing a completion;
+;;;   - stop, with transfers queued and live, each completing as stopped,
+;;;     a later submit refused, a second stop at once, the counts at zero;
+;;;   - the thread rule: the engine's handle used from another thread
+;;;     raises &curl-wrong-thread, with who, expected and actual;
+;;;   - a request carrying a procedure is refused when it is made;
+;;;   - a raise inside the loop, at each step a fault can be planted;
+;;;   - in children, each under a bound: the collection bound, beside an
+;;;     idle engine and beside a caller awaiting a slow transfer; four
+;;;     caller threads awaiting at once while collections run; and Ctrl-C
+;;;     while a caller awaits.
+;;;
+;;; The plan's load check, a child whose first reference to the library is
+;;; make-curl-engine, is not here: a top-level program invokes the
+;;; libraries it imports, and theirs, before its first line, so no engine's
+;;; thread can make a first reference, and that child passed with
+;;; make-curl-engine's early reference removed, 20 runs of 20.
+;;;
+;;; Importing (curl) runs the load before this suite's first line, on this
+;;; thread. Every expected value is one the code under test cannot produce
+;;; by failing: SRFI-64 makes #f of a raise in the actual expression, so
+;;; none is #f.
+(import (rnrs)
+        (srfi :64)
+        (rnrs mutable-strings)
+        (only (chezscheme) fork-thread make-mutex with-mutex make-condition condition-wait
+              condition-broadcast sleep make-time current-time time-second time-nanosecond
+              getenv get-thread-id library-directories make-list iota)
+        (curl-testing)
+        (curl)
+        (curl private engine)
+        (curl private transfer)
+        (curl private conditions)
+        (curl private counters)
+        (curl private memory)
+        (only (curl private native) curl-multi-perform curl-multi-poll curl-multi-info-read))
+
+;; SRFI-64 sets no exit status. This suite's last line turns the runner's
+;; counts into one.
+(define runner (test-runner-simple))
+(test-runner-current runner)
+
+;; written : Any -> String
+(define (written x) (call-with-string-output-port (lambda (p) (write x p))))
+
+;; The simple runner names a failing test but not its values. Print both.
+(let ((simple-end (test-runner-on-test-end runner)))
+  (test-runner-on-test-end! runner
+    (lambda (r)
+      (simple-end r)
+      (when (memq (test-result-kind r) '(fail xpass))
+        (display "  expected: ")
+        (display (written (test-result-ref r 'expected-value)))
+        (newline)
+        (display "  actual:   ")
+        (display (written (test-result-ref r 'actual-value)))
+        (newline))
+      ;; A suite killed at its bound never flushes: flush each verdict.
+      (flush-output-port (current-output-port)))))
+
+(test-begin "engine")
+
+;; --- helpers --------------------------------------------------------------------------
+
+(define zero-counts
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+
+;; The counts while the suite's engine runs: its multi handle and its slot,
+;; and nothing else.
+(define running-counts
+  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1)))
+
+;; The loaded libcurl, read here, on this thread, before any thread is
+;; forked.
+(define version
+  (guard (e (#t (list 'no-version (describe e))))
+    (libcurl-info-version (loaded-libcurl))))
+
+;; now-ms : -> Integer
+(define (now-ms)
+  (let ((t (current-time 'time-monotonic)))
+    (+ (* (time-second t) 1000) (div (time-nanosecond t) 1000000))))
+
+;; pause-ms : Natural -> Unit
+(define (pause-ms ms)
+  (sleep (make-time 'time-duration (* (mod ms 1000) 1000000) (div ms 1000))))
+
+;; latin-1 : Bytevector -> String
+(define (latin-1 bytes)
+  (list->string (map integer->char (bytevector->u8-list bytes))))
+
+;; request : String . (Listof Any) -> Request
+;; A GET of TARGET, no headers, no user agent, a 20 s timeout, no limit,
+;; the system store, verification on; OPTIONS give headers, ca-file or
+;; fault, keyword then value.
+(define (request target . options)
+  (let ((given (lambda (key default)
+                 (let ((at (memq key options))) (if at (cadr at) default)))))
+    (make-transfer-request target 'get (given 'headers '()) #f 20000 #f
+                           (given 'ca-file #f) #t (given 'fault #f))))
+
+;; outcome : (-> Response) -> Outcome
+;; What THUNK answers, whole: (response STATUS BODY), the body as Latin-1;
+;; (transfer-error REASON CODE RECORDED); (engine-error REASON CONDITION);
+;; (request-refused FIELD REASON); (url-refused REASON);
+;; (assertion-violation WHO); (raised TEXT) for anything else.
+(define (outcome thunk)
+  (guard (e ((curl-transfer-error? e)
+             (list 'transfer-error (curl-transfer-error-reason e) (curl-transfer-error-code e)
+                   (curl-transfer-error-recorded e)))
+            ((curl-engine-error? e)
+             (list 'engine-error (curl-engine-error-reason e) (curl-engine-error-condition e)))
+            ((curl-request-error? e)
+             (list 'request-refused (curl-request-error-field e) (curl-request-error-reason e)))
+            ((curl-url-error? e) (list 'url-refused (curl-url-error-reason e)))
+            ((and (assertion-violation? e) (who-condition? e))
+             (list 'assertion-violation (condition-who e)))
+            (#t (list 'raised (describe e))))
+    (let ((r (thunk)))
+      (list 'response (transfer-response-status r) (latin-1 (transfer-response-body r))))))
+
+;; await-bounded : Token Natural -> Response
+;; curl-token-await's answer for TOKEN, called once curl-token-done? says
+;; it is done, polled every 1 ms for at most MS; a raise of
+;; (never-completed) if it is not done by then. A token an engine never
+;; completes, or a wait that deadlocks, would hang an await for good, and a
+;; hang names no test: so every await in this suite is bounded, and the
+;; children, each under a bound of its own, are where curl-token-await
+;; waits.
+(define (await-bounded token ms)
+  (let ((deadline (+ (now-ms) ms)))
+    (let wait ()
+      (cond ((curl-token-done? token) (curl-token-await token))
+            ((> (now-ms) deadline) (raise '(never-completed)))
+            (else (pause-ms 1) (wait))))))
+
+;; awaited-within : Token Natural -> Outcome
+;; TOKEN's outcome, by await-bounded within MS; (never-completed) if it is
+;; not done by then.
+(define (awaited-within token ms)
+  (guard (e ((equal? e '(never-completed)) e))
+    (outcome (lambda () (await-bounded token ms)))))
+
+;; awaited : Token -> Outcome
+;; TOKEN's outcome, within 20 s.
+(define (awaited token) (awaited-within token 20000))
+
+;; stop-within : Engine . (List (-> Any)) -> Any
+;; curl-engine-stop of ENGINE, run on a thread of its own, waited for here
+;; for at most 20 s: a raise of (never-stopped) if it has not returned by
+;; then, so a stop that hangs fails the check that made it, by name. THEN,
+;; if given, runs on that thread the moment the stop returns, and its
+;; answer is this one's: what a check reads then is what the stop left,
+;; with no wait between.
+(define (stop-within engine . then)
+  (let ((mx (make-mutex)) (done #f) (answer #f) (deadline (+ (now-ms) 20000)))
+    (fork-thread
+     (lambda ()
+       (guard (e (#t #f)) (curl-engine-stop engine))
+       (let ((a (if (null? then) #t (guard (e (#t (list 'raised (describe e)))) ((car then))))))
+         (with-mutex mx (set! answer a) (set! done #t)))))
+    (let wait ()
+      (cond ((with-mutex mx done) answer)
+            ((> (now-ms) deadline) (raise '(never-stopped)))
+            (else (pause-ms 1) (wait))))))
+
+;; url-of : Origin Symbol String -> String
+(define (url-of o face path)
+  (let ((f (origin-face o face)))
+    (string-append "http://" (car f) ":" (number->string (cdr f)) path)))
+
+;; drip-body : Natural -> String
+;; What /raw/drip?bytes=N answers: the alphabet, over and over, N bytes of it.
+(define (drip-body n)
+  (list->string (map (lambda (i) (integer->char (+ 97 (mod i 26)))) (iota n))))
+
+;; library-path : -> String
+;; This suite's library path, as --libdirs takes it.
+(define (library-path)
+  (let loop ((dirs (map car (library-directories))) (text ""))
+    (cond ((null? dirs) text)
+          ((string=? text "") (loop (cdr dirs) (car dirs)))
+          (else (loop (cdr dirs) (string-append text ":" (car dirs)))))))
+
+;; read-all : String -> (Listof Any)
+(define (read-all text)
+  (let ((port (open-string-input-port text)))
+    (let loop ((found '()))
+      (let ((datum (guard (e (#t '(unreadable))) (read port))))
+        (cond ((eof-object? datum) (reverse found))
+              ((equal? datum '(unreadable)) (reverse (cons datum found)))
+              (else (loop (cons datum found))))))))
+
+;; child-script : Positive-Integer -> String
+;; sh -c CHILD-SCRIPT sh COMMAND...: COMMAND, its stdin at its end, under
+;; GNU timeout (gtimeout on macOS), killed with SIGKILL after BOUND
+;; seconds, exit 137; exit 125 with neither found. The shell's own stderr
+;; is /dev/null, so dash's "Killed" is not the command's (traps.md).
+(define (child-script bound)
+  (string-append
+   "t=$(command -v timeout || command -v gtimeout) || { echo 'engine child: no timeout' >&2; exit 125; }\n"
+   "exec 3>&2 2>/dev/null\n"
+   "( exec \"$t\" -s KILL " (number->string bound) " \"$@\" </dev/null 2>&3 3>&- )\n"
+   "exit $?\n"))
+
+;; run-child : Positive-Integer String . (Listof String) -> (List Integer (Listof Any) String)
+;; tests/PROGRAM with ARGS, in a child Chez, under child-script: its exit
+;; status, what it printed, read as data, and its stderr.
+(define (run-child bound program . args)
+  (guard (e (#t (list 'raised (describe e) "")))
+    (let ((r (capture-command (append (list "sh" "-c" (child-script bound) "sh" (getenv "CHEZ")
+                                            "--libdirs" (library-path) "--program" program)
+                                      args))))
+      (list (car r) (read-all (cadr r)) (caddr r)))))
+
+;; interrupt-script : String
+;; sh -c INTERRUPT-SCRIPT sh COMMAND...: COMMAND under GNU timeout (gtimeout
+;; on macOS), killed with SIGKILL after 60 s, its output in a file made
+;; under TMPDIR; once it prints (ready PID), 500 ms later, SIGINT to PID,
+;; the child Chez itself; then its exit status, and its output but the
+;; ready line. Exit 125 with no timeout, 126 when the child never says it
+;; is ready, within 20 s.
+(define interrupt-script
+  (string-append
+   "t=$(command -v timeout || command -v gtimeout) || { echo 'engine-interrupt: no timeout' >&2; exit 125; }\n"
+   "out=$(mktemp \"${TMPDIR:-/tmp}/engine-interrupt.XXXXXX\") || exit 125\n"
+   "\"$t\" -s KILL 60 \"$@\" >\"$out\" 2>&1 </dev/null &\n"
+   "waiter=$!\n"
+   "n=0\n"
+   "until grep -q '^(ready ' \"$out\" || [ \"$n\" -ge 400 ]; do sleep 0.05; n=$((n + 1)); done\n"
+   "pid=$(sed -n 's/^(ready \\([0-9]*\\))$/\\1/p' \"$out\")\n"
+   "if [ -z \"$pid\" ]; then kill \"$waiter\"; wait \"$waiter\"; cat \"$out\" >&2; rm -f \"$out\"; echo 'engine-interrupt: the child never said it was ready' >&2; exit 126; fi\n"
+   "sleep 0.5\n"
+   "kill -INT \"$pid\"\n"
+   "wait \"$waiter\"\n"
+   "status=$?\n"
+   "grep -v '^(ready ' \"$out\"\n"
+   "rm -f \"$out\"\n"
+   "exit $status\n"))
+
+;; run-interrupt-child : String -> (List Integer (Listof Any) String)
+;; tests/engine-interrupt.sps for URL, under interrupt-script: its exit
+;; status, what it printed but its ready line, read as data, and the
+;; script's stderr.
+(define (run-interrupt-child url)
+  (guard (e (#t (list 'raised (describe e) "")))
+    (let ((r (capture-command (list "sh" "-c" interrupt-script "sh" (getenv "CHEZ")
+                                    "--libdirs" (library-path)
+                                    "--program" "tests/engine-interrupt.sps" url))))
+      (list (car r) (read-all (cadr r)) (caddr r)))))
+
+;; --- the engine, made ------------------------------------------------------------------
+
+(define main-thread (get-thread-id))
+
+(define engine
+  (guard (e (#t (list 'raised (describe e))))
+    (make-curl-engine)))
+
+(define engine-made? (curl-engine? engine))
+
+(test-equal "make-curl-engine returns an engine running on a thread of its own, its multi handle made there"
+  (list #t 'running #t #t)
+  (if engine-made?
+      (list #t (curl-engine-state engine)
+            (not (eqv? (curl-engine-thread engine) main-thread))
+            (and (curl-engine-multi engine) #t))
+      engine))
+
+(test-equal "a request carrying a procedure is refused when it is made: a fault is data, never a procedure (ADR-0012, decision 4)"
+  '(assertion-violation make-transfer-request)
+  (outcome (lambda () (make-transfer-request "http://127.0.0.1/" 'get '() #f #f #f #f #t
+                                             (lambda (chunk) chunk)))))
+
+;; --- the thread rule (ADR-0012, decision 3) ----------------------------------------------
+
+;; wrong-thread : (-> Any) -> Any
+;; THUNK's &curl-wrong-thread as (WHO EXPECTED ACTUAL), or what it did.
+(define (wrong-thread thunk)
+  (guard (e ((curl-wrong-thread? e)
+             (list (curl-wrong-thread-who e) (curl-wrong-thread-expected e)
+                   (curl-wrong-thread-actual e)))
+            (#t (list 'raised (describe e))))
+    (thunk)
+    'no-raise))
+
+(test-equal "the engine's multi handle, used from this thread, raises &curl-wrong-thread from curl-multi-perform, curl-multi-poll and curl-multi-info-read, each carrying the engine's thread as expected and this one as actual"
+  (if engine-made?
+      (map (lambda (who) (list who (curl-engine-thread engine) main-thread))
+           '(curl-multi-perform curl-multi-poll curl-multi-info-read))
+      engine)
+  ;; A slot of this suite's own: without the check, the calls would run, and
+  ;; write through it.
+  (if engine-made?
+      (let ((multi (curl-engine-multi engine))
+            (slot (foreign-block 8)))
+        (let* ((perform (wrong-thread (lambda () (curl-multi-perform multi slot))))
+               (poll (wrong-thread (lambda () (curl-multi-poll multi 0))))
+               (read (wrong-thread (lambda () (curl-multi-info-read multi slot)))))
+          (free-foreign-block! slot)
+          (list perform poll read)))
+      engine))
+
+;; refused-at-submit : (-> Any) (Listof (Pairof String Integer)) -> (List Outcome Counts Natural Natural Natural)
+;; What a submit of MAKE's request, with OPTIONS, answered, the counts
+;; after, how many messages the engine queued and transfers it holds, and
+;; how many transfers were started meanwhile.
+(define (refused-at-submit make options)
+  (let* ((started (transfers-started))
+         (answer (outcome (lambda () (curl-engine-submit-with engine (make) options)))))
+    (list answer (native-counts) (curl-engine-queued-count engine)
+          (curl-engine-live-count engine) (- (transfers-started) started))))
+
+;; --- against the origin ----------------------------------------------------------------
+
+(define started-before (transfers-started))
+
+(call-with-origin
+ (lambda (o)
+   (define status (url-of o 'http "/status/200"))
+   (define (drip bytes gap)
+     (url-of o 'raw (string-append "/raw/drip?bytes=" (number->string bytes)
+                                   "&gap=" (number->string gap))))
+
+   ;; --- concurrency ---------------------------------------------------------------------
+
+   (test-equal "a /status/200 submitted and awaited answers its response, its one chunk logged on the engine's thread"
+     (list '(response 200 "status 200\n")
+           (list (list (string-length "status 200\n") (curl-engine-thread engine) 'accepted)))
+     (let ((t (curl-engine-submit engine (request status))))
+       (list (awaited t) (curl-token-chunks t))))
+
+   ;; Eight drips of 400 ms each, submitted together: overlapping, they end
+   ;; in far less than eight times one, and every chunk ran on the engine's
+   ;; thread.
+   (let* ((one-ms (let ((t0 (now-ms)))
+                    (awaited (curl-engine-submit engine (request (drip 40 10))))
+                    (- (now-ms) t0)))
+          (t0 (now-ms))
+          (tokens (map (lambda (i) (curl-engine-submit engine (request (drip 40 10)))) (iota 8)))
+          (answers (map awaited tokens))
+          (all-ms (- (now-ms) t0))
+          (chunks (apply append (map curl-token-chunks tokens))))
+     (test-equal "eight drips on one engine each answer whole, and every chunk of theirs ran on the engine's thread, accepted"
+       (list (make-list 8 (list 'response 200 (drip-body 40))) #t)
+       (list answers
+             (for-all (lambda (c) (and (eqv? (cadr c) (curl-engine-thread engine))
+                                       (eq? (caddr c) 'accepted)))
+                      chunks)))
+     (test-equal "the eight drips overlapped: together they took under three times one alone, where one after another would take eight"
+       (list 'under-three-times-one #t)
+       (list (if (< all-ms (* 3 one-ms)) 'under-three-times-one (list all-ms 'against one-ms))
+             (> (length chunks) 8))))
+
+   ;; Two caller threads, each awaiting its own transfer and one they share.
+   (test-equal "two caller threads awaiting together each get their own answer and the shared one, eq? to this thread's, and each await returns on the thread that awaited"
+     (list (list '(response 200 "status 200\n") (list 'response 200 (drip-body 30)) #t #t)
+           (list (list 'response 200 (drip-body 20)) (list 'response 200 (drip-body 30)) #t #t)
+           #t)
+     (let* ((shared (curl-engine-submit engine (request (drip 30 10))))
+            (mx (make-mutex)) (cv (make-condition)) (results '()))
+       (for-each
+        (lambda (i target)
+          (fork-thread
+           (lambda ()
+             (let* ((me (get-thread-id))
+                    (own (awaited (curl-engine-submit engine (request target))))
+                    (theirs (await-bounded shared 20000))
+                    (after (get-thread-id)))
+               (with-mutex mx
+                 (set! results (cons (list i (list own (outcome (lambda () theirs))
+                                                   (eqv? me after)
+                                                   (not (eqv? after (curl-engine-thread engine))))
+                                           theirs)
+                                     results))
+                 (condition-broadcast cv))))))
+        '(0 1) (list status (drip 20 10)))
+       (with-mutex mx (let w () (unless (= (length results) 2) (condition-wait cv mx) (w))))
+       (let ((mine (await-bounded shared 20000)))
+         (list (cadr (assv 0 results)) (cadr (assv 1 results))
+               (for-all (lambda (r) (eq? (caddr r) mine)) results)))))
+
+   ;; --- submit ----------------------------------------------------------------------------
+
+   (for-each
+    (lambda (row)
+      (test-equal (string-append "a submit refuses " (car row) " before anything is queued: "
+                                 (written (cadr row)) ", nothing queued, live or started, the counts zero")
+        (list (cadr row) running-counts 0 0 0)
+        (refused-at-submit (caddr row) (cadddr row))))
+    (list
+     (list "a header name changed after the request was made, to hold a space"
+           '(request-refused header-name not-a-token)
+           (lambda () (let ((name (string-copy "X-A")))
+                        (let ((r (request status 'headers (list (cons name "v")))))
+                          (string-set! name 1 #\space)
+                          r)))
+           '())
+     (list "a URL changed after the request was made, to hold U+0000"
+           '(url-refused embedded-nul)
+           (lambda () (let* ((url (string-copy status)) (r (request url)))
+                        (string-set! url (- (string-length url) 1) #\nul)
+                        r))
+           '())
+     (list "a URL whose scheme is not http or https"
+           '(url-refused scheme-not-http)
+           (lambda () (request "ftp://127.0.0.1/x"))
+           '())
+     (list "a CA file's path changed after the request was made, to hold U+0000"
+           '(request-refused ca-file embedded-nul)
+           (lambda () (let* ((path (string-copy "/tmp/ca.pem")) (r (request status 'ca-file path)))
+                        (string-set! path 3 #\nul)
+                        r))
+           '())
+     (list "the test seam's option this libcurl does not know"
+           '(transfer-error unknown-option #f #f)
+           (lambda () (request status))
+           '(("NO_SUCH_OPTION_EVER" . 1)))
+     (list "the test seam's owned option, URL"
+           '(request-refused options owned-option)
+           (lambda () (request status))
+           '(("URL" . 1)))
+     (list "the test seam's string option, COOKIE"
+           '(request-refused options unsupported-type)
+           (lambda () (request status))
+           '(("COOKIE" . 1)))
+     (list "what is not a request"
+           '(assertion-violation curl-engine-submit)
+           (lambda () 'not-a-request)
+           '())))
+
+   (test-equal "after every refusal the engine still runs, and its next transfer answers"
+     (list 'running '(response 200 "status 200\n"))
+     (list (curl-engine-state engine) (awaited (curl-engine-submit engine (request status)))))
+
+   ;; --- cancel ----------------------------------------------------------------------------
+
+   (test-equal "a cancel of a token still queued completes it as cancelled, on this thread, with nothing started and no chunk"
+     (list '(transfer-error cancelled #f #f) '() 0 running-counts)
+     (let* ((started (transfers-started))
+            (t (call-with-engine-held engine
+                 (lambda ()
+                   (let ((t (curl-engine-submit engine (request status))))
+                     (curl-token-cancel t)
+                     t)))))
+       (let ((answer (awaited t)))
+         ;; One transfer after it, so the engine has taken the queue.
+         (awaited (curl-engine-submit engine (request status)))
+         (list answer (curl-token-chunks t) (- (transfers-started) started 1) (native-counts)))))
+
+   (test-equal "a cancel of a live drip completes it as cancelled, with the chunks it had accepted, and the engine's table empty after"
+     (list '(transfer-error cancelled #f #f) #t 0 running-counts)
+     (let ((t (curl-engine-submit engine (request (drip 200 5)))))
+       (pause-ms 200)
+       (curl-token-cancel t)
+       (let ((answer (awaited t)))
+         (list answer
+               (let ((chunks (curl-token-chunks t)))
+                 (and (pair? chunks) (< (length chunks) 200)
+                      (for-all (lambda (c) (eq? (caddr c) 'accepted)) chunks)))
+               (curl-engine-live-count engine) (native-counts)))))
+
+   (test-equal "a cancel of a done token leaves its outcome: await again answers the same response, eq?"
+     (list '(response 200 "status 200\n") #t)
+     (let* ((t (curl-engine-submit engine (request status)))
+            (first (await-bounded t 20000)))
+       (curl-token-cancel t)
+       (list (outcome (lambda () first)) (eq? first (await-bounded t 20000)))))
+
+   (test-equal "a cancel racing a completion, 60 times at growing delays, ends each as the response or cancelled, and nothing else, with the counts zero"
+     (list '() running-counts 0)
+     (let loop ((i 0) (strays '()))
+       (if (= i 60)
+           (list strays (native-counts) (curl-engine-live-count engine))
+           (let ((t (curl-engine-submit engine (request status))))
+             (pause-ms (div i 6))
+             (curl-token-cancel t)
+             (let ((a (awaited t)))
+               (loop (+ i 1)
+                     (if (member a '((response 200 "status 200\n") (transfer-error cancelled #f #f)))
+                         strays
+                         (cons a strays))))))))
+
+   ;; A live token cancelled twice queues two messages: the second finds it
+   ;; done, and must leave it so.
+   (test-equal "a live drip cancelled twice while the engine is held: the first cancel ends it as cancelled, the second, finding it done, is counted stale and changes nothing"
+     (list '(transfer-error cancelled #f #f) 1 0 running-counts)
+     (let* ((t (curl-engine-submit engine (request (drip 100 10))))
+            (stale (begin (pause-ms 150) (curl-engine-stale-cancels engine))))
+       (call-with-engine-held engine
+         (lambda () (curl-token-cancel t) (curl-token-cancel t)))
+       (let ((answer (awaited-within t 10000)))
+         ;; One transfer after it, so the engine has carried out both.
+         (awaited (curl-engine-submit engine (request status)))
+         (list answer (- (curl-engine-stale-cancels engine) stale)
+               (curl-engine-live-count engine) (native-counts)))))
+
+   ;; A token's first outcome stands: one cancelled while queued keeps it
+   ;; through the stop that takes its submit.
+   (test-equal "a token cancelled while queued, then stopped in the same batch, stays cancelled, and was never started"
+     (list '(transfer-error cancelled #f #f) 0 'stopped)
+     (let* ((stopping (make-curl-engine))
+            (started (transfers-started))
+            (t (call-with-engine-held stopping
+                 (lambda ()
+                   (let ((t (curl-engine-submit stopping (request status))))
+                     (curl-token-cancel t)
+                     (curl-engine-request-stop! stopping)
+                     t)))))
+       (stop-within stopping)
+       (list (awaited-within t 10000) (- (transfers-started) started) (curl-engine-state stopping))))
+
+   (test-equal "a submit while the engine is stopping is refused as stopped, and the stop then ends with nothing left"
+     (list '(engine-error stopped #f) 'stopped running-counts)
+     (let* ((stopping (make-curl-engine))
+            (refused (call-with-engine-held stopping
+                       (lambda ()
+                         (curl-engine-request-stop! stopping)
+                         (outcome (lambda () (curl-engine-submit stopping (request status))))))))
+       (stop-within stopping)
+       (list refused (curl-engine-state stopping) (native-counts))))
+
+   ;; A cancel and a stop wake the engine: a drip 2 s between bytes leaves
+   ;; libcurl's poll waiting its whole 1000 ms otherwise.
+   (test-equal "a cancel of a drip idle between bytes ends it within 300 ms, and a stop of an engine holding one returns within 300 ms: each wakes the poll"
+     (list '(transfer-error cancelled #f #f) 'within-bound 'within-bound)
+     (let* ((t (curl-engine-submit engine (request (drip 3 2000))))
+            (t0 (begin (pause-ms 300) (now-ms))))
+       (curl-token-cancel t)
+       (let* ((answer (awaited-within t 10000))
+              (cancel-ms (- (now-ms) t0))
+              (stopping (make-curl-engine))
+              (s (curl-engine-submit stopping (request (drip 3 2000))))
+              (t1 (begin (pause-ms 300) (now-ms)))
+              (stop-ms (begin (stop-within stopping) (- (now-ms) t1))))
+         (awaited-within s 10000)
+         (list answer (if (< cancel-ms 300) 'within-bound cancel-ms)
+               (if (< stop-ms 300) 'within-bound stop-ms)))))
+
+   ;; --- a raise inside the loop (section 3.7) ---------------------------------------------
+
+   ;; Each step: what reaches it, the token's outcome, the engine's state, a
+   ;; later submit's, a stop's time, and the counts.
+   (for-each
+    (lambda (step)
+      (test-equal (string-append "a fault planted at the loop's " (symbol->string step)
+                                 " step fails the engine: its transfer completes as &curl-engine-error failed, carrying the fault; a later submit raises the same; stop returns at once; the table and counts are empty")
+        (list (list 'engine-error 'failed (planted-engine-fault step))
+              'failed
+              (list 'engine-error 'failed (planted-engine-fault step))
+              'at-once 0 #f running-counts)
+        (let* ((faulty (make-faulty-curl-engine step))
+               (t (curl-engine-submit faulty (request (if (memq step '(cancel poll)) (drip 100 10) status)))))
+          (when (eq? step 'cancel)
+            (pause-ms 100)
+            (curl-token-cancel t))
+          ;; The first stop waits for the engine's thread to end its
+          ;; cleanup; the second must return at once.
+          (let* ((answer (awaited-within t 10000))
+                 (later (outcome (lambda () (curl-engine-submit faulty (request status)))))
+                 (state (begin (stop-within faulty) (curl-engine-state faulty)))
+                 (t0 (now-ms)))
+            (stop-within faulty)
+            (list answer state later (if (< (- (now-ms) t0) 50) 'at-once (- (now-ms) t0))
+                  (curl-engine-live-count faulty) (curl-engine-multi faulty) (native-counts))))))
+    (remq 'start engine-fault-steps))
+
+   (test-equal "a fault planted at the engine's start fails it before its multi handle is made: make-faulty-curl-engine raises &curl-engine-error failed, carrying the fault, and nothing is left"
+     (list (list 'engine-error 'failed (planted-engine-fault 'start)) running-counts)
+     (let ((answer (outcome (lambda () (make-faulty-curl-engine 'start)))))
+       (list answer (native-counts))))
+
+   (test-equal "a fault at cancel with two transfers live and one set up in the same turn fails all three"
+     (make-list 3 (list 'engine-error 'failed (planted-engine-fault 'cancel)))
+     (let* ((faulty (make-faulty-curl-engine 'cancel))
+            (a (curl-engine-submit faulty (request (drip 100 10))))
+            (b (curl-engine-submit faulty (request (drip 100 10)))))
+       (pause-ms 100)
+       (let ((c (call-with-engine-held faulty
+                  (lambda ()
+                    (curl-token-cancel a)
+                    (curl-engine-submit faulty (request status))))))
+         (let ((answers (map (lambda (t) (awaited-within t 10000)) (list a b c))))
+           (stop-within faulty)
+           answers))))
+
+   ;; Sixty live transfers make the failed engine's cleanup long enough to
+   ;; see, and the state and counts are read on the stopping thread the
+   ;; moment curl-engine-stop returns: a stop that returned before the
+   ;; cleanup ended would read their counts.
+   (test-equal "a fault while sixty transfers are live: the stop returns only once the engine's thread has freed them all, so its state is failed, and its table, its multi handle and the counts are empty, the moment it returns"
+     (list 'failed 0 #f running-counts)
+     (let* ((faulty (make-faulty-curl-engine 'cancel))
+            (tokens (map (lambda (i) (curl-engine-submit faulty (request (drip 100 10)))) (iota 60))))
+       (pause-ms 300)
+       (curl-token-cancel (car tokens))
+       (let ((after (stop-within faulty
+                      (lambda ()
+                        (list (curl-engine-state faulty) (curl-engine-live-count faulty)
+                              (curl-engine-multi faulty) (native-counts))))))
+         (for-each (lambda (t) (awaited-within t 10000)) tokens)
+         after)))
+
+   ;; --- stop ------------------------------------------------------------------------------
+
+   (let* ((stopping (make-curl-engine))
+          (live (map (lambda (i) (curl-engine-submit stopping (request (drip 100 10)))) '(0 1)))
+          (started-live (begin (pause-ms 150) (transfers-started)))
+          (queued (call-with-engine-held stopping
+                    (lambda ()
+                      (let ((q (map (lambda (i) (curl-engine-submit stopping (request status))) '(0 1))))
+                        (curl-engine-request-stop! stopping)
+                        q))))
+          (stop-answer (guard (e (#t (list 'stop-raised e))) (stop-within stopping) 'returned)))
+     (test-equal "a stop completes each live transfer as stopped, with the chunks it had, and each queued one as stopped, never started"
+       (list (make-list 2 '(transfer-error stopped #f #f)) '(#t #t)
+             (make-list 2 '(transfer-error stopped #f #f)) '(() ()) 0)
+       (list (map (lambda (t) (awaited-within t 10000)) live)
+             (map (lambda (t) (pair? (curl-token-chunks t))) live)
+             (map (lambda (t) (awaited-within t 10000)) queued) (map curl-token-chunks queued)
+             (- (transfers-started) started-live)))
+     (test-equal "after a stop the engine is stopped, its table empty and its multi handle freed, a submit refused as stopped, and a second stop returns at once"
+       (list 'returned 'stopped 0 #f '(engine-error stopped #f) 'at-once running-counts)
+       (list stop-answer (curl-engine-state stopping) (curl-engine-live-count stopping)
+             (curl-engine-multi stopping)
+             (outcome (lambda () (curl-engine-submit stopping (request status))))
+             (let ((t0 (now-ms))) (stop-within stopping)
+               (if (< (- (now-ms) t0) 50) 'at-once (- (now-ms) t0)))
+             (native-counts))))
+
+   ;; --- the children ------------------------------------------------------------------------
+
+   ;; The collection bound (section 3.2; ADR-0013, amended 2026-10-25): a
+   ;; worker's 20 collections, back to back, beside an idle engine, and
+   ;; beside a caller awaiting a slow transfer. A plain poll would hold each
+   ;; up to about 500 polls of 1000 ms, and a wait that sleeps in a critical
+   ;; section would hold it for good: so 20 must end within 500 ms.
+   (for-each
+    (lambda (mode)
+      (test-equal (string-append "beside " (if (eq? mode 'idle) "an idle engine" "a caller awaiting a 1 s drip")
+                                 ", a worker's 20 collections, back to back, end within 500 ms, in a child bounded at 60 s, whose counts are zero")
+        (list 0 (list 'collections mode 'within-bound) (list 'counts zero-counts) "")
+        (let ((r (run-child 60 "tests/engine-collect.sps" (symbol->string mode) (drip 10 100))))
+          (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
+              (let ((c (car (cadr r))))
+                (list (car r)
+                      (if (and (list? c) (= (length c) 3) (number? (caddr c)) (< (caddr c) 500))
+                          (list 'collections mode 'within-bound)
+                          c)
+                      (cadr (cadr r)) (caddr r)))
+              r))))
+    '(idle await))
+
+   ;; Several awaiters at once, while collections run (ADR-0013, amended
+   ;; 2026-10-25): a wait that held the engine's mutex deadlocked here within
+   ;; 1 s, 3 runs of 3.
+   (test-equal "four caller threads, each submitting and awaiting /status/200 for 2 s while their allocation collects, have hundreds of 200s, with collections among them, and end, in a child bounded at 60 s, whose counts are zero"
+     (list 0 '(awaiters 4 hundreds collecting) (list 'counts zero-counts) "")
+     (let ((r (run-child 60 "tests/engine-awaiters.sps" "together" "4" "2000" status)))
+       (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
+           (let ((a (car (cadr r))))
+             (list (car r)
+                   (if (and (list? a) (= (length a) 4) (number? (caddr a)) (>= (caddr a) 100)
+                            (number? (cadddr a)) (> (cadddr a) 0))
+                       '(awaiters 4 hundreds collecting)
+                       a)
+                   (cadr (cadr r)) (caddr r)))
+           r)))
+
+   ;; The polling's cap (ADR-0013, amended 2026-10-25): a waiter wakes
+   ;; within its current sleep, 10 ms at most, of its token's completion. A
+   ;; watcher polling every 1 ms sees each completion; the await's return
+   ;; must follow it within 30 ms, on five drips of 500 ms, each long
+   ;; enough for the sleeps to reach their cap.
+   (test-equal "five 500 ms drips awaited through curl-token-await each return within 30 ms of a watcher seeing them done: the polling's sleeps reach 10 ms and no more; in a child bounded at 60 s, its counts zero"
+     (list 0 '(wake 5 within-cap) (list 'counts zero-counts) "")
+     (let ((r (run-child 60 "tests/engine-awaiters.sps" "wake" "5" "0" (drip 5 100))))
+       (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
+           (let ((a (car (cadr r))))
+             (list (car r)
+                   (if (and (list? a) (= (length a) 3) (number? (caddr a)) (< (caddr a) 30))
+                       '(wake 5 within-cap)
+                       a)
+                   (cadr (cadr r)) (caddr r)))
+           r)))
+
+   ;; A wait with interrupts off would sleep with its thread active, and
+   ;; deadlock with a collection the engine's thread joins: so it is refused
+   ;; before it starts.
+   (test-equal "an await, a stop and a make-curl-engine, each inside critical-section, are each refused before they start, as assertion violations from their own names, in a child bounded at 60 s, its counts zero"
+     (list 0 '(critical curl-token-await curl-engine-stop make-curl-engine) (list 'counts zero-counts) "")
+     (let ((r (run-child 60 "tests/engine-awaiters.sps" "critical" "1" "0" (drip 5 100))))
+       (if (and (pair? r) (= (length r) 3) (list? (cadr r)))
+           (list (car r) (if (pair? (cadr r)) (car (cadr r)) (cadr r))
+                 (if (and (pair? (cadr r)) (pair? (cdr (cadr r)))) (cadr (cadr r)) 'none)
+                 (caddr r))
+           r)))
+
+   ;; A completion wakes its awaiter at once: twenty awaits one after
+   ;; another, through curl-token-await itself, in a child. A wait that woke
+   ;; only every 100 ms would take about 2 s.
+   (test-equal "twenty transfers submitted and awaited one after another, in a child bounded at 60 s, each wake their awaiter at once: all twenty within 1000 ms, and the counts zero"
+     (list 0 '(latency 20 within-bound) (list 'counts zero-counts) "")
+     (let ((r (run-child 60 "tests/engine-awaiters.sps" "latency" "20" "0" status)))
+       (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
+           (let ((a (car (cadr r))))
+             (list (car r)
+                   (if (and (list? a) (= (length a) 3) (number? (caddr a)) (< (caddr a) 1000))
+                       '(latency 20 within-bound)
+                       a)
+                   (cadr (cadr r)) (caddr r)))
+           r)))
+
+   ;; A wait sleeps between its reads, holding nothing: it does not spin.
+   ;; cpu-time counts the whole process, the engine's thread too, which a
+   ;; drip of a byte every 100 ms barely wakes.
+   (test-equal "a child awaiting a 2 s drip through curl-token-await spends under 2% of the wait on the CPU: the waiter sleeps between its reads, waking at most 100 times a second; its counts zero"
+     (list 0 '(cpu sleeping) (list 'counts zero-counts) "")
+     (let ((r (run-child 60 "tests/engine-awaiters.sps" "cpu" "1" "0" (drip 20 100))))
+       (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
+           (let ((a (car (cadr r))))
+             (list (car r)
+                   (if (and (list? a) (= (length a) 3) (number? (cadr a)) (number? (caddr a))
+                            (> (caddr a) 1500) (< (* 50 (cadr a)) (caddr a)))
+                       '(cpu sleeping)
+                       a)
+                   (cadr (cadr r)) (caddr r)))
+           r)))
+
+   ;; Ctrl-C (section 3.4): the child's main thread awaits a 2 s drip, and
+   ;; gets SIGINT 500 ms after it says it is ready. Its handler must run
+   ;; within one wait of the signal, long before the drip ends: a wait that
+   ;; answers Ctrl-C only when it ends runs it at about 2000 ms.
+   (test-equal "a caller awaiting a 2 s drip answers SIGINT, sent about 500 ms in, by 1000 ms, its await then answers the drip, and its counts are zero"
+     (list 0 '(interrupt within-bound (response 200)) (list 'counts zero-counts) "")
+     (let ((r (run-interrupt-child (drip 20 100))))
+       (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
+           (let ((i (car (cadr r))))
+             (list (car r)
+                   (if (and (list? i) (= (length i) 4) (number? (cadr i)) (number? (caddr i))
+                            (<= 450 (cadr i) 1000) (> (caddr i) 1500)
+                            (equal? (cadddr i) '(response 200)))
+                       '(interrupt within-bound (response 200))
+                       i)
+                   (cadr (cadr r)) (caddr r)))
+           r)))))
+
+(test-equal "the suite's engine stops, and every count is zero after"
+  (list 'stopped 0 zero-counts 0)
+  (if engine-made?
+      (begin (stop-within engine)
+             (list (curl-engine-state engine) (curl-engine-live-count engine) (native-counts)
+                   (live-transfer-count)))
+      engine))
+
+(test-end "engine")
+
+(exit (suite-exit-status runner))

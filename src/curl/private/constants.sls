@@ -18,7 +18,8 @@
           curl-http-version-3
           curle-unsupported-protocol curle-weird-server-reply curle-partial-file
           curle-write-error curle-out-of-memory curle-operation-timedout
-          curle-got-nothing curle-recv-error curle-filesize-exceeded)
+          curle-got-nothing curle-recv-error curle-filesize-exceeded
+          curlm-ok curlm-unknown-option curlmsg-done)
   (import (curl private require-threaded)
           (rnrs))
 
@@ -182,7 +183,7 @@
   ;; curl/urlapi.h: CURLUPART_SCHEME, the second CURLUPart, 1.
   (define curlupart-scheme 1)
 
-  ;; --- the blocking transfer (M2 plan, section 5) -----------------------------
+  ;; --- the transfer (M2 plan, section 5; on an engine since M3) ---------------
 
   ;; curlinfo-response-code : Positive-Integer
   ;; curl/curl.h: CURLINFO_RESPONSE_CODE, CURLINFO_LONG + 2, 0x200000 + 2.
@@ -238,4 +239,17 @@
   (define curle-operation-timedout 28)
   (define curle-got-nothing 52)
   (define curle-recv-error 56)
-  (define curle-filesize-exceeded 63))
+  (define curle-filesize-exceeded 63)
+
+  ;; The multi interface's (M3 plan, section 5.2), curl/multi.h.
+  ;;
+  ;; curlm-ok : Natural                  CURLM_OK, 0
+  ;; curlm-unknown-option : Positive-Integer
+  ;;                                     CURLM_UNKNOWN_OPTION, 6: curl_multi_setopt's
+  ;;                                     answer to an option the libcurl lacks
+  ;; curlmsg-done : Positive-Integer     CURLMSG_DONE, 1: a CURLMsg's msg for a
+  ;;                                     transfer that has ended, its result in
+  ;;                                     data.result
+  (define curlm-ok 0)
+  (define curlm-unknown-option 6)
+  (define curlmsg-done 1))

@@ -1,79 +1,49 @@
 #!r6rs
-;;; (curl private transfer): one blocking request, run on the calling
-;;; thread through curl_easy_perform (M2 plan, sections 3 and 5). Private:
-;;; (curl) exports nothing of it in M2, and M3's engine reuses it.
+;;; (curl private transfer): a request, and its transfer on an engine's
+;;; thread (M2 plan, sections 3 and 5; M3 plan, sections 3.1 and 5.2).
+;;; Private: (curl) exports nothing of it, and (curl private engine) runs
+;;; it.
 ;;;
 ;;; A request is a record whose fields are checked when it is made, before
 ;;; anything native: wrong types are assertion violations, and a header or
 ;;; a user agent libcurl would send otherwise than asked, or a CA file's
 ;;; path holding U+0000, is a &curl-request-error. Header strings are
 ;;; Latin-1, both ways (ADR-0001, amended 2026-10-23); a CA file's path is
-;;; UTF-8, as every other string. The URL is checked when the transfer
-;;; runs, by call-with-parsed-url and require-http-scheme (ADR-0008).
+;;; UTF-8, as every other string. A request holds no procedure: its last
+;;; field, a private fault, is data (M3 plan, section 3.6).
 ;;;
 ;;; A request holds the caller's strings and lists, which stay mutable. So
-;;; perform-transfer checks nothing it does not own: it first takes a
-;;; snapshot, fresh pairs and fresh strings for the headers, the user agent
-;;; and the CA file, checks the snapshot by the constructor's rules, and
-;;; sends only the snapshot. A request changed after it was made is refused
-;;; then, before anything native; a change it takes is sent as changed. The
-;;; URL takes the same path inside call-with-parsed-url, and every C string
-;;; inside native.
+;;; a submit, on the caller's thread, checks nothing it does not own:
+;;; prepare-transfer takes a plan, fresh pairs and fresh strings for the
+;;; URL, the headers, the user agent and the CA file, checks the plan by
+;;; the constructor's rules, checks the test seam's settings, and parses
+;;; the plan's URL and checks its scheme, freeing that CURLU before it
+;;; returns (ADR-0008, amended 2026-10-24). Every refusal raises there,
+;;; before anything is queued. A request changed after it was made is
+;;; refused then; a change it takes is sent as changed. The engine sends
+;;; only the plan.
 ;;;
-;;; perform-transfer makes, on this thread, and frees before it returns,
-;;; raises or escapes, under dynamic-wind (plan, section 3.1), but for the
-;;; easy handle of a perform left without its return (below):
+;;; On the engine's thread (ADR-0012), start-transfer! makes, in order:
 ;;;
-;;;   - the CURLU handle, call-with-parsed-url's;
 ;;;   - the transfer's key, registered in a table write-body reads, counted
 ;;;     as transfer;
+;;;   - the URL's CURLU handle, the plan's URL parsed again, its scheme
+;;;     checked again;
 ;;;   - the error buffer, a counted block of CURL_ERROR_SIZE bytes, zeroed
 ;;;     through the checked copy;
 ;;;   - the header list, a string list of Latin-1 copies, counted as slist;
-;;;   - the easy handle.
+;;;   - the easy handle, with every setting set-transfer-options! makes.
 ;;;
-;;; They nest in that order, so they are freed the other way round: the easy
-;;; handle is cleaned up before the header list, the error buffer and the
-;;; CURLU it used are freed. Re-entering any of them through a continuation,
-;;; once freed, raises an assertion violation.
-;;;
-;;; Asynchronous escapes (ADR-0013, amended 2026-10-23). An interrupt
-;;; handler may invoke a continuation at any safe point: an engine's
-;;; expiry, a timer-interrupt-handler, a keyboard interrupt and reset, a
-;;; collect-request-handler. Escapes are allowed, and counted:
-;;;
-;;;   - curl_easy_perform runs outside any critical section, so this thread
-;;;     answers its interrupts and its own collect requests while a
-;;;     transfer runs. A handler may then escape from write-body, abandoning
-;;;     perform's C frames;
-;;;   - the easy handle carries a performing mark, set just before
-;;;     curl_easy_perform and cleared just after it returns, each in a
-;;;     critical section. When the easy extent's after thunk finds it still
-;;;     set, control left perform without its return, and curl_easy_cleanup
-;;;     is never called: libcurl must never be called on a handle whose
-;;;     call is still running. That handle stays counted as easy. The other
-;;;     extents, the header list, the error buffer, the CURLU and the key,
-;;;     are freed as ever, since libcurl never runs on that handle again;
-;;;   - each extent is a dynamic-wind whose critical? argument is #t: making
-;;;     its native object, and recording it where the after thunk frees it,
-;;;     happen in one critical section, and so does the free;
-;;;   - each mutex is held through locked, in a critical section: Chez's
-;;;     with-mutex takes its mutex in a dynamic-wind's before thunk, so an
-;;;     escape between the take and the wind would leave the mutex held,
-;;;     and every other thread's transfer blocked on it.
-;;;
-;;; The limits, stated rather than fixed:
-;;;
-;;;   - an escape from perform leaks libcurl's connection, about 8 KB and
-;;;     its connection's sockets, how many is libcurl's, and leaves one easy
-;;;     counted, so a suite fails on it;
-;;;   - a transfer cannot be paused by an engine and resumed: its extents
-;;;     refuse re-entry once freed;
-;;;   - an escape during (curl private native)'s load wedges that library
-;;;     for the process, since load-step records raises, not escapes;
-;;;   - an escape from inside CHUNK-HOOK, the test seam, meets the hook's
-;;;     refusal below: the transfer raises callback-raised, and an engine
-;;;     that expired there cannot finish ("no engine active").
+;;; The engine adds the easy handle to its multi handle. Once
+;;; curl_multi_info_read says the transfer is done, finish-transfer reads
+;;; what it ended with, and once the engine has removed the handle,
+;;; free-transfer! frees each object the other way round: the easy handle
+;;; before the header list, the error buffer and the CURLU it used. A
+;;; transfer cancelled, or stopped, is freed the same way, unread. Each
+;;; object is made, and recorded in the transfer's live record, in one
+;;; critical section, and freed, and cleared, in another (ADR-0013, amended
+;;; 2026-10-23). Each mutex is held through locked, in a critical section,
+;;; and no hold waits.
 ;;;
 ;;; Options are named, never numbered: their ids and CURLOT types come from
 ;;; the loaded library, through curl-easy-option, cached once per process
@@ -85,7 +55,7 @@
 ;;; name several.
 ;;;
 ;;; TLS (ADR-0018). Every transfer, an http:// one too, makes the settings
-;;; tls-settings computes from its snapshot's CA file and verification, as
+;;; tls-settings computes from its plan's CA file and verification, as
 ;;; data, by one call, set-tls-options!, after the request's other settings
 ;;; and before the test seam's: SSL_VERIFYPEER and SSL_VERIFYHOST at 1 and
 ;;; 2, or both 0 with verification off; then, with a CA file, CAINFO at its
@@ -98,53 +68,55 @@
 ;;; when a transfer starts, after every setopt; what chez-curl does about
 ;;; that is M4's.
 ;;;
-;;; write-body is the one callable (plan, section 3.5): __collect_safe,
-;;; since curl_easy_perform is (ADR-0013), locked where it is defined and
-;;; never unlocked, and handed the transfer's key, an integer, as its
-;;; WRITEDATA, so no Scheme object crosses into C. No raise leaves it: its
-;;; whole body runs under a guard that records anything raised against the
-;;; key and returns 0. CHUNK-HOOK, the one caller code it runs, runs in a
-;;; dynamic-wind that turns an exit by continuation, or a re-entry, into a
-;;; raise there. libcurl then answers CURLE_WRITE_ERROR, 23, and the
-;;; transfer raises what was recorded. So caller code leaves it only by
-;;; its return. An interrupt handler can still escape from it, abandoning
-;;; curl_easy_perform's C frames and libcurl's connection: the performing
-;;; mark covers that (above). The body limit takes the same path:
-;;; CURLOPT_MAXFILESIZE_LARGE is the limit plus one (plan, section 5.3), so
-;;; a declared length past that is refused before its body, and the
-;;; callable refuses the first byte past the limit itself, on every libcurl.
+;;; write-body is the one callable (M2 plan, section 3.5): __collect_safe,
+;;; since curl_multi_perform, where it fires, is (ADR-0013, accepted
+;;; 2026-10-24), locked where it is defined and never unlocked, and handed
+;;; the transfer's key, an integer, as its WRITEDATA, so no Scheme object
+;;; crosses into C. It runs no procedure a caller supplied (ADR-0012,
+;;; decision 4). It logs each chunk libcurl hands it, its length, the thread
+;;; it ran on and what became of it, as data the engine hands the token. No
+;;; raise leaves it: its whole body runs under a guard that records
+;;; anything raised against the key and returns 0. libcurl then answers
+;;; CURLE_WRITE_ERROR, 23, and the transfer fails with what was recorded. A
+;;; request's fault plants such a raise, at the chunk it names. The body
+;;; limit takes the same path: CURLOPT_MAXFILESIZE_LARGE is the limit plus
+;;; one (M2 plan, section 5.3), so a declared length past that is refused
+;;; before its body, and the callable refuses the first byte past the limit
+;;; itself, on every libcurl.
 ;;;
-;;; perform-transfer-with is a test seam held to ADR-0009's rules, narrowed
-;;; (ADR-0009, amended 2026-10-23): long, enumerated-value and off_t options
-;;; alone, none chez-curl owns, nor an owned setting's twin, the CA file's
-;;; CAINFO_BLOB and SSL_OPTIONS among them (amended 2026-10-24), compared by
-;;; id.
+;;; The test seam, curl-engine-submit-with, hands prepare-transfer its
+;;; settings, held to ADR-0009's rules, narrowed (ADR-0009, amended
+;;; 2026-10-23): long, enumerated-value and off_t options alone, none
+;;; chez-curl owns, nor an owned setting's twin, the CA file's CAINFO_BLOB
+;;; and SSL_OPTIONS among them (amended 2026-10-24), compared by id.
 ;;;
 ;;; The pins, ADR-0003's PROTOCOLS_STR and REDIR_PROTOCOLS_STR at
 ;;; "http,https" and NOSIGNAL at 1, are pinned-options, set by one call,
-;;; set-pinned-options!, the first form of the easy handle's extent, before
-;;; curl_easy_perform. Their names, and the deprecated bitmasks', stand in
-;;; this file only as data, in pinned-options and owned-option-names.
+;;; set-pinned-options!, the first form of set-transfer-options!. Their
+;;; names, and the deprecated bitmasks', stand in this file only as data,
+;;; in pinned-options and owned-option-names.
 ;;;
 ;;; It imports foreign-callable, foreign-callable-entry-point and
 ;;; lock-object, which check-seam lets this library alone import (ADR-0007,
-;;; plan, section 3.6).
+;;; M2 plan, section 3.6).
 (library (curl private transfer)
   (export make-transfer-request transfer-request?
           transfer-request-url transfer-request-method transfer-request-headers
           transfer-request-user-agent transfer-request-timeout-ms transfer-request-body-limit
-          transfer-request-ca-file transfer-request-verify transfer-request-chunk-hook
-          perform-transfer perform-transfer-with
+          transfer-request-ca-file transfer-request-verify transfer-request-fault
+          prepare-transfer start-transfer! finish-transfer free-transfer!
+          live-transfer-easy live-transfer-chunks transfer-ended planted-fault transfers-started
+          abandon-transfer-easy!
           transfer-response? transfer-response-status transfer-response-http-version
           transfer-response-effective-url transfer-response-headers transfer-response-body
           option-bindings option-binding option-setter http-version-symbol bytes->latin-1 pinned-options
           request-field-options owned-option-names live-transfer-count cached-option-names
           tls-settings setopt-accepted?)
   (import (curl private require-threaded)
-          (except (rnrs) dynamic-wind)
+          (rnrs)
           (rnrs mutable-strings)
-          (only (chezscheme) critical-section dynamic-wind foreign-callable
-                foreign-callable-entry-point lock-object make-mutex with-mutex foreign-sizeof)
+          (only (chezscheme) critical-section foreign-callable foreign-callable-entry-point
+                lock-object make-mutex with-mutex foreign-sizeof get-thread-id)
           (curl private conditions)
           (curl private constants)
           (curl private counters)
@@ -336,7 +308,7 @@
 
   ;; make-transfer-request : String (U 'get 'head) (Listof (Pairof String String))
   ;;                         (U String #f) (U Positive-Integer #f) (U Natural #f)
-  ;;                         (U String #f) Boolean (U (Bytevector -> Any) #f) -> Request
+  ;;                         (U String #f) Boolean (U Positive-Integer #f) -> Request
   ;; transfer-request? : Any -> Boolean
   ;; transfer-request-url : Request -> String
   ;; transfer-request-method : Request -> (U 'get 'head)
@@ -346,16 +318,16 @@
   ;; transfer-request-body-limit : Request -> (U Natural #f)
   ;; transfer-request-ca-file : Request -> (U String #f)
   ;; transfer-request-verify : Request -> Boolean
-  ;; transfer-request-chunk-hook : Request -> (U (Bytevector -> Any) #f)
+  ;; transfer-request-fault : Request -> (U Positive-Integer #f)
   ;;
-  ;; URL, a string, parsed when the transfer runs. METHOD, get or head.
+  ;; URL, a string, parsed at submit, and again on the engine's thread. METHOD, get or head.
   ;; HEADERS, (NAME . VALUE) strings, in the order sent, repeats kept, but
   ;; for Host: libcurl sends a Host header in place of its own, first,
   ;; before every other header, and spelt Host, whatever its case here; and
   ;; a second Host header, in any case, is refused as duplicates-field
   ;; (RFC 9112, section 3.2, has a server answer 400 to more than one); and
   ;; a Content-Length or Transfer-Encoding header, in any case, as
-  ;; framing-header: a server would wait for a body M2 never sends.
+  ;; framing-header: a server would wait for a body chez-curl never sends.
   ;; USER-AGENT, a non-empty string, or #f for none. TIMEOUT-MS, a positive
   ;; exact integer a long holds, or #f for libcurl's default, none.
   ;; BODY-LIMIT, an exact natural below 2^63 - 1, or #f for none.
@@ -363,15 +335,17 @@
   ;; or absolute: the request's only trust anchor (ADR-0018); or #f for
   ;; libcurl's system store, as built. VERIFY, #t to verify the peer's
   ;; chain and its name, #f to verify neither: libcurl then reads no CA.
-  ;; CHUNK-HOOK, #f, or a procedure handed a fresh copy of each chunk,
-  ;; inside the callable, after the limit check: a test seam, private. It
-  ;; must return: an exit any other way is refused, as a raise.
+  ;; FAULT, #f, or a positive exact integer: a planted fault, private, the
+  ;; test seam's, that makes the callable raise (planted-fault FAULT) at the
+  ;; chunk of that number, counting from 1, before its limit check (M3
+  ;; plan, section 3.6). It is data, never a procedure: a request holds no
+  ;; caller code (ADR-0012, decision 4).
   ;;
   ;; A wrong type is an assertion violation, the empty string as a CA file
   ;; among them. Then, in order, snapshot's rules for the headers and the
   ;; user agent, and ca-file-copy's for the CA file, each refusal a
   ;; &curl-request-error naming the field. The record keeps the caller's
-  ;; objects; perform-transfer checks them again, as a snapshot.
+  ;; objects; a submit checks them again, as a plan.
   (define-record-type (transfer-request make-transfer-request transfer-request?)
     (fields (immutable url transfer-request-url)
             (immutable method transfer-request-method)
@@ -381,10 +355,10 @@
             (immutable body-limit transfer-request-body-limit)
             (immutable ca-file transfer-request-ca-file)
             (immutable verify transfer-request-verify)
-            (immutable chunk-hook transfer-request-chunk-hook))
+            (immutable fault transfer-request-fault))
     (protocol
      (lambda (new)
-       (lambda (url method headers user-agent timeout-ms body-limit ca-file verify chunk-hook)
+       (lambda (url method headers user-agent timeout-ms body-limit ca-file verify fault)
          (define (wrong message irritant)
            (assertion-violation 'make-transfer-request message irritant))
          (unless (string? url) (wrong "a URL is a string" url))
@@ -398,11 +372,12 @@
          (unless (ca-file? ca-file)
            (wrong "a CA file is a non-empty string, its path, or #f" ca-file))
          (unless (boolean? verify) (wrong "verify is #t or #f" verify))
-         (unless (or (not chunk-hook) (procedure? chunk-hook))
-           (wrong "a chunk hook is a procedure or #f" chunk-hook))
+         (unless (or (not fault) (and (integer? fault) (exact? fault) (positive? fault)))
+           (wrong "a fault is a positive exact integer, the chunk it raises at, or #f: a request holds no procedure"
+                  fault))
          (snapshot 'make-transfer-request headers user-agent)
          (ca-file-copy 'make-transfer-request ca-file)
-         (new url method headers user-agent timeout-ms body-limit ca-file verify chunk-hook)))))
+         (new url method headers user-agent timeout-ms body-limit ca-file verify fault)))))
 
   ;; --- the response -----------------------------------------------------------------
 
@@ -464,21 +439,36 @@
                            (bytes->latin-1 text))))
                    (else (loop (+ i 1))))))))
 
-  ;; fail : Symbol (U Integer #f) (U String #f) (U Positive-Integer #f) Any -> Nothing
-  ;; Raises &curl-transfer-error for REASON, with CODE's strerror and the
-  ;; error buffer's text, read now, while the buffer lives.
-  (define (fail reason code option buffer recorded)
+  ;; failure : Symbol (U Integer #f) (U String #f) (U Positive-Integer #f) Any -> Condition
+  ;; &curl-transfer-error for REASON, with CODE's strerror and the error
+  ;; buffer's text, read now, while the buffer lives.
+  (define (failure reason code option buffer recorded)
     (let ((strerror (and code (curl-easy-strerror code))))
-      (raise (condition (make-curl-transfer-error reason code option strerror
-                                                  (error-buffer-text buffer) recorded)
-                        (make-who-condition 'perform-transfer)
-                        (make-message-condition
-                         (or strerror
-                             (case reason
-                               ((unknown-option) "the loaded libcurl does not know this option")
-                               ((no-handle) "curl_easy_init returned NULL")
-                               (else "the transfer failed"))))
-                        (make-irritants-condition (if option (list option) '()))))))
+      (condition (make-curl-transfer-error reason code option strerror
+                                           (error-buffer-text buffer) recorded)
+                 (make-who-condition 'curl-transfer)
+                 (make-message-condition
+                  (or strerror
+                      (case reason
+                        ((unknown-option) "the loaded libcurl does not know this option")
+                        ((no-handle) "curl_easy_init returned NULL")
+                        ((cancelled) "the transfer was cancelled before it ended")
+                        ((stopped) "the transfer's engine stopped before it ended")
+                        (else "the transfer failed"))))
+                 (make-irritants-condition (if option (list option) '())))))
+
+  ;; fail : Symbol (U Integer #f) (U String #f) (U Positive-Integer #f) Any -> Nothing
+  ;; Raises failure's condition.
+  (define (fail reason code option buffer recorded)
+    (raise (failure reason code option buffer recorded)))
+
+  ;; transfer-ended : (U 'cancelled 'stopped) -> Condition
+  ;; The outcome of a transfer cancelled, or whose engine stopped, before
+  ;; it ended: &curl-transfer-error with that reason and no code.
+  (define (transfer-ended reason)
+    (unless (memq reason '(cancelled stopped))
+      (assertion-violation 'transfer-ended "a transfer ends early cancelled or stopped" reason))
+    (failure reason #f #f #f #f))
 
   ;; --- options ----------------------------------------------------------------------
 
@@ -698,7 +688,7 @@
   ;; &curl-request-error, field options. A value out of its type's range,
   ;; and OPTIONS of any other shape, are assertion violations.
   (define (checked-settings options)
-    (define (wrong message irritant) (assertion-violation 'perform-transfer-with message irritant))
+    (define (wrong message irritant) (assertion-violation 'curl-engine-submit-with message irritant))
     (unless (list? options) (wrong "options are a list of (NAME . VALUE)" options))
     (let loop ((rest options) (left (length options)) (found '()))
       (cond ((and (null? rest) (= left 0)) (reverse found))
@@ -710,23 +700,25 @@
                     (option (option-named name))
                     (type (find (lambda (entry) (eqv? (cdr entry) (cdr option))) curlot-types)))
                (when (memv (car option) (owned-option-ids))
-                 (refuse-field 'perform-transfer-with 'options name 'owned-option))
+                 (refuse-field 'curl-engine-submit-with 'options name 'owned-option))
                (unless (and type (memq (car type) '(long values off-t)))
-                 (refuse-field 'perform-transfer-with 'options name 'unsupported-type))
+                 (refuse-field 'curl-engine-submit-with 'options name 'unsupported-type))
                (unless (if (eq? (car type) 'off-t) (off-t? value) (long? value))
                  (wrong "the value does not fit the option's type" (cons name value)))
                (loop (cdr rest) (- left 1) (cons (cons name value) found)))))))
 
   ;; --- the transfers write-body serves ------------------------------------------------
 
-  ;; A sink is what one transfer's callable writes to: its limit and hook,
-  ;; the bytes received, the chunks kept, newest first, and what was
+  ;; A sink is what one transfer's callable writes to: its limit and its
+  ;; planted fault, the bytes received, the chunks kept, newest first, the
+  ;; log of every chunk libcurl handed it, newest first, and what was
   ;; recorded, #f or (REASON . OBJECT).
   (define-record-type sink
-    (fields (immutable limit) (immutable hook)
-            (mutable received) (mutable chunks) (mutable recorded)))
+    (fields (immutable limit) (immutable fault)
+            (mutable received) (mutable chunks) (mutable log) (mutable recorded)))
 
-  ;; The live transfers, by key, and the next key, under the mutex.
+  ;; The live transfers, by key, and the next key, under the mutex. Every
+  ;; engine's thread reads it: one callable serves them all.
   (define sinks (make-eqv-hashtable))
   (define sinks-lock (make-mutex))
   (define next-key 1)
@@ -736,6 +728,13 @@
   ;; test that it is empty once they have ended.
   (define (live-transfer-count)
     (locked sinks-lock (lambda () (hashtable-size sinks))))
+
+  ;; transfers-started : -> Natural
+  ;; How many transfers start-transfer! has registered in this process, ever:
+  ;; a private accessor, for the test that a cancel or a stop of a queued
+  ;; token makes nothing native. One less than the next key.
+  (define (transfers-started)
+    (locked sinks-lock (lambda () (- next-key 1))))
 
   ;; sink-of : Natural -> (U Sink #f)
   (define (sink-of key)
@@ -750,68 +749,44 @@
         (when (and sink (not (sink-recorded sink)))
           (sink-recorded-set! sink (cons reason object))))))
 
-  ;; hook-refusal : Symbol -> Condition
-  ;; What write-body records when CHUNK-HOOK left otherwise than by
-  ;; returning: escaped through a continuation, or re-entered through one.
-  (define (hook-refusal how)
-    (condition (make-assertion-violation)
-               (make-who-condition 'write-body)
-               (make-message-condition
-                "CHUNK-HOOK must return: control may leave the write callable only by its return")
-               (make-irritants-condition (list how))))
-
-  ;; call-hook : (Bytevector -> Any) Bytevector -> Void
-  ;; HOOK on CHUNK, in a dynamic-wind, so caller code leaves it only by its
-  ;; return or a raise, which goes on to write-body's guard. Its after thunk
-  ;; turns an exit through a continuation into a raise of
-  ;; (hook-refusal 'escaped), and its before thunk refuses a re-entry, so
-  ;; neither abandons curl_easy_perform's C frames. An interrupt handler's
-  ;; escape from inside HOOK meets the same refusal: the after thunk cannot
-  ;; tell the two apart.
-  (define (call-hook hook chunk)
-    (let ((state 'ready) (raised #f))
-      (dynamic-wind
-        (lambda ()
-          (unless (eq? state 'ready)
-            (set! state 'refused)
-            (raise (hook-refusal 're-entered))))
-        (lambda ()
-          (set! state 'running)
-          (guard (e (#t (set! raised e) (set! state 'raised)))
-            (hook chunk)
-            (set! state 'returned)))
-        (lambda ()
-          (when (eq? state 'running)
-            (set! state 'escaped)
-            (raise (hook-refusal 'escaped)))))
-      (when (eq? state 'raised) (raise raised))))
+  ;; planted-fault : Positive-Integer -> (List 'planted-fault Positive-Integer)
+  ;; What write-body raises at the chunk N a request's fault names: data, so
+  ;; a test can tell it from every other raise.
+  (define (planted-fault n) (list 'planted-fault n))
 
   ;; write-body : Code
   ;; libcurl's curl_write_callback for every transfer: DATA, SIZE times
-  ;; NMEMB bytes of body, for the transfer KEY names. If they would take it
-  ;; past its limit, it records body-limit and answers 0. Otherwise it
-  ;; copies them with the checked copy, hands the hook a fresh copy through
-  ;; call-hook, keeps the chunk, and answers their count. No raise leaves
-  ;; it: its whole body runs under a guard, which records anything raised
-  ;; as callback-raised and answers 0. An interrupt handler may escape from
-  ;; it; the easy handle's performing mark covers that. An empty chunk,
-  ;; which libcurl hands an empty body, is kept as nothing.
+  ;; NMEMB bytes of body, for the transfer KEY names. It logs each chunk,
+  ;; (LENGTH THREAD VERDICT), THREAD its get-thread-id, then: at the chunk
+  ;; the transfer's fault names, it raises (planted-fault N), verdict
+  ;; raised; for bytes that would take it past its limit, it records
+  ;; body-limit and answers 0, verdict refused; otherwise it copies them
+  ;; with the checked copy, keeps the chunk, and answers their count,
+  ;; verdict accepted. No raise leaves it: its whole body runs under a
+  ;; guard, which records anything raised as callback-raised and answers 0.
+  ;; An empty chunk, which libcurl hands an empty body, is kept as nothing,
+  ;; and not logged. It runs no procedure a caller supplied.
   (define write-body
     (foreign-callable __collect_safe
       (lambda (data size nmemb key)
         (guard (e (#t (record! key 'callback-raised e) 0))
           (let ((sink (sink-of key)) (n (* size nmemb)))
+            (define (log! verdict)
+              (sink-log-set! sink (cons (list n (get-thread-id) verdict) (sink-log sink))))
             (cond
               ((not sink) 0)
               ((= n 0) 0)
+              ((and (sink-fault sink) (= (+ (length (sink-log sink)) 1) (sink-fault sink)))
+               (log! 'raised)
+               (raise (planted-fault (sink-fault sink))))
               ((and (sink-limit sink) (> (+ (sink-received sink) n) (sink-limit sink)))
+               (log! 'refused)
                (record! key 'body-limit #f)
                0)
               (else
                (let ((chunk (make-bytevector n)))
                  (copy-foreign->bytevector! data chunk 0 n)
-                 (when (sink-hook sink)
-                   (call-hook (sink-hook sink) (bytevector-copy chunk)))
+                 (log! 'accepted)
                  (sink-received-set! sink (+ (sink-received sink) n))
                  (sink-chunks-set! sink (cons chunk (sink-chunks sink)))
                  n))))))
@@ -826,64 +801,65 @@
   ;; write-body-entry : Positive-Integer
   (define write-body-entry (foreign-callable-entry-point write-body))
 
-  ;; --- extents ----------------------------------------------------------------------
+  ;; --- the plan, on the caller's thread -------------------------------------------------
 
-  ;; within : Symbol (-> A) (A -> Any) (A -> B) -> B
-  ;; PROC's answer, given what MAKE made, which FREE frees once PROC
-  ;; returns, raises or escapes. When MAKE raises, nothing was made, and
-  ;; nothing is freed. Re-entering PROC through a continuation, once freed,
-  ;; raises an assertion violation from WHO, the extent's name: the
-  ;; outermost extent's refusal comes first, so a test that re-enters sees
-  ;; which extent is outermost. The dynamic-wind is critical: MAKE and the
-  ;; record of what it made run in one critical section with the record of
-  ;; entry, and FREE with the record of exit, so no interrupt that escapes
-  ;; falls between.
-  (define (within who make free proc)
-    (let ((made #f) (freed #f))
-      (dynamic-wind #t
-        (lambda ()
-          (when freed
-            (assertion-violation who "re-entered after its native object was freed"))
-          (set! made (make)))
-        (lambda () (proc made))
-        (lambda ()
-          (set! freed #t)
-          (free made)))))
+  ;; A plan is what a submit checked: fresh copies of the request's URL,
+  ;; headers, user agent and CA file, its other fields, the test seam's
+  ;; settings, and its fault.
+  (define-record-type plan
+    (fields (immutable url) (immutable method) (immutable headers) (immutable agent)
+            (immutable timeout-ms) (immutable body-limit) (immutable ca-file)
+            (immutable verify) (immutable settings) (immutable fault)))
 
-  ;; call-with-sink : Request (Natural Sink -> Any) -> Any
-  ;; PROC given a fresh key and its sink, registered while PROC runs, and
-  ;; counted as transfer. The count falls only when the key is removed, so
-  ;; the count is the table's.
-  (define (call-with-sink request proc)
-    (within 'call-with-sink
-            (lambda ()
-              (let ((sink (make-sink (transfer-request-body-limit request)
-                                     (transfer-request-chunk-hook request) 0 '() #f)))
-                (locked sinks-lock
-                  (lambda ()
-                    (let ((key next-key))
-                      (set! next-key (+ next-key 1))
-                      (hashtable-set! sinks key sink)
-                      (count-up! 'transfer)
-                      (cons key sink))))))
-            (lambda (registered)
-              (let ((removed (locked sinks-lock
-                               (lambda ()
-                                 (and (hashtable-contains? sinks (car registered))
-                                      (begin (hashtable-delete! sinks (car registered))
-                                             (not (hashtable-contains? sinks (car registered)))))))))
-                (when removed (count-down! 'transfer))))
-            (lambda (registered) (proc (car registered) (cdr registered)))))
+  ;; prepare-transfer : Request (Listof (Pairof String Integer)) -> Plan
+  ;; REQUEST's plan, with OPTIONS, the test seam's (NAME . VALUE) pairs,
+  ;; each checked by checked-settings, on the caller's thread, before
+  ;; anything is queued (M3 plan, section 3.4). In order: the snapshot of
+  ;; the headers and the user agent, the CA file's copy, OPTIONS, then the
+  ;; URL's copy, parsed by call-with-parsed-url and checked by
+  ;; require-http-scheme, its CURLU freed before this returns (ADR-0008,
+  ;; amended 2026-10-24). Each refusal raises here.
+  (define (prepare-transfer request options)
+    (unless (transfer-request? request)
+      (assertion-violation 'curl-engine-submit "not a transfer request" request))
+    (let* ((url (string-copy (transfer-request-url request)))
+           (fields (snapshot 'curl-engine-submit (transfer-request-headers request)
+                             (transfer-request-user-agent request)))
+           (ca-file (ca-file-copy 'curl-engine-submit (transfer-request-ca-file request)))
+           (settings (checked-settings options)))
+      (call-with-parsed-url url require-http-scheme)
+      (make-plan url (transfer-request-method request) (car fields) (cdr fields)
+                 (transfer-request-timeout-ms request) (transfer-request-body-limit request)
+                 ca-file (transfer-request-verify request) settings
+                 (transfer-request-fault request))))
 
-  ;; call-with-error-buffer : (Positive-Integer -> Any) -> Any
-  ;; PROC given a counted block of CURL_ERROR_SIZE bytes, zeroed.
-  (define (call-with-error-buffer proc)
-    (within 'call-with-error-buffer
-            (lambda () (foreign-block curl-error-size))
-            free-foreign-block!
-            (lambda (buffer)
-              (copy-bytevector->foreign! (make-bytevector curl-error-size 0) 0 buffer curl-error-size)
-              (proc buffer))))
+  ;; --- the transfer, on the engine's thread ---------------------------------------------
+
+  ;; A live transfer: its plan, and each native object it holds, set in the
+  ;; critical section that makes it and cleared in the one that frees it, #f
+  ;; while not made: its key, registered for write-body and counted as
+  ;; transfer, and its sink; its URL's CURLU handle; its error buffer; its
+  ;; header list, 0 while it holds none; and its easy handle.
+  (define-record-type (live-transfer make-live-transfer live-transfer?)
+    (fields (immutable plan live-transfer-plan)
+            (mutable key live-transfer-key live-transfer-key-set!)
+            (mutable sink live-transfer-sink live-transfer-sink-set!)
+            (mutable url live-transfer-url live-transfer-url-set!)
+            (mutable buffer live-transfer-buffer live-transfer-buffer-set!)
+            (mutable header-list live-transfer-header-list live-transfer-header-list-set!)
+            (mutable easy live-transfer-easy live-transfer-easy-set!)))
+
+  ;; live-transfer-easy : Live -> (U Positive-Integer #f)
+  ;; The easy handle the engine adds to its multi handle, and finds again by
+  ;; the address curl_multi_info_read answers.
+
+  ;; live-transfer-chunks : Live -> (Listof (List Positive-Integer Integer Symbol))
+  ;; write-body's log of LIVE's chunks, oldest first: each chunk's length,
+  ;; the get-thread-id of the thread it ran on, and its verdict, accepted,
+  ;; refused or raised (M3 plan, section 3.6).
+  (define (live-transfer-chunks live)
+    (let ((sink (live-transfer-sink live)))
+      (if sink (reverse (sink-log sink)) '())))
 
   ;; header-line : (Pairof String String) -> String
   ;; "Name: value", or "Name;" for an empty value: libcurl's form for a
@@ -893,65 +869,134 @@
         (string-append (car header) ";")
         (string-append (car header) ": " (cdr header))))
 
-  ;; call-with-header-list : (Listof (Pairof String String)) (Natural -> Any) -> Any
-  ;; PROC given a string list of HEADERS' lines, each a Latin-1 copy, or 0
-  ;; for none. curl_slist_append copies its string, so each copy is freed
-  ;; as soon as it returns. When it answers NULL, the list built so far is
-  ;; still freed.
-  (define (call-with-header-list headers proc)
-    (within 'call-with-header-list
-            (lambda () (vector 0))
-            (lambda (held)
-              (unless (eqv? (vector-ref held 0) 0)
-                (curl-slist-free-all (vector-ref held 0))))
-            (lambda (held)
-              (for-each
-               (lambda (header)
-                 (call-with-latin-1-c-string (header-line header)
-                   (lambda (address)
-                     ;; The list and its record, where the after thunk
-                     ;; frees it, in one critical section.
-                     (critical-section
-                      (let ((appended (curl-slist-append (vector-ref held 0) address)))
-                        (when (eqv? appended 0)
-                          (error 'perform-transfer "curl_slist_append returned NULL: no memory for a header"
-                                 (car header)))
-                        (vector-set! held 0 appended))))))
-               headers)
-              (proc (vector-ref held 0)))))
+  ;; set-transfer-options! : Positive-Integer Plan Positive-Integer Positive-Integer Natural Positive-Integer -> Void
+  ;; Every setting PLAN's transfer makes on EASY, in order: pinned-options
+  ;; first, then ERRORBUFFER at BUFFER, CURLU at URL, WRITEFUNCTION and
+  ;; WRITEDATA at KEY; and as the request asks, NOBODY for head, HTTPHEADER
+  ;; at HEADER-LIST, USERAGENT, TIMEOUT_MS and MAXFILESIZE_LARGE at the body
+  ;; limit plus one; then, always, tls-settings' for the plan's CA file and
+  ;; verification, through set-tls-options!; then the test seam's settings.
+  ;; It follows no redirect unless they say so.
+  (define (set-transfer-options! easy plan key buffer header-list url)
+    (set-pinned-options! easy buffer)
+    (set-option! easy "ERRORBUFFER" buffer #f)
+    (set-option! easy (field-option 'url) url buffer)
+    (set-option! easy "WRITEFUNCTION" write-body-entry buffer)
+    (set-option! easy "WRITEDATA" key buffer)
+    (when (eq? (plan-method plan) 'head)
+      (set-option! easy (field-option 'method) 1 buffer))
+    (unless (eqv? header-list 0)
+      (set-option! easy (field-option 'headers) header-list buffer))
+    (let ((agent (plan-agent plan)))
+      (when agent
+        (call-with-latin-1-c-string agent
+          (lambda (address)
+            (set-option! easy (field-option 'user-agent) address buffer)))))
+    (let ((timeout (plan-timeout-ms plan)))
+      (when timeout
+        (set-option! easy (field-option 'timeout-ms) timeout buffer)))
+    (let ((limit (plan-body-limit plan)))
+      (when limit
+        (set-option! easy (field-option 'body-limit) (+ limit 1) buffer)))
+    (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
+    (for-each (lambda (setting)
+                (set-option! easy (car setting) (cdr setting) buffer))
+              (plan-settings plan)))
 
-  ;; An easy handle, and whether curl_easy_perform is running on it: the
-  ;; performing mark.
-  (define-record-type easy-state
-    (fields (immutable address) (mutable performing)))
+  ;; start-transfer! : Plan -> Live
+  ;; PLAN's transfer, made on this thread, the engine's, ready for its
+  ;; multi handle: its key and sink, its URL parsed again and its scheme
+  ;; checked again, its error buffer, zeroed, its header list, and its easy
+  ;; handle, set by set-transfer-options!. Each object is made, and recorded
+  ;; in the live record, in one critical section. A raise frees what was
+  ;; made, by free-transfer!, then raises again: the URL's refusal, or a
+  ;; &curl-transfer-error, setopt-failed, unknown-option or no-handle.
+  (define (start-transfer! plan)
+    (let ((live (make-live-transfer plan #f #f #f #f 0 #f)))
+      (guard (e (#t (free-transfer! live) (raise e)))
+        (critical-section
+         (let ((sink (make-sink (plan-body-limit plan) (plan-fault plan) 0 '() '() #f)))
+           (locked sinks-lock
+             (lambda ()
+               (let ((key next-key))
+                 (set! next-key (+ next-key 1))
+                 (hashtable-set! sinks key sink)
+                 (count-up! 'transfer)
+                 (live-transfer-key-set! live key))))
+           (live-transfer-sink-set! live sink)))
+        (critical-section (live-transfer-url-set! live (parse-url (plan-url plan))))
+        (require-http-scheme (live-transfer-url live))
+        (critical-section (live-transfer-buffer-set! live (foreign-block curl-error-size)))
+        (copy-bytevector->foreign! (make-bytevector curl-error-size 0) 0
+                                   (live-transfer-buffer live) curl-error-size)
+        (for-each
+         (lambda (header)
+           (call-with-latin-1-c-string (header-line header)
+             (lambda (address)
+               ;; The list and its record, where free-transfer! frees it, in
+               ;; one critical section.
+               (critical-section
+                (let ((appended (curl-slist-append (live-transfer-header-list live) address)))
+                  (when (eqv? appended 0)
+                    (error 'start-transfer! "curl_slist_append returned NULL: no memory for a header"
+                           (car header)))
+                  (live-transfer-header-list-set! live appended))))))
+         (plan-headers plan))
+        (critical-section
+         (let ((easy (curl-easy-init)))
+           (when (eqv? easy 0) (fail 'no-handle #f #f #f #f))
+           (live-transfer-easy-set! live easy)))
+        (set-transfer-options! (live-transfer-easy live) plan (live-transfer-key live)
+                               (live-transfer-buffer live) (live-transfer-header-list live)
+                               (live-transfer-url live))
+        live)))
 
-  ;; call-with-easy : (Positive-Integer (-> Integer) -> Any) -> Any
-  ;; PROC given a fresh easy handle and PERFORM, which runs
-  ;; curl_easy_perform on it and answers its code; no-handle when
-  ;; curl_easy_init answers NULL. PERFORM sets the handle's performing mark
-  ;; just before the call, and clears it just after the call returns, each
-  ;; in a critical section. When control left the call without its return,
-  ;; an interrupt handler escaping from write-body, the mark is still set,
-  ;; and the after thunk never calls curl_easy_cleanup: libcurl must never
-  ;; be called on a handle whose call is still running. That handle stays
-  ;; counted as easy, and its connection is leaked.
-  (define (call-with-easy proc)
-    (within 'call-with-easy
-            (lambda ()
-              (let ((easy (curl-easy-init)))
-                (when (eqv? easy 0) (fail 'no-handle #f #f #f #f))
-                (make-easy-state easy #f)))
-            (lambda (state)
-              (unless (easy-state-performing state)
-                (curl-easy-cleanup (easy-state-address state))))
-            (lambda (state)
-              (let ((easy (easy-state-address state)))
-                (proc easy
-                      (lambda ()
-                        (critical-section (easy-state-performing-set! state #t))
-                        (let ((code (curl-easy-perform easy)))
-                          (critical-section (easy-state-performing-set! state #f))
-                          code)))))))
+  ;; abandon-transfer-easy! : Live -> Void
+  ;; LIVE's easy handle forgotten, and not freed, so that free-transfer!
+  ;; frees everything but it: for a handle the engine could not take out of
+  ;; its multi handle, whose curl_easy_cleanup would remove it there, a call
+  ;; that can block. It stays counted as easy, so a suite sees it.
+  (define (abandon-transfer-easy! live)
+    (critical-section (live-transfer-easy-set! live #f)))
+
+  ;; free-transfer! : Live -> Void
+  ;; Frees what LIVE holds, the other way round from its making: the easy
+  ;; handle, which the engine has taken out of its multi handle first, then
+  ;; the header list, the error buffer, the CURLU and the key. Each free,
+  ;; and the clearing of its record, is one critical section. A field never
+  ;; made holds #f, or 0 for the header list, and is passed over, so a second
+  ;; call frees nothing.
+  (define (free-transfer! live)
+    (critical-section
+     (let ((easy (live-transfer-easy live)))
+       (when easy
+         (curl-easy-cleanup easy)
+         (live-transfer-easy-set! live #f))))
+    (critical-section
+     (let ((header-list (live-transfer-header-list live)))
+       (unless (eqv? header-list 0)
+         (curl-slist-free-all header-list)
+         (live-transfer-header-list-set! live 0))))
+    (critical-section
+     (let ((buffer (live-transfer-buffer live)))
+       (when buffer
+         (free-foreign-block! buffer)
+         (live-transfer-buffer-set! live #f))))
+    (critical-section
+     (let ((url (live-transfer-url live)))
+       (when url
+         (free-parsed-url! url)
+         (live-transfer-url-set! live #f))))
+    (critical-section
+     (let ((key (live-transfer-key live)))
+       (when key
+         (let ((removed (locked sinks-lock
+                          (lambda ()
+                            (and (hashtable-contains? sinks key)
+                                 (begin (hashtable-delete! sinks key)
+                                        (not (hashtable-contains? sinks key))))))))
+           (when removed (count-down! 'transfer)))
+         (live-transfer-key-set! live #f)))))
 
   ;; --- the response's parts -----------------------------------------------------------
 
@@ -959,7 +1004,7 @@
   (define (info-long easy info)
     (let-values (((code value) (curl-easy-getinfo-long easy info)))
       (unless (eqv? code curle-ok)
-        (error 'perform-transfer "curl_easy_getinfo refused a CURLINFO" info code))
+        (error 'finish-transfer "curl_easy_getinfo refused a CURLINFO" info code))
       value))
 
   ;; info-text : Positive-Integer Integer -> (U String #f)
@@ -967,7 +1012,7 @@
   (define (info-text easy info)
     (let-values (((code bytes) (curl-easy-getinfo-string easy info)))
       (unless (eqv? code curle-ok)
-        (error 'perform-transfer "curl_easy_getinfo refused a CURLINFO" info code))
+        (error 'finish-transfer "curl_easy_getinfo refused a CURLINFO" info code))
       (and bytes (utf8->string bytes))))
 
   ;; response-headers : Positive-Integer -> (Listof (Pairof String String))
@@ -993,90 +1038,29 @@
           (loop (cdr rest) (+ at (bytevector-length (car rest))))))
       body))
 
-  ;; --- the transfer -------------------------------------------------------------------
-
-  ;; perform-transfer : Request -> Response
-  ;; REQUEST's transfer, run on this thread, as perform-transfer-with with
-  ;; no options.
-  (define (perform-transfer request)
-    (perform-transfer-with request '()))
-
-  ;; perform-transfer-with : Request (Listof (Pairof String Integer)) -> Response
-  ;; REQUEST's transfer, run on this thread, with OPTIONS, each (NAME .
-  ;; VALUE), checked by checked-settings: a test seam, private, held to
-  ;; ADR-0009's rules, narrowed (amended 2026-10-23 and 2026-10-24), so no
-  ;; option it takes is one the transfer sets, nor such an option's twin.
-  ;; Before anything native, it takes the request's snapshot, the headers,
-  ;; the user agent and the CA file, and checks it, and checks OPTIONS. Then
-  ;; it always sets pinned-options first, then ERRORBUFFER, CURLU,
-  ;; WRITEFUNCTION and WRITEDATA; and as the request asks, NOBODY for head,
-  ;; HTTPHEADER, USERAGENT, TIMEOUT_MS and MAXFILESIZE_LARGE at the body
-  ;; limit plus one; then, always, tls-settings' for the snapshot's CA file
-  ;; and verification, through set-tls-options!; then OPTIONS. It follows
-  ;; no redirect unless OPTIONS say so. A non-zero code, or anything the
-  ;; callable recorded, raises &curl-transfer-error: the recorded reason,
-  ;; else perform-failed. Every native object it made is freed before it
-  ;; returns, raises or escapes, but the easy handle of a perform left
-  ;; without its return, which stays counted (call-with-easy).
-  (define (perform-transfer-with request options)
-    (unless (transfer-request? request)
-      (assertion-violation 'perform-transfer "not a transfer request" request))
-    (let* ((fields (snapshot 'perform-transfer (transfer-request-headers request)
-                             (transfer-request-user-agent request)))
-           (headers (car fields))
-           (agent (cdr fields))
-           (ca-file (ca-file-copy 'perform-transfer (transfer-request-ca-file request)))
-           (verify (transfer-request-verify request))
-           (settings (checked-settings options)))
-      (call-with-parsed-url (transfer-request-url request)
-        (lambda (url)
-          (require-http-scheme url)
-          (call-with-sink request
-            (lambda (key sink)
-              (call-with-error-buffer
-                (lambda (buffer)
-                  (call-with-header-list headers
-                    (lambda (header-list)
-                      (call-with-easy
-                        (lambda (easy perform)
-                          (set-pinned-options! easy buffer)
-                          (set-option! easy "ERRORBUFFER" buffer #f)
-                          (set-option! easy (field-option 'url) url buffer)
-                          (set-option! easy "WRITEFUNCTION" write-body-entry buffer)
-                          (set-option! easy "WRITEDATA" key buffer)
-                          (when (eq? (transfer-request-method request) 'head)
-                            (set-option! easy (field-option 'method) 1 buffer))
-                          (unless (eqv? header-list 0)
-                            (set-option! easy (field-option 'headers) header-list buffer))
-                          (when agent
-                            (call-with-latin-1-c-string agent
-                              (lambda (address)
-                                (set-option! easy (field-option 'user-agent) address buffer))))
-                          (let ((timeout (transfer-request-timeout-ms request)))
-                            (when timeout
-                              (set-option! easy (field-option 'timeout-ms) timeout buffer)))
-                          (let ((limit (transfer-request-body-limit request)))
-                            (when limit
-                              (set-option! easy (field-option 'body-limit) (+ limit 1) buffer)))
-                          (set-tls-options! easy ca-file verify buffer)
-                          (for-each (lambda (setting)
-                                      (set-option! easy (car setting) (cdr setting) buffer))
-                                    settings)
-                          ;; let*, not let: Chez may evaluate a let's inits in
-                          ;; any order, and what was recorded is read after the
-                          ;; transfer has run.
-                          (let* ((code (perform))
-                                 (recorded (sink-recorded sink)))
-                            (cond
-                              (recorded
-                               (fail (car recorded) code #f buffer
-                                     (and (eq? (car recorded) 'callback-raised) (cdr recorded))))
-                              ((not (eqv? code curle-ok))
-                               (fail 'perform-failed code #f buffer #f))
-                              (else
-                               (make-transfer-response
-                                (info-long easy curlinfo-response-code)
-                                (http-version-symbol (info-long easy curlinfo-http-version))
-                                (info-text easy curlinfo-effective-url)
-                                (response-headers easy)
-                                (sink-body sink))))))))))))))))))
+  ;; finish-transfer : Live Integer -> (U Response Condition)
+  ;; What LIVE's transfer ended with, CODE being the CURLcode
+  ;; curl_multi_info_read gave for it, read on this thread, the engine's,
+  ;; before anything is freed: what the callable recorded, as a
+  ;; &curl-transfer-error with that reason, the raised object for
+  ;; callback-raised; else, for a CODE but CURLE_OK, perform-failed; else
+  ;; the response. The answer is data: the engine completes the token with
+  ;; it, and an awaiting thread raises a condition.
+  (define (finish-transfer live code)
+    (let* ((sink (live-transfer-sink live))
+           (buffer (live-transfer-buffer live))
+           (easy (live-transfer-easy live))
+           (recorded (sink-recorded sink)))
+      (cond
+        (recorded
+         (failure (car recorded) code #f buffer
+                  (and (eq? (car recorded) 'callback-raised) (cdr recorded))))
+        ((not (eqv? code curle-ok))
+         (failure 'perform-failed code #f buffer #f))
+        (else
+         ;; let*: what each part reads, it reads in this order.
+         (let* ((status (info-long easy curlinfo-response-code))
+                (version (http-version-symbol (info-long easy curlinfo-http-version)))
+                (effective (info-text easy curlinfo-effective-url))
+                (headers (response-headers easy)))
+           (make-transfer-response status version effective headers (sink-body sink))))))))

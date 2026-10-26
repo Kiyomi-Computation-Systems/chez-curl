@@ -58,11 +58,26 @@
 ;;; exception (ADR-0001, amended 2026-10-23): call-with-latin-1-c-string
 ;;; hands C one byte per char, refusing U+0000 and any char above U+00FF.
 ;;;
-;;; The blocking transfer's bindings (M2 plan, section 5.2) are step 6's:
-;;; curl_easy_perform, through bind-blocking, whose template carries
-;;; __collect_safe (ADR-0013), and curl_easy_strerror, curl_easy_nextheader,
-;;; curl_slist_append and curl_slist_free_all, plain. Their counted
-;;; wrappers count a string list as slist while it is not NULL.
+;;; The transfer's bindings (M2 plan, section 5.2) are step 6's:
+;;; curl_easy_strerror, curl_easy_nextheader, curl_slist_append and
+;;; curl_slist_free_all, plain. Their counted wrappers count a string list
+;;; as slist while it is not NULL. So are the engine's, the multi interface
+;;; (M3 plan, section 3.2): curl_multi_poll, curl_multi_perform,
+;;; curl_multi_remove_handle and curl_multi_cleanup, which can block, through
+;;; bind-blocking, whose template carries __collect_safe (ADR-0013, accepted
+;;; 2026-10-24); the rest plain. A multi handle is counted as multi.
+;;;
+;;; Each handle's thread (ADR-0012, decision 3; M3 plan, section 3.3). Each
+;;; easy, multi and CURLU handle and each string list native makes is
+;;; recorded with its kind and the thread that made it, in the critical
+;;; section that counts it, and forgotten in the one that frees it. Every
+;;; exported procedure that takes one checks it first, by check-owner: a
+;;; handle another thread made raises &curl-wrong-thread, carrying who, the
+;;; maker's get-thread-id and the caller's, and an address that holds no
+;;; live handle of that kind, an assertion violation, each before C sees it.
+;;; curl_multi_wakeup alone may be called from any thread, on a live multi
+;;; handle; the engine that owns the handle keeps it alive while a caller
+;;; may wake it. The header probe's handle is checked as every other is.
 ;;;
 ;;; The load runs once per process, whatever it decides. Chez runs a
 ;;; library body that raised again at every later reference, so each step
@@ -98,15 +113,18 @@
           call-with-c-string call-with-latin-1-c-string c-string->bytevector
           curl-url curl-url-cleanup curl-url-set curl-url-get curl-url-strerror
           curl-free loaded-protocols
-          curl-easy-perform curl-easy-strerror curl-easy-nextheader curl-header-bytes
-          curl-slist-append curl-slist-free-all)
+          curl-easy-strerror curl-easy-nextheader curl-header-bytes
+          curl-slist-append curl-slist-free-all
+          curl-multi-init curl-multi-cleanup curl-multi-add-handle curl-multi-remove-handle
+          curl-multi-perform curl-multi-poll curl-multi-wakeup curl-multi-info-read
+          curl-multi-strerror)
   (import (curl private require-threaded)
           (except (rnrs) dynamic-wind)
           (only (chezscheme) critical-section dynamic-wind ftype-ref make-ftype-pointer
                 foreign-procedure foreign-entry? load-shared-object
                 foreign-ref foreign-sizeof
                 format format-condition? display-condition
-                getenv machine-type file-regular?)
+                getenv machine-type file-regular? get-thread-id make-mutex with-mutex)
           (curl private load-state)
           (curl private libcurl-info)
           (curl private conditions)
@@ -169,6 +187,62 @@
         (apply format (condition-message e) (condition-irritants e))
         (call-with-string-output-port (lambda (p) (display-condition e p)))))
 
+  ;; --- each handle's thread (ADR-0012, decision 3) --------------------------------
+
+  ;; locked : Mutex (-> Any) -> Any
+  ;; THUNK's value, run holding LOCK, in a critical section. Chez's
+  ;; with-mutex is a dynamic-wind whose before thunk takes the mutex, so an
+  ;; interrupt that escapes between the take and the wind would leave it
+  ;; held. Every mutex here is held through locked, and no hold waits.
+  (define (locked lock thunk)
+    (critical-section (with-mutex lock (thunk))))
+
+  ;; The live handles native made, by address, each with its kind, easy,
+  ;; multi, url or slist, and the get-thread-id of the thread that made it:
+  ;; (KIND . THREAD). Read and written under the mutex.
+  (define owners (make-eqv-hashtable))
+  (define owners-lock (make-mutex))
+
+  ;; own! : Positive-Integer Symbol -> Void
+  ;; HANDLE recorded as a live KIND handle this thread made. Its caller
+  ;; holds the critical section that counts it.
+  (define (own! handle kind)
+    (let ((thread (get-thread-id)))
+      (locked owners-lock (lambda () (hashtable-set! owners handle (cons kind thread))))))
+
+  ;; disown! : Positive-Integer -> Void
+  ;; HANDLE forgotten, in its caller's critical section that frees it.
+  (define (disown! handle)
+    (locked owners-lock (lambda () (hashtable-delete! owners handle))))
+
+  ;; live-handle : Symbol Any Symbol -> (Pairof Symbol Integer)
+  ;; HANDLE's record, when it is a live KIND handle native made; otherwise
+  ;; an assertion violation from WHO, before C sees it: an address freed
+  ;; already, never made here, or made as another kind.
+  (define (live-handle who handle kind)
+    (let ((entry (locked owners-lock (lambda () (hashtable-ref owners handle #f)))))
+      (unless (and entry (eq? (car entry) kind))
+        (assertion-violation who
+                             (string-append "not a live " (symbol->string kind)
+                                            " handle chez-curl made")
+                             handle))
+      entry))
+
+  ;; check-owner : Symbol Any Symbol -> Void
+  ;; Returns when HANDLE is a live KIND handle this thread made. One another
+  ;; thread made raises &curl-wrong-thread from WHO, carrying WHO, the
+  ;; maker's get-thread-id and this thread's (ADR-0012); anything else is
+  ;; live-handle's assertion violation. Both before C sees it.
+  (define (check-owner who handle kind)
+    (let* ((entry (live-handle who handle kind))
+           (thread (get-thread-id)))
+      (unless (eqv? (cdr entry) thread)
+        (raise (condition (make-curl-wrong-thread who (cdr entry) thread)
+                          (make-who-condition who)
+                          (make-message-condition
+                           "a handle is used only on the thread that made it: an engine's on the engine's own thread (ADR-0012)")
+                          (make-irritants-condition (list handle)))))))
+
   ;; required-entry : String (U Libcurl-Info #f) -> Void
   ;; Raises missing-api, naming NAME and carrying LIBRARY, unless the loaded
   ;; library has it.
@@ -209,8 +283,8 @@
   ;; __collect_safe, after required-entry has found it (ADR-0013, decision
   ;; 1). The convention is the template's own, never a use's: a thread
   ;; blocked in a plain call stays active, and every other thread's
-  ;; collection waits for it. tests/foreign-conventions.sls holds
-  ;; curl_easy_perform's row to this binder.
+  ;; collection waits for it. tests/foreign-conventions.sls holds the rows
+  ;; of the multi calls that can block to this binder.
   (define-syntax bind-blocking
     (syntax-rules ()
       ((_ entry (arg ...) result library)
@@ -507,7 +581,7 @@
   ;; CURLHcode curl_easy_header(CURL *easy, const char *name, size_t index,
   ;;                            unsigned int origin, int request,
   ;;                            struct curl_header **hout)
-  (define curl-easy-header
+  (define raw-curl-easy-header
     (load-step
      (bind-required "curl_easy_header" (uptr string size_t unsigned-int int uptr) int info)))
 
@@ -526,12 +600,9 @@
 
   ;; CURLUcode curl_url_set(CURLU *handle, CURLUPart what, const char *part,
   ;;                        unsigned int flags)
-  ;; curl-url-set : Natural Integer Natural Natural -> Integer
-  ;; HANDLE, a CURLUPART_* code, the address of a C string, as
-  ;; call-with-c-string hands it, and flags: the CURLUcode. libcurl keeps
-  ;; no pointer to the string: "does not have to keep content around after
-  ;; a successful call" (curl_url_set(3), 7.85.0).
-  (define curl-url-set
+  ;; libcurl keeps no pointer to the string: "does not have to keep content
+  ;; around after a successful call" (curl_url_set(3), 7.85.0).
+  (define raw-curl-url-set
     (load-step (bind-required "curl_url_set" (uptr int uptr unsigned-int) int info)))
 
   ;; CURLUcode curl_url_get(const CURLU *handle, CURLUPart what, char **part,
@@ -546,16 +617,8 @@
   ;; void curl_free(void *p)
   (define raw-curl-free (load-step (bind-required "curl_free" (uptr) void info)))
 
-  ;; The blocking transfer's (M2 plan, section 5.2). curl_easy_nextheader is
+  ;; The transfer's (M2 plan, section 5.2). curl_easy_nextheader is
   ;; 7.83.0, below the floor; the rest are older still. All required.
-
-  ;; CURLcode curl_easy_perform(CURL *curl)
-  ;; curl-easy-perform : Positive-Integer -> Integer
-  ;; The whole transfer EASY is set up for, write callbacks included, on
-  ;; this thread: its CURLcode. __collect_safe, so the thread is inactive
-  ;; while it blocks, and the callable reactivates it (ADR-0013).
-  (define curl-easy-perform
-    (load-step (bind-blocking "curl_easy_perform" (uptr) int info)))
 
   ;; const char *curl_easy_strerror(CURLcode error)
   (define raw-curl-easy-strerror
@@ -563,12 +626,7 @@
 
   ;; struct curl_header *curl_easy_nextheader(CURL *curl, unsigned int origin,
   ;;                                          int request, struct curl_header *prev)
-  ;; curl-easy-nextheader : Positive-Integer Natural Integer Natural -> Natural
-  ;; The header after PREV, or the first for 0, of EASY's response REQUEST
-  ;; (-1, the last), among those whose origin is in ORIGIN's CURLH_ bits: a
-  ;; struct curl_header libcurl owns until the handle is reused or cleaned
-  ;; up, or 0 when there is none. curl-header-bytes reads it.
-  (define curl-easy-nextheader
+  (define raw-curl-easy-nextheader
     (load-step (bind-required "curl_easy_nextheader" (uptr unsigned-int int uptr) uptr info)))
 
   ;; struct curl_slist *curl_slist_append(struct curl_slist *list, const char *data)
@@ -579,31 +637,64 @@
   (define raw-curl-slist-free-all
     (load-step (bind-required "curl_slist_free_all" (uptr) void info)))
 
+  ;; The engine's (M3 plan, section 3.2): the multi interface, all below the
+  ;; floor, curl_multi_poll 7.66.0 and curl_multi_wakeup 7.68.0, and all
+  ;; required. The four that can block are __collect_safe, through
+  ;; bind-blocking (ADR-0013, accepted 2026-10-24).
+
+  ;; CURLM *curl_multi_init(void)
+  (define raw-curl-multi-init (load-step (bind-required "curl_multi_init" () uptr info)))
+
+  ;; CURLMcode curl_multi_cleanup(CURLM *multi_handle)
+  (define raw-curl-multi-cleanup
+    (load-step (bind-blocking "curl_multi_cleanup" (uptr) int info)))
+
+  ;; CURLMcode curl_multi_add_handle(CURLM *multi_handle, CURL *curl_handle)
+  (define raw-curl-multi-add-handle
+    (load-step (bind-required "curl_multi_add_handle" (uptr uptr) int info)))
+
+  ;; CURLMcode curl_multi_remove_handle(CURLM *multi_handle, CURL *curl_handle)
+  (define raw-curl-multi-remove-handle
+    (load-step (bind-blocking "curl_multi_remove_handle" (uptr uptr) int info)))
+
+  ;; CURLMcode curl_multi_perform(CURLM *multi_handle, int *running_handles)
+  (define raw-curl-multi-perform
+    (load-step (bind-blocking "curl_multi_perform" (uptr uptr) int info)))
+
+  ;; CURLMcode curl_multi_poll(CURLM *multi_handle, struct curl_waitfd extra_fds[],
+  ;;                           unsigned int extra_nfds, int timeout_ms, int *ret)
+  (define raw-curl-multi-poll
+    (load-step (bind-blocking "curl_multi_poll" (uptr uptr unsigned-int int uptr) int info)))
+
+  ;; CURLMcode curl_multi_wakeup(CURLM *multi_handle)
+  (define raw-curl-multi-wakeup
+    (load-step (bind-required "curl_multi_wakeup" (uptr) int info)))
+
+  ;; CURLMsg *curl_multi_info_read(CURLM *multi_handle, int *msgs_in_queue)
+  (define raw-curl-multi-info-read
+    (load-step (bind-required "curl_multi_info_read" (uptr uptr) uptr info)))
+
+  ;; const char *curl_multi_strerror(CURLMcode)
+  (define raw-curl-multi-strerror
+    (load-step (bind-required "curl_multi_strerror" (int) uptr info)))
+
   ;; CURLcode curl_easy_setopt(CURL *handle, CURLoption option, ...),
   ;; variadic after option: bound once per value type. curl_off_t is 64
   ;; bits on every platform chez-curl supports. Bound last, so a library
   ;; that lacks an earlier entry point is refused naming that one.
   ;;
-  ;; curl-easy-setopt-long : Natural Integer Integer -> Integer
-  ;; curl-easy-setopt-pointer : Natural Integer Natural -> Integer
-  ;; curl-easy-setopt-off-t : Natural Integer Integer -> Integer
-  ;; HANDLE, an option's id from curl-easy-option, and a long, a pointer
-  ;; or a curl_off_t: the CURLcode.
-  (define curl-easy-setopt-long
+  (define raw-curl-easy-setopt-long
     (load-step (bind-variadic "curl_easy_setopt" (uptr int long) int info)))
 
-  (define curl-easy-setopt-pointer
+  (define raw-curl-easy-setopt-pointer
     (load-step (bind-variadic "curl_easy_setopt" (uptr int uptr) int info)))
 
-  (define curl-easy-setopt-off-t
+  (define raw-curl-easy-setopt-off-t
     (load-step (bind-variadic "curl_easy_setopt" (uptr int integer-64) int info)))
 
   ;; CURLcode curl_easy_getinfo(CURL *handle, CURLINFO info, ...), variadic
   ;; after info: its one argument there is where to write the answer.
-  ;; curl-easy-getinfo : Natural Integer Natural -> Integer
-  ;; HANDLE, a CURLINFO_* code from (curl private constants), and the
-  ;; address libcurl writes the answer to: the CURLcode.
-  (define curl-easy-getinfo
+  (define raw-curl-easy-getinfo
     (load-step (bind-variadic "curl_easy_getinfo" (uptr int uptr) int info)))
 
   ;; --- the counted wrappers, exported: step 7 counts its handle through them ------
@@ -611,38 +702,94 @@
   ;; curl-easy-init : -> Natural
   ;; A fresh easy handle's address, counted as easy; 0, counted as
   ;; nothing, when libcurl could make none.
+  ;; A fresh easy handle's address, counted as easy and owned by this
+  ;; thread; 0, counted as nothing, when libcurl could make none.
   (define (curl-easy-init)
     (critical-section
      (let ((easy (raw-curl-easy-init)))
        (unless (eqv? easy 0)
-         (count-up! 'easy))
+         (count-up! 'easy)
+         (own! easy 'easy))
        easy)))
 
   ;; curl-easy-cleanup : Positive-Integer -> Void
-  ;; Frees the easy handle EASY, counting it down first: a count already
-  ;; at zero raises there, before C, as a double free.
+  ;; Frees the easy handle EASY, this thread's, counting it down and
+  ;; forgetting it first: a handle freed already is no live handle, and
+  ;; raises there, before C, as a double free.
   (define (curl-easy-cleanup easy)
+    (check-owner 'curl-easy-cleanup easy 'easy)
     (critical-section
      (count-down! 'easy)
+     (disown! easy)
      (raw-curl-easy-cleanup easy)))
 
+  ;; curl-easy-setopt-long : Positive-Integer Integer Integer -> Integer
+  ;; curl-easy-setopt-pointer : Positive-Integer Integer Natural -> Integer
+  ;; curl-easy-setopt-off-t : Positive-Integer Integer Integer -> Integer
+  ;; EASY, this thread's, an option's id from curl-easy-option, and a long,
+  ;; a pointer or a curl_off_t: the CURLcode.
+  (define (curl-easy-setopt-long easy option value)
+    (check-owner 'curl-easy-setopt easy 'easy)
+    (raw-curl-easy-setopt-long easy option value))
+
+  (define (curl-easy-setopt-pointer easy option value)
+    (check-owner 'curl-easy-setopt easy 'easy)
+    (raw-curl-easy-setopt-pointer easy option value))
+
+  (define (curl-easy-setopt-off-t easy option value)
+    (check-owner 'curl-easy-setopt easy 'easy)
+    (raw-curl-easy-setopt-off-t easy option value))
+
+  ;; curl-easy-getinfo : Positive-Integer Integer Positive-Integer -> Integer
+  ;; EASY, this thread's, a CURLINFO_* code from (curl private constants),
+  ;; and the address libcurl writes the answer to: the CURLcode.
+  (define (curl-easy-getinfo easy info address)
+    (check-owner 'curl-easy-getinfo easy 'easy)
+    (raw-curl-easy-getinfo easy info address))
+
+  ;; curl-easy-nextheader : Positive-Integer Natural Integer Natural -> Natural
+  ;; The header after PREV, or the first for 0, of EASY's response REQUEST
+  ;; (-1, the last), among those whose origin is in ORIGIN's CURLH_ bits: a
+  ;; struct curl_header libcurl owns until the handle is reused or cleaned
+  ;; up, or 0 when there is none. curl-header-bytes reads it. EASY is this
+  ;; thread's.
+  (define (curl-easy-nextheader easy origin request previous)
+    (check-owner 'curl-easy-nextheader easy 'easy)
+    (raw-curl-easy-nextheader easy origin request previous))
+
+  ;; curl-easy-header : Positive-Integer String Natural Natural Integer Positive-Integer -> Integer
+  ;; The header probe's call, on its own handle, which this thread made.
+  (define (curl-easy-header easy name index origin request hout)
+    (check-owner 'curl-easy-header easy 'easy)
+    (raw-curl-easy-header easy name index origin request hout))
+
   ;; curl-url : -> Natural
-  ;; A fresh CURLU handle's address, counted as url; 0, counted as
-  ;; nothing, when libcurl could make none.
+  ;; A fresh CURLU handle's address, counted as url and owned by this
+  ;; thread; 0, counted as nothing, when libcurl could make none.
   (define (curl-url)
     (critical-section
      (let ((handle (raw-curl-url)))
        (unless (eqv? handle 0)
-         (count-up! 'url))
+         (count-up! 'url)
+         (own! handle 'url))
        handle)))
 
   ;; curl-url-cleanup : Positive-Integer -> Void
-  ;; Frees the CURLU handle HANDLE, counting it down first, as
-  ;; curl-easy-cleanup does.
+  ;; Frees the CURLU handle HANDLE, this thread's, as curl-easy-cleanup
+  ;; does.
   (define (curl-url-cleanup handle)
+    (check-owner 'curl-url-cleanup handle 'url)
     (critical-section
      (count-down! 'url)
+     (disown! handle)
      (raw-curl-url-cleanup handle)))
+
+  ;; curl-url-set : Positive-Integer Integer Positive-Integer Natural -> Integer
+  ;; HANDLE, this thread's, a CURLUPART_* code, the address of a C string,
+  ;; as call-with-c-string hands it, and flags: the CURLUcode.
+  (define (curl-url-set handle part address flags)
+    (check-owner 'curl-url-set handle 'url)
+    (raw-curl-url-set handle part address flags))
 
   ;; curl-url-get : Positive-Integer Integer Natural -> (Values Integer Natural)
   ;; The CURLUcode, and the address of the string curl_url_get wrote for
@@ -652,6 +799,7 @@
   ;; critical section; a caller records the address in its own, as url's
   ;; get-part does.
   (define (curl-url-get handle part flags)
+    (check-owner 'curl-url-get handle 'url)
     (let ((slot #f))
       (dynamic-wind #t
         (lambda () (set! slot (foreign-block (foreign-sizeof 'void*))))
@@ -730,21 +878,125 @@
   ;; when it was 0 before. 0 means libcurl could not append: LIST is left as
   ;; it was, still valid, and still the caller's to free, and nothing is
   ;; counted.
+  ;; A LIST that is not 0 is this thread's. A new list is owned by this
+  ;; thread, and keeps its address: libcurl appends at the end.
   (define (curl-slist-append list address)
+    (unless (eqv? list 0)
+      (check-owner 'curl-slist-append list 'slist))
     (critical-section
      (let ((appended (raw-curl-slist-append list address)))
        (when (and (eqv? list 0) (not (eqv? appended 0)))
-         (count-up! 'slist))
+         (count-up! 'slist)
+         (own! appended 'slist))
        appended)))
 
   ;; curl-slist-free-all : Positive-Integer -> Void
-  ;; Frees the string list LIST and every string in it, counting it down
-  ;; first: a count already at zero raises there, before C, as a double
-  ;; free.
+  ;; Frees the string list LIST, this thread's, and every string in it,
+  ;; counting it down and forgetting it first: a list freed already is no
+  ;; live handle, and raises there, before C, as a double free.
   (define (curl-slist-free-all list)
+    (check-owner 'curl-slist-free-all list 'slist)
     (critical-section
      (count-down! 'slist)
+     (disown! list)
      (raw-curl-slist-free-all list)))
+
+  ;; --- the multi interface's wrappers (M3 plan, section 3.2) --------------------------
+
+  ;; curl-multi-init : -> Natural
+  ;; A fresh multi handle's address, counted as multi and owned by this
+  ;; thread; 0, counted as nothing, when libcurl could make none.
+  (define (curl-multi-init)
+    (critical-section
+     (let ((multi (raw-curl-multi-init)))
+       (unless (eqv? multi 0)
+         (count-up! 'multi)
+         (own! multi 'multi))
+       multi)))
+
+  ;; curl-multi-cleanup : Positive-Integer -> Integer
+  ;; Frees MULTI, this thread's, which must hold no easy handle: the
+  ;; CURLMcode. On CURLM_OK it is counted down and forgotten, in the
+  ;; critical section of the call, which is __collect_safe: the thread is
+  ;; inactive while it waits, critical section or not, so other threads'
+  ;; collections go on. Any other code leaves it counted, and live.
+  (define (curl-multi-cleanup multi)
+    (check-owner 'curl-multi-cleanup multi 'multi)
+    (critical-section
+     (let ((code (raw-curl-multi-cleanup multi)))
+       (when (eqv? code curlm-ok)
+         (count-down! 'multi)
+         (disown! multi))
+       code)))
+
+  ;; curl-multi-add-handle : Positive-Integer Positive-Integer -> Integer
+  ;; curl-multi-remove-handle : Positive-Integer Positive-Integer -> Integer
+  ;; EASY added to, or removed from, MULTI, both this thread's: the
+  ;; CURLMcode. Removal can block, and is __collect_safe.
+  (define (curl-multi-add-handle multi easy)
+    (check-owner 'curl-multi-add-handle multi 'multi)
+    (check-owner 'curl-multi-add-handle easy 'easy)
+    (raw-curl-multi-add-handle multi easy))
+
+  (define (curl-multi-remove-handle multi easy)
+    (check-owner 'curl-multi-remove-handle multi 'multi)
+    (check-owner 'curl-multi-remove-handle easy 'easy)
+    (raw-curl-multi-remove-handle multi easy))
+
+  ;; check-slot : Symbol Any -> Void
+  ;; SLOT is a positive exact integer: the address of its caller's counted
+  ;; block, an int's size at least, where libcurl writes a count. The
+  ;; caller holds it for as long as its multi handle, so a call makes and
+  ;; frees nothing, and the counts read the same before and after it.
+  (define (check-slot who slot)
+    (unless (and (integer? slot) (exact? slot) (positive? slot))
+      (assertion-violation who "a slot is the address of a counted block" slot)))
+
+  ;; curl-multi-perform : Positive-Integer Positive-Integer -> (Values Integer Natural)
+  ;; Runs what MULTI, this thread's, can run now, write callbacks included:
+  ;; the CURLMcode, and how many transfers still run, 0 unless CURLM_OK,
+  ;; written through SLOT, check-slot's.
+  (define (curl-multi-perform multi slot)
+    (check-owner 'curl-multi-perform multi 'multi)
+    (check-slot 'curl-multi-perform slot)
+    (let ((code (raw-curl-multi-perform multi slot)))
+      (values code (if (eqv? code curlm-ok) (foreign-ref 'int slot 0) 0))))
+
+  ;; curl-multi-poll : Positive-Integer Natural -> Integer
+  ;; Waits on MULTI, this thread's, for activity, for at most TIMEOUT-MS, or
+  ;; less when libcurl's own timers say so, or until curl-multi-wakeup: the
+  ;; CURLMcode. No extra file descriptors, and no count back.
+  (define (curl-multi-poll multi timeout-ms)
+    (check-owner 'curl-multi-poll multi 'multi)
+    (raw-curl-multi-poll multi 0 0 timeout-ms 0))
+
+  ;; curl-multi-wakeup : Positive-Integer -> Integer
+  ;; Wakes MULTI's poll, or the next one: the CURLMcode. Any thread may call
+  ;; it on a live multi handle (ADR-0012); its owner must keep the handle
+  ;; alive while another thread may.
+  (define (curl-multi-wakeup multi)
+    (live-handle 'curl-multi-wakeup multi 'multi)
+    (raw-curl-multi-wakeup multi))
+
+  ;; curl-multi-info-read : Positive-Integer Positive-Integer -> (U #f (List Integer Natural Integer))
+  ;; The next message MULTI, this thread's, holds, read from its CURLMsg: its
+  ;; msg, its easy handle's address, and data.result, which is the
+  ;; transfer's CURLcode when msg is CURLMSG_DONE; #f when none is left.
+  ;; libcurl writes the queue's count through SLOT, check-slot's.
+  (define (curl-multi-info-read multi slot)
+    (check-owner 'curl-multi-info-read multi 'multi)
+    (check-slot 'curl-multi-info-read slot)
+    (let ((address (raw-curl-multi-info-read multi slot)))
+      (and (not (eqv? address 0))
+           (let ((message (make-ftype-pointer curl-msg address)))
+             (list (ftype-ref curl-msg (msg) message)
+                   (ftype-ref curl-msg (easy-handle) message)
+                   (ftype-ref curl-msg (data.result) message))))))
+
+  ;; curl-multi-strerror : Integer -> (U String #f)
+  ;; libcurl's text for the CURLMcode CODE, copied; #f for NULL.
+  (define (curl-multi-strerror code)
+    (c-text (raw-curl-multi-strerror code)))
 
 
   ;; --- 7. the two API probes, then check-apis --------------------------------------------

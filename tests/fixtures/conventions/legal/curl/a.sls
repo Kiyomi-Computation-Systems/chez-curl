@@ -47,10 +47,12 @@
     (foreign-procedure (__varargs_after 2) __collect_safe "fixture_two_conventions" (uptr int long) int))
 
   ;; A define-syntax that is no known wrapper, binding a string entry: the
-  ;; fixture's table lists it as any, which only a fixture may.
+  ;; fixture's table lists it as any, which only a fixture may. Its entry is
+  ;; a fixture row's: the real table holds each blocking multi call to
+  ;; bind-blocking.
   (define-syntax bind-poll
     (syntax-rules ()
-      ((_) (foreign-procedure __collect_safe "curl_multi_poll" (uptr uptr unsigned int uptr) int))))
+      ((_) (foreign-procedure __collect_safe "fixture_polled" (uptr uptr unsigned int uptr) int))))
 
   ;; A callable, the whole right-hand side of a define.
   (define on-write

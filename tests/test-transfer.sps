@@ -1,13 +1,15 @@
 #!r6rs
-;;; The suite for (curl private transfer): one blocking request on the
-;;; calling thread, against the test origin's plaintext faces (M2 plan,
-;;; section 5).
+;;; The suite for (curl private transfer): a request, submitted to an
+;;; engine and awaited, against the test origin's plaintext faces (M2 plan,
+;;; section 5; M3 plan, sections 3.6 and 5.2). Every transfer runs on the
+;;; suite's one engine, made near the top.
 ;;;
 ;;; Every scenario is asserted whole: the status, the HTTP version, every
 ;;; header in libcurl's order, and the body, or the &curl-transfer-error's
-;;; reason and CURLcode, with the native counts after it, which must all be
-;;; zero, refusals included. curl's verdicts vary by version (plan, section
-;;; 5.1.1), so, as test-url does:
+;;; reason and CURLcode, with the native counts after it, which must be the
+;;; engine's multi handle alone, refusals included; once the engine has
+;;; stopped, at the end, all zero. curl's verdicts vary by version (plan,
+;;; section 5.1.1), so, as test-url does:
 ;;;
 ;;;   - shared answers hold what every recorded libcurl answers, 7.85.0,
 ;;;     8.5.0 (OpenSSL and GnuTLS) and 8.20.0, measured through C, and
@@ -27,52 +29,56 @@
 ;;;     the name rule against the whole complement of tchar from U+0000 to
 ;;;     U+00FF and beyond, and nothing native made at the raise;
 ;;;   - the body limit at its edges, with MAXFILESIZE_LARGE at the limit
-;;;     plus one, and what the callable accepted, seen through CHUNK-HOOK;
-;;;   - a raise inside the callable, re-raised by the transfer;
-;;;   - two threads' transfers at once, with positive evidence they
-;;;     overlapped;
+;;;     plus one, and what the callable accepted, read from the chunk log
+;;;     write-body keeps on the token (M3 plan, section 3.6);
+;;;   - a raise inside the callable, planted as data by a request's fault,
+;;;     recorded by the transfer;
+;;;   - two threads submitting to the one engine at once, with positive
+;;;     evidence their transfers were live together;
 ;;;   - the lock: a drip beside a thread that collects every 2 ms;
 ;;;   - the option table and its bindings, written out here, since on
 ;;;     x86-64 a long sent through the off_t binding arrives all the same;
 ;;;     the field table and the record's fields, written out too;
-;;;   - the test seam, perform-transfer-with, held to ADR-0009's rules,
+;;;   - the test seam, curl-engine-submit-with, held to ADR-0009's rules,
 ;;;     narrowed (amended 2026-10-23): long, enumerated-value and off_t
 ;;;     options alone, none the transfer owns, compared by id, the TLS
 ;;;     fields' four and the CA file's twins written out (amended
-;;;     2026-10-24); through it, the last request's headers after a
-;;;     redirect followed, and the redirect pin observed;
-;;;   - the request's snapshot: a request changed after it was made is
-;;;     refused at the transfer, and a value another thread changes is
-;;;     sent whole or refused, never otherwise;
-;;;   - caller code leaving the callable other than by its return, refused,
-;;;     and no socket left behind;
-;;;   - asynchronous escapes, an engine's or a timer's, allowed and counted
-;;;     (ADR-0013, amended 2026-10-23): in a child, tests/transfer-escapes.sps,
-;;;     a sweep at every tick, timers, and a handler that must run while
-;;;     perform does, judged here; and sweeps of the mutexes, here;
+;;;     2026-10-24), each refused at submit; through it, the last request's
+;;;     headers after a redirect followed, and the redirect pin observed;
+;;;   - the request's snapshot, taken at submit: a request changed after it
+;;;     was made is refused there, in prepare-transfer's order, and a value
+;;;     another thread changes is sent whole or refused, never otherwise;
+;;;   - a mutex held across an asynchronous escape: sweeps of the calls
+;;;     that take transfer.sls's mutexes, and of a refused submit;
 ;;;   - framing headers, Content-Length and Transfer-Encoding, refused;
 ;;;   - hermetic: no proxy variable is set;
-;;;   - the native objects' lifetimes: the counts inside the callable,
-;;;     re-entry through a continuation refused by the outermost extent,
-;;;     and the extents' nesting, read from transfer.sls as data, since
-;;;     libcurl 8.20.0's cleanup reads none of the objects a wrong order
-;;;     would free first.
+;;;   - the native objects' lifetimes: the counts while a transfer is live,
+;;;     and, read from transfer.sls as data, set-transfer-options!' order,
+;;;     start-transfer!'s making order against free-transfer!'s freeing
+;;;     order, and prepare-transfer's checks, since libcurl 8.20.0's cleanup
+;;;     reads none of the objects a wrong order would free first.
+;;;
+;;; M2's escape child, tests/transfer-escapes.sps, its performing mark and
+;;; the chunk hook's refusals retired with perform-transfer: the engine's
+;;; thread runs no caller code, sets no timer and gets no Ctrl-C (ADR-0013,
+;;; amended 2026-10-25).
 ;;;
 ;;; Importing (curl) runs the load before this suite's first line, on this
 ;;; thread: a first reference from a second thread during the load would
 ;;; raise cyclic dependency (ADR-0002, amended). The suite's top level also
-;;; reaches (curl private transfer) before any thread is forked. Every
-;;; expected value is one the code under test cannot produce by failing:
-;;; SRFI-64 makes #f of a raise in the actual expression, so none is #f.
+;;; reaches (curl private transfer), then makes its engine, before any
+;;; other thread is forked. Every expected value is one the code under test
+;;; cannot produce by failing: SRFI-64 makes #f of a raise in the actual
+;;; expression, so none is #f.
 (import (rnrs)
         (srfi :64)
         (rnrs mutable-strings)
         (rnrs mutable-pairs)
         (only (chezscheme) fork-thread thread-join make-mutex with-mutex collect-rendezvous
-              sleep make-time current-time time-second time-nanosecond getenv get-process-id
-              file-directory?)
+              sleep make-time current-time time-second time-nanosecond getenv get-thread-id)
         (curl-testing)
         (curl)
+        (curl private engine)
         (curl private transfer)
         (curl private conditions)
         (curl private constants)
@@ -80,7 +86,7 @@
         (only (curl private native) curl-easy-setopt-long curl-easy-setopt-off-t
               curl-easy-setopt-pointer call-with-c-string curl-slist-append curl-slist-free-all
               curl-easy-strerror loaded-protocols curl-easy-option)
-        (only (chezscheme) make-engine library-directories)
+        (only (chezscheme) make-engine)
         (only (rnrs records inspection) record-rtd record-type-field-names))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
@@ -118,7 +124,14 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+
+;; running-counts : (Listof (Pairof Symbol Natural))
+;; The counts while the suite's engine runs and no transfer is live: its
+;; multi handle and its slot, a counted block it holds while it runs, and
+;; nothing else.
+(define running-counts
+  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1)))
 
 ;; The loaded libcurl's version, read here, on this thread, so the load runs
 ;; before any thread is forked.
@@ -131,6 +144,20 @@
 (define bindings-read
   (guard (e (#t (list 'raised (describe e))))
     option-bindings))
+
+;; The suite's one engine, made here, on this thread, once the load and
+;; (curl private transfer)'s body have run, and before any other thread is
+;; forked. Every transfer below runs on it. A failure to make it is the
+;; first test's, below.
+(define engine
+  (guard (e (#t (list 'raised (describe e))))
+    (make-curl-engine)))
+
+(define engine-made? (curl-engine? engine))
+
+;; engine-thread-id : (U Integer #f)
+;; The get-thread-id of the engine's thread, where every chunk must run.
+(define engine-thread-id (and engine-made? (curl-engine-thread engine)))
 
 ;; latin-1 : Bytevector -> String
 ;; Each byte as the char of its code.
@@ -165,15 +192,61 @@
 ;; request : String . (Listof Any) -> Request
 ;; A request for TARGET with the suite's defaults: a GET, no headers, no
 ;; user agent, default-timeout, no body limit, libcurl's system store,
-;; verification on, and no hook. OPTIONS are keyword and value: method,
-;; headers, user-agent, timeout, limit, ca-file, verify, hook.
+;; verification on, and no fault. OPTIONS are keyword and value: method,
+;; headers, user-agent, timeout, limit, ca-file, verify, fault.
 (define (request target . options)
   (let ((given (lambda (key default)
                  (let ((at (memq key options))) (if at (cadr at) default)))))
     (make-transfer-request target (given 'method 'get) (given 'headers '())
                            (given 'user-agent #f) (given 'timeout default-timeout)
                            (given 'limit #f) (given 'ca-file #f) (given 'verify #t)
-                           (given 'hook #f))))
+                           (given 'fault #f))))
+
+;; await-bound-ms : Positive-Integer
+;; The longest this suite awaits a token: past every transfer's own
+;; timeout, default-timeout's 20 s. An engine that never completes a token
+;; would hang an await for good, and a hang names no test: so the check
+;; that awaited it fails, by name, and the suite goes on.
+(define await-bound-ms 60000)
+
+;; await-token : Token -> Response
+;; TOKEN's response, or a raise of what it ended with, as curl-token-await
+;; answers once TOKEN is done; a raise of (never-completed MS) when it is
+;; not done within await-bound-ms.
+(define (await-token token)
+  (let ((deadline (+ (now-ms) await-bound-ms)))
+    (let wait ()
+      (cond ((curl-token-done? token) (curl-token-await token))
+            ((> (now-ms) deadline) (raise (list 'never-completed await-bound-ms)))
+            (else (pause-ms 1) (wait))))))
+
+;; perform : Request -> Response
+;; R submitted to the suite's engine, then awaited: its response, or a raise
+;; of what it ended with, at submit, on this thread, or on the engine's.
+(define (perform r) (await-token (curl-engine-submit engine r)))
+
+;; perform-with : Request (Listof (Pairof String Integer)) -> Response
+;; perform's, through the test seam, curl-engine-submit-with, with OPTIONS.
+(define (perform-with r options) (await-token (curl-engine-submit-with engine r options)))
+
+;; settled : Any -> Any
+;; X, as it is; a token is cancelled first, and awaited, whatever it ended
+;; with, so that a submit a check expected refused leaves nothing running.
+(define (settled x)
+  (when (curl-token? x)
+    (curl-token-cancel x)
+    (guard (e (#t #f)) (await-token x)))
+  x)
+
+;; log-of : Token -> (U (Listof (List Positive-Integer Symbol)) (List 'off-the-engine Any))
+;; TOKEN's chunk log, write-body's, each entry's length and verdict, once
+;; every entry ran on the suite's engine's thread; else (off-the-engine
+;; LOG), the log whole.
+(define (log-of token)
+  (let ((chunks (curl-token-chunks token)))
+    (if (for-all (lambda (c) (and (list? c) (= (length c) 3) (eqv? (cadr c) engine-thread-id))) chunks)
+        (map (lambda (c) (list (car c) (caddr c))) chunks)
+        (list 'off-the-engine chunks))))
 
 ;; answer-of : (-> Response) -> Answer
 ;; What THUNK's transfer answers, whole: (response STATUS VERSION HEADERS
@@ -197,6 +270,29 @@
 ;; with-counts : Any -> (List Any (Listof (Pairof Symbol Natural)))
 ;; ANSWER, and the native counts once it was answered.
 (define (with-counts answer) (list answer (native-counts)))
+
+;; submitted : (-> Token) -> Answer
+;; What THUNK's submit raised, as answer-of names it: a refusal at submit,
+;; on this thread, before anything is queued. When it raised nothing,
+;; (not-refused-at-submit ANSWER), ANSWER what its token, cancelled, then
+;; answered.
+(define (submitted thunk)
+  (let ((outcome (guard (e (#t (cons 'raised-at-submit e))) (cons 'token (thunk)))))
+    (if (eq? (car outcome) 'raised-at-submit)
+        (answer-of (lambda () (raise (cdr outcome))))
+        (let ((token (settled (cdr outcome))))
+          (list 'not-refused-at-submit
+                (if (curl-token? token) (answer-of (lambda () (await-token token))) token))))))
+
+;; run : Request -> (List Answer Any)
+;; What R answers through the suite's engine, as answer-of names it, and its
+;; token's log, by log-of; refused-at-submit for the log of a submit that
+;; raised.
+(define (run r)
+  (let ((token (guard (e (#t (cons 'raised-at-submit e))) (curl-engine-submit engine r))))
+    (if (curl-token? token)
+        (list (answer-of (lambda () (await-token token))) (log-of token))
+        (list (answer-of (lambda () (raise (cdr token)))) 'refused-at-submit))))
 
 ;; numbered : String Natural String -> (Listof (List String String))
 ;; COUNT headers PREFIX1 to PREFIXCOUNT, each VALUE.
@@ -236,9 +332,9 @@
     (string-append (car f) ":" (number->string (cdr f)))))
 
 ;; case-answer : Origin Case -> Answer
-;; What CASE, (get FACE PATH), answers against O, through perform-transfer.
+;; What CASE, (get FACE PATH), answers against O, through perform.
 (define (case-answer o a-case)
-  (answer-of (lambda () (perform-transfer (request (url-of o (cadr a-case) (caddr a-case)))))))
+  (answer-of (lambda () (perform (request (url-of o (cadr a-case) (caddr a-case)))))))
 
 ;; case-text : Case -> String
 (define (case-text a-case)
@@ -455,7 +551,9 @@
 ;; refusal : (-> Any) -> (List Any (Listof (Pairof Symbol Natural)) (Listof (Pairof Symbol Natural)))
 ;; What THUNK raised, as answer-of names it, or (assertion-violation WHO);
 ;; the native counts at the raise, read by a handler before any
-;; dynamic-wind's after thunk; and the counts after.
+;; dynamic-wind's after thunk; and the counts after. no-raise when nothing
+;; was raised: a token THUNK answered, a submit not refused, is settled
+;; first.
 (define (refusal thunk)
   (let* ((seen 'no-raise)
          (r (guard (e ((curl-request-error? e)
@@ -470,7 +568,7 @@
                       (#t (list 'raised (describe e))))
               (with-exception-handler
                 (lambda (c) (set! seen (native-counts)) (raise c))
-                (lambda () (thunk) 'no-raise)))))
+                (lambda () (settled (thunk)) 'no-raise)))))
     (list r seen (native-counts))))
 
 ;; tchars : (Listof Char)
@@ -524,6 +622,14 @@
   '()
   (filter (lambda (name) (getenv name)) proxy-variables))
 
+;; --- the suite's engine ------------------------------------------------------------------
+
+(test-equal "the suite's engine is made: running, on a thread of its own, holding its multi handle and nothing else"
+  (list 'running #t running-counts)
+  (if engine-made?
+      (list (curl-engine-state engine) (not (eqv? engine-thread-id (get-thread-id))) (native-counts))
+      engine))
+
 ;; --- the request record -------------------------------------------------------------------
 
 (for-each
@@ -532,13 +638,13 @@
      (test-equal (string-append "a header value with U+" (number->string (char->integer c) 16)
                                 " at each of its places, and alone, is refused as "
                                 (symbol->string reason) ", naming header-value and the value, with nothing native at the raise")
-       (map (lambda (value) (list (list 'request-refused 'header-value value reason) zero-counts zero-counts))
+       (map (lambda (value) (list (list 'request-refused 'header-value value reason) running-counts running-counts))
             (at-each-place c))
        (map (lambda (value) (refusal (header-request "X-Value" value))) (at-each-place c)))
      (test-equal (string-append "a user agent with U+" (number->string (char->integer c) 16)
                                 " at each of its places, and alone, is refused as "
                                 (symbol->string reason) ", naming user-agent, with nothing native at the raise")
-       (map (lambda (value) (list (list 'request-refused 'user-agent value reason) zero-counts zero-counts))
+       (map (lambda (value) (list (list 'request-refused 'user-agent value reason) running-counts running-counts))
             (at-each-place c))
        (map (lambda (value) (refusal (agent-request value))) (at-each-place c)))))
  value-offences)
@@ -566,10 +672,10 @@
      (test-equal (string-append "a header value and a user agent with " (whitespace-name c)
                                 " first, last, at both ends, alone, or twice alone, are refused as surrounding-whitespace, with nothing native at the raise")
        (append (map (lambda (v) (list (list 'request-refused 'header-value v 'surrounding-whitespace)
-                                      zero-counts zero-counts))
+                                      running-counts running-counts))
                     values)
                (map (lambda (v) (list (list 'request-refused 'user-agent v 'surrounding-whitespace)
-                                      zero-counts zero-counts))
+                                      running-counts running-counts))
                     values))
        (append (map (lambda (v) (refusal (header-request "X-Value" v))) values)
                (map (lambda (v) (refusal (agent-request v))) values)))))
@@ -593,7 +699,7 @@
         (car (refusal (agent-request "\ta\n")))))
 
 (test-equal "an empty user agent is an assertion violation from make-transfer-request: a user agent is a non-empty string or #f"
-  (list '(assertion-violation make-transfer-request) zero-counts zero-counts)
+  (list '(assertion-violation make-transfer-request) running-counts running-counts)
   (refusal (agent-request "")))
 
 (test-equal "a header named User-Agent, in any case, beside a user agent, is refused as duplicates-field, naming header-name: libcurl would let the header win; with no user agent, or another name, it is a header like any other"
@@ -641,13 +747,13 @@
          "Transfer-Encoding" "transfer-encoding" "TRANSFER-ENCODING" "tRaNsFeR-eNcOdInG"
          "Content-Type" "TE" "X-Content-Length" "Transfer-Encodings")))
 
-(test-equal "a request whose header name becomes Content-Length, or Transfer-Encoding, after it was made is refused as framing-header by perform-transfer, before anything native"
-  (list '(request-refused header-name framing-header) '(request-refused header-name framing-header) zero-counts)
+(test-equal "a request whose header name becomes Content-Length, or Transfer-Encoding, after it was made is refused as framing-header at submit, before anything native"
+  (list '(request-refused header-name framing-header) '(request-refused header-name framing-header) running-counts)
   (let* ((changed (lambda (spelt at char)
                     (let* ((name (string-copy spelt))
                            (r (make-transfer-request "http://127.0.0.1:1/" 'get (list (cons name "0")) #f #f #f #f #t #f)))
                       (string-set! name at char)
-                      (answer-of (lambda () (perform-transfer r))))))
+                      (submitted (lambda () (curl-engine-submit engine r))))))
          (framed-length (changed "Content-Lengtx" 13 #\h))
          (encoding (changed "Transfer-Encodinx" 16 #\g)))
     (list framed-length encoding (native-counts))))
@@ -704,8 +810,8 @@
 
 ;; --- a request changed after it was made -----------------------------------------------
 ;; The record holds the caller's strings and pairs, which stay mutable.
-;; perform-transfer takes a snapshot and checks it, so a change made after
-;; the constructor's check is refused at the transfer, before anything
+;; A submit takes a snapshot and checks it, on this thread, so a change
+;; made after the constructor's check is refused at submit, before anything
 ;; native, wherever it is made.
 
 ;; overwrite! : String String -> Unit
@@ -718,7 +824,7 @@
 
 ;; made-then-changed : (String String String Pair List String -> Unit) -> Refusal
 ;; A request made from fresh strings and pairs, passed by its constructor,
-;; then CHANGE made to them, then performed: what refusal says of it.
+;; then CHANGE made to them, then submitted: what refusal says of it.
 (define (made-then-changed change)
   (let* ((url (string-copy "http://127.0.0.1:1/x"))
          (name (string-copy "X-Name"))
@@ -729,10 +835,10 @@
          (agent (string-copy "an-agent"))
          (r (make-transfer-request url 'get headers agent #f #f #f #t #f)))
     (change url name value header headers agent other)
-    (refusal (lambda () (perform-transfer r)))))
+    (refusal (lambda () (curl-engine-submit engine r)))))
 
-(test-equal "a request changed after it was made is refused by perform-transfer, at each field, before anything native: the URL, a header's name, its value, CR LF that would inject a header, the user agent, the list, a pair's car and cdr, the second header's value, and the list's or a name's type"
-  (map (lambda (r) (list r zero-counts zero-counts))
+(test-equal "a request changed after it was made is refused at submit, at each field, before anything native: the URL, a header's name, its value, CR LF that would inject a header, the user agent, the list, a pair's car and cdr, the second header's value, and the list's or a name's type"
+  (map (lambda (r) (list r running-counts running-counts))
        '((url-refused embedded-nul)
          (request-refused header-name "X:Name" not-a-token)
          (request-refused header-value "safe-value-xxxxx\rx" line-break)
@@ -742,8 +848,8 @@
          (request-refused header-name "X Y" not-a-token)
          (request-refused header-value " v" surrounding-whitespace)
          (request-refused header-value "o\x100;her" not-latin-1)
-         (assertion-violation perform-transfer)
-         (assertion-violation perform-transfer)))
+         (assertion-violation curl-engine-submit)
+         (assertion-violation curl-engine-submit)))
   (map made-then-changed
        (list (lambda (url name value header headers agent other) (string-set! url 7 #\nul))
              (lambda (url name value header headers agent other) (string-set! name 1 #\:))
@@ -757,8 +863,31 @@
              (lambda (url name value header headers agent other) (set-cdr! (cdr headers) 'tail))
              (lambda (url name value header headers agent other) (set-car! header 'x-name)))))
 
+;; A submit checks a request in prepare-transfer's order: the snapshot of
+;; the headers and the user agent, the CA file's copy, the test seam's
+;; options, then the URL, parsed and its scheme checked. Each row makes its
+;; field wrong and every field checked after it, so a check out of order,
+;; or one left to the engine's thread, names another answer.
+(test-equal "a submit checks in prepare-transfer's order, each refusal raised at submit: a header, while the CA file, the test seam's options and the URL are wrong too; the CA file, while the options and the URL are; the options, while the URL is, each before anything native; then the URL, parsed on this thread, its CURLU live at the raise and freed after"
+  (list (list '(request-refused header-name "X Name" not-a-token) running-counts running-counts)
+        (list '(request-refused ca-file "/x/c\x0;.pem" embedded-nul) running-counts running-counts)
+        (list '(request-refused options "URL" owned-option) running-counts running-counts)
+        (list '(url-refused scheme-not-http)
+              '((block . 1) (easy . 0) (url . 1) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1))
+              running-counts))
+  (map (lambda (wrong)
+         (let* ((name (string-copy "X-Name"))
+                (path (string-copy "/x/ca.pem"))
+                (r (make-transfer-request (if (memq 'url wrong) "ftp://127.0.0.1:1/x" "http://127.0.0.1:1/x")
+                                          'get (list (cons name "v")) #f #f #f path #t #f)))
+           (when (memq 'header wrong) (string-set! name 1 #\space))
+           (when (memq 'ca-file wrong) (string-set! path 4 #\nul))
+           (refusal (lambda ()
+                      (curl-engine-submit-with engine r (if (memq 'options wrong) '(("URL" . 1)) '()))))))
+       '((header ca-file options url) (ca-file options url) (options url) (url))))
+
 (test-equal "values that hold every char U+0001 to U+00FF but CR and LF are taken, as a header value and as a user agent, and nothing native is made"
-  (list (list 'no-raise 'no-raise zero-counts) (list 'no-raise 'no-raise zero-counts))
+  (list (list 'no-raise 'no-raise running-counts) (list 'no-raise 'no-raise running-counts))
   (list (refusal (header-request "X-Value" every-byte-but-cr-lf))
         (refusal (agent-request every-byte-but-cr-lf))))
 
@@ -769,7 +898,7 @@
 
 (test-equal "every char from U+0000 to U+00FF that is no tchar, and U+0100, U+20AC and U+1F600, in the middle of a name, is refused as not-a-token, naming header-name, with nothing native at the raise"
   (map (lambda (c) (list (list 'request-refused 'header-name (string #\a c #\b) 'not-a-token)
-                         zero-counts zero-counts))
+                         running-counts running-counts))
        not-tchars)
   (map (lambda (c) (refusal (header-request (string #\a c #\b) "v"))) not-tchars))
 
@@ -802,9 +931,9 @@
         (car (refusal (lambda () (make-transfer-request "http://127.0.0.1:1/" 'get
                                                         '(("X:" . "v")) "a\rb" #f #f #f #t #f))))))
 
-(test-equal "wrong types are assertion violations from make-transfer-request, with nothing native made"
-  (map (lambda (x) (list '(assertion-violation make-transfer-request) zero-counts zero-counts))
-       (iota-from 0 21))
+(test-equal "wrong types are assertion violations from make-transfer-request, with nothing native made: a fault that is a symbol, a string, 0, -1, 1.5 or a procedure among them, since a request holds no caller code"
+  (map (lambda (x) (list '(assertion-violation make-transfer-request) running-counts running-counts))
+       (iota-from 0 25))
   (map (lambda (args) (refusal (lambda () (apply make-transfer-request args))))
        (list (list 'not-a-url 'get '() #f #f #f #f #t #f)
              (list "http://a/" 'post '() #f #f #f #f #t #f)
@@ -826,27 +955,32 @@
              (list "http://a/" 'get '() #f #f (expt 2 63) #f #t #f)
              (list "http://a/" 'get '() #f #f "10" #f #t #f)
              (list "http://a/" 'get '() #f #f #f #f #t 'hook)
-             (list "http://a/" 'get '() #f #f #f #f #t "hook"))))
+             (list "http://a/" 'get '() #f #f #f #f #t "hook")
+             (list "http://a/" 'get '() #f #f #f #f #t 0)
+             (list "http://a/" 'get '() #f #f #f #f #t -1)
+             (list "http://a/" 'get '() #f #f #f #f #t 1.5)
+             (list "http://a/" 'get '() #f #f #f #f #t (lambda (chunk) chunk)))))
 
-(test-equal "the edges a request takes: a timeout of 1 and of the largest long, a body limit of 0 and of 2^63 - 2, method head"
-  '(no-raise no-raise no-raise no-raise no-raise)
+(test-equal "the edges a request takes: a timeout of 1 and of the largest long, a body limit of 0 and of 2^63 - 2, method head, a fault at chunk 1 and at chunk 2^70"
+  '(no-raise no-raise no-raise no-raise no-raise no-raise no-raise)
   (map (lambda (args) (car (refusal (lambda () (apply make-transfer-request args)))))
        (list (list "http://a/" 'get '() #f 1 #f #f #t #f)
              (list "http://a/" 'get '() #f (- (expt 2 63) 1) #f #f #t #f)
              (list "http://a/" 'get '() #f #f 0 #f #t #f)
              (list "http://a/" 'get '() #f #f (- (expt 2 63) 2) #f #t #f)
-             (list "http://a/" 'head '() #f #f #f #f #t #f))))
+             (list "http://a/" 'head '() #f #f #f #f #t #f)
+             (list "http://a/" 'get '() #f #f #f #f #t 1)
+             (list "http://a/" 'get '() #f #f #f #f #t (expt 2 70)))))
 
 (test-equal "a request's fields read back as given"
-  (list "http://a/b" 'head '(("X-A" . "1") ("X-A" . "2")) "agent" 300 10 "/a/ca.pem" 'verify-off 'the-hook)
-  (let* ((hook (lambda (chunk) #f))
-         (r (make-transfer-request "http://a/b" 'head '(("X-A" . "1") ("X-A" . "2")) "agent" 300 10
-                                   "/a/ca.pem" #f hook)))
+  (list "http://a/b" 'head '(("X-A" . "1") ("X-A" . "2")) "agent" 300 10 "/a/ca.pem" 'verify-off 3)
+  (let ((r (make-transfer-request "http://a/b" 'head '(("X-A" . "1") ("X-A" . "2")) "agent" 300 10
+                                  "/a/ca.pem" #f 3)))
     (list (transfer-request-url r) (transfer-request-method r) (transfer-request-headers r)
           (transfer-request-user-agent r) (transfer-request-timeout-ms r)
           (transfer-request-body-limit r) (transfer-request-ca-file r)
           (if (eq? (transfer-request-verify r) #f) 'verify-off (transfer-request-verify r))
-          (if (eq? (transfer-request-chunk-hook r) hook) 'the-hook (transfer-request-chunk-hook r)))))
+          (transfer-request-fault r))))
 
 ;; --- the option table, written out here ---------------------------------------------------
 
@@ -877,9 +1011,11 @@
           (option-setter 'string))))
 
 ;; The string list's count: slist while the list is not NULL, once however
-;; long it grows, and a second free refused before C.
-(test-equal "a string list is counted slist once it holds a string, still once after a second, and zero once freed; freeing it again raises before C"
-  '(((slist . 1)) ((slist . 1)) ((slist . 0)) (assertion-violation count-down!) ((slist . 0)))
+;; long it grows, and a second free refused before C: native records each
+;; list with the thread that made it, and forgets it when it is freed, so
+;; curl-slist-free-all's own check finds it no longer live (ADR-0012).
+(test-equal "a string list is counted slist once it holds a string, still once after a second, and zero once freed; freeing it again raises before C, from curl-slist-free-all, which no longer finds it live"
+  '(((slist . 1)) ((slist . 1)) ((slist . 0)) (assertion-violation curl-slist-free-all) ((slist . 0)))
   (let* ((slist-count (lambda () (list (assq 'slist (native-counts)))))
          (list1 (call-with-c-string "X-A: 1" (lambda (address) (curl-slist-append 0 address))))
          (after-one (slist-count))
@@ -919,50 +1055,50 @@
   (filter (lambda (name) (not (member name owned-option-names)))
           (apply append (map cdr request-field-options))))
 
-(test-equal "a request's fields, written out, in the record's order: url, method, headers, user-agent, timeout-ms, body-limit, ca-file, verify and chunk-hook"
-  '(url method headers user-agent timeout-ms body-limit ca-file verify chunk-hook)
+(test-equal "a request's fields, written out, in the record's order: url, method, headers, user-agent, timeout-ms, body-limit, ca-file, verify and fault"
+  '(url method headers user-agent timeout-ms body-limit ca-file verify fault)
   (guard (e (#t (list 'raised (describe e))))
     (vector->list (record-type-field-names
                    (record-rtd (make-transfer-request "http://a/" 'get '() #f #f #f #f #t #f))))))
 
 ;; The record's own fields, read from its record type: a field added later
 ;; needs a row, or its place here among the fields that set no option.
-(test-equal "every field of a request has a row in request-field-options, but chunk-hook, which sets no option"
+(test-equal "every field of a request has a row in request-field-options, but fault, which sets no option"
   '()
   (guard (e (#t (list 'raised (describe e))))
-    (filter (lambda (field) (not (or (assq field request-field-options) (memq field '(chunk-hook)))))
+    (filter (lambda (field) (not (or (assq field request-field-options) (memq field '(fault)))))
             (vector->list (record-type-field-names
                            (record-rtd (make-transfer-request "http://a/" 'get '() #f #f #f #f #t #f)))))))
 
 ;; seam-refusal : (Listof Pair) -> Refusal
-;; What refusal says of the test seam given OPTIONS, on a URL nothing
-;; listens on: a refusal comes before anything native, and a transfer that
-;; ran would answer 7 there.
+;; What refusal says of a submit through the test seam given OPTIONS, on a
+;; URL nothing listens on: a refusal is raised at submit, before anything
+;; native, and a transfer that ran would answer 7 there.
 (define (seam-refusal options)
-  (refusal (lambda () (perform-transfer-with (request "http://127.0.0.1:1/") options))))
+  (refusal (lambda () (curl-engine-submit-with engine (request "http://127.0.0.1:1/") options))))
 
-(test-equal "the test seam refuses each owned option this libcurl knows, by id, as owned-option, naming it, before anything native"
+(test-equal "the test seam refuses each owned option this libcurl knows, by id, as owned-option, naming it, at submit, before anything native"
   (map (lambda (name)
          (list (if (curl-easy-option name)
                    (list 'request-refused 'options name 'owned-option)
                    (list 'transfer-refused 'unknown-option name))
-               zero-counts zero-counts))
+               running-counts running-counts))
        owned-option-names)
   (map (lambda (name) (seam-refusal (list (cons name 1)))) owned-option-names))
 
 ;; The TLS fields' options and the CA file's twins, written out here: the
 ;; loop above is held by owned-option-names, the table it loops over, so a
 ;; name dropped from both would pass it (ADR-0009, amended 2026-10-24).
-(test-equal "the test seam refuses CAINFO, CAPATH, SSL_VERIFYPEER and SSL_VERIFYHOST, the TLS fields' options, and CAINFO_BLOB and SSL_OPTIONS, the CA file's twins, each by id, as owned-option, naming it, before anything native"
-  (map (lambda (name) (list (list 'request-refused 'options name 'owned-option) zero-counts zero-counts))
+(test-equal "the test seam refuses CAINFO, CAPATH, SSL_VERIFYPEER and SSL_VERIFYHOST, the TLS fields' options, and CAINFO_BLOB and SSL_OPTIONS, the CA file's twins, each by id, as owned-option, naming it, at submit, before anything native"
+  (map (lambda (name) (list (list 'request-refused 'options name 'owned-option) running-counts running-counts))
        '("CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST" "CAINFO_BLOB" "SSL_OPTIONS"))
   (map (lambda (name) (seam-refusal (list (cons name 1))))
        '("CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST" "CAINFO_BLOB" "SSL_OPTIONS")))
 
 (test-equal "an alias of an owned option is refused as owned-option: FILE is WRITEDATA's id, and RTSPHEADER HTTPHEADER's"
   (list '(same same)
-        (list '(request-refused options "FILE" owned-option) zero-counts zero-counts)
-        (list '(request-refused options "RTSPHEADER" owned-option) zero-counts zero-counts))
+        (list '(request-refused options "FILE" owned-option) running-counts running-counts)
+        (list '(request-refused options "RTSPHEADER" owned-option) running-counts running-counts))
   (list (map (lambda (pair)
                (let ((a (curl-easy-option (car pair))) (b (curl-easy-option (cdr pair))))
                  (if (and a b (= (car a) (car b))) 'same (list (car pair) a (cdr pair) b))))
@@ -970,9 +1106,9 @@
         (seam-refusal '(("FILE" . 1)))
         (seam-refusal '(("RTSPHEADER" . 1)))))
 
-(test-equal "the test seam refuses an option of every other CURLOT type as unsupported-type, before anything native: a string, a string list, an object, a callback pointer, a function and a blob"
+(test-equal "the test seam refuses an option of every other CURLOT type as unsupported-type, at submit, before anything native: a string, a string list, an object, a callback pointer, a function and a blob"
   (list '(string slist object cbptr function blob)
-        (map (lambda (name) (list (list 'request-refused 'options name 'unsupported-type) zero-counts zero-counts))
+        (map (lambda (name) (list (list 'request-refused 'options name 'unsupported-type) running-counts running-counts))
              '("ACCEPT_ENCODING" "HTTP200ALIASES" "STDERR" "HEADERDATA" "XFERINFOFUNCTION" "SSLCERT_BLOB")))
   (list (map (lambda (name)
                (let ((o (curl-easy-option name)))
@@ -981,13 +1117,13 @@
         (map (lambda (name) (seam-refusal (list (cons name 1))))
              '("ACCEPT_ENCODING" "HTTP200ALIASES" "STDERR" "HEADERDATA" "XFERINFOFUNCTION" "SSLCERT_BLOB"))))
 
-(test-equal "the test seam's values are checked before anything native: a string for a long, a long past long's range, an off_t past its range, are assertion violations from perform-transfer-with; options of any other shape too; an unknown name is unknown-option"
-  (map (lambda (r) (list r zero-counts zero-counts))
-       '((assertion-violation perform-transfer-with)
-         (assertion-violation perform-transfer-with)
-         (assertion-violation perform-transfer-with)
-         (assertion-violation perform-transfer-with)
-         (assertion-violation perform-transfer-with)
+(test-equal "the test seam's values are checked at submit, before anything native: a string for a long, a long past long's range, an off_t past its range, are assertion violations from curl-engine-submit-with; options of any other shape too; an unknown name is unknown-option"
+  (map (lambda (r) (list r running-counts running-counts))
+       '((assertion-violation curl-engine-submit-with)
+         (assertion-violation curl-engine-submit-with)
+         (assertion-violation curl-engine-submit-with)
+         (assertion-violation curl-engine-submit-with)
+         (assertion-violation curl-engine-submit-with)
          (transfer-refused unknown-option "NO_SUCH_OPTION")))
   (map seam-refusal
        (list '(("MAXREDIRS" . "3"))
@@ -997,7 +1133,15 @@
              '((maxredirs . 3))
              '(("NO_SUCH_OPTION" . 1)))))
 
-;; --- what perform-transfer-with sets, read from transfer.sls as data ---------------------
+;; --- what a transfer sets, read from transfer.sls as data -----------------------------
+;; On the engine's thread, start-transfer! makes a transfer's native objects
+;; and set-transfer-options! every setting its easy handle gets, in one
+;; order; free-transfer! frees them the other way round (M3 plan, section
+;; 5.2). libcurl reads no setting before the transfer runs, and 8.20.0's
+;; curl_easy_cleanup reads none of the objects a wrong order would free
+;; first: freed first, each passed every behavioural check, Valgrind's too
+;; (traps.md). So the orders are read. Their limit is the pins': they hold
+;; an accidental move, not a rewrite made to pass them.
 
 (define transfer-source "src/curl/private/transfer.sls")
 
@@ -1029,17 +1173,20 @@
                   (if (pair? rest) (loop (cdr rest) (append found (option-sets (car rest) inner))) found))))
       '()))
 
-(define perform-sets
-  (let ((d (transfer-definition 'perform-transfer-with)))
+;; transfer-sets : Any
+;; Each set-option! and set-string-option! call in set-transfer-options!,
+;; as option-sets reads it, or what went wrong.
+(define transfer-sets
+  (let ((d (transfer-definition 'set-transfer-options!)))
     (if (and (pair? d) (eq? (car d) 'define)) (option-sets (cddr d) '()) d)))
 
 ;; --- the pins, read from transfer.sls as data ----------------------------------------
 ;; ADR-0003's protocol pins and the signal rule are one table, set by one
-;; call, the first form of the easy handle's extent, before the transfer
-;; runs; their names, and the deprecated bitmasks', stand nowhere else. The
-;; limit of these checks: they hold the pins against an accidental move, a
-;; set made later, or conditionally, or never, or an owned name undone in
-;; place; not against a rewrite made to pass them, such as a name built from
+;; call, the first form of set-transfer-options!, before any other setting;
+;; their names, and the deprecated bitmasks', stand nowhere else. The limit
+;; of these checks: they hold the pins against an accidental move, a set
+;; made later, or conditionally, or never, or an owned name undone in place;
+;; not against a rewrite made to pass them, such as a name built from
 ;; pieces at run time.
 
 ;; transfer-library : Any
@@ -1063,15 +1210,6 @@
                pinned-options))
   (transfer-definition 'set-pinned-options!))
 
-;; easy-body : Any -> (U (Listof Any) #f)
-;; The body of the lambda handed to call-with-easy in X.
-(define (easy-body x)
-  (cond ((and (list? x) (= (length x) 2) (eq? (car x) 'call-with-easy)
-              (pair? (cadr x)) (eq? (car (cadr x)) 'lambda) (list? (cadr x)))
-         (cddr (cadr x)))
-        ((pair? x) (or (easy-body (car x)) (easy-body (cdr x))))
-        (else #f)))
-
 ;; holds? : Any Any -> Boolean
 (define (holds? x datum)
   (or (equal? x datum) (and (pair? x) (or (holds? (car x) datum) (holds? (cdr x) datum)))))
@@ -1082,14 +1220,111 @@
         ((pair? x) (+ (symbol-count name (car x)) (symbol-count name (cdr x))))
         (else 0)))
 
-(test-equal "the easy handle's extent sets the pins first: its body's first form is (set-pinned-options! easy buffer), a later form calls (perform), which runs curl_easy_perform, and set-pinned-options! stands twice in transfer.sls, its definition and that call"
-  '(pins-first perform-later 2)
-  (let ((body (easy-body (transfer-definition 'perform-transfer-with))))
-    (if body
-        (list (if (equal? (car body) '(set-pinned-options! easy buffer)) 'pins-first (list 'first-form (car body)))
-              (if (exists (lambda (f) (holds? f '(perform))) (cdr body)) 'perform-later 'no-perform-after)
-              (symbol-count 'set-pinned-options! transfer-library))
-        (list 'no-easy-body))))
+;; set-name : Any -> Any
+;; NAME, as a set-option! call writes it: a string as itself; (field-option
+;; 'FIELD) as FIELD's one option, from request-field-options; (car
+;; setting), the test seam's loop, as seam; anything else as (unread NAME).
+(define (set-name name)
+  (cond ((string? name) name)
+        ((and (list? name) (= (length name) 2) (eq? (car name) 'field-option)
+              (pair? (cadr name)) (eq? (car (cadr name)) 'quote) (pair? (cdr (cadr name)))
+              (assq (cadr (cadr name)) request-field-options))
+         => (lambda (row) (if (= (length row) 2) (cadr row) (list 'several row))))
+        ((equal? name '(car setting)) 'seam)
+        (else (list 'unread name))))
+
+;; setting-order : Any -> Any
+;; What each form of the definition D's body sets, in order: pins for
+;; (set-pinned-options! easy buffer); tls for (set-tls-options! easy
+;; (plan-ca-file plan) (plan-verify plan) buffer); else each set-option!
+;; and set-string-option! call in it, by set-name; (other FORM) for a form
+;; that sets nothing. D itself when it is no definition: what went wrong.
+(define (setting-order d)
+  (if (and (list? d) (pair? d) (eq? (car d) 'define))
+      (apply append
+             (map (lambda (form)
+                    (cond ((equal? form '(set-pinned-options! easy buffer)) '(pins))
+                          ((equal? form '(set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer))
+                           '(tls))
+                          (else (let ((sets (option-sets form '())))
+                                  (if (null? sets)
+                                      (list (list 'other form))
+                                      (map (lambda (s) (set-name (car s))) sets))))))
+                  (cddr d)))
+      d))
+
+(test-equal "set-transfer-options!, read from transfer.sls, form by form: the pins first, then ERRORBUFFER, CURLU, WRITEFUNCTION and WRITEDATA, then the request's NOBODY, HTTPHEADER, USERAGENT, TIMEOUT_MS and MAXFILESIZE_LARGE, then set-tls-options!, then the test seam's settings; set-pinned-options! and set-transfer-options! each stand twice in transfer.sls, a definition and one call"
+  '((pins "ERRORBUFFER" "CURLU" "WRITEFUNCTION" "WRITEDATA" "NOBODY" "HTTPHEADER" "USERAGENT" "TIMEOUT_MS"
+          "MAXFILESIZE_LARGE" tls seam)
+    2 2)
+  (list (setting-order (transfer-definition 'set-transfer-options!))
+        (symbol-count 'set-pinned-options! transfer-library)
+        (symbol-count 'set-transfer-options! transfer-library)))
+
+(test-equal "setting-order, the reader: pins, tls, each set's name at any depth, a field's through field-option, the seam's loop, a form that sets nothing, and a name it cannot read"
+  '(pins "A" "NOBODY" "B" tls seam (other (f x)) (unread n))
+  (setting-order '(define (g)
+                    (set-pinned-options! easy buffer)
+                    (set-option! e "A" 1 b)
+                    (when h (set-option! e (field-option 'method) 1 b) (set-string-option! e "B" "x" b))
+                    (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
+                    (for-each (lambda (setting) (set-option! e (car setting) (cdr setting) b)) s)
+                    (f x)
+                    (set-option! e n 1 b))))
+
+;; symbols-in : (Listof Symbol) Any -> (Listof Symbol)
+;; Each of NAMES standing in X, in the order written, depth first.
+(define (symbols-in names x)
+  (cond ((and (symbol? x) (memq x names)) (list x))
+        ((pair? x) (append (symbols-in names (car x)) (symbols-in names (cdr x))))
+        (else '())))
+
+(test-equal "symbols-in, the reader: each listed symbol at any depth, a form's head among them, in the order written, and an unlisted one passed over"
+  '(a b a c)
+  (symbols-in '(a b c) '(a (x b) ((a)) y . c)))
+
+;; live-setters : (Listof Symbol)
+;; The live record's setters: the key's, its sink's, and one per native
+;; object a transfer holds.
+(define live-setters
+  '(live-transfer-key-set! live-transfer-sink-set! live-transfer-url-set! live-transfer-buffer-set!
+    live-transfer-header-list-set! live-transfer-easy-set!))
+
+;; making-order : (Listof Symbol)
+;; start-transfer!'s setters, its settings' calls and its free, as written.
+(define making-order
+  (symbols-in (append live-setters '(set-transfer-options! set-option! set-string-option! free-transfer!))
+              (transfer-definition 'start-transfer!)))
+
+;; freeing-order : (Listof Symbol)
+;; free-transfer!'s frees and setters, as written.
+(define freeing-order
+  (symbols-in (append live-setters '(curl-easy-cleanup curl-slist-free-all free-foreign-block! free-parsed-url!
+                                     count-down!))
+              (transfer-definition 'free-transfer!)))
+
+(test-equal "start-transfer!, read from transfer.sls, records what it makes in order: free-transfer! on a raise; then the key and its sink, the CURLU, the error buffer, the header list, then the easy handle; then set-transfer-options!, once, and no setting of its own"
+  '(free-transfer! live-transfer-key-set! live-transfer-sink-set! live-transfer-url-set!
+    live-transfer-buffer-set! live-transfer-header-list-set! live-transfer-easy-set! set-transfer-options!)
+  making-order)
+
+(test-equal "free-transfer!, read from transfer.sls, frees the other way round from start-transfer!'s making: the easy handle, the header list, the error buffer, the CURLU, then the key, each freed before its record is cleared"
+  (list '(curl-easy-cleanup live-transfer-easy-set! curl-slist-free-all live-transfer-header-list-set!
+          free-foreign-block! live-transfer-buffer-set! free-parsed-url! live-transfer-url-set!
+          count-down! live-transfer-key-set!)
+        'the-making-reversed)
+  (list freeing-order
+        (let ((made (filter (lambda (s) (memq s live-setters)) making-order))
+              (freed (filter (lambda (s) (memq s live-setters)) freeing-order)))
+          (if (equal? (reverse (remq 'live-transfer-sink-set! made)) freed)
+              'the-making-reversed
+              (list 'made made 'freed freed)))))
+
+(test-equal "prepare-transfer, read from transfer.sls, checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the test seam's settings, then the URL, parsed and its scheme checked; then it makes the plan"
+  '(transfer-request? snapshot ca-file-copy checked-settings call-with-parsed-url require-http-scheme make-plan)
+  (symbols-in '(transfer-request? snapshot ca-file-copy checked-settings call-with-parsed-url require-http-scheme
+                make-plan)
+              (transfer-definition 'prepare-transfer)))
 
 ;; pin-names : (Listof String)
 (define pin-names '("PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL"))
@@ -1149,13 +1384,13 @@
            (pair? (cadr name)) (eq? (car (cadr name)) 'quote)
            (assq (cadr (cadr name)) request-field-options) #t)))
 
-(test-equal "every option perform-transfer-with sets is an owned option, written as a literal or through field-option, but for the test seam's own settings, set once, by (car setting)"
+(test-equal "every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for the test seam's own settings, set once, by (car setting)"
   '(() 1)
-  (if (list? perform-sets)
+  (if (list? transfer-sets)
       (list (map car (filter (lambda (s) (not (or (owned-set? (car s)) (equal? (car s) '(car setting)))))
-                             perform-sets))
-            (length (filter (lambda (s) (equal? (car s) '(car setting))) perform-sets)))
-      perform-sets))
+                             transfer-sets))
+            (length (filter (lambda (s) (equal? (car s) '(car setting))) transfer-sets)))
+      transfer-sets))
 
 (test-equal "option-sets, the reader: a set at any depth, a form's head among them, with the heads around it, and its name and value as written"
   '(("A" 1 (begin)) ("B" "x" (begin when)) ((field-option 'url) u (begin)))
@@ -1191,9 +1426,10 @@
   (list 'response 200 'http/1.1 (list (list "Content-Length" (number->string (string-length body)))) body))
 
 ;; engine-sweep : (-> Any) Natural -> (List Symbol Natural)
-;; THUNK run in a fresh engine with fuel 1, 1+STEP, 1+2 STEP and so on, each
-;; that runs out abandoned, until one completes: (completed EXPIRED), or
-;; (never-completed EXPIRED) past 100000 fuel.
+;; THUNK run in a fresh Chez engine, make-engine's, not chez-curl's, with
+;; fuel 1, 1+STEP, 1+2 STEP and so on, each that runs out abandoned, until
+;; one completes: (completed EXPIRED), or (never-completed EXPIRED) past
+;; 100000 fuel.
 (define (engine-sweep thunk step)
   (let loop ((fuel 1) (expired 0))
     (cond ((> fuel 100000) (list 'never-completed expired))
@@ -1226,255 +1462,41 @@
             (else (pause-ms 10) (loop (+ i 1)))))))
 
 ;; every-lock : -> Any
-;; Takes each mutex transfer.sls and the counters hold, in turn: the
-;; live-transfer table's, the option cache's, and the counts'.
+;; Takes each mutex transfer.sls and the counters hold, in turn, and the
+;; suite's engine's: the live-transfer table's, the option cache's, the
+;; counts', and the engine's.
 (define (every-lock)
   (live-transfer-count)
   (cached-option-names)
-  (native-counts))
+  (native-counts)
+  (curl-engine-state engine))
 
-;; --- the escape child: tests/transfer-escapes.sps ---------------------------------------
+;; log-shape : Any -> Any
+;; A chunk log, by log-of, as (ACCEPTED ENDING): how many bytes its
+;; accepted chunks held, and refused when one refused chunk ended it, none
+;; when it holds accepted chunks alone; else (odd LOG).
+(define (log-shape log)
+  (if (and (list? log) (for-all (lambda (c) (and (list? c) (= (length c) 2) (integer? (car c)))) log))
+      (let loop ((rest log) (bytes 0))
+        (cond ((null? rest) (list bytes 'none))
+              ((eq? (cadr (car rest)) 'accepted) (loop (cdr rest) (+ bytes (car (car rest)))))
+              ((and (eq? (cadr (car rest)) 'refused) (null? (cdr rest))) (list bytes 'refused))
+              (else (list 'odd log))))
+      (list 'odd log)))
 
-;; library-path : -> String
-;; This suite's library path, as --libdirs takes it: so the child finds the
-;; libraries this suite found, wherever it runs, make test or a copy.
-(define (library-path)
-  (let loop ((dirs (map car (library-directories))) (text ""))
-    (cond ((null? dirs) text)
-          ((string=? text "") (loop (cdr dirs) (car dirs)))
-          (else (loop (cdr dirs) (string-append text ":" (car dirs)))))))
-
-;; read-all : String -> (Listof Any)
-;; TEXT read as data, each datum in turn; a datum that does not read ends
-;; the list with (unreadable).
-(define (read-all text)
-  (let ((port (open-string-input-port text)))
-    (let loop ((found '()))
-      (let ((datum (guard (e (#t '(unreadable))) (read port))))
-        (cond ((eof-object? datum) (reverse found))
-              ((equal? datum '(unreadable)) (reverse (cons datum found)))
-              (else (loop (cons datum found))))))))
-
-;; escape-bound : Positive-Integer
-;; The seconds the child may run before it is killed. Measured: about 8 s
-;; natively, the same beside 4 busy loops on 18 cores, and 39 s beside 36,
-;; most of it in the shells that count sockets. make test gives the whole
-;; suite 300 s.
-(define escape-bound 180)
-
-;; escape-script : String
-;; sh -c ESCAPE-SCRIPT sh COMMAND...: COMMAND, with stdin at its end, under
-;; GNU timeout (gtimeout on macOS), killed with SIGKILL after escape-bound
-;; seconds, exit 137; with neither found, exit 125, saying so. It is
-;; (curl-testing)'s bounded-script, whose bound is 10 s, with this bound,
-;; for the reasons given there: the shell's stderr is /dev/null, so dash's
-;; "Killed" is not the command's.
-(define escape-script
-  (string-append
-   "t=$(command -v timeout || command -v gtimeout) || { echo 'transfer-escapes: no timeout' >&2; exit 125; }\n"
-   "exec 3>&2 2>/dev/null\n"
-   "( exec \"$t\" -s KILL " (number->string escape-bound) " \"$@\" </dev/null 2>&3 3>&- )\n"
-   "exit $?\n"))
-
-;; escape-run : (U (List Integer (Listof Any) String) (List 'raised String))
-;; tests/transfer-escapes.sps run once, in a child Chez, under
-;; escape-script: its exit status, what it printed, read as data, and its
-;; stderr.
-(define escape-run
-  (guard (e (#t (list 'raised (describe e))))
-    (let ((r (capture-command (list "sh" "-c" escape-script "sh" (getenv "CHEZ") "--libdirs" (library-path)
-                                    "--program" "tests/transfer-escapes.sps"))))
-      (list (car r) (read-all (cadr r)) (caddr r)))))
-
-;; escape-shapes : (Listof (Pairof Symbol Natural))
-;; Each datum the child prints, by its head, and its length.
-(define escape-shapes '((sweep . 6) (timer . 5) (interrupt . 4) (after . 4) (done . 1)))
-
-;; run-problem : Any Positive-Integer -> Any
-;; #f when RUN, an escape-run, ran to its end: exit 0, every datum of a
-;; known shape, (done) last and only there, nothing on stderr. Else what
-;; went wrong, short, so a failing test names it whole: (child-did-not-run
-;; TEXT), (child-timed-out BOUND), (child-exited STATUS STDERR),
-;; (child-output-ended-early LAST), (child-printed-an-unknown-shape DATUM)
-;; or (child-wrote-on-stderr STDERR).
-(define (run-problem run bound)
-  (define (cut text) (if (> (string-length text) 300) (string-append (substring text 0 300) "...") text))
-  (define (shaped? d)
-    (and (list? d) (pair? d) (assq (car d) escape-shapes)
-         (= (length d) (cdr (assq (car d) escape-shapes)))))
-  (cond ((not (and (list? run) (= (length run) 3))) (list 'child-did-not-run run))
-        ((eq? (car run) 'raised) (list 'child-did-not-run (cadr run)))
-        ((eqv? (car run) 137) (list 'child-timed-out bound))
-        ((not (eqv? (car run) 0)) (list 'child-exited (car run) (cut (caddr run))))
-        ((or (null? (cadr run)) (not (equal? (list-ref (cadr run) (- (length (cadr run)) 1)) '(done))))
-         (list 'child-output-ended-early (if (null? (cadr run)) 'nothing (list-ref (cadr run) (- (length (cadr run)) 1)))))
-        ((find (lambda (d) (not (shaped? d))) (cadr run))
-         => (lambda (d) (list 'child-printed-an-unknown-shape d)))
-        ((not (= (length (filter (lambda (d) (equal? d '(done))) (cadr run))) 1))
-         (list 'child-printed-an-unknown-shape '(done)))
-        ((not (string=? (caddr run) "")) (list 'child-wrote-on-stderr (cut (caddr run))))
-        (else #f)))
-
-;; escape-problem : Any
-;; What went wrong with the child's run, or #f.
-(define escape-problem (run-problem escape-run escape-bound))
-
-;; escape-data : Symbol -> (Listof (Listof Any))
-;; The child's data headed by HEAD; none when its run went wrong.
-(define (escape-data head)
-  (if escape-problem
-      '()
-      (filter (lambda (d) (eq? (car d) head)) (cadr escape-run))))
-
-(define one-easy
-  '((block . 0) (easy . 1) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0)))
-
-;; escape-cases : -> (Listof (List Any Any Any))
-;; Every sweep and timer case the child printed, well formed, as its
-;; OUTCOME, its counts' DELTA and its new SOCKETS: (sweep NAME FUEL OUTCOME
-;; DELTA SOCKETS) and (timer TICKS OUTCOME DELTA SOCKETS).
-(define (escape-cases)
-  (append (map (lambda (d) (list-tail d 3)) (filter (lambda (d) (= (length d) 6)) (escape-data 'sweep)))
-          (map (lambda (d) (list-tail d 2)) (filter (lambda (d) (= (length d) 5)) (escape-data 'timer)))))
-
-;; escape-kind : Any Any -> (U 'completed 'outside 'inside #f)
-;; A case's OUTCOME and the COUNTS it left, judged: completed, every count
-;; zero; outside, run out or escaped outside perform, every count zero;
-;; inside, escaped inside perform, one easy left and nothing else. #f for
-;; anything else.
-(define (escape-kind outcome counts)
-  (cond ((and (pair? outcome) (eq? (car outcome) 'completed) (equal? counts zero-counts)) 'completed)
-        ((and (memq outcome '(expired escaped)) (equal? counts zero-counts)) 'outside)
-        ((and (memq outcome '(expired escaped)) (equal? counts one-easy)) 'inside)
-        (else #f)))
-
-;; sweep-verdict : String -> Any
-;; The child's sweep NAME: the cases no kind fits, whether some ran out
-;; outside perform and some escaped inside it, how many completed, the
-;; last case's outcome, and whether the fuels ran 1, 2, 3 on, once each.
-(define (sweep-verdict name)
-  (let* ((cases (filter (lambda (d) (and (= (length d) 6) (equal? (cadr d) name))) (escape-data 'sweep)))
-         (kinds (map (lambda (c) (escape-kind (list-ref c 3) (list-ref c 4))) cases)))
-    (cond
-      (escape-problem escape-problem)
-      ((null? cases) (list 'no-cases name))
-      (else
-        (list (filter (lambda (c) (not (escape-kind (list-ref c 3) (list-ref c 4)))) cases)
-              (if (memq 'outside kinds) 'outside-seen 'no-outside)
-              (if (memq 'inside kinds) 'inside-seen 'no-inside)
-              (length (filter (lambda (k) (eq? k 'completed)) kinds))
-              (list-ref (list-ref cases (- (length cases) 1)) 3)
-              (equal? (map caddr cases) (iota-from-1 (length cases))))))))
-
-;; inside-count : String -> Natural
-;; How many of the child's sweep NAME's engines escaped inside perform.
-(define (inside-count name)
-  (length (filter (lambda (d) (and (= (length d) 6) (equal? (cadr d) name)
-                                   (eq? (escape-kind (list-ref d 3) (list-ref d 4)) 'inside)))
-                  (escape-data 'sweep))))
-
-;; iota-from-1 : Natural -> (Listof Natural)
-(define (iota-from-1 n)
-  (let loop ((i n) (found '()))
-    (if (= i 0) found (loop (- i 1) (cons i found)))))
-
-;; timer-verdict : -> Any
-;; The child's timer cases: those no kind fits, or that completed otherwise
-;; than whole; whether one escaped inside perform; and whether every
-;; completion was the 40-byte body.
-(define (timer-verdict)
-  (let ((cases (filter (lambda (d) (= (length d) 5)) (escape-data 'timer))))
-    (cond
-      (escape-problem escape-problem)
-      ((null? cases) '(no-cases timer))
-      (else
-        (list (filter (lambda (c) (not (escape-kind (caddr c) (cadddr c)))) cases)
-              (if (exists (lambda (c) (eq? (escape-kind (caddr c) (cadddr c)) 'inside)) cases)
-                  'inside-seen
-                  'no-inside)
-              (if (for-all (lambda (c) (or (not (pair? (caddr c)))
-                                           (equal? (caddr c) '(completed (response 200 40)))))
-                           cases)
-                  'whole
-                  'not-whole))))))
-
-;; interrupt-verdict : -> Any
-;; The child's interrupt case: whether its handler ran once, with 3 to 19
-;; bytes come, then the transfer's answer and the counts it left.
-(define (interrupt-verdict)
-  (let ((cases (escape-data 'interrupt)))
-    (if (or escape-problem (not (= (length cases) 1)))
-        (or escape-problem (list 'interrupt-cases (length cases)))
-        (let ((fired (cadr (car cases))))
-          (list (if (and (list? fired) (= (length fired) 1) (<= 3 (car fired) 19))
-                    'once-before-the-end
-                    (list 'fired fired))
-                (caddr (car cases))
-                (cadddr (car cases)))))))
-
-;; after-verdict : -> Any
-;; The child's after line: live transfers, whether another thread took
-;; every mutex, and whether the counts are one easy per escape inside
-;; perform and nothing else.
-(define (after-verdict)
-  (let ((cases (escape-data 'after))
-        (inside (length (filter (lambda (c) (eq? (escape-kind (car c) (cadr c)) 'inside)) (escape-cases)))))
-    (if (or escape-problem (not (= (length cases) 1)))
-        (or escape-problem (list 'after-cases (length cases)))
-        (let ((counts (cadddr (car cases))))
-          (list (cadr (car cases))
-                (caddr (car cases))
-                (if (equal? counts (map (lambda (k) (if (eq? (car k) 'easy) (cons 'easy inside) k)) zero-counts))
-                    'escapes-counted
-                    (list 'counts counts 'inside inside)))))))
-
-;; sockets-verdict : -> Any
-;; The child's sweep and timer cases that completed, or ran out outside
-;; perform, and left a new socket; and whether an escape inside perform
-;; left one, which shows the sockets were counted. Off Linux, where the
-;; child counts none, unmeasured.
-(define (sockets-verdict)
-  (let ((cases (escape-cases)))
-    (cond (escape-problem escape-problem)
-          ((null? cases) '(no-cases sweep timer))
-          ((not (for-all (lambda (c) (integer? (caddr c))) cases)) 'unmeasured)
-          (else
-           (list (filter (lambda (c) (and (memq (escape-kind (car c) (cadr c)) '(completed outside))
-                                          (not (= (caddr c) 0))))
-                         cases)
-                 (if (exists (lambda (c) (and (eq? (escape-kind (car c) (cadr c)) 'inside) (> (caddr c) 0)))
-                             cases)
-                     'inside-left-sockets
-                     'no-inside-left-sockets))))))
-
-;; refused-recording : (-> Any) -> Any
-;; THUNK's &curl-transfer-error as (refused REASON CODE (WHO IRRITANTS)),
-;; the recorded object's who and irritants; anything else as answer-of
-;; names it.
-(define (refused-recording thunk)
-  (guard (e ((curl-transfer-error? e)
-             (let ((rec (curl-transfer-error-recorded e)))
-               (list 'refused (curl-transfer-error-reason e) (curl-transfer-error-code e)
-                     (if (and (condition? rec) (who-condition? rec) (irritants-condition? rec))
-                         (list (condition-who rec) (condition-irritants rec))
-                         (list 'recorded rec)))))
-            (#t (list 'raised (describe e))))
-    (thunk)
-    'no-raise))
-
-;; sockets-open : -> (U Natural #f)
-;; The sockets this process holds, counted from /proc on Linux; #f
-;; elsewhere.
-(define (sockets-open)
-  (and (file-directory? "/proc/self/fd")
-       (let ((r (capture-command
-                 (list "sh" "-c" (string-append "ls -l /proc/" (number->string (get-process-id))
-                                                "/fd | grep -c socket:")))))
-         (let ((text (cadr r)))
-           (string->number (if (and (> (string-length text) 0)
-                                    (char=? (string-ref text (- (string-length text) 1)) #\newline))
-                               (substring text 0 (- (string-length text) 1))
-                               text))))))
+;; recorded-run : Request -> (List Any Any)
+;; What R answers through the suite's engine, a &curl-transfer-error as
+;; (refused REASON CODE RECORDED), RECORDED the object it recorded, else as
+;; answer-of names it; and its token's log, by log-of.
+(define (recorded-run r)
+  (guard (e (#t (list (list 'raised-at-submit (describe e)) 'no-log)))
+    (let ((token (curl-engine-submit engine r)))
+      (list (guard (e ((curl-transfer-error? e)
+                       (list 'refused (curl-transfer-error-reason e) (curl-transfer-error-code e)
+                             (curl-transfer-error-recorded e))))
+              (let ((response (await-token token)))
+                (answer-of (lambda () response))))
+            (log-of token)))))
 
 ;; texts-of : (-> Any) -> Any
 ;; For THUNK's &curl-transfer-error: whether its strerror is
@@ -1510,8 +1532,8 @@
   ;; --- every shared scenario, whole
   (for-each
    (lambda (pair)
-     (test-equal (string-append "shared: " (case-text (car pair)) ", whole, and the counts back at zero")
-       (list (expanded (cadr pair)) zero-counts)
+     (test-equal (string-append "shared: " (case-text (car pair)) ", whole, and the counts back to the engine's alone")
+       (list (expanded (cadr pair)) running-counts)
        (with-counts (case-answer o (car pair)))))
    shared-answers)
 
@@ -1521,23 +1543,23 @@
   (for-each
    (lambda (entry)
      (let ((want (and the-row (assoc (car entry) (row-answers the-row)))))
-       (test-equal (string-append "varying: " (case-text (car entry)) ", as this libcurl's row says, and the counts back at zero")
-         (list (if want (expanded (cadr want)) (list 'no-row-for version)) zero-counts)
+       (test-equal (string-append "varying: " (case-text (car entry)) ", as this libcurl's row says, and the counts back to the engine's alone")
+         (list (if want (expanded (cadr want)) (list 'no-row-for version)) running-counts)
          (list (cadr entry) (caddr entry)))))
    varying-answered)
 
   ;; --- the echoes, whose Host holds the origin's port
   (test-equal "echo: GET /raw/echo sends Host and libcurl's Accept, and no User-Agent unless asked"
-    (list (echoed (raw-echo-body o '("Accept: */*\r\n"))) zero-counts)
-    (with-counts (answer-of (lambda () (perform-transfer (request (url-of o 'raw "/raw/echo")))))))
+    (list (echoed (raw-echo-body o '("Accept: */*\r\n"))) running-counts)
+    (with-counts (answer-of (lambda () (perform (request (url-of o 'raw "/raw/echo")))))))
   (let ((node-echo (string-append "GET /echo HTTP/1.1\nHost: " (host-of o 'http) "\nAccept: */*\n\n")))
     (test-equal "echo: GET /echo on the http face, as Node parsed it"
       (list (list 'response 200 'http/1.1
                   (list (list "Content-Length" (number->string (string-length node-echo)))
                         '("Connection" "keep-alive"))
                   node-echo)
-            zero-counts)
-      (with-counts (answer-of (lambda () (perform-transfer (request (url-of o 'http "/echo"))))))))
+            running-counts)
+      (with-counts (answer-of (lambda () (perform (request (url-of o 'http "/echo"))))))))
 
   ;; --- the setopt bindings, observed (ADR-0001's FFI test)
   ;; A string: USERAGENT's chars U+0080 to U+00FF arrive as single bytes,
@@ -1545,9 +1567,9 @@
   (let ((agent (chars (iota-from #x80 128))))
     (test-equal "USERAGENT: chars U+0080 to U+00FF arrive in /raw/echo as exactly those bytes, one each, between Host and Accept"
       (list (echoed (raw-echo-body o (list (string-append "User-Agent: " agent "\r\n") "Accept: */*\r\n")))
-            zero-counts)
-      (with-counts (answer-of (lambda () (perform-transfer (request (url-of o 'raw "/raw/echo")
-                                                                    'user-agent agent)))))))
+            running-counts)
+      (with-counts (answer-of (lambda () (perform (request (url-of o 'raw "/raw/echo")
+                                                           'user-agent agent)))))))
   ;; A long: TIMEOUT_MS. Without it, a stall never ends.
   (for-each
    (lambda (path)
@@ -1555,9 +1577,9 @@
      ;; memory gate's Valgrind, the first the slowest. 600 catches a timeout
      ;; that arrived doubled.
      (test-equal (string-append "TIMEOUT_MS 300 against " path ": 28, no sooner than 300 ms and sooner than 600")
-       (list (list 'refused 'perform-failed curle-operation-timedout) 'within zero-counts)
+       (list (list 'refused 'perform-failed curle-operation-timedout) 'within running-counts)
        (let* ((start (now-ms))
-              (a (answer-of (lambda () (perform-transfer (request (url-of o 'raw path) 'timeout 300)))))
+              (a (answer-of (lambda () (perform (request (url-of o 'raw path) 'timeout 300)))))
               (took (- (now-ms) start)))
          (list a (if (and (>= took 300) (< took 600)) 'within (list 'took took)) (native-counts)))))
    '("/raw/stall-after-head" "/raw/stall-before-head"))
@@ -1569,52 +1591,47 @@
                   (list (list "Content-Length" (number->string (string-length head-echo)))
                         '("Connection" "keep-alive"))
                   "")
-            zero-counts)
-      (with-counts (answer-of (lambda () (perform-transfer (request (url-of o 'http "/echo") 'method 'head)))))))
+            running-counts)
+      (with-counts (answer-of (lambda () (perform (request (url-of o 'http "/echo") 'method 'head)))))))
   (test-equal "NOBODY: head of /status/200 gets its headers and no body"
-    (list '(response 200 http/1.1 (("Content-Length" "11") ("Connection" "keep-alive")) "") zero-counts)
-    (with-counts (answer-of (lambda () (perform-transfer (request (url-of o 'http "/status/200") 'method 'head))))))
+    (list '(response 200 http/1.1 (("Content-Length" "11") ("Connection" "keep-alive")) "") running-counts)
+    (with-counts (answer-of (lambda () (perform (request (url-of o 'http "/status/200") 'method 'head))))))
   ;; An off_t: MAXFILESIZE_LARGE, at the body limit plus one, below a
   ;; Content-Length: refused before any body.
-  (test-equal "MAXFILESIZE_LARGE below a Content-Length: a body limit of 9 against /status/200's 11 is 63, perform-failed, before any chunk"
-    (list (list 'refused 'perform-failed curle-filesize-exceeded) "" zero-counts)
-    (let* ((seen '())
-           (a (answer-of (lambda ()
-                           (perform-transfer
-                            (request (url-of o 'http "/status/200") 'limit 9
-                                     'hook (lambda (chunk) (set! seen (cons chunk seen)))))))))
-      (list a (apply string-append (map latin-1 (reverse seen))) (native-counts))))
+  (test-equal "MAXFILESIZE_LARGE below a Content-Length: a body limit of 9 against /status/200's 11 is 63, perform-failed, before any chunk: the chunk log is empty"
+    (list (list (list 'refused 'perform-failed curle-filesize-exceeded) '()) running-counts)
+    (with-counts (run (request (url-of o 'http "/status/200") 'limit 9))))
 
   ;; --- Latin-1, both ways
   (test-equal "a request header whose value holds every char U+0001 to U+00FF but CR and LF arrives in /raw/echo byte for byte, after Accept"
     (list (echoed (raw-echo-body o (list "Accept: */*\r\n"
                                          (string-append "X-Bytes: " every-byte-but-cr-lf "\r\n"))))
-          zero-counts)
-    (with-counts (answer-of (lambda () (perform-transfer (request (url-of o 'raw "/raw/echo")
-                                                                  'headers (list (cons "X-Bytes" every-byte-but-cr-lf))))))))
+          running-counts)
+    (with-counts (answer-of (lambda () (perform (request (url-of o 'raw "/raw/echo")
+                                                         'headers (list (cons "X-Bytes" every-byte-but-cr-lf))))))))
   (test-equal "request headers keep their order and their repeats, and an empty value is sent as libcurl's Name; form writes it"
     (list (echoed (raw-echo-body o '("Accept: */*\r\n" "X-One: 1\r\n" "X-Dup: a\r\n" "X-Empty:\r\n"
                                      "X-Dup: b\r\n" "X-Two: two  words\r\n")))
-          zero-counts)
-    (with-counts (answer-of (lambda () (perform-transfer (request (url-of o 'raw "/raw/echo")
-                                                                  'headers '(("X-One" . "1") ("X-Dup" . "a") ("X-Empty" . "")
-                                                                             ("X-Dup" . "b") ("X-Two" . "two  words"))))))))
+          running-counts)
+    (with-counts (answer-of (lambda () (perform (request (url-of o 'raw "/raw/echo")
+                                                         'headers '(("X-One" . "1") ("X-Dup" . "a") ("X-Empty" . "")
+                                                                    ("X-Dup" . "b") ("X-Two" . "two  words"))))))))
 
   (test-equal "a Host header is libcurl's exception to order: sent first, in place of libcurl's own, spelt Host, ahead of Accept and the headers before it"
     (list (echoed "GET /raw/echo HTTP/1.1\r\nHost: a.example\r\nAccept: */*\r\nX-A: 1\r\nX-B: 2\r\n\r\n")
-          zero-counts)
-    (with-counts (answer-of (lambda () (perform-transfer (request (url-of o 'raw "/raw/echo")
-                                                                  'headers '(("X-A" . "1") ("hOsT" . "a.example") ("X-B" . "2"))))))))
+          running-counts)
+    (with-counts (answer-of (lambda () (perform (request (url-of o 'raw "/raw/echo")
+                                                         'headers '(("X-A" . "1") ("hOsT" . "a.example") ("X-B" . "2"))))))))
 
   ;; --- the effective URL, libcurl's own form, read as UTF-8
   (test-equal "the effective URL: libcurl's parse of the request, dot segments gone; a redirect not followed keeps the request's; é in a path reads back as é"
     (list (url-of o 'http "/status/200")
           (url-of o 'http "/redirect/302?to=/status/200")
           (url-of o 'http "/caf\xE9;")
-          zero-counts)
+          running-counts)
     (let ((effective (lambda (path)
                        (guard (e (#t (list 'raised (describe e))))
-                         (transfer-response-effective-url (perform-transfer (request (url-of o 'http path))))))))
+                         (transfer-response-effective-url (perform (request (url-of o 'http path))))))))
       (list (effective "/a/../status/200")
             (effective "/redirect/302?to=/status/200")
             (effective "/caf\xE9;")
@@ -1623,55 +1640,49 @@
   ;; --- the last request's headers: a redirect followed, through the test
   ;; seam, makes two requests, and the first one's headers are not the
   ;; response's
-  (test-equal "with FOLLOWLOCATION set through perform-transfer-with, a followed redirect answers the last request's status, headers and body, and its effective URL"
+  (test-equal "with FOLLOWLOCATION set through the test seam, a followed redirect answers the last request's status, headers and body, and its effective URL"
     (list (list '(response 200 http/1.1 (("Content-Length" "11") ("Connection" "keep-alive")) "status 200\n")
                 (url-of o 'http "/status/200"))
-          zero-counts)
+          running-counts)
     (list (guard (e (#t (list 'raised (describe e))))
-            (let ((r (perform-transfer-with (request (url-of o 'http "/redirect/302?to=/status/200"))
-                                            '(("FOLLOWLOCATION" . 1)))))
+            (let ((r (perform-with (request (url-of o 'http "/redirect/302?to=/status/200"))
+                                   '(("FOLLOWLOCATION" . 1)))))
               (list (answer-of (lambda () r)) (transfer-response-effective-url r))))
           (native-counts)))
 
-  ;; --- the URL, checked as the transfer runs
-  (test-equal "a URL whose scheme is not http or https is refused as scheme-not-http, and one curl_url refuses with its code; nothing native is left"
-    (list '(url-refused scheme-not-http #f) '(url-refused bad-port-number 4) zero-counts)
-    (list (answer-of (lambda () (perform-transfer (request "file:///etc/passwd"))))
-          (answer-of (lambda () (perform-transfer (request "http://127.0.0.1:99999/"))))
+  ;; --- the URL, checked at submit, on this thread
+  (test-equal "a URL whose scheme is not http or https is refused at submit as scheme-not-http, and one curl_url refuses with its code; nothing native is left"
+    (list '(url-refused scheme-not-http #f) '(url-refused bad-port-number 4) running-counts)
+    (list (submitted (lambda () (curl-engine-submit engine (request "file:///etc/passwd"))))
+          (submitted (lambda () (curl-engine-submit engine (request "http://127.0.0.1:99999/"))))
           (native-counts)))
 
-  ;; --- re-entry: a continuation captured inside the callable, invoked once
-  ;; the transfer has returned, is refused by the outermost extent's
-  ;; before thunk, before anything resumes into C: the CURLU's, which
-  ;; outlives every other native object the transfer makes
-  (test-equal "re-entering a transfer through a continuation captured in CHUNK-HOOK raises from call-with-parsed-url, the outermost extent, the hook having run once, and the counts back at zero"
-    (list '(assertion-violation call-with-parsed-url) 1 zero-counts)
-    (let ((k #f) (runs 0))
-      (let ((r (guard (e ((and (assertion-violation? e) (who-condition? e))
-                          (list 'assertion-violation (condition-who e)))
-                         (#t (list 'other (describe e))))
-                 (perform-transfer
-                  (request (url-of o 'http "/status/200")
-                           'hook (lambda (chunk)
-                                   (call/cc (lambda (c) (set! k c)))
-                                   (set! runs (+ runs 1)))))
-                 (if (= runs 1) (k #f) (list 'reentered runs)))))
-        (list r runs (native-counts)))))
-
-  ;; --- the counts while a transfer runs
-  (test-equal "inside the callable, the transfer holds its easy handle, its CURLU, its header list, its error buffer and itself, one each, and the live-transfer table holds it; all zero after"
-    (list '((block . 1) (easy . 1) (url . 1) (slist . 1) (curl-string . 0) (transfer . 1)) 1
-          zero-counts 0)
-    (let* ((inside #f)
-           (live #f)
-           (a (answer-of (lambda ()
-                           (perform-transfer
-                            (request (url-of o 'http "/status/200") 'headers '(("X-A" . "1"))
-                                     'hook (lambda (chunk)
-                                             (unless inside
-                                               (set! inside (native-counts))
-                                               (set! live (live-transfer-count))))))))))
-      (list inside live (native-counts) (live-transfer-count))))
+  ;; --- the counts while a transfer is live, read on this thread while the
+  ;; engine's table holds a drip, before the counts and after them: the
+  ;; engine records a transfer once start-transfer! has made everything,
+  ;; and takes it out before free-transfer! frees anything
+  (let ((live-counts '((block . 2) (easy . 1) (url . 1) (slist . 1) (curl-string . 0) (transfer . 1) (multi . 1))))
+    (test-equal "while a transfer is live, it holds its easy handle, its CURLU, its header list, its error buffer and itself, one each, beside the engine's multi handle and slot, and the live-transfer table and the engine's table each hold it; once it ends, the engine's handle and slot alone, and both tables empty"
+      (list live-counts 1 1
+            '(response 200 http/1.1 (("Content-Length" "20")) "abcdefghijklmnopqrst")
+            running-counts 0 0)
+      (let* ((t (curl-engine-submit engine (request (url-of o 'raw "/raw/drip?bytes=20&gap=50")
+                                                    'headers '(("X-A" . "1")))))
+             ;; Sampled until a sample is the expected one, or the drip ends:
+             ;; the engine's own slots come and go (native-counts).
+             (seen (let wait ((deadline (+ (now-ms) 10000)) (last '(never-seen-live)))
+                     (cond ((or (curl-token-done? t) (> (now-ms) deadline)) last)
+                           ((= (curl-engine-live-count engine) 1)
+                            (let* ((counts (native-counts))
+                                   (live (live-transfer-count))
+                                   (table (curl-engine-live-count engine))
+                                   (sample (list counts live table)))
+                              (cond ((not (= table 1)) (pause-ms 1) (wait deadline last))
+                                    ((equal? counts live-counts) sample)
+                                    (else (pause-ms 1) (wait deadline sample)))))
+                           (else (pause-ms 5) (wait deadline last)))))
+             (a (answer-of (lambda () (await-token t)))))
+        (append seen (list a (native-counts) (live-transfer-count) (curl-engine-live-count engine))))))
 
   ;; --- libcurl's texts, as the error carries them: strerror is
   ;; curl_easy_strerror's for the code, called here; the error buffer is
@@ -1684,7 +1695,7 @@
        (list 'strerror-is-libcurls (or (caddr row) 'buffer-is-text))
        (texts-of (cadr row))))
    (let ((get (lambda (face path . options)
-                (lambda () (perform-transfer (apply request (url-of o face path) options))))))
+                (lambda () (perform (apply request (url-of o face path) options))))))
      (list (list "reset-after-pause" (get 'raw "/raw/reset-after-pause?ms=50") "Recv failure: Connection reset by peer")
            (list "reset-mid-body" (get 'raw "/raw/reset-mid-body") "Recv failure: Connection reset by peer")
            (list "bad-status-line" (get 'raw "/raw/bad-status-line") "Received HTTP/0.9 when not allowed")
@@ -1697,22 +1708,21 @@
            (list "short-body" (get 'raw "/raw/short-body") #f)
            (list "stall-after-head, TIMEOUT_MS 300" (get 'raw "/raw/stall-after-head" 'timeout 300) #f)
            (list "a body limit the callable enforces" (get 'http "/status/200" 'limit 10) #f)
-           (list "a raise in CHUNK-HOOK" (get 'http "/status/200" 'hook (lambda (chunk) (raise 'x))) #f))))
+           (list "a fault planted at chunk 1" (get 'http "/status/200" 'fault 1) #f))))
 
-  ;; --- the body limit, at its edges: limit-*.txt's 20 cases. The hook sees
-  ;; what the callable accepted.
+  ;; --- the body limit, at its edges: limit-*.txt's 20 cases. The chunk
+  ;; log shows what the callable did: how many bytes it accepted, and
+  ;; whether it refused the chunk that ended the transfer.
   (for-each
    (lambda (row)
      (let ((face (car row)) (path (cadr row)) (limit (caddr row)) (want (cadddr row)) (accepted (list-ref row 4)))
        (test-equal (string-append "body limit " (number->string limit) " against " (symbol->string face) " " path
-                                  ": " (written want) ", the callable having accepted " (written accepted))
-         (list want accepted zero-counts)
-         (let* ((seen '())
-                (a (answer-of (lambda ()
-                                (perform-transfer
-                                 (request (url-of o face path) 'limit limit
-                                          'hook (lambda (chunk) (set! seen (cons chunk seen)))))))))
-           (list a (apply string-append (map latin-1 (reverse seen))) (native-counts))))))
+                                  ": " (written want) ", the callable having accepted " (written accepted)
+                                  (if (eq? (cadr want) 'body-limit) ", then refused the next chunk" ", and refused none")
+                                  ", each chunk on the engine's thread")
+         (list want (list (string-length accepted) (if (eq? (cadr want) 'body-limit) 'refused 'none)) running-counts)
+         (let ((r (run (request (url-of o face path) 'limit limit))))
+           (list (car r) (log-shape (cadr r)) (native-counts))))))
    (let ((limit `(refused body-limit ,curle-write-error))
          (size `(refused perform-failed ,curle-filesize-exceeded))
          (status-200 `(response 200 http/1.1 (("Content-Length" "11") ("Connection" "keep-alive")) ,ok))
@@ -1739,23 +1749,37 @@
        (raw "/raw/http10" 5 ,limit "")
        (raw "/raw/drip?bytes=5&gap=10" 3 ,size ""))))
 
-  ;; --- a raise inside the callable
-  (let ((thrown (list 'thrown-inside-the-callable)))
-    (test-equal "a raise inside the callable, through CHUNK-HOOK: callback-raised, 23, recording the very object raised, and the counts back at zero"
-      (list (list 'callback-raised curle-write-error 'the-object) zero-counts)
-      (let ((r (guard (e ((curl-transfer-error? e)
-                          (list (curl-transfer-error-reason e) (curl-transfer-error-code e)
-                                (if (eq? (curl-transfer-error-recorded e) thrown)
-                                    'the-object
-                                    (curl-transfer-error-recorded e))))
-                         (#t (list 'raised (describe e))))
-                 (perform-transfer (request (url-of o 'http "/status/200")
-                                            'hook (lambda (chunk) (raise thrown))))
-                 'no-raise)))
-        (list r (native-counts)))))
+  ;; --- a raise inside the callable, planted by a request's fault: data,
+  ;; never a procedure (M3 plan, section 3.6)
+  (for-each
+   (lambda (row)
+     (test-equal (string-append "a fault " (car row) ", each chunk logged on the engine's thread")
+       (list (caddr row) running-counts)
+       (let ((r (recorded-run (cadr row))))
+         (with-counts (if (null? (cdddr row)) r (list (car r) (log-shape (cadr r))))))))
+   (list (list "at chunk 1 of /status/200's one: the callable raises (planted-fault 1), so the transfer is callback-raised, 23, recording it, the chunk logged raised"
+               (request (url-of o 'http "/status/200") 'fault 1)
+               `((refused callback-raised ,curle-write-error ,(planted-fault 1)) ((11 raised))))
+         (list "at chunk 2 of /chunked's three: the first accepted, the second raised, recording (planted-fault 2), and no third"
+               (request (url-of o 'http "/chunked") 'fault 2)
+               `((refused callback-raised ,curle-write-error ,(planted-fault 2)) ((6 accepted) (5 raised))))
+         (list "at chunk 1 of /status/200, with a body limit of 10 it passes: the fault comes before the limit check, so callback-raised, not body-limit"
+               (request (url-of o 'http "/status/200") 'limit 10 'fault 1)
+               `((refused callback-raised ,curle-write-error ,(planted-fault 1)) ((11 raised))))
+         (list "at chunk 2 of /status/200's one: never reached, so the response whole, its chunk accepted"
+               (request (url-of o 'http "/status/200") 'fault 2)
+               `((response 200 http/1.1 (("Content-Length" "11") ("Connection" "keep-alive")) ,ok)
+                 ((11 accepted))))
+         ;; How long the refused chunk is can vary: 8.20.0 cuts it to the
+         ;; one byte MAXFILESIZE_LARGE leaves, where the whole chunk is 5. So
+         ;; the log is read as its shape: the bytes accepted, then a refusal.
+         (list "at chunk 3 of /chunked, with a body limit of 6: never reached, since the limit refuses chunk 2 and ends the transfer as body-limit, recording nothing; the log, 6 bytes accepted, then a refusal"
+               (request (url-of o 'http "/chunked") 'limit 6 'fault 3)
+               `((refused body-limit ,curle-write-error #f) (6 refused))
+               'shape)))
   ;; --- the user agent another thread changes while transfers run
-  (test-equal "a user agent another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the agent whole, never the CR, both seen; the counts back at zero"
-    (list '() '(refused whole) zero-counts)
+  (test-equal "a user agent another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the agent whole, never the CR, both seen; the counts back to the engine's alone"
+    (list '() '(refused whole) running-counts)
     (let* ((agent (string-copy "abcdef"))
            (r (make-transfer-request (url-of o 'raw "/raw/echo") 'get '() agent default-timeout #f #f #t #f))
            (clean (echoed (raw-echo-body o '("User-Agent: abcdef\r\n" "Accept: */*\r\n"))))
@@ -1783,7 +1807,7 @@
           (let loop ((i 0) (odd '()) (seen '()))
             (if (= i 300)
                 (list (reverse odd) (filter (lambda (k) (memq k seen)) '(refused whole)) (native-counts))
-                (let* ((a (answer-of (lambda () (perform-transfer r))))
+                (let* ((a (answer-of (lambda () (perform r))))
                        (k (cond ((equal? a clean) 'whole)
                                 ((equal? a '(request-refused user-agent line-break)) 'refused)
                                 (else #f))))
@@ -1793,114 +1817,42 @@
         (lambda () (set! stop #t) (thread-join flipper)))))
 
   ;; --- a mutex held across an asynchronous escape: Chez's with-mutex is a
-  ;; dynamic-wind whose before thunk takes the mutex, so an engine that runs
-  ;; out between the take and the wind leaves it held, with no after thunk
-  ;; to release it, and every other thread then blocks on it. Each sweep
-  ;; runs out at every tick of a call that takes one: the live-transfer
-  ;; table's, the option cache's, and, through a seam setting refused after
-  ;; a known one, the lookup's.
-  (test-equal "an engine that runs out at every tick of live-transfer-count, of cached-option-names, and of a seam call refused as unknown-option after MAXREDIRS, each abandoned, until one completes: each completes, and another thread then takes every lock"
-    '((completed expired-first) (completed expired-first) (completed expired-first) other-thread-ran)
+  ;; dynamic-wind whose before thunk takes the mutex, so a Chez engine that
+  ;; runs out between the take and the wind leaves it held, with no after
+  ;; thunk to release it, and every other thread then blocks on it; and one
+  ;; that runs out between making a native object and recording it leaks
+  ;; the object. A caller's thread runs no transfer now, only a submit and
+  ;; an await. Each sweep runs out at every tick of a call that takes a
+  ;; mutex: the live-transfer table's, the option cache's; through a submit
+  ;; whose seam setting is refused after a known one, the lookup's; and,
+  ;; through a submit to a stopped engine, the URL's CURLU, made and freed
+  ;; on this thread, and that engine's own mutex, which refuses it.
+  (test-equal "a Chez engine that runs out at every tick of live-transfer-count, of cached-option-names, of a submit through the test seam refused as unknown-option after MAXREDIRS, and of a submit to a stopped engine, refused as stopped once its URL was parsed, each abandoned, until one completes: each completes, no native object is left, and another thread then takes every lock, both engines' among them"
+    `(stopped (completed expired-first) (completed expired-first) (completed expired-first)
+      (completed expired-first) ,running-counts other-thread-ran)
     (let* ((refused (request "http://127.0.0.1:1/"))
+           (stopped (guard (e (#t (list 'raised (describe e))))
+                      (let ((made (make-curl-engine))) (curl-engine-stop made) made)))
+           (submit-to-stopped
+            (lambda ()
+              (guard (e ((curl-engine-error? e) (curl-engine-error-reason e))
+                        (#t (list 'raised (describe e))))
+                (curl-engine-submit stopped refused)
+                'queued)))
+           (stopped-refuses (submit-to-stopped))
            (sweeps (map (lambda (thunk)
                           (let ((r (engine-sweep thunk 1)))
                             (if (and (eq? (car r) 'completed) (> (cadr r) 0)) '(completed expired-first) r)))
                         (list live-transfer-count
                               cached-option-names
-                              (lambda () (answer-of (lambda () (perform-transfer-with refused '(("MAXREDIRS" . 1) ("NO_SUCH_OPTION" . 1))))))))))
-      (append sweeps (list (other-thread-can every-lock)))))
-
-  ;; --- asynchronous escapes: an engine's fuel, or a timer, running out
-  ;; anywhere in a transfer, perform included (ADR-0013, amended
-  ;; 2026-10-23). An escape from inside perform is allowed, and counted:
-  ;; its easy handle is never cleaned up, so it stays counted as easy, and
-  ;; libcurl's connection leaks, with its connection's sockets. Under the memory gate Valgrind would see
-  ;; that leak in this process, so the sweeps and the timers run in a child,
-  ;; tests/transfer-escapes.sps, which prints each case and the counts it
-  ;; left. These tests judge what it printed.
-  (test-equal "the escape child runs to its end within its bound: exit 0, each line a case of a known shape, (done) last, and nothing on stderr; else every test of it names what went wrong"
-    'ran-to-its-end
-    (or escape-problem 'ran-to-its-end))
-  (test-equal "run-problem, the judge of the child's run: a kill at the bound is child-timed-out, an end before (done) child-output-ended-early, an exit child-exited, a datum of no known shape named, and a whole run none"
-    '((child-timed-out 180) (child-output-ended-early (timer 300 escaped x 0)) (child-output-ended-early nothing)
-      (child-exited 1 "boom") (child-printed-an-unknown-shape (sweep "whole" 1 expired x))
-      (child-wrote-on-stderr "w") #f)
-    (map (lambda (run) (run-problem run 180))
-         '((137 () "")
-           (0 ((sweep "whole" 1 expired x 0) (timer 300 escaped x 0)) "")
-           (0 () "")
-           (1 ((done)) "boom")
-           (0 ((sweep "whole" 1 expired x) (done)) "")
-           (0 ((done)) "w")
-           (0 ((sweep "whole" 1 expired x 0) (timer 300 escaped x 0) (interrupt (3) a x) (after 0 l x) (done)) ""))))
-  ;; The refused transfer runs no callback, so its escapes inside perform
-  ;; are the ones around the call, between the mark and curl_easy_perform:
-  ;; measured, two, and three in one run of perform in a critical section.
-  ;; The whole transfer escaping inside more than twice as often as the
-  ;; refused one, plus one, shows escapes from write-body, inside the call:
-  ;; measured, 32.
-  (test-equal "a transfer in an engine that runs out at every tick, in the child: each engine completed, ran out outside perform, or escaped inside it, each with its counts; some ran out outside and some escaped inside, more than twice as often as the refused transfer below, plus one, so from write-body; one completed, the last, whole; and the fuels ran 1, 2, 3 on"
-    '(() outside-seen inside-seen 1 (completed (response 200 17)) #t more-inside-than-refused)
-    (or escape-problem
-        (append (sweep-verdict "whole")
-                (list (if (> (inside-count "whole") (* 2 (+ (inside-count "refused") 1)))
-                          'more-inside-than-refused
-                          (list 'inside (inside-count "whole") 'refused (inside-count "refused")))))))
-  (test-equal "a transfer refused at connect, to a closed port, in an engine that runs out at every tick, in the child: the same, its one completion the refusal, 7"
-    '(() outside-seen inside-seen 1 (completed (refused perform-failed 7)) #t)
-    (sweep-verdict "refused"))
-  (test-equal "a timer-interrupt-handler that escapes through a continuation, armed 300 to 1700 ticks into a 40-chunk transfer, in the child: each case completed whole, escaped outside perform, or escaped inside it, each with its counts, and one escaped inside at least"
-    '(() inside-seen whole)
-    (timer-verdict))
-  (test-equal "interrupts are not put off while perform runs: a timer handler armed once 3 bytes of a 20-byte, 1 s drip have come runs, once, before the last byte, and the transfer then completes whole, with every count zero"
-    (list 'once-before-the-end '(response 200 20) zero-counts)
-    (interrupt-verdict))
-  (test-equal "once every case has run, in the child: no live transfer, no mutex held, and the counts exactly one easy per escape inside perform"
-    '(0 other-thread-ran escapes-counted)
-    (after-verdict))
-  ;; An escape inside perform leaks its connection's sockets: how many is
-  ;; libcurl's, one on 8.20.0, nearer three on 7.85.0. Every other case
-  ;; leaves none.
-  (unless (file-directory? "/proc/self/fd") (test-skip 1))
-  (test-equal "in the child, each case that completed, or ran out outside perform, left no new socket, and an escape inside perform left its connection's sockets (Linux, from /proc; skipped elsewhere)"
-    '(() inside-left-sockets)
-    (sockets-verdict))
-
-  ;; --- control leaving the callable other than by its return: an outer
-  ;; continuation invoked from CHUNK-HOOK, and an earlier chunk's from a
-  ;; later chunk. Either would abandon curl_easy_perform's C frames, and
-  ;; libcurl's connection: so each is refused, as a raise, in the callable.
-  (let* ((before (sockets-open))
-         (escaped (call/cc
-                   (lambda (k)
-                     (refused-recording
-                      (lambda ()
-                        (perform-transfer (request (url-of o 'http "/status/200")
-                                                   'hook (lambda (chunk) (k 'escaped)))))))))
-         (escaped-counts (native-counts))
-         (calls 0)
-         (stale (let ((kept #f))
-                  (refused-recording
-                   (lambda ()
-                     (perform-transfer
-                      (request (url-of o 'raw "/raw/drip?bytes=3&gap=20")
-                               'hook (lambda (chunk)
-                                       (set! calls (+ calls 1))
-                                       (if kept
-                                           (let ((k kept)) (set! kept #f) (k 'again))
-                                           (call/cc (lambda (c) (set! kept c)))))))))))
-         (stale-counts (native-counts))
-         (after (sockets-open)))
-    (test-equal "CHUNK-HOOK escaping through a continuation captured outside the transfer is refused in the callable: callback-raised, 23, recording write-body's refusal of an escape, and the counts back at zero"
-      (list '(refused callback-raised 23 (write-body (escaped))) zero-counts)
-      (list escaped escaped-counts))
-    (test-equal "CHUNK-HOOK invoking an earlier chunk's continuation from a later chunk is refused the same way, the hook called twice, and the counts back at zero"
-      (list '(refused callback-raised 23 (write-body (escaped))) 2 zero-counts)
-      (list stale calls stale-counts))
-    (unless before (test-skip 1))
-    (test-equal "after both, this process holds as many sockets as before: libcurl closed each connection (Linux, from /proc; skipped elsewhere)"
-      'as-many
-      (if (and before after (= before after)) 'as-many (list 'before before 'after after))))
+                              (lambda ()
+                                (answer-of (lambda ()
+                                             (curl-engine-submit-with engine refused
+                                                                      '(("MAXREDIRS" . 1) ("NO_SUCH_OPTION" . 1))))))
+                              submit-to-stopped))))
+      (append (list stopped-refuses) sweeps
+              (list (native-counts)
+                    (other-thread-can (lambda () (every-lock) (curl-engine-state stopped)))))))
 
   (test-equal "the error carries libcurl's texts: strerror for 23, and the error buffer's, both strings; no recorded object for the body limit"
     '(body-limit 23 #t #t no-recorded)
@@ -1910,56 +1862,56 @@
                      (string? (curl-transfer-error-error-buffer e))
                      (if (eq? (curl-transfer-error-recorded e) #f) 'no-recorded 'recorded)))
               (#t (list 'raised (describe e))))
-      (perform-transfer (request (url-of o 'http "/status/200") 'limit 10))
+      (perform (request (url-of o 'http "/status/200") 'limit 10))
       'no-raise))
 
-  ;; --- options through perform-transfer-with
-  (test-equal "an option the loaded libcurl does not know raises unknown-option, naming it, with no code, and the counts back at zero"
-    (list '(unknown-option #f "NO_SUCH_OPTION") zero-counts)
+  ;; --- options through the test seam, curl-engine-submit-with
+  (test-equal "an option the loaded libcurl does not know raises unknown-option, naming it, with no code, and the counts back to the engine's alone"
+    (list '(unknown-option #f "NO_SUCH_OPTION") running-counts)
     (list (guard (e ((curl-transfer-error? e)
                      (list (curl-transfer-error-reason e) (curl-transfer-error-code e)
                            (curl-transfer-error-option e)))
                     (#t (list 'raised (describe e))))
-            (perform-transfer-with (request (url-of o 'http "/status/200")) '(("NO_SUCH_OPTION" . 1)))
+            (perform-with (request (url-of o 'http "/status/200")) '(("NO_SUCH_OPTION" . 1)))
             'no-raise)
           (native-counts)))
-  (test-equal "an option libcurl refuses raises setopt-failed, naming it, with its code, through each integer binding: MAXREDIRS -2 through the long one and MAX_RECV_SPEED_LARGE -1 through the off_t one are 43, never taken zero-extended, as 4294967294 and 4294967295 would be; the counts back at zero"
+  (test-equal "an option libcurl refuses raises setopt-failed, naming it, with its code, through each integer binding: MAXREDIRS -2 through the long one and MAX_RECV_SPEED_LARGE -1 through the off_t one are 43, never taken zero-extended, as 4294967294 and 4294967295 would be; the counts back to the engine's alone"
     (list (list 'setopt-failed curle-bad-function-argument "MAXREDIRS")
           (list 'setopt-failed curle-bad-function-argument "MAX_RECV_SPEED_LARGE")
-          zero-counts)
+          running-counts)
     (append (map (lambda (option)
                    (guard (e ((curl-transfer-error? e)
                               (list (curl-transfer-error-reason e) (curl-transfer-error-code e)
                                     (curl-transfer-error-option e)))
                              (#t (list 'raised (describe e))))
-                     (perform-transfer-with (request (url-of o 'http "/status/200")) (list option))
+                     (perform-with (request (url-of o 'http "/status/200")) (list option))
                      'no-raise))
                  (list '("MAXREDIRS" . -2) '("MAX_RECV_SPEED_LARGE" . -1)))
             (list (native-counts))))
 
   ;; --- the redirect pin, observed: without REDIR_PROTOCOLS_STR, libcurl
   ;; would follow to FTP, and answer 7, connection refused
-  (test-equal "REDIR_PROTOCOLS_STR, observed: FOLLOWLOCATION through the test seam, to ftp://127.0.0.1:1/, a protocol this libcurl lists, is refused as 1, CURLE_UNSUPPORTED_PROTOCOL, never tried; the counts back at zero"
-    (list 'ftp-listed (list 'refused 'perform-failed curle-unsupported-protocol) zero-counts)
+  (test-equal "REDIR_PROTOCOLS_STR, observed: FOLLOWLOCATION through the test seam, to ftp://127.0.0.1:1/, a protocol this libcurl lists, is refused as 1, CURLE_UNSUPPORTED_PROTOCOL, never tried; the counts back to the engine's alone"
+    (list 'ftp-listed (list 'refused 'perform-failed curle-unsupported-protocol) running-counts)
     (list (if (member "ftp" (loaded-protocols)) 'ftp-listed (list 'no-ftp-in (loaded-protocols)))
           (answer-of (lambda ()
-                       (perform-transfer-with (request (url-of o 'http "/redirect/302?to=ftp://127.0.0.1:1/"))
-                                              '(("FOLLOWLOCATION" . 1)))))
+                       (perform-with (request (url-of o 'http "/redirect/302?to=ftp://127.0.0.1:1/"))
+                                     '(("FOLLOWLOCATION" . 1)))))
           (native-counts)))
 
   ;; --- the option cache keeps its own copy of a name
   (test-equal "the option cache keeps a copy of each name: a caller's name, changed after its transfer, leaves the cache's key as it was"
     '(kept not-taken)
     (let ((name (string-copy "LOW_SPEED_TIME")))
-      (perform-transfer-with (request (url-of o 'http "/status/200")) (list (cons name 30)))
+      (perform-with (request (url-of o 'http "/status/200")) (list (cons name 30)))
       (string-set! name 0 #\X)
       (let ((keys (cached-option-names)))
         (list (if (member "LOW_SPEED_TIME" keys) 'kept 'lost)
               (if (member "XOW_SPEED_TIME" keys) 'taken 'not-taken)))))
 
   ;; --- a header value another thread changes while transfers run
-  (test-equal "a header value another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the value whole, never the CR, both seen; the counts back at zero"
-    (list '() '(refused whole) zero-counts)
+  (test-equal "a header value another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the value whole, never the CR, both seen; the counts back to the engine's alone"
+    (list '() '(refused whole) running-counts)
     (let* ((value (string-copy "abcdef"))
            (r (make-transfer-request (url-of o 'raw "/raw/echo") 'get (list (cons "X-Race" value))
                                      #f default-timeout #f #f #t #f))
@@ -1991,7 +1943,7 @@
           (let loop ((i 0) (odd '()) (seen '()))
             (if (= i 300)
                 (list (reverse odd) (filter (lambda (k) (memq k seen)) '(refused whole)) (native-counts))
-                (let* ((a (answer-of (lambda () (perform-transfer r))))
+                (let* ((a (answer-of (lambda () (perform r))))
                        (k (cond ((equal? a clean) 'whole)
                                 ((equal? a '(request-refused header-value line-break)) 'refused)
                                 (else #f))))
@@ -2000,72 +1952,59 @@
                         (if (and k (not (memq k seen))) (cons k seen) seen))))))
         (lambda () (set! stop #t) (thread-join flipper)))))
 
-  ;; --- two threads, each with its own transfer, at once. Positive evidence
-  ;; that they overlapped: each one's first chunk came before either ended.
-  (test-equal "two threads, each with its own transfer, at once: both started before either ended, both bodies whole, and the counts back at zero"
+  ;; --- two threads, each submitting its own transfer to the one engine, at
+  ;; once. Positive evidence that the transfers overlapped: this thread saw
+  ;; the engine's table hold both.
+  (test-equal "two threads, each submitting its own transfer to the one engine at once: the engine's table held both together, both bodies whole, each chunk on the engine's thread, and the counts back to the engine's alone"
     (list 'overlapped
-          '((response 200 http/1.1 (("Content-Length" "11")) "hello world")
-            (response 200 http/1.1 (("Content-Length" "11")) "hello world"))
-          zero-counts)
-    (let* ((lock (make-mutex))
-           (events '())
-           (note! (lambda (event) (with-mutex lock (set! events (cons event events)))))
-           (results (make-vector 2 'never-ran))
-           (run (lambda (i)
-                  (lambda ()
-                    (let ((first? #t))
-                      (vector-set! results i
-                                   (answer-of
-                                    (lambda ()
-                                      (perform-transfer
-                                       (request (url-of o 'raw "/raw/pause-mid-body?ms=600")
-                                                'hook (lambda (chunk)
-                                                        (when first? (set! first? #f) (note! (list i 'started)))))))))
-                      (note! (list i 'ended))))))
-           (threads (list (fork-thread (run 0)) (fork-thread (run 1)))))
+          '(((response 200 http/1.1 (("Content-Length" "11")) "hello world") ((5 accepted) (6 accepted)))
+            ((response 200 http/1.1 (("Content-Length" "11")) "hello world") ((5 accepted) (6 accepted))))
+          running-counts)
+    (let* ((results (make-vector 2 'never-ran))
+           (submitter (lambda (i)
+                        (lambda ()
+                          (vector-set! results i (run (request (url-of o 'raw "/raw/pause-mid-body?ms=600")))))))
+           (threads (list (fork-thread (submitter 0)) (fork-thread (submitter 1))))
+           (most (let watch ((most 0) (deadline (+ (now-ms) 20000)))
+                   (if (or (> (now-ms) deadline)
+                           (for-all (lambda (r) (not (eq? r 'never-ran))) (vector->list results)))
+                       most
+                       (let ((now-live (curl-engine-live-count engine)))
+                         (pause-ms 5)
+                         (watch (max most now-live) deadline))))))
       (for-each thread-join threads)
-      (let* ((order (reverse events))
-             (index (lambda (event) (let loop ((rest order) (n 0))
-                                      (cond ((null? rest) #f)
-                                            ((equal? (car rest) event) n)
-                                            (else (loop (cdr rest) (+ n 1)))))))
-             (s0 (index '(0 started))) (s1 (index '(1 started)))
-             (e0 (index '(0 ended))) (e1 (index '(1 ended))))
-        (list (if (and s0 s1 e0 e1 (< (max s0 s1) (min e0 e1))) 'overlapped (list 'order order))
-              (vector->list results)
-              (native-counts)))))
+      (list (if (= most 2) 'overlapped (list 'most-live most))
+            (vector->list results)
+            (native-counts))))
 
-  ;; --- the lock: a drip beside a thread that collects every 2 ms, so the
-  ;; collector runs between the callable's calls. Without lock-object it
-  ;; moves the callable's code, and libcurl calls where it was (plan,
-  ;; section 5.1.1).
-  (test-equal "the lock: a 50-byte drip, 10 ms apart, beside a thread that collects every 2 ms: the whole body, collections between the first chunk and the last, and the counts back at zero"
-    (list (list 'response 200 'http/1.1 '(("Content-Length" "50"))
-                "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx")
-          'collected-between zero-counts)
+  ;; --- the lock: a drip beside a thread that collects every 2 ms. The
+  ;; engine's thread waits in its __collect_safe poll between chunks, so the
+  ;; collector runs between the callable's calls. Without lock-object a
+  ;; collection moves the callable's code, and libcurl calls where it was
+  ;; (plan, section 5.1.1). The positive evidence: collections made while
+  ;; the engine's table held the transfer, more than its connect and the
+  ;; 10 ms before its first byte leave room for.
+  (test-equal "the lock: a 50-byte drip, 10 ms apart, beside a thread that collects every 2 ms: the whole body, every chunk accepted on the engine's thread, ten collections or more while it was live, and the counts back to the engine's alone"
+    (list (list (list 'response 200 'http/1.1 '(("Content-Length" "50"))
+                      "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx")
+                '(50 none))
+          'collected-while-live running-counts)
     (let* ((stop #f)
-           (collected 0)
+           (while-live 0)
            (collector (fork-thread
                        (lambda ()
                          (let loop ()
                            (unless stop
                              (make-bytevector 20000 1)
                              (collect-rendezvous)
-                             (set! collected (+ collected 1))
+                             (when (> (curl-engine-live-count engine) 0) (set! while-live (+ while-live 1)))
                              (pause-ms 2)
                              (loop))))))
-           (at-first #f)
-           (at-last #f)
-           (a (answer-of (lambda ()
-                           (perform-transfer
-                            (request (url-of o 'raw "/raw/drip?bytes=50&gap=10")
-                                     'hook (lambda (chunk)
-                                             (unless at-first (set! at-first collected))
-                                             (set! at-last collected))))))))
+           (r (run (request (url-of o 'raw "/raw/drip?bytes=50&gap=10")))))
       (set! stop #t)
       (thread-join collector)
-      (list a
-            (if (and at-first at-last (> at-last at-first)) 'collected-between (list 'collections at-first at-last))
+      (list (list (car r) (log-shape (cadr r)))
+            (if (>= while-live 10) 'collected-while-live (list 'collections-while-live while-live))
             (native-counts)))))
 
 (define scenarios-outcome
@@ -2076,9 +2015,21 @@
   'done
   scenarios-outcome)
 
-(test-equal "once every transfer has ended, the live-transfer table is empty, and the transfer count zero"
-  '(0 0)
-  (list (live-transfer-count) (cdr (assq 'transfer (native-counts)))))
+(test-equal "once every transfer has ended, the live-transfer table and the engine's are empty, and the transfer count zero"
+  '(0 0 0)
+  (list (live-transfer-count) (if engine-made? (curl-engine-live-count engine) engine)
+        (cdr (assq 'transfer (native-counts)))))
+
+;; The engine stops before the suite ends: suite-exit-status fails a suite
+;; whose counts are not all zero at its end, and the engine's multi handle
+;; is counted until its stop.
+(test-equal "the suite's engine stops, and every count is zero after"
+  (list 'stopped 0 zero-counts 0)
+  (if engine-made?
+      (begin (curl-engine-stop engine)
+             (list (curl-engine-state engine) (curl-engine-live-count engine) (native-counts)
+                   (live-transfer-count)))
+      engine))
 
 ;; No row: say so on the error port, with the row to add.
 (when (and (string? version) (not the-row))
@@ -2175,58 +2126,6 @@
       (cond ((not (eq? (row-problem row) 'ok)) (row-problem row))
             ((not (same-cases? (map car (row-answers row)) varying-cases)) (row-answers row))
             (else 'ok)))))
-
-;; --- the order the extents nest in, read from transfer.sls as data ------------------------
-;; libcurl documents that the CURLU, the header list and the error buffer must
-;; outlive the easy handle that uses them, yet 8.20.0's curl_easy_cleanup
-;; reads none of them: freed first, each passed every test above, under
-;; Valgrind too (the mutation log). So the nesting is read: each extent of
-;; perform-transfer-with stands once, inside exactly the ones before it.
-
-;; extent-heads : (Listof Symbol)
-;; perform-transfer-with's extents, outermost first.
-(define extent-heads
-  '(call-with-parsed-url call-with-sink call-with-error-buffer call-with-header-list call-with-easy))
-
-;; extents-within : Any (Listof Symbol) -> (Listof (Pairof Symbol (Listof Symbol)))
-;; Each form in X headed by one of extent-heads, with the heads of those
-;; around it, outermost first, ENCLOSING among them.
-(define (extents-within x enclosing)
-  (cond ((pair? x)
-         (let ((inner (if (memq (car x) extent-heads) (append enclosing (list (car x))) enclosing)))
-           (append (if (memq (car x) extent-heads) (list (cons (car x) enclosing)) '())
-                   (extents-within (car x) enclosing)
-                   (let loop ((rest (cdr x)) (found '()))
-                     (cond ((pair? rest) (loop (cdr rest) (append found (extents-within (car rest) inner))))
-                           (else found))))))
-        (else '())))
-
-;; transfer-extents : Any
-;; The extents of transfer.sls's perform-transfer-with, or what went wrong.
-(define transfer-extents
-  (guard (e (#t (list 'unreadable (describe e))))
-    (let* ((form (call-with-port (open-file-input-port transfer-source (file-options) (buffer-mode block)
-                                                       (make-transcoder (utf-8-codec)))
-                   read))
-           (definition (find (lambda (f) (and (pair? f) (eq? (car f) 'define) (pair? (cdr f))
-                                              (pair? (cadr f)) (eq? (car (cadr f)) 'perform-transfer-with)))
-                             (cddddr form))))
-      (if definition (extents-within (cddr definition) '()) '(no-definition)))))
-
-(test-equal "perform-transfer-with's extents each stand once, each inside exactly those before it: the CURLU, the key, the error buffer, the header list, then the easy handle, innermost, so cleaned up first"
-  '((call-with-parsed-url) (call-with-sink call-with-parsed-url)
-    (call-with-error-buffer call-with-parsed-url call-with-sink)
-    (call-with-header-list call-with-parsed-url call-with-sink call-with-error-buffer)
-    (call-with-easy call-with-parsed-url call-with-sink call-with-error-buffer call-with-header-list))
-  transfer-extents)
-
-(test-equal "the extent reader: a head is found at any depth, a form's head among them, with the heads around it, and a head in a sibling is not around another"
-  '((call-with-sink) (call-with-easy call-with-sink) (call-with-easy call-with-sink)
-    (call-with-error-buffer) (call-with-easy))
-  (extents-within '(begin (call-with-sink (lambda (k) (x (call-with-easy f)) (call-with-easy g)))
-                          (call-with-error-buffer h)
-                          ((call-with-easy (lambda (e) e)) 1))
-                  '()))
 
 (test-equal "the loaded libcurl's version has exactly one row in tests/known-transfer-verdicts.sexp"
   (list version)

@@ -16,7 +16,7 @@
 ;;; It never loads libcurl. (curl private native) does, and reads these
 ;;; through ftype pointers.
 (library (curl private layouts)
-  (export curl-version-info-data curl-easyoption curl-header)
+  (export curl-version-info-data curl-easyoption curl-header curl-msg)
   (import (curl private require-threaded)
           (rnrs)
           (only (chezscheme) define-ftype))
@@ -87,4 +87,20 @@
       (amount size_t)
       (index size_t)
       (origin unsigned-int)
-      (anchor uptr))))
+      (anchor uptr)))
+
+  ;; curl-msg : Ftype
+  ;; struct CURLMsg, curl/multi.h, every field: what curl_multi_info_read
+  ;; answers a pointer to. msg is a CURLMSG, an enum of int's size;
+  ;; easy-handle the transfer's easy handle. data is a union of a void *
+  ;; and a CURLcode, result: a transfer that ended, msg CURLMSG_DONE, has
+  ;; its CURLcode there, so the field is laid out as that member alone, an
+  ;; int at the union's offset, and named for it, data.result, which the
+  ;; suite reads as the C member's name. The union is a pointer's size, so
+  ;; the struct's size, which the suite checks, is the trailing padding's
+  ;; too.
+  (define-ftype curl-msg
+    (struct
+      (msg int)
+      (easy-handle uptr)
+      (data.result int))))

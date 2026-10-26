@@ -265,3 +265,21 @@ Both were settled by the maintainer.
   `test-transfer-tls` under `test-memory` is the evidence: with the total rule restored, it
   fails.
 
+
+## Amendment, 2026-10-25: per engine is the engine's table (M3 slice 2)
+
+- **The process counters stay the gate** (the M3 plan, §3.8). They gain a seventh kind,
+  `multi`, an engine's multi handle, counted when it is made and freed on the engine's thread.
+- **Decision 7's "per engine" is an engine's table of live transfers.** The engine records each
+  transfer it set up, by its easy handle, and takes it out when the transfer ends, is
+  cancelled or is stopped. A stop empties the table and checks it empty before the engine's
+  thread signals its end, so a suite that stops its engines asserts the process counts zero,
+  as every suite already does at its end. `test-engine` reads the table's size and the counts
+  after each cancel, stop and planted fault.
+- **A running engine holds one `multi` and one `block`, and nothing else between transfers.**
+  The block is its slot, where `curl_multi_perform` and `curl_multi_info_read` write their
+  counts, made when the engine starts and freed when it stops. A slot made and freed on each
+  call, as first built, let a caller that read the counts as an await returned find the block
+  6 reads in 100 (measured on 8.20.0), so a suite could see the engine mid-call. A suite that
+  keeps an engine for its scenarios asserts those two counts until it stops it, and zero
+  after.

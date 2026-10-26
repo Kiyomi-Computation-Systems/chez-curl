@@ -276,14 +276,13 @@
   (define (cite record phrase) (string-append record ": " phrase))
 
   (define cannot-block (cite adr-0013 "Calls that cannot block stay plain."))
-  (define can-block (cite adr-0013 "Known now: `curl_multi_poll` and `curl_easy_perform`."))
+  (define can-block (cite adr-0013 "`curl_multi_poll` is the engine's wait, so it is `__collect_safe`."))
   ;; What spike E1 measured (M3 slice 1; ADR-0013, accepted): the multi
   ;; calls that waited 9 to 10 s while a name lookup stalled, and those that
   ;; never took a millisecond. curl_easy_cleanup is plain for a handle taken
   ;; out of the engine's multi handle, and for the load's header probe's,
   ;; which never ran a transfer. After curl_easy_perform it waited about 9 s
-  ;; on 8.20.0: M2's blocking path, which slice 2 deletes, is the one place
-  ;; the plain binding is wrong.
+  ;; on 8.20.0; slice 2 deleted that path, and the binding with it.
   (define e1-can-block
     (cite adr-0013 "`curl_multi_perform`, `curl_multi_remove_handle` and `curl_multi_cleanup` can block, so each is `__collect_safe`."))
   (define e1-plain
@@ -303,10 +302,10 @@
   (define variadic-after-2
     (cite adr-0001 "Variadic entry points are bound once per value type, with `(__varargs_after 2)`."))
   ;; write-body, (curl private transfer)'s one callable, is invoked from
-  ;; inside curl_easy_perform, a __collect_safe call, so it reactivates the
-  ;; thread (CSUG).
+  ;; inside curl_multi_perform, a __collect_safe call, so it reactivates the
+  ;; thread (CSUG). Spike E1 saw it fire there and nowhere else.
   (define callback-in-perform
-    (cite adr-0013 "M2's transfer callbacks run inside `curl_easy_perform`, so they are."))
+    (cite adr-0013 "So the engine's write callable is `__collect_safe`, as its perform is."))
 
   ;; conventions-table : (Listof Row)
   ;; A Row is (List (U String Symbol) (Listof Convention) String), then
@@ -332,8 +331,8 @@
   ;; name bind-variadic, whose template carries the convention, so a
   ;; binding made any other way, directly with the convention included, is
   ;; the wrong binder, and make check-variadic's mutation of that template
-  ;; reaches every binding of them. curl_easy_perform's names bind-blocking,
-  ;; whose template carries __collect_safe, likewise.
+  ;; reaches every binding of them. The four multi calls that can block
+  ;; name bind-blocking, whose template carries __collect_safe, likewise.
   (define conventions-table
     (list (list "curl_version_info" '() cannot-block)
           (list "curl_global_init" '() cannot-block)
@@ -345,15 +344,15 @@
           (list "curl_easy_getinfo" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
           (list "curl_multi_setopt" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
           (list "curl_share_setopt" '((__varargs_after 2)) variadic-after-2 '(bound-by bind-variadic))
-          (list "curl_easy_perform" '(__collect_safe) can-block '(bound-by bind-blocking))
-          (list "curl_multi_poll" '(__collect_safe) can-block)
-          (list "curl_multi_perform" '(__collect_safe) e1-can-block)
-          (list "curl_multi_remove_handle" '(__collect_safe) e1-can-block)
-          (list "curl_multi_cleanup" '(__collect_safe) e1-can-block)
+          (list "curl_multi_poll" '(__collect_safe) can-block '(bound-by bind-blocking))
+          (list "curl_multi_perform" '(__collect_safe) e1-can-block '(bound-by bind-blocking))
+          (list "curl_multi_remove_handle" '(__collect_safe) e1-can-block '(bound-by bind-blocking))
+          (list "curl_multi_cleanup" '(__collect_safe) e1-can-block '(bound-by bind-blocking))
           (list "curl_multi_init" '() e1-plain)
           (list "curl_multi_add_handle" '() e1-plain)
           (list "curl_multi_wakeup" '() e1-plain)
           (list "curl_multi_info_read" '() e1-plain)
+          (list "curl_multi_strerror" '() cannot-block)
           (list "memcpy" '() memcpy-plain (list 'bytevector-crossing one-checked-wrapper))
           (list "strlen" '() cannot-block)
           (list "curl_url" '() cannot-block)

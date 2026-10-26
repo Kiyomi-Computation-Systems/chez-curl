@@ -1,8 +1,8 @@
 #!r6rs
-;;; tests/transfer-tls-env.sps: one blocking request against a TLS face, run
-;;; in a child Chez of tests/test-transfer-tls.sps, which sets SSL_CERT_FILE
-;;; or SSL_CERT_DIR for the child alone, through its command, never in its
-;;; own environment (ADR-0018). Guix's libcurl reads both at
+;;; tests/transfer-tls-env.sps: one request against a TLS face, on an engine
+;;; of its own, run in a child Chez of tests/test-transfer-tls.sps, which
+;;; sets SSL_CERT_FILE or SSL_CERT_DIR for the child alone, through its
+;;; command, never in its own environment (ADR-0018). Guix's libcurl reads both at
 ;;; curl_global_init and writes them over CAINFO and CAPATH when a transfer
 ;;; starts; Guix's 8.6.0 set them as the easy handle's defaults, which a
 ;;; request's setopts win; any other libcurl ignores them. The suite judges
@@ -10,12 +10,13 @@
 ;;;
 ;;;   transfer-tls-env.sps URL CA-FILE
 ;;;
-;;; It makes one request, URL with CA-FILE as its CA file and verification
-;;; on, and prints four data, each on its own line:
+;;; It makes an engine, submits one request to it, URL with CA-FILE as its
+;;; CA file and verification on, awaits it, stops the engine, and prints
+;;; four data, each on its own line:
 ;;;
 ;;;   (libcurl VERSION)                                     the libcurl it loaded
 ;;;   (environment (SSL_CERT_FILE . V) (SSL_CERT_DIR . V))  each #f when unset
-;;;   (transfer ANSWER COUNTS)                              the native counts after
+;;;   (transfer ANSWER COUNTS)                              the native counts, the engine stopped
 ;;;   (done)
 ;;;
 ;;; ANSWER is (response STATUS VERSION HEADERS BODY), each header (NAME
@@ -30,6 +31,7 @@
         (only (curl) loaded-libcurl libcurl-info-version)
         (curl private counters)
         (curl private conditions)
+        (curl private engine)
         (curl private transfer))
 
 ;; show : Any -> Unspecified
@@ -62,10 +64,14 @@
   (show (list 'environment
               (cons 'SSL_CERT_FILE (getenv "SSL_CERT_FILE"))
               (cons 'SSL_CERT_DIR (getenv "SSL_CERT_DIR"))))
-  (let ((answer (answer-of
-                 (lambda ()
-                   (perform-transfer
-                    (make-transfer-request (car args) 'get '() #f 20000 #f (cadr args) #t #f))))))
+  (let* ((engine (make-curl-engine))
+         (answer (answer-of
+                  (lambda ()
+                    (curl-token-await
+                     (curl-engine-submit engine
+                                         (make-transfer-request (car args) 'get '() #f 20000 #f (cadr args)
+                                                                #t #f)))))))
+    (curl-engine-stop engine)
     (show (list 'transfer answer (native-counts))))
   (show '(done))
   (exit 0))

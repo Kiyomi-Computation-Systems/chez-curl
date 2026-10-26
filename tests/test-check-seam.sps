@@ -316,6 +316,30 @@
                   (string-append (at "callable-elsewhere" "http-client/h.sls") ": (http-client h) "
                                  (library-only "lock-object" "(curl private transfer)"))))
 
+   (list "engine-listed"
+         "rule (f), passing: fork-thread, disable-interrupts and enable-interrupts imported by (curl private engine), the one library listed for each, with make-mutex, with-mutex, critical-section, sleep and make-time beside them"
+         (holds 2 2))
+   (list "engine-elsewhere"
+         "rule (f): fork-thread and disable-interrupts imported by a library not listed for them, in either family, or by a name that only looks like the listed one, and the listed library's own other names; and condition-wait and mutex-acquire, which no list holds"
+         (refused 7
+                  (string-append (at "engine-elsewhere" "curl/private/engine.sls")
+                                 ": (curl private engine) "
+                                 (library-only "foreign-alloc" "(curl private memory)"))
+                  (string-append (at "engine-elsewhere" "curl/private/engine/extra.sls")
+                                 ": (curl private engine extra) "
+                                 (library-only "fork-thread" "(curl private engine)"))
+                  (string-append (at "engine-elsewhere" "curl/private/transfer.sls")
+                                 ": (curl private transfer) "
+                                 (library-only "fork-thread" "(curl private engine)"))
+                  (string-append (at "engine-elsewhere" "curl/x.sls") ": (curl x) "
+                                 (not-listed "condition-wait"))
+                  (string-append (at "engine-elsewhere" "curl/x.sls") ": (curl x) "
+                                 (library-only "disable-interrupts" "(curl private engine)"))
+                  (string-append (at "engine-elsewhere" "http-client/h.sls") ": (http-client h) "
+                                 (not-listed "mutex-acquire"))
+                  (string-append (at "engine-elsewhere" "http-client/h.sls") ": (http-client h) "
+                                 (library-only "fork-thread" "(curl private engine)"))))
+
    ;; --- rule (g): no library exports a name it imports from (chezscheme) ---
    (list "export-chez"
          "rule (g): a name imported from (chezscheme) exported, plain or as a rename spec's internal name, in either family, each in export order; a name from (rnrs), a rename of a library's own definition to a (chezscheme) name, and a definition named like a (chezscheme) binding are not named"

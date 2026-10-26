@@ -208,6 +208,15 @@ it should not be a comment. (chez-cmark-gfm)
   case is settled for M3: Chez locks no library's invocation, so an engine
   loads libcurl before its thread starts (ADR-0002, amended 2026-10-24).
   (chez-curl, M0 slice 3)
+* **A top-level program runs every library body it reaches before its first
+  line.** In a program importing `(curl private engine)` alone, and referring to
+  it only on its last line, libcurl was already mapped at its first expression:
+  the program's invoke requirements, and theirs, run first. So in a program no
+  thread can make a first reference, and the M3 plan's check of the engine's
+  load, a child whose first reference is `make-curl-engine`, passed with that
+  early reference removed, 20 runs of 20: it could not fail, and was dropped.
+  Only `eval`, in an `environment` that loaded a library without invoking it,
+  reaches the race (spike E1's `load-race.sps`). (chez-curl, M3 slice 2)
 * **Chez's `system` stops silently at a NUL.** The command goes to C as a
   NUL-terminated string, so whatever follows the NUL is dropped. Measured at the
   pin: `echo before`, then a NUL, then `> /tmp/nul-out` printed `before` to
@@ -294,12 +303,14 @@ it should not be a comment. (chez-cmark-gfm)
   reversed (ADR-0013, amended 2026-10-23): an escape from perform is allowed, chez-curl
   never calls libcurl on that handle again, and it stays counted. Each native object is
   made, or freed, in one short critical section with the record of it: its count, and the
-  variable its free reads. (chez-curl)
+  variable its free reads. M3 slice 2 deleted that path: the engine's thread runs no caller
+  code, but for a process-wide `collect-request-handler`, which could escape there, and the
+  window rule is all that stays (ADR-0013, amended 2026-10-25). (chez-curl)
 * **`with-mutex` takes its mutex before its own `dynamic-wind`.** An engine's expiry between
   the two left the mutex held. Chez's mutexes are recursive, so the thread that held it never
   noticed, but every other thread then blocked on it: 4 of 11 mutants hung in the two-thread
   test, every thread in a futex wait. So every mutex is held through `critical-section`
-  around `with-mutex`. (chez-curl)
+  around `with-mutex`, and no hold waits (below). (chez-curl)
 * **An after thunk that raises during an engine's expiry kills the engine.** The test hook's
   refusal of a continuation exit raises in its `dynamic-wind`'s after thunk. When an engine's
   fuel ran out inside the hook, that raise came during the engine's own unwind, and the call
@@ -328,13 +339,23 @@ it should not be a comment. (chez-cmark-gfm)
   wait ended, 3 s later, even with timed waits of 100 ms in a loop: the event
   counter again. Leaving a critical section runs pending events at once, so
   timed waits each inside their own `critical-section` answered within one
-  wait. Spike E1 sent SIGINT to the other thread's id instead: the handler never
+  wait. But a thread waiting inside a critical section stays active: Chez's
+  `condition-wait` deactivates it only with interrupts on. So every other
+  thread's collection waited for the wait to end, a median 80 ms of 100, and a
+  prototype engine's transfers, awaited so, took 100 or 200 ms each, its own
+  thread held in a collection. A wait whose mutex a critical `dynamic-wind`
+  held, waiting with interrupts on, answered Ctrl-C and stalled no collection
+  in a test, but deadlocked in use: a waiter holding the mutex with interrupts
+  on joined a collection, while a thread blocked on that mutex with interrupts
+  off stayed active, and four caller threads hung within 1 s. So a wait polls,
+  holding nothing while it sleeps (ADR-0013, amended 2026-10-25, after the
+  slice's review). Spike E1 sent SIGINT to the other thread's id instead: the handler never
   ran. On Linux, Chez installs its handler without `SA_RESTART`, so the signal
   ended that thread's `sleep` and `curl_multi_poll` at about 1 s, but not its
   `condition-wait`. So a signal the kernel hands an engine's thread is lost,
   and ends its poll early. glibc's `system` also ignores SIGINT in the whole
   process while its command runs (`system(3)`): a Ctrl-C test captures nothing
-  while it waits. (chez-curl, the M3 plan and spike E1)
+  while it waits. (chez-curl, the M3 plan, spike E1 and M3 slice 2)
 
 ## Checks and environment
 
