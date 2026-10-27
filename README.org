@@ -20,6 +20,46 @@ An HTTP Client for Chez Scheme built on libcurl.
 
 ** Configuration
 
+*** What a transfer reads from the environment
+
+libcurl, and the TLS library under it, read some variables from your
+program's environment. chez-curl never changes them.
+
+- *Proxies.* =http_proxy=, =https_proxy=, =HTTPS_PROXY=, =all_proxy= and
+  =ALL_PROXY= send a transfer through the proxy they name. =no_proxy= and
+  =NO_PROXY= list hosts that go direct. =HTTP_PROXY= is ignored. A request
+  made with ='proxy #f= goes direct, whatever they say.
+- *A proxy's TLS.* An =https://= proxy is checked against libcurl's system
+  store: on Guix, the one =SSL_CERT_FILE= names. A request's =ca-file= and
+  =verify= are for the server, never the proxy.
+- *Guix's =SSL_CERT_FILE= and =SSL_CERT_DIR=.* Guix's libcurl reads both when
+  it loads. Its 8.20.0 puts =SSL_CERT_FILE= in place of a request's
+  =ca-file=, and adds =SSL_CERT_DIR='s certificates beside it. So on any Guix
+  libcurl, if either was set when your program started, a request with a
+  =ca-file= and =verify= on is refused when you submit it, naming the
+  variable. Unset it before starting the program, or leave out =ca-file= to
+  trust the store it names.
+- *A =ca-file= named =pkcs11:...=.* GnuTLS reads a path that begins
+  =pkcs11:=, in any case, as a PKCS#11 token, not a file. chez-curl refuses
+  such a =ca-file= with every TLS library. Name the file as =./pkcs11:...=.
+- *=SSLKEYLOGFILE=* makes the TLS library write every transfer's secrets to
+  the file it names, so anyone with that file can read the traffic. Use it
+  only to debug.
+- *=OPENSSL_CONF=* can weaken what an OpenSSL build checks: one at security
+  level 0 let a 1024-bit certificate pass.
+- *macOS and =CURL_SSL_BACKEND=.* Apple's libcurl has two TLS libraries and
+  uses LibreSSL unless =CURL_SSL_BACKEND= picks the other. Apple's LibreSSL
+  checks the keychain when a =ca-file= fails, so a server the keychain trusts
+  passes whatever the =ca-file= names. So there a request with a =ca-file=
+  and =verify= on is refused when you submit it. Start the program with
+  =CURL_SSL_BACKEND=secure-transport=, which keeps the =ca-file= the only
+  anchor. =make test= sets it on macOS. Apple's =OPENSSL_X509_TEA_DISABLE=1=
+  turns the keychain fallback off too, but chez-curl does not read it yet,
+  and still refuses.
+- *The request size.* libcurl 8.7.0 and 8.7.1, the Mac's among them, count
+  no bytes sent, ever. On them a failure from a transfer that ran has a
+  request size of =#f=, unknown, not =0=.
+
 ** License
 
 © [[https://kiyomicomputation.systems/][Kiyomi Computation Systems LLC]]. Licensed under BSD 3-Clause — see

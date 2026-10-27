@@ -63,6 +63,11 @@
 ;;;     that take transfer.sls's mutexes, and of a refused submit;
 ;;;   - framing headers, Content-Length and Transfer-Encoding, refused;
 ;;;   - hermetic: no proxy variable is set;
+;;;   - the proxy field, in a child, tests/transfer-proxy.sps, given
+;;;     http_proxy or all_proxy at the http face, which stands in for the
+;;;     proxy, through its command alone, no_proxy and NO_PROXY cleared:
+;;;     environment goes through it, #f direct, judged by the target the
+;;;     face's /echo saw (ADR-0024, decision 1);
 ;;;   - the native objects' lifetimes: the counts while a transfer is live,
 ;;;     and, read from transfer.sls as data, set-transfer-options!' order,
 ;;;     start-transfer!'s making order against free-transfer!'s freeing
@@ -86,7 +91,8 @@
         (rnrs mutable-strings)
         (rnrs mutable-pairs)
         (only (chezscheme) fork-thread thread-join make-mutex with-mutex collect-rendezvous
-              sleep make-time current-time time-second time-nanosecond getenv get-thread-id)
+              sleep make-time current-time time-second time-nanosecond getenv get-thread-id
+              library-directories)
         (curl-testing)
         (curl)
         (curl private engine)
@@ -763,6 +769,54 @@
   '()
   (filter (lambda (name) (getenv name)) proxy-variables))
 
+;; --- the proxy field's child: tests/transfer-proxy.sps ----------------------------------
+
+;; library-path : -> String
+;; This suite's library path, as --libdirs takes it.
+(define (library-path)
+  (let loop ((dirs (map car (library-directories))) (text ""))
+    (cond ((null? dirs) text)
+          ((string=? text "") (loop (cdr dirs) (car dirs)))
+          (else (loop (cdr dirs) (string-append text ":" (car dirs)))))))
+
+;; read-all : String -> (Listof Any)
+;; TEXT read as data, each datum in turn; a datum that does not read ends
+;; the list with (unreadable).
+(define (read-all text)
+  (let ((port (open-string-input-port text)))
+    (let loop ((found '()))
+      (let ((datum (guard (e (#t '(unreadable))) (read port))))
+        (cond ((eof-object? datum) (reverse found))
+              ((equal? datum '(unreadable)) (reverse (cons datum found)))
+              (else (loop (cons datum found))))))))
+
+;; child-script : String
+;; sh -c CHILD-SCRIPT sh COMMAND...: COMMAND, with stdin at its end, under
+;; GNU timeout (gtimeout on macOS), killed with SIGKILL after 60 s, exit
+;; 137; with neither found, exit 125, saying so. The shell's own stderr is
+;; /dev/null, so dash's "Killed" is not the command's, as in
+;; (curl-testing)'s bounded-script.
+(define child-script
+  (string-append
+   "t=$(command -v timeout || command -v gtimeout) || { echo 'transfer-proxy: no timeout' >&2; exit 125; }\n"
+   "exec 3>&2 2>/dev/null\n"
+   "( exec \"$t\" -s KILL 60 \"$@\" </dev/null 2>&3 3>&- )\n"
+   "exit $?\n"))
+
+;; proxy-child : (Listof String) String String -> (U (List Integer (Listof Any) String) (List 'raised String))
+;; tests/transfer-proxy.sps on URL with the proxy field PROXY, environment
+;; or none, in a child Chez under child-script, with no_proxy and NO_PROXY
+;; cleared and ASSIGNMENTS, each NAME=VALUE, in its environment alone, set
+;; by env in its command: its exit status, what it printed, read as data,
+;; and its stderr.
+(define (proxy-child assignments url proxy)
+  (guard (e (#t (list 'raised (describe e))))
+    (let ((r (capture-command (append (list "sh" "-c" child-script "sh" "env" "-u" "no_proxy" "-u" "NO_PROXY")
+                                      assignments
+                                      (list (getenv "CHEZ") "--libdirs" (library-path)
+                                            "--program" "tests/transfer-proxy.sps" url proxy)))))
+      (list (car r) (read-all (cadr r)) (caddr r)))))
+
 ;; --- the suite's engine ------------------------------------------------------------------
 
 (test-equal "the suite's engine is made: running, on a thread of its own, holding its multi handle and nothing else"
@@ -1180,15 +1234,16 @@
 
 ;; --- the test seam's deny-list (ADR-0009, amended 2026-10-23) ---------------------------
 
-(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT among them, and the pins' bitmasks; then each request field's, FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, and the CA file's CAINFO_BLOB and SSL_OPTIONS; then every proxy TLS option"
+(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT among them, and the pins' bitmasks; then each request field's, FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's NOPROXY, PRE_PROXY, PROXYPORT and PROXYTYPE; then every proxy TLS option"
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
     "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
     "CURLU" "NOBODY" "CUSTOMREQUEST" "HTTPHEADER" "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "USERAGENT"
     "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "CAINFO" "CAPATH"
-    "SSL_VERIFYPEER" "SSL_VERIFYHOST" "FOLLOWLOCATION"
+    "SSL_VERIFYPEER" "SSL_VERIFYHOST" "PROXY" "FOLLOWLOCATION"
     "TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "PUT" "UPLOAD"
     "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE" "INFILESIZE_LARGE"
     "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
+    "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
     "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
     "PROXY_CAINFO" "PROXY_CAINFO_BLOB" "PROXY_CAPATH" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
     "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
@@ -1197,12 +1252,12 @@
     "PROXY_TLSAUTH_PASSWORD")
   owned-option-names)
 
-(test-equal "request-field-options, written out: url's CURLU; method's NOBODY and CUSTOMREQUEST; headers' HTTPHEADER; body's POSTFIELDSIZE_LARGE and COPYPOSTFIELDS; user-agent's USERAGENT; timeout-ms's TIMEOUT_MS; connect-timeout-ms's CONNECTTIMEOUT_MS; body-limit's MAXFILESIZE_LARGE; ca-file's CAINFO and CAPATH; verify's SSL_VERIFYPEER and SSL_VERIFYHOST; and follow's FOLLOWLOCATION"
+(test-equal "request-field-options, written out: url's CURLU; method's NOBODY and CUSTOMREQUEST; headers' HTTPHEADER; body's POSTFIELDSIZE_LARGE and COPYPOSTFIELDS; user-agent's USERAGENT; timeout-ms's TIMEOUT_MS; connect-timeout-ms's CONNECTTIMEOUT_MS; body-limit's MAXFILESIZE_LARGE; ca-file's CAINFO and CAPATH; verify's SSL_VERIFYPEER and SSL_VERIFYHOST; proxy's PROXY; and follow's FOLLOWLOCATION"
   '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST") (headers "HTTPHEADER")
     (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS") (user-agent "USERAGENT")
     (timeout-ms "TIMEOUT_MS") (connect-timeout-ms "CONNECTTIMEOUT_MS")
     (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
-    (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (follow "FOLLOWLOCATION"))
+    (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY") (follow "FOLLOWLOCATION"))
   request-field-options)
 
 (test-equal "every option of every request field is an owned option, so the test seam refuses it"
@@ -1210,8 +1265,8 @@
   (filter (lambda (name) (not (member name owned-option-names)))
           (apply append (map cdr request-field-options))))
 
-(test-equal "a request's fields, written out, in the record's order: url, method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, then the private fault and follow"
-  '(url method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify fault follow)
+(test-equal "a request's fields, written out, in the record's order: url, method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, then the private fault and follow"
+  '(url method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy fault follow)
   (guard (e (#t (list 'raised (describe e))))
     (vector->list (record-type-field-names (record-rtd (make-curl-request "http://a/"))))))
 
@@ -1247,6 +1302,14 @@
        '("CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST" "CAINFO_BLOB" "SSL_OPTIONS"))
   (map (lambda (name) (seam-refusal (list (cons name 1))))
        '("CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST" "CAINFO_BLOB" "SSL_OPTIONS")))
+
+;; The proxy field's option and its twins, written out for the same reason
+;; (ADR-0024, decision 1).
+(test-equal "the test seam refuses PROXY, the proxy field's option, and NOPROXY, PRE_PROXY, PROXYPORT and PROXYTYPE, its twins, each by id, as owned-option, naming it, at submit, before anything native"
+  (map (lambda (name) (list (list 'request-refused 'options name 'owned-option) running-counts running-counts))
+       '("PROXY" "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE"))
+  (map (lambda (name) (seam-refusal (list (cons name 1))))
+       '("PROXY" "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE")))
 
 (test-equal "the test seam refuses QUICK_EXIT, which every engine transfer sets where the loaded libcurl knows it, by id, as owned-option, naming it, at submit, before anything native; a libcurl without it, the floor, refuses it as unknown-option (ADR-0009, amended 2026-10-24)"
   (list (if (curl-easy-option "QUICK_EXIT")
@@ -1406,6 +1469,31 @@
         ((pair? x) (+ (symbol-count name (car x)) (symbol-count name (cdr x))))
         (else 0)))
 
+;; definitions-naming : Symbol Any -> (Listof Symbol)
+;; The name of each top-level definition in LIBRARY, a library form, whose
+;; body names NAME, in order.
+(define (definitions-naming name library)
+  (if (and (list? library) (> (length library) 4))
+      (fold-right (lambda (form found)
+                    (if (and (pair? form) (eq? (car form) 'define) (pair? (cdr form))
+                             (> (symbol-count name (cddr form)) 0))
+                        (cons (if (pair? (cadr form)) (car (cadr form)) (cadr form)) found)
+                        found))
+                  '() (cddddr library))
+      (list 'no-library library)))
+
+;; A transfer that ran reports libcurl's count through ran-request-size
+;; alone, which reported-request-size judges by version: #f on 8.7.0 and
+;; 8.7.1, whose count is broken (ADR-0022, amended 2026-10-27). Only a lane
+;; on one of them shows it by behaviour, and CI runs none, so the reading is
+;; held here, as data.
+(test-equal "CURLINFO_REQUEST_SIZE is read in transfer.sls by ran-request-size alone, through reported-request-size; finish-transfer reads a size by ran-request-size at both its failures, and never curlinfo-request-size itself"
+  '((ran-request-size) 1 2 0)
+  (list (definitions-naming 'curlinfo-request-size transfer-library)
+        (symbol-count 'reported-request-size (transfer-definition 'ran-request-size))
+        (symbol-count 'ran-request-size (transfer-definition 'finish-transfer))
+        (symbol-count 'curlinfo-request-size (transfer-definition 'finish-transfer))))
+
 ;; set-name : Any -> Any
 ;; NAME, as a set-option! call writes it: a string as itself; (field-option
 ;; 'FIELD) as FIELD's one option, from request-field-options; (car
@@ -1448,9 +1536,9 @@
                   (cddr d)))
       d))
 
-(test-equal "set-transfer-options!, read from transfer.sls, form by form: the pins first, then ERRORBUFFER, CURLU, WRITEFUNCTION and WRITEDATA, then the loop over method-settings' answer, then the request's HTTPHEADER, USERAGENT, TIMEOUT_MS, CONNECTTIMEOUT_MS and MAXFILESIZE_LARGE, then set-tls-options!, then the private follow field's FOLLOWLOCATION, then the test seam's settings; set-pinned-options! and set-transfer-options! each stand twice in transfer.sls, a definition and one call"
+(test-equal "set-transfer-options!, read from transfer.sls, form by form: the pins first, then ERRORBUFFER, CURLU, WRITEFUNCTION and WRITEDATA, then the loop over method-settings' answer, then the request's HTTPHEADER, USERAGENT, TIMEOUT_MS, CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE and PROXY, then set-tls-options!, then the private follow field's FOLLOWLOCATION, then the test seam's settings; set-pinned-options! and set-transfer-options! each stand twice in transfer.sls, a definition and one call"
   '((pins "ERRORBUFFER" "CURLU" "WRITEFUNCTION" "WRITEDATA" method "HTTPHEADER" "USERAGENT" "TIMEOUT_MS"
-          "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" tls "FOLLOWLOCATION" seam)
+          "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "PROXY" tls "FOLLOWLOCATION" seam)
     2 2)
   (list (setting-order (transfer-definition 'set-transfer-options!))
         (symbol-count 'set-pinned-options! transfer-library)
@@ -1517,10 +1605,11 @@
               'the-making-reversed
               (list 'made made 'freed freed)))))
 
-(test-equal "prepare-transfer, read from transfer.sls, checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the test seam's settings, then the URL, parsed and its scheme checked; then it makes the plan"
-  '(curl-request? snapshot ca-file-copy checked-settings call-with-parsed-url require-http-scheme make-plan)
-  (symbols-in '(curl-request? snapshot ca-file-copy checked-settings call-with-parsed-url require-http-scheme
-                make-plan)
+(test-equal "prepare-transfer, read from transfer.sls, checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the test seam's settings, the CA file against the environment the libcurl loaded with, then the URL, parsed and its scheme checked; then it makes the plan"
+  '(curl-request? snapshot ca-file-copy checked-settings check-ca-environment call-with-parsed-url
+    require-http-scheme make-plan)
+  (symbols-in '(curl-request? snapshot ca-file-copy checked-settings check-ca-environment call-with-parsed-url
+                require-http-scheme make-plan)
               (transfer-definition 'prepare-transfer)))
 
 ;; pin-names : (Listof String)
@@ -2287,7 +2376,45 @@
       (thread-join collector)
       (list (list (car r) (log-shape (cadr r)))
             (if (>= while-live 10) 'collected-while-live (list 'collections-while-live while-live))
-            (native-counts)))))
+            (native-counts))))
+
+  ;; --- the proxy field (ADR-0024, decision 1), in a child given http_proxy
+  ;; or all_proxy at the http face, and no no_proxy or NO_PROXY, through its
+  ;; command alone, so this suite stays hermetic. The http face stands in
+  ;; for the proxy: a target in absolute form is routed by its path, and
+  ;; /echo's first line shows the target as it came. So the proxy's own
+  ;; record says how each request reached it: GET http://HOST/echo through
+  ;; the proxy, GET /echo direct.
+  (let* ((proxy (string-append "http://" (host-of o 'http)))
+         (url (url-of o 'http "/echo"))
+         (through (string-append "GET " url " HTTP/1.1"))
+         (direct "GET /echo HTTP/1.1"))
+    (for-each
+     (lambda (row)
+       (let ((variable (list-ref row 0)) (field (list-ref row 1)) (line (list-ref row 2))
+             (text (list-ref row 3)))
+         (test-equal (string-append "the proxy field, in a child: " text)
+           (list 0
+                 (list (list 'environment
+                             (cons 'http_proxy (and (equal? variable "http_proxy") proxy))
+                             (cons 'all_proxy (and (equal? variable "all_proxy") proxy))
+                             '(no_proxy . #f) '(NO_PROXY . #f))
+                       (list 'transfer (list 'response 200 line) zero-counts)
+                       '(done))
+                 "")
+           (proxy-child (if variable (list (string-append variable "=" proxy)) '()) url field))))
+     (list (list "http_proxy" "default" through
+                 "http_proxy at the http face and no proxy key, the default: the request reaches the proxy, its target in absolute form")
+           (list "http_proxy" "environment" through
+                 "http_proxy at the http face and the proxy key at environment: through the proxy")
+           (list "http_proxy" "none" direct
+                 "http_proxy at the http face and the proxy key at #f: the request goes direct, PROXY \"\" reading no variable")
+           (list "all_proxy" "default" through
+                 "all_proxy at the http face and no proxy key, the default: through the proxy")
+           (list "all_proxy" "none" direct
+                 "all_proxy at the http face and the proxy key at #f: direct")
+           (list #f "default" direct
+                 "no proxy variable and no proxy key: direct, so the variable is what sent the others through")))))
 
 (define scenarios-outcome
   (guard (e (#t (list 'raised (describe e))))

@@ -34,6 +34,10 @@
 //           GET /chunked                 three writes, each its own chunk
 //           ANY /echo                    the request as Node parsed it
 //           anything else                404, body "not found\n"
+//         A target in absolute form, http://AUTHORITY then its path, as a
+//         client sends one to a proxy, is routed by that path, / when it
+//         has none, so the face can stand in for a plain proxy; /echo's
+//         first line shows the target as it came. https:// is not taken.
 //         204 and 304 carry no body and no Content-Length; 205 carries
 //         Content-Length: 0 and no body.
 //   raw   node:net. Reads the request head, up to the first CRLF CRLF, and
@@ -154,8 +158,10 @@ function trackSession(session) {
 // route: what the well-formed faces answer for the request target URL.
 // TARGET must decode to printable ASCII with no space, which is what a header
 // value can carry unchanged.
-function route(url) {
-  if (typeof url !== 'string') return { kind: 'not-found' };
+function route(target) {
+  if (typeof target !== 'string') return { kind: 'not-found' };
+  const absolute = /^http:\/\/[^/?#]*(.*)$/.exec(target);
+  const url = absolute ? (absolute[1].startsWith('/') ? absolute[1] : `/${absolute[1]}`) : target;
   const at = url.indexOf('?');
   const path = at < 0 ? url : url.slice(0, at);
   const query = at < 0 ? undefined : url.slice(at + 1);

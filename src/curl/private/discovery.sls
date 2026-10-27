@@ -22,7 +22,7 @@
 ;;;      returned without asking exists?.
 (library (curl private discovery)
   (export choose-libcurl libcurl-world linux-triple libcurl-candidates
-          libcurl-sources)
+          libcurl-sources mapped-file bytes-hold? backend-in-use)
   (import (curl private require-threaded)
           (rnrs)
           (curl private conditions))
@@ -123,6 +123,101 @@
     (and path
          (string-prefix? "/gnu/store/" path)
          (string=? (basename path) "libc.so.6")))
+
+  ;; mapped-file : (U String #f) Natural -> (U String #f)
+  ;; The pathname of the line of MAPS-TEXT, the text of /proc/self/maps,
+  ;; whose range, START-END in hex, holds ADDRESS: the file the kernel maps
+  ;; it from, every symlink resolved. #f when MAPS-TEXT is #f, when no line
+  ;; holds ADDRESS, or when the line that does names no file. A line whose
+  ;; range does not read as two hex numbers is skipped. The native layer
+  ;; asks it for curl_version_info's entry point, so the answer is the file
+  ;; of the libcurl it calls (ADR-0024, amended 2026-10-26).
+  (define (mapped-file maps-text address)
+    (and maps-text
+         (let loop ((rest (lines maps-text)))
+           (cond ((null? rest) #f)
+                 ((range-holds? (car rest) address) (line-path (car rest)))
+                 (else (loop (cdr rest)))))))
+
+  ;; bytes-hold? : Bytevector Bytevector -> Boolean
+  ;; Whether PATTERN, one byte or more, stands anywhere in BYTES. An empty
+  ;; PATTERN is an assertion violation. The native layer asks it whether the
+  ;; loaded libcurl's file holds Guix's patch's literal, SSL_CERT_FILE
+  ;; (ADR-0024, amended 2026-10-26: the key).
+  (define (bytes-hold? bytes pattern)
+    (let ((n (bytevector-length bytes)) (m (bytevector-length pattern)))
+      (when (= m 0) (assertion-violation 'bytes-hold? "a pattern is one byte or more" pattern))
+      (let ((first (bytevector-u8-ref pattern 0)))
+        (let scan ((i 0))
+          (cond ((> (+ i m) n) #f)
+                ((and (= (bytevector-u8-ref bytes i) first)
+                      (let match ((j 1))
+                        (or (= j m)
+                            (and (= (bytevector-u8-ref bytes (+ i j)) (bytevector-u8-ref pattern j))
+                                 (match (+ j 1))))))
+                 #t)
+                (else (scan (+ i 1))))))))
+
+  ;; backend-in-use : (U String #f) -> (U String #f)
+  ;; The TLS backend in use, as curl_version_info's ssl_version names it:
+  ;; TEXT with each parenthesised group taken out, an unclosed one to its
+  ;; end, and the spaces left at its ends trimmed, its version after a /
+  ;; kept. A MultiSSL libcurl puts every backend but the one in use in
+  ;; parentheses, each a backend's own version text, which may hold spaces:
+  ;; OpenSSL/1.1.1k FIPS. #f when TEXT is #f, or nothing is left. Before
+  ;; curl_global_init a MultiSSL libcurl names its first backend so,
+  ;; whatever the init will pick (lib/vtls/vtls.c, multissl_version): the
+  ;; native layer asks it of the text read after (ADR-0024, amended
+  ;; 2026-10-27).
+  (define (backend-in-use text)
+    (and text
+         (let* ((n (string-length text))
+                (kept (let loop ((i 0) (depth 0) (found '()))
+                        (cond ((= i n) (list->string (reverse found)))
+                              ((char=? (string-ref text i) #\() (loop (+ i 1) (+ depth 1) found))
+                              ((and (char=? (string-ref text i) #\)) (> depth 0))
+                               (loop (+ i 1) (- depth 1) found))
+                              ((> depth 0) (loop (+ i 1) depth found))
+                              (else (loop (+ i 1) depth (cons (string-ref text i) found))))))
+                (trimmed (trim-spaces kept)))
+           (and (> (string-length trimmed) 0) trimmed))))
+
+  ;; trim-spaces : String -> String
+  ;; TEXT without the spaces at its ends, and with each run of spaces
+  ;; inside it one space: a group taken out leaves its neighbours' spaces.
+  (define (trim-spaces text)
+    (let loop ((chars (string->list text)) (found '()) (space #f))
+      (cond ((null? chars) (list->string (reverse found)))
+            ((char=? (car chars) #\space) (loop (cdr chars) found (pair? found)))
+            (else (loop (cdr chars)
+                        (cons (car chars) (if space (cons #\space found) found))
+                        #f)))))
+
+  ;; range-holds? : String Natural -> Boolean
+  ;; Whether LINE starts with START-END, two hex numbers, then a space, and
+  ;; START <= ADDRESS < END.
+  (define (range-holds? line address)
+    (let* ((n (string-length line))
+           (dash (let loop ((i 0))
+                   (cond ((= i n) #f)
+                         ((char=? (string-ref line i) #\-) i)
+                         (else (loop (+ i 1))))))
+           (space (and dash
+                       (let loop ((i dash))
+                         (cond ((= i n) #f)
+                               ((char=? (string-ref line i) #\space) i)
+                               (else (loop (+ i 1)))))))
+           (start (and space (hex (substring line 0 dash))))
+           (end (and start (hex (substring line (+ dash 1) space)))))
+      (and end (<= start address) (< address end))))
+
+  ;; hex : String -> (U Natural #f)
+  ;; TEXT read as a hex natural: one or more hex digits, nothing else.
+  (define (hex text)
+    (and (> (string-length text) 0)
+         (for-all (lambda (c) (or (char<=? #\0 c #\9) (char<=? #\a c #\f) (char<=? #\A c #\F)))
+                  (string->list text))
+         (string->number text 16)))
 
   ;; line-path : String -> (U String #f)
   ;; The pathname column of one line of /proc/self/maps: from its first /

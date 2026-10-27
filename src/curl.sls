@@ -34,7 +34,10 @@
    ;; libcurl-info-host : Libcurl-Info -> (U String #f)
    ;; What it reports: the path loaded and where it came from, then
    ;; curl_version_info's version, version_num, features (as the word and
-   ;; as names), ssl_version and host. See (curl private libcurl-info).
+   ;; as names), ssl_version and host, as it answered them before
+   ;; curl_global_init. On a libcurl with more than one TLS backend, Apple's,
+   ;; ssl_version and the features then name its first backend, whatever the
+   ;; init puts in use. See (curl private libcurl-info).
    libcurl-info? libcurl-info-path libcurl-info-source libcurl-info-version
    libcurl-info-version-number libcurl-info-features libcurl-info-feature-names
    libcurl-info-ssl-version libcurl-info-host
@@ -85,8 +88,19 @@
    ;;                       among it, or #f; #f
    ;;   body-limit          the body's bound in bytes, or #f; #f
    ;;   ca-file             the only CA file to trust, or #f for the system
-   ;;                       store; #f
+   ;;                       store; #f. A path beginning pkcs11:, in any
+   ;;                       ASCII case, is refused: reach such a file as
+   ;;                       ./pkcs11:... On any Guix libcurl, a submit
+   ;;                       refuses a CA file, verify on, when SSL_CERT_FILE
+   ;;                       or SSL_CERT_DIR was set at the load, which
+   ;;                       would replace it, or add to it; and on macOS
+   ;;                       with Apple's LibreSSL in use, which checks the
+   ;;                       keychain when it fails: set
+   ;;                       CURL_SSL_BACKEND=secure-transport
    ;;   verify              whether to verify the peer; #t
+   ;;   proxy               environment, through the proxy http_proxy,
+   ;;                       https_proxy or all_proxy names, by libcurl's
+   ;;                       rules; or #f, direct; environment
    ;; A key it does not take, one given twice, and one with no value are
    ;; refused by name, as &curl-request-error, before anything else.
    ;; curl-request-with : Request Symbol Any ... -> Request
@@ -102,10 +116,11 @@
    ;; curl-request-body-limit : Request -> (U Natural #f)
    ;; curl-request-ca-file : Request -> (U String #f)
    ;; curl-request-verify : Request -> Boolean
+   ;; curl-request-proxy : Request -> (U 'environment #f)
    make-curl-request curl-request-with curl-request?
    curl-request-url curl-request-method curl-request-headers curl-request-body
    curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
-   curl-request-body-limit curl-request-ca-file curl-request-verify
+   curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
 
    ;; --- the response -------------------------------------------------------
    ;; curl-response? : Any -> Boolean
@@ -210,7 +225,9 @@
    ;; curl-transfer-error-error-buffer : &curl-transfer-error -> (U String #f)
    ;; curl-transfer-error-recorded : &curl-transfer-error -> Any
    ;; curl-transfer-error-request-size : &curl-transfer-error -> (U Natural #f)
-   ;;   the bytes of request sent: 0 when none was
+   ;;   the bytes of request sent: 0 when none was; #f when it is unknown,
+   ;;   a transfer cancelled or stopped, or one that ran on libcurl 8.7.0 or
+   ;;   8.7.1, whose count is broken, the Mac's among them
    ;; curl-transfer-error-reasons : (Listof Symbol)
    ;; See (curl private conditions) for each field and reason.
    &curl-transfer-error curl-transfer-error? curl-transfer-error-reason

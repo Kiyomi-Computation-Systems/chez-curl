@@ -1,0 +1,26 @@
+# The maintainer's M1, 2026-10-27, on feat/m4-slice-3 (fedfab5), as pasted:
+#   NODE="$(asdf which node)" sh .plans/research/m4/proxy/run.sh mac
+[mac] libcurl 8.7.1, Darwin arm64
+[mac] http, no variable: code 0 status 200 body "origin"; exit 0; proxy got 0
+[mac] http, http_proxy: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[mac] http, HTTP_PROXY alone: code 0 status 200 body "origin"; exit 0; proxy got 0
+[mac] http, all_proxy: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[mac] http, ALL_PROXY: code 0 status 299 body "proxy"; exit 0; proxy got 1
+[mac] http, http_proxy and no_proxy: code 0 status 200 body "origin"; exit 0; proxy got 0
+[mac] http, http_proxy and NO_PROXY: code 0 status 200 body "origin"; exit 0; proxy got 0
+[mac] http, http_proxy, PROXY "": code 0 status 200 body "origin"; exit 0; proxy got 0
+[mac] http, all_proxy, PROXY "": code 0 status 200 body "origin"; exit 0; proxy got 0
+[mac] http, http_proxy, NOPROXY "*": code 0 status 200 body "origin"; exit 0; proxy got 0
+[mac] https, no variable: code 35 status 0 body ""; exit 0; proxy got 0
+[mac] https, https_proxy: code 56 status 0 body ""; exit 0; proxy got 1
+[mac] https, HTTPS_PROXY: code 56 status 0 body ""; exit 0; proxy got 1
+[mac] https, https_proxy, PROXY "": code 35 status 0 body ""; exit 0; proxy got 0
+[mac] https, https_proxy, NOPROXY "*": code 35 status 0 body ""; exit 0; proxy got 0
+[mac] the proxy's log:
+[mac]   GET http://127.0.0.1:52136/x
+[mac]   GET http://127.0.0.1:52136/x
+[mac]   GET http://127.0.0.1:52136/x
+[mac]   CONNECT 127.0.0.1:52136
+[mac]   CONNECT 127.0.0.1:52136
+.plans/research/m4/proxy/run.sh: line 42: 50854 Terminated: 15          "${NODE:-node}" "$here/proxies.mjs" "$tmp/log" < "$tmp/in" > "$tmp/announce"
+[mac] the proxies exited 143, not 0, after their stdin closed: 143 is the watchdog's kill, 5 s on

@@ -19,9 +19,17 @@
 ;;;               nothing a check below would name. They read
 ;;;               curl_version_info_data's strings, through the checked
 ;;;               copies, into the libcurl-info record, and its protocol
-;;;               list, which loaded-protocols answers
+;;;               list, which loaded-protocols answers. Then the file the
+;;;               kernel maps curl_version_info's entry point from, which
+;;;               loaded-libcurl-file answers, and whether that file holds
+;;;               Guix's patch's literal, which loaded-libcurl-patched?
+;;;               answers
 ;;;   4. check    the floor and CURL_VERSION_SSL: check-version
-;;;   5. init     curl_global_init, exactly once
+;;;   5. init     SSL_CERT_FILE and SSL_CERT_DIR, read and recorded, which
+;;;               loaded-ca-variables answers; then curl_global_init, exactly
+;;;               once; then the TLS backend it put in use, which
+;;;               loaded-tls-backend answers, and whether this is macOS,
+;;;               loaded-on-macos?
 ;;;   6. bind     every other entry point, eagerly
 ;;;   7. probe    the options API and the header API, then check-apis
 ;;;
@@ -107,7 +115,9 @@
 ;;;                curl_global_init failed (detail: what happened)
 ;;;   missing-api  a required entry point is absent (detail: its C name)
 (library (curl private native)
-  (export loaded-libcurl curl-easy-option
+  (export loaded-libcurl loaded-libcurl-file loaded-libcurl-patched? loaded-ca-variables
+          loaded-tls-backend loaded-on-macos?
+          curl-easy-option
           curl-easy-init curl-easy-cleanup
           curl-easy-setopt-long curl-easy-setopt-pointer curl-easy-setopt-off-t
           curl-easy-getinfo curl-easy-getinfo-long curl-easy-getinfo-off-t curl-easy-getinfo-string
@@ -124,7 +134,7 @@
   (import (curl private require-threaded)
           (except (rnrs) dynamic-wind)
           (only (chezscheme) critical-section dynamic-wind ftype-ref make-ftype-pointer
-                foreign-procedure foreign-entry? load-shared-object
+                foreign-procedure foreign-entry foreign-entry? load-shared-object
                 foreign-ref foreign-sizeof
                 format format-condition? display-condition
                 getenv machine-type file-regular? get-thread-id make-mutex with-mutex)
@@ -567,6 +577,32 @@
                    (reverse found)
                    (loop (+ i 1) (cons (c-text entry) found)))))))))
 
+  ;; The file the kernel maps the libcurl native calls from: the pathname of
+  ;; the /proc/self/maps line that holds curl_version_info's entry point,
+  ;; every symlink resolved, through discovery's mapped-file; #f off Linux,
+  ;; or when the maps cannot be read. foreign-entry answers the address
+  ;; native's own binding calls, the most recently loaded object's. Whether
+  ;; a libcurl is Guix's is read from this file, not from ADR-0002's world,
+  ;; which is libc's: spike E1's Chez, built on Ubuntu, loads Guix's 8.20.0,
+  ;; which still writes SSL_CERT_FILE over a CA file (ADR-0024, amended
+  ;; 2026-10-26).
+  (define libcurl-file
+    (load-step (mapped-file (maps-text) (foreign-entry "curl_version_info"))))
+
+  ;; Whether the libcurl's file, the mapped one, or the path as loaded where
+  ;; none was read, holds the literal SSL_CERT_FILE: Guix's patch's own
+  ;; string, which Guix's 8.20.0 and 8.6.0 hold once each and none of six
+  ;; stock builds holds (ADR-0024, amended 2026-10-26: the key). So a Guix
+  ;; libcurl copied out of the store is still Guix's. Read once, whole; a
+  ;; file that cannot be read, Apple's in the dyld cache among them, holds
+  ;; nothing.
+  (define libcurl-patched
+    (load-step
+     (let ((bytes (guard (e (#t #f))
+                    (call-with-port (open-file-input-port (or libcurl-file libcurl-path))
+                      get-bytevector-all))))
+       (and (bytevector? bytes) (bytes-hold? bytes (string->utf8 "SSL_CERT_FILE"))))))
+
   ;; --- 4. the floor and SSL ----------------------------------------------------------
 
   (define version-checked
@@ -579,6 +615,21 @@
   ;; CURLcode curl_global_init(long flags)
   (define curl-global-init (load-step (bind-required "curl_global_init" (long) int info)))
 
+  ;; SSL_CERT_FILE and SSL_CERT_DIR, each with its value, or #f when it is
+  ;; unset or empty, read immediately before curl_global_init below: Guix's
+  ;; patch reads both there, through curl_getenv, which answers an empty
+  ;; value as NULL, and never again, so a variable set after the load
+  ;; changes no transfer, and one unset after it still does (ADR-0024,
+  ;; amended 2026-10-26). Another library's earlier curl_global_init in
+  ;; this process would have read them first, and libcurl's source makes
+  ;; this one a count alone: the record could then differ, unseen.
+  (define ca-variables
+    (load-step
+     (map (lambda (name)
+            (let ((value (getenv name)))
+              (cons name (and value (not (string=? value "")) value))))
+          '("SSL_CERT_FILE" "SSL_CERT_DIR"))))
+
   (define global-initialized
     (load-step
      (let ((code (curl-global-init curl-global-default)))
@@ -587,6 +638,26 @@
                  (string-append "curl_global_init returned " (number->string code))
                  "curl_global_init failed, so this libcurl cannot be used; name another with CHEZ_CURL_LIBCURL"))
        #t)))
+
+  ;; The TLS backend in use, read from curl_version_info after the init,
+  ;; through discovery's backend-in-use: before it, a MultiSSL libcurl
+  ;; names its first backend whatever the init picks, so the record step 3
+  ;; built, info, says SecureTransport on Apple's 8.7.1, where the init
+  ;; puts LibreSSL in use (ADR-0024, amended 2026-10-27). curl_version_info
+  ;; writes the names into a buffer of its own, so it is called again; #f
+  ;; when it answers NULL or no one backend is bare.
+  (define tls-backend
+    (load-step
+     (let ((address (curl-version-info curlversion-tenth)))
+       (and (not (zero? address))
+            (backend-in-use
+             (c-text (ftype-ref curl-version-info-data (ssl-version)
+                                (make-ftype-pointer curl-version-info-data address))))))))
+
+  ;; Whether this is macOS: Chez's machine types for it end in osx.
+  (define on-macos
+    (let* ((name (symbol->string (machine-type))) (n (string-length name)))
+      (and (>= n 3) (string=? (substring name (- n 3) n) "osx"))))
 
   ;; --- 6. every other entry point, eagerly ---------------------------------------------
 
@@ -1084,6 +1155,36 @@
   ;; runs the load above, once; a refusal raises from there instead, at
   ;; this reference and every later one.
   (define (loaded-libcurl) info)
+
+  ;; loaded-libcurl-file : -> (U String #f)
+  ;; The file the loaded libcurl is mapped from, symlinks resolved, step 3's
+  ;; libcurl-file: a fresh string, or #f where it could not be read. Private:
+  ;; (curl) does not export it.
+  (define (loaded-libcurl-file) (and libcurl-file (string-copy libcurl-file)))
+
+  ;; loaded-tls-backend : -> (U String #f)
+  ;; The TLS backend libcurl put in use at its init, as curl_version_info
+  ;; then named it, LibreSSL/3.3.6 say: a fresh string, or #f. Private:
+  ;; (curl) does not export it.
+  (define (loaded-tls-backend) (and tls-backend (string-copy tls-backend)))
+
+  ;; loaded-on-macos? : -> Boolean
+  ;; Whether this process runs on macOS, by Chez's machine type. Private.
+  (define (loaded-on-macos?) on-macos)
+
+  ;; loaded-libcurl-patched? : -> Boolean
+  ;; Whether the loaded libcurl's file holds Guix's patch's literal, step 3's
+  ;; libcurl-patched. Private: (curl) does not export it.
+  (define (loaded-libcurl-patched?) libcurl-patched)
+
+  ;; loaded-ca-variables : -> (List (Pairof String (U String #f)) (Pairof String (U String #f)))
+  ;; ("SSL_CERT_FILE" . VALUE) and ("SSL_CERT_DIR" . VALUE), as step 5 read
+  ;; them before curl_global_init, an empty value as #f: fresh pairs and
+  ;; fresh strings. Private: (curl) does not export it.
+  (define (loaded-ca-variables)
+    (map (lambda (entry)
+           (cons (string-copy (car entry)) (and (cdr entry) (string-copy (cdr entry)))))
+         ca-variables))
 
   ;; loaded-protocols : -> (Listof String)
   ;; The protocols the loaded libcurl lists, as curl_version_info gives

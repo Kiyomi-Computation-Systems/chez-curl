@@ -36,7 +36,11 @@
 ;;;     and λ, which ls lists as UTF-8, passes https;
 ;;;   - the request's refusals: a CA file with U+0000 at every place,
 ;;;     refused as embedded-nul, naming ca-file, by the constructor and by
-;;;     the snapshot a submit takes, with nothing native at the raise; wrong
+;;;     the snapshot a submit takes, with nothing native at the raise; one
+;;;     beginning pkcs11: in each of its sixteen ASCII cases, as pkcs11-url,
+;;;     by both, its near misses taken, two Unicode folds among them, and a
+;;;     file named pkcs11:ca.pem reached by its absolute path (ADR-0024,
+;;;     decision 4); wrong
 ;;;     types; a change after the request was made, sent as changed; and a
 ;;;     CA file another thread flips to U+0000 while transfers run, refused
 ;;;     or sent whole, which a transfer that checked the caller's string,
@@ -45,20 +49,32 @@
 ;;;     CA file and verification; setopt-accepted? against every code from
 ;;;     -1 to 300; and, read from transfer.sls and held whole, every
 ;;;     definition from a request's CA file and verification to the setopt
-;;;     binding: ca-file?, ca-file-copy, field-options, tls-settings,
+;;;     binding: ca-file?, ca-file-copy, check-ca-environment, which hands
+;;;     native's records to overriding-variables, held by synthetic inputs
+;;;     instead, field-options, tls-settings,
 ;;;     set-tls-options!, set-string-option!, set-option!, setopt-accepted?
 ;;;     and option-named; what prepare-transfer hands the plan, and
 ;;;     set-transfer-options!' call of set-tls-options! with the plan's,
 ;;;     after the request's other settings and before the test seam's; and
 ;;;     the six TLS option names, standing in transfer.sls only as data in
 ;;;     its two tables;
+;;;   - the Mac's keychain (ADR-0024, amended 2026-10-27): keychain-fallback?
+;;;     by synthetic inputs; this process's own backend, which on macOS make
+;;;     test sets to SecureTransport; loaded-tls-backend and loaded-on-macos?
+;;;     against this suite's readings; and two children given
+;;;     CURL_SSL_BACKEND at openssl and secure-transport, refused and run on
+;;;     macOS, both run elsewhere;
 ;;;   - the Guix pin, in a child, tests/transfer-tls-env.sps, given
-;;;     SSL_CERT_FILE or SSL_CERT_DIR through its command alone, three
-;;;     cases, the two SSL_CERT_FILE ones mirrored: by ADR-0002's world and
-;;;     the libcurl's version, through guix-pin-verdicts, on Guix's 8.20.0
-;;;     SSL_CERT_FILE replaces the CA file and SSL_CERT_DIR adds a CA
-;;;     directory; elsewhere both are ignored; a Guix libcurl of another
-;;;     version fails, named, its verdicts unrecorded (ADR-0018, decision 5).
+;;;     SSL_CERT_FILE or SSL_CERT_DIR through its command alone, or set or
+;;;     emptied after the load, nine cases: by the file the libcurl is
+;;;     mapped from, read here apart from the native layer's reading, a
+;;;     libcurl under /gnu/store/ refuses a CA file, verification on, at
+;;;     submit, naming each variable set at the load; elsewhere both are
+;;;     ignored, and the transfer answers by its CA file. The library's
+;;;     table, guix-ca-overrides, is held to this suite's copy, and
+;;;     ca-overridden? by file, path and version; a Guix libcurl with no
+;;;     row fails, named, its override unmeasured (ADR-0018, decision 5;
+;;;     ADR-0024, decision 2, amended 2026-10-26).
 ;;;
 ;;; Its limit (ADR-0018, consequences): no lane can show CAPATH's clear by
 ;;; behaviour. No lane's system store, nor any default CA directory, trusts
@@ -82,15 +98,18 @@
 (import (rnrs)
         (srfi :64)
         (rnrs mutable-strings)
+        (rnrs mutable-pairs)
         (only (chezscheme) parameterize getenv fork-thread thread-join sleep make-time mkdir
-              directory-list library-directories current-time time-second time-nanosecond)
+              directory-list library-directories current-time time-second time-nanosecond
+              foreign-entry machine-type)
         (curl-testing)
         (curl)
         (curl private engine)
         (curl private transfer)
         (curl private conditions)
         (curl private counters)
-        (only (curl private discovery) libcurl-world))
+        (only (curl private native) loaded-libcurl-file loaded-libcurl-patched? loaded-ca-variables
+              loaded-tls-backend loaded-on-macos?))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
 ;; counts into one.
@@ -343,6 +362,7 @@
 (define utf8-ca (string-append (scratch-file utf8-name) "/ca.pem"))
 (define cert-dir (scratch-file "cert-dir"))
 (define run-ca-copy (scratch-file "a.pem"))
+(define pkcs11-named (scratch-file "pkcs11:ca.pem"))
 (define other-ca-copy (scratch-file "b.pem"))
 
 ;; copies : (U (List 'made String) (List 'raised String))
@@ -358,6 +378,7 @@
     (mkdir cert-dir)
     (copy-file (pki-file "ca.pem") (string-append cert-dir "/ca.pem"))
     (copy-file (pki-file "ca.pem") run-ca-copy)
+    (copy-file (pki-file "ca.pem") pkcs11-named)
     (copy-file (pki-file "other-ca.pem") other-ca-copy)
     (let* ((hashed (capture-command (list (openssl-program) "x509" "-hash" "-noout"
                                           "-in" (string-append cert-dir "/ca.pem"))))
@@ -372,14 +393,14 @@
 
 (define hash-link (and (eq? (car copies) 'made) (cadr copies)))
 
-(test-equal "the copies are made: ca.pem under café-λ, cert-dir with ca.pem and its hash link, and a.pem and b.pem"
+(test-equal "the copies are made: ca.pem under café-λ, cert-dir with ca.pem and its hash link, a.pem and b.pem, and pkcs11:ca.pem"
   'made
   (car copies))
 
-(test-equal "on disk: the PKI's directory holds its ten files alone; the scratch directory, as ls lists it, read as UTF-8, a.pem, b.pem, café-λ and cert-dir; cert-dir, ca.pem and its hash link"
+(test-equal "on disk: the PKI's directory holds its ten files alone; the scratch directory, as ls lists it, read as UTF-8, a.pem, b.pem, café-λ, cert-dir and pkcs11:ca.pem; cert-dir, ca.pem and its hash link"
   (list '("ca.pem" "expired.key" "expired.pem" "good.key" "good.pem" "other-ca.pem"
           "untrusted.key" "untrusted.pem" "wrong-host.key" "wrong-host.pem")
-        (list-sort string<? (list "a.pem" "b.pem" utf8-name "cert-dir"))
+        (list-sort string<? (list "a.pem" "b.pem" utf8-name "cert-dir" "pkcs11:ca.pem"))
         (list-sort string<? (list "ca.pem" (or hash-link "no-link"))))
   (guard (e (#t (list 'raised (describe e))))
     (list (list-sort string<? (directory-list pki))
@@ -426,6 +447,64 @@
            (string-set! path i #\nul)
            (refusal (lambda () (curl-submit engine r)))))
        (iota-from 0 (string-length a-path))))
+
+;; pkcs11-cases : (Listof String)
+;; pkcs11: in each of its sixteen ASCII cases, p, k, c and s each lower or
+;; upper: 1, 1 and : have none. GnuTLS reads each as a PKCS#11 URL
+;; (ADR-0024, amended 2026-10-26).
+(define pkcs11-cases
+  (map (lambda (i)
+         (string (if (odd? i) #\P #\p) (if (odd? (div i 2)) #\K #\k) (if (odd? (div i 4)) #\C #\c)
+                 (if (odd? (div i 8)) #\S #\s) #\1 #\1 #\:))
+       (iota-from 0 16)))
+
+;; pkcs11-paths : (Listof String)
+;; Each of pkcs11-cases alone, and before object=ca.
+(define pkcs11-paths
+  (append pkcs11-cases (map (lambda (p) (string-append p "object=ca")) pkcs11-cases)))
+
+(test-equal "a CA file's path that begins pkcs11:, in each of its sixteen ASCII cases, alone and before more, is refused by make-curl-request as pkcs11-url, naming ca-file and the path, with nothing native at the raise"
+  (map (lambda (path) (list (list 'request-refused 'ca-file path 'pkcs11-url) running-counts running-counts))
+       pkcs11-paths)
+  (map (lambda (path) (refusal (lambda () (make-curl-request "http://127.0.0.1:1/" 'ca-file path))))
+       pkcs11-paths))
+
+;; pkcs11-near-misses : (Listof String)
+;; Paths GnuTLS reads as files, each measured on GnuTLS 3.8.3, 3.8.9 and
+;; 3.8.13 (research/m4/slice3/, x/pkcs11: for /x/pkcs11:): the prefix cut
+;; short, lengthened, spaced or moved; each of its seven chars made the
+;; next one; and two chars that a Unicode fold makes ASCII, U+212A KELVIN
+;; SIGN, which char-downcase and char-foldcase make k, and U+017F LATIN
+;; SMALL LETTER LONG S, which char-foldcase, and so string-ci=?, makes s.
+(define pkcs11-near-misses
+  (list "pkcs11" "pkcs1:" "pkcs111:" " pkcs11:" "pkcs11 :" "./pkcs11:" "xpkcs11:" "/x/pkcs11:"
+        "qkcs11:" "plcs11:" "pkds11:" "pkct11:" "pkcs21:" "pkcs12:" "pkcs11;"
+        (string #\p (integer->char #x212A) #\c #\s #\1 #\1 #\:)
+        (string #\p #\k #\c (integer->char #x17F) #\1 #\1 #\:)))
+
+(test-equal "near misses are taken, each with verification on: pkcs11: cut short, lengthened, after a space, a dot-slash, another char or a directory, with a space in it; each of its seven chars made the next; p, U+212A KELVIN SIGN, cs11:, and pkc, U+017F LONG S, 11:"
+  (map (lambda (path) 'no-raise) pkcs11-near-misses)
+  (map (lambda (path) (car (refusal (lambda () (make-curl-request "http://127.0.0.1:1/" 'ca-file path)))))
+       pkcs11-near-misses))
+
+(test-equal "U+0000 is checked before the prefix: pkcs11: with U+0000 after it is refused as embedded-nul"
+  (list (list 'request-refused 'ca-file (string-append "pkcs11:" (string #\nul)) 'embedded-nul)
+        running-counts running-counts)
+  (refusal (lambda () (make-curl-request "http://127.0.0.1:1/" 'ca-file (string-append "pkcs11:" (string #\nul))))))
+
+(test-equal "a request whose CA file is changed after it was made, from pkcs10: or PKCS10: to begin pkcs11: or PKCS11:, is refused at submit as pkcs11-url, naming ca-file and the path as changed, with nothing native at the raise"
+  (map (lambda (path) (list (list 'request-refused 'ca-file path 'pkcs11-url) running-counts running-counts))
+       '("pkcs11:x/ca.pem" "PKCS11:x/ca.pem"))
+  (map (lambda (from)
+         (let* ((path (string-copy from))
+                (r (make-curl-request "http://127.0.0.1:1/" 'ca-file path)))
+           (string-set! path 5 #\1)
+           (refusal (lambda () (curl-submit engine r)))))
+       '("pkcs10:x/ca.pem" "PKCS10:x/ca.pem")))
+
+(test-equal "pkcs11-prefix?, the rule alone: each case and near miss as above, and the empty string, which no prefix begins"
+  (list (map (lambda (p) #t) pkcs11-paths) (map (lambda (p) #f) pkcs11-near-misses) #f)
+  (list (map pkcs11-prefix? pkcs11-paths) (map pkcs11-prefix? pkcs11-near-misses) (pkcs11-prefix? "")))
 
 (test-equal "wrong types are assertion violations from make-curl-request, with nothing native made: a CA file that is a number, the empty string, a symbol, #t or a list; verification that is 1, 0, a symbol, a string or the empty list"
   (map (lambda (i) (list '(assertion-violation make-curl-request) running-counts running-counts))
@@ -523,16 +602,41 @@
   '((ca-file? "a CA file is #f, or a non-empty string"
      (define (ca-file? x)
        (or (not x) (and (string? x) (> (string-length x) 0)))))
-    (ca-file-copy "the CA file sent is a fresh copy, scanned for U+0000 by index, refused there"
+    (ca-file-copy "the CA file sent is a fresh copy, scanned for U+0000 by index, refused there, then for the pkcs11: prefix, refused there"
      (define (ca-file-copy who ca-file)
        (and ca-file
             (let ((copy (string-copy ca-file)))
               (let scan ((i 0))
                 (when (< i (string-length copy))
                   (when (char=? (string-ref copy i) #\nul)
-                    (refuse-ca-file who copy))
+                    (refuse-ca-file who copy 'embedded-nul
+                                    "a CA file's path holds U+0000, where C would end it, and libcurl would open another file"
+                                    '()))
                   (scan (+ i 1))))
+              (when (pkcs11-prefix? copy)
+                (refuse-ca-file who copy 'pkcs11-url
+                                "a CA file's path that begins pkcs11:, in any ASCII case, is a PKCS#11 URL to GnuTLS, not a file; reach a file of that name as ./pkcs11:..."
+                                '()))
               copy))))
+    (check-ca-environment "the CA file is checked against what native recorded at the load, for the loaded libcurl, and refused naming each variable, or the backend whose keychain would undo it"
+     (define (check-ca-environment who ca-file verify)
+       (let* ((info (loaded-libcurl))
+              (names (overriding-variables ca-file verify (loaded-libcurl-file) (libcurl-info-path info)
+                                           (loaded-libcurl-patched?) (libcurl-info-version info)
+                                           (loaded-ca-variables)))
+              (backend (loaded-tls-backend)))
+         (unless (null? names)
+           (refuse-ca-file who ca-file 'environment-override
+                           (string-append
+                            "Guix's libcurl writes SSL_CERT_FILE over a CA file, and adds SSL_CERT_DIR beside it, as they were when it loaded; unset "
+                            (fold-right (lambda (name rest) (if (string=? rest "") name (string-append name " and " rest)))
+                                        "" names)
+                            " before the program starts, or trust the store it names with no CA file")
+                           names))
+         (when (keychain-fallback? ca-file verify (loaded-on-macos?) (libcurl-info-path info) backend)
+           (refuse-ca-file who ca-file 'keychain-fallback
+                           "Apple's libcurl uses its LibreSSL, which checks the keychain when a CA file fails, so the CA file would not be the only anchor; start the program with CURL_SSL_BACKEND=secure-transport, where this libcurl has it, or pass no CA file"
+                           (list backend))))))
     (field-options "a field's options are its row's names, in order"
      (define (field-options field) (cdr (assq field request-field-options))))
     (tls-settings "the verification pair, then CAINFO at the path and CAPATH at #f with a CA file alone"
@@ -623,15 +727,17 @@
 ;; verification into its tenth; set-transfer-options! hands set-tls-options!
 ;; those two fields. A plan handed the caller's own string would be sent
 ;; whatever another thread made it after the check.
-(test-equal "prepare-transfer hands the plan its snapshot: its let* binds ca-file to (ca-file-copy 'curl-submit (curl-request-ca-file request)), make-plan takes ca-file and (curl-request-verify request) as its ninth and tenth arguments, the plan's ninth and tenth fields are ca-file and verify, and ca-file stands twice in prepare-transfer, that binding and that argument"
+(test-equal "prepare-transfer hands the plan its snapshot: its let* binds ca-file to (ca-file-copy 'curl-submit (curl-request-ca-file request)), it checks that copy as (check-ca-environment 'curl-submit ca-file (curl-request-verify request)), make-plan takes ca-file and (curl-request-verify request) as its ninth and tenth arguments, the plan's ninth and tenth fields are ca-file and verify, and ca-file stands three times in prepare-transfer, that binding, that check and make-plan's argument"
   '((ca-file (ca-file-copy 'curl-submit (curl-request-ca-file request)))
+    (check-ca-environment 'curl-submit ca-file (curl-request-verify request))
     (ca-file (curl-request-verify request))
     ((immutable ca-file) (immutable verify))
-    2)
+    3)
   (let* ((d (transfer-definition 'prepare-transfer))
          (bindings (or (let*-bindings d) '()))
          (made (form-headed 'make-plan d)))
     (list (assq 'ca-file bindings)
+          (form-headed 'check-ca-environment d)
           (if (and made (> (length made) 10)) (list (list-ref made 9) (list-ref made 10)) (list 'make-plan made))
           (if (and (list? plan-fields) (> (length plan-fields) 9))
               (list (list-ref plan-fields 8) (list-ref plan-fields 9))
@@ -745,31 +851,61 @@
    "( exec \"$t\" -s KILL " (number->string child-bound) " \"$@\" </dev/null 2>&3 3>&- )\n"
    "exit $?\n"))
 
-;; child-run : String String String String -> (U (List Integer (Listof Any) String) (List 'raised String))
-;; tests/transfer-tls-env.sps on URL with CA-FILE, in a child Chez under
-;; child-script, with the variable NAME at VALUE in its environment alone,
-;; set by env in its command: its exit status, what it printed, read as
-;; data, and its stderr.
-(define (child-run name value url ca-file)
+;; child-run : (Listof String) String String String (Listof String) -> (U (List Integer (Listof Any) String) (List 'raised String))
+;; tests/transfer-tls-env.sps on URL with CA-FILE, "-" for none, and
+;; VERIFY, on or off, then AFTER, () or (NAME VALUE), in a child Chez under
+;; child-script, with ASSIGNMENTS, each NAME=VALUE, in its environment
+;; alone, set by env in its command: its exit status, what it printed, read
+;; as data, and its stderr.
+(define (child-run assignments url ca-file verify after)
   (guard (e (#t (list 'raised (describe e))))
-    (let ((r (capture-command (list "sh" "-c" child-script "sh" "env" (string-append name "=" value)
-                                    (getenv "CHEZ") "--libdirs" (library-path)
-                                    "--program" "tests/transfer-tls-env.sps" url ca-file))))
+    (let ((r (capture-command (append (list "sh" "-c" child-script "sh" "env")
+                                      assignments
+                                      (list (getenv "CHEZ") "--libdirs" (library-path)
+                                            "--program" "tests/transfer-tls-env.sps" url ca-file verify)
+                                      after))))
       (list (car r) (read-all (cadr r)) (caddr r)))))
 
-;; maps-text : (U String #f)
-;; This process's /proc/self/maps, as the native layer reads it; #f off
-;; Linux. The child runs the same Chez, so it lives in the same world.
-(define maps-text
-  (guard (e (#t #f))
-    (call-with-port (open-file-input-port "/proc/self/maps" (file-options) (buffer-mode block)
-                                          (make-transcoder (utf-8-codec)))
-      get-string-all)))
+;; maps-lines : (Listof String)
+;; This process's /proc/self/maps, line by line; () off Linux, or when it
+;; cannot be read. The child runs the same Chez and the same libcurl.
+(define maps-lines
+  (guard (e (#t '()))
+    (lines-of (call-with-port (open-file-input-port "/proc/self/maps" (file-options) (buffer-mode block)
+                                                    (make-transcoder (utf-8-codec)))
+                get-string-all))))
 
-;; world : (U 'guix 'fhs)
-;; ADR-0002's world: guix when libc is mapped from /gnu/store; fhs on any
-;; other Linux, and on macOS.
-(define world (libcurl-world maps-text))
+;; holding-file : Natural -> (U String #f)
+;; This suite's own reading of the maps, written apart from discovery's
+;; mapped-file: the pathname of the line whose START-END range holds
+;; ADDRESS, from the line's first /; #f when none does, or it names no file.
+(define (holding-file address)
+  (let loop ((rest maps-lines))
+    (if (null? rest)
+        #f
+        (let* ((line (car rest))
+               (dash (string-index line #\-))
+               (space (string-index line #\space))
+               (start (and dash (string->number (substring line 0 dash) 16)))
+               (end (and dash space (< dash space) (string->number (substring line (+ dash 1) space) 16)))
+               (slash (string-index line #\/)))
+          (if (and start end (<= start address) (< address end))
+              (and slash (substring line slash (string-length line)))
+              (loop (cdr rest)))))))
+
+;; string-index : String Char -> (U Natural #f)
+(define (string-index s c)
+  (let loop ((i 0))
+    (cond ((= i (string-length s)) #f)
+          ((char=? (string-ref s i) c) i)
+          (else (loop (+ i 1))))))
+
+;; libcurl-file : (U String #f)
+;; The file this process's libcurl is mapped from, read here: the line
+;; holding curl_version_info's entry point.
+(define libcurl-file
+  (guard (e (#t (list 'raised (describe e))))
+    (holding-file (foreign-entry "curl_version_info"))))
 
 ;; libcurl-version : (U String (List 'raised String))
 ;; The loaded libcurl's version, which the child loads too.
@@ -777,41 +913,189 @@
   (guard (e (#t (list 'raised (describe e))))
     (libcurl-info-version (loaded-libcurl))))
 
-;; guix-pin-verdicts : (Listof (List String Symbol))
-;; Guix's libcurl, by version, and what its environment patch does to a
-;; transfer's CA settings. 8.20.0's writes SSL_CERT_FILE over CAINFO and
-;; SSL_CERT_DIR over CAPATH when a transfer starts, after every setopt:
-;; overridden (ADR-0018). Guix's 8.6.0 sets them as the easy handle's
-;; defaults instead, which the request's setopts win, so it answers each
-;; case the other way (measured in M2 slice 3's review); no lane runs it,
-;; so it has no row. A Guix libcurl of any other version fails the pin,
-;; named: measure its three cases, and add its row.
-(define guix-pin-verdicts '(("8.20.0" overridden)))
+(test-equal "loaded-libcurl-file is the file the maps hold curl_version_info's entry point in, as this suite reads them, symlinks resolved: on Linux, a path; elsewhere #f"
+  (list libcurl-file (if (null? maps-lines) 'no-maps 'a-path))
+  (guard (e (#t (list 'raised (describe e))))
+    (let ((file (loaded-libcurl-file)))
+      (list file (if (string? file) 'a-path 'no-maps)))))
 
-;; pin-verdict : Symbol Any -> (U 'overridden 'ignored (List 'unrecorded Any))
-;; What SSL_CERT_FILE and SSL_CERT_DIR do to a transfer in WORLD, on the
-;; libcurl at VERSION: in a Guix world, its version's row; in any other,
-;; ignored, since no other libcurl reads them; unrecorded for a Guix
-;; libcurl with no row.
-(define (pin-verdict world version)
-  (cond ((not (eq? world 'guix)) 'ignored)
-        ((and (string? version) (assoc version guix-pin-verdicts)) => cadr)
-        (else (list 'unrecorded version))))
+;; holds-literal? : Bytevector String -> Boolean
+;; This suite's own search, written apart from discovery's bytes-hold?:
+;; whether TEXT's ASCII bytes stand at some offset of BYTES.
+(define (holds-literal? bytes text)
+  (let ((want (map char->integer (string->list text))))
+    (let try ((at 0))
+      (and (<= (+ at (length want)) (bytevector-length bytes))
+           (or (let same ((i at) (rest want))
+                 (or (null? rest)
+                     (and (= (bytevector-u8-ref bytes i) (car rest)) (same (+ i 1) (cdr rest)))))
+               (try (+ at 1)))))))
 
-(define verdict (pin-verdict world libcurl-version))
+;; libcurl-patched : (U Boolean (List 'raised String))
+;; Whether this libcurl's file holds Guix's patch's literal, SSL_CERT_FILE,
+;; read here: the mapped file, or, with none, the path as loaded; #f for a
+;; file that cannot be read, Apple's in the dyld cache among them.
+(define libcurl-patched
+  (guard (e (#t (list 'raised (describe e))))
+    (let ((bytes (guard (e (#t #f))
+                   (call-with-port (open-file-input-port (or libcurl-file (libcurl-info-path (loaded-libcurl))))
+                     get-bytevector-all))))
+      (and (bytevector? bytes) (holds-literal? bytes "SSL_CERT_FILE")))))
 
-(test-equal "pin-verdict, the Guix pin's table: Guix's 8.20.0 overridden; every other world ignored, whatever its version; a Guix libcurl with no row, 8.6.0 among them, unrecorded, naming its version"
-  '(overridden ignored ignored (unrecorded "8.6.0") (unrecorded "8.21.0"))
-  (list (pin-verdict 'guix "8.20.0") (pin-verdict 'fhs "8.20.0") (pin-verdict 'fhs "8.5.0")
-        (pin-verdict 'guix "8.6.0") (pin-verdict 'guix "8.21.0")))
+(test-equal "loaded-libcurl-patched? is whether the libcurl's file holds Guix's patch's literal, SSL_CERT_FILE, as this suite reads it"
+  libcurl-patched
+  (guard (e (#t (list 'raised (describe e)))) (loaded-libcurl-patched?)))
 
-(test-equal (string-append "the Guix pin has a verdict for this world, " (symbol->string world)
-                           ", and this libcurl, " (written libcurl-version)
-                           ": a Guix libcurl's comes from its version's row in guix-pin-verdicts; one with no row has unrecorded verdicts: measure the pin's three cases on it, and add its row")
+(test-equal "loaded-libcurl-file and loaded-ca-variables answer fresh objects: a string or pair changed in one answer is as it was in the next"
+  '(file-kept variables-kept)
+  (guard (e (#t (list 'raised (describe e))))
+    (let ((file (loaded-libcurl-file)) (variables (loaded-ca-variables)))
+      (when (and (string? file) (> (string-length file) 0)) (string-set! file 0 #\x))
+      (set-cdr! (car variables) "changed")
+      (string-set! (car (cadr variables)) 0 #\x)
+      (list (if (equal? (loaded-libcurl-file) libcurl-file) 'file-kept (list 'file (loaded-libcurl-file)))
+            (if (equal? (loaded-ca-variables) '(("SSL_CERT_FILE" . #f) ("SSL_CERT_DIR" . #f)))
+                'variables-kept
+                (list 'variables (loaded-ca-variables)))))))
+
+;; The library's table and rule, and this suite's copy of each, written
+;; apart (ADR-0024, decision 2; amended 2026-10-26): Guix's libcurls, by
+;; version, and what each one's environment patch does to a request's CA
+;; file. 8.20.0's writes SSL_CERT_FILE over CAINFO and SSL_CERT_DIR over
+;; CAPATH when a transfer starts, after every setopt: overrides. Any other
+;; Guix libcurl is taken to override, 8.6.0 among them, whose older patch
+;; does not (measured, research/m4/slice3/); a libcurl outside the store
+;; never does. A Guix libcurl with no row fails the pin, named: measure it
+;; with research/m4/slice3/run.sh's when set, and add its row to both.
+(define guix-pin-verdicts '(("8.20.0" . overrides)))
+
+;; pin-refuses? : (U String #f) Any Any -> Boolean
+;; Whether a submit on the libcurl mapped from FILE, at VERSION, its file
+;; holding Guix's patch's literal when PATCHED is #t, refuses a CA file with
+;; SSL_CERT_FILE or SSL_CERT_DIR set as it loaded: FILE under /gnu/store/,
+;; or PATCHED, whatever its version (ADR-0024, amended 2026-10-26: the key).
+(define (pin-refuses? file version patched)
+  (or (eq? patched #t)
+      (and (string? file) (>= (string-length file) 11) (string=? (substring file 0 11) "/gnu/store/"))))
+
+(define refuses (pin-refuses? libcurl-file libcurl-version libcurl-patched))
+
+;; libcurl-copy : (U String #f)
+;; A copy of this libcurl's file, out of the store, in the scratch
+;; directory, for the pin's child to load through CHEZ_CURL_LIBCURL; #f
+;; where there is no file to copy, Apple's in the dyld cache.
+(define libcurl-copy
+  (guard (e (#t #f))
+    (and (string? libcurl-file) scratch
+         (let ((copy (scratch-file "libcurl.so.4")))
+           (copy-file libcurl-file copy)
+           copy))))
+
+(test-equal "the copy of this libcurl's file, for the pin, is made where there is a file: on Linux"
+  (if (string? libcurl-file) 'copied 'no-file)
+  (cond (libcurl-copy 'copied) ((string? libcurl-file) 'not-copied) (else 'no-file)))
+
+;; name-of : Any -> Any
+;; A backend's NAME/VERSION cut at its /, as the pin's child prints one.
+(define (name-of x)
+  (if (string? x)
+      (let loop ((i 0))
+        (cond ((= i (string-length x)) x)
+              ((char=? (string-ref x i) #\/) (substring x 0 i))
+              (else (loop (+ i 1)))))
+      x))
+
+;; backend-name : Any
+;; The TLS backend this process's libcurl put in use, by name: the one the
+;; pin's child, which inherits this environment, puts in use too.
+(define backend-name (guard (e (#t (list 'raised (describe e)))) (name-of (loaded-tls-backend))))
+
+(test-equal "keychain-fallback?, the rule alone, written out: a CA file, verification on, on macOS, Apple's libcurl under /usr/lib/, with LibreSSL in use or a backend that could not be read; never SecureTransport, nor OpenSSL, nor a libcurl elsewhere on LibreSSL, nor off macOS, nor verification off, nor no CA file"
+  '(#t #t #f #f #f #f #f #f #f)
+  (let ((apple "/usr/lib/libcurl.4.dylib"))
+    (list (keychain-fallback? "/x/ca.pem" #t #t apple "LibreSSL/3.3.6")
+          (keychain-fallback? "/x/ca.pem" #t #t apple #f)
+          (keychain-fallback? "/x/ca.pem" #t #t apple "SecureTransport")
+          (keychain-fallback? "/x/ca.pem" #t #t apple "OpenSSL/3.0.13")
+          (keychain-fallback? "/x/ca.pem" #t #t "/opt/homebrew/opt/curl/lib/libcurl.4.dylib" "LibreSSL/3.9.2")
+          (keychain-fallback? "/x/ca.pem" #t #f apple "LibreSSL/3.3.6")
+          (keychain-fallback? "/x/ca.pem" #t #f "/usr/lib/x86_64-linux-gnu/libcurl.so.4" "LibreSSL/3.3.6")
+          (keychain-fallback? "/x/ca.pem" #f #t apple "LibreSSL/3.3.6")
+          (keychain-fallback? #f #t #t apple "LibreSSL/3.3.6"))))
+
+(test-equal "loaded-tls-backend is a string, the backend libcurl's init put in use; on a libcurl with one backend, no multi-ssl feature, the whole of the ssl_version the report read before the init, which then names it alone"
+  'named
+  (guard (e (#t (list 'raised (describe e))))
+    (let ((backend (loaded-tls-backend)) (info (loaded-libcurl)))
+      (cond ((not (string? backend)) (list 'no-backend backend))
+            ((memq 'multi-ssl (libcurl-info-feature-names info)) 'named)
+            ((equal? backend (libcurl-info-ssl-version info)) 'named)
+            (else (list 'differs backend (libcurl-info-ssl-version info)))))))
+
+(test-equal "loaded-on-macos? is whether Chez's machine type, as this suite reads it, ends in osx"
+  (let* ((name (symbol->string (machine-type))) (n (string-length name)))
+    (and (>= n 3) (string=? (substring name (- n 3) n) "osx")))
+  (guard (e (#t (list 'raised (describe e)))) (loaded-on-macos?)))
+
+(test-equal "this process's TLS backend is no keychain's, or every CA file here would be refused: on macOS, CURL_SSL_BACKEND=secure-transport, which make test sets"
+  'not-the-keychain
+  (guard (e (#t (list 'raised (describe e))))
+    (if (keychain-fallback? "/x/ca.pem" #t (loaded-on-macos?) (libcurl-info-path (loaded-libcurl))
+                            (loaded-tls-backend))
+        (list 'keychain-backend (loaded-tls-backend)
+              "Apple's LibreSSL is in use: run with CURL_SSL_BACKEND=secure-transport, as make test does on macOS")
+        'not-the-keychain)))
+
+(test-equal "guix-ca-overrides, the library's table, is this suite's copy: Guix's 8.20.0 overrides"
+  guix-pin-verdicts
+  guix-ca-overrides)
+
+(test-equal "ca-overridden?, by file, path, the patch's literal and version: a file under /gnu/store/ at 8.20.0, as a profile's link maps, and at a version with no row, 8.6.0 and 8.21.0 among them; with no file, the path, under /gnu/store/; a file elsewhere holding the literal, copied out of the store, at 8.20.0 and with no row; never a file elsewhere without it, whatever the path, nor /gnu/storex/"
+  '(#t #t #t #t #t #t #f #f #f #f)
+  (list (ca-overridden? "/gnu/store/x-curl-8.20.0/lib/libcurl.so.4.8.0" "/home/u/.guix-profile/lib/libcurl.so.4" #f "8.20.0")
+        (ca-overridden? "/gnu/store/x-curl-8.6.0/lib/libcurl.so.4.8.0" "/x/libcurl.so.4" #f "8.6.0")
+        (ca-overridden? "/gnu/store/x-curl-8.21.0/lib/libcurl.so.4.8.0" "/x/libcurl.so.4" #f "8.21.0")
+        (ca-overridden? #f "/gnu/store/x-profile/lib/libcurl.so.4" #f "8.20.0")
+        (ca-overridden? "/opt/copy/libcurl.so.4.8.0" "/opt/copy/libcurl.so.4" #t "8.20.0")
+        (ca-overridden? #f "/opt/copy/libcurl.so.4" #t "8.21.0")
+        (ca-overridden? "/usr/lib/x86_64-linux-gnu/libcurl.so.4.8.0" "/gnu/store/x/lib/libcurl.so.4" #f "8.20.0")
+        (ca-overridden? "/usr/lib/libcurl.so.4" "/usr/lib/libcurl.so.4" #f "8.20.0")
+        (ca-overridden? #f "/usr/lib/libcurl.4.dylib" #f "8.7.1")
+        (ca-overridden? "/gnu/storex/lib/libcurl.so.4" "/gnu/storex/lib/libcurl.so.4" #f "8.20.0")))
+
+(test-equal "overriding-variables, the rule alone, written out: a CA file, verification on, on a libcurl under /gnu/store/ or holding the patch's literal names each variable set, in order, SSL_CERT_DIR alone too; none set, verification off, no CA file, or a libcurl elsewhere without the literal, ()"
+  '(("SSL_CERT_FILE" "SSL_CERT_DIR") ("SSL_CERT_DIR") ("SSL_CERT_FILE") ("SSL_CERT_FILE" "SSL_CERT_DIR")
+    () () () () ())
+  (let ((guix "/gnu/store/x-curl-8.20.0/lib/libcurl.so.4.8.0")
+        (both '(("SSL_CERT_FILE" . "/f.pem") ("SSL_CERT_DIR" . "/d"))))
+    (list (overriding-variables "/x/ca.pem" #t guix "/p" #f "8.20.0" both)
+          (overriding-variables "/x/ca.pem" #t guix "/p" #f "8.20.0" '(("SSL_CERT_FILE" . #f) ("SSL_CERT_DIR" . "/d")))
+          (overriding-variables "/x/ca.pem" #t #f "/gnu/store/x-profile/lib/libcurl.so.4" #f "8.6.0"
+                                '(("SSL_CERT_FILE" . "/f.pem") ("SSL_CERT_DIR" . #f)))
+          (overriding-variables "/x/ca.pem" #t "/opt/copy/libcurl.so.4.8.0" "/opt/copy/libcurl.so.4" #t "8.20.0" both)
+          (overriding-variables "/x/ca.pem" #t guix "/p" #f "8.20.0" '(("SSL_CERT_FILE" . #f) ("SSL_CERT_DIR" . #f)))
+          (overriding-variables "/x/ca.pem" #f guix "/p" #t "8.20.0" both)
+          (overriding-variables #f #t guix "/p" #t "8.20.0" both)
+          (overriding-variables "/x/ca.pem" #t "/usr/lib/libcurl.so.4.8.0" "/usr/lib/libcurl.so.4" #f "8.20.0" both)
+          (overriding-variables "/x/ca.pem" #t #f "/usr/lib/libcurl.4.dylib" #f "8.7.1" both))))
+
+(test-equal "pin-refuses?, this suite's rule: a file under /gnu/store/ refuses, whatever its version, and so does any file holding the patch's literal; one elsewhere without it, #f and /gnu/storex/ do not"
+  '(#t #t #t #t #f #f #f)
+  (list (pin-refuses? "/gnu/store/x/lib/libcurl.so.4.8.0" "8.20.0" #f)
+        (pin-refuses? "/gnu/store/x/lib/libcurl.so.4.8.0" "8.6.0" #f)
+        (pin-refuses? "/opt/copy/libcurl.so.4.8.0" "8.20.0" #t)
+        (pin-refuses? #f "8.21.0" #t)
+        (pin-refuses? "/usr/lib/libcurl.so.4.8.0" "8.20.0" #f)
+        (pin-refuses? #f "8.20.0" #f)
+        (pin-refuses? "/gnu/storex/libcurl.so.4" "8.20.0" #f)))
+
+(test-equal (string-append "the Guix pin has a row for this libcurl, " (written libcurl-version) ", mapped from "
+                           (written libcurl-file)
+                           ": a Guix libcurl's comes from its version's row in guix-pin-verdicts; one with no row is unrecorded: measure it with research/m4/slice3/run.sh's when set, and add its row here and to guix-ca-overrides")
   'recorded
-  (if (pair? verdict)
+  (if (and refuses (not (and (string? libcurl-version) (assoc libcurl-version guix-pin-verdicts))))
       (list 'unrecorded-guix-libcurl libcurl-version
-            "its pin verdicts are unrecorded: measure the pin's three cases, and add a row to guix-pin-verdicts")
+            "its override is unmeasured: measure it with research/m4/slice3/run.sh's when set, and add its row")
       'recorded))
 
 ;; --- against the origin --------------------------------------------------------------------
@@ -905,6 +1189,12 @@
             'no-raise)
           (native-counts)))
 
+  ;; --- a file really named pkcs11:..., reached by a path that does not
+  ;; begin so (ADR-0024, decision 4)
+  (test-equal "a copy of ca.pem named pkcs11:ca.pem, reached by its absolute path, which does not begin pkcs11:, answers 200, whole; the counts back to the engine's alone"
+    (list good-answer running-counts)
+    (with-counts (get 'https 'ca-file pkcs11-named)))
+
   ;; --- the path's encoding
   (test-equal "the path's encoding: https with a copy of ca.pem under café-λ answers 200, whole, so the path reached libcurl as the UTF-8 the file system holds; the counts back to the engine's alone"
     (list good-answer running-counts)
@@ -972,45 +1262,119 @@
                           (if (and k (not (memq k seen))) (cons k seen) seen))))))
           (lambda () (set! stop #t) (thread-join flipper))))))
 
-  ;; --- the Guix pin, in a child (ADR-0018, decision 5). Guix's 8.20.0
-  ;; writes SSL_CERT_FILE over CAINFO and SSL_CERT_DIR over CAPATH when a
-  ;; transfer starts; any other libcurl ignores both. The child is handed
-  ;; the variable through its command, so this process's environment stays
-  ;; hermetic, and it prints the libcurl it loaded and the variables it
-  ;; saw. Each case answers one way overridden and the other ignored, the
-  ;; two SSL_CERT_FILE cases mirrored, so that ignored is told from added.
+  ;; --- the Guix pin, in a child (ADR-0018, decision 5; ADR-0024, decision
+  ;; 2). Guix's 8.20.0 writes SSL_CERT_FILE over CAINFO and SSL_CERT_DIR
+  ;; over CAPATH when a transfer starts, as they were at curl_global_init;
+  ;; any other libcurl ignores both. So on a libcurl mapped from the store,
+  ;; a submit refuses a CA file, verification on, when either was set as it
+  ;; loaded, naming each set; elsewhere the transfer runs, and answers by
+  ;; its CA file. The child is handed the variables through its command, so
+  ;; this process's environment stays hermetic, and it prints the libcurl it
+  ;; loaded, its file, the variables it started with and those native
+  ;; recorded. Each case answers one way where it refuses and another
+  ;; where it does not: the SSL_CERT_FILE ones mirrored, so that ignored is
+  ;; told from added, and two that set or empty the variable after the
+  ;; load, so that what native read at the load is told from what a submit
+  ;; could read later.
+  (let ((store-answer (get 'https))
+        (overridden (lambda names (list 'request-refused 'ca-file 'environment-override names))))
+    (for-each
+     (lambda (row)
+       (let* ((assignments (list-ref row 0)) (ca-file (list-ref row 1)) (verify (list-ref row 2))
+              (after (list-ref row 3)) (refused (list-ref row 4)) (ignored (list-ref row 5))
+              (text (list-ref row 6)) (library (list-ref row 7))
+              (file (or library libcurl-file))
+              (refuses (pin-refuses? file libcurl-version libcurl-patched)))
+         (define (given name) (let ((hit (assoc name assignments))) (and hit (cdr hit))))
+         (define (read-as name) (let ((v (given name))) (and v (not (string=? v "")) v)))
+         (test-equal (string-append "the Guix pin, in a child given " text ", on libcurl "
+                                    (written libcurl-version) ", mapped from " (written file) ": "
+                                    (if refuses "Guix's, " "not Guix's, ")
+                                    (written (if refuses refused ignored)) ", whole; the child's counts zero")
+           (list 0
+                 (list (list 'libcurl libcurl-version)
+                       (list 'file file)
+                       (list 'backend backend-name)
+                       (list 'environment
+                             (cons 'SSL_CERT_FILE (given "SSL_CERT_FILE"))
+                             (cons 'SSL_CERT_DIR (given "SSL_CERT_DIR"))
+                             (cons 'CURL_SSL_BACKEND (getenv "CURL_SSL_BACKEND")))
+                       (list 'recorded (list (cons "SSL_CERT_FILE" (read-as "SSL_CERT_FILE"))
+                                             (cons "SSL_CERT_DIR" (read-as "SSL_CERT_DIR"))))
+                       (list 'transfer (if refuses refused ignored) zero-counts)
+                       '(done))
+                 "")
+           (child-run (append (if library (list (string-append "CHEZ_CURL_LIBCURL=" library)) '())
+                              (map (lambda (a) (string-append (car a) "=" (cdr a))) assignments))
+                      (url-of o 'https "/status/200") (or ca-file "-") (if verify "on" "off") after))))
+     (append
+      (list (list (list (cons "SSL_CERT_FILE" (pki-file "other-ca.pem"))) (pki-file "ca.pem") #t '()
+                 (overridden "SSL_CERT_FILE") good-answer
+                 "SSL_CERT_FILE at other-ca.pem, and the run CA as the CA file" #f)
+           (list (list (cons "SSL_CERT_FILE" (pki-file "ca.pem"))) (pki-file "other-ca.pem") #t '()
+                 (overridden "SSL_CERT_FILE") peer-refused
+                 "SSL_CERT_FILE at ca.pem, and other-ca.pem as the CA file" #f)
+           (list (list (cons "SSL_CERT_DIR" cert-dir)) (pki-file "other-ca.pem") #t '()
+                 (overridden "SSL_CERT_DIR") peer-refused
+                 "SSL_CERT_DIR at a directory holding ca.pem and its hash link, and other-ca.pem as the CA file" #f)
+           (list (list (cons "SSL_CERT_FILE" (pki-file "other-ca.pem")) (cons "SSL_CERT_DIR" cert-dir))
+                 (pki-file "ca.pem") #t '()
+                 (overridden "SSL_CERT_FILE" "SSL_CERT_DIR") good-answer
+                 "both, SSL_CERT_FILE at other-ca.pem and SSL_CERT_DIR at the run CA's directory, and the run CA as the CA file: refused naming both, in that order" #f)
+           (list (list (cons "SSL_CERT_FILE" (pki-file "other-ca.pem"))) (pki-file "ca.pem") #f '()
+                 good-answer good-answer
+                 "SSL_CERT_FILE at other-ca.pem, the run CA as the CA file, and verification off, when libcurl reads no CA: nothing refused" #f)
+           (list (list (cons "SSL_CERT_FILE" (pki-file "ca.pem"))) #f #t '()
+                 good-answer store-answer
+                 "SSL_CERT_FILE at ca.pem and no CA file: the store a Guix libcurl trusts, the operator's setting, unrefused; elsewhere the system store's answer" #f)
+           (list (list (cons "SSL_CERT_FILE" "")) (pki-file "ca.pem") #t '()
+                 good-answer good-answer
+                 "SSL_CERT_FILE empty, which libcurl and native read as unset, and the run CA as the CA file" #f)
+           (list '() (pki-file "ca.pem") #t (list "SSL_CERT_FILE" (pki-file "other-ca.pem"))
+                 good-answer good-answer
+                 "no variable, then SSL_CERT_FILE at other-ca.pem set after the load, and the run CA as the CA file: libcurl read the variables at curl_global_init, as native did, so it changes nothing" #f)
+           (list (list (cons "SSL_CERT_FILE" (pki-file "other-ca.pem"))) (pki-file "ca.pem") #t
+                 (list "SSL_CERT_FILE" "")
+                 (overridden "SSL_CERT_FILE") good-answer
+                 "SSL_CERT_FILE at other-ca.pem, emptied after the load, and the run CA as the CA file: libcurl still writes it, so a Guix submit still refuses" #f))
+      (if libcurl-copy
+          (list (list (list (cons "SSL_CERT_FILE" (pki-file "other-ca.pem"))) (pki-file "ca.pem") #t '()
+                      (overridden "SSL_CERT_FILE") good-answer
+                      "SSL_CERT_FILE at other-ca.pem, the run CA as the CA file, and a copy of this libcurl's file out of the store as CHEZ_CURL_LIBCURL: Guix's by the patch's literal, which the copy holds too"
+                      libcurl-copy))
+          '()))))
+
+  ;; --- the Mac's keychain (ADR-0024, amended 2026-10-27), in a child given
+  ;; CURL_SSL_BACKEND through its command. Apple's libcurl puts the backend
+  ;; it names in use at its init; a libcurl with one backend ignores it. On
+  ;; macOS, with LibreSSL, whose keychain undoes a CA file, a submit refuses
+  ;; a CA file, naming the backend; with SecureTransport the transfer runs,
+  ;; and answers by its CA file. Elsewhere both run, on this backend.
   (for-each
-   (lambda (pin)
-     (let ((name (list-ref pin 0)) (value (list-ref pin 1)) (ca-file (list-ref pin 2))
-           (overridden (list-ref pin 3)) (ignored (list-ref pin 4)) (text (list-ref pin 5)))
-       (test-equal (string-append "the Guix pin, in a child given " text ", in this world, " (symbol->string world)
-                                  ", on libcurl " (written libcurl-version) ": "
-                                  (case verdict
-                                    ((overridden) "overridden, ")
-                                    ((ignored) "ignored, ")
-                                    (else "with no recorded verdict, "))
-                                  (written (if (eq? verdict 'overridden) overridden ignored))
-                                  ", whole; the child's counts zero")
+   (lambda (row)
+     (let* ((value (car row)) (name (cadr row))
+            (macos (eq? (guard (e (#t #f)) (loaded-on-macos?)) #t))
+            (backend (if macos name backend-name))
+            (answer (if (and macos (equal? name "LibreSSL"))
+                        (list 'request-refused 'ca-file 'keychain-fallback (list "LibreSSL"))
+                        good-answer)))
+       (test-equal (string-append "the keychain, in a child given CURL_SSL_BACKEND=" value
+                                  " and the run CA as the CA file: "
+                                  (if macos "on macOS, " "off macOS, where it is ignored, ")
+                                  (written backend) " in use, " (written answer) "; the child's counts zero")
          (list 0
                (list (list 'libcurl libcurl-version)
-                     (list 'environment
-                           (cons 'SSL_CERT_FILE (and (string=? name "SSL_CERT_FILE") value))
-                           (cons 'SSL_CERT_DIR (and (string=? name "SSL_CERT_DIR") value)))
-                     (list 'transfer
-                           (case verdict
-                             ((overridden) overridden)
-                             ((ignored) ignored)
-                             (else (list 'no-verdict-for verdict)))
-                           zero-counts)
+                     (list 'file libcurl-file)
+                     (list 'backend backend)
+                     (list 'environment '(SSL_CERT_FILE . #f) '(SSL_CERT_DIR . #f)
+                           (cons 'CURL_SSL_BACKEND value))
+                     '(recorded (("SSL_CERT_FILE" . #f) ("SSL_CERT_DIR" . #f)))
+                     (list 'transfer answer zero-counts)
                      '(done))
                "")
-         (child-run name value (url-of o 'https "/status/200") ca-file))))
-   (list (list "SSL_CERT_FILE" (pki-file "other-ca.pem") (pki-file "ca.pem") peer-refused good-answer
-               "SSL_CERT_FILE at other-ca.pem alone, and the run CA as the CA file")
-         (list "SSL_CERT_FILE" (pki-file "ca.pem") (pki-file "other-ca.pem") good-answer peer-refused
-               "SSL_CERT_FILE at ca.pem alone, and other-ca.pem as the CA file")
-         (list "SSL_CERT_DIR" cert-dir (pki-file "other-ca.pem") good-answer peer-refused
-               "SSL_CERT_DIR at a directory holding ca.pem and its hash link alone, and other-ca.pem as the CA file"))))
+         (child-run (list (string-append "CURL_SSL_BACKEND=" value))
+                    (url-of o 'https "/status/200") (pki-file "ca.pem") "on" '()))))
+   '(("openssl" "LibreSSL") ("secure-transport" "SecureTransport"))))
 
 (define scenarios-outcome
   (guard (e (#t (list 'raised (describe e))))

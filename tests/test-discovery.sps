@@ -260,6 +260,60 @@
   (libcurl-world (string-append fhs-maps
                                 (maps-line "/opt/gnu/store/ddd-glibc/lib/libc.so.6"))))
 
+;; --- the loaded library's file (ADR-0024, amended 2026-10-26) --------------------
+
+;; curl-maps : String
+;; Two libcurl mappings, its text and its data, beside libc's, a heap with
+;; no file, and a line whose range is no hex.
+(define curl-maps
+  (string-append
+   "7f1e2a000000-7f1e2a028000 r--p 00000000 08:02 5678                       /usr/lib/x86_64-linux-gnu/libc.so.6\n"
+   "7f1e2c000000-7f1e2c0a0000 r-xp 00010000 fc:01 7777                       /gnu/store/abc-curl-8.20.0/lib/libcurl.so.4.8.0\n"
+   "7f1e2c0a0000-7f1e2c0b0000 rw-p 000a0000 fc:01 7777                       /gnu/store/abc-curl-8.20.0/lib/libcurl.so.4.8.0\n"
+   "14b8c000-14bad000 rw-p 00000000 00:00 0                                  [heap]\n"
+   "7f1e2dzz0000-7f1e2e000000 r--p 00000000 08:02 1 /not/hex\n"))
+
+(test-equal "mapped-file: the line whose range holds the address names the file, at the range's first byte and its last, in its data as in its text; the libc line its own"
+  '("/gnu/store/abc-curl-8.20.0/lib/libcurl.so.4.8.0" "/gnu/store/abc-curl-8.20.0/lib/libcurl.so.4.8.0"
+    "/gnu/store/abc-curl-8.20.0/lib/libcurl.so.4.8.0" "/gnu/store/abc-curl-8.20.0/lib/libcurl.so.4.8.0"
+    "/usr/lib/x86_64-linux-gnu/libc.so.6")
+  (map (lambda (address) (mapped-file curl-maps address))
+       (list #x7f1e2c000000 #x7f1e2c09ffff #x7f1e2c0a0000 #x7f1e2c0affff #x7f1e2a000010)))
+
+(test-equal "mapped-file: #f for an address past a range's end, which is not its own, below every range, in a mapping with no file, in a line that is no hex, and for an unreadable maps, #f"
+  '(#f #f #f #f #f)
+  (list (mapped-file curl-maps #x7f1e2c0b0000)
+        (mapped-file curl-maps #x1000)
+        (mapped-file curl-maps #x14b8c010)
+        (mapped-file curl-maps #x7f1e2df00000)
+        (mapped-file #f #x7f1e2c000000)))
+
+(test-equal "mapped-file: upper-case hex is read too, and the last line needs no newline"
+  "/x/libcurl.so.4"
+  (mapped-file "7F1E2C000000-7F1E2C0A0000 r-xp 00000000 fc:01 1 /x/libcurl.so.4" #x7f1e2c000001))
+
+(test-equal "bytes-hold?: a pattern at the start, inside, and at the very end, after a partial match that breaks off; not one cut short at the end, nor one absent, nor in an empty bytevector"
+  '(#t #t #t #f #f #f)
+  (map (lambda (text) (bytes-hold? (string->utf8 text) (string->utf8 "SSL_CERT_FILE")))
+       (list "SSL_CERT_FILE\x0;rest" "x\x0;SSL_CERT_FILE\x0;y" "SSL_CERT_FILSSL_CERT_FILE"
+             "abc SSL_CERT_FIL" "SSL_CERT_DIR SSL_CERT_FIL3" "")))
+
+(test-equal "bytes-hold?: an empty pattern is an assertion violation"
+  'assertion-violation
+  (guard (e ((assertion-violation? e) 'assertion-violation) (#t (list 'raised e)))
+    (bytes-hold? (string->utf8 "abc") (make-bytevector 0))
+    'no-raise))
+
+(test-equal "backend-in-use: the text outside parentheses, trimmed, its version kept: Apple's 8.7.1 after the init and before it, a single backend's, OpenSSL's; a version with spaces, alone and beside a group, a group with spaces, a group between two, nested and unclosed groups; #f for groups alone, the empty string, spaces alone and #f"
+  '("LibreSSL/3.3.6" "SecureTransport" "GnuTLS/3.8.13" "OpenSSL/3.0.13"
+    "OpenSSL/1.1.1k FIPS" "OpenSSL/1.1.1k FIPS" "OpenSSL/3.0.13" "B/2" "A/1" "A/1"
+    #f #f #f #f)
+  (map backend-in-use
+       (list "(SecureTransport) LibreSSL/3.3.6" "SecureTransport (LibreSSL/3.3.6)" "GnuTLS/3.8.13"
+             "OpenSSL/3.0.13" "OpenSSL/1.1.1k FIPS" "(x/1) OpenSSL/1.1.1k FIPS"
+             "(NSS/3.21 Basic ECC) OpenSSL/3.0.13" "(A/1) B/2 (C/3)" "A/1 ((B/2) C/3)" "A/1 (B/2"
+             "(a) (b)" "" "   " #f)))
+
 ;; --- the Guix world -------------------------------------------------------------
 
 (test-equal "guix: the candidate list, in ADR-0002's order"

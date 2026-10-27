@@ -1,0 +1,392 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libc6 2.39-0ubuntu8.9
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libssl3t64 3.0.13-0ubuntu3.16
+[floor] libcurl 7.85.0, OpenSSL/3.0.13, https-proxy yes, Linux x86_64, OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+[floor] control, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] control, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor] control, no CA file: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_FILE the other CA before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_FILE the run CA before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_FILE the other CA after init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_FILE the run CA after init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_FILE the other CA before init, unset after, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_FILE empty before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_FILE empty before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_FILE a missing file before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_FILE a missing file before init, CA file the run CA, verify off: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_FILE the run CA before init, no CA file: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_DIR the run CA's before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_DIR the run CA's after init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_DIR the run CA's before init, unset after, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor] SSL_CERT_DIR empty before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "missing.pem", which does not exist: code 77 status 0 body "" error "error setting certificate file: missing.pem" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "pkcs11:object=x": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "pkcs11:ca.pem": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "PKCS11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "Pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "pKcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "pkCs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "pkcS11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "pkcs11": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "pkcs1:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "pkcs111:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file " pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "pkcs11 :": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "tpmkey:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "system:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "./pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] CA file "p<U+212A KELVIN SIGN>cs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor] http, http_proxy https://, no CA file: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 806D4BD0D9720000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[floor] http, http_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 806D4BD0D9720000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[floor] http, http_proxy https://, verify off: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 806D4BD0D9720000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[floor] http, http_proxy https://, CA file the run CA, verify off: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 806D4BD0D9720000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[floor] http, http_proxy https://, PROXY_CAINFO the run CA: code 0 status 299 body "proxy" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor]   proxy handshake
+[floor]   proxy GET http://127.0.0.1:45009/x
+[floor] http, http_proxy https://, the proxy's verify off: code 0 status 299 body "proxy" error "" ssl "OpenSSL/3.0.13"; exit 0
+[floor]   proxy handshake
+[floor]   proxy GET http://127.0.0.1:45009/x
+[floor] http, all_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 806D4BD0D9720000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[floor] https, https_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 806D4BD0D9720000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[floor] https, https_proxy https://, verify off: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 806D4BD0D9720000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[floor] https, https_proxy https://, CA file and PROXY_CAINFO the run CA: code 56 status 0 body "" error "Received HTTP code 403 from proxy after CONNECT" ssl "OpenSSL/3.0.13"; exit 0
+[floor]   proxy handshake
+[floor]   proxy CONNECT 127.0.0.1:42381
+[floor] http, http_proxy https://, SSL_CERT_FILE the run CA before init, no CA file: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[floor]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 806D4BD0D9720000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[floor] maps: (given "/src/build/e1/ci/curl-floor/lib/libcurl.so.4") (mapped "/src/build/e1/ci/curl-floor/lib/libcurl.so.4.8.0") (libc "/usr/lib/x86_64-linux-gnu/libc.so.6")
+[floor] maps: (given "/tmp/slice3-research.RsM8w0/libcurl.so.4") (mapped "/src/build/e1/ci/curl-floor/lib/libcurl.so.4.8.0") (libc "/usr/lib/x86_64-linux-gnu/libc.so.6")
+[floor] done
+[ubuntu-openssl] libcurl 8.5.0, OpenSSL/3.0.13, https-proxy yes, Linux x86_64, OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+[ubuntu-openssl] control, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] control, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] control, no CA file: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_FILE the other CA before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_FILE the run CA before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_FILE the other CA after init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_FILE the run CA after init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_FILE the other CA before init, unset after, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_FILE empty before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_FILE empty before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_FILE a missing file before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_FILE a missing file before init, CA file the run CA, verify off: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_FILE the run CA before init, no CA file: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_DIR the run CA's before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_DIR the run CA's after init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_DIR the run CA's before init, unset after, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] SSL_CERT_DIR empty before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "missing.pem", which does not exist: code 77 status 0 body "" error "error setting certificate file: missing.pem" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "pkcs11:object=x": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "pkcs11:ca.pem": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "PKCS11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "Pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "pKcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "pkCs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "pkcS11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "pkcs11": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "pkcs1:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "pkcs111:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file " pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "pkcs11 :": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "tpmkey:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "system:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "./pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] CA file "p<U+212A KELVIN SIGN>cs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl] http, http_proxy https://, no CA file: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 802DC3D4C3710000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[ubuntu-openssl] http, http_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 802DC3D4C3710000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[ubuntu-openssl] http, http_proxy https://, verify off: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 802DC3D4C3710000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[ubuntu-openssl] http, http_proxy https://, CA file the run CA, verify off: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 802DC3D4C3710000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[ubuntu-openssl] http, http_proxy https://, PROXY_CAINFO the run CA: code 0 status 299 body "proxy" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl]   proxy handshake
+[ubuntu-openssl]   proxy GET http://127.0.0.1:39657/x
+[ubuntu-openssl] http, http_proxy https://, the proxy's verify off: code 0 status 299 body "proxy" error "" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl]   proxy handshake
+[ubuntu-openssl]   proxy GET http://127.0.0.1:39657/x
+[ubuntu-openssl] http, all_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 802DC3D4C3710000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[ubuntu-openssl] https, https_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 802DC3D4C3710000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[ubuntu-openssl] https, https_proxy https://, verify off: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 802DC3D4C3710000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[ubuntu-openssl] https, https_proxy https://, CA file and PROXY_CAINFO the run CA: code 56 status 0 body "" error "CONNECT tunnel failed, response 403" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl]   proxy handshake
+[ubuntu-openssl]   proxy CONNECT 127.0.0.1:42129
+[ubuntu-openssl] http, http_proxy https://, SSL_CERT_FILE the run CA before init, no CA file: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "OpenSSL/3.0.13"; exit 0
+[ubuntu-openssl]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA 802DC3D4C3710000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:ssl/record/rec_layer_s3.c:918:SSL alert number 48 
+[ubuntu-openssl] maps: (given "/usr/lib/x86_64-linux-gnu/libcurl.so.4") (mapped "/usr/lib/x86_64-linux-gnu/libcurl.so.4.8.0") (libc "/usr/lib/x86_64-linux-gnu/libc.so.6")
+[ubuntu-openssl] maps: (given "/tmp/slice3-research.i3wsL7/libcurl.so.4") (mapped "/usr/lib/x86_64-linux-gnu/libcurl.so.4.8.0") (libc "/usr/lib/x86_64-linux-gnu/libc.so.6")
+[ubuntu-openssl] done
+[ubuntu-gnutls] libcurl 8.5.0, GnuTLS/3.8.3, https-proxy yes, Linux x86_64, OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+[ubuntu-gnutls] control, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] control, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.kcSwbb/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] control, no CA file: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_FILE the other CA before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_FILE the run CA before init, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.kcSwbb/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_FILE the other CA after init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_FILE the run CA after init, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.kcSwbb/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_FILE the other CA before init, unset after, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_FILE empty before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_FILE empty before init, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.kcSwbb/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_FILE a missing file before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_FILE a missing file before init, CA file the run CA, verify off: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_FILE the run CA before init, no CA file: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_DIR the run CA's before init, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.kcSwbb/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_DIR the run CA's after init, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.kcSwbb/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_DIR the run CA's before init, unset after, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.kcSwbb/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] SSL_CERT_DIR empty before init, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.kcSwbb/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "missing.pem", which does not exist: code 77 status 0 body "" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "pkcs11:": code 60 status 0 body "" error "server certificate verification failed. CAfile: pkcs11: CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "pkcs11:object=x": code 60 status 0 body "" error "server certificate verification failed. CAfile: pkcs11:object=x CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "pkcs11:ca.pem": code 77 status 0 body "" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "PKCS11:": code 60 status 0 body "" error "server certificate verification failed. CAfile: PKCS11: CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "Pkcs11:": code 60 status 0 body "" error "server certificate verification failed. CAfile: Pkcs11: CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "pKcs11:": code 60 status 0 body "" error "server certificate verification failed. CAfile: pKcs11: CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "pkCs11:": code 60 status 0 body "" error "server certificate verification failed. CAfile: pkCs11: CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "pkcS11:": code 60 status 0 body "" error "server certificate verification failed. CAfile: pkcS11: CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "pkcs11": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "pkcs1:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "pkcs111:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file " pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "pkcs11 :": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "tpmkey:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "system:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "./pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] CA file "p<U+212A KELVIN SIGN>cs11:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls] http, http_proxy https://, no CA file: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls]   proxy handshake
+[ubuntu-gnutls] http, http_proxy https://, CA file the run CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls]   proxy handshake
+[ubuntu-gnutls] http, http_proxy https://, verify off: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls]   proxy handshake
+[ubuntu-gnutls] http, http_proxy https://, CA file the run CA, verify off: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls]   proxy handshake
+[ubuntu-gnutls] http, http_proxy https://, PROXY_CAINFO the run CA: code 0 status 299 body "proxy" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls]   proxy handshake
+[ubuntu-gnutls]   proxy GET http://127.0.0.1:35185/x
+[ubuntu-gnutls] http, http_proxy https://, the proxy's verify off: code 0 status 299 body "proxy" error "" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls]   proxy handshake
+[ubuntu-gnutls]   proxy GET http://127.0.0.1:35185/x
+[ubuntu-gnutls] http, all_proxy https://, CA file the run CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls]   proxy handshake
+[ubuntu-gnutls] https, https_proxy https://, CA file the run CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls]   proxy handshake
+[ubuntu-gnutls] https, https_proxy https://, verify off: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls]   proxy handshake
+[ubuntu-gnutls] https, https_proxy https://, CA file and PROXY_CAINFO the run CA: code 56 status 0 body "" error "CONNECT tunnel failed, response 403" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls]   proxy handshake
+[ubuntu-gnutls]   proxy CONNECT 127.0.0.1:45355
+[ubuntu-gnutls] http, http_proxy https://, SSL_CERT_FILE the run CA before init, no CA file: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.3"; exit 0
+[ubuntu-gnutls]   proxy handshake
+[ubuntu-gnutls] maps: (given "/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4") (mapped "/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4.8.0") (libc "/usr/lib/x86_64-linux-gnu/libc.so.6")
+[ubuntu-gnutls] maps: (given "/tmp/slice3-research.kcSwbb/libcurl.so.4") (mapped "/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4.8.0") (libc "/usr/lib/x86_64-linux-gnu/libc.so.6")
+[ubuntu-gnutls] done
+[current] libcurl 8.23.0, OpenSSL/3.0.13, https-proxy yes, Linux x86_64, OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+[current] control, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] control, CA file the other CA: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current] control, no CA file: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_FILE the other CA before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_FILE the run CA before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_FILE the other CA after init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_FILE the run CA after init, CA file the other CA: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_FILE the other CA before init, unset after, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_FILE empty before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_FILE empty before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_FILE a missing file before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_FILE a missing file before init, CA file the run CA, verify off: code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_FILE the run CA before init, no CA file: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_DIR the run CA's before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_DIR the run CA's after init, CA file the other CA: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_DIR the run CA's before init, unset after, CA file the other CA: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current] SSL_CERT_DIR empty before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "missing.pem", which does not exist: code 77 status 0 body "" error "error adding trust anchors from file: missing.pem" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "pkcs11:object=x": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "pkcs11:ca.pem": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "PKCS11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "Pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "pKcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "pkCs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "pkcS11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "pkcs11": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "pkcs1:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "pkcs111:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file " pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "pkcs11 :": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "tpmkey:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "system:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "./pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] CA file "p<U+212A KELVIN SIGN>cs11:": code 0 status 200 body "origin-tls" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current] http, http_proxy https://, no CA file: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current]   proxy handshake
+[current] http, http_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current]   proxy handshake
+[current] http, http_proxy https://, verify off: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current]   proxy handshake
+[current] http, http_proxy https://, CA file the run CA, verify off: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current]   proxy handshake
+[current] http, http_proxy https://, PROXY_CAINFO the run CA: code 0 status 299 body "proxy" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current]   proxy handshake
+[current]   proxy GET http://127.0.0.1:46647/x
+[current] http, http_proxy https://, the proxy's verify off: code 0 status 299 body "proxy" error "" ssl "OpenSSL/3.0.13"; exit 0
+[current]   proxy handshake
+[current]   proxy GET http://127.0.0.1:46647/x
+[current] http, all_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current]   proxy handshake
+[current] https, https_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current]   proxy handshake
+[current] https, https_proxy https://, verify off: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current]   proxy handshake
+[current] https, https_proxy https://, CA file and PROXY_CAINFO the run CA: code 7 status 0 body "" error "CONNECT tunnel failed, response 403" ssl "OpenSSL/3.0.13"; exit 0
+[current]   proxy handshake
+[current]   proxy CONNECT 127.0.0.1:33071
+[current] http, http_proxy https://, SSL_CERT_FILE the run CA before init, no CA file: code 60 status 0 body "" error "SSL certificate OpenSSL verify result: unable to get local issuer certificate (20)" ssl "OpenSSL/3.0.13"; exit 0
+[current]   proxy handshake
+[current] maps: (given "/home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4") (mapped "/home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4.8.0") (libc "/usr/lib/x86_64-linux-gnu/libc.so.6")
+[current] maps: (given "/tmp/slice3-research.OFGEZS/libcurl.so.4") (mapped "/home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4.8.0") (libc "/usr/lib/x86_64-linux-gnu/libc.so.6")
+[current] done
+[guix-8.20.0-fhs] libcurl 8.20.0, GnuTLS/3.8.13, https-proxy yes, Linux x86_64, OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+[guix-8.20.0-fhs] control, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] control, CA file the other CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.TnWOLm/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] control, no CA file: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_FILE the other CA before init, CA file the run CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.TnWOLm/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_FILE the run CA before init, CA file the other CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_FILE the other CA after init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_FILE the run CA after init, CA file the other CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.TnWOLm/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_FILE the other CA before init, unset after, CA file the run CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.TnWOLm/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_FILE empty before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_FILE empty before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.TnWOLm/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_FILE a missing file before init, CA file the run CA: code 77 status 0 body "" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_FILE a missing file before init, CA file the run CA, verify off: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_FILE the run CA before init, no CA file: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_DIR the run CA's before init, CA file the other CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_DIR the run CA's after init, CA file the other CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.TnWOLm/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_DIR the run CA's before init, unset after, CA file the other CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] SSL_CERT_DIR empty before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.TnWOLm/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "missing.pem", which does not exist: code 77 status 0 body "" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "pkcs11:": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: pkcs11: CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "pkcs11:object=x": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: pkcs11:object=x CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "pkcs11:ca.pem": code 77 status 0 body "" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "PKCS11:": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: PKCS11: CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "Pkcs11:": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: Pkcs11: CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "pKcs11:": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: pKcs11: CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "pkCs11:": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: pkCs11: CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "pkcS11:": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: pkcS11: CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "pkcs11": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "pkcs1:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "pkcs111:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file " pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "pkcs11 :": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "tpmkey:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "system:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "./pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] CA file "p<U+212A KELVIN SIGN>cs11:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs] http, http_proxy https://, no CA file: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs]   proxy handshake
+[guix-8.20.0-fhs] http, http_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs]   proxy handshake
+[guix-8.20.0-fhs] http, http_proxy https://, verify off: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs]   proxy handshake
+[guix-8.20.0-fhs] http, http_proxy https://, CA file the run CA, verify off: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs]   proxy handshake
+[guix-8.20.0-fhs] http, http_proxy https://, PROXY_CAINFO the run CA: code 0 status 299 body "proxy" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs]   proxy handshake
+[guix-8.20.0-fhs]   proxy GET http://127.0.0.1:44779/x
+[guix-8.20.0-fhs] http, http_proxy https://, the proxy's verify off: code 0 status 299 body "proxy" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs]   proxy handshake
+[guix-8.20.0-fhs]   proxy GET http://127.0.0.1:44779/x
+[guix-8.20.0-fhs] http, all_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs]   proxy handshake
+[guix-8.20.0-fhs] https, https_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs]   proxy handshake
+[guix-8.20.0-fhs] https, https_proxy https://, verify off: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs]   proxy handshake
+[guix-8.20.0-fhs] https, https_proxy https://, CA file and PROXY_CAINFO the run CA: code 7 status 0 body "" error "CONNECT tunnel failed, response 403" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs]   proxy handshake
+[guix-8.20.0-fhs]   proxy CONNECT 127.0.0.1:37865
+[guix-8.20.0-fhs] http, http_proxy https://, SSL_CERT_FILE the run CA before init, no CA file: code 0 status 299 body "proxy" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0-fhs]   proxy handshake
+[guix-8.20.0-fhs]   proxy GET http://127.0.0.1:44779/x
+[guix-8.20.0-fhs] maps: (given "/gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4") (mapped "/gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0") (libc "/usr/lib/x86_64-linux-gnu/libc.so.6")
+[guix-8.20.0-fhs] maps: (given "/tmp/slice3-research.TnWOLm/libcurl.so.4") (mapped "/gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0") (libc "/usr/lib/x86_64-linux-gnu/libc.so.6")
+[guix-8.20.0-fhs] done
+[guix-8.6.0-fhs] libcurl 8.6.0, GnuTLS/3.8.9, https-proxy yes, Linux x86_64, OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+[guix-8.6.0-fhs] control, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] control, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.JmAJ9U/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] control, no CA file: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_FILE the other CA before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_FILE the run CA before init, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.JmAJ9U/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_FILE the other CA after init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_FILE the run CA after init, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.JmAJ9U/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_FILE the other CA before init, unset after, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_FILE empty before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_FILE empty before init, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.JmAJ9U/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_FILE a missing file before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_FILE a missing file before init, CA file the run CA, verify off: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_FILE the run CA before init, no CA file: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_DIR the run CA's before init, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.JmAJ9U/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_DIR the run CA's after init, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.JmAJ9U/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_DIR the run CA's before init, unset after, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.JmAJ9U/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] SSL_CERT_DIR empty before init, CA file the other CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: /tmp/slice3-research.JmAJ9U/pki/other-ca.pem CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "missing.pem", which does not exist: code 77 status 0 body "" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "pkcs11:": code 60 status 0 body "" error "server certificate verification failed. CAfile: pkcs11: CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "pkcs11:object=x": code 60 status 0 body "" error "server certificate verification failed. CAfile: pkcs11:object=x CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "pkcs11:ca.pem": code 77 status 0 body "" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "PKCS11:": code 60 status 0 body "" error "server certificate verification failed. CAfile: PKCS11: CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "Pkcs11:": code 60 status 0 body "" error "server certificate verification failed. CAfile: Pkcs11: CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "pKcs11:": code 60 status 0 body "" error "server certificate verification failed. CAfile: pKcs11: CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "pkCs11:": code 60 status 0 body "" error "server certificate verification failed. CAfile: pkCs11: CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "pkcS11:": code 60 status 0 body "" error "server certificate verification failed. CAfile: pkcS11: CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "pkcs11": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "pkcs1:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "pkcs111:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file " pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "pkcs11 :": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "tpmkey:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "system:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "./pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] CA file "p<U+212A KELVIN SIGN>cs11:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs] http, http_proxy https://, no CA file: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs]   proxy handshake
+[guix-8.6.0-fhs] http, http_proxy https://, CA file the run CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs]   proxy handshake
+[guix-8.6.0-fhs] http, http_proxy https://, verify off: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs]   proxy handshake
+[guix-8.6.0-fhs] http, http_proxy https://, CA file the run CA, verify off: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs]   proxy handshake
+[guix-8.6.0-fhs] http, http_proxy https://, PROXY_CAINFO the run CA: code 0 status 299 body "proxy" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs]   proxy handshake
+[guix-8.6.0-fhs]   proxy GET http://127.0.0.1:42659/x
+[guix-8.6.0-fhs] http, http_proxy https://, the proxy's verify off: code 0 status 299 body "proxy" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs]   proxy handshake
+[guix-8.6.0-fhs]   proxy GET http://127.0.0.1:42659/x
+[guix-8.6.0-fhs] http, all_proxy https://, CA file the run CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs]   proxy handshake
+[guix-8.6.0-fhs] https, https_proxy https://, CA file the run CA: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs]   proxy handshake
+[guix-8.6.0-fhs] https, https_proxy https://, verify off: code 60 status 0 body "" error "server certificate verification failed. CAfile: none CRLfile: none" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs]   proxy handshake
+[guix-8.6.0-fhs] https, https_proxy https://, CA file and PROXY_CAINFO the run CA: code 56 status 0 body "" error "CONNECT tunnel failed, response 403" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs]   proxy handshake
+[guix-8.6.0-fhs]   proxy CONNECT 127.0.0.1:46541
+[guix-8.6.0-fhs] http, http_proxy https://, SSL_CERT_FILE the run CA before init, no CA file: code 0 status 299 body "proxy" error "" ssl "GnuTLS/3.8.9"; exit 0
+[guix-8.6.0-fhs]   proxy handshake
+[guix-8.6.0-fhs]   proxy GET http://127.0.0.1:42659/x
+[guix-8.6.0-fhs] maps: (given "/gnu/store/1br92r2drmpfqk808y93x4ky6yi0mjnn-curl-8.6.0/lib/libcurl.so.4") (mapped "/gnu/store/1br92r2drmpfqk808y93x4ky6yi0mjnn-curl-8.6.0/lib/libcurl.so.4.8.0") (libc "/usr/lib/x86_64-linux-gnu/libc.so.6")
+[guix-8.6.0-fhs] maps: (given "/tmp/slice3-research.JmAJ9U/libcurl.so.4") (mapped "/gnu/store/1br92r2drmpfqk808y93x4ky6yi0mjnn-curl-8.6.0/lib/libcurl.so.4.8.0") (libc "/usr/lib/x86_64-linux-gnu/libc.so.6")
+[guix-8.6.0-fhs] done

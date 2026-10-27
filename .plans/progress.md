@@ -11,45 +11,82 @@ close-out under **Close-outs**, newest first.
   body and the classes; the asynchronous API; the environment; the hatch, `(curl unsupported)`.
   - **Slice 1, the request, its body and the classes:** merged in PR #25. Its close-out is
     below.
-  - **Slice 2, the asynchronous API:** built on `feat/m4-slice-2`, not yet merged.
-    - **Measured first** ([`research/m4/slice2/`](research/m4/slice2/)), on a prototype of the
-      take and the append, in the container (8.20.0) and in Docker `ubuntu:24.04` (8.5.0,
-      Valgrind 3.22): where a SIGINT to the process lands, 160 of 160 on the main thread, no
-      thread blocking any signal; a take's delay from completion, 0 to 9.6 ms, Valgrind or
-      not; and an interrupt handler that escapes as a take's critical section ends, which
-      loses the notice and keeps the outcome (the plan, §5.1; ADR-0021, amended).
-    - **Decided by the maintainer, 2026-10-26:** the engine's thread leaves its signal mask
-      alone, the Mac to run the SIGINT probe on the slice's PR (ADR-0012, amended).
-    - **Built:** `(curl)` exports the engine, `curl-submit` with an optional mailbox and
-      callback, the token with `curl-token-wait`, and the mailbox's take and delivery, with
-      `&curl-engine-error`; a wait's last sleep stops at its bound; `test-mailbox`, 25 checks,
-      the escape planted in a child as the measurement planted it, through a private seam
-      that holds the mailbox's mutex.
-    - **The slice's review** (Opus, read-only) found no blocker. Its major: every wait in the
-      suite was timed only where it ran out, and a wait that slept out its whole bound after
-      one empty read passed all 24 checks, which it ran in a copy. A take, a delivery and a
-      token's wait now each return once a 300 ms transfer ends. Its eight minors were answered:
-      the escape child held a mutex as the traps forbid, in two places; the cancel and stop
-      comments overstated the code; a top-level `cdr` was unguarded; and four records
-      overstated their logs, the container's Valgrind among them, 3.27.0.
-    - **Checks:** on the final tree, in the container, `make test` 25 of 25 and
-      `test-mailbox` under Valgrind; before the review's fixes, `make test-memory` 25 of 25.
-      In Docker, the main (8.5.0), gnutls, floor (7.85.0) and current (8.23.0) lanes 25 of 25
-      each, and the memory lane 25 of 25 with `check-memory-gate` 33 of 33, before and after
-      the fixes. The [mutation log](mailbox-mutation-log.md): 25 mutants, 24 failing a named
-      check, and one wait's read after its bound, with a cancel's append, left unchecked, each
-      for its reason.
+  - **Slice 2, the asynchronous API:** merged in PR #26. Its close-out is below.
+  - **Slice 3, the environment:** built on `feat/m4-slice-3`, not yet merged.
+    - **Measured first** ([`research/m4/slice3/`](research/m4/slice3/)), through a C probe
+      with chez-curl's TLS settings, on seven lanes: Guix's 8.20.0 in the container, and in
+      Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, 8.23.0, and Guix's 8.20.0
+      and 8.6.0 loaded from the store beside Ubuntu's libc. Guix's patch reads the variables
+      at `curl_global_init` alone, an empty one as unset; Guix's 8.6.0 lets a CA file win;
+      GnuTLS takes `pkcs11:` in all sixteen ASCII cases, a file of that name there or not; an
+      `https://` proxy is verified against the system store whatever the request says; and a
+      Guix libcurl loaded outside Guix still overrides, so its own mapped file decides, not
+      libc's world (the plan, §6.1; ADR-0024, amended).
+    - **Decided by the maintainer, 2026-10-26:** Guix's 8.6.0 stays taken to override, since
+      no lane runs it; and, after the review, a libcurl is Guix's when its file is under
+      `/gnu/store/` or holds the patch's literal `SSL_CERT_FILE`, which both Guix builds hold
+      and six stock builds do not (ADR-0024, amended).
+    - **Built:** the native layer records the libcurl's mapped file, whether it holds the
+      patch's literal, and the two variables, at the load; a submit refuses a CA file,
+      verification on, on a Guix libcurl with either set, naming each, by a pure rule held on
+      every lane; `pkcs11:` refused in any ASCII case, at the request and at submit; the
+      `proxy` key, `environment` or `#f`, `PROXY` owned with four twins; the origin routes an
+      absolute-form target, so its http face stands in for a proxy; README.org names what a
+      transfer reads.
+    - **The slice's review** (Opus, read-only) found no blocker and two majors, each proved
+      in a copy of the tree. A native that read the variables again at each submit passed
+      every lane but the Guix container: the pin's child printed native's record before
+      changing the environment, and now prints it after. And a copy of Guix's 8.20.0 loaded
+      from outside the store replaced the CA file unrefused: the key above. Its fourteen
+      minors were answered, the records' overclaims among them: "every ASCII case" rested on
+      six of sixteen, now all measured, and two probes' findings had been run together.
+    - **Checks:** on the final tree, in the container, `make test` and `make test-memory` 25
+      of 25; in Docker, the main (8.5.0), gnutls, floor (7.85.0) and current (8.23.0) lanes 25
+      of 25 each, and the memory lane 25 of 25 with `check-memory-gate` 33 of 33, after each
+      round of fixes. The [mutation log](environment-mutation-log.md): 54 mutants over five
+      sweeps, 53 failing a named check, the reviews' gaps among them, and one equivalent.
     - **One subagent:**
 
       | Agent | Model | Tokens | Time |
       |---|---|---|---|
-      | adversarial review | Opus | 287k | 17 min |
-    - **The Mac** ran `run.sh mac sigint` on the PR, #26: 40 of 40 SIGINTs on the main
-      thread, so the decision stands (ADR-0012, amended). The runner then hung in its cleanup,
-      waiting with no bound for the origin, whose FIFO stdin had closed; the wait now has one,
-      watched ending a stand-in that ignores its stdin.
+      | adversarial review | Opus | 289k | 21 min |
+      | review of the Mac's follow-up | Opus | 285k | 21 min |
+    - **The Mac ran the PR, 2026-10-27:** the plan's proxy probe answered as on Linux; the
+      environment's sets showed Apple's 8.7.1 ignoring `SSL_CERT_FILE` and reading every
+      `pkcs11:` path as a file. Two findings followed, each measured and then decided by the
+      maintainer:
+      - Apple's 8.7.1 puts LibreSSL in use at its init, not SecureTransport, as ADR-0018 had
+        read before the init; its keychain fallback undid a CA file for `https://example.com/`,
+        through chez-curl too, where SecureTransport kept it. A submit now refuses a CA file
+        there, and make runs the suites with `CURL_SSL_BACKEND=secure-transport` on macOS
+        (ADR-0024 and ADR-0018, amended 2026-10-27);
+      - `make test` failed slice 1's request-size check, its first Mac run: upstream 8.7.0 and
+        8.7.1 count 0 for every transfer, 8.6.0 and 8.8.0 do not. A transfer that ran on them
+        now carries `#f` (ADR-0022, amended 2026-10-27).
+    - **A second review** (Opus, read-only) of that work found one blocker: test-request's
+      connect-timeout row still expected 0 where 8.7.1 now answers `#f`, which the Mac would
+      have failed; test-engine's stalled rows had the same, on Linux alone. Its majors: curl
+      names SecureTransport `secure-transport`, and `securetransport` reached it only by the
+      fallback an unknown name takes; and three mutants passed every Linux lane, a backend read
+      before the init, one never read, and `finish-transfer` reading libcurl's count past
+      `ran-request-size`. A MultiSSL decoy, a check of the backend on every lane, and a
+      source check now fail each. Its minors were answered: the keychain rule now keys on
+      Apple's own libcurl, and refuses where the backend cannot be read; `backend-in-use`
+      strips parenthesised groups, so a version with spaces stays whole; the records cite
+      curl's own release notes for 8.8.0's fix.
+    - **The Mac's third run, 2026-10-27:** `make test` 25 of 25, its TLS suites on
+      SecureTransport for the first time. `secure-transport` reached SecureTransport by name,
+      and `securetransport` and a name no backend has by curl's fallback. With
+      `OPENSSL_X509_TEA_DISABLE=1`, LibreSSL kept the CA file the only anchor: Apple's keychain
+      fallback is what undid it. **Decided by the maintainer:** that variable is carried past
+      slice 3, its timing measured first; the refusal stays, erring toward refusing (ADR-0024,
+      amended 2026-10-27).
+    - **The Mac's Node did not exit when its FIFO stdin closed,** in every slice 3 run, four
+      times; the runners' watchdogs ended it 5 s on. Its cause is still unmeasured.
   - **Carried into M4:** why a timeout's 28 came 1,014 ms late once (ADR-0019, amended
-    2026-10-25); CI has still never run.
+    2026-10-25); CI has still never run; accepting Apple's `OPENSSL_X509_TEA_DISABLE=1` in
+    place of the keychain refusal, once when LibreSSL reads it is measured (ADR-0024, amended
+    2026-10-27).
 - **M3, the engine:** **done on 2026-10-26.** Its three slices are merged (PRs #19, #20 and
   #21), PR #22 moved CI's `current` lane to curl 8.23.0, and the Mac has run both
   (M3 plan, §7). Their close-outs are below.
@@ -122,6 +159,52 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-26 — M4 slice 2: the asynchronous API (PR #26, `b88f778`)
+
+- **Measured first** ([`research/m4/slice2/`](research/m4/slice2/)), on a prototype of the
+  take and the append, in the container (8.20.0) and in Docker `ubuntu:24.04` (8.5.0,
+  Valgrind 3.22): where a SIGINT to the process lands, 160 of 160 on the main thread, no
+  thread blocking any signal; a take's delay from completion, 0 to 9.6 ms, Valgrind or not;
+  and an interrupt handler that escapes as a take's critical section ends, which loses the
+  notice and keeps the outcome (the plan, §5.1; ADR-0021, amended).
+- **Decided by the maintainer, 2026-10-26:** the engine's thread leaves its signal mask
+  alone. The Mac ran the SIGINT probe on the PR: 40 of 40 on the main thread, so the decision
+  stands (ADR-0012, amended).
+- **Built:** `(curl)` exports the engine, `curl-submit` with an optional mailbox and
+  callback, the token with `curl-token-wait`, and the mailbox's take and delivery, with
+  `&curl-engine-error`; a wait's last sleep stops at its bound; `test-mailbox`, 25 checks,
+  the escape planted in a child as the measurement planted it, through a private seam that
+  holds the mailbox's mutex.
+- **The slice's review** (Opus, read-only) found no blocker. Its major: every wait in the
+  suite was timed only where it ran out, and a wait that slept out its whole bound after one
+  empty read passed all 24 checks, which it ran in a copy. A take, a delivery and a token's
+  wait now each return once a 300 ms transfer ends. Its eight minors were answered.
+- **Checks:** in the container, `make test` 25 of 25 and `test-mailbox` under Valgrind;
+  before the review's fixes, `make test-memory` 25 of 25. In Docker, the main, gnutls, floor
+  and current lanes 25 of 25 each, and the memory lane 25 of 25 with `check-memory-gate` 33 of
+  33, before and after the fixes. The [mutation log](mailbox-mutation-log.md): 25 mutants, 24
+  failing a named check, and a wait's read after its bound, with a cancel's append, left
+  unchecked, each for its reason.
+- **One subagent:**
+
+  | Agent | Model | Tokens | Time |
+  |---|---|---|---|
+  | adversarial review | Opus | 287k | 17 min |
+- **The Mac's runner hung** after its 40 of 40, waiting with no bound for the origin, whose
+  FIFO stdin had closed. The wait now has one; why the origin did not exit is unmeasured.
+- **Learned:**
+  - a belief went into a record before its measurement, as in slice 1: a draft of ADR-0012
+    said Chez's threads block no signal, from belief, until the masks were read from
+    `/proc`, before the merge;
+  - a probe and a check were built from arithmetic: the delay probe paused in multiples of
+    the period it measured, and the clamp check rested on a computed read time, so it passed
+    either way. The numbers and the sweep caught both, after the fact (`traps.md`);
+  - the mutants shared the author's blind spots: none timed a wait that receives its token,
+    and the review's one oversleep mutant passed every check;
+  - three listed traps were broken again: a top-level raise that killed the suite, a mutex
+    held outside a critical section in the escape child, and an unbounded wait in the Mac's
+    runner.
 
 ### 2026-10-26 — M4 slice 1: the public request, its body and the classes (PR #25, `7629a91`)
 

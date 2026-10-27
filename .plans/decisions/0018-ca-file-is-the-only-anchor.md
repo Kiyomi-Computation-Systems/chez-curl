@@ -1,7 +1,8 @@
 # ADR-0018: A request's CA file is its only trust anchor
 
 - **Status:** Accepted; amended 2026-10-26: SecureTransport's first run; amended 2026-10-26:
-  the environment's policy is decided (the M4 plan)
+  the environment's policy is decided (the M4 plan); amended 2026-10-27: that run was
+  LibreSSL's
 - **Date:** 2026-10-24
 - **Scope:** M2's private request (M2 plan, §6), and M4's public one, which inherits its
   fields
@@ -188,3 +189,14 @@ chosen by the maintainer on 2026-10-26:
 
 Decision 5's "its policy is M4's" and Consequences' "does not hold until M4 decides" end when M4
 builds it.
+
+## Amendment, 2026-10-27: that run was LibreSSL's
+
+The amendment "SecureTransport's first run" was wrong about its backend. The Mac's drift row
+read `SecureTransport (LibreSSL/3.3.6)` before `curl_global_init`, when `curl_version_info`
+names the first backend whatever the init will pick. After the init Apple's 8.7.1 reads
+`(SecureTransport) LibreSSL/3.3.6`: its transfers ran on Apple's LibreSSL, and so did the 55
+checks of that run. Measured on the Mac, 2026-10-27, Apple's LibreSSL checks the keychain when a
+CA file fails, so a CA file is not the only anchor there for a server the keychain trusts;
+SecureTransport, selected by `CURL_SSL_BACKEND`, keeps it so. What chez-curl does about it is
+ADR-0024's, amended 2026-10-27: a submit refuses a CA file there.

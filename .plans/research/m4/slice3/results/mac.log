@@ -1,0 +1,100 @@
+# The maintainer's M1, 2026-10-27, on feat/m4-slice-3 (fedfab5), as pasted:
+#   NODE="$(asdf which node)" sh .plans/research/m4/slice3/run.sh mac when pkcs11 proxy backend
+# That revision's backend set: CURL_SSL_BACKEND=openssl only, and its version
+# line read after curl_global_init alone.
+[mac] libcurl 8.7.1, (SecureTransport) LibreSSL/3.3.6, https-proxy yes, Darwin arm64, OpenSSL 3.6.3 9 Jun 2026 (Library: OpenSSL 3.6.3 9 Jun 2026)
+[mac] control, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] control, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] control, no CA file: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_FILE the other CA before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_FILE the run CA before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_FILE the other CA after init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_FILE the run CA after init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_FILE the other CA before init, unset after, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_FILE the other CA before init, emptied after, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_FILE empty before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_FILE empty before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_FILE a missing file before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_FILE a missing file before init, CA file the run CA, verify off: code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_FILE the run CA before init, no CA file: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_DIR the run CA's before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_DIR the run CA's after init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_DIR the run CA's before init, unset after, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] SSL_CERT_DIR empty before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "missing.pem", which does not exist: code 77 status 0 body "" error "error setting certificate verify locations:  CAfile: missing.pem CApath: none" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkcS11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkCs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkCS11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pKcs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pKcS11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pKCs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pKCS11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "Pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "PkcS11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "PkCs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "PkCS11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "PKcs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "PKcS11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "PKCs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "PKCS11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkcs11:object=x": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkcs11:ca.pem": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkcs11": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkcs1:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkcs111:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file " pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkcs11 :": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "xpkcs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "x/pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "qkcs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "plcs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkds11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkct11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkcs21:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkcs12:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkcs11;": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "tpmkey:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "system:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "./pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "p<U+212A KELVIN SIGN>cs11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CA file "pkc<U+017F LATIN SMALL LETTER LONG S>11:": code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] http, http_proxy https://, no CA file: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA C0A1D5F901000000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:1586:SSL alert number 48
+[mac] http, http_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA C0A1D5F901000000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:1586:SSL alert number 48
+[mac] http, http_proxy https://, verify off: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA C0A1D5F901000000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:1586:SSL alert number 48
+[mac] http, http_proxy https://, CA file the run CA, verify off: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA C0A1D5F901000000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:1586:SSL alert number 48
+[mac] http, http_proxy https://, PROXY_CAINFO the run CA: code 0 status 299 body "proxy" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac]   proxy handshake
+[mac]   proxy GET http://127.0.0.1:52153/x
+[mac] http, http_proxy https://, the proxy's verify off: code 0 status 299 body "proxy" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac]   proxy handshake
+[mac]   proxy GET http://127.0.0.1:52153/x
+[mac] http, all_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA C0A1D5F901000000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:1586:SSL alert number 48
+[mac] https, https_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA C0A1D5F901000000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:1586:SSL alert number 48
+[mac] https, https_proxy https://, verify off: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA C0A1D5F901000000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:1586:SSL alert number 48
+[mac] https, https_proxy https://, CA file and PROXY_CAINFO the run CA: code 56 status 0 body "" error "CONNECT tunnel failed, response 403" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac]   proxy handshake
+[mac]   proxy CONNECT 127.0.0.1:52154
+[mac] http, http_proxy https://, SSL_CERT_FILE the run CA before init, no CA file: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac]   proxy aborted handshake: ERR_SSL_TLSV1_ALERT_UNKNOWN_CA C0A1D5F901000000:error:0A000418:SSL routines:ssl3_read_bytes:tlsv1 alert unknown ca:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:1586:SSL alert number 48
+[mac] public, no CA file: code 0 status 200 body "<!doctype html><html lang=en><head><meta charset=utf-8><link re" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] public, CA file the run CA: code 0 status 200 body "<!doctype html><html lang=en><head><meta charset=utf-8><link re" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] public, CURL_SSL_BACKEND=openssl, no CA file: code 0 status 200 body "<!doctype html><html lang=en><head><meta charset=utf-8><link re" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] public, CURL_SSL_BACKEND=openssl, CA file the run CA: code 0 status 200 body "<!doctype html><html lang=en><head><meta charset=utf-8><link re" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] local, CURL_SSL_BACKEND=openssl, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] local, CURL_SSL_BACKEND=openssl, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] done
+.plans/research/m4/slice3/run.sh: line 59: 51040 Terminated: 15          "${NODE:-node}" "$here/servers.mjs" "$tmp/pki" "$tmp/log" < "$tmp/in" > "$tmp/announce"
+[mac] the servers exited 143, not 0, after their stdin closed: 143 is the watchdog's kill, 5 s on
+# Then, as pasted, make test NODE="$(asdf which node)": 24 of 25; test-request's one failure:
+# FAIL a failure's class and request size, each on an engine of its own: a refused connect, 7, connect, and a TLS failure, 60, tls, send nothing, 0; a timeout before the head, 28, a server that closes before answering, 52, send-receive, the body limit, too-large, and a raise in the callable, of no class, sent the head, its length; a setopt the libcurl refuses, 43, the base type, sent nothing
+#   expected: ((refused perform-failed 7 connect 0) (refused perform-failed 60 tls 0) (refused perform-failed 28 timeout 75) (refused perform-failed 52 send-receive 79) (refused body-limit 23 too-large 61) (refused callback-raised 23 none 64) (refused setopt-failed 43 none 0))
+#   actual:   ((refused perform-failed 7 connect 0) (refused perform-failed 60 tls 0) (refused perform-failed 28 timeout 0) (refused perform-failed 52 send-receive 0) (refused body-limit 23 too-large 0) (refused callback-raised 23 none 0) (refused setopt-failed 43 none 0))
+# test-transfer-tls passed, 75 checks; test-transfer 229; test-engine 51, its stalled-lookup checks Linux's alone.

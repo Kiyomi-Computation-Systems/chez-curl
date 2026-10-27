@@ -317,7 +317,8 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * Guix's libcurl 8.20.0 writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over a
   transfer's `CAINFO` and `CAPATH` when it starts, after every setopt; its
   8.6.0 did not. The container passes neither; `test-transfer-tls` fails
-  first when either is set, and pins the override by world and version.
+  first when either is set, and pins the refusal a submit makes on a Guix
+  libcurl with either set (ADR-0024).
 * Ubuntu's libcurl trusts its default `CAPATH` beside `CAINFO`, so a CA file
   alone also trusts the system store. No lane's store trusts the run CA, so
   no behavioural test can see it: the transfer clears `CAPATH`, and its TLS
@@ -369,6 +370,21 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   event check, never as the section ends; a pending keyboard interrupt runs
   as it ends. To plant an escape there, block the code inside its section on
   a mutex another thread holds, and send SIGINT meanwhile.
+* GnuTLS answers 77 for a malformed PKCS#11 URL, as for a missing file. A
+  probe tells "read as a file" only by a file that is there and trusted: 200.
+* ADR-0002's world is libc's. A Guix libcurl loaded outside Guix still
+  writes `SSL_CERT_FILE` over a CA file, and so does a copy of it out of the
+  store. Key on the library's own file, the maps line holding one of its
+  entry points, and on the patch's string in that file.
+* `char-downcase` makes U+212A KELVIN SIGN `k`, and `char-foldcase`,
+  `string-ci=?` and `char-ci=?` make U+017F LONG S `s`. Where the other side
+  compares bytes, fold A to Z alone, and test both chars.
+* A MultiSSL libcurl's `curl_version_info` names its first backend as the
+  one in use until `curl_global_init` picks one: Apple's 8.7.1 then uses
+  LibreSSL, not SecureTransport. Read the backend after the init, and name
+  it as curl does: `secure-transport`.
+* libcurl 8.7.0 and 8.7.1 answer `CURLINFO_REQUEST_SIZE` 0 for every
+  transfer. A count measured on some versions says nothing of one between.
 
 ## Closing ritual
 
