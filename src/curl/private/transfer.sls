@@ -160,7 +160,8 @@
           option-bindings option-binding option-setter http-version-symbol bytes->latin-1 pinned-options
           request-field-options owned-option-names live-transfer-count cached-option-names
           tls-settings setopt-accepted? quick-exit-pin pinned-settings quick-exit-known?
-          quick-exits-set guix-ca-overrides ca-overridden? pkcs11-prefix? overriding-variables)
+          quick-exits-set guix-ca-overrides ca-overridden? pkcs11-prefix? overriding-variables
+          keychain-fallback? request-size-unreliable reported-request-size)
   (import (curl private require-threaded)
           (rnrs)
           (rnrs mutable-strings)
@@ -433,17 +434,37 @@
         (map car (filter cdr variables))
         '()))
 
+  ;; keychain-fallback? : (U String #f) Boolean Boolean String (U String #f) -> Boolean
+  ;; Whether CA-FILE, with VERIFY, would fail to be the only anchor on the
+  ;; libcurl loaded from PATH, MACOS being whether this is macOS, BACKEND
+  ;; the TLS backend its init put in use: on Apple's own libcurl, under
+  ;; /usr/lib/, with LibreSSL in use, or a backend that could not be read.
+  ;; Apple's LibreSSL checks the keychain when a CA file fails to verify, so
+  ;; example.com, which the keychain trusts, passed a CA file that named
+  ;; another CA; SecureTransport, selected by CURL_SSL_BACKEND, keeps the CA
+  ;; file the only anchor (measured on Apple's 8.7.1; ADR-0024, amended
+  ;; 2026-10-27). A libcurl built elsewhere on upstream LibreSSL has no
+  ;; keychain to fall back to. Pure: check-ca-environment hands it native's
+  ;; records.
+  (define (keychain-fallback? ca-file verify macos path backend)
+    (and ca-file verify macos (string-prefix? "/usr/lib/" path)
+         (or (not (string? backend)) (string-prefix? "LibreSSL" backend))
+         #t))
+
   ;; check-ca-environment : Symbol (U String #f) Boolean -> Void
   ;; Refuses CA-FILE, a checked copy, with VERIFY, as WHO, when
   ;; overriding-variables names any for the loaded libcurl and what the
   ;; native layer recorded at its load: environment-override, a
   ;; &curl-request-error naming ca-file, whose irritants are the path, then
-  ;; each variable's name, in that order.
+  ;; each variable's name, in that order; and when keychain-fallback? says
+  ;; so for the loaded libcurl and the backend its init put in use:
+  ;; keychain-fallback, whose irritants are the path, then that backend.
   (define (check-ca-environment who ca-file verify)
     (let* ((info (loaded-libcurl))
            (names (overriding-variables ca-file verify (loaded-libcurl-file) (libcurl-info-path info)
                                         (loaded-libcurl-patched?) (libcurl-info-version info)
-                                        (loaded-ca-variables))))
+                                        (loaded-ca-variables)))
+           (backend (loaded-tls-backend)))
       (unless (null? names)
         (refuse-ca-file who ca-file 'environment-override
                         (string-append
@@ -451,7 +472,11 @@
                          (fold-right (lambda (name rest) (if (string=? rest "") name (string-append name " and " rest)))
                                      "" names)
                          " before the program starts, or trust the store it names with no CA file")
-                        names))))
+                        names))
+      (when (keychain-fallback? ca-file verify (loaded-on-macos?) (libcurl-info-path info) backend)
+        (refuse-ca-file who ca-file 'keychain-fallback
+                        "Apple's libcurl uses its LibreSSL, which checks the keychain when a CA file fails, so the CA file would not be the only anchor; start the program with CURL_SSL_BACKEND=secure-transport, where this libcurl has it, or pass no CA file"
+                        (list backend)))))
 
   ;; body-limit-bound : Positive-Integer
   ;; A body limit is below 2^63 - 1, so the limit plus one, which
@@ -778,9 +803,32 @@
                         (else "the transfer failed"))))
                  (make-irritants-condition (if option (list option) '())))))
 
+  ;; request-size-unreliable : (Listof String)
+  ;; The libcurl versions whose CURLINFO_REQUEST_SIZE answers 0 for every
+  ;; transfer, one that sent its request too: upstream 8.7.0 and 8.7.1, the
+  ;; Mac's, measured on slice 1's probe's 21 transfers, where 8.6.0 and
+  ;; 8.8.0 answered each request's length (ADR-0022, amended 2026-10-27).
+  ;; tests/test-request.sps holds it to its own copy.
+  (define request-size-unreliable '("8.7.0" "8.7.1"))
+
+  ;; reported-request-size : String Natural -> (U Natural #f)
+  ;; SIZE, CURLINFO_REQUEST_SIZE's answer for a transfer that ran, on the
+  ;; libcurl at VERSION: #f, unknown, where request-size-unreliable names
+  ;; VERSION, so 0 there never claims that nothing was sent; SIZE elsewhere.
+  (define (reported-request-size version size)
+    (if (member version request-size-unreliable) #f size))
+
+  ;; ran-request-size : Positive-Integer -> (U Natural #f)
+  ;; reported-request-size for EASY's transfer, which ran, on the loaded
+  ;; libcurl.
+  (define (ran-request-size easy)
+    (reported-request-size (libcurl-info-version (loaded-libcurl))
+                           (info-long easy curlinfo-request-size)))
+
   ;; fail : Symbol (U Integer #f) (U String #f) (U Positive-Integer #f) Any -> Nothing
   ;; Raises failure's condition for a transfer refused while it was set up,
-  ;; before anything was sent: its request size is 0.
+  ;; before anything was sent: its request size is 0, which chez-curl knows
+  ;; itself, on every libcurl.
   (define (fail reason code option buffer recorded)
     (raise (failure reason code option buffer recorded 0)))
 
@@ -1532,7 +1580,8 @@
   ;; before anything is freed: what the callable recorded, as a
   ;; &curl-transfer-error with that reason, the raised object for
   ;; callback-raised; else, for a CODE but CURLE_OK, perform-failed; each
-  ;; failure of its class, with its request size, REQUEST_SIZE; else the
+  ;; failure of its class, with its request size, REQUEST_SIZE, or #f on a
+  ;; libcurl whose answer to it is unreliable, ran-request-size's; else the
   ;; response, with its timings, timing-infos', each read as a curl_off_t.
   ;; The answer is data: the engine completes the token with it, and an
   ;; awaiting thread raises a condition.
@@ -1545,9 +1594,9 @@
         (recorded
          (failure (car recorded) code #f buffer
                   (and (eq? (car recorded) 'callback-raised) (cdr recorded))
-                  (info-long easy curlinfo-request-size)))
+                  (ran-request-size easy)))
         ((not (eqv? code curle-ok))
-         (failure 'perform-failed code #f buffer #f (info-long easy curlinfo-request-size)))
+         (failure 'perform-failed code #f buffer #f (ran-request-size easy)))
         (else
          ;; let*: what each part reads, it reads in this order.
          (let* ((status (info-long easy curlinfo-response-code))

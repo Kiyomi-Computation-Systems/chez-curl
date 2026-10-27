@@ -42,18 +42,42 @@ close-out under **Close-outs**, newest first.
       six of sixteen, now all measured, and two probes' findings had been run together.
     - **Checks:** on the final tree, in the container, `make test` and `make test-memory` 25
       of 25; in Docker, the main (8.5.0), gnutls, floor (7.85.0) and current (8.23.0) lanes 25
-      of 25 each, and the memory lane 25 of 25 with `check-memory-gate` 33 of 33, before the
-      review's fixes and after. The [mutation log](environment-mutation-log.md): 37 mutants,
-      36 failing a named check, the review's two gaps among them, and one equivalent.
+      of 25 each, and the memory lane 25 of 25 with `check-memory-gate` 33 of 33, after each
+      round of fixes. The [mutation log](environment-mutation-log.md): 54 mutants over five
+      sweeps, 53 failing a named check, the reviews' gaps among them, and one equivalent.
     - **One subagent:**
 
       | Agent | Model | Tokens | Time |
       |---|---|---|---|
       | adversarial review | Opus | 289k | 21 min |
-    - **Owed by the Mac** on the slice's PR: `research/m4/proxy/run.sh mac`, the plan's proxy
-      probe; `research/m4/slice3/run.sh mac when pkcs11 proxy backend`, whose `backend` set
-      asks whether Apple's LibreSSL, by `CURL_SSL_BACKEND`, undoes a CA file; and `make test`,
-      whose new pin row with no CA file is unmeasured there.
+      | review of the Mac's follow-up | Opus | 285k | 21 min |
+    - **The Mac ran the PR, 2026-10-27:** the plan's proxy probe answered as on Linux; the
+      environment's sets showed Apple's 8.7.1 ignoring `SSL_CERT_FILE` and reading every
+      `pkcs11:` path as a file. Two findings followed, each measured and then decided by the
+      maintainer:
+      - Apple's 8.7.1 puts LibreSSL in use at its init, not SecureTransport, as ADR-0018 had
+        read before the init; its keychain fallback undid a CA file for `https://example.com/`,
+        through chez-curl too, where SecureTransport kept it. A submit now refuses a CA file
+        there, and make runs the suites with `CURL_SSL_BACKEND=secure-transport` on macOS
+        (ADR-0024 and ADR-0018, amended 2026-10-27);
+      - `make test` failed slice 1's request-size check, its first Mac run: upstream 8.7.0 and
+        8.7.1 count 0 for every transfer, 8.6.0 and 8.8.0 do not. A transfer that ran on them
+        now carries `#f` (ADR-0022, amended 2026-10-27).
+    - **A second review** (Opus, read-only) of that work found one blocker: test-request's
+      connect-timeout row still expected 0 where 8.7.1 now answers `#f`, which the Mac would
+      have failed; test-engine's stalled rows had the same, on Linux alone. Its majors: curl
+      names SecureTransport `secure-transport`, and `securetransport` reached it only by the
+      fallback an unknown name takes; and three mutants passed every Linux lane, a backend read
+      before the init, one never read, and `finish-transfer` reading libcurl's count past
+      `ran-request-size`. A MultiSSL decoy, a check of the backend on every lane, and a
+      source check now fail each. Its minors were answered: the keychain rule now keys on
+      Apple's own libcurl, and refuses where the backend cannot be read; `backend-in-use`
+      strips parenthesised groups, so a version with spaces stays whole; the records cite
+      curl's own release notes for 8.8.0's fix.
+    - **Owed by the Mac:** `make test` again, its TLS suites now on SecureTransport, which has
+      not run them; and `research/m4/slice3/run.sh mac backend`, which tries
+      `secure-transport`, `securetransport`, a name no backend has, and
+      `OPENSSL_X509_TEA_DISABLE=1`.
   - **Carried into M4:** why a timeout's 28 came 1,014 ms late once (ADR-0019, amended
     2026-10-25); CI has still never run.
 - **M3, the engine:** **done on 2026-10-26.** Its three slices are merged (PRs #19, #20 and

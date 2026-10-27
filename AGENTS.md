@@ -379,6 +379,12 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * `char-downcase` makes U+212A KELVIN SIGN `k`, and `char-foldcase`,
   `string-ci=?` and `char-ci=?` make U+017F LONG S `s`. Where the other side
   compares bytes, fold A to Z alone, and test both chars.
+* A MultiSSL libcurl's `curl_version_info` names its first backend as the
+  one in use until `curl_global_init` picks one: Apple's 8.7.1 then uses
+  LibreSSL, not SecureTransport. Read the backend after the init, and name
+  it as curl does: `secure-transport`.
+* libcurl 8.7.0 and 8.7.1 answer `CURLINFO_REQUEST_SIZE` 0 for every
+  transfer. A count measured on some versions says nothing of one between.
 
 ## Closing ritual
 

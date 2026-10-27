@@ -193,3 +193,15 @@ the head (`research/m4/slice3/results/mac.log`).
     that ships 8.7.1.
 - **Decided by the maintainer, 2026-10-27: the fix lands in slice 3's PR,** so the Mac's `make
   test` can pass before the merge.
+- **The window, measured 2026-10-27:** upstream 8.7.0, its library built alone, since its man
+  pages failed to build, answered 0 on all 21 transfers too; 8.8.0 answered each request's
+  length, row for row as 8.6.0 (`research/m4/slice3/results/reqsize-8.7.0.log`,
+  `reqsize-8.8.0.log`). curl's own 8.8.0 `RELEASE-NOTES` list "CURLINFO_REQUEST_SIZE: fixed,
+  add tests for transfer infos reported", curl bug 13269 (read from the 8.8.0 tarball). No
+  release lies between 8.7.1 and 8.8.0, so the table holds the two measured, 8.7.0 and 8.7.1.
+- **As built:** `request-size-unreliable`, in `(curl private transfer)`, holds `"8.7.0"` and
+  `"8.7.1"`; `reported-request-size` answers `#f` for a transfer that ran on either, and the
+  size libcurl counted elsewhere. A transfer refused while it was set up keeps 0 on every
+  libcurl: chez-curl knows it sent nothing, without libcurl's count. `test-request` holds the
+  table to its own copy, and the rule with synthetic versions, and pins each failure's size by
+  the loaded libcurl's row.

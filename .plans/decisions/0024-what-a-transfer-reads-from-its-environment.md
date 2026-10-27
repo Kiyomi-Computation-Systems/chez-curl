@@ -2,7 +2,7 @@
 
 - **Status:** Accepted; amended 2026-10-26: a proxy's TLS, and after the plan's review;
   amended 2026-10-26: measured before slice 3; amended 2026-10-26: as built in slice 3;
-  amended 2026-10-26: the key, after slice 3's review
+  amended 2026-10-26: the key, after slice 3's review; amended 2026-10-27: the Mac's keychain
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, every transfer, from M4
 - **Settles:** the environment policy ADR-0018 handed to M4: the proxy variables, Guix's
@@ -252,3 +252,70 @@ copied file, perhaps a relocatable `guix pack` in its fallback modes, or any Gui
   - **Rejected:** widening the path rule, to `/gnu/store/` anywhere in the path and unreadable
     maps taken to override, which leaves a plain copy failing open; and recording the gap
     alone.
+
+## Amendment, 2026-10-27: the Mac's keychain
+
+The maintainer's Mac ran slice 3's probes on its PR (`research/m4/slice3/results/mac.log`,
+`mac-2.log`; `research/m4/proxy/results/mac.log`).
+
+- **The proxy probe:** Apple's 8.7.1 answered as the five Linux libcurls did. `http_proxy`,
+  `all_proxy`, `ALL_PROXY`, `https_proxy` and `HTTPS_PROXY` sent the transfer through the
+  proxy, a lone `HTTP_PROXY` did not, `no_proxy` and `NO_PROXY` sent it direct, and
+  `CURLOPT_PROXY` `""` and `CURLOPT_NOPROXY` `"*"` turned the variables off. A refused
+  `CONNECT` answered 56.
+- **The environment:** it ignored `SSL_CERT_FILE` and `SSL_CERT_DIR` in every case, read every
+  `pkcs11:` path as a file, and verified an `https://` proxy against its store, as the request's
+  `ca-file` and `verify` said nothing to it.
+- **The backend in use is LibreSSL, not SecureTransport.** `curl_version_info` names the first
+  backend as the one in use until `curl_global_init` picks one (`lib/vtls/vtls.c`,
+  `multissl_version`): before the init it read `SecureTransport (LibreSSL/3.3.6)`, after it
+  `(SecureTransport) LibreSSL/3.3.6`. ADR-0018 read the first.
+- **Apple's LibreSSL undoes a CA file for any server the keychain trusts.** With no
+  `CURL_SSL_BACKEND`, and with it at `openssl`, a request to `https://example.com/` whose CA
+  file was the run CA answered 200, through the C probe and through chez-curl itself; the local
+  origin, which the keychain does not trust, answered 60 with the other CA's file. With
+  `CURL_SSL_BACKEND=securetransport`, the same request to example.com answered 60, `peer not
+  verified`, and the local origin 200 with the run CA: SecureTransport keeps a CA file the only
+  anchor.
+- **Decided by the maintainer, 2026-10-27: refuse, as for Guix.** The native layer records the
+  backend in use after `curl_global_init`. On macOS with LibreSSL in use, a submit refuses a CA
+  file with verification on, naming the cause, and README.org names
+  `CURL_SSL_BACKEND=secure-transport`, set before the program starts, as the way to a CA file
+  there. chez-curl picks no backend for the process. The Mac's suites run with that variable
+  set.
+  - **Rejected:** selecting SecureTransport with `curl_global_sslset` before the init, a choice
+    for the whole process that overrides the operator's `CURL_SSL_BACKEND`, on a backend curl
+    documents without TLS 1.3 and has since removed upstream; and documenting it alone, which
+    would leave the CA field's promise failing silently there.
+- **As built.** The native layer calls `curl_version_info` again after the init and records the
+  backend in use, the one name in its `ssl_version` not in parentheses (discovery's
+  `backend-in-use`), and whether this is macOS, by Chez's machine type. `keychain-fallback?`
+  is pure: a CA file, verification on, macOS, and a backend whose name begins `LibreSSL`.
+  `check-ca-environment` refuses then as `keychain-fallback`, whose irritants are the path and
+  the backend. `test-transfer-tls` holds the rule on every lane, with synthetic inputs, and
+  the shell whole; two child rows, given `CURL_SSL_BACKEND` at `openssl` and at
+  `secure-transport`, show the refusal and the transfer on macOS, and both transfers elsewhere,
+  where a libcurl with one backend ignores the variable. The Makefile exports
+  `CURL_SSL_BACKEND=secure-transport` on macOS unless set, and the suite fails first, naming it,
+  when its own backend is the keychain's. How SecureTransport answers the suites is the Mac's
+  next run.
+- **After the follow-up's review (Opus, read-only), 2026-10-27:**
+  - **The backend's name is `secure-transport`.** Upstream 8.7.1 names SecureTransport
+    `secure-transport` (`lib/vtls/sectransp.c`), and its `multissl_setup` puts an unknown name's
+    libcurl on its first backend, which on Apple's build is SecureTransport, while an unset
+    variable takes the build's default, LibreSSL. So the measured `securetransport` reached
+    SecureTransport by that fallback, not by name. README.org, the Makefile and the refusal
+    name `secure-transport`; the Mac's next run tries both spellings and a name no backend has.
+    SecureTransport keeps a CA file the only anchor by its source too: with a CA file it calls
+    `SecTrustSetAnchorCertificatesOnly(trust, true)`.
+  - **The measurement shows one server, example.com,** passing a CA file that named another CA
+    under Apple's LibreSSL; that the keychain is what passed it is Apple's account of its
+    fallback (curl issue 12604). The Mac's next run sets `OPENSSL_X509_TEA_DISABLE=1`, said to
+    turn that fallback off, to tell it from any other.
+  - **The key, as built:** Apple's own libcurl, loaded from under `/usr/lib/` on macOS, with
+    LibreSSL in use, or a backend that could not be read, which refuses rather than pass. A
+    libcurl built elsewhere on upstream LibreSSL has no keychain fallback, and is not refused.
+  - **Checks a Linux lane can make:** the decoy library now builds as a MultiSSL one, naming one
+    backend before the init and another after, and `test-library-loading` requires the
+    backend native records to be the one after; every lane requires the backend to be read,
+    and, on a libcurl with one backend, to be the whole of the version text.

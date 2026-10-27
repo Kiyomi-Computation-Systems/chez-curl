@@ -446,7 +446,10 @@
           (list 'cancel (list-ref v 0) '(transfer-error cancelled #f #f #f))
           (list 'other (list-ref v 1) '(response 200 "abcdefghij"))
           (list 'cancel-stop (list-ref v 2))
-          (list 'timeout (list-ref v 3) '(transfer-error perform-failed 28 #f 0))
+          (list 'timeout (list-ref v 3)
+                (list 'transfer-error 'perform-failed 28 #f
+                      (guard (e (#t (list 'raised (describe e))))
+                        (reported-request-size (libcurl-info-version (loaded-libcurl)) 0))))
           (list 'timeout-stop (list-ref v 4))
           (list 'stop (list-ref v 5) '(transfer-error stopped #f #f #f))
           '(stalled "cancel.stall.invalid" "stop.stall.invalid" "timeout.stall.invalid")

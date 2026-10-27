@@ -28,7 +28,11 @@
 #            (default scheme) on CURL_LIB as given and through a symlink in
 #            a temporary directory. Linux only
 #   backend  the Mac's: no CURL_SSL_BACKEND, then openssl, Apple's LibreSSL,
-#            then securetransport, against PUBLIC_URL (default
+#            secure-transport, curl's name for SecureTransport, securetransport,
+#            and nonesuch, two names curl 8.7.1 does not know, which fall to
+#            its first backend; then no CURL_SSL_BACKEND with
+#            OPENSSL_X509_TEA_DISABLE=1, which is said to turn Apple's
+#            keychain fallback off. Each against PUBLIC_URL (default
 #            https://example.com/), which the keychain trusts, and the local
 #            origin, with no CA file, the run CA and the other CA as the CA
 #            file. It reaches the network, so it runs only when named
@@ -190,9 +194,13 @@ for set in "$@"; do
       fi ;;
     backend)
       pub=${PUBLIC_URL:-https://example.com/}
-      for backend in - openssl securetransport; do
+      for backend in - openssl secure-transport securetransport nonesuch tea; do
         # run_case sets label and url, so the backend's own name is bl.
-        if [ "$backend" = - ]; then b= bl="no CURL_SSL_BACKEND"; else b=before:CURL_SSL_BACKEND=$backend bl="CURL_SSL_BACKEND=$backend"; fi
+        case $backend in
+          -) b= bl="no CURL_SSL_BACKEND" ;;
+          tea) b=before:OPENSSL_X509_TEA_DISABLE=1 bl="no CURL_SSL_BACKEND, OPENSSL_X509_TEA_DISABLE=1" ;;
+          *) b=before:CURL_SSL_BACKEND=$backend bl="CURL_SSL_BACKEND=$backend" ;;
+        esac
         echo "[$lane] $bl: $(cd "$tmp/work" && env -i ${b:+"${b#before:}"} "$tmp/probe" version 2>&1)"
         # shellcheck disable=SC2086
         run_case "public, $bl, no CA file" "$pub" $b

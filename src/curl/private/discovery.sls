@@ -22,7 +22,7 @@
 ;;;      returned without asking exists?.
 (library (curl private discovery)
   (export choose-libcurl libcurl-world linux-triple libcurl-candidates
-          libcurl-sources mapped-file bytes-hold?)
+          libcurl-sources mapped-file bytes-hold? backend-in-use)
   (import (curl private require-threaded)
           (rnrs)
           (curl private conditions))
@@ -157,6 +157,41 @@
                                  (match (+ j 1))))))
                  #t)
                 (else (scan (+ i 1))))))))
+
+  ;; backend-in-use : (U String #f) -> (U String #f)
+  ;; The TLS backend in use, as curl_version_info's ssl_version names it:
+  ;; TEXT with each parenthesised group taken out, an unclosed one to its
+  ;; end, and the spaces left at its ends trimmed, its version after a /
+  ;; kept. A MultiSSL libcurl puts every backend but the one in use in
+  ;; parentheses, each a backend's own version text, which may hold spaces:
+  ;; OpenSSL/1.1.1k FIPS. #f when TEXT is #f, or nothing is left. Before
+  ;; curl_global_init a MultiSSL libcurl names its first backend so,
+  ;; whatever the init will pick (lib/vtls/vtls.c, multissl_version): the
+  ;; native layer asks it of the text read after (ADR-0024, amended
+  ;; 2026-10-27).
+  (define (backend-in-use text)
+    (and text
+         (let* ((n (string-length text))
+                (kept (let loop ((i 0) (depth 0) (found '()))
+                        (cond ((= i n) (list->string (reverse found)))
+                              ((char=? (string-ref text i) #\() (loop (+ i 1) (+ depth 1) found))
+                              ((and (char=? (string-ref text i) #\)) (> depth 0))
+                               (loop (+ i 1) (- depth 1) found))
+                              ((> depth 0) (loop (+ i 1) depth found))
+                              (else (loop (+ i 1) depth (cons (string-ref text i) found))))))
+                (trimmed (trim-spaces kept)))
+           (and (> (string-length trimmed) 0) trimmed))))
+
+  ;; trim-spaces : String -> String
+  ;; TEXT without the spaces at its ends, and with each run of spaces
+  ;; inside it one space: a group taken out leaves its neighbours' spaces.
+  (define (trim-spaces text)
+    (let loop ((chars (string->list text)) (found '()) (space #f))
+      (cond ((null? chars) (list->string (reverse found)))
+            ((char=? (car chars) #\space) (loop (cdr chars) found (pair? found)))
+            (else (loop (cdr chars)
+                        (cons (car chars) (if space (cons #\space found) found))
+                        #f)))))
 
   ;; range-holds? : String Natural -> Boolean
   ;; Whether LINE starts with START-END, two hex numbers, then a space, and

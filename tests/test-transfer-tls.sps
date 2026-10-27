@@ -58,6 +58,12 @@
 ;;;     after the request's other settings and before the test seam's; and
 ;;;     the six TLS option names, standing in transfer.sls only as data in
 ;;;     its two tables;
+;;;   - the Mac's keychain (ADR-0024, amended 2026-10-27): keychain-fallback?
+;;;     by synthetic inputs; this process's own backend, which on macOS make
+;;;     test sets to SecureTransport; loaded-tls-backend and loaded-on-macos?
+;;;     against this suite's readings; and two children given
+;;;     CURL_SSL_BACKEND at openssl and secure-transport, refused and run on
+;;;     macOS, both run elsewhere;
 ;;;   - the Guix pin, in a child, tests/transfer-tls-env.sps, given
 ;;;     SSL_CERT_FILE or SSL_CERT_DIR through its command alone, or set or
 ;;;     emptied after the load, nine cases: by the file the libcurl is
@@ -95,14 +101,15 @@
         (rnrs mutable-pairs)
         (only (chezscheme) parameterize getenv fork-thread thread-join sleep make-time mkdir
               directory-list library-directories current-time time-second time-nanosecond
-              foreign-entry)
+              foreign-entry machine-type)
         (curl-testing)
         (curl)
         (curl private engine)
         (curl private transfer)
         (curl private conditions)
         (curl private counters)
-        (only (curl private native) loaded-libcurl-file loaded-libcurl-patched? loaded-ca-variables))
+        (only (curl private native) loaded-libcurl-file loaded-libcurl-patched? loaded-ca-variables
+              loaded-tls-backend loaded-on-macos?))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
 ;; counts into one.
@@ -611,12 +618,13 @@
                                 "a CA file's path that begins pkcs11:, in any ASCII case, is a PKCS#11 URL to GnuTLS, not a file; reach a file of that name as ./pkcs11:..."
                                 '()))
               copy))))
-    (check-ca-environment "the CA file is checked against what native recorded at the load, for the loaded libcurl, and refused naming each variable"
+    (check-ca-environment "the CA file is checked against what native recorded at the load, for the loaded libcurl, and refused naming each variable, or the backend whose keychain would undo it"
      (define (check-ca-environment who ca-file verify)
        (let* ((info (loaded-libcurl))
               (names (overriding-variables ca-file verify (loaded-libcurl-file) (libcurl-info-path info)
                                            (loaded-libcurl-patched?) (libcurl-info-version info)
-                                           (loaded-ca-variables))))
+                                           (loaded-ca-variables)))
+              (backend (loaded-tls-backend)))
          (unless (null? names)
            (refuse-ca-file who ca-file 'environment-override
                            (string-append
@@ -624,7 +632,11 @@
                             (fold-right (lambda (name rest) (if (string=? rest "") name (string-append name " and " rest)))
                                         "" names)
                             " before the program starts, or trust the store it names with no CA file")
-                           names)))))
+                           names))
+         (when (keychain-fallback? ca-file verify (loaded-on-macos?) (libcurl-info-path info) backend)
+           (refuse-ca-file who ca-file 'keychain-fallback
+                           "Apple's libcurl uses its LibreSSL, which checks the keychain when a CA file fails, so the CA file would not be the only anchor; start the program with CURL_SSL_BACKEND=secure-transport, where this libcurl has it, or pass no CA file"
+                           (list backend))))))
     (field-options "a field's options are its row's names, in order"
      (define (field-options field) (cdr (assq field request-field-options))))
     (tls-settings "the verification pair, then CAINFO at the path and CAPATH at #f with a CA file alone"
@@ -983,6 +995,57 @@
   (if (string? libcurl-file) 'copied 'no-file)
   (cond (libcurl-copy 'copied) ((string? libcurl-file) 'not-copied) (else 'no-file)))
 
+;; name-of : Any -> Any
+;; A backend's NAME/VERSION cut at its /, as the pin's child prints one.
+(define (name-of x)
+  (if (string? x)
+      (let loop ((i 0))
+        (cond ((= i (string-length x)) x)
+              ((char=? (string-ref x i) #\/) (substring x 0 i))
+              (else (loop (+ i 1)))))
+      x))
+
+;; backend-name : Any
+;; The TLS backend this process's libcurl put in use, by name: the one the
+;; pin's child, which inherits this environment, puts in use too.
+(define backend-name (guard (e (#t (list 'raised (describe e)))) (name-of (loaded-tls-backend))))
+
+(test-equal "keychain-fallback?, the rule alone, written out: a CA file, verification on, on macOS, Apple's libcurl under /usr/lib/, with LibreSSL in use or a backend that could not be read; never SecureTransport, nor OpenSSL, nor a libcurl elsewhere on LibreSSL, nor off macOS, nor verification off, nor no CA file"
+  '(#t #t #f #f #f #f #f #f #f)
+  (let ((apple "/usr/lib/libcurl.4.dylib"))
+    (list (keychain-fallback? "/x/ca.pem" #t #t apple "LibreSSL/3.3.6")
+          (keychain-fallback? "/x/ca.pem" #t #t apple #f)
+          (keychain-fallback? "/x/ca.pem" #t #t apple "SecureTransport")
+          (keychain-fallback? "/x/ca.pem" #t #t apple "OpenSSL/3.0.13")
+          (keychain-fallback? "/x/ca.pem" #t #t "/opt/homebrew/opt/curl/lib/libcurl.4.dylib" "LibreSSL/3.9.2")
+          (keychain-fallback? "/x/ca.pem" #t #f apple "LibreSSL/3.3.6")
+          (keychain-fallback? "/x/ca.pem" #t #f "/usr/lib/x86_64-linux-gnu/libcurl.so.4" "LibreSSL/3.3.6")
+          (keychain-fallback? "/x/ca.pem" #f #t apple "LibreSSL/3.3.6")
+          (keychain-fallback? #f #t #t apple "LibreSSL/3.3.6"))))
+
+(test-equal "loaded-tls-backend is a string, the backend libcurl's init put in use; on a libcurl with one backend, no multi-ssl feature, the whole of the ssl_version the report read before the init, which then names it alone"
+  'named
+  (guard (e (#t (list 'raised (describe e))))
+    (let ((backend (loaded-tls-backend)) (info (loaded-libcurl)))
+      (cond ((not (string? backend)) (list 'no-backend backend))
+            ((memq 'multi-ssl (libcurl-info-feature-names info)) 'named)
+            ((equal? backend (libcurl-info-ssl-version info)) 'named)
+            (else (list 'differs backend (libcurl-info-ssl-version info)))))))
+
+(test-equal "loaded-on-macos? is whether Chez's machine type, as this suite reads it, ends in osx"
+  (let* ((name (symbol->string (machine-type))) (n (string-length name)))
+    (and (>= n 3) (string=? (substring name (- n 3) n) "osx")))
+  (guard (e (#t (list 'raised (describe e)))) (loaded-on-macos?)))
+
+(test-equal "this process's TLS backend is no keychain's, or every CA file here would be refused: on macOS, CURL_SSL_BACKEND=secure-transport, which make test sets"
+  'not-the-keychain
+  (guard (e (#t (list 'raised (describe e))))
+    (if (keychain-fallback? "/x/ca.pem" #t (loaded-on-macos?) (libcurl-info-path (loaded-libcurl))
+                            (loaded-tls-backend))
+        (list 'keychain-backend (loaded-tls-backend)
+              "Apple's LibreSSL is in use: run with CURL_SSL_BACKEND=secure-transport, as make test does on macOS")
+        'not-the-keychain)))
+
 (test-equal "guix-ca-overrides, the library's table, is this suite's copy: Guix's 8.20.0 overrides"
   guix-pin-verdicts
   guix-ca-overrides)
@@ -1231,9 +1294,11 @@
            (list 0
                  (list (list 'libcurl libcurl-version)
                        (list 'file file)
+                       (list 'backend backend-name)
                        (list 'environment
                              (cons 'SSL_CERT_FILE (given "SSL_CERT_FILE"))
-                             (cons 'SSL_CERT_DIR (given "SSL_CERT_DIR")))
+                             (cons 'SSL_CERT_DIR (given "SSL_CERT_DIR"))
+                             (cons 'CURL_SSL_BACKEND (getenv "CURL_SSL_BACKEND")))
                        (list 'recorded (list (cons "SSL_CERT_FILE" (read-as "SSL_CERT_FILE"))
                                              (cons "SSL_CERT_DIR" (read-as "SSL_CERT_DIR"))))
                        (list 'transfer (if refuses refused ignored) zero-counts)
@@ -1277,7 +1342,39 @@
                       (overridden "SSL_CERT_FILE") good-answer
                       "SSL_CERT_FILE at other-ca.pem, the run CA as the CA file, and a copy of this libcurl's file out of the store as CHEZ_CURL_LIBCURL: Guix's by the patch's literal, which the copy holds too"
                       libcurl-copy))
-          '())))))
+          '()))))
+
+  ;; --- the Mac's keychain (ADR-0024, amended 2026-10-27), in a child given
+  ;; CURL_SSL_BACKEND through its command. Apple's libcurl puts the backend
+  ;; it names in use at its init; a libcurl with one backend ignores it. On
+  ;; macOS, with LibreSSL, whose keychain undoes a CA file, a submit refuses
+  ;; a CA file, naming the backend; with SecureTransport the transfer runs,
+  ;; and answers by its CA file. Elsewhere both run, on this backend.
+  (for-each
+   (lambda (row)
+     (let* ((value (car row)) (name (cadr row))
+            (macos (eq? (guard (e (#t #f)) (loaded-on-macos?)) #t))
+            (backend (if macos name backend-name))
+            (answer (if (and macos (equal? name "LibreSSL"))
+                        (list 'request-refused 'ca-file 'keychain-fallback (list "LibreSSL"))
+                        good-answer)))
+       (test-equal (string-append "the keychain, in a child given CURL_SSL_BACKEND=" value
+                                  " and the run CA as the CA file: "
+                                  (if macos "on macOS, " "off macOS, where it is ignored, ")
+                                  (written backend) " in use, " (written answer) "; the child's counts zero")
+         (list 0
+               (list (list 'libcurl libcurl-version)
+                     (list 'file libcurl-file)
+                     (list 'backend backend)
+                     (list 'environment '(SSL_CERT_FILE . #f) '(SSL_CERT_DIR . #f)
+                           (cons 'CURL_SSL_BACKEND value))
+                     '(recorded (("SSL_CERT_FILE" . #f) ("SSL_CERT_DIR" . #f)))
+                     (list 'transfer answer zero-counts)
+                     '(done))
+               "")
+         (child-run (list (string-append "CURL_SSL_BACKEND=" value))
+                    (url-of o 'https "/status/200") (pki-file "ca.pem") "on" '()))))
+   '(("openssl" "LibreSSL") ("secure-transport" "SecureTransport"))))
 
 (define scenarios-outcome
   (guard (e (#t (list 'raised (describe e))))

@@ -929,3 +929,19 @@ it should not be a comment. (chez-cmark-gfm)
   SMALL LETTER LONG S `s` too. A prefix rule written with any of them refuses `p`, U+212A,
   `cs11:` as `pkcs11:`, though GnuTLS compares bytes and reads it as a file. Fold A to Z
   alone where the other side compares bytes, and test both chars. (chez-curl, M4 slice 3)
+* **A MultiSSL libcurl names its first backend as the one in use until `curl_global_init`
+  picks one.** `curl_version_info`'s `ssl_version` read `SecureTransport (LibreSSL/3.3.6)` on
+  Apple's 8.7.1 before the init, and `(SecureTransport) LibreSSL/3.3.6` after it
+  (`lib/vtls/vtls.c`, `multissl_version`). ADR-0018 read the first, and recorded the Mac's
+  transfers as SecureTransport's; they ran on LibreSSL, whose keychain fallback undid a CA
+  file. The features read before the init are the first backend's too: the Mac's drift row
+  lacks HTTPS-proxy, which the probe after the init has. Read the backend in use after the
+  init, the text outside parentheses. And name it as curl does: 8.7.1's SecureTransport is
+  `secure-transport`, and `securetransport` reached it only because an unknown name falls to
+  the first backend. (chez-curl, M4 slice 3)
+* **libcurl 8.7.0 and 8.7.1 count no request bytes.** `CURLINFO_REQUEST_SIZE` read 0 on all 21
+  of slice 1's probe transfers, the 200s among them, where 8.6.0 and 8.8.0 counted each
+  request. Slice 1 measured five libcurls without them, and its check failed only when the
+  Mac, which ships 8.7.1, first ran it. curl 8.8.0's release notes list the fix, bug 13269. A
+  count measured on some versions says nothing of a version between them.
+  (chez-curl, M4 slice 3)

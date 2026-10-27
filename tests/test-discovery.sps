@@ -304,6 +304,16 @@
     (bytes-hold? (string->utf8 "abc") (make-bytevector 0))
     'no-raise))
 
+(test-equal "backend-in-use: the text outside parentheses, trimmed, its version kept: Apple's 8.7.1 after the init and before it, a single backend's, OpenSSL's; a version with spaces, alone and beside a group, a group with spaces, a group between two, nested and unclosed groups; #f for groups alone, the empty string, spaces alone and #f"
+  '("LibreSSL/3.3.6" "SecureTransport" "GnuTLS/3.8.13" "OpenSSL/3.0.13"
+    "OpenSSL/1.1.1k FIPS" "OpenSSL/1.1.1k FIPS" "OpenSSL/3.0.13" "B/2" "A/1" "A/1"
+    #f #f #f #f)
+  (map backend-in-use
+       (list "(SecureTransport) LibreSSL/3.3.6" "SecureTransport (LibreSSL/3.3.6)" "GnuTLS/3.8.13"
+             "OpenSSL/3.0.13" "OpenSSL/1.1.1k FIPS" "(x/1) OpenSSL/1.1.1k FIPS"
+             "(NSS/3.21 Basic ECC) OpenSSL/3.0.13" "(A/1) B/2 (C/3)" "A/1 ((B/2) C/3)" "A/1 (B/2"
+             "(a) (b)" "" "   " #f)))
+
 ;; --- the Guix world -------------------------------------------------------------
 
 (test-equal "guix: the candidate list, in ADR-0002's order"

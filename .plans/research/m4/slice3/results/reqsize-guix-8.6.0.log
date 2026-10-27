@@ -1,3 +1,7 @@
+# Made on the host, 2026-10-27, by a one-off run in Docker ubuntu:24.04, with the debian
+# prereqs, NODE from the Guix store and CC=gcc:
+#   CURL_LIB=/gnu/store/1br92r2drmpfqk808y93x4ky6yi0mjnn-curl-8.6.0/lib/libcurl.so.4 \
+#     sh .plans/research/m4/slice1/run.sh guix-8.6.0-fhs
 [guix-8.6.0-fhs] libcurl 8.6.0, Linux x86_64
 [guix-8.6.0-fhs] -- bodies, Expect answered at once
 [guix-8.6.0-fhs] POST 0: code 0 status 200 sent 0 fnv 811c9dc5 -> {"head":"POST /continue HTTP/1.1\r\nHost: 127.0.0.1:PORT\r\nAccept: */*\r\nContent-Length: 0\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n","length":0,"fnv":"811c9dc5","wait":null}

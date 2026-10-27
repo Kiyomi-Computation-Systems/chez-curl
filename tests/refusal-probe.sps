@@ -4,7 +4,7 @@
 ;;; tests/test-library-loading.sps to read. It is not a suite: its name lies
 ;;; outside the tests/test-*.sps glob, so make test never runs it directly.
 ;;;
-;;;   refusal-probe.sps [--then-override PATH] [--marker NAME]
+;;;   refusal-probe.sps [--then-override PATH] [--marker NAME] [--backend yes]
 ;;;
 ;;; It references loaded-libcurl three times, each inside its guard. The
 ;;; first reference prints what happened:
@@ -35,6 +35,10 @@
 ;;; its counts, and tests/test-library-loading.sps requires every one zero,
 ;;; refusals included: a native object a refused load left behind shows here
 ;;; and nowhere else.
+;;;
+;;; With --backend, (backend . NAME-OR-#F) follows the counts: (curl private
+;;; native)'s loaded-tls-backend, the TLS backend in use as libcurl named it
+;;; after curl_global_init.
 ;;;
 ;;; With --marker, (marker . present) or (marker . absent) follows: whether
 ;;; this process has the entry point NAME, as foreign-entry? answers.
@@ -145,6 +149,10 @@
   (show 'again (list (later first second) (later first third))))
 
 (show 'counts (native-counts))
+
+(when (option "--backend")
+  (show 'backend (guard (e (#t (list 'raised (text e))))
+                   (eval '(loaded-tls-backend) (environment '(curl private native))))))
 
 (let ((marker (option "--marker")))
   (when marker

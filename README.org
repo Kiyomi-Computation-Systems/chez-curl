@@ -47,9 +47,16 @@ program's environment. chez-curl never changes them.
   only to debug.
 - *=OPENSSL_CONF=* can weaken what an OpenSSL build checks: one at security
   level 0 let a 1024-bit certificate pass.
-- *=CURL_SSL_BACKEND=* picks the TLS library when libcurl has more than one,
-  as Apple's does. Apple's LibreSSL falls back to the keychain when a CA file
-  fails. Whether that undoes a =ca-file= is not yet measured.
+- *macOS and =CURL_SSL_BACKEND=.* Apple's libcurl has two TLS libraries and
+  uses LibreSSL unless =CURL_SSL_BACKEND= picks the other. Apple's LibreSSL
+  checks the keychain when a =ca-file= fails, so a server the keychain trusts
+  passes whatever the =ca-file= names. So there a request with a =ca-file=
+  and =verify= on is refused when you submit it. Start the program with
+  =CURL_SSL_BACKEND=secure-transport=, which keeps the =ca-file= the only
+  anchor. =make test= sets it on macOS.
+- *The request size.* libcurl 8.7.0 and 8.7.1, the Mac's among them, count
+  no bytes sent, ever. On them a failure from a transfer that ran has a
+  request size of =#f=, unknown, not =0=.
 
 ** License
 

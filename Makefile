@@ -25,6 +25,17 @@ export NODE
 OPENSSL ?= openssl
 export OPENSSL
 
+# The TLS backend a libcurl with more than one puts in use, which it reads at
+# curl_global_init. On macOS, Apple's libcurl puts LibreSSL in use, which
+# checks the keychain when a CA file fails, so a submit refuses a CA file
+# there (ADR-0024, amended 2026-10-27). SecureTransport keeps the CA file the
+# only anchor: the suites run on it on macOS, unless CURL_SSL_BACKEND names
+# another. Exported, so that every suite's children inherit it.
+ifeq ($(shell uname -s),Darwin)
+CURL_SSL_BACKEND ?= secure-transport
+export CURL_SSL_BACKEND
+endif
+
 # The make target to name in a missing-tool hint (scripts/require-tools):
 # what the user typed, $(MAKECMDGOALS), or, when that is empty, the
 # recipe's own target, $@. Recursively expanded (=, not :=), so each

@@ -20,7 +20,9 @@
 ;;;     answers, with a control a transfer past its connect phase outlives;
 ;;;   - the timings, on a plaintext and a TLS pause of 300 ms mid-body;
 ;;;   - a failure's class and request size: 0 when nothing was sent, the
-;;;     head's length when it was;
+;;;     head's length when it was; #f, unknown, for one that ran on 8.7.0 or
+;;;     8.7.1, whose count is broken, and the library's table of them held to
+;;;     this suite's copy (ADR-0022, amended 2026-10-27);
 ;;;   - no redirect followed, but through the private follow field.
 ;;;
 ;;; Each transfer's native counts are the engine's alone after it, and all
@@ -36,7 +38,8 @@
         (curl private engine)
         (only (curl private transfer) curl-request-fault curl-request-follow
               curl-request-with-fault curl-request-following request-keys request-methods
-              sent-header-lines timing-infos live-transfer-count)
+              sent-header-lines timing-infos live-transfer-count request-size-unreliable
+              reported-request-size)
         (curl private counters))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
@@ -670,8 +673,29 @@
                                      "\nAccept: */*\nContent-Length: 4\n\naaaa")))
   (outcome 'copied))
 
-(test-equal "the connect timeout ends a TLS handshake the server never answers: 28, a timeout, with nothing sent, between 300 ms and 2 s, so neither its whole bound, 10 s, nor ten times its own; 2 s leaves the memory gate's Valgrind room, where it took 990 ms"
-  '((refused perform-failed 28 timeout 0) within-300-to-2000-ms)
+;; request-size-broken : (Listof String)
+;; This suite's copy of the library's request-size-unreliable, written
+;; apart: the libcurl versions whose CURLINFO_REQUEST_SIZE answers 0 for
+;; every transfer, measured on upstream 8.7.0 and 8.7.1, where 8.6.0 and
+;; 8.8.0 answered each request's length (ADR-0022, amended 2026-10-27).
+(define request-size-broken '("8.7.0" "8.7.1"))
+
+;; size-broken? : Boolean
+;; Whether the loaded libcurl is one of them.
+(define size-broken?
+  (guard (e (#t #f))
+    (and (member (libcurl-info-version (loaded-libcurl)) request-size-broken) #t)))
+
+;; ran-size : Natural -> (U Natural #f)
+;; What a transfer that ran reports as its request size here: SIZE, or #f
+;; on a libcurl whose count is broken.
+(define (ran-size size) (if size-broken? #f size))
+
+(test-equal (string-append "the connect timeout ends a TLS handshake the server never answers: 28, a timeout, with nothing sent, between 300 ms and 2 s, so neither its whole bound, 10 s, nor ten times its own; 2 s leaves the memory gate's Valgrind room, where it took 990 ms; "
+                           (if size-broken?
+                               "its request size #f, unknown, on this libcurl, whose count is broken"
+                               "its request size 0"))
+  (list (list 'refused 'perform-failed 28 'timeout (ran-size 0)) 'within-300-to-2000-ms)
   (outcome 'connect-timeout))
 
 (test-equal "the connect timeout bounds the connection phase alone: a transfer that pauses 1 s mid-body, past its 300 ms connect timeout, succeeds"
@@ -701,15 +725,28 @@
         (list (timing-shape (car t) #f) (timing-shape (cadr t) #t))
         t)))
 
-(test-equal "a failure's class and request size, each on an engine of its own: a refused connect, 7, connect, and a TLS failure, 60, tls, send nothing, 0; a timeout before the head, 28, a server that closes before answering, 52, send-receive, the body limit, too-large, and a raise in the callable, of no class, sent the head, its length; a setopt the libcurl refuses, 43, the base type, sent nothing"
+(test-equal "request-size-unreliable, the library's table, is this suite's copy: 8.7.0 and 8.7.1"
+  request-size-broken
+  request-size-unreliable)
+
+(test-equal "reported-request-size: #f, unknown, for any size on 8.7.0 and 8.7.1; the size itself, 0 among them, on 8.6.0, 8.8.0 and 8.20.0"
+  '(#f #f #f 75 0 79)
+  (list (reported-request-size "8.7.0" 75) (reported-request-size "8.7.1" 0)
+        (reported-request-size "8.7.1" 79) (reported-request-size "8.6.0" 75)
+        (reported-request-size "8.8.0" 0) (reported-request-size "8.20.0" 79)))
+
+(test-equal (string-append "a failure's class and request size, each on an engine of its own: a refused connect, 7, connect, and a TLS failure, 60, tls, send nothing, 0; a timeout before the head, 28, a server that closes before answering, 52, send-receive, the body limit, too-large, and a raise in the callable, of no class, sent the head, its length; a setopt the libcurl refuses, 43, the base type, sent nothing, 0; "
+                           (if size-broken?
+                               "on this libcurl, whose count is broken, each that ran #f, unknown"
+                               "each that ran, the size libcurl counted"))
   (let ((sizes (outcome 'heads-for-sizes)))
     (if (and (list? sizes) (= (length sizes) 4))
-        (list '(refused perform-failed 7 connect 0)
-              '(refused perform-failed 60 tls 0)
-              (list 'refused 'perform-failed 28 'timeout (car sizes))
-              (list 'refused 'perform-failed 52 'send-receive (cadr sizes))
-              (list 'refused 'body-limit 23 'too-large (caddr sizes))
-              (list 'refused 'callback-raised 23 'none (cadddr sizes))
+        (list (list 'refused 'perform-failed 7 'connect (ran-size 0))
+              (list 'refused 'perform-failed 60 'tls (ran-size 0))
+              (list 'refused 'perform-failed 28 'timeout (ran-size (car sizes)))
+              (list 'refused 'perform-failed 52 'send-receive (ran-size (cadr sizes)))
+              (list 'refused 'body-limit 23 'too-large (ran-size (caddr sizes)))
+              (list 'refused 'callback-raised 23 'none (ran-size (cadddr sizes)))
               '(refused setopt-failed 43 none 0))
         sizes))
   (outcome 'failures))

@@ -83,13 +83,52 @@ the checks named above or more. On an FHS lane, Docker `ubuntu:24.04` with its l
 rows and fresh objects. Before the fix, the review saw it fail nothing more than the tree did,
 on a copy of the container's libcurl out of the store.
 
+## The Mac's follow-up: the fourth sweep
+
+The Mac's runs brought the keychain refusal and the request size's `#f` (ADR-0024 and
+ADR-0022, amended 2026-10-27). Ten mutants of that code ran, as the first ones did: 10 lines and
+`done`, each failing as named.
+
+| Mutant | Change | Failed |
+|---|---|---|
+| `keychain-macos-ignored` | the rule refuses off macOS too | `keychain-fallback?` alone |
+| `keychain-any-backend` | any backend refused, not LibreSSL alone | the same |
+| `keychain-verify-ignored` | verification off refused too | the same |
+| `keychain-check-dropped` | `check-ca-environment` never refuses for the keychain | the shell held whole |
+| `macos-wrong` | native takes Linux for macOS | `loaded-on-macos?` against the suite's reading; both keychain rows |
+| `backend-first-word` | the first bare word taken | `backend-in-use` |
+| `backend-paren-kept` | a parenthesised word taken | the same |
+| `reqsize-table-emptied` | `request-size-unreliable` empty | the table held to the suite's copy; `reported-request-size` |
+| `reqsize-ignored` | the size passed on, on any version | `reported-request-size` |
+| `reqsize-setup-unknown` | a transfer refused at set-up carries `#f` | the failures' sizes; test-transfer's set-up refusals |
+
+## After the follow-up's review: the fifth sweep
+
+The follow-up's review (Opus, read-only) ran three mutants that passed every Linux lane: a
+backend read before the init, a backend never read, and `finish-transfer` reading libcurl's
+count past `ran-request-size`. The decoy library now builds as a MultiSSL one, every lane checks
+the backend read, and a source check holds the count's reading. The three ran again, with four
+of the review's other fixes: 7 lines and `done`, each failing as named.
+
+| Mutant | Change | Failed |
+|---|---|---|
+| `backend-before-init` | the backend parsed from the text read before the init, the second call kept | the MultiSSL decoy |
+| `backend-always-f` | no backend ever recorded | the MultiSSL decoy and the control's; the backend read on every lane |
+| `reqsize-raw-at-finish` | `finish-transfer` reads CURLINFO_REQUEST_SIZE itself at a failure | the source check of the count's reading |
+| `keychain-any-libcurl` | any libcurl on macOS, not Apple's alone | `keychain-fallback?` alone |
+| `keychain-unknown-passes` | a backend that could not be read passes | the same |
+| `backend-untrimmed` | the spaces a group leaves kept | `backend-in-use` |
+| `backend-groups-kept` | the text inside parentheses kept | the same |
+
 ## Unchecked, by design
 
+- **Behaviour only the Mac shows.** The keychain refusal and the request size's `#f` run on
+  Apple's libcurl alone: the rules are pure and held on every lane, their shells held whole,
+  the backend's reading held by the decoy, and the Mac's `make test` shows them by behaviour.
 - **`native-patch-path-only`, which survived:** native reads the literal from the path as
   loaded, not the mapped file. On every lane the path resolves to the mapped file, so the two
   read the same bytes; they differ only for a path changed in the instant between the load
   and the read.
-
 - **The override itself, seen through the library.** On a Guix libcurl a submit refuses
   before libcurl could write a variable over the CA file, so no suite sees the write. The
   measurement is its evidence (ADR-0024, amended 2026-10-26).

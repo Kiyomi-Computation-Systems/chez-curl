@@ -266,6 +266,11 @@ provisional. They bind until that record is accepted or amended.
     verification on is refused at submit, as `&curl-request-error` `environment-override`,
     whose irritants name each variable recorded as set. The rule is pure,
     `overriding-variables`, held on every lane; only a Guix libcurl shows it by behaviour;
+  - on macOS with Apple's LibreSSL the TLS backend in use, as `curl_version_info` names it
+    after the init, a request with a CA file and verification on is refused at submit, as
+    `keychain-fallback`: its keychain fallback would undo the CA file.
+    `CURL_SSL_BACKEND=secure-transport` is the operator's way to a CA file there, and make
+    sets it for the suites on macOS (ADR-0024, amended 2026-10-27);
   - a CA file's path beginning `pkcs11:`, in any ASCII case and no other fold, is refused as
     `pkcs11-url` when the request is made and again at submit, on every backend: GnuTLS took
     all sixteen ASCII cases;
@@ -304,7 +309,9 @@ provisional. They bind until that record is accepted or amended.
   whether it is 0 is what M5's retry policy reads to tell whether a request was sent. A check
   of its value runs on an engine of its own, since curl 8.23.0 resends a head after a dead
   reused connection, and counts both. It carries no timings, which on a failure move with the version;
-  the response carries them (ADR-0022, amended 2026-10-26, from M4 slice 1).
+  the response carries them (ADR-0022, amended 2026-10-26, from M4 slice 1). On libcurl 8.7.0
+  and 8.7.1, whose count reads 0 for every transfer, a transfer that ran carries `#f`, unknown,
+  and one refused while it was set up still 0 (ADR-0022, amended 2026-10-27).
 
 ## The escape hatch
 

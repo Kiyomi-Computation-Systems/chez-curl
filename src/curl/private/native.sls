@@ -27,7 +27,9 @@
 ;;;   4. check    the floor and CURL_VERSION_SSL: check-version
 ;;;   5. init     SSL_CERT_FILE and SSL_CERT_DIR, read and recorded, which
 ;;;               loaded-ca-variables answers; then curl_global_init, exactly
-;;;               once
+;;;               once; then the TLS backend it put in use, which
+;;;               loaded-tls-backend answers, and whether this is macOS,
+;;;               loaded-on-macos?
 ;;;   6. bind     every other entry point, eagerly
 ;;;   7. probe    the options API and the header API, then check-apis
 ;;;
@@ -114,6 +116,7 @@
 ;;;   missing-api  a required entry point is absent (detail: its C name)
 (library (curl private native)
   (export loaded-libcurl loaded-libcurl-file loaded-libcurl-patched? loaded-ca-variables
+          loaded-tls-backend loaded-on-macos?
           curl-easy-option
           curl-easy-init curl-easy-cleanup
           curl-easy-setopt-long curl-easy-setopt-pointer curl-easy-setopt-off-t
@@ -636,6 +639,26 @@
                  "curl_global_init failed, so this libcurl cannot be used; name another with CHEZ_CURL_LIBCURL"))
        #t)))
 
+  ;; The TLS backend in use, read from curl_version_info after the init,
+  ;; through discovery's backend-in-use: before it, a MultiSSL libcurl
+  ;; names its first backend whatever the init picks, so the record step 3
+  ;; built, info, says SecureTransport on Apple's 8.7.1, where the init
+  ;; puts LibreSSL in use (ADR-0024, amended 2026-10-27). curl_version_info
+  ;; writes the names into a buffer of its own, so it is called again; #f
+  ;; when it answers NULL or no one backend is bare.
+  (define tls-backend
+    (load-step
+     (let ((address (curl-version-info curlversion-tenth)))
+       (and (not (zero? address))
+            (backend-in-use
+             (c-text (ftype-ref curl-version-info-data (ssl-version)
+                                (make-ftype-pointer curl-version-info-data address))))))))
+
+  ;; Whether this is macOS: Chez's machine types for it end in osx.
+  (define on-macos
+    (let* ((name (symbol->string (machine-type))) (n (string-length name)))
+      (and (>= n 3) (string=? (substring name (- n 3) n) "osx"))))
+
   ;; --- 6. every other entry point, eagerly ---------------------------------------------
 
   ;; const struct curl_easyoption *curl_easy_option_by_name(const char *name)
@@ -1138,6 +1161,16 @@
   ;; libcurl-file: a fresh string, or #f where it could not be read. Private:
   ;; (curl) does not export it.
   (define (loaded-libcurl-file) (and libcurl-file (string-copy libcurl-file)))
+
+  ;; loaded-tls-backend : -> (U String #f)
+  ;; The TLS backend libcurl put in use at its init, as curl_version_info
+  ;; then named it, LibreSSL/3.3.6 say: a fresh string, or #f. Private:
+  ;; (curl) does not export it.
+  (define (loaded-tls-backend) (and tls-backend (string-copy tls-backend)))
+
+  ;; loaded-on-macos? : -> Boolean
+  ;; Whether this process runs on macOS, by Chez's machine type. Private.
+  (define (loaded-on-macos?) on-macos)
 
   ;; loaded-libcurl-patched? : -> Boolean
   ;; Whether the loaded libcurl's file holds Guix's patch's literal, step 3's

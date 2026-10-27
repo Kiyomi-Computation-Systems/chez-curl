@@ -1469,6 +1469,31 @@
         ((pair? x) (+ (symbol-count name (car x)) (symbol-count name (cdr x))))
         (else 0)))
 
+;; definitions-naming : Symbol Any -> (Listof Symbol)
+;; The name of each top-level definition in LIBRARY, a library form, whose
+;; body names NAME, in order.
+(define (definitions-naming name library)
+  (if (and (list? library) (> (length library) 4))
+      (fold-right (lambda (form found)
+                    (if (and (pair? form) (eq? (car form) 'define) (pair? (cdr form))
+                             (> (symbol-count name (cddr form)) 0))
+                        (cons (if (pair? (cadr form)) (car (cadr form)) (cadr form)) found)
+                        found))
+                  '() (cddddr library))
+      (list 'no-library library)))
+
+;; A transfer that ran reports libcurl's count through ran-request-size
+;; alone, which reported-request-size judges by version: #f on 8.7.0 and
+;; 8.7.1, whose count is broken (ADR-0022, amended 2026-10-27). Only a lane
+;; on one of them shows it by behaviour, and CI runs none, so the reading is
+;; held here, as data.
+(test-equal "CURLINFO_REQUEST_SIZE is read in transfer.sls by ran-request-size alone, through reported-request-size; finish-transfer reads a size by ran-request-size at both its failures, and never curlinfo-request-size itself"
+  '((ran-request-size) 1 2 0)
+  (list (definitions-naming 'curlinfo-request-size transfer-library)
+        (symbol-count 'reported-request-size (transfer-definition 'ran-request-size))
+        (symbol-count 'ran-request-size (transfer-definition 'finish-transfer))
+        (symbol-count 'curlinfo-request-size (transfer-definition 'finish-transfer))))
+
 ;; set-name : Any -> Any
 ;; NAME, as a set-option! call writes it: a string as itself; (field-option
 ;; 'FIELD) as FIELD's one option, from request-field-options; (car

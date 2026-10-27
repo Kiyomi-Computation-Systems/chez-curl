@@ -23,6 +23,9 @@
  *   DECOY_BELOW_FLOOR          version 7.84.0, 0x075400: one minor below
  *   DECOY_NO_SSL               features without CURL_VERSION_SSL
  *   DECOY_SSL_VERSION_NULL     ssl_version is NULL
+ *   DECOY_MULTISSL             ssl_version names two backends, as a MultiSSL
+ *                              libcurl does: DecoyFirst in use until
+ *                              curl_global_init, which puts DecoyTLS in use
  *   DECOY_VERSION_NULL         version is NULL
  *   DECOY_HOST_NULL            host is NULL
  *   DECOY_HOST_UTF8            host is "décoy-λ€", in UTF-8: two- and
@@ -120,8 +123,10 @@ int decoy_marker(void)
                         CURL_VERSION_HTTP2 | CURL_VERSION_THREADSAFE)
 #endif
 
-#ifdef DECOY_SSL_VERSION_NULL
+#if defined(DECOY_SSL_VERSION_NULL)
 #define DECOY_SSL_VERSION NULL
+#elif defined(DECOY_MULTISSL)
+#define DECOY_SSL_VERSION "DecoyFirst/1.0 (DecoyTLS/1.0)"
 #else
 #define DECOY_SSL_VERSION "DecoyTLS/1.0"
 #endif
@@ -167,6 +172,9 @@ CURLcode curl_global_init(long flags)
 #ifdef DECOY_INIT_FAILS
   return CURLE_FAILED_INIT;
 #else
+#if defined(DECOY_MULTISSL) && !defined(DECOY_LACKS_curl_version_info)
+  info.ssl_version = "(DecoyFirst/1.0) DecoyTLS/1.0";
+#endif
   return CURLE_OK;
 #endif
 }

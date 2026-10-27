@@ -1,3 +1,5 @@
+# Made on the host, 2026-10-27, by sh .plans/research/m4/slice3/reqsize-871.sh, as committed
+# in a0e9a41: a full make and install of upstream 8.7.1. The script is now reqsize.sh.
 image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
 sha256 6fea2aac6a4610fbd0400afb0bcddbe7258a64c63f1f68e5855ebc0c659710cd curl-8.7.1.tar.xz
 curl-config: libcurl 8.7.1, features: AsynchDNS HSTS HTTP2 HTTPS-proxy IPv6 Largefile NTLM SSL TLS-SRP UnixSockets alt-svc libz threadsafe 

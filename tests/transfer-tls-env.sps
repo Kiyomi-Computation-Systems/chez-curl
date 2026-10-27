@@ -1,13 +1,16 @@
 #!r6rs
 ;;; tests/transfer-tls-env.sps: one request against a TLS face, on an engine
 ;;; of its own, run in a child Chez of tests/test-transfer-tls.sps, which
-;;; sets SSL_CERT_FILE or SSL_CERT_DIR for the child alone, through its
-;;; command, never in its own environment (ADR-0018; ADR-0024). Guix's
-;;; libcurl reads both at curl_global_init, and its 8.20.0 writes them over
-;;; CAINFO and CAPATH when a transfer starts; the native layer records both
-;;; there, and a submit refuses a CA file, verification on, on such a
-;;; libcurl with either set. Any other libcurl ignores them. The suite
-;;; judges the answer by the libcurl's mapped file and its version.
+;;; sets SSL_CERT_FILE, SSL_CERT_DIR, CURL_SSL_BACKEND or CHEZ_CURL_LIBCURL
+;;; for the child alone, through its command, never in its own environment
+;;; (ADR-0018; ADR-0024). Guix's libcurl reads the first two at
+;;; curl_global_init, and its 8.20.0 writes them over CAINFO and CAPATH when
+;;; a transfer starts; the native layer records both there, and a submit
+;;; refuses a CA file, verification on, on such a libcurl with either set.
+;;; Any other libcurl ignores them. Apple's reads CURL_SSL_BACKEND at its
+;;; init, and with its LibreSSL in use a submit refuses a CA file there. The
+;;; suite judges the answer by the libcurl's mapped file, the literal its
+;;; file holds, its version, the platform and the backend in use.
 ;;;
 ;;;   transfer-tls-env.sps URL CA-FILE VERIFY [NAME VALUE]
 ;;;
@@ -16,11 +19,13 @@
 ;;; its first line, it putenvs NAME to VALUE, the empty string standing for
 ;;; unset, as libcurl's curl_getenv reads it. Then it makes an engine,
 ;;; submits one request of URL with that CA file and verification, awaits
-;;; it, stops the engine, and prints six data, each on its own line:
+;;; it, stops the engine, and prints seven data, each on its own line:
 ;;;
 ;;;   (libcurl VERSION)                                     the libcurl it loaded
 ;;;   (file FILE)                                           loaded-libcurl-file
-;;;   (environment (SSL_CERT_FILE . V) (SSL_CERT_DIR . V))  as it started, each #f when unset
+;;;   (backend NAME)                                        loaded-tls-backend, its version cut
+;;;   (environment (SSL_CERT_FILE . V) (SSL_CERT_DIR . V) (CURL_SSL_BACKEND . V))
+;;;                                                         as it started, each #f when unset
 ;;;   (recorded (("SSL_CERT_FILE" . V) ("SSL_CERT_DIR" . V)))
 ;;;                                                         loaded-ca-variables, after the
 ;;;                                                         putenv: what native read at the load
@@ -30,15 +35,15 @@
 ;;; ANSWER is (response STATUS VERSION HEADERS BODY), each header (NAME
 ;;; VALUE) and the body read as Latin-1; (refused REASON CODE) for a
 ;;; &curl-transfer-error; (request-refused FIELD REASON IRRITANTS) for a
-;;; &curl-request-error, IRRITANTS those after the value; (raised TEXT) for
-;;; anything else. The environment line is the evidence that the variable
+;;; &curl-request-error, IRRITANTS those after the value, a backend's name
+;;; cut at its / as above; (raised TEXT) for anything else. The environment line is the evidence that the variable
 ;;; reached the child: elsewhere than Guix, the answer is the one the child
 ;;; would give without it.
 (import (rnrs)
         (only (chezscheme) getenv putenv)
         (only (curl-testing) describe)
         (only (curl) loaded-libcurl libcurl-info-version)
-        (only (curl private native) loaded-libcurl-file loaded-ca-variables)
+        (only (curl private native) loaded-libcurl-file loaded-ca-variables loaded-tls-backend)
         (curl private counters)
         (curl private conditions)
         (curl private engine)
@@ -54,6 +59,17 @@
 (define (latin-1 bytes)
   (list->string (map integer->char (bytevector->u8-list bytes))))
 
+;; name-of : Any -> Any
+;; A backend's NAME/VERSION cut at its /: LibreSSL for LibreSSL/3.3.6, so a
+;; line holds whatever version a machine has; anything else as it is.
+(define (name-of x)
+  (if (string? x)
+      (let loop ((i 0))
+        (cond ((= i (string-length x)) x)
+              ((char=? (string-ref x i) #\/) (substring x 0 i))
+              (else (loop (+ i 1)))))
+      x))
+
 ;; answer-of : (-> Response) -> Answer
 (define (answer-of thunk)
   (guard (e ((curl-transfer-error? e)
@@ -62,7 +78,7 @@
              (list 'request-refused (curl-request-error-field e) (curl-request-error-reason e)
                    (if (irritants-condition? e)
                        (let ((irritants (condition-irritants e)))
-                         (if (pair? irritants) (cdr irritants) irritants))
+                         (if (pair? irritants) (map name-of (cdr irritants)) irritants))
                        'no-irritants)))
             (#t (list 'raised (describe e))))
     (let ((r (thunk)))
@@ -77,9 +93,11 @@
     (exit 2))
   (show (list 'libcurl (libcurl-info-version (loaded-libcurl))))
   (show (list 'file (loaded-libcurl-file)))
+  (show (list 'backend (name-of (loaded-tls-backend))))
   (show (list 'environment
               (cons 'SSL_CERT_FILE (getenv "SSL_CERT_FILE"))
-              (cons 'SSL_CERT_DIR (getenv "SSL_CERT_DIR"))))
+              (cons 'SSL_CERT_DIR (getenv "SSL_CERT_DIR"))
+              (cons 'CURL_SSL_BACKEND (getenv "CURL_SSL_BACKEND"))))
   (when (= (length args) 5)
     (putenv (list-ref args 3) (list-ref args 4)))
   (show (list 'recorded (loaded-ca-variables)))

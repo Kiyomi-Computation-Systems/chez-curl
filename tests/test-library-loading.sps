@@ -273,16 +273,20 @@
 
 ;; The call log's entries, as tests/decoy-libcurl.c writes them. The
 ;; arguments are the header's values: CURLVERSION_TENTH is 9,
-;; CURL_GLOBAL_DEFAULT is 3, CURLH_HEADER is 1.
+;; CURL_GLOBAL_DEFAULT is 3, CURLH_HEADER is 1. backend-call is
+;; curl_version_info again, once the init has run: a MultiSSL libcurl
+;; names the backend the init put in use only then (ADR-0024, amended
+;; 2026-10-27).
 (define version-call "curl_version_info(9)")
 (define init-call "curl_global_init(3)")
+(define backend-call "curl_version_info(9)")
 (define option-call "curl_easy_option_by_name(URL)")
 (define easy-init-call "curl_easy_init()")
 (define header-call "curl_easy_header(handle,Content-Type,0,1,-1,hout)")
 (define cleanup-call "curl_easy_cleanup(handle)")
 
 (define every-call
-  (list version-call init-call option-call easy-init-call header-call cleanup-call))
+  (list version-call init-call backend-call option-call easy-init-call header-call cleanup-call))
 
 ;; decoy-case : String (Listof String) String (String -> Expected) -> Void
 ;; The test DESCRIPTION: compiles the decoy NAME under SWITCHES, runs the
@@ -322,6 +326,33 @@
 
 ;; The record's version is a string, and the floor's refusal names it: a
 ;; NULL there is refused before the floor is checked.
+;; A MultiSSL libcurl names its first backend as the one in use until
+;; curl_global_init picks one (lib/vtls/vtls.c, multissl_version): Apple's
+;; 8.7.1 names SecureTransport before it and LibreSSL after. The decoy built
+;; with DECOY_MULTISSL names DecoyFirst before the init and DecoyTLS after.
+;; The report keeps the text read before; loaded-tls-backend must be the
+;; backend after, read by curl_version_info again (ADR-0024, amended
+;; 2026-10-27). The control decoy names one backend throughout.
+(let ((so (in-scratch "multissl.so")))
+  (test-equal "decoy multissl: the report keeps ssl_version as curl_version_info named it before the init, and loaded-tls-backend is the backend in use after it, DecoyTLS, read by a second call"
+    (list 0 (list 0
+                  (append (list (cons 'loaded so) (cons 'source 'override))
+                          (decoy-report "DecoyFirst/1.0 (DecoyTLS/1.0)" "decoy-host")
+                          (list (cons 'protocols '()) once no-native-objects
+                                (cons 'backend "DecoyTLS/1.0") (cons 'calls (join every-call))))
+                  ""))
+    (let ((compiled (compile-decoy "multissl" '("-DDECOY_MULTISSL"))))
+      (list compiled (probe-with (list (override so)) '("--backend" "yes"))))))
+
+(test-equal "decoy accepted, with --backend: one backend, named alike before and after the init"
+  (list 0
+        (append (list (cons 'loaded (in-scratch "accepted.so")) (cons 'source 'override))
+                (decoy-report "DecoyTLS/1.0" "decoy-host")
+                (list (cons 'protocols '()) once no-native-objects
+                      (cons 'backend "DecoyTLS/1.0") (cons 'calls (join every-call))))
+        "")
+  (probe-with (list (override (in-scratch "accepted.so"))) '("--backend" "yes")))
+
 (decoy-case "version-null" '("-DDECOY_VERSION_NULL")
   "a NULL version is load-failed, and nothing runs after curl_version_info"
   (lambda (so) (refused 'load-failed so 'override "curl_version_info returned no version" '()
@@ -368,7 +399,7 @@
 (decoy-case "easy-init-null" '("-DDECOY_EASY_INIT_NULL")
   "curl_easy_init answering NULL is load-failed, and curl_easy_header never runs"
   (lambda (so) (refused 'load-failed so 'override "curl_easy_init returned NULL" '()
-                        (control so) (list version-call init-call option-call easy-init-call))))
+                        (control so) (list version-call init-call backend-call option-call easy-init-call))))
 
 (decoy-case "not-curl" '("-DDECOY_NOT_CURL")
   "a library with no curl_* function is missing-api, naming curl_version_info"
@@ -419,32 +450,32 @@
                  (string-append "a library without " name " is missing-api, naming it")
                  (lambda (so) (refused 'missing-api so 'override name '() (control so) calls)))))
  (list (cons "curl_global_init" (list version-call))
-       (cons "curl_easy_option_by_name" (list version-call init-call))
-       (cons "curl_easy_init" (list version-call init-call))
-       (cons "curl_easy_header" (list version-call init-call))
-       (cons "curl_easy_cleanup" (list version-call init-call))
-       (cons "curl_url" (list version-call init-call))
-       (cons "curl_url_cleanup" (list version-call init-call))
-       (cons "curl_url_set" (list version-call init-call))
-       (cons "curl_url_get" (list version-call init-call))
-       (cons "curl_url_strerror" (list version-call init-call))
-       (cons "curl_free" (list version-call init-call))
-       (cons "curl_easy_setopt" (list version-call init-call))
-       (cons "curl_easy_getinfo" (list version-call init-call))
-       (cons "curl_easy_strerror" (list version-call init-call))
-       (cons "curl_easy_nextheader" (list version-call init-call))
-       (cons "curl_slist_append" (list version-call init-call))
-       (cons "curl_slist_free_all" (list version-call init-call))
-       (cons "curl_multi_init" (list version-call init-call))
-       (cons "curl_multi_cleanup" (list version-call init-call))
-       (cons "curl_multi_add_handle" (list version-call init-call))
-       (cons "curl_multi_remove_handle" (list version-call init-call))
-       (cons "curl_multi_perform" (list version-call init-call))
-       (cons "curl_multi_poll" (list version-call init-call))
-       (cons "curl_multi_wakeup" (list version-call init-call))
-       (cons "curl_multi_info_read" (list version-call init-call))
-       (cons "curl_multi_strerror" (list version-call init-call))
-       (cons "curl_multi_setopt" (list version-call init-call))))
+       (cons "curl_easy_option_by_name" (list version-call init-call backend-call))
+       (cons "curl_easy_init" (list version-call init-call backend-call))
+       (cons "curl_easy_header" (list version-call init-call backend-call))
+       (cons "curl_easy_cleanup" (list version-call init-call backend-call))
+       (cons "curl_url" (list version-call init-call backend-call))
+       (cons "curl_url_cleanup" (list version-call init-call backend-call))
+       (cons "curl_url_set" (list version-call init-call backend-call))
+       (cons "curl_url_get" (list version-call init-call backend-call))
+       (cons "curl_url_strerror" (list version-call init-call backend-call))
+       (cons "curl_free" (list version-call init-call backend-call))
+       (cons "curl_easy_setopt" (list version-call init-call backend-call))
+       (cons "curl_easy_getinfo" (list version-call init-call backend-call))
+       (cons "curl_easy_strerror" (list version-call init-call backend-call))
+       (cons "curl_easy_nextheader" (list version-call init-call backend-call))
+       (cons "curl_slist_append" (list version-call init-call backend-call))
+       (cons "curl_slist_free_all" (list version-call init-call backend-call))
+       (cons "curl_multi_init" (list version-call init-call backend-call))
+       (cons "curl_multi_cleanup" (list version-call init-call backend-call))
+       (cons "curl_multi_add_handle" (list version-call init-call backend-call))
+       (cons "curl_multi_remove_handle" (list version-call init-call backend-call))
+       (cons "curl_multi_perform" (list version-call init-call backend-call))
+       (cons "curl_multi_poll" (list version-call init-call backend-call))
+       (cons "curl_multi_wakeup" (list version-call init-call backend-call))
+       (cons "curl_multi_info_read" (list version-call init-call backend-call))
+       (cons "curl_multi_strerror" (list version-call init-call backend-call))
+       (cons "curl_multi_setopt" (list version-call init-call backend-call))))
 
 ;; --- the real libcurl ---------------------------------------------------------------
 
