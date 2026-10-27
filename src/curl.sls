@@ -85,8 +85,16 @@
    ;;                       among it, or #f; #f
    ;;   body-limit          the body's bound in bytes, or #f; #f
    ;;   ca-file             the only CA file to trust, or #f for the system
-   ;;                       store; #f
+   ;;                       store; #f. A path beginning pkcs11:, in any
+   ;;                       ASCII case, is refused: reach such a file as
+   ;;                       ./pkcs11:... On any Guix libcurl, a submit
+   ;;                       refuses a CA file, verify on, when SSL_CERT_FILE
+   ;;                       or SSL_CERT_DIR was set at the load, which
+   ;;                       would replace it, or add to it
    ;;   verify              whether to verify the peer; #t
+   ;;   proxy               environment, through the proxy http_proxy,
+   ;;                       https_proxy or all_proxy names, by libcurl's
+   ;;                       rules; or #f, direct; environment
    ;; A key it does not take, one given twice, and one with no value are
    ;; refused by name, as &curl-request-error, before anything else.
    ;; curl-request-with : Request Symbol Any ... -> Request
@@ -102,10 +110,11 @@
    ;; curl-request-body-limit : Request -> (U Natural #f)
    ;; curl-request-ca-file : Request -> (U String #f)
    ;; curl-request-verify : Request -> Boolean
+   ;; curl-request-proxy : Request -> (U 'environment #f)
    make-curl-request curl-request-with curl-request?
    curl-request-url curl-request-method curl-request-headers curl-request-body
    curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
-   curl-request-body-limit curl-request-ca-file curl-request-verify
+   curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
 
    ;; --- the response -------------------------------------------------------
    ;; curl-response? : Any -> Boolean

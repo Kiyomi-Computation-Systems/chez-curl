@@ -92,10 +92,20 @@
 ;;; anchor, whatever CA directory the build defaults to. A backend with no
 ;;; CA directory answers the clear CURLE_NOT_BUILT_IN, which is taken. A CA
 ;;; file of #f is libcurl's system store, as built, and sets neither. The
-;;; four names stand in this file only in request-field-options. Guix's
-;;; libcurl writes SSL_CERT_FILE and SSL_CERT_DIR over CAINFO and CAPATH
-;;; when a transfer starts, after every setopt; what chez-curl does about
-;;; that is M4's.
+;;; four names stand in this file only in request-field-options.
+;;;
+;;; The environment (ADR-0024). Guix's 8.20.0 writes SSL_CERT_FILE over
+;;; CAINFO and SSL_CERT_DIR over the cleared CAPATH when a transfer starts,
+;;; after every setopt, as they were at curl_global_init. So a submit
+;;; refuses a CA file, with verification on, as environment-override, on a
+;;; libcurl guix-ca-overrides names, when either was set as it loaded: the
+;;; native layer records both there, the file the libcurl is mapped from,
+;;; and whether that file holds Guix's patch's literal, so a copy out of
+;;; the store is Guix's too. A CA file's path beginning pkcs11:, in any ASCII case, is refused
+;;; whenever it is checked, as pkcs11-url: GnuTLS reads it as a PKCS#11
+;;; URL. The proxy variables are libcurl's to read; a proxy of #f sets
+;;; PROXY to "", which reads none of them, and a proxy's TLS stays
+;;; libcurl's verified default, its options owned.
 ;;;
 ;;; write-body is the one callable (M2 plan, section 3.5): __collect_safe,
 ;;; since curl_multi_perform, where it fires, is (ADR-0013, accepted
@@ -138,7 +148,7 @@
   (export make-curl-request curl-request-with curl-request?
           curl-request-url curl-request-method curl-request-headers curl-request-body
           curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
-          curl-request-body-limit curl-request-ca-file curl-request-verify
+          curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
           curl-request-fault curl-request-follow curl-request-with-fault curl-request-following
           request-keys request-methods sent-header-lines timing-infos
           prepare-transfer start-transfer! finish-transfer free-transfer!
@@ -150,7 +160,7 @@
           option-bindings option-binding option-setter http-version-symbol bytes->latin-1 pinned-options
           request-field-options owned-option-names live-transfer-count cached-option-names
           tls-settings setopt-accepted? quick-exit-pin pinned-settings quick-exit-known?
-          quick-exits-set)
+          quick-exits-set guix-ca-overrides ca-overridden? pkcs11-prefix? overriding-variables)
   (import (curl private require-threaded)
           (rnrs)
           (rnrs mutable-strings)
@@ -161,6 +171,7 @@
           (curl private counters)
           (curl private memory)
           (curl private native)
+          (only (curl private libcurl-info) libcurl-info-path libcurl-info-version)
           (curl private url))
 
   ;; --- ranges -------------------------------------------------------------------
@@ -317,20 +328,43 @@
   (define (ca-file? x)
     (or (not x) (and (string? x) (> (string-length x) 0))))
 
-  ;; refuse-ca-file : Symbol String -> Nothing
-  ;; The refusal of a CA file whose path PATH holds U+0000, as WHO.
-  (define (refuse-ca-file who path)
-    (raise (condition (make-curl-request-error 'ca-file path 'embedded-nul)
+  ;; refuse-ca-file : Symbol String Symbol String (Listof Any) -> Nothing
+  ;; The refusal of the CA file PATH for REASON, as WHO, with MESSAGE, and
+  ;; IRRITANTS after PATH.
+  (define (refuse-ca-file who path reason message irritants)
+    (raise (condition (make-curl-request-error 'ca-file path reason)
                       (make-who-condition who)
-                      (make-message-condition
-                       "a CA file's path holds U+0000, where C would end it, and libcurl would open another file")
-                      (make-irritants-condition (list path)))))
+                      (make-message-condition message)
+                      (make-irritants-condition (cons path irritants)))))
+
+  ;; pkcs11-prefix? : String -> Boolean
+  ;; Whether PATH begins pkcs11:, in any ASCII case. GnuTLS reads such a CA
+  ;; path as a PKCS#11 URL, not a file, in every ASCII case, even with a
+  ;; file of that name there (GnuTLS 3.8.3, 3.8.9 and 3.8.13; ADR-0024,
+  ;; amended 2026-10-26). A to Z alone fold: char-downcase and string-ci=?
+  ;; fold U+212A KELVIN SIGN to k, and GnuTLS compares bytes, so p, U+212A,
+  ;; cs11: names a file.
+  (define (pkcs11-prefix? path)
+    (let ((prefix "pkcs11:"))
+      (and (>= (string-length path) (string-length prefix))
+           (let loop ((i 0))
+             (or (= i (string-length prefix))
+                 (and (char=? (ascii-downcase (string-ref path i)) (string-ref prefix i))
+                      (loop (+ i 1))))))))
+
+  ;; ascii-downcase : Char -> Char
+  ;; C, with A to Z as a to z; any other char as it is.
+  (define (ascii-downcase c)
+    (if (char<=? #\A c #\Z) (integer->char (+ (char->integer c) 32)) c))
 
   ;; ca-file-copy : Symbol (U String #f) -> (U String #f)
   ;; CA-FILE, a ca-file?, as a fresh string, checked: what WHO may send as
-  ;; CAINFO; #f for #f. A path holding U+0000 is refused as embedded-nul, a
+  ;; CAINFO; #f for #f. A path holding U+0000 is refused as embedded-nul;
+  ;; then one that begins pkcs11:, in any ASCII case, as pkcs11-url, on
+  ;; every backend, so the field always names a file, and a file really
+  ;; named so is reached as ./pkcs11:... (ADR-0024, decision 4). Each is a
   ;; &curl-request-error naming ca-file. No other char is refused: a path
-  ;; may hold CR or LF. The copy is made before the check, so what is
+  ;; may hold CR or LF. The copy is made before the checks, so what is
   ;; checked is what is sent. It is scanned by index, allocating nothing:
   ;; a path may be megabytes long, and libcurl refuses one past 8000000
   ;; bytes itself.
@@ -340,9 +374,84 @@
            (let scan ((i 0))
              (when (< i (string-length copy))
                (when (char=? (string-ref copy i) #\nul)
-                 (refuse-ca-file who copy))
+                 (refuse-ca-file who copy 'embedded-nul
+                                 "a CA file's path holds U+0000, where C would end it, and libcurl would open another file"
+                                 '()))
                (scan (+ i 1))))
+           (when (pkcs11-prefix? copy)
+             (refuse-ca-file who copy 'pkcs11-url
+                             "a CA file's path that begins pkcs11:, in any ASCII case, is a PKCS#11 URL to GnuTLS, not a file; reach a file of that name as ./pkcs11:..."
+                             '()))
            copy)))
+
+  ;; guix-ca-overrides : (Listof (Pairof String Symbol))
+  ;; Guix's libcurls, by version, and what each one's environment patch
+  ;; does to a request's CA file when SSL_CERT_FILE or SSL_CERT_DIR was set
+  ;; as libcurl loaded: overrides, for one that writes SSL_CERT_FILE over
+  ;; CAINFO and SSL_CERT_DIR over the cleared CAPATH when a transfer starts,
+  ;; after every setopt (ADR-0018; ADR-0024, decision 2). 8.20.0's was
+  ;; measured, in Guix and outside it. A Guix libcurl with no row is taken
+  ;; to override: 8.6.0's older patch does not, and the maintainer kept it
+  ;; taken to, since no lane runs it (ADR-0024, amended 2026-10-26).
+  ;; tests/test-transfer-tls.sps holds it to its own copy.
+  (define guix-ca-overrides '(("8.20.0" . overrides)))
+
+  ;; ca-overridden? : (U String #f) String Boolean String -> Boolean
+  ;; Whether a libcurl at VERSION, mapped from FILE, or loaded from PATH
+  ;; where FILE is #f, is Guix's and writes the variables over a CA file.
+  ;; It is Guix's when that file is under /gnu/store/, or when PATCHED, its
+  ;; file holding Guix's patch's literal, SSL_CERT_FILE (ADR-0024, amended
+  ;; 2026-10-26: the key); then its version's row in guix-ca-overrides says
+  ;; overrides, or it has no row. FILE is the native layer's
+  ;; loaded-libcurl-file, every symlink resolved, so a profile's link is
+  ;; Guix's, and so is a Guix libcurl loaded by a Chez outside Guix; PATCHED
+  ;; is its loaded-libcurl-patched?, so a copy out of the store is too.
+  (define (ca-overridden? file path patched version)
+    (and (or patched (string-prefix? "/gnu/store/" (or file path)))
+         (let ((row (assoc version guix-ca-overrides)))
+           (or (not row) (eq? (cdr row) 'overrides)))))
+
+  ;; string-prefix? : String String -> Boolean
+  (define (string-prefix? prefix s)
+    (and (>= (string-length s) (string-length prefix))
+         (string=? (substring s 0 (string-length prefix)) prefix)))
+
+  ;; overriding-variables : (U String #f) Boolean (U String #f) String Boolean String
+  ;;                         (Listof (Pairof String (U String #f))) -> (Listof String)
+  ;; The variables that would override CA-FILE, with VERIFY, on the libcurl
+  ;; at VERSION mapped from FILE, or loaded from PATH, its file holding
+  ;; Guix's patch's literal when PATCHED, given VARIABLES, each (NAME .
+  ;; VALUE) as the native layer recorded it at the load, #f for one unset or
+  ;; empty: each NAME whose VALUE is a string, in VARIABLES' order, when
+  ;; CA-FILE is a path, VERIFY is on, and ca-overridden? says the libcurl
+  ;; writes them over a CA file; () otherwise (ADR-0024, decision
+  ;; 2). With VERIFY off, libcurl reads no CA, and a request with no CA
+  ;; file trusts the store the variables name, the operator's setting:
+  ;; neither is refused. Pure: check-ca-environment hands it native's.
+  (define (overriding-variables ca-file verify file path patched version variables)
+    (if (and ca-file verify (ca-overridden? file path patched version))
+        (map car (filter cdr variables))
+        '()))
+
+  ;; check-ca-environment : Symbol (U String #f) Boolean -> Void
+  ;; Refuses CA-FILE, a checked copy, with VERIFY, as WHO, when
+  ;; overriding-variables names any for the loaded libcurl and what the
+  ;; native layer recorded at its load: environment-override, a
+  ;; &curl-request-error naming ca-file, whose irritants are the path, then
+  ;; each variable's name, in that order.
+  (define (check-ca-environment who ca-file verify)
+    (let* ((info (loaded-libcurl))
+           (names (overriding-variables ca-file verify (loaded-libcurl-file) (libcurl-info-path info)
+                                        (loaded-libcurl-patched?) (libcurl-info-version info)
+                                        (loaded-ca-variables))))
+      (unless (null? names)
+        (refuse-ca-file who ca-file 'environment-override
+                        (string-append
+                         "Guix's libcurl writes SSL_CERT_FILE over a CA file, and adds SSL_CERT_DIR beside it, as they were when it loaded; unset "
+                         (fold-right (lambda (name rest) (if (string=? rest "") name (string-append name " and " rest)))
+                                     "" names)
+                         " before the program starts, or trust the store it names with no CA file")
+                        names))))
 
   ;; body-limit-bound : Positive-Integer
   ;; A body limit is below 2^63 - 1, so the limit plus one, which
@@ -358,7 +467,7 @@
   ;; The keys make-curl-request and curl-request-with take, in the record's
   ;; order. tests/test-request.sps writes it out.
   (define request-keys
-    '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify))
+    '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy))
 
   ;; timeout? : Any -> Boolean
   ;; X is a timeout: #f, none, or a positive exact integer a long holds.
@@ -394,6 +503,7 @@
   ;; curl-request-body-limit : Request -> (U Natural #f)
   ;; curl-request-ca-file : Request -> (U String #f)
   ;; curl-request-verify : Request -> Boolean
+  ;; curl-request-proxy : Request -> (U 'environment #f)
   ;; curl-request-fault : Request -> (U Positive-Integer #f)   private
   ;; curl-request-follow : Request -> Boolean                  private
   ;;
@@ -428,15 +538,23 @@
   ;;   verify              #t, the default, to verify the peer's chain and
   ;;                       its name; #f to verify neither: libcurl then reads
   ;;                       no CA
+  ;;   proxy               environment, the default, to go through the proxy
+  ;;                       the environment names, by libcurl's own rules:
+  ;;                       http_proxy, https_proxy, HTTPS_PROXY, all_proxy and
+  ;;                       ALL_PROXY, with no_proxy and NO_PROXY, but never
+  ;;                       HTTP_PROXY; or #f, to go direct, whatever they say
+  ;;                       (ADR-0024, decision 1). A proxy's TLS is libcurl's
+  ;;                       verified default, against its system store: neither
+  ;;                       ca-file nor verify reaches it
   ;;
   ;; The defaults set no policy: libcurl's own stand (ADR-0023, decision 3).
   ;; The keys are refused first, by request-settings' rules, then a URL
   ;; that is not a string, then a wrong type for method, body, timeout-ms,
-  ;; connect-timeout-ms, body-limit, ca-file or verify, each an assertion
-  ;; violation, the empty string as a CA file among them; then a body with
-  ;; get or head, body-not-allowed; then snapshot's rules for the headers
-  ;; and the user agent, their types first, as assertion violations; then
-  ;; ca-file-copy's for the CA file. Each refusal of a value is a
+  ;; connect-timeout-ms, body-limit, ca-file, verify or proxy, each an
+  ;; assertion violation, the empty string as a CA file among them; then a
+  ;; body with get or head, body-not-allowed; then snapshot's rules for the
+  ;; headers and the user agent, their types first, as assertion
+  ;; violations; then ca-file-copy's for the CA file. Each refusal of a value is a
   ;; &curl-request-error naming the field. The record keeps the caller's
   ;; objects; a submit checks them again, as a plan.
   ;;
@@ -463,14 +581,15 @@
             (immutable body-limit curl-request-body-limit)
             (immutable ca-file curl-request-ca-file)
             (immutable verify curl-request-verify)
+            (immutable proxy curl-request-proxy)
             (immutable fault curl-request-fault)
             (immutable follow curl-request-follow)))
 
-  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any -> Request
+  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any Any -> Request
   ;; A request of these fields, checked as WHO by make-curl-request's rules,
   ;; after the keys.
   (define (checked-request who url method headers body user-agent timeout-ms
-                           connect-timeout-ms body-limit ca-file verify fault follow)
+                           connect-timeout-ms body-limit ca-file verify proxy fault follow)
     (define (wrong message irritant) (assertion-violation who message irritant))
     (unless (string? url) (wrong "a URL is a string" url))
     (unless (memq method request-methods)
@@ -488,6 +607,8 @@
     (unless (ca-file? ca-file)
       (wrong "a CA file is a non-empty string, its path, or #f" ca-file))
     (unless (boolean? verify) (wrong "verify is #t or #f" verify))
+    (unless (or (eq? proxy 'environment) (not proxy))
+      (wrong "a proxy is environment, the environment's, or #f, none" proxy))
     (unless (or (not fault) (and (integer? fault) (exact? fault) (positive? fault)))
       (wrong "a fault is a positive exact integer, the chunk it raises at, or #f: a request holds no procedure"
              fault))
@@ -497,7 +618,7 @@
     (snapshot who headers user-agent)
     (ca-file-copy who ca-file)
     (new-curl-request url method headers body user-agent timeout-ms connect-timeout-ms
-                      body-limit ca-file verify fault follow))
+                      body-limit ca-file verify proxy fault follow))
 
   ;; request-like : Symbol Request (Listof (Pairof Symbol Any)) String Any Any -> Request
   ;; REQUEST with SETTINGS' keys replaced, URL, FAULT and FOLLOW given, the
@@ -515,13 +636,14 @@
                      (given 'body-limit curl-request-body-limit)
                      (given 'ca-file curl-request-ca-file)
                      (given 'verify curl-request-verify)
+                     (given 'proxy curl-request-proxy)
                      fault follow))
 
   ;; default-request : Request
   ;; Every key at its default, for a URL nothing reads: what
   ;; make-curl-request replaces keys in.
   (define default-request
-    (new-curl-request "" 'get '() #f #f #f #f #f #f #t #f #f))
+    (new-curl-request "" 'get '() #f #f #f #f #f #f #t 'environment #f #f))
 
   (define (make-curl-request url . plist)
     (request-like 'make-curl-request default-request
@@ -713,14 +835,15 @@
   ;; then COPYPOSTFIELDS, in that order, since libcurl copies the size the
   ;; first set. The TLS fields set two each, in the order tls-settings makes
   ;; them: ca-file CAINFO, its path, then CAPATH, cleared; verify
-  ;; SSL_VERIFYPEER, then SSL_VERIFYHOST (ADR-0018). follow is the private
-  ;; field's (M4 plan, section 3.2).
+  ;; SSL_VERIFYPEER, then SSL_VERIFYHOST (ADR-0018). proxy sets PROXY, to ""
+  ;; when it is #f (ADR-0024, decision 1). follow is the private field's (M4
+  ;; plan, section 3.2).
   (define request-field-options
     '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST") (headers "HTTPHEADER")
       (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS") (user-agent "USERAGENT")
       (timeout-ms "TIMEOUT_MS") (connect-timeout-ms "CONNECTTIMEOUT_MS")
       (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
-      (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (follow "FOLLOWLOCATION")))
+      (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY") (follow "FOLLOWLOCATION")))
 
   ;; field-options : Symbol -> (Listof String)
   ;; FIELD's options, in request-field-options' order.
@@ -771,6 +894,10 @@
   ;;     its body, against the body limit;
   ;;   - the CA file's: CAINFO_BLOB, which adds a CA, and SSL_OPTIONS, whose
   ;;     NATIVE_CA adds the system store;
+  ;;   - the proxy field's (ADR-0024, decision 1): NOPROXY, whose "*" turns
+  ;;     the environment's proxy off as PROXY "" does; PRE_PROXY, a SOCKS
+  ;;     proxy before it; PROXYPORT and PROXYTYPE, its port and its kind,
+  ;;     parts of the proxy PROXY names, as PORT is of the URL;
   ;; then proxy-tls-option-names. They are compared by id, so an alias name
   ;; is refused too.
   (define owned-option-names
@@ -779,7 +906,8 @@
             (apply append (map cdr request-field-options))
             '("TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "PUT" "UPLOAD"
               "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE" "INFILESIZE_LARGE"
-              "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS")
+              "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
+              "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE")
             proxy-tls-option-names))
 
   ;; pinned-options : (Listof (Pairof String (U String Integer)))
@@ -1085,15 +1213,17 @@
   (define-record-type plan
     (fields (immutable url) (immutable method) (immutable headers) (immutable agent)
             (immutable body) (immutable timeout-ms) (immutable connect-timeout-ms)
-            (immutable body-limit) (immutable ca-file) (immutable verify)
+            (immutable body-limit) (immutable ca-file) (immutable verify) (immutable proxy)
             (immutable settings) (immutable fault) (immutable follow)))
 
   ;; prepare-transfer : Request (Listof (Pairof String Integer)) -> Plan
   ;; REQUEST's plan, with OPTIONS, the test seam's (NAME . VALUE) pairs,
   ;; each checked by checked-settings, on the caller's thread, before
   ;; anything is queued (M3 plan, section 3.4). In order: the snapshot of
-  ;; the headers and the user agent, the CA file's copy, OPTIONS, then the
-  ;; URL's copy, parsed by call-with-parsed-url and checked by
+  ;; the headers and the user agent, the CA file's copy, OPTIONS, the CA
+  ;; file against the environment the libcurl loaded with, by
+  ;; check-ca-environment, then the URL's copy, parsed by
+  ;; call-with-parsed-url and checked by
   ;; require-http-scheme, its CURLU freed before this returns (ADR-0008,
   ;; amended 2026-10-24). Each refusal raises here. The body is copied, so
   ;; the caller's bytevector may change once this returns (ADR-0023,
@@ -1108,10 +1238,12 @@
            (ca-file (ca-file-copy 'curl-submit (curl-request-ca-file request)))
            (body (let ((body (curl-request-body request))) (and body (bytevector-copy body))))
            (settings (checked-settings options)))
+      (check-ca-environment 'curl-submit ca-file (curl-request-verify request))
       (call-with-parsed-url url require-http-scheme)
       (make-plan url (curl-request-method request) (car fields) (cdr fields) body
                  (curl-request-timeout-ms request) (curl-request-connect-timeout-ms request)
                  (curl-request-body-limit request) ca-file (curl-request-verify request)
+                 (curl-request-proxy request)
                  settings (curl-request-fault request) (curl-request-follow request))))
 
   ;; sends-body? : Symbol (U Bytevector #f) -> Boolean
@@ -1206,10 +1338,11 @@
   ;; for the plan's method and body, a string through a C string and the
   ;; body through a counted copy, call-with-foreign-bytes'; and as the
   ;; request asks, HTTPHEADER at HEADER-LIST, USERAGENT, TIMEOUT_MS,
-  ;; CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE at the body limit plus one; then,
-  ;; always, tls-settings' for the plan's CA file and verification, through
-  ;; set-tls-options!; then FOLLOWLOCATION at 1 for the private follow
-  ;; field; then the test seam's settings.
+  ;; CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE at the body limit plus one, and
+  ;; PROXY at "" for a proxy of #f; then, always, tls-settings' for the
+  ;; plan's CA file and verification, through set-tls-options!; then
+  ;; FOLLOWLOCATION at 1 for the private follow field; then the test seam's
+  ;; settings.
   (define (set-transfer-options! easy plan key buffer header-list url quick-exit)
     (set-pinned-options! easy buffer quick-exit)
     (set-option! easy "ERRORBUFFER" buffer #f)
@@ -1240,6 +1373,8 @@
     (let ((limit (plan-body-limit plan)))
       (when limit
         (set-option! easy (field-option 'body-limit) (+ limit 1) buffer)))
+    (unless (plan-proxy plan)
+      (set-string-option! easy (field-option 'proxy) "" buffer))
     (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
     (when (plan-follow plan)
       (set-option! easy (field-option 'follow) 1 buffer))

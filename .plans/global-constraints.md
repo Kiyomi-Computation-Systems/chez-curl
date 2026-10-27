@@ -246,20 +246,29 @@ provisional. They bind until that record is accepted or amended.
 - **Guix's libcurl 8.20.0 writes `SSL_CERT_FILE` and `SSL_CERT_DIR` over `CAINFO` and
   `CAPATH`** when a transfer starts, after every setopt. Guix's 8.6.0, an older patch, lets the
   request's settings win. `test-transfer-tls` fails first when either is set, and a child test
-  pins the override by world and version, from a table in the suite: a Guix libcurl of an
-  unrecorded version fails it (ADR-0018).
+  pins the refusal below, given each variable before the load, or set or emptied after it, by
+  the file the libcurl is mapped from, read in the suite apart from native's reading: a Guix
+  libcurl of a version neither table has a row for fails it (ADR-0018; ADR-0024, amended
+  2026-10-26).
 - **What a transfer reads from its environment** (ADR-0024, from M4 slice 3):
   - it honours the proxy variables, by libcurl's own rules, and a request's `proxy` field at
     `#f` turns them off, by `CURLOPT_PROXY` `""`. A proxy given by URL is M7's;
   - a proxy's TLS stays libcurl's verified default, against its system store, until M7: every
     `PROXY_SSL_*` and `PROXY_CA*` option is owned (ADR-0024, amended 2026-10-26);
-  - native reads `SSL_CERT_FILE` and `SSL_CERT_DIR` beside `curl_global_init`, and records
-    them, an empty value as unset. Where a table says the loaded libcurl overrides a CA file
-    (Guix's 8.20.0, and every other libcurl whose resolved path is under `/gnu/store`), a
-    request with a CA file and verification on is refused at submit, as
-    `&curl-request-error`, naming the variable recorded as set;
-  - a CA file's path beginning `pkcs11:`, in any ASCII case and no other fold, is refused when
-    the request is made, on every backend;
+  - native reads `SSL_CERT_FILE` and `SSL_CERT_DIR` immediately before `curl_global_init`, where
+    Guix's patch reads them, and records them, an empty value as unset. It records the file the
+    libcurl is mapped from too: the `/proc/self/maps` line holding `curl_version_info`'s entry
+    point, symlinks resolved, never libc's world, and whether that file holds Guix's patch's
+    literal, `SSL_CERT_FILE`. Where `guix-ca-overrides` says the loaded libcurl overrides a
+    CA file (Guix's 8.20.0, and every other libcurl whose file is under `/gnu/store/`, or,
+    with no file read, whose path is, or whose file holds the literal: ADR-0024, amended
+    2026-10-26, the key), a request with a CA file and
+    verification on is refused at submit, as `&curl-request-error` `environment-override`,
+    whose irritants name each variable recorded as set. The rule is pure,
+    `overriding-variables`, held on every lane; only a Guix libcurl shows it by behaviour;
+  - a CA file's path beginning `pkcs11:`, in any ASCII case and no other fold, is refused as
+    `pkcs11-url` when the request is made and again at submit, on every backend: GnuTLS took
+    all sixteen ASCII cases;
   - `SSLKEYLOGFILE`, `OPENSSL_CONF` and `CURL_SSL_BACKEND` are documented in README.org, not
     refused.
 
@@ -325,7 +334,8 @@ provisional. They bind until that record is accepted or amended.
   read the options tables of five libcurls for the twins: `CONNECTTIMEOUT`, `POSTFIELDS`,
   `POSTFIELDSIZE`, `HTTPPOST`, `MIMEPOST`, `INFILESIZE`, `INFILESIZE_LARGE`, the URL's `PORT`
   and `REQUEST_TARGET`, `CRLF` and `HEADER`, and all 23 `PROXY_` TLS options (ADR-0009,
-  amended 2026-10-26, as built).
+  amended 2026-10-26, as built). Slice 3 added `PROXY`, the proxy field's, and its twins
+  `NOPROXY`, `PRE_PROXY`, `PROXYPORT` and `PROXYTYPE` (ADR-0024, amended 2026-10-26).
 - **The test seam, `curl-engine-submit-with`, is held to these rules, narrowed:** long,
   enumerated-value and `off_t` options alone, so no address can pass, checked at submit on
   the caller's thread. It stays private (ADR-0009, amended 2026-10-23 and 2026-10-25).

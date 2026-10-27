@@ -136,11 +136,13 @@
 ;; its record, or its free and its record (M2 fix round 2): they run no code
 ;; built at run time, and reach no library. current-time, time-second and
 ;; time-nanosecond read the monotonic clock, for a bounded wait's deadline
-;; (M4 slice 2), and run no code either.
+;; (M4 slice 2), and run no code either. foreign-entry answers an entry
+;; point's address, which native finds in /proc/self/maps to read the
+;; loaded libcurl's file (M4 slice 3): it calls nothing.
 (define allowed-chez-names
   '(critical-section current-time define-ftype disable-interrupts display-condition
     dynamic-wind enable-interrupts file-regular? foreign-alloc foreign-callable
-    foreign-callable-entry-point foreign-entry? foreign-free foreign-procedure
+    foreign-callable-entry-point foreign-entry foreign-entry? foreign-free foreign-procedure
     foreign-ref foreign-sizeof fork-thread format format-condition? ftype-ref get-thread-id
     getenv load-shared-object lock-object machine-type make-ftype-pointer
     make-mutex make-time
@@ -158,7 +160,9 @@
 ;; a block allocated anywhere else is one the counters cannot see.
 ;; foreign-procedure belongs to (curl private native), the only library that
 ;; calls into libcurl, and the one whose load checks each entry point with
-;; foreign-entry? before binding it; and so does load-shared-object, so no
+;; foreign-entry? before binding it; and so does foreign-entry, an entry
+;; point's address, so no other library reads where libcurl's code lives;
+;; and so does load-shared-object, so no
 ;; other library can load a second libcurl, or anything else, into the
 ;; process (ADR-0002, decision 3). foreign-callable,
 ;; foreign-callable-entry-point and lock-object belong to (curl private
@@ -184,6 +188,7 @@
     (foreign-alloc (curl private memory))
     (foreign-free (curl private memory))
     (foreign-procedure (curl private native))
+    (foreign-entry (curl private native))
     (load-shared-object (curl private native))
     (foreign-callable (curl private transfer))
     (foreign-callable-entry-point (curl private transfer))

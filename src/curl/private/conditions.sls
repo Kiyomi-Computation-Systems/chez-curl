@@ -252,13 +252,22 @@
   ;;   body-not-allowed
   ;;                 a body with get or head, which send none (the M4 plan,
   ;;                 section 3.2)
+  ;;   pkcs11-url    a CA file's path that begins pkcs11:, in any ASCII case,
+  ;;                 which GnuTLS reads as a PKCS#11 URL, not a file
+  ;;                 (ADR-0024, decision 4)
+  ;;   environment-override
+  ;;                 a CA file, verification on, on a libcurl that is Guix's,
+  ;;                 every one of which is taken to write SSL_CERT_FILE over
+  ;;                 it or add SSL_CERT_DIR beside it, with either set when
+  ;;                 libcurl loaded (ADR-0024, decision 2); the irritants
+  ;;                 name each one set
   ;;
   ;; A value is scanned left to right, and its first offending char decides;
   ;; only when none offends are its ends checked.
   (define curl-request-error-reasons
     '(embedded-nul line-break not-latin-1 not-a-token surrounding-whitespace duplicates-field
       framing-header owned-option unsupported-type unknown-key repeated-key missing-value
-      body-not-allowed))
+      body-not-allowed pkcs11-url environment-override))
 
   ;; The fields:
   ;;

@@ -454,6 +454,21 @@
             (string-append "HTTP/1.1 200 OK\r\nContent-Length: 101\r\nConnection: close\r\n\r\n"
                            "POST /echo?x=1 HTTP/1.1\nHost: 127.0.0.1\nX-Two: a\nx-lower: b\n"
                            "Content-Length: 4\nConnection: close\n\nbody"))
+  ;; --- the well-formed face as a stand-in proxy: a target in absolute form
+  (http-row o "an absolute-form target, as a proxy is sent one: /echo routed by its path, the first line the target as it came"
+            "GET http://127.0.0.1:1/echo?x=1 HTTP/1.1\r\nHost: 127.0.0.1:1\r\nConnection: close\r\n\r\n"
+            (string-append "HTTP/1.1 200 OK\r\nContent-Length: 78\r\nConnection: close\r\n\r\n"
+                           "GET http://127.0.0.1:1/echo?x=1 HTTP/1.1\nHost: 127.0.0.1:1\nConnection: close\n\n"))
+  (http-row o "an absolute-form target to /status/200 is routed by its path"
+            "GET http://127.0.0.1:1/status/200 HTTP/1.1\r\nHost: 127.0.0.1:1\r\nConnection: close\r\n\r\n"
+            "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\nstatus 200\n")
+  (for-each
+   (lambda (target)
+     (http-row o (string-append target ", in absolute form, is 404")
+               (string-append "GET " target " HTTP/1.1\r\nHost: 127.0.0.1:1\r\nConnection: close\r\n\r\n")
+               "HTTP/1.1 404 Not Found\r\nContent-Length: 10\r\nConnection: close\r\n\r\nnot found\n"))
+   '("http://127.0.0.1:1" "http://127.0.0.1:1?x=1" "https://127.0.0.1:1/status/200"
+     "http://127.0.0.1:1/nowhere"))
   (for-each
    (lambda (target)
      (http-row o (string-append target ": anything else is 404") (get target close)

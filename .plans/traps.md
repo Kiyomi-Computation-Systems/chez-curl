@@ -791,8 +791,9 @@ it should not be a comment. (chez-cmark-gfm)
   the maintainer's host. The container passes neither, so only a shell outside it, or a
   child given one, shows it. Guix's 8.6.0 carried an older version of the patch, which set
   them as a handle's defaults, so a request's settings won there: the override is the
-  patch version's, not Guix's. `test-transfer-tls` fails first when either is set, and pins
-  the override by world and version (ADR-0018). (chez-curl)
+  patch version's, not Guix's. `test-transfer-tls` fails first when either is set. Since M4
+  slice 3 a submit refuses a CA file on a Guix libcurl with either set, and the suite pins
+  that refusal (ADR-0018; ADR-0024). (chez-curl)
 * **Ubuntu's libcurl trusts its default `CAPATH` beside `CAINFO`.** It is built with
   `/etc/ssl/certs` as its CA directory, and setting `CAINFO` leaves that in place. So a
   request naming one CA file also trusts the whole system store. No test lane's store
@@ -909,3 +910,22 @@ it should not be a comment. (chez-cmark-gfm)
   before the take at 1 to 6 and after it had returned at 7 to 26, never between, where a
   SIGINT escapes between; from 27, the take ended first. To plant an escape at a section's end, hold the mutex the code blocks on, inside
   that section, from another thread, and signal meanwhile. (chez-curl, M4 slice 2)
+* **GnuTLS answers a malformed PKCS#11 URL as it answers a missing file: 77.** The slice's
+  probe judged a CA path read as a PKCS#11 URL by 60 and one read as a file by 77, a missing
+  file's code. `pkcs11:ca.pem` answered 77 with a file of that name beside the probe, a copy
+  of the run CA: GnuTLS had parsed it as a URL, failed, and never opened the file. Only a
+  file that is there, and trusted, tells "read as a file": each path tried became one, and
+  200 alone counted. (chez-curl, M4 slice 3)
+* **ADR-0002's world is libc's, not libcurl's.** Spike E1's Chez, built on Ubuntu, loaded
+  Guix's libcurl 8.20.0 from the store through its path, and libc came from `/usr/lib`, so
+  the world read FHS. A C probe built in the same Ubuntu showed that libcurl still writing
+  `SSL_CERT_FILE` over the CA file. M4's first draft keyed Guix's override on the world, and
+  would have let that through. The file a library is mapped from is its own: the
+  `/proc/self/maps` line holding one of its entry points, symlinks resolved. And a copy of
+  that file out of the store still carries the patch: the slice's review loaded one, and
+  only the patch's own string tells it. (chez-curl, M4 slice 3)
+* **Chez folds Unicode, so a fold meant for ASCII takes more.** `char-downcase` makes U+212A
+  KELVIN SIGN `k`; `char-foldcase`, and so `string-ci=?` and `char-ci=?`, make U+017F LATIN
+  SMALL LETTER LONG S `s` too. A prefix rule written with any of them refuses `p`, U+212A,
+  `cs11:` as `pkcs11:`, though GnuTLS compares bytes and reads it as a file. Fold A to Z
+  alone where the other side compares bytes, and test both chars. (chez-curl, M4 slice 3)

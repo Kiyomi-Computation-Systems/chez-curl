@@ -1,0 +1,65 @@
+[guix-8.20.0] libcurl 8.20.0, GnuTLS/3.8.13, https-proxy yes, Linux x86_64, OpenSSL 3.5.7 9 Jun 2026 (Library: OpenSSL 3.5.7 9 Jun 2026)
+[guix-8.20.0] control, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] control, CA file the other CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.CEESH8/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] control, no CA file: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_FILE the other CA before init, CA file the run CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.CEESH8/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_FILE the run CA before init, CA file the other CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_FILE the other CA after init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_FILE the run CA after init, CA file the other CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.CEESH8/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_FILE the other CA before init, unset after, CA file the run CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.CEESH8/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_FILE empty before init, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_FILE empty before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.CEESH8/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_FILE a missing file before init, CA file the run CA: code 77 status 0 body "" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_FILE a missing file before init, CA file the run CA, verify off: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_FILE the run CA before init, no CA file: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_DIR the run CA's before init, CA file the other CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_DIR the run CA's after init, CA file the other CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.CEESH8/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_DIR the run CA's before init, unset after, CA file the other CA: code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] SSL_CERT_DIR empty before init, CA file the other CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/slice3-research.CEESH8/pki/other-ca.pem CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "missing.pem", which does not exist: code 77 status 0 body "" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "pkcs11:": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: pkcs11: CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "pkcs11:object=x": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: pkcs11:object=x CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "pkcs11:ca.pem": code 77 status 0 body "" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "PKCS11:": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: PKCS11: CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "Pkcs11:": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: Pkcs11: CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "pKcs11:": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: pKcs11: CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "pkCs11:": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: pkCs11: CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "pkcS11:": code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: pkcS11: CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "pkcs11": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "pkcs1:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "pkcs111:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file " pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "pkcs11 :": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "tpmkey:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "system:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "./pkcs11:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] CA file "p<U+212A KELVIN SIGN>cs11:": code 0 status 200 body "origin-tls" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0] http, http_proxy https://, no CA file: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0]   proxy handshake
+[guix-8.20.0] http, http_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0]   proxy handshake
+[guix-8.20.0] http, http_proxy https://, verify off: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0]   proxy handshake
+[guix-8.20.0] http, http_proxy https://, CA file the run CA, verify off: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0]   proxy handshake
+[guix-8.20.0] http, http_proxy https://, PROXY_CAINFO the run CA: code 0 status 299 body "proxy" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0]   proxy handshake
+[guix-8.20.0]   proxy GET http://127.0.0.1:38173/x
+[guix-8.20.0] http, http_proxy https://, the proxy's verify off: code 0 status 299 body "proxy" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0]   proxy handshake
+[guix-8.20.0]   proxy GET http://127.0.0.1:38173/x
+[guix-8.20.0] http, all_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0]   proxy handshake
+[guix-8.20.0] https, https_proxy https://, CA file the run CA: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0]   proxy handshake
+[guix-8.20.0] https, https_proxy https://, verify off: code 60 status 0 body "" error "SSL certificate verification failed: certificate signer not trusted. (CAfile: none CRLfile: none)" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0]   proxy handshake
+[guix-8.20.0] https, https_proxy https://, CA file and PROXY_CAINFO the run CA: code 7 status 0 body "" error "CONNECT tunnel failed, response 403" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0]   proxy handshake
+[guix-8.20.0]   proxy CONNECT 127.0.0.1:38963
+[guix-8.20.0] http, http_proxy https://, SSL_CERT_FILE the run CA before init, no CA file: code 0 status 299 body "proxy" error "" ssl "GnuTLS/3.8.13"; exit 0
+[guix-8.20.0]   proxy handshake
+[guix-8.20.0]   proxy GET http://127.0.0.1:38173/x
+[guix-8.20.0] maps: (given "/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4") (mapped "/gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0") (libc "/gnu/store/m31vlvwm79m89fk3xk0z4h7snk61y510-glibc-2.41/lib/libc.so.6")
+[guix-8.20.0] maps: (given "/tmp/slice3-research.CEESH8/libcurl.so.4") (mapped "/gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0") (libc "/gnu/store/m31vlvwm79m89fk3xk0z4h7snk61y510-glibc-2.41/lib/libc.so.6")
+[guix-8.20.0] done
