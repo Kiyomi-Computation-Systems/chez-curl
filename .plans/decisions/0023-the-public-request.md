@@ -1,6 +1,7 @@
 # ADR-0023: The public request is made from a property list, and carries a whole body
 
-- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: as built (M4 slice 1)
+- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: as built
+  (M4 slice 1); amended 2026-10-27: M5 follows a redirect from its `Location`
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, `(curl)`'s request record, from M4
 - **Settles:** the request's public shape, and whether M4's request carries a body; the
@@ -120,3 +121,12 @@ So, as the M4 plan proposed (§3.2), now built:
   value; then the headers and the user agent, their types first; then the CA file's path
   (corrected after the slice's review, which found the headers' types checked after
   `body-not-allowed`).
+
+## Amendment, 2026-10-27: M5 follows a redirect from its `Location` (the M5 plan)
+
+The first amendment above said M5 would follow redirects "from `CURLINFO_REDIRECT_URL`". The M5
+plan measured that field on five libcurls first (ADR-0008, amended 2026-10-27): which statuses
+carry it, and whether it keeps credentials, move with the version, and it hands back unparsed
+what `curl_url_set` refuses. So M5 resolves the first `Location` header's bytes itself, by
+ADR-0008's decision 4, against the URL it requested. `FOLLOWLOCATION` stays owned and off, and
+the private `follow` field stays the redirect-pin tests' alone.
