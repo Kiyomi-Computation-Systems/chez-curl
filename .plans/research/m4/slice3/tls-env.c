@@ -5,8 +5,11 @@
      tls-env version
      tls-env URL [STEP]...
 
-   The first runs curl_global_init and prints the loaded libcurl's version,
-   its TLS library, and whether it has CURL_VERSION_HTTPS_PROXY. The second
+   The first prints the loaded libcurl's TLS libraries as curl_version_info
+   names them before curl_global_init, then runs it and prints its version,
+   its TLS libraries again, and whether it has CURL_VERSION_HTTPS_PROXY. On
+   a MultiSSL libcurl, the one in use is the one without parentheses: before
+   the init that is always the first available, whatever the init picks. The second
    applies each STEP in turn: an environment step either side of
    curl_global_init, as its prefix says, and the request's settings once
    the easy handle exists. Then one GET of URL, and one line: the CURLcode,
@@ -90,12 +93,16 @@ int main(int argc, char **argv) {
     fprintf(stderr, "usage: tls-env version | URL [STEP]...\n");
     return 2;
   }
+  if (!strcmp(argv[1], "version")) {
+    v = curl_version_info(CURLVERSION_NOW);
+    printf("before init %s; ", v->ssl_version ? v->ssl_version : "none");
+  }
   for (i = 2; i < argc; i++)
     if (prefixed(argv[i], "before:")) put(argv[i] + strlen("before:"));
   if (curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) return 2;
   v = curl_version_info(CURLVERSION_NOW);
   if (!strcmp(argv[1], "version")) {
-    printf("%s, %s, https-proxy %s\n", v->version, v->ssl_version ? v->ssl_version : "none",
+    printf("after init %s, %s, https-proxy %s\n", v->version, v->ssl_version ? v->ssl_version : "none",
            (v->features & CURL_VERSION_HTTPS_PROXY) ? "yes" : "no");
     return 0;
   }

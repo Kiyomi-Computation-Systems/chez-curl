@@ -27,13 +27,18 @@
 #   maps     tests the native layer's path rule: maps.sps under CHEZ
 #            (default scheme) on CURL_LIB as given and through a symlink in
 #            a temporary directory. Linux only
-#   backend  the Mac's: CURL_SSL_BACKEND=openssl, Apple's LibreSSL, against
-#            PUBLIC_URL (default https://example.com/), which the keychain
-#            trusts, with the run CA as the CA file. It reaches the network,
-#            so it runs only when named
+#   backend  the Mac's: no CURL_SSL_BACKEND, then openssl, Apple's LibreSSL,
+#            then securetransport, against PUBLIC_URL (default
+#            https://example.com/), which the keychain trusts, and the local
+#            origin, with no CA file, the run CA and the other CA as the CA
+#            file. It reaches the network, so it runs only when named
+#   chez     the same through chez-curl itself, ca-chez.sps under CHEZ
+#            (default scheme), with no CURL_SSL_BACKEND. It reaches the
+#            network, so it runs only when named
 #
 # On the Mac, with coreutils:
 #   NODE="$(asdf which node)" sh .plans/research/m4/slice3/run.sh mac when pkcs11 proxy backend
+#   NODE="$(asdf which node)" CHEZ=chez sh .plans/research/m4/slice3/run.sh mac backend chez
 set -u
 [ "$#" -ge 1 ] || { echo "usage: run.sh LANE [SET...]" >&2; exit 2; }
 [ -f .plans/research/m4/slice3/tls-env.c ] || { echo "run.sh: run it from the repository's root" >&2; exit 2; }
@@ -185,12 +190,29 @@ for set in "$@"; do
       fi ;;
     backend)
       pub=${PUBLIC_URL:-https://example.com/}
-      run_case "public, no CA file" "$pub"
-      run_case "public, CA file the run CA" "$pub" "ca-file:$ca"
-      run_case "public, CURL_SSL_BACKEND=openssl, no CA file" "$pub" before:CURL_SSL_BACKEND=openssl
-      run_case "public, CURL_SSL_BACKEND=openssl, CA file the run CA" "$pub" before:CURL_SSL_BACKEND=openssl "ca-file:$ca"
-      run_case "local, CURL_SSL_BACKEND=openssl, CA file the run CA" "$s" before:CURL_SSL_BACKEND=openssl "ca-file:$ca"
-      run_case "local, CURL_SSL_BACKEND=openssl, CA file the other CA" "$s" before:CURL_SSL_BACKEND=openssl "ca-file:$other" ;;
+      for backend in - openssl securetransport; do
+        # run_case sets label and url, so the backend's own name is bl.
+        if [ "$backend" = - ]; then b= bl="no CURL_SSL_BACKEND"; else b=before:CURL_SSL_BACKEND=$backend bl="CURL_SSL_BACKEND=$backend"; fi
+        echo "[$lane] $bl: $(cd "$tmp/work" && env -i ${b:+"${b#before:}"} "$tmp/probe" version 2>&1)"
+        # shellcheck disable=SC2086
+        run_case "public, $bl, no CA file" "$pub" $b
+        # shellcheck disable=SC2086
+        run_case "public, $bl, CA file the run CA" "$pub" $b "ca-file:$ca"
+        # shellcheck disable=SC2086
+        run_case "local, $bl, CA file the run CA" "$s" $b "ca-file:$ca"
+        # shellcheck disable=SC2086
+        run_case "local, $bl, CA file the other CA" "$s" $b "ca-file:$other"
+      done ;;
+    chez)
+      pub=${PUBLIC_URL:-https://example.com/}
+      for row in "public, no CA file|$pub|-" "public, CA file the run CA|$pub|$ca" \
+                 "local, CA file the run CA|$s|$ca" "local, CA file the other CA|$s|$other"; do
+        rl=${row%%|*} rest=${row#*|}
+        ru=${rest%%|*} rf=${rest#*|}
+        out=$(env -u CURL_SSL_BACKEND "${CHEZ:-scheme}" --libdirs src:tests:build/scheme-libs \
+                --program "$here/ca-chez.sps" "$ru" "$rf" 2>&1 < /dev/null | tr '\n' ' ')
+        echo "[$lane] chez-curl, $rl: $out"
+      done ;;
     *) echo "run.sh: no set $set" >&2; exit 2 ;;
   esac
 done

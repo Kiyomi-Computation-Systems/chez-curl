@@ -1,6 +1,6 @@
 # ADR-0022: libcurl's codes are classed as condition types
 
-- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: a failure carries its request size, and the table as built (M4 slice 1)
+- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: a failure carries its request size, and the table as built (M4 slice 1); amended 2026-10-27: 8.7.1 reports no request size
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, what a failed transfer raises, from M4
 - **Settles:** the brief's "error taxonomy mapping `CURLE_*` to conditions" (§8, M4); the
@@ -170,3 +170,26 @@ failure the `current` lane then showed:
   check on an engine of its own, its pool empty.
 - **On a connection reused, the timings of the phases it skipped are 0:** a second GET over one
   https connection reported name-lookup, connect and tls-handshake 0, on 8.20.0 (the same log).
+
+## Amendment, 2026-10-27: 8.7.1 reports no request size
+
+The maintainer's Mac ran `make test` on M4 slice 3's PR, the first Mac run of slice 1's
+request-size check: Apple's libcurl 8.7.1 answered 0 for a timeout before the head, a server
+that closed before answering, the body limit and a raise in the callable, each of which sent
+the head (`research/m4/slice3/results/mac.log`).
+
+- **Measured, 2026-10-27:** upstream curl 8.7.1, built from its tarball with OpenSSL in Docker
+  `ubuntu:24.04`, answered `CURLINFO_REQUEST_SIZE` 0 on all 21 of slice 1's probe transfers,
+  a 200 among them (`research/m4/slice3/results/reqsize-8.7.1.log`). Guix's 8.6.0 answered the
+  request's length, as 7.85.0, 8.5.0, 8.20.0 and 8.23.0 do
+  (`research/m4/slice3/results/reqsize-guix-8.6.0.log`). So it is 8.7.1's, not Apple's, and
+  the window lies after 8.6.0 and before 8.20.0.
+- **Decided by the maintainer, 2026-10-27: on a libcurl whose request size is known broken, a
+  failure carries `#f`, unknown.** The request size becomes `(U Natural #f)`. A table by version
+  names the broken libcurls, 8.7.1 measured, the window's edges measured before its rows land.
+  M5's retry policy reads `#f` as "whether the request was sent is unknown". `test-request` pins
+  8.7.1's row.
+  - **Rejected:** keeping 0 and documenting it: 0 would then lie on the Mac, the one platform
+    that ships 8.7.1.
+- **Decided by the maintainer, 2026-10-27: the fix lands in slice 3's PR,** so the Mac's `make
+  test` can pass before the merge.
