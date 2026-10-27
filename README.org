@@ -60,6 +60,37 @@ program's environment. chez-curl never changes them.
   no bytes sent, ever. On them a failure from a transfer that ran has a
   request size of =#f=, unknown, not =0=.
 
+*** Options chez-curl does not wrap
+
+=(curl unsupported)= attaches a libcurl option to a request by its name, for
+anything the request's own keys do not cover:
+
+#+begin_src scheme
+(import (curl) (curl unsupported))
+
+(curl-request-with-options
+ (make-curl-request "https://example.com/")
+ '(("LOW_SPEED_TIME" . 30)))
+#+end_src
+
+- *It is unsupported.* No promise it stays the same, and an option set
+  through it can change what chez-curl tests.
+- *A value is plain data:* an integer, a string, a list of strings, or a
+  bytevector, as the option's type says. Options that take a pointer or a
+  callback are refused.
+- *No string may hold NUL, CR or LF.*
+- *Options chez-curl sets itself are refused,* and so is any option that
+  would do the same job another way. So are a few that would reach past
+  your request: read stdin or write stdout (=COOKIEFILE=, =COOKIEJAR=),
+  steer later requests (=RESOLVE=), or skip the =proxy= key (=DOH_URL=). The
+  refusal names the option.
+- *It is checked when you attach it.* The request keeps its own copy, so
+  changing your string later changes nothing.
+- *=VERBOSE= and =NOPROGRESS= write to your program's stderr.* =VERBOSE=
+  writes every header it sends, so a password in one too.
+- *A path is opened as given,* and chez-curl does not check it: a path of
+  =/dev/stdin= names your program's stdin.
+
 ** License
 
 © [[https://kiyomicomputation.systems/][Kiyomi Computation Systems LLC]]. Licensed under BSD 3-Clause — see

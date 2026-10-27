@@ -226,19 +226,23 @@
 ;; (curl) and fails the row below it.
 
 ;; sls-files : String -> (Listof String)
-;; Every .sls under DIR, depth first, sorted by path.
+;; Every .sls under DIR, sorted by its whole path, as the program sorts
+;; them: so src/curl.sls comes before src/curl/unsupported.sls, . before /,
+;; though a walk directory by directory would reach curl/ first.
 (define (sls-files dir)
-  (apply append
-         (map (lambda (name)
-                (let ((path (string-append dir "/" name)))
-                  (cond ((file-directory? path) (sls-files path))
-                        ((and (> (string-length name) 4)
-                              (string=? (substring name (- (string-length name) 4)
-                                                   (string-length name))
-                                        ".sls"))
-                         (list path))
-                        (else '()))))
-              (list-sort string<? (directory-list dir)))))
+  (define (walk dir)
+    (apply append
+           (map (lambda (name)
+                  (let ((path (string-append dir "/" name)))
+                    (cond ((file-directory? path) (walk path))
+                          ((and (> (string-length name) 4)
+                                (string=? (substring name (- (string-length name) 4)
+                                                     (string-length name))
+                                          ".sls"))
+                           (list path))
+                          (else '()))))
+                (directory-list dir))))
+  (list-sort string<? (walk dir)))
 
 ;; library-name : String -> (U (Listof Symbol) Symbol)
 ;; The name of the library form that opens the file at PATH, or a symbol when

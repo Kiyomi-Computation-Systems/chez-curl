@@ -385,6 +385,18 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   it as curl does: `secure-transport`.
 * libcurl 8.7.0 and 8.7.1 answer `CURLINFO_REQUEST_SIZE` 0 for every
   transfer. A count measured on some versions says nothing of one between.
+* An option on one easy handle can reach past its transfer: `RESOLVE` fills
+  the DNS cache the engine's multi handle shares, `DOH_URL`'s lookups ignore
+  the transfer's proxy settings, and `SSLENGINE_DEFAULT` sets OpenSSL's
+  default for the process. Read what a transfer shares.
+* `RESUME_FROM` beside a `POSTFIELDS` body makes 7.85.0 read stdin through
+  libcurl's default read callback, as `COOKIEFILE "-"` does everywhere.
+* libcurl's header checks read `HTTPHEADER` alone: a `PROXYHEADER`
+  `Content-Length` went out beside libcurl's own through a proxy.
+* Reopening `/dev/stdin` on a file gets an offset of its own, so fd 0's
+  offset cannot show a read through it. Watch a pipe's contents.
+* A check of an order held by one element cannot see the order: a sort per
+  directory passed with one public library, and failed with two.
 
 ## Closing ritual
 

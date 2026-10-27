@@ -157,6 +157,7 @@
     (curlinfo-http-version . "CURLINFO_HTTP_VERSION")
     (curlinfo-effective-url . "CURLINFO_EFFECTIVE_URL")
     (curl-error-size . "CURL_ERROR_SIZE")
+    (curl-blob-copy . "CURL_BLOB_COPY")
     (curl-http-version-1-0 . "CURL_HTTP_VERSION_1_0")
     (curl-http-version-1-1 . "CURL_HTTP_VERSION_1_1")
     (curl-http-version-2-0 . "CURL_HTTP_VERSION_2_0")
@@ -246,7 +247,8 @@
   '((curl-version-info-data "curl_version_info_data" prefix)
     (curl-easyoption "struct curl_easyoption" whole)
     (curl-header "struct curl_header" whole)
-    (curl-msg "struct CURLMsg" whole)))
+    (curl-msg "struct CURLMsg" whole)
+    (curl-blob "struct curl_blob" whole)))
 
 (define extents '(whole prefix))
 
@@ -1922,8 +1924,9 @@
 
 ;; Written out here, not read from the table: a row turned to prefix would
 ;; drop its size check with it.
-(test-equal "curl-easyoption, curl-header and curl-msg are laid out whole, and curl-version-info-data as a prefix"
-  '((curl-version-info-data prefix) (curl-easyoption whole) (curl-header whole) (curl-msg whole))
+(test-equal "curl-easyoption, curl-header, curl-msg and curl-blob are laid out whole, and curl-version-info-data as a prefix"
+  '((curl-version-info-data prefix) (curl-easyoption whole) (curl-header whole) (curl-msg whole)
+    (curl-blob whole))
   (map (lambda (row) (list (car row) (caddr row))) layout-rows))
 
 ;; --- curlot-types is complete ---------------------------------------------------------------
@@ -2097,8 +2100,8 @@
     (("memcpy" "const void *") uptr void* u8*)
     (("memcpy" "const char *") uptr void* u8* string)))
 
-(test-equal "the universe the map is held against: every type the conventions reader reads, for src/'s four layouts, and an ftype no layout defines"
-  (+ 33 1 3 7 1 8 1)
+(test-equal "the universe the map is held against: every type the conventions reader reads, for src/'s five layouts, and an ftype no layout defines"
+  (+ 33 1 3 7 1 10 1)
   (length universe))
 
 (for-each

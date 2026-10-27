@@ -66,6 +66,13 @@
 ;;;       path in each library directory in turn, so one defined elsewhere
 ;;;       under the directory could satisfy rule (h) while another directory
 ;;;       supplied the library Chez loads.
+;;;   (j) a (curl ...) library imports (curl unsupported), the hatch
+;;;       (ADR-0009, decision 1; the M4 plan, section 3.8). Rule (b) keeps it
+;;;       from every (http-client ...) library, and this rule from every
+;;;       (curl ...) one. It closes that route alone: the hatch's procedure
+;;;       is (curl private transfer)'s export too, which any (curl ...)
+;;;       library may import, so tests/test-unsupported.sps holds (curl)'s
+;;;       exports by what each is bound to.
 ;;;
 ;;; The lists are allowlists: a name or a library that is not on one fails,
 ;;; so a route nobody thought of is closed until a reviewer opens it.
@@ -115,6 +122,12 @@
 ;; one is a reviewed change to the seam (ADR-0007).
 (define public-curl '((curl)))
 
+;; hatch : (Listof Symbol)
+;; The escape hatch's library, which rule (j) keeps from every (curl ...)
+;; library, and rule (b) from every (http-client ...) one (ADR-0009). Its
+;; procedure is (curl private transfer)'s too: see rule (j).
+(define hatch '(curl unsupported))
+
 ;; families : (Listof Symbol)
 ;; The first identifier of a library's name under src/: one of these.
 (define families '(curl http-client))
@@ -138,12 +151,15 @@
 ;; time-nanosecond read the monotonic clock, for a bounded wait's deadline
 ;; (M4 slice 2), and run no code either. foreign-entry answers an entry
 ;; point's address, which native finds in /proc/self/maps to read the
-;; loaded libcurl's file (M4 slice 3): it calls nothing.
+;; loaded libcurl's file (M4 slice 3): it calls nothing. ftype-sizeof and
+;; ftype-set! size and fill the struct curl_blob a blob option takes (M4
+;; slice 4): they write a field of a block, and run no code.
 (define allowed-chez-names
   '(critical-section current-time define-ftype disable-interrupts display-condition
     dynamic-wind enable-interrupts file-regular? foreign-alloc foreign-callable
     foreign-callable-entry-point foreign-entry foreign-entry? foreign-free foreign-procedure
-    foreign-ref foreign-sizeof fork-thread format format-condition? ftype-ref get-thread-id
+    foreign-ref foreign-sizeof fork-thread format format-condition? ftype-ref ftype-set!
+    ftype-sizeof get-thread-id
     getenv load-shared-object lock-object machine-type make-ftype-pointer
     make-mutex make-time
     scheme-version scheme-version-number sleep threaded? time-nanosecond time-second
@@ -164,7 +180,9 @@
 ;; point's address, so no other library reads where libcurl's code lives;
 ;; and so does load-shared-object, so no
 ;; other library can load a second libcurl, or anything else, into the
-;; process (ADR-0002, decision 3). foreign-callable,
+;; process (ADR-0002, decision 3); and so does ftype-set!, which writes
+;; into foreign memory: native fills each struct curl_blob, in a counted
+;; block it frees (the M4 plan, section 3.8). foreign-callable,
 ;; foreign-callable-entry-point and lock-object belong to (curl private
 ;; transfer), whose one callable, write-body, is locked where it is defined
 ;; and held to its row in tests/foreign-conventions.sls (M2 plan, sections
@@ -190,6 +208,7 @@
     (foreign-procedure (curl private native))
     (foreign-entry (curl private native))
     (load-shared-object (curl private native))
+    (ftype-set! (curl private native))
     (foreign-callable (curl private transfer))
     (foreign-callable-entry-point (curl private transfer))
     (lock-object (curl private transfer))
@@ -449,13 +468,18 @@
       ;; Rule (h) names an import no other rule refuses: one refused already
       ;; fails the seam, defined or not.
       ((family? 'curl imported)
-       (if (and (family? 'http-client name) (not (member imported public-curl)))
-           (list (string-append path ": " (written name) " imports "
-                                (written imported)
-                                ", but an (http-client ...) library may"
-                                " import only the public (curl ...)"
-                                " libraries " (written public-curl)))
-           (undefined-complaints path name imported defined)))
+       (cond ((and (family? 'http-client name) (not (member imported public-curl)))
+              (list (string-append path ": " (written name) " imports "
+                                   (written imported)
+                                   ", but an (http-client ...) library may"
+                                   " import only the public (curl ...)"
+                                   " libraries " (written public-curl))))
+             ((and (family? 'curl name) (equal? imported hatch))
+              (list (string-append path ": " (written name) " imports "
+                                   (written imported)
+                                   ", the escape hatch, which no (curl ...) library may"
+                                   " import, so none can re-export it")))
+             (else (undefined-complaints path name imported defined))))
       ((family? 'http-client imported)
        (if (family? 'curl name)
            (list (string-append path ": " (written name) " imports "

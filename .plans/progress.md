@@ -12,77 +12,50 @@ close-out under **Close-outs**, newest first.
   - **Slice 1, the request, its body and the classes:** merged in PR #25. Its close-out is
     below.
   - **Slice 2, the asynchronous API:** merged in PR #26. Its close-out is below.
-  - **Slice 3, the environment:** built on `feat/m4-slice-3`, not yet merged.
-    - **Measured first** ([`research/m4/slice3/`](research/m4/slice3/)), through a C probe
-      with chez-curl's TLS settings, on seven lanes: Guix's 8.20.0 in the container, and in
-      Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, 8.23.0, and Guix's 8.20.0
-      and 8.6.0 loaded from the store beside Ubuntu's libc. Guix's patch reads the variables
-      at `curl_global_init` alone, an empty one as unset; Guix's 8.6.0 lets a CA file win;
-      GnuTLS takes `pkcs11:` in all sixteen ASCII cases, a file of that name there or not; an
-      `https://` proxy is verified against the system store whatever the request says; and a
-      Guix libcurl loaded outside Guix still overrides, so its own mapped file decides, not
-      libc's world (the plan, §6.1; ADR-0024, amended).
-    - **Decided by the maintainer, 2026-10-26:** Guix's 8.6.0 stays taken to override, since
-      no lane runs it; and, after the review, a libcurl is Guix's when its file is under
-      `/gnu/store/` or holds the patch's literal `SSL_CERT_FILE`, which both Guix builds hold
-      and six stock builds do not (ADR-0024, amended).
-    - **Built:** the native layer records the libcurl's mapped file, whether it holds the
-      patch's literal, and the two variables, at the load; a submit refuses a CA file,
-      verification on, on a Guix libcurl with either set, naming each, by a pure rule held on
-      every lane; `pkcs11:` refused in any ASCII case, at the request and at submit; the
-      `proxy` key, `environment` or `#f`, `PROXY` owned with four twins; the origin routes an
-      absolute-form target, so its http face stands in for a proxy; README.org names what a
-      transfer reads.
-    - **The slice's review** (Opus, read-only) found no blocker and two majors, each proved
-      in a copy of the tree. A native that read the variables again at each submit passed
-      every lane but the Guix container: the pin's child printed native's record before
-      changing the environment, and now prints it after. And a copy of Guix's 8.20.0 loaded
-      from outside the store replaced the CA file unrefused: the key above. Its fourteen
-      minors were answered, the records' overclaims among them: "every ASCII case" rested on
-      six of sixteen, now all measured, and two probes' findings had been run together.
-    - **Checks:** on the final tree, in the container, `make test` and `make test-memory` 25
-      of 25; in Docker, the main (8.5.0), gnutls, floor (7.85.0) and current (8.23.0) lanes 25
-      of 25 each, and the memory lane 25 of 25 with `check-memory-gate` 33 of 33, after each
-      round of fixes. The [mutation log](environment-mutation-log.md): 54 mutants over five
-      sweeps, 53 failing a named check, the reviews' gaps among them, and one equivalent.
-    - **One subagent:**
+  - **Slice 3, the environment:** merged in PR #27. Its close-out is below.
+  - **Slice 4, the hatch:** built on `feat/m4-slice-4`, not yet merged.
+    - **Measured first** ([`research/m4/slice4/`](research/m4/slice4/)), through a C probe on
+      the multi interface with chez-curl's pins, on five libcurls: Guix's 8.20.0 in the
+      container, and in Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, and
+      8.23.0. A blob with `CURL_BLOB_COPY` and a string list freed after the easy handle left
+      Valgrind clean on all five, each control caught. An Opus review classed the 200 options
+      the hatch's types reach from curl's docs and source; the probe measured what the source
+      could not settle (the plan, §7.1; ADR-0009, amended 2026-10-27).
+    - **Decided by the maintainer, 2026-10-27:** 18 more options are owned, by id: ten twins,
+      `TRANSFERTEXT`, the URL's credentials and `HSTS`, the two socket options, `PROXYHEADER`
+      and `HEADEROPT`; and eight kept from the hatch, which read stdin, write stdout, send
+      nothing, skip the proxy field or reach later requests. `VERBOSE` and `NOPROGRESS` stay;
+      only libcurl's own `"-"` modes are refused; one reason, `owned-option`, covers all.
+    - **Built:** `(curl unsupported)` exports `curl-request-with-options`; a request keeps
+      checked copies of its options, and the engine sets them last; blobs through a counted
+      `struct curl_blob` native fills, string lists counted and freed after the easy handle;
+      check-seam's rule (j) and `ftype-set!` for native alone; `test-unsupported`; the test
+      seam retired, each check that used it accounted for (ADR-0009, amended 2026-10-27).
+    - **The slice's review** (Opus, read-only) found no blocker and one major, proved in a
+      copy: rule (j) closes the route through `(curl unsupported)` alone, since the procedure
+      is `(curl private transfer)`'s export too, and a re-export from `(curl)` under another
+      name passed check-seam and test-unsupported. test-unsupported now holds `(curl)`'s
+      exports by what each is bound to, and the records say what rule (j) does. Its minors:
+      the option cache's copy of a name could not be seen through the hatch, which copies
+      first, and is now tested through `option-named`; and test-unsupported has no 8.7.1 blob
+      row, so the Mac's `make test` fails it, printing the row, until that row is added (the
+      plan, §8).
+    - **Checks:** on the final tree, in the container, `make test` 26 of 26, and the two
+      suites the review's fixes changed under the memory gate; before those fixes, `make
+      test-memory` 26 of 26. In Docker, on the final tree and before the fixes, the main
+      (8.5.0), gnutls, floor (7.85.0) and current (8.23.0) lanes 26 of 26 each, and the memory
+      lane 26 of 26 with `check-memory-gate` 33 of 33. The [mutation log](hatch-mutation-log.md): 39 mutants over three sweeps, 38
+      failing a named check, three of them only after a fix, one the slice's own sweep found
+      and two the review's, and one equivalent.
+    - **Two subagents:**
 
       | Agent | Model | Tokens | Time |
       |---|---|---|---|
-      | adversarial review | Opus | 289k | 21 min |
-      | review of the Mac's follow-up | Opus | 285k | 21 min |
-    - **The Mac ran the PR, 2026-10-27:** the plan's proxy probe answered as on Linux; the
-      environment's sets showed Apple's 8.7.1 ignoring `SSL_CERT_FILE` and reading every
-      `pkcs11:` path as a file. Two findings followed, each measured and then decided by the
-      maintainer:
-      - Apple's 8.7.1 puts LibreSSL in use at its init, not SecureTransport, as ADR-0018 had
-        read before the init; its keychain fallback undid a CA file for `https://example.com/`,
-        through chez-curl too, where SecureTransport kept it. A submit now refuses a CA file
-        there, and make runs the suites with `CURL_SSL_BACKEND=secure-transport` on macOS
-        (ADR-0024 and ADR-0018, amended 2026-10-27);
-      - `make test` failed slice 1's request-size check, its first Mac run: upstream 8.7.0 and
-        8.7.1 count 0 for every transfer, 8.6.0 and 8.8.0 do not. A transfer that ran on them
-        now carries `#f` (ADR-0022, amended 2026-10-27).
-    - **A second review** (Opus, read-only) of that work found one blocker: test-request's
-      connect-timeout row still expected 0 where 8.7.1 now answers `#f`, which the Mac would
-      have failed; test-engine's stalled rows had the same, on Linux alone. Its majors: curl
-      names SecureTransport `secure-transport`, and `securetransport` reached it only by the
-      fallback an unknown name takes; and three mutants passed every Linux lane, a backend read
-      before the init, one never read, and `finish-transfer` reading libcurl's count past
-      `ran-request-size`. A MultiSSL decoy, a check of the backend on every lane, and a
-      source check now fail each. Its minors were answered: the keychain rule now keys on
-      Apple's own libcurl, and refuses where the backend cannot be read; `backend-in-use`
-      strips parenthesised groups, so a version with spaces stays whole; the records cite
-      curl's own release notes for 8.8.0's fix.
-    - **The Mac's third run, 2026-10-27:** `make test` 25 of 25, its TLS suites on
-      SecureTransport for the first time. `secure-transport` reached SecureTransport by name,
-      and `securetransport` and a name no backend has by curl's fallback. With
-      `OPENSSL_X509_TEA_DISABLE=1`, LibreSSL kept the CA file the only anchor: Apple's keychain
-      fallback is what undid it. **Decided by the maintainer:** that variable is carried past
-      slice 3, its timing measured first; the refusal stays, erring toward refusing (ADR-0024,
-      amended 2026-10-27).
-    - **The Mac's Node did not exit when its FIFO stdin closed,** in every slice 3 run, four
-      times; the runners' watchdogs ended it 5 s on. Its cause is still unmeasured.
+      | twin review of the 200 options | Opus | 468k | 38 min |
+      | adversarial review | Opus | 230k | 16 min |
+    - **Owed by the Mac:** `make test`, whose test-unsupported prints the 8.7.1 blob row; the
+      slice's sets, `.plans/research/m4/slice4/run.sh mac` with and without
+      `CURL_SSL_BACKEND=secure-transport`; and 8.7.1's options table, slice 1's `options.sh`.
   - **Carried into M4:** why a timeout's 28 came 1,014 ms late once (ADR-0019, amended
     2026-10-25); CI has still never run; accepting Apple's `OPENSSL_X509_TEA_DISABLE=1` in
     place of the keychain refusal, once when LibreSSL reads it is measured (ADR-0024, amended
@@ -159,6 +132,90 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-27 — M4 slice 3: the environment (PR #27, `9c8fdb0`)
+
+- **Measured first** ([`research/m4/slice3/`](research/m4/slice3/)), through a C probe
+  with chez-curl's TLS settings, on seven lanes: Guix's 8.20.0 in the container, and in
+  Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, 8.23.0, and Guix's 8.20.0
+  and 8.6.0 loaded from the store beside Ubuntu's libc. Guix's patch reads the variables
+  at `curl_global_init` alone, an empty one as unset; Guix's 8.6.0 lets a CA file win;
+  GnuTLS takes `pkcs11:` in all sixteen ASCII cases, a file of that name there or not; an
+  `https://` proxy is verified against the system store whatever the request says; and a
+  Guix libcurl loaded outside Guix still overrides, so its own mapped file decides, not
+  libc's world (the plan, §6.1; ADR-0024, amended).
+- **Decided by the maintainer, 2026-10-26:** Guix's 8.6.0 stays taken to override, since
+  no lane runs it; and, after the review, a libcurl is Guix's when its file is under
+  `/gnu/store/` or holds the patch's literal `SSL_CERT_FILE`, which both Guix builds hold
+  and six stock builds do not (ADR-0024, amended).
+- **Built:** the native layer records the libcurl's mapped file, whether it holds the
+  patch's literal, and the two variables, at the load; a submit refuses a CA file,
+  verification on, on a Guix libcurl with either set, naming each, by a pure rule held on
+  every lane; `pkcs11:` refused in any ASCII case, at the request and at submit; the
+  `proxy` key, `environment` or `#f`, `PROXY` owned with four twins; the origin routes an
+  absolute-form target, so its http face stands in for a proxy; README.org names what a
+  transfer reads.
+- **The slice's review** (Opus, read-only) found no blocker and two majors, each proved
+  in a copy of the tree. A native that read the variables again at each submit passed
+  every lane but the Guix container: the pin's child printed native's record before
+  changing the environment, and now prints it after. And a copy of Guix's 8.20.0 loaded
+  from outside the store replaced the CA file unrefused: the key above. Its fourteen
+  minors were answered, the records' overclaims among them: "every ASCII case" rested on
+  six of sixteen, now all measured, and two probes' findings had been run together.
+- **Checks:** on the final tree, in the container, `make test` and `make test-memory` 25
+  of 25; in Docker, the main (8.5.0), gnutls, floor (7.85.0) and current (8.23.0) lanes 25
+  of 25 each, and the memory lane 25 of 25 with `check-memory-gate` 33 of 33, after each
+  round of fixes. The [mutation log](environment-mutation-log.md): 54 mutants over five
+  sweeps, 53 failing a named check, the reviews' gaps among them, and one equivalent.
+- **Two subagents:**
+
+  | Agent | Model | Tokens | Time |
+  |---|---|---|---|
+  | adversarial review | Opus | 289k | 21 min |
+  | review of the Mac's follow-up | Opus | 285k | 21 min |
+- **The Mac ran the PR, 2026-10-27:** the plan's proxy probe answered as on Linux; the
+  environment's sets showed Apple's 8.7.1 ignoring `SSL_CERT_FILE` and reading every
+  `pkcs11:` path as a file. Two findings followed, each measured and then decided by the
+  maintainer:
+  - Apple's 8.7.1 puts LibreSSL in use at its init, not SecureTransport, as ADR-0018 had
+    read before the init; its keychain fallback undid a CA file for `https://example.com/`,
+    through chez-curl too, where SecureTransport kept it. A submit now refuses a CA file
+    there, and make runs the suites with `CURL_SSL_BACKEND=secure-transport` on macOS
+    (ADR-0024 and ADR-0018, amended 2026-10-27);
+  - `make test` failed slice 1's request-size check, its first Mac run: upstream 8.7.0 and
+    8.7.1 count 0 for every transfer, 8.6.0 and 8.8.0 do not. A transfer that ran on them
+    now carries `#f` (ADR-0022, amended 2026-10-27).
+- **A second review** (Opus, read-only) of that work found one blocker: test-request's
+  connect-timeout row still expected 0 where 8.7.1 now answers `#f`, which the Mac would
+  have failed; test-engine's stalled rows had the same, on Linux alone. Its majors: curl
+  names SecureTransport `secure-transport`, and `securetransport` reached it only by the
+  fallback an unknown name takes; and three mutants passed every Linux lane, a backend read
+  before the init, one never read, and `finish-transfer` reading libcurl's count past
+  `ran-request-size`. A MultiSSL decoy, a check of the backend on every lane, and a
+  source check now fail each. Its minors were answered: the keychain rule now keys on
+  Apple's own libcurl, and refuses where the backend cannot be read; `backend-in-use`
+  strips parenthesised groups, so a version with spaces stays whole; the records cite
+  curl's own release notes for 8.8.0's fix.
+- **The Mac's third run, 2026-10-27:** `make test` 25 of 25, its TLS suites on
+  SecureTransport for the first time. `secure-transport` reached SecureTransport by name,
+  and `securetransport` and a name no backend has by curl's fallback. With
+  `OPENSSL_X509_TEA_DISABLE=1`, LibreSSL kept the CA file the only anchor: Apple's keychain
+  fallback is what undid it. **Decided by the maintainer:** that variable is carried past
+  slice 3, its timing measured first; the refusal stays, erring toward refusing (ADR-0024,
+  amended 2026-10-27).
+- **The Mac's Node did not exit when its FIFO stdin closed,** in every slice 3 run, four
+  times; the runners' watchdogs ended it 5 s on. Its cause is still unmeasured.
+- **Learned:**
+  - facts went into code and records from memory again: `securetransport` for curl's
+    `secure-transport`, "eleven" 8.6.0 builds for ten, and the host's 7.81.0 libcurls called
+    Ubuntu's 8.5.0, each caught later by a review or a reread;
+  - a fix to one failing check of a value whose meaning changed left its siblings: the
+    request size's other 0 expectations stood until the second review found them;
+  - slice 1's version-sensitive check never ran on the Mac until this slice, so the 8.7.x
+    request size surfaced two slices late, and changed slice 1's public answer;
+  - mutation sweeps found kills resting on one lane, the Guix container's and the Mac's, and
+    shaped the design: a pure rule every lane runs, and a thin reading the suite holds as
+    source.
 
 ### 2026-10-26 — M4 slice 2: the asynchronous API (PR #26, `b88f778`)
 

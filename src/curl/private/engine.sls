@@ -114,7 +114,7 @@
 ;;; recorded: collect-request-handler is process-wide, so a caller's handler
 ;;; that escapes could run on this thread (M3 plan, section 3.6).
 (library (curl private engine)
-  (export make-curl-engine curl-engine? curl-submit curl-engine-submit-with
+  (export make-curl-engine curl-engine? curl-submit
           curl-engine-stop curl-engine-request-stop! curl-engine-state curl-engine-thread
           curl-engine-multi curl-engine-live-count curl-engine-queued-count
           curl-engine-stale-cancels call-with-engine-held
@@ -443,21 +443,12 @@
   ;;     stopped, or failed, with what it failed with.
   (define curl-submit
     (case-lambda
-      ((engine request) (submit engine request '() #f #f))
-      ((engine request mailbox) (submit engine request '() mailbox #f))
-      ((engine request mailbox callback) (submit engine request '() mailbox callback))))
+      ((engine request) (submit engine request #f #f))
+      ((engine request mailbox) (submit engine request mailbox #f))
+      ((engine request mailbox callback) (submit engine request mailbox callback))))
 
-  ;; curl-engine-submit-with : Engine Request (Listof (Pairof String Integer)) [(U Mailbox #f)] -> Token
-  ;; curl-submit's, with OPTIONS, the test seam's, and MAILBOX, #f unless
-  ;; given: the seam's refusals raise beside the request's (ADR-0009,
-  ;; amended 2026-10-23).
-  (define curl-engine-submit-with
-    (case-lambda
-      ((engine request options) (submit engine request options #f #f))
-      ((engine request options mailbox) (submit engine request options mailbox #f))))
-
-  ;; submit : Engine Request (Listof (Pairof String Integer)) (U Mailbox #f) (U Procedure #f) -> Token
-  (define (submit engine request options mailbox callback)
+  ;; submit : Engine Request (U Mailbox #f) (U Procedure #f) -> Token
+  (define (submit engine request mailbox callback)
     (define who 'curl-submit)
     (check-engine who engine)
     (unless (or (not mailbox) (curl-mailbox? mailbox))
@@ -466,7 +457,7 @@
       (assertion-violation who "a callback is a procedure of one argument, the token" callback))
     (when (and callback (not mailbox))
       (assertion-violation who "a callback needs a mailbox, which a delivery calls it from" callback))
-    (let* ((plan (prepare-transfer request options))
+    (let* ((plan (prepare-transfer request))
            (token (make-token engine plan 'queued #f '() #f mailbox callback))
            (refusal
             (locked (curl-engine-lock engine)

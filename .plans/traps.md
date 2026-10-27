@@ -945,3 +945,28 @@ it should not be a comment. (chez-cmark-gfm)
   Mac, which ships 8.7.1, first ran it. curl 8.8.0's release notes list the fix, bug 13269. A
   count measured on some versions says nothing of a version between them.
   (chez-curl, M4 slice 3)
+* **An option on one easy handle can reach past its transfer.** Through chez-curl's hatch, a
+  request with `RESOLVE` made a later request on the same engine, which never named it,
+  reach its address on all five Linux libcurls: the DNS cache is the multi handle's. A
+  `DOH_URL`'s lookups went through `https_proxy` with the transfer's `PROXY ""`; and
+  `SSLENGINE_DEFAULT` sets OpenSSL's default for the process, by curl's source. A review of
+  one option's effects reads what the transfer shares: its multi handle, its process, the
+  process's streams. (chez-curl, M4 slice 4)
+* **Some options make libcurl call its default read callback, which reads stdin.**
+  `RESUME_FROM` beside a body set by `POSTFIELDSIZE_LARGE` and `COPYPOSTFIELDS` made 7.85.0
+  read 11 bytes of stdin on the transferring thread, then send the body's first 5 bytes as
+  bytes 3 to 7 of 8. 8.5.0, 8.20.0 and 8.23.0 answered 43. `COOKIEFILE "-"` read stdin on
+  all five. (chez-curl, M4 slice 4)
+* **libcurl's header checks read `HTTPHEADER` alone.** Through `http_proxy`, a
+  `PROXYHEADER` of `Content-Length: 5` went out beside libcurl's own `Content-Length: 3`, and
+  one of `Transfer-Encoding: chunked` beside it too, on all five Linux libcurls. A rule that
+  holds the request's headers must hold every list that adds headers.
+  (chez-curl, M4 slice 4)
+* **A probe that watches fd 0's offset cannot see a read through `/dev/stdin`.** Reopening
+  `/dev/stdin` on a regular file makes a file description of its own, with its own offset,
+  so `SSLCERT "/dev/stdin"` left fd 0's offset at 0 whether or not it read. Watch a pipe's
+  contents instead. (chez-curl, M4 slice 4)
+* **A check of an order held by one element cannot see the order.** test-check-nothreads
+  sorted `src/`'s files directory by directory, so `curl/` came before `curl.sls`, where the
+  program sorts whole paths, `.` before `/`. It passed while `(curl)` was the only public
+  library; `(curl unsupported)` failed it. (chez-curl, M4 slice 4)

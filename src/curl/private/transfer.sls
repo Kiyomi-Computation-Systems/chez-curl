@@ -21,9 +21,9 @@
 ;;; mutable. So a submit, on the caller's thread, checks nothing it does
 ;;; not own: prepare-transfer takes a plan, fresh pairs and fresh strings
 ;;; for the URL, the headers, the user agent and the CA file, and a fresh
-;;; copy of the body, checks the plan by the constructor's rules, checks
-;;; the test seam's settings, and parses the plan's URL and checks its
-;;; scheme, freeing that CURLU before it returns (ADR-0008, amended
+;;; copy of the body, checks the plan by the constructor's rules, and
+;;; parses the plan's URL and checks its scheme, freeing that CURLU before
+;;; it returns (ADR-0008, amended
 ;;; 2026-10-24). Every refusal raises there, before anything is queued. A
 ;;; request changed after it was made is refused then; a change it takes is
 ;;; sent as changed. The engine sends only the plan.
@@ -86,7 +86,7 @@
 ;;; TLS (ADR-0018). Every transfer, an http:// one too, makes the settings
 ;;; tls-settings computes from its plan's CA file and verification, as
 ;;; data, by one call, set-tls-options!, after the request's other settings
-;;; and before the test seam's: SSL_VERIFYPEER and SSL_VERIFYHOST at 1 and
+;;; and before the hatch's: SSL_VERIFYPEER and SSL_VERIFYHOST at 1 and
 ;;; 2, or both 0 with verification off; then, with a CA file, CAINFO at its
 ;;; path and CAPATH cleared, so the CA file is the request's only trust
 ;;; anchor, whatever CA directory the build defaults to. A backend with no
@@ -123,11 +123,18 @@
 ;;; before its body, and the callable refuses the first byte past the limit
 ;;; itself, on every libcurl.
 ;;;
-;;; The test seam, curl-engine-submit-with, hands prepare-transfer its
-;;; settings, held to ADR-0009's rules, narrowed (ADR-0009, amended
-;;; 2026-10-23): long, enumerated-value and off_t options alone, none
-;;; chez-curl owns, nor an owned setting's twin, the CA file's CAINFO_BLOB
-;;; and SSL_OPTIONS among them (amended 2026-10-24), compared by id.
+;;; The hatch (ADR-0009; the M4 plan, section 3.7): curl-request-with-options,
+;;; which (curl unsupported) exports, attaches options to a request by name.
+;;; Each is checked as it is attached, on the caller's thread, against the
+;;; loaded libcurl's own table: a type that hands libcurl no address of the
+;;; caller's, long, enumerated values, off_t, a string, a string list or a
+;;; blob; a value that fits it, no string holding U+0000, CR or LF; and
+;;; none chez-curl owns, nor an owned setting's twin, compared by id. The
+;;; request keeps a copy of each value, the one checked, so a submit has
+;;; nothing of the hatch's to check, and the engine sets the copies last,
+;;; after every option chez-curl sets itself. It took the place of M2's
+;;; and M3's test seam, curl-engine-submit-with, which took long,
+;;; enumerated-value and off_t options alone (ADR-0009, amended 2026-10-27).
 ;;;
 ;;; The pins, ADR-0003's PROTOCOLS_STR and REDIR_PROTOCOLS_STR at
 ;;; "http,https" and NOSIGNAL at 1, are pinned-options, set by one call,
@@ -161,7 +168,8 @@
           request-field-options owned-option-names live-transfer-count cached-option-names
           tls-settings setopt-accepted? quick-exit-pin pinned-settings quick-exit-known?
           quick-exits-set guix-ca-overrides ca-overridden? pkcs11-prefix? overriding-variables
-          keychain-fallback? request-size-unreliable reported-request-size)
+          keychain-fallback? request-size-unreliable reported-request-size
+          curl-request-with-options hatch-types option-named hatch-settings-of)
   (import (curl private require-threaded)
           (rnrs)
           (rnrs mutable-strings)
@@ -256,8 +264,6 @@
                          ((surrounding-whitespace) "a header string starts or ends with whitespace, which libcurl trims")
                          ((duplicates-field) "a User-Agent header beside the user agent field, which libcurl would let win, or a second Host header, which libcurl would drop")
                          ((framing-header) "a Content-Length or Transfer-Encoding header: libcurl frames the message, from the body it is handed")
-                         ((owned-option) "chez-curl sets this option, or its twin, itself")
-                         ((unsupported-type) "the test seam takes long, enumerated-value and off_t options alone")
                          ((unknown-key) "not a key a request takes")
                          ((repeated-key) "a key given twice")
                          ((missing-value) "a key given last, with no value after it")
@@ -531,6 +537,7 @@
   ;; curl-request-proxy : Request -> (U 'environment #f)
   ;; curl-request-fault : Request -> (U Positive-Integer #f)   private
   ;; curl-request-follow : Request -> Boolean                  private
+  ;; curl-request-options : Request -> (Listof Hatch-Setting)  private
   ;;
   ;; (make-curl-request URL KEY VALUE ...): URL, a string, parsed at
   ;; submit, and again on the engine's thread. The keys, each once at most,
@@ -587,14 +594,16 @@
   ;; keys given replaced and the rest kept, its private fields among them,
   ;; checked as make-curl-request checks a new one.
   ;;
-  ;; The private fields are no keys, and (curl) exports neither: FAULT, #f,
-  ;; or a positive exact integer, a planted fault that makes the callable
+  ;; The private fields are no keys, and (curl) exports none: FAULT, #f, or
+  ;; a positive exact integer, a planted fault that makes the callable
   ;; raise (planted-fault FAULT) at the chunk of that number, counting from
-  ;; 1, before its limit check (M3 plan, section 3.6); and FOLLOW, a
+  ;; 1, before its limit check (M3 plan, section 3.6); FOLLOW, a
   ;; boolean, FOLLOWLOCATION at 1 when #t, for the tests that follow a
-  ;; redirect, which nothing public may (M4 plan, section 3.2). Each is
-  ;; data, never a procedure: a request holds no caller code (ADR-0012,
-  ;; decision 4).
+  ;; redirect, which nothing public may (M4 plan, section 3.2); and
+  ;; OPTIONS, the hatch's settings, () until curl-request-with-options
+  ;; attaches some, each a copy no caller holds, which curl-request-with
+  ;; and the private constructors keep (ADR-0009). Each is data, never a
+  ;; procedure: a request holds no caller code (ADR-0012, decision 4).
   (define-record-type (curl-request new-curl-request curl-request?)
     (fields (immutable url curl-request-url)
             (immutable method curl-request-method)
@@ -608,13 +617,16 @@
             (immutable verify curl-request-verify)
             (immutable proxy curl-request-proxy)
             (immutable fault curl-request-fault)
-            (immutable follow curl-request-follow)))
+            (immutable follow curl-request-follow)
+            (immutable options curl-request-options)))
 
-  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any Any -> Request
+  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any Any (Listof Hatch-Setting) -> Request
   ;; A request of these fields, checked as WHO by make-curl-request's rules,
-  ;; after the keys.
+  ;; after the keys. OPTIONS, the hatch's, were checked as they were
+  ;; attached, and are private copies, so they are kept as they are.
   (define (checked-request who url method headers body user-agent timeout-ms
-                           connect-timeout-ms body-limit ca-file verify proxy fault follow)
+                           connect-timeout-ms body-limit ca-file verify proxy fault follow
+                           options)
     (define (wrong message irritant) (assertion-violation who message irritant))
     (unless (string? url) (wrong "a URL is a string" url))
     (unless (memq method request-methods)
@@ -643,12 +655,12 @@
     (snapshot who headers user-agent)
     (ca-file-copy who ca-file)
     (new-curl-request url method headers body user-agent timeout-ms connect-timeout-ms
-                      body-limit ca-file verify proxy fault follow))
+                      body-limit ca-file verify proxy fault follow options))
 
-  ;; request-like : Symbol Request (Listof (Pairof Symbol Any)) String Any Any -> Request
-  ;; REQUEST with SETTINGS' keys replaced, URL, FAULT and FOLLOW given, the
-  ;; rest kept, checked as WHO.
-  (define (request-like who request settings url fault follow)
+  ;; request-like : Symbol Request (Listof (Pairof Symbol Any)) String Any Any (Listof Hatch-Setting) -> Request
+  ;; REQUEST with SETTINGS' keys replaced, URL, FAULT, FOLLOW and OPTIONS
+  ;; given, the rest kept, checked as WHO.
+  (define (request-like who request settings url fault follow options)
     (define (given key accessor)
       (let ((hit (assq key settings))) (if hit (cdr hit) (accessor request))))
     (checked-request who url
@@ -662,24 +674,24 @@
                      (given 'ca-file curl-request-ca-file)
                      (given 'verify curl-request-verify)
                      (given 'proxy curl-request-proxy)
-                     fault follow))
+                     fault follow options))
 
   ;; default-request : Request
   ;; Every key at its default, for a URL nothing reads: what
   ;; make-curl-request replaces keys in.
   (define default-request
-    (new-curl-request "" 'get '() #f #f #f #f #f #f #t 'environment #f #f))
+    (new-curl-request "" 'get '() #f #f #f #f #f #f #t 'environment #f #f '()))
 
   (define (make-curl-request url . plist)
     (request-like 'make-curl-request default-request
-                  (request-settings 'make-curl-request plist) url #f #f))
+                  (request-settings 'make-curl-request plist) url #f #f '()))
 
   (define (curl-request-with request . plist)
     (unless (curl-request? request)
       (assertion-violation 'curl-request-with "not a request" request))
     (request-like 'curl-request-with request (request-settings 'curl-request-with plist)
                   (curl-request-url request) (curl-request-fault request)
-                  (curl-request-follow request)))
+                  (curl-request-follow request) (curl-request-options request)))
 
   ;; curl-request-with-fault : Request (U Positive-Integer #f) -> Request
   ;; REQUEST with its private fault FAULT, the test seam's (M3 plan, section
@@ -688,7 +700,7 @@
     (unless (curl-request? request)
       (assertion-violation 'curl-request-with-fault "not a request" request))
     (request-like 'curl-request-with-fault request '() (curl-request-url request) fault
-                  (curl-request-follow request)))
+                  (curl-request-follow request) (curl-request-options request)))
 
   ;; curl-request-following : Request -> Request
   ;; REQUEST, following redirects: FOLLOWLOCATION at 1, for the tests of a
@@ -700,7 +712,7 @@
     (unless (curl-request? request)
       (assertion-violation 'curl-request-following "not a request" request))
     (request-like 'curl-request-following request '() (curl-request-url request)
-                  (curl-request-fault request) #t))
+                  (curl-request-fault request) #t (curl-request-options request)))
 
   ;; --- the response -----------------------------------------------------------------
 
@@ -877,7 +889,7 @@
   ;; request-field-options : (Listof (Pairof Symbol (Listof String)))
   ;; Each request field that sets options, with their names, (FIELD NAME
   ;; ...): the one place the transfer reads them from, and part of
-  ;; owned-option-names, so a field's options are closed to the test seam by
+  ;; owned-option-names, so a field's options are closed to the hatch by
   ;; being a field's (ADR-0009, consequences). method sets NOBODY for head
   ;; and CUSTOMREQUEST for put, patch and delete; body, POSTFIELDSIZE_LARGE
   ;; then COPYPOSTFIELDS, in that order, since libcurl copies the size the
@@ -922,8 +934,8 @@
       "PROXY_TLSAUTH_PASSWORD"))
 
   ;; owned-option-names : (Listof String)
-  ;; The options the test seam refuses, by name (ADR-0009, amended
-  ;; 2026-10-23 to 2026-10-26): those the transfer always sets, QUICK_EXIT
+  ;; The options the hatch refuses, by name (ADR-0009, amended
+  ;; 2026-10-23 to 2026-10-27): those the transfer always sets, QUICK_EXIT
   ;; among them where the libcurl knows it, and the protocol pins'
   ;; deprecated bitmasks; then every option of each request field; then
   ;; each owned setting's twin, an option with an id of its own that sets
@@ -946,6 +958,26 @@
   ;;     the environment's proxy off as PROXY "" does; PRE_PROXY, a SOCKS
   ;;     proxy before it; PROXYPORT and PROXYTYPE, its port and its kind,
   ;;     parts of the proxy PROXY names, as PORT is of the URL;
+  ;;   - found by M4 slice 4's review of every option the hatch's types
+  ;;     reach, each measured on five libcurls but where named (ADR-0009,
+  ;;     amended 2026-10-27, decided by the maintainer): TRANSFERTEXT, which
+  ;;     rewrites the body as CRLF does; USERPWD, USERNAME, PASSWORD and
+  ;;     NETRC, which each replace part of the URL's credentials on some
+  ;;     version, and HSTS, which turns its http:// into https://;
+  ;;     UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET, which skip the
+  ;;     environment's proxy, as NOPROXY does; PROXYHEADER, whose headers
+  ;;     reach a proxied request past the header checks, a second
+  ;;     Content-Length among them, and HEADEROPT, whose UNIFIED sends the
+  ;;     request's headers to the proxy in a CONNECT;
+  ;;   - and, kept from the hatch though no twin: RESUME_FROM and
+  ;;     RESUME_FROM_LARGE, which beside a body read stdin on 7.85.0 and
+  ;;     send part of the body; COOKIEFILE and COOKIEJAR, whose "-" reads
+  ;;     stdin and writes stdout from the engine's thread; CONNECT_ONLY,
+  ;;     which sends no request and ends OK; DOH_URL, whose lookups ignore
+  ;;     the proxy field; RESOLVE, whose entries reach every later request
+  ;;     on the engine through the DNS cache its multi handle shares; and
+  ;;     SSLENGINE_DEFAULT, which sets OpenSSL's default for the whole
+  ;;     process, by curl's source;
   ;; then proxy-tls-option-names. They are compared by id, so an alias name
   ;; is refused too.
   (define owned-option-names
@@ -955,7 +987,11 @@
             '("TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "PUT" "UPLOAD"
               "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE" "INFILESIZE_LARGE"
               "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
-              "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE")
+              "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
+              "TRANSFERTEXT" "USERPWD" "USERNAME" "PASSWORD" "NETRC" "HSTS"
+              "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
+              "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
+              "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT")
             proxy-tls-option-names))
 
   ;; pinned-options : (Listof (Pairof String (U String Integer)))
@@ -1001,13 +1037,14 @@
   (define option-lock (make-mutex))
   (define owned-ids #f)
 
-  ;; option-named : String -> (Pairof Integer Natural)
-  ;; NAME's id and CURLOT type in the loaded libcurl; unknown-option,
-  ;; naming it, when it does not know NAME. NAME is copied first: the copy
-  ;; is the cache's key, and what is looked up, so the caller's string may
-  ;; change after. A NAME holding U+0000 is an assertion violation:
-  ;; curl_easy_option_by_name would read it short.
-  (define (option-named name)
+  ;; option-found : String -> (U (Pairof Integer Natural) #f)
+  ;; NAME's id and CURLOT type in the loaded libcurl, or #f when it does not
+  ;; know NAME, looked up once per name, per process, under the mutex. NAME
+  ;; is copied first: the copy is the cache's key, and what is looked up,
+  ;; so the caller's string may change after. A NAME that is no string, or
+  ;; holds U+0000, which curl_easy_option_by_name would read short, is an
+  ;; assertion violation.
+  (define (option-found name)
     (unless (string? name)
       (assertion-violation 'set-option! "an option's name is a string without U+0000" name))
     (let ((name (string-copy name)))
@@ -1019,9 +1056,13 @@
                            (let ((option (or (curl-easy-option name) 'unknown)))
                              (hashtable-set! option-cache name option)
                              option))))))
-        (if (eq? found 'unknown)
-            (fail 'unknown-option #f name #f #f)
-            found))))
+        (and (not (eq? found 'unknown)) found))))
+
+  ;; option-named : String -> (Pairof Integer Natural)
+  ;; option-found's answer for NAME; unknown-option, naming it, when the
+  ;; loaded libcurl does not know NAME.
+  (define (option-named name)
+    (or (option-found name) (fail 'unknown-option #f name #f #f)))
 
   ;; cached-option-names : -> (Listof String)
   ;; The option cache's keys, sorted: a private accessor, for the test that
@@ -1120,33 +1161,186 @@
                     (set-option! easy (car setting) (cdr setting) buffer)))
               (tls-settings ca-file verify)))
 
-  ;; checked-settings : Any -> (Listof (Pairof String Integer))
-  ;; OPTIONS, the test seam's (NAME . VALUE) pairs, as fresh pairs, in
-  ;; order, each checked before anything native (ADR-0009, amended
-  ;; 2026-10-23): a name the loaded libcurl does not know raises
-  ;; unknown-option; an option whose id is an owned option's, owned-option;
-  ;; a type but long, enumerated values or off_t, unsupported-type, each a
-  ;; &curl-request-error, field options. A value out of its type's range,
-  ;; and OPTIONS of any other shape, are assertion violations.
-  (define (checked-settings options)
-    (define (wrong message irritant) (assertion-violation 'curl-engine-submit-with message irritant))
-    (unless (list? options) (wrong "options are a list of (NAME . VALUE)" options))
+  ;; --- the hatch (ADR-0009; the M4 plan, section 3.7) ---------------------------------
+
+  ;; hatch-types : (Listof Symbol)
+  ;; The CURLOT types the hatch takes: long, enumerated values, off_t, a
+  ;; string, a string list and a blob. Every other hands libcurl an object,
+  ;; a callback's pointer or a function (ADR-0009, decision 3).
+  (define hatch-types '(long values off-t string slist blob))
+
+  ;; A hatch setting: an option the hatch attached to a request, its name as
+  ;; given, its id and its CURLOT type's name in the loaded libcurl, and its
+  ;; value, a private copy, checked: no caller holds it.
+  (define-record-type hatch-setting
+    (fields (immutable name) (immutable id) (immutable type) (immutable value)))
+
+  ;; refuse-option : Symbol String Symbol -> Nothing
+  ;; The hatch's refusal, as WHO, of the option NAME, for REASON: a
+  ;; &curl-request-error, field options, whose value is NAME.
+  (define (refuse-option who name reason)
+    (raise (condition (make-curl-request-error 'options name reason)
+                      (make-who-condition who)
+                      (make-message-condition
+                       (case reason
+                         ((unknown-option) "the loaded libcurl knows no option by this name")
+                         ((owned-option) "chez-curl owns this option: it sets it, sets it another way, or keeps it from the hatch")
+                         ((unsupported-type) "the hatch takes long, enumerated-value, off_t, string, string-list and blob options alone")
+                         ((repeated-option) "the request carries this option already, by this name or another of its id")
+                         ((embedded-nul) "a string of the option's value holds U+0000, which C would read as its end")
+                         (else "a string of the option's value holds CR or LF, which could end a line libcurl sends")))
+                      (make-irritants-condition (list name)))))
+
+  ;; option-pairs : Symbol Any -> (Listof (Pairof String Any))
+  ;; OPTIONS, a list of (NAME . VALUE) pairs, each NAME a string, as fresh
+  ;; pairs holding a fresh copy of each NAME, in order; any other shape is
+  ;; an assertion violation from WHO. The list is walked by the count it had
+  ;; when checked, so another thread that changes it meanwhile is refused,
+  ;; never followed round a cycle.
+  (define (option-pairs who options)
+    (define (wrong) (assertion-violation who "options are a list of (NAME . VALUE), each NAME a string" options))
+    (unless (list? options) (wrong))
     (let loop ((rest options) (left (length options)) (found '()))
       (cond ((and (null? rest) (= left 0)) (reverse found))
-            ((or (= left 0) (not (pair? rest)) (not (pair? (car rest))) (not (string? (caar rest))))
-             (wrong "options are a list of (NAME . VALUE)" options))
+            ((or (= left 0) (not (pair? rest))) (wrong))
             (else
-             (let* ((name (string-copy (caar rest)))
-                    (value (cdar rest))
-                    (option (option-named name))
-                    (type (find (lambda (entry) (eqv? (cdr entry) (cdr option))) curlot-types)))
-               (when (memv (car option) (owned-option-ids))
-                 (refuse-field 'curl-engine-submit-with 'options name 'owned-option))
-               (unless (and type (memq (car type) '(long values off-t)))
-                 (refuse-field 'curl-engine-submit-with 'options name 'unsupported-type))
-               (unless (if (eq? (car type) 'off-t) (off-t? value) (long? value))
-                 (wrong "the value does not fit the option's type" (cons name value)))
-               (loop (cdr rest) (- left 1) (cons (cons name value) found)))))))
+             (let ((option (car rest)))
+               (unless (and (pair? option) (string? (car option))) (wrong))
+               (loop (cdr rest) (- left 1)
+                     (cons (cons (string-copy (car option)) (cdr option)) found)))))))
+
+  ;; text-fault : String -> (U Symbol #f)
+  ;; The reason the hatch refuses S, read left to right, its first offending
+  ;; char deciding: U+0000 embedded-nul, CR or LF line-break; #f when none
+  ;; offends.
+  (define (text-fault s)
+    (let ((n (string-length s)))
+      (let loop ((i 0))
+        (and (< i n)
+             (case (char->integer (string-ref s i))
+               ((0) 'embedded-nul)
+               ((10 13) 'line-break)
+               (else (loop (+ i 1))))))))
+
+  ;; hatch-value : Symbol String Symbol Any -> Any
+  ;; VALUE, the value of the option NAME, of the hatch type TYPE, as the
+  ;; setting keeps it: copied first, and the copy checked (ADR-0009,
+  ;; decision 3). A long or an enumerated value is an exact integer a C long
+  ;; holds; an off_t one a 64-bit signed one, each kept as it is; a string a
+  ;; fresh copy; a blob a fresh copy of a bytevector; a string list fresh
+  ;; pairs of fresh copies, walked by its count as option-pairs walks. A
+  ;; value of the wrong shape, or out of range, is an assertion violation
+  ;; from WHO; then a copied string that holds U+0000, CR or LF, the list's
+  ;; each in turn, is refused by text-fault's reason.
+  (define (hatch-value who name type value)
+    (define (wrong message) (assertion-violation who message (cons name value)))
+    (define (checked text)
+      (let ((fault (text-fault text)))
+        (when fault (refuse-option who name fault))
+        text))
+    (case type
+      ((long values)
+       (unless (long? value) (wrong "the option takes an exact integer a C long holds"))
+       value)
+      ((off-t)
+       (unless (off-t? value) (wrong "the option takes an exact integer a curl_off_t holds"))
+       value)
+      ((string)
+       (unless (string? value) (wrong "the option takes a string"))
+       (checked (string-copy value)))
+      ((blob)
+       (unless (bytevector? value) (wrong "the option takes a bytevector"))
+       (bytevector-copy value))
+      (else
+       (unless (list? value) (wrong "the option takes a list of strings"))
+       (let ((copies
+              (let loop ((rest value) (left (length value)) (found '()))
+                (cond ((and (null? rest) (= left 0)) (reverse found))
+                      ((or (= left 0) (not (pair? rest)))
+                       (wrong "the option takes a list of strings"))
+                      (else
+                       (let ((element (car rest)))
+                         (unless (string? element) (wrong "the option takes a list of strings"))
+                         (loop (cdr rest) (- left 1) (cons (string-copy element) found))))))))
+         (for-each checked copies)
+         copies))))
+
+  ;; curl-request-with-options : Request (Listof (Pairof String Any)) -> Request
+  ;; A new request, REQUEST's fields and the options it carries kept, with
+  ;; each of OPTIONS, (NAME . VALUE) pairs, attached after them, in order:
+  ;; the hatch, which (curl unsupported) exports and (curl) does not
+  ;; (ADR-0009). The engine sets them last, after every option chez-curl
+  ;; sets itself. Each is checked as it is attached, on this thread, and
+  ;; the setting keeps a copy, the one checked, so the caller's objects are
+  ;; never read again. In order, the first refusal raising:
+  ;;   - REQUEST no request, or OPTIONS of another shape, an assertion
+  ;;     violation;
+  ;;   - then each option, its name first: one holding U+0000, which
+  ;;     curl_easy_option_by_name would read short, embedded-nul; one the
+  ;;     loaded libcurl does not know, unknown-option; one whose id is an
+  ;;     owned option's, an alias's too, owned-option; one of a type but
+  ;;     hatch-types', unsupported-type; one whose id the request carries
+  ;;     already, or an earlier option here, repeated-option;
+  ;;   - then its value, by hatch-value's rules.
+  ;; Each refusal of a name or a string is a &curl-request-error, field
+  ;; options, naming the option as given. Then REQUEST's own fields are
+  ;; checked, as curl-request-with checks them.
+  (define (curl-request-with-options request options)
+    (define who 'curl-request-with-options)
+    (unless (curl-request? request) (assertion-violation who "not a request" request))
+    (let loop ((rest (option-pairs who options))
+               (found (reverse (curl-request-options request))))
+      (if (null? rest)
+          (request-like who request '() (curl-request-url request) (curl-request-fault request)
+                        (curl-request-follow request) (reverse found))
+          (let ((name (caar rest)))
+            (when (memv #\nul (string->list name)) (refuse-option who name 'embedded-nul))
+            (let* ((option (or (option-found name) (refuse-option who name 'unknown-option)))
+                   (type (find (lambda (entry) (eqv? (cdr entry) (cdr option))) curlot-types)))
+              (when (memv (car option) (owned-option-ids)) (refuse-option who name 'owned-option))
+              (unless (and type (memq (car type) hatch-types))
+                (refuse-option who name 'unsupported-type))
+              (when (find (lambda (setting) (eqv? (hatch-setting-id setting) (car option))) found)
+                (refuse-option who name 'repeated-option))
+              (loop (cdr rest)
+                    (cons (make-hatch-setting name (car option) (car type)
+                                              (hatch-value who name (car type) (cdar rest)))
+                          found)))))))
+
+  ;; hatch-settings-of : Request -> (Listof (List String Symbol Any))
+  ;; The hatch settings REQUEST carries, in order, each (NAME TYPE VALUE),
+  ;; fresh copies all: a private accessor, for the tests that a setting
+  ;; keeps a copy of its own. Neither (curl) nor (curl unsupported) exports
+  ;; it.
+  (define (hatch-settings-of request)
+    (unless (curl-request? request)
+      (assertion-violation 'hatch-settings-of "not a request" request))
+    (map (lambda (setting)
+           (let ((value (hatch-setting-value setting)))
+             (list (string-copy (hatch-setting-name setting)) (hatch-setting-type setting)
+                   (cond ((string? value) (string-copy value))
+                         ((bytevector? value) (bytevector-copy value))
+                         ((list? value) (map string-copy value))
+                         (else value)))))
+         (curl-request-options request)))
+
+  ;; set-hatch-option! : Positive-Integer Hatch-Setting (U Natural #f) (U Positive-Integer #f) -> Void
+  ;; SETTING set on EASY, by its type: a long, an enumerated value or an
+  ;; off_t through set-option!, which sends each through its type's binding;
+  ;; a string through set-string-option!, a counted UTF-8 copy; a blob
+  ;; through call-with-curl-blob, a counted struct curl_blob flagged
+  ;; CURL_BLOB_COPY; a string list as LIST, the string list start-transfer!
+  ;; built for it, or #f, NULL, for an empty one. Each code libcurl answers
+  ;; is judged by setopt-accepted?.
+  (define (set-hatch-option! easy setting list buffer)
+    (let ((name (hatch-setting-name setting))
+          (value (hatch-setting-value setting)))
+      (case (hatch-setting-type setting)
+        ((string) (set-string-option! easy name value buffer))
+        ((blob) (call-with-curl-blob value
+                  (lambda (address) (set-option! easy name address buffer))))
+        ((slist) (set-option! easy name list buffer))
+        (else (set-option! easy name value buffer)))))
 
   ;; --- the transfers write-body serves ------------------------------------------------
 
@@ -1256,20 +1450,20 @@
   ;; --- the plan, on the caller's thread -------------------------------------------------
 
   ;; A plan is what a submit checked: fresh copies of the request's URL,
-  ;; headers, user agent, CA file and body, its other fields, the test
-  ;; seam's settings, and its private fields.
+  ;; headers, user agent, CA file and body, its other fields, the hatch's
+  ;; settings, private copies checked as they were attached, and its private
+  ;; fields.
   (define-record-type plan
     (fields (immutable url) (immutable method) (immutable headers) (immutable agent)
             (immutable body) (immutable timeout-ms) (immutable connect-timeout-ms)
             (immutable body-limit) (immutable ca-file) (immutable verify) (immutable proxy)
             (immutable settings) (immutable fault) (immutable follow)))
 
-  ;; prepare-transfer : Request (Listof (Pairof String Integer)) -> Plan
-  ;; REQUEST's plan, with OPTIONS, the test seam's (NAME . VALUE) pairs,
-  ;; each checked by checked-settings, on the caller's thread, before
-  ;; anything is queued (M3 plan, section 3.4). In order: the snapshot of
-  ;; the headers and the user agent, the CA file's copy, OPTIONS, the CA
-  ;; file against the environment the libcurl loaded with, by
+  ;; prepare-transfer : Request -> Plan
+  ;; REQUEST's plan, checked on the caller's thread, before anything is
+  ;; queued (M3 plan, section 3.4). In order: the snapshot of the headers
+  ;; and the user agent, the CA file's copy, the CA file against the
+  ;; environment the libcurl loaded with, by
   ;; check-ca-environment, then the URL's copy, parsed by
   ;; call-with-parsed-url and checked by
   ;; require-http-scheme, its CURLU freed before this returns (ADR-0008,
@@ -1277,22 +1471,22 @@
   ;; the caller's bytevector may change once this returns (ADR-0023,
   ;; decision 4); a request's method and the presence of its body cannot
   ;; change, so body-not-allowed needs no second check.
-  (define (prepare-transfer request options)
+  (define (prepare-transfer request)
     (unless (curl-request? request)
       (assertion-violation 'curl-submit "not a request" request))
     (let* ((url (string-copy (curl-request-url request)))
            (fields (snapshot 'curl-submit (curl-request-headers request)
                              (curl-request-user-agent request)))
            (ca-file (ca-file-copy 'curl-submit (curl-request-ca-file request)))
-           (body (let ((body (curl-request-body request))) (and body (bytevector-copy body))))
-           (settings (checked-settings options)))
+           (body (let ((body (curl-request-body request))) (and body (bytevector-copy body)))))
       (check-ca-environment 'curl-submit ca-file (curl-request-verify request))
       (call-with-parsed-url url require-http-scheme)
       (make-plan url (curl-request-method request) (car fields) (cdr fields) body
                  (curl-request-timeout-ms request) (curl-request-connect-timeout-ms request)
                  (curl-request-body-limit request) ca-file (curl-request-verify request)
                  (curl-request-proxy request)
-                 settings (curl-request-fault request) (curl-request-follow request))))
+                 (curl-request-options request) (curl-request-fault request)
+                 (curl-request-follow request))))
 
   ;; sends-body? : Symbol (U Bytevector #f) -> Boolean
   ;; Whether a transfer of METHOD with BODY sets the body's options: post,
@@ -1334,7 +1528,9 @@
   ;; critical section that makes it and cleared in the one that frees it, #f
   ;; while not made: its key, registered for write-body and counted as
   ;; transfer, and its sink; its URL's CURLU handle; its error buffer; its
-  ;; header list, 0 while it holds none; and its easy handle.
+  ;; header list, 0 while it holds none; the string lists of its hatch
+  ;; settings, each (SETTING . LIST), newest first, () while it holds none;
+  ;; and its easy handle.
   (define-record-type (live-transfer make-live-transfer live-transfer?)
     (fields (immutable plan live-transfer-plan)
             (mutable key live-transfer-key live-transfer-key-set!)
@@ -1342,6 +1538,7 @@
             (mutable url live-transfer-url live-transfer-url-set!)
             (mutable buffer live-transfer-buffer live-transfer-buffer-set!)
             (mutable header-list live-transfer-header-list live-transfer-header-list-set!)
+            (mutable lists live-transfer-lists live-transfer-lists-set!)
             (mutable easy live-transfer-easy live-transfer-easy-set!)))
 
   ;; live-transfer-easy : Live -> (U Positive-Integer #f)
@@ -1379,7 +1576,7 @@
                           (cons (cadr body-names) bytes)))
                   '()))))
 
-  ;; set-transfer-options! : Positive-Integer Plan Positive-Integer Positive-Integer Natural Positive-Integer Boolean -> Void
+  ;; set-transfer-options! : Positive-Integer Plan Positive-Integer Positive-Integer Natural (Listof (Pairof Hatch-Setting Positive-Integer)) Positive-Integer Boolean -> Void
   ;; Every setting PLAN's transfer makes on EASY, in order: the pins first,
   ;; QUICK_EXIT among them as QUICK-EXIT says, then ERRORBUFFER at BUFFER,
   ;; CURLU at URL, WRITEFUNCTION and WRITEDATA at KEY; then method-settings'
@@ -1389,9 +1586,11 @@
   ;; CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE at the body limit plus one, and
   ;; PROXY at "" for a proxy of #f; then, always, tls-settings' for the
   ;; plan's CA file and verification, through set-tls-options!; then
-  ;; FOLLOWLOCATION at 1 for the private follow field; then the test seam's
-  ;; settings.
-  (define (set-transfer-options! easy plan key buffer header-list url quick-exit)
+  ;; FOLLOWLOCATION at 1 for the private follow field; then, last, the hatch's
+  ;; settings, in the order they were attached, through set-hatch-option!,
+  ;; a string list's from LISTS, the lists start-transfer! built (ADR-0009,
+  ;; decision 2).
+  (define (set-transfer-options! easy plan key buffer header-list lists url quick-exit)
     (set-pinned-options! easy buffer quick-exit)
     (set-option! easy "ERRORBUFFER" buffer #f)
     (set-option! easy (field-option 'url) url buffer)
@@ -1427,20 +1626,25 @@
     (when (plan-follow plan)
       (set-option! easy (field-option 'follow) 1 buffer))
     (for-each (lambda (setting)
-                (set-option! easy (car setting) (cdr setting) buffer))
+                (set-hatch-option! easy setting
+                                   (let ((held (assq setting lists))) (and held (cdr held)))
+                                   buffer))
               (plan-settings plan)))
 
   ;; start-transfer! : Plan Boolean -> Live
   ;; PLAN's transfer, made on this thread, the engine's, ready for its
   ;; multi handle: its key and sink, its URL parsed again and its scheme
-  ;; checked again, its error buffer, zeroed, its header list, and its easy
-  ;; handle, set by set-transfer-options!, with QUICK_EXIT where the libcurl
-  ;; knows it, unless QUICK-EXIT is #f, an engine made without it. Each object is made, and recorded
-  ;; in the live record, in one critical section. A raise frees what was
+  ;; checked again, its error buffer, zeroed, its header list, a string list
+  ;; for each hatch setting of a non-empty list, of UTF-8 copies, counted as
+  ;; slist (ADR-0009, decision 4), and its easy handle, set by
+  ;; set-transfer-options!, with QUICK_EXIT where the libcurl knows it,
+  ;; unless QUICK-EXIT is #f, an engine made without it. Each object is
+  ;; made, and recorded in the live record, in one critical section. A raise
+  ;; frees what was
   ;; made, by free-transfer!, then raises again: the URL's refusal, or a
   ;; &curl-transfer-error, setopt-failed, unknown-option or no-handle.
   (define (start-transfer! plan quick-exit)
-    (let ((live (make-live-transfer plan #f #f #f #f 0 #f)))
+    (let ((live (make-live-transfer plan #f #f #f #f 0 '() #f)))
       (guard (e (#t (free-transfer! live) (raise e)))
         (critical-section
          (let ((sink (make-sink (plan-body-limit plan) (plan-fault plan) 0 '() '() #f)))
@@ -1470,13 +1674,36 @@
                            line))
                   (live-transfer-header-list-set! live appended))))))
          (sent-header-lines (plan-headers plan) (plan-method plan) (plan-body plan)))
+        (for-each
+         (lambda (setting)
+           (when (and (eq? (hatch-setting-type setting) 'slist)
+                      (pair? (hatch-setting-value setting)))
+             ;; The list's first element and its record in one critical
+             ;; section, as the header list's; each later one appends to a
+             ;; list the record holds already.
+             (for-each
+              (lambda (text)
+                (call-with-c-string text
+                  (lambda (address)
+                    (critical-section
+                     (let* ((held (assq setting (live-transfer-lists live)))
+                            (list (if held (cdr held) 0))
+                            (appended (curl-slist-append list address)))
+                       (when (eqv? appended 0)
+                         (error 'start-transfer! "curl_slist_append returned NULL: no memory for a string of a hatch setting"
+                                (hatch-setting-name setting)))
+                       (unless held
+                         (live-transfer-lists-set! live (cons (cons setting appended)
+                                                              (live-transfer-lists live)))))))))
+              (hatch-setting-value setting))))
+         (plan-settings plan))
         (critical-section
          (let ((easy (curl-easy-init)))
            (when (eqv? easy 0) (fail 'no-handle #f #f #f #f))
            (live-transfer-easy-set! live easy)))
         (set-transfer-options! (live-transfer-easy live) plan (live-transfer-key live)
                                (live-transfer-buffer live) (live-transfer-header-list live)
-                               (live-transfer-url live) quick-exit)
+                               (live-transfer-lists live) (live-transfer-url live) quick-exit)
         live)))
 
   ;; abandon-transfer-easy! : Live -> Void
@@ -1490,16 +1717,23 @@
   ;; free-transfer! : Live -> Void
   ;; Frees what LIVE holds, the other way round from its making: the easy
   ;; handle, which the engine has taken out of its multi handle first, then
-  ;; the header list, the error buffer, the CURLU and the key. Each free,
-  ;; and the clearing of its record, is one critical section. A field never
-  ;; made holds #f, or 0 for the header list, and is passed over, so a second
-  ;; call frees nothing.
+  ;; the hatch's string lists, the header list, the error buffer, the CURLU
+  ;; and the key. Each free, and the clearing of its record, is one critical
+  ;; section. A field never made holds #f, or 0 for the header list, or ()
+  ;; for the hatch's lists, and is passed over, so a second call frees
+  ;; nothing.
   (define (free-transfer! live)
     (critical-section
      (let ((easy (live-transfer-easy live)))
        (when easy
          (curl-easy-cleanup easy)
          (live-transfer-easy-set! live #f))))
+    (for-each
+     (lambda (held)
+       (critical-section
+        (curl-slist-free-all (cdr held))
+        (live-transfer-lists-set! live (remq held (live-transfer-lists live)))))
+     (live-transfer-lists live))
     (critical-section
      (let ((header-list (live-transfer-header-list live)))
        (unless (eqv? header-list 0)

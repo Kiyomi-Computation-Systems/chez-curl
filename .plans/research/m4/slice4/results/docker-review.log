@@ -1,0 +1,418 @@
+# Docker ubuntu:24.04, 2026-10-27, on feat/m4-slice-4 (9c8fdb0, the probe uncommitted):
+#   PLAIN_ONLY=1 sh .plans/research/m4/slice4/docker.sh build/verify/current/curl-8.23.0-install candidates review chez
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libc6 2.39-0ubuntu8.9
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libssl3t64 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[floor] libcurl 7.85.0 OpenSSL/3.0.13, Linux x86_64
+[floor] COOKIEFILE -, stdin a cookie file: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 37 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n
+[floor] COOKIEFILE -, stdin empty: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n
+[floor] COOKIEFILE the cookie file, stdin empty: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n
+[floor] POST, body 8, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nContent-Length: 8\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":8,\"body\":\"\u0007&Ed\xc2\x83\xc2\xa2\xc3\x81\xc3\xa0\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nContent-Length: 8\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[floor]   capture tcp body &Ed¢Áà
+[floor] POST, body 8, RESUME_FROM 3, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nContent-Range: bytes 3-7/8\r\nAccept: */*\r\nContent-Length: 5\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":5,\"body\":\"\u0007&Ed\xc2\x83\"}" stdin-offset 11 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nContent-Range: bytes 3-7/8\r\nAccept: */*\r\nContent-Length: 5\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[floor]   capture tcp body &Ed
+[floor] PUT, body 8, RESUME_FROM 3, stdin bytes: set CUSTOMREQUEST 0 set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"PUT /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nContent-Range: bytes 3-7/8\r\nAccept: */*\r\nContent-Length: 5\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":5,\"body\":\"\u0007&Ed\xc2\x83\"}" stdin-offset 11 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp PUT /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nContent-Range: bytes 3-7/8\r\nAccept: */*\r\nContent-Length: 5\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[floor]   capture tcp body &Ed
+[floor] POST, body 8, RESUME_FROM_LARGE 3, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM_LARGE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nContent-Range: bytes 3-7/8\r\nAccept: */*\r\nContent-Length: 5\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":5,\"body\":\"\u0007&Ed\xc2\x83\"}" stdin-offset 11 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nContent-Range: bytes 3-7/8\r\nAccept: */*\r\nContent-Length: 5\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[floor]   capture tcp body &Ed
+[floor] GET, RESUME_FROM 3, stdin bytes: set RESUME_FROM 0 code 33 status 200 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nRange: bytes=3-\r\nAccept: */*\r\n\r\n
+[floor] COOKIEJAR -, COOKIELIST a cookie: set COOKIELIST 0 set COOKIEJAR 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nCookie: jar=out\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39549/x # Netscape HTTP Cookie File # https://curl.se/docs/http-cookies.html # This file was generated by libcurl! Edit at your own risk.  127.0.0.1	FALSE	/	FALSE	0	jar	out | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nCookie: jar=out\r\n\r\n
+[floor] control, http_proxy capture: code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[floor]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[floor] UNIX_SOCKET_PATH capture's socket: set UNIX_SOCKET_PATH 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"unix\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[floor]   capture unix GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[floor] UNIX_SOCKET_PATH capture's socket, http_proxy capture: set UNIX_SOCKET_PATH 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"unix\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[floor]   capture unix GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[floor] CONNECT_TO icy, http_proxy capture: set CONNECT_TO 0 code 1 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[floor]   capture tcp CONNECT 127.0.0.1:42089 HTTP/1.1\r\nHost: 127.0.0.1:42089\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[floor] RESOLVE hatch.test to 127.0.0.1, http_proxy capture: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[floor]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[floor] PROXYHEADER X-P, no proxy: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n
+[floor] PROXYHEADER X-P, http_proxy capture: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nX-P: 1\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[floor]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nX-P: 1\r\n\r\n
+[floor] POST, body 3, PROXYHEADER Content-Length 5, http_proxy capture: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set PROXYHEADER 0 code 28 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[floor]   capture tcp POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nContent-Length: 5\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[floor] PROXYHEADER Host elsewhere, http_proxy capture: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[floor]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[floor] PROXYHEADER Transfer-Encoding chunked, POST body 3, http_proxy capture: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nTransfer-Encoding: chunked\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":3,\"body\":\"\u0007&E\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[floor]   capture tcp POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nTransfer-Encoding: chunked\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[floor]   capture tcp body &E
+[floor] https, HTTPHEADER X-Secret, HEADEROPT 1, https_proxy capture: set CAINFO 0 set CAPATH 0 set HTTPHEADER 0 set HEADEROPT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:46387/x | exit 0
+[floor]   capture tcp CONNECT 127.0.0.1:46387 HTTP/1.1\r\nHost: 127.0.0.1:46387\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[floor] https, HTTPHEADER X-Secret, HEADEROPT 0, https_proxy capture: set CAINFO 0 set CAPATH 0 set HTTPHEADER 0 set HEADEROPT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:46387/x | exit 0
+[floor]   capture tcp CONNECT 127.0.0.1:46387 HTTP/1.1\r\nHost: 127.0.0.1:46387\r\nProxy-Connection: Keep-Alive\r\nX-Secret: s\r\n\r\n
+[floor] CONNECT_ONLY 1: set CONNECT_ONLY 0 code 0 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor] TIMECONDITION 1, TIMEVALUE 0: set TIMECONDITION 0 set TIMEVALUE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nIf-Modified-Since: Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nIf-Modified-Since: Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n
+[floor] TRANSFER_ENCODING 1: set TRANSFER_ENCODING 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nConnection: TE\r\nTE: gzip\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nConnection: TE\r\nTE: gzip\r\n\r\n
+[floor] DOH_URL the TLS origin, CA file the run CA: set CAINFO 0 set CAPATH 0 set DOH_URL 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:39549/x | exit 0
+[floor]   tls POST /dns-query
+[floor]   tls POST /dns-query
+[floor] NETRC 1, HOME with a .netrc: set NETRC 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic bmV0cmMtdXNlcjpuZXRyYy1wYXNz\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic bmV0cmMtdXNlcjpuZXRyYy1wYXNz\r\nAccept: */*\r\n\r\n
+[floor] NETRC 1, no HOME: set NETRC 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n
+[floor] VERBOSE 1: *   Trying 127.0.0.1:39549... * Connected to 127.0.0.1 (127.0.0.1) port 39549 (#0) > GET /x HTTP/1.1 Host: 127.0.0.1:39549 Accept: */*  * Mark bundle as not supporting multiuse < HTTP/1.1 200 OK < Content-Length: 107 < Connection: close <  * Closing connection 0 set VERBOSE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n
+[floor] POST a LF b LF: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":4,\"body\":\"a\nb\n\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[floor]   capture tcp body a\nb\n
+[floor] POST a LF b LF, CRLF 1: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set CRLF 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":4,\"body\":\"a\nb\n\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[floor]   capture tcp body a\nb\n
+[floor] POST a LF b LF, TRANSFERTEXT 1: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set TRANSFERTEXT 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":4,\"body\":\"a\nb\n\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[floor]   capture tcp body a\nb\n
+[floor] the URL's credentials alice:secret: code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://alice:secret@127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[floor] the URL's credentials, USERPWD mallory:x: set USERPWD 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic bWFsbG9yeTp4\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://alice:secret@127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic bWFsbG9yeTp4\r\nAccept: */*\r\n\r\n
+[floor] the URL's credentials, USERNAME mallory: set USERNAME 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic bWFsbG9yeTpzZWNyZXQ=\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://alice:secret@127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic bWFsbG9yeTpzZWNyZXQ=\r\nAccept: */*\r\n\r\n
+[floor] the URL's credentials, PASSWORD x: set PASSWORD 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic YWxpY2U6eA==\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://alice:secret@127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic YWxpY2U6eA==\r\nAccept: */*\r\n\r\n
+[floor] the URL's credentials, NETRC 2, NETRC_FILE a file: set NETRC 0 set NETRC_FILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://alice:secret@127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[floor] the URL's credentials, NETRC 1, NETRC_FILE a file: set NETRC 0 set NETRC_FILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://alice:secret@127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[floor] the URL's credentials, NETRC_FILE alone: set NETRC_FILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://alice:secret@127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[floor] http://localhost, HSTS naming localhost: set HSTS 0 code 28 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://localhost:39549/x | exit 0
+[floor] http://localhost, HSTS naming another host: set HSTS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: localhost:39549\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://localhost:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: localhost:39549\r\nAccept: */*\r\n\r\n
+[floor] ABSTRACT_UNIX_SOCKET capture's, http_proxy capture: set ABSTRACT_UNIX_SOCKET 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"abstract\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[floor]   capture abstract GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[floor] DOH_URL the TLS origin, PROXY empty, https_proxy capture: set CAINFO 0 set CAPATH 0 set PROXY 0 set DOH_URL 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:39549/x | exit 0
+[floor]   capture tcp CONNECT 127.0.0.1:46387 HTTP/1.1\r\nHost: 127.0.0.1:46387\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[floor]   capture tcp CONNECT 127.0.0.1:46387 HTTP/1.1\r\nHost: 127.0.0.1:46387\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[floor] control, PROXY empty, https_proxy capture, no DOH_URL: set CAINFO 0 set CAPATH 0 set PROXY 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:39549/x | exit 0
+[floor] SSLCERT /dev/stdin, stdin the leaf, CA file the run CA: set CAINFO 0 set CAPATH 0 set SSLCERT 0 code 58 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:46387/x | exit 0
+[floor] control, SSLCERT the leaf's file, stdin the leaf: set CAINFO 0 set CAPATH 0 set SSLCERT 0 code 58 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:46387/x | exit 0
+[floor] SSLENGINE rdrand, SSLENGINE_DEFAULT 1: set SSLENGINE 53 set SSLENGINE_DEFAULT 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n
+[floor] NOPROGRESS 0:   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current                                  Dload  Upload   Total   Spent    Left  Speed   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   107  100   107    0     0   144k      0 --:--:-- --:--:-- --:--:--  104k set NOPROGRESS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39549/x | exit 0
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n
+[floor] chez-curl, RESOLVE across one engine: (fresh (refused perform-failed 6)) (attached (status 200)) (after (status 200)) (removed (refused perform-failed 6)) (after-removed (refused perform-failed 6)) 
+[floor]   capture tcp CONNECT 127.0.0.1:46387 HTTP/1.1\r\nHost: 127.0.0.1:46387\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39549\r\nAccept: */*\r\n\r\n
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: resolve-probe.invalid:39549\r\nAccept: */*\r\n\r\n
+[floor]   capture tcp GET /x HTTP/1.1\r\nHost: resolve-probe.invalid:39549\r\nAccept: */*\r\n\r\n
+[floor] done
+[ubuntu-openssl] libcurl 8.5.0 OpenSSL/3.0.13, Linux x86_64
+[ubuntu-openssl] COOKIEFILE -, stdin a cookie file: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 37 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n
+[ubuntu-openssl] COOKIEFILE -, stdin empty: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] COOKIEFILE the cookie file, stdin empty: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n
+[ubuntu-openssl] POST, body 8, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nContent-Length: 8\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":8,\"body\":\"\u0007&Ed\xc2\x83\xc2\xa2\xc3\x81\xc3\xa0\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nContent-Length: 8\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[ubuntu-openssl]   capture tcp body &Ed¢Áà
+[ubuntu-openssl] POST, body 8, RESUME_FROM 3, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl] PUT, body 8, RESUME_FROM 3, stdin bytes: set CUSTOMREQUEST 0 set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl] POST, body 8, RESUME_FROM_LARGE 3, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM_LARGE 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl] GET, RESUME_FROM 3, stdin bytes: set RESUME_FROM 0 code 33 status 200 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nRange: bytes=3-\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] COOKIEJAR -, COOKIELIST a cookie: set COOKIELIST 0 set COOKIEJAR 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nCookie: jar=out\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x # Netscape HTTP Cookie File # https://curl.se/docs/http-cookies.html # This file was generated by libcurl! Edit at your own risk.  .127.0.0.1	TRUE	/	FALSE	0	jar	out | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nCookie: jar=out\r\n\r\n
+[ubuntu-openssl] control, http_proxy capture: code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-openssl]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-openssl] UNIX_SOCKET_PATH capture's socket: set UNIX_SOCKET_PATH 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"unix\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-openssl]   capture unix GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] UNIX_SOCKET_PATH capture's socket, http_proxy capture: set UNIX_SOCKET_PATH 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"unix\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-openssl]   capture unix GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] CONNECT_TO icy, http_proxy capture: set CONNECT_TO 0 code 1 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-openssl]   capture tcp CONNECT 127.0.0.1:33809 HTTP/1.1\r\nHost: 127.0.0.1:33809\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-openssl] RESOLVE hatch.test to 127.0.0.1, http_proxy capture: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-openssl]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-openssl] PROXYHEADER X-P, no proxy: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] PROXYHEADER X-P, http_proxy capture: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nX-P: 1\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-openssl]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nX-P: 1\r\n\r\n
+[ubuntu-openssl] POST, body 3, PROXYHEADER Content-Length 5, http_proxy capture: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set PROXYHEADER 0 code 28 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-openssl]   capture tcp POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nContent-Length: 5\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[ubuntu-openssl] PROXYHEADER Host elsewhere, http_proxy capture: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-openssl]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-openssl] PROXYHEADER Transfer-Encoding chunked, POST body 3, http_proxy capture: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nTransfer-Encoding: chunked\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":3,\"body\":\"\u0007&E\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-openssl]   capture tcp POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nTransfer-Encoding: chunked\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[ubuntu-openssl]   capture tcp body &E
+[ubuntu-openssl] https, HTTPHEADER X-Secret, HEADEROPT 1, https_proxy capture: set CAINFO 0 set CAPATH 0 set HTTPHEADER 0 set HEADEROPT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:45665/x | exit 0
+[ubuntu-openssl]   capture tcp CONNECT 127.0.0.1:45665 HTTP/1.1\r\nHost: 127.0.0.1:45665\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-openssl] https, HTTPHEADER X-Secret, HEADEROPT 0, https_proxy capture: set CAINFO 0 set CAPATH 0 set HTTPHEADER 0 set HEADEROPT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:45665/x | exit 0
+[ubuntu-openssl]   capture tcp CONNECT 127.0.0.1:45665 HTTP/1.1\r\nHost: 127.0.0.1:45665\r\nProxy-Connection: Keep-Alive\r\nX-Secret: s\r\n\r\n
+[ubuntu-openssl] CONNECT_ONLY 1: set CONNECT_ONLY 0 code 0 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl] TIMECONDITION 1, TIMEVALUE 0: set TIMECONDITION 0 set TIMEVALUE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nIf-Modified-Since: Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nIf-Modified-Since: Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n
+[ubuntu-openssl] TRANSFER_ENCODING 1: set TRANSFER_ENCODING 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nConnection: TE\r\nTE: gzip\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nConnection: TE\r\nTE: gzip\r\n\r\n
+[ubuntu-openssl] DOH_URL the TLS origin, CA file the run CA: set CAINFO 0 set CAPATH 0 set DOH_URL 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:36543/x | exit 0
+[ubuntu-openssl]   tls POST /dns-query
+[ubuntu-openssl]   tls POST /dns-query
+[ubuntu-openssl] NETRC 1, HOME with a .netrc: set NETRC 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic bmV0cmMtdXNlcjpuZXRyYy1wYXNz\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic bmV0cmMtdXNlcjpuZXRyYy1wYXNz\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] NETRC 1, no HOME: set NETRC 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] VERBOSE 1: *   Trying 127.0.0.1:36543... * Connected to 127.0.0.1 (127.0.0.1) port 36543 > GET /x HTTP/1.1 Host: 127.0.0.1:36543 Accept: */*  < HTTP/1.1 200 OK < Content-Length: 107 < Connection: close <  * Closing connection set VERBOSE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] POST a LF b LF: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":4,\"body\":\"a\nb\n\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[ubuntu-openssl]   capture tcp body a\nb\n
+[ubuntu-openssl] POST a LF b LF, CRLF 1: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set CRLF 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":4,\"body\":\"a\nb\n\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[ubuntu-openssl]   capture tcp body a\nb\n
+[ubuntu-openssl] POST a LF b LF, TRANSFERTEXT 1: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set TRANSFERTEXT 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":4,\"body\":\"a\nb\n\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[ubuntu-openssl]   capture tcp body a\nb\n
+[ubuntu-openssl] the URL's credentials alice:secret: code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] the URL's credentials, USERPWD mallory:x: set USERPWD 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic bWFsbG9yeTp4\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic bWFsbG9yeTp4\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] the URL's credentials, USERNAME mallory: set USERNAME 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] the URL's credentials, PASSWORD x: set PASSWORD 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic YWxpY2U6eA==\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic YWxpY2U6eA==\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] the URL's credentials, NETRC 2, NETRC_FILE a file: set NETRC 0 set NETRC_FILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic YWxpY2U6bmV0cmMtcGFzcw==\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic YWxpY2U6bmV0cmMtcGFzcw==\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] the URL's credentials, NETRC 1, NETRC_FILE a file: set NETRC 0 set NETRC_FILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] the URL's credentials, NETRC_FILE alone: set NETRC_FILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] http://localhost, HSTS naming localhost: set HSTS 0 code 28 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://localhost:36543/x | exit 0
+[ubuntu-openssl] http://localhost, HSTS naming another host: set HSTS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: localhost:36543\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://localhost:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: localhost:36543\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] ABSTRACT_UNIX_SOCKET capture's, http_proxy capture: set ABSTRACT_UNIX_SOCKET 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"abstract\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-openssl]   capture abstract GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] DOH_URL the TLS origin, PROXY empty, https_proxy capture: set CAINFO 0 set CAPATH 0 set PROXY 0 set DOH_URL 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:36543/x | exit 0
+[ubuntu-openssl]   capture tcp CONNECT 127.0.0.1:45665 HTTP/1.1\r\nHost: 127.0.0.1:45665\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-openssl]   capture tcp CONNECT 127.0.0.1:45665 HTTP/1.1\r\nHost: 127.0.0.1:45665\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-openssl] control, PROXY empty, https_proxy capture, no DOH_URL: set CAINFO 0 set CAPATH 0 set PROXY 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:36543/x | exit 0
+[ubuntu-openssl] SSLCERT /dev/stdin, stdin the leaf, CA file the run CA: set CAINFO 0 set CAPATH 0 set SSLCERT 0 code 58 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:45665/x | exit 0
+[ubuntu-openssl] control, SSLCERT the leaf's file, stdin the leaf: set CAINFO 0 set CAPATH 0 set SSLCERT 0 code 58 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:45665/x | exit 0
+[ubuntu-openssl] SSLENGINE rdrand, SSLENGINE_DEFAULT 1: set SSLENGINE 53 set SSLENGINE_DEFAULT 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] NOPROGRESS 0:   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current                                  Dload  Upload   Total   Spent    Left  Speed   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   107  100   107    0     0  89840      0 --:--:-- --:--:-- --:--:--  104k set NOPROGRESS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:36543/x | exit 0
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] chez-curl, RESOLVE across one engine: (fresh (refused perform-failed 6)) (attached (status 200)) (after (status 200)) (removed (refused perform-failed 6)) (after-removed (refused perform-failed 6)) 
+[ubuntu-openssl]   capture tcp CONNECT 127.0.0.1:45665 HTTP/1.1\r\nHost: 127.0.0.1:45665\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:36543\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: resolve-probe.invalid:36543\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl]   capture tcp GET /x HTTP/1.1\r\nHost: resolve-probe.invalid:36543\r\nAccept: */*\r\n\r\n
+[ubuntu-openssl] done
+[ubuntu-gnutls] libcurl 8.5.0 GnuTLS/3.8.3, Linux x86_64
+[ubuntu-gnutls] COOKIEFILE -, stdin a cookie file: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 37 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n
+[ubuntu-gnutls] COOKIEFILE -, stdin empty: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] COOKIEFILE the cookie file, stdin empty: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n
+[ubuntu-gnutls] POST, body 8, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nContent-Length: 8\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":8,\"body\":\"\u0007&Ed\xc2\x83\xc2\xa2\xc3\x81\xc3\xa0\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nContent-Length: 8\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[ubuntu-gnutls]   capture tcp body &Ed¢Áà
+[ubuntu-gnutls] POST, body 8, RESUME_FROM 3, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls] PUT, body 8, RESUME_FROM 3, stdin bytes: set CUSTOMREQUEST 0 set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls] POST, body 8, RESUME_FROM_LARGE 3, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM_LARGE 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls] GET, RESUME_FROM 3, stdin bytes: set RESUME_FROM 0 code 33 status 200 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nRange: bytes=3-\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] COOKIEJAR -, COOKIELIST a cookie: set COOKIELIST 0 set COOKIEJAR 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nCookie: jar=out\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x # Netscape HTTP Cookie File # https://curl.se/docs/http-cookies.html # This file was generated by libcurl! Edit at your own risk.  .127.0.0.1	TRUE	/	FALSE	0	jar	out | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nCookie: jar=out\r\n\r\n
+[ubuntu-gnutls] control, http_proxy capture: code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-gnutls]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-gnutls] UNIX_SOCKET_PATH capture's socket: set UNIX_SOCKET_PATH 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"unix\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-gnutls]   capture unix GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] UNIX_SOCKET_PATH capture's socket, http_proxy capture: set UNIX_SOCKET_PATH 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"unix\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-gnutls]   capture unix GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] CONNECT_TO icy, http_proxy capture: set CONNECT_TO 0 code 1 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-gnutls]   capture tcp CONNECT 127.0.0.1:46443 HTTP/1.1\r\nHost: 127.0.0.1:46443\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-gnutls] RESOLVE hatch.test to 127.0.0.1, http_proxy capture: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-gnutls]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-gnutls] PROXYHEADER X-P, no proxy: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] PROXYHEADER X-P, http_proxy capture: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nX-P: 1\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-gnutls]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nX-P: 1\r\n\r\n
+[ubuntu-gnutls] POST, body 3, PROXYHEADER Content-Length 5, http_proxy capture: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set PROXYHEADER 0 code 28 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-gnutls]   capture tcp POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nContent-Length: 5\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[ubuntu-gnutls] PROXYHEADER Host elsewhere, http_proxy capture: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-gnutls]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-gnutls] PROXYHEADER Transfer-Encoding chunked, POST body 3, http_proxy capture: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nTransfer-Encoding: chunked\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":3,\"body\":\"\u0007&E\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-gnutls]   capture tcp POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nTransfer-Encoding: chunked\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[ubuntu-gnutls]   capture tcp body &E
+[ubuntu-gnutls] https, HTTPHEADER X-Secret, HEADEROPT 1, https_proxy capture: set CAINFO 0 set CAPATH 0 set HTTPHEADER 0 set HEADEROPT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:45307/x | exit 0
+[ubuntu-gnutls]   capture tcp CONNECT 127.0.0.1:45307 HTTP/1.1\r\nHost: 127.0.0.1:45307\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-gnutls] https, HTTPHEADER X-Secret, HEADEROPT 0, https_proxy capture: set CAINFO 0 set CAPATH 0 set HTTPHEADER 0 set HEADEROPT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:45307/x | exit 0
+[ubuntu-gnutls]   capture tcp CONNECT 127.0.0.1:45307 HTTP/1.1\r\nHost: 127.0.0.1:45307\r\nProxy-Connection: Keep-Alive\r\nX-Secret: s\r\n\r\n
+[ubuntu-gnutls] CONNECT_ONLY 1: set CONNECT_ONLY 0 code 0 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls] TIMECONDITION 1, TIMEVALUE 0: set TIMECONDITION 0 set TIMEVALUE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nIf-Modified-Since: Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nIf-Modified-Since: Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n
+[ubuntu-gnutls] TRANSFER_ENCODING 1: set TRANSFER_ENCODING 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nConnection: TE\r\nTE: gzip\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nConnection: TE\r\nTE: gzip\r\n\r\n
+[ubuntu-gnutls] DOH_URL the TLS origin, CA file the run CA: set CAINFO 0 set CAPATH 0 set DOH_URL 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:38267/x | exit 0
+[ubuntu-gnutls]   tls POST /dns-query
+[ubuntu-gnutls]   tls POST /dns-query
+[ubuntu-gnutls] NETRC 1, HOME with a .netrc: set NETRC 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic bmV0cmMtdXNlcjpuZXRyYy1wYXNz\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic bmV0cmMtdXNlcjpuZXRyYy1wYXNz\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] NETRC 1, no HOME: set NETRC 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] VERBOSE 1: *   Trying 127.0.0.1:38267... * Connected to 127.0.0.1 (127.0.0.1) port 38267 > GET /x HTTP/1.1 Host: 127.0.0.1:38267 Accept: */*  < HTTP/1.1 200 OK < Content-Length: 107 < Connection: close <  * Closing connection set VERBOSE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] POST a LF b LF: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":4,\"body\":\"a\nb\n\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[ubuntu-gnutls]   capture tcp body a\nb\n
+[ubuntu-gnutls] POST a LF b LF, CRLF 1: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set CRLF 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":4,\"body\":\"a\nb\n\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[ubuntu-gnutls]   capture tcp body a\nb\n
+[ubuntu-gnutls] POST a LF b LF, TRANSFERTEXT 1: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set TRANSFERTEXT 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":4,\"body\":\"a\nb\n\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[ubuntu-gnutls]   capture tcp body a\nb\n
+[ubuntu-gnutls] the URL's credentials alice:secret: code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] the URL's credentials, USERPWD mallory:x: set USERPWD 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic bWFsbG9yeTp4\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic bWFsbG9yeTp4\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] the URL's credentials, USERNAME mallory: set USERNAME 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] the URL's credentials, PASSWORD x: set PASSWORD 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic YWxpY2U6eA==\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic YWxpY2U6eA==\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] the URL's credentials, NETRC 2, NETRC_FILE a file: set NETRC 0 set NETRC_FILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic YWxpY2U6bmV0cmMtcGFzcw==\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic YWxpY2U6bmV0cmMtcGFzcw==\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] the URL's credentials, NETRC 1, NETRC_FILE a file: set NETRC 0 set NETRC_FILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] the URL's credentials, NETRC_FILE alone: set NETRC_FILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] http://localhost, HSTS naming localhost: set HSTS 0 code 28 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://localhost:38267/x | exit 0
+[ubuntu-gnutls] http://localhost, HSTS naming another host: set HSTS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: localhost:38267\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://localhost:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: localhost:38267\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] ABSTRACT_UNIX_SOCKET capture's, http_proxy capture: set ABSTRACT_UNIX_SOCKET 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"abstract\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[ubuntu-gnutls]   capture abstract GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] DOH_URL the TLS origin, PROXY empty, https_proxy capture: set CAINFO 0 set CAPATH 0 set PROXY 0 set DOH_URL 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp CONNECT 127.0.0.1:45307 HTTP/1.1\r\nHost: 127.0.0.1:45307\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-gnutls]   capture tcp CONNECT 127.0.0.1:45307 HTTP/1.1\r\nHost: 127.0.0.1:45307\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-gnutls] control, PROXY empty, https_proxy capture, no DOH_URL: set CAINFO 0 set CAPATH 0 set PROXY 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:38267/x | exit 0
+[ubuntu-gnutls] SSLCERT /dev/stdin, stdin the leaf, CA file the run CA: set CAINFO 0 set CAPATH 0 set SSLCERT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:45307/x | exit 0
+[ubuntu-gnutls] control, SSLCERT the leaf's file, stdin the leaf: set CAINFO 0 set CAPATH 0 set SSLCERT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:45307/x | exit 0
+[ubuntu-gnutls] SSLENGINE rdrand, SSLENGINE_DEFAULT 1: set SSLENGINE 4 set SSLENGINE_DEFAULT 4 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] NOPROGRESS 0:   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current                                  Dload  Upload   Total   Spent    Left  Speed   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   107  100   107    0     0   119k      0 --:--:-- --:--:-- --:--:--  104k set NOPROGRESS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:38267/x | exit 0
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] chez-curl, RESOLVE across one engine: (fresh (refused perform-failed 6)) (attached (status 200)) (after (status 200)) (removed (refused perform-failed 6)) (after-removed (refused perform-failed 6)) 
+[ubuntu-gnutls]   capture tcp CONNECT 127.0.0.1:45307 HTTP/1.1\r\nHost: 127.0.0.1:45307\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:38267\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: resolve-probe.invalid:38267\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls]   capture tcp GET /x HTTP/1.1\r\nHost: resolve-probe.invalid:38267\r\nAccept: */*\r\n\r\n
+[ubuntu-gnutls] done
+[current] libcurl 8.23.0 OpenSSL/3.0.13, Linux x86_64
+[current] COOKIEFILE -, stdin a cookie file: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 37 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n
+[current] COOKIEFILE -, stdin empty: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n
+[current] COOKIEFILE the cookie file, stdin empty: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n
+[current] POST, body 8, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nContent-Length: 8\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":8,\"body\":\"\u0007&Ed\xc2\x83\xc2\xa2\xc3\x81\xc3\xa0\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nContent-Length: 8\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[current]   capture tcp body &Ed¢Áà
+[current] POST, body 8, RESUME_FROM 3, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current] PUT, body 8, RESUME_FROM 3, stdin bytes: set CUSTOMREQUEST 0 set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current] POST, body 8, RESUME_FROM_LARGE 3, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM_LARGE 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current] GET, RESUME_FROM 3, stdin bytes: set RESUME_FROM 0 code 33 status 200 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nRange: bytes=3-\r\nAccept: */*\r\n\r\n
+[current] COOKIEJAR -, COOKIELIST a cookie: set COOKIELIST 0 set COOKIEJAR 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nCookie: jar=out\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x # Netscape HTTP Cookie File # https://curl.se/docs/http-cookies.html # This file was generated by libcurl! Edit at your own risk.  .127.0.0.1	TRUE	/	FALSE	0	jar	out | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nCookie: jar=out\r\n\r\n
+[current] control, http_proxy capture: code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[current]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[current] UNIX_SOCKET_PATH capture's socket: set UNIX_SOCKET_PATH 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"unix\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[current]   capture unix GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[current] UNIX_SOCKET_PATH capture's socket, http_proxy capture: set UNIX_SOCKET_PATH 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"unix\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[current]   capture unix GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[current] CONNECT_TO icy, http_proxy capture: set CONNECT_TO 0 code 1 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[current]   capture tcp CONNECT 127.0.0.1:33557 HTTP/1.1\r\nHost: 127.0.0.1:33557\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[current] RESOLVE hatch.test to 127.0.0.1, http_proxy capture: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[current]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[current] PROXYHEADER X-P, no proxy: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n
+[current] PROXYHEADER X-P, http_proxy capture: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nX-P: 1\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[current]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nX-P: 1\r\n\r\n
+[current] POST, body 3, PROXYHEADER Content-Length 5, http_proxy capture: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set PROXYHEADER 0 code 28 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[current]   capture tcp POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nContent-Length: 5\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[current] PROXYHEADER Host elsewhere, http_proxy capture: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[current]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[current] PROXYHEADER Transfer-Encoding chunked, POST body 3, http_proxy capture: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nTransfer-Encoding: chunked\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":3,\"body\":\"\u0007&E\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[current]   capture tcp POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nTransfer-Encoding: chunked\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[current]   capture tcp body &E
+[current] https, HTTPHEADER X-Secret, HEADEROPT 1, https_proxy capture: set CAINFO 0 set CAPATH 0 set HTTPHEADER 0 set HEADEROPT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:40751/x | exit 0
+[current]   capture tcp CONNECT 127.0.0.1:40751 HTTP/1.1\r\nHost: 127.0.0.1:40751\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[current] https, HTTPHEADER X-Secret, HEADEROPT 0, https_proxy capture: set CAINFO 0 set CAPATH 0 set HTTPHEADER 0 set HEADEROPT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:40751/x | exit 0
+[current]   capture tcp CONNECT 127.0.0.1:40751 HTTP/1.1\r\nHost: 127.0.0.1:40751\r\nProxy-Connection: Keep-Alive\r\nX-Secret: s\r\n\r\n
+[current] CONNECT_ONLY 1: set CONNECT_ONLY 0 code 0 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current] TIMECONDITION 1, TIMEVALUE 0: set TIMECONDITION 0 set TIMEVALUE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nIf-Modified-Since: Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nIf-Modified-Since: Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n
+[current] TRANSFER_ENCODING 1: set TRANSFER_ENCODING 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nTE: gzip\r\nConnection: TE\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nTE: gzip\r\nConnection: TE\r\n\r\n
+[current] DOH_URL the TLS origin, CA file the run CA: set CAINFO 0 set CAPATH 0 set DOH_URL 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:39601/x | exit 0
+[current]   tls POST /dns-query
+[current]   tls POST /dns-query
+[current] NETRC 1, HOME with a .netrc: set NETRC 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic bmV0cmMtdXNlcjpuZXRyYy1wYXNz\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic bmV0cmMtdXNlcjpuZXRyYy1wYXNz\r\nAccept: */*\r\n\r\n
+[current] NETRC 1, no HOME: set NETRC 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n
+[current] VERBOSE 1: *   Trying 127.0.0.1:39601... * Established connection to 127.0.0.1 (127.0.0.1 port 39601) from 127.0.0.1 port 51820  * using HTTP/1.x > GET /x HTTP/1.1 Host: 127.0.0.1:39601 Accept: */*  * Request completely sent off < HTTP/1.1 200 OK < Content-Length: 107 < Connection: close <  * shutting down connection #0 set VERBOSE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n
+[current] POST a LF b LF: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":4,\"body\":\"a\nb\n\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nContent-Length: 4\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[current]   capture tcp body a\nb\n
+[current] POST a LF b LF, CRLF 1: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set CRLF 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nTransfer-Encoding: chunked\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nTransfer-Encoding: chunked\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[current] POST a LF b LF, TRANSFERTEXT 1: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set TRANSFERTEXT 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nTransfer-Encoding: chunked\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\nTransfer-Encoding: chunked\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[current] the URL's credentials alice:secret: code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[current] the URL's credentials, USERPWD mallory:x: set USERPWD 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic bWFsbG9yeTp4\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic bWFsbG9yeTp4\r\nAccept: */*\r\n\r\n
+[current] the URL's credentials, USERNAME mallory: set USERNAME 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic bWFsbG9yeTo=\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic bWFsbG9yeTo=\r\nAccept: */*\r\n\r\n
+[current] the URL's credentials, PASSWORD x: set PASSWORD 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[current] the URL's credentials, NETRC 2, NETRC_FILE a file: set NETRC 0 set NETRC_FILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[current] the URL's credentials, NETRC 1, NETRC_FILE a file: set NETRC 0 set NETRC_FILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[current] the URL's credentials, NETRC_FILE alone: set NETRC_FILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAuthorization: Basic YWxpY2U6c2VjcmV0\r\nAccept: */*\r\n\r\n
+[current] http://localhost, HSTS naming localhost: set HSTS 0 code 28 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://localhost:39601/x | exit 0
+[current] http://localhost, HSTS naming another host: set HSTS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: localhost:39601\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://localhost:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: localhost:39601\r\nAccept: */*\r\n\r\n
+[current] ABSTRACT_UNIX_SOCKET capture's, http_proxy capture: set ABSTRACT_UNIX_SOCKET 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"abstract\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[current]   capture abstract GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[current] DOH_URL the TLS origin, PROXY empty, https_proxy capture: set CAINFO 0 set CAPATH 0 set PROXY 0 set DOH_URL 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:39601/x | exit 0
+[current]   capture tcp CONNECT 127.0.0.1:40751 HTTP/1.1\r\nHost: 127.0.0.1:40751\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[current]   capture tcp CONNECT 127.0.0.1:40751 HTTP/1.1\r\nHost: 127.0.0.1:40751\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[current] control, PROXY empty, https_proxy capture, no DOH_URL: set CAINFO 0 set CAPATH 0 set PROXY 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:39601/x | exit 0
+[current] SSLCERT /dev/stdin, stdin the leaf, CA file the run CA: set CAINFO 0 set CAPATH 0 set SSLCERT 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:40751/x | exit 0
+[current] control, SSLCERT the leaf's file, stdin the leaf: set CAINFO 0 set CAPATH 0 set SSLCERT 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:40751/x | exit 0
+[current] SSLENGINE rdrand, SSLENGINE_DEFAULT 1: set SSLENGINE 53 set SSLENGINE_DEFAULT 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n
+[current] NOPROGRESS 0:   % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current                                  Dload  Upload  Total   Spent   Left   Speed   0      0   0      0   0      0      0      0                              0100    107 100    107   0      0 156.6k      0                              0100    107 100    107   0      0 149.7k      0                              0100    107 100    107   0      0 145.1k      0                              0 set NOPROGRESS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:39601/x | exit 0
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n
+[current] chez-curl, RESOLVE across one engine: (fresh (refused perform-failed 6)) (attached (status 200)) (after (status 200)) (removed (refused perform-failed 6)) (after-removed (refused perform-failed 6)) 
+[current]   capture tcp CONNECT 127.0.0.1:40751 HTTP/1.1\r\nHost: 127.0.0.1:40751\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:39601\r\nAccept: */*\r\n\r\n
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: resolve-probe.invalid:39601\r\nAccept: */*\r\n\r\n
+[current]   capture tcp GET /x HTTP/1.1\r\nHost: resolve-probe.invalid:39601\r\nAccept: */*\r\n\r\n
+[current] done
+docker.sh exit 0

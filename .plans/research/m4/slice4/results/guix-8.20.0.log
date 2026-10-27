@@ -1,0 +1,44 @@
+# The container, 2026-10-27, on feat/m4-slice-4 (9c8fdb0, the probe uncommitted):
+#   scripts/guix-env sh -c 'CURL_LIB=$CHEZ_CURL_LIBCURL sh .plans/research/m4/slice4/run.sh guix-8.20.0'
+#   scripts/guix-env sh -c 'CURL_LIB=$CHEZ_CURL_LIBCURL VALGRIND=valgrind sh .plans/research/m4/slice4/run.sh guix-8.20.0-valgrind'
+# hatch.c then printed no stdin offset or effective URL, and run.sh had the blob and list
+# sets alone; both gained the rest later the same day, for the other logs here.
+[guix-8.20.0] libcurl 8.20.0 GnuTLS/3.8.13, Linux x86_64
+[guix-8.20.0] control, no blob: set CAINFO 0 set CAPATH 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" | exit 0
+[guix-8.20.0] ISSUERCERT_BLOB the run CA, copied: set CAINFO 0 set CAPATH 0 set ISSUERCERT_BLOB 4 code 0 status 200 msgs 1 ours 1 body "origin-tls" | exit 0
+[guix-8.20.0] ISSUERCERT_BLOB the other CA, copied: set CAINFO 0 set CAPATH 0 set ISSUERCERT_BLOB 4 code 0 status 200 msgs 1 ours 1 body "origin-tls" | exit 0
+[guix-8.20.0] ISSUERCERT_BLOB the run CA, not copied, freed after setopt: set CAINFO 0 set CAPATH 0 set ISSUERCERT_BLOB 4 code 0 status 200 msgs 1 ours 1 body "origin-tls" | exit 0
+[guix-8.20.0] SSLCERT_BLOB the leaf, SSLKEY_BLOB its key, copied: set CAINFO 0 set CAPATH 0 set SSLCERT_BLOB 0 set SSLKEY_BLOB 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" | exit 0
+[guix-8.20.0] SSLCERT_BLOB the leaf alone, copied: set CAINFO 0 set CAPATH 0 set SSLCERT_BLOB 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" | exit 0
+[guix-8.20.0] SSLCERT_BLOB no certificate, copied: set CAINFO 0 set CAPATH 0 set SSLCERT_BLOB 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" | exit 0
+[guix-8.20.0] SSLCERT_BLOB the leaf, SSLKEY_BLOB its key, not copied, freed after setopt: set CAINFO 0 set CAPATH 0 set SSLCERT_BLOB 0 set SSLKEY_BLOB 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" | exit 0
+[guix-8.20.0] control, hatch.test unresolved: code 6 status 0 msgs 1 ours 1 body "" | exit 0
+[guix-8.20.0] RESOLVE hatch.test to 127.0.0.1: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\\r\\nHost: hatch.test:38391\\r\\nAccept: */*\\r\\n\\r\\n\",\"length\":0,\"body\":\"\"}" | exit 0
+.plans/research/m4/slice4/run.sh: line 97:    97 Segmentation fault      (core dumped) env -i "$tmp/probe" "$url" "$@" > "$tmp/out" 2>&1
+[guix-8.20.0] RESOLVE hatch.test to 127.0.0.1, freed after setopt: | exit 139
+[guix-8.20.0] RESOLVE hatch.test to 127.0.0.1, never freed: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\\r\\nHost: hatch.test:38391\\r\\nAccept: */*\\r\\n\\r\\n\",\"length\":0,\"body\":\"\"}" | exit 0
+[guix-8.20.0] CONNECT_TO any host to capture: set CONNECT_TO 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\\r\\nHost: hatch.test:1\\r\\nAccept: */*\\r\\n\\r\\n\",\"length\":0,\"body\":\"\"}" | exit 0
+[guix-8.20.0] control, icy without an alias: code 1 status 0 msgs 1 ours 1 body "" | exit 0
+[guix-8.20.0] HTTP200ALIASES ICY 200 OK: set HTTP200ALIASES 0 code 0 status 200 msgs 1 ours 1 body "icy" | exit 0
+.plans/research/m4/slice4/run.sh: line 97:   112 Segmentation fault      (core dumped) env -i "$tmp/probe" "$url" "$@" > "$tmp/out" 2>&1
+[guix-8.20.0] HTTP200ALIASES ICY 200 OK, freed after setopt: | exit 139
+[guix-8.20.0] done
+[guix-8.20.0-valgrind] libcurl 8.20.0 GnuTLS/3.8.13, Linux x86_64, valgrind-3.27.0
+[guix-8.20.0-valgrind] control, no blob: set CAINFO 0 set CAPATH 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" | valgrind exit 0, ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] ISSUERCERT_BLOB the run CA, copied: set CAINFO 0 set CAPATH 0 set ISSUERCERT_BLOB 4 code 0 status 200 msgs 1 ours 1 body "origin-tls" | valgrind exit 0, ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] ISSUERCERT_BLOB the other CA, copied: set CAINFO 0 set CAPATH 0 set ISSUERCERT_BLOB 4 code 0 status 200 msgs 1 ours 1 body "origin-tls" | valgrind exit 0, ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] ISSUERCERT_BLOB the run CA, not copied, freed after setopt: set CAINFO 0 set CAPATH 0 set ISSUERCERT_BLOB 4 code 0 status 200 msgs 1 ours 1 body "origin-tls" | valgrind exit 0, ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] SSLCERT_BLOB the leaf, SSLKEY_BLOB its key, copied: set CAINFO 0 set CAPATH 0 set SSLCERT_BLOB 0 set SSLKEY_BLOB 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" | valgrind exit 0, ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] SSLCERT_BLOB the leaf alone, copied: set CAINFO 0 set CAPATH 0 set SSLCERT_BLOB 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" | valgrind exit 0, ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] SSLCERT_BLOB no certificate, copied: set CAINFO 0 set CAPATH 0 set SSLCERT_BLOB 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" | valgrind exit 0, ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] SSLCERT_BLOB the leaf, SSLKEY_BLOB its key, not copied, freed after setopt: set CAINFO 0 set CAPATH 0 set SSLCERT_BLOB 0 set SSLKEY_BLOB 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" | valgrind exit 9, ERROR SUMMARY: 87 errors from 7 contexts (suppressed: 1 from 1) | first: Invalid read of size 8
+[guix-8.20.0-valgrind] control, hatch.test unresolved: code 6 status 0 msgs 1 ours 1 body "" | valgrind exit 0, ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] RESOLVE hatch.test to 127.0.0.1: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\\r\\nHost: hatch.test:42877\\r\\nAccept: */*\\r\\n\\r\\n\",\"length\":0,\"body\":\"\"}" | valgrind exit 0, ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] RESOLVE hatch.test to 127.0.0.1, freed after setopt: set RESOLVE 0 code 6 status 0 msgs 1 ours 1 body "" | valgrind exit 9, ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 1 from 1) | first: Invalid read of size 8
+[guix-8.20.0-valgrind] RESOLVE hatch.test to 127.0.0.1, never freed: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\\r\\nHost: hatch.test:42877\\r\\nAccept: */*\\r\\n\\r\\n\",\"length\":0,\"body\":\"\"}" | valgrind exit 9, ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 1 from 1) | first: 43 (16 direct, 27 indirect) bytes in 1 blocks are definitely lost in loss record 2 of 3
+[guix-8.20.0-valgrind] CONNECT_TO any host to capture: set CONNECT_TO 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\\r\\nHost: hatch.test:1\\r\\nAccept: */*\\r\\n\\r\\n\",\"length\":0,\"body\":\"\"}" | valgrind exit 0, ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] control, icy without an alias: code 1 status 0 msgs 1 ours 1 body "" | valgrind exit 0, ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] HTTP200ALIASES ICY 200 OK: set HTTP200ALIASES 0 code 0 status 200 msgs 1 ours 1 body "icy" | valgrind exit 0, ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+.plans/research/m4/slice4/run.sh: line 97:   320 Segmentation fault      (core dumped) env -i "$vg" -v --command-line-only=yes "--log-file=$vlog" --error-exitcode=9 --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite $supp "$tmp/probe" "$url" "$@" > "$tmp/out" 2>&1
+[guix-8.20.0-valgrind] HTTP200ALIASES ICY 200 OK, freed after setopt: | valgrind exit 139, ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 1 from 1) | first: Invalid read of size 8
+[guix-8.20.0-valgrind] done

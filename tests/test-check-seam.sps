@@ -112,6 +112,8 @@
 
 (define seam-a "but no (curl ...) library may import an (http-client ...) library")
 
+(define hatch-j "the escape hatch, which no (curl ...) library may import, so none can re-export it")
+
 ;; holds-several : String String Natural -> String
 ;; Rule (i): the file FILE in the tree CASE holds COUNT libraries.
 (define (holds-several case file count)
@@ -153,6 +155,14 @@
          "rule (b): an (http-client ...) library importing a (curl ...) library that is not public"
          (refused 1 (string-append (at "rule-b" "http-client/z.sls")
                                    ": (http-client z) imports (curl private thing), but an (http-client ...) library may import only the public (curl ...) libraries ((curl))")))
+   (list "rule-j"
+         "rule (j): (curl) importing (curl unsupported), the hatch, and a private (curl ...) library importing it through prefix; an (http-client ...) library importing it is rule (b)'s; the hatch importing (curl) passes"
+         (refused 3
+                  (string-append (at "rule-j" "curl.sls") ": (curl) imports (curl unsupported), " hatch-j)
+                  (string-append (at "rule-j" "curl/private/x.sls")
+                                 ": (curl private x) imports (curl unsupported), " hatch-j)
+                  (string-append (at "rule-j" "http-client/z.sls")
+                                 ": (http-client z) imports (curl unsupported), but an (http-client ...) library may import only the public (curl ...) libraries ((curl))")))
    (list "second-library"
          "every library form in a file is checked, the second included; rule (i) names the file, and the second library, off its name's path"
          (refused 3
@@ -632,6 +642,16 @@
   (guard (e (#t (list 'malformed (describe e))))
     (map (lambda (entry) (cons (car entry) (sorted-libraries (cdr entry))))
          declared-library-only)))
+
+;; The entries above are held to src/'s imports, so an entry dropped with
+;; nothing else changed passes there: the name then becomes one every
+;; library may import. So the list's names are written out here.
+(test-equal "library-only-chez-names, written out: define-ftype, foreign-alloc, foreign-free, foreign-procedure, foreign-entry, load-shared-object, ftype-set!, foreign-callable, foreign-callable-entry-point, lock-object, fork-thread, disable-interrupts and enable-interrupts, each kept to its libraries"
+  '(define-ftype foreign-alloc foreign-free foreign-procedure foreign-entry load-shared-object ftype-set!
+    foreign-callable foreign-callable-entry-point lock-object fork-thread disable-interrupts
+    enable-interrupts)
+  (guard (e (#t (list 'malformed (describe e))))
+    (map car declared-library-only)))
 
 (test-equal "rnrs-libraries is the (rnrs ...) libraries this Chez has, but (rnrs eval)"
   (sorted-libraries

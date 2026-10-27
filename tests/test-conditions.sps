@@ -218,8 +218,8 @@
 ;; exported list must fail these tests, not shrink them.
 (define request-reasons
   '(embedded-nul line-break not-latin-1 not-a-token surrounding-whitespace duplicates-field
-    framing-header owned-option unsupported-type unknown-key repeated-key missing-value
-    body-not-allowed pkcs11-url environment-override keychain-fallback))
+    framing-header owned-option unsupported-type unknown-option repeated-option unknown-key
+    repeated-key missing-value body-not-allowed pkcs11-url environment-override keychain-fallback))
 
 (test-equal "request-error: an error and a curl-error, and none of the other kinds, carrying its field, value and reason"
   '(#t #t #f #f #f #f #t #f header-value "a\rb" line-break)
@@ -230,11 +230,11 @@
                   (curl-request-error-field c) (curl-request-error-value c)
                   (curl-request-error-reason c)))))
 
-(test-equal "the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option, unsupported-type, unknown-key, repeated-key, missing-value, body-not-allowed, pkcs11-url, environment-override and keychain-fallback, in order"
+(test-equal "the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option, unsupported-type, unknown-option, repeated-option, unknown-key, repeated-key, missing-value, body-not-allowed, pkcs11-url, environment-override and keychain-fallback, in order"
   request-reasons
   curl-request-error-reasons)
 
-(test-equal "the request-error constructor takes each of the thirteen reasons"
+(test-equal "the request-error constructor takes each of the eighteen reasons"
   request-reasons
   (map (lambda (reason)
          (curl-request-error-reason (make-curl-request-error 'user-agent "x" reason)))
