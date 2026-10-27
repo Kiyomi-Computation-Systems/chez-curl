@@ -1,0 +1,5 @@
+(import (chezscheme))
+(display (list (random 1000000) (random 1000000) (random 1000000) (random-seed)))
+(newline)
+(display (guard (e (#t (list 'no-prg (condition-message e)))) (eval '(let ((g (make-pseudo-random-generator))) (pseudo-random-generator-next! g 1000000)))))
+(newline)

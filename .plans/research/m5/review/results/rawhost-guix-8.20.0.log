@@ -1,0 +1,7 @@
+libcurl/8.20.0 GnuTLS/3.8.13 zlib/1.3.1 zstd/1.5.6 libidn2/2.3.8 libpsl/0.21.5 nghttp2/1.69.0 mit-krb5/1.21
+ref=http://caf\xe9.invalid/x url=http://caf\xe9.invalid/x user=uc11 password=uc12 host=caf\xe9.invalid path=/x query=uc16 fragment=uc17
+ref=http://caf\xe8.invalid/x url=http://caf\xe8.invalid/x user=uc11 password=uc12 host=caf\xe8.invalid path=/x query=uc16 fragment=uc17
+ref=http://us\xe9r:p\xe9ss@h.invalid/x url=http://us\xe9r:p\xe9ss@h.invalid/x user=us\xe9r password=p\xe9ss host=h.invalid path=/x query=uc16 fragment=uc17
+ref=/p\xe9?q=\xe9#f\xe9 url=http://base.example/p%E9?q=%E9#f%E9 user=uc11 password=uc12 host=base.example path=/p%E9 query=q=%E9 fragment=f%E9
+ref=#only url=http://base.example/a/b#only user=uc11 password=uc12 host=base.example path=/a/b query=uc16 fragment=only
+ref=http://H.EXAMPLE:80/x url=http://H.EXAMPLE:80/x user=uc11 password=uc12 host=H.EXAMPLE path=/x query=uc16 fragment=uc17

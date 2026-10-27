@@ -1,7 +1,7 @@
 # chez-curl: a libcurl-backed async HTTP client for Chez Scheme — project brief
 
 Date: 2026-09-20
-Status: accepted for M0 and M1. [ADR-0001 to ADR-0024](decisions/) record what was settled (from 2026-10-04). [The harness plan](2026-10-04-harness-plan.md) says what M0 copies from the siblings, [the M1 plan](2026-10-18-m1-plan.md) how M1 builds §7, [the M2 plan](2026-10-19-m2-plan.md), a draft, how M2 builds §8's M2, [the M3 plan](2026-10-24-m3-plan.md), a draft, how M3 builds §8's M3, and [the M4 plan](2026-10-26-m4-plan.md), a draft, how M4 builds §8's M4. This brief is kept in step with them; where it and a record disagree, the record wins. ADR-0013 was accepted from spike E1 (§5) on 2026-10-24.
+Status: accepted for M0 and M1. [ADR-0001 to ADR-0027](decisions/) record what was settled (from 2026-10-04). [The harness plan](2026-10-04-harness-plan.md) says what M0 copies from the siblings, [the M1 plan](2026-10-18-m1-plan.md) how M1 builds §7, [the M2 plan](2026-10-19-m2-plan.md), a draft, how M2 builds §8's M2, [the M3 plan](2026-10-24-m3-plan.md), a draft, how M3 builds §8's M3, [the M4 plan](2026-10-26-m4-plan.md), a draft, how M4 builds §8's M4, and [the M5 plan](2026-10-27-m5-plan.md), a draft, how M5 builds §8's M5. This brief is kept in step with them; where it and a record disagree, the record wins. ADR-0013 was accepted from spike E1 (§5) on 2026-10-24.
 Consumers: Chez applications that need to *make* HTTP requests; the first is ad-hoc scripting. `chez-http-server`'s black-box lane does not use it (ADR-0011)
 Dependencies: libcurl ≥ 7.85.0, any TLS backend (ADR-0003); Chez ≥ 10.4.0, threaded (ADR-0001). No C shim: nothing is compiled (ADR-0001). **Not** chez-libuv, **not** chez-httparse — see §3.
 Evidence behind this brief: measured on the maintainer's Mac 2026-09-20 — system libcurl 8.7.1, `Features: alt-svc AsynchDNS GSS-API HSTS HTTP2 HTTPS-proxy IPv6 Kerberos Largefile libz MultiSSL NTLM SPNEGO SSL threadsafe UnixSockets`; SDK headers include `curl.h multi.h easy.h urlapi.h header.h options.h`; `pkg-config --libs libcurl` → `-lcurl`; `(threaded?)` → `#t` on Chez 10.4.1. Plus chez-http-server's E5 spike series, run through chez-libuv's binding on macOS arm64 and cited in §5. The Linux development host (Guix Chez 10.4.0, Guix libcurl 8.20.0 with GnuTLS, no Node outside Guix) was measured on 2026-10-04; those numbers live in ADR-0001, ADR-0002, ADR-0005 and ADR-0006.
@@ -12,7 +12,7 @@ A client that reads like Drakma or Racket's `http-easy` at the top, sits on libc
 and gives real concurrency without asking the caller to think about an event loop.
 
 ```
-        application: (get s "https://example.com/x")  ·  (http-parallel s reqs)
+   application: (http-get s "https://example.com/x")  ·  (http-parallel s specs)
                                │
         ┌──────────────────────┴───────────────────────┐
         │  (http-client ...)   THE HIGH LEVEL          │
@@ -41,8 +41,9 @@ These are the answers given before work started. ADR-0012 records items 1–3 an
 caller-code rule of §5, ADR-0002 records item 5, and ADR-0001 reversed item 6.
 
 1. **A standalone engine thread, no chez-libuv.** `curl_multi_poll` runs on one dedicated
-   Chez thread that owns the multi handle. Completions marshal back to callers through Chez
-   condition variables. This needs no `uv_poll` bindings (chez-libuv does not have them),
+   Chez thread that owns the multi handle. Completions marshal back to callers through tokens
+   and mailboxes, which callers wait on by polling, not on condition variables (ADR-0013,
+   amended 2026-10-25; ADR-0021). This needs no `uv_poll` bindings (chez-libuv does not have them),
    imposes no loop-affinity rules from another library, and leaves a chez-libuv bridge as a
    later, optional library if the client ever wants to live inside the server's loop
    (ADR-0012).
@@ -52,8 +53,8 @@ caller-code rule of §5, ADR-0002 records item 5, and ADR-0001 reversed item 6.
    chez-libuv's ADR-0019, and it is enforced the same way: an operational verb called off
    the engine thread raises a named condition, `&curl-wrong-thread`, rather than corrupting
    a handle (ADR-0012).
-3. **The high level blocks; concurrency does not cost threads.** `(get s url)` blocks the
-   calling Chez thread on a condition variable, exactly like `http-easy`. But because the
+3. **The high level blocks; concurrency does not cost threads.** `(http-get s url)` blocks
+   the calling Chez thread, exactly like `http-easy`. But because the
    engine multiplexes, *N concurrent requests need one engine thread, not N caller threads* —
    `http-parallel` submits N requests and blocks one caller. Caller threads exist to let the
    caller interleave their own work, not to buy I/O concurrency. This is the single most
@@ -159,8 +160,10 @@ escape hatch (ADR-0010).
 ### 6.2 `(http-client ...)` — the high level
 
 The Drakma / `http-easy` surface. A `session` owns the engine, a connection pool and default
-options; `(get s url)`, `(post s url #:json …)`, `(request s method url …)` block and return a
-`response` record (status, headers, body, final URL, timing). Redirect policy, retry with
+options; `(http-get s url)`, `(http-post s url 'form …)`, `(http-request s method url …)` block
+and return a `response` record (status, headers, body, final URL, timing). The verbs carry the
+`http-` prefix, every call takes an explicit session, and a body is bytes, a string or a form,
+never JSON (ADR-0025). Redirect policy, retry with
 backoff, auth and cookie jars live here, because they are policy and the low level has none.
 `(http-client)` is its public library, and it reaches the low level only through `(curl)`
 (ADR-0007, ADR-0010).
@@ -169,19 +172,19 @@ backoff, auth and cookie jars live here, because they are policy and the low lev
 
 ```scheme
 ;; the session owns the engine thread and the pool; cleanup is guaranteed
-(call-with-http-session opts (lambda (s) ...))
+(call-with-http-session 'timeout-ms 5000 (lambda (s) ...))
 
 ;; a bounded group: every request joined before it returns, on the happy path
 ;; and on an exception. No thread is spawned per request — the engine multiplexes.
 (call-with-request-group s
   (lambda (go)
-    (let ((a (go req-a)) (b (go req-b)))
-      (values (await a) (await b)))))
+    (let ((a (go 'get url-a)) (b (go 'get url-b)))
+      (values (http-await a) (http-await b)))))
 
 ;; the common case, one line
-(http-parallel s (list req ...))        ; -> (list response ...)
+(http-parallel s (list spec ...))       ; -> (list response ...)
 
-;; streaming, closing what it opens
+;; streaming, closing what it opens (M6)
 (call-with-response-port s req (lambda (port) ...))
 ```
 

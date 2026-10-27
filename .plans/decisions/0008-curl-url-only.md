@@ -3,7 +3,8 @@
 - **Status:** Accepted; amended 2026-10-17: the measured verdicts become M2's tests; amended
   2026-10-19: the verdicts vary by version, so the suite holds shared answers and version
   rows; amended 2026-10-23 with what M2 slice 1 built, and with what M2 slice 2 changed; amended
-  2026-10-24: the caller checks, the engine parses (M3)
+  2026-10-24: the caller checks, the engine parses (M3); amended 2026-10-27: a redirect's
+  `Location`, measured (the M5 plan)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D2 (brief §10)
@@ -208,3 +209,50 @@ Decision 3 left M3 to settle which thread parses a request's URL. The maintainer
   native handle across threads, and leaves a submit that fails after the parse to free it.
   Also rejected: parsing on the engine alone, which turns a bad URL from a raise at submit
   into a failed completion.
+
+## Amendment, 2026-10-27: a redirect's `Location`, measured (the M5 plan)
+
+M4 left redirects to M5, and the M4 plan and ADR-0023's amendment said M5 would follow them
+"from `CURLINFO_REDIRECT_URL`". The M5 plan measured that first
+([research](../research/m5/redirect-url/)): a C probe made one transfer with the options the
+engine sets, its URL through `CURLOPT_CURLU`, the pins, and `FOLLOWLOCATION` off, through
+`curl_easy_perform`, against a server
+that wrote each `Location` byte for byte, on 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with
+GnuTLS, Guix's 8.20.0 and 8.23.0, 62 cases each. It printed `CURLINFO_REDIRECT_URL` beside the
+first `Location` header, resolved by `curl_url_set` on the request URL's handle, as decision 4
+does it.
+
+- **Where libcurl's answer is a parsed URL, it is decision 4's resolution,** on all five, but
+  for credentials on 8.23.0, below.
+- **But libcurl's answer moves with the version where decision 4's does not:**
+  - 7.85.0 and 8.5.0 give one only for a 3xx status; 8.20.0 and 8.23.0 for any status that
+    carries a `Location`, 200 and 400 among them;
+  - 8.23.0 drops credentials from it: the request URL's on a relative reference, and a
+    `Location`'s own. The other four keep both, as `curl_url_set` does on all five.
+- **libcurl hands back what `curl_url_set` refuses, as it came:** `http://[::1/x` and a port of
+  99999 on all five, `foo://bar/x` on all five, and `javascript:alert(1)` from 8.5.0. 7.85.0
+  resolves the last as a relative path. Bytes 0x01 and 0x7F come back raw on 7.85.0 and 8.5.0,
+  where `curl_url_set` refuses them, and percent-encoded from 8.20.0, as `curl_url_set` encodes
+  them there.
+- **Variance both share:** a byte above 0x7F in a path is percent-encoded on all five, in
+  lower-case hex on 7.85.0 and 8.5.0 and upper-case from 8.20.0, and a UTF-8 host comes back
+  raw; and a lone `#only` drops the last segment and the
+  query on 7.85.0 and 8.5.0, the `#s` row `test-url` already holds. No version gives a
+  reference without a fragment the request's, which RFC 9110 §10.2.2 asks of a user agent.
+- **Around the URL:** an empty or blank `Location` gives none, on all five; two `Location`
+  headers fail the transfer with 8 on 8.20.0 and 8.23.0, and the first is taken on 7.85.0 and
+  8.5.0; a 110,000-byte one fails with 27 on 7.85.0 and 8.5.0, and 100 from 8.20.0, as an
+  oversized head does.
+
+So, the M5 plan's design (§3.4), revising the M4 plan's: **the high level follows a redirect
+from the first `Location` header's bytes, resolved by decision 4 against the URL it requested,
+never from `CURLINFO_REDIRECT_URL`.** The status, the credentials and the refusals are then
+chez-curl's rules, one on every libcurl, and the variance left is `curl_url`'s, which `test-url`
+already pins by version. A header string is Latin-1, so the resolution takes its bytes as given:
+`(curl)` exports one that takes a bytevector reference beside a string (the M5 plan, §3.1).
+
+The plan's review then found, in the container on 8.20.0 ([research](../research/m5/review/)),
+that a Latin-1 byte in a host or in the user info comes back raw from `curl_url_get`, whole and
+by part, where `utf8->string` reads `caf\xe9` and `caf\xe8` as one string. So each URL
+function refuses an answer that is not UTF-8, by a new reason, `not-utf-8`, rather than decode
+it (the M5 plan, §3.1).

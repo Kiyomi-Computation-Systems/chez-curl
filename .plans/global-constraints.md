@@ -620,3 +620,26 @@ provisional. They bind until that record is accepted or amended.
   and live transfer completes as `stopped`. The engine frees every handle and cleans up the
   multi handle, and the caller's stop returns once its thread has signalled its end. A later
   submit raises, and a later stop returns at once. A drain is the caller's: await, then stop.
+
+## The high level
+
+- **`(http-client)` reaches the low level through `(curl)` alone,** and holds no native object of
+  its own (ADR-0007).
+- **The verbs carry the `http-` prefix:** `http-get`, `http-head`, `http-post`, `http-put`,
+  `http-patch`, `http-delete`, and `http-request`, which takes the method; each takes the
+  session first (ADR-0025).
+- **Every call takes an explicit session.** There is no default session, and the high level
+  starts no thread a caller did not ask for. A session owns one engine, and
+  `call-with-http-session` stops it when its procedure returns or escapes (ADR-0025).
+- **A call's body is a bytevector, a string sent as UTF-8, or a form;** `params` add to the
+  URL's query through libcurl's URL API, never by Scheme splicing a string. The form encoding is
+  chez-curl's, `application/x-www-form-urlencoded`. No JSON (ADR-0025).
+- **Retries are off unless the session or the call names a policy** (ADR-0026). Off means
+  chez-curl adds no attempt: libcurl itself may resend on a dead reused connection.
+- **A redirect from `https` to `http` is refused** as `&http-redirect-error`,
+  `insecure-redirect`, unless the session or the call sets `allow-downgrade` (ADR-0027).
+- **A redirect is followed from the first `Location` header's bytes,** resolved by
+  `curl_url_set` against the URL the transfer requested, never from `CURLINFO_REDIRECT_URL`,
+  whose statuses and credentials move with the version. `FOLLOWLOCATION` stays owned and off
+  (ADR-0008 and ADR-0023, amended 2026-10-27). A URL function's answer that is not UTF-8 is
+  refused, never decoded (ADR-0008, amended 2026-10-27).

@@ -6,60 +6,48 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **Milestone:** M4, the public records and the asynchronous API (brief §8), per the
-  [M4 plan](2026-10-26-m4-plan.md), merged in PRs #23 and #24. Four slices: the request, its
-  body and the classes; the asynchronous API; the environment; the hatch, `(curl unsupported)`.
-  - **Slice 1, the request, its body and the classes:** merged in PR #25. Its close-out is
-    below.
-  - **Slice 2, the asynchronous API:** merged in PR #26. Its close-out is below.
-  - **Slice 3, the environment:** merged in PR #27. Its close-out is below.
-  - **Slice 4, the hatch:** built on `feat/m4-slice-4`, not yet merged.
-    - **Measured first** ([`research/m4/slice4/`](research/m4/slice4/)), through a C probe on
-      the multi interface with chez-curl's pins, on five libcurls: Guix's 8.20.0 in the
-      container, and in Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, and
-      8.23.0. A blob with `CURL_BLOB_COPY` and a string list freed after the easy handle left
-      Valgrind clean on all five, each control caught. An Opus review classed the 200 options
-      the hatch's types reach from curl's docs and source; the probe measured what the source
-      could not settle (the plan, §7.1; ADR-0009, amended 2026-10-27).
-    - **Decided by the maintainer, 2026-10-27:** 18 more options are owned, by id: ten twins,
-      `TRANSFERTEXT`, the URL's credentials and `HSTS`, the two socket options, `PROXYHEADER`
-      and `HEADEROPT`; and eight kept from the hatch, which read stdin, write stdout, send
-      nothing, skip the proxy field or reach later requests. `VERBOSE` and `NOPROGRESS` stay;
-      only libcurl's own `"-"` modes are refused; one reason, `owned-option`, covers all.
-    - **Built:** `(curl unsupported)` exports `curl-request-with-options`; a request keeps
-      checked copies of its options, and the engine sets them last; blobs through a counted
-      `struct curl_blob` native fills, string lists counted and freed after the easy handle;
-      check-seam's rule (j) and `ftype-set!` for native alone; `test-unsupported`; the test
-      seam retired, each check that used it accounted for (ADR-0009, amended 2026-10-27).
-    - **The slice's review** (Opus, read-only) found no blocker and one major, proved in a
-      copy: rule (j) closes the route through `(curl unsupported)` alone, since the procedure
-      is `(curl private transfer)`'s export too, and a re-export from `(curl)` under another
-      name passed check-seam and test-unsupported. test-unsupported now holds `(curl)`'s
-      exports by what each is bound to, and the records say what rule (j) does. Its minors:
-      the option cache's copy of a name could not be seen through the hatch, which copies
-      first, and is now tested through `option-named`; and test-unsupported has no 8.7.1 blob
-      row, so the Mac's `make test` fails it, printing the row, until that row is added (the
-      plan, §8).
-    - **Checks:** on the final tree, in the container, `make test` 26 of 26, and the two
-      suites the review's fixes changed under the memory gate; before those fixes, `make
-      test-memory` 26 of 26. In Docker, on the final tree and before the fixes, the main
-      (8.5.0), gnutls, floor (7.85.0) and current (8.23.0) lanes 26 of 26 each, and the memory
-      lane 26 of 26 with `check-memory-gate` 33 of 33. The [mutation log](hatch-mutation-log.md): 39 mutants over three sweeps, 38
-      failing a named check, three of them only after a fix, one the slice's own sweep found
-      and two the review's, and one equivalent.
-    - **Two subagents:**
-
-      | Agent | Model | Tokens | Time |
-      |---|---|---|---|
-      | twin review of the 200 options | Opus | 468k | 38 min |
-      | adversarial review | Opus | 230k | 16 min |
-    - **Owed by the Mac:** `make test`, whose test-unsupported prints the 8.7.1 blob row; the
-      slice's sets, `.plans/research/m4/slice4/run.sh mac` with and without
-      `CURL_SSL_BACKEND=secure-transport`; and 8.7.1's options table, slice 1's `options.sh`.
-  - **Carried into M4:** why a timeout's 28 came 1,014 ms late once (ADR-0019, amended
-    2026-10-25); CI has still never run; accepting Apple's `OPENSSL_X509_TEA_DISABLE=1` in
-    place of the keychain refusal, once when LibreSSL reads it is measured (ADR-0024, amended
+- **Milestone:** M5, the high level (brief §8), per the [M5 plan](2026-10-27-m5-plan.md), a
+  draft on `docs/m5-plan`. Four slices: the session and the verbs; redirects; retries; the
+  request group and `http-parallel`.
+  - **Measured first** ([`research/m5/redirect-url/`](research/m5/redirect-url/)), through a C
+    probe that made each transfer as the engine does, `FOLLOWLOCATION` off, on five libcurls:
+    Guix's 8.20.0 in the container, and in Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with
+    GnuTLS, and 8.23.0, 62 cases each. `CURLINFO_REDIRECT_URL` moves with the version: 7.85.0
+    and 8.5.0 give it for a 3xx alone, 8.20.0 and 8.23.0 for any status with a `Location`;
+    8.23.0 drops credentials from it; and every version hands back unparsed what `curl_url_set`
+    refuses. Where it is a parsed URL, it is `curl_url_set`'s resolution of the first
+    `Location`. So M5 resolves that header's bytes itself (ADR-0008 and ADR-0023, amended
     2026-10-27).
+  - **Decided by the maintainer, 2026-10-27,** each the recommended option: the verbs carry the
+    `http-` prefix; every call takes an explicit session; a body is bytes, a string or a form,
+    with `params` for the query, and no JSON
+    ([ADR-0025](decisions/0025-the-high-levels-surface.md), new); retries are off unless a
+    session or a call asks ([ADR-0026](decisions/0026-retries-off-unless-asked.md), new); and,
+    after the review below, a redirect from `https` to `http` is refused unless the caller
+    allows it ([ADR-0027](decisions/0027-no-downgrade-unless-allowed.md), new).
+  - **An adversarial review of the plan** (Opus, read-only), before it merged: one blocker,
+    twelve majors and sixteen minors, each answered in the plan and its records. The blocker: a
+    group that recovered a lost notice by reading `curl-token-done?` could step a token twice,
+    and send a `post` twice; each token is now stepped once, from a set. Among the majors:
+    libcurl itself resends any method on a dead reused connection, so "off" means chez-curl adds
+    no attempt; on 8.7.x every transfer carries `#f`, so a `post` is never retried there; Chez's
+    `random` draws one sequence in every process; a Latin-1 host comes back raw from
+    `curl_url_get`, and is now refused, not decoded; `Host` and `Proxy-Authorization` are
+    dropped across origins; and the downgrade, put to the maintainer. I checked its citations
+    in the code and in curl's source, and reran its probes, which are kept in
+    [`research/m5/review/`](research/m5/review/).
+- **M4, the public records and the asynchronous API:** its four slices are merged (PRs #25 to
+  #28), per the [M4 plan](2026-10-26-m4-plan.md). Their close-outs are below.
+  - **M4 is done once the Mac has run slice 4** (the M4 plan, §9): `make test`, whose
+    test-unsupported prints the 8.7.1 blob row to add; the slice's sets,
+    `.plans/research/m4/slice4/run.sh mac` with and without
+    `CURL_SSL_BACKEND=secure-transport`; and 8.7.1's options table, slice 1's `options.sh`.
+    The plan's proxy probe ran there with slice 3.
+  - **Carried into M5** (the M5 plan, §10): why a timeout's 28 came 1,014 ms late once
+    (ADR-0019, amended 2026-10-25); the stall checks on macOS; the Mac's Node not exiting when
+    its FIFO stdin closes; a curl bug report on 8.23.0's dead-connection reuse; accepting
+    Apple's `OPENSSL_X509_TEA_DISABLE=1` in place of the keychain refusal, once when LibreSSL
+    reads it is measured (ADR-0024, amended 2026-10-27); and CI has still never run.
 - **M3, the engine:** **done on 2026-10-26.** Its three slices are merged (PRs #19, #20 and
   #21), PR #22 moved CI's `current` lane to curl 8.23.0, and the Mac has run both
   (M3 plan, §7). Their close-outs are below.
@@ -132,6 +120,60 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-27 — M4 slice 4: the hatch (PR #28, `d8e1225`)
+
+- **Measured first** ([`research/m4/slice4/`](research/m4/slice4/)), through a C probe on
+  the multi interface with chez-curl's pins, on five libcurls: Guix's 8.20.0 in the
+  container, and in Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, and
+  8.23.0. A blob with `CURL_BLOB_COPY` and a string list freed after the easy handle left
+  Valgrind clean on all five, each control caught. An Opus review classed the 200 options
+  the hatch's types reach from curl's docs and source; the probe measured what the source
+  could not settle (the plan, §7.1; ADR-0009, amended 2026-10-27).
+- **Decided by the maintainer, 2026-10-27:** 18 more options are owned, by id: ten twins,
+  `TRANSFERTEXT`, the URL's credentials and `HSTS`, the two socket options, `PROXYHEADER`
+  and `HEADEROPT`; and eight kept from the hatch, which read stdin, write stdout, send
+  nothing, skip the proxy field or reach later requests. `VERBOSE` and `NOPROGRESS` stay;
+  only libcurl's own `"-"` modes are refused; one reason, `owned-option`, covers all.
+- **Built:** `(curl unsupported)` exports `curl-request-with-options`; a request keeps
+  checked copies of its options, and the engine sets them last; blobs through a counted
+  `struct curl_blob` native fills, string lists counted and freed after the easy handle;
+  check-seam's rule (j) and `ftype-set!` for native alone; `test-unsupported`; the test
+  seam retired, each check that used it accounted for (ADR-0009, amended 2026-10-27).
+- **The slice's review** (Opus, read-only) found no blocker and one major, proved in a
+  copy: rule (j) closes the route through `(curl unsupported)` alone, since the procedure
+  is `(curl private transfer)`'s export too, and a re-export from `(curl)` under another
+  name passed check-seam and test-unsupported. test-unsupported now holds `(curl)`'s
+  exports by what each is bound to, and the records say what rule (j) does. Its minors:
+  the option cache's copy of a name could not be seen through the hatch, which copies
+  first, and is now tested through `option-named`; and test-unsupported has no 8.7.1 blob
+  row, so the Mac's `make test` fails it, printing the row, until that row is added (the
+  plan, §8).
+- **Checks:** on the final tree, in the container, `make test` 26 of 26, and the two
+  suites the review's fixes changed under the memory gate; before those fixes, `make
+  test-memory` 26 of 26. In Docker, on the final tree and before the fixes, the main
+  (8.5.0), gnutls, floor (7.85.0) and current (8.23.0) lanes 26 of 26 each, and the memory
+  lane 26 of 26 with `check-memory-gate` 33 of 33. The [mutation log](hatch-mutation-log.md): 39 mutants over three sweeps, 38
+  failing a named check, three of them only after a fix, one the slice's own sweep found
+  and two the review's, and one equivalent.
+- **Two subagents:**
+
+  | Agent | Model | Tokens | Time |
+  |---|---|---|---|
+  | twin review of the 200 options | Opus | 468k | 38 min |
+  | adversarial review | Opus | 230k | 16 min |
+- **Merged before the Mac ran it,** at the maintainer's call: the Mac's runs are owed (Now,
+  above), and test-unsupported fails there until its 8.7.1 blob row is added.
+- **Learned:**
+  - a rule that closes one route reads as closing them all: rule (j) kept `(curl)` from
+    importing the hatch, and the records said `(curl)` could not export it, until the review
+    re-exported the procedure from `(curl private transfer)` under another name;
+  - a check of an order held by one element cannot see the order: test-check-nothreads
+    sorted per directory and passed until a second public library arrived (`traps.md`);
+  - a source reading is a hypothesis: the twin review's reading of `RESUME_FROM` in 8.20.0's
+    source was wrong, and the probe measured 43 there;
+  - counts went into the records from memory again, "six libcurls" for five, and README
+    overclaimed what `VERBOSE` writes and what `/dev/stdin` reads, each caught on a reread.
 
 ### 2026-10-27 — M4 slice 3: the environment (PR #27, `9c8fdb0`)
 
