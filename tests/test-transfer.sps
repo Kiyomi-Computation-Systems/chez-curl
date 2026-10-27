@@ -48,19 +48,19 @@
 ;;;   - the option table and its bindings, written out here, since on
 ;;;     x86-64 a long sent through the off_t binding arrives all the same;
 ;;;     the field table and the record's fields, written out too;
-;;;   - the test seam, curl-engine-submit-with, held to ADR-0009's rules,
-;;;     narrowed (amended 2026-10-23): long, enumerated-value and off_t
-;;;     options alone, none the transfer owns, compared by id, the TLS
-;;;     fields' four and the CA file's twins written out (amended
-;;;     2026-10-24), each refused at submit, FOLLOWLOCATION among them;
-;;;     through the private follow field, curl-request-following, the last
-;;;     request's headers after a redirect followed, and the redirect pin
-;;;     observed;
+;;;   - the hatch's settings as the engine sets them (ADR-0009): a setopt
+;;;     libcurl refuses, through each integer binding, and the option
+;;;     cache's own copy of a name; option-named's refusal of a name the
+;;;     libcurl does not know. The hatch's own rules are test-unsupported's
+;;;     (the M4 plan, section 3.7). Through the private follow field,
+;;;     curl-request-following, the last request's headers after a redirect
+;;;     followed, and the redirect pin observed;
 ;;;   - the request's snapshot, taken at submit: a request changed after it
 ;;;     was made is refused there, in prepare-transfer's order, and a value
 ;;;     another thread changes is sent whole or refused, never otherwise;
 ;;;   - a mutex held across an asynchronous escape: sweeps of the calls
-;;;     that take transfer.sls's mutexes, and of a refused submit;
+;;;     that take transfer.sls's mutexes, of a refused attach, and of a
+;;;     refused submit;
 ;;;   - framing headers, Content-Length and Transfer-Encoding, refused;
 ;;;   - hermetic: no proxy variable is set;
 ;;;   - the proxy field, in a child, tests/transfer-proxy.sps, given
@@ -245,9 +245,9 @@
 ;; of what it ended with, at submit, on this thread, or on the engine's.
 (define (perform r) (await-token (curl-submit engine r)))
 
-;; perform-with : Request (Listof (Pairof String Integer)) -> Response
-;; perform's, through the test seam, curl-engine-submit-with, with OPTIONS.
-(define (perform-with r options) (await-token (curl-engine-submit-with engine r options)))
+;; perform-with : Request (Listof (Pairof String Any)) -> Response
+;; perform's, of R with OPTIONS attached through the hatch.
+(define (perform-with r options) (perform (curl-request-with-options r options)))
 
 ;; settled : Any -> Any
 ;; X, as it is; a token is cancelled first, and awaited, whatever it ended
@@ -542,7 +542,7 @@
 ;; The scenarios whose answers vary by version, in the order every row
 ;; answers them: big-header at both sizes past CURL_MAX_HTTP_HEADER,
 ;; many-headers, bad-status-code and conflicting-content-length. The plan's
-;; fifth, MAXFILESIZE_LARGE alone, is no longer reachable: the test seam
+;; fifth, MAXFILESIZE_LARGE alone, is no longer reachable: the hatch
 ;; refuses it, a request field's option (ADR-0009, amended 2026-10-23).
 ;; Then a text: nul-in-header's error buffer, which 8.23.0 capitalised
 ;; (ADR-0020, amended 2026-10-26).
@@ -1058,14 +1058,15 @@
              (lambda (url name value header headers agent other) (set-car! header 'x-name)))))
 
 ;; A submit checks a request in prepare-transfer's order: the snapshot of
-;; the headers and the user agent, the CA file's copy, the test seam's
-;; options, then the URL, parsed and its scheme checked. Each row makes its
-;; field wrong and every field checked after it, so a check out of order,
-;; or one left to the engine's thread, names another answer.
-(test-equal "a submit checks in prepare-transfer's order, each refusal raised at submit: a header, while the CA file, the test seam's options and the URL are wrong too; the CA file, while the options and the URL are; the options, while the URL is, each before anything native; then the URL, parsed on this thread, its CURLU live at the raise and freed after"
+;; the headers and the user agent, the CA file's copy, then the URL, parsed
+;; and its scheme checked. Each row makes its field wrong and every field
+;; checked after it, so a check out of order, or one left to the engine's
+;; thread, names another answer. The hatch's options were checked as they
+;; were attached, and are private copies: a submit has nothing of theirs
+;; to check (ADR-0009, amended 2026-10-27).
+(test-equal "a submit checks in prepare-transfer's order, each refusal raised at submit: a header, while the CA file and the URL are wrong too; the CA file, while the URL is, each before anything native; then the URL, parsed on this thread, its CURLU live at the raise and freed after"
   (list (list '(request-refused header-name "X Name" not-a-token) running-counts running-counts)
         (list '(request-refused ca-file "/x/c\x0;.pem" embedded-nul) running-counts running-counts)
-        (list '(request-refused options "URL" owned-option) running-counts running-counts)
         (list '(url-refused scheme-not-http)
               '((block . 1) (easy . 0) (url . 1) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1))
               running-counts))
@@ -1076,9 +1077,8 @@
                                       'headers (list (cons name "v")) 'ca-file path)))
            (when (memq 'header wrong) (string-set! name 1 #\space))
            (when (memq 'ca-file wrong) (string-set! path 4 #\nul))
-           (refusal (lambda ()
-                      (curl-engine-submit-with engine r (if (memq 'options wrong) '(("URL" . 1)) '()))))))
-       '((header ca-file options url) (ca-file options url) (options url) (url))))
+           (refusal (lambda () (curl-submit engine r)))))
+       '((header ca-file url) (ca-file url) (url))))
 
 (test-equal "values that hold every char U+0001 to U+00FF but CR and LF are taken, as a header value and as a user agent, and nothing native is made"
   (list (list 'no-raise 'no-raise running-counts) (list 'no-raise 'no-raise running-counts))
@@ -1232,9 +1232,9 @@
                       'not-tried-with-a-count-left)))
       (list after-one after-two after-free again (slist-count)))))
 
-;; --- the test seam's deny-list (ADR-0009, amended 2026-10-23) ---------------------------
+;; --- the hatch's deny-list (ADR-0009, amended 2026-10-23 and 2026-10-27) ------------------
 
-(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT among them, and the pins' bitmasks; then each request field's, FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's NOPROXY, PRE_PROXY, PROXYPORT and PROXYTYPE; then every proxy TLS option"
+(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT among them, and the pins' bitmasks; then each request field's, FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's NOPROXY, PRE_PROXY, PROXYPORT and PROXYTYPE; then slice 4's: TRANSFERTEXT, CRLF's twin; the URL's USERPWD, USERNAME, PASSWORD, NETRC and HSTS; the proxy field's UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET; the headers' PROXYHEADER and HEADEROPT; and RESUME_FROM, RESUME_FROM_LARGE, COOKIEFILE, COOKIEJAR, CONNECT_ONLY, DOH_URL, RESOLVE and SSLENGINE_DEFAULT, kept from the hatch; then every proxy TLS option"
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
     "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
     "CURLU" "NOBODY" "CUSTOMREQUEST" "HTTPHEADER" "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "USERAGENT"
@@ -1244,6 +1244,10 @@
     "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE" "INFILESIZE_LARGE"
     "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
     "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
+    "TRANSFERTEXT" "USERPWD" "USERNAME" "PASSWORD" "NETRC" "HSTS"
+    "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
+    "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
+    "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT"
     "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
     "PROXY_CAINFO" "PROXY_CAINFO_BLOB" "PROXY_CAPATH" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
     "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
@@ -1260,101 +1264,23 @@
     (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY") (follow "FOLLOWLOCATION"))
   request-field-options)
 
-(test-equal "every option of every request field is an owned option, so the test seam refuses it"
+(test-equal "every option of every request field is an owned option, so the hatch refuses it"
   '()
   (filter (lambda (name) (not (member name owned-option-names)))
           (apply append (map cdr request-field-options))))
 
-(test-equal "a request's fields, written out, in the record's order: url, method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, then the private fault and follow"
-  '(url method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy fault follow)
+(test-equal "a request's fields, written out, in the record's order: url, method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, then the private fault and follow, then the hatch's options"
+  '(url method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy fault follow options)
   (guard (e (#t (list 'raised (describe e))))
     (vector->list (record-type-field-names (record-rtd (make-curl-request "http://a/"))))))
 
 ;; The record's own fields, read from its record type: a field added later
 ;; needs a row, or its place here among the fields that set no option.
-(test-equal "every field of a request has a row in request-field-options, but fault, which sets no option"
+(test-equal "every field of a request has a row in request-field-options, but fault and the hatch's options, which set no option of their own"
   '()
   (guard (e (#t (list 'raised (describe e))))
-    (filter (lambda (field) (not (or (assq field request-field-options) (memq field '(fault)))))
+    (filter (lambda (field) (not (or (assq field request-field-options) (memq field '(fault options)))))
             (vector->list (record-type-field-names (record-rtd (make-curl-request "http://a/")))))))
-
-;; seam-refusal : (Listof Pair) -> Refusal
-;; What refusal says of a submit through the test seam given OPTIONS, on a
-;; URL nothing listens on: a refusal is raised at submit, before anything
-;; native, and a transfer that ran would answer 7 there.
-(define (seam-refusal options)
-  (refusal (lambda () (curl-engine-submit-with engine (request "http://127.0.0.1:1/") options))))
-
-(test-equal "the test seam refuses each owned option this libcurl knows, by id, as owned-option, naming it, at submit, before anything native; one it does not know as unknown-option, having sent nothing"
-  (map (lambda (name)
-         (list (if (curl-easy-option name)
-                   (list 'request-refused 'options name 'owned-option)
-                   (list 'transfer-refused 'unknown-option name 0))
-               running-counts running-counts))
-       owned-option-names)
-  (map (lambda (name) (seam-refusal (list (cons name 1)))) owned-option-names))
-
-;; The TLS fields' options and the CA file's twins, written out here: the
-;; loop above is held by owned-option-names, the table it loops over, so a
-;; name dropped from both would pass it (ADR-0009, amended 2026-10-24).
-(test-equal "the test seam refuses CAINFO, CAPATH, SSL_VERIFYPEER and SSL_VERIFYHOST, the TLS fields' options, and CAINFO_BLOB and SSL_OPTIONS, the CA file's twins, each by id, as owned-option, naming it, at submit, before anything native"
-  (map (lambda (name) (list (list 'request-refused 'options name 'owned-option) running-counts running-counts))
-       '("CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST" "CAINFO_BLOB" "SSL_OPTIONS"))
-  (map (lambda (name) (seam-refusal (list (cons name 1))))
-       '("CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST" "CAINFO_BLOB" "SSL_OPTIONS")))
-
-;; The proxy field's option and its twins, written out for the same reason
-;; (ADR-0024, decision 1).
-(test-equal "the test seam refuses PROXY, the proxy field's option, and NOPROXY, PRE_PROXY, PROXYPORT and PROXYTYPE, its twins, each by id, as owned-option, naming it, at submit, before anything native"
-  (map (lambda (name) (list (list 'request-refused 'options name 'owned-option) running-counts running-counts))
-       '("PROXY" "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE"))
-  (map (lambda (name) (seam-refusal (list (cons name 1))))
-       '("PROXY" "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE")))
-
-(test-equal "the test seam refuses QUICK_EXIT, which every engine transfer sets where the loaded libcurl knows it, by id, as owned-option, naming it, at submit, before anything native; a libcurl without it, the floor, refuses it as unknown-option (ADR-0009, amended 2026-10-24)"
-  (list (if (curl-easy-option "QUICK_EXIT")
-            '(request-refused options "QUICK_EXIT" owned-option)
-            '(transfer-refused unknown-option "QUICK_EXIT" 0))
-        running-counts running-counts)
-  (seam-refusal (list (cons "QUICK_EXIT" 1))))
-
-(test-equal "an alias of an owned option is refused as owned-option: FILE is WRITEDATA's id, and RTSPHEADER HTTPHEADER's"
-  (list '(same same)
-        (list '(request-refused options "FILE" owned-option) running-counts running-counts)
-        (list '(request-refused options "RTSPHEADER" owned-option) running-counts running-counts))
-  (list (map (lambda (pair)
-               (let ((a (curl-easy-option (car pair))) (b (curl-easy-option (cdr pair))))
-                 (if (and a b (= (car a) (car b))) 'same (list (car pair) a (cdr pair) b))))
-             '(("FILE" . "WRITEDATA") ("RTSPHEADER" . "HTTPHEADER")))
-        (seam-refusal '(("FILE" . 1)))
-        (seam-refusal '(("RTSPHEADER" . 1)))))
-
-(test-equal "the test seam refuses an option of every other CURLOT type as unsupported-type, at submit, before anything native: a string, a string list, an object, a callback pointer, a function and a blob"
-  (list '(string slist object cbptr function blob)
-        (map (lambda (name) (list (list 'request-refused 'options name 'unsupported-type) running-counts running-counts))
-             '("ACCEPT_ENCODING" "HTTP200ALIASES" "STDERR" "HEADERDATA" "XFERINFOFUNCTION" "SSLCERT_BLOB")))
-  (list (map (lambda (name)
-               (let ((o (curl-easy-option name)))
-                 (if o (car (find (lambda (entry) (= (cdr entry) (cdr o))) curlot-types)) (list 'unknown name))))
-             '("ACCEPT_ENCODING" "HTTP200ALIASES" "STDERR" "HEADERDATA" "XFERINFOFUNCTION" "SSLCERT_BLOB"))
-        (map (lambda (name) (seam-refusal (list (cons name 1))))
-             '("ACCEPT_ENCODING" "HTTP200ALIASES" "STDERR" "HEADERDATA" "XFERINFOFUNCTION" "SSLCERT_BLOB"))))
-
-(test-equal "the test seam's values are checked at submit, before anything native: a string for a long, a long past long's range, an off_t past its range, are assertion violations from curl-engine-submit-with; options of any other shape too; an unknown name is unknown-option, having sent nothing"
-  (map (lambda (r) (list r running-counts running-counts))
-       '((assertion-violation curl-engine-submit-with)
-         (assertion-violation curl-engine-submit-with)
-         (assertion-violation curl-engine-submit-with)
-         (assertion-violation curl-engine-submit-with)
-         (assertion-violation curl-engine-submit-with)
-         (transfer-refused unknown-option "NO_SUCH_OPTION" 0)))
-  (map seam-refusal
-       (list '(("MAXREDIRS" . "3"))
-             (list (cons "MAXREDIRS" (expt 2 63)))
-             (list (cons "MAX_RECV_SPEED_LARGE" (expt 2 63)))
-             'not-a-list
-             '((maxredirs . 3))
-             '(("NO_SUCH_OPTION" . 1)))))
 
 ;; --- what a transfer sets, read from transfer.sls as data -----------------------------
 ;; On the engine's thread, start-transfer! makes a transfer's native objects
@@ -1496,16 +1422,25 @@
 
 ;; set-name : Any -> Any
 ;; NAME, as a set-option! call writes it: a string as itself; (field-option
-;; 'FIELD) as FIELD's one option, from request-field-options; (car
-;; setting), the test seam's loop, as seam; anything else as (unread NAME).
+;; 'FIELD) as FIELD's one option, from request-field-options; anything else
+;; as (unread NAME).
 (define (set-name name)
   (cond ((string? name) name)
         ((and (list? name) (= (length name) 2) (eq? (car name) 'field-option)
               (pair? (cadr name)) (eq? (car (cadr name)) 'quote) (pair? (cdr (cadr name)))
               (assq (cadr (cadr name)) request-field-options))
          => (lambda (row) (if (= (length row) 2) (cadr row) (list 'several row))))
-        ((equal? name '(car setting)) 'seam)
         (else (list 'unread name))))
+
+;; hatch-loop? : Any -> Boolean
+;; FORM is a for-each over the plan's hatch settings, each set by
+;; set-hatch-option!, with the string list start-transfer! built for it.
+(define (hatch-loop? form)
+  (equal? form '(for-each (lambda (setting)
+                            (set-hatch-option! easy setting
+                                               (let ((held (assq setting lists))) (and held (cdr held)))
+                                               buffer))
+                          (plan-settings plan))))
 
 ;; method-loop? : Any -> Boolean
 ;; FORM is a for-each over method-settings' answer for the plan's method
@@ -1518,7 +1453,8 @@
 ;; What each form of the definition D's body sets, in order: pins for
 ;; (set-pinned-options! easy buffer quick-exit); tls for (set-tls-options! easy
 ;; (plan-ca-file plan) (plan-verify plan) buffer); method for the loop over
-;; method-settings' answer, by method-loop?; else each set-option! and
+;; method-settings' answer, by method-loop?; hatch for the loop over the
+;; hatch's settings, by hatch-loop?; else each set-option! and
 ;; set-string-option! call in it, by set-name; (other FORM) for a form that
 ;; sets nothing. D itself when it is no definition: what went wrong.
 (define (setting-order d)
@@ -1529,6 +1465,7 @@
                           ((equal? form '(set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer))
                            '(tls))
                           ((method-loop? form) '(method))
+                          ((hatch-loop? form) '(hatch))
                           (else (let ((sets (option-sets form '())))
                                   (if (null? sets)
                                       (list (list 'other form))
@@ -1536,16 +1473,17 @@
                   (cddr d)))
       d))
 
-(test-equal "set-transfer-options!, read from transfer.sls, form by form: the pins first, then ERRORBUFFER, CURLU, WRITEFUNCTION and WRITEDATA, then the loop over method-settings' answer, then the request's HTTPHEADER, USERAGENT, TIMEOUT_MS, CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE and PROXY, then set-tls-options!, then the private follow field's FOLLOWLOCATION, then the test seam's settings; set-pinned-options! and set-transfer-options! each stand twice in transfer.sls, a definition and one call"
+(test-equal "set-transfer-options!, read from transfer.sls, form by form: the pins first, then ERRORBUFFER, CURLU, WRITEFUNCTION and WRITEDATA, then the loop over method-settings' answer, then the request's HTTPHEADER, USERAGENT, TIMEOUT_MS, CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE and PROXY, then set-tls-options!, then the private follow field's FOLLOWLOCATION, then, last, the loop over the hatch's settings; set-pinned-options!, set-transfer-options! and set-hatch-option! each stand twice in transfer.sls, a definition and one call"
   '((pins "ERRORBUFFER" "CURLU" "WRITEFUNCTION" "WRITEDATA" method "HTTPHEADER" "USERAGENT" "TIMEOUT_MS"
-          "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "PROXY" tls "FOLLOWLOCATION" seam)
-    2 2)
+          "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "PROXY" tls "FOLLOWLOCATION" hatch)
+    2 2 2)
   (list (setting-order (transfer-definition 'set-transfer-options!))
         (symbol-count 'set-pinned-options! transfer-library)
-        (symbol-count 'set-transfer-options! transfer-library)))
+        (symbol-count 'set-transfer-options! transfer-library)
+        (symbol-count 'set-hatch-option! transfer-library)))
 
-(test-equal "setting-order, the reader: pins, tls, the loop over method-settings' answer, each set's name at any depth, a field's through field-option, the seam's loop, a form that sets nothing, and a name it cannot read"
-  '(pins "A" "USERAGENT" "B" tls method seam (other (f x)) (unread n))
+(test-equal "setting-order, the reader: pins, tls, the loop over method-settings' answer, each set's name at any depth, a field's through field-option, the hatch's loop, a form that sets nothing, a loop by (car setting), and a name it cannot read"
+  '(pins "A" "USERAGENT" "B" tls method hatch (other (f x)) (unread (car setting)) (unread n))
   (setting-order '(define (g)
                     (set-pinned-options! easy buffer quick-exit)
                     (set-option! e "A" 1 b)
@@ -1553,8 +1491,13 @@
                     (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
                     (for-each (lambda (setting) (set-option! e (car setting) (cdr setting) b))
                               (method-settings (plan-method plan) (plan-body plan)))
-                    (for-each (lambda (setting) (set-option! e (car setting) (cdr setting) b)) s)
+                    (for-each (lambda (setting)
+                                (set-hatch-option! easy setting
+                                                   (let ((held (assq setting lists))) (and held (cdr held)))
+                                                   buffer))
+                              (plan-settings plan))
                     (f x)
+                    (for-each (lambda (setting) (set-option! e (car setting) (cdr setting) b)) s)
                     (set-option! e n 1 b))))
 
 ;; symbols-in : (Listof Symbol) Any -> (Listof Symbol)
@@ -1573,7 +1516,7 @@
 ;; object a transfer holds.
 (define live-setters
   '(live-transfer-key-set! live-transfer-sink-set! live-transfer-url-set! live-transfer-buffer-set!
-    live-transfer-header-list-set! live-transfer-easy-set!))
+    live-transfer-header-list-set! live-transfer-lists-set! live-transfer-easy-set!))
 
 ;; making-order : (Listof Symbol)
 ;; start-transfer!'s setters, its settings' calls and its free, as written.
@@ -1588,13 +1531,15 @@
                                      count-down!))
               (transfer-definition 'free-transfer!)))
 
-(test-equal "start-transfer!, read from transfer.sls, records what it makes in order: free-transfer! on a raise; then the key and its sink, the CURLU, the error buffer, the header list, then the easy handle; then set-transfer-options!, once, and no setting of its own"
+(test-equal "start-transfer!, read from transfer.sls, records what it makes in order: free-transfer! on a raise; then the key and its sink, the CURLU, the error buffer, the header list, the hatch's string lists, then the easy handle; then set-transfer-options!, once, and no setting of its own"
   '(free-transfer! live-transfer-key-set! live-transfer-sink-set! live-transfer-url-set!
-    live-transfer-buffer-set! live-transfer-header-list-set! live-transfer-easy-set! set-transfer-options!)
+    live-transfer-buffer-set! live-transfer-header-list-set! live-transfer-lists-set!
+    live-transfer-easy-set! set-transfer-options!)
   making-order)
 
-(test-equal "free-transfer!, read from transfer.sls, frees the other way round from start-transfer!'s making: the easy handle, the header list, the error buffer, the CURLU, then the key, each freed before its record is cleared"
-  (list '(curl-easy-cleanup live-transfer-easy-set! curl-slist-free-all live-transfer-header-list-set!
+(test-equal "free-transfer!, read from transfer.sls, frees the other way round from start-transfer!'s making: the easy handle, the hatch's string lists, the header list, the error buffer, the CURLU, then the key, each freed before its record is cleared"
+  (list '(curl-easy-cleanup live-transfer-easy-set! curl-slist-free-all live-transfer-lists-set!
+          curl-slist-free-all live-transfer-header-list-set!
           free-foreign-block! live-transfer-buffer-set! free-parsed-url! live-transfer-url-set!
           count-down! live-transfer-key-set!)
         'the-making-reversed)
@@ -1605,11 +1550,11 @@
               'the-making-reversed
               (list 'made made 'freed freed)))))
 
-(test-equal "prepare-transfer, read from transfer.sls, checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the test seam's settings, the CA file against the environment the libcurl loaded with, then the URL, parsed and its scheme checked; then it makes the plan"
-  '(curl-request? snapshot ca-file-copy checked-settings check-ca-environment call-with-parsed-url
-    require-http-scheme make-plan)
+(test-equal "prepare-transfer, read from transfer.sls, checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the CA file against the environment the libcurl loaded with, then the URL, parsed and its scheme checked; then it makes the plan, the request's hatch settings in it as they are"
+  '(curl-request? snapshot ca-file-copy check-ca-environment call-with-parsed-url
+    require-http-scheme make-plan curl-request-options)
   (symbols-in '(curl-request? snapshot ca-file-copy checked-settings check-ca-environment call-with-parsed-url
-                require-http-scheme make-plan)
+                require-http-scheme make-plan curl-request-options)
               (transfer-definition 'prepare-transfer)))
 
 ;; pin-names : (Listof String)
@@ -1693,8 +1638,8 @@
 ;; method-settings' names are its fields' rows in request-field-options,
 ;; through field-options: tests/test-request.sps writes out every method's
 ;; answer, names and all.
-(test-equal "every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for those set by (car setting): three in the loop over method-settings' answer for the plan's method and body, and one in the loop over the test seam's own settings"
-  '(() (((method-settings (plan-method plan) (plan-body plan)) 3) ((plan-settings plan) 1)))
+(test-equal "every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for those set by (car setting): three in the loop over method-settings' answer for the plan's method and body; the hatch's settings are set by set-hatch-option!, through its loop alone"
+  '(() (((method-settings (plan-method plan) (plan-body plan)) 3)))
   (if (list? transfer-sets)
       (list (map car (filter (lambda (s) (not (or (owned-set? (car s)) (equal? (car s) '(car setting)))))
                              transfer-sets))
@@ -1984,7 +1929,7 @@
 
   ;; --- the last request's headers: a redirect followed, through the
   ;; private follow field, makes two requests, and the first one's headers
-  ;; are not the response's. FOLLOWLOCATION is owned: the test seam refuses
+  ;; are not the response's. FOLLOWLOCATION is owned: the hatch refuses
   ;; it.
   (test-equal "with FOLLOWLOCATION set by the private follow field, curl-request-following, a followed redirect answers the last request's status, headers and body, and its effective URL"
     (list (list '(response 200 http/1.1 (("Content-Length" "11") ("Connection" "keep-alive")) "status 200\n")
@@ -2171,11 +2116,12 @@
   ;; that runs out between making a native object and recording it leaks
   ;; the object. A caller's thread runs no transfer now, only a submit and
   ;; an await. Each sweep runs out at every tick of a call that takes a
-  ;; mutex: the live-transfer table's, the option cache's; through a submit
-  ;; whose seam setting is refused after a known one, the lookup's; and,
-  ;; through a submit to a stopped engine, the URL's CURLU, made and freed
-  ;; on this thread, and that engine's own mutex, which refuses it.
-  (test-equal "a Chez engine that runs out at every tick of live-transfer-count, of cached-option-names, of a submit through the test seam refused as unknown-option after MAXREDIRS, and of a submit to a stopped engine, refused as stopped once its URL was parsed, each abandoned, until one completes: each completes, no native object is left, and another thread then takes every lock, both engines' among them"
+  ;; mutex: the live-transfer table's, the option cache's; through the
+  ;; hatch, an attach refused as unknown-option after MAXREDIRS, the
+  ;; lookup's; and, through a submit to a stopped engine, the URL's CURLU,
+  ;; made and freed on this thread, and that engine's own mutex, which
+  ;; refuses it.
+  (test-equal "a Chez engine that runs out at every tick of live-transfer-count, of cached-option-names, of an attach through the hatch refused as unknown-option after MAXREDIRS, and of a submit to a stopped engine, refused as stopped once its URL was parsed, each abandoned, until one completes: each completes, no native object is left, and another thread then takes every lock, both engines' among them"
     `(stopped (completed expired-first) (completed expired-first) (completed expired-first)
       (completed expired-first) ,running-counts other-thread-ran)
     (let* ((refused (request "http://127.0.0.1:1/"))
@@ -2195,8 +2141,8 @@
                               cached-option-names
                               (lambda ()
                                 (answer-of (lambda ()
-                                             (curl-engine-submit-with engine refused
-                                                                      '(("MAXREDIRS" . 1) ("NO_SUCH_OPTION" . 1))))))
+                                             (curl-request-with-options
+                                              refused '(("MAXREDIRS" . 1) ("NO_SUCH_OPTION" . 1))))))
                               submit-to-stopped))))
       (append (list stopped-refuses) sweeps
               (list (native-counts)
@@ -2213,17 +2159,20 @@
       (perform (request (url-of o 'http "/status/200") 'limit 10))
       'no-raise))
 
-  ;; --- options through the test seam, curl-engine-submit-with
-  (test-equal "an option the loaded libcurl does not know raises unknown-option, naming it, with no code and a request size of 0, of no class, and the counts back to the engine's alone"
-    (list (list 'unknown-option #f "NO_SUCH_OPTION" 0 (table-class 'unknown-option #f)) running-counts)
-    (list (guard (e ((curl-transfer-error? e)
-                     (list (curl-transfer-error-reason e) (curl-transfer-error-code e)
-                           (curl-transfer-error-option e) (curl-transfer-error-request-size e)
-                           (class-of e)))
-                    (#t (list 'raised (describe e))))
-            (perform-with (request (url-of o 'http "/status/200")) '(("NO_SUCH_OPTION" . 1)))
-            'no-raise)
-          (native-counts)))
+  ;; --- options the hatch attached, as the engine sets them
+  ;; The hatch refuses a name the libcurl does not know as it is attached
+  ;; (test-unsupported), so no transfer reaches option-named with one; it
+  ;; refuses one all the same, for chez-curl's own names, QUICK_EXIT's on a
+  ;; libcurl without it among them, called here on this thread.
+  (test-equal "option-named, through which every option is set, refuses a name the loaded libcurl does not know as unknown-option, naming it, with no code and a request size of 0, of no class"
+    (list 'unknown-option #f "NO_SUCH_OPTION" 0 (table-class 'unknown-option #f))
+    (guard (e ((curl-transfer-error? e)
+               (list (curl-transfer-error-reason e) (curl-transfer-error-code e)
+                     (curl-transfer-error-option e) (curl-transfer-error-request-size e)
+                     (class-of e)))
+              (#t (list 'raised (describe e))))
+      (option-named "NO_SUCH_OPTION")
+      'no-raise))
   (test-equal "an option libcurl refuses raises setopt-failed, naming it, with its code and a request size of 0, of no class, through each integer binding: MAXREDIRS -2 through the long one and MAX_RECV_SPEED_LARGE -1 through the off_t one are 43, never taken zero-extended, as 4294967294 and 4294967295 would be; the counts back to the engine's alone"
     (list (list 'setopt-failed curle-bad-function-argument "MAXREDIRS" 0
                 (table-class 'setopt-failed curle-bad-function-argument))
@@ -2271,14 +2220,20 @@
       (list cancelled stopped (native-counts))))
 
   ;; --- the option cache keeps its own copy of a name
-  (test-equal "the option cache keeps a copy of each name: a caller's name, changed after its transfer, leaves the cache's key as it was"
-    '(kept not-taken)
-    (let ((name (string-copy "LOW_SPEED_TIME")))
-      (perform-with (request (url-of o 'http "/status/200")) (list (cons name 30)))
+  ;; Through option-named directly: the hatch copies a name itself before
+  ;; the lookup, so through it option-found's own copy would be unseen. The
+  ;; name is one nothing in this suite looks up, so the lookup is its first,
+  ;; and a key the cache made of the caller's string would change with it.
+  (test-equal "the option cache keeps a copy of each name: MAXAGE_CONN, looked up first by option-named in a caller's string, changed after, leaves the cache's key as it was"
+    '(not-cached kept not-taken)
+    (let ((name (string-copy "MAXAGE_CONN"))
+          (before (cached-option-names)))
+      (option-named name)
       (string-set! name 0 #\X)
       (let ((keys (cached-option-names)))
-        (list (if (member "LOW_SPEED_TIME" keys) 'kept 'lost)
-              (if (member "XOW_SPEED_TIME" keys) 'taken 'not-taken)))))
+        (list (if (member "MAXAGE_CONN" before) 'cached-before 'not-cached)
+              (if (member "MAXAGE_CONN" keys) 'kept 'lost)
+              (if (member "XAXAGE_CONN" keys) 'taken 'not-taken)))))
 
   ;; --- a header value another thread changes while transfers run
   (test-equal "a header value another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the value whole, never the CR, both seen; the counts back to the engine's alone"

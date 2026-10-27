@@ -1,6 +1,6 @@
 # ADR-0009: A typed escape hatch for unwrapped options, in the low level only
 
-- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built
+- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built; amended 2026-10-27, the hatch, measured, decided and built (M4 slice 4)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, `(curl ...)` only
 - **Settles:** D3 (brief §10)
@@ -242,3 +242,156 @@ request; `TIMECONDITION`, `TIMEVALUE`, `TIMEVALUE_LARGE`, `RESUME_FROM`, `RESUME
 `CONNECT_TO`, `RESOLVE`, `UNIX_SOCKET_PATH` and `ABSTRACT_UNIX_SOCKET`, which send a connection
 elsewhere; `HEADEROPT` and `PROXYHEADER`, slice 3's; and `COOKIEFILE` at `"-"`, which reads
 stdin. `PROXY`, `NOPROXY` and `PRE_PROXY` come with slice 3's field.
+
+## Amendment, 2026-10-27: the hatch, measured, decided and built (M4 slice 4)
+
+### Measured first
+
+[`research/m4/slice4/`](../research/m4/slice4/), the M4 plan's §7.1. A C probe, `hatch.c`, made
+one transfer through the multi interface with chez-curl's pins and options set by name. It
+ran against `servers.mjs`, whose servers log each request's head whole. Five libcurls took
+part: Guix's 8.20.0 with GnuTLS 3.8.13 in the container, and in Docker `ubuntu:24.04` 7.85.0,
+Ubuntu's 8.5.0 with OpenSSL 3.0.13 and with GnuTLS 3.8.3, and 8.23.0 with OpenSSL 3.0.13.
+
+- **A blob and a string list, each freed once,** under the memory gate's Valgrind options
+  (3.27.0 in the container, Ubuntu's 3.22.0 in Docker):
+  - every blob passed with `CURL_BLOB_COPY` and freed as setopt returned, and every list
+    freed after `curl_easy_cleanup`, left 0 errors on all five;
+  - each control was caught on all five. A client certificate and key passed with
+    `CURL_BLOB_NOCOPY` and freed gave 87 to 1,055 errors, GnuTLS too, which never uses
+    them. A list freed as setopt returned gave invalid reads, and a list never freed one
+    definite loss.
+- **What a blob does, by backend:**
+  - OpenSSL (7.85.0, 8.5.0, 8.23.0): `ISSUERCERT_BLOB` at the run CA answered 200, at the
+    other CA 83. `SSLCERT_BLOB` at bytes that are no certificate answered 58.
+  - Ubuntu's GnuTLS 8.5.0 takes both and ignores them.
+  - Guix's GnuTLS 8.20.0 answers 4 to `ISSUERCERT_BLOB`'s setopt and ignores `SSLCERT_BLOB`.
+  - So in the container no blob's bytes show by behaviour. Native's struct is read back on
+    every lane instead.
+- **Lists.** `RESOLVE`, `CONNECT_TO` and `HTTP200ALIASES` reached libcurl on all five.
+- **The twin review** (Opus, read-only) classed all 200 options the hatch's types reach and
+  nothing owned: 72 inert, 110 allowed, 8 twins and 10 hazards, each citing curl's docs and
+  source in five trees. Its claims that the source alone could not settle were then measured.
+  On all five unless named:
+  - **TRANSFERTEXT:** rewrites a body as the owned `CRLF` does. On 7.85.0 and 8.5.0 both left
+    a 4-byte body alone; on 8.20.0 and 8.23.0 both sent it chunked.
+  - **The URL's credentials:** `USERPWD` replaced them everywhere. `USERNAME` replaced the
+    user on 7.85.0 and 8.23.0, `PASSWORD` the password on 7.85.0 to 8.20.0, and `NETRC` 2 the
+    password on 8.5.0 and 8.20.0.
+  - **HSTS:** turned `http://localhost` into `https://`.
+  - **The two socket options:** `UNIX_SOCKET_PATH` and `ABSTRACT_UNIX_SOCKET` sent the request
+    to their socket, not through `http_proxy`.
+  - **PROXYHEADER:** through `http_proxy`, its `Content-Length: 5` was sent beside libcurl's
+    `Content-Length: 3`, and its `Transfer-Encoding: chunked` beside it too.
+  - **HEADEROPT:** at 0 it sent `HTTPHEADER`'s headers in the CONNECT to `https_proxy`.
+  - **RESUME_FROM and RESUME_FROM_LARGE** beside a body of 8:
+    - 7.85.0 read stdin, 11 bytes, and sent `Content-Range: bytes 3-7/8` with the body's first
+      5 bytes;
+    - 8.5.0, 8.20.0 and 8.23.0 answered 43 and sent nothing. The review's reading of 8.20.0's
+      source, which drops the first bytes, did not hold there.
+  - **COOKIEFILE and COOKIEJAR:** `COOKIEFILE "-"` read stdin, 37 bytes, and sent its cookie.
+    `COOKIEJAR "-"` wrote the jar to stdout.
+  - **CONNECT_ONLY:** sent nothing, and ended `CURLE_OK` with status 0.
+  - **DOH_URL:** with `PROXY ""`, the field's `#f`, its two lookups went through
+    `https_proxy`. `curl_multi_info_read` gave one message, the transfer's own.
+  - **RESOLVE:** through chez-curl's hatch, one request's entry made a later request on the
+    same engine reach its address, where a fresh engine answered 6.
+  - **SSLENGINE_DEFAULT:** sets OpenSSL's default engine for the whole process, by the source.
+    No lane had an engine, so it was not shown: the OpenSSL lanes answered 53 to
+    `SSLENGINE "rdrand"`, and the GnuTLS ones 4 to both.
+  - **Process streams:** `VERBOSE` 1 wrote its trace to stderr, and `NOPROGRESS` 0 the
+    progress meter.
+  - **Paths:** whether a path option at `/dev/stdin` reads stdin is the review's inference
+    from `fopen`. The probe could not show it: reopening `/dev/stdin` on a file gets an
+    offset of its own.
+
+### Decided by the maintainer, 2026-10-27
+
+- **All 18 are owned, by id:**
+  - the twins `TRANSFERTEXT`, `CRLF`'s;
+  - `USERPWD`, `USERNAME`, `PASSWORD`, `NETRC` and `HSTS`, the URL's, as `PORT` is;
+  - `UNIX_SOCKET_PATH` and `ABSTRACT_UNIX_SOCKET`, the proxy field's, as `NOPROXY` is;
+  - `PROXYHEADER` and `HEADEROPT`, the headers field's;
+  - and, kept from the hatch though no twin, `RESUME_FROM`, `RESUME_FROM_LARGE`,
+    `COOKIEFILE`, `COOKIEJAR`, `CONNECT_ONLY`, `DOH_URL`, `RESOLVE` and `SSLENGINE_DEFAULT`.
+- **`VERBOSE` and `NOPROGRESS` stay allowed,** and the README says what they print.
+- **Only libcurl's own `"-"` modes are refused,** through `COOKIEFILE` and `COOKIEJAR`. A path
+  at `/dev/stdin` is the caller's choice, and the README says so.
+- **One reason covers them all:** `owned-option`. Its message now reads "chez-curl owns this
+  option: it sets it, sets it another way, or keeps it from the hatch".
+
+Three verdicts lean on these refusals:
+- `NETRC_FILE` is inert while `NETRC` is refused;
+- the `DOH_SSL_*` options while `DOH_URL` is;
+- `COOKIELIST` reaches no process stream while `COOKIEFILE` and `COOKIEJAR` are refused.
+
+**Left allowed, and recorded.** `HTTPAUTH`'s and `PROXYAUTH`'s `CURLAUTH_NTLM_WB` bit makes
+libcurl fork and exec `ntlm_auth` from the engine's thread, given an NTLM challenge. Only
+builds with NTLM_WB do this, which among the libcurls here is the floor alone, and no rule by
+id can refuse one bit.
+
+### As built
+
+- **`(curl unsupported)` exports one procedure,** `curl-request-with-options`. It is defined in
+  `(curl private transfer)` beside the request's constructor, which it needs, and re-exported.
+  `(curl)` does not export it. check-seam's new rule (j) refuses any `(curl ...)` library that
+  imports `(curl unsupported)`, and rule (b) already refused every `(http-client ...)` one.
+  Rule (j) closes that route alone: any `(curl ...)` library may import the procedure from
+  `(curl private transfer)`. So `test-unsupported` holds that no export of `(curl)` is bound
+  to it, by any name (ADR-0007, amended 2026-10-27).
+- **Checked as attached, on the caller's thread, first refusal raising:**
+  - a request or options of the wrong shape, an assertion violation;
+  - then each option's name: one holding U+0000, `embedded-nul`, checked before the lookup,
+    since `URL<NUL>x` reads as `URL`; one the libcurl does not know, `unknown-option`; an owned
+    id, `owned-option`; a type outside long, enumerated values, `off_t`, string, string list
+    and blob, `unsupported-type`; an id the request carries already, or one earlier in the
+    same call, `repeated-option`;
+  - then its value. A wrong shape or range is an assertion violation. A string holding
+    U+0000, CR or LF is refused as `embedded-nul` or `line-break`, its first offending char
+    deciding, and so is each string of a list.
+
+  Each refusal of a name or a string is a `&curl-request-error`, field `options`, naming the
+  option as given. `unknown-option` and `repeated-option` are new request-error reasons.
+- **Copies.** The name, a string, each string of a list, and a bytevector are copied first,
+  and the copy is checked and kept. A submit has nothing of the hatch's to check, and
+  `curl-request-with` keeps the options.
+- **Applied last** by `set-hatch-option!`, after the request's own settings and the pins:
+  - a string as a counted UTF-8 copy;
+  - a blob through native's `call-with-curl-blob`: two counted blocks, the bytes and a
+    `struct curl_blob` flagged `CURL_BLOB_COPY`, filled with `ftype-set!`, which check-seam
+    lets native alone import, and freed as setopt returns;
+  - a string list built on the engine's thread, counted as `slist`, recorded in the live
+    transfer, and freed after the easy handle. An empty list sets NULL.
+- **`option-named` still refuses an unknown name,** as `unknown-option`, for chez-curl's own
+  names. No hatch setting reaches it with one, so `test-transfer` calls it directly.
+
+### The test seam retired
+
+`curl-engine-submit-with` and `checked-settings` are gone. For each check that used them,
+what would make it fail now:
+- **the owned options, the TLS fields' and the proxy field's, `QUICK_EXIT`, the aliases, the
+  types refused, and the values checked:** test-unsupported writes every owned name out
+  itself, at attach. test-transfer still writes `owned-option-names` out. Dropping a name
+  from the table fails both;
+- **an unknown option at submit:** refused at attach now. `option-named`'s own refusal is
+  test-transfer's;
+- **a setopt libcurl refuses, through each integer binding:** unchanged in test-transfer,
+  through the hatch. test-mailbox and test-request take their setup failure through it too;
+- **the option cache's copy of a name:** the hatch copies a name before the lookup, so through
+  it the cache's own copy could not be seen; the slice's review removed that copy, and
+  test-transfer passed. The check now looks a fresh name up through `option-named` itself, in
+  a caller's string, and the review's mutant fails it;
+- **the submit's check order:** test-transfer drops the options row, and the source reading
+  of `prepare-transfer` fails if `checked-settings` returns;
+- **test-engine's three rows of the seam's refusals at submit:** gone with the seam. Its
+  other rows still hold that a refused submit queues and starts nothing;
+- **the engine sweep:** it now sweeps an attach refused after a known option.
+
+### Consequences
+
+- The hatch reaches the options neither owned nor of a refused type: 182 of the 200 its types
+  reach across the five libcurls, 72 of them inert for HTTP.
+- `test-unsupported` holds each refusal rule, watched firing in the
+  [mutation log](../hatch-mutation-log.md). It also holds the copies, a race on a string and
+  on a list's string, a string's UTF-8 bytes, a list and a blob reaching libcurl, a row per
+  libcurl, and the counts.

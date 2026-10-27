@@ -315,17 +315,26 @@ provisional. They bind until that record is accepted or amended.
 
 ## The escape hatch
 
-- **It lives in `(curl unsupported)` only.** It attaches named options to a request record,
-  never to a handle, and the engine applies them after the binding's own (ADR-0009).
+- **It lives in `(curl unsupported)` only,** which exports `curl-request-with-options`. It
+  attaches named options to a request record, never to a handle, and the engine applies them
+  after the binding's own and the pins. `(curl)` does not export it, by any name, which
+  `test-unsupported` holds; and no `(curl ...)` library imports `(curl unsupported)`
+  (check-seam's rule (j)). The procedure is `(curl private transfer)`'s export too, beside the
+  request's constructor it needs (ADR-0009, amended 2026-10-27).
 - **Each option is checked when attached,** against the loaded libcurl's own table:
   - the name must be known to that libcurl;
   - the type must be long, enumerated values, `off_t`, string, blob or string list;
   - the value must match the type;
   - no string may contain NUL, CR or LF;
   - the option must not be one chez-curl owns or wraps. That is compared by id, so an alias
-    cannot pass.
+    cannot pass;
+  - the request must not carry it already, by any of its names.
 
-  (ADR-0009)
+  Each value is copied first, and the copy is checked and kept: the caller's objects are never
+  read again. A name or a string refused is a `&curl-request-error`, field `options`, reason
+  `embedded-nul`, `unknown-option`, `owned-option`, `unsupported-type`, `repeated-option` or
+  `line-break`; a value of the wrong shape or range is an assertion violation (ADR-0009,
+  amended 2026-10-27).
 - **Owned options:** `URL`, `CURLU`, `PROTOCOLS_STR`, `REDIR_PROTOCOLS_STR`, `PROTOCOLS`,
   `REDIR_PROTOCOLS`, `NOSIGNAL`, and every option a request field sets, among them `CAINFO`,
   `CAPATH`, `SSL_VERIFYPEER` and `SSL_VERIFYHOST` (ADR-0009), and `QUICK_EXIT`, which every
@@ -342,12 +351,19 @@ provisional. They bind until that record is accepted or amended.
   `POSTFIELDSIZE`, `HTTPPOST`, `MIMEPOST`, `INFILESIZE`, `INFILESIZE_LARGE`, the URL's `PORT`
   and `REQUEST_TARGET`, `CRLF` and `HEADER`, and all 23 `PROXY_` TLS options (ADR-0009,
   amended 2026-10-26, as built). Slice 3 added `PROXY`, the proxy field's, and its twins
-  `NOPROXY`, `PRE_PROXY`, `PROXYPORT` and `PROXYTYPE` (ADR-0024, amended 2026-10-26).
-- **The test seam, `curl-engine-submit-with`, is held to these rules, narrowed:** long,
-  enumerated-value and `off_t` options alone, so no address can pass, checked at submit on
-  the caller's thread. It stays private (ADR-0009, amended 2026-10-23 and 2026-10-25).
-- **Lifetimes.** Blobs are passed with `CURL_BLOB_COPY`. String lists are built by the
-  binding and freed only after the transfer completes (ADR-0009).
+  `NOPROXY`, `PRE_PROXY`, `PROXYPORT` and `PROXYTYPE` (ADR-0024, amended 2026-10-26). Slice 4
+  added, from a review of all 200 options the hatch's types reach, each measured, decided by
+  the maintainer: the twins `TRANSFERTEXT`, `USERPWD`, `USERNAME`, `PASSWORD`, `NETRC`, `HSTS`,
+  `UNIX_SOCKET_PATH`, `ABSTRACT_UNIX_SOCKET`, `PROXYHEADER` and `HEADEROPT`; and, kept from the
+  hatch though no twin, `RESUME_FROM`, `RESUME_FROM_LARGE`, `COOKIEFILE`, `COOKIEJAR`,
+  `CONNECT_ONLY`, `DOH_URL`, `RESOLVE` and `SSLENGINE_DEFAULT`, all refused as `owned-option`
+  (ADR-0009, amended 2026-10-27).
+- **The test seam, `curl-engine-submit-with`, is retired into the hatch** (ADR-0009, amended
+  2026-10-27). No submit takes options of its own.
+- **Lifetimes.** Blobs are passed with `CURL_BLOB_COPY`, through a counted `struct curl_blob`
+  native fills and frees as setopt returns. String lists are built by the binding on the
+  engine's thread, counted as `slist`, and freed after the easy handle (ADR-0009, amended
+  2026-10-27).
 
 ## Layout and names
 
@@ -357,17 +373,19 @@ provisional. They bind until that record is accepted or amended.
 - **`make check-seam` guards the boundary, and `make test` runs it.** Tests are exempt
   (ADR-0007, amended).
   - No `(curl ...)` library imports `(http-client ...)`. An `(http-client ...)` library
-    imports only `(curl)` from the low level.
+    imports only `(curl)` from the low level. No `(curl ...)` library imports
+    `(curl unsupported)` (rule (j); ADR-0009, amended 2026-10-27).
   - Every library under `src/` is in one of the two families.
   - A library imports only from allowlists: `(rnrs ...)` except `(rnrs eval)`, `(only
     (chezscheme) name ...)` with names from `allowed-chez-names`, and the two families.
     Adding to a list is a reviewed change.
   - A name in `library-only-chez-names` is imported only by the libraries listed with it:
     `define-ftype` by `(curl private layouts)`, `foreign-alloc` and `foreign-free` by
-    `(curl private memory)`, `foreign-procedure` and `load-shared-object` by
-    `(curl private native)`, `foreign-callable`, `foreign-callable-entry-point` and
-    `lock-object` by `(curl private transfer)`, and `fork-thread` by
-    `(curl private engine)`, each alone (ADR-0007, amended). No library imports
+    `(curl private memory)`, `foreign-procedure`, `load-shared-object` and `ftype-set!`,
+    which fills each `struct curl_blob`, by `(curl private native)`, `foreign-callable`,
+    `foreign-callable-entry-point` and `lock-object` by `(curl private transfer)`, and
+    `fork-thread` by `(curl private engine)`, each alone (ADR-0007, amended). test-check-seam
+    writes the list's names out. No library imports
     `mutex-acquire`, `mutex-release`, `make-condition`, `condition-wait` or
     `condition-broadcast` (ADR-0013, amended 2026-10-25).
   - No file under `src/` may be one Chez loads as a library that the check doesn't read.

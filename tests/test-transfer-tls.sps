@@ -52,10 +52,10 @@
 ;;;     binding: ca-file?, ca-file-copy, check-ca-environment, which hands
 ;;;     native's records to overriding-variables, held by synthetic inputs
 ;;;     instead, field-options, tls-settings,
-;;;     set-tls-options!, set-string-option!, set-option!, setopt-accepted?
-;;;     and option-named; what prepare-transfer hands the plan, and
-;;;     set-transfer-options!' call of set-tls-options! with the plan's,
-;;;     after the request's other settings and before the test seam's; and
+;;;     set-tls-options!, set-string-option!, set-option!, setopt-accepted?,
+;;;     option-named and option-found; what prepare-transfer hands the plan,
+;;;     and set-transfer-options!' call of set-tls-options! with the plan's,
+;;;     after the request's other settings and before the hatch's; and
 ;;;     the six TLS option names, standing in transfer.sls only as data in
 ;;;     its two tables;
 ;;;   - the Mac's keychain (ADR-0024, amended 2026-10-27): keychain-fallback?
@@ -674,8 +674,11 @@
      (define (setopt-accepted? value code)
        (or (eqv? code curle-ok)
            (and (not value) (eqv? code curle-not-built-in)))))
-    (option-named "a name is looked up as given, by curl-easy-option, through the cache"
+    (option-named "option-found's answer, or unknown-option"
      (define (option-named name)
+       (or (option-found name) (fail 'unknown-option #f name #f #f))))
+    (option-found "a name is looked up as given, by curl-easy-option, through the cache"
+     (define (option-found name)
        (unless (string? name)
          (assertion-violation 'set-option! "an option's name is a string without U+0000" name))
        (let ((name (string-copy name)))
@@ -687,9 +690,7 @@
                               (let ((option (or (curl-easy-option name) 'unknown)))
                                 (hashtable-set! option-cache name option)
                                 option))))))
-           (if (eq? found 'unknown)
-               (fail 'unknown-option #f name #f #f)
-               found)))))))
+           (and (not (eq? found 'unknown)) found)))))))
 
 (for-each
  (lambda (row)
@@ -747,13 +748,13 @@
 ;; form-kind : Any -> Symbol
 ;; A form of set-transfer-options!, by what it does: pins, the pins' call;
 ;; tls, set-tls-options!'s, handed the plan's CA file and verification;
-;; follow, the private follow field's setting; seam, the loop over the test
-;; seam's settings; else request, one of the request's other settings.
+;; follow, the private follow field's setting; hatch, the loop over the
+;; hatch's settings; else request, one of the request's other settings.
 (define (form-kind form)
   (cond ((equal? form '(set-pinned-options! easy buffer quick-exit)) 'pins)
         ((equal? form '(set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)) 'tls)
         ((holds? form '(plan-follow plan)) 'follow)
-        ((holds? form '(plan-settings plan)) 'seam)
+        ((holds? form '(plan-settings plan)) 'hatch)
         (else 'request)))
 
 ;; runs : (Listof Symbol) -> (Listof Symbol)
@@ -762,15 +763,15 @@
   (fold-right (lambda (k found) (if (and (pair? found) (eq? (car found) k)) found (cons k found)))
               '() kinds))
 
-(test-equal "set-transfer-options!, form by form: the pins first, then the request's other settings, then set-tls-options! once, as (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer), then the private follow field's setting, then the test seam's settings; and set-tls-options! stands twice in transfer.sls, its definition and that call"
-  '((pins request tls follow seam) 2)
+(test-equal "set-transfer-options!, form by form: the pins first, then the request's other settings, then set-tls-options! once, as (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer), then the private follow field's setting, then the hatch's settings; and set-tls-options! stands twice in transfer.sls, its definition and that call"
+  '((pins request tls follow hatch) 2)
   (let ((d (transfer-definition 'set-transfer-options!)))
     (if (and (list? d) (eq? (car d) 'define))
         (list (runs (map form-kind (cddr d))) (symbol-count 'set-tls-options! transfer-library))
         (list 'no-definition d))))
 
 (test-equal "the form reader: kinds by form, and a run of one kind written once"
-  '(pins request tls follow seam)
+  '(pins request tls follow hatch)
   (runs (map form-kind '((set-pinned-options! easy buffer quick-exit) (set-option! easy "A" 1 buffer)
                          (when x (set-option! easy "B" 2 buffer))
                          (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)

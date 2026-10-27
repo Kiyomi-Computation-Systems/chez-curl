@@ -16,7 +16,7 @@
 ;;; It never loads libcurl. (curl private native) does, and reads these
 ;;; through ftype pointers.
 (library (curl private layouts)
-  (export curl-version-info-data curl-easyoption curl-header curl-msg)
+  (export curl-version-info-data curl-easyoption curl-header curl-msg curl-blob)
   (import (curl private require-threaded)
           (rnrs)
           (only (chezscheme) define-ftype))
@@ -103,4 +103,16 @@
     (struct
       (msg int)
       (easy-handle uptr)
-      (data.result int))))
+      (data.result int)))
+
+  ;; curl-blob : Ftype
+  ;; struct curl_blob, curl/easy.h (7.71.0), every field: what a blob
+  ;; option's setopt takes the address of. data is the bytes' address, len
+  ;; their count, and flags CURL_BLOB_COPY or CURL_BLOB_NOCOPY; native fills
+  ;; one for each blob the hatch sets (ADR-0009, decision 4). The suite
+  ;; checks every field and the struct's size.
+  (define-ftype curl-blob
+    (struct
+      (data uptr)
+      (len size_t)
+      (flags unsigned-int))))

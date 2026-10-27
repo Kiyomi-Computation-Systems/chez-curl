@@ -35,6 +35,7 @@
               time-nanosecond)
         (curl-testing)
         (curl)
+        (curl unsupported)
         (curl private engine)
         (only (curl private transfer) curl-request-fault curl-request-follow
               curl-request-with-fault curl-request-following request-keys request-methods
@@ -120,17 +121,14 @@
 ;; perform : Request -> Response
 (define (perform r) (await-token (curl-submit engine r)))
 
-;; on-own-engine : Request . (List Options) -> Answer
+;; on-own-engine : Request -> Answer
 ;; What R answers, through failed, on an engine of its own, made before and
-;; stopped after: through the test seam with OPTIONS when given. An engine
-;; that cannot be made, or stopped, answers (raised TEXT).
-(define (on-own-engine r . options)
+;; stopped after. An engine that cannot be made, or stopped, answers
+;; (raised TEXT).
+(define (on-own-engine r)
   (guard (e (#t (list 'raised (describe e))))
     (let* ((own (make-curl-engine))
-           (answer (failed (lambda ()
-                             (await-token (if (null? options)
-                                              (curl-submit own r)
-                                              (curl-engine-submit-with own r (car options))))))))
+           (answer (failed (lambda () (await-token (curl-submit own r))))))
       (curl-engine-stop own)
       answer)))
 
@@ -582,8 +580,9 @@
            (raised (on-own-engine (curl-request-with-fault
                                    (make-curl-request (url-of o 'http "/status/200") 'timeout-ms 20000)
                                    1)))
-           (setopt (on-own-engine (make-curl-request (url-of o 'http "/status/200"))
-                                  '(("MAXREDIRS" . -2)))))
+           (setopt (on-own-engine (curl-request-with-options
+                                   (make-curl-request (url-of o 'http "/status/200"))
+                                   '(("MAXREDIRS" . -2))))))
       (list refused untrusted timeout nothing limit raised setopt)))
   ;; A token cancelled while queued completes with no request size: it is
   ;; taken apart unread.

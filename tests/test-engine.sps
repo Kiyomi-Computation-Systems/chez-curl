@@ -359,13 +359,13 @@
           (list perform poll read setopt)))
       engine))
 
-;; refused-at-submit : (-> Any) (Listof (Pairof String Integer)) -> (List Outcome Counts Natural Natural Natural)
-;; What a submit of MAKE's request, with OPTIONS, answered, the counts
-;; after, how many messages the engine queued and transfers it holds, and
-;; how many transfers were started meanwhile.
-(define (refused-at-submit make options)
+;; refused-at-submit : (-> Any) -> (List Outcome Counts Natural Natural Natural)
+;; What a submit of MAKE's request answered, the counts after, how many
+;; messages the engine queued and transfers it holds, and how many
+;; transfers were started meanwhile.
+(define (refused-at-submit make)
   (let* ((started (transfers-started))
-         (answer (outcome (lambda () (curl-engine-submit-with engine (make) options)))))
+         (answer (outcome (lambda () (curl-submit engine (make))))))
     (list answer (native-counts) (curl-engine-queued-count engine)
           (curl-engine-live-count engine) (- (transfers-started) started))))
 
@@ -692,47 +692,30 @@
       (test-equal (string-append "a submit refuses " (car row) " before anything is queued: "
                                  (written (cadr row)) ", nothing queued, live or started, the counts zero")
         (list (cadr row) running-counts 0 0 0)
-        (refused-at-submit (caddr row) (cadddr row))))
+        (refused-at-submit (caddr row))))
     (list
      (list "a header name changed after the request was made, to hold a space"
            '(request-refused header-name not-a-token)
            (lambda () (let ((name (string-copy "X-A")))
                         (let ((r (request status 'headers (list (cons name "v")))))
                           (string-set! name 1 #\space)
-                          r)))
-           '())
+                          r))))
      (list "a URL changed after the request was made, to hold U+0000"
            '(url-refused embedded-nul)
            (lambda () (let* ((url (string-copy status)) (r (request url)))
                         (string-set! url (- (string-length url) 1) #\nul)
-                        r))
-           '())
+                        r)))
      (list "a URL whose scheme is not http or https"
            '(url-refused scheme-not-http)
-           (lambda () (request "ftp://127.0.0.1/x"))
-           '())
+           (lambda () (request "ftp://127.0.0.1/x")))
      (list "a CA file's path changed after the request was made, to hold U+0000"
            '(request-refused ca-file embedded-nul)
            (lambda () (let* ((path (string-copy "/tmp/ca.pem")) (r (request status 'ca-file path)))
                         (string-set! path 3 #\nul)
-                        r))
-           '())
-     (list "the test seam's option this libcurl does not know"
-           '(transfer-error unknown-option #f #f 0)
-           (lambda () (request status))
-           '(("NO_SUCH_OPTION_EVER" . 1)))
-     (list "the test seam's owned option, URL"
-           '(request-refused options owned-option)
-           (lambda () (request status))
-           '(("URL" . 1)))
-     (list "the test seam's string option, COOKIE"
-           '(request-refused options unsupported-type)
-           (lambda () (request status))
-           '(("COOKIE" . 1)))
+                        r)))
      (list "what is not a request"
            '(assertion-violation curl-submit)
-           (lambda () 'not-a-request)
-           '())))
+           (lambda () 'not-a-request))))
 
    (test-equal "after every refusal the engine still runs, and its next transfer answers"
      (list 'running '(response 200 "status 200\n"))

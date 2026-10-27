@@ -13,7 +13,7 @@
           curlinfo-private curlinfo-rtsp-client-cseq curlot-types
           curlue-ok curlue-codes curlupart-url curlupart-scheme
           curlinfo-response-code curlinfo-http-version curlinfo-effective-url
-          curl-error-size
+          curl-error-size curl-blob-copy
           curl-http-version-1-0 curl-http-version-1-1 curl-http-version-2-0
           curl-http-version-3
           curle-write-error curle-out-of-memory curle-operation-timedout
@@ -217,6 +217,12 @@
   ;; curl-error-size : Positive-Integer
   ;; curl/curl.h: CURL_ERROR_SIZE, 256: the bytes CURLOPT_ERRORBUFFER needs.
   (define curl-error-size 256)
+
+  ;; curl-blob-copy : Positive-Integer
+  ;; curl/easy.h: CURL_BLOB_COPY, 1 (7.71.0): a struct curl_blob's flags,
+  ;; telling setopt to copy the bytes, so they may be freed once it returns
+  ;; (ADR-0009, decision 4).
+  (define curl-blob-copy 1)
 
   ;; curl-http-version-1-0 : Positive-Integer
   ;; curl-http-version-1-1 : Positive-Integer

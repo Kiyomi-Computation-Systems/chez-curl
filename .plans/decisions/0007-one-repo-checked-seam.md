@@ -6,7 +6,9 @@
   amended 2026-10-17 with where a library may be defined
   ([amendment](#amendment-2026-10-17-a-library-is-defined-under-src-at-its-names-path-m0-slice-6));
   amended 2026-10-23 with M2 slice 1's names, and with M2 slice 2's
-  ([amendment](#amendment-2026-10-23-memory-loading-and-binding-each-have-one-library-m2-slice-1))
+  ([amendment](#amendment-2026-10-23-memory-loading-and-binding-each-have-one-library-m2-slice-1));
+  amended 2026-10-27 with the hatch's rule and its blob
+  ([amendment](#amendment-2026-10-27-the-hatch-fenced-off-from-the-low-level-too-m4-slice-4))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1 layout
 - **Settles:** D1 (brief §10)
@@ -209,3 +211,23 @@ honour.
   `callable-elsewhere`, as slice 1's entries are held.
 - `src/` now holds 14 libraries in 14 files: `(curl private transfer)` is new.
 
+## Amendment, 2026-10-27: the hatch fenced off from the low level too (M4 slice 4)
+
+- **Rule (j):** no `(curl ...)` library may import `(curl unsupported)`. Rule (b) kept the
+  hatch from every `(http-client ...)` library already; without (j), `(curl)` could import it
+  and re-export it past (b). It closes that route alone. The hatch's procedure is defined in
+  `(curl private transfer)`, beside the request's constructor it needs, and exported there
+  too, and every `(curl ...)` library may import that library. The slice's review re-exported
+  it from `(curl)` under another name, and check-seam passed. So `test-unsupported` holds
+  `(curl)`'s exports by what each is bound to, which a rename cannot hide; the review's
+  mutant now fails it. The hatch itself may import `(curl ...)` libraries. The
+  `rule-j` fixture tree holds (curl), and a private library importing it through `prefix`,
+  each refused by name, beside an `(http-client ...)` import that (b) refuses.
+- **`allowed-chez-names` gains `ftype-sizeof` and `ftype-set!`,** for the `struct curl_blob`
+  a blob option takes. `ftype-set!` writes into foreign memory, so `library-only-chez-names`
+  keeps it to `(curl private native)`, which fills each struct in a counted block and frees
+  it as setopt returns. `ftype-sizeof` runs no code, and is not kept to one library.
+- **`test-check-seam` writes out `library-only-chez-names`' names.** Its old check held each
+  entry to the libraries that import its name. So an entry removed was held to nothing: the
+  sweep's `ftype-set-unlisted` mutant passed until then.
+- `src/` now holds 16 libraries in 16 files: `(curl unsupported)` is new.

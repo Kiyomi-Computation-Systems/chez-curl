@@ -65,6 +65,12 @@
 ;;; one back as bytes. Header strings and the user agent are the one
 ;;; exception (ADR-0001, amended 2026-10-23): call-with-latin-1-c-string
 ;;; hands C one byte per char, refusing U+0000 and any char above U+00FF.
+;;; A blob the hatch sets goes through call-with-curl-blob: a counted copy
+;;; of its bytes, and a counted struct curl_blob, filled with ftype-set!,
+;;; which check-seam lets this library alone import, flagged
+;;; CURL_BLOB_COPY, so libcurl copies the bytes as setopt runs and both
+;;; blocks are freed once it returns (ADR-0009, decision 4; the M4 plan,
+;;; section 3.7).
 ;;;
 ;;; The transfer's bindings (M2 plan, section 5.2) are step 6's:
 ;;; curl_easy_strerror, curl_easy_nextheader, curl_slist_append and
@@ -123,7 +129,7 @@
           curl-easy-getinfo curl-easy-getinfo-long curl-easy-getinfo-off-t curl-easy-getinfo-string
           copy-foreign->bytevector! copy-bytevector->foreign!
           call-with-c-string call-with-latin-1-c-string call-with-foreign-bytes
-          c-string->bytevector
+          call-with-curl-blob c-string->bytevector
           curl-url curl-url-cleanup curl-url-set curl-url-get curl-url-strerror
           curl-free loaded-protocols
           curl-easy-strerror curl-easy-nextheader curl-header-bytes
@@ -133,8 +139,8 @@
           curl-multi-strerror curl-multi-setopt-long)
   (import (curl private require-threaded)
           (except (rnrs) dynamic-wind)
-          (only (chezscheme) critical-section dynamic-wind ftype-ref make-ftype-pointer
-                foreign-procedure foreign-entry foreign-entry? load-shared-object
+          (only (chezscheme) critical-section dynamic-wind ftype-ref ftype-set! ftype-sizeof
+                make-ftype-pointer foreign-procedure foreign-entry foreign-entry? load-shared-object
                 foreign-ref foreign-sizeof
                 format format-condition? display-condition
                 getenv machine-type file-regular? get-thread-id make-mutex with-mutex)
@@ -426,6 +432,30 @@
     (call-with-c-bytes 'call-with-foreign-bytes bytes
                        (if (= (bytevector-length bytes) 0) (make-bytevector 1 0) bytes)
                        proc))
+
+  ;; call-with-curl-blob : Bytevector (Positive-Integer -> Any) -> Any
+  ;; PROC's answer, PROC given the address of a struct curl_blob, in a
+  ;; counted block: its data the address of a counted copy of BYTES, which
+  ;; call-with-foreign-bytes makes, never NULL; its len BYTES' length; its
+  ;; flags CURL_BLOB_COPY. libcurl copies the bytes when a blob option is
+  ;; set (ADR-0009; measured on five Linux libcurls, the M4 plan, section
+  ;; 7.1), so both blocks are freed once PROC returns, raises or escapes,
+  ;; as call-with-c-bytes frees its block, and PROC is never re-entered
+  ;; after.
+  (define (call-with-curl-blob bytes proc)
+    (unless (bytevector? bytes)
+      (assertion-violation 'call-with-curl-blob "not a bytevector" bytes))
+    (unless (procedure? proc)
+      (assertion-violation 'call-with-curl-blob "not a procedure" proc))
+    (call-with-foreign-bytes bytes
+      (lambda (data)
+        (call-with-c-bytes 'call-with-curl-blob bytes (make-bytevector (ftype-sizeof curl-blob) 0)
+          (lambda (address)
+            (let ((blob (make-ftype-pointer curl-blob address)))
+              (ftype-set! curl-blob (data) blob data)
+              (ftype-set! curl-blob (len) blob (bytevector-length bytes))
+              (ftype-set! curl-blob (flags) blob curl-blob-copy)
+              (proc address)))))))
 
   ;; call-with-c-string : String (Positive-Integer -> Any) -> Any
   ;; PROC's answer, PROC given the address of STRING as C reads it: its

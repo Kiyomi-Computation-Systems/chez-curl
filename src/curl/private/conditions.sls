@@ -219,8 +219,12 @@
   ;; curl-request-error-reasons : (Listof Symbol)
   ;; Why a request's field is refused (M2 plan, section 5.3):
   ;;
-  ;;   embedded-nul  a value holds U+0000, which C would read as its end
-  ;;   line-break    a value holds CR or LF, which would end its header line
+  ;;   embedded-nul  a value holds U+0000, which C would read as its end: a
+  ;;                 header's, a CA file's path, or a hatch option's name or
+  ;;                 string
+  ;;   line-break    a value holds CR or LF, which would end its header line,
+  ;;                 or a line libcurl sends: a header's, or a hatch
+  ;;                 option's string
   ;;   not-latin-1   a value holds a char above U+00FF, which has no byte:
   ;;                 header strings are Latin-1, both ways (ADR-0001,
   ;;                 amended 2026-10-23)
@@ -239,12 +243,20 @@
   ;;                 a header named Content-Length or Transfer-Encoding, in
   ;;                 any case: libcurl frames the message, from the body it
   ;;                 is handed
-  ;;   owned-option  an option the test seam may not set: chez-curl sets it,
-  ;;                 a request field sets it, or it is the twin of one that
-  ;;                 does, compared by id (ADR-0009, amended 2026-10-23)
+  ;;   owned-option  an option the hatch may not attach: chez-curl sets it,
+  ;;                 a request field sets it, it is the twin of one that
+  ;;                 does, or chez-curl keeps it from the hatch, compared by
+  ;;                 id (ADR-0009, amended 2026-10-23 and 2026-10-27)
   ;;   unsupported-type
-  ;;                 an option the test seam may not set for its type: only
-  ;;                 long, enumerated values and off_t, so no address passes
+  ;;                 an option the hatch may not attach for its type: only
+  ;;                 long, enumerated values, off_t, a string, a string list
+  ;;                 and a blob, so no address of the caller's passes
+  ;;   unknown-option
+  ;;                 an option's name the loaded libcurl does not know
+  ;;                 (ADR-0009, decision 3)
+  ;;   repeated-option
+  ;;                 an option the request carries already, or one attached
+  ;;                 earlier in the same call, by any of its names: its id
   ;;   unknown-key   a key make-curl-request or curl-request-with does not
   ;;                 take (ADR-0023)
   ;;   repeated-key  a key given twice to one call
@@ -271,13 +283,14 @@
   ;; only when none offends are its ends checked.
   (define curl-request-error-reasons
     '(embedded-nul line-break not-latin-1 not-a-token surrounding-whitespace duplicates-field
-      framing-header owned-option unsupported-type unknown-key repeated-key missing-value
-      body-not-allowed pkcs11-url environment-override keychain-fallback))
+      framing-header owned-option unsupported-type unknown-option repeated-option
+      unknown-key repeated-key missing-value body-not-allowed pkcs11-url environment-override
+      keychain-fallback))
 
   ;; The fields:
   ;;
   ;;   field   Symbol: the field refused, header-name, header-value,
-  ;;           user-agent, ca-file, or options, the test seam's; key for
+  ;;           user-agent, ca-file, or options, the hatch's; key for
   ;;           unknown-key, repeated-key and missing-value; body for
   ;;           body-not-allowed
   ;;   value   the string refused, whole, or the option's name; the key, as
