@@ -1,0 +1,40 @@
+# The maintainer's M1, 2026-10-27, on feat/m4-slice-3 (4789fcc), as pasted:
+#   make test NODE="$(asdf which node)"
+# ran 25, passed 25, failed 0, hung 0, with CURL_SSL_BACKEND=secure-transport, which make
+# exports on macOS: test-transfer-tls 81 checks, test-request 38, test-library-loading 74,
+# test-transfer 230, test-engine 51, its stalled-lookup checks Linux's alone.
+#   NODE="$(asdf which node)" sh .plans/research/m4/slice3/run.sh mac backend
+[mac] libcurl before init SecureTransport (LibreSSL/3.3.6); after init 8.7.1, (SecureTransport) LibreSSL/3.3.6, https-proxy yes, Darwin arm64, OpenSSL 3.6.3 9 Jun 2026 (Library: OpenSSL 3.6.3 9 Jun 2026)
+[mac] no CURL_SSL_BACKEND: before init SecureTransport (LibreSSL/3.3.6); after init 8.7.1, (SecureTransport) LibreSSL/3.3.6, https-proxy yes
+[mac] public, no CURL_SSL_BACKEND, no CA file: code 0 status 200 body "<!doctype html><html lang=en><head><meta charset=utf-8><link re" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] public, no CURL_SSL_BACKEND, CA file the run CA: code 0 status 200 body "<!doctype html><html lang=en><head><meta charset=utf-8><link re" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] local, no CURL_SSL_BACKEND, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] local, no CURL_SSL_BACKEND, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CURL_SSL_BACKEND=openssl: before init SecureTransport (LibreSSL/3.3.6); after init 8.7.1, (SecureTransport) LibreSSL/3.3.6, https-proxy yes
+[mac] public, CURL_SSL_BACKEND=openssl, no CA file: code 0 status 200 body "<!doctype html><html lang=en><head><meta charset=utf-8><link re" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] public, CURL_SSL_BACKEND=openssl, CA file the run CA: code 0 status 200 body "<!doctype html><html lang=en><head><meta charset=utf-8><link re" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] local, CURL_SSL_BACKEND=openssl, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] local, CURL_SSL_BACKEND=openssl, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] CURL_SSL_BACKEND=secure-transport: before init SecureTransport (LibreSSL/3.3.6); after init 8.7.1, SecureTransport (LibreSSL/3.3.6), https-proxy yes
+[mac] public, CURL_SSL_BACKEND=secure-transport, no CA file: code 0 status 200 body "<!doctype html><html lang=en><head><meta charset=utf-8><link re" error "" ssl "SecureTransport (LibreSSL/3.3.6)"; exit 0
+[mac] public, CURL_SSL_BACKEND=secure-transport, CA file the run CA: code 60 status 0 body "" error "SSL: peer not verified:  RecoverableTrustFailure" ssl "SecureTransport (LibreSSL/3.3.6)"; exit 0
+[mac] local, CURL_SSL_BACKEND=secure-transport, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "SecureTransport (LibreSSL/3.3.6)"; exit 0
+[mac] local, CURL_SSL_BACKEND=secure-transport, CA file the other CA: code 60 status 0 body "" error "SSL: peer not verified:  RecoverableTrustFailure" ssl "SecureTransport (LibreSSL/3.3.6)"; exit 0
+[mac] CURL_SSL_BACKEND=securetransport: before init SecureTransport (LibreSSL/3.3.6); after init 8.7.1, SecureTransport (LibreSSL/3.3.6), https-proxy yes
+[mac] public, CURL_SSL_BACKEND=securetransport, no CA file: code 0 status 200 body "<!doctype html><html lang=en><head><meta charset=utf-8><link re" error "" ssl "SecureTransport (LibreSSL/3.3.6)"; exit 0
+[mac] public, CURL_SSL_BACKEND=securetransport, CA file the run CA: code 60 status 0 body "" error "SSL: peer not verified:  RecoverableTrustFailure" ssl "SecureTransport (LibreSSL/3.3.6)"; exit 0
+[mac] local, CURL_SSL_BACKEND=securetransport, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "SecureTransport (LibreSSL/3.3.6)"; exit 0
+[mac] local, CURL_SSL_BACKEND=securetransport, CA file the other CA: code 60 status 0 body "" error "SSL: peer not verified:  RecoverableTrustFailure" ssl "SecureTransport (LibreSSL/3.3.6)"; exit 0
+[mac] CURL_SSL_BACKEND=nonesuch: before init SecureTransport (LibreSSL/3.3.6); after init 8.7.1, SecureTransport (LibreSSL/3.3.6), https-proxy yes
+[mac] public, CURL_SSL_BACKEND=nonesuch, no CA file: code 0 status 200 body "<!doctype html><html lang=en><head><meta charset=utf-8><link re" error "" ssl "SecureTransport (LibreSSL/3.3.6)"; exit 0
+[mac] public, CURL_SSL_BACKEND=nonesuch, CA file the run CA: code 60 status 0 body "" error "SSL: peer not verified:  RecoverableTrustFailure" ssl "SecureTransport (LibreSSL/3.3.6)"; exit 0
+[mac] local, CURL_SSL_BACKEND=nonesuch, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "SecureTransport (LibreSSL/3.3.6)"; exit 0
+[mac] local, CURL_SSL_BACKEND=nonesuch, CA file the other CA: code 60 status 0 body "" error "SSL: peer not verified:  RecoverableTrustFailure" ssl "SecureTransport (LibreSSL/3.3.6)"; exit 0
+[mac] no CURL_SSL_BACKEND, OPENSSL_X509_TEA_DISABLE=1: before init SecureTransport (LibreSSL/3.3.6); after init 8.7.1, (SecureTransport) LibreSSL/3.3.6, https-proxy yes
+[mac] public, no CURL_SSL_BACKEND, OPENSSL_X509_TEA_DISABLE=1, no CA file: code 0 status 200 body "<!doctype html><html lang=en><head><meta charset=utf-8><link re" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] public, no CURL_SSL_BACKEND, OPENSSL_X509_TEA_DISABLE=1, CA file the run CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] local, no CURL_SSL_BACKEND, OPENSSL_X509_TEA_DISABLE=1, CA file the run CA: code 0 status 200 body "origin-tls" error "" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] local, no CURL_SSL_BACKEND, OPENSSL_X509_TEA_DISABLE=1, CA file the other CA: code 60 status 0 body "" error "SSL certificate problem: unable to get local issuer certificate" ssl "(SecureTransport) LibreSSL/3.3.6"; exit 0
+[mac] done
+.plans/research/m4/slice3/run.sh: line 68: 78506 Terminated: 15          "${NODE:-node}" "$here/servers.mjs" "$tmp/pki" "$tmp/log" < "$tmp/in" > "$tmp/announce"
+[mac] the servers exited 143, not 0, after their stdin closed: 143 is the watchdog's kill, 5 s on

@@ -74,12 +74,19 @@ close-out under **Close-outs**, newest first.
       Apple's own libcurl, and refuses where the backend cannot be read; `backend-in-use`
       strips parenthesised groups, so a version with spaces stays whole; the records cite
       curl's own release notes for 8.8.0's fix.
-    - **Owed by the Mac:** `make test` again, its TLS suites now on SecureTransport, which has
-      not run them; and `research/m4/slice3/run.sh mac backend`, which tries
-      `secure-transport`, `securetransport`, a name no backend has, and
-      `OPENSSL_X509_TEA_DISABLE=1`.
+    - **The Mac's third run, 2026-10-27:** `make test` 25 of 25, its TLS suites on
+      SecureTransport for the first time. `secure-transport` reached SecureTransport by name,
+      and `securetransport` and a name no backend has by curl's fallback. With
+      `OPENSSL_X509_TEA_DISABLE=1`, LibreSSL kept the CA file the only anchor: Apple's keychain
+      fallback is what undid it. **Decided by the maintainer:** that variable is carried past
+      slice 3, its timing measured first; the refusal stays, erring toward refusing (ADR-0024,
+      amended 2026-10-27).
+    - **The Mac's Node did not exit when its FIFO stdin closed,** in every slice 3 run, four
+      times; the runners' watchdogs ended it 5 s on. Its cause is still unmeasured.
   - **Carried into M4:** why a timeout's 28 came 1,014 ms late once (ADR-0019, amended
-    2026-10-25); CI has still never run.
+    2026-10-25); CI has still never run; accepting Apple's `OPENSSL_X509_TEA_DISABLE=1` in
+    place of the keychain refusal, once when LibreSSL reads it is measured (ADR-0024, amended
+    2026-10-27).
 - **M3, the engine:** **done on 2026-10-26.** Its three slices are merged (PRs #19, #20 and
   #21), PR #22 moved CI's `current` lane to curl 8.23.0, and the Mac has run both
   (M3 plan, §7). Their close-outs are below.

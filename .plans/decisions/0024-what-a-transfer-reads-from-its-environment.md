@@ -319,3 +319,15 @@ The maintainer's Mac ran slice 3's probes on its PR (`research/m4/slice3/results
     backend before the init and another after, and `test-library-loading` requires the
     backend native records to be the one after; every lane requires the backend to be read,
     and, on a libcurl with one backend, to be the whole of the version text.
+- **The Mac's third run, 2026-10-27** (`research/m4/slice3/results/mac-3.log`):
+  - `make test` passed 25 of 25 with `CURL_SSL_BACKEND=secure-transport`, its TLS suites on
+    SecureTransport for the first time;
+  - `secure-transport` put SecureTransport in use by name, and `securetransport` and `nonesuch`
+    did too, by the fallback an unknown name takes, as 8.7.1's source has it;
+  - with no `CURL_SSL_BACKEND` and `OPENSSL_X509_TEA_DISABLE=1`, LibreSSL stayed in use and
+    example.com answered 60 to a CA file naming the run CA; the local origin answered 200 with
+    it and 60 with the other CA's. So Apple's Trust Evaluation Agent, the keychain fallback, is
+    what undid the CA file, and that variable turns it off.
+  - **Decided by the maintainer, 2026-10-27: the variable is carried past slice 3.** The refusal
+    stays as built, and fires with it set: it errs toward refusing. Accepting it waits on when
+    LibreSSL reads it, once or at each verification, measured first.

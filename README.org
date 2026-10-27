@@ -53,7 +53,9 @@ program's environment. chez-curl never changes them.
   passes whatever the =ca-file= names. So there a request with a =ca-file=
   and =verify= on is refused when you submit it. Start the program with
   =CURL_SSL_BACKEND=secure-transport=, which keeps the =ca-file= the only
-  anchor. =make test= sets it on macOS.
+  anchor. =make test= sets it on macOS. Apple's =OPENSSL_X509_TEA_DISABLE=1=
+  turns the keychain fallback off too, but chez-curl does not read it yet,
+  and still refuses.
 - *The request size.* libcurl 8.7.0 and 8.7.1, the Mac's among them, count
   no bytes sent, ever. On them a failure from a transfer that ran has a
   request size of =#f=, unknown, not =0=.
