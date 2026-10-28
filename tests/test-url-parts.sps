@@ -722,10 +722,32 @@
   '((assertion curl-url-part) (assertion curl-url-part) (assertion curl-url-part)
     (assertion curl-url-append-query) (assertion curl-url-append-query))
   (list (refusal (lambda () (curl-url-part 42 'host)))
-        (refusal (lambda () (curl-url-part "http://a/" 'zoneid)))
+        (refusal (lambda () (curl-url-part "http://a/" 'options)))
         (refusal (lambda () (curl-url-part "http://a/" "host")))
         (refusal (lambda () (curl-url-append-query #f "b=2")))
         (refusal (lambda () (curl-url-append-query "http://a/" 42)))))
+
+;; The zone ID, read for the origin rule (the M5 plan, section 3.4): an IPv6
+;; host comes back without it, on every libcurl measured, so two zones of
+;; one address would read as one host. These answers are alike on the five
+;; Linux libcurls (.plans/research/m5/location/results/zoneid-*.log); an
+;; empty zone, %25 inside one and %30 vary on 8.23.0, and are left out. The
+;; host of [FE80::1%25ETH0] keeps its case on 7.85.0 and 8.5.0 alone, so
+;; its zone ID alone is asserted.
+(test-equal "curl-url-part's zoneid: an IPv6 host's zone ID as written, which the host leaves out, with a port, from a raw %, and in its own case; absent for an IPv6 host with none, a name and an IPv4 address"
+  (list '(("eth0" "[fe80::1]") ("eth1" "[fe80::1]") ((absent) "[fe80::1]") ("eth0" "[fe80::1]")
+          ("eth0" "[fe80::1]") ("lo" "[::1]") ((absent) "h.example") ((absent) "127.0.0.1"))
+        "ETH0" 8080 zero-counts)
+  (let* ((pairs (map (lambda (url)
+                       (list (one-answer (lambda () (curl-url-part url 'zoneid)))
+                             (one-answer (lambda () (curl-url-part url 'host)))))
+                     '("http://[fe80::1%25eth0]/" "http://[fe80::1%25eth1]/" "http://[fe80::1]/"
+                       "http://[fe80::1%25eth0]:8080/p" "http://[fe80::1%eth0]/" "http://[::1%25lo]/"
+                       "http://h.example/" "http://127.0.0.1/")))
+         (case (one-answer (lambda () (curl-url-part "http://[FE80::1%25ETH0]/" 'zoneid))))
+         (port (one-answer (lambda () (curl-url-part "http://[fe80::1%25eth0]:8080/p" 'port))))
+         (counts (native-counts)))
+    (list pairs case port counts)))
 
 ;; --- the string written, by tables ---------------------------------------------------------
 ;; appended-url is the append's string assembly, pure, so these rows reach

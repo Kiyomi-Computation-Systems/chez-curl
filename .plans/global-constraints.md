@@ -124,7 +124,9 @@ provisional. They bind until that record is accepted or amended.
 - **Header strings are Latin-1, both ways:** one char per byte. A response header's name and
   value become strings that way. A request header's name and value, and the user agent, reach
   libcurl as counted Latin-1 copies, and a char above U+00FF is refused, as U+0000 is. That
-  is the UTF-8 rule's one exception (ADR-0001, amended 2026-10-23).
+  is the UTF-8 rule's one exception (ADR-0001, amended 2026-10-23). A header's bytes handed to
+  a URL function, a `Location`'s, are no second one: `curl-url-resolve` and
+  `curl-url-with-fragment` encode them into ASCII first (ADR-0029, amended 2026-10-28).
 - **Every check of a caller's string or list runs on a private copy, and the copy is what is
   used.** Scheme strings and pairs are mutable, so a check, then a use, of the caller's own
   checks something else. That covers the transfer's snapshot of its request, its body
@@ -236,7 +238,8 @@ provisional. They bind until that record is accepted or amended.
   case every recorded libcurl agrees on, and a row per libcurl version for the cases that
   vary. A libcurl with no row fails, printing its row. Answers are asserted whole, as a URL
   or a `CURLUcode`, never a message (ADR-0008, amended). `test-url-parts` holds `curl-url-part`'s
-  and `curl-url-append-query`'s the same way, in a rows file of its own.
+  and `curl-url-append-query`'s the same way, in a rows file of its own, and `test-url-location`
+  `curl-url-resolve`'s and `curl-url-with-fragment`'s, in another.
 
 ## TLS
 
@@ -646,6 +649,10 @@ provisional. They bind until that record is accepted or amended.
   which keeps the part's hex case on every libcurl, where setting a part does not; and its query
   read back, or `query-not-kept` (ADR-0028). Never `CURLU_APPENDQUERY`, and never a URL that
   `curl_url` has not parsed whole.
+- **A redirect's fragment is set by `curl-url-with-fragment`:** the URL written from what
+  `curl_url_get` gave back, `#` and the fragment, then parsed whole; a header's bytes encoded
+  first, each byte at or below 0x20, 0x7F and each above as upper-case `%XX`, every other byte
+  kept (ADR-0029). Never `curl_url_set` of the fragment part, which stores its bytes unchecked.
 - **A call's drive winds with Chez's critical `dynamic-wind`,** `(dynamic-wind #t ...)`, so a
   second escape that lands in its after thunk cannot skip the cancel; the submit and the record
   of its token share one `critical-section`; and a call with interrupts off is refused before
@@ -660,8 +667,12 @@ provisional. They bind until that record is accepted or amended.
   chez-curl adds no attempt: libcurl itself may resend on a dead reused connection.
 - **A redirect from `https` to `http` is refused** as `&http-redirect-error`,
   `insecure-redirect`, unless the session or the call sets `allow-downgrade` (ADR-0027).
-- **A redirect is followed from the first `Location` header's bytes,** resolved by
-  `curl_url_set` against the URL the transfer requested, never from `CURLINFO_REDIRECT_URL`,
-  whose statuses and credentials move with the version. `FOLLOWLOCATION` stays owned and off
-  (ADR-0008 and ADR-0023, amended 2026-10-27). A URL function's answer that is not UTF-8 is
-  refused, never decoded (ADR-0008, amended 2026-10-27).
+- **A redirect is followed from the first `Location` header's bytes,** encoded by ADR-0029's
+  rule, then resolved by `curl_url_set` against the URL the transfer requested, never from
+  `CURLINFO_REDIRECT_URL`, whose statuses and credentials move with the version.
+  `FOLLOWLOCATION` stays owned and off (ADR-0008 and ADR-0023, amended 2026-10-27; ADR-0029,
+  amended 2026-10-28). A URL function's answer that is not UTF-8 is refused, never decoded
+  (ADR-0008, amended 2026-10-27).
+- **An origin is the scheme, the host A to Z folded, its zone ID and the port,** each by
+  `curl-url-part`: libcurl gives an IPv6 host without its zone, so a rule that compares hosts
+  alone sends a call's credentials to another zone (ADR-0008, amended 2026-10-28).

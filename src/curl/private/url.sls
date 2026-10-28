@@ -21,9 +21,13 @@
 ;;; Every refusal raises &curl-url-error (curl private conditions): with
 ;;; libcurl's CURLUcode and its name, or with one of chez-curl's own
 ;;; reasons, scheme-not-http, embedded-nul, not-utf-8 or query-not-kept, and
-;;; no code. A string holding U+0000 is refused before libcurl sees it: C
-;;; reads a string to its first NUL, so "http://a/\x0;b" would reach libcurl
-;;; as http://a/. Every string curl_url_get gives back is read as UTF-8, or
+;;; no code. A string holding U+0000, or a bytevector holding 0x00, is
+;;; refused before libcurl sees it: C reads a string to its first NUL, so
+;;; "http://a/\x0;b" would reach libcurl as http://a/. A bytevector, a
+;;; header's bytes, is encoded into ASCII by encoded-bytes before libcurl
+;;; sees it (ADR-0029, amended), so every string libcurl gets here is
+;;; UTF-8; a refusal names the bytes read as Latin-1, as a header string
+;;; holds them. Every string curl_url_get gives back is read as UTF-8, or
 ;;; refused as not-utf-8, never decoded with U+FFFD: libcurl decodes a
 ;;; host's %XX, so http://caf%E9.example/ comes back holding the byte 0xE9,
 ;;; on every libcurl measured (the M5 plan, section 3.1;
@@ -31,10 +35,13 @@
 ;;;
 ;;; curl's verdicts vary by version (ADR-0008, amended 2026-10-19):
 ;;; tests/test-url.sps holds the shared answers, and
-;;; tests/known-url-verdicts.sexp a row per libcurl for the rest.
+;;; tests/known-url-verdicts.sexp a row per libcurl for the rest;
+;;; tests/test-url-parts.sps and tests/test-url-location.sps hold the M5
+;;; functions' the same way, each with a rows file of its own.
 (library (curl private url)
   (export url-normalize url-resolve call-with-parsed-url require-http-scheme
-          parse-url free-parsed-url! curl-url-part curl-url-append-query appended-url)
+          parse-url free-parsed-url! curl-url-part curl-url-append-query appended-url
+          curl-url-resolve curl-url-with-fragment fragment-url encoded-bytes)
   (import (curl private require-threaded)
           (except (rnrs) dynamic-wind)
           (only (chezscheme) dynamic-wind)
@@ -236,14 +243,16 @@
           (list 'port curlupart-port curlu-default-port (code-of 'no-port))
           (list 'path curlupart-path 0 #f)
           (list 'query curlupart-query 0 (code-of 'no-query))
-          (list 'fragment curlupart-fragment 0 (code-of 'no-fragment))))
+          (list 'fragment curlupart-fragment 0 (code-of 'no-fragment))
+          (list 'zoneid curlupart-zoneid 0 (code-of 'no-zoneid))))
 
   ;; curl-url-part : String Symbol -> (U String Natural #f)
   ;; PART of URL, parsed by curl_url_set with no flags, as curl_url_get
   ;; gives it back with no flags: url, the whole URL; scheme, user,
-  ;; password, host, path, query or fragment, a string, or #f for one the
-  ;; URL lacks; or port, a natural, the scheme's default when the URL names
-  ;; none. URL's refusal raises &curl-url-error, and so does an answer whose
+  ;; password, host, path, query, fragment or zoneid, a string, or #f for
+  ;; one the URL lacks; or port, a natural, the scheme's default when the
+  ;; URL names none. An IPv6 host comes without its zone ID, which zoneid
+  ;; gives, as written (the M5 plan, section 3.4). URL's refusal raises &curl-url-error, and so does an answer whose
   ;; bytes are not UTF-8, as not-utf-8. Whether an empty user, password or
   ;; query is "" or #f varies by version: tests/known-url-part-verdicts.sexp.
   (define (curl-url-part url part)
@@ -329,4 +338,129 @@
               (unless (string=? kept expected)
                 (refuse addition 'query-not-kept #f
                         "the query part would not come back as written"))
-              answer)))))))
+              answer))))))
+
+  ;; latin-1 : Bytevector -> String
+  ;; BYTES read as Latin-1, the byte nn as U+00nn, as a header string holds
+  ;; them.
+  (define (latin-1 bytes)
+    (list->string (map integer->char (bytevector->u8-list bytes))))
+
+  ;; checked-bytes : Symbol Any String -> Bytevector
+  ;; A copy of INPUT, a bytevector without 0x00: an assertion violation from
+  ;; WHO for what is no bytevector, and embedded-nul for one that holds it,
+  ;; naming the bytes read as Latin-1. As checked-string, the copy is what is
+  ;; checked and what libcurl gets.
+  (define (checked-bytes who input what)
+    (unless (bytevector? input)
+      (assertion-violation who (string-append what " is a bytevector") input))
+    (let ((copy (bytevector-copy input)))
+      (let scan ((i 0))
+        (when (< i (bytevector-length copy))
+          (when (= (bytevector-u8-ref copy i) 0)
+            (refuse (latin-1 copy) 'embedded-nul #f
+                    (string-append what " holds 0x00, which libcurl would read as its end")))
+          (scan (+ i 1))))
+      copy))
+
+  ;; set-url-named! : Positive-Integer String String -> Void
+  ;; set-url! of TEXT, its refusal naming NAME.
+  (define (set-url-named! handle text name)
+    (let ((code (call-with-c-string text
+                  (lambda (address) (curl-url-set handle curlupart-url address 0)))))
+      (unless (eqv? code curlue-ok)
+        (refuse-code name code))))
+
+  ;; curl-url-resolve : String (U String Bytevector) -> String
+  ;; REFERENCE resolved against BASE, by curl_url_set on BASE's handle
+  ;; (ADR-0008, decision 4), as curl_url_get gives it back, read as UTF-8.
+  ;; A string is a URL as make-curl-request takes one, sent as UTF-8. A
+  ;; bytevector, a header's bytes, is encoded by encoded-bytes first, as
+  ;; curl-url-with-fragment encodes one (ADR-0029, amended): a byte above
+  ;; 0x7F, in any part, is then followed, never refused for the answer it
+  ;; would make, but in a host, which libcurl decodes. A refusal names the
+  ;; string refused, a bytevector's bytes read as Latin-1; one 0x00 among
+  ;; them is refused as embedded-nul.
+  (define (curl-url-resolve base reference)
+    (define string (checked-input 'curl-url-resolve base))
+    (if (bytevector? reference)
+        (let* ((bytes (checked-bytes 'curl-url-resolve reference "a reference"))
+               (name (latin-1 bytes))
+               (text (encoded-bytes bytes)))
+          (call-with-parsed-url string
+            (lambda (handle)
+              (set-url-named! handle text name)
+              (get-part handle curlupart-url 0 #f name))))
+        (let ((text (checked-string 'curl-url-resolve reference "a reference")))
+          (call-with-parsed-url string
+            (lambda (handle)
+              (set-url! handle text)
+              (get-part handle curlupart-url 0 #f text))))))
+
+  ;; encoded-bytes : Bytevector -> String
+  ;; BYTES, a header's, as chez-curl hands them to libcurl, for a fragment
+  ;; curl-url-with-fragment writes and a reference curl-url-resolve
+  ;; resolves: each byte at or below 0x20, 0x7F and each above 0x7F as %
+  ;; and two upper-case hex digits, every other byte as its char, % and #
+  ;; among them (ADR-0029, amended). Pure, so the suite drives it over every
+  ;; byte.
+  (define (encoded-bytes bytes)
+    (let loop ((i (- (bytevector-length bytes) 1)) (acc '()))
+      (if (< i 0)
+          (apply string-append acc)
+          (let ((b (bytevector-u8-ref bytes i)))
+            (loop (- i 1)
+                  (cons (if (or (<= b #x20) (>= b #x7F))
+                            (string #\% (string-ref "0123456789ABCDEF" (div b 16))
+                                    (string-ref "0123456789ABCDEF" (mod b 16)))
+                            (string (integer->char b)))
+                        acc))))))
+
+  ;; fragment-url : String (U String #f) String -> String
+  ;; The string curl-url-with-fragment has curl_url parse whole: from WHOLE,
+  ;; a URL as curl_url_get gives it back, and its FRAGMENT as curl_url_get
+  ;; gives it, #f for none, the fragment, with its #, comes off the end of
+  ;; WHOLE; then # and NEW, unless NEW is empty. Pure, as appended-url is: a
+  ;; "" fragment WHOLE lacks cuts nothing, and a non-empty fragment that is
+  ;; not WHOLE's end is an error.
+  (define (fragment-url whole fragment new)
+    (let ((stem (cond ((not fragment) whole)
+                      ((string-suffix? whole (string-append "#" fragment))
+                       (substring whole 0 (- (string-length whole)
+                                             (+ 1 (string-length fragment)))))
+                      ((string=? fragment "") whole)
+                      (else (error 'curl-url-with-fragment
+                                   "libcurl's URL does not end with its fragment"
+                                   whole fragment)))))
+      (if (string=? new "") stem (string-append stem "#" new))))
+
+  ;; curl-url-with-fragment : String (U String Bytevector #f) -> String
+  ;; URL with its fragment replaced by FRAGMENT, or cleared by #f or an
+  ;; empty one (ADR-0029): URL parsed, its url and fragment read back, the
+  ;; URL written again with # and FRAGMENT in place of its own, and that
+  ;; string parsed whole, as url-normalize parses one, which keeps every
+  ;; byte and its hex case on every libcurl, where curl_url_set of the part
+  ;; stores the bytes unchecked and moves the hex case by version. A
+  ;; bytevector, a header's bytes, is encoded first, by encoded-bytes,
+  ;; and one holding 0x00 is refused as embedded-nul; a string comes as a
+  ;; URL holds it, and nothing here encodes it. A refusal of the string
+  ;; written names that string.
+  (define (curl-url-with-fragment url fragment)
+    (define string (checked-input 'curl-url-with-fragment url))
+    (define addition
+      (cond ((not fragment) "")
+            ((bytevector? fragment)
+             (encoded-bytes (checked-bytes 'curl-url-with-fragment fragment "a fragment")))
+            ((string? fragment) (checked-string 'curl-url-with-fragment fragment "a fragment"))
+            (else (assertion-violation 'curl-url-with-fragment
+                                       "a fragment is a string, a bytevector or #f" fragment))))
+    (let-values (((whole old)
+                  (call-with-parsed-url string
+                    (lambda (handle)
+                      (let* ((whole (get-part handle curlupart-url 0 #f string))
+                             (old (get-part handle curlupart-fragment 0 (code-of 'no-fragment)
+                                            string)))
+                        (values whole old))))))
+      (let ((written (fragment-url whole old addition)))
+        (call-with-parsed-url written
+          (lambda (handle) (get-part handle curlupart-url 0 #f written)))))))

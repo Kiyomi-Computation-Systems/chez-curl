@@ -1,0 +1,52 @@
+# The comparator's control (2026-10-28): run.sh's compare awk, cut from run.sh, given
+# guix-8.20.0.log's C and S lines, then the same with five planted differences, one
+# in each field it reads: r0 (latin1's %E9 lowered), location (empty's), status (s303's),
+# rc (two's 8 made 0) and amount (rel-abs.head's 1 made 2). Each must be named.
+## the awk program
+function load(line, arr,   n, parts, i, k) {
+  for (k in arr) delete arr[k]
+  gsub(/\(len /, "(len_", line)
+  n = split(line, parts, " ")
+  for (i = 1; i <= n; i++) {
+    k = index(parts[i], "=")
+    if (k) arr[substr(parts[i], 1, k - 1)] = substr(parts[i], k + 1)
+  }
+}
+$2 == "C" { c[$3] = $0; order[++n] = $3 }
+$2 == "S" && $3 != "libcurl" && $3 != "--" { s[$3] = $0; ns++ }
+END {
+  agree = 0; differ = 0
+  for (i = 1; i <= n; i++) {
+    l = order[i]
+    if (!(l in s)) { print "[" lane "] compare " l ": no Scheme line"; differ++; continue }
+    load(c[l], C); load(s[l], S)
+    if (C["location"] ~ /^hc/) C["location"] = "none"
+    verdict = ""
+    if (C["rc"] != "0" || S["rc"] != "0") {
+      if (C["rc"] != S["rc"]) verdict = " rc"
+    } else {
+      if (C["status"] != S["status"]) verdict = verdict " status"
+      if (C["location"] != S["location"]) verdict = verdict " location"
+      if (C["amount"] != S["amount"]) verdict = verdict " amount"
+      if (C["r0"] != S["r0"]) verdict = verdict " r0"
+    }
+    if (verdict == "") agree++
+    else { differ++; print "[" lane "] compare " l " differs:" verdict; print "  " c[l]; print "  " s[l] }
+  }
+  print "[" lane "] compare: " agree " agree, " differ " differ, of " n " C lines and " ns " Scheme lines"
+}
+## unchanged
+[x] compare: 64 agree, 0 differ, of 64 C lines and 64 Scheme lines
+## the planted lines
+> [guix-8.20.0] S empty GET rc=0 status=302 location=X amount=1 r0=http://127.0.0.1:35343/a/b/c/empty?q=1 utf8=yes
+> [guix-8.20.0] S latin1 GET rc=0 status=302 location=/caf\xe9 amount=1 r0=http://127.0.0.1:35343/caf%e9 utf8=yes
+> [guix-8.20.0] S two GET rc=0
+> [guix-8.20.0] S s303 GET rc=0 status=302 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+> [guix-8.20.0] S rel-abs.head HEAD rc=0 status=302 location=/x/y?z=1 amount=2 r0=http://127.0.0.1:35343/x/y?z=1 utf8=yes
+## planted
+[x] compare empty differs: location
+[x] compare latin1 differs: r0
+[x] compare two differs: rc
+[x] compare s303 differs: status
+[x] compare rel-abs.head differs: amount
+[x] compare: 59 agree, 5 differ, of 64 C lines and 64 Scheme lines

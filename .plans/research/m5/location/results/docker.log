@@ -1,0 +1,827 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+[floor-7.85.0] libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 -> /src/build/e1/ci/curl-floor/lib/libcurl.so.4.8.0
+[floor-7.85.0] -- fragment
+[floor-7.85.0] plain base=http://h.example/a/b?q=1 f=only part0=http://h.example/a/b?q=1#only frag=only penc=http://h.example/a/b?q=1#only frag=only whole=http://h.example/a/b?q=1#only frag=only ref=http://h.example/a/#only frag=only
+[floor-7.85.0] empty base=http://h.example/a/b?q=1 f= part0=http://h.example/a/b?q=1# frag= penc=http://h.example/a/b?q=1# frag= whole=http://h.example/a/b?q=1 whole.frag=uc17 ref=http://h.example/a/ ref.frag=uc17
+[floor-7.85.0] space base=http://h.example/a/b?q=1 f=a\x20b part0=http://h.example/a/b?q=1#a\x20b frag=a\x20b penc=http://h.example/a/b?q=1#a%20b frag=a%20b whole=uc20 ref=http://h.example/a/#a%20b frag=a%20b
+[floor-7.85.0] blank base=http://h.example/a/b?q=1 f=\x20\x20\x20 part0=http://h.example/a/b?q=1#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20 whole=uc20 ref=http://h.example/a/#%20%20%20 frag=%20%20%20
+[floor-7.85.0] tab base=http://h.example/a/b?q=1 f=\x09 part0=http://h.example/a/b?q=1#\x09 frag=\x09 penc=http://h.example/a/b?q=1#%09 frag=%09 whole=uc20 ref=uc20
+[floor-7.85.0] cr base=http://h.example/a/b?q=1 f=\x0d part0=http://h.example/a/b?q=1#\x0d frag=\x0d penc=http://h.example/a/b?q=1#%0d frag=%0d whole=uc20 ref=uc20
+[floor-7.85.0] latin1 base=http://h.example/a/b?q=1 f=caf\xe9 part0=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b?q=1#caf%e9 frag=caf%e9 whole=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 ref=http://h.example/a/#caf%e9 frag=caf%e9
+[floor-7.85.0] utf8 base=http://h.example/a/b?q=1 f=caf\xc3\xa9 part0=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b?q=1#caf%c3%a9 frag=caf%c3%a9 whole=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/#caf%c3%a9 frag=caf%c3%a9
+[floor-7.85.0] bom base=http://h.example/a/b?q=1 f=\xef\xbb\xbfbom part0=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b?q=1#%ef%bb%bfbom frag=%ef%bb%bfbom whole=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/#%ef%bb%bfbom frag=%ef%bb%bfbom
+[floor-7.85.0] pct-lower base=http://h.example/a/b?q=1 f=%e9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25e9x frag=%25e9x whole=http://h.example/a/b?q=1#%e9x frag=%e9x ref=http://h.example/a/#%e9x frag=%e9x
+[floor-7.85.0] pct-upper base=http://h.example/a/b?q=1 f=%E9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25E9x frag=%25E9x whole=http://h.example/a/b?q=1#%E9x frag=%E9x ref=http://h.example/a/#%E9x frag=%E9x
+[floor-7.85.0] pct-mixed base=http://h.example/a/b?q=1 f=%c3%A9 part0=http://h.example/a/b?q=1#%c3%a9 frag=%c3%a9 penc=http://h.example/a/b?q=1#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b?q=1#%c3%A9 frag=%c3%A9 ref=http://h.example/a/#%c3%A9 frag=%c3%A9
+[floor-7.85.0] bad-pct base=http://h.example/a/b?q=1 f=%zz part0=http://h.example/a/b?q=1#%zz frag=%zz penc=http://h.example/a/b?q=1#%25zz frag=%25zz whole=http://h.example/a/b?q=1#%zz frag=%zz ref=http://h.example/a/#%zz frag=%zz
+[floor-7.85.0] lone-pct base=http://h.example/a/b?q=1 f=% part0=http://h.example/a/b?q=1#% frag=% penc=http://h.example/a/b?q=1#%25 frag=%25 whole=http://h.example/a/b?q=1#% frag=% ref=http://h.example/a/#% frag=%
+[floor-7.85.0] hash base=http://h.example/a/b?q=1 f=a#b part0=http://h.example/a/b?q=1#a#b frag=a#b penc=http://h.example/a/b?q=1#a%23b frag=a%23b whole=http://h.example/a/b?q=1#a#b frag=a#b ref=http://h.example/a/#a#b frag=a#b
+[floor-7.85.0] ctl base=http://h.example/a/b?q=1 f=x\x01y part0=http://h.example/a/b?q=1#x\x01y frag=x\x01y penc=http://h.example/a/b?q=1#x%01y frag=x%01y whole=uc20 ref=uc20
+[floor-7.85.0] del base=http://h.example/a/b?q=1 f=x\x7fy part0=http://h.example/a/b?q=1#x\x7fy frag=x\x7fy penc=http://h.example/a/b?q=1#x%7fy frag=x%7fy whole=uc20 ref=uc20
+[floor-7.85.0] delims base=http://h.example/a/b?q=1 f="<>`{}|^ part0=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b?q=1#%22%3c%3e%60%7b%7d%7c%5e frag=%22%3c%3e%60%7b%7d%7c%5e whole=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/#"<>`{}|^ frag="<>`{}|^
+[floor-7.85.0] reserved base=http://h.example/a/b?q=1 f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b?q=1#a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d frag=a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d whole=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[floor-7.85.0] backslash base=http://h.example/a/b?q=1 f=a\x5cb part0=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb penc=http://h.example/a/b?q=1#a%5cb frag=a%5cb whole=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb ref=http://h.example/a/#a\x5cb frag=a\x5cb
+[floor-7.85.0] plain base=http://h.example/a/b?q=1#old f=only part0=http://h.example/a/b?q=1#only frag=only penc=http://h.example/a/b?q=1#only frag=only whole=http://h.example/a/b?q=1#only frag=only ref=http://h.example/a/#only frag=only
+[floor-7.85.0] empty base=http://h.example/a/b?q=1#old f= part0=http://h.example/a/b?q=1# frag= penc=http://h.example/a/b?q=1# frag= whole=http://h.example/a/b?q=1 whole.frag=uc17 ref=http://h.example/a/ ref.frag=uc17
+[floor-7.85.0] space base=http://h.example/a/b?q=1#old f=a\x20b part0=http://h.example/a/b?q=1#a\x20b frag=a\x20b penc=http://h.example/a/b?q=1#a%20b frag=a%20b whole=uc20 ref=http://h.example/a/#a%20b frag=a%20b
+[floor-7.85.0] blank base=http://h.example/a/b?q=1#old f=\x20\x20\x20 part0=http://h.example/a/b?q=1#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20 whole=uc20 ref=http://h.example/a/#%20%20%20 frag=%20%20%20
+[floor-7.85.0] tab base=http://h.example/a/b?q=1#old f=\x09 part0=http://h.example/a/b?q=1#\x09 frag=\x09 penc=http://h.example/a/b?q=1#%09 frag=%09 whole=uc20 ref=uc20
+[floor-7.85.0] cr base=http://h.example/a/b?q=1#old f=\x0d part0=http://h.example/a/b?q=1#\x0d frag=\x0d penc=http://h.example/a/b?q=1#%0d frag=%0d whole=uc20 ref=uc20
+[floor-7.85.0] latin1 base=http://h.example/a/b?q=1#old f=caf\xe9 part0=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b?q=1#caf%e9 frag=caf%e9 whole=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 ref=http://h.example/a/#caf%e9 frag=caf%e9
+[floor-7.85.0] utf8 base=http://h.example/a/b?q=1#old f=caf\xc3\xa9 part0=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b?q=1#caf%c3%a9 frag=caf%c3%a9 whole=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/#caf%c3%a9 frag=caf%c3%a9
+[floor-7.85.0] bom base=http://h.example/a/b?q=1#old f=\xef\xbb\xbfbom part0=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b?q=1#%ef%bb%bfbom frag=%ef%bb%bfbom whole=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/#%ef%bb%bfbom frag=%ef%bb%bfbom
+[floor-7.85.0] pct-lower base=http://h.example/a/b?q=1#old f=%e9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25e9x frag=%25e9x whole=http://h.example/a/b?q=1#%e9x frag=%e9x ref=http://h.example/a/#%e9x frag=%e9x
+[floor-7.85.0] pct-upper base=http://h.example/a/b?q=1#old f=%E9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25E9x frag=%25E9x whole=http://h.example/a/b?q=1#%E9x frag=%E9x ref=http://h.example/a/#%E9x frag=%E9x
+[floor-7.85.0] pct-mixed base=http://h.example/a/b?q=1#old f=%c3%A9 part0=http://h.example/a/b?q=1#%c3%a9 frag=%c3%a9 penc=http://h.example/a/b?q=1#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b?q=1#%c3%A9 frag=%c3%A9 ref=http://h.example/a/#%c3%A9 frag=%c3%A9
+[floor-7.85.0] bad-pct base=http://h.example/a/b?q=1#old f=%zz part0=http://h.example/a/b?q=1#%zz frag=%zz penc=http://h.example/a/b?q=1#%25zz frag=%25zz whole=http://h.example/a/b?q=1#%zz frag=%zz ref=http://h.example/a/#%zz frag=%zz
+[floor-7.85.0] lone-pct base=http://h.example/a/b?q=1#old f=% part0=http://h.example/a/b?q=1#% frag=% penc=http://h.example/a/b?q=1#%25 frag=%25 whole=http://h.example/a/b?q=1#% frag=% ref=http://h.example/a/#% frag=%
+[floor-7.85.0] hash base=http://h.example/a/b?q=1#old f=a#b part0=http://h.example/a/b?q=1#a#b frag=a#b penc=http://h.example/a/b?q=1#a%23b frag=a%23b whole=http://h.example/a/b?q=1#a#b frag=a#b ref=http://h.example/a/#a#b frag=a#b
+[floor-7.85.0] ctl base=http://h.example/a/b?q=1#old f=x\x01y part0=http://h.example/a/b?q=1#x\x01y frag=x\x01y penc=http://h.example/a/b?q=1#x%01y frag=x%01y whole=uc20 ref=uc20
+[floor-7.85.0] del base=http://h.example/a/b?q=1#old f=x\x7fy part0=http://h.example/a/b?q=1#x\x7fy frag=x\x7fy penc=http://h.example/a/b?q=1#x%7fy frag=x%7fy whole=uc20 ref=uc20
+[floor-7.85.0] delims base=http://h.example/a/b?q=1#old f="<>`{}|^ part0=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b?q=1#%22%3c%3e%60%7b%7d%7c%5e frag=%22%3c%3e%60%7b%7d%7c%5e whole=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/#"<>`{}|^ frag="<>`{}|^
+[floor-7.85.0] reserved base=http://h.example/a/b?q=1#old f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b?q=1#a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d frag=a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d whole=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[floor-7.85.0] backslash base=http://h.example/a/b?q=1#old f=a\x5cb part0=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb penc=http://h.example/a/b?q=1#a%5cb frag=a%5cb whole=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb ref=http://h.example/a/#a\x5cb frag=a\x5cb
+[floor-7.85.0] plain base=http://h.example/a/b#old%e9 f=only part0=http://h.example/a/b#only frag=only penc=http://h.example/a/b#only frag=only whole=http://h.example/a/b#only frag=only ref=http://h.example/a/#only frag=only
+[floor-7.85.0] empty base=http://h.example/a/b#old%e9 f= part0=http://h.example/a/b# frag= penc=http://h.example/a/b# frag= whole=http://h.example/a/b whole.frag=uc17 ref=http://h.example/a/ ref.frag=uc17
+[floor-7.85.0] space base=http://h.example/a/b#old%e9 f=a\x20b part0=http://h.example/a/b#a\x20b frag=a\x20b penc=http://h.example/a/b#a%20b frag=a%20b whole=uc20 ref=http://h.example/a/#a%20b frag=a%20b
+[floor-7.85.0] blank base=http://h.example/a/b#old%e9 f=\x20\x20\x20 part0=http://h.example/a/b#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b#%20%20%20 frag=%20%20%20 whole=uc20 ref=http://h.example/a/#%20%20%20 frag=%20%20%20
+[floor-7.85.0] tab base=http://h.example/a/b#old%e9 f=\x09 part0=http://h.example/a/b#\x09 frag=\x09 penc=http://h.example/a/b#%09 frag=%09 whole=uc20 ref=uc20
+[floor-7.85.0] cr base=http://h.example/a/b#old%e9 f=\x0d part0=http://h.example/a/b#\x0d frag=\x0d penc=http://h.example/a/b#%0d frag=%0d whole=uc20 ref=uc20
+[floor-7.85.0] latin1 base=http://h.example/a/b#old%e9 f=caf\xe9 part0=http://h.example/a/b#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b#caf%e9 frag=caf%e9 whole=http://h.example/a/b#caf\xe9 frag=caf\xe9 ref=http://h.example/a/#caf%e9 frag=caf%e9
+[floor-7.85.0] utf8 base=http://h.example/a/b#old%e9 f=caf\xc3\xa9 part0=http://h.example/a/b#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b#caf%c3%a9 frag=caf%c3%a9 whole=http://h.example/a/b#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/#caf%c3%a9 frag=caf%c3%a9
+[floor-7.85.0] bom base=http://h.example/a/b#old%e9 f=\xef\xbb\xbfbom part0=http://h.example/a/b#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b#%ef%bb%bfbom frag=%ef%bb%bfbom whole=http://h.example/a/b#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/#%ef%bb%bfbom frag=%ef%bb%bfbom
+[floor-7.85.0] pct-lower base=http://h.example/a/b#old%e9 f=%e9x part0=http://h.example/a/b#%e9x frag=%e9x penc=http://h.example/a/b#%25e9x frag=%25e9x whole=http://h.example/a/b#%e9x frag=%e9x ref=http://h.example/a/#%e9x frag=%e9x
+[floor-7.85.0] pct-upper base=http://h.example/a/b#old%e9 f=%E9x part0=http://h.example/a/b#%e9x frag=%e9x penc=http://h.example/a/b#%25E9x frag=%25E9x whole=http://h.example/a/b#%E9x frag=%E9x ref=http://h.example/a/#%E9x frag=%E9x
+[floor-7.85.0] pct-mixed base=http://h.example/a/b#old%e9 f=%c3%A9 part0=http://h.example/a/b#%c3%a9 frag=%c3%a9 penc=http://h.example/a/b#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b#%c3%A9 frag=%c3%A9 ref=http://h.example/a/#%c3%A9 frag=%c3%A9
+[floor-7.85.0] bad-pct base=http://h.example/a/b#old%e9 f=%zz part0=http://h.example/a/b#%zz frag=%zz penc=http://h.example/a/b#%25zz frag=%25zz whole=http://h.example/a/b#%zz frag=%zz ref=http://h.example/a/#%zz frag=%zz
+[floor-7.85.0] lone-pct base=http://h.example/a/b#old%e9 f=% part0=http://h.example/a/b#% frag=% penc=http://h.example/a/b#%25 frag=%25 whole=http://h.example/a/b#% frag=% ref=http://h.example/a/#% frag=%
+[floor-7.85.0] hash base=http://h.example/a/b#old%e9 f=a#b part0=http://h.example/a/b#a#b frag=a#b penc=http://h.example/a/b#a%23b frag=a%23b whole=http://h.example/a/b#a#b frag=a#b ref=http://h.example/a/#a#b frag=a#b
+[floor-7.85.0] ctl base=http://h.example/a/b#old%e9 f=x\x01y part0=http://h.example/a/b#x\x01y frag=x\x01y penc=http://h.example/a/b#x%01y frag=x%01y whole=uc20 ref=uc20
+[floor-7.85.0] del base=http://h.example/a/b#old%e9 f=x\x7fy part0=http://h.example/a/b#x\x7fy frag=x\x7fy penc=http://h.example/a/b#x%7fy frag=x%7fy whole=uc20 ref=uc20
+[floor-7.85.0] delims base=http://h.example/a/b#old%e9 f="<>`{}|^ part0=http://h.example/a/b#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b#%22%3c%3e%60%7b%7d%7c%5e frag=%22%3c%3e%60%7b%7d%7c%5e whole=http://h.example/a/b#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/#"<>`{}|^ frag="<>`{}|^
+[floor-7.85.0] reserved base=http://h.example/a/b#old%e9 f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b#a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d frag=a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d whole=http://h.example/a/b#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[floor-7.85.0] backslash base=http://h.example/a/b#old%e9 f=a\x5cb part0=http://h.example/a/b#a\x5cb frag=a\x5cb penc=http://h.example/a/b#a%5cb frag=a%5cb whole=http://h.example/a/b#a\x5cb frag=a\x5cb ref=http://h.example/a/#a\x5cb frag=a\x5cb
+[floor-7.85.0] clear base=http://h.example/a/b?q=1 cleared=http://h.example/a/b?q=1 cleared.frag=uc17
+[floor-7.85.0] clear base=http://h.example/a/b?q=1#old cleared=http://h.example/a/b?q=1 cleared.frag=uc17
+[floor-7.85.0] clear base=http://h.example/a/b#old%e9 cleared=http://h.example/a/b cleared.frag=uc17
+[floor-7.85.0] -- 63 lines
+[floor-7.85.0] -- localhost, port 46323
+[floor-7.85.0] http://127.0.0.1:46323/x rc=0 status=404 ip=127.0.0.1 connect-us=140
+[floor-7.85.0] http://localhost:46323/x rc=0 status=404 ip=127.0.0.1 connect-us=65
+[floor-7.85.0] http://[::ffff:127.0.0.1]:46323/x rc=0 status=404 ip=::ffff:127.0.0.1 connect-us=66
+[floor-7.85.0] -- 64 cases, base http://127.0.0.1:46323/a/b/c
+[floor-7.85.0] -- C
+[floor-7.85.0] C rel-abs GET rc=0 status=302 redirect=http://127.0.0.1:46323/x/y?z=1 effective=http://127.0.0.1:46323/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:46323/x/y?z=1 renc=http://127.0.0.1:46323/x/y?z=1
+[floor-7.85.0] C rel-path GET rc=0 status=302 redirect=http://127.0.0.1:46323/a/b/c/d/e effective=http://127.0.0.1:46323/a/b/c/rel-path?q=1 location=d/e amount=1 r0=http://127.0.0.1:46323/a/b/c/d/e renc=http://127.0.0.1:46323/a/b/c/d/e
+[floor-7.85.0] C rel-dots GET rc=0 status=302 redirect=http://127.0.0.1:46323/a/up effective=http://127.0.0.1:46323/a/b/c/rel-dots?q=1 location=../../up amount=1 r0=http://127.0.0.1:46323/a/up renc=http://127.0.0.1:46323/a/up
+[floor-7.85.0] C rel-query GET rc=0 status=302 redirect=http://127.0.0.1:46323/a/b/c/rel-query?only=1 effective=http://127.0.0.1:46323/a/b/c/rel-query?q=1 location=?only=1 amount=1 r0=http://127.0.0.1:46323/a/b/c/rel-query?only=1 renc=http://127.0.0.1:46323/a/b/c/rel-query?only=1
+[floor-7.85.0] C rel-frag GET rc=0 status=302 redirect=http://127.0.0.1:46323/a/b/c/#only effective=http://127.0.0.1:46323/a/b/c/rel-frag?q=1 location=#only amount=1 r0=http://127.0.0.1:46323/a/b/c/#only renc=http://127.0.0.1:46323/a/b/c/#only
+[floor-7.85.0] C netpath GET rc=0 status=302 redirect=http://127.0.0.1:46323/np effective=http://127.0.0.1:46323/a/b/c/netpath?q=1 location=//127.0.0.1:46323/np amount=1 r0=http://127.0.0.1:46323/np renc=http://127.0.0.1:46323/np
+[floor-7.85.0] C other-host GET rc=0 status=302 redirect=http://other.invalid/x effective=http://127.0.0.1:46323/a/b/c/other-host?q=1 location=http://other.invalid/x amount=1 r0=http://other.invalid/x renc=http://other.invalid/x
+[floor-7.85.0] C https GET rc=0 status=302 redirect=https://127.0.0.1:1/s effective=http://127.0.0.1:46323/a/b/c/https?q=1 location=https://127.0.0.1:1/s amount=1 r0=https://127.0.0.1:1/s renc=https://127.0.0.1:1/s
+[floor-7.85.0] C no-path GET rc=0 status=302 redirect=http://127.0.0.1:46323/ effective=http://127.0.0.1:46323/a/b/c/no-path?q=1 location=http://127.0.0.1:46323 amount=1 r0=http://127.0.0.1:46323/ renc=http://127.0.0.1:46323/
+[floor-7.85.0] C upper-scheme GET rc=0 status=302 redirect=http://127.0.0.1:46323/UP effective=http://127.0.0.1:46323/a/b/c/upper-scheme?q=1 location=HTTP://127.0.0.1:46323/UP amount=1 r0=http://127.0.0.1:46323/UP renc=http://127.0.0.1:46323/UP
+[floor-7.85.0] C ftp GET rc=0 status=302 redirect=ftp://127.0.0.1/f effective=http://127.0.0.1:46323/a/b/c/ftp?q=1 location=ftp://127.0.0.1/f amount=1 r0=ftp://127.0.0.1/f renc=ftp://127.0.0.1/f
+[floor-7.85.0] C file GET rc=0 status=302 redirect=file:///etc/passwd effective=http://127.0.0.1:46323/a/b/c/file?q=1 location=file:///etc/passwd amount=1 r0=file:///etc/passwd renc=file:///etc/passwd
+[floor-7.85.0] C javascript GET rc=0 status=302 redirect=http://127.0.0.1:46323/a/b/c/javascript:alert(1) effective=http://127.0.0.1:46323/a/b/c/javascript?q=1 location=javascript:alert(1) amount=1 r0=http://127.0.0.1:46323/a/b/c/javascript:alert(1) renc=http://127.0.0.1:46323/a/b/c/javascript:alert(1)
+[floor-7.85.0] C unknown-scheme GET rc=0 status=302 redirect=foo://bar/x effective=http://127.0.0.1:46323/a/b/c/unknown-scheme?q=1 location=foo://bar/x amount=1 r0=uc5 renc=uc5
+[floor-7.85.0] C empty GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:46323/a/b/c/empty?q=1 location= amount=1 r0=http://127.0.0.1:46323/a/b/c/ renc=http://127.0.0.1:46323/a/b/c/
+[floor-7.85.0] C blank GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:46323/a/b/c/blank?q=1 location= amount=1 r0=http://127.0.0.1:46323/a/b/c/ renc=http://127.0.0.1:46323/a/b/c/
+[floor-7.85.0] C missing GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:46323/a/b/c/missing?q=1 location=hc2
+[floor-7.85.0] C padded GET rc=0 status=302 redirect=http://127.0.0.1:46323/padded effective=http://127.0.0.1:46323/a/b/c/padded?q=1 location=/padded amount=1 r0=http://127.0.0.1:46323/padded renc=http://127.0.0.1:46323/padded
+[floor-7.85.0] C tab GET rc=0 status=302 redirect=http://127.0.0.1:46323/tabbed effective=http://127.0.0.1:46323/a/b/c/tab?q=1 location=/tabbed amount=1 r0=http://127.0.0.1:46323/tabbed renc=http://127.0.0.1:46323/tabbed
+[floor-7.85.0] C space-inside GET rc=0 status=302 redirect=http://127.0.0.1:46323/a%20b/c%20d effective=http://127.0.0.1:46323/a/b/c/space-inside?q=1 location=/a\x20b/c\x20d amount=1 r0=http://127.0.0.1:46323/a%20b/c%20d renc=http://127.0.0.1:46323/a%20b/c%20d
+[floor-7.85.0] C utf8 GET rc=0 status=302 redirect=http://127.0.0.1:46323/caf%c3%a9 effective=http://127.0.0.1:46323/a/b/c/utf8?q=1 location=/caf\xc3\xa9 amount=1 r0=http://127.0.0.1:46323/caf%c3%a9 renc=http://127.0.0.1:46323/caf%c3%a9
+[floor-7.85.0] C latin1 GET rc=0 status=302 redirect=http://127.0.0.1:46323/caf%e9 effective=http://127.0.0.1:46323/a/b/c/latin1?q=1 location=/caf\xe9 amount=1 r0=http://127.0.0.1:46323/caf%e9 renc=http://127.0.0.1:46323/caf%e9
+[floor-7.85.0] C ctl GET rc=0 status=302 redirect=/x\x01y effective=http://127.0.0.1:46323/a/b/c/ctl?q=1 location=/x\x01y amount=1 r0=uc25 renc=uc25
+[floor-7.85.0] C del GET rc=0 status=302 redirect=/x\x7fy effective=http://127.0.0.1:46323/a/b/c/del?q=1 location=/x\x7fy amount=1 r0=uc25 renc=uc25
+[floor-7.85.0] C pct GET rc=0 status=302 redirect=http://127.0.0.1:46323/already%20encoded effective=http://127.0.0.1:46323/a/b/c/pct?q=1 location=/already%20encoded amount=1 r0=http://127.0.0.1:46323/already%20encoded renc=http://127.0.0.1:46323/already%20encoded
+[floor-7.85.0] C bad-pct GET rc=0 status=302 redirect=http://127.0.0.1:46323/bad%zz effective=http://127.0.0.1:46323/a/b/c/bad-pct?q=1 location=/bad%zz amount=1 r0=http://127.0.0.1:46323/bad%zz renc=http://127.0.0.1:46323/bad%zz
+[floor-7.85.0] C userinfo GET rc=0 status=302 redirect=http://u:p@127.0.0.1:46323/creds effective=http://127.0.0.1:46323/a/b/c/userinfo?q=1 location=http://u:p@127.0.0.1:46323/creds amount=1 r0=http://u:p@127.0.0.1:46323/creds renc=http://u:p@127.0.0.1:46323/creds
+[floor-7.85.0] C frag-abs GET rc=0 status=302 redirect=http://127.0.0.1:46323/withfrag#f effective=http://127.0.0.1:46323/a/b/c/frag-abs?q=1 location=/withfrag#f amount=1 r0=http://127.0.0.1:46323/withfrag#f renc=http://127.0.0.1:46323/withfrag#f
+[floor-7.85.0] C bad-ipv6 GET rc=0 status=302 redirect=http://[::1/x effective=http://127.0.0.1:46323/a/b/c/bad-ipv6?q=1 location=http://[::1/x amount=1 r0=uc4 renc=uc4
+[floor-7.85.0] C bad-port GET rc=0 status=302 redirect=http://127.0.0.1:99999/x effective=http://127.0.0.1:46323/a/b/c/bad-port?q=1 location=http://127.0.0.1:99999/x amount=1 r0=uc4 renc=uc4
+[floor-7.85.0] C backslash GET rc=0 status=302 redirect=http://127.0.0.1:46323/\x5cevil.invalid/x effective=http://127.0.0.1:46323/a/b/c/backslash?q=1 location=/\x5cevil.invalid/x amount=1 r0=http://127.0.0.1:46323/\x5cevil.invalid/x renc=http://127.0.0.1:46323/\x5cevil.invalid/x
+[floor-7.85.0] C two GET rc=0 status=302 redirect=http://127.0.0.1:46323/first effective=http://127.0.0.1:46323/a/b/c/two?q=1 location=/first amount=2 r0=http://127.0.0.1:46323/first renc=http://127.0.0.1:46323/first
+[floor-7.85.0] C lower-name GET rc=0 status=302 redirect=http://127.0.0.1:46323/lc effective=http://127.0.0.1:46323/a/b/c/lower-name?q=1 location=/lc amount=1 r0=http://127.0.0.1:46323/lc renc=http://127.0.0.1:46323/lc
+[floor-7.85.0] C idn GET rc=0 status=302 redirect=http://caf\xc3\xa9.invalid/ effective=http://127.0.0.1:46323/a/b/c/idn?q=1 location=http://caf\xc3\xa9.invalid/ amount=1 r0=http://caf\xc3\xa9.invalid/ renc=http://caf\xc3\xa9.invalid/
+[floor-7.85.0] C long-8k GET rc=0 status=302 redirect=http://127.0.0.1:46323/aaaaaaaaaaaaaaaaa...(len 8023) effective=http://127.0.0.1:46323/a/b/c/long-8k?q=1 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 8001) amount=1 r0=http://127.0.0.1:46323/aaaaaaaaaaaaaaaaa...(len 8023) renc=http://127.0.0.1:46323/aaaaaaaaaaaaaaaaa...(len 8023)
+[floor-7.85.0] C long-90k GET rc=0 status=302 redirect=http://127.0.0.1:46323/aaaaaaaaaaaaaaaaa...(len 90023) effective=http://127.0.0.1:46323/a/b/c/long-90k?q=1 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 90001) amount=1 r0=http://127.0.0.1:46323/aaaaaaaaaaaaaaaaa...(len 90023) renc=http://127.0.0.1:46323/aaaaaaaaaaaaaaaaa...(len 90023)
+[floor-7.85.0] C long-110k GET rc=27 status=302 redirect=NULL effective=http://127.0.0.1:46323/a/b/c/long-110k?q=1 location=hc3
+[floor-7.85.0] C s200 GET rc=0 status=200 redirect=NULL effective=http://127.0.0.1:46323/a/b/c/s200?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s201 GET rc=0 status=201 redirect=NULL effective=http://127.0.0.1:46323/a/b/c/s201?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s299 GET rc=0 status=299 redirect=NULL effective=http://127.0.0.1:46323/a/b/c/s299?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s300 GET rc=0 status=300 redirect=http://127.0.0.1:46323/s effective=http://127.0.0.1:46323/a/b/c/s300?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s301 GET rc=0 status=301 redirect=http://127.0.0.1:46323/s effective=http://127.0.0.1:46323/a/b/c/s301?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s303 GET rc=0 status=303 redirect=http://127.0.0.1:46323/s effective=http://127.0.0.1:46323/a/b/c/s303?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s304 GET rc=0 status=304 redirect=http://127.0.0.1:46323/s effective=http://127.0.0.1:46323/a/b/c/s304?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s305 GET rc=0 status=305 redirect=http://127.0.0.1:46323/s effective=http://127.0.0.1:46323/a/b/c/s305?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s306 GET rc=0 status=306 redirect=http://127.0.0.1:46323/s effective=http://127.0.0.1:46323/a/b/c/s306?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s307 GET rc=0 status=307 redirect=http://127.0.0.1:46323/s effective=http://127.0.0.1:46323/a/b/c/s307?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s308 GET rc=0 status=308 redirect=http://127.0.0.1:46323/s effective=http://127.0.0.1:46323/a/b/c/s308?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s309 GET rc=0 status=309 redirect=http://127.0.0.1:46323/s effective=http://127.0.0.1:46323/a/b/c/s309?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s399 GET rc=0 status=399 redirect=http://127.0.0.1:46323/s effective=http://127.0.0.1:46323/a/b/c/s399?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s400 GET rc=0 status=400 redirect=NULL effective=http://127.0.0.1:46323/a/b/c/s400?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C rel-abs.head HEAD rc=0 status=302 redirect=http://127.0.0.1:46323/x/y?z=1 effective=http://127.0.0.1:46323/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:46323/x/y?z=1 renc=http://127.0.0.1:46323/x/y?z=1
+[floor-7.85.0] C s303.head HEAD rc=0 status=303 redirect=http://127.0.0.1:46323/s effective=http://127.0.0.1:46323/a/b/c/s303?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s304.head HEAD rc=0 status=304 redirect=http://127.0.0.1:46323/s effective=http://127.0.0.1:46323/a/b/c/s304?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C s307.head HEAD rc=0 status=307 redirect=http://127.0.0.1:46323/s effective=http://127.0.0.1:46323/a/b/c/s307?q=1 location=/s amount=1 r0=http://127.0.0.1:46323/s renc=http://127.0.0.1:46323/s
+[floor-7.85.0] C rel-abs#orig GET rc=0 status=302 redirect=http://127.0.0.1:46323/x/y?z=1 effective=http://127.0.0.1:46323/a/b/c/rel-abs?q=1#orig location=/x/y?z=1 amount=1 r0=http://127.0.0.1:46323/x/y?z=1 renc=http://127.0.0.1:46323/x/y?z=1
+[floor-7.85.0] C rel-frag#orig GET rc=0 status=302 redirect=http://127.0.0.1:46323/a/b/c/#only effective=http://127.0.0.1:46323/a/b/c/rel-frag?q=1#orig location=#only amount=1 r0=http://127.0.0.1:46323/a/b/c/#only renc=http://127.0.0.1:46323/a/b/c/#only
+[floor-7.85.0] C frag-abs#orig GET rc=0 status=302 redirect=http://127.0.0.1:46323/withfrag#f effective=http://127.0.0.1:46323/a/b/c/frag-abs?q=1#orig location=/withfrag#f amount=1 r0=http://127.0.0.1:46323/withfrag#f renc=http://127.0.0.1:46323/withfrag#f
+[floor-7.85.0] C netpath#orig GET rc=0 status=302 redirect=http://127.0.0.1:46323/np effective=http://127.0.0.1:46323/a/b/c/netpath?q=1#orig location=//127.0.0.1:46323/np amount=1 r0=http://127.0.0.1:46323/np renc=http://127.0.0.1:46323/np
+[floor-7.85.0] C rel-abs@creds GET rc=0 status=302 redirect=http://me:secret@127.0.0.1:46323/x/y?z=1 effective=http://me:secret@127.0.0.1:46323/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://me:secret@127.0.0.1:46323/x/y?z=1 renc=http://me:secret@127.0.0.1:46323/x/y?z=1
+[floor-7.85.0] C netpath@creds GET rc=0 status=302 redirect=http://127.0.0.1:46323/np effective=http://me:secret@127.0.0.1:46323/a/b/c/netpath?q=1 location=//127.0.0.1:46323/np amount=1 r0=http://127.0.0.1:46323/np renc=http://127.0.0.1:46323/np
+[floor-7.85.0] C other-host@creds GET rc=0 status=302 redirect=http://other.invalid/x effective=http://me:secret@127.0.0.1:46323/a/b/c/other-host?q=1 location=http://other.invalid/x amount=1 r0=http://other.invalid/x renc=http://other.invalid/x
+[floor-7.85.0] C localhost GET rc=0 status=302 redirect=http://localhost:46323/x/y?z=1 effective=http://localhost:46323/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://localhost:46323/x/y?z=1 renc=http://localhost:46323/x/y?z=1
+[floor-7.85.0] C mapped GET rc=0 status=302 redirect=http://[::ffff:127.0.0.1]:46323/x/y?z=1 effective=http://[::ffff:127.0.0.1]:46323/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://[::ffff:127.0.0.1]:46323/x/y?z=1 renc=http://[::ffff:127.0.0.1]:46323/x/y?z=1
+[floor-7.85.0] -- Scheme
+[floor-7.85.0] probe.sps exited 0
+[floor-7.85.0] S libcurl 7.85.0 at /src/build/e1/ci/curl-floor/lib/libcurl.so.4
+[floor-7.85.0] S rel-abs GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:46323/x/y?z=1 utf8=yes
+[floor-7.85.0] S rel-path GET rc=0 status=302 location=d/e amount=1 r0=http://127.0.0.1:46323/a/b/c/d/e utf8=yes
+[floor-7.85.0] S rel-dots GET rc=0 status=302 location=../../up amount=1 r0=http://127.0.0.1:46323/a/up utf8=yes
+[floor-7.85.0] S rel-query GET rc=0 status=302 location=?only=1 amount=1 r0=http://127.0.0.1:46323/a/b/c/rel-query?only=1 utf8=yes
+[floor-7.85.0] S rel-frag GET rc=0 status=302 location=#only amount=1 r0=http://127.0.0.1:46323/a/b/c/#only utf8=yes
+[floor-7.85.0] S netpath GET rc=0 status=302 location=//127.0.0.1:46323/np amount=1 r0=http://127.0.0.1:46323/np utf8=yes
+[floor-7.85.0] S other-host GET rc=0 status=302 location=http://other.invalid/x amount=1 r0=http://other.invalid/x utf8=yes
+[floor-7.85.0] S https GET rc=0 status=302 location=https://127.0.0.1:1/s amount=1 r0=https://127.0.0.1:1/s utf8=yes
+[floor-7.85.0] S no-path GET rc=0 status=302 location=http://127.0.0.1:46323 amount=1 r0=http://127.0.0.1:46323/ utf8=yes
+[floor-7.85.0] S upper-scheme GET rc=0 status=302 location=HTTP://127.0.0.1:46323/UP amount=1 r0=http://127.0.0.1:46323/UP utf8=yes
+[floor-7.85.0] S ftp GET rc=0 status=302 location=ftp://127.0.0.1/f amount=1 r0=ftp://127.0.0.1/f utf8=yes
+[floor-7.85.0] S file GET rc=0 status=302 location=file:///etc/passwd amount=1 r0=file:///etc/passwd utf8=yes
+[floor-7.85.0] S javascript GET rc=0 status=302 location=javascript:alert(1) amount=1 r0=http://127.0.0.1:46323/a/b/c/javascript:alert(1) utf8=yes
+[floor-7.85.0] S unknown-scheme GET rc=0 status=302 location=foo://bar/x amount=1 r0=uc5
+[floor-7.85.0] S empty GET rc=0 status=302 location= amount=1 r0=http://127.0.0.1:46323/a/b/c/ utf8=yes
+[floor-7.85.0] S blank GET rc=0 status=302 location= amount=1 r0=http://127.0.0.1:46323/a/b/c/ utf8=yes
+[floor-7.85.0] S missing GET rc=0 status=302 location=none
+[floor-7.85.0] S padded GET rc=0 status=302 location=/padded amount=1 r0=http://127.0.0.1:46323/padded utf8=yes
+[floor-7.85.0] S tab GET rc=0 status=302 location=/tabbed amount=1 r0=http://127.0.0.1:46323/tabbed utf8=yes
+[floor-7.85.0] S space-inside GET rc=0 status=302 location=/a\x20b/c\x20d amount=1 r0=http://127.0.0.1:46323/a%20b/c%20d utf8=yes
+[floor-7.85.0] S utf8 GET rc=0 status=302 location=/caf\xc3\xa9 amount=1 r0=http://127.0.0.1:46323/caf%c3%a9 utf8=yes
+[floor-7.85.0] S latin1 GET rc=0 status=302 location=/caf\xe9 amount=1 r0=http://127.0.0.1:46323/caf%e9 utf8=yes
+[floor-7.85.0] S ctl GET rc=0 status=302 location=/x\x01y amount=1 r0=uc25
+[floor-7.85.0] S del GET rc=0 status=302 location=/x\x7fy amount=1 r0=uc25
+[floor-7.85.0] S pct GET rc=0 status=302 location=/already%20encoded amount=1 r0=http://127.0.0.1:46323/already%20encoded utf8=yes
+[floor-7.85.0] S bad-pct GET rc=0 status=302 location=/bad%zz amount=1 r0=http://127.0.0.1:46323/bad%zz utf8=yes
+[floor-7.85.0] S userinfo GET rc=0 status=302 location=http://u:p@127.0.0.1:46323/creds amount=1 r0=http://u:p@127.0.0.1:46323/creds utf8=yes
+[floor-7.85.0] S frag-abs GET rc=0 status=302 location=/withfrag#f amount=1 r0=http://127.0.0.1:46323/withfrag#f utf8=yes
+[floor-7.85.0] S bad-ipv6 GET rc=0 status=302 location=http://[::1/x amount=1 r0=uc4
+[floor-7.85.0] S bad-port GET rc=0 status=302 location=http://127.0.0.1:99999/x amount=1 r0=uc4
+[floor-7.85.0] S backslash GET rc=0 status=302 location=/\x5cevil.invalid/x amount=1 r0=http://127.0.0.1:46323/\x5cevil.invalid/x utf8=yes
+[floor-7.85.0] S two GET rc=0 status=302 location=/first amount=2 r0=http://127.0.0.1:46323/first utf8=yes
+[floor-7.85.0] S lower-name GET rc=0 status=302 location=/lc amount=1 r0=http://127.0.0.1:46323/lc utf8=yes
+[floor-7.85.0] S idn GET rc=0 status=302 location=http://caf\xc3\xa9.invalid/ amount=1 r0=http://caf\xc3\xa9.invalid/ utf8=yes
+[floor-7.85.0] S long-8k GET rc=0 status=302 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 8001) amount=1 r0=http://127.0.0.1:46323/aaaaaaaaaaaaaaaaa...(len 8023) utf8=yes
+[floor-7.85.0] S long-90k GET rc=0 status=302 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 90001) amount=1 r0=http://127.0.0.1:46323/aaaaaaaaaaaaaaaaa...(len 90023) utf8=yes
+[floor-7.85.0] S long-110k GET rc=27
+[floor-7.85.0] S s200 GET rc=0 status=200 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s201 GET rc=0 status=201 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s299 GET rc=0 status=299 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s300 GET rc=0 status=300 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s301 GET rc=0 status=301 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s303 GET rc=0 status=303 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s304 GET rc=0 status=304 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s305 GET rc=0 status=305 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s306 GET rc=0 status=306 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s307 GET rc=0 status=307 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s308 GET rc=0 status=308 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s309 GET rc=0 status=309 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s399 GET rc=0 status=399 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s400 GET rc=0 status=400 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S rel-abs.head HEAD rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:46323/x/y?z=1 utf8=yes
+[floor-7.85.0] S s303.head HEAD rc=0 status=303 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s304.head HEAD rc=0 status=304 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S s307.head HEAD rc=0 status=307 location=/s amount=1 r0=http://127.0.0.1:46323/s utf8=yes
+[floor-7.85.0] S rel-abs#orig GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:46323/x/y?z=1 utf8=yes
+[floor-7.85.0] S rel-frag#orig GET rc=0 status=302 location=#only amount=1 r0=http://127.0.0.1:46323/a/b/c/#only utf8=yes
+[floor-7.85.0] S frag-abs#orig GET rc=0 status=302 location=/withfrag#f amount=1 r0=http://127.0.0.1:46323/withfrag#f utf8=yes
+[floor-7.85.0] S netpath#orig GET rc=0 status=302 location=//127.0.0.1:46323/np amount=1 r0=http://127.0.0.1:46323/np utf8=yes
+[floor-7.85.0] S rel-abs@creds GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://me:secret@127.0.0.1:46323/x/y?z=1 utf8=yes
+[floor-7.85.0] S netpath@creds GET rc=0 status=302 location=//127.0.0.1:46323/np amount=1 r0=http://127.0.0.1:46323/np utf8=yes
+[floor-7.85.0] S other-host@creds GET rc=0 status=302 location=http://other.invalid/x amount=1 r0=http://other.invalid/x utf8=yes
+[floor-7.85.0] S localhost GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://localhost:46323/x/y?z=1 utf8=yes
+[floor-7.85.0] S mapped GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://[::ffff:127.0.0.1]:46323/x/y?z=1 utf8=yes
+[floor-7.85.0] S -- 64 probes
+[floor-7.85.0] -- compare
+[floor-7.85.0] compare: 64 agree, 0 differ, of 64 C lines and 64 Scheme lines
+[ubuntu-openssl-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 -> /usr/lib/x86_64-linux-gnu/libcurl.so.4.8.0
+[ubuntu-openssl-8.5.0] -- fragment
+[ubuntu-openssl-8.5.0] plain base=http://h.example/a/b?q=1 f=only part0=http://h.example/a/b?q=1#only frag=only penc=http://h.example/a/b?q=1#only frag=only whole=http://h.example/a/b?q=1#only frag=only ref=http://h.example/a/#only frag=only
+[ubuntu-openssl-8.5.0] empty base=http://h.example/a/b?q=1 f= part0=http://h.example/a/b?q=1# frag= penc=http://h.example/a/b?q=1 penc.frag=uc17 whole=http://h.example/a/b?q=1 whole.frag=uc17 ref=http://h.example/a/ ref.frag=uc17
+[ubuntu-openssl-8.5.0] space base=http://h.example/a/b?q=1 f=a\x20b part0=http://h.example/a/b?q=1#a\x20b frag=a\x20b penc=http://h.example/a/b?q=1#a%20b frag=a%20b whole=uc3 ref=http://h.example/a/#a%20b frag=a%20b
+[ubuntu-openssl-8.5.0] blank base=http://h.example/a/b?q=1 f=\x20\x20\x20 part0=http://h.example/a/b?q=1#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20 whole=uc3 ref=http://h.example/a/#%20%20%20 frag=%20%20%20
+[ubuntu-openssl-8.5.0] tab base=http://h.example/a/b?q=1 f=\x09 part0=http://h.example/a/b?q=1#\x09 frag=\x09 penc=http://h.example/a/b?q=1#%09 frag=%09 whole=uc3 ref=uc3
+[ubuntu-openssl-8.5.0] cr base=http://h.example/a/b?q=1 f=\x0d part0=http://h.example/a/b?q=1#\x0d frag=\x0d penc=http://h.example/a/b?q=1#%0d frag=%0d whole=uc3 ref=uc3
+[ubuntu-openssl-8.5.0] latin1 base=http://h.example/a/b?q=1 f=caf\xe9 part0=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b?q=1#caf%e9 frag=caf%e9 whole=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 ref=http://h.example/a/#caf%e9 frag=caf%e9
+[ubuntu-openssl-8.5.0] utf8 base=http://h.example/a/b?q=1 f=caf\xc3\xa9 part0=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b?q=1#caf%c3%a9 frag=caf%c3%a9 whole=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/#caf%c3%a9 frag=caf%c3%a9
+[ubuntu-openssl-8.5.0] bom base=http://h.example/a/b?q=1 f=\xef\xbb\xbfbom part0=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b?q=1#%ef%bb%bfbom frag=%ef%bb%bfbom whole=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/#%ef%bb%bfbom frag=%ef%bb%bfbom
+[ubuntu-openssl-8.5.0] pct-lower base=http://h.example/a/b?q=1 f=%e9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25e9x frag=%25e9x whole=http://h.example/a/b?q=1#%e9x frag=%e9x ref=http://h.example/a/#%e9x frag=%e9x
+[ubuntu-openssl-8.5.0] pct-upper base=http://h.example/a/b?q=1 f=%E9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25E9x frag=%25E9x whole=http://h.example/a/b?q=1#%E9x frag=%E9x ref=http://h.example/a/#%E9x frag=%E9x
+[ubuntu-openssl-8.5.0] pct-mixed base=http://h.example/a/b?q=1 f=%c3%A9 part0=http://h.example/a/b?q=1#%c3%a9 frag=%c3%a9 penc=http://h.example/a/b?q=1#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b?q=1#%c3%A9 frag=%c3%A9 ref=http://h.example/a/#%c3%A9 frag=%c3%A9
+[ubuntu-openssl-8.5.0] bad-pct base=http://h.example/a/b?q=1 f=%zz part0=http://h.example/a/b?q=1#%zz frag=%zz penc=http://h.example/a/b?q=1#%25zz frag=%25zz whole=http://h.example/a/b?q=1#%zz frag=%zz ref=http://h.example/a/#%zz frag=%zz
+[ubuntu-openssl-8.5.0] lone-pct base=http://h.example/a/b?q=1 f=% part0=http://h.example/a/b?q=1#% frag=% penc=http://h.example/a/b?q=1#%25 frag=%25 whole=http://h.example/a/b?q=1#% frag=% ref=http://h.example/a/#% frag=%
+[ubuntu-openssl-8.5.0] hash base=http://h.example/a/b?q=1 f=a#b part0=http://h.example/a/b?q=1#a#b frag=a#b penc=http://h.example/a/b?q=1#a%23b frag=a%23b whole=http://h.example/a/b?q=1#a#b frag=a#b ref=http://h.example/a/#a#b frag=a#b
+[ubuntu-openssl-8.5.0] ctl base=http://h.example/a/b?q=1 f=x\x01y part0=http://h.example/a/b?q=1#x\x01y frag=x\x01y penc=http://h.example/a/b?q=1#x%01y frag=x%01y whole=uc3 ref=uc3
+[ubuntu-openssl-8.5.0] del base=http://h.example/a/b?q=1 f=x\x7fy part0=http://h.example/a/b?q=1#x\x7fy frag=x\x7fy penc=http://h.example/a/b?q=1#x%7fy frag=x%7fy whole=uc3 ref=uc3
+[ubuntu-openssl-8.5.0] delims base=http://h.example/a/b?q=1 f="<>`{}|^ part0=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b?q=1#%22%3c%3e%60%7b%7d%7c%5e frag=%22%3c%3e%60%7b%7d%7c%5e whole=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/#"<>`{}|^ frag="<>`{}|^
+[ubuntu-openssl-8.5.0] reserved base=http://h.example/a/b?q=1 f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b?q=1#a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d frag=a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d whole=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[ubuntu-openssl-8.5.0] backslash base=http://h.example/a/b?q=1 f=a\x5cb part0=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb penc=http://h.example/a/b?q=1#a%5cb frag=a%5cb whole=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb ref=http://h.example/a/#a\x5cb frag=a\x5cb
+[ubuntu-openssl-8.5.0] plain base=http://h.example/a/b?q=1#old f=only part0=http://h.example/a/b?q=1#only frag=only penc=http://h.example/a/b?q=1#only frag=only whole=http://h.example/a/b?q=1#only frag=only ref=http://h.example/a/#only frag=only
+[ubuntu-openssl-8.5.0] empty base=http://h.example/a/b?q=1#old f= part0=http://h.example/a/b?q=1# frag= penc=http://h.example/a/b?q=1 penc.frag=uc17 whole=http://h.example/a/b?q=1 whole.frag=uc17 ref=http://h.example/a/ ref.frag=uc17
+[ubuntu-openssl-8.5.0] space base=http://h.example/a/b?q=1#old f=a\x20b part0=http://h.example/a/b?q=1#a\x20b frag=a\x20b penc=http://h.example/a/b?q=1#a%20b frag=a%20b whole=uc3 ref=http://h.example/a/#a%20b frag=a%20b
+[ubuntu-openssl-8.5.0] blank base=http://h.example/a/b?q=1#old f=\x20\x20\x20 part0=http://h.example/a/b?q=1#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20 whole=uc3 ref=http://h.example/a/#%20%20%20 frag=%20%20%20
+[ubuntu-openssl-8.5.0] tab base=http://h.example/a/b?q=1#old f=\x09 part0=http://h.example/a/b?q=1#\x09 frag=\x09 penc=http://h.example/a/b?q=1#%09 frag=%09 whole=uc3 ref=uc3
+[ubuntu-openssl-8.5.0] cr base=http://h.example/a/b?q=1#old f=\x0d part0=http://h.example/a/b?q=1#\x0d frag=\x0d penc=http://h.example/a/b?q=1#%0d frag=%0d whole=uc3 ref=uc3
+[ubuntu-openssl-8.5.0] latin1 base=http://h.example/a/b?q=1#old f=caf\xe9 part0=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b?q=1#caf%e9 frag=caf%e9 whole=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 ref=http://h.example/a/#caf%e9 frag=caf%e9
+[ubuntu-openssl-8.5.0] utf8 base=http://h.example/a/b?q=1#old f=caf\xc3\xa9 part0=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b?q=1#caf%c3%a9 frag=caf%c3%a9 whole=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/#caf%c3%a9 frag=caf%c3%a9
+[ubuntu-openssl-8.5.0] bom base=http://h.example/a/b?q=1#old f=\xef\xbb\xbfbom part0=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b?q=1#%ef%bb%bfbom frag=%ef%bb%bfbom whole=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/#%ef%bb%bfbom frag=%ef%bb%bfbom
+[ubuntu-openssl-8.5.0] pct-lower base=http://h.example/a/b?q=1#old f=%e9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25e9x frag=%25e9x whole=http://h.example/a/b?q=1#%e9x frag=%e9x ref=http://h.example/a/#%e9x frag=%e9x
+[ubuntu-openssl-8.5.0] pct-upper base=http://h.example/a/b?q=1#old f=%E9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25E9x frag=%25E9x whole=http://h.example/a/b?q=1#%E9x frag=%E9x ref=http://h.example/a/#%E9x frag=%E9x
+[ubuntu-openssl-8.5.0] pct-mixed base=http://h.example/a/b?q=1#old f=%c3%A9 part0=http://h.example/a/b?q=1#%c3%a9 frag=%c3%a9 penc=http://h.example/a/b?q=1#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b?q=1#%c3%A9 frag=%c3%A9 ref=http://h.example/a/#%c3%A9 frag=%c3%A9
+[ubuntu-openssl-8.5.0] bad-pct base=http://h.example/a/b?q=1#old f=%zz part0=http://h.example/a/b?q=1#%zz frag=%zz penc=http://h.example/a/b?q=1#%25zz frag=%25zz whole=http://h.example/a/b?q=1#%zz frag=%zz ref=http://h.example/a/#%zz frag=%zz
+[ubuntu-openssl-8.5.0] lone-pct base=http://h.example/a/b?q=1#old f=% part0=http://h.example/a/b?q=1#% frag=% penc=http://h.example/a/b?q=1#%25 frag=%25 whole=http://h.example/a/b?q=1#% frag=% ref=http://h.example/a/#% frag=%
+[ubuntu-openssl-8.5.0] hash base=http://h.example/a/b?q=1#old f=a#b part0=http://h.example/a/b?q=1#a#b frag=a#b penc=http://h.example/a/b?q=1#a%23b frag=a%23b whole=http://h.example/a/b?q=1#a#b frag=a#b ref=http://h.example/a/#a#b frag=a#b
+[ubuntu-openssl-8.5.0] ctl base=http://h.example/a/b?q=1#old f=x\x01y part0=http://h.example/a/b?q=1#x\x01y frag=x\x01y penc=http://h.example/a/b?q=1#x%01y frag=x%01y whole=uc3 ref=uc3
+[ubuntu-openssl-8.5.0] del base=http://h.example/a/b?q=1#old f=x\x7fy part0=http://h.example/a/b?q=1#x\x7fy frag=x\x7fy penc=http://h.example/a/b?q=1#x%7fy frag=x%7fy whole=uc3 ref=uc3
+[ubuntu-openssl-8.5.0] delims base=http://h.example/a/b?q=1#old f="<>`{}|^ part0=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b?q=1#%22%3c%3e%60%7b%7d%7c%5e frag=%22%3c%3e%60%7b%7d%7c%5e whole=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/#"<>`{}|^ frag="<>`{}|^
+[ubuntu-openssl-8.5.0] reserved base=http://h.example/a/b?q=1#old f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b?q=1#a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d frag=a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d whole=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[ubuntu-openssl-8.5.0] backslash base=http://h.example/a/b?q=1#old f=a\x5cb part0=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb penc=http://h.example/a/b?q=1#a%5cb frag=a%5cb whole=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb ref=http://h.example/a/#a\x5cb frag=a\x5cb
+[ubuntu-openssl-8.5.0] plain base=http://h.example/a/b#old%e9 f=only part0=http://h.example/a/b#only frag=only penc=http://h.example/a/b#only frag=only whole=http://h.example/a/b#only frag=only ref=http://h.example/a/#only frag=only
+[ubuntu-openssl-8.5.0] empty base=http://h.example/a/b#old%e9 f= part0=http://h.example/a/b# frag= penc=http://h.example/a/b penc.frag=uc17 whole=http://h.example/a/b whole.frag=uc17 ref=http://h.example/a/ ref.frag=uc17
+[ubuntu-openssl-8.5.0] space base=http://h.example/a/b#old%e9 f=a\x20b part0=http://h.example/a/b#a\x20b frag=a\x20b penc=http://h.example/a/b#a%20b frag=a%20b whole=uc3 ref=http://h.example/a/#a%20b frag=a%20b
+[ubuntu-openssl-8.5.0] blank base=http://h.example/a/b#old%e9 f=\x20\x20\x20 part0=http://h.example/a/b#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b#%20%20%20 frag=%20%20%20 whole=uc3 ref=http://h.example/a/#%20%20%20 frag=%20%20%20
+[ubuntu-openssl-8.5.0] tab base=http://h.example/a/b#old%e9 f=\x09 part0=http://h.example/a/b#\x09 frag=\x09 penc=http://h.example/a/b#%09 frag=%09 whole=uc3 ref=uc3
+[ubuntu-openssl-8.5.0] cr base=http://h.example/a/b#old%e9 f=\x0d part0=http://h.example/a/b#\x0d frag=\x0d penc=http://h.example/a/b#%0d frag=%0d whole=uc3 ref=uc3
+[ubuntu-openssl-8.5.0] latin1 base=http://h.example/a/b#old%e9 f=caf\xe9 part0=http://h.example/a/b#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b#caf%e9 frag=caf%e9 whole=http://h.example/a/b#caf\xe9 frag=caf\xe9 ref=http://h.example/a/#caf%e9 frag=caf%e9
+[ubuntu-openssl-8.5.0] utf8 base=http://h.example/a/b#old%e9 f=caf\xc3\xa9 part0=http://h.example/a/b#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b#caf%c3%a9 frag=caf%c3%a9 whole=http://h.example/a/b#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/#caf%c3%a9 frag=caf%c3%a9
+[ubuntu-openssl-8.5.0] bom base=http://h.example/a/b#old%e9 f=\xef\xbb\xbfbom part0=http://h.example/a/b#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b#%ef%bb%bfbom frag=%ef%bb%bfbom whole=http://h.example/a/b#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/#%ef%bb%bfbom frag=%ef%bb%bfbom
+[ubuntu-openssl-8.5.0] pct-lower base=http://h.example/a/b#old%e9 f=%e9x part0=http://h.example/a/b#%e9x frag=%e9x penc=http://h.example/a/b#%25e9x frag=%25e9x whole=http://h.example/a/b#%e9x frag=%e9x ref=http://h.example/a/#%e9x frag=%e9x
+[ubuntu-openssl-8.5.0] pct-upper base=http://h.example/a/b#old%e9 f=%E9x part0=http://h.example/a/b#%e9x frag=%e9x penc=http://h.example/a/b#%25E9x frag=%25E9x whole=http://h.example/a/b#%E9x frag=%E9x ref=http://h.example/a/#%E9x frag=%E9x
+[ubuntu-openssl-8.5.0] pct-mixed base=http://h.example/a/b#old%e9 f=%c3%A9 part0=http://h.example/a/b#%c3%a9 frag=%c3%a9 penc=http://h.example/a/b#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b#%c3%A9 frag=%c3%A9 ref=http://h.example/a/#%c3%A9 frag=%c3%A9
+[ubuntu-openssl-8.5.0] bad-pct base=http://h.example/a/b#old%e9 f=%zz part0=http://h.example/a/b#%zz frag=%zz penc=http://h.example/a/b#%25zz frag=%25zz whole=http://h.example/a/b#%zz frag=%zz ref=http://h.example/a/#%zz frag=%zz
+[ubuntu-openssl-8.5.0] lone-pct base=http://h.example/a/b#old%e9 f=% part0=http://h.example/a/b#% frag=% penc=http://h.example/a/b#%25 frag=%25 whole=http://h.example/a/b#% frag=% ref=http://h.example/a/#% frag=%
+[ubuntu-openssl-8.5.0] hash base=http://h.example/a/b#old%e9 f=a#b part0=http://h.example/a/b#a#b frag=a#b penc=http://h.example/a/b#a%23b frag=a%23b whole=http://h.example/a/b#a#b frag=a#b ref=http://h.example/a/#a#b frag=a#b
+[ubuntu-openssl-8.5.0] ctl base=http://h.example/a/b#old%e9 f=x\x01y part0=http://h.example/a/b#x\x01y frag=x\x01y penc=http://h.example/a/b#x%01y frag=x%01y whole=uc3 ref=uc3
+[ubuntu-openssl-8.5.0] del base=http://h.example/a/b#old%e9 f=x\x7fy part0=http://h.example/a/b#x\x7fy frag=x\x7fy penc=http://h.example/a/b#x%7fy frag=x%7fy whole=uc3 ref=uc3
+[ubuntu-openssl-8.5.0] delims base=http://h.example/a/b#old%e9 f="<>`{}|^ part0=http://h.example/a/b#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b#%22%3c%3e%60%7b%7d%7c%5e frag=%22%3c%3e%60%7b%7d%7c%5e whole=http://h.example/a/b#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/#"<>`{}|^ frag="<>`{}|^
+[ubuntu-openssl-8.5.0] reserved base=http://h.example/a/b#old%e9 f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b#a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d frag=a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d whole=http://h.example/a/b#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[ubuntu-openssl-8.5.0] backslash base=http://h.example/a/b#old%e9 f=a\x5cb part0=http://h.example/a/b#a\x5cb frag=a\x5cb penc=http://h.example/a/b#a%5cb frag=a%5cb whole=http://h.example/a/b#a\x5cb frag=a\x5cb ref=http://h.example/a/#a\x5cb frag=a\x5cb
+[ubuntu-openssl-8.5.0] clear base=http://h.example/a/b?q=1 cleared=http://h.example/a/b?q=1 cleared.frag=uc17
+[ubuntu-openssl-8.5.0] clear base=http://h.example/a/b?q=1#old cleared=http://h.example/a/b?q=1 cleared.frag=uc17
+[ubuntu-openssl-8.5.0] clear base=http://h.example/a/b#old%e9 cleared=http://h.example/a/b cleared.frag=uc17
+[ubuntu-openssl-8.5.0] -- 63 lines
+[ubuntu-openssl-8.5.0] -- localhost, port 44925
+[ubuntu-openssl-8.5.0] http://127.0.0.1:44925/x rc=0 status=404 ip=127.0.0.1 connect-us=133
+[ubuntu-openssl-8.5.0] http://localhost:44925/x rc=0 status=404 ip=127.0.0.1 connect-us=131
+[ubuntu-openssl-8.5.0] http://[::ffff:127.0.0.1]:44925/x rc=0 status=404 ip=::ffff:127.0.0.1 connect-us=71
+[ubuntu-openssl-8.5.0] -- 64 cases, base http://127.0.0.1:44925/a/b/c
+[ubuntu-openssl-8.5.0] -- C
+[ubuntu-openssl-8.5.0] C rel-abs GET rc=0 status=302 redirect=http://127.0.0.1:44925/x/y?z=1 effective=http://127.0.0.1:44925/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:44925/x/y?z=1 renc=http://127.0.0.1:44925/x/y?z=1
+[ubuntu-openssl-8.5.0] C rel-path GET rc=0 status=302 redirect=http://127.0.0.1:44925/a/b/c/d/e effective=http://127.0.0.1:44925/a/b/c/rel-path?q=1 location=d/e amount=1 r0=http://127.0.0.1:44925/a/b/c/d/e renc=http://127.0.0.1:44925/a/b/c/d/e
+[ubuntu-openssl-8.5.0] C rel-dots GET rc=0 status=302 redirect=http://127.0.0.1:44925/a/up effective=http://127.0.0.1:44925/a/b/c/rel-dots?q=1 location=../../up amount=1 r0=http://127.0.0.1:44925/a/up renc=http://127.0.0.1:44925/a/up
+[ubuntu-openssl-8.5.0] C rel-query GET rc=0 status=302 redirect=http://127.0.0.1:44925/a/b/c/rel-query?only=1 effective=http://127.0.0.1:44925/a/b/c/rel-query?q=1 location=?only=1 amount=1 r0=http://127.0.0.1:44925/a/b/c/rel-query?only=1 renc=http://127.0.0.1:44925/a/b/c/rel-query?only=1
+[ubuntu-openssl-8.5.0] C rel-frag GET rc=0 status=302 redirect=http://127.0.0.1:44925/a/b/c/#only effective=http://127.0.0.1:44925/a/b/c/rel-frag?q=1 location=#only amount=1 r0=http://127.0.0.1:44925/a/b/c/#only renc=http://127.0.0.1:44925/a/b/c/#only
+[ubuntu-openssl-8.5.0] C netpath GET rc=0 status=302 redirect=http://127.0.0.1:44925/np effective=http://127.0.0.1:44925/a/b/c/netpath?q=1 location=//127.0.0.1:44925/np amount=1 r0=http://127.0.0.1:44925/np renc=http://127.0.0.1:44925/np
+[ubuntu-openssl-8.5.0] C other-host GET rc=0 status=302 redirect=http://other.invalid/x effective=http://127.0.0.1:44925/a/b/c/other-host?q=1 location=http://other.invalid/x amount=1 r0=http://other.invalid/x renc=http://other.invalid/x
+[ubuntu-openssl-8.5.0] C https GET rc=0 status=302 redirect=https://127.0.0.1:1/s effective=http://127.0.0.1:44925/a/b/c/https?q=1 location=https://127.0.0.1:1/s amount=1 r0=https://127.0.0.1:1/s renc=https://127.0.0.1:1/s
+[ubuntu-openssl-8.5.0] C no-path GET rc=0 status=302 redirect=http://127.0.0.1:44925/ effective=http://127.0.0.1:44925/a/b/c/no-path?q=1 location=http://127.0.0.1:44925 amount=1 r0=http://127.0.0.1:44925/ renc=http://127.0.0.1:44925/
+[ubuntu-openssl-8.5.0] C upper-scheme GET rc=0 status=302 redirect=http://127.0.0.1:44925/UP effective=http://127.0.0.1:44925/a/b/c/upper-scheme?q=1 location=HTTP://127.0.0.1:44925/UP amount=1 r0=http://127.0.0.1:44925/UP renc=http://127.0.0.1:44925/UP
+[ubuntu-openssl-8.5.0] C ftp GET rc=0 status=302 redirect=ftp://127.0.0.1/f effective=http://127.0.0.1:44925/a/b/c/ftp?q=1 location=ftp://127.0.0.1/f amount=1 r0=ftp://127.0.0.1/f renc=ftp://127.0.0.1/f
+[ubuntu-openssl-8.5.0] C file GET rc=0 status=302 redirect=file:///etc/passwd effective=http://127.0.0.1:44925/a/b/c/file?q=1 location=file:///etc/passwd amount=1 r0=file:///etc/passwd renc=file:///etc/passwd
+[ubuntu-openssl-8.5.0] C javascript GET rc=0 status=302 redirect=javascript:alert(1) effective=http://127.0.0.1:44925/a/b/c/javascript?q=1 location=javascript:alert(1) amount=1 r0=uc5 renc=uc5
+[ubuntu-openssl-8.5.0] C unknown-scheme GET rc=0 status=302 redirect=foo://bar/x effective=http://127.0.0.1:44925/a/b/c/unknown-scheme?q=1 location=foo://bar/x amount=1 r0=uc5 renc=uc5
+[ubuntu-openssl-8.5.0] C empty GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:44925/a/b/c/empty?q=1 location=\x0d amount=1 r0=uc3 renc=uc3
+[ubuntu-openssl-8.5.0] C blank GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:44925/a/b/c/blank?q=1 location=\x0d amount=1 r0=uc3 renc=uc3
+[ubuntu-openssl-8.5.0] C missing GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:44925/a/b/c/missing?q=1 location=hc2
+[ubuntu-openssl-8.5.0] C padded GET rc=0 status=302 redirect=http://127.0.0.1:44925/padded effective=http://127.0.0.1:44925/a/b/c/padded?q=1 location=/padded amount=1 r0=http://127.0.0.1:44925/padded renc=http://127.0.0.1:44925/padded
+[ubuntu-openssl-8.5.0] C tab GET rc=0 status=302 redirect=http://127.0.0.1:44925/tabbed effective=http://127.0.0.1:44925/a/b/c/tab?q=1 location=/tabbed amount=1 r0=http://127.0.0.1:44925/tabbed renc=http://127.0.0.1:44925/tabbed
+[ubuntu-openssl-8.5.0] C space-inside GET rc=0 status=302 redirect=http://127.0.0.1:44925/a%20b/c%20d effective=http://127.0.0.1:44925/a/b/c/space-inside?q=1 location=/a\x20b/c\x20d amount=1 r0=http://127.0.0.1:44925/a%20b/c%20d renc=http://127.0.0.1:44925/a%20b/c%20d
+[ubuntu-openssl-8.5.0] C utf8 GET rc=0 status=302 redirect=http://127.0.0.1:44925/caf%c3%a9 effective=http://127.0.0.1:44925/a/b/c/utf8?q=1 location=/caf\xc3\xa9 amount=1 r0=http://127.0.0.1:44925/caf%c3%a9 renc=http://127.0.0.1:44925/caf%c3%a9
+[ubuntu-openssl-8.5.0] C latin1 GET rc=0 status=302 redirect=http://127.0.0.1:44925/caf%e9 effective=http://127.0.0.1:44925/a/b/c/latin1?q=1 location=/caf\xe9 amount=1 r0=http://127.0.0.1:44925/caf%e9 renc=http://127.0.0.1:44925/caf%e9
+[ubuntu-openssl-8.5.0] C ctl GET rc=0 status=302 redirect=/x\x01y effective=http://127.0.0.1:44925/a/b/c/ctl?q=1 location=/x\x01y amount=1 r0=uc3 renc=uc3
+[ubuntu-openssl-8.5.0] C del GET rc=0 status=302 redirect=/x\x7fy effective=http://127.0.0.1:44925/a/b/c/del?q=1 location=/x\x7fy amount=1 r0=uc3 renc=uc3
+[ubuntu-openssl-8.5.0] C pct GET rc=0 status=302 redirect=http://127.0.0.1:44925/already%20encoded effective=http://127.0.0.1:44925/a/b/c/pct?q=1 location=/already%20encoded amount=1 r0=http://127.0.0.1:44925/already%20encoded renc=http://127.0.0.1:44925/already%20encoded
+[ubuntu-openssl-8.5.0] C bad-pct GET rc=0 status=302 redirect=http://127.0.0.1:44925/bad%zz effective=http://127.0.0.1:44925/a/b/c/bad-pct?q=1 location=/bad%zz amount=1 r0=http://127.0.0.1:44925/bad%zz renc=http://127.0.0.1:44925/bad%zz
+[ubuntu-openssl-8.5.0] C userinfo GET rc=0 status=302 redirect=http://u:p@127.0.0.1:44925/creds effective=http://127.0.0.1:44925/a/b/c/userinfo?q=1 location=http://u:p@127.0.0.1:44925/creds amount=1 r0=http://u:p@127.0.0.1:44925/creds renc=http://u:p@127.0.0.1:44925/creds
+[ubuntu-openssl-8.5.0] C frag-abs GET rc=0 status=302 redirect=http://127.0.0.1:44925/withfrag#f effective=http://127.0.0.1:44925/a/b/c/frag-abs?q=1 location=/withfrag#f amount=1 r0=http://127.0.0.1:44925/withfrag#f renc=http://127.0.0.1:44925/withfrag#f
+[ubuntu-openssl-8.5.0] C bad-ipv6 GET rc=0 status=302 redirect=http://[::1/x effective=http://127.0.0.1:44925/a/b/c/bad-ipv6?q=1 location=http://[::1/x amount=1 r0=uc22 renc=uc22
+[ubuntu-openssl-8.5.0] C bad-port GET rc=0 status=302 redirect=http://127.0.0.1:99999/x effective=http://127.0.0.1:44925/a/b/c/bad-port?q=1 location=http://127.0.0.1:99999/x amount=1 r0=uc4 renc=uc4
+[ubuntu-openssl-8.5.0] C backslash GET rc=0 status=302 redirect=http://127.0.0.1:44925/\x5cevil.invalid/x effective=http://127.0.0.1:44925/a/b/c/backslash?q=1 location=/\x5cevil.invalid/x amount=1 r0=http://127.0.0.1:44925/\x5cevil.invalid/x renc=http://127.0.0.1:44925/\x5cevil.invalid/x
+[ubuntu-openssl-8.5.0] C two GET rc=0 status=302 redirect=http://127.0.0.1:44925/first effective=http://127.0.0.1:44925/a/b/c/two?q=1 location=/first amount=2 r0=http://127.0.0.1:44925/first renc=http://127.0.0.1:44925/first
+[ubuntu-openssl-8.5.0] C lower-name GET rc=0 status=302 redirect=http://127.0.0.1:44925/lc effective=http://127.0.0.1:44925/a/b/c/lower-name?q=1 location=/lc amount=1 r0=http://127.0.0.1:44925/lc renc=http://127.0.0.1:44925/lc
+[ubuntu-openssl-8.5.0] C idn GET rc=0 status=302 redirect=http://caf\xc3\xa9.invalid/ effective=http://127.0.0.1:44925/a/b/c/idn?q=1 location=http://caf\xc3\xa9.invalid/ amount=1 r0=http://caf\xc3\xa9.invalid/ renc=http://caf\xc3\xa9.invalid/
+[ubuntu-openssl-8.5.0] C long-8k GET rc=0 status=302 redirect=http://127.0.0.1:44925/aaaaaaaaaaaaaaaaa...(len 8023) effective=http://127.0.0.1:44925/a/b/c/long-8k?q=1 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 8001) amount=1 r0=http://127.0.0.1:44925/aaaaaaaaaaaaaaaaa...(len 8023) renc=http://127.0.0.1:44925/aaaaaaaaaaaaaaaaa...(len 8023)
+[ubuntu-openssl-8.5.0] C long-90k GET rc=0 status=302 redirect=http://127.0.0.1:44925/aaaaaaaaaaaaaaaaa...(len 90023) effective=http://127.0.0.1:44925/a/b/c/long-90k?q=1 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 90001) amount=1 r0=http://127.0.0.1:44925/aaaaaaaaaaaaaaaaa...(len 90023) renc=http://127.0.0.1:44925/aaaaaaaaaaaaaaaaa...(len 90023)
+[ubuntu-openssl-8.5.0] C long-110k GET rc=27 status=302 redirect=NULL effective=http://127.0.0.1:44925/a/b/c/long-110k?q=1 location=hc3
+[ubuntu-openssl-8.5.0] C s200 GET rc=0 status=200 redirect=NULL effective=http://127.0.0.1:44925/a/b/c/s200?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s201 GET rc=0 status=201 redirect=NULL effective=http://127.0.0.1:44925/a/b/c/s201?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s299 GET rc=0 status=299 redirect=NULL effective=http://127.0.0.1:44925/a/b/c/s299?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s300 GET rc=0 status=300 redirect=http://127.0.0.1:44925/s effective=http://127.0.0.1:44925/a/b/c/s300?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s301 GET rc=0 status=301 redirect=http://127.0.0.1:44925/s effective=http://127.0.0.1:44925/a/b/c/s301?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s303 GET rc=0 status=303 redirect=http://127.0.0.1:44925/s effective=http://127.0.0.1:44925/a/b/c/s303?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s304 GET rc=0 status=304 redirect=http://127.0.0.1:44925/s effective=http://127.0.0.1:44925/a/b/c/s304?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s305 GET rc=0 status=305 redirect=http://127.0.0.1:44925/s effective=http://127.0.0.1:44925/a/b/c/s305?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s306 GET rc=0 status=306 redirect=http://127.0.0.1:44925/s effective=http://127.0.0.1:44925/a/b/c/s306?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s307 GET rc=0 status=307 redirect=http://127.0.0.1:44925/s effective=http://127.0.0.1:44925/a/b/c/s307?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s308 GET rc=0 status=308 redirect=http://127.0.0.1:44925/s effective=http://127.0.0.1:44925/a/b/c/s308?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s309 GET rc=0 status=309 redirect=http://127.0.0.1:44925/s effective=http://127.0.0.1:44925/a/b/c/s309?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s399 GET rc=0 status=399 redirect=http://127.0.0.1:44925/s effective=http://127.0.0.1:44925/a/b/c/s399?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s400 GET rc=0 status=400 redirect=NULL effective=http://127.0.0.1:44925/a/b/c/s400?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C rel-abs.head HEAD rc=0 status=302 redirect=http://127.0.0.1:44925/x/y?z=1 effective=http://127.0.0.1:44925/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:44925/x/y?z=1 renc=http://127.0.0.1:44925/x/y?z=1
+[ubuntu-openssl-8.5.0] C s303.head HEAD rc=0 status=303 redirect=http://127.0.0.1:44925/s effective=http://127.0.0.1:44925/a/b/c/s303?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s304.head HEAD rc=0 status=304 redirect=http://127.0.0.1:44925/s effective=http://127.0.0.1:44925/a/b/c/s304?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C s307.head HEAD rc=0 status=307 redirect=http://127.0.0.1:44925/s effective=http://127.0.0.1:44925/a/b/c/s307?q=1 location=/s amount=1 r0=http://127.0.0.1:44925/s renc=http://127.0.0.1:44925/s
+[ubuntu-openssl-8.5.0] C rel-abs#orig GET rc=0 status=302 redirect=http://127.0.0.1:44925/x/y?z=1 effective=http://127.0.0.1:44925/a/b/c/rel-abs?q=1#orig location=/x/y?z=1 amount=1 r0=http://127.0.0.1:44925/x/y?z=1 renc=http://127.0.0.1:44925/x/y?z=1
+[ubuntu-openssl-8.5.0] C rel-frag#orig GET rc=0 status=302 redirect=http://127.0.0.1:44925/a/b/c/#only effective=http://127.0.0.1:44925/a/b/c/rel-frag?q=1#orig location=#only amount=1 r0=http://127.0.0.1:44925/a/b/c/#only renc=http://127.0.0.1:44925/a/b/c/#only
+[ubuntu-openssl-8.5.0] C frag-abs#orig GET rc=0 status=302 redirect=http://127.0.0.1:44925/withfrag#f effective=http://127.0.0.1:44925/a/b/c/frag-abs?q=1#orig location=/withfrag#f amount=1 r0=http://127.0.0.1:44925/withfrag#f renc=http://127.0.0.1:44925/withfrag#f
+[ubuntu-openssl-8.5.0] C netpath#orig GET rc=0 status=302 redirect=http://127.0.0.1:44925/np effective=http://127.0.0.1:44925/a/b/c/netpath?q=1#orig location=//127.0.0.1:44925/np amount=1 r0=http://127.0.0.1:44925/np renc=http://127.0.0.1:44925/np
+[ubuntu-openssl-8.5.0] C rel-abs@creds GET rc=0 status=302 redirect=http://me:secret@127.0.0.1:44925/x/y?z=1 effective=http://127.0.0.1:44925/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://me:secret@127.0.0.1:44925/x/y?z=1 renc=http://me:secret@127.0.0.1:44925/x/y?z=1
+[ubuntu-openssl-8.5.0] C netpath@creds GET rc=0 status=302 redirect=http://127.0.0.1:44925/np effective=http://127.0.0.1:44925/a/b/c/netpath?q=1 location=//127.0.0.1:44925/np amount=1 r0=http://127.0.0.1:44925/np renc=http://127.0.0.1:44925/np
+[ubuntu-openssl-8.5.0] C other-host@creds GET rc=0 status=302 redirect=http://other.invalid/x effective=http://127.0.0.1:44925/a/b/c/other-host?q=1 location=http://other.invalid/x amount=1 r0=http://other.invalid/x renc=http://other.invalid/x
+[ubuntu-openssl-8.5.0] C localhost GET rc=0 status=302 redirect=http://localhost:44925/x/y?z=1 effective=http://localhost:44925/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://localhost:44925/x/y?z=1 renc=http://localhost:44925/x/y?z=1
+[ubuntu-openssl-8.5.0] C mapped GET rc=0 status=302 redirect=http://[::ffff:127.0.0.1]:44925/x/y?z=1 effective=http://[::ffff:127.0.0.1]:44925/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://[::ffff:127.0.0.1]:44925/x/y?z=1 renc=http://[::ffff:127.0.0.1]:44925/x/y?z=1
+[ubuntu-openssl-8.5.0] -- Scheme
+[ubuntu-openssl-8.5.0] probe.sps exited 0
+[ubuntu-openssl-8.5.0] S libcurl 8.5.0 at /usr/lib/x86_64-linux-gnu/libcurl.so.4
+[ubuntu-openssl-8.5.0] S rel-abs GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:44925/x/y?z=1 utf8=yes
+[ubuntu-openssl-8.5.0] S rel-path GET rc=0 status=302 location=d/e amount=1 r0=http://127.0.0.1:44925/a/b/c/d/e utf8=yes
+[ubuntu-openssl-8.5.0] S rel-dots GET rc=0 status=302 location=../../up amount=1 r0=http://127.0.0.1:44925/a/up utf8=yes
+[ubuntu-openssl-8.5.0] S rel-query GET rc=0 status=302 location=?only=1 amount=1 r0=http://127.0.0.1:44925/a/b/c/rel-query?only=1 utf8=yes
+[ubuntu-openssl-8.5.0] S rel-frag GET rc=0 status=302 location=#only amount=1 r0=http://127.0.0.1:44925/a/b/c/#only utf8=yes
+[ubuntu-openssl-8.5.0] S netpath GET rc=0 status=302 location=//127.0.0.1:44925/np amount=1 r0=http://127.0.0.1:44925/np utf8=yes
+[ubuntu-openssl-8.5.0] S other-host GET rc=0 status=302 location=http://other.invalid/x amount=1 r0=http://other.invalid/x utf8=yes
+[ubuntu-openssl-8.5.0] S https GET rc=0 status=302 location=https://127.0.0.1:1/s amount=1 r0=https://127.0.0.1:1/s utf8=yes
+[ubuntu-openssl-8.5.0] S no-path GET rc=0 status=302 location=http://127.0.0.1:44925 amount=1 r0=http://127.0.0.1:44925/ utf8=yes
+[ubuntu-openssl-8.5.0] S upper-scheme GET rc=0 status=302 location=HTTP://127.0.0.1:44925/UP amount=1 r0=http://127.0.0.1:44925/UP utf8=yes
+[ubuntu-openssl-8.5.0] S ftp GET rc=0 status=302 location=ftp://127.0.0.1/f amount=1 r0=ftp://127.0.0.1/f utf8=yes
+[ubuntu-openssl-8.5.0] S file GET rc=0 status=302 location=file:///etc/passwd amount=1 r0=file:///etc/passwd utf8=yes
+[ubuntu-openssl-8.5.0] S javascript GET rc=0 status=302 location=javascript:alert(1) amount=1 r0=uc5
+[ubuntu-openssl-8.5.0] S unknown-scheme GET rc=0 status=302 location=foo://bar/x amount=1 r0=uc5
+[ubuntu-openssl-8.5.0] S empty GET rc=0 status=302 location=\x0d amount=1 r0=uc3
+[ubuntu-openssl-8.5.0] S blank GET rc=0 status=302 location=\x0d amount=1 r0=uc3
+[ubuntu-openssl-8.5.0] S missing GET rc=0 status=302 location=none
+[ubuntu-openssl-8.5.0] S padded GET rc=0 status=302 location=/padded amount=1 r0=http://127.0.0.1:44925/padded utf8=yes
+[ubuntu-openssl-8.5.0] S tab GET rc=0 status=302 location=/tabbed amount=1 r0=http://127.0.0.1:44925/tabbed utf8=yes
+[ubuntu-openssl-8.5.0] S space-inside GET rc=0 status=302 location=/a\x20b/c\x20d amount=1 r0=http://127.0.0.1:44925/a%20b/c%20d utf8=yes
+[ubuntu-openssl-8.5.0] S utf8 GET rc=0 status=302 location=/caf\xc3\xa9 amount=1 r0=http://127.0.0.1:44925/caf%c3%a9 utf8=yes
+[ubuntu-openssl-8.5.0] S latin1 GET rc=0 status=302 location=/caf\xe9 amount=1 r0=http://127.0.0.1:44925/caf%e9 utf8=yes
+[ubuntu-openssl-8.5.0] S ctl GET rc=0 status=302 location=/x\x01y amount=1 r0=uc3
+[ubuntu-openssl-8.5.0] S del GET rc=0 status=302 location=/x\x7fy amount=1 r0=uc3
+[ubuntu-openssl-8.5.0] S pct GET rc=0 status=302 location=/already%20encoded amount=1 r0=http://127.0.0.1:44925/already%20encoded utf8=yes
+[ubuntu-openssl-8.5.0] S bad-pct GET rc=0 status=302 location=/bad%zz amount=1 r0=http://127.0.0.1:44925/bad%zz utf8=yes
+[ubuntu-openssl-8.5.0] S userinfo GET rc=0 status=302 location=http://u:p@127.0.0.1:44925/creds amount=1 r0=http://u:p@127.0.0.1:44925/creds utf8=yes
+[ubuntu-openssl-8.5.0] S frag-abs GET rc=0 status=302 location=/withfrag#f amount=1 r0=http://127.0.0.1:44925/withfrag#f utf8=yes
+[ubuntu-openssl-8.5.0] S bad-ipv6 GET rc=0 status=302 location=http://[::1/x amount=1 r0=uc22
+[ubuntu-openssl-8.5.0] S bad-port GET rc=0 status=302 location=http://127.0.0.1:99999/x amount=1 r0=uc4
+[ubuntu-openssl-8.5.0] S backslash GET rc=0 status=302 location=/\x5cevil.invalid/x amount=1 r0=http://127.0.0.1:44925/\x5cevil.invalid/x utf8=yes
+[ubuntu-openssl-8.5.0] S two GET rc=0 status=302 location=/first amount=2 r0=http://127.0.0.1:44925/first utf8=yes
+[ubuntu-openssl-8.5.0] S lower-name GET rc=0 status=302 location=/lc amount=1 r0=http://127.0.0.1:44925/lc utf8=yes
+[ubuntu-openssl-8.5.0] S idn GET rc=0 status=302 location=http://caf\xc3\xa9.invalid/ amount=1 r0=http://caf\xc3\xa9.invalid/ utf8=yes
+[ubuntu-openssl-8.5.0] S long-8k GET rc=0 status=302 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 8001) amount=1 r0=http://127.0.0.1:44925/aaaaaaaaaaaaaaaaa...(len 8023) utf8=yes
+[ubuntu-openssl-8.5.0] S long-90k GET rc=0 status=302 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 90001) amount=1 r0=http://127.0.0.1:44925/aaaaaaaaaaaaaaaaa...(len 90023) utf8=yes
+[ubuntu-openssl-8.5.0] S long-110k GET rc=27
+[ubuntu-openssl-8.5.0] S s200 GET rc=0 status=200 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s201 GET rc=0 status=201 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s299 GET rc=0 status=299 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s300 GET rc=0 status=300 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s301 GET rc=0 status=301 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s303 GET rc=0 status=303 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s304 GET rc=0 status=304 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s305 GET rc=0 status=305 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s306 GET rc=0 status=306 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s307 GET rc=0 status=307 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s308 GET rc=0 status=308 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s309 GET rc=0 status=309 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s399 GET rc=0 status=399 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s400 GET rc=0 status=400 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S rel-abs.head HEAD rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:44925/x/y?z=1 utf8=yes
+[ubuntu-openssl-8.5.0] S s303.head HEAD rc=0 status=303 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s304.head HEAD rc=0 status=304 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S s307.head HEAD rc=0 status=307 location=/s amount=1 r0=http://127.0.0.1:44925/s utf8=yes
+[ubuntu-openssl-8.5.0] S rel-abs#orig GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:44925/x/y?z=1 utf8=yes
+[ubuntu-openssl-8.5.0] S rel-frag#orig GET rc=0 status=302 location=#only amount=1 r0=http://127.0.0.1:44925/a/b/c/#only utf8=yes
+[ubuntu-openssl-8.5.0] S frag-abs#orig GET rc=0 status=302 location=/withfrag#f amount=1 r0=http://127.0.0.1:44925/withfrag#f utf8=yes
+[ubuntu-openssl-8.5.0] S netpath#orig GET rc=0 status=302 location=//127.0.0.1:44925/np amount=1 r0=http://127.0.0.1:44925/np utf8=yes
+[ubuntu-openssl-8.5.0] S rel-abs@creds GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://me:secret@127.0.0.1:44925/x/y?z=1 utf8=yes
+[ubuntu-openssl-8.5.0] S netpath@creds GET rc=0 status=302 location=//127.0.0.1:44925/np amount=1 r0=http://127.0.0.1:44925/np utf8=yes
+[ubuntu-openssl-8.5.0] S other-host@creds GET rc=0 status=302 location=http://other.invalid/x amount=1 r0=http://other.invalid/x utf8=yes
+[ubuntu-openssl-8.5.0] S localhost GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://localhost:44925/x/y?z=1 utf8=yes
+[ubuntu-openssl-8.5.0] S mapped GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://[::ffff:127.0.0.1]:44925/x/y?z=1 utf8=yes
+[ubuntu-openssl-8.5.0] S -- 64 probes
+[ubuntu-openssl-8.5.0] -- compare
+[ubuntu-openssl-8.5.0] compare: 64 agree, 0 differ, of 64 C lines and 64 Scheme lines
+[ubuntu-gnutls-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 -> /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4.8.0
+[ubuntu-gnutls-8.5.0] -- fragment
+[ubuntu-gnutls-8.5.0] plain base=http://h.example/a/b?q=1 f=only part0=http://h.example/a/b?q=1#only frag=only penc=http://h.example/a/b?q=1#only frag=only whole=http://h.example/a/b?q=1#only frag=only ref=http://h.example/a/#only frag=only
+[ubuntu-gnutls-8.5.0] empty base=http://h.example/a/b?q=1 f= part0=http://h.example/a/b?q=1# frag= penc=http://h.example/a/b?q=1 penc.frag=uc17 whole=http://h.example/a/b?q=1 whole.frag=uc17 ref=http://h.example/a/ ref.frag=uc17
+[ubuntu-gnutls-8.5.0] space base=http://h.example/a/b?q=1 f=a\x20b part0=http://h.example/a/b?q=1#a\x20b frag=a\x20b penc=http://h.example/a/b?q=1#a%20b frag=a%20b whole=uc3 ref=http://h.example/a/#a%20b frag=a%20b
+[ubuntu-gnutls-8.5.0] blank base=http://h.example/a/b?q=1 f=\x20\x20\x20 part0=http://h.example/a/b?q=1#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20 whole=uc3 ref=http://h.example/a/#%20%20%20 frag=%20%20%20
+[ubuntu-gnutls-8.5.0] tab base=http://h.example/a/b?q=1 f=\x09 part0=http://h.example/a/b?q=1#\x09 frag=\x09 penc=http://h.example/a/b?q=1#%09 frag=%09 whole=uc3 ref=uc3
+[ubuntu-gnutls-8.5.0] cr base=http://h.example/a/b?q=1 f=\x0d part0=http://h.example/a/b?q=1#\x0d frag=\x0d penc=http://h.example/a/b?q=1#%0d frag=%0d whole=uc3 ref=uc3
+[ubuntu-gnutls-8.5.0] latin1 base=http://h.example/a/b?q=1 f=caf\xe9 part0=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b?q=1#caf%e9 frag=caf%e9 whole=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 ref=http://h.example/a/#caf%e9 frag=caf%e9
+[ubuntu-gnutls-8.5.0] utf8 base=http://h.example/a/b?q=1 f=caf\xc3\xa9 part0=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b?q=1#caf%c3%a9 frag=caf%c3%a9 whole=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/#caf%c3%a9 frag=caf%c3%a9
+[ubuntu-gnutls-8.5.0] bom base=http://h.example/a/b?q=1 f=\xef\xbb\xbfbom part0=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b?q=1#%ef%bb%bfbom frag=%ef%bb%bfbom whole=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/#%ef%bb%bfbom frag=%ef%bb%bfbom
+[ubuntu-gnutls-8.5.0] pct-lower base=http://h.example/a/b?q=1 f=%e9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25e9x frag=%25e9x whole=http://h.example/a/b?q=1#%e9x frag=%e9x ref=http://h.example/a/#%e9x frag=%e9x
+[ubuntu-gnutls-8.5.0] pct-upper base=http://h.example/a/b?q=1 f=%E9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25E9x frag=%25E9x whole=http://h.example/a/b?q=1#%E9x frag=%E9x ref=http://h.example/a/#%E9x frag=%E9x
+[ubuntu-gnutls-8.5.0] pct-mixed base=http://h.example/a/b?q=1 f=%c3%A9 part0=http://h.example/a/b?q=1#%c3%a9 frag=%c3%a9 penc=http://h.example/a/b?q=1#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b?q=1#%c3%A9 frag=%c3%A9 ref=http://h.example/a/#%c3%A9 frag=%c3%A9
+[ubuntu-gnutls-8.5.0] bad-pct base=http://h.example/a/b?q=1 f=%zz part0=http://h.example/a/b?q=1#%zz frag=%zz penc=http://h.example/a/b?q=1#%25zz frag=%25zz whole=http://h.example/a/b?q=1#%zz frag=%zz ref=http://h.example/a/#%zz frag=%zz
+[ubuntu-gnutls-8.5.0] lone-pct base=http://h.example/a/b?q=1 f=% part0=http://h.example/a/b?q=1#% frag=% penc=http://h.example/a/b?q=1#%25 frag=%25 whole=http://h.example/a/b?q=1#% frag=% ref=http://h.example/a/#% frag=%
+[ubuntu-gnutls-8.5.0] hash base=http://h.example/a/b?q=1 f=a#b part0=http://h.example/a/b?q=1#a#b frag=a#b penc=http://h.example/a/b?q=1#a%23b frag=a%23b whole=http://h.example/a/b?q=1#a#b frag=a#b ref=http://h.example/a/#a#b frag=a#b
+[ubuntu-gnutls-8.5.0] ctl base=http://h.example/a/b?q=1 f=x\x01y part0=http://h.example/a/b?q=1#x\x01y frag=x\x01y penc=http://h.example/a/b?q=1#x%01y frag=x%01y whole=uc3 ref=uc3
+[ubuntu-gnutls-8.5.0] del base=http://h.example/a/b?q=1 f=x\x7fy part0=http://h.example/a/b?q=1#x\x7fy frag=x\x7fy penc=http://h.example/a/b?q=1#x%7fy frag=x%7fy whole=uc3 ref=uc3
+[ubuntu-gnutls-8.5.0] delims base=http://h.example/a/b?q=1 f="<>`{}|^ part0=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b?q=1#%22%3c%3e%60%7b%7d%7c%5e frag=%22%3c%3e%60%7b%7d%7c%5e whole=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/#"<>`{}|^ frag="<>`{}|^
+[ubuntu-gnutls-8.5.0] reserved base=http://h.example/a/b?q=1 f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b?q=1#a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d frag=a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d whole=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[ubuntu-gnutls-8.5.0] backslash base=http://h.example/a/b?q=1 f=a\x5cb part0=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb penc=http://h.example/a/b?q=1#a%5cb frag=a%5cb whole=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb ref=http://h.example/a/#a\x5cb frag=a\x5cb
+[ubuntu-gnutls-8.5.0] plain base=http://h.example/a/b?q=1#old f=only part0=http://h.example/a/b?q=1#only frag=only penc=http://h.example/a/b?q=1#only frag=only whole=http://h.example/a/b?q=1#only frag=only ref=http://h.example/a/#only frag=only
+[ubuntu-gnutls-8.5.0] empty base=http://h.example/a/b?q=1#old f= part0=http://h.example/a/b?q=1# frag= penc=http://h.example/a/b?q=1 penc.frag=uc17 whole=http://h.example/a/b?q=1 whole.frag=uc17 ref=http://h.example/a/ ref.frag=uc17
+[ubuntu-gnutls-8.5.0] space base=http://h.example/a/b?q=1#old f=a\x20b part0=http://h.example/a/b?q=1#a\x20b frag=a\x20b penc=http://h.example/a/b?q=1#a%20b frag=a%20b whole=uc3 ref=http://h.example/a/#a%20b frag=a%20b
+[ubuntu-gnutls-8.5.0] blank base=http://h.example/a/b?q=1#old f=\x20\x20\x20 part0=http://h.example/a/b?q=1#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20 whole=uc3 ref=http://h.example/a/#%20%20%20 frag=%20%20%20
+[ubuntu-gnutls-8.5.0] tab base=http://h.example/a/b?q=1#old f=\x09 part0=http://h.example/a/b?q=1#\x09 frag=\x09 penc=http://h.example/a/b?q=1#%09 frag=%09 whole=uc3 ref=uc3
+[ubuntu-gnutls-8.5.0] cr base=http://h.example/a/b?q=1#old f=\x0d part0=http://h.example/a/b?q=1#\x0d frag=\x0d penc=http://h.example/a/b?q=1#%0d frag=%0d whole=uc3 ref=uc3
+[ubuntu-gnutls-8.5.0] latin1 base=http://h.example/a/b?q=1#old f=caf\xe9 part0=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b?q=1#caf%e9 frag=caf%e9 whole=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 ref=http://h.example/a/#caf%e9 frag=caf%e9
+[ubuntu-gnutls-8.5.0] utf8 base=http://h.example/a/b?q=1#old f=caf\xc3\xa9 part0=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b?q=1#caf%c3%a9 frag=caf%c3%a9 whole=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/#caf%c3%a9 frag=caf%c3%a9
+[ubuntu-gnutls-8.5.0] bom base=http://h.example/a/b?q=1#old f=\xef\xbb\xbfbom part0=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b?q=1#%ef%bb%bfbom frag=%ef%bb%bfbom whole=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/#%ef%bb%bfbom frag=%ef%bb%bfbom
+[ubuntu-gnutls-8.5.0] pct-lower base=http://h.example/a/b?q=1#old f=%e9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25e9x frag=%25e9x whole=http://h.example/a/b?q=1#%e9x frag=%e9x ref=http://h.example/a/#%e9x frag=%e9x
+[ubuntu-gnutls-8.5.0] pct-upper base=http://h.example/a/b?q=1#old f=%E9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25E9x frag=%25E9x whole=http://h.example/a/b?q=1#%E9x frag=%E9x ref=http://h.example/a/#%E9x frag=%E9x
+[ubuntu-gnutls-8.5.0] pct-mixed base=http://h.example/a/b?q=1#old f=%c3%A9 part0=http://h.example/a/b?q=1#%c3%a9 frag=%c3%a9 penc=http://h.example/a/b?q=1#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b?q=1#%c3%A9 frag=%c3%A9 ref=http://h.example/a/#%c3%A9 frag=%c3%A9
+[ubuntu-gnutls-8.5.0] bad-pct base=http://h.example/a/b?q=1#old f=%zz part0=http://h.example/a/b?q=1#%zz frag=%zz penc=http://h.example/a/b?q=1#%25zz frag=%25zz whole=http://h.example/a/b?q=1#%zz frag=%zz ref=http://h.example/a/#%zz frag=%zz
+[ubuntu-gnutls-8.5.0] lone-pct base=http://h.example/a/b?q=1#old f=% part0=http://h.example/a/b?q=1#% frag=% penc=http://h.example/a/b?q=1#%25 frag=%25 whole=http://h.example/a/b?q=1#% frag=% ref=http://h.example/a/#% frag=%
+[ubuntu-gnutls-8.5.0] hash base=http://h.example/a/b?q=1#old f=a#b part0=http://h.example/a/b?q=1#a#b frag=a#b penc=http://h.example/a/b?q=1#a%23b frag=a%23b whole=http://h.example/a/b?q=1#a#b frag=a#b ref=http://h.example/a/#a#b frag=a#b
+[ubuntu-gnutls-8.5.0] ctl base=http://h.example/a/b?q=1#old f=x\x01y part0=http://h.example/a/b?q=1#x\x01y frag=x\x01y penc=http://h.example/a/b?q=1#x%01y frag=x%01y whole=uc3 ref=uc3
+[ubuntu-gnutls-8.5.0] del base=http://h.example/a/b?q=1#old f=x\x7fy part0=http://h.example/a/b?q=1#x\x7fy frag=x\x7fy penc=http://h.example/a/b?q=1#x%7fy frag=x%7fy whole=uc3 ref=uc3
+[ubuntu-gnutls-8.5.0] delims base=http://h.example/a/b?q=1#old f="<>`{}|^ part0=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b?q=1#%22%3c%3e%60%7b%7d%7c%5e frag=%22%3c%3e%60%7b%7d%7c%5e whole=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/#"<>`{}|^ frag="<>`{}|^
+[ubuntu-gnutls-8.5.0] reserved base=http://h.example/a/b?q=1#old f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b?q=1#a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d frag=a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d whole=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[ubuntu-gnutls-8.5.0] backslash base=http://h.example/a/b?q=1#old f=a\x5cb part0=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb penc=http://h.example/a/b?q=1#a%5cb frag=a%5cb whole=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb ref=http://h.example/a/#a\x5cb frag=a\x5cb
+[ubuntu-gnutls-8.5.0] plain base=http://h.example/a/b#old%e9 f=only part0=http://h.example/a/b#only frag=only penc=http://h.example/a/b#only frag=only whole=http://h.example/a/b#only frag=only ref=http://h.example/a/#only frag=only
+[ubuntu-gnutls-8.5.0] empty base=http://h.example/a/b#old%e9 f= part0=http://h.example/a/b# frag= penc=http://h.example/a/b penc.frag=uc17 whole=http://h.example/a/b whole.frag=uc17 ref=http://h.example/a/ ref.frag=uc17
+[ubuntu-gnutls-8.5.0] space base=http://h.example/a/b#old%e9 f=a\x20b part0=http://h.example/a/b#a\x20b frag=a\x20b penc=http://h.example/a/b#a%20b frag=a%20b whole=uc3 ref=http://h.example/a/#a%20b frag=a%20b
+[ubuntu-gnutls-8.5.0] blank base=http://h.example/a/b#old%e9 f=\x20\x20\x20 part0=http://h.example/a/b#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b#%20%20%20 frag=%20%20%20 whole=uc3 ref=http://h.example/a/#%20%20%20 frag=%20%20%20
+[ubuntu-gnutls-8.5.0] tab base=http://h.example/a/b#old%e9 f=\x09 part0=http://h.example/a/b#\x09 frag=\x09 penc=http://h.example/a/b#%09 frag=%09 whole=uc3 ref=uc3
+[ubuntu-gnutls-8.5.0] cr base=http://h.example/a/b#old%e9 f=\x0d part0=http://h.example/a/b#\x0d frag=\x0d penc=http://h.example/a/b#%0d frag=%0d whole=uc3 ref=uc3
+[ubuntu-gnutls-8.5.0] latin1 base=http://h.example/a/b#old%e9 f=caf\xe9 part0=http://h.example/a/b#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b#caf%e9 frag=caf%e9 whole=http://h.example/a/b#caf\xe9 frag=caf\xe9 ref=http://h.example/a/#caf%e9 frag=caf%e9
+[ubuntu-gnutls-8.5.0] utf8 base=http://h.example/a/b#old%e9 f=caf\xc3\xa9 part0=http://h.example/a/b#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b#caf%c3%a9 frag=caf%c3%a9 whole=http://h.example/a/b#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/#caf%c3%a9 frag=caf%c3%a9
+[ubuntu-gnutls-8.5.0] bom base=http://h.example/a/b#old%e9 f=\xef\xbb\xbfbom part0=http://h.example/a/b#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b#%ef%bb%bfbom frag=%ef%bb%bfbom whole=http://h.example/a/b#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/#%ef%bb%bfbom frag=%ef%bb%bfbom
+[ubuntu-gnutls-8.5.0] pct-lower base=http://h.example/a/b#old%e9 f=%e9x part0=http://h.example/a/b#%e9x frag=%e9x penc=http://h.example/a/b#%25e9x frag=%25e9x whole=http://h.example/a/b#%e9x frag=%e9x ref=http://h.example/a/#%e9x frag=%e9x
+[ubuntu-gnutls-8.5.0] pct-upper base=http://h.example/a/b#old%e9 f=%E9x part0=http://h.example/a/b#%e9x frag=%e9x penc=http://h.example/a/b#%25E9x frag=%25E9x whole=http://h.example/a/b#%E9x frag=%E9x ref=http://h.example/a/#%E9x frag=%E9x
+[ubuntu-gnutls-8.5.0] pct-mixed base=http://h.example/a/b#old%e9 f=%c3%A9 part0=http://h.example/a/b#%c3%a9 frag=%c3%a9 penc=http://h.example/a/b#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b#%c3%A9 frag=%c3%A9 ref=http://h.example/a/#%c3%A9 frag=%c3%A9
+[ubuntu-gnutls-8.5.0] bad-pct base=http://h.example/a/b#old%e9 f=%zz part0=http://h.example/a/b#%zz frag=%zz penc=http://h.example/a/b#%25zz frag=%25zz whole=http://h.example/a/b#%zz frag=%zz ref=http://h.example/a/#%zz frag=%zz
+[ubuntu-gnutls-8.5.0] lone-pct base=http://h.example/a/b#old%e9 f=% part0=http://h.example/a/b#% frag=% penc=http://h.example/a/b#%25 frag=%25 whole=http://h.example/a/b#% frag=% ref=http://h.example/a/#% frag=%
+[ubuntu-gnutls-8.5.0] hash base=http://h.example/a/b#old%e9 f=a#b part0=http://h.example/a/b#a#b frag=a#b penc=http://h.example/a/b#a%23b frag=a%23b whole=http://h.example/a/b#a#b frag=a#b ref=http://h.example/a/#a#b frag=a#b
+[ubuntu-gnutls-8.5.0] ctl base=http://h.example/a/b#old%e9 f=x\x01y part0=http://h.example/a/b#x\x01y frag=x\x01y penc=http://h.example/a/b#x%01y frag=x%01y whole=uc3 ref=uc3
+[ubuntu-gnutls-8.5.0] del base=http://h.example/a/b#old%e9 f=x\x7fy part0=http://h.example/a/b#x\x7fy frag=x\x7fy penc=http://h.example/a/b#x%7fy frag=x%7fy whole=uc3 ref=uc3
+[ubuntu-gnutls-8.5.0] delims base=http://h.example/a/b#old%e9 f="<>`{}|^ part0=http://h.example/a/b#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b#%22%3c%3e%60%7b%7d%7c%5e frag=%22%3c%3e%60%7b%7d%7c%5e whole=http://h.example/a/b#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/#"<>`{}|^ frag="<>`{}|^
+[ubuntu-gnutls-8.5.0] reserved base=http://h.example/a/b#old%e9 f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b#a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d frag=a%3fb%2fc%3ad%40e%21%24%26%27%28%29%2a%2b%2c%3b%3d whole=http://h.example/a/b#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[ubuntu-gnutls-8.5.0] backslash base=http://h.example/a/b#old%e9 f=a\x5cb part0=http://h.example/a/b#a\x5cb frag=a\x5cb penc=http://h.example/a/b#a%5cb frag=a%5cb whole=http://h.example/a/b#a\x5cb frag=a\x5cb ref=http://h.example/a/#a\x5cb frag=a\x5cb
+[ubuntu-gnutls-8.5.0] clear base=http://h.example/a/b?q=1 cleared=http://h.example/a/b?q=1 cleared.frag=uc17
+[ubuntu-gnutls-8.5.0] clear base=http://h.example/a/b?q=1#old cleared=http://h.example/a/b?q=1 cleared.frag=uc17
+[ubuntu-gnutls-8.5.0] clear base=http://h.example/a/b#old%e9 cleared=http://h.example/a/b cleared.frag=uc17
+[ubuntu-gnutls-8.5.0] -- 63 lines
+[ubuntu-gnutls-8.5.0] -- localhost, port 44021
+[ubuntu-gnutls-8.5.0] http://127.0.0.1:44021/x rc=0 status=404 ip=127.0.0.1 connect-us=154
+[ubuntu-gnutls-8.5.0] http://localhost:44021/x rc=0 status=404 ip=127.0.0.1 connect-us=124
+[ubuntu-gnutls-8.5.0] http://[::ffff:127.0.0.1]:44021/x rc=0 status=404 ip=::ffff:127.0.0.1 connect-us=76
+[ubuntu-gnutls-8.5.0] -- 64 cases, base http://127.0.0.1:44021/a/b/c
+[ubuntu-gnutls-8.5.0] -- C
+[ubuntu-gnutls-8.5.0] C rel-abs GET rc=0 status=302 redirect=http://127.0.0.1:44021/x/y?z=1 effective=http://127.0.0.1:44021/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:44021/x/y?z=1 renc=http://127.0.0.1:44021/x/y?z=1
+[ubuntu-gnutls-8.5.0] C rel-path GET rc=0 status=302 redirect=http://127.0.0.1:44021/a/b/c/d/e effective=http://127.0.0.1:44021/a/b/c/rel-path?q=1 location=d/e amount=1 r0=http://127.0.0.1:44021/a/b/c/d/e renc=http://127.0.0.1:44021/a/b/c/d/e
+[ubuntu-gnutls-8.5.0] C rel-dots GET rc=0 status=302 redirect=http://127.0.0.1:44021/a/up effective=http://127.0.0.1:44021/a/b/c/rel-dots?q=1 location=../../up amount=1 r0=http://127.0.0.1:44021/a/up renc=http://127.0.0.1:44021/a/up
+[ubuntu-gnutls-8.5.0] C rel-query GET rc=0 status=302 redirect=http://127.0.0.1:44021/a/b/c/rel-query?only=1 effective=http://127.0.0.1:44021/a/b/c/rel-query?q=1 location=?only=1 amount=1 r0=http://127.0.0.1:44021/a/b/c/rel-query?only=1 renc=http://127.0.0.1:44021/a/b/c/rel-query?only=1
+[ubuntu-gnutls-8.5.0] C rel-frag GET rc=0 status=302 redirect=http://127.0.0.1:44021/a/b/c/#only effective=http://127.0.0.1:44021/a/b/c/rel-frag?q=1 location=#only amount=1 r0=http://127.0.0.1:44021/a/b/c/#only renc=http://127.0.0.1:44021/a/b/c/#only
+[ubuntu-gnutls-8.5.0] C netpath GET rc=0 status=302 redirect=http://127.0.0.1:44021/np effective=http://127.0.0.1:44021/a/b/c/netpath?q=1 location=//127.0.0.1:44021/np amount=1 r0=http://127.0.0.1:44021/np renc=http://127.0.0.1:44021/np
+[ubuntu-gnutls-8.5.0] C other-host GET rc=0 status=302 redirect=http://other.invalid/x effective=http://127.0.0.1:44021/a/b/c/other-host?q=1 location=http://other.invalid/x amount=1 r0=http://other.invalid/x renc=http://other.invalid/x
+[ubuntu-gnutls-8.5.0] C https GET rc=0 status=302 redirect=https://127.0.0.1:1/s effective=http://127.0.0.1:44021/a/b/c/https?q=1 location=https://127.0.0.1:1/s amount=1 r0=https://127.0.0.1:1/s renc=https://127.0.0.1:1/s
+[ubuntu-gnutls-8.5.0] C no-path GET rc=0 status=302 redirect=http://127.0.0.1:44021/ effective=http://127.0.0.1:44021/a/b/c/no-path?q=1 location=http://127.0.0.1:44021 amount=1 r0=http://127.0.0.1:44021/ renc=http://127.0.0.1:44021/
+[ubuntu-gnutls-8.5.0] C upper-scheme GET rc=0 status=302 redirect=http://127.0.0.1:44021/UP effective=http://127.0.0.1:44021/a/b/c/upper-scheme?q=1 location=HTTP://127.0.0.1:44021/UP amount=1 r0=http://127.0.0.1:44021/UP renc=http://127.0.0.1:44021/UP
+[ubuntu-gnutls-8.5.0] C ftp GET rc=0 status=302 redirect=ftp://127.0.0.1/f effective=http://127.0.0.1:44021/a/b/c/ftp?q=1 location=ftp://127.0.0.1/f amount=1 r0=ftp://127.0.0.1/f renc=ftp://127.0.0.1/f
+[ubuntu-gnutls-8.5.0] C file GET rc=0 status=302 redirect=file:///etc/passwd effective=http://127.0.0.1:44021/a/b/c/file?q=1 location=file:///etc/passwd amount=1 r0=file:///etc/passwd renc=file:///etc/passwd
+[ubuntu-gnutls-8.5.0] C javascript GET rc=0 status=302 redirect=javascript:alert(1) effective=http://127.0.0.1:44021/a/b/c/javascript?q=1 location=javascript:alert(1) amount=1 r0=uc5 renc=uc5
+[ubuntu-gnutls-8.5.0] C unknown-scheme GET rc=0 status=302 redirect=foo://bar/x effective=http://127.0.0.1:44021/a/b/c/unknown-scheme?q=1 location=foo://bar/x amount=1 r0=uc5 renc=uc5
+[ubuntu-gnutls-8.5.0] C empty GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:44021/a/b/c/empty?q=1 location=\x0d amount=1 r0=uc3 renc=uc3
+[ubuntu-gnutls-8.5.0] C blank GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:44021/a/b/c/blank?q=1 location=\x0d amount=1 r0=uc3 renc=uc3
+[ubuntu-gnutls-8.5.0] C missing GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:44021/a/b/c/missing?q=1 location=hc2
+[ubuntu-gnutls-8.5.0] C padded GET rc=0 status=302 redirect=http://127.0.0.1:44021/padded effective=http://127.0.0.1:44021/a/b/c/padded?q=1 location=/padded amount=1 r0=http://127.0.0.1:44021/padded renc=http://127.0.0.1:44021/padded
+[ubuntu-gnutls-8.5.0] C tab GET rc=0 status=302 redirect=http://127.0.0.1:44021/tabbed effective=http://127.0.0.1:44021/a/b/c/tab?q=1 location=/tabbed amount=1 r0=http://127.0.0.1:44021/tabbed renc=http://127.0.0.1:44021/tabbed
+[ubuntu-gnutls-8.5.0] C space-inside GET rc=0 status=302 redirect=http://127.0.0.1:44021/a%20b/c%20d effective=http://127.0.0.1:44021/a/b/c/space-inside?q=1 location=/a\x20b/c\x20d amount=1 r0=http://127.0.0.1:44021/a%20b/c%20d renc=http://127.0.0.1:44021/a%20b/c%20d
+[ubuntu-gnutls-8.5.0] C utf8 GET rc=0 status=302 redirect=http://127.0.0.1:44021/caf%c3%a9 effective=http://127.0.0.1:44021/a/b/c/utf8?q=1 location=/caf\xc3\xa9 amount=1 r0=http://127.0.0.1:44021/caf%c3%a9 renc=http://127.0.0.1:44021/caf%c3%a9
+[ubuntu-gnutls-8.5.0] C latin1 GET rc=0 status=302 redirect=http://127.0.0.1:44021/caf%e9 effective=http://127.0.0.1:44021/a/b/c/latin1?q=1 location=/caf\xe9 amount=1 r0=http://127.0.0.1:44021/caf%e9 renc=http://127.0.0.1:44021/caf%e9
+[ubuntu-gnutls-8.5.0] C ctl GET rc=0 status=302 redirect=/x\x01y effective=http://127.0.0.1:44021/a/b/c/ctl?q=1 location=/x\x01y amount=1 r0=uc3 renc=uc3
+[ubuntu-gnutls-8.5.0] C del GET rc=0 status=302 redirect=/x\x7fy effective=http://127.0.0.1:44021/a/b/c/del?q=1 location=/x\x7fy amount=1 r0=uc3 renc=uc3
+[ubuntu-gnutls-8.5.0] C pct GET rc=0 status=302 redirect=http://127.0.0.1:44021/already%20encoded effective=http://127.0.0.1:44021/a/b/c/pct?q=1 location=/already%20encoded amount=1 r0=http://127.0.0.1:44021/already%20encoded renc=http://127.0.0.1:44021/already%20encoded
+[ubuntu-gnutls-8.5.0] C bad-pct GET rc=0 status=302 redirect=http://127.0.0.1:44021/bad%zz effective=http://127.0.0.1:44021/a/b/c/bad-pct?q=1 location=/bad%zz amount=1 r0=http://127.0.0.1:44021/bad%zz renc=http://127.0.0.1:44021/bad%zz
+[ubuntu-gnutls-8.5.0] C userinfo GET rc=0 status=302 redirect=http://u:p@127.0.0.1:44021/creds effective=http://127.0.0.1:44021/a/b/c/userinfo?q=1 location=http://u:p@127.0.0.1:44021/creds amount=1 r0=http://u:p@127.0.0.1:44021/creds renc=http://u:p@127.0.0.1:44021/creds
+[ubuntu-gnutls-8.5.0] C frag-abs GET rc=0 status=302 redirect=http://127.0.0.1:44021/withfrag#f effective=http://127.0.0.1:44021/a/b/c/frag-abs?q=1 location=/withfrag#f amount=1 r0=http://127.0.0.1:44021/withfrag#f renc=http://127.0.0.1:44021/withfrag#f
+[ubuntu-gnutls-8.5.0] C bad-ipv6 GET rc=0 status=302 redirect=http://[::1/x effective=http://127.0.0.1:44021/a/b/c/bad-ipv6?q=1 location=http://[::1/x amount=1 r0=uc22 renc=uc22
+[ubuntu-gnutls-8.5.0] C bad-port GET rc=0 status=302 redirect=http://127.0.0.1:99999/x effective=http://127.0.0.1:44021/a/b/c/bad-port?q=1 location=http://127.0.0.1:99999/x amount=1 r0=uc4 renc=uc4
+[ubuntu-gnutls-8.5.0] C backslash GET rc=0 status=302 redirect=http://127.0.0.1:44021/\x5cevil.invalid/x effective=http://127.0.0.1:44021/a/b/c/backslash?q=1 location=/\x5cevil.invalid/x amount=1 r0=http://127.0.0.1:44021/\x5cevil.invalid/x renc=http://127.0.0.1:44021/\x5cevil.invalid/x
+[ubuntu-gnutls-8.5.0] C two GET rc=0 status=302 redirect=http://127.0.0.1:44021/first effective=http://127.0.0.1:44021/a/b/c/two?q=1 location=/first amount=2 r0=http://127.0.0.1:44021/first renc=http://127.0.0.1:44021/first
+[ubuntu-gnutls-8.5.0] C lower-name GET rc=0 status=302 redirect=http://127.0.0.1:44021/lc effective=http://127.0.0.1:44021/a/b/c/lower-name?q=1 location=/lc amount=1 r0=http://127.0.0.1:44021/lc renc=http://127.0.0.1:44021/lc
+[ubuntu-gnutls-8.5.0] C idn GET rc=0 status=302 redirect=http://caf\xc3\xa9.invalid/ effective=http://127.0.0.1:44021/a/b/c/idn?q=1 location=http://caf\xc3\xa9.invalid/ amount=1 r0=http://caf\xc3\xa9.invalid/ renc=http://caf\xc3\xa9.invalid/
+[ubuntu-gnutls-8.5.0] C long-8k GET rc=0 status=302 redirect=http://127.0.0.1:44021/aaaaaaaaaaaaaaaaa...(len 8023) effective=http://127.0.0.1:44021/a/b/c/long-8k?q=1 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 8001) amount=1 r0=http://127.0.0.1:44021/aaaaaaaaaaaaaaaaa...(len 8023) renc=http://127.0.0.1:44021/aaaaaaaaaaaaaaaaa...(len 8023)
+[ubuntu-gnutls-8.5.0] C long-90k GET rc=0 status=302 redirect=http://127.0.0.1:44021/aaaaaaaaaaaaaaaaa...(len 90023) effective=http://127.0.0.1:44021/a/b/c/long-90k?q=1 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 90001) amount=1 r0=http://127.0.0.1:44021/aaaaaaaaaaaaaaaaa...(len 90023) renc=http://127.0.0.1:44021/aaaaaaaaaaaaaaaaa...(len 90023)
+[ubuntu-gnutls-8.5.0] C long-110k GET rc=27 status=302 redirect=NULL effective=http://127.0.0.1:44021/a/b/c/long-110k?q=1 location=hc3
+[ubuntu-gnutls-8.5.0] C s200 GET rc=0 status=200 redirect=NULL effective=http://127.0.0.1:44021/a/b/c/s200?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s201 GET rc=0 status=201 redirect=NULL effective=http://127.0.0.1:44021/a/b/c/s201?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s299 GET rc=0 status=299 redirect=NULL effective=http://127.0.0.1:44021/a/b/c/s299?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s300 GET rc=0 status=300 redirect=http://127.0.0.1:44021/s effective=http://127.0.0.1:44021/a/b/c/s300?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s301 GET rc=0 status=301 redirect=http://127.0.0.1:44021/s effective=http://127.0.0.1:44021/a/b/c/s301?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s303 GET rc=0 status=303 redirect=http://127.0.0.1:44021/s effective=http://127.0.0.1:44021/a/b/c/s303?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s304 GET rc=0 status=304 redirect=http://127.0.0.1:44021/s effective=http://127.0.0.1:44021/a/b/c/s304?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s305 GET rc=0 status=305 redirect=http://127.0.0.1:44021/s effective=http://127.0.0.1:44021/a/b/c/s305?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s306 GET rc=0 status=306 redirect=http://127.0.0.1:44021/s effective=http://127.0.0.1:44021/a/b/c/s306?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s307 GET rc=0 status=307 redirect=http://127.0.0.1:44021/s effective=http://127.0.0.1:44021/a/b/c/s307?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s308 GET rc=0 status=308 redirect=http://127.0.0.1:44021/s effective=http://127.0.0.1:44021/a/b/c/s308?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s309 GET rc=0 status=309 redirect=http://127.0.0.1:44021/s effective=http://127.0.0.1:44021/a/b/c/s309?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s399 GET rc=0 status=399 redirect=http://127.0.0.1:44021/s effective=http://127.0.0.1:44021/a/b/c/s399?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s400 GET rc=0 status=400 redirect=NULL effective=http://127.0.0.1:44021/a/b/c/s400?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C rel-abs.head HEAD rc=0 status=302 redirect=http://127.0.0.1:44021/x/y?z=1 effective=http://127.0.0.1:44021/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:44021/x/y?z=1 renc=http://127.0.0.1:44021/x/y?z=1
+[ubuntu-gnutls-8.5.0] C s303.head HEAD rc=0 status=303 redirect=http://127.0.0.1:44021/s effective=http://127.0.0.1:44021/a/b/c/s303?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s304.head HEAD rc=0 status=304 redirect=http://127.0.0.1:44021/s effective=http://127.0.0.1:44021/a/b/c/s304?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C s307.head HEAD rc=0 status=307 redirect=http://127.0.0.1:44021/s effective=http://127.0.0.1:44021/a/b/c/s307?q=1 location=/s amount=1 r0=http://127.0.0.1:44021/s renc=http://127.0.0.1:44021/s
+[ubuntu-gnutls-8.5.0] C rel-abs#orig GET rc=0 status=302 redirect=http://127.0.0.1:44021/x/y?z=1 effective=http://127.0.0.1:44021/a/b/c/rel-abs?q=1#orig location=/x/y?z=1 amount=1 r0=http://127.0.0.1:44021/x/y?z=1 renc=http://127.0.0.1:44021/x/y?z=1
+[ubuntu-gnutls-8.5.0] C rel-frag#orig GET rc=0 status=302 redirect=http://127.0.0.1:44021/a/b/c/#only effective=http://127.0.0.1:44021/a/b/c/rel-frag?q=1#orig location=#only amount=1 r0=http://127.0.0.1:44021/a/b/c/#only renc=http://127.0.0.1:44021/a/b/c/#only
+[ubuntu-gnutls-8.5.0] C frag-abs#orig GET rc=0 status=302 redirect=http://127.0.0.1:44021/withfrag#f effective=http://127.0.0.1:44021/a/b/c/frag-abs?q=1#orig location=/withfrag#f amount=1 r0=http://127.0.0.1:44021/withfrag#f renc=http://127.0.0.1:44021/withfrag#f
+[ubuntu-gnutls-8.5.0] C netpath#orig GET rc=0 status=302 redirect=http://127.0.0.1:44021/np effective=http://127.0.0.1:44021/a/b/c/netpath?q=1#orig location=//127.0.0.1:44021/np amount=1 r0=http://127.0.0.1:44021/np renc=http://127.0.0.1:44021/np
+[ubuntu-gnutls-8.5.0] C rel-abs@creds GET rc=0 status=302 redirect=http://me:secret@127.0.0.1:44021/x/y?z=1 effective=http://127.0.0.1:44021/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://me:secret@127.0.0.1:44021/x/y?z=1 renc=http://me:secret@127.0.0.1:44021/x/y?z=1
+[ubuntu-gnutls-8.5.0] C netpath@creds GET rc=0 status=302 redirect=http://127.0.0.1:44021/np effective=http://127.0.0.1:44021/a/b/c/netpath?q=1 location=//127.0.0.1:44021/np amount=1 r0=http://127.0.0.1:44021/np renc=http://127.0.0.1:44021/np
+[ubuntu-gnutls-8.5.0] C other-host@creds GET rc=0 status=302 redirect=http://other.invalid/x effective=http://127.0.0.1:44021/a/b/c/other-host?q=1 location=http://other.invalid/x amount=1 r0=http://other.invalid/x renc=http://other.invalid/x
+[ubuntu-gnutls-8.5.0] C localhost GET rc=0 status=302 redirect=http://localhost:44021/x/y?z=1 effective=http://localhost:44021/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://localhost:44021/x/y?z=1 renc=http://localhost:44021/x/y?z=1
+[ubuntu-gnutls-8.5.0] C mapped GET rc=0 status=302 redirect=http://[::ffff:127.0.0.1]:44021/x/y?z=1 effective=http://[::ffff:127.0.0.1]:44021/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://[::ffff:127.0.0.1]:44021/x/y?z=1 renc=http://[::ffff:127.0.0.1]:44021/x/y?z=1
+[ubuntu-gnutls-8.5.0] -- Scheme
+[ubuntu-gnutls-8.5.0] probe.sps exited 0
+[ubuntu-gnutls-8.5.0] S libcurl 8.5.0 at /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4
+[ubuntu-gnutls-8.5.0] S rel-abs GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:44021/x/y?z=1 utf8=yes
+[ubuntu-gnutls-8.5.0] S rel-path GET rc=0 status=302 location=d/e amount=1 r0=http://127.0.0.1:44021/a/b/c/d/e utf8=yes
+[ubuntu-gnutls-8.5.0] S rel-dots GET rc=0 status=302 location=../../up amount=1 r0=http://127.0.0.1:44021/a/up utf8=yes
+[ubuntu-gnutls-8.5.0] S rel-query GET rc=0 status=302 location=?only=1 amount=1 r0=http://127.0.0.1:44021/a/b/c/rel-query?only=1 utf8=yes
+[ubuntu-gnutls-8.5.0] S rel-frag GET rc=0 status=302 location=#only amount=1 r0=http://127.0.0.1:44021/a/b/c/#only utf8=yes
+[ubuntu-gnutls-8.5.0] S netpath GET rc=0 status=302 location=//127.0.0.1:44021/np amount=1 r0=http://127.0.0.1:44021/np utf8=yes
+[ubuntu-gnutls-8.5.0] S other-host GET rc=0 status=302 location=http://other.invalid/x amount=1 r0=http://other.invalid/x utf8=yes
+[ubuntu-gnutls-8.5.0] S https GET rc=0 status=302 location=https://127.0.0.1:1/s amount=1 r0=https://127.0.0.1:1/s utf8=yes
+[ubuntu-gnutls-8.5.0] S no-path GET rc=0 status=302 location=http://127.0.0.1:44021 amount=1 r0=http://127.0.0.1:44021/ utf8=yes
+[ubuntu-gnutls-8.5.0] S upper-scheme GET rc=0 status=302 location=HTTP://127.0.0.1:44021/UP amount=1 r0=http://127.0.0.1:44021/UP utf8=yes
+[ubuntu-gnutls-8.5.0] S ftp GET rc=0 status=302 location=ftp://127.0.0.1/f amount=1 r0=ftp://127.0.0.1/f utf8=yes
+[ubuntu-gnutls-8.5.0] S file GET rc=0 status=302 location=file:///etc/passwd amount=1 r0=file:///etc/passwd utf8=yes
+[ubuntu-gnutls-8.5.0] S javascript GET rc=0 status=302 location=javascript:alert(1) amount=1 r0=uc5
+[ubuntu-gnutls-8.5.0] S unknown-scheme GET rc=0 status=302 location=foo://bar/x amount=1 r0=uc5
+[ubuntu-gnutls-8.5.0] S empty GET rc=0 status=302 location=\x0d amount=1 r0=uc3
+[ubuntu-gnutls-8.5.0] S blank GET rc=0 status=302 location=\x0d amount=1 r0=uc3
+[ubuntu-gnutls-8.5.0] S missing GET rc=0 status=302 location=none
+[ubuntu-gnutls-8.5.0] S padded GET rc=0 status=302 location=/padded amount=1 r0=http://127.0.0.1:44021/padded utf8=yes
+[ubuntu-gnutls-8.5.0] S tab GET rc=0 status=302 location=/tabbed amount=1 r0=http://127.0.0.1:44021/tabbed utf8=yes
+[ubuntu-gnutls-8.5.0] S space-inside GET rc=0 status=302 location=/a\x20b/c\x20d amount=1 r0=http://127.0.0.1:44021/a%20b/c%20d utf8=yes
+[ubuntu-gnutls-8.5.0] S utf8 GET rc=0 status=302 location=/caf\xc3\xa9 amount=1 r0=http://127.0.0.1:44021/caf%c3%a9 utf8=yes
+[ubuntu-gnutls-8.5.0] S latin1 GET rc=0 status=302 location=/caf\xe9 amount=1 r0=http://127.0.0.1:44021/caf%e9 utf8=yes
+[ubuntu-gnutls-8.5.0] S ctl GET rc=0 status=302 location=/x\x01y amount=1 r0=uc3
+[ubuntu-gnutls-8.5.0] S del GET rc=0 status=302 location=/x\x7fy amount=1 r0=uc3
+[ubuntu-gnutls-8.5.0] S pct GET rc=0 status=302 location=/already%20encoded amount=1 r0=http://127.0.0.1:44021/already%20encoded utf8=yes
+[ubuntu-gnutls-8.5.0] S bad-pct GET rc=0 status=302 location=/bad%zz amount=1 r0=http://127.0.0.1:44021/bad%zz utf8=yes
+[ubuntu-gnutls-8.5.0] S userinfo GET rc=0 status=302 location=http://u:p@127.0.0.1:44021/creds amount=1 r0=http://u:p@127.0.0.1:44021/creds utf8=yes
+[ubuntu-gnutls-8.5.0] S frag-abs GET rc=0 status=302 location=/withfrag#f amount=1 r0=http://127.0.0.1:44021/withfrag#f utf8=yes
+[ubuntu-gnutls-8.5.0] S bad-ipv6 GET rc=0 status=302 location=http://[::1/x amount=1 r0=uc22
+[ubuntu-gnutls-8.5.0] S bad-port GET rc=0 status=302 location=http://127.0.0.1:99999/x amount=1 r0=uc4
+[ubuntu-gnutls-8.5.0] S backslash GET rc=0 status=302 location=/\x5cevil.invalid/x amount=1 r0=http://127.0.0.1:44021/\x5cevil.invalid/x utf8=yes
+[ubuntu-gnutls-8.5.0] S two GET rc=0 status=302 location=/first amount=2 r0=http://127.0.0.1:44021/first utf8=yes
+[ubuntu-gnutls-8.5.0] S lower-name GET rc=0 status=302 location=/lc amount=1 r0=http://127.0.0.1:44021/lc utf8=yes
+[ubuntu-gnutls-8.5.0] S idn GET rc=0 status=302 location=http://caf\xc3\xa9.invalid/ amount=1 r0=http://caf\xc3\xa9.invalid/ utf8=yes
+[ubuntu-gnutls-8.5.0] S long-8k GET rc=0 status=302 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 8001) amount=1 r0=http://127.0.0.1:44021/aaaaaaaaaaaaaaaaa...(len 8023) utf8=yes
+[ubuntu-gnutls-8.5.0] S long-90k GET rc=0 status=302 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 90001) amount=1 r0=http://127.0.0.1:44021/aaaaaaaaaaaaaaaaa...(len 90023) utf8=yes
+[ubuntu-gnutls-8.5.0] S long-110k GET rc=27
+[ubuntu-gnutls-8.5.0] S s200 GET rc=0 status=200 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s201 GET rc=0 status=201 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s299 GET rc=0 status=299 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s300 GET rc=0 status=300 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s301 GET rc=0 status=301 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s303 GET rc=0 status=303 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s304 GET rc=0 status=304 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s305 GET rc=0 status=305 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s306 GET rc=0 status=306 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s307 GET rc=0 status=307 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s308 GET rc=0 status=308 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s309 GET rc=0 status=309 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s399 GET rc=0 status=399 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s400 GET rc=0 status=400 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S rel-abs.head HEAD rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:44021/x/y?z=1 utf8=yes
+[ubuntu-gnutls-8.5.0] S s303.head HEAD rc=0 status=303 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s304.head HEAD rc=0 status=304 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S s307.head HEAD rc=0 status=307 location=/s amount=1 r0=http://127.0.0.1:44021/s utf8=yes
+[ubuntu-gnutls-8.5.0] S rel-abs#orig GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:44021/x/y?z=1 utf8=yes
+[ubuntu-gnutls-8.5.0] S rel-frag#orig GET rc=0 status=302 location=#only amount=1 r0=http://127.0.0.1:44021/a/b/c/#only utf8=yes
+[ubuntu-gnutls-8.5.0] S frag-abs#orig GET rc=0 status=302 location=/withfrag#f amount=1 r0=http://127.0.0.1:44021/withfrag#f utf8=yes
+[ubuntu-gnutls-8.5.0] S netpath#orig GET rc=0 status=302 location=//127.0.0.1:44021/np amount=1 r0=http://127.0.0.1:44021/np utf8=yes
+[ubuntu-gnutls-8.5.0] S rel-abs@creds GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://me:secret@127.0.0.1:44021/x/y?z=1 utf8=yes
+[ubuntu-gnutls-8.5.0] S netpath@creds GET rc=0 status=302 location=//127.0.0.1:44021/np amount=1 r0=http://127.0.0.1:44021/np utf8=yes
+[ubuntu-gnutls-8.5.0] S other-host@creds GET rc=0 status=302 location=http://other.invalid/x amount=1 r0=http://other.invalid/x utf8=yes
+[ubuntu-gnutls-8.5.0] S localhost GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://localhost:44021/x/y?z=1 utf8=yes
+[ubuntu-gnutls-8.5.0] S mapped GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://[::ffff:127.0.0.1]:44021/x/y?z=1 utf8=yes
+[ubuntu-gnutls-8.5.0] S -- 64 probes
+[ubuntu-gnutls-8.5.0] -- compare
+[ubuntu-gnutls-8.5.0] compare: 64 agree, 0 differ, of 64 C lines and 64 Scheme lines
+[current-8.23.0] libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 -> /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4.8.0
+[current-8.23.0] -- fragment
+[current-8.23.0] plain base=http://h.example/a/b?q=1 f=only part0=http://h.example/a/b?q=1#only frag=only penc=http://h.example/a/b?q=1#only frag=only whole=http://h.example/a/b?q=1#only frag=only ref=http://h.example/a/b?q=1#only frag=only
+[current-8.23.0] empty base=http://h.example/a/b?q=1 f= part0=http://h.example/a/b?q=1# frag= penc=http://h.example/a/b?q=1 penc.frag=uc17 whole=http://h.example/a/b?q=1 whole.frag=uc17 ref=http://h.example/a/b?q=1 ref.frag=uc17
+[current-8.23.0] space base=http://h.example/a/b?q=1 f=a\x20b part0=http://h.example/a/b?q=1#a\x20b frag=a\x20b penc=http://h.example/a/b?q=1#a%20b frag=a%20b whole=uc20 ref=http://h.example/a/b?q=1#a%20b frag=a%20b
+[current-8.23.0] blank base=http://h.example/a/b?q=1 f=\x20\x20\x20 part0=http://h.example/a/b?q=1#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20 whole=uc20 ref=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20
+[current-8.23.0] tab base=http://h.example/a/b?q=1 f=\x09 part0=http://h.example/a/b?q=1#\x09 frag=\x09 penc=http://h.example/a/b?q=1#%09 frag=%09 whole=uc20 ref=http://h.example/a/b?q=1#%09 frag=%09
+[current-8.23.0] cr base=http://h.example/a/b?q=1 f=\x0d part0=http://h.example/a/b?q=1#\x0d frag=\x0d penc=http://h.example/a/b?q=1#%0D frag=%0D whole=uc20 ref=http://h.example/a/b?q=1#%0D frag=%0D
+[current-8.23.0] latin1 base=http://h.example/a/b?q=1 f=caf\xe9 part0=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b?q=1#caf%E9 frag=caf%E9 whole=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 ref=http://h.example/a/b?q=1#caf%E9 frag=caf%E9
+[current-8.23.0] utf8 base=http://h.example/a/b?q=1 f=caf\xc3\xa9 part0=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b?q=1#caf%C3%A9 frag=caf%C3%A9 whole=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/b?q=1#caf%C3%A9 frag=caf%C3%A9
+[current-8.23.0] bom base=http://h.example/a/b?q=1 f=\xef\xbb\xbfbom part0=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b?q=1#%EF%BB%BFbom frag=%EF%BB%BFbom whole=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/b?q=1#%EF%BB%BFbom frag=%EF%BB%BFbom
+[current-8.23.0] pct-lower base=http://h.example/a/b?q=1 f=%e9x part0=http://h.example/a/b?q=1#%E9x frag=%E9x penc=http://h.example/a/b?q=1#%25e9x frag=%25e9x whole=http://h.example/a/b?q=1#%e9x frag=%e9x ref=http://h.example/a/b?q=1#%E9x frag=%E9x
+[current-8.23.0] pct-upper base=http://h.example/a/b?q=1 f=%E9x part0=http://h.example/a/b?q=1#%E9x frag=%E9x penc=http://h.example/a/b?q=1#%25E9x frag=%25E9x whole=http://h.example/a/b?q=1#%E9x frag=%E9x ref=http://h.example/a/b?q=1#%E9x frag=%E9x
+[current-8.23.0] pct-mixed base=http://h.example/a/b?q=1 f=%c3%A9 part0=http://h.example/a/b?q=1#%C3%A9 frag=%C3%A9 penc=http://h.example/a/b?q=1#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b?q=1#%c3%A9 frag=%c3%A9 ref=http://h.example/a/b?q=1#%C3%A9 frag=%C3%A9
+[current-8.23.0] bad-pct base=http://h.example/a/b?q=1 f=%zz part0=http://h.example/a/b?q=1#%zz frag=%zz penc=http://h.example/a/b?q=1#%25zz frag=%25zz whole=http://h.example/a/b?q=1#%zz frag=%zz ref=http://h.example/a/b?q=1#%zz frag=%zz
+[current-8.23.0] lone-pct base=http://h.example/a/b?q=1 f=% part0=http://h.example/a/b?q=1#% frag=% penc=http://h.example/a/b?q=1#%25 frag=%25 whole=http://h.example/a/b?q=1#% frag=% ref=http://h.example/a/b?q=1#% frag=%
+[current-8.23.0] hash base=http://h.example/a/b?q=1 f=a#b part0=http://h.example/a/b?q=1#a#b frag=a#b penc=http://h.example/a/b?q=1#a%23b frag=a%23b whole=http://h.example/a/b?q=1#a#b frag=a#b ref=http://h.example/a/b?q=1#a#b frag=a#b
+[current-8.23.0] ctl base=http://h.example/a/b?q=1 f=x\x01y part0=http://h.example/a/b?q=1#x\x01y frag=x\x01y penc=http://h.example/a/b?q=1#x%01y frag=x%01y whole=uc20 ref=http://h.example/a/b?q=1#x%01y frag=x%01y
+[current-8.23.0] del base=http://h.example/a/b?q=1 f=x\x7fy part0=http://h.example/a/b?q=1#x\x7fy frag=x\x7fy penc=http://h.example/a/b?q=1#x%7Fy frag=x%7Fy whole=uc20 ref=http://h.example/a/b?q=1#x%7Fy frag=x%7Fy
+[current-8.23.0] delims base=http://h.example/a/b?q=1 f="<>`{}|^ part0=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b?q=1#%22%3C%3E%60%7B%7D%7C%5E frag=%22%3C%3E%60%7B%7D%7C%5E whole=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^
+[current-8.23.0] reserved base=http://h.example/a/b?q=1 f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b?q=1#a%3Fb%2Fc%3Ad%40e%21%24%26%27%28%29%2A%2B%2C%3B%3D frag=a%3Fb%2Fc%3Ad%40e%21%24%26%27%28%29%2A%2B%2C%3B%3D whole=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[current-8.23.0] backslash base=http://h.example/a/b?q=1 f=a\x5cb part0=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb penc=http://h.example/a/b?q=1#a%5Cb frag=a%5Cb whole=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb ref=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb
+[current-8.23.0] plain base=http://h.example/a/b?q=1#old f=only part0=http://h.example/a/b?q=1#only frag=only penc=http://h.example/a/b?q=1#only frag=only whole=http://h.example/a/b?q=1#only frag=only ref=http://h.example/a/b?q=1#only frag=only
+[current-8.23.0] empty base=http://h.example/a/b?q=1#old f= part0=http://h.example/a/b?q=1# frag= penc=http://h.example/a/b?q=1 penc.frag=uc17 whole=http://h.example/a/b?q=1 whole.frag=uc17 ref=http://h.example/a/b?q=1 ref.frag=uc17
+[current-8.23.0] space base=http://h.example/a/b?q=1#old f=a\x20b part0=http://h.example/a/b?q=1#a\x20b frag=a\x20b penc=http://h.example/a/b?q=1#a%20b frag=a%20b whole=uc20 ref=http://h.example/a/b?q=1#a%20b frag=a%20b
+[current-8.23.0] blank base=http://h.example/a/b?q=1#old f=\x20\x20\x20 part0=http://h.example/a/b?q=1#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20 whole=uc20 ref=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20
+[current-8.23.0] tab base=http://h.example/a/b?q=1#old f=\x09 part0=http://h.example/a/b?q=1#\x09 frag=\x09 penc=http://h.example/a/b?q=1#%09 frag=%09 whole=uc20 ref=http://h.example/a/b?q=1#%09 frag=%09
+[current-8.23.0] cr base=http://h.example/a/b?q=1#old f=\x0d part0=http://h.example/a/b?q=1#\x0d frag=\x0d penc=http://h.example/a/b?q=1#%0D frag=%0D whole=uc20 ref=http://h.example/a/b?q=1#%0D frag=%0D
+[current-8.23.0] latin1 base=http://h.example/a/b?q=1#old f=caf\xe9 part0=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b?q=1#caf%E9 frag=caf%E9 whole=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 ref=http://h.example/a/b?q=1#caf%E9 frag=caf%E9
+[current-8.23.0] utf8 base=http://h.example/a/b?q=1#old f=caf\xc3\xa9 part0=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b?q=1#caf%C3%A9 frag=caf%C3%A9 whole=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/b?q=1#caf%C3%A9 frag=caf%C3%A9
+[current-8.23.0] bom base=http://h.example/a/b?q=1#old f=\xef\xbb\xbfbom part0=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b?q=1#%EF%BB%BFbom frag=%EF%BB%BFbom whole=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/b?q=1#%EF%BB%BFbom frag=%EF%BB%BFbom
+[current-8.23.0] pct-lower base=http://h.example/a/b?q=1#old f=%e9x part0=http://h.example/a/b?q=1#%E9x frag=%E9x penc=http://h.example/a/b?q=1#%25e9x frag=%25e9x whole=http://h.example/a/b?q=1#%e9x frag=%e9x ref=http://h.example/a/b?q=1#%E9x frag=%E9x
+[current-8.23.0] pct-upper base=http://h.example/a/b?q=1#old f=%E9x part0=http://h.example/a/b?q=1#%E9x frag=%E9x penc=http://h.example/a/b?q=1#%25E9x frag=%25E9x whole=http://h.example/a/b?q=1#%E9x frag=%E9x ref=http://h.example/a/b?q=1#%E9x frag=%E9x
+[current-8.23.0] pct-mixed base=http://h.example/a/b?q=1#old f=%c3%A9 part0=http://h.example/a/b?q=1#%C3%A9 frag=%C3%A9 penc=http://h.example/a/b?q=1#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b?q=1#%c3%A9 frag=%c3%A9 ref=http://h.example/a/b?q=1#%C3%A9 frag=%C3%A9
+[current-8.23.0] bad-pct base=http://h.example/a/b?q=1#old f=%zz part0=http://h.example/a/b?q=1#%zz frag=%zz penc=http://h.example/a/b?q=1#%25zz frag=%25zz whole=http://h.example/a/b?q=1#%zz frag=%zz ref=http://h.example/a/b?q=1#%zz frag=%zz
+[current-8.23.0] lone-pct base=http://h.example/a/b?q=1#old f=% part0=http://h.example/a/b?q=1#% frag=% penc=http://h.example/a/b?q=1#%25 frag=%25 whole=http://h.example/a/b?q=1#% frag=% ref=http://h.example/a/b?q=1#% frag=%
+[current-8.23.0] hash base=http://h.example/a/b?q=1#old f=a#b part0=http://h.example/a/b?q=1#a#b frag=a#b penc=http://h.example/a/b?q=1#a%23b frag=a%23b whole=http://h.example/a/b?q=1#a#b frag=a#b ref=http://h.example/a/b?q=1#a#b frag=a#b
+[current-8.23.0] ctl base=http://h.example/a/b?q=1#old f=x\x01y part0=http://h.example/a/b?q=1#x\x01y frag=x\x01y penc=http://h.example/a/b?q=1#x%01y frag=x%01y whole=uc20 ref=http://h.example/a/b?q=1#x%01y frag=x%01y
+[current-8.23.0] del base=http://h.example/a/b?q=1#old f=x\x7fy part0=http://h.example/a/b?q=1#x\x7fy frag=x\x7fy penc=http://h.example/a/b?q=1#x%7Fy frag=x%7Fy whole=uc20 ref=http://h.example/a/b?q=1#x%7Fy frag=x%7Fy
+[current-8.23.0] delims base=http://h.example/a/b?q=1#old f="<>`{}|^ part0=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b?q=1#%22%3C%3E%60%7B%7D%7C%5E frag=%22%3C%3E%60%7B%7D%7C%5E whole=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^
+[current-8.23.0] reserved base=http://h.example/a/b?q=1#old f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b?q=1#a%3Fb%2Fc%3Ad%40e%21%24%26%27%28%29%2A%2B%2C%3B%3D frag=a%3Fb%2Fc%3Ad%40e%21%24%26%27%28%29%2A%2B%2C%3B%3D whole=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[current-8.23.0] backslash base=http://h.example/a/b?q=1#old f=a\x5cb part0=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb penc=http://h.example/a/b?q=1#a%5Cb frag=a%5Cb whole=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb ref=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb
+[current-8.23.0] plain base=http://h.example/a/b#old%e9 f=only part0=http://h.example/a/b#only frag=only penc=http://h.example/a/b#only frag=only whole=http://h.example/a/b#only frag=only ref=http://h.example/a/b#only frag=only
+[current-8.23.0] empty base=http://h.example/a/b#old%e9 f= part0=http://h.example/a/b# frag= penc=http://h.example/a/b penc.frag=uc17 whole=http://h.example/a/b whole.frag=uc17 ref=http://h.example/a/b ref.frag=uc17
+[current-8.23.0] space base=http://h.example/a/b#old%e9 f=a\x20b part0=http://h.example/a/b#a\x20b frag=a\x20b penc=http://h.example/a/b#a%20b frag=a%20b whole=uc20 ref=http://h.example/a/b#a%20b frag=a%20b
+[current-8.23.0] blank base=http://h.example/a/b#old%e9 f=\x20\x20\x20 part0=http://h.example/a/b#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b#%20%20%20 frag=%20%20%20 whole=uc20 ref=http://h.example/a/b#%20%20%20 frag=%20%20%20
+[current-8.23.0] tab base=http://h.example/a/b#old%e9 f=\x09 part0=http://h.example/a/b#\x09 frag=\x09 penc=http://h.example/a/b#%09 frag=%09 whole=uc20 ref=http://h.example/a/b#%09 frag=%09
+[current-8.23.0] cr base=http://h.example/a/b#old%e9 f=\x0d part0=http://h.example/a/b#\x0d frag=\x0d penc=http://h.example/a/b#%0D frag=%0D whole=uc20 ref=http://h.example/a/b#%0D frag=%0D
+[current-8.23.0] latin1 base=http://h.example/a/b#old%e9 f=caf\xe9 part0=http://h.example/a/b#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b#caf%E9 frag=caf%E9 whole=http://h.example/a/b#caf\xe9 frag=caf\xe9 ref=http://h.example/a/b#caf%E9 frag=caf%E9
+[current-8.23.0] utf8 base=http://h.example/a/b#old%e9 f=caf\xc3\xa9 part0=http://h.example/a/b#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b#caf%C3%A9 frag=caf%C3%A9 whole=http://h.example/a/b#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/b#caf%C3%A9 frag=caf%C3%A9
+[current-8.23.0] bom base=http://h.example/a/b#old%e9 f=\xef\xbb\xbfbom part0=http://h.example/a/b#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b#%EF%BB%BFbom frag=%EF%BB%BFbom whole=http://h.example/a/b#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/b#%EF%BB%BFbom frag=%EF%BB%BFbom
+[current-8.23.0] pct-lower base=http://h.example/a/b#old%e9 f=%e9x part0=http://h.example/a/b#%E9x frag=%E9x penc=http://h.example/a/b#%25e9x frag=%25e9x whole=http://h.example/a/b#%e9x frag=%e9x ref=http://h.example/a/b#%E9x frag=%E9x
+[current-8.23.0] pct-upper base=http://h.example/a/b#old%e9 f=%E9x part0=http://h.example/a/b#%E9x frag=%E9x penc=http://h.example/a/b#%25E9x frag=%25E9x whole=http://h.example/a/b#%E9x frag=%E9x ref=http://h.example/a/b#%E9x frag=%E9x
+[current-8.23.0] pct-mixed base=http://h.example/a/b#old%e9 f=%c3%A9 part0=http://h.example/a/b#%C3%A9 frag=%C3%A9 penc=http://h.example/a/b#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b#%c3%A9 frag=%c3%A9 ref=http://h.example/a/b#%C3%A9 frag=%C3%A9
+[current-8.23.0] bad-pct base=http://h.example/a/b#old%e9 f=%zz part0=http://h.example/a/b#%zz frag=%zz penc=http://h.example/a/b#%25zz frag=%25zz whole=http://h.example/a/b#%zz frag=%zz ref=http://h.example/a/b#%zz frag=%zz
+[current-8.23.0] lone-pct base=http://h.example/a/b#old%e9 f=% part0=http://h.example/a/b#% frag=% penc=http://h.example/a/b#%25 frag=%25 whole=http://h.example/a/b#% frag=% ref=http://h.example/a/b#% frag=%
+[current-8.23.0] hash base=http://h.example/a/b#old%e9 f=a#b part0=http://h.example/a/b#a#b frag=a#b penc=http://h.example/a/b#a%23b frag=a%23b whole=http://h.example/a/b#a#b frag=a#b ref=http://h.example/a/b#a#b frag=a#b
+[current-8.23.0] ctl base=http://h.example/a/b#old%e9 f=x\x01y part0=http://h.example/a/b#x\x01y frag=x\x01y penc=http://h.example/a/b#x%01y frag=x%01y whole=uc20 ref=http://h.example/a/b#x%01y frag=x%01y
+[current-8.23.0] del base=http://h.example/a/b#old%e9 f=x\x7fy part0=http://h.example/a/b#x\x7fy frag=x\x7fy penc=http://h.example/a/b#x%7Fy frag=x%7Fy whole=uc20 ref=http://h.example/a/b#x%7Fy frag=x%7Fy
+[current-8.23.0] delims base=http://h.example/a/b#old%e9 f="<>`{}|^ part0=http://h.example/a/b#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b#%22%3C%3E%60%7B%7D%7C%5E frag=%22%3C%3E%60%7B%7D%7C%5E whole=http://h.example/a/b#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/b#"<>`{}|^ frag="<>`{}|^
+[current-8.23.0] reserved base=http://h.example/a/b#old%e9 f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b#a%3Fb%2Fc%3Ad%40e%21%24%26%27%28%29%2A%2B%2C%3B%3D frag=a%3Fb%2Fc%3Ad%40e%21%24%26%27%28%29%2A%2B%2C%3B%3D whole=http://h.example/a/b#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/b#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[current-8.23.0] backslash base=http://h.example/a/b#old%e9 f=a\x5cb part0=http://h.example/a/b#a\x5cb frag=a\x5cb penc=http://h.example/a/b#a%5Cb frag=a%5Cb whole=http://h.example/a/b#a\x5cb frag=a\x5cb ref=http://h.example/a/b#a\x5cb frag=a\x5cb
+[current-8.23.0] clear base=http://h.example/a/b?q=1 cleared=http://h.example/a/b?q=1 cleared.frag=uc17
+[current-8.23.0] clear base=http://h.example/a/b?q=1#old cleared=http://h.example/a/b?q=1 cleared.frag=uc17
+[current-8.23.0] clear base=http://h.example/a/b#old%e9 cleared=http://h.example/a/b cleared.frag=uc17
+[current-8.23.0] -- 63 lines
+[current-8.23.0] -- localhost, port 39815
+[current-8.23.0] http://127.0.0.1:39815/x rc=0 status=404 ip=127.0.0.1 connect-us=116
+[current-8.23.0] http://localhost:39815/x rc=0 status=404 ip=127.0.0.1 connect-us=126
+[current-8.23.0] http://[::ffff:127.0.0.1]:39815/x rc=0 status=404 ip=::ffff:127.0.0.1 connect-us=57
+[current-8.23.0] -- 64 cases, base http://127.0.0.1:39815/a/b/c
+[current-8.23.0] -- C
+[current-8.23.0] C rel-abs GET rc=0 status=302 redirect=http://127.0.0.1:39815/x/y?z=1 effective=http://127.0.0.1:39815/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:39815/x/y?z=1 renc=http://127.0.0.1:39815/x/y?z=1
+[current-8.23.0] C rel-path GET rc=0 status=302 redirect=http://127.0.0.1:39815/a/b/c/d/e effective=http://127.0.0.1:39815/a/b/c/rel-path?q=1 location=d/e amount=1 r0=http://127.0.0.1:39815/a/b/c/d/e renc=http://127.0.0.1:39815/a/b/c/d/e
+[current-8.23.0] C rel-dots GET rc=0 status=302 redirect=http://127.0.0.1:39815/a/up effective=http://127.0.0.1:39815/a/b/c/rel-dots?q=1 location=../../up amount=1 r0=http://127.0.0.1:39815/a/up renc=http://127.0.0.1:39815/a/up
+[current-8.23.0] C rel-query GET rc=0 status=302 redirect=http://127.0.0.1:39815/a/b/c/rel-query?only=1 effective=http://127.0.0.1:39815/a/b/c/rel-query?q=1 location=?only=1 amount=1 r0=http://127.0.0.1:39815/a/b/c/rel-query?only=1 renc=http://127.0.0.1:39815/a/b/c/rel-query?only=1
+[current-8.23.0] C rel-frag GET rc=0 status=302 redirect=http://127.0.0.1:39815/a/b/c/rel-frag?q=1#only effective=http://127.0.0.1:39815/a/b/c/rel-frag?q=1 location=#only amount=1 r0=http://127.0.0.1:39815/a/b/c/rel-frag?q=1#only renc=http://127.0.0.1:39815/a/b/c/rel-frag?q=1#only
+[current-8.23.0] C netpath GET rc=0 status=302 redirect=http://127.0.0.1:39815/np effective=http://127.0.0.1:39815/a/b/c/netpath?q=1 location=//127.0.0.1:39815/np amount=1 r0=http://127.0.0.1:39815/np renc=http://127.0.0.1:39815/np
+[current-8.23.0] C other-host GET rc=0 status=302 redirect=http://other.invalid/x effective=http://127.0.0.1:39815/a/b/c/other-host?q=1 location=http://other.invalid/x amount=1 r0=http://other.invalid/x renc=http://other.invalid/x
+[current-8.23.0] C https GET rc=0 status=302 redirect=https://127.0.0.1:1/s effective=http://127.0.0.1:39815/a/b/c/https?q=1 location=https://127.0.0.1:1/s amount=1 r0=https://127.0.0.1:1/s renc=https://127.0.0.1:1/s
+[current-8.23.0] C no-path GET rc=0 status=302 redirect=http://127.0.0.1:39815/ effective=http://127.0.0.1:39815/a/b/c/no-path?q=1 location=http://127.0.0.1:39815 amount=1 r0=http://127.0.0.1:39815/ renc=http://127.0.0.1:39815/
+[current-8.23.0] C upper-scheme GET rc=0 status=302 redirect=http://127.0.0.1:39815/UP effective=http://127.0.0.1:39815/a/b/c/upper-scheme?q=1 location=HTTP://127.0.0.1:39815/UP amount=1 r0=http://127.0.0.1:39815/UP renc=http://127.0.0.1:39815/UP
+[current-8.23.0] C ftp GET rc=0 status=302 redirect=ftp://127.0.0.1/f effective=http://127.0.0.1:39815/a/b/c/ftp?q=1 location=ftp://127.0.0.1/f amount=1 r0=ftp://127.0.0.1/f renc=ftp://127.0.0.1/f
+[current-8.23.0] C file GET rc=0 status=302 redirect=file:///etc/passwd effective=http://127.0.0.1:39815/a/b/c/file?q=1 location=file:///etc/passwd amount=1 r0=file:///etc/passwd renc=file:///etc/passwd
+[current-8.23.0] C javascript GET rc=0 status=302 redirect=javascript:alert(1) effective=http://127.0.0.1:39815/a/b/c/javascript?q=1 location=javascript:alert(1) amount=1 r0=uc5 renc=uc5
+[current-8.23.0] C unknown-scheme GET rc=0 status=302 redirect=foo://bar/x effective=http://127.0.0.1:39815/a/b/c/unknown-scheme?q=1 location=foo://bar/x amount=1 r0=uc5 renc=uc5
+[current-8.23.0] C empty GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:39815/a/b/c/empty?q=1 location= amount=1 r0=http://127.0.0.1:39815/a/b/c/empty?q=1 renc=http://127.0.0.1:39815/a/b/c/empty?q=1
+[current-8.23.0] C blank GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:39815/a/b/c/blank?q=1 location= amount=1 r0=http://127.0.0.1:39815/a/b/c/blank?q=1 renc=http://127.0.0.1:39815/a/b/c/blank?q=1
+[current-8.23.0] C missing GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:39815/a/b/c/missing?q=1 location=hc2
+[current-8.23.0] C padded GET rc=0 status=302 redirect=http://127.0.0.1:39815/padded effective=http://127.0.0.1:39815/a/b/c/padded?q=1 location=/padded amount=1 r0=http://127.0.0.1:39815/padded renc=http://127.0.0.1:39815/padded
+[current-8.23.0] C tab GET rc=0 status=302 redirect=http://127.0.0.1:39815/tabbed effective=http://127.0.0.1:39815/a/b/c/tab?q=1 location=/tabbed amount=1 r0=http://127.0.0.1:39815/tabbed renc=http://127.0.0.1:39815/tabbed
+[current-8.23.0] C space-inside GET rc=0 status=302 redirect=http://127.0.0.1:39815/a%20b/c%20d effective=http://127.0.0.1:39815/a/b/c/space-inside?q=1 location=/a\x20b/c\x20d amount=1 r0=http://127.0.0.1:39815/a%20b/c%20d renc=http://127.0.0.1:39815/a%20b/c%20d
+[current-8.23.0] C utf8 GET rc=0 status=302 redirect=http://127.0.0.1:39815/caf%C3%A9 effective=http://127.0.0.1:39815/a/b/c/utf8?q=1 location=/caf\xc3\xa9 amount=1 r0=http://127.0.0.1:39815/caf%C3%A9 renc=http://127.0.0.1:39815/caf%C3%A9
+[current-8.23.0] C latin1 GET rc=0 status=302 redirect=http://127.0.0.1:39815/caf%E9 effective=http://127.0.0.1:39815/a/b/c/latin1?q=1 location=/caf\xe9 amount=1 r0=http://127.0.0.1:39815/caf%E9 renc=http://127.0.0.1:39815/caf%E9
+[current-8.23.0] C ctl GET rc=0 status=302 redirect=http://127.0.0.1:39815/x%01y effective=http://127.0.0.1:39815/a/b/c/ctl?q=1 location=/x\x01y amount=1 r0=http://127.0.0.1:39815/x%01y renc=http://127.0.0.1:39815/x%01y
+[current-8.23.0] C del GET rc=0 status=302 redirect=http://127.0.0.1:39815/x%7Fy effective=http://127.0.0.1:39815/a/b/c/del?q=1 location=/x\x7fy amount=1 r0=http://127.0.0.1:39815/x%7Fy renc=http://127.0.0.1:39815/x%7Fy
+[current-8.23.0] C pct GET rc=0 status=302 redirect=http://127.0.0.1:39815/already%20encoded effective=http://127.0.0.1:39815/a/b/c/pct?q=1 location=/already%20encoded amount=1 r0=http://127.0.0.1:39815/already%20encoded renc=http://127.0.0.1:39815/already%20encoded
+[current-8.23.0] C bad-pct GET rc=0 status=302 redirect=http://127.0.0.1:39815/bad%zz effective=http://127.0.0.1:39815/a/b/c/bad-pct?q=1 location=/bad%zz amount=1 r0=http://127.0.0.1:39815/bad%zz renc=http://127.0.0.1:39815/bad%zz
+[current-8.23.0] C userinfo GET rc=0 status=302 redirect=http://127.0.0.1:39815/creds effective=http://127.0.0.1:39815/a/b/c/userinfo?q=1 location=http://u:p@127.0.0.1:39815/creds amount=1 r0=http://u:p@127.0.0.1:39815/creds renc=http://u:p@127.0.0.1:39815/creds
+[current-8.23.0] C frag-abs GET rc=0 status=302 redirect=http://127.0.0.1:39815/withfrag#f effective=http://127.0.0.1:39815/a/b/c/frag-abs?q=1 location=/withfrag#f amount=1 r0=http://127.0.0.1:39815/withfrag#f renc=http://127.0.0.1:39815/withfrag#f
+[current-8.23.0] C bad-ipv6 GET rc=0 status=302 redirect=http://[::1/x effective=http://127.0.0.1:39815/a/b/c/bad-ipv6?q=1 location=http://[::1/x amount=1 r0=uc22 renc=uc22
+[current-8.23.0] C bad-port GET rc=0 status=302 redirect=http://127.0.0.1:99999/x effective=http://127.0.0.1:39815/a/b/c/bad-port?q=1 location=http://127.0.0.1:99999/x amount=1 r0=uc4 renc=uc4
+[current-8.23.0] C backslash GET rc=0 status=302 redirect=http://127.0.0.1:39815/\x5cevil.invalid/x effective=http://127.0.0.1:39815/a/b/c/backslash?q=1 location=/\x5cevil.invalid/x amount=1 r0=http://127.0.0.1:39815/\x5cevil.invalid/x renc=http://127.0.0.1:39815/\x5cevil.invalid/x
+[current-8.23.0] C two GET rc=8 status=302 redirect=NULL effective=http://127.0.0.1:39815/a/b/c/two?q=1 location=/first amount=1 r0=http://127.0.0.1:39815/first renc=http://127.0.0.1:39815/first
+[current-8.23.0] C lower-name GET rc=0 status=302 redirect=http://127.0.0.1:39815/lc effective=http://127.0.0.1:39815/a/b/c/lower-name?q=1 location=/lc amount=1 r0=http://127.0.0.1:39815/lc renc=http://127.0.0.1:39815/lc
+[current-8.23.0] C idn GET rc=0 status=302 redirect=http://caf\xc3\xa9.invalid/ effective=http://127.0.0.1:39815/a/b/c/idn?q=1 location=http://caf\xc3\xa9.invalid/ amount=1 r0=http://caf\xc3\xa9.invalid/ renc=http://caf\xc3\xa9.invalid/
+[current-8.23.0] C long-8k GET rc=0 status=302 redirect=http://127.0.0.1:39815/aaaaaaaaaaaaaaaaa...(len 8023) effective=http://127.0.0.1:39815/a/b/c/long-8k?q=1 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 8001) amount=1 r0=http://127.0.0.1:39815/aaaaaaaaaaaaaaaaa...(len 8023) renc=http://127.0.0.1:39815/aaaaaaaaaaaaaaaaa...(len 8023)
+[current-8.23.0] C long-90k GET rc=0 status=302 redirect=http://127.0.0.1:39815/aaaaaaaaaaaaaaaaa...(len 90023) effective=http://127.0.0.1:39815/a/b/c/long-90k?q=1 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 90001) amount=1 r0=http://127.0.0.1:39815/aaaaaaaaaaaaaaaaa...(len 90023) renc=http://127.0.0.1:39815/aaaaaaaaaaaaaaaaa...(len 90023)
+[current-8.23.0] C long-110k GET rc=100 status=302 redirect=NULL effective=http://127.0.0.1:39815/a/b/c/long-110k?q=1 location=hc3
+[current-8.23.0] C s200 GET rc=0 status=200 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s200?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s201 GET rc=0 status=201 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s201?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s299 GET rc=0 status=299 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s299?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s300 GET rc=0 status=300 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s300?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s301 GET rc=0 status=301 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s301?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s303 GET rc=0 status=303 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s303?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s304 GET rc=0 status=304 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s304?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s305 GET rc=0 status=305 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s305?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s306 GET rc=0 status=306 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s306?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s307 GET rc=0 status=307 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s307?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s308 GET rc=0 status=308 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s308?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s309 GET rc=0 status=309 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s309?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s399 GET rc=0 status=399 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s399?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s400 GET rc=0 status=400 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s400?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C rel-abs.head HEAD rc=0 status=302 redirect=http://127.0.0.1:39815/x/y?z=1 effective=http://127.0.0.1:39815/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:39815/x/y?z=1 renc=http://127.0.0.1:39815/x/y?z=1
+[current-8.23.0] C s303.head HEAD rc=0 status=303 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s303?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s304.head HEAD rc=0 status=304 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s304?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C s307.head HEAD rc=0 status=307 redirect=http://127.0.0.1:39815/s effective=http://127.0.0.1:39815/a/b/c/s307?q=1 location=/s amount=1 r0=http://127.0.0.1:39815/s renc=http://127.0.0.1:39815/s
+[current-8.23.0] C rel-abs#orig GET rc=0 status=302 redirect=http://127.0.0.1:39815/x/y?z=1 effective=http://127.0.0.1:39815/a/b/c/rel-abs?q=1#orig location=/x/y?z=1 amount=1 r0=http://127.0.0.1:39815/x/y?z=1 renc=http://127.0.0.1:39815/x/y?z=1
+[current-8.23.0] C rel-frag#orig GET rc=0 status=302 redirect=http://127.0.0.1:39815/a/b/c/rel-frag?q=1#only effective=http://127.0.0.1:39815/a/b/c/rel-frag?q=1#orig location=#only amount=1 r0=http://127.0.0.1:39815/a/b/c/rel-frag?q=1#only renc=http://127.0.0.1:39815/a/b/c/rel-frag?q=1#only
+[current-8.23.0] C frag-abs#orig GET rc=0 status=302 redirect=http://127.0.0.1:39815/withfrag#f effective=http://127.0.0.1:39815/a/b/c/frag-abs?q=1#orig location=/withfrag#f amount=1 r0=http://127.0.0.1:39815/withfrag#f renc=http://127.0.0.1:39815/withfrag#f
+[current-8.23.0] C netpath#orig GET rc=0 status=302 redirect=http://127.0.0.1:39815/np effective=http://127.0.0.1:39815/a/b/c/netpath?q=1#orig location=//127.0.0.1:39815/np amount=1 r0=http://127.0.0.1:39815/np renc=http://127.0.0.1:39815/np
+[current-8.23.0] C rel-abs@creds GET rc=0 status=302 redirect=http://127.0.0.1:39815/x/y?z=1 effective=http://127.0.0.1:39815/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://me:secret@127.0.0.1:39815/x/y?z=1 renc=http://me:secret@127.0.0.1:39815/x/y?z=1
+[current-8.23.0] C netpath@creds GET rc=0 status=302 redirect=http://127.0.0.1:39815/np effective=http://127.0.0.1:39815/a/b/c/netpath?q=1 location=//127.0.0.1:39815/np amount=1 r0=http://127.0.0.1:39815/np renc=http://127.0.0.1:39815/np
+[current-8.23.0] C other-host@creds GET rc=0 status=302 redirect=http://other.invalid/x effective=http://127.0.0.1:39815/a/b/c/other-host?q=1 location=http://other.invalid/x amount=1 r0=http://other.invalid/x renc=http://other.invalid/x
+[current-8.23.0] C localhost GET rc=0 status=302 redirect=http://localhost:39815/x/y?z=1 effective=http://localhost:39815/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://localhost:39815/x/y?z=1 renc=http://localhost:39815/x/y?z=1
+[current-8.23.0] C mapped GET rc=0 status=302 redirect=http://[::ffff:127.0.0.1]:39815/x/y?z=1 effective=http://[::ffff:127.0.0.1]:39815/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://[::ffff:127.0.0.1]:39815/x/y?z=1 renc=http://[::ffff:127.0.0.1]:39815/x/y?z=1
+[current-8.23.0] -- Scheme
+[current-8.23.0] probe.sps exited 0
+[current-8.23.0] S libcurl 8.23.0 at /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4
+[current-8.23.0] S rel-abs GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:39815/x/y?z=1 utf8=yes
+[current-8.23.0] S rel-path GET rc=0 status=302 location=d/e amount=1 r0=http://127.0.0.1:39815/a/b/c/d/e utf8=yes
+[current-8.23.0] S rel-dots GET rc=0 status=302 location=../../up amount=1 r0=http://127.0.0.1:39815/a/up utf8=yes
+[current-8.23.0] S rel-query GET rc=0 status=302 location=?only=1 amount=1 r0=http://127.0.0.1:39815/a/b/c/rel-query?only=1 utf8=yes
+[current-8.23.0] S rel-frag GET rc=0 status=302 location=#only amount=1 r0=http://127.0.0.1:39815/a/b/c/rel-frag?q=1#only utf8=yes
+[current-8.23.0] S netpath GET rc=0 status=302 location=//127.0.0.1:39815/np amount=1 r0=http://127.0.0.1:39815/np utf8=yes
+[current-8.23.0] S other-host GET rc=0 status=302 location=http://other.invalid/x amount=1 r0=http://other.invalid/x utf8=yes
+[current-8.23.0] S https GET rc=0 status=302 location=https://127.0.0.1:1/s amount=1 r0=https://127.0.0.1:1/s utf8=yes
+[current-8.23.0] S no-path GET rc=0 status=302 location=http://127.0.0.1:39815 amount=1 r0=http://127.0.0.1:39815/ utf8=yes
+[current-8.23.0] S upper-scheme GET rc=0 status=302 location=HTTP://127.0.0.1:39815/UP amount=1 r0=http://127.0.0.1:39815/UP utf8=yes
+[current-8.23.0] S ftp GET rc=0 status=302 location=ftp://127.0.0.1/f amount=1 r0=ftp://127.0.0.1/f utf8=yes
+[current-8.23.0] S file GET rc=0 status=302 location=file:///etc/passwd amount=1 r0=file:///etc/passwd utf8=yes
+[current-8.23.0] S javascript GET rc=0 status=302 location=javascript:alert(1) amount=1 r0=uc5
+[current-8.23.0] S unknown-scheme GET rc=0 status=302 location=foo://bar/x amount=1 r0=uc5
+[current-8.23.0] S empty GET rc=0 status=302 location= amount=1 r0=http://127.0.0.1:39815/a/b/c/empty?q=1 utf8=yes
+[current-8.23.0] S blank GET rc=0 status=302 location= amount=1 r0=http://127.0.0.1:39815/a/b/c/blank?q=1 utf8=yes
+[current-8.23.0] S missing GET rc=0 status=302 location=none
+[current-8.23.0] S padded GET rc=0 status=302 location=/padded amount=1 r0=http://127.0.0.1:39815/padded utf8=yes
+[current-8.23.0] S tab GET rc=0 status=302 location=/tabbed amount=1 r0=http://127.0.0.1:39815/tabbed utf8=yes
+[current-8.23.0] S space-inside GET rc=0 status=302 location=/a\x20b/c\x20d amount=1 r0=http://127.0.0.1:39815/a%20b/c%20d utf8=yes
+[current-8.23.0] S utf8 GET rc=0 status=302 location=/caf\xc3\xa9 amount=1 r0=http://127.0.0.1:39815/caf%C3%A9 utf8=yes
+[current-8.23.0] S latin1 GET rc=0 status=302 location=/caf\xe9 amount=1 r0=http://127.0.0.1:39815/caf%E9 utf8=yes
+[current-8.23.0] S ctl GET rc=0 status=302 location=/x\x01y amount=1 r0=http://127.0.0.1:39815/x%01y utf8=yes
+[current-8.23.0] S del GET rc=0 status=302 location=/x\x7fy amount=1 r0=http://127.0.0.1:39815/x%7Fy utf8=yes
+[current-8.23.0] S pct GET rc=0 status=302 location=/already%20encoded amount=1 r0=http://127.0.0.1:39815/already%20encoded utf8=yes
+[current-8.23.0] S bad-pct GET rc=0 status=302 location=/bad%zz amount=1 r0=http://127.0.0.1:39815/bad%zz utf8=yes
+[current-8.23.0] S userinfo GET rc=0 status=302 location=http://u:p@127.0.0.1:39815/creds amount=1 r0=http://u:p@127.0.0.1:39815/creds utf8=yes
+[current-8.23.0] S frag-abs GET rc=0 status=302 location=/withfrag#f amount=1 r0=http://127.0.0.1:39815/withfrag#f utf8=yes
+[current-8.23.0] S bad-ipv6 GET rc=0 status=302 location=http://[::1/x amount=1 r0=uc22
+[current-8.23.0] S bad-port GET rc=0 status=302 location=http://127.0.0.1:99999/x amount=1 r0=uc4
+[current-8.23.0] S backslash GET rc=0 status=302 location=/\x5cevil.invalid/x amount=1 r0=http://127.0.0.1:39815/\x5cevil.invalid/x utf8=yes
+[current-8.23.0] S two GET rc=8
+[current-8.23.0] S lower-name GET rc=0 status=302 location=/lc amount=1 r0=http://127.0.0.1:39815/lc utf8=yes
+[current-8.23.0] S idn GET rc=0 status=302 location=http://caf\xc3\xa9.invalid/ amount=1 r0=http://caf\xc3\xa9.invalid/ utf8=yes
+[current-8.23.0] S long-8k GET rc=0 status=302 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 8001) amount=1 r0=http://127.0.0.1:39815/aaaaaaaaaaaaaaaaa...(len 8023) utf8=yes
+[current-8.23.0] S long-90k GET rc=0 status=302 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 90001) amount=1 r0=http://127.0.0.1:39815/aaaaaaaaaaaaaaaaa...(len 90023) utf8=yes
+[current-8.23.0] S long-110k GET rc=100
+[current-8.23.0] S s200 GET rc=0 status=200 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s201 GET rc=0 status=201 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s299 GET rc=0 status=299 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s300 GET rc=0 status=300 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s301 GET rc=0 status=301 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s303 GET rc=0 status=303 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s304 GET rc=0 status=304 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s305 GET rc=0 status=305 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s306 GET rc=0 status=306 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s307 GET rc=0 status=307 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s308 GET rc=0 status=308 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s309 GET rc=0 status=309 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s399 GET rc=0 status=399 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s400 GET rc=0 status=400 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S rel-abs.head HEAD rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:39815/x/y?z=1 utf8=yes
+[current-8.23.0] S s303.head HEAD rc=0 status=303 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s304.head HEAD rc=0 status=304 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S s307.head HEAD rc=0 status=307 location=/s amount=1 r0=http://127.0.0.1:39815/s utf8=yes
+[current-8.23.0] S rel-abs#orig GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:39815/x/y?z=1 utf8=yes
+[current-8.23.0] S rel-frag#orig GET rc=0 status=302 location=#only amount=1 r0=http://127.0.0.1:39815/a/b/c/rel-frag?q=1#only utf8=yes
+[current-8.23.0] S frag-abs#orig GET rc=0 status=302 location=/withfrag#f amount=1 r0=http://127.0.0.1:39815/withfrag#f utf8=yes
+[current-8.23.0] S netpath#orig GET rc=0 status=302 location=//127.0.0.1:39815/np amount=1 r0=http://127.0.0.1:39815/np utf8=yes
+[current-8.23.0] S rel-abs@creds GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://me:secret@127.0.0.1:39815/x/y?z=1 utf8=yes
+[current-8.23.0] S netpath@creds GET rc=0 status=302 location=//127.0.0.1:39815/np amount=1 r0=http://127.0.0.1:39815/np utf8=yes
+[current-8.23.0] S other-host@creds GET rc=0 status=302 location=http://other.invalid/x amount=1 r0=http://other.invalid/x utf8=yes
+[current-8.23.0] S localhost GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://localhost:39815/x/y?z=1 utf8=yes
+[current-8.23.0] S mapped GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://[::ffff:127.0.0.1]:39815/x/y?z=1 utf8=yes
+[current-8.23.0] S -- 64 probes
+[current-8.23.0] -- compare
+[current-8.23.0] compare: 64 agree, 0 differ, of 64 C lines and 64 Scheme lines

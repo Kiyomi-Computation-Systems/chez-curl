@@ -126,8 +126,9 @@
    ;; curl-url-part : String Symbol -> (U String Natural #f)
    ;; (curl-url-part URL PART): PART of URL, parsed by libcurl's URL API, as
    ;; it gives it back: url, the whole URL; scheme, user, password, host,
-   ;; path, query or fragment, a string, or #f for one the URL lacks; or
-   ;; port, a natural, the scheme's default when the URL names none.
+   ;; path, query, fragment or zoneid, a string, or #f for one the URL
+   ;; lacks; or port, a natural, the scheme's default when the URL names
+   ;; none. An IPv6 host comes without its zone ID, which zoneid gives.
    ;; Whether an empty user, password or query is "" or #f varies by
    ;; libcurl.
    ;; curl-url-append-query : String String -> String
@@ -135,11 +136,23 @@
    ;; appended to its query, after a & unless the query is empty or ends in
    ;; one; its fragment kept. PART goes out as written, on every libcurl
    ;; (ADR-0028).
-   ;; Each refusal raises &curl-url-error: libcurl's, a URL holding U+0000,
-   ;; an answer whose bytes are not UTF-8, as libcurl's decoding of a host's
-   ;; %XX can make, and a part that would not come back as written, one
-   ;; holding #.
-   curl-url-part curl-url-append-query
+   ;; curl-url-resolve : String (U String Bytevector) -> String
+   ;; (curl-url-resolve BASE REFERENCE): REFERENCE resolved against BASE by
+   ;; libcurl's URL API. A string is sent as UTF-8. A bytevector, a header's
+   ;; bytes, a Location header's Latin-1 string as bytes, has each byte at
+   ;; or below 0x20, 0x7F and each above encoded as upper-case %XX first, as
+   ;; curl-url-with-fragment's has (ADR-0029, amended).
+   ;; curl-url-with-fragment : String (U String Bytevector #f) -> String
+   ;; (curl-url-with-fragment URL FRAGMENT): URL with its fragment replaced
+   ;; by FRAGMENT, or cleared by #f or an empty one. A bytevector, a header's
+   ;; bytes, has each byte at or below 0x20, 0x7F and each above encoded as
+   ;; upper-case %XX; a string comes as a URL holds it. Alike on every
+   ;; libcurl (ADR-0029).
+   ;; Each refusal raises &curl-url-error: libcurl's, a URL holding U+0000 or
+   ;; a bytevector 0x00, an answer whose bytes are not UTF-8, as libcurl's
+   ;; decoding of a host's %XX can make, and a part that would not come back
+   ;; as written, one holding #.
+   curl-url-part curl-url-append-query curl-url-resolve curl-url-with-fragment
 
    ;; --- the response -------------------------------------------------------
    ;; curl-response? : Any -> Boolean

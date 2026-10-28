@@ -992,6 +992,31 @@ it should not be a comment. (chez-cmark-gfm)
   `%3D` as `%3d` on 7.85.0, 8.5.0 and 8.20.0, and `%3d` as `%3D` on 8.23.0; a whole URL parsed
   kept the case it was given on all five. So no case an encoder picks goes out alike when a
   part is set: ADR-0028 writes the URL and parses it whole. (chez-curl, M5 slice 1)
+* **Setting a fragment part stores its bytes unchecked.** `curl_url_set` of
+  `CURLUPART_FRAGMENT`, flags 0, put a space, a tab, a CR, 0x01 and 0x7F into the URL raw, and
+  kept a raw 0xE9, on all five Linux libcurls, where a whole URL parsed refuses the first five;
+  and it moved the hex case as a query's set does. `CURLU_URLENCODE` encodes `%` too, so `%e9`
+  became `%25e9`, another fragment. ADR-0029 writes the URL and parses it whole, encoding a
+  header's bytes first. (chez-curl, M5 slice 2)
+* **On 8.20.0 and 8.23.0, libcurl's own resolution of a lone `#F` answers as
+  `curl-url-with-fragment` does, but for hex given in lower case, which it raises.** Both keep
+  the URL, and both encode a space, a control byte and a byte above 0x7F in upper case; so a
+  test of the lone-`#` rule whose fragment held `%E9` passed every test there with the rule
+  replaced by `curl-url-resolve`. Only lower-case hex, `%e9`, tells the two apart on those
+  versions: the location probe's fragment log shows `#%e9x` resolved to `%E9x` and written whole
+  as `%e9x`. (chez-curl, M5 slice 2)
+* **libcurl treats a raw byte above 0x7F in a reference by where it sits.** Resolved against a
+  base, `/caf\xE9` and `?q=caf\xE9` came back as `%e9` or `%E9`, by version, but
+  `http://h.example/caf\xE9` came back holding the raw byte, on all five Linux libcurls, and was
+  refused as not UTF-8. The location probe's 62 cases put every Latin-1 byte in a relative
+  reference, so it said no resolution came back raw; the slice's review found the absolute one.
+  A header's bytes are now encoded before they are resolved (ADR-0029, amended).
+  (chez-curl, M5 slice 2)
+* **libcurl gives an IPv6 host without its zone ID.** `curl_url_get` of the host of
+  `http://[fe80::1%25eth0]/` and of `%25eth1` is `[fe80::1]` for both, on all five Linux
+  libcurls; the zone is a part of its own, `CURLUPART_ZONEID`. An origin rule that compared
+  hosts alone sent a call's credentials to another zone: the slice's review planted the
+  redirect. (chez-curl, M5 slice 2)
 * **libcurl decodes a host's percent-encoding, so a UTF-8 string can come back as bytes that
   are not UTF-8.** `http://caf%E9.example/` came back from `curl_url_get` as `caf` and the byte
   0xE9, whole and as the host, on all five Linux libcurls; `%C3` alone came back as a lone

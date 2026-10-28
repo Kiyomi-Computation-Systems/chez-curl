@@ -184,15 +184,17 @@
 
   ;; The fields:
   ;;
-  ;;   input    the string refused
+  ;;   input    the string refused, or a bytevector's bytes read as Latin-1
   ;;   reason   (U Symbol #f): for libcurl's refusal, its CURLUcode's name in
   ;;            (curl private constants)'s curlue-codes, ok and the floor's
   ;;            others, or #f for a code that list lacks, a later libcurl's;
   ;;            for chez-curl's own, one of its four reasons:
   ;;              scheme-not-http  the URL parsed, but its scheme is neither
   ;;                               http nor https (ADR-0008, decision 2)
-  ;;              embedded-nul     the input holds U+0000, which libcurl
-  ;;                               would read as its end
+  ;;              embedded-nul     the input holds U+0000, or a bytevector
+  ;;                               0x00, which libcurl would read as its
+  ;;                               end; a bytevector's input is its bytes
+  ;;                               read as Latin-1
   ;;              not-utf-8        libcurl gave back a URL, or a part of one,
   ;;                               whose bytes are not UTF-8: it decodes a
   ;;                               host's %XX (the M5 plan, section 3.1)

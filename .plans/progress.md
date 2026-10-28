@@ -9,37 +9,50 @@ close-out under **Close-outs**, newest first.
 - **Milestone:** M5, the high level (brief §8), per the [M5 plan](2026-10-27-m5-plan.md),
   merged as PR #29 (`a66ef78`). Four slices: the session and the verbs; redirects; retries; the
   request group and `http-parallel`.
-  - **Slice 1, the session and the verbs,** is built on `feat/m5-slice-1`, not yet committed.
-    - **Measured first** ([`research/m5/url-parts/`](research/m5/url-parts/)), on the five
-      Linux libcurls: setting a query part changes its hex case, to lower on 7.85.0, 8.5.0 and
-      8.20.0 and to upper on 8.23.0, where a whole URL keeps it; and libcurl decodes a host's
-      `%XX`, so a UTF-8 string can come back as other bytes.
-    - **Decided by the maintainer, 2026-10-27,** each the recommended option: `params` are
-      appended by writing the URL and parsing it whole
-      ([ADR-0028](decisions/0028-params-written-then-parsed-whole.md), new); and a second
-      escape as a session's close starts, which can leave its engine running, is documented,
-      not prevented (ADR-0025, amended).
-    - **Built:** `(curl)` gained `curl-url-part` and `curl-url-append-query`, and every URL
-      function refuses an answer that is not UTF-8, a submit's scheme check among them
-      (ADR-0008, amended), held by `test-url-parts` and its own rows file. `(http-client)` has
-      sessions, the six verbs and `http-request`, the keys and their merge, the form encoding,
-      `params`, the response, the conditions and the call's bound, with the exchange's
-      functional core and the shell for one call, held by `test-http-client`, 72 tests.
-    - **Reviewed twice** (Opus, read-only). The first review found no blocker and two majors:
-      a bound over 300 s misread libcurl's own connect default as its own, and a second escape
-      in the drive's after thunk skipped the cancel. The scoped review of those fixes found two
-      more: compounding every condition broke a handler's resumable raise, and the connect
-      fill lifted libcurl's 300 s cap. Each is fixed and tested, and their minors too.
-    - **Checks,** on the final tree: in the container, `make test` 28 of 28 and check-seam
-      (21 libraries); in Docker, the floor (7.85.0), main (8.5.0), gnutls and current (8.23.0)
-      lanes 28 of 28 each, and the memory lane 28 of 28 twice, with `check-memory-gate` 33 of
-      33. The memory lane found two test traps under Valgrind, each measured and fixed in the
-      suite: a collection inside `test-engine`'s 50 ms window, which this branch's allocation
-      moved there ([research](research/m5/valgrind-collect/)), and a sleep of no time that
-      starved the flip tests' second thread ([research](research/m5/valgrind-yield/)).
-    - **The Mac ran it, 2026-10-28,** on `fa51098`: `make test` passed 27 of 28, every suite
-      but `test-url-parts`, which printed its 8.7.1 row, 8.5.0's, now added; and the URL-parts
-      probe answered all 103 lines as 8.5.0 did (ADR-0008, amended).
+  - **Slice 1, the session and the verbs:** merged as PR #30 (`d0dd8e9`); its close-out is
+    below.
+  - **Slice 2, redirects,** is in progress on `feat/m5-slice-2`.
+    - **Measured first** ([`research/m5/location/`](research/m5/location/)), on the five Linux
+      libcurls: each of 64 `Location` cases, made by the C probe and through an engine with
+      chez-curl's own header reading, agrees byte for byte, its resolution among it; setting a
+      fragment part stores its bytes unchecked, a space and 0x01 raw, and moves its hex case
+      by version, where the URL written and parsed whole answers alike; and `localhost`
+      reaches the origin on all five (ADR-0008, amended 2026-10-28).
+    - **Decided by the maintainer, 2026-10-28,** each the recommended option: a fragment is set
+      by writing the URL and parsing it whole, a header's bytes encoded first
+      ([ADR-0029](decisions/0029-fragment-written-then-parsed-whole.md), new); and, after the
+      review below, a `Location`'s bytes are encoded the same way before they are resolved
+      (ADR-0029, amended).
+    - **Built:** `(curl)` gained `curl-url-resolve`, a string or a header's bytes, and
+      `curl-url-with-fragment`, held by `test-url-location`, 222 tests, and its own rows file;
+      and `curl-url-part` reads `zoneid`. `(http-client)` follows redirects by the plan's §3.4:
+      the `redirects` and `allow-downgrade` keys, `&http-redirect-error`, the rules in the
+      exchange's core, the history, and the shell following each redirect with the time left.
+      `tests/origin.mjs` gained `/raw/location`, a `Location` written from its query's bytes,
+      held by `test-origin`; `test-redirect`, 68 tests, holds the rules, live and by tables.
+      README.org says what follows a redirect.
+    - **Mutants:** 9 of mine on the URL functions, 9 on the redirect rules and 6 on the review's
+      fixes, and the builder's 67, each failing a named test.
+    - **Reviewed** (Opus, read-only): no blocker, two majors and nine minors. The majors: an
+      absolute `Location` with a Latin-1 byte was refused as `not-utf-8` where a relative one
+      was followed, which the maintainer settled by encoding a `Location`'s bytes; and the
+      records still called a bytevector reference the UTF-8 rule's second exception, which
+      the encoding makes none. Among the minors, each fixed and tested: two zones of one IPv6
+      address read as one host, so credentials crossed them; `Expect` survived onto a request
+      with no body; three rules no test failed without; and three records' claims, one a
+      count, one backed by no kept log.
+    - **Checks,** on the final tree: in the container, `make test` 30 of 30 and check-seam (21
+      libraries); in Docker, the floor (7.85.0), main (8.5.0), gnutls and current (8.23.0)
+      lanes 30 of 30 each, and the memory lane 30 of 30, with `check-memory-gate` 33 of 33.
+      That full run failed `test-url-location` on 7.85.0 and 8.5.0 and under Valgrind, every
+      other suite passing: its test that a string and bytes resolve alike held 0x01 and 0x7F,
+      which a string sends raw and those versions refuse. I had run the suite after the
+      encoding change in the container alone. The test now holds printable ASCII, and the suite
+      passed on all five lanes and under Valgrind.
+    - **Owed by the Mac:** the probes, `CHEZ=chez NODE="$(asdf which node)" sh
+      .plans/research/m5/location/run.sh mac`, and `encoded.sh mac` and `zoneid.sh mac` with
+      `CHEZ=chez`; and `test-url-location`'s 8.7.1 row, which `make test` prints there (the
+      plan, §8).
   - **Measured first** ([`research/m5/redirect-url/`](research/m5/redirect-url/)), through a C
     probe that made each transfer as the engine does, `FOLLOWLOCATION` off, on five libcurls:
     Guix's 8.20.0 in the container, and in Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with
@@ -151,6 +164,62 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-28 — M5 slice 1: the session and the verbs (PR #30, `d0dd8e9`)
+
+- **Measured first** ([`research/m5/url-parts/`](research/m5/url-parts/)), through C, on
+  7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, Guix's 8.20.0 and 8.23.0: setting a query
+  part changes its hex case, to lower on 7.85.0, 8.5.0 and 8.20.0 and to upper on 8.23.0,
+  where a whole URL keeps it; libcurl decodes a host's `%XX`, so a UTF-8 string can come back as
+  other bytes; and an empty user, password or query reads as `""` or absent by version
+  (ADR-0008, amended 2026-10-27).
+- **Decided by the maintainer, 2026-10-27,** each the recommended option: `params` are appended
+  by writing the URL and parsing it whole
+  ([ADR-0028](decisions/0028-params-written-then-parsed-whole.md), new); and a second escape as
+  a session's close starts, which can leave its engine running, is documented, not prevented
+  (ADR-0025, amended).
+- **Built:** `(curl)` gained `curl-url-part` and `curl-url-append-query`, and every URL function
+  refuses an answer that is not UTF-8, a submit's scheme check among them, held by
+  `test-url-parts`, 159 tests, and its own rows file. `(http-client)` has sessions, the six
+  verbs and `http-request`, the keys and their merge, the form encoding, `params`, the response,
+  the conditions and the call's bound, with the exchange's functional core and the shell for
+  one call, held by `test-http-client`, 72 tests. 35 mutants, the builder's, and 11 of mine each
+  fail `test-http-client`; deleting either of `appended-url`'s two branches no libcurl reaches
+  fails `test-url-parts`.
+- **Reviewed twice** (Opus, read-only). The first review found no blocker and two majors: a
+  bound over 300 s misread libcurl's own connect default as its own, and a second escape in the
+  drive's after thunk skipped the cancel. The scoped review of those fixes found two more:
+  compounding every condition broke a handler's resumable raise, and the connect fill lifted
+  libcurl's 300 s cap. Each is fixed and tested, and their minors too.
+- **Checks,** on the final tree: in the container, `make test` 28 of 28 and check-seam (21
+  libraries); in Docker, the floor (7.85.0), main (8.5.0), gnutls and current (8.23.0) lanes 28
+  of 28 each, and the memory lane 28 of 28 twice, with `check-memory-gate` 33 of 33. The memory
+  lane found two test traps under Valgrind, each measured and fixed in the suite: a collection
+  inside `test-engine`'s 50 ms window ([research](research/m5/valgrind-collect/)), and a sleep
+  of no time that starved the flip tests' second thread
+  ([research](research/m5/valgrind-yield/)).
+- **The Mac ran it, 2026-10-28,** on `fa51098`: `make test` passed 27 of 28, every suite but
+  `test-url-parts`, which printed its 8.7.1 row, 8.5.0's, added before the merge; and the
+  URL-parts probe answered all 103 lines as 8.5.0 did. It also ran M4's owed checks on `main`,
+  which closed M4 (Now, above).
+- **Three subagents:**
+
+  | Agent | Model | Tokens | Time |
+  |---|---|---|---|
+  | builder, the build and two fix rounds | Opus | 663k | 67 + 37 + 47 min |
+  | adversarial review | Opus | 398k | 27 min |
+  | scoped review of the fixes | Opus | 359k | 30 min |
+- **Learned:**
+  - measuring first changed the design twice: `CURLU_APPENDQUERY`'s hex case became ADR-0028,
+    and a host's decoded `%XX` brought the `not-utf-8` rule into slice 1, for strings too;
+  - a fix brief is design: "compound every condition" and "the time left as the connect
+    timeout" were mine, written from the finding rather than from what else each would reach,
+    and the scoped review found each broke something;
+  - counts went into the records before they were counted, again: 59 of 62 for 56, 16 lines for
+    11, and 157 tests for 159, each caught on a reread;
+  - a failure seen only on the branch is the branch's until a run on `main` says otherwise: both
+    memory-lane flakes were this slice's allocation and timing, found by counting what happened
+    inside the test.
 
 ### 2026-10-27 — M4 slice 4: the hatch (PR #28, `d8e1225`)
 

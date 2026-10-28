@@ -8,6 +8,8 @@
 ;;;                         catches these too
 ;;;   &http-request-error   a key or a value the high level checks itself,
 ;;;                         refused: field, value and reason
+;;;   &http-redirect-error  a redirect the rules refuse to follow: reason,
+;;;                         the response that named it, and its Location
 ;;;   &http-timeout         a call's timeout-ms passed: the bound, in ms
 ;;;   &http-exchange        not an error: the context compounded onto
 ;;;                         whatever a call raises, under &condition, so a
@@ -20,6 +22,9 @@
           &http-request-error make-http-request-error http-request-error?
           http-request-error-field http-request-error-value http-request-error-reason
           http-request-error-reasons
+          &http-redirect-error make-http-redirect-error http-redirect-error?
+          http-redirect-error-reason http-redirect-error-response http-redirect-error-location
+          http-redirect-error-reasons
           &http-timeout make-http-timeout http-timeout? http-timeout-timeout-ms
           &http-exchange make-http-exchange http-exchange? http-exchange-method
           http-exchange-url http-exchange-history http-exchange-transfers)
@@ -44,19 +49,24 @@
   ;;   not-a-body            a body that is neither a bytevector nor a string
   ;;   not-name-value-pairs  a form or params that is not a list of pairs,
   ;;                         each of a name and a value, both strings
+  ;;   not-a-redirect-count  a redirects that is neither an exact natural
+  ;;                         nor #f
+  ;;   not-a-boolean         an allow-downgrade that is neither #t nor #f
   (define http-request-error-reasons
     '(unknown-key repeated-key missing-value body-and-form body-not-allowed not-a-body
-      not-name-value-pairs))
+      not-name-value-pairs not-a-redirect-count not-a-boolean))
 
   ;; The fields:
   ;;
   ;;   field   Symbol: key, for unknown-key, repeated-key and missing-value;
   ;;           form, for body-and-form; body or form, for body-not-allowed,
   ;;           whichever the call gave; body, for not-a-body; form or params,
-  ;;           for not-name-value-pairs
+  ;;           for not-name-value-pairs; redirects, for not-a-redirect-count;
+  ;;           allow-downgrade, for not-a-boolean
   ;;   value   the key as given, for a key's refusal; the method, for
-  ;;           body-not-allowed; the value as given, for not-a-body and
-  ;;           not-name-value-pairs; #f, for body-and-form
+  ;;           body-not-allowed; the value as given, for not-a-body,
+  ;;           not-name-value-pairs, not-a-redirect-count and not-a-boolean;
+  ;;           #f, for body-and-form
   ;;   reason  one of http-request-error-reasons
   (define-condition-type &http-request-error &http-error
     unchecked-make-http-request-error http-request-error?
@@ -79,6 +89,47 @@
   ;; http-request-error-field : &http-request-error -> Symbol
   ;; http-request-error-value : &http-request-error -> Any
   ;; http-request-error-reason : &http-request-error -> Symbol
+
+  ;; http-redirect-error-reasons : (Listof Symbol)
+  ;; Why a redirect is not followed (the M5 plan, section 3.4; ADR-0027):
+  ;;
+  ;;   too-many-redirects  the call had followed its redirects' bound, and
+  ;;                       this response would redirect once more
+  ;;   bad-location        the Location could not be made a URL: a URL
+  ;;                       function of (curl) refused it, whose
+  ;;                       &curl-url-error is compounded with this one, or it
+  ;;                       names a scheme that is not http or https, with none
+  ;;   insecure-redirect   from an https URL to an http one, which the call
+  ;;                       did not allow
+  (define http-redirect-error-reasons
+    '(too-many-redirects bad-location insecure-redirect))
+
+  ;; The fields:
+  ;;
+  ;;   reason    one of http-redirect-error-reasons
+  ;;   response  the response that named the redirect, an http-response,
+  ;;             with the call's history before it
+  ;;   location  its first Location header's value, as the response holds
+  ;;             it, or #f
+  (define-condition-type &http-redirect-error &http-error
+    unchecked-make-http-redirect-error http-redirect-error?
+    (reason http-redirect-error-reason)
+    (response http-redirect-error-response)
+    (location http-redirect-error-location))
+
+  ;; make-http-redirect-error : Symbol Response (U String #f) -> &http-redirect-error
+  ;; Refuses a REASON that is not one of http-redirect-error-reasons with an
+  ;; assertion violation, as make-http-request-error refuses its own.
+  (define (make-http-redirect-error reason response location)
+    (unless (memq reason http-redirect-error-reasons)
+      (assertion-violation 'make-http-redirect-error
+                           "not a reason the high level refuses a redirect for" reason))
+    (unchecked-make-http-redirect-error reason response location))
+
+  ;; http-redirect-error? : Any -> Boolean
+  ;; http-redirect-error-reason : &http-redirect-error -> Symbol
+  ;; http-redirect-error-response : &http-redirect-error -> Response
+  ;; http-redirect-error-location : &http-redirect-error -> (U String #f)
 
   ;; make-http-timeout : Positive-Integer -> &http-timeout
   ;; http-timeout? : Any -> Boolean

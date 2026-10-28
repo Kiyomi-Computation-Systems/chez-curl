@@ -91,6 +91,24 @@ anything the request's own keys do not cover:
 - *A path is opened as given,* and chez-curl does not check it: a path of
   =/dev/stdin= names your program's stdin.
 
+*** What follows a redirect
+
+=(http-client)= follows a 301, 302, 303, 307 or 308 that has a =Location=,
+up to =redirects= times: 20, unless the session or the call says otherwise.
+=#f= follows none, and answers the redirect.
+
+- *To another origin,* another scheme, host or port, the call drops
+  =Authorization=, =Cookie= and =Proxy-Authorization=, and =Host= when the
+  host changes. A header dropped stays dropped, even back on the first
+  origin. *Every other header follows,* so an =X-Api-Key= reaches the new
+  origin too.
+- *A =user:pass@= in the URL* stays for a relative =Location=. An absolute
+  one carries its own, or none.
+- *From https to http is refused,* unless =allow-downgrade= is =#t=.
+- *A 303 makes a =get= of anything but a =head=,* and so do a 301 and a 302
+  of a =post=. The body goes, and with it your =Content-= headers, =Digest=,
+  =Last-Modified= and =Expect=.
+
 ** License
 
 © [[https://kiyomicomputation.systems/][Kiyomi Computation Systems LLC]]. Licensed under BSD 3-Clause — see

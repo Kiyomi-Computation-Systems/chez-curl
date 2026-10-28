@@ -54,6 +54,15 @@
 //         hello, waits N ms, then writes " wor" and resets: its last write
 //         and its reset come together, after a pause long enough for a
 //         check to stop the client across both.
+//         /raw/location?code=CODE[&ms=N][&to=BYTES]... reads its own query:
+//         code once, 200 to 599; ms at most once, 0 to 60000, 0 when left
+//         out; to any number of times, each percent-decoded, %XX in either
+//         case, every other char its own byte, so any byte can be sent. It
+//         waits N ms, then writes "HTTP/1.1 CODE Redirect", a Location header
+//         for each to, in order, its value the bytes as they are, then
+//         Content-Length: 0 and Connection: close, and ends. A pair that is
+//         no NAME=VALUE, an unknown name, a repeat of code or ms, a value out
+//         of range, and a malformed %, get the fixed 400.
 //   h2c   node:http2, plaintext, by prior knowledge: the HTTP/2 routes.
 //   With --pki DIR:
 //   https, https-expired, https-wrong-host, https-untrusted
@@ -367,8 +376,9 @@ const badRequest = [
 ];
 
 // The scripts, by NAME. Each takes its parameters, by name: every one listed,
-// each a decimal natural within its range, and no other. play gets the
-// parameters and the request head's bytes.
+// each a decimal natural within its range, and no other; or, with a query
+// function, what that reads from the query, null for one it refuses. play
+// gets the parameters and the request head's bytes.
 const scripts = {
   // framing
   'content-length': { play: () => [write('HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\nhello\n'), END] },
@@ -475,7 +485,65 @@ const scripts = {
     play: (_, head) => [write(Buffer.concat([ascii(`HTTP/1.1 200 OK\r\nContent-Length: ${head.length}\r\n\r\n`),
                                              head])), END],
   },
+
+  // redirects: a status and Location headers of any bytes, after a wait
+  'location': {
+    query: locationQuery,
+    play: ({ code, ms, to }) => {
+      const head = [ascii(`HTTP/1.1 ${code} Redirect\r\n`)];
+      for (const bytes of to) head.push(ascii('Location: '), bytes, ascii('\r\n'));
+      head.push(ascii('Content-Length: 0\r\nConnection: close\r\n\r\n'));
+      return [...(ms > 0 ? [wait(ms)] : []), write(Buffer.concat(head)), END];
+    },
+  },
 };
+
+// percentDecoded: TEXT, a query value read as Latin-1, as bytes: each %XX,
+// in either case, its byte, and every other char its own; null for a %
+// without two hex digits after it.
+function percentDecoded(text) {
+  const bytes = [];
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === '%') {
+      const hex = text.slice(i + 1, i + 3);
+      if (!/^[0-9A-Fa-f]{2}$/.test(hex)) return null;
+      bytes.push(parseInt(hex, 16));
+      i += 2;
+    } else {
+      bytes.push(text.charCodeAt(i));
+    }
+  }
+  return Buffer.from(bytes);
+}
+
+// locationQuery: the location script's parameters from QUERY, or null: code
+// exactly once, 200 to 599; ms at most once, 0 to 60000, 0 when absent; to
+// any number of times, in order, each value's bytes. Every pair is
+// NAME=VALUE, the value after the first =.
+function locationQuery(query) {
+  if (query === undefined) return null;
+  const found = { code: null, ms: null, to: [] };
+  for (const pair of query.split('&')) {
+    const at = pair.indexOf('=');
+    if (at < 0) return null;
+    const name = pair.slice(0, at);
+    const value = pair.slice(at + 1);
+    if (name === 'code' || name === 'ms') {
+      if (found[name] !== null || !/^(0|[1-9][0-9]*)$/.test(value)) return null;
+      const n = Number(value);
+      if (name === 'code' ? !(n >= 200 && n <= 599) : !(n <= 60000)) return null;
+      found[name] = n;
+    } else if (name === 'to') {
+      const bytes = percentDecoded(value);
+      if (bytes === null) return null;
+      found.to.push(bytes);
+    } else {
+      return null;
+    }
+  }
+  if (found.code === null) return null;
+  return { code: found.code, ms: found.ms === null ? 0 : found.ms, to: found.to };
+}
 
 // parameters: the query's parameters as SPEC asks for them, or null.
 function parameters(spec, query) {
@@ -501,7 +569,7 @@ function scriptFor(head) {
   const m = /^\/raw\/([a-z0-9-]+)(?:\?(.*))?$/.exec(parts[1]);
   if (!m || !Object.hasOwn(scripts, m[1])) return badRequest;
   const script = scripts[m[1]];
-  const found = parameters(script.params || {}, m[2]);
+  const found = script.query ? script.query(m[2]) : parameters(script.params || {}, m[2]);
   return found === null ? badRequest : script.play(found, head);
 }
 

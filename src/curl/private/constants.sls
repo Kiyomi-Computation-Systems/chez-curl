@@ -13,7 +13,7 @@
           curlinfo-private curlinfo-rtsp-client-cseq curlot-types
           curlue-ok curlue-codes curlupart-url curlupart-scheme
           curlupart-user curlupart-password curlupart-host curlupart-port curlupart-path
-          curlupart-query curlupart-fragment curlu-default-port
+          curlupart-query curlupart-fragment curlupart-zoneid curlu-default-port
           curlinfo-response-code curlinfo-http-version curlinfo-effective-url
           curl-error-size curl-blob-copy
           curl-http-version-1-0 curl-http-version-1-1 curl-http-version-2-0
@@ -205,8 +205,10 @@
   ;; curlupart-path : Positive-Integer
   ;; curlupart-query : Positive-Integer
   ;; curlupart-fragment : Positive-Integer
+  ;; curlupart-zoneid : Positive-Integer
   ;; curl/urlapi.h: the CURLUParts curl-url-part reads (the M5 plan, section
-  ;; 3.1). CURLUPART_OPTIONS, 4, lies between the password and the host.
+  ;; 3.1). CURLUPART_OPTIONS, 4, lies between the password and the host; the
+  ;; zone ID, an IPv6 host's, which the host part leaves out, comes last.
   (define curlupart-user 2)
   (define curlupart-password 3)
   (define curlupart-host 5)
@@ -214,6 +216,7 @@
   (define curlupart-path 7)
   (define curlupart-query 8)
   (define curlupart-fragment 9)
+  (define curlupart-zoneid 10)
 
   ;; curlu-default-port : Positive-Integer
   ;; curl/urlapi.h: CURLU_DEFAULT_PORT, (1<<0): curl_url_get's port is the

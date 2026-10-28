@@ -1,0 +1,206 @@
+[guix-8.20.0] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 -> /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0
+[guix-8.20.0] -- fragment
+[guix-8.20.0] plain base=http://h.example/a/b?q=1 f=only part0=http://h.example/a/b?q=1#only frag=only penc=http://h.example/a/b?q=1#only frag=only whole=http://h.example/a/b?q=1#only frag=only ref=http://h.example/a/b?q=1#only frag=only
+[guix-8.20.0] empty base=http://h.example/a/b?q=1 f= part0=http://h.example/a/b?q=1# frag= penc=http://h.example/a/b?q=1 penc.frag=uc17 whole=http://h.example/a/b?q=1 whole.frag=uc17 ref=http://h.example/a/b?q=1 ref.frag=uc17
+[guix-8.20.0] space base=http://h.example/a/b?q=1 f=a\x20b part0=http://h.example/a/b?q=1#a\x20b frag=a\x20b penc=http://h.example/a/b?q=1#a%20b frag=a%20b whole=uc3 ref=http://h.example/a/b?q=1#a%20b frag=a%20b
+[guix-8.20.0] blank base=http://h.example/a/b?q=1 f=\x20\x20\x20 part0=http://h.example/a/b?q=1#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20 whole=uc3 ref=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20
+[guix-8.20.0] tab base=http://h.example/a/b?q=1 f=\x09 part0=http://h.example/a/b?q=1#\x09 frag=\x09 penc=http://h.example/a/b?q=1#%09 frag=%09 whole=uc3 ref=http://h.example/a/b?q=1#%09 frag=%09
+[guix-8.20.0] cr base=http://h.example/a/b?q=1 f=\x0d part0=http://h.example/a/b?q=1#\x0d frag=\x0d penc=http://h.example/a/b?q=1#%0D frag=%0D whole=uc3 ref=http://h.example/a/b?q=1#%0D frag=%0D
+[guix-8.20.0] latin1 base=http://h.example/a/b?q=1 f=caf\xe9 part0=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b?q=1#caf%E9 frag=caf%E9 whole=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 ref=http://h.example/a/b?q=1#caf%E9 frag=caf%E9
+[guix-8.20.0] utf8 base=http://h.example/a/b?q=1 f=caf\xc3\xa9 part0=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b?q=1#caf%C3%A9 frag=caf%C3%A9 whole=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/b?q=1#caf%C3%A9 frag=caf%C3%A9
+[guix-8.20.0] bom base=http://h.example/a/b?q=1 f=\xef\xbb\xbfbom part0=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b?q=1#%EF%BB%BFbom frag=%EF%BB%BFbom whole=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/b?q=1#%EF%BB%BFbom frag=%EF%BB%BFbom
+[guix-8.20.0] pct-lower base=http://h.example/a/b?q=1 f=%e9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25e9x frag=%25e9x whole=http://h.example/a/b?q=1#%e9x frag=%e9x ref=http://h.example/a/b?q=1#%E9x frag=%E9x
+[guix-8.20.0] pct-upper base=http://h.example/a/b?q=1 f=%E9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25E9x frag=%25E9x whole=http://h.example/a/b?q=1#%E9x frag=%E9x ref=http://h.example/a/b?q=1#%E9x frag=%E9x
+[guix-8.20.0] pct-mixed base=http://h.example/a/b?q=1 f=%c3%A9 part0=http://h.example/a/b?q=1#%c3%a9 frag=%c3%a9 penc=http://h.example/a/b?q=1#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b?q=1#%c3%A9 frag=%c3%A9 ref=http://h.example/a/b?q=1#%C3%A9 frag=%C3%A9
+[guix-8.20.0] bad-pct base=http://h.example/a/b?q=1 f=%zz part0=http://h.example/a/b?q=1#%zz frag=%zz penc=http://h.example/a/b?q=1#%25zz frag=%25zz whole=http://h.example/a/b?q=1#%zz frag=%zz ref=http://h.example/a/b?q=1#%zz frag=%zz
+[guix-8.20.0] lone-pct base=http://h.example/a/b?q=1 f=% part0=http://h.example/a/b?q=1#% frag=% penc=http://h.example/a/b?q=1#%25 frag=%25 whole=http://h.example/a/b?q=1#% frag=% ref=http://h.example/a/b?q=1#% frag=%
+[guix-8.20.0] hash base=http://h.example/a/b?q=1 f=a#b part0=http://h.example/a/b?q=1#a#b frag=a#b penc=http://h.example/a/b?q=1#a%23b frag=a%23b whole=http://h.example/a/b?q=1#a#b frag=a#b ref=http://h.example/a/b?q=1#a#b frag=a#b
+[guix-8.20.0] ctl base=http://h.example/a/b?q=1 f=x\x01y part0=http://h.example/a/b?q=1#x\x01y frag=x\x01y penc=http://h.example/a/b?q=1#x%01y frag=x%01y whole=uc3 ref=http://h.example/a/b?q=1#x%01y frag=x%01y
+[guix-8.20.0] del base=http://h.example/a/b?q=1 f=x\x7fy part0=http://h.example/a/b?q=1#x\x7fy frag=x\x7fy penc=http://h.example/a/b?q=1#x%7Fy frag=x%7Fy whole=uc3 ref=http://h.example/a/b?q=1#x%7Fy frag=x%7Fy
+[guix-8.20.0] delims base=http://h.example/a/b?q=1 f="<>`{}|^ part0=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b?q=1#%22%3C%3E%60%7B%7D%7C%5E frag=%22%3C%3E%60%7B%7D%7C%5E whole=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^
+[guix-8.20.0] reserved base=http://h.example/a/b?q=1 f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b?q=1#a%3Fb%2Fc%3Ad%40e%21%24%26%27%28%29%2A%2B%2C%3B%3D frag=a%3Fb%2Fc%3Ad%40e%21%24%26%27%28%29%2A%2B%2C%3B%3D whole=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[guix-8.20.0] backslash base=http://h.example/a/b?q=1 f=a\x5cb part0=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb penc=http://h.example/a/b?q=1#a%5Cb frag=a%5Cb whole=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb ref=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb
+[guix-8.20.0] plain base=http://h.example/a/b?q=1#old f=only part0=http://h.example/a/b?q=1#only frag=only penc=http://h.example/a/b?q=1#only frag=only whole=http://h.example/a/b?q=1#only frag=only ref=http://h.example/a/b?q=1#only frag=only
+[guix-8.20.0] empty base=http://h.example/a/b?q=1#old f= part0=http://h.example/a/b?q=1# frag= penc=http://h.example/a/b?q=1 penc.frag=uc17 whole=http://h.example/a/b?q=1 whole.frag=uc17 ref=http://h.example/a/b?q=1 ref.frag=uc17
+[guix-8.20.0] space base=http://h.example/a/b?q=1#old f=a\x20b part0=http://h.example/a/b?q=1#a\x20b frag=a\x20b penc=http://h.example/a/b?q=1#a%20b frag=a%20b whole=uc3 ref=http://h.example/a/b?q=1#a%20b frag=a%20b
+[guix-8.20.0] blank base=http://h.example/a/b?q=1#old f=\x20\x20\x20 part0=http://h.example/a/b?q=1#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20 whole=uc3 ref=http://h.example/a/b?q=1#%20%20%20 frag=%20%20%20
+[guix-8.20.0] tab base=http://h.example/a/b?q=1#old f=\x09 part0=http://h.example/a/b?q=1#\x09 frag=\x09 penc=http://h.example/a/b?q=1#%09 frag=%09 whole=uc3 ref=http://h.example/a/b?q=1#%09 frag=%09
+[guix-8.20.0] cr base=http://h.example/a/b?q=1#old f=\x0d part0=http://h.example/a/b?q=1#\x0d frag=\x0d penc=http://h.example/a/b?q=1#%0D frag=%0D whole=uc3 ref=http://h.example/a/b?q=1#%0D frag=%0D
+[guix-8.20.0] latin1 base=http://h.example/a/b?q=1#old f=caf\xe9 part0=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b?q=1#caf%E9 frag=caf%E9 whole=http://h.example/a/b?q=1#caf\xe9 frag=caf\xe9 ref=http://h.example/a/b?q=1#caf%E9 frag=caf%E9
+[guix-8.20.0] utf8 base=http://h.example/a/b?q=1#old f=caf\xc3\xa9 part0=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b?q=1#caf%C3%A9 frag=caf%C3%A9 whole=http://h.example/a/b?q=1#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/b?q=1#caf%C3%A9 frag=caf%C3%A9
+[guix-8.20.0] bom base=http://h.example/a/b?q=1#old f=\xef\xbb\xbfbom part0=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b?q=1#%EF%BB%BFbom frag=%EF%BB%BFbom whole=http://h.example/a/b?q=1#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/b?q=1#%EF%BB%BFbom frag=%EF%BB%BFbom
+[guix-8.20.0] pct-lower base=http://h.example/a/b?q=1#old f=%e9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25e9x frag=%25e9x whole=http://h.example/a/b?q=1#%e9x frag=%e9x ref=http://h.example/a/b?q=1#%E9x frag=%E9x
+[guix-8.20.0] pct-upper base=http://h.example/a/b?q=1#old f=%E9x part0=http://h.example/a/b?q=1#%e9x frag=%e9x penc=http://h.example/a/b?q=1#%25E9x frag=%25E9x whole=http://h.example/a/b?q=1#%E9x frag=%E9x ref=http://h.example/a/b?q=1#%E9x frag=%E9x
+[guix-8.20.0] pct-mixed base=http://h.example/a/b?q=1#old f=%c3%A9 part0=http://h.example/a/b?q=1#%c3%a9 frag=%c3%a9 penc=http://h.example/a/b?q=1#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b?q=1#%c3%A9 frag=%c3%A9 ref=http://h.example/a/b?q=1#%C3%A9 frag=%C3%A9
+[guix-8.20.0] bad-pct base=http://h.example/a/b?q=1#old f=%zz part0=http://h.example/a/b?q=1#%zz frag=%zz penc=http://h.example/a/b?q=1#%25zz frag=%25zz whole=http://h.example/a/b?q=1#%zz frag=%zz ref=http://h.example/a/b?q=1#%zz frag=%zz
+[guix-8.20.0] lone-pct base=http://h.example/a/b?q=1#old f=% part0=http://h.example/a/b?q=1#% frag=% penc=http://h.example/a/b?q=1#%25 frag=%25 whole=http://h.example/a/b?q=1#% frag=% ref=http://h.example/a/b?q=1#% frag=%
+[guix-8.20.0] hash base=http://h.example/a/b?q=1#old f=a#b part0=http://h.example/a/b?q=1#a#b frag=a#b penc=http://h.example/a/b?q=1#a%23b frag=a%23b whole=http://h.example/a/b?q=1#a#b frag=a#b ref=http://h.example/a/b?q=1#a#b frag=a#b
+[guix-8.20.0] ctl base=http://h.example/a/b?q=1#old f=x\x01y part0=http://h.example/a/b?q=1#x\x01y frag=x\x01y penc=http://h.example/a/b?q=1#x%01y frag=x%01y whole=uc3 ref=http://h.example/a/b?q=1#x%01y frag=x%01y
+[guix-8.20.0] del base=http://h.example/a/b?q=1#old f=x\x7fy part0=http://h.example/a/b?q=1#x\x7fy frag=x\x7fy penc=http://h.example/a/b?q=1#x%7Fy frag=x%7Fy whole=uc3 ref=http://h.example/a/b?q=1#x%7Fy frag=x%7Fy
+[guix-8.20.0] delims base=http://h.example/a/b?q=1#old f="<>`{}|^ part0=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b?q=1#%22%3C%3E%60%7B%7D%7C%5E frag=%22%3C%3E%60%7B%7D%7C%5E whole=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/b?q=1#"<>`{}|^ frag="<>`{}|^
+[guix-8.20.0] reserved base=http://h.example/a/b?q=1#old f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b?q=1#a%3Fb%2Fc%3Ad%40e%21%24%26%27%28%29%2A%2B%2C%3B%3D frag=a%3Fb%2Fc%3Ad%40e%21%24%26%27%28%29%2A%2B%2C%3B%3D whole=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/b?q=1#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[guix-8.20.0] backslash base=http://h.example/a/b?q=1#old f=a\x5cb part0=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb penc=http://h.example/a/b?q=1#a%5Cb frag=a%5Cb whole=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb ref=http://h.example/a/b?q=1#a\x5cb frag=a\x5cb
+[guix-8.20.0] plain base=http://h.example/a/b#old%e9 f=only part0=http://h.example/a/b#only frag=only penc=http://h.example/a/b#only frag=only whole=http://h.example/a/b#only frag=only ref=http://h.example/a/b#only frag=only
+[guix-8.20.0] empty base=http://h.example/a/b#old%e9 f= part0=http://h.example/a/b# frag= penc=http://h.example/a/b penc.frag=uc17 whole=http://h.example/a/b whole.frag=uc17 ref=http://h.example/a/b ref.frag=uc17
+[guix-8.20.0] space base=http://h.example/a/b#old%e9 f=a\x20b part0=http://h.example/a/b#a\x20b frag=a\x20b penc=http://h.example/a/b#a%20b frag=a%20b whole=uc3 ref=http://h.example/a/b#a%20b frag=a%20b
+[guix-8.20.0] blank base=http://h.example/a/b#old%e9 f=\x20\x20\x20 part0=http://h.example/a/b#\x20\x20\x20 frag=\x20\x20\x20 penc=http://h.example/a/b#%20%20%20 frag=%20%20%20 whole=uc3 ref=http://h.example/a/b#%20%20%20 frag=%20%20%20
+[guix-8.20.0] tab base=http://h.example/a/b#old%e9 f=\x09 part0=http://h.example/a/b#\x09 frag=\x09 penc=http://h.example/a/b#%09 frag=%09 whole=uc3 ref=http://h.example/a/b#%09 frag=%09
+[guix-8.20.0] cr base=http://h.example/a/b#old%e9 f=\x0d part0=http://h.example/a/b#\x0d frag=\x0d penc=http://h.example/a/b#%0D frag=%0D whole=uc3 ref=http://h.example/a/b#%0D frag=%0D
+[guix-8.20.0] latin1 base=http://h.example/a/b#old%e9 f=caf\xe9 part0=http://h.example/a/b#caf\xe9 frag=caf\xe9 penc=http://h.example/a/b#caf%E9 frag=caf%E9 whole=http://h.example/a/b#caf\xe9 frag=caf\xe9 ref=http://h.example/a/b#caf%E9 frag=caf%E9
+[guix-8.20.0] utf8 base=http://h.example/a/b#old%e9 f=caf\xc3\xa9 part0=http://h.example/a/b#caf\xc3\xa9 frag=caf\xc3\xa9 penc=http://h.example/a/b#caf%C3%A9 frag=caf%C3%A9 whole=http://h.example/a/b#caf\xc3\xa9 frag=caf\xc3\xa9 ref=http://h.example/a/b#caf%C3%A9 frag=caf%C3%A9
+[guix-8.20.0] bom base=http://h.example/a/b#old%e9 f=\xef\xbb\xbfbom part0=http://h.example/a/b#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom penc=http://h.example/a/b#%EF%BB%BFbom frag=%EF%BB%BFbom whole=http://h.example/a/b#\xef\xbb\xbfbom frag=\xef\xbb\xbfbom ref=http://h.example/a/b#%EF%BB%BFbom frag=%EF%BB%BFbom
+[guix-8.20.0] pct-lower base=http://h.example/a/b#old%e9 f=%e9x part0=http://h.example/a/b#%e9x frag=%e9x penc=http://h.example/a/b#%25e9x frag=%25e9x whole=http://h.example/a/b#%e9x frag=%e9x ref=http://h.example/a/b#%E9x frag=%E9x
+[guix-8.20.0] pct-upper base=http://h.example/a/b#old%e9 f=%E9x part0=http://h.example/a/b#%e9x frag=%e9x penc=http://h.example/a/b#%25E9x frag=%25E9x whole=http://h.example/a/b#%E9x frag=%E9x ref=http://h.example/a/b#%E9x frag=%E9x
+[guix-8.20.0] pct-mixed base=http://h.example/a/b#old%e9 f=%c3%A9 part0=http://h.example/a/b#%c3%a9 frag=%c3%a9 penc=http://h.example/a/b#%25c3%25A9 frag=%25c3%25A9 whole=http://h.example/a/b#%c3%A9 frag=%c3%A9 ref=http://h.example/a/b#%C3%A9 frag=%C3%A9
+[guix-8.20.0] bad-pct base=http://h.example/a/b#old%e9 f=%zz part0=http://h.example/a/b#%zz frag=%zz penc=http://h.example/a/b#%25zz frag=%25zz whole=http://h.example/a/b#%zz frag=%zz ref=http://h.example/a/b#%zz frag=%zz
+[guix-8.20.0] lone-pct base=http://h.example/a/b#old%e9 f=% part0=http://h.example/a/b#% frag=% penc=http://h.example/a/b#%25 frag=%25 whole=http://h.example/a/b#% frag=% ref=http://h.example/a/b#% frag=%
+[guix-8.20.0] hash base=http://h.example/a/b#old%e9 f=a#b part0=http://h.example/a/b#a#b frag=a#b penc=http://h.example/a/b#a%23b frag=a%23b whole=http://h.example/a/b#a#b frag=a#b ref=http://h.example/a/b#a#b frag=a#b
+[guix-8.20.0] ctl base=http://h.example/a/b#old%e9 f=x\x01y part0=http://h.example/a/b#x\x01y frag=x\x01y penc=http://h.example/a/b#x%01y frag=x%01y whole=uc3 ref=http://h.example/a/b#x%01y frag=x%01y
+[guix-8.20.0] del base=http://h.example/a/b#old%e9 f=x\x7fy part0=http://h.example/a/b#x\x7fy frag=x\x7fy penc=http://h.example/a/b#x%7Fy frag=x%7Fy whole=uc3 ref=http://h.example/a/b#x%7Fy frag=x%7Fy
+[guix-8.20.0] delims base=http://h.example/a/b#old%e9 f="<>`{}|^ part0=http://h.example/a/b#"<>`{}|^ frag="<>`{}|^ penc=http://h.example/a/b#%22%3C%3E%60%7B%7D%7C%5E frag=%22%3C%3E%60%7B%7D%7C%5E whole=http://h.example/a/b#"<>`{}|^ frag="<>`{}|^ ref=http://h.example/a/b#"<>`{}|^ frag="<>`{}|^
+[guix-8.20.0] reserved base=http://h.example/a/b#old%e9 f=a?b/c:d@e!$&'()*+,;= part0=http://h.example/a/b#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= penc=http://h.example/a/b#a%3Fb%2Fc%3Ad%40e%21%24%26%27%28%29%2A%2B%2C%3B%3D frag=a%3Fb%2Fc%3Ad%40e%21%24%26%27%28%29%2A%2B%2C%3B%3D whole=http://h.example/a/b#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;= ref=http://h.example/a/b#a?b/c:d@e!$&'()*+,;= frag=a?b/c:d@e!$&'()*+,;=
+[guix-8.20.0] backslash base=http://h.example/a/b#old%e9 f=a\x5cb part0=http://h.example/a/b#a\x5cb frag=a\x5cb penc=http://h.example/a/b#a%5Cb frag=a%5Cb whole=http://h.example/a/b#a\x5cb frag=a\x5cb ref=http://h.example/a/b#a\x5cb frag=a\x5cb
+[guix-8.20.0] clear base=http://h.example/a/b?q=1 cleared=http://h.example/a/b?q=1 cleared.frag=uc17
+[guix-8.20.0] clear base=http://h.example/a/b?q=1#old cleared=http://h.example/a/b?q=1 cleared.frag=uc17
+[guix-8.20.0] clear base=http://h.example/a/b#old%e9 cleared=http://h.example/a/b cleared.frag=uc17
+[guix-8.20.0] -- 63 lines
+[guix-8.20.0] -- localhost, port 35343
+[guix-8.20.0] http://127.0.0.1:35343/x rc=0 status=404 ip=127.0.0.1 connect-us=144
+[guix-8.20.0] http://localhost:35343/x rc=0 status=404 ip=127.0.0.1 connect-us=145
+[guix-8.20.0] http://[::ffff:127.0.0.1]:35343/x rc=0 status=404 ip=::ffff:127.0.0.1 connect-us=75
+[guix-8.20.0] -- 64 cases, base http://127.0.0.1:35343/a/b/c
+[guix-8.20.0] -- C
+[guix-8.20.0] C rel-abs GET rc=0 status=302 redirect=http://127.0.0.1:35343/x/y?z=1 effective=http://127.0.0.1:35343/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:35343/x/y?z=1 renc=http://127.0.0.1:35343/x/y?z=1
+[guix-8.20.0] C rel-path GET rc=0 status=302 redirect=http://127.0.0.1:35343/a/b/c/d/e effective=http://127.0.0.1:35343/a/b/c/rel-path?q=1 location=d/e amount=1 r0=http://127.0.0.1:35343/a/b/c/d/e renc=http://127.0.0.1:35343/a/b/c/d/e
+[guix-8.20.0] C rel-dots GET rc=0 status=302 redirect=http://127.0.0.1:35343/a/up effective=http://127.0.0.1:35343/a/b/c/rel-dots?q=1 location=../../up amount=1 r0=http://127.0.0.1:35343/a/up renc=http://127.0.0.1:35343/a/up
+[guix-8.20.0] C rel-query GET rc=0 status=302 redirect=http://127.0.0.1:35343/a/b/c/rel-query?only=1 effective=http://127.0.0.1:35343/a/b/c/rel-query?q=1 location=?only=1 amount=1 r0=http://127.0.0.1:35343/a/b/c/rel-query?only=1 renc=http://127.0.0.1:35343/a/b/c/rel-query?only=1
+[guix-8.20.0] C rel-frag GET rc=0 status=302 redirect=http://127.0.0.1:35343/a/b/c/rel-frag?q=1#only effective=http://127.0.0.1:35343/a/b/c/rel-frag?q=1 location=#only amount=1 r0=http://127.0.0.1:35343/a/b/c/rel-frag?q=1#only renc=http://127.0.0.1:35343/a/b/c/rel-frag?q=1#only
+[guix-8.20.0] C netpath GET rc=0 status=302 redirect=http://127.0.0.1:35343/np effective=http://127.0.0.1:35343/a/b/c/netpath?q=1 location=//127.0.0.1:35343/np amount=1 r0=http://127.0.0.1:35343/np renc=http://127.0.0.1:35343/np
+[guix-8.20.0] C other-host GET rc=0 status=302 redirect=http://other.invalid/x effective=http://127.0.0.1:35343/a/b/c/other-host?q=1 location=http://other.invalid/x amount=1 r0=http://other.invalid/x renc=http://other.invalid/x
+[guix-8.20.0] C https GET rc=0 status=302 redirect=https://127.0.0.1:1/s effective=http://127.0.0.1:35343/a/b/c/https?q=1 location=https://127.0.0.1:1/s amount=1 r0=https://127.0.0.1:1/s renc=https://127.0.0.1:1/s
+[guix-8.20.0] C no-path GET rc=0 status=302 redirect=http://127.0.0.1:35343/ effective=http://127.0.0.1:35343/a/b/c/no-path?q=1 location=http://127.0.0.1:35343 amount=1 r0=http://127.0.0.1:35343/ renc=http://127.0.0.1:35343/
+[guix-8.20.0] C upper-scheme GET rc=0 status=302 redirect=http://127.0.0.1:35343/UP effective=http://127.0.0.1:35343/a/b/c/upper-scheme?q=1 location=HTTP://127.0.0.1:35343/UP amount=1 r0=http://127.0.0.1:35343/UP renc=http://127.0.0.1:35343/UP
+[guix-8.20.0] C ftp GET rc=0 status=302 redirect=ftp://127.0.0.1/f effective=http://127.0.0.1:35343/a/b/c/ftp?q=1 location=ftp://127.0.0.1/f amount=1 r0=ftp://127.0.0.1/f renc=ftp://127.0.0.1/f
+[guix-8.20.0] C file GET rc=0 status=302 redirect=file:///etc/passwd effective=http://127.0.0.1:35343/a/b/c/file?q=1 location=file:///etc/passwd amount=1 r0=file:///etc/passwd renc=file:///etc/passwd
+[guix-8.20.0] C javascript GET rc=0 status=302 redirect=javascript:alert(1) effective=http://127.0.0.1:35343/a/b/c/javascript?q=1 location=javascript:alert(1) amount=1 r0=uc5 renc=uc5
+[guix-8.20.0] C unknown-scheme GET rc=0 status=302 redirect=foo://bar/x effective=http://127.0.0.1:35343/a/b/c/unknown-scheme?q=1 location=foo://bar/x amount=1 r0=uc5 renc=uc5
+[guix-8.20.0] C empty GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:35343/a/b/c/empty?q=1 location= amount=1 r0=http://127.0.0.1:35343/a/b/c/empty?q=1 renc=http://127.0.0.1:35343/a/b/c/empty?q=1
+[guix-8.20.0] C blank GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:35343/a/b/c/blank?q=1 location= amount=1 r0=http://127.0.0.1:35343/a/b/c/blank?q=1 renc=http://127.0.0.1:35343/a/b/c/blank?q=1
+[guix-8.20.0] C missing GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:35343/a/b/c/missing?q=1 location=hc2
+[guix-8.20.0] C padded GET rc=0 status=302 redirect=http://127.0.0.1:35343/padded effective=http://127.0.0.1:35343/a/b/c/padded?q=1 location=/padded amount=1 r0=http://127.0.0.1:35343/padded renc=http://127.0.0.1:35343/padded
+[guix-8.20.0] C tab GET rc=0 status=302 redirect=http://127.0.0.1:35343/tabbed effective=http://127.0.0.1:35343/a/b/c/tab?q=1 location=/tabbed amount=1 r0=http://127.0.0.1:35343/tabbed renc=http://127.0.0.1:35343/tabbed
+[guix-8.20.0] C space-inside GET rc=0 status=302 redirect=http://127.0.0.1:35343/a%20b/c%20d effective=http://127.0.0.1:35343/a/b/c/space-inside?q=1 location=/a\x20b/c\x20d amount=1 r0=http://127.0.0.1:35343/a%20b/c%20d renc=http://127.0.0.1:35343/a%20b/c%20d
+[guix-8.20.0] C utf8 GET rc=0 status=302 redirect=http://127.0.0.1:35343/caf%C3%A9 effective=http://127.0.0.1:35343/a/b/c/utf8?q=1 location=/caf\xc3\xa9 amount=1 r0=http://127.0.0.1:35343/caf%C3%A9 renc=http://127.0.0.1:35343/caf%C3%A9
+[guix-8.20.0] C latin1 GET rc=0 status=302 redirect=http://127.0.0.1:35343/caf%E9 effective=http://127.0.0.1:35343/a/b/c/latin1?q=1 location=/caf\xe9 amount=1 r0=http://127.0.0.1:35343/caf%E9 renc=http://127.0.0.1:35343/caf%E9
+[guix-8.20.0] C ctl GET rc=0 status=302 redirect=http://127.0.0.1:35343/x%01y effective=http://127.0.0.1:35343/a/b/c/ctl?q=1 location=/x\x01y amount=1 r0=http://127.0.0.1:35343/x%01y renc=http://127.0.0.1:35343/x%01y
+[guix-8.20.0] C del GET rc=0 status=302 redirect=http://127.0.0.1:35343/x%7Fy effective=http://127.0.0.1:35343/a/b/c/del?q=1 location=/x\x7fy amount=1 r0=http://127.0.0.1:35343/x%7Fy renc=http://127.0.0.1:35343/x%7Fy
+[guix-8.20.0] C pct GET rc=0 status=302 redirect=http://127.0.0.1:35343/already%20encoded effective=http://127.0.0.1:35343/a/b/c/pct?q=1 location=/already%20encoded amount=1 r0=http://127.0.0.1:35343/already%20encoded renc=http://127.0.0.1:35343/already%20encoded
+[guix-8.20.0] C bad-pct GET rc=0 status=302 redirect=http://127.0.0.1:35343/bad%zz effective=http://127.0.0.1:35343/a/b/c/bad-pct?q=1 location=/bad%zz amount=1 r0=http://127.0.0.1:35343/bad%zz renc=http://127.0.0.1:35343/bad%zz
+[guix-8.20.0] C userinfo GET rc=0 status=302 redirect=http://u:p@127.0.0.1:35343/creds effective=http://127.0.0.1:35343/a/b/c/userinfo?q=1 location=http://u:p@127.0.0.1:35343/creds amount=1 r0=http://u:p@127.0.0.1:35343/creds renc=http://u:p@127.0.0.1:35343/creds
+[guix-8.20.0] C frag-abs GET rc=0 status=302 redirect=http://127.0.0.1:35343/withfrag#f effective=http://127.0.0.1:35343/a/b/c/frag-abs?q=1 location=/withfrag#f amount=1 r0=http://127.0.0.1:35343/withfrag#f renc=http://127.0.0.1:35343/withfrag#f
+[guix-8.20.0] C bad-ipv6 GET rc=0 status=302 redirect=http://[::1/x effective=http://127.0.0.1:35343/a/b/c/bad-ipv6?q=1 location=http://[::1/x amount=1 r0=uc22 renc=uc22
+[guix-8.20.0] C bad-port GET rc=0 status=302 redirect=http://127.0.0.1:99999/x effective=http://127.0.0.1:35343/a/b/c/bad-port?q=1 location=http://127.0.0.1:99999/x amount=1 r0=uc4 renc=uc4
+[guix-8.20.0] C backslash GET rc=0 status=302 redirect=http://127.0.0.1:35343/\x5cevil.invalid/x effective=http://127.0.0.1:35343/a/b/c/backslash?q=1 location=/\x5cevil.invalid/x amount=1 r0=http://127.0.0.1:35343/\x5cevil.invalid/x renc=http://127.0.0.1:35343/\x5cevil.invalid/x
+[guix-8.20.0] C two GET rc=8 status=302 redirect=NULL effective=http://127.0.0.1:35343/a/b/c/two?q=1 location=/first amount=1 r0=http://127.0.0.1:35343/first renc=http://127.0.0.1:35343/first
+[guix-8.20.0] C lower-name GET rc=0 status=302 redirect=http://127.0.0.1:35343/lc effective=http://127.0.0.1:35343/a/b/c/lower-name?q=1 location=/lc amount=1 r0=http://127.0.0.1:35343/lc renc=http://127.0.0.1:35343/lc
+[guix-8.20.0] C idn GET rc=0 status=302 redirect=http://caf\xc3\xa9.invalid/ effective=http://127.0.0.1:35343/a/b/c/idn?q=1 location=http://caf\xc3\xa9.invalid/ amount=1 r0=http://caf\xc3\xa9.invalid/ renc=http://caf\xc3\xa9.invalid/
+[guix-8.20.0] C long-8k GET rc=0 status=302 redirect=http://127.0.0.1:35343/aaaaaaaaaaaaaaaaa...(len 8023) effective=http://127.0.0.1:35343/a/b/c/long-8k?q=1 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 8001) amount=1 r0=http://127.0.0.1:35343/aaaaaaaaaaaaaaaaa...(len 8023) renc=http://127.0.0.1:35343/aaaaaaaaaaaaaaaaa...(len 8023)
+[guix-8.20.0] C long-90k GET rc=0 status=302 redirect=http://127.0.0.1:35343/aaaaaaaaaaaaaaaaa...(len 90023) effective=http://127.0.0.1:35343/a/b/c/long-90k?q=1 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 90001) amount=1 r0=http://127.0.0.1:35343/aaaaaaaaaaaaaaaaa...(len 90023) renc=http://127.0.0.1:35343/aaaaaaaaaaaaaaaaa...(len 90023)
+[guix-8.20.0] C long-110k GET rc=100 status=302 redirect=NULL effective=http://127.0.0.1:35343/a/b/c/long-110k?q=1 location=hc3
+[guix-8.20.0] C s200 GET rc=0 status=200 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s200?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s201 GET rc=0 status=201 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s201?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s299 GET rc=0 status=299 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s299?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s300 GET rc=0 status=300 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s300?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s301 GET rc=0 status=301 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s301?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s303 GET rc=0 status=303 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s303?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s304 GET rc=0 status=304 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s304?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s305 GET rc=0 status=305 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s305?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s306 GET rc=0 status=306 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s306?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s307 GET rc=0 status=307 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s307?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s308 GET rc=0 status=308 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s308?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s309 GET rc=0 status=309 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s309?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s399 GET rc=0 status=399 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s399?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s400 GET rc=0 status=400 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s400?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C rel-abs.head HEAD rc=0 status=302 redirect=http://127.0.0.1:35343/x/y?z=1 effective=http://127.0.0.1:35343/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:35343/x/y?z=1 renc=http://127.0.0.1:35343/x/y?z=1
+[guix-8.20.0] C s303.head HEAD rc=0 status=303 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s303?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s304.head HEAD rc=0 status=304 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s304?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C s307.head HEAD rc=0 status=307 redirect=http://127.0.0.1:35343/s effective=http://127.0.0.1:35343/a/b/c/s307?q=1 location=/s amount=1 r0=http://127.0.0.1:35343/s renc=http://127.0.0.1:35343/s
+[guix-8.20.0] C rel-abs#orig GET rc=0 status=302 redirect=http://127.0.0.1:35343/x/y?z=1 effective=http://127.0.0.1:35343/a/b/c/rel-abs?q=1#orig location=/x/y?z=1 amount=1 r0=http://127.0.0.1:35343/x/y?z=1 renc=http://127.0.0.1:35343/x/y?z=1
+[guix-8.20.0] C rel-frag#orig GET rc=0 status=302 redirect=http://127.0.0.1:35343/a/b/c/rel-frag?q=1#only effective=http://127.0.0.1:35343/a/b/c/rel-frag?q=1#orig location=#only amount=1 r0=http://127.0.0.1:35343/a/b/c/rel-frag?q=1#only renc=http://127.0.0.1:35343/a/b/c/rel-frag?q=1#only
+[guix-8.20.0] C frag-abs#orig GET rc=0 status=302 redirect=http://127.0.0.1:35343/withfrag#f effective=http://127.0.0.1:35343/a/b/c/frag-abs?q=1#orig location=/withfrag#f amount=1 r0=http://127.0.0.1:35343/withfrag#f renc=http://127.0.0.1:35343/withfrag#f
+[guix-8.20.0] C netpath#orig GET rc=0 status=302 redirect=http://127.0.0.1:35343/np effective=http://127.0.0.1:35343/a/b/c/netpath?q=1#orig location=//127.0.0.1:35343/np amount=1 r0=http://127.0.0.1:35343/np renc=http://127.0.0.1:35343/np
+[guix-8.20.0] C rel-abs@creds GET rc=0 status=302 redirect=http://me:secret@127.0.0.1:35343/x/y?z=1 effective=http://me:secret@127.0.0.1:35343/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://me:secret@127.0.0.1:35343/x/y?z=1 renc=http://me:secret@127.0.0.1:35343/x/y?z=1
+[guix-8.20.0] C netpath@creds GET rc=0 status=302 redirect=http://127.0.0.1:35343/np effective=http://me:secret@127.0.0.1:35343/a/b/c/netpath?q=1 location=//127.0.0.1:35343/np amount=1 r0=http://127.0.0.1:35343/np renc=http://127.0.0.1:35343/np
+[guix-8.20.0] C other-host@creds GET rc=0 status=302 redirect=http://other.invalid/x effective=http://me:secret@127.0.0.1:35343/a/b/c/other-host?q=1 location=http://other.invalid/x amount=1 r0=http://other.invalid/x renc=http://other.invalid/x
+[guix-8.20.0] C localhost GET rc=0 status=302 redirect=http://localhost:35343/x/y?z=1 effective=http://localhost:35343/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://localhost:35343/x/y?z=1 renc=http://localhost:35343/x/y?z=1
+[guix-8.20.0] C mapped GET rc=0 status=302 redirect=http://[::ffff:127.0.0.1]:35343/x/y?z=1 effective=http://[::ffff:127.0.0.1]:35343/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://[::ffff:127.0.0.1]:35343/x/y?z=1 renc=http://[::ffff:127.0.0.1]:35343/x/y?z=1
+[guix-8.20.0] -- Scheme
+[guix-8.20.0] probe.sps exited 0
+[guix-8.20.0] S libcurl 8.20.0 at /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+[guix-8.20.0] S rel-abs GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:35343/x/y?z=1 utf8=yes
+[guix-8.20.0] S rel-path GET rc=0 status=302 location=d/e amount=1 r0=http://127.0.0.1:35343/a/b/c/d/e utf8=yes
+[guix-8.20.0] S rel-dots GET rc=0 status=302 location=../../up amount=1 r0=http://127.0.0.1:35343/a/up utf8=yes
+[guix-8.20.0] S rel-query GET rc=0 status=302 location=?only=1 amount=1 r0=http://127.0.0.1:35343/a/b/c/rel-query?only=1 utf8=yes
+[guix-8.20.0] S rel-frag GET rc=0 status=302 location=#only amount=1 r0=http://127.0.0.1:35343/a/b/c/rel-frag?q=1#only utf8=yes
+[guix-8.20.0] S netpath GET rc=0 status=302 location=//127.0.0.1:35343/np amount=1 r0=http://127.0.0.1:35343/np utf8=yes
+[guix-8.20.0] S other-host GET rc=0 status=302 location=http://other.invalid/x amount=1 r0=http://other.invalid/x utf8=yes
+[guix-8.20.0] S https GET rc=0 status=302 location=https://127.0.0.1:1/s amount=1 r0=https://127.0.0.1:1/s utf8=yes
+[guix-8.20.0] S no-path GET rc=0 status=302 location=http://127.0.0.1:35343 amount=1 r0=http://127.0.0.1:35343/ utf8=yes
+[guix-8.20.0] S upper-scheme GET rc=0 status=302 location=HTTP://127.0.0.1:35343/UP amount=1 r0=http://127.0.0.1:35343/UP utf8=yes
+[guix-8.20.0] S ftp GET rc=0 status=302 location=ftp://127.0.0.1/f amount=1 r0=ftp://127.0.0.1/f utf8=yes
+[guix-8.20.0] S file GET rc=0 status=302 location=file:///etc/passwd amount=1 r0=file:///etc/passwd utf8=yes
+[guix-8.20.0] S javascript GET rc=0 status=302 location=javascript:alert(1) amount=1 r0=uc5
+[guix-8.20.0] S unknown-scheme GET rc=0 status=302 location=foo://bar/x amount=1 r0=uc5
+[guix-8.20.0] S empty GET rc=0 status=302 location= amount=1 r0=http://127.0.0.1:35343/a/b/c/empty?q=1 utf8=yes
+[guix-8.20.0] S blank GET rc=0 status=302 location= amount=1 r0=http://127.0.0.1:35343/a/b/c/blank?q=1 utf8=yes
+[guix-8.20.0] S missing GET rc=0 status=302 location=none
+[guix-8.20.0] S padded GET rc=0 status=302 location=/padded amount=1 r0=http://127.0.0.1:35343/padded utf8=yes
+[guix-8.20.0] S tab GET rc=0 status=302 location=/tabbed amount=1 r0=http://127.0.0.1:35343/tabbed utf8=yes
+[guix-8.20.0] S space-inside GET rc=0 status=302 location=/a\x20b/c\x20d amount=1 r0=http://127.0.0.1:35343/a%20b/c%20d utf8=yes
+[guix-8.20.0] S utf8 GET rc=0 status=302 location=/caf\xc3\xa9 amount=1 r0=http://127.0.0.1:35343/caf%C3%A9 utf8=yes
+[guix-8.20.0] S latin1 GET rc=0 status=302 location=/caf\xe9 amount=1 r0=http://127.0.0.1:35343/caf%E9 utf8=yes
+[guix-8.20.0] S ctl GET rc=0 status=302 location=/x\x01y amount=1 r0=http://127.0.0.1:35343/x%01y utf8=yes
+[guix-8.20.0] S del GET rc=0 status=302 location=/x\x7fy amount=1 r0=http://127.0.0.1:35343/x%7Fy utf8=yes
+[guix-8.20.0] S pct GET rc=0 status=302 location=/already%20encoded amount=1 r0=http://127.0.0.1:35343/already%20encoded utf8=yes
+[guix-8.20.0] S bad-pct GET rc=0 status=302 location=/bad%zz amount=1 r0=http://127.0.0.1:35343/bad%zz utf8=yes
+[guix-8.20.0] S userinfo GET rc=0 status=302 location=http://u:p@127.0.0.1:35343/creds amount=1 r0=http://u:p@127.0.0.1:35343/creds utf8=yes
+[guix-8.20.0] S frag-abs GET rc=0 status=302 location=/withfrag#f amount=1 r0=http://127.0.0.1:35343/withfrag#f utf8=yes
+[guix-8.20.0] S bad-ipv6 GET rc=0 status=302 location=http://[::1/x amount=1 r0=uc22
+[guix-8.20.0] S bad-port GET rc=0 status=302 location=http://127.0.0.1:99999/x amount=1 r0=uc4
+[guix-8.20.0] S backslash GET rc=0 status=302 location=/\x5cevil.invalid/x amount=1 r0=http://127.0.0.1:35343/\x5cevil.invalid/x utf8=yes
+[guix-8.20.0] S two GET rc=8
+[guix-8.20.0] S lower-name GET rc=0 status=302 location=/lc amount=1 r0=http://127.0.0.1:35343/lc utf8=yes
+[guix-8.20.0] S idn GET rc=0 status=302 location=http://caf\xc3\xa9.invalid/ amount=1 r0=http://caf\xc3\xa9.invalid/ utf8=yes
+[guix-8.20.0] S long-8k GET rc=0 status=302 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 8001) amount=1 r0=http://127.0.0.1:35343/aaaaaaaaaaaaaaaaa...(len 8023) utf8=yes
+[guix-8.20.0] S long-90k GET rc=0 status=302 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 90001) amount=1 r0=http://127.0.0.1:35343/aaaaaaaaaaaaaaaaa...(len 90023) utf8=yes
+[guix-8.20.0] S long-110k GET rc=100
+[guix-8.20.0] S s200 GET rc=0 status=200 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s201 GET rc=0 status=201 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s299 GET rc=0 status=299 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s300 GET rc=0 status=300 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s301 GET rc=0 status=301 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s303 GET rc=0 status=303 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s304 GET rc=0 status=304 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s305 GET rc=0 status=305 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s306 GET rc=0 status=306 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s307 GET rc=0 status=307 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s308 GET rc=0 status=308 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s309 GET rc=0 status=309 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s399 GET rc=0 status=399 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s400 GET rc=0 status=400 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S rel-abs.head HEAD rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:35343/x/y?z=1 utf8=yes
+[guix-8.20.0] S s303.head HEAD rc=0 status=303 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s304.head HEAD rc=0 status=304 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S s307.head HEAD rc=0 status=307 location=/s amount=1 r0=http://127.0.0.1:35343/s utf8=yes
+[guix-8.20.0] S rel-abs#orig GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:35343/x/y?z=1 utf8=yes
+[guix-8.20.0] S rel-frag#orig GET rc=0 status=302 location=#only amount=1 r0=http://127.0.0.1:35343/a/b/c/rel-frag?q=1#only utf8=yes
+[guix-8.20.0] S frag-abs#orig GET rc=0 status=302 location=/withfrag#f amount=1 r0=http://127.0.0.1:35343/withfrag#f utf8=yes
+[guix-8.20.0] S netpath#orig GET rc=0 status=302 location=//127.0.0.1:35343/np amount=1 r0=http://127.0.0.1:35343/np utf8=yes
+[guix-8.20.0] S rel-abs@creds GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://me:secret@127.0.0.1:35343/x/y?z=1 utf8=yes
+[guix-8.20.0] S netpath@creds GET rc=0 status=302 location=//127.0.0.1:35343/np amount=1 r0=http://127.0.0.1:35343/np utf8=yes
+[guix-8.20.0] S other-host@creds GET rc=0 status=302 location=http://other.invalid/x amount=1 r0=http://other.invalid/x utf8=yes
+[guix-8.20.0] S localhost GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://localhost:35343/x/y?z=1 utf8=yes
+[guix-8.20.0] S mapped GET rc=0 status=302 location=/x/y?z=1 amount=1 r0=http://[::ffff:127.0.0.1]:35343/x/y?z=1 utf8=yes
+[guix-8.20.0] S -- 64 probes
+[guix-8.20.0] -- compare
+[guix-8.20.0] compare: 64 agree, 0 differ, of 64 C lines and 64 Scheme lines

@@ -2,7 +2,10 @@
 ;;; (http-client private drive): the shell for one call, on its caller's
 ;;; thread (the M5 plan, section 3.6). It reads the clocks, submits, awaits,
 ;;; and hands each outcome to the core, (http-client private exchange),
-;;; which answers what comes next.
+;;; which answers what comes next: a redirect is a next with a wait of 0,
+;;; whose request goes through the core's submission at once, with the time
+;;; left, as the first did. A next with a wait above 0 is a retry's, slice
+;;; 3's, and this shell refuses it.
 ;;;
 ;;; A call needs interrupts on: its await sleeps between its looks, and
 ;;; inside a critical section that sleep would hold every other thread's
@@ -15,8 +18,10 @@
 ;;; Anything else raised there, an interrupt handler's own raise among it,
 ;;; passes through as raised.
 ;;;
-;;; One dynamic-wind spans the whole loop. Its after thunk cancels the token
-;;; it recorded, when that token is not done: an escape from the await, by
+;;; One dynamic-wind spans the whole loop, every transfer of the call. Its
+;;; after thunk cancels the token it recorded last, when that token is not
+;;; done; every earlier one was done before the next submit. An escape
+;;; from the await, by
 ;;; an interrupt handler, a timer, a Chez engine's expiry or a
 ;;; continuation, ends the transfer rather than leave it running with no
 ;;; one to await it. The wind is Chez's critical one, (dynamic-wind #t
@@ -27,7 +32,9 @@
 ;;; records its token run in one critical section, so an interrupt handler
 ;;; that escapes cannot fall between them, nor between the record and the
 ;;; protection: a keyboard interrupt made pending inside the section runs as
-;;; it ends, once the token is recorded (traps.md). A submit never waits
+;;; it ends, once the token is recorded (traps.md). Each submit of a call,
+;;; a redirect's as the first, shares its section with its record. A
+;;; submit never waits
 ;;; but for the engine's mutex; it does copy the request's body inside the
 ;;; section, as its private copy: about 50 ms for 64 MB, and 207 to 227 ms
 ;;; for 256 MB (.plans/research/m5/submit-time/), which Ctrl-C then waits
@@ -91,7 +98,8 @@
 
   ;; drive-exchange : Engine State -> Response
   ;; STATE's call, driven on ENGINE until the core answers done, whose
-  ;; response it answers, or fail, whose condition it raises. Each step
+  ;; response it answers, or fail, whose condition it raises; a next with a
+  ;; wait of 0, a redirect, is submitted at once, from its state. Each step
   ;; reads the monotonic clock and the UTC clock, with a draw of 0.0: no
   ;; retry draws before slice 3. With interrupts off it refuses, before
   ;; the first submit.
@@ -102,27 +110,34 @@
       (dynamic-wind #t
         (lambda () #f)
         (lambda ()
-          (let ((submission (exchange-submission state (monotonic-ns))))
-            (case (car submission)
-              ((fail) (raise (cadr submission)))
-              (else
-               (let* ((state (cadr submission))
-                      (request (caddr submission))
-                      (refusal (guard (e ((curl-error? e) (list 'refused e)))
-                                 (critical-section
-                                  (set! token (curl-submit engine request)))
-                                 #f))
-                      (outcome (or refusal
-                                   (guard (e ((curl-error? e) (list 'failed e)))
-                                     (list 'response (curl-token-await token)))))
-                      (step (exchange-step state outcome (monotonic-ns) (utc-seconds) 0.0)))
-                 (case (car step)
-                   ((done) (cadr step))
-                   ((fail) (raise (cadr step)))
-                   (else
-                    (assertion-violation 'drive-exchange
-                                         "the core answered a step this shell does not take before redirects and retries"
-                                         step))))))))
+          (let loop ((state state))
+            (let ((submission (exchange-submission state (monotonic-ns))))
+              (case (car submission)
+                ((fail) (raise (cadr submission)))
+                (else
+                 (let* ((state (cadr submission))
+                        (request (caddr submission))
+                        (refusal (guard (e ((curl-error? e) (list 'refused e)))
+                                   (critical-section
+                                    (set! token (curl-submit engine request)))
+                                   #f))
+                        (outcome (or refusal
+                                     (guard (e ((curl-error? e) (list 'failed e)))
+                                       (list 'response (curl-token-await token)))))
+                        (step (exchange-step state outcome (monotonic-ns) (utc-seconds) 0.0)))
+                   (case (car step)
+                     ((done) (cadr step))
+                     ((fail) (raise (cadr step)))
+                     ((next)
+                      (if (eqv? (cadddr step) 0)
+                          (loop (cadr step))
+                          (assertion-violation 'drive-exchange
+                                               "the core answered a next with a wait, a retry's, which this shell does not take before retries"
+                                               step)))
+                     (else
+                      (assertion-violation 'drive-exchange
+                                           "the core answered a step this shell does not know"
+                                           step)))))))))
         (lambda ()
           (when (and token (not (curl-token-done? token)))
             (curl-token-cancel token)))))))

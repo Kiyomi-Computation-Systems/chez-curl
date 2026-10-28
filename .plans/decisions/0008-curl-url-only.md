@@ -5,7 +5,8 @@
   rows; amended 2026-10-23 with what M2 slice 1 built, and with what M2 slice 2 changed; amended
   2026-10-24: the caller checks, the engine parses (M3); amended 2026-10-27: a redirect's
   `Location`, measured (the M5 plan), and on the Mac; amended 2026-10-27: a URL's parts,
-  measured, and every answer UTF-8 or refused (M5 slice 1)
+  measured, and every answer UTF-8 or refused (M5 slice 1); amended 2026-10-28: the `Location`
+  through chez-curl's own reading, and `localhost`, measured (M5 slice 2)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D2 (brief §10)
@@ -309,3 +310,55 @@ through C, on 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, Guix's 8.20.0
   ([results/mac-8.7.1.log](../research/m5/url-parts/results/mac-8.7.1.log)), and
   `test-url-parts` printed 8.5.0's row for it, now the file's fifth; its `make test` passed every
   other suite, `test-http-client`'s 72 among them.
+
+## Amendment, 2026-10-28: the `Location` through chez-curl's own reading, measured (M5 slice 2)
+
+The M5 plan's §5.1 asked that the `Location` cases above resolve through chez-curl as the C
+probe resolved them, byte for byte. Slice 2 measured it ([research](../research/m5/location/)),
+on the same five libcurls: the 62 cases above, and `rel-abs` again from `localhost` and from
+`[::ffff:127.0.0.1]`, 64 a lane. Each case ran twice in one run against one server: by the C
+probe above, and by `probe.sps`, through an engine, as the high level makes a transfer, its
+response's headers read as chez-curl reads them, by `curl_easy_nextheader`, each value a Latin-1
+string. The first `Location` header, A to Z folded, was resolved from that string's bytes by
+`curl_url_set` against the URL requested, flags 0.
+
+- **All 64 agree, on each of the five:** the status, the first `Location`'s bytes, how many
+  there were, and the resolution, byte for byte; and a failed transfer's code, 8 for two
+  `Location` headers on 8.20.0 and 8.23.0, and 27 or 100 for 110,000 bytes, as above. The
+  comparator, given five planted differences, one in each field it reads, caught each
+  ([results/compare-control.log](../research/m5/location/results/compare-control.log)).
+- **8.5.0's lone CR comes through chez-curl's reading too:** an empty or blank `Location` reads
+  as `\r` there, which `curl_url_set` refuses with 3, and as empty on 7.85.0, 8.20.0 and
+  8.23.0. 7.85.0
+  resolves an empty one as it resolves `#only`, dropping the last segment and the query; 8.20.0
+  and 8.23.0 answer the URL requested. The M5 plan's §3.4 answers either as no redirect.
+- **No resolution of the 62 came back as bytes that are not UTF-8,** but every Latin-1 byte
+  among them sat in a relative reference, which libcurl encodes: the path's came back as `%e9`
+  or `%E9`, and the UTF-8 host raw. The slice's review found that a Latin-1 byte in an absolute
+  URL, in its path, query, fragment or user, comes back raw, and was refused as `not-utf-8`. So
+  a header's bytes are now encoded before they are resolved
+  ([ADR-0029](0029-fragment-written-then-parsed-whole.md), amended 2026-10-28); a Latin-1 host
+  is still refused, since libcurl decodes a host's `%XX`.
+- **`localhost` reaches a server on 127.0.0.1,** on all five: by `localhost.c`, with the
+  options the engine sets that bear on a connect, libcurl connected to 127.0.0.1 each time; and
+  through the engine, which answered the server's 302. So does `[::ffff:127.0.0.1]`, at that
+  address. A live test changes host by `localhost`.
+- **A fragment set by `curl_url_set` is stored unchecked, and its hex case moves by version,**
+  so `curl-url-with-fragment` writes the URL and parses it whole, as `curl-url-append-query`
+  does ([ADR-0029](0029-fragment-written-then-parsed-whole.md), new).
+- **`tests/test-url-location.sps` holds `curl-url-resolve`'s bytes and
+  `curl-url-with-fragment`,** as test-url-parts holds slice 1's: 170 cases, 146 shared by
+  7.85.0, 8.5.0, 8.20.0 and 8.23.0, and `tests/known-url-location-verdicts.sexp` with a row per
+  version for the other 24. Of the 39 resolutions it shares with the probe, the port written as
+  40001 and the empty value the one each probe sent, all 39 answer as the probe's did on 8.20.0
+  and 8.23.0, which encode a relative reference's bytes as the suite now does; on 7.85.0 and
+  8.5.0, all but the four the encoding changes, a byte above 0x7F in upper-case hex where they
+  wrote lower, and 0x01 and 0x7F followed where they refused, and on 8.5.0 its lone CR, which
+  the high level never resolves
+  ([results/suite-vs-probe.log](../research/m5/location/results/suite-vs-probe.log)).
+- **libcurl gives an IPv6 host without its zone ID,** on all five: `[fe80::1%25eth0]` and
+  `[fe80::1%25eth1]` both read as the host `[fe80::1]`, and the zone as a part of its own,
+  `CURLUPART_ZONEID`, kept in its case ([results/zoneid-*.log](../research/m5/location/results/)).
+  The slice's review found the origin rule comparing hosts alone, so a call's credentials
+  crossed zones. `curl-url-part` now reads `zoneid` too, and another zone is another host. An
+  empty zone, `%25` inside one and `%30` read otherwise on 8.23.0.

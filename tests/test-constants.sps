@@ -160,6 +160,7 @@
     (curlupart-path . "CURLUPART_PATH")
     (curlupart-query . "CURLUPART_QUERY")
     (curlupart-fragment . "CURLUPART_FRAGMENT")
+    (curlupart-zoneid . "CURLUPART_ZONEID")
     (curlu-default-port . "CURLU_DEFAULT_PORT")
     (curlinfo-response-code . "CURLINFO_RESPONSE_CODE")
     (curlinfo-http-version . "CURLINFO_HTTP_VERSION")

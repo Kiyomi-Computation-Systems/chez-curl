@@ -2,7 +2,8 @@
 ;;; The suite for (http-client), the high level's first slice (ADR-0025; the
 ;;; M5 plan, sections 3.1 to 3.3, 3.6 and 4): sessions, the verbs, the keys
 ;;; and their merge, the encodings, the response, the conditions, the
-;;; call's bound, the functional core and the shell for one call.
+;;; call's bound, the functional core and the shell for one call. Redirects,
+;;; slice 2's, are tests/test-redirect.sps'.
 ;;;
 ;;;   - (http-client)'s exports, written out;
 ;;;   - sessions: their keys refused by name, a bad value refused with no
@@ -221,7 +222,8 @@
 
 ;; --- the exports ----------------------------------------------------------------------
 
-;; Written out: the M5 plan's slice 1, section 3.1, and the brief's names.
+;; Written out: the M5 plan's slices 1 and 2, section 3.1, and the brief's
+;; names.
 (define http-client-exports
   '(make-http-session http-session? http-session-close call-with-http-session
     http-request http-get http-head http-post http-put http-patch http-delete
@@ -231,11 +233,13 @@
     &http-error http-error?
     &http-request-error http-request-error? http-request-error-field http-request-error-value
     http-request-error-reason http-request-error-reasons
+    &http-redirect-error http-redirect-error? http-redirect-error-reason
+    http-redirect-error-response http-redirect-error-location http-redirect-error-reasons
     &http-timeout http-timeout? http-timeout-timeout-ms
     &http-exchange http-exchange? http-exchange-method http-exchange-url http-exchange-history
     http-exchange-transfers))
 
-(test-equal "(http-client) exports exactly slice 1's names, none of them (curl)'s"
+(test-equal "(http-client) exports exactly slices 1 and 2's names, none of them (curl)'s"
   (list (symbols-sorted http-client-exports) '())
   (let ((exports (library-exports '(http-client))))
     (list (symbols-sorted exports)
@@ -243,7 +247,7 @@
 
 (test-equal "http-request-error-reasons, written out"
   '(unknown-key repeated-key missing-value body-and-form body-not-allowed not-a-body
-    not-name-value-pairs)
+    not-name-value-pairs not-a-redirect-count not-a-boolean)
   http-request-error-reasons)
 
 (test-equal "the conditions' types: the request error and the timeout under &http-error, under &curl-error and &error; &http-exchange under &condition alone, no error"
@@ -256,7 +260,7 @@
           (list (serious-condition? c) (error? c) (curl-error? c) (http-error? c) (http-timeout? c)
                 (http-exchange? c)))))
 
-(test-equal "make-http-request-error refuses a reason that is not one of the seven, an assertion violation"
+(test-equal "make-http-request-error refuses a reason that is not one of the nine, an assertion violation"
   '(raised (assertion make-http-request-error))
   (outcome (lambda () (make-http-request-error 'key 'k 'unknown))))
 
@@ -269,14 +273,14 @@
 ;; Before any session is made here: no engine runs, so the multi count is
 ;; the suite's own evidence that a refusal made none.
 
-(test-equal "make-http-session refuses an unknown key by name, redirects, allow-downgrade, retry, body, method and a string among them, each as &http-request-error, field key, with no engine made"
+(test-equal "make-http-session refuses an unknown key by name, retry, body, method, redirect, a string among them, each as &http-request-error, field key, with no engine made"
   (map (lambda (key) (list (list 'raised '(http-error) (list 'http-request-error 'key key 'unknown-key)) 0))
-       (list 'redirects 'allow-downgrade 'retry 'body 'method "timeout-ms"))
+       (list 'retry 'body 'method 'redirect "timeout-ms" "redirects"))
   (in-order (lambda (key)
               (let* ((refused (outcome (lambda () (make-http-session key 1))))
                      (multi (count-of 'multi)))
                 (list refused multi)))
-            (list 'redirects 'allow-downgrade 'retry 'body 'method "timeout-ms")))
+            (list 'retry 'body 'method 'redirect "timeout-ms" "redirects")))
 
 (test-equal "make-http-session refuses a repeated key and a key with no value by name, and an unknown key before a missing value, with no engine made"
   (list '(raised (http-error) (http-request-error key timeout-ms repeated-key))
@@ -355,11 +359,11 @@
 (test-equal "call-with-http-session refuses no procedure last, and a refused key, with no engine made"
   (list '(raised (assertion call-with-http-session))
         '(raised (assertion call-with-http-session))
-        '(raised (http-error) (http-request-error key redirects unknown-key))
+        '(raised (http-error) (http-request-error key retry unknown-key))
         0)
   (let* ((none (outcome (lambda () (call-with-http-session))))
          (no-procedure (outcome (lambda () (call-with-http-session 'timeout-ms 5000))))
-         (refused-key (outcome (lambda () (call-with-http-session 'redirects 3 (lambda (s) s)))))
+         (refused-key (outcome (lambda () (call-with-http-session 'retry 3 (lambda (s) s)))))
          (multi (count-of 'multi)))
     (list none no-procedure refused-key multi)))
 
@@ -566,8 +570,10 @@
                      'connect-timeout-ms connect))
 
 ;; table-state : (U Positive-Integer #f) (U Positive-Integer #f) -> State
+;; With the session's default redirect policy: 20, no downgrade.
 (define (table-state bound connect)
-  (make-exchange 'post "http://H.example/p?q=1" (table-request bound connect) bound table-start))
+  (make-exchange 'post "http://H.example/p?q=1" (table-request bound connect) bound table-start
+                 20 #f))
 
 ;; parts : Condition (Listof Condition) -> (Listof Any)
 ;; C's simple conditions, each named: (http-timeout MS), (exchange ...),
@@ -1127,8 +1133,8 @@
             (more (- (transfers-started) started)))
        (append refusals (list more))))
 
-   (test-equal "a call's keys refused by name, compounded with &http-exchange: unknown, redirects among them in slice 1; repeated; missing a value"
-     (list (list 'raised '(http-error) '(http-request-error key redirects unknown-key)
+   (test-equal "a call's keys refused by name, compounded with &http-exchange: unknown, retry among them before slice 3; repeated; missing a value"
+     (list (list 'raised '(http-error) '(http-request-error key retry unknown-key)
                  (list 'exchange 'get echo '() 0))
            (list 'raised '(http-error) '(http-request-error key body repeated-key)
                  (list 'exchange 'post echo '() 0))
@@ -1136,7 +1142,7 @@
                  (list 'exchange 'post echo '() 0))
            (list 'raised '(http-error) '(http-request-error key method unknown-key)
                  (list 'exchange 'get echo '() 0)))
-     (list (outcome (lambda () (http-get s echo 'redirects 3)))
+     (list (outcome (lambda () (http-get s echo 'retry 3)))
            (outcome (lambda () (http-post s echo 'body "a" 'body "b")))
            (outcome (lambda () (http-post s echo 'timeout-ms 1000 'form)))
            (outcome (lambda () (http-get s echo 'method 'post)))))
