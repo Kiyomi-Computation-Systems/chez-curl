@@ -1,0 +1,12 @@
+$ scripts/guix-env sh -c 'pids=; i=0; while [ $i -lt 24 ]; do ( while :; do :; done ) & pids="$pids $!"; i=$((i + 1)); done; $CHEZ --libdirs src:tests:build/scheme-libs --program build/m5s1-builder/kept/engine/slices.sps; for p in $pids; do kill $p; done'
+(0 never-live (raised cancelled 1))
+(1 never-live (raised cancelled 1))
+(2 never-live (raised cancelled 1))
+(3 never-live (raised cancelled 1))
+(4 never-live (raised cancelled 1))
+(5 never-live (raised cancelled 1))
+(6 never-live (raised cancelled 1))
+(7 never-live (raised cancelled 1))
+(8 never-live (raised cancelled 1))
+(9 never-live (raised cancelled 1))
+exit 0

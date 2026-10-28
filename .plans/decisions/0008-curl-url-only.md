@@ -4,7 +4,8 @@
   2026-10-19: the verdicts vary by version, so the suite holds shared answers and version
   rows; amended 2026-10-23 with what M2 slice 1 built, and with what M2 slice 2 changed; amended
   2026-10-24: the caller checks, the engine parses (M3); amended 2026-10-27: a redirect's
-  `Location`, measured (the M5 plan)
+  `Location`, measured (the M5 plan), and on the Mac; amended 2026-10-27: a URL's parts,
+  measured, and every answer UTF-8 or refused (M5 slice 1)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D2 (brief §10)
@@ -256,3 +257,55 @@ that a Latin-1 byte in a host or in the user info comes back raw from `curl_url_
 by part, where `utf8->string` reads `caf\xe9` and `caf\xe8` as one string. So each URL
 function refuses an answer that is not UTF-8, by a new reason, `not-utf-8`, rather than decode
 it (the M5 plan, §3.1).
+
+On the Mac, the maintainer ran the probe against Apple's 8.7.1 on 2026-10-27
+([results/mac-8.7.1.log](../research/m5/redirect-url/results/mac-8.7.1.log)). It answered as
+8.5.0 did on 56 of the 62 cases: a URL for a 3xx alone, credentials kept, `javascript:` and the
+control bytes handed back raw, the last segment and the query dropped for `#only`, a path's
+bytes in lower-case hex, and the first of two `Location` headers taken. The other six differ
+three ways: an empty or blank `Location` reads as empty, not as 8.5.0's lone CR; a 110,000-byte
+one fails with 100, as from 8.20.0, not 27; and `EFFECTIVE_URL` keeps the request's credentials,
+as 7.85.0 and 8.20.0 do. Where libcurl's answer is a parsed URL, it is `curl_url_set`'s
+resolution there too.
+
+## Amendment, 2026-10-27: a URL's parts, measured, and every answer UTF-8 or refused (M5 slice 1)
+
+M5 slice 1 adds two URL functions to `(curl)`, `curl-url-part` and `curl-url-append-query`,
+and measured `curl_url_set` and `curl_url_get` first ([research](../research/m5/url-parts/)),
+through C, on 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, Guix's 8.20.0 and 8.23.0:
+44 URLs read back by part, 56 appends with `CURLU_APPENDQUERY`, and 2 plain sets of a query.
+
+- **libcurl decodes a host's `%XX`,** on all five: `http://caf%E9.example/` comes back as
+  `caf`, the byte 0xE9 and `.example`, whole and as the host; `%C3` alone as a lone lead byte;
+  `%41` as `A` and `%2E` as `.`. `%00` and `%2F` there are refused, 21. The user info, the
+  path, the query and the fragment keep their `%XX`. A raw byte above 0x7F comes back as it
+  was given, in every part of a whole URL.
+- **So a string, which chez-curl sends as UTF-8, can come back as bytes that are not UTF-8.**
+  Every function of `(curl private url)` now reads what `curl_url_get` gives back as strict
+  UTF-8, and refuses anything else as `&curl-url-error`, reason `not-utf-8`, no code, naming
+  the string it was given, as the M5 plan's review asked (above). That covers `url-normalize`,
+  `url-resolve` and the scheme check a submit runs, which now takes the string it names: a
+  submit of `http://caf%E9.example/` is refused on the caller's thread. Chez's decoders drop a
+  leading U+FEFF, so the decode puts one back (traps.md).
+- **Setting a part changes its hex case** (ADR-0028): lower on 7.85.0, 8.5.0 and 8.20.0, upper
+  on 8.23.0; a whole URL keeps it on all five. So `curl-url-append-query` writes the URL and
+  parses it whole, and reads its query back, or refuses the part as `query-not-kept`.
+- **What else varies:** an empty user is absent on 7.85.0 and `""` from 8.5.0; an empty password
+  is absent on 7.85.0, which also drops its `:` from the URL; an empty query is `""` on 7.85.0
+  and 8.5.0 and absent from 8.20.0, the URL dropping its `?` on all five; and a space in a
+  query, parsed whole, is refused with 3 (`MALFORMED_INPUT`) on 8.5.0 and 8.20.0, and 26
+  (`BAD_QUERY`) on 7.85.0 and 8.23.0.
+- **Alike on all five:** an explicit default port, a host's case and an IPv6 host's brackets
+  are kept, `:080` becomes `:80`, a port of 0 is taken, and `CURLU_DEFAULT_PORT` gives 80 and
+  443.
+- **`tests/test-url-parts.sps` holds them,** in the shape `test-url` holds its verdicts: shared
+  answers for 113 cases, and `tests/known-url-part-verdicts.sexp` with a row per version for
+  the 6 that vary. It is a file of its own so that a version row for the Mac's 8.7.1, owed
+  until it runs, fails only there. On the 36 URLs both ran, its parts answers agree with the C
+  probe's `curl_url_get` on each Linux libcurl; the suite's other 5 URLs, `file:`, `ftp:`, two
+  that hold U+FEFF and a port of 99999, and the space's codes, are the suite's own answers, as
+  each lane printed them ([research](../research/m5/url-parts/results/printed-rows.log)).
+- **The Mac, 2026-10-28:** Apple's 8.7.1 answered all 103 of the probe's lines as 8.5.0 did
+  ([results/mac-8.7.1.log](../research/m5/url-parts/results/mac-8.7.1.log)), and
+  `test-url-parts` printed 8.5.0's row for it, now the file's fifth; its `make test` passed every
+  other suite, `test-http-client`'s 72 among them.

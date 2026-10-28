@@ -356,6 +356,23 @@ it should not be a comment. (chez-cmark-gfm)
   and ends its poll early. glibc's `system` also ignores SIGINT in the whole
   process while its command runs (`system(3)`): a Ctrl-C test captures nothing
   while it waits. (chez-curl, the M3 plan, spike E1 and M3 slice 2)
+* **Chez's UTF-8 decoders drop a leading byte-order mark, the strict one too.** `utf8->string`,
+  and `bytevector->string` with a transcoder whose error-handling mode is `raise`, read EF BB
+  BF at a bytevector's start as nothing, and keep the next one: two give one U+FEFF. M5 slice
+  1's strict decode of `curl_url_get`'s answers would have answered `"x"` for the query of
+  `http://h.example/p?\xFEFF;x`; it puts the character back, and `test-url-parts` holds a query
+  and a fragment that begin with it. (chez-curl, M5 slice 1)
+* **Under Valgrind a collection takes about 140 ms, so a timed window can catch one.**
+  test-engine's check that a failed engine's second stop returns within 50 ms took 142 to 145
+  ms in 2 of 3 Valgrind runs on M5 slice 1's branch, which allocates more, and passed on main;
+  a copy that counted `(collections)` showed one in the window. `(collect)` just before a short
+  timed window opens leaves none due inside it ([research](research/m5/valgrind-collect/)).
+  (chez-curl, M5 slice 1)
+* **Under Valgrind a sleep of no time may not let another thread run.** test-url's flip test
+  yielded with `(sleep (make-time 'time-duration 0 0))` so its flipper would run; in one of three
+  runs on M5 slice 1's branch the flipper never did, 0 refusals of 1000, where 1 ms gave 490 to
+  500 in each of six ([research](research/m5/valgrind-yield/)). A thread that must let another
+  run sleeps for real. (chez-curl, M5 slice 1)
 
 ## Checks and environment
 
@@ -970,3 +987,23 @@ it should not be a comment. (chez-cmark-gfm)
   sorted `src/`'s files directory by directory, so `curl/` came before `curl.sls`, where the
   program sorts whole paths, `.` before `/`. It passed while `(curl)` was the only public
   library; `(curl unsupported)` failed it. (chez-curl, M4 slice 4)
+* **Setting one part of a URL changes its percent-encoding's hex case, one way or the other by
+  version.** `curl_url_set` of `CURLUPART_QUERY`, with `CURLU_APPENDQUERY` or without, wrote
+  `%3D` as `%3d` on 7.85.0, 8.5.0 and 8.20.0, and `%3d` as `%3D` on 8.23.0; a whole URL parsed
+  kept the case it was given on all five. So no case an encoder picks goes out alike when a
+  part is set: ADR-0028 writes the URL and parses it whole. (chez-curl, M5 slice 1)
+* **libcurl decodes a host's percent-encoding, so a UTF-8 string can come back as bytes that
+  are not UTF-8.** `http://caf%E9.example/` came back from `curl_url_get` as `caf` and the byte
+  0xE9, whole and as the host, on all five Linux libcurls; `%C3` alone came back as a lone
+  lead byte, and `%41` as `A`. The user info, the path, the query and the fragment kept their
+  `%XX`. `utf8->string` would have read the byte as U+FFFD, and named a host no one gave, so
+  every URL function refuses such an answer as `not-utf-8`. (chez-curl, M5 slice 1)
+* **An engine's queue and live table both miss a token it is setting up.** The turn empties
+  its queue in one hold of the engine's mutex and enters each transfer in its live table in a
+  later one, after `start-transfer!`, so `curl-engine-queued-count` plus
+  `curl-engine-live-count` reads 0 for a token neither done nor live. M5 slice 1's escape test
+  used that sum as its witness and failed 5 of 40 runs under load; a probe then saw the gap
+  on 299 of 300 submits ([research](research/m5/engine-window/)). Each count is read in a hold
+  of its own, so the engine can also move the token between the two reads: the witness read 2
+  once, for one transfer ([research](research/m5/http-client/witness/)). Read the token, or
+  wait past the setup. (chez-curl, M5 slice 1)

@@ -225,10 +225,18 @@ provisional. They bind until that record is accepted or amended.
 - **Origins are compared by** scheme, lowercased host and effective port, never as strings
   (ADR-0008).
 - **No dependency on uriparse** (ADR-0008).
+- **Every string `curl_url_get` gives back is read as strict UTF-8, or refused** as
+  `&curl-url-error`, `not-utf-8`, naming the string the caller gave: libcurl decodes a host's
+  `%XX`, so a UTF-8 URL can come back as other bytes. Never `utf8->string`, which reads them
+  as U+FFFD. The decode keeps a leading U+FEFF, which Chez's decoders drop (ADR-0008,
+  amended 2026-10-27, slice 1). One exception: a response's `CURLINFO_EFFECTIVE_URL` is still
+  read with `utf8->string`. While `FOLLOWLOCATION` stays owned and off it is the URL the strict
+  check passed, and a refusal there would raise on the engine's thread.
 - **curl's URL verdicts vary by version,** so the URL suite holds a shared answer for each
   case every recorded libcurl agrees on, and a row per libcurl version for the cases that
   vary. A libcurl with no row fails, printing its row. Answers are asserted whole, as a URL
-  or a `CURLUcode`, never a message (ADR-0008, amended).
+  or a `CURLUcode`, never a message (ADR-0008, amended). `test-url-parts` holds `curl-url-part`'s
+  and `curl-url-append-query`'s the same way, in a rows file of its own.
 
 ## TLS
 
@@ -631,9 +639,23 @@ provisional. They bind until that record is accepted or amended.
 - **Every call takes an explicit session.** There is no default session, and the high level
   starts no thread a caller did not ask for. A session owns one engine, and
   `call-with-http-session` stops it when its procedure returns or escapes (ADR-0025).
-- **A call's body is a bytevector, a string sent as UTF-8, or a form;** `params` add to the
-  URL's query through libcurl's URL API, never by Scheme splicing a string. The form encoding is
+- **A call's body is a bytevector, a string sent as UTF-8, or a form.** The form encoding is
   chez-curl's, `application/x-www-form-urlencoded`. No JSON (ADR-0025).
+- **`params` reach the URL by `curl-url-append-query`:** the URL written from what
+  `curl_url_get` gave back, a separator and the encoded part, then parsed whole by `curl_url`,
+  which keeps the part's hex case on every libcurl, where setting a part does not; and its query
+  read back, or `query-not-kept` (ADR-0028). Never `CURLU_APPENDQUERY`, and never a URL that
+  `curl_url` has not parsed whole.
+- **A call's drive winds with Chez's critical `dynamic-wind`,** `(dynamic-wind #t ...)`, so a
+  second escape that lands in its after thunk cannot skip the cancel; the submit and the record
+  of its token share one `critical-section`; and a call with interrupts off is refused before
+  it submits, by `(curl)`'s own refusal of a wait there. A session's close waits, so it cannot
+  wind critically: a second escape as it starts can leave the engine running, documented, not
+  prevented (ADR-0025, amended 2026-10-27).
+- **A bounded call gives each transfer the time left as its `timeout-ms`, and as its
+  `connect-timeout-ms` when the caller gave none, capped at 300,000 ms:** libcurl's connect
+  takes that default when none is set, so with more than 300 s left its 28 is not the bound's,
+  and the cap keeps a bounded connect no longer than an unbounded one (the M5 plan, §3.5).
 - **Retries are off unless the session or the call names a policy** (ADR-0026). Off means
   chez-curl adds no attempt: libcurl itself may resend on a dead reused connection.
 - **A redirect from `https` to `http` is refused** as `&http-redirect-error`,

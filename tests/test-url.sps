@@ -515,7 +515,7 @@
                                   (curl-url-error-input e)))
                            (#t (list 'other (describe e))))
                    (call-with-parsed-url string
-                     (lambda (handle) (require-http-scheme handle) 'accepted)))))
+                     (lambda (handle) (require-http-scheme handle string) 'accepted)))))
     (list outcome (native-counts))))
 
 (test-equal "file:///etc/passwd parses, and require-http-scheme refuses it as scheme-not-http, with no code, naming the URL"
@@ -678,6 +678,7 @@
   (let* ((s (string-copy "http://a/xax"))
          (stop #f)
          (yield (lambda () (sleep (make-time 'time-duration 0 0))))
+         (pause (lambda () (sleep (make-time 'time-duration 1000000 0))))
          (flip (lambda ()
                  (let loop ((i 0))
                    (when (< i 100000)
@@ -702,11 +703,15 @@
         (let loop ((i 0) (odd '()) (seen '()))
           (if (= i n)
               (list (reverse odd) (filter (lambda (k) (memq k seen)) '(refused whole)) (native-counts))
-              ;; Before every tenth, a sleep of no time: a system call, where
-              ;; Valgrind, which runs one thread at a time, lets the flipper
-              ;; run, leaving the URL in either state. Natively the flipper
+              ;; Before every tenth, a sleep of a millisecond, where Valgrind,
+              ;; which runs one thread at a time, lets the flipper run,
+              ;; leaving the URL in either state. A sleep of no time there
+              ;; could hand this thread the lock straight back: in 1 of 3
+              ;; runs the flipper never ran, 0 of 1000 refused, where 1 ms
+              ;; gave 490 to 500 in each of 6 (M5 slice 1,
+              ;; .plans/research/m5/valgrind-yield/). Natively the flipper
               ;; races each call from another core.
-              (let ((o (let ((a (begin (when (= (mod i 10) 0) (yield))
+              (let ((o (let ((a (begin (when (= (mod i 10) 0) (pause))
                                        (answer (list 'normalize s)))))
                          (cond ((equal? a '(refused-by-chez-curl embedded-nul)) 'refused)
                                ((equal? a "http://a/xax") 'whole)
@@ -748,7 +753,9 @@
  (lambda (row)
    (test-equal (string-append (car row) " in an engine that runs out at every tick, each abandoned, until one completes: it completes, and no native object is left, no CURLU and no string libcurl made")
      (list 'completed-after-expiries zero-counts)
-     (list (swept (engine-sweep (cadr row) 1)) (native-counts))))
+     (let* ((sweep (swept (engine-sweep (cadr row) 1)))
+            (counts (native-counts)))
+       (list sweep counts))))
  (list (list "url-normalize" (lambda () (url-normalize "http://a/b/../c")))
        (list "url-resolve" (lambda () (url-resolve "http://a/b/c" "../d")))))
 

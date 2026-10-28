@@ -1,6 +1,8 @@
 # ADR-0025: The high level's surface: explicit sessions, prefixed verbs, bodies, forms and params
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-27: params are written into the URL, then parsed whole
+  (ADR-0028); amended 2026-10-27: a second escape during a session's close is documented, not
+  prevented
 - **Date:** 2026-10-27
 - **Scope:** chez-curl v1, `(http-client)`, from M5
 - **Settles:** three questions the M5 plan raised about `(http-client)`'s public surface. The
@@ -59,3 +61,28 @@ library (brief §3).
   the URL through libcurl's URL API, never by Scheme splicing a string (ADR-0008).
 - **`(curl)` gains URL functions the high level needs:** appending a query, reading a URL's
   parts, resolving a header's bytes, and setting a fragment. The M5 plan, §3.1, names them.
+
+## Amendment, 2026-10-27: params are written into the URL, then parsed whole (ADR-0028)
+
+- **The consequence above, "never by Scheme splicing a string", no longer holds.** M5 slice 1
+  measured `CURLU_APPENDQUERY` and found that setting a query part changes its hex case, to lower
+  on 7.85.0, 8.5.0 and 8.20.0 and to upper on 8.23.0, where parsing a whole URL keeps it on all
+  five.
+- **So `curl-url-append-query` writes the URL** from what `curl_url_get` gives back, the
+  query's separator and the caller's encoded part, then has `curl_url` parse it whole, and
+  checks that the query came back as written (ADR-0028). Every URL is still parsed by
+  `curl_url` (ADR-0008), and `params` go out as chez-curl encodes them on every libcurl.
+
+## Amendment, 2026-10-27: a second escape during a session's close is documented, not prevented
+
+- **Found by M5 slice 1's review** (Opus, read-only), and reproduced there: an escape, by a timer
+  or an escaping Ctrl-C handler, that lands at the start of `call-with-http-session`'s after
+  thunk skips `curl-engine-stop`, and the session's engine, a thread and its multi handle,
+  lives on until the process exits. The close waits for the engine's thread, so it cannot run
+  with interrupts off, as the drive's cancel now does.
+- **Decided by the maintainer, 2026-10-27, the recommended option:** `(http-client)` says so,
+  as the M5 plan already says a second Ctrl-C abandons a group's join (§3.7). `(curl)` keeps its
+  surface: no non-waiting stop request is added for it.
+- **Rejected:** a non-waiting `curl-engine-request-stop` in `(curl)`, which a critical after
+  thunk would call first. It would grow the low level's public surface past the URL functions
+  the M5 plan names.

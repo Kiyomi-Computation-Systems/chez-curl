@@ -1,6 +1,6 @@
 # ADR-0009: A typed escape hatch for unwrapped options, in the low level only
 
-- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built; amended 2026-10-27, the hatch, measured, decided and built (M4 slice 4)
+- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built; amended 2026-10-27, the hatch, measured, decided and built (M4 slice 4); amended 2026-10-27, the Mac's runs
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, `(curl ...)` only
 - **Settles:** D3 (brief §10)
@@ -395,3 +395,28 @@ what would make it fail now:
   [mutation log](../hatch-mutation-log.md). It also holds the copies, a race on a string and
   on a list's string, a string's UTF-8 bytes, a list and a blob reaching libcurl, a row per
   libcurl, and the counts.
+
+## Amendment, 2026-10-27: the Mac's runs
+
+The maintainer ran M4 slice 4's owed checks on the Mac (Apple M1, macOS 26.7.1, Apple's libcurl
+8.7.1), on `main` at `a66ef78`, and pasted the output; it is kept in
+[research/m4/slice4/results/](../research/m4/slice4/results/) and
+[research/m4/slice1/results/](../research/m4/slice1/results/).
+
+- **The probe's sets, `blob`, `list` and `candidates`,** with each backend (`mac-8.7.1.log`):
+  - with Apple's LibreSSL, which a process selects when `CURL_SSL_BACKEND` names none, every
+    case answered as Ubuntu's 8.5.0 with OpenSSL does: the two string lists freed after their
+    setopt crashed the probe, exit 139, as on all five Linux lanes, and the only differences are
+    a body's control bytes, which the terminal's paste did not carry;
+  - with SecureTransport, `CURL_SSL_BACKEND=secure-transport`, 11 of its case lines differ
+    from LibreSSL's, its 11 TLS cases: clearing `CAPATH` answers 4, `CURLE_NOT_BUILT_IN`, in
+    each; and three of them answer otherwise too: `ISSUERCERT_BLOB` is ignored, so the other CA
+    verifies, copied or freed after the setopt, and a PEM `SSLCERT_BLOB` with its key is refused,
+    58, as the leaf alone and no certificate are with either backend.
+- **`make test`,** under SecureTransport, which it selects on macOS, passed 25 of 26 suites;
+  `test-unsupported` failed for want of its 8.7.1 blob row, and printed it
+  (`mac-8.7.1-make-test.log`): `(response 200) (response 200) (refused perform-failed 58 #f)`,
+  SecureTransport's answers above. The row is added.
+- **8.7.1's options table** (`options-mac-8.7.1.log`): 8.5.0's options, by name, id and type,
+  and one more, `SERVER_RESPONSE_TIMEOUT_MS` (324). Every option it lists is in a Linux table,
+  so the classification above covers each.

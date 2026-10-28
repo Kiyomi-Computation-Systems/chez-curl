@@ -1,0 +1,9 @@
+body 1 MB: submit inside critical-section 0.2 ms
+body 64 MB: submit inside critical-section 48.3 ms
+body 256 MB: submit inside critical-section 207.5 ms
+body 1 MB: submit inside critical-section 0.2 ms
+body 64 MB: submit inside critical-section 50.5 ms
+body 256 MB: submit inside critical-section 224.1 ms
+body 1 MB: submit inside critical-section 0.2 ms
+body 64 MB: submit inside critical-section 51.2 ms
+body 256 MB: submit inside critical-section 226.9 ms

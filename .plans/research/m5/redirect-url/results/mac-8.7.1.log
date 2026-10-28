@@ -1,0 +1,70 @@
+[mac] libcurl by -lcurl: libcurl/8.7.1 SecureTransport (LibreSSL/3.3.6) zlib/1.2.12 nghttp2/1.68.1
+[mac] base http://127.0.0.1:53372/a/b/c/NAME?q=1, port 53372
+[mac] rel-abs GET rc=0 status=302 redirect=http://127.0.0.1:53372/x/y?z=1 effective=http://127.0.0.1:53372/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:53372/x/y?z=1 renc=http://127.0.0.1:53372/x/y?z=1
+[mac] rel-path GET rc=0 status=302 redirect=http://127.0.0.1:53372/a/b/c/d/e effective=http://127.0.0.1:53372/a/b/c/rel-path?q=1 location=d/e amount=1 r0=http://127.0.0.1:53372/a/b/c/d/e renc=http://127.0.0.1:53372/a/b/c/d/e
+[mac] rel-dots GET rc=0 status=302 redirect=http://127.0.0.1:53372/a/up effective=http://127.0.0.1:53372/a/b/c/rel-dots?q=1 location=../../up amount=1 r0=http://127.0.0.1:53372/a/up renc=http://127.0.0.1:53372/a/up
+[mac] rel-query GET rc=0 status=302 redirect=http://127.0.0.1:53372/a/b/c/rel-query?only=1 effective=http://127.0.0.1:53372/a/b/c/rel-query?q=1 location=?only=1 amount=1 r0=http://127.0.0.1:53372/a/b/c/rel-query?only=1 renc=http://127.0.0.1:53372/a/b/c/rel-query?only=1
+[mac] rel-frag GET rc=0 status=302 redirect=http://127.0.0.1:53372/a/b/c/#only effective=http://127.0.0.1:53372/a/b/c/rel-frag?q=1 location=#only amount=1 r0=http://127.0.0.1:53372/a/b/c/#only renc=http://127.0.0.1:53372/a/b/c/#only
+[mac] netpath GET rc=0 status=302 redirect=http://127.0.0.1:53372/np effective=http://127.0.0.1:53372/a/b/c/netpath?q=1 location=//127.0.0.1:53372/np amount=1 r0=http://127.0.0.1:53372/np renc=http://127.0.0.1:53372/np
+[mac] other-host GET rc=0 status=302 redirect=http://other.invalid/x effective=http://127.0.0.1:53372/a/b/c/other-host?q=1 location=http://other.invalid/x amount=1 r0=http://other.invalid/x renc=http://other.invalid/x
+[mac] https GET rc=0 status=302 redirect=https://127.0.0.1:1/s effective=http://127.0.0.1:53372/a/b/c/https?q=1 location=https://127.0.0.1:1/s amount=1 r0=https://127.0.0.1:1/s renc=https://127.0.0.1:1/s
+[mac] no-path GET rc=0 status=302 redirect=http://127.0.0.1:53372/ effective=http://127.0.0.1:53372/a/b/c/no-path?q=1 location=http://127.0.0.1:53372 amount=1 r0=http://127.0.0.1:53372/ renc=http://127.0.0.1:53372/
+[mac] upper-scheme GET rc=0 status=302 redirect=http://127.0.0.1:53372/UP effective=http://127.0.0.1:53372/a/b/c/upper-scheme?q=1 location=HTTP://127.0.0.1:53372/UP amount=1 r0=http://127.0.0.1:53372/UP renc=http://127.0.0.1:53372/UP
+[mac] ftp GET rc=0 status=302 redirect=ftp://127.0.0.1/f effective=http://127.0.0.1:53372/a/b/c/ftp?q=1 location=ftp://127.0.0.1/f amount=1 r0=ftp://127.0.0.1/f renc=ftp://127.0.0.1/f
+[mac] file GET rc=0 status=302 redirect=file:///etc/passwd effective=http://127.0.0.1:53372/a/b/c/file?q=1 location=file:///etc/passwd amount=1 r0=file:///etc/passwd renc=file:///etc/passwd
+[mac] javascript GET rc=0 status=302 redirect=javascript:alert(1) effective=http://127.0.0.1:53372/a/b/c/javascript?q=1 location=javascript:alert(1) amount=1 r0=uc5 renc=uc5
+[mac] unknown-scheme GET rc=0 status=302 redirect=foo://bar/x effective=http://127.0.0.1:53372/a/b/c/unknown-scheme?q=1 location=foo://bar/x amount=1 r0=uc5 renc=uc5
+[mac] empty GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:53372/a/b/c/empty?q=1 location= amount=1 r0=uc3 renc=uc3
+[mac] blank GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:53372/a/b/c/blank?q=1 location= amount=1 r0=uc3 renc=uc3
+[mac] missing GET rc=0 status=302 redirect=NULL effective=http://127.0.0.1:53372/a/b/c/missing?q=1 location=hc2
+[mac] padded GET rc=0 status=302 redirect=http://127.0.0.1:53372/padded effective=http://127.0.0.1:53372/a/b/c/padded?q=1 location=/padded amount=1 r0=http://127.0.0.1:53372/padded renc=http://127.0.0.1:53372/padded
+[mac] tab GET rc=0 status=302 redirect=http://127.0.0.1:53372/tabbed effective=http://127.0.0.1:53372/a/b/c/tab?q=1 location=/tabbed amount=1 r0=http://127.0.0.1:53372/tabbed renc=http://127.0.0.1:53372/tabbed
+[mac] space-inside GET rc=0 status=302 redirect=http://127.0.0.1:53372/a%20b/c%20d effective=http://127.0.0.1:53372/a/b/c/space-inside?q=1 location=/a\x20b/c\x20d amount=1 r0=http://127.0.0.1:53372/a%20b/c%20d renc=http://127.0.0.1:53372/a%20b/c%20d
+[mac] utf8 GET rc=0 status=302 redirect=http://127.0.0.1:53372/caf%c3%a9 effective=http://127.0.0.1:53372/a/b/c/utf8?q=1 location=/caf\xc3\xa9 amount=1 r0=http://127.0.0.1:53372/caf%c3%a9 renc=http://127.0.0.1:53372/caf%c3%a9
+[mac] latin1 GET rc=0 status=302 redirect=http://127.0.0.1:53372/caf%e9 effective=http://127.0.0.1:53372/a/b/c/latin1?q=1 location=/caf\xe9 amount=1 r0=http://127.0.0.1:53372/caf%e9 renc=http://127.0.0.1:53372/caf%e9
+[mac] ctl GET rc=0 status=302 redirect=/x\x01y effective=http://127.0.0.1:53372/a/b/c/ctl?q=1 location=/x\x01y amount=1 r0=uc3 renc=uc3
+[mac] del GET rc=0 status=302 redirect=/x\x7fy effective=http://127.0.0.1:53372/a/b/c/del?q=1 location=/x\x7fy amount=1 r0=uc3 renc=uc3
+[mac] pct GET rc=0 status=302 redirect=http://127.0.0.1:53372/already%20encoded effective=http://127.0.0.1:53372/a/b/c/pct?q=1 location=/already%20encoded amount=1 r0=http://127.0.0.1:53372/already%20encoded renc=http://127.0.0.1:53372/already%20encoded
+[mac] bad-pct GET rc=0 status=302 redirect=http://127.0.0.1:53372/bad%zz effective=http://127.0.0.1:53372/a/b/c/bad-pct?q=1 location=/bad%zz amount=1 r0=http://127.0.0.1:53372/bad%zz renc=http://127.0.0.1:53372/bad%zz
+[mac] userinfo GET rc=0 status=302 redirect=http://u:p@127.0.0.1:53372/creds effective=http://127.0.0.1:53372/a/b/c/userinfo?q=1 location=http://u:p@127.0.0.1:53372/creds amount=1 r0=http://u:p@127.0.0.1:53372/creds renc=http://u:p@127.0.0.1:53372/creds
+[mac] frag-abs GET rc=0 status=302 redirect=http://127.0.0.1:53372/withfrag#f effective=http://127.0.0.1:53372/a/b/c/frag-abs?q=1 location=/withfrag#f amount=1 r0=http://127.0.0.1:53372/withfrag#f renc=http://127.0.0.1:53372/withfrag#f
+[mac] bad-ipv6 GET rc=0 status=302 redirect=http://[::1/x effective=http://127.0.0.1:53372/a/b/c/bad-ipv6?q=1 location=http://[::1/x amount=1 r0=uc22 renc=uc22
+[mac] bad-port GET rc=0 status=302 redirect=http://127.0.0.1:99999/x effective=http://127.0.0.1:53372/a/b/c/bad-port?q=1 location=http://127.0.0.1:99999/x amount=1 r0=uc4 renc=uc4
+[mac] backslash GET rc=0 status=302 redirect=http://127.0.0.1:53372/\x5cevil.invalid/x effective=http://127.0.0.1:53372/a/b/c/backslash?q=1 location=/\x5cevil.invalid/x amount=1 r0=http://127.0.0.1:53372/\x5cevil.invalid/x renc=http://127.0.0.1:53372/\x5cevil.invalid/x
+[mac] two GET rc=0 status=302 redirect=http://127.0.0.1:53372/first effective=http://127.0.0.1:53372/a/b/c/two?q=1 location=/first amount=2 r0=http://127.0.0.1:53372/first renc=http://127.0.0.1:53372/first
+[mac] lower-name GET rc=0 status=302 redirect=http://127.0.0.1:53372/lc effective=http://127.0.0.1:53372/a/b/c/lower-name?q=1 location=/lc amount=1 r0=http://127.0.0.1:53372/lc renc=http://127.0.0.1:53372/lc
+[mac] idn GET rc=0 status=302 redirect=http://caf\xc3\xa9.invalid/ effective=http://127.0.0.1:53372/a/b/c/idn?q=1 location=http://caf\xc3\xa9.invalid/ amount=1 r0=http://caf\xc3\xa9.invalid/ renc=http://caf\xc3\xa9.invalid/
+[mac] long-8k GET rc=0 status=302 redirect=http://127.0.0.1:53372/aaaaaaaaaaaaaaaaa...(len 8023) effective=http://127.0.0.1:53372/a/b/c/long-8k?q=1 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 8001) amount=1 r0=http://127.0.0.1:53372/aaaaaaaaaaaaaaaaa...(len 8023) renc=http://127.0.0.1:53372/aaaaaaaaaaaaaaaaa...(len 8023)
+[mac] long-90k GET rc=0 status=302 redirect=http://127.0.0.1:53372/aaaaaaaaaaaaaaaaa...(len 90023) effective=http://127.0.0.1:53372/a/b/c/long-90k?q=1 location=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...(len 90001) amount=1 r0=http://127.0.0.1:53372/aaaaaaaaaaaaaaaaa...(len 90023) renc=http://127.0.0.1:53372/aaaaaaaaaaaaaaaaa...(len 90023)
+[mac] long-110k GET rc=100 status=302 redirect=NULL effective=http://127.0.0.1:53372/a/b/c/long-110k?q=1 location=hc3
+[mac] s200 GET rc=0 status=200 redirect=NULL effective=http://127.0.0.1:53372/a/b/c/s200?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s201 GET rc=0 status=201 redirect=NULL effective=http://127.0.0.1:53372/a/b/c/s201?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s299 GET rc=0 status=299 redirect=NULL effective=http://127.0.0.1:53372/a/b/c/s299?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s300 GET rc=0 status=300 redirect=http://127.0.0.1:53372/s effective=http://127.0.0.1:53372/a/b/c/s300?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s301 GET rc=0 status=301 redirect=http://127.0.0.1:53372/s effective=http://127.0.0.1:53372/a/b/c/s301?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s303 GET rc=0 status=303 redirect=http://127.0.0.1:53372/s effective=http://127.0.0.1:53372/a/b/c/s303?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s304 GET rc=0 status=304 redirect=http://127.0.0.1:53372/s effective=http://127.0.0.1:53372/a/b/c/s304?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s305 GET rc=0 status=305 redirect=http://127.0.0.1:53372/s effective=http://127.0.0.1:53372/a/b/c/s305?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s306 GET rc=0 status=306 redirect=http://127.0.0.1:53372/s effective=http://127.0.0.1:53372/a/b/c/s306?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s307 GET rc=0 status=307 redirect=http://127.0.0.1:53372/s effective=http://127.0.0.1:53372/a/b/c/s307?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s308 GET rc=0 status=308 redirect=http://127.0.0.1:53372/s effective=http://127.0.0.1:53372/a/b/c/s308?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s309 GET rc=0 status=309 redirect=http://127.0.0.1:53372/s effective=http://127.0.0.1:53372/a/b/c/s309?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s399 GET rc=0 status=399 redirect=http://127.0.0.1:53372/s effective=http://127.0.0.1:53372/a/b/c/s399?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s400 GET rc=0 status=400 redirect=NULL effective=http://127.0.0.1:53372/a/b/c/s400?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] -- HEAD
+[mac] rel-abs HEAD rc=0 status=302 redirect=http://127.0.0.1:53372/x/y?z=1 effective=http://127.0.0.1:53372/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://127.0.0.1:53372/x/y?z=1 renc=http://127.0.0.1:53372/x/y?z=1
+[mac] s303 HEAD rc=0 status=303 redirect=http://127.0.0.1:53372/s effective=http://127.0.0.1:53372/a/b/c/s303?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s304 HEAD rc=0 status=304 redirect=http://127.0.0.1:53372/s effective=http://127.0.0.1:53372/a/b/c/s304?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] s307 HEAD rc=0 status=307 redirect=http://127.0.0.1:53372/s effective=http://127.0.0.1:53372/a/b/c/s307?q=1 location=/s amount=1 r0=http://127.0.0.1:53372/s renc=http://127.0.0.1:53372/s
+[mac] -- the request URL carries a fragment
+[mac] rel-abs#orig GET rc=0 status=302 redirect=http://127.0.0.1:53372/x/y?z=1 effective=http://127.0.0.1:53372/a/b/c/rel-abs?q=1#orig location=/x/y?z=1 amount=1 r0=http://127.0.0.1:53372/x/y?z=1 renc=http://127.0.0.1:53372/x/y?z=1
+[mac] rel-frag#orig GET rc=0 status=302 redirect=http://127.0.0.1:53372/a/b/c/#only effective=http://127.0.0.1:53372/a/b/c/rel-frag?q=1#orig location=#only amount=1 r0=http://127.0.0.1:53372/a/b/c/#only renc=http://127.0.0.1:53372/a/b/c/#only
+[mac] frag-abs#orig GET rc=0 status=302 redirect=http://127.0.0.1:53372/withfrag#f effective=http://127.0.0.1:53372/a/b/c/frag-abs?q=1#orig location=/withfrag#f amount=1 r0=http://127.0.0.1:53372/withfrag#f renc=http://127.0.0.1:53372/withfrag#f
+[mac] netpath#orig GET rc=0 status=302 redirect=http://127.0.0.1:53372/np effective=http://127.0.0.1:53372/a/b/c/netpath?q=1#orig location=//127.0.0.1:53372/np amount=1 r0=http://127.0.0.1:53372/np renc=http://127.0.0.1:53372/np
+[mac] -- the request URL carries credentials
+[mac] rel-abs@creds GET rc=0 status=302 redirect=http://me:secret@127.0.0.1:53372/x/y?z=1 effective=http://me:secret@127.0.0.1:53372/a/b/c/rel-abs?q=1 location=/x/y?z=1 amount=1 r0=http://me:secret@127.0.0.1:53372/x/y?z=1 renc=http://me:secret@127.0.0.1:53372/x/y?z=1
+[mac] netpath@creds GET rc=0 status=302 redirect=http://127.0.0.1:53372/np effective=http://me:secret@127.0.0.1:53372/a/b/c/netpath?q=1 location=//127.0.0.1:53372/np amount=1 r0=http://127.0.0.1:53372/np renc=http://127.0.0.1:53372/np
+[mac] other-host@creds GET rc=0 status=302 redirect=http://other.invalid/x effective=http://me:secret@127.0.0.1:53372/a/b/c/other-host?q=1 location=http://other.invalid/x amount=1 r0=http://other.invalid/x renc=http://other.invalid/x
+[mac] -- 62 probes
+.plans/research/m5/redirect-url/run.sh: line 29:  9090 Terminated: 15          "${NODE:-node}" "$d/server.mjs" < "$tmp/in" > "$tmp/port"
+[mac] the server exited 143, not 0, after its stdin closed: 143 is the watchdog's kill, 5 s on

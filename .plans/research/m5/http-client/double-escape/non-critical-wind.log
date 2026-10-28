@@ -1,0 +1,8 @@
+$ python3 build/m5s1-builder/mutate.py item2-after-thunk-not-critical  # on the host: the drive's (dynamic-wind #t ...) made a plain dynamic-wind, in an rsync copy of the tree, then tests/test-http-client.sps run there in the container
+%%%% Starting test http-client
+FAIL a second escape that lands as the first unwinds, at each of ticks 1 to 24, still leaves no transfer live within 3 s
+  expected: ((1 ended) (2 ended) (3 ended) (4 ended) (5 ended) (6 ended) (7 ended) (8 ended) (9 ended) (10 ended) (11 ended) (12 ended) (13 ended) (14 ended) (15 ended) (16 ended) (17 ended) (18 ended) (19 ended) (20 ended) (21 ended) (22 ended) (23 ended) (24 ended))
+  actual:   ((1 ended) (2 ended) (3 ended) (4 ended) (5 still-live) (6 still-live) (7 still-live) (8 still-live) (9 still-live) (10 ended) (11 ended) (12 ended) (13 ended) (14 ended) (15 ended) (16 ended) (17 ended) (18 ended) (19 ended) (20 ended) (21 ended) (22 ended) (23 ended) (24 ended))
+# of expected passes      64
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 64, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

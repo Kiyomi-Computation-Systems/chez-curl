@@ -1,0 +1,423 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+[floor-7.85.0] libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 -> /src/build/e1/ci/curl-floor/lib/libcurl.so.4.8.0
+[floor-7.85.0] libcurl/7.85.0 OpenSSL/3.0.13 zlib/1.3 nghttp2/1.59.0
+[floor-7.85.0] append base=http://h.example/p part="b=2" set=uc0 url=http://h.example/p?b=2 query=b=2
+[floor-7.85.0] append base=http://h.example/p part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3d%26%2b query=n=a%20b+c&m=%3d%26%2b
+[floor-7.85.0] append base=http://h.example/p part="x" set=uc0 url=http://h.example/p?x query=x
+[floor-7.85.0] append base=http://h.example/p part="" set=uc0 url=http://h.example/p query=
+[floor-7.85.0] append base=http://h.example/p part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%c3%a9 query=e=%c3%a9
+[floor-7.85.0] append base=http://h.example/p part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b query=s=a\x20b
+[floor-7.85.0] append base=http://h.example/p part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9 query=u=\xc3\xa9
+[floor-7.85.0] append base=http://h.example/p?a=1 part="b=2" set=uc0 url=http://h.example/p?a=1&b=2 query=a=1&b=2
+[floor-7.85.0] append base=http://h.example/p?a=1 part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?a=1&n=a%20b+c&m=%3d%26%2b query=a=1&n=a%20b+c&m=%3d%26%2b
+[floor-7.85.0] append base=http://h.example/p?a=1 part="x" set=uc0 url=http://h.example/p?a=1&x query=a=1&x
+[floor-7.85.0] append base=http://h.example/p?a=1 part="" set=uc0 url=http://h.example/p?a=1& query=a=1&
+[floor-7.85.0] append base=http://h.example/p?a=1 part="e=%C3%A9" set=uc0 url=http://h.example/p?a=1&e=%c3%a9 query=a=1&e=%c3%a9
+[floor-7.85.0] append base=http://h.example/p?a=1 part="s=a\x20b" set=uc0 url=http://h.example/p?a=1&s=a\x20b query=a=1&s=a\x20b
+[floor-7.85.0] append base=http://h.example/p?a=1 part="u=\xc3\xa9" set=uc0 url=http://h.example/p?a=1&u=\xc3\xa9 query=a=1&u=\xc3\xa9
+[floor-7.85.0] append base=http://h.example/p? part="b=2" set=uc0 url=http://h.example/p?b=2 query=b=2
+[floor-7.85.0] append base=http://h.example/p? part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3d%26%2b query=n=a%20b+c&m=%3d%26%2b
+[floor-7.85.0] append base=http://h.example/p? part="x" set=uc0 url=http://h.example/p?x query=x
+[floor-7.85.0] append base=http://h.example/p? part="" set=uc0 url=http://h.example/p query=
+[floor-7.85.0] append base=http://h.example/p? part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%c3%a9 query=e=%c3%a9
+[floor-7.85.0] append base=http://h.example/p? part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b query=s=a\x20b
+[floor-7.85.0] append base=http://h.example/p? part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9 query=u=\xc3\xa9
+[floor-7.85.0] append base=http://h.example/p?a=1& part="b=2" set=uc0 url=http://h.example/p?a=1&b=2 query=a=1&b=2
+[floor-7.85.0] append base=http://h.example/p?a=1& part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?a=1&n=a%20b+c&m=%3d%26%2b query=a=1&n=a%20b+c&m=%3d%26%2b
+[floor-7.85.0] append base=http://h.example/p?a=1& part="x" set=uc0 url=http://h.example/p?a=1&x query=a=1&x
+[floor-7.85.0] append base=http://h.example/p?a=1& part="" set=uc0 url=http://h.example/p?a=1& query=a=1&
+[floor-7.85.0] append base=http://h.example/p?a=1& part="e=%C3%A9" set=uc0 url=http://h.example/p?a=1&e=%c3%a9 query=a=1&e=%c3%a9
+[floor-7.85.0] append base=http://h.example/p?a=1& part="s=a\x20b" set=uc0 url=http://h.example/p?a=1&s=a\x20b query=a=1&s=a\x20b
+[floor-7.85.0] append base=http://h.example/p?a=1& part="u=\xc3\xa9" set=uc0 url=http://h.example/p?a=1&u=\xc3\xa9 query=a=1&u=\xc3\xa9
+[floor-7.85.0] append base=http://h.example/p#frag part="b=2" set=uc0 url=http://h.example/p?b=2#frag query=b=2
+[floor-7.85.0] append base=http://h.example/p#frag part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3d%26%2b#frag query=n=a%20b+c&m=%3d%26%2b
+[floor-7.85.0] append base=http://h.example/p#frag part="x" set=uc0 url=http://h.example/p?x#frag query=x
+[floor-7.85.0] append base=http://h.example/p#frag part="" set=uc0 url=http://h.example/p#frag query=
+[floor-7.85.0] append base=http://h.example/p#frag part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%c3%a9#frag query=e=%c3%a9
+[floor-7.85.0] append base=http://h.example/p#frag part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b#frag query=s=a\x20b
+[floor-7.85.0] append base=http://h.example/p#frag part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9#frag query=u=\xc3\xa9
+[floor-7.85.0] append base=http://h.example/p?a=1#frag part="b=2" set=uc0 url=http://h.example/p?a=1&b=2#frag query=a=1&b=2
+[floor-7.85.0] append base=http://h.example/p?a=1#frag part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?a=1&n=a%20b+c&m=%3d%26%2b#frag query=a=1&n=a%20b+c&m=%3d%26%2b
+[floor-7.85.0] append base=http://h.example/p?a=1#frag part="x" set=uc0 url=http://h.example/p?a=1&x#frag query=a=1&x
+[floor-7.85.0] append base=http://h.example/p?a=1#frag part="" set=uc0 url=http://h.example/p?a=1&#frag query=a=1&
+[floor-7.85.0] append base=http://h.example/p?a=1#frag part="e=%C3%A9" set=uc0 url=http://h.example/p?a=1&e=%c3%a9#frag query=a=1&e=%c3%a9
+[floor-7.85.0] append base=http://h.example/p?a=1#frag part="s=a\x20b" set=uc0 url=http://h.example/p?a=1&s=a\x20b#frag query=a=1&s=a\x20b
+[floor-7.85.0] append base=http://h.example/p?a=1#frag part="u=\xc3\xa9" set=uc0 url=http://h.example/p?a=1&u=\xc3\xa9#frag query=a=1&u=\xc3\xa9
+[floor-7.85.0] append base=http://h.example/p?#frag part="b=2" set=uc0 url=http://h.example/p?b=2#frag query=b=2
+[floor-7.85.0] append base=http://h.example/p?#frag part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3d%26%2b#frag query=n=a%20b+c&m=%3d%26%2b
+[floor-7.85.0] append base=http://h.example/p?#frag part="x" set=uc0 url=http://h.example/p?x#frag query=x
+[floor-7.85.0] append base=http://h.example/p?#frag part="" set=uc0 url=http://h.example/p#frag query=
+[floor-7.85.0] append base=http://h.example/p?#frag part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%c3%a9#frag query=e=%c3%a9
+[floor-7.85.0] append base=http://h.example/p?#frag part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b#frag query=s=a\x20b
+[floor-7.85.0] append base=http://h.example/p?#frag part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9#frag query=u=\xc3\xa9
+[floor-7.85.0] append base=http://h.example part="b=2" set=uc0 url=http://h.example/?b=2 query=b=2
+[floor-7.85.0] append base=http://h.example part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/?n=a%20b+c&m=%3d%26%2b query=n=a%20b+c&m=%3d%26%2b
+[floor-7.85.0] append base=http://h.example part="x" set=uc0 url=http://h.example/?x query=x
+[floor-7.85.0] append base=http://h.example part="" set=uc0 url=http://h.example/ query=
+[floor-7.85.0] append base=http://h.example part="e=%C3%A9" set=uc0 url=http://h.example/?e=%c3%a9 query=e=%c3%a9
+[floor-7.85.0] append base=http://h.example part="s=a\x20b" set=uc0 url=http://h.example/?s=a\x20b query=s=a\x20b
+[floor-7.85.0] append base=http://h.example part="u=\xc3\xa9" set=uc0 url=http://h.example/?u=\xc3\xa9 query=u=\xc3\xa9
+[floor-7.85.0] set base=http://h.example/p part="n=%3D%26&m=%3d" set=uc0 url=http://h.example/p?n=%3d%26&m=%3d query=n=%3d%26&m=%3d
+[floor-7.85.0] set base=http://h.example/p?a=1#frag part="n=%3D%26&m=%3d" set=uc0 url=http://h.example/p?n=%3d%26&m=%3d#frag query=n=%3d%26&m=%3d
+[floor-7.85.0] parts in=http://h.example/p url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[floor-7.85.0] parts in=https://u:pw@H.Example:8443/p/q?a=1&b=2#frag url=https://u:pw@H.Example:8443/p/q?a=1&b=2#frag scheme=https user=u password=pw host=H.Example port=8443 port0=8443 path=/p/q query=a=1&b=2 fragment=frag
+[floor-7.85.0] parts in=HTTP://h.example/p url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://h.example url=http://h.example/ scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://h.example:80/p url=http://h.example:80/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=80 path=/p query=uc16 fragment=uc17
+[floor-7.85.0] parts in=https://h.example/ url=https://h.example/ scheme=https user=uc11 password=uc12 host=h.example port=443 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://h.example:080/ url=http://h.example:80/ scheme=http user=uc11 password=uc12 host=h.example port=80 port0=80 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://h.example:0/ url=http://h.example:0/ scheme=http user=uc11 password=uc12 host=h.example port=0 port0=0 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://h.example:65535/ url=http://h.example:65535/ scheme=http user=uc11 password=uc12 host=h.example port=65535 port0=65535 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://[::1]:8080/p url=http://[::1]:8080/p scheme=http user=uc11 password=uc12 host=[::1] port=8080 port0=8080 path=/p query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://u@h.example/ url=http://u@h.example/ scheme=http user=u password=uc12 host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://:pw@h.example/ url=http://:pw@h.example/ scheme=http user=uc11 password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://u:@h.example/ url=http://u@h.example/ scheme=http user=u password=uc12 host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://h.example/p? url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query= fragment=uc17
+[floor-7.85.0] parts in=http://h.example/p# url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://h.example/p?# url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query= fragment=uc17
+[floor-7.85.0] parts in=http://h.example/p%3D%3d?x=%3D&y=%3d#f%3D%3d url=http://h.example/p%3D%3d?x=%3D&y=%3d#f%3D%3d scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p%3D%3d query=x=%3D&y=%3d fragment=f%3D%3d
+[floor-7.85.0] parts in=http://us\xe9r:pw@h.example/ url=http://us\xe9r:pw@h.example/ scheme=http user=us\xe9r password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://u:p\xe9ss@h.example/ url=http://u:p\xe9ss@h.example/ scheme=http user=u password=p\xe9ss host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://caf\xe9.example/ url=http://caf\xe9.example/ scheme=http user=uc11 password=uc12 host=caf\xe9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://h.example/p\xe9 url=http://h.example/p\xe9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p\xe9 query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://h.example/p?q=\xe9 url=http://h.example/p?q=\xe9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=q=\xe9 fragment=uc17
+[floor-7.85.0] parts in=http://h.example/p#f\xe9 url=http://h.example/p#f\xe9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=f\xe9
+[floor-7.85.0] parts in=http://us\xc3\xa9r:pw@h.example/ url=http://us\xc3\xa9r:pw@h.example/ scheme=http user=us\xc3\xa9r password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://u:p\xc3\xa9ss@h.example/ url=http://u:p\xc3\xa9ss@h.example/ scheme=http user=u password=p\xc3\xa9ss host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://caf\xc3\xa9.example/ url=http://caf\xc3\xa9.example/ scheme=http user=uc11 password=uc12 host=caf\xc3\xa9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://h.example/p\xc3\xa9 url=http://h.example/p\xc3\xa9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p\xc3\xa9 query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://h.example/p?q=\xc3\xa9 url=http://h.example/p?q=\xc3\xa9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=q=\xc3\xa9 fragment=uc17
+[floor-7.85.0] parts in=http://h.example/p#f\xc3\xa9 url=http://h.example/p#f\xc3\xa9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=f\xc3\xa9
+[floor-7.85.0] parts in=http://us%E9r:pw@h.example/ url=http://us%E9r:pw@h.example/ scheme=http user=us%E9r password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://u:p%E9ss@h.example/ url=http://u:p%E9ss@h.example/ scheme=http user=u password=p%E9ss host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://caf%E9.example/ url=http://caf\xe9.example/ scheme=http user=uc11 password=uc12 host=caf\xe9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://h.example/p%E9 url=http://h.example/p%E9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p%E9 query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://h.example/p?q=%E9 url=http://h.example/p?q=%E9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=q=%E9 fragment=uc17
+[floor-7.85.0] parts in=http://h.example/p#f%E9 url=http://h.example/p#f%E9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=f%E9
+[floor-7.85.0] parts in=http://caf%e9.example/ url=http://caf\xe9.example/ scheme=http user=uc11 password=uc12 host=caf\xe9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://caf%C3%A9.example/ url=http://caf\xc3\xa9.example/ scheme=http user=uc11 password=uc12 host=caf\xc3\xa9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://caf%C3.example/ url=http://caf\xc3.example/ scheme=http user=uc11 password=uc12 host=caf\xc3.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://%41.example/ url=http://A.example/ scheme=http user=uc11 password=uc12 host=A.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://a%00b.example/ set-uc21
+[floor-7.85.0] parts in=http://a%2Fb.example/ set-uc21
+[floor-7.85.0] parts in=http://a%2Eb.example/ url=http://a.b.example/ scheme=http user=uc11 password=uc12 host=a.b.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://caf\xc3.example/ url=http://caf\xc3.example/ scheme=http user=uc11 password=uc12 host=caf\xc3.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] parts in=http://caf\xff.example/ url=http://caf\xff.example/ scheme=http user=uc11 password=uc12 host=caf\xff.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[floor-7.85.0] -- 56 appends, 2 sets, 44 urls
+[ubuntu-openssl-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 -> /usr/lib/x86_64-linux-gnu/libcurl.so.4.8.0
+[ubuntu-openssl-8.5.0] libcurl/8.5.0 OpenSSL/3.0.13 zlib/1.3 brotli/1.1.0 zstd/1.5.5 libidn2/2.3.7 libpsl/0.21.2 (+libidn2/2.3.7) libssh/0.10.6/openssl/zlib nghttp2/1.59.0 librtmp/2.3 OpenLDAP/2.6.10
+[ubuntu-openssl-8.5.0] append base=http://h.example/p part="b=2" set=uc0 url=http://h.example/p?b=2 query=b=2
+[ubuntu-openssl-8.5.0] append base=http://h.example/p part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3d%26%2b query=n=a%20b+c&m=%3d%26%2b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p part="x" set=uc0 url=http://h.example/p?x query=x
+[ubuntu-openssl-8.5.0] append base=http://h.example/p part="" set=uc0 url=http://h.example/p query=
+[ubuntu-openssl-8.5.0] append base=http://h.example/p part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%c3%a9 query=e=%c3%a9
+[ubuntu-openssl-8.5.0] append base=http://h.example/p part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b query=s=a\x20b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9 query=u=\xc3\xa9
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1 part="b=2" set=uc0 url=http://h.example/p?a=1&b=2 query=a=1&b=2
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1 part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?a=1&n=a%20b+c&m=%3d%26%2b query=a=1&n=a%20b+c&m=%3d%26%2b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1 part="x" set=uc0 url=http://h.example/p?a=1&x query=a=1&x
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1 part="" set=uc0 url=http://h.example/p?a=1& query=a=1&
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1 part="e=%C3%A9" set=uc0 url=http://h.example/p?a=1&e=%c3%a9 query=a=1&e=%c3%a9
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1 part="s=a\x20b" set=uc0 url=http://h.example/p?a=1&s=a\x20b query=a=1&s=a\x20b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1 part="u=\xc3\xa9" set=uc0 url=http://h.example/p?a=1&u=\xc3\xa9 query=a=1&u=\xc3\xa9
+[ubuntu-openssl-8.5.0] append base=http://h.example/p? part="b=2" set=uc0 url=http://h.example/p?b=2 query=b=2
+[ubuntu-openssl-8.5.0] append base=http://h.example/p? part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3d%26%2b query=n=a%20b+c&m=%3d%26%2b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p? part="x" set=uc0 url=http://h.example/p?x query=x
+[ubuntu-openssl-8.5.0] append base=http://h.example/p? part="" set=uc0 url=http://h.example/p query=
+[ubuntu-openssl-8.5.0] append base=http://h.example/p? part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%c3%a9 query=e=%c3%a9
+[ubuntu-openssl-8.5.0] append base=http://h.example/p? part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b query=s=a\x20b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p? part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9 query=u=\xc3\xa9
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1& part="b=2" set=uc0 url=http://h.example/p?a=1&b=2 query=a=1&b=2
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1& part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?a=1&n=a%20b+c&m=%3d%26%2b query=a=1&n=a%20b+c&m=%3d%26%2b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1& part="x" set=uc0 url=http://h.example/p?a=1&x query=a=1&x
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1& part="" set=uc0 url=http://h.example/p?a=1& query=a=1&
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1& part="e=%C3%A9" set=uc0 url=http://h.example/p?a=1&e=%c3%a9 query=a=1&e=%c3%a9
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1& part="s=a\x20b" set=uc0 url=http://h.example/p?a=1&s=a\x20b query=a=1&s=a\x20b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1& part="u=\xc3\xa9" set=uc0 url=http://h.example/p?a=1&u=\xc3\xa9 query=a=1&u=\xc3\xa9
+[ubuntu-openssl-8.5.0] append base=http://h.example/p#frag part="b=2" set=uc0 url=http://h.example/p?b=2#frag query=b=2
+[ubuntu-openssl-8.5.0] append base=http://h.example/p#frag part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3d%26%2b#frag query=n=a%20b+c&m=%3d%26%2b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p#frag part="x" set=uc0 url=http://h.example/p?x#frag query=x
+[ubuntu-openssl-8.5.0] append base=http://h.example/p#frag part="" set=uc0 url=http://h.example/p#frag query=
+[ubuntu-openssl-8.5.0] append base=http://h.example/p#frag part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%c3%a9#frag query=e=%c3%a9
+[ubuntu-openssl-8.5.0] append base=http://h.example/p#frag part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b#frag query=s=a\x20b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p#frag part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9#frag query=u=\xc3\xa9
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1#frag part="b=2" set=uc0 url=http://h.example/p?a=1&b=2#frag query=a=1&b=2
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1#frag part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?a=1&n=a%20b+c&m=%3d%26%2b#frag query=a=1&n=a%20b+c&m=%3d%26%2b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1#frag part="x" set=uc0 url=http://h.example/p?a=1&x#frag query=a=1&x
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1#frag part="" set=uc0 url=http://h.example/p?a=1&#frag query=a=1&
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1#frag part="e=%C3%A9" set=uc0 url=http://h.example/p?a=1&e=%c3%a9#frag query=a=1&e=%c3%a9
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1#frag part="s=a\x20b" set=uc0 url=http://h.example/p?a=1&s=a\x20b#frag query=a=1&s=a\x20b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?a=1#frag part="u=\xc3\xa9" set=uc0 url=http://h.example/p?a=1&u=\xc3\xa9#frag query=a=1&u=\xc3\xa9
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?#frag part="b=2" set=uc0 url=http://h.example/p?b=2#frag query=b=2
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?#frag part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3d%26%2b#frag query=n=a%20b+c&m=%3d%26%2b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?#frag part="x" set=uc0 url=http://h.example/p?x#frag query=x
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?#frag part="" set=uc0 url=http://h.example/p#frag query=
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?#frag part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%c3%a9#frag query=e=%c3%a9
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?#frag part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b#frag query=s=a\x20b
+[ubuntu-openssl-8.5.0] append base=http://h.example/p?#frag part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9#frag query=u=\xc3\xa9
+[ubuntu-openssl-8.5.0] append base=http://h.example part="b=2" set=uc0 url=http://h.example/?b=2 query=b=2
+[ubuntu-openssl-8.5.0] append base=http://h.example part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/?n=a%20b+c&m=%3d%26%2b query=n=a%20b+c&m=%3d%26%2b
+[ubuntu-openssl-8.5.0] append base=http://h.example part="x" set=uc0 url=http://h.example/?x query=x
+[ubuntu-openssl-8.5.0] append base=http://h.example part="" set=uc0 url=http://h.example/ query=
+[ubuntu-openssl-8.5.0] append base=http://h.example part="e=%C3%A9" set=uc0 url=http://h.example/?e=%c3%a9 query=e=%c3%a9
+[ubuntu-openssl-8.5.0] append base=http://h.example part="s=a\x20b" set=uc0 url=http://h.example/?s=a\x20b query=s=a\x20b
+[ubuntu-openssl-8.5.0] append base=http://h.example part="u=\xc3\xa9" set=uc0 url=http://h.example/?u=\xc3\xa9 query=u=\xc3\xa9
+[ubuntu-openssl-8.5.0] set base=http://h.example/p part="n=%3D%26&m=%3d" set=uc0 url=http://h.example/p?n=%3d%26&m=%3d query=n=%3d%26&m=%3d
+[ubuntu-openssl-8.5.0] set base=http://h.example/p?a=1#frag part="n=%3D%26&m=%3d" set=uc0 url=http://h.example/p?n=%3d%26&m=%3d#frag query=n=%3d%26&m=%3d
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=https://u:pw@H.Example:8443/p/q?a=1&b=2#frag url=https://u:pw@H.Example:8443/p/q?a=1&b=2#frag scheme=https user=u password=pw host=H.Example port=8443 port0=8443 path=/p/q query=a=1&b=2 fragment=frag
+[ubuntu-openssl-8.5.0] parts in=HTTP://h.example/p url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example url=http://h.example/ scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example:80/p url=http://h.example:80/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=80 path=/p query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=https://h.example/ url=https://h.example/ scheme=https user=uc11 password=uc12 host=h.example port=443 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example:080/ url=http://h.example:80/ scheme=http user=uc11 password=uc12 host=h.example port=80 port0=80 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example:0/ url=http://h.example:0/ scheme=http user=uc11 password=uc12 host=h.example port=0 port0=0 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example:65535/ url=http://h.example:65535/ scheme=http user=uc11 password=uc12 host=h.example port=65535 port0=65535 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://[::1]:8080/p url=http://[::1]:8080/p scheme=http user=uc11 password=uc12 host=[::1] port=8080 port0=8080 path=/p query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://u@h.example/ url=http://u@h.example/ scheme=http user=u password=uc12 host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://:pw@h.example/ url=http://:pw@h.example/ scheme=http user= password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://u:@h.example/ url=http://u:@h.example/ scheme=http user=u password= host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p? url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query= fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p# url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p?# url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query= fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p%3D%3d?x=%3D&y=%3d#f%3D%3d url=http://h.example/p%3D%3d?x=%3D&y=%3d#f%3D%3d scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p%3D%3d query=x=%3D&y=%3d fragment=f%3D%3d
+[ubuntu-openssl-8.5.0] parts in=http://us\xe9r:pw@h.example/ url=http://us\xe9r:pw@h.example/ scheme=http user=us\xe9r password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://u:p\xe9ss@h.example/ url=http://u:p\xe9ss@h.example/ scheme=http user=u password=p\xe9ss host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://caf\xe9.example/ url=http://caf\xe9.example/ scheme=http user=uc11 password=uc12 host=caf\xe9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p\xe9 url=http://h.example/p\xe9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p\xe9 query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p?q=\xe9 url=http://h.example/p?q=\xe9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=q=\xe9 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p#f\xe9 url=http://h.example/p#f\xe9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=f\xe9
+[ubuntu-openssl-8.5.0] parts in=http://us\xc3\xa9r:pw@h.example/ url=http://us\xc3\xa9r:pw@h.example/ scheme=http user=us\xc3\xa9r password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://u:p\xc3\xa9ss@h.example/ url=http://u:p\xc3\xa9ss@h.example/ scheme=http user=u password=p\xc3\xa9ss host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://caf\xc3\xa9.example/ url=http://caf\xc3\xa9.example/ scheme=http user=uc11 password=uc12 host=caf\xc3\xa9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p\xc3\xa9 url=http://h.example/p\xc3\xa9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p\xc3\xa9 query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p?q=\xc3\xa9 url=http://h.example/p?q=\xc3\xa9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=q=\xc3\xa9 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p#f\xc3\xa9 url=http://h.example/p#f\xc3\xa9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=f\xc3\xa9
+[ubuntu-openssl-8.5.0] parts in=http://us%E9r:pw@h.example/ url=http://us%E9r:pw@h.example/ scheme=http user=us%E9r password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://u:p%E9ss@h.example/ url=http://u:p%E9ss@h.example/ scheme=http user=u password=p%E9ss host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://caf%E9.example/ url=http://caf\xe9.example/ scheme=http user=uc11 password=uc12 host=caf\xe9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p%E9 url=http://h.example/p%E9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p%E9 query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p?q=%E9 url=http://h.example/p?q=%E9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=q=%E9 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://h.example/p#f%E9 url=http://h.example/p#f%E9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=f%E9
+[ubuntu-openssl-8.5.0] parts in=http://caf%e9.example/ url=http://caf\xe9.example/ scheme=http user=uc11 password=uc12 host=caf\xe9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://caf%C3%A9.example/ url=http://caf\xc3\xa9.example/ scheme=http user=uc11 password=uc12 host=caf\xc3\xa9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://caf%C3.example/ url=http://caf\xc3.example/ scheme=http user=uc11 password=uc12 host=caf\xc3.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://%41.example/ url=http://A.example/ scheme=http user=uc11 password=uc12 host=A.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://a%00b.example/ set-uc21
+[ubuntu-openssl-8.5.0] parts in=http://a%2Fb.example/ set-uc21
+[ubuntu-openssl-8.5.0] parts in=http://a%2Eb.example/ url=http://a.b.example/ scheme=http user=uc11 password=uc12 host=a.b.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://caf\xc3.example/ url=http://caf\xc3.example/ scheme=http user=uc11 password=uc12 host=caf\xc3.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] parts in=http://caf\xff.example/ url=http://caf\xff.example/ scheme=http user=uc11 password=uc12 host=caf\xff.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-openssl-8.5.0] -- 56 appends, 2 sets, 44 urls
+[ubuntu-gnutls-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 -> /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4.8.0
+[ubuntu-gnutls-8.5.0] libcurl/8.5.0 GnuTLS/3.8.3 zlib/1.3 brotli/1.1.0 zstd/1.5.5 libidn2/2.3.7 libpsl/0.21.2 (+libidn2/2.3.7) libssh/0.10.6/openssl/zlib nghttp2/1.59.0 librtmp/2.3 OpenLDAP/2.6.10
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p part="b=2" set=uc0 url=http://h.example/p?b=2 query=b=2
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3d%26%2b query=n=a%20b+c&m=%3d%26%2b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p part="x" set=uc0 url=http://h.example/p?x query=x
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p part="" set=uc0 url=http://h.example/p query=
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%c3%a9 query=e=%c3%a9
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b query=s=a\x20b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9 query=u=\xc3\xa9
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1 part="b=2" set=uc0 url=http://h.example/p?a=1&b=2 query=a=1&b=2
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1 part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?a=1&n=a%20b+c&m=%3d%26%2b query=a=1&n=a%20b+c&m=%3d%26%2b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1 part="x" set=uc0 url=http://h.example/p?a=1&x query=a=1&x
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1 part="" set=uc0 url=http://h.example/p?a=1& query=a=1&
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1 part="e=%C3%A9" set=uc0 url=http://h.example/p?a=1&e=%c3%a9 query=a=1&e=%c3%a9
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1 part="s=a\x20b" set=uc0 url=http://h.example/p?a=1&s=a\x20b query=a=1&s=a\x20b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1 part="u=\xc3\xa9" set=uc0 url=http://h.example/p?a=1&u=\xc3\xa9 query=a=1&u=\xc3\xa9
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p? part="b=2" set=uc0 url=http://h.example/p?b=2 query=b=2
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p? part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3d%26%2b query=n=a%20b+c&m=%3d%26%2b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p? part="x" set=uc0 url=http://h.example/p?x query=x
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p? part="" set=uc0 url=http://h.example/p query=
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p? part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%c3%a9 query=e=%c3%a9
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p? part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b query=s=a\x20b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p? part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9 query=u=\xc3\xa9
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1& part="b=2" set=uc0 url=http://h.example/p?a=1&b=2 query=a=1&b=2
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1& part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?a=1&n=a%20b+c&m=%3d%26%2b query=a=1&n=a%20b+c&m=%3d%26%2b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1& part="x" set=uc0 url=http://h.example/p?a=1&x query=a=1&x
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1& part="" set=uc0 url=http://h.example/p?a=1& query=a=1&
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1& part="e=%C3%A9" set=uc0 url=http://h.example/p?a=1&e=%c3%a9 query=a=1&e=%c3%a9
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1& part="s=a\x20b" set=uc0 url=http://h.example/p?a=1&s=a\x20b query=a=1&s=a\x20b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1& part="u=\xc3\xa9" set=uc0 url=http://h.example/p?a=1&u=\xc3\xa9 query=a=1&u=\xc3\xa9
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p#frag part="b=2" set=uc0 url=http://h.example/p?b=2#frag query=b=2
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p#frag part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3d%26%2b#frag query=n=a%20b+c&m=%3d%26%2b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p#frag part="x" set=uc0 url=http://h.example/p?x#frag query=x
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p#frag part="" set=uc0 url=http://h.example/p#frag query=
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p#frag part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%c3%a9#frag query=e=%c3%a9
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p#frag part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b#frag query=s=a\x20b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p#frag part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9#frag query=u=\xc3\xa9
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1#frag part="b=2" set=uc0 url=http://h.example/p?a=1&b=2#frag query=a=1&b=2
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1#frag part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?a=1&n=a%20b+c&m=%3d%26%2b#frag query=a=1&n=a%20b+c&m=%3d%26%2b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1#frag part="x" set=uc0 url=http://h.example/p?a=1&x#frag query=a=1&x
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1#frag part="" set=uc0 url=http://h.example/p?a=1&#frag query=a=1&
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1#frag part="e=%C3%A9" set=uc0 url=http://h.example/p?a=1&e=%c3%a9#frag query=a=1&e=%c3%a9
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1#frag part="s=a\x20b" set=uc0 url=http://h.example/p?a=1&s=a\x20b#frag query=a=1&s=a\x20b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?a=1#frag part="u=\xc3\xa9" set=uc0 url=http://h.example/p?a=1&u=\xc3\xa9#frag query=a=1&u=\xc3\xa9
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?#frag part="b=2" set=uc0 url=http://h.example/p?b=2#frag query=b=2
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?#frag part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3d%26%2b#frag query=n=a%20b+c&m=%3d%26%2b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?#frag part="x" set=uc0 url=http://h.example/p?x#frag query=x
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?#frag part="" set=uc0 url=http://h.example/p#frag query=
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?#frag part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%c3%a9#frag query=e=%c3%a9
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?#frag part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b#frag query=s=a\x20b
+[ubuntu-gnutls-8.5.0] append base=http://h.example/p?#frag part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9#frag query=u=\xc3\xa9
+[ubuntu-gnutls-8.5.0] append base=http://h.example part="b=2" set=uc0 url=http://h.example/?b=2 query=b=2
+[ubuntu-gnutls-8.5.0] append base=http://h.example part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/?n=a%20b+c&m=%3d%26%2b query=n=a%20b+c&m=%3d%26%2b
+[ubuntu-gnutls-8.5.0] append base=http://h.example part="x" set=uc0 url=http://h.example/?x query=x
+[ubuntu-gnutls-8.5.0] append base=http://h.example part="" set=uc0 url=http://h.example/ query=
+[ubuntu-gnutls-8.5.0] append base=http://h.example part="e=%C3%A9" set=uc0 url=http://h.example/?e=%c3%a9 query=e=%c3%a9
+[ubuntu-gnutls-8.5.0] append base=http://h.example part="s=a\x20b" set=uc0 url=http://h.example/?s=a\x20b query=s=a\x20b
+[ubuntu-gnutls-8.5.0] append base=http://h.example part="u=\xc3\xa9" set=uc0 url=http://h.example/?u=\xc3\xa9 query=u=\xc3\xa9
+[ubuntu-gnutls-8.5.0] set base=http://h.example/p part="n=%3D%26&m=%3d" set=uc0 url=http://h.example/p?n=%3d%26&m=%3d query=n=%3d%26&m=%3d
+[ubuntu-gnutls-8.5.0] set base=http://h.example/p?a=1#frag part="n=%3D%26&m=%3d" set=uc0 url=http://h.example/p?n=%3d%26&m=%3d#frag query=n=%3d%26&m=%3d
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=https://u:pw@H.Example:8443/p/q?a=1&b=2#frag url=https://u:pw@H.Example:8443/p/q?a=1&b=2#frag scheme=https user=u password=pw host=H.Example port=8443 port0=8443 path=/p/q query=a=1&b=2 fragment=frag
+[ubuntu-gnutls-8.5.0] parts in=HTTP://h.example/p url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example url=http://h.example/ scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example:80/p url=http://h.example:80/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=80 path=/p query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=https://h.example/ url=https://h.example/ scheme=https user=uc11 password=uc12 host=h.example port=443 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example:080/ url=http://h.example:80/ scheme=http user=uc11 password=uc12 host=h.example port=80 port0=80 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example:0/ url=http://h.example:0/ scheme=http user=uc11 password=uc12 host=h.example port=0 port0=0 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example:65535/ url=http://h.example:65535/ scheme=http user=uc11 password=uc12 host=h.example port=65535 port0=65535 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://[::1]:8080/p url=http://[::1]:8080/p scheme=http user=uc11 password=uc12 host=[::1] port=8080 port0=8080 path=/p query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://u@h.example/ url=http://u@h.example/ scheme=http user=u password=uc12 host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://:pw@h.example/ url=http://:pw@h.example/ scheme=http user= password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://u:@h.example/ url=http://u:@h.example/ scheme=http user=u password= host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p? url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query= fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p# url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p?# url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query= fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p%3D%3d?x=%3D&y=%3d#f%3D%3d url=http://h.example/p%3D%3d?x=%3D&y=%3d#f%3D%3d scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p%3D%3d query=x=%3D&y=%3d fragment=f%3D%3d
+[ubuntu-gnutls-8.5.0] parts in=http://us\xe9r:pw@h.example/ url=http://us\xe9r:pw@h.example/ scheme=http user=us\xe9r password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://u:p\xe9ss@h.example/ url=http://u:p\xe9ss@h.example/ scheme=http user=u password=p\xe9ss host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://caf\xe9.example/ url=http://caf\xe9.example/ scheme=http user=uc11 password=uc12 host=caf\xe9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p\xe9 url=http://h.example/p\xe9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p\xe9 query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p?q=\xe9 url=http://h.example/p?q=\xe9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=q=\xe9 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p#f\xe9 url=http://h.example/p#f\xe9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=f\xe9
+[ubuntu-gnutls-8.5.0] parts in=http://us\xc3\xa9r:pw@h.example/ url=http://us\xc3\xa9r:pw@h.example/ scheme=http user=us\xc3\xa9r password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://u:p\xc3\xa9ss@h.example/ url=http://u:p\xc3\xa9ss@h.example/ scheme=http user=u password=p\xc3\xa9ss host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://caf\xc3\xa9.example/ url=http://caf\xc3\xa9.example/ scheme=http user=uc11 password=uc12 host=caf\xc3\xa9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p\xc3\xa9 url=http://h.example/p\xc3\xa9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p\xc3\xa9 query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p?q=\xc3\xa9 url=http://h.example/p?q=\xc3\xa9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=q=\xc3\xa9 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p#f\xc3\xa9 url=http://h.example/p#f\xc3\xa9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=f\xc3\xa9
+[ubuntu-gnutls-8.5.0] parts in=http://us%E9r:pw@h.example/ url=http://us%E9r:pw@h.example/ scheme=http user=us%E9r password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://u:p%E9ss@h.example/ url=http://u:p%E9ss@h.example/ scheme=http user=u password=p%E9ss host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://caf%E9.example/ url=http://caf\xe9.example/ scheme=http user=uc11 password=uc12 host=caf\xe9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p%E9 url=http://h.example/p%E9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p%E9 query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p?q=%E9 url=http://h.example/p?q=%E9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=q=%E9 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://h.example/p#f%E9 url=http://h.example/p#f%E9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=f%E9
+[ubuntu-gnutls-8.5.0] parts in=http://caf%e9.example/ url=http://caf\xe9.example/ scheme=http user=uc11 password=uc12 host=caf\xe9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://caf%C3%A9.example/ url=http://caf\xc3\xa9.example/ scheme=http user=uc11 password=uc12 host=caf\xc3\xa9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://caf%C3.example/ url=http://caf\xc3.example/ scheme=http user=uc11 password=uc12 host=caf\xc3.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://%41.example/ url=http://A.example/ scheme=http user=uc11 password=uc12 host=A.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://a%00b.example/ set-uc21
+[ubuntu-gnutls-8.5.0] parts in=http://a%2Fb.example/ set-uc21
+[ubuntu-gnutls-8.5.0] parts in=http://a%2Eb.example/ url=http://a.b.example/ scheme=http user=uc11 password=uc12 host=a.b.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://caf\xc3.example/ url=http://caf\xc3.example/ scheme=http user=uc11 password=uc12 host=caf\xc3.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] parts in=http://caf\xff.example/ url=http://caf\xff.example/ scheme=http user=uc11 password=uc12 host=caf\xff.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[ubuntu-gnutls-8.5.0] -- 56 appends, 2 sets, 44 urls
+[current-8.23.0] libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 -> /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4.8.0
+[current-8.23.0] libcurl/8.23.0 OpenSSL/3.0.13 zlib/1.3 nghttp2/1.59.0
+[current-8.23.0] append base=http://h.example/p part="b=2" set=uc0 url=http://h.example/p?b=2 query=b=2
+[current-8.23.0] append base=http://h.example/p part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3D%26%2B query=n=a%20b+c&m=%3D%26%2B
+[current-8.23.0] append base=http://h.example/p part="x" set=uc0 url=http://h.example/p?x query=x
+[current-8.23.0] append base=http://h.example/p part="" set=uc0 url=http://h.example/p query=uc16
+[current-8.23.0] append base=http://h.example/p part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%C3%A9 query=e=%C3%A9
+[current-8.23.0] append base=http://h.example/p part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b query=s=a\x20b
+[current-8.23.0] append base=http://h.example/p part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9 query=u=\xc3\xa9
+[current-8.23.0] append base=http://h.example/p?a=1 part="b=2" set=uc0 url=http://h.example/p?a=1&b=2 query=a=1&b=2
+[current-8.23.0] append base=http://h.example/p?a=1 part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?a=1&n=a%20b+c&m=%3D%26%2B query=a=1&n=a%20b+c&m=%3D%26%2B
+[current-8.23.0] append base=http://h.example/p?a=1 part="x" set=uc0 url=http://h.example/p?a=1&x query=a=1&x
+[current-8.23.0] append base=http://h.example/p?a=1 part="" set=uc0 url=http://h.example/p?a=1& query=a=1&
+[current-8.23.0] append base=http://h.example/p?a=1 part="e=%C3%A9" set=uc0 url=http://h.example/p?a=1&e=%C3%A9 query=a=1&e=%C3%A9
+[current-8.23.0] append base=http://h.example/p?a=1 part="s=a\x20b" set=uc0 url=http://h.example/p?a=1&s=a\x20b query=a=1&s=a\x20b
+[current-8.23.0] append base=http://h.example/p?a=1 part="u=\xc3\xa9" set=uc0 url=http://h.example/p?a=1&u=\xc3\xa9 query=a=1&u=\xc3\xa9
+[current-8.23.0] append base=http://h.example/p? part="b=2" set=uc0 url=http://h.example/p?b=2 query=b=2
+[current-8.23.0] append base=http://h.example/p? part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3D%26%2B query=n=a%20b+c&m=%3D%26%2B
+[current-8.23.0] append base=http://h.example/p? part="x" set=uc0 url=http://h.example/p?x query=x
+[current-8.23.0] append base=http://h.example/p? part="" set=uc0 url=http://h.example/p query=uc16
+[current-8.23.0] append base=http://h.example/p? part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%C3%A9 query=e=%C3%A9
+[current-8.23.0] append base=http://h.example/p? part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b query=s=a\x20b
+[current-8.23.0] append base=http://h.example/p? part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9 query=u=\xc3\xa9
+[current-8.23.0] append base=http://h.example/p?a=1& part="b=2" set=uc0 url=http://h.example/p?a=1&b=2 query=a=1&b=2
+[current-8.23.0] append base=http://h.example/p?a=1& part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?a=1&n=a%20b+c&m=%3D%26%2B query=a=1&n=a%20b+c&m=%3D%26%2B
+[current-8.23.0] append base=http://h.example/p?a=1& part="x" set=uc0 url=http://h.example/p?a=1&x query=a=1&x
+[current-8.23.0] append base=http://h.example/p?a=1& part="" set=uc0 url=http://h.example/p?a=1& query=a=1&
+[current-8.23.0] append base=http://h.example/p?a=1& part="e=%C3%A9" set=uc0 url=http://h.example/p?a=1&e=%C3%A9 query=a=1&e=%C3%A9
+[current-8.23.0] append base=http://h.example/p?a=1& part="s=a\x20b" set=uc0 url=http://h.example/p?a=1&s=a\x20b query=a=1&s=a\x20b
+[current-8.23.0] append base=http://h.example/p?a=1& part="u=\xc3\xa9" set=uc0 url=http://h.example/p?a=1&u=\xc3\xa9 query=a=1&u=\xc3\xa9
+[current-8.23.0] append base=http://h.example/p#frag part="b=2" set=uc0 url=http://h.example/p?b=2#frag query=b=2
+[current-8.23.0] append base=http://h.example/p#frag part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3D%26%2B#frag query=n=a%20b+c&m=%3D%26%2B
+[current-8.23.0] append base=http://h.example/p#frag part="x" set=uc0 url=http://h.example/p?x#frag query=x
+[current-8.23.0] append base=http://h.example/p#frag part="" set=uc0 url=http://h.example/p#frag query=uc16
+[current-8.23.0] append base=http://h.example/p#frag part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%C3%A9#frag query=e=%C3%A9
+[current-8.23.0] append base=http://h.example/p#frag part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b#frag query=s=a\x20b
+[current-8.23.0] append base=http://h.example/p#frag part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9#frag query=u=\xc3\xa9
+[current-8.23.0] append base=http://h.example/p?a=1#frag part="b=2" set=uc0 url=http://h.example/p?a=1&b=2#frag query=a=1&b=2
+[current-8.23.0] append base=http://h.example/p?a=1#frag part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?a=1&n=a%20b+c&m=%3D%26%2B#frag query=a=1&n=a%20b+c&m=%3D%26%2B
+[current-8.23.0] append base=http://h.example/p?a=1#frag part="x" set=uc0 url=http://h.example/p?a=1&x#frag query=a=1&x
+[current-8.23.0] append base=http://h.example/p?a=1#frag part="" set=uc0 url=http://h.example/p?a=1&#frag query=a=1&
+[current-8.23.0] append base=http://h.example/p?a=1#frag part="e=%C3%A9" set=uc0 url=http://h.example/p?a=1&e=%C3%A9#frag query=a=1&e=%C3%A9
+[current-8.23.0] append base=http://h.example/p?a=1#frag part="s=a\x20b" set=uc0 url=http://h.example/p?a=1&s=a\x20b#frag query=a=1&s=a\x20b
+[current-8.23.0] append base=http://h.example/p?a=1#frag part="u=\xc3\xa9" set=uc0 url=http://h.example/p?a=1&u=\xc3\xa9#frag query=a=1&u=\xc3\xa9
+[current-8.23.0] append base=http://h.example/p?#frag part="b=2" set=uc0 url=http://h.example/p?b=2#frag query=b=2
+[current-8.23.0] append base=http://h.example/p?#frag part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/p?n=a%20b+c&m=%3D%26%2B#frag query=n=a%20b+c&m=%3D%26%2B
+[current-8.23.0] append base=http://h.example/p?#frag part="x" set=uc0 url=http://h.example/p?x#frag query=x
+[current-8.23.0] append base=http://h.example/p?#frag part="" set=uc0 url=http://h.example/p#frag query=uc16
+[current-8.23.0] append base=http://h.example/p?#frag part="e=%C3%A9" set=uc0 url=http://h.example/p?e=%C3%A9#frag query=e=%C3%A9
+[current-8.23.0] append base=http://h.example/p?#frag part="s=a\x20b" set=uc0 url=http://h.example/p?s=a\x20b#frag query=s=a\x20b
+[current-8.23.0] append base=http://h.example/p?#frag part="u=\xc3\xa9" set=uc0 url=http://h.example/p?u=\xc3\xa9#frag query=u=\xc3\xa9
+[current-8.23.0] append base=http://h.example part="b=2" set=uc0 url=http://h.example/?b=2 query=b=2
+[current-8.23.0] append base=http://h.example part="n=a%20b+c&m=%3D%26%2B" set=uc0 url=http://h.example/?n=a%20b+c&m=%3D%26%2B query=n=a%20b+c&m=%3D%26%2B
+[current-8.23.0] append base=http://h.example part="x" set=uc0 url=http://h.example/?x query=x
+[current-8.23.0] append base=http://h.example part="" set=uc0 url=http://h.example/ query=uc16
+[current-8.23.0] append base=http://h.example part="e=%C3%A9" set=uc0 url=http://h.example/?e=%C3%A9 query=e=%C3%A9
+[current-8.23.0] append base=http://h.example part="s=a\x20b" set=uc0 url=http://h.example/?s=a\x20b query=s=a\x20b
+[current-8.23.0] append base=http://h.example part="u=\xc3\xa9" set=uc0 url=http://h.example/?u=\xc3\xa9 query=u=\xc3\xa9
+[current-8.23.0] set base=http://h.example/p part="n=%3D%26&m=%3d" set=uc0 url=http://h.example/p?n=%3D%26&m=%3D query=n=%3D%26&m=%3D
+[current-8.23.0] set base=http://h.example/p?a=1#frag part="n=%3D%26&m=%3d" set=uc0 url=http://h.example/p?n=%3D%26&m=%3D#frag query=n=%3D%26&m=%3D
+[current-8.23.0] parts in=http://h.example/p url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[current-8.23.0] parts in=https://u:pw@H.Example:8443/p/q?a=1&b=2#frag url=https://u:pw@H.Example:8443/p/q?a=1&b=2#frag scheme=https user=u password=pw host=H.Example port=8443 port0=8443 path=/p/q query=a=1&b=2 fragment=frag
+[current-8.23.0] parts in=HTTP://h.example/p url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example url=http://h.example/ scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example:80/p url=http://h.example:80/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=80 path=/p query=uc16 fragment=uc17
+[current-8.23.0] parts in=https://h.example/ url=https://h.example/ scheme=https user=uc11 password=uc12 host=h.example port=443 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example:080/ url=http://h.example:80/ scheme=http user=uc11 password=uc12 host=h.example port=80 port0=80 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example:0/ url=http://h.example:0/ scheme=http user=uc11 password=uc12 host=h.example port=0 port0=0 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example:65535/ url=http://h.example:65535/ scheme=http user=uc11 password=uc12 host=h.example port=65535 port0=65535 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://[::1]:8080/p url=http://[::1]:8080/p scheme=http user=uc11 password=uc12 host=[::1] port=8080 port0=8080 path=/p query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://u@h.example/ url=http://u@h.example/ scheme=http user=u password=uc12 host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://:pw@h.example/ url=http://:pw@h.example/ scheme=http user= password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://u:@h.example/ url=http://u:@h.example/ scheme=http user=u password= host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example/p? url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example/p# url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example/p?# url=http://h.example/p scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example/p%3D%3d?x=%3D&y=%3d#f%3D%3d url=http://h.example/p%3D%3d?x=%3D&y=%3d#f%3D%3d scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p%3D%3d query=x=%3D&y=%3d fragment=f%3D%3d
+[current-8.23.0] parts in=http://us\xe9r:pw@h.example/ url=http://us\xe9r:pw@h.example/ scheme=http user=us\xe9r password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://u:p\xe9ss@h.example/ url=http://u:p\xe9ss@h.example/ scheme=http user=u password=p\xe9ss host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://caf\xe9.example/ url=http://caf\xe9.example/ scheme=http user=uc11 password=uc12 host=caf\xe9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example/p\xe9 url=http://h.example/p\xe9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p\xe9 query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example/p?q=\xe9 url=http://h.example/p?q=\xe9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=q=\xe9 fragment=uc17
+[current-8.23.0] parts in=http://h.example/p#f\xe9 url=http://h.example/p#f\xe9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=f\xe9
+[current-8.23.0] parts in=http://us\xc3\xa9r:pw@h.example/ url=http://us\xc3\xa9r:pw@h.example/ scheme=http user=us\xc3\xa9r password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://u:p\xc3\xa9ss@h.example/ url=http://u:p\xc3\xa9ss@h.example/ scheme=http user=u password=p\xc3\xa9ss host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://caf\xc3\xa9.example/ url=http://caf\xc3\xa9.example/ scheme=http user=uc11 password=uc12 host=caf\xc3\xa9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example/p\xc3\xa9 url=http://h.example/p\xc3\xa9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p\xc3\xa9 query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example/p?q=\xc3\xa9 url=http://h.example/p?q=\xc3\xa9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=q=\xc3\xa9 fragment=uc17
+[current-8.23.0] parts in=http://h.example/p#f\xc3\xa9 url=http://h.example/p#f\xc3\xa9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=f\xc3\xa9
+[current-8.23.0] parts in=http://us%E9r:pw@h.example/ url=http://us%E9r:pw@h.example/ scheme=http user=us%E9r password=pw host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://u:p%E9ss@h.example/ url=http://u:p%E9ss@h.example/ scheme=http user=u password=p%E9ss host=h.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://caf%E9.example/ url=http://caf\xe9.example/ scheme=http user=uc11 password=uc12 host=caf\xe9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example/p%E9 url=http://h.example/p%E9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p%E9 query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://h.example/p?q=%E9 url=http://h.example/p?q=%E9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=q=%E9 fragment=uc17
+[current-8.23.0] parts in=http://h.example/p#f%E9 url=http://h.example/p#f%E9 scheme=http user=uc11 password=uc12 host=h.example port=80 port0=uc15 path=/p query=uc16 fragment=f%E9
+[current-8.23.0] parts in=http://caf%e9.example/ url=http://caf\xe9.example/ scheme=http user=uc11 password=uc12 host=caf\xe9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://caf%C3%A9.example/ url=http://caf\xc3\xa9.example/ scheme=http user=uc11 password=uc12 host=caf\xc3\xa9.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://caf%C3.example/ url=http://caf\xc3.example/ scheme=http user=uc11 password=uc12 host=caf\xc3.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://%41.example/ url=http://A.example/ scheme=http user=uc11 password=uc12 host=A.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://a%00b.example/ set-uc21
+[current-8.23.0] parts in=http://a%2Fb.example/ set-uc21
+[current-8.23.0] parts in=http://a%2Eb.example/ url=http://a.b.example/ scheme=http user=uc11 password=uc12 host=a.b.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://caf\xc3.example/ url=http://caf\xc3.example/ scheme=http user=uc11 password=uc12 host=caf\xc3.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] parts in=http://caf\xff.example/ url=http://caf\xff.example/ scheme=http user=uc11 password=uc12 host=caf\xff.example port=80 port0=uc15 path=/ query=uc16 fragment=uc17
+[current-8.23.0] -- 56 appends, 2 sets, 44 urls

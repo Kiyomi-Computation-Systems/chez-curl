@@ -1,0 +1,22 @@
+$ scripts/guix-env sh -c 'sh build/m5s1-builder/repeat.sh 10 0; echo loaded; sh build/m5s1-builder/repeat.sh 10 24'  # the suite with the engine test's first version, 1000-tick slices
+run 0 status 0 # of expected passes      72|
+run 1 status 0 # of expected passes      72|
+run 2 status 0 # of expected passes      72|
+run 3 status 0 # of expected passes      72|
+run 4 status 0 # of expected passes      72|
+run 5 status 1 FAIL a call in a Chez engine whose fuel runs out in its await: the expiry cancels the transfer, which ends before the engine is resumed; resumed, the call raises the low level's cancelled, compounded with &http-exchange, one transfer|# of expected passes      71|# of unexpected failures  1|
+run 6 status 0 # of expected passes      72|
+run 7 status 0 # of expected passes      72|
+run 8 status 0 # of expected passes      72|
+run 9 status 1 FAIL a call in a Chez engine whose fuel runs out in its await: the expiry cancels the transfer, which ends before the engine is resumed; resumed, the call raises the low level's cancelled, compounded with &http-exchange, one transfer|# of expected passes      71|# of unexpected failures  1|
+loaded
+run 0 status 1 FAIL a call in a Chez engine whose fuel runs out in its await: the expiry cancels the transfer, which ends before the engine is resumed; resumed, the call raises the low level's cancelled, compounded with &http-exchange, one transfer|# of expected passes      71|# of unexpected failures  1|
+run 1 status 1 FAIL a call in a Chez engine whose fuel runs out in its await: the expiry cancels the transfer, which ends before the engine is resumed; resumed, the call raises the low level's cancelled, compounded with &http-exchange, one transfer|# of expected passes      71|# of unexpected failures  1|
+run 2 status 1 FAIL a call in a Chez engine whose fuel runs out in its await: the expiry cancels the transfer, which ends before the engine is resumed; resumed, the call raises the low level's cancelled, compounded with &http-exchange, one transfer|# of expected passes      71|# of unexpected failures  1|
+run 3 status 1 FAIL a call in a Chez engine whose fuel runs out in its await: the expiry cancels the transfer, which ends before the engine is resumed; resumed, the call raises the low level's cancelled, compounded with &http-exchange, one transfer|# of expected passes      71|# of unexpected failures  1|
+run 4 status 1 FAIL a call in a Chez engine whose fuel runs out in its await: the expiry cancels the transfer, which ends before the engine is resumed; resumed, the call raises the low level's cancelled, compounded with &http-exchange, one transfer|# of expected passes      71|# of unexpected failures  1|
+run 5 status 1 FAIL a call in a Chez engine whose fuel runs out in its await: the expiry cancels the transfer, which ends before the engine is resumed; resumed, the call raises the low level's cancelled, compounded with &http-exchange, one transfer|# of expected passes      71|# of unexpected failures  1|
+run 6 status 1 FAIL a call in a Chez engine whose fuel runs out in its await: the expiry cancels the transfer, which ends before the engine is resumed; resumed, the call raises the low level's cancelled, compounded with &http-exchange, one transfer|# of expected passes      71|# of unexpected failures  1|
+run 7 status 1 FAIL a call in a Chez engine whose fuel runs out in its await: the expiry cancels the transfer, which ends before the engine is resumed; resumed, the call raises the low level's cancelled, compounded with &http-exchange, one transfer|# of expected passes      71|# of unexpected failures  1|
+run 8 status 1 FAIL a call in a Chez engine whose fuel runs out in its await: the expiry cancels the transfer, which ends before the engine is resumed; resumed, the call raises the low level's cancelled, compounded with &http-exchange, one transfer|# of expected passes      71|# of unexpected failures  1|
+run 9 status 1 FAIL a call in a Chez engine whose fuel runs out in its await: the expiry cancels the transfer, which ends before the engine is resumed; resumed, the call raises the low level's cancelled, compounded with &http-exchange, one transfer|# of expected passes      71|# of unexpected failures  1|

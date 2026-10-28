@@ -12,6 +12,8 @@
           curle-bad-function-argument curle-not-built-in curlversion-tenth
           curlinfo-private curlinfo-rtsp-client-cseq curlot-types
           curlue-ok curlue-codes curlupart-url curlupart-scheme
+          curlupart-user curlupart-password curlupart-host curlupart-port curlupart-path
+          curlupart-query curlupart-fragment curlu-default-port
           curlinfo-response-code curlinfo-http-version curlinfo-effective-url
           curl-error-size curl-blob-copy
           curl-http-version-1-0 curl-http-version-1-1 curl-http-version-2-0
@@ -195,6 +197,28 @@
   ;; curlupart-scheme : Positive-Integer
   ;; curl/urlapi.h: CURLUPART_SCHEME, the second CURLUPart, 1.
   (define curlupart-scheme 1)
+
+  ;; curlupart-user : Positive-Integer
+  ;; curlupart-password : Positive-Integer
+  ;; curlupart-host : Positive-Integer
+  ;; curlupart-port : Positive-Integer
+  ;; curlupart-path : Positive-Integer
+  ;; curlupart-query : Positive-Integer
+  ;; curlupart-fragment : Positive-Integer
+  ;; curl/urlapi.h: the CURLUParts curl-url-part reads (the M5 plan, section
+  ;; 3.1). CURLUPART_OPTIONS, 4, lies between the password and the host.
+  (define curlupart-user 2)
+  (define curlupart-password 3)
+  (define curlupart-host 5)
+  (define curlupart-port 6)
+  (define curlupart-path 7)
+  (define curlupart-query 8)
+  (define curlupart-fragment 9)
+
+  ;; curlu-default-port : Positive-Integer
+  ;; curl/urlapi.h: CURLU_DEFAULT_PORT, (1<<0): curl_url_get's port is the
+  ;; scheme's default when the URL names none.
+  (define curlu-default-port 1)
 
   ;; --- the transfer (M2 plan, section 5; on an engine since M3) ---------------
 

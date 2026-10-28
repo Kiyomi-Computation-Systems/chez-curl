@@ -2,7 +2,7 @@
 
 - **Status:** Accepted; amended 2026-10-26: SecureTransport's first run; amended 2026-10-26:
   the environment's policy is decided (the M4 plan); amended 2026-10-27: that run was
-  LibreSSL's
+  LibreSSL's; amended 2026-10-27: the `CAPATH` clear, measured on the Mac
 - **Date:** 2026-10-24
 - **Scope:** M2's private request (M2 plan, §6), and M4's public one, which inherits its
   fields
@@ -200,3 +200,12 @@ checks of that run. Measured on the Mac, 2026-10-27, Apple's LibreSSL checks the
 CA file fails, so a CA file is not the only anchor there for a server the keychain trusts;
 SecureTransport, selected by `CURL_SSL_BACKEND`, keeps it so. What chez-curl does about it is
 ADR-0024's, amended 2026-10-27: a submit refuses a CA file there.
+
+## Amendment, 2026-10-27: the `CAPATH` clear, measured on the Mac
+
+M4 slice 4's probe clears `CAPATH` as decision 1 does, `curl_easy_setopt(CAPATH, NULL)`, before
+each TLS case, and prints the answer. On the Mac, Apple's 8.7.1 answered 0 with its LibreSSL and
+4, `CURLE_NOT_BUILT_IN`, with SecureTransport
+([research](../research/m4/slice4/results/mac-8.7.1.log)), as the context above expected of a
+backend with no CA directory. Decision 1 accepts both, so the amendment "SecureTransport's first
+run"'s open question is answered: SecureTransport has no directory to clear.

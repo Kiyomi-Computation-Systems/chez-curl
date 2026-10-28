@@ -1,0 +1,71 @@
+;; test-url-parts' printed rows, 2026-10-27: the container's from a copy whose rows file held none; the lanes', in Docker ubuntu:24.04, from lanes/lanes.sh, as it ran: from build/m5s1/, on a snapshot of the tree in build/m5s1/snap/.
+;; container (guix-8.20.0)
+(libcurl
+ (where "TODO: say where this libcurl runs")
+ (version "8.20.0")
+ (answers
+  ((append "http://h.example/p" "s=a b") (refused 3))
+  ((append "http://h.example/p?a=1#frag" "s=a b") (refused 3))
+  ((parts "http://:pw@h.example/") ("http://:pw@h.example/" "http" "" "pw" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://u:@h.example/") ("http://u:@h.example/" "http" "u" "" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://h.example/p?") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" (absent) (absent)))
+  ((parts "http://h.example/p?#") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" (absent) (absent)))))
+
+;; lane floor
+(libcurl
+ (where "TODO: say where this libcurl runs")
+ (version "7.85.0")
+ (answers
+  ((append "http://h.example/p" "s=a b") (refused 26))
+  ((append "http://h.example/p?a=1#frag" "s=a b") (refused 26))
+  ((parts "http://:pw@h.example/") ("http://:pw@h.example/" "http" (absent) "pw" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://u:@h.example/") ("http://u@h.example/" "http" "u" (absent) "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://h.example/p?") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))
+  ((parts "http://h.example/p?#") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))))
+
+;; lane main
+(libcurl
+ (where "TODO: say where this libcurl runs")
+ (version "8.5.0")
+ (answers
+  ((append "http://h.example/p" "s=a b") (refused 3))
+  ((append "http://h.example/p?a=1#frag" "s=a b") (refused 3))
+  ((parts "http://:pw@h.example/") ("http://:pw@h.example/" "http" "" "pw" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://u:@h.example/") ("http://u:@h.example/" "http" "u" "" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://h.example/p?") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))
+  ((parts "http://h.example/p?#") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))))
+
+;; lane gnutls
+(libcurl
+ (where "TODO: say where this libcurl runs")
+ (version "8.5.0")
+ (answers
+  ((append "http://h.example/p" "s=a b") (refused 3))
+  ((append "http://h.example/p?a=1#frag" "s=a b") (refused 3))
+  ((parts "http://:pw@h.example/") ("http://:pw@h.example/" "http" "" "pw" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://u:@h.example/") ("http://u:@h.example/" "http" "u" "" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://h.example/p?") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))
+  ((parts "http://h.example/p?#") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))))
+
+;; lane current
+(libcurl
+ (where "TODO: say where this libcurl runs")
+ (version "8.23.0")
+ (answers
+  ((append "http://h.example/p" "s=a b") (refused 26))
+  ((append "http://h.example/p?a=1#frag" "s=a b") (refused 26))
+  ((parts "http://:pw@h.example/") ("http://:pw@h.example/" "http" "" "pw" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://u:@h.example/") ("http://u:@h.example/" "http" "u" "" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://h.example/p?") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" (absent) (absent)))
+  ((parts "http://h.example/p?#") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" (absent) (absent)))))
+;; the Mac (Apple's 8.7.1), printed by make test on feat/m5-slice-1, fa51098, 2026-10-28, and pasted into the session
+(libcurl
+ (where "TODO: say where this libcurl runs")
+ (version "8.7.1")
+ (answers
+  ((append "http://h.example/p" "s=a b") (refused 3))
+  ((append "http://h.example/p?a=1#frag" "s=a b") (refused 3))
+  ((parts "http://:pw@h.example/") ("http://:pw@h.example/" "http" "" "pw" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://u:@h.example/") ("http://u:@h.example/" "http" "u" "" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://h.example/p?") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))
+  ((parts "http://h.example/p?#") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))))
