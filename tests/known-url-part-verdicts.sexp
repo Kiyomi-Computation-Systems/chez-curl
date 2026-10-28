@@ -67,3 +67,14 @@
   ((parts "http://u:@h.example/") ("http://u:@h.example/" "http" "u" "" "h.example" 80 "/" (absent) (absent)))
   ((parts "http://h.example/p?") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" (absent) (absent)))
   ((parts "http://h.example/p?#") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" (absent) (absent)))))
+
+(libcurl
+ (where "Apple's libcurl 8.7.1, /usr/lib/libcurl.4.dylib, on the maintainer's Mac: Apple M1, macOS 26.7.1, SecureTransport (LibreSSL/3.3.6). Printed by test-url-parts there on 2026-10-28; 8.5.0's answers, and the C probe's curl_url_get gave the same parts (.plans/research/m5/url-parts/results/mac-8.7.1.log).")
+ (version "8.7.1")
+ (answers
+  ((append "http://h.example/p" "s=a b") (refused 3))
+  ((append "http://h.example/p?a=1#frag" "s=a b") (refused 3))
+  ((parts "http://:pw@h.example/") ("http://:pw@h.example/" "http" "" "pw" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://u:@h.example/") ("http://u:@h.example/" "http" "u" "" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://h.example/p?") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))
+  ((parts "http://h.example/p?#") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))))

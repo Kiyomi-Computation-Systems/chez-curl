@@ -1,0 +1,164 @@
+% make test NODE="$(asdf which node)"
+# Run by the maintainer on the Mac (Apple M1, macOS 26.7.1, Apple's libcurl 8.7.1) on
+# feat/m5-slice-1, fa51098, 2026-10-28, and pasted into the session; saved here verbatim.
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (28 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-check-floors.sps
+%%%% Starting test check-floors
+# of expected passes      375
+test: pass tests/test-check-floors.sps
+=== tests/test-check-nothreads.sps
+%%%% Starting test check-nothreads
+# of expected passes      17
+test: pass tests/test-check-nothreads.sps
+=== tests/test-check-seam.sps
+%%%% Starting test check-seam
+# of expected passes      60
+test: pass tests/test-check-seam.sps
+=== tests/test-collect-safe.sps
+%%%% Starting test collect-safe
+# of expected passes      120
+test: pass tests/test-collect-safe.sps
+=== tests/test-conditions.sps
+%%%% Starting test conditions
+# of expected passes      38
+test: pass tests/test-conditions.sps
+=== tests/test-constants.sps
+%%%% Starting test constants
+# of expected passes      623
+test: pass tests/test-constants.sps
+=== tests/test-curl-testing.sps
+%%%% Starting test curl-testing
+# of expected passes      284
+test: pass tests/test-curl-testing.sps
+=== tests/test-discovery.sps
+%%%% Starting test discovery
+# of expected passes      47
+test: pass tests/test-discovery.sps
+=== tests/test-drift.sps
+%%%% Starting test drift
+# of expected passes      55
+test: pass tests/test-drift.sps
+=== tests/test-engine.sps
+%%%% Starting test engine
+test-engine: the stalled-lookup checks run on Linux alone, so none ran here (ADR-0019, amended 2026-10-25)
+# of expected passes      48
+test: pass tests/test-engine.sps
+=== tests/test-http-client.sps
+%%%% Starting test http-client
+# of expected passes      72
+test: pass tests/test-http-client.sps
+=== tests/test-library-loading.sps
+%%%% Starting test library-loading
+# of expected passes      74
+test: pass tests/test-library-loading.sps
+=== tests/test-load-state.sps
+%%%% Starting test load-state
+# of expected passes      12
+test: pass tests/test-load-state.sps
+=== tests/test-mailbox.sps
+%%%% Starting test mailbox
+# of expected passes      25
+test: pass tests/test-mailbox.sps
+=== tests/test-manifest.sps
+%%%% Starting test manifest
+# of expected passes      4
+test: pass tests/test-manifest.sps
+=== tests/test-memory-safety.sps
+%%%% Starting test memory-safety
+# of expected passes      89
+test: pass tests/test-memory-safety.sps
+=== tests/test-native.sps
+%%%% Starting test native
+# of expected passes      16
+test: pass tests/test-native.sps
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      88
+# of skipped tests        1
+test: pass tests/test-origin-tls.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      127
+# of skipped tests        1
+test: pass tests/test-origin.sps
+=== tests/test-request.sps
+%%%% Starting test request
+# of expected passes      38
+test: pass tests/test-request.sps
+=== tests/test-require-threaded.sps
+%%%% Starting test require-threaded
+# of expected passes      69
+test: pass tests/test-require-threaded.sps
+=== tests/test-transfer-tls.sps
+%%%% Starting test transfer-tls
+# of expected passes      82
+test: pass tests/test-transfer-tls.sps
+=== tests/test-transfer.sps
+%%%% Starting test transfer
+# of expected passes      223
+test: pass tests/test-transfer.sps
+=== tests/test-unsupported.sps
+%%%% Starting test unsupported
+# of expected passes      31
+test: pass tests/test-unsupported.sps
+=== tests/test-url-parts.sps
+test-url-parts: no row of tests/known-url-part-verdicts.sexp is for libcurl 8.7.1.
+test-url-parts: if it is one to support, review its answers, and add this row,
+test-url-parts: with `where` saying where it runs (ADR-0028):
+
+(libcurl
+ (where "TODO: say where this libcurl runs")
+ (version "8.7.1")
+ (answers
+  ((append "http://h.example/p" "s=a b") (refused 3))
+  ((append "http://h.example/p?a=1#frag" "s=a b") (refused 3))
+  ((parts "http://:pw@h.example/") ("http://:pw@h.example/" "http" "" "pw" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://u:@h.example/") ("http://u:@h.example/" "http" "u" "" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://h.example/p?") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))
+  ((parts "http://h.example/p?#") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))))
+
+%%%% Starting test url-parts
+FAIL the loaded libcurl's version has exactly one row in tests/known-url-part-verdicts.sexp
+  expected: ("8.7.1")
+  actual:   ()
+FAIL libcurl 8.7.1: append "s=a b" to "http://h.example/p" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: append "s=a b" to "http://h.example/p?a=1#frag" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: the parts of "http://:pw@h.example/" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   (("http://:pw@h.example/" "http" "" "pw" "h.example" 80 "/" (absent) (absent)) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: the parts of "http://u:@h.example/" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   (("http://u:@h.example/" "http" "u" "" "h.example" 80 "/" (absent) (absent)) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: the parts of "http://h.example/p?" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   (("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: the parts of "http://h.example/p?#" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   (("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+# of expected passes      150
+# of unexpected failures  7
+suite-exit-status: exit 1 (pass 150, fail 7, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-url-parts.sps (exit 1)
+=== tests/test-url.sps
+%%%% Starting test url
+# of expected passes      145
+test: pass tests/test-url.sps
+=== tests/test-variadic.sps
+%%%% Starting test variadic
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 1: done, the first done at 1018 ms, both at 2039 ms
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 2: done, the first done at 1024 ms, both at 1024 ms
+# of expected passes      30
+test: pass tests/test-variadic.sps
+=== tests/test-verify.sps
+%%%% Starting test verify
+# of expected passes      21
+test: pass tests/test-verify.sps
+test: ran 28, passed 27, failed 1, hung 0
+make: *** [test] Error 1

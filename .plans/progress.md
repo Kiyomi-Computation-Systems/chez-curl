@@ -37,8 +37,9 @@ close-out under **Close-outs**, newest first.
       suite: a collection inside `test-engine`'s 50 ms window, which this branch's allocation
       moved there ([research](research/m5/valgrind-collect/)), and a sleep of no time that
       starved the flip tests' second thread ([research](research/m5/valgrind-yield/)).
-    - **Owed by the Mac,** once pushed: `test-url-parts`' 8.7.1 row, which `make test` prints,
-      and `sh .plans/research/m5/url-parts/run.sh mac`.
+    - **The Mac ran it, 2026-10-28,** on `fa51098`: `make test` passed 27 of 28, every suite
+      but `test-url-parts`, which printed its 8.7.1 row, 8.5.0's, now added; and the URL-parts
+      probe answered all 103 lines as 8.5.0 did (ADR-0008, amended).
   - **Measured first** ([`research/m5/redirect-url/`](research/m5/redirect-url/)), through a C
     probe that made each transfer as the engine does, `FOLLOWLOCATION` off, on five libcurls:
     Guix's 8.20.0 in the container, and in Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with

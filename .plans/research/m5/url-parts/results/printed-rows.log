@@ -58,4 +58,14 @@
   ((parts "http://u:@h.example/") ("http://u:@h.example/" "http" "u" "" "h.example" 80 "/" (absent) (absent)))
   ((parts "http://h.example/p?") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" (absent) (absent)))
   ((parts "http://h.example/p?#") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" (absent) (absent)))))
-
+;; the Mac (Apple's 8.7.1), printed by make test on feat/m5-slice-1, fa51098, 2026-10-28, and pasted into the session
+(libcurl
+ (where "TODO: say where this libcurl runs")
+ (version "8.7.1")
+ (answers
+  ((append "http://h.example/p" "s=a b") (refused 3))
+  ((append "http://h.example/p?a=1#frag" "s=a b") (refused 3))
+  ((parts "http://:pw@h.example/") ("http://:pw@h.example/" "http" "" "pw" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://u:@h.example/") ("http://u:@h.example/" "http" "u" "" "h.example" 80 "/" (absent) (absent)))
+  ((parts "http://h.example/p?") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))
+  ((parts "http://h.example/p?#") ("http://h.example/p" "http" (absent) (absent) "h.example" 80 "/p" "" (absent)))))

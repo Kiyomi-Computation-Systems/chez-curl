@@ -305,3 +305,7 @@ through C, on 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, Guix's 8.20.0
   probe's `curl_url_get` on each Linux libcurl; the suite's other 5 URLs, `file:`, `ftp:`, two
   that hold U+FEFF and a port of 99999, and the space's codes, are the suite's own answers, as
   each lane printed them ([research](../research/m5/url-parts/results/printed-rows.log)).
+- **The Mac, 2026-10-28:** Apple's 8.7.1 answered all 103 of the probe's lines as 8.5.0 did
+  ([results/mac-8.7.1.log](../research/m5/url-parts/results/mac-8.7.1.log)), and
+  `test-url-parts` printed 8.5.0's row for it, now the file's fifth; its `make test` passed every
+  other suite, `test-http-client`'s 72 among them.
