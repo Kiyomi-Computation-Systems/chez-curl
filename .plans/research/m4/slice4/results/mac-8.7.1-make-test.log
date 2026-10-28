@@ -1,0 +1,125 @@
+% make test
+# Run by the maintainer on the Mac (Apple M1, macOS 26.7.1, Apple's libcurl 8.7.1) on main,
+# a66ef78, 2026-10-27, and pasted into the session; saved here verbatim.
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (26 checked)
+check-seam: the seam holds (16 libraries in 16 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-check-floors.sps
+%%%% Starting test check-floors
+# of expected passes      375
+test: pass tests/test-check-floors.sps
+=== tests/test-check-nothreads.sps
+%%%% Starting test check-nothreads
+# of expected passes      17
+test: pass tests/test-check-nothreads.sps
+=== tests/test-check-seam.sps
+%%%% Starting test check-seam
+# of expected passes      60
+test: pass tests/test-check-seam.sps
+=== tests/test-collect-safe.sps
+%%%% Starting test collect-safe
+# of expected passes      120
+test: pass tests/test-collect-safe.sps
+=== tests/test-conditions.sps
+%%%% Starting test conditions
+# of expected passes      38
+test: pass tests/test-conditions.sps
+=== tests/test-constants.sps
+%%%% Starting test constants
+# of expected passes      591
+test: pass tests/test-constants.sps
+=== tests/test-curl-testing.sps
+%%%% Starting test curl-testing
+# of expected passes      284
+test: pass tests/test-curl-testing.sps
+=== tests/test-discovery.sps
+%%%% Starting test discovery
+# of expected passes      47
+test: pass tests/test-discovery.sps
+=== tests/test-drift.sps
+%%%% Starting test drift
+# of expected passes      55
+test: pass tests/test-drift.sps
+=== tests/test-engine.sps
+%%%% Starting test engine
+test-engine: the stalled-lookup checks run on Linux alone, so none ran here (ADR-0019, amended 2026-10-25)
+# of expected passes      48
+test: pass tests/test-engine.sps
+=== tests/test-library-loading.sps
+%%%% Starting test library-loading
+# of expected passes      74
+test: pass tests/test-library-loading.sps
+=== tests/test-load-state.sps
+%%%% Starting test load-state
+# of expected passes      12
+test: pass tests/test-load-state.sps
+=== tests/test-mailbox.sps
+%%%% Starting test mailbox
+# of expected passes      25
+test: pass tests/test-mailbox.sps
+=== tests/test-manifest.sps
+%%%% Starting test manifest
+# of expected passes      4
+test: pass tests/test-manifest.sps
+=== tests/test-memory-safety.sps
+%%%% Starting test memory-safety
+# of expected passes      89
+test: pass tests/test-memory-safety.sps
+=== tests/test-native.sps
+%%%% Starting test native
+# of expected passes      16
+test: pass tests/test-native.sps
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      88
+# of skipped tests        1
+test: pass tests/test-origin-tls.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      127
+# of skipped tests        1
+test: pass tests/test-origin.sps
+=== tests/test-request.sps
+%%%% Starting test request
+# of expected passes      38
+test: pass tests/test-request.sps
+=== tests/test-require-threaded.sps
+%%%% Starting test require-threaded
+# of expected passes      64
+test: pass tests/test-require-threaded.sps
+=== tests/test-transfer-tls.sps
+%%%% Starting test transfer-tls
+# of expected passes      82
+test: pass tests/test-transfer-tls.sps
+=== tests/test-transfer.sps
+%%%% Starting test transfer
+# of expected passes      223
+test: pass tests/test-transfer.sps
+=== tests/test-unsupported.sps
+%%%% Starting test unsupported
+FAIL a blob reaches libcurl, as ("8.7.1" . "SecureTransport")'s row of blob-rows says
+  expected: (no-row ("8.7.1" . "SecureTransport"))
+  actual:   ((response 200) (response 200) (refused perform-failed 58 #f))
+test-unsupported: no row of blob-rows for this libcurl; measured, it would be:
+(("8.7.1" . "SecureTransport") (response 200) (response 200) (refused perform-failed 58 #f))
+# of expected passes      30
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 30, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-unsupported.sps (exit 1)
+=== tests/test-url.sps
+%%%% Starting test url
+# of expected passes      145
+test: pass tests/test-url.sps
+=== tests/test-variadic.sps
+%%%% Starting test variadic
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 1: done, the first done at 1019 ms, both at 2042 ms
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 2: done, the first done at 1020 ms, both at 1020 ms
+# of expected passes      30
+test: pass tests/test-variadic.sps
+=== tests/test-verify.sps
+%%%% Starting test verify
+# of expected passes      21
+test: pass tests/test-verify.sps
+test: ran 26, passed 25, failed 1, hung 0
+make: *** [test] Error 1

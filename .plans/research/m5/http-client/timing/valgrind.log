@@ -1,0 +1,14 @@
+$ scripts/guix-env sh -c 'for i in 1 2 3; do valgrind -q --error-exitcode=9 --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite --suppressions=tests/guix-glibc-locpath.supp $CHEZ --libdirs src:tests:build/scheme-libs --program build/m5s1-builder/kept/timing/timing.sps; done'
+(bound call (#t #t) 479)
+(bound session (#t #t) 411)
+(bound connect (#t #t) 411)
+(escape escaped 212 ended-after 10)
+(bound call (#t #t) 478)
+(bound session (#t #t) 414)
+(bound connect (#t #t) 412)
+(escape escaped 204 ended-after 6)
+(bound call (#t #t) 480)
+(bound session (#t #t) 412)
+(bound connect (#t #t) 418)
+(escape escaped 210 ended-after 7)
+exit 0

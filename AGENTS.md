@@ -164,6 +164,8 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * Chez finds a library by its path, and `tests/` is on the suites' library
   path. So `check-seam` requires every family import to be defined under
   `src/`, each file to hold one library, at its name's path.
+* Chez's UTF-8 decoders, `utf8->string` and a strict transcoder alike, drop a
+  leading U+FEFF. A decode that must give back every character puts it back.
 * A function ftype binds C without `foreign-procedure`: `make-ftype-pointer`
   takes an entry point's name, or a procedure. A rule on who may import a
   keyword loses to a re-export, or to a macro that takes the keyword as an
@@ -289,6 +291,10 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   around `with-mutex`, and never wait while holding one.
 * Valgrind runs one thread at a time, so a thread that never sleeps starves
   the rest. Pace a collecting or racing thread.
+* Under Valgrind a collection takes about 140 ms, so a short timed window
+  can catch one. `(collect)` just before it opens.
+* Under Valgrind a sleep of no time can hand the lock straight back, and
+  starve the other thread. A thread that must let another run sleeps 1 ms.
 * One protocol pin hides the other's removal in a redirect test: libcurl
   checks a followed URL against both. Hold each pin by reading the options.
 * An ambient `http_proxy` and the like divert every transfer, so
@@ -397,6 +403,14 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   offset cannot show a read through it. Watch a pipe's contents.
 * A check of an order held by one element cannot see the order: a sort per
   directory passed with one public library, and failed with two.
+* `curl_url_set` of one part changes its `%XX` hex case: to lower case on
+  7.85.0, 8.5.0 and 8.20.0, to upper on 8.23.0. A whole URL parsed keeps the
+  case given.
+* libcurl decodes a host's `%XX`: `http://caf%E9.example/` comes back holding
+  the byte 0xE9. Read `curl_url_get`'s answers as strict UTF-8, or refuse them.
+* An engine's queued and live counts both read 0 for a token it is setting
+  up: the turn takes the queue, then enters the transfer in its table later.
+  A check that the engine holds a token reads the token, or waits past the setup.
 
 ## Closing ritual
 

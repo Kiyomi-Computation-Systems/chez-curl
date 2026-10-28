@@ -188,11 +188,17 @@
   ;;   reason   (U Symbol #f): for libcurl's refusal, its CURLUcode's name in
   ;;            (curl private constants)'s curlue-codes, ok and the floor's
   ;;            others, or #f for a code that list lacks, a later libcurl's;
-  ;;            for chez-curl's own, one of its two reasons:
+  ;;            for chez-curl's own, one of its four reasons:
   ;;              scheme-not-http  the URL parsed, but its scheme is neither
   ;;                               http nor https (ADR-0008, decision 2)
   ;;              embedded-nul     the input holds U+0000, which libcurl
   ;;                               would read as its end
+  ;;              not-utf-8        libcurl gave back a URL, or a part of one,
+  ;;                               whose bytes are not UTF-8: it decodes a
+  ;;                               host's %XX (the M5 plan, section 3.1)
+  ;;              query-not-kept   a query part appended did not come back
+  ;;                               as written, one holding # among them
+  ;;                               (ADR-0028); the input is the part
   ;;   code     (U Integer #f): libcurl's CURLUcode, or #f for chez-curl's
   ;;            own refusals
   ;;   message  (U String #f): curl_url_strerror's text, or chez-curl's own

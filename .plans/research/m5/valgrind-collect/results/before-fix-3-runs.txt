@@ -1,0 +1,11 @@
+run 1   [memsuites] test-memory: pass tests/test-engine.sps
+run 1   [memsuites] test-memory: pass tests/test-url.sps
+run 1   [memsuites] test-memory: ran 2, passed 2, failed 0, hung 0
+run 2   [memsuites] test-memory: FAIL tests/test-engine.sps (exit 1)
+run 2   [memsuites] test-memory: pass tests/test-url.sps
+run 2   [memsuites] test-memory: ran 2, passed 1, failed 1, hung 0
+run 3   [memsuites] test-memory: FAIL tests/test-engine.sps (exit 1)
+run 3   [memsuites] test-memory: pass tests/test-url.sps
+run 3   [memsuites] test-memory: ran 2, passed 1, failed 1, hung 0
+
+[exited with code 0]

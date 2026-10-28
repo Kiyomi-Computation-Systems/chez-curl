@@ -49,7 +49,7 @@
         (rnrs mutable-strings)
         (only (chezscheme) fork-thread make-mutex with-mutex sleep make-time current-time
               time-second time-nanosecond
-              getenv get-thread-id library-directories make-list iota machine-type)
+              getenv get-thread-id library-directories make-list iota machine-type collect)
         (curl-testing)
         (only (libcurl-oracle) c-compiler)
         (curl)
@@ -843,11 +843,14 @@
             (pause-ms 100)
             (curl-token-cancel t))
           ;; The first stop waits for the engine's thread to end its
-          ;; cleanup; the second must return at once.
+          ;; cleanup; the second must return at once. A collection that
+          ;; lands in the second's window takes about 140 ms under Valgrind
+          ;; (measured in M5 slice 1, .plans/traps.md), so the window opens
+          ;; just after one, with none due.
           (let* ((answer (awaited-within t 10000))
                  (later (outcome (lambda () (curl-submit faulty (request status)))))
                  (state (begin (stop-within faulty) (curl-engine-state faulty)))
-                 (t0 (now-ms)))
+                 (t0 (begin (collect) (now-ms))))
             (stop-within faulty)
             (list answer state later (if (< (- (now-ms) t0) 50) 'at-once (- (now-ms) t0))
                   (curl-engine-live-count faulty) (curl-engine-multi faulty) (native-counts))))))
@@ -912,7 +915,7 @@
        (list stop-answer (curl-engine-state stopping) (curl-engine-live-count stopping)
              (curl-engine-multi stopping)
              (outcome (lambda () (curl-submit stopping (request status))))
-             (let ((t0 (now-ms))) (stop-within stopping)
+             (let ((t0 (begin (collect) (now-ms)))) (stop-within stopping)
                (if (< (- (now-ms) t0) 50) 'at-once (- (now-ms) t0)))
              (native-counts))))
 

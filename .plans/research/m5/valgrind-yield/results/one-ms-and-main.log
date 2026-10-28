@@ -1,0 +1,10 @@
+main run 1: test-memory: pass tests/test-url.sps
+main run 2: test-memory: pass tests/test-url.sps
+main run 3: test-memory: pass tests/test-url.sps
+main run 4: test-memory: pass tests/test-url.sps
+1ms run 1: test-memory: pass tests/test-url.sps flip-refused 490
+1ms run 2: test-memory: pass tests/test-url.sps flip-refused 500
+1ms run 3: test-memory: pass tests/test-url.sps flip-refused 490
+1ms run 4: test-memory: pass tests/test-url.sps flip-refused 490
+1ms run 5: test-memory: pass tests/test-url.sps flip-refused 500
+1ms run 6: test-memory: pass tests/test-url.sps flip-refused 490

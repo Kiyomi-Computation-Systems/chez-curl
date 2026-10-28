@@ -685,14 +685,18 @@
 ;; certificate. OpenSSL reads all three: 83, CURLE_SSL_ISSUER_ERROR, for the
 ;; wrong issuer, and 58, CURLE_SSL_CERTPROBLEM, for the certificate. GnuTLS
 ;; takes SSLCERT_BLOB and ignores it; 8.5.0's ignores ISSUERCERT_BLOB too,
-;; and 8.20.0's setopt refuses it, CURLE_NOT_BUILT_IN.
+;; and 8.20.0's setopt refuses it, CURLE_NOT_BUILT_IN. Apple's 8.7.1 on
+;; SecureTransport, which make test selects on macOS, ignores ISSUERCERT_BLOB
+;; and refuses the certificate, 58 (the Mac's make test, 2026-10-27,
+;; .plans/research/m4/slice4/results/mac-8.7.1-make-test.log).
 (define blob-rows
   '((("7.85.0" . "OpenSSL") (response 200) (refused perform-failed 83 #f) (refused perform-failed 58 #f))
     (("8.5.0" . "OpenSSL") (response 200) (refused perform-failed 83 #f) (refused perform-failed 58 #f))
     (("8.5.0" . "GnuTLS") (response 200) (response 200) (response 200))
     (("8.20.0" . "GnuTLS") (refused setopt-failed 4 "ISSUERCERT_BLOB")
      (refused setopt-failed 4 "ISSUERCERT_BLOB") (response 200))
-    (("8.23.0" . "OpenSSL") (response 200) (refused perform-failed 83 #f) (refused perform-failed 58 #f))))
+    (("8.23.0" . "OpenSSL") (response 200) (refused perform-failed 83 #f) (refused perform-failed 58 #f))
+    (("8.7.1" . "SecureTransport") (response 200) (response 200) (refused perform-failed 58 #f))))
 
 (define blob-row (assoc (cons version backend) blob-rows))
 

@@ -1,0 +1,158 @@
+% NODE="$(asdf which node)" sh .plans/research/m4/slice4/run.sh mac blob list candidates
+% CURL_SSL_BACKEND=secure-transport NODE="$(asdf which node)" sh .plans/research/m4/slice4/run.sh mac-st blob list candidates
+# Run by the maintainer on the Mac (Apple M1, macOS 26.7.1) on main, a66ef78, 2026-10-27, and pasted
+# into the session; saved here verbatim.
+[mac] libcurl 8.7.1 (SecureTransport) LibreSSL/3.3.6, Darwin arm64
+[mac] control, no blob: set CAINFO 0 set CAPATH 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" stdin-offset -1 url https://127.0.0.1:53281/x | exit 0
+[mac] ISSUERCERT_BLOB the run CA, copied: set CAINFO 0 set CAPATH 0 set ISSUERCERT_BLOB 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" stdin-offset -1 url https://127.0.0.1:53281/x | exit 0
+[mac] ISSUERCERT_BLOB the other CA, copied: set CAINFO 0 set CAPATH 0 set ISSUERCERT_BLOB 0 code 83 status 0 msgs 1 ours 1 body "" stdin-offset -1 url https://127.0.0.1:53281/x | exit 0
+[mac] ISSUERCERT_BLOB the run CA, not copied, freed after setopt: set CAINFO 0 set CAPATH 0 set ISSUERCERT_BLOB 0 code 83 status 0 msgs 1 ours 1 body "" stdin-offset -1 url https://127.0.0.1:53281/x | exit 0
+[mac] SSLCERT_BLOB the leaf, SSLKEY_BLOB its key, copied: set CAINFO 0 set CAPATH 0 set SSLCERT_BLOB 0 set SSLKEY_BLOB 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" stdin-offset -1 url https://127.0.0.1:53281/x | exit 0
+[mac] SSLCERT_BLOB the leaf alone, copied: set CAINFO 0 set CAPATH 0 set SSLCERT_BLOB 0 code 58 status 0 msgs 1 ours 1 body "" stdin-offset -1 url https://127.0.0.1:53281/x | exit 0
+[mac] SSLCERT_BLOB no certificate, copied: set CAINFO 0 set CAPATH 0 set SSLCERT_BLOB 0 code 58 status 0 msgs 1 ours 1 body "" stdin-offset -1 url https://127.0.0.1:53281/x | exit 0
+[mac] SSLCERT_BLOB the leaf, SSLKEY_BLOB its key, not copied, freed after setopt: set CAINFO 0 set CAPATH 0 set SSLCERT_BLOB 0 set SSLKEY_BLOB 0 code 58 status 0 msgs 1 ours 1 body "" stdin-offset -1 url https://127.0.0.1:53281/x | exit 0
+[mac] control, hatch.test unresolved: code 6 status 0 msgs 1 ours 1 body "" stdin-offset -1 url http://hatch.test:53279/x | exit 0
+[mac] RESOLVE hatch.test to 127.0.0.1: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:53279\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset -1 url http://hatch.test:53279/x | exit 0
+.plans/research/m4/slice4/run.sh: line 125:  8262 Segmentation fault: 11  env -i $keep "$tmp/probe" "$url" "$@" > "$tmp/out" 2>&1
+[mac] RESOLVE hatch.test to 127.0.0.1, freed after setopt: | exit 139
+[mac] RESOLVE hatch.test to 127.0.0.1, never freed: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:53279\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset -1 url http://hatch.test:53279/x | exit 0
+[mac] CONNECT_TO any host to capture: set CONNECT_TO 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset -1 url http://hatch.test:1/x | exit 0
+[mac] control, icy without an alias: code 1 status 0 msgs 1 ours 1 body "" stdin-offset -1 url http://127.0.0.1:53280/x | exit 0
+[mac] HTTP200ALIASES ICY 200 OK: set HTTP200ALIASES 0 code 0 status 200 msgs 1 ours 1 body "icy" stdin-offset -1 url http://127.0.0.1:53280/x | exit 0
+.plans/research/m4/slice4/run.sh: line 125:  8277 Segmentation fault: 11  env -i $keep "$tmp/probe" "$url" "$@" > "$tmp/out" 2>&1
+[mac] HTTP200ALIASES ICY 200 OK, freed after setopt: | exit 139
+[mac] COOKIEFILE -, stdin a cookie file: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 37 url http://127.0.0.1:53279/x | exit 0
+[mac]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n
+[mac] COOKIEFILE -, stdin empty: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\n\r\n
+[mac] COOKIEFILE the cookie file, stdin empty: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n
+[mac] POST, body 8, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\nContent-Length: 8\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":8,\"body\":\"\u0007&Ed¢Áà\"}" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\nContent-Length: 8\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[mac]   capture tcp body &Ed¢Áà
+[mac] POST, body 8, RESUME_FROM 3, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac] PUT, body 8, RESUME_FROM 3, stdin bytes: set CUSTOMREQUEST 0 set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac] POST, body 8, RESUME_FROM_LARGE 3, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM_LARGE 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac] GET, RESUME_FROM 3, stdin bytes: set RESUME_FROM 0 code 33 status 200 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nRange: bytes=3-\r\nAccept: */*\r\n\r\n
+[mac] COOKIEJAR -, COOKIELIST a cookie: set COOKIELIST 0 set COOKIEJAR 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\nCookie: jar=out\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53279/x # Netscape HTTP Cookie File # https://curl.se/docs/http-cookies.html # This file was generated by libcurl! Edit at your own risk.  .127.0.0.1	TRUE	/	FALSE	0	jar	out | exit 0
+[mac]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\nCookie: jar=out\r\n\r\n
+[mac] control, http_proxy capture: code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[mac] UNIX_SOCKET_PATH capture's socket: set UNIX_SOCKET_PATH 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"unix\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac]   capture unix GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[mac] UNIX_SOCKET_PATH capture's socket, http_proxy capture: set UNIX_SOCKET_PATH 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"unix\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac]   capture unix GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[mac] CONNECT_TO icy, http_proxy capture: set CONNECT_TO 0 code 1 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac]   capture tcp CONNECT 127.0.0.1:53280 HTTP/1.1\r\nHost: 127.0.0.1:53280\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[mac] RESOLVE hatch.test to 127.0.0.1, http_proxy capture: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[mac] PROXYHEADER X-P, no proxy: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\n\r\n
+[mac] PROXYHEADER X-P, http_proxy capture: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nX-P: 1\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nX-P: 1\r\n\r\n
+[mac] POST, body 3, PROXYHEADER Content-Length 5, http_proxy capture: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set PROXYHEADER 0 code 28 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac]   capture tcp POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nContent-Length: 5\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[mac] PROXYHEADER Host elsewhere, http_proxy capture: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[mac] PROXYHEADER Transfer-Encoding chunked, POST body 3, http_proxy capture: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nTransfer-Encoding: chunked\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":3,\"body\":\"\u0007&E\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac]   capture tcp POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nTransfer-Encoding: chunked\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[mac]   capture tcp body &E
+[mac] https, HTTPHEADER X-Secret, HEADEROPT 1, https_proxy capture: set CAINFO 0 set CAPATH 0 set HTTPHEADER 0 set HEADEROPT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:53281/x | exit 0
+[mac]   capture tcp CONNECT 127.0.0.1:53281 HTTP/1.1\r\nHost: 127.0.0.1:53281\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[mac] https, HTTPHEADER X-Secret, HEADEROPT 0, https_proxy capture: set CAINFO 0 set CAPATH 0 set HTTPHEADER 0 set HEADEROPT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:53281/x | exit 0
+[mac]   capture tcp CONNECT 127.0.0.1:53281 HTTP/1.1\r\nHost: 127.0.0.1:53281\r\nProxy-Connection: Keep-Alive\r\nX-Secret: s\r\n\r\n
+[mac] CONNECT_ONLY 1: set CONNECT_ONLY 0 code 0 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac] TIMECONDITION 1, TIMEVALUE 0: set TIMECONDITION 0 set TIMEVALUE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\nIf-Modified-Since: Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\nIf-Modified-Since: Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n
+[mac] TRANSFER_ENCODING 1: set TRANSFER_ENCODING 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\nConnection: TE\r\nTE: gzip\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\nConnection: TE\r\nTE: gzip\r\n\r\n
+[mac] DOH_URL the TLS origin, CA file the run CA: set CAINFO 0 set CAPATH 0 set DOH_URL 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:53279/x | exit 0
+[mac]   tls POST /dns-query
+[mac]   tls POST /dns-query
+[mac] NETRC 1, HOME with a .netrc: set NETRC 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAuthorization: Basic bmV0cmMtdXNlcjpuZXRyYy1wYXNz\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAuthorization: Basic bmV0cmMtdXNlcjpuZXRyYy1wYXNz\r\nAccept: */*\r\n\r\n
+[mac] NETRC 1, no HOME: set NETRC 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\n\r\n
+ * Closing connection set VERBOSE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53279/x | exit 0
+[mac]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53279\r\nAccept: */*\r\n\r\n
+[mac] done
+.plans/research/m4/slice4/run.sh: line 74:  8219 Terminated: 15          "${NODE:-node}" "$here/servers.mjs" "$tmp/pki" "$tmp/log" "$tmp/capture.sock" $abstract < "$tmp/in" > "$tmp/announce"
+[mac] the servers exited 143, not 0, after their stdin closed: 143 is the watchdog's kill, 5 s on
+[mac-st] libcurl 8.7.1 SecureTransport (LibreSSL/3.3.6), Darwin arm64, CURL_SSL_BACKEND=secure-transport
+[mac-st] control, no blob: set CAINFO 0 set CAPATH 4 code 0 status 200 msgs 1 ours 1 body "origin-tls" stdin-offset -1 url https://127.0.0.1:53325/x | exit 0
+[mac-st] ISSUERCERT_BLOB the run CA, copied: set CAINFO 0 set CAPATH 4 set ISSUERCERT_BLOB 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" stdin-offset -1 url https://127.0.0.1:53325/x | exit 0
+[mac-st] ISSUERCERT_BLOB the other CA, copied: set CAINFO 0 set CAPATH 4 set ISSUERCERT_BLOB 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" stdin-offset -1 url https://127.0.0.1:53325/x | exit 0
+[mac-st] ISSUERCERT_BLOB the run CA, not copied, freed after setopt: set CAINFO 0 set CAPATH 4 set ISSUERCERT_BLOB 0 code 0 status 200 msgs 1 ours 1 body "origin-tls" stdin-offset -1 url https://127.0.0.1:53325/x | exit 0
+[mac-st] SSLCERT_BLOB the leaf, SSLKEY_BLOB its key, copied: set CAINFO 0 set CAPATH 4 set SSLCERT_BLOB 0 set SSLKEY_BLOB 0 code 58 status 0 msgs 1 ours 1 body "" stdin-offset -1 url https://127.0.0.1:53325/x | exit 0
+[mac-st] SSLCERT_BLOB the leaf alone, copied: set CAINFO 0 set CAPATH 4 set SSLCERT_BLOB 0 code 58 status 0 msgs 1 ours 1 body "" stdin-offset -1 url https://127.0.0.1:53325/x | exit 0
+[mac-st] SSLCERT_BLOB no certificate, copied: set CAINFO 0 set CAPATH 4 set SSLCERT_BLOB 0 code 58 status 0 msgs 1 ours 1 body "" stdin-offset -1 url https://127.0.0.1:53325/x | exit 0
+[mac-st] SSLCERT_BLOB the leaf, SSLKEY_BLOB its key, not copied, freed after setopt: set CAINFO 0 set CAPATH 4 set SSLCERT_BLOB 0 set SSLKEY_BLOB 0 code 58 status 0 msgs 1 ours 1 body "" stdin-offset -1 url https://127.0.0.1:53325/x | exit 0
+[mac-st] control, hatch.test unresolved: code 6 status 0 msgs 1 ours 1 body "" stdin-offset -1 url http://hatch.test:53323/x | exit 0
+[mac-st] RESOLVE hatch.test to 127.0.0.1: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:53323\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset -1 url http://hatch.test:53323/x | exit 0
+.plans/research/m4/slice4/run.sh: line 125:  8627 Segmentation fault: 11  env -i $keep "$tmp/probe" "$url" "$@" > "$tmp/out" 2>&1
+[mac-st] RESOLVE hatch.test to 127.0.0.1, freed after setopt: | exit 139
+[mac-st] RESOLVE hatch.test to 127.0.0.1, never freed: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:53323\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset -1 url http://hatch.test:53323/x | exit 0
+[mac-st] CONNECT_TO any host to capture: set CONNECT_TO 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset -1 url http://hatch.test:1/x | exit 0
+[mac-st] control, icy without an alias: code 1 status 0 msgs 1 ours 1 body "" stdin-offset -1 url http://127.0.0.1:53324/x | exit 0
+[mac-st] HTTP200ALIASES ICY 200 OK: set HTTP200ALIASES 0 code 0 status 200 msgs 1 ours 1 body "icy" stdin-offset -1 url http://127.0.0.1:53324/x | exit 0
+.plans/research/m4/slice4/run.sh: line 125:  8642 Segmentation fault: 11  env -i $keep "$tmp/probe" "$url" "$@" > "$tmp/out" 2>&1
+[mac-st] HTTP200ALIASES ICY 200 OK, freed after setopt: | exit 139
+[mac-st] COOKIEFILE -, stdin a cookie file: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 37 url http://127.0.0.1:53323/x | exit 0
+[mac-st]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n
+[mac-st] COOKIEFILE -, stdin empty: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\n\r\n
+[mac-st] COOKIEFILE the cookie file, stdin empty: set COOKIEFILE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\nCookie: from=stdin\r\n\r\n
+[mac-st] POST, body 8, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\nContent-Length: 8\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":8,\"body\":\"\u0007&Ed¢Áà\"}" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st]   capture tcp POST /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\nContent-Length: 8\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[mac-st]   capture tcp body &Ed¢Áà
+[mac-st] POST, body 8, RESUME_FROM 3, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st] PUT, body 8, RESUME_FROM 3, stdin bytes: set CUSTOMREQUEST 0 set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st] POST, body 8, RESUME_FROM_LARGE 3, stdin bytes: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set RESUME_FROM_LARGE 0 code 43 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st] GET, RESUME_FROM 3, stdin bytes: set RESUME_FROM 0 code 33 status 200 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nRange: bytes=3-\r\nAccept: */*\r\n\r\n
+[mac-st] COOKIEJAR -, COOKIELIST a cookie: set COOKIELIST 0 set COOKIEJAR 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\nCookie: jar=out\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53323/x # Netscape HTTP Cookie File # https://curl.se/docs/http-cookies.html # This file was generated by libcurl! Edit at your own risk.  .127.0.0.1	TRUE	/	FALSE	0	jar	out | exit 0
+[mac-st]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\nCookie: jar=out\r\n\r\n
+[mac-st] control, http_proxy capture: code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac-st]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[mac-st] UNIX_SOCKET_PATH capture's socket: set UNIX_SOCKET_PATH 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"unix\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac-st]   capture unix GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[mac-st] UNIX_SOCKET_PATH capture's socket, http_proxy capture: set UNIX_SOCKET_PATH 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"unix\",\"head\":\"GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac-st]   capture unix GET /x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\n\r\n
+[mac-st] CONNECT_TO icy, http_proxy capture: set CONNECT_TO 0 code 1 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac-st]   capture tcp CONNECT 127.0.0.1:53324 HTTP/1.1\r\nHost: 127.0.0.1:53324\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[mac-st] RESOLVE hatch.test to 127.0.0.1, http_proxy capture: set RESOLVE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac-st]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[mac-st] PROXYHEADER X-P, no proxy: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\n\r\n
+[mac-st] PROXYHEADER X-P, http_proxy capture: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nX-P: 1\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac-st]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nX-P: 1\r\n\r\n
+[mac-st] POST, body 3, PROXYHEADER Content-Length 5, http_proxy capture: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set PROXYHEADER 0 code 28 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac-st]   capture tcp POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nContent-Length: 5\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[mac-st] PROXYHEADER Host elsewhere, http_proxy capture: set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac-st]   capture tcp GET http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[mac-st] PROXYHEADER Transfer-Encoding chunked, POST body 3, http_proxy capture: set POSTFIELDSIZE_LARGE 0 set COPYPOSTFIELDS 0 set PROXYHEADER 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nTransfer-Encoding: chunked\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n\",\"length\":3,\"body\":\"\u0007&E\"}" stdin-offset 0 url http://hatch.test:1/x | exit 0
+[mac-st]   capture tcp POST http://hatch.test:1/x HTTP/1.1\r\nHost: hatch.test:1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\nTransfer-Encoding: chunked\r\nContent-Length: 3\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n
+[mac-st]   capture tcp body &E
+[mac-st] https, HTTPHEADER X-Secret, HEADEROPT 1, https_proxy capture: set CAINFO 0 set CAPATH 4 set HTTPHEADER 0 set HEADEROPT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:53325/x | exit 0
+[mac-st]   capture tcp CONNECT 127.0.0.1:53325 HTTP/1.1\r\nHost: 127.0.0.1:53325\r\nProxy-Connection: Keep-Alive\r\n\r\n
+[mac-st] https, HTTPHEADER X-Secret, HEADEROPT 0, https_proxy capture: set CAINFO 0 set CAPATH 4 set HTTPHEADER 0 set HEADEROPT 0 code 35 status 0 msgs 1 ours 1 body "" stdin-offset 0 url https://127.0.0.1:53325/x | exit 0
+[mac-st]   capture tcp CONNECT 127.0.0.1:53325 HTTP/1.1\r\nHost: 127.0.0.1:53325\r\nProxy-Connection: Keep-Alive\r\nX-Secret: s\r\n\r\n
+[mac-st] CONNECT_ONLY 1: set CONNECT_ONLY 0 code 0 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st] TIMECONDITION 1, TIMEVALUE 0: set TIMECONDITION 0 set TIMEVALUE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\nIf-Modified-Since: Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\nIf-Modified-Since: Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n
+[mac-st] TRANSFER_ENCODING 1: set TRANSFER_ENCODING 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\nConnection: TE\r\nTE: gzip\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\nConnection: TE\r\nTE: gzip\r\n\r\n
+[mac-st] DOH_URL the TLS origin, CA file the run CA: set CAINFO 0 set CAPATH 4 set DOH_URL 0 code 6 status 0 msgs 1 ours 1 body "" stdin-offset 0 url http://hatch.test:53323/x | exit 0
+[mac-st]   tls POST /dns-query
+[mac-st]   tls POST /dns-query
+[mac-st] NETRC 1, HOME with a .netrc: set NETRC 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAuthorization: Basic bmV0cmMtdXNlcjpuZXRyYy1wYXNz\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAuthorization: Basic bmV0cmMtdXNlcjpuZXRyYy1wYXNz\r\nAccept: */*\r\n\r\n
+[mac-st] NETRC 1, no HOME: set NETRC 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\n\r\n
+ * Closing connection set VERBOSE 0 code 0 status 200 msgs 1 ours 1 body "{\"via\":\"tcp\",\"head\":\"GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\n\r\n\",\"length\":0,\"body\":\"\"}" stdin-offset 0 url http://127.0.0.1:53323/x | exit 0
+[mac-st]   capture tcp GET /x HTTP/1.1\r\nHost: 127.0.0.1:53323\r\nAccept: */*\r\n\r\n
+[mac-st] done
+.plans/research/m4/slice4/run.sh: line 74:  8586 Terminated: 15          "${NODE:-node}" "$here/servers.mjs" "$tmp/pki" "$tmp/log" "$tmp/capture.sock" $abstract < "$tmp/in" > "$tmp/announce"
+[mac-st] the servers exited 143, not 0, after their stdin closed: 143 is the watchdog's kill, 5 s on

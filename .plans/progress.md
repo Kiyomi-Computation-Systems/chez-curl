@@ -6,9 +6,39 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **Milestone:** M5, the high level (brief §8), per the [M5 plan](2026-10-27-m5-plan.md), a
-  draft on `docs/m5-plan`. Four slices: the session and the verbs; redirects; retries; the
+- **Milestone:** M5, the high level (brief §8), per the [M5 plan](2026-10-27-m5-plan.md),
+  merged as PR #29 (`a66ef78`). Four slices: the session and the verbs; redirects; retries; the
   request group and `http-parallel`.
+  - **Slice 1, the session and the verbs,** is built on `feat/m5-slice-1`, not yet committed.
+    - **Measured first** ([`research/m5/url-parts/`](research/m5/url-parts/)), on the five
+      Linux libcurls: setting a query part changes its hex case, to lower on 7.85.0, 8.5.0 and
+      8.20.0 and to upper on 8.23.0, where a whole URL keeps it; and libcurl decodes a host's
+      `%XX`, so a UTF-8 string can come back as other bytes.
+    - **Decided by the maintainer, 2026-10-27,** each the recommended option: `params` are
+      appended by writing the URL and parsing it whole
+      ([ADR-0028](decisions/0028-params-written-then-parsed-whole.md), new); and a second
+      escape as a session's close starts, which can leave its engine running, is documented,
+      not prevented (ADR-0025, amended).
+    - **Built:** `(curl)` gained `curl-url-part` and `curl-url-append-query`, and every URL
+      function refuses an answer that is not UTF-8, a submit's scheme check among them
+      (ADR-0008, amended), held by `test-url-parts` and its own rows file. `(http-client)` has
+      sessions, the six verbs and `http-request`, the keys and their merge, the form encoding,
+      `params`, the response, the conditions and the call's bound, with the exchange's
+      functional core and the shell for one call, held by `test-http-client`, 72 tests.
+    - **Reviewed twice** (Opus, read-only). The first review found no blocker and two majors:
+      a bound over 300 s misread libcurl's own connect default as its own, and a second escape
+      in the drive's after thunk skipped the cancel. The scoped review of those fixes found two
+      more: compounding every condition broke a handler's resumable raise, and the connect
+      fill lifted libcurl's 300 s cap. Each is fixed and tested, and their minors too.
+    - **Checks,** on the final tree: in the container, `make test` 28 of 28 and check-seam
+      (21 libraries); in Docker, the floor (7.85.0), main (8.5.0), gnutls and current (8.23.0)
+      lanes 28 of 28 each, and the memory lane 28 of 28 twice, with `check-memory-gate` 33 of
+      33. The memory lane found two test traps under Valgrind, each measured and fixed in the
+      suite: a collection inside `test-engine`'s 50 ms window, which this branch's allocation
+      moved there ([research](research/m5/valgrind-collect/)), and a sleep of no time that
+      starved the flip tests' second thread ([research](research/m5/valgrind-yield/)).
+    - **Owed by the Mac,** once pushed: `test-url-parts`' 8.7.1 row, which `make test` prints,
+      and `sh .plans/research/m5/url-parts/run.sh mac`.
   - **Measured first** ([`research/m5/redirect-url/`](research/m5/redirect-url/)), through a C
     probe that made each transfer as the engine does, `FOLLOWLOCATION` off, on five libcurls:
     Guix's 8.20.0 in the container, and in Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with
@@ -36,13 +66,13 @@ close-out under **Close-outs**, newest first.
     dropped across origins; and the downgrade, put to the maintainer. I checked its citations
     in the code and in curl's source, and reran its probes, which are kept in
     [`research/m5/review/`](research/m5/review/).
-- **M4, the public records and the asynchronous API:** its four slices are merged (PRs #25 to
-  #28), per the [M4 plan](2026-10-26-m4-plan.md). Their close-outs are below.
-  - **M4 is done once the Mac has run slice 4** (the M4 plan, §9): `make test`, whose
-    test-unsupported prints the 8.7.1 blob row to add; the slice's sets,
-    `.plans/research/m4/slice4/run.sh mac` with and without
-    `CURL_SSL_BACKEND=secure-transport`; and 8.7.1's options table, slice 1's `options.sh`.
-    The plan's proxy probe ran there with slice 3.
+- **M4, the public records and the asynchronous API:** **done on 2026-10-27.** Its four slices
+  are merged (PRs #25 to #28), per the [M4 plan](2026-10-26-m4-plan.md), and the Mac has run
+  slice 4 (the M4 plan, §9), on `main` at `a66ef78`: `make test` passed 25 of 26 and printed
+  test-unsupported's 8.7.1 blob row, added on `feat/m5-slice-1`; the hatch's sets, with Apple's
+  LibreSSL and with SecureTransport; and 8.7.1's options table, 8.5.0's and
+  `SERVER_RESPONSE_TIMEOUT_MS` (ADR-0009 and ADR-0018, amended 2026-10-27). Their close-outs
+  are below.
   - **Carried into M5** (the M5 plan, §10): why a timeout's 28 came 1,014 ms late once
     (ADR-0019, amended 2026-10-25); the stall checks on macOS; the Mac's Node not exiting when
     its FIFO stdin closes; a curl bug report on 8.23.0's dead-connection reuse; accepting

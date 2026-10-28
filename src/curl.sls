@@ -122,6 +122,25 @@
    curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
    curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
 
+   ;; --- URLs (ADR-0008) ----------------------------------------------------
+   ;; curl-url-part : String Symbol -> (U String Natural #f)
+   ;; (curl-url-part URL PART): PART of URL, parsed by libcurl's URL API, as
+   ;; it gives it back: url, the whole URL; scheme, user, password, host,
+   ;; path, query or fragment, a string, or #f for one the URL lacks; or
+   ;; port, a natural, the scheme's default when the URL names none.
+   ;; Whether an empty user, password or query is "" or #f varies by
+   ;; libcurl.
+   ;; curl-url-append-query : String String -> String
+   ;; (curl-url-append-query URL PART): URL with PART, already encoded,
+   ;; appended to its query, after a & unless the query is empty or ends in
+   ;; one; its fragment kept. PART goes out as written, on every libcurl
+   ;; (ADR-0028).
+   ;; Each refusal raises &curl-url-error: libcurl's, a URL holding U+0000,
+   ;; an answer whose bytes are not UTF-8, as libcurl's decoding of a host's
+   ;; %XX can make, and a part that would not come back as written, one
+   ;; holding #.
+   curl-url-part curl-url-append-query
+
    ;; --- the response -------------------------------------------------------
    ;; curl-response? : Any -> Boolean
    ;; curl-response-status : Response -> Integer
@@ -263,4 +282,5 @@
           (curl private engine)
           (curl private libcurl-info)
           (curl private native)
-          (curl private transfer)))
+          (curl private transfer)
+          (curl private url)))

@@ -1,0 +1,17 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-engine.sps
+test-memory: FAIL tests/test-engine.sps (exit 1)
+  log: build/memory/test-engine.log
+  Valgrind's log: build/memory/test-engine.valgrind
+  ==3941==    definitely lost: 0 bytes in 0 blocks
+  ==3941==         suppressed: 0 bytes in 0 blocks
+  ==3941== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+  | %%%% Starting test engine
+  | FAIL a fault planted at the loop's cancel step fails the engine: its transfer completes as &curl-engine-error failed, carrying the fault; a later submit raises the same; stop returns at once; the table and counts are empty
+  |   expected: ((engine-error failed (planted-engine-fault cancel)) failed (engine-error failed (planted-engine-fault cancel)) at-once 0 #f ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1)))
+  |   actual:   ((engine-error failed (planted-engine-fault cancel)) failed (engine-error failed (planted-engine-fault cancel)) (ms 144 collections 1) 0 #f ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1)))
+  | # of expected passes      52
+  | # of unexpected failures  1
+  | suite-exit-status: exit 1 (pass 52, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test-memory: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:441: test-memory] Error 1

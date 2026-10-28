@@ -1,0 +1,27 @@
+;; Does a submitted token, not done, ever sit in neither the engine's queue
+;; nor its live table? For each of N submits, sample (queued, live, done?)
+;; as fast as possible until the token is live or done. URL is a server that
+;; never answers, so the token stays live until its 100 ms bound: every
+;; sample counted comes before it was ever live.
+(import (chezscheme) (curl)
+        (only (curl private engine) curl-engine-live-count curl-engine-queued-count))
+(define engine (make-curl-engine))
+(define n 300)
+(define url (string-append "http://127.0.0.1:" (car (command-line-arguments)) "/x"))
+(define (one)
+  (let ((token (curl-submit engine (make-curl-request url 'timeout-ms 100))))
+    (let loop ((samples 0) (gap 0))
+      (let* ((done (curl-token-done? token))
+             (q (curl-engine-queued-count engine))
+             (l (curl-engine-live-count engine)))
+        (cond ((or done (> l 0) (> samples 100000))
+               (guard (e (#t #f)) (curl-token-await token))
+               (list samples gap))
+              ((and (= q 0) (= l 0) (not (curl-token-done? token))) (loop (+ samples 1) (+ gap 1)))
+              (else (loop (+ samples 1) gap)))))))
+(let loop ((i 0) (with-gap 0) (gaps 0))
+  (if (= i n)
+      (begin (printf "submits ~a, submits with a sample in neither table and not done: ~a, such samples: ~a~%" n with-gap gaps)
+             (curl-engine-stop engine))
+      (let ((r (one)))
+        (loop (+ i 1) (if (> (cadr r) 0) (+ with-gap 1) with-gap) (+ gaps (cadr r))))))

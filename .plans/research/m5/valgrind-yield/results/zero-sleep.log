@@ -1,0 +1,4 @@
+zero-sleep run 1: test-memory: pass tests/test-url.sps
+zero-sleep run 2: test-memory: FAIL tests/test-url.sps (exit 1)
+zero-sleep run 3: test-memory: pass tests/test-url.sps
+counts: run 1 flip-refused 530, run 2 flip-refused 0, run 3 flip-refused 270 (from build/memory/test-url.log of each run, as printed by the session)

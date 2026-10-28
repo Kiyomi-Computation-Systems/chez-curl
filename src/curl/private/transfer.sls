@@ -1480,7 +1480,7 @@
            (ca-file (ca-file-copy 'curl-submit (curl-request-ca-file request)))
            (body (let ((body (curl-request-body request))) (and body (bytevector-copy body)))))
       (check-ca-environment 'curl-submit ca-file (curl-request-verify request))
-      (call-with-parsed-url url require-http-scheme)
+      (call-with-parsed-url url (lambda (handle) (require-http-scheme handle url)))
       (make-plan url (curl-request-method request) (car fields) (cdr fields) body
                  (curl-request-timeout-ms request) (curl-request-connect-timeout-ms request)
                  (curl-request-body-limit request) ca-file (curl-request-verify request)
@@ -1657,7 +1657,7 @@
                  (live-transfer-key-set! live key))))
            (live-transfer-sink-set! live sink)))
         (critical-section (live-transfer-url-set! live (parse-url (plan-url plan))))
-        (require-http-scheme (live-transfer-url live))
+        (require-http-scheme (live-transfer-url live) (plan-url plan))
         (critical-section (live-transfer-buffer-set! live (foreign-block curl-error-size)))
         (copy-bytevector->foreign! (make-bytevector curl-error-size 0) 0
                                    (live-transfer-buffer live) curl-error-size)

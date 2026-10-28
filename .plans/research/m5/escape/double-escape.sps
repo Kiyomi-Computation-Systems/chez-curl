@@ -1,0 +1,47 @@
+;; A second escape, by a timer, that lands in the drive's after thunk: does
+;; it leave the transfer live? Sweeps the second timer's ticks N.
+(import (chezscheme) (curl) (http-client) (curl-testing) (curl private counters))
+(define (count-of kind) (cdr (assq kind (native-counts))))
+(define (now-ms) (let ((t (current-time 'time-monotonic))) (+ (* (time-second t) 1000) (div (time-nanosecond t) 1000000))))
+(define (attempt url n)
+  (let* ((s (make-http-session 'timeout-ms 30000))
+         (t0 (now-ms))
+         (phase 'first)
+         (result
+          (call/cc
+           (lambda (k2)
+             (let ((how (call/cc
+                         (lambda (k1)
+                           (timer-interrupt-handler
+                            (lambda ()
+                              (case phase
+                                ((first)
+                                 (if (and (>= (- (now-ms) t0) 100) (= (count-of 'transfer) 1))
+                                     (begin (set! phase 'second) (set-timer n) (k1 'escaped))
+                                     (set-timer 200)))
+                                ((second) (set! phase 'done) (k2 'escaped-twice))
+                                (else #f))))
+                           (set-timer 200)
+                           (http-get s url)
+                           'returned))))
+               (set-timer 0)
+               how)))))
+    (set-timer 0)
+    (set! phase 'done)
+    (let ((live (let loop ((i 0))
+                  (cond ((= (count-of 'transfer) 0) 'ended)
+                        ((> i 30) 'still-live)
+                        (else (sleep (make-time 'time-duration 10000000 0)) (loop (+ i 1)))))))
+      (http-session-close s)
+      (list n result live (count-of 'transfer)))))
+(call-with-origin
+ (lambda (o)
+   (let* ((f (origin-face o 'raw))
+          (url (string-append "http://" (car f) ":" (number->string (cdr f)) "/raw/pause-mid-body?ms=10000")))
+     (let loop ((n 1) (hits 0))
+       (for-each (lambda (n) (write (attempt url n)) (newline)) '(300 1000))
+       (when (<= n 12)
+         (let ((r (attempt url n)))
+           (begin (write r) (newline) (flush-output-port))
+           (loop (+ n 1) (if (eq? (caddr r) 'still-live) (+ hits 1) hits))))))))
+(display "done\n")

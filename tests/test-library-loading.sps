@@ -836,7 +836,7 @@
     (environment '(curl))
     (list-sort symbol<? (library-exports '(curl)))))
 
-(test-equal "(curl) exports loaded-libcurl, the info record's accessors, the request and the response, the engine, the token and the mailbox, and the conditions, a failed transfer's classes and the engine's among them; none of their constructors, nor the request's private fields, nor the engine's seams, counts and faults"
+(test-equal "(curl) exports loaded-libcurl, the info record's accessors, the request, two URL functions and the response, the engine, the token and the mailbox, and the conditions, a failed transfer's classes and the engine's among them; none of their constructors, nor the request's private fields, nor the engine's seams, counts and faults"
   (list-sort symbol<?
              '(loaded-libcurl
                libcurl-info? libcurl-info-path libcurl-info-source libcurl-info-version
@@ -854,6 +854,7 @@
                curl-request-url curl-request-method curl-request-headers curl-request-body
                curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
                curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
+               curl-url-part curl-url-append-query
                curl-response? curl-response-status curl-response-http-version
                curl-response-effective-url curl-response-headers curl-response-body
                curl-response-timings
