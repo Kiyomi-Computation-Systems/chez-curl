@@ -53,6 +53,53 @@ close-out under **Close-outs**, newest first.
       .plans/research/m5/location/run.sh mac`, and `encoded.sh mac` and `zoneid.sh mac` with
       `CHEZ=chez`; and `test-url-location`'s 8.7.1 row, which `make test` prints there (the
       plan, §8).
+  - **Slice 3, retries,** is in progress on `feat/m5-slice-3`, stacked on slice 2's branch,
+    whose PR #31 waits for the Mac's runs.
+    - **Measured first** ([`research/m5/retry/`](research/m5/retry/)), through an engine per
+      transfer against a probe server of plaintext, TLS and HTTP/2 faces, on the five Linux
+      libcurls: the request size is 0 exactly when nothing was sent, on every face; a close or
+      a reset is send-receive and a stall a timeout on all five; an HTTP/2 `GOAWAY` is
+      send-receive on 8.5.0 alone, a protocol error elsewhere; and libcurl resends a stream
+      HTTP/2 refused five times, a `post` among them (ADR-0022 and ADR-0026, amended
+      2026-10-28).
+    - **Built:** `make-http-retry` and the `retry` key; the rules in the exchange's core, the
+      backoff, full jitter and `Retry-After` in RFC 9110's three date forms; each session's
+      time-seeded generator under a mutex of its own; the shell's wait, a take from an empty
+      mailbox; `/raw/retry` and `/raw/attempts` at the origin; check-seam's two generator names,
+      kept to `(http-client private call)`; `test-retry`, 80 tests. `(curl)` gained
+      `curl-token-outcome`, a done token's outcome as data (ADR-0021, amended).
+    - **Reviewed three times** (Opus, read-only), each round's fixes reviewed after them:
+      - the first review: one blocker, a `&curl-error` the caller's interrupt handler raised
+        during the await read as the transfer's failure, so a `post` was resent while the first
+        still ran; one major, a retry taken with almost no time left, which lost the response
+        it retried; and ten minors, each fixed or recorded;
+      - the scoped review of the fixes: two new majors, the blocker's fix re-awaiting the token
+        inside its guard's clause, where a handler's raise was lost or misread (100 of 100 calls
+        in an assertion under a storm of raises), and "ran out" raising a failure that said
+        nothing was sent for a retry that had sent its request; and a minor, a retried 3xx;
+      - the narrow review of round 2: four minors, a timing margin, an overclaiming sentence
+        and two test gaps, each fixed.
+    - **Decided by the maintainer, 2026-10-28,** each the recommended option: a retry that runs
+      out of time answers what it retried, but only when the retry sent nothing (ADR-0026,
+      amended twice); a policy retries statuses from 400 to 599 alone; and `(curl)` exports
+      `curl-token-outcome`, which the drive reads after an unguarded wait (ADR-0021, amended).
+    - **Mutants:** the builder's 61, 13 and 5 over its three rounds, and 8 of mine, 4 on the
+      retry rules, 2 on `curl-token-outcome`, 1 on the kept outcome and 1 on the close test, each
+      failing a named test.
+    - **Checks,** on the final tree: in the container, `make test` 31 of 31 and check-seam (21
+      libraries); in Docker, the floor (7.85.0), main (8.5.0), gnutls and current (8.23.0)
+      lanes 31 of 31 each and the memory lane 31 of 31, with `check-memory-gate` 33 of 33, on
+      round 2's tree; then, after the narrow review's fixes, `test-retry`, `test-mailbox` and
+      `test-library-loading` on all five lanes, and `test-retry` under Valgrind 3 of 3. Round
+      2's tree failed `test-retry` once under Valgrind, on the very margin the narrow review
+      had flagged, the TLS stall's first attempt; it was widened.
+    - **The review's probes are kept** ([`research/m5/retry-review/`](research/m5/retry-review/)),
+      run before and after the second fix round: before, each of four storms lost 24 to 100
+      of the handler's raises, and two ended 22 and 100 of 100 calls in assertions; after,
+      none.
+    - **Owed by the Mac:** `CHEZ=chez NODE="$(asdf which node)" sh
+      .plans/research/m5/retry/run.sh mac`; and `make test`, whose `test-retry` pins 8.7.1's
+      unknown request size.
   - **Measured first** ([`research/m5/redirect-url/`](research/m5/redirect-url/)), through a C
     probe that made each transfer as the engine does, `FOLLOWLOCATION` off, on five libcurls:
     Guix's 8.20.0 in the container, and in Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with

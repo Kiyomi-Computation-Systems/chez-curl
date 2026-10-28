@@ -1,6 +1,6 @@
 # ADR-0022: libcurl's codes are classed as condition types
 
-- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: a failure carries its request size, and the table as built (M4 slice 1); amended 2026-10-27: 8.7.1 reports no request size
+- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: a failure carries its request size, and the table as built (M4 slice 1); amended 2026-10-27: 8.7.1 reports no request size; amended 2026-10-28: the request size and the classes over TLS and HTTP/2 (M5 slice 3)
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, what a failed transfer raises, from M4
 - **Settles:** the brief's "error taxonomy mapping `CURLE_*` to conditions" (§8, M4); the
@@ -205,3 +205,25 @@ the head (`research/m4/slice3/results/mac.log`).
   libcurl: chez-curl knows it sent nothing, without libcurl's count. `test-request` holds the
   table to its own copy, and the rule with synthetic versions, and pins each failure's size by
   the loaded libcurl's row.
+
+## Amendment, 2026-10-28: the request size and the classes over TLS and HTTP/2 (M5 slice 3)
+
+M5's retry policy reads a failure's class and its request size (ADR-0026). M4 measured the size
+over plaintext and a stalled TLS handshake; M5 slice 3 measured each scenario a retry reads
+over plaintext, TLS and HTTP/2 ([research](../research/m5/retry/)), through an engine of its
+own per transfer, so no pool held a dead connection, on 7.85.0, Ubuntu's 8.5.0 with OpenSSL and
+with GnuTLS, Guix's 8.20.0 and 8.23.0: 40 transfers each, a `get` and a `post` of each case.
+
+- **The request size is 0 when nothing was sent, on all five:** a refused connect, 7, connect
+  class, over plaintext and TLS, and a TLS handshake that stalled to the connect timeout, 28,
+  timeout class, are 0; once the request went out, the size is above 0, over plaintext, TLS
+  and HTTP/2 alike, a `post`'s 7-byte body counted.
+- **The classes:** a close before the head, a reset before it and a reset after it are
+  send-receive, 52 or 56; a stall before the head, at the transfer's bound, is a timeout, 28. A
+  close over TLS answers 56, but 52 on 8.5.0 with OpenSSL; both are send-receive.
+- **An HTTP/2 `GOAWAY` whose last stream is 0,** so the request was never processed, varies
+  by class: 92, protocol, on 7.85.0; 56, send-receive, on 8.5.0, both builds; 16, protocol, on
+  8.20.0 and 8.23.0. So a retry by class takes it on 8.5.0 alone.
+- **An HTTP/2 `RST_STREAM` with `REFUSED_STREAM`** is resent by libcurl itself, 5 times more,
+  then fails with 56, send-receive: the server counted six of each request, and its request
+  size is six sends', on all five, a `post`'s among them (ADR-0026, amended).

@@ -154,6 +154,10 @@
 ;; loaded libcurl's file (M4 slice 3): it calls nothing. ftype-sizeof and
 ;; ftype-set! size and fill the struct curl_blob a blob option takes (M4
 ;; slice 4): they write a field of a block, and run no code.
+;; make-pseudo-random-generator and pseudo-random-generator-next! make and
+;; draw from a session's jitter generator (M5 slice 3): they run no code
+;; and reach no library, and Chez's random, which draws the same sequence
+;; in every process, stays out (the M5 plan, section 3.5).
 (define allowed-chez-names
   '(critical-section current-time define-ftype disable-interrupts display-condition
     dynamic-wind enable-interrupts file-regular? foreign-alloc foreign-callable
@@ -161,7 +165,7 @@
     foreign-ref foreign-sizeof fork-thread format format-condition? ftype-ref ftype-set!
     ftype-sizeof get-thread-id
     getenv load-shared-object lock-object machine-type make-ftype-pointer
-    make-mutex make-time
+    make-mutex make-pseudo-random-generator make-time pseudo-random-generator-next!
     scheme-version scheme-version-number sleep threaded? time-nanosecond time-second
     with-mutex))
 
@@ -192,7 +196,11 @@
 ;; started anywhere else is one no engine owns. So do disable-interrupts
 ;; and enable-interrupts, which the engine uses only to ask whether a wait
 ;; may start: interrupts held off elsewhere could hide every Ctrl-C and
-;; collection request. No library imports
+;; collection request. make-pseudo-random-generator and
+;; pseudo-random-generator-next! belong to (http-client private call), the
+;; high level's library that holds the session: each session's generator is
+;; made there and drawn from there alone, under the session's mutex (the M5
+;; plan, sections 3.5 and 3.8). No library imports
 ;; mutex-acquire, mutex-release, make-condition, condition-wait or
 ;; condition-broadcast at all: every hold of a mutex is locked's, short and
 ;; with interrupts off, and a wait polls, sleeping between holds, since a
@@ -214,7 +222,9 @@
     (lock-object (curl private transfer))
     (fork-thread (curl private engine))
     (disable-interrupts (curl private engine))
-    (enable-interrupts (curl private engine))))
+    (enable-interrupts (curl private engine))
+    (make-pseudo-random-generator (http-client private call))
+    (pseudo-random-generator-next! (http-client private call))))
 
 ;; rnrs-libraries : (Listof (Listof Symbol))
 ;; The standard libraries a library under src/ may import: R6RS's, but for

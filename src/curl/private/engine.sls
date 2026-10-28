@@ -119,7 +119,7 @@
           curl-engine-multi curl-engine-live-count curl-engine-queued-count
           curl-engine-stale-cancels call-with-engine-held
           curl-token? curl-token-await curl-token-wait curl-token-cancel curl-token-done?
-          curl-token-chunks
+          curl-token-outcome curl-token-chunks
           make-curl-mailbox curl-mailbox? curl-mailbox-take curl-mailbox-deliver
           call-with-mailbox-held
           make-faulty-curl-engine engine-fault-steps planted-engine-fault
@@ -322,6 +322,18 @@
     (check-token 'curl-token-done? token)
     (locked (curl-engine-lock (curl-token-engine token))
       (lambda () (eq? (token-state token) 'done))))
+
+  ;; curl-token-outcome : Token -> (U Response Condition #f)
+  ;; TOKEN's outcome once it is done, as data: the response curl-token-await
+  ;; answers, or the condition it raises, the same object; #f while it is
+  ;; not done. It never waits and never raises the outcome, so it may run
+  ;; inside a critical section, and a caller that waits with curl-token-wait
+  ;; reads a failure with no guard around the wait, where a handler's own
+  ;; raise could be taken for the transfer's (M5 slice 3's review).
+  (define (curl-token-outcome token)
+    (check-token 'curl-token-outcome token)
+    (locked (curl-engine-lock (curl-token-engine token))
+      (lambda () (and (eq? (token-state token) 'done) (token-outcome token)))))
 
   ;; curl-token-chunks : Token -> (Listof (List Positive-Integer Integer Symbol))
   ;; write-body's log of TOKEN's chunks, oldest first, once it is done: each

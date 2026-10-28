@@ -202,9 +202,14 @@
    ;; keeps its outcome, and so does a live one whose engine is stopping or
    ;; failing, which ends it as stopped or failed.
    ;; curl-token-done? : Token -> Boolean
+   ;; curl-token-outcome : Token -> (U Response Condition #f)
+   ;; Once the transfer has ended, the response await answers, or the
+   ;; condition it raises, the same object, as data; #f before. It never
+   ;; waits, and never raises.
    ;; Every wait sleeps between its looks, so Ctrl-C reaches it, and none may
    ;; run inside a critical section.
    curl-token? curl-token-await curl-token-wait curl-token-cancel curl-token-done?
+   curl-token-outcome
 
    ;; --- the mailbox (ADR-0021) ---------------------------------------------
    ;; make-curl-mailbox : -> Mailbox

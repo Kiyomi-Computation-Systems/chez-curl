@@ -860,6 +860,7 @@
                curl-response-timings
                make-curl-engine curl-engine? curl-engine-stop curl-submit
                curl-token? curl-token-await curl-token-wait curl-token-cancel curl-token-done?
+               curl-token-outcome
                make-curl-mailbox curl-mailbox? curl-mailbox-take curl-mailbox-deliver
                &curl-embedded-nul curl-embedded-nul? curl-embedded-nul-string
                &curl-url-error curl-url-error? curl-url-error-input curl-url-error-reason

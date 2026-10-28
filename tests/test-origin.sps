@@ -195,6 +195,17 @@
 ;; iota : Natural -> (Listof Natural)
 (define (iota n) (let loop ((i (- n 1)) (acc '())) (if (< i 0) acc (loop (- i 1) (cons i acc)))))
 
+;; in-order : (Any -> Any) (Listof Any) -> (Listof Any)
+;; PROC of each of ITEMS, called first to last: map calls its procedure in
+;; no fixed order (traps.md), and the retry script's answers depend on the
+;; requests before them.
+(define (in-order proc items)
+  (let loop ((rest items) (answers '()))
+    (if (null? rest)
+        (reverse answers)
+        (let ((answer (proc (car rest))))
+          (loop (cdr rest) (cons answer answers))))))
+
 (define (scenarios o)
   ;; --- the raw face: framing
   (raw-row o "/raw/content-length" "HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\nhello\n" 'eof)
@@ -391,6 +402,77 @@
                     'late-enough
                     (list 'first-at at 'connected (probe-connected p))))))))
 
+  ;; --- the raw face: retry, a key's first requests failed, then a 200, and
+  ;; the key's count, which attempts reads. Each check has keys of its own:
+  ;; the counts live as long as the origin, across the scenarios.
+  (let ((ok (lambda (n)
+              (let ((body (string-append "attempt " (number->string n) "\n")))
+                (string-append "HTTP/1.1 200 OK\r\nContent-Length: " (number->string (string-length body))
+                               "\r\nConnection: close\r\n\r\n" body))))
+        (failed (lambda (code after n)
+                  (let ((body (string-append "attempt " (number->string n) "\n")))
+                    (string-append "HTTP/1.1 " code " Retry\r\n"
+                                   (if after (string-append "Retry-After: " after "\r\n") "")
+                                   "Content-Length: " (number->string (string-length body))
+                                   "\r\nConnection: close\r\n\r\n" body))))
+        (counted (lambda (n)
+                   (let ((body (string-append "attempts " (number->string n) "\n")))
+                     (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: "
+                                          (number->string (string-length body))
+                                          "\r\nConnection: close\r\n\r\n" body)
+                           'eof)))))
+    (test-equal "raw /raw/retry, how=close, fail=2: the first two requests get nothing and an eof, the third and fourth a 200 that names their attempt; attempts reads 4"
+      (list (list "" 'eof) (list "" 'eof) (list (ok 3) 'eof) (list (ok 4) 'eof) (counted 4))
+      (in-order (lambda (target) (exchange o 'raw (get target) 2000))
+           '("/raw/retry?key=close-2&fail=2&how=close" "/raw/retry?key=close-2&fail=2&how=close"
+             "/raw/retry?key=close-2&fail=2&how=close" "/raw/retry?key=close-2&fail=2&how=close"
+             "/raw/attempts?key=close-2")))
+    (test-equal "raw /raw/retry, how=reset, fail=1: the first request gets nothing and a reset, the second the 200; attempts reads 2"
+      (list (list "" 'reset) (list (ok 2) 'eof) (counted 2))
+      (in-order (lambda (target) (exchange o 'raw (get target) 2000))
+           '("/raw/retry?key=reset-1&fail=1&how=reset" "/raw/retry?key=reset-1&fail=1&how=reset"
+             "/raw/attempts?key=reset-1")))
+    (test-equal "raw /raw/retry, how=status: CODE, the Retry-After's bytes as given, percent-decoded, and none without after; then the 200"
+      (list (list (failed "503" "1" 1) 'eof) (list (ok 2) 'eof)
+            (list (failed "429" "Wed, 21 Oct 2026 07:28:00 GMT" 1) 'eof)
+            (list (failed "500" #f 1) 'eof) (list (failed "500" #f 2) 'eof) (list (ok 3) 'eof))
+      (in-order (lambda (target) (exchange o 'raw (get target) 2000))
+           '("/raw/retry?key=status-1&fail=1&how=status&code=503&after=1"
+             "/raw/retry?code=503&after=1&how=status&fail=1&key=status-1"
+             "/raw/retry?key=status-date&fail=1&how=status&code=429&after=Wed%2C%2021%20Oct%202026%2007%3a28%3A00%20GMT"
+             "/raw/retry?key=status-none&fail=2&how=status&code=500"
+             "/raw/retry?key=status-none&fail=2&how=status&code=500"
+             "/raw/retry?key=status-none&fail=2&how=status&code=500")))
+    (test-equal "raw /raw/retry: fail=0 answers the 200 at once; each key counts alone, whatever its other parameters; attempts reads 0 for a key never counted"
+      (list (list (ok 1) 'eof) (list (ok 1) 'eof) (list "" 'eof) (list (ok 2) 'eof) (counted 0)
+            (counted 1) (counted 2))
+      (in-order (lambda (target) (exchange o 'raw (get target) 2000))
+           '("/raw/retry?key=zero&fail=0&how=close" "/raw/retry?key=Other.key_1-x&fail=0&how=reset"
+             "/raw/retry?key=mixed&fail=1&how=close" "/raw/retry?key=mixed&fail=0&how=status&code=503"
+             "/raw/attempts?key=never-counted" "/raw/attempts?key=zero" "/raw/attempts?key=mixed")))
+    (test-equal "raw /raw/retry, then=stall: past its failures every request gets nothing, the connection held open until the client goes; then=ok, given, answers as the default does; each counted"
+      (list (list "" 'eof) (list "" 'timeout) (list "" 'timeout) (counted 3)
+            (list "" 'reset) (list (ok 2) 'eof) (counted 2))
+      (in-order (lambda (row) (exchange o 'raw (get (car row)) (cadr row)))
+                '(("/raw/retry?key=stall-1&fail=1&how=close&then=stall" 2000)
+                  ("/raw/retry?then=stall&key=stall-1&fail=1&how=close" 300)
+                  ("/raw/retry?key=stall-1&fail=1&how=close&then=stall" 300)
+                  ("/raw/attempts?key=stall-1" 2000)
+                  ("/raw/retry?key=then-ok&fail=1&how=reset&then=ok" 2000)
+                  ("/raw/retry?key=then-ok&fail=1&how=reset&then=ok" 2000)
+                  ("/raw/attempts?key=then-ok" 2000))))
+    (test-equal "raw /raw/attempts counts nothing itself: read twice it answers 1 both times, and the next retry is the second attempt"
+      (list (list "" 'eof) (counted 1) (counted 1) (list (ok 2) 'eof) (counted 2))
+      (in-order (lambda (target) (exchange o 'raw (get target) 2000))
+                '("/raw/retry?key=read-twice&fail=1&how=close" "/raw/attempts?key=read-twice"
+                  "/raw/attempts?key=read-twice" "/raw/retry?key=read-twice&fail=1&how=close"
+                  "/raw/attempts?key=read-twice")))
+    (test-equal "raw /raw/retry: a query it refuses gets the fixed 400 and counts nothing"
+      (list bad-request bad-request (counted 0))
+      (in-order (lambda (target) (exchange o 'raw (get target) 2000))
+           '("/raw/retry?key=refused&fail=1&how=close&x=1" "/raw/retry?key=refused&fail=101&how=close"
+             "/raw/attempts?key=refused"))))
+
   ;; --- the raw face: the fixed 400, for every NAME or parameter it refuses
   (for-each
    (lambda (row)
@@ -434,6 +516,36 @@
          (list "location with a pair that has no =" (get "/raw/location?code=302&to"))
          (list "location with a % and no hex after it" (get "/raw/location?code=302&to=%zz"))
          (list "location with a % and one hex digit" (get "/raw/location?code=302&to=a%4"))
+         (list "retry without a query" (get "/raw/retry"))
+         (list "retry with an empty query" (get "/raw/retry?"))
+         (list "retry without key" (get "/raw/retry?fail=1&how=close"))
+         (list "retry without fail" (get "/raw/retry?key=k&how=close"))
+         (list "retry without how" (get "/raw/retry?key=k&fail=1"))
+         (list "retry with an empty key" (get "/raw/retry?key=&fail=1&how=close"))
+         (list "retry with a key of 65 chars" (get (string-append "/raw/retry?key=" (make-string 65 #\k)
+                                                                  "&fail=1&how=close")))
+         (list "retry with a key holding a char outside A-Z, a-z, 0-9, ., _ and -"
+               (get "/raw/retry?key=a%2Fb&fail=1&how=close"))
+         (list "retry with key twice" (get "/raw/retry?key=k&key=k&fail=1&how=close"))
+         (list "retry fail=101, above its range" (get "/raw/retry?key=k&fail=101&how=close"))
+         (list "retry fail with a leading zero" (get "/raw/retry?key=k&fail=01&how=close"))
+         (list "retry fail that is no number" (get "/raw/retry?key=k&fail=x&how=close"))
+         (list "retry with an unknown how" (get "/raw/retry?key=k&fail=1&how=drop"))
+         (list "retry how=status without code" (get "/raw/retry?key=k&fail=1&how=status"))
+         (list "retry how=close with code" (get "/raw/retry?key=k&fail=1&how=close&code=503"))
+         (list "retry how=reset with after" (get "/raw/retry?key=k&fail=1&how=reset&after=1"))
+         (list "retry code=199, below its range" (get "/raw/retry?key=k&fail=1&how=status&code=199"))
+         (list "retry code=600, above its range" (get "/raw/retry?key=k&fail=1&how=status&code=600"))
+         (list "retry after twice" (get "/raw/retry?key=k&fail=1&how=status&code=503&after=1&after=2"))
+         (list "retry after with a % and no hex after it" (get "/raw/retry?key=k&fail=1&how=status&code=503&after=%zz"))
+         (list "retry with an unknown parameter" (get "/raw/retry?key=k&fail=1&how=close&x=1"))
+         (list "retry with a pair that has no =" (get "/raw/retry?key=k&fail=1&how=close&after"))
+         (list "retry with an unknown then" (get "/raw/retry?key=k&fail=1&how=close&then=hang"))
+         (list "retry with then twice" (get "/raw/retry?key=k&fail=1&how=close&then=ok&then=stall"))
+         (list "attempts without a query" (get "/raw/attempts"))
+         (list "attempts with an empty key" (get "/raw/attempts?key="))
+         (list "attempts with another parameter" (get "/raw/attempts?key=k&x=1"))
+         (list "attempts without key" (get "/raw/attempts?x=k"))
          (list "a path outside /raw/" (get "/content-length"))
          (list "a request line of two words" "GET /raw/content-length\r\n\r\n")
          (list "a request line of four words" "GET /raw/content-length HTTP/1.1 x\r\n\r\n")

@@ -1,0 +1,4 @@
+get, attempts 3: (first (next 100) second (next 200) at-deadline (fail #f (7 0) 2))
+get, attempts 2: (first (next 100) second (fail #f (7 0) 2) at-deadline n/a)
+post, methods (post), attempts 3: (first (next 100) second (next 200) at-deadline (fail #f (7 0) 2))
+post, default methods: (first (fail #f (52 85) 1))

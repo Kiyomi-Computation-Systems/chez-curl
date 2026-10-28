@@ -341,6 +341,31 @@
                 (lambda (m t) (curl-mailbox-deliver m 5000))
                 (lambda (m t) (curl-token-wait t 5000)))))
 
+   ;; curl-token-outcome reads a done token's outcome as data, so a caller can
+   ;; wait with curl-token-wait, with no guard around the wait, and still
+   ;; tell the transfer's failure from what an interrupt handler raised
+   ;; there (M5 slice 3's review). The refused connect is to port 1.
+   (test-equal "curl-token-outcome answers #f while the transfer runs, inside critical-section too; once done, the response await answers, eq?, or the condition await raises, eq?, never raising it; and refuses what is no token"
+     (list #f #f #t 'response #t #t #t '(assertion-violation curl-token-outcome))
+     (on-own-engine
+      (lambda (own)
+        (let* ((t (curl-submit own (request (pause 600))))
+               (live (curl-token-outcome t))
+               (live-critical (critical-section (curl-token-outcome t)))
+               (ended (within 5000 (lambda () (curl-token-wait t 5000))))
+               (o (curl-token-outcome t))
+               (f (curl-submit own (make-curl-request "http://127.0.0.1:1/x" 'proxy #f
+                                                      'timeout-ms 5000)))
+               (f-ended (within 5000 (lambda () (curl-token-wait f 5000))))
+               (fo (curl-token-outcome f))
+               (raised (guard (e (#t e)) (curl-token-await f) 'not-raised)))
+          (list live live-critical ended
+                (if (curl-response? o) 'response o)
+                (and (curl-response? o) (eq? o (curl-token-await t)))
+                f-ended
+                (and (condition? fo) (curl-transfer-error? fo) (eq? fo raised))
+                (refusal (lambda () (curl-token-outcome 'not-a-token))))))))
+
    ;; --- the mailbox ---------------------------------------------------------------------
 
    (test-equal "a token submitted with a mailbox goes there when done: a take answers it, eq?, then #f, and await answers its response"

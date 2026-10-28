@@ -1,29 +1,46 @@
 #!r6rs
 ;;; (http-client private call): a session's and a call's keys, checked; the
-;;; session's record; the merge of a call's keys with its session's; the
-;;; form encoding; and a call made into its first request, with its
-;;; redirect policy (the M5 plan, sections 3.2 and 3.4; ADR-0025,
-;;; ADR-0027).
+;;; session's record, with its jitter generator; the retry policy, made
+;;; from its keys; the merge of a call's keys with its session's; the form
+;;; encoding; and a call made into its first request, with its redirect
+;;; and retry policies (the M5 plan, sections 3.2, 3.4 and 3.5; ADR-0025,
+;;; ADR-0026, ADR-0027).
 ;;;
 ;;; Every check of a caller's string or list runs on a private copy, and the
 ;;; copy is what is used (ADR-0001, amended): headers, the user agent, the
-;;; CA file's path, a body, a form and params are copied before anything
-;;; reads them. The keys are refused by name first, as the low level refuses
-;;; its own; then the high level's own values, a body, a form, params,
-;;; redirects and allow-downgrade; then the low level's, by building a
-;;; request from them, whose refusal passes through as it was raised.
+;;; CA file's path, a body, a form, params, and a policy's statuses and
+;;; methods are copied before anything reads them. The keys are refused by
+;;; name first, as the low level refuses its own; then the high level's own
+;;; values, a body, a form, params, redirects, allow-downgrade and retry;
+;;; then the low level's, by building a request from them, whose refusal
+;;; passes through as it was raised.
+;;;
+;;; A session's one mutable part, beside its engine, is its jitter
+;;; generator, a make-pseudo-random-generator of its own, time-seeded, never
+;;; Chez's random, which draws the same sequence in every process (the M5
+;;; plan, section 2). Chez 10.4.0 seeds each from the UTC time, (time-second
+;;; + time-nanosecond) & 0xFFFFFFFF (its s/5_3.ss). Each draw holds the
+;;; session's own mutex, inside a critical section around with-mutex, so an
+;;; escape cannot leave the mutex held (traps.md), and threads that share
+;;; the session draw one at a time: two threads drawing at once from a bare
+;;; generator lose and repeat draws (the slice's review).
 ;;;
 ;;; Header names are compared with A to Z folded alone, never char-downcase
 ;;; or char-foldcase, which fold U+212A KELVIN SIGN to k and U+017F LONG S
 ;;; to s (traps.md): libcurl and a server compare bytes.
 (library (http-client private call)
-  (export session-keys call-keys key-settings string-pairs string-pairs-within ascii-ci=?
-          form-encode form-type with-form-type merge-fields
+  (export session-keys call-keys retry-keys key-settings string-pairs string-pairs-within
+          ascii-ci=? form-encode form-type with-form-type merge-fields
+          make-http-retry http-retry? http-retry-attempts http-retry-backoff-ms
+          http-retry-max-backoff-ms http-retry-jitter http-retry-statuses http-retry-methods
           new-http-session http-session? http-session-engine http-session-defaults
-          http-session-redirects http-session-allow-downgrade
+          http-session-redirects http-session-allow-downgrade http-session-retry
+          http-session-draw http-session-generator
           default-redirects session-defaults session-policy call-request)
   (import (curl)
           (rnrs)
+          (only (chezscheme) critical-section make-mutex with-mutex make-pseudo-random-generator
+                pseudo-random-generator-next!)
           (http-client private conditions))
 
   ;; --- refusals --------------------------------------------------------------------
@@ -46,10 +63,11 @@
 
   ;; policy-keys : (Listof Symbol)
   ;; The session's keys that are the high level's own: redirects, the most
-  ;; redirects a call follows, an exact natural or #f, 20 by default; and
+  ;; redirects a call follows, an exact natural or #f, 20 by default;
   ;; allow-downgrade, whether a redirect from https to http is followed, a
-  ;; boolean, #f by default (ADR-0027). retry comes with retries.
-  (define policy-keys '(redirects allow-downgrade))
+  ;; boolean, #f by default (ADR-0027); and retry, a policy, or #f, none,
+  ;; by default (ADR-0026).
+  (define policy-keys '(redirects allow-downgrade retry))
 
   ;; session-keys : (Listof Symbol)
   ;; The keys make-http-session takes: the request's, then the policy's.
@@ -261,41 +279,185 @@
       (refuse who 'allow-downgrade value 'not-a-boolean "allow-downgrade is #t or #f"))
     value)
 
-  ;; policy-of : Symbol (Listof (Pairof Symbol Any)) (U Natural #f) Boolean
-  ;;             -> (List (U Natural #f) Boolean)
-  ;; SETTINGS' redirects and allow-downgrade, each checked, as WHO, in that
-  ;; order; each one SETTINGS lack is REDIRECTS or ALLOW-DOWNGRADE.
-  (define (policy-of who settings redirects allow-downgrade)
+  ;; checked-retry : Symbol Any -> (U Retry #f)
+  ;; VALUE, a retry value: a policy, or #f; anything else is refused as WHO,
+  ;; not-a-retry-policy.
+  (define (checked-retry who value)
+    (unless (or (not value) (http-retry? value))
+      (refuse who 'retry value 'not-a-retry-policy
+              "retry is a policy, made by make-http-retry, or #f, none"))
+    value)
+
+  ;; policy-of : Symbol (Listof (Pairof Symbol Any)) (U Natural #f) Boolean (U Retry #f)
+  ;;             -> (List (U Natural #f) Boolean (U Retry #f))
+  ;; SETTINGS' redirects, allow-downgrade and retry, each checked, as WHO,
+  ;; in that order; each one SETTINGS lack is REDIRECTS, ALLOW-DOWNGRADE or
+  ;; RETRY.
+  (define (policy-of who settings redirects allow-downgrade retry)
     (let* ((r (assq 'redirects settings))
            (a (assq 'allow-downgrade settings))
+           (p (assq 'retry settings))
            (redirects (if r (checked-redirects who (cdr r)) redirects))
-           (allow-downgrade (if a (checked-allow-downgrade who (cdr a)) allow-downgrade)))
-      (list redirects allow-downgrade)))
+           (allow-downgrade (if a (checked-allow-downgrade who (cdr a)) allow-downgrade))
+           (retry (if p (checked-retry who (cdr p)) retry)))
+      (list redirects allow-downgrade retry)))
 
-  ;; session-policy : (Listof (Pairof Symbol Any)) -> (List (U Natural #f) Boolean)
-  ;; A session's redirects and allow-downgrade, from its SETTINGS, each
-  ;; checked, or the default: 20, and #f.
+  ;; session-policy : (Listof (Pairof Symbol Any))
+  ;;                  -> (List (U Natural #f) Boolean (U Retry #f))
+  ;; A session's redirects, allow-downgrade and retry, from its SETTINGS,
+  ;; each checked, or the default: 20, #f and #f.
   (define (session-policy settings)
-    (policy-of 'make-http-session settings default-redirects #f))
+    (policy-of 'make-http-session settings default-redirects #f #f))
+
+  ;; --- the retry policy (ADR-0026; the M5 plan, section 3.5) -----------------------
+
+  ;; A policy, data alone: what exchange-step reads to retry.
+  ;; http-retry? : Any -> Boolean
+  ;; http-retry-attempts : Retry -> Positive-Integer
+  ;;   transfers per step, the first among them
+  ;; http-retry-backoff-ms : Retry -> Natural
+  ;;   the first retry's backoff, doubling for each later one in the step
+  ;; http-retry-max-backoff-ms : Retry -> Natural
+  ;;   the backoff's cap, and the longest Retry-After the policy waits
+  ;; http-retry-jitter : Retry -> Boolean
+  ;;   whether a backoff's wait is a draw's share of it, "full jitter"
+  ;; http-retry-statuses : Retry -> (Listof Integer)
+  ;; http-retry-methods : Retry -> (Listof Symbol)
+  ;;   the methods a status, or a failure after a request was sent, is
+  ;;   retried for
+  (define-record-type (http-retry new-http-retry http-retry?)
+    (fields (immutable attempts http-retry-attempts)
+            (immutable backoff-ms http-retry-backoff-ms)
+            (immutable max-backoff-ms http-retry-max-backoff-ms)
+            (immutable jitter http-retry-jitter)
+            (immutable statuses http-retry-statuses)
+            (immutable methods http-retry-methods))
+    (sealed #t)
+    (opaque #t))
+
+  ;; retry-keys : (Listof Symbol)
+  ;; The keys make-http-retry takes, in the order it checks them.
+  (define retry-keys '(attempts backoff-ms max-backoff-ms jitter statuses methods))
+
+  ;; call-methods : (Listof Symbol)
+  ;; The methods a call takes, and a policy's methods may name.
+  (define call-methods '(get head post put patch delete))
+
+  ;; exact-natural? : Any -> Boolean
+  (define (exact-natural? x) (and (integer? x) (exact? x) (>= x 0)))
+
+  ;; list-within : Any (Any -> Boolean) -> (U List #f)
+  ;; A fresh copy of X when X is a list each of whose elements OK? takes,
+  ;; else #f. X is measured once, by length, which refuses an improper or a
+  ;; circular list itself, and read once, within that bound, as
+  ;; string-pairs reads its list: the copy is what was checked.
+  (define (list-within x ok?)
+    (let ((n (guard (e ((assertion-violation? e) #f)) (length x))))
+      (and n
+           (let loop ((rest x) (left n) (copied '()))
+             (cond ((and (null? rest) (= left 0)) (reverse copied))
+                   ((or (= left 0) (not (pair? rest))) #f)
+                   (else
+                    (let ((v (car rest)))
+                      (and (ok? v) (loop (cdr rest) (- left 1) (cons v copied))))))))))
+
+  ;; status? : Any -> Boolean
+  ;; Whether X is an exact integer from 400 to 599, a client's or a
+  ;; server's error: a 3xx a policy could retry would also be a redirect,
+  ;; and a 2xx is a success (decided by the maintainer, 2026-10-28).
+  (define (status? x) (and (integer? x) (exact? x) (<= 400 x 599)))
+
+  ;; make-http-retry : Any ... -> Retry
+  ;; (make-http-retry KEY VALUE ...): a policy, each key once at most, each
+  ;; left out its default. The keys are refused by name first, as a
+  ;; session's are, with who make-http-retry; then each value, in
+  ;; retry-keys' order:
+  ;;   attempts        an exact integer of 1 or more; 3; not-an-attempt-count
+  ;;   backoff-ms      an exact natural; 200; not-a-backoff
+  ;;   max-backoff-ms  an exact natural; 10000; not-a-backoff
+  ;;   jitter          a boolean; #t; not-a-boolean
+  ;;   statuses        a list of exact integers from 400 to 599; (429 503);
+  ;;                   not-a-status-list
+  ;;   methods         a list of get, head, post, put, patch and delete;
+  ;;                   (get head put delete), which RFC 9110, section 9.2.2,
+  ;;                   calls idempotent; not-a-method-list
+  ;; each &http-request-error, its field the key, its value as given. A
+  ;; list is copied, so a later change to the caller's is not the policy's.
+  (define (make-http-retry . plist)
+    (let* ((settings (key-settings 'make-http-retry retry-keys plist))
+           (value (lambda (key default)
+                    (let ((hit (assq key settings))) (if hit (cdr hit) default))))
+           (attempts (let ((v (value 'attempts 3)))
+                       (unless (and (integer? v) (exact? v) (>= v 1))
+                         (refuse 'make-http-retry 'attempts v 'not-an-attempt-count
+                                 "attempts is an exact integer of 1 or more, the transfers per step"))
+                       v))
+           (backoff (let ((v (value 'backoff-ms 200)))
+                      (unless (exact-natural? v)
+                        (refuse 'make-http-retry 'backoff-ms v 'not-a-backoff
+                                "backoff-ms is an exact natural number of ms"))
+                      v))
+           (cap (let ((v (value 'max-backoff-ms 10000)))
+                  (unless (exact-natural? v)
+                    (refuse 'make-http-retry 'max-backoff-ms v 'not-a-backoff
+                            "max-backoff-ms is an exact natural number of ms"))
+                  v))
+           (jitter (let ((v (value 'jitter #t)))
+                     (unless (boolean? v)
+                       (refuse 'make-http-retry 'jitter v 'not-a-boolean "jitter is #t or #f"))
+                     v))
+           (statuses (let ((v (value 'statuses '(429 503))))
+                       (or (list-within v status?)
+                           (refuse 'make-http-retry 'statuses v 'not-a-status-list
+                                   "statuses is a list of exact integers from 400 to 599"))))
+           (methods (let ((v (value 'methods '(get head put delete))))
+                      (or (list-within v (lambda (m) (and (memq m call-methods) #t)))
+                          (refuse 'make-http-retry 'methods v 'not-a-method-list
+                                  "methods is a list of get, head, post, put, patch and delete")))))
+      (new-http-retry attempts backoff cap jitter statuses methods)))
 
   ;; --- the session -----------------------------------------------------------------
 
   ;; A session: its engine; DEFAULTS, a request of the session's request
-  ;; keys, checked by make-curl-request, whose URL nothing reads; and its
-  ;; redirect policy, checked.
-  ;; new-http-session : Engine Request (U Natural #f) Boolean -> Session
+  ;; keys, checked by make-curl-request, whose URL nothing reads; its
+  ;; redirect and retry policies, checked; and its jitter generator, with
+  ;; the mutex every draw holds.
+  ;; new-http-session : Engine Request (U Natural #f) Boolean (U Retry #f) -> Session
+  ;;   a fresh generator, and a fresh mutex
   ;; http-session? : Any -> Boolean
   ;; http-session-engine : Session -> Engine
   ;; http-session-defaults : Session -> Request
   ;; http-session-redirects : Session -> (U Natural #f)
   ;; http-session-allow-downgrade : Session -> Boolean
-  (define-record-type (http-session new-http-session http-session?)
+  ;; http-session-retry : Session -> (U Retry #f)
+  ;; http-session-generator : Session -> Pseudo-Random-Generator
+  ;;   for the suites alone, which read its state to predict a draw
+  (define-record-type (http-session make-session-record http-session?)
     (fields (immutable engine http-session-engine)
             (immutable defaults http-session-defaults)
             (immutable redirects http-session-redirects)
-            (immutable allow-downgrade http-session-allow-downgrade))
+            (immutable allow-downgrade http-session-allow-downgrade)
+            (immutable retry http-session-retry)
+            (immutable generator http-session-generator)
+            (immutable lock http-session-lock))
     (sealed #t)
     (opaque #t))
+
+  (define (new-http-session engine defaults redirects allow-downgrade retry)
+    (make-session-record engine defaults redirects allow-downgrade retry
+                         (make-pseudo-random-generator) (make-mutex)))
+
+  ;; http-session-draw : Session -> Real
+  ;; The next draw from SESSION's generator, a flonum strictly between 0
+  ;; and 1, so in [0, 1), as exchange-step takes one: Chez 10.4.0's
+  ;; S_random_state_next_double (its c/random.c) answers (y + 1) * norm,
+  ;; y from MRG32k3a in [0, m1 - 1] and norm 1 / (m1 + 1). It holds the
+  ;; session's mutex, within a critical section, for the draw alone.
+  (define (http-session-draw session)
+    (let ((generator (http-session-generator session)))
+      (critical-section
+       (with-mutex (http-session-lock session)
+         (pseudo-random-generator-next! generator)))))
 
   ;; check-url : String
   ;; The URL the checks' requests carry: make-curl-request parses no URL.
@@ -333,14 +495,15 @@
                 "a list of pairs of a name and a value, both strings")))
 
   ;; call-request : Session Any Any List
-  ;;                -> (Values Request (U Natural #f) Boolean)
+  ;;                -> (Values Request (U Natural #f) Boolean (U Retry #f))
   ;; The first request of a call of METHOD on URL, with PLIST's keys merged
-  ;; with SESSION's, then the call's redirects and allow-downgrade: each the
-  ;; call's, or else the session's. In order, each raising as it is
-  ;; refused:
+  ;; with SESSION's, then the call's redirects, allow-downgrade and retry:
+  ;; each the call's, or else the session's; a call's retry #f is none, over
+  ;; a session's policy. In order, each raising as it is refused:
   ;;   1. the keys, by key-settings' rules;
   ;;   2. body, not-a-body; form, then params, not-name-value-pairs;
   ;;      redirects, not-a-redirect-count; allow-downgrade, not-a-boolean;
+  ;;      retry, not-a-retry-policy;
   ;;   3. body and form together, body-and-form; either with get or head,
   ;;      body-not-allowed, field the one given;
   ;;   4. the method and the call's own request keys, by make-curl-request,
@@ -359,7 +522,8 @@
            (form (and form-given (call-pairs 'form (cdr form-given))))
            (params (and params-given (call-pairs 'params (cdr params-given))))
            (policy (policy-of 'http-request settings (http-session-redirects session)
-                              (http-session-allow-downgrade session))))
+                              (http-session-allow-downgrade session)
+                              (http-session-retry session))))
       (when (and body-given form-given)
         (refuse 'http-request 'form #f 'body-and-form "a body and a form together"))
       (when (and (memq method '(get head)) (or body-given form-given))
@@ -396,4 +560,5 @@
                                    'verify (pick 'verify curl-request-verify)
                                    'proxy (pick 'proxy curl-request-proxy))
                 (car policy)
-                (cadr policy))))))
+                (cadr policy)
+                (caddr policy))))))

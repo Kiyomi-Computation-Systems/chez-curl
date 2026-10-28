@@ -9,9 +9,10 @@
 ;;; An exchange is one call: its method and URL as the caller gave them,
 ;;; the request of its step, the first and then each redirect's, its bound,
 ;;; the call's timeout-ms, from START-NS, the monotonic time it began, the
-;;; transfers it has made, its history, the request in flight, and its
+;;; transfers it has made, its history, the request in flight, its
 ;;; redirect policy: the most redirects it follows, or #f, whether it
-;;; follows one from https to http, and how many it has followed. A header a
+;;; follows one from https to http, and how many it has followed; and its
+;;; retry policy, or #f, with the transfers its step has made. A header a
 ;;; redirect drops is gone from the step's request, which each later one is
 ;;; made from, so it stays dropped. Each answer is a tagged list:
 ;;;
@@ -21,7 +22,11 @@
 ;;;                             timeout-ms, and, when it has none, as its
 ;;;                             connect-timeout-ms too, capped at libcurl's
 ;;;                             300000; as it is, with no bound
-;;;     (fail CONDITION)        no time left: &http-timeout
+;;;     (fail CONDITION)        no time left: &http-timeout; for a retry,
+;;;                             which has sent nothing, the failure it
+;;;                             repeated
+;;;     (done RESPONSE)         no time left for a retry of a response: the
+;;;                             response it repeated
 ;;;
 ;;;   (exchange-step STATE OUTCOME NOW-NS UTC-S DRAW), OUTCOME one of
 ;;;   (response RESPONSE) or (failed CONDITION) from a transfer's await, or
@@ -31,18 +36,20 @@
 ;;;   timings alike, and gives the answer the URL in flight and the history.
 ;;;     (done RESPONSE)               the call's answer
 ;;;     (fail CONDITION)              what the call raises
-;;;     (next STATE REQUEST WAIT-MS)  a redirect: REQUEST, STATE's step
-;;;                                   request, goes through
+;;;     (next STATE REQUEST WAIT-MS)  a redirect or a retry: REQUEST,
+;;;                                   STATE's step request, goes through
 ;;;                                   exchange-submission once WAIT-MS ms
-;;;                                   pass, 0 for a redirect; a retry's,
-;;;                                   never, before slice 3
+;;;                                   pass, a natural: 0 for a redirect;
+;;;                                   for a retry, its wait, which ends
+;;;                                   before the bound
 ;;;
 ;;; Every fail is (condition [HTTP-TIMEOUT] C EXCHANGE), built here: C what
 ;;; the transfer or the submit raised, when there is one, and EXCHANGE the
 ;;; call's &http-exchange. A 28 is the call's bound's when the call has one
 ;;; and either the transfer's connect-timeout-ms is not shorter than its
 ;;; timeout-ms, the time left, or NOW-NS is at or past the deadline; it then
-;;; carries &http-timeout too. Otherwise a 28 is the transfer's own connect
+;;; carries &http-timeout too, unless it ends a retry that sent nothing,
+;;; which answers what it repeated (below). Otherwise a 28 is the transfer's own connect
 ;;; timeout's (the M5 plan, section 3.5). A redirect the rules refuse fails
 ;;; with (condition REDIRECT-ERROR WHO MESSAGE [URL-ERROR] EXCHANGE).
 ;;;
@@ -105,19 +112,78 @@
 ;;;   - the response joins the history, oldest first, with a history of
 ;;;     its own of (); the answer, and a redirect error's response, carry
 ;;;     the history before them.
+;;;
+;;; The retry rules (the M5 plan, section 3.5; ADR-0026, amended
+;;; 2026-10-28; ADR-0022, amended 2026-10-28), with a policy. A policy's
+;;; statuses are 400 to 599, so no status both retries and redirects. A
+;;; step is one URL: its attempts count the transfers
+;;; it has made, and a redirect starts them again, so a call makes at most
+;;; attempts x (redirects + 1) transfers of its own. While the step has made
+;;; fewer than the policy's attempts, and the wait would end before the
+;;; deadline, strictly, these are retried, by (next STATE REQUEST WAIT-MS),
+;;; REQUEST the step's again:
+;;;
+;;;   - a failure from the await, perform-failed, of the connect,
+;;;     send-receive or timeout class, that is not the bound's 28, with a
+;;;     request size of 0, nothing sent, for any method; above 0, or #f,
+;;;     unknown (8.7.0 and 8.7.1), for a method in the policy's methods
+;;;     alone. The method is the step's request's, which a redirect may have
+;;;     made a get;
+;;;   - a response whose status is in the policy's statuses, for a method
+;;;     in its methods.
+;;;
+;;; The wait is backoff-wait's: backoff-ms, doubled for each retry of the
+;;; step after the first, capped at max-backoff-ms; with jitter, DRAW times
+;;; that, rounded down to a whole ms. A retried status's first Retry-After,
+;;; A to Z folded, sets the wait in place of the backoff, untouched by
+;;; jitter: delta-seconds, or an HTTP-date in any of RFC 9110's three forms,
+;;; measured against UTC-S, 0 for one past. One that cannot be read is
+;;; absent, and the backoff waits; one longer than max-backoff-ms, or one
+;;; that would end at or past the deadline, is no retry. A Retry-After of
+;;; 0, or a date at or before UTC-S, waits 0, and so may a backoff with
+;;; jitter: the step's attempts bound how often such a retry repeats.
+;;;
+;;; A retry that runs out of time having sent nothing answers what it
+;;; retried (decided by the maintainer, 2026-10-28, and narrowed after the
+;;; slice's second review): the state keeps the step's last retried
+;;; outcome, and when the bound passes before the retry sends anything,
+;;; either exchange-submission finding no time left for the retried
+;;; request or that request's transfer failing with the bound's 28 and a
+;;; request size of 0, the call answers the last response the retry
+;;; repeated, or raises the last failure with its &http-exchange, and no
+;;; &http-timeout. A bound's 28 whose request size is above 0, or #f,
+;;; unknown, means the retry may have reached the server: it raises with
+;;; &http-timeout, so the last transfer's own "nothing sent" is never
+;;; claimed for it. A raised failure's size speaks for its own transfer
+;;; alone: an earlier transfer of the step, retried for a method in the
+;;; policy's methods, may have sent its request, which &http-exchange's
+;;; transfer count above 1 says may be so (the slice's third review). A
+;;; redirect clears the kept outcome, so a later transfer's bound is the
+;;; plain &http-timeout; a retried transfer that ends any other way goes
+;;; through the rules. Not retried: any
+;;; other class, a code no class names, any reason but perform-failed, a
+;;; refused submit, the engine's stop among them, a redirect the rules
+;;; refuse, and the bound's 28. What is not retried is as with no policy: a
+;;; failure fails, and a response is done or redirects. A retried response,
+;;; or failure, joins no history, and the call's context counts its
+;;; transfer.
 (library (http-client private exchange)
   (export make-exchange exchange? exchange-method exchange-url exchange-request
           exchange-bound exchange-start-ns exchange-transfers exchange-history
           exchange-flight exchange-redirects exchange-allow-downgrade exchange-followed
+          exchange-policy exchange-attempts exchange-retried
           exchange-deadline exchange-condition
           exchange-submission exchange-step
+          retry-after-ms http-date-seconds backoff-wait
           make-http-response http-response? http-response-status http-response-http-version
           http-response-url http-response-headers http-response-body http-response-timings
           http-response-history http-response-header http-response-text)
   (import (curl)
           (rnrs)
           (http-client private conditions)
-          (only (http-client private call) ascii-ci=?))
+          (only (http-client private call) ascii-ci=? http-retry? http-retry-attempts
+                http-retry-backoff-ms http-retry-max-backoff-ms http-retry-jitter
+                http-retry-statuses http-retry-methods))
 
   ;; --- the response ----------------------------------------------------------------
 
@@ -190,6 +256,17 @@
   ;; exchange-allow-downgrade : State -> Boolean
   ;; exchange-followed : State -> Natural
   ;;   the redirects the call has followed
+  ;; exchange-policy : State -> (U Retry #f)
+  ;;   the call's retry policy, or #f for none
+  ;; exchange-attempts : State -> Natural
+  ;;   the transfers the step has made: 0 for a call's first request and
+  ;;   for each redirect's, one more for each response or failure from an
+  ;;   await
+  ;; exchange-retried : State -> (U (List 'response Response) (List 'failed Condition) #f)
+  ;;   the step's last outcome a retry repeated, the response as the call
+  ;;   would answer it or the transfer's condition as raised, which the
+  ;;   call answers or raises if its bound passes before the retry ends;
+  ;;   #f before any retry of the step, and again after a redirect
   (define-record-type (exchange make-exchange-state exchange?)
     (fields (immutable method exchange-method)
             (immutable url exchange-url)
@@ -201,43 +278,55 @@
             (immutable flight exchange-flight)
             (immutable redirects exchange-redirects)
             (immutable allow-downgrade exchange-allow-downgrade)
-            (immutable followed exchange-followed))
+            (immutable followed exchange-followed)
+            (immutable policy exchange-policy)
+            (immutable attempts exchange-attempts)
+            (immutable retried exchange-retried))
     (sealed #t))
 
   ;; ns? : Any -> Boolean
   (define (ns? x) (and (integer? x) (exact? x)))
 
   ;; make-exchange : Any Any Request (U Positive-Integer #f) Integer (U Natural #f) Boolean
-  ;;                 -> State
+  ;;                 [(U Retry #f)] -> State
   ;; A call of METHOD on URL, as the caller gave them, whose first request
   ;; is REQUEST, bounded by TIMEOUT-MS from START-NS, or unbounded for #f,
-  ;; that follows REDIRECTS redirects at most, or none for #f, and one from
-  ;; https to http when ALLOW-DOWNGRADE; no transfer made, no history, none
-  ;; followed, and REQUEST in flight.
-  (define (make-exchange method url request timeout-ms start-ns redirects allow-downgrade)
-    (unless (curl-request? request)
-      (assertion-violation 'make-exchange "not a request" request))
-    (unless (or (not timeout-ms)
-                (and (integer? timeout-ms) (exact? timeout-ms) (positive? timeout-ms)))
-      (assertion-violation 'make-exchange "a bound is a positive exact integer of ms, or #f"
-                           timeout-ms))
-    (unless (ns? start-ns)
-      (assertion-violation 'make-exchange "a time is an exact integer of ns" start-ns))
-    (unless (or (not redirects) (and (integer? redirects) (exact? redirects) (>= redirects 0)))
-      (assertion-violation 'make-exchange "redirects is an exact natural, or #f" redirects))
-    (unless (boolean? allow-downgrade)
-      (assertion-violation 'make-exchange "allow-downgrade is a boolean" allow-downgrade))
-    (make-exchange-state method url request timeout-ms start-ns 0 '() request redirects
-                         allow-downgrade 0))
+  ;; that follows REDIRECTS redirects at most, or none for #f, one from
+  ;; https to http when ALLOW-DOWNGRADE, and retries by RETRY, a policy, or
+  ;; none for #f, the default; no transfer made, no history, none followed,
+  ;; no attempt, and REQUEST in flight.
+  (define make-exchange
+    (case-lambda
+      ((method url request timeout-ms start-ns redirects allow-downgrade)
+       (make-exchange method url request timeout-ms start-ns redirects allow-downgrade #f))
+      ((method url request timeout-ms start-ns redirects allow-downgrade retry)
+       (unless (curl-request? request)
+         (assertion-violation 'make-exchange "not a request" request))
+       (unless (or (not timeout-ms)
+                   (and (integer? timeout-ms) (exact? timeout-ms) (positive? timeout-ms)))
+         (assertion-violation 'make-exchange "a bound is a positive exact integer of ms, or #f"
+                              timeout-ms))
+       (unless (ns? start-ns)
+         (assertion-violation 'make-exchange "a time is an exact integer of ns" start-ns))
+       (unless (or (not redirects) (and (integer? redirects) (exact? redirects) (>= redirects 0)))
+         (assertion-violation 'make-exchange "redirects is an exact natural, or #f" redirects))
+       (unless (boolean? allow-downgrade)
+         (assertion-violation 'make-exchange "allow-downgrade is a boolean" allow-downgrade))
+       (unless (or (not retry) (http-retry? retry))
+         (assertion-violation 'make-exchange "retry is a policy, or #f" retry))
+       (make-exchange-state method url request timeout-ms start-ns 0 '() request redirects
+                            allow-downgrade 0 retry 0 #f))))
 
-  ;; remade : State Request Natural (Listof Response) Request Natural -> State
-  ;; STATE with its step's request, transfers, history, request in flight
-  ;; and redirects followed replaced.
-  (define (remade state request transfers history flight followed)
+  ;; remade : State Request Natural (Listof Response) Request Natural Natural
+  ;;          (U (List Symbol Any) #f) -> State
+  ;; STATE with its step's request, transfers, history, request in flight,
+  ;; redirects followed, the step's attempts and its retried outcome
+  ;; replaced.
+  (define (remade state request transfers history flight followed attempts retried)
     (make-exchange-state (exchange-method state) (exchange-url state) request
                          (exchange-bound state) (exchange-start-ns state) transfers history
                          flight (exchange-redirects state) (exchange-allow-downgrade state)
-                         followed))
+                         followed (exchange-policy state) attempts retried))
 
   ;; exchange-deadline : State -> (U Integer #f)
   ;; The monotonic time, in ns, at which STATE's bound passes, or #f.
@@ -254,13 +343,14 @@
   ;; with-flight : State Request -> State
   (define (with-flight state request)
     (remade state (exchange-request state) (exchange-transfers state) (exchange-history state)
-            request (exchange-followed state)))
+            request (exchange-followed state) (exchange-attempts state) (exchange-retried state)))
 
   ;; counted : State -> State
-  ;; STATE, with one more transfer made.
+  ;; STATE, with one more transfer made, by the call and by its step.
   (define (counted state)
     (remade state (exchange-request state) (+ (exchange-transfers state) 1)
-            (exchange-history state) (exchange-flight state) (exchange-followed state)))
+            (exchange-history state) (exchange-flight state) (exchange-followed state)
+            (+ (exchange-attempts state) 1) (exchange-retried state)))
 
   (define (check-state who state)
     (unless (exchange? state) (assertion-violation who "not an exchange" state)))
@@ -273,14 +363,29 @@
   ;; CONNECTTIMEOUT is unset: 300000 on 7.85.0 and 8.23.0 alike.
   (define default-connect-timeout-ms 300000)
 
-  ;; exchange-submission : State Integer -> (U (List 'submit State Request) (List 'fail Condition))
+  ;; ran-out : State -> (U (List 'done Response) (List 'fail Condition))
+  ;; What a call answers when its bound passes before a retry of its step
+  ;; sends anything: the outcome the retry repeated, as with no policy. Its
+  ;; response, as the call would have answered it then; or its failure,
+  ;; compounded with STATE's &http-exchange, which counts every transfer,
+  ;; and no &http-timeout.
+  (define (ran-out state)
+    (let ((last (exchange-retried state)))
+      (if (eq? (car last) 'response)
+          (list 'done (cadr last))
+          (list 'fail (condition (cadr last) (exchange-condition state))))))
+
+  ;; exchange-submission : State Integer
+  ;;                       -> (U (List 'submit State Request) (List 'fail Condition)
+  ;;                             (List 'done Response))
   ;; What to submit at NOW-NS, a monotonic time in ns: the step's request,
   ;; its timeout-ms the time left before the deadline, rounded up to a whole
   ;; ms, and, when it has no connect-timeout-ms, the one libcurl would
   ;; apply, written out: the smaller of the time left and 300000 ms; and the
   ;; state with it in flight. With no bound, the request as it is. With no
   ;; time left, the call's &http-timeout, compounded with its
-  ;; &http-exchange.
+  ;; &http-exchange; but for a retry, ran-out's answer, the outcome the
+  ;; retry repeated.
   (define (exchange-submission state now-ns)
     (check-state 'exchange-submission state)
     (check-ns 'exchange-submission now-ns)
@@ -289,16 +394,19 @@
       (if (not deadline)
           (list 'submit (with-flight state request) request)
           (let ((left-ns (- deadline now-ns)))
-            (if (<= left-ns 0)
-                (list 'fail (condition (make-http-timeout (exchange-bound state))
-                                       (exchange-condition state)))
+            (cond
+             ((and (<= left-ns 0) (exchange-retried state)) (ran-out state))
+             ((<= left-ns 0)
+              (list 'fail (condition (make-http-timeout (exchange-bound state))
+                                     (exchange-condition state))))
+             (else
                 (let* ((left (div (+ left-ns 999999) 1000000))
                        (sent (if (curl-request-connect-timeout-ms request)
                                  (curl-request-with request 'timeout-ms left)
                                  (curl-request-with request 'timeout-ms left
                                                     'connect-timeout-ms
                                                     (min left default-connect-timeout-ms)))))
-                  (list 'submit (with-flight state sent) sent)))))))
+                  (list 'submit (with-flight state sent) sent))))))))
 
   ;; bound-timeout? : State Condition Integer -> Boolean
   ;; Whether C, a transfer's failure at NOW-NS, is a 28 that is the call's
@@ -344,12 +452,17 @@
   ;; 300, 304, 305 and 306 are answered.
   (define redirect-statuses '(301 302 303 307 308))
 
+  ;; first-header : (Listof (Pairof String String)) String -> (U String #f)
+  ;; The value of the first of HEADERS named NAME, A to Z folded alone, or
+  ;; #f.
+  (define (first-header headers name)
+    (let ((hit (find (lambda (header) (ascii-ci=? (car header) name)) headers)))
+      (and hit (cdr hit))))
+
   ;; location-of : (Listof (Pairof String String)) -> (U String #f)
   ;; The value of the first of HEADERS named Location, A to Z folded alone,
   ;; or #f.
-  (define (location-of headers)
-    (let ((hit (find (lambda (header) (ascii-ci=? (car header) "location")) headers)))
-      (and hit (cdr hit))))
+  (define (location-of headers) (first-header headers "location"))
 
   ;; blank? : String -> Boolean
   ;; Whether S is empty, or made of SP, HTAB and CR alone: libcurl trims a
@@ -537,7 +650,7 @@
                              (next (remade state request (exchange-transfers state)
                                            (append (exchange-history state)
                                                    (list (without-history response)))
-                                           request (+ (exchange-followed state) 1))))
+                                           request (+ (exchange-followed state) 1) 0 #f)))
                         (list 'next next request 0)))))))))
 
   ;; redirected : State Response
@@ -557,16 +670,281 @@
              (refuse-redirect state 'too-many-redirects response location #f))
             (else (follow state response status location)))))
 
+  ;; --- retries (ADR-0026; the M5 plan, section 3.5) ---------------------------------
+
+  ;; backoff-wait : Retry Positive-Integer Real -> Natural
+  ;; The wait, in ms, before the retry that follows the ATTEMPTS-th transfer
+  ;; of a step, by POLICY's backoff: backoff-ms, doubled for each retry of
+  ;; the step after the first, capped at max-backoff-ms. With jitter, DRAW,
+  ;; in [0, 1), times that, rounded down to a whole ms, so a wait in
+  ;; [0, backoff) for a backoff above 0, "full jitter"; without, the backoff
+  ;; itself. The product is exact: DRAW is made exact first.
+  (define (backoff-wait policy attempts draw)
+    (let* ((cap (http-retry-max-backoff-ms policy))
+           (backoff (let loop ((b (http-retry-backoff-ms policy)) (k 1))
+                      (if (or (>= k attempts) (>= b cap) (= b 0))
+                          (min b cap)
+                          (loop (* b 2) (+ k 1))))))
+      (if (http-retry-jitter policy)
+          (floor (* (exact draw) backoff))
+          backoff)))
+
+  ;; ows? : Char -> Boolean
+  ;; Whether C is optional whitespace, SP or HTAB (RFC 9110, section 5.6.3).
+  (define (ows? c) (memv c '(#\space #\tab)))
+
+  ;; trimmed : String -> String
+  ;; S without its leading and trailing SP and HTAB.
+  (define (trimmed s)
+    (let* ((n (string-length s))
+           (start (let loop ((i 0)) (if (and (< i n) (ows? (string-ref s i))) (loop (+ i 1)) i)))
+           (end (let loop ((i n)) (if (and (> i start) (ows? (string-ref s (- i 1)))) (loop (- i 1)) i))))
+      (substring s start end)))
+
+  ;; ascii-digit? : Char -> Boolean
+  ;; 0 to 9 alone: char-numeric? takes every Unicode digit.
+  (define (ascii-digit? c) (and (char<=? #\0 c) (char<=? c #\9)))
+
+  ;; digits-value : String Natural Natural -> (U Natural #f)
+  ;; The decimal value of S from START to END, every char an ASCII digit,
+  ;; at least one; #f otherwise.
+  (define (digits-value s start end)
+    (and (< start end)
+         (let loop ((i start) (v 0))
+           (cond ((= i end) v)
+                 ((ascii-digit? (string-ref s i))
+                  (loop (+ i 1) (+ (* v 10) (- (char->integer (string-ref s i)) 48))))
+                 (else #f)))))
+
+  ;; day-names, long-day-names, month-names : (Listof String)
+  ;; RFC 9110, section 5.6.7, written out: each compared case-sensitively.
+  (define day-names '("Mon" "Tue" "Wed" "Thu" "Fri" "Sat" "Sun"))
+  (define long-day-names '("Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday"))
+  (define month-names '("Jan" "Feb" "Mar" "Apr" "May" "Jun" "Jul" "Aug" "Sep" "Oct" "Nov" "Dec"))
+
+  ;; month-of : String Natural -> (U Natural #f)
+  ;; The month, 1 to 12, whose name is S's three chars from START, or #f.
+  (define (month-of s start)
+    (let ((name (substring s start (+ start 3))))
+      (let loop ((names month-names) (m 1))
+        (cond ((null? names) #f)
+              ((string=? (car names) name) m)
+              (else (loop (cdr names) (+ m 1)))))))
+
+  ;; leap-year? : Integer -> Boolean
+  (define (leap-year? y)
+    (and (= (mod y 4) 0) (or (not (= (mod y 100) 0)) (= (mod y 400) 0))))
+
+  ;; days-in-month : Integer Natural -> Natural
+  (define (days-in-month y m)
+    (case m
+      ((2) (if (leap-year? y) 29 28))
+      ((4 6 9 11) 30)
+      (else 31)))
+
+  ;; days-from-civil : Integer Natural Natural -> Integer
+  ;; The days from 1970-01-01 to Y-M-D, proleptic Gregorian (Howard
+  ;; Hinnant's days_from_civil).
+  (define (days-from-civil y m d)
+    (let* ((y (if (<= m 2) (- y 1) y))
+           (era (div y 400))
+           (yoe (- y (* era 400)))
+           (doy (+ (div (+ (* 153 (+ m (if (> m 2) -3 9))) 2) 5) (- d 1)))
+           (doe (+ (* yoe 365) (div yoe 4) (- (div yoe 100)) doy)))
+      (+ (* era 146097) doe -719468)))
+
+  ;; civil-of-seconds : Integer -> (List Integer Natural Natural)
+  ;; The Gregorian year, month and day holding UTC-S, seconds since 1970
+  ;; (Howard Hinnant's civil_from_days).
+  (define (civil-of-seconds utc-s)
+    (let* ((z (+ (div utc-s 86400) 719468))
+           (era (div z 146097))
+           (doe (- z (* era 146097)))
+           (yoe (div (+ doe (- (div doe 1460)) (div doe 36524) (- (div doe 146096))) 365))
+           (doy (- doe (+ (* 365 yoe) (div yoe 4) (- (div yoe 100)))))
+           (mp (div (+ (* 5 doy) 2) 153))
+           (d (+ (- doy (div (+ (* 153 mp) 2) 5)) 1))
+           (m (if (< mp 10) (+ mp 3) (- mp 9))))
+      (list (+ yoe (* era 400) (if (<= m 2) 1 0)) m d)))
+
+  ;; char-at? : String Natural Char -> Boolean
+  (define (char-at? s i c) (char=? (string-ref s i) c))
+
+  ;; time-of-day : String Natural -> (U Natural #f)
+  ;; The seconds into the day of S's HH:MM:SS from START: hour 00 to 23,
+  ;; minute 00 to 59, second 00 to 60, a leap second's 60 among them; or #f.
+  (define (time-of-day s start)
+    (and (char-at? s (+ start 2) #\:) (char-at? s (+ start 5) #\:)
+         (let ((h (digits-value s start (+ start 2)))
+               (mi (digits-value s (+ start 3) (+ start 5)))
+               (sec (digits-value s (+ start 6) (+ start 8))))
+           (and h mi sec (<= h 23) (<= mi 59) (<= sec 60)
+                (+ (* h 3600) (* mi 60) sec)))))
+
+  ;; date-seconds : Integer Natural Natural Natural -> (U Integer #f)
+  ;; Y-M-D at SECONDS into the day, as seconds since 1970, or #f for a day
+  ;; its month does not have.
+  (define (date-seconds y m d seconds)
+    (and m (>= d 1) (<= d (days-in-month y m))
+         (+ (* (days-from-civil y m d) 86400) seconds)))
+
+  ;; two-digit-year-seconds : Natural Natural Natural Natural Integer -> (U Integer #f)
+  ;; An rfc850-date of YY, month M, day D and SECONDS into the day, read
+  ;; at UTC-S by its timestamp (RFC 9110, section 5.6.7): in the current
+  ;; century, unless that timestamp is more than 50 years after UTC-S,
+  ;; that is past the same day, month and time 50 years on, then in the
+  ;; century before, the most recent past year with those digits. The day
+  ;; is checked in the year chosen; #f for one it lacks.
+  (define (two-digit-year-seconds yy m d seconds utc-s)
+    (let* ((now (civil-of-seconds utc-s))
+           (year (car now))
+           (limit (+ (* (days-from-civil (+ year 50) (cadr now) (caddr now)) 86400)
+                     (mod utc-s 86400)))
+           (this (+ (- year (mod year 100)) yy))
+           (candidate (date-seconds this m d seconds)))
+      (if (and candidate (> candidate limit))
+          (date-seconds (- this 100) m d seconds)
+          candidate)))
+
+  ;; http-date-seconds : String Integer -> (U Integer #f)
+  ;; S, an HTTP-date in any of RFC 9110's three forms (section 5.6.7), as
+  ;; seconds since 1970, UTC; #f for anything else. Names and GMT are
+  ;; matched case-sensitively; a day name is not checked against the date;
+  ;; a day its month lacks, an hour past 23, a minute past 59 and a second
+  ;; past 60 are refused. UTC-S, now, reads an rfc850-date's two-digit year.
+  ;;   IMF-fixdate    Sun, 06 Nov 1994 08:49:37 GMT
+  ;;   rfc850-date    Sunday, 06-Nov-94 08:49:37 GMT
+  ;;   asctime-date   Sun Nov  6 08:49:37 1994
+  (define (http-date-seconds s utc-s)
+    (let ((n (string-length s)))
+      (cond
+       ;; IMF-fixdate: 29 chars.
+       ((and (= n 29) (char-at? s 3 #\,))
+        (and (member (substring s 0 3) day-names)
+             (char-at? s 4 #\space) (char-at? s 7 #\space) (char-at? s 11 #\space)
+             (char-at? s 16 #\space) (char-at? s 25 #\space)
+             (string=? (substring s 26 29) "GMT")
+             (let ((d (digits-value s 5 7)) (m (month-of s 8)) (y (digits-value s 12 16))
+                   (t (time-of-day s 17)))
+               (and d y t (date-seconds y m d t)))))
+       ;; asctime-date: 24 chars, the day as 2DIGIT or SP DIGIT.
+       ((and (= n 24) (char-at? s 3 #\space))
+        (and (member (substring s 0 3) day-names)
+             (char-at? s 7 #\space) (char-at? s 10 #\space) (char-at? s 19 #\space)
+             (let ((d (if (char-at? s 8 #\space) (digits-value s 9 10) (digits-value s 8 10)))
+                   (m (month-of s 4)) (y (digits-value s 20 24)) (t (time-of-day s 11)))
+               (and d y t (date-seconds y m d t)))))
+       ;; rfc850-date: a long day name, then 24 chars from its comma.
+       (else
+        (let ((comma (let loop ((i 0))
+                       (cond ((= i n) #f) ((char-at? s i #\,) i) (else (loop (+ i 1)))))))
+          (and comma (= (- n comma) 24)
+               (member (substring s 0 comma) long-day-names)
+               (char-at? s (+ comma 1) #\space) (char-at? s (+ comma 4) #\-)
+               (char-at? s (+ comma 8) #\-) (char-at? s (+ comma 11) #\space)
+               (char-at? s (+ comma 20) #\space)
+               (string=? (substring s (+ comma 21) n) "GMT")
+               (let ((d (digits-value s (+ comma 2) (+ comma 4))) (m (month-of s (+ comma 5)))
+                     (yy (digits-value s (+ comma 9) (+ comma 11))) (t (time-of-day s (+ comma 12))))
+                 (and d yy t (two-digit-year-seconds yy m d t utc-s)))))))))
+
+  ;; retry-after-ms : String Integer -> (U Natural #f)
+  ;; The wait, in ms, a Retry-After header's VALUE asks for at UTC-S (RFC
+  ;; 9110, section 10.2.3), its SP and HTAB trimmed: delta-seconds, one or
+  ;; more ASCII digits, times 1000; or an HTTP-date's seconds after UTC-S,
+  ;; times 1000, 0 for one at or before it; #f for a value that is neither,
+  ;; which is read as absent.
+  (define (retry-after-ms value utc-s)
+    (let* ((s (trimmed value))
+           (delta (digits-value s 0 (string-length s))))
+      (if delta
+          (* delta 1000)
+          (let ((date (http-date-seconds s utc-s)))
+            (and date (* (max 0 (- date utc-s)) 1000))))))
+
+  ;; wait-fits? : State Integer Natural -> Boolean
+  ;; Whether a wait of WAIT-MS from NOW-NS ends before STATE's deadline:
+  ;; always, with no bound.
+  (define (wait-fits? state now-ns wait-ms)
+    (let ((deadline (exchange-deadline state)))
+      (or (not deadline) (< (+ now-ns (* wait-ms 1000000)) deadline))))
+
+  ;; retry : State Natural (List Symbol Any) -> (List 'next State Request Natural)
+  ;; The step's request again, after WAIT-MS: STATE, which counted the
+  ;; transfer, with the step's request in flight, as a redirect's answer
+  ;; has its own, and OUTCOME, (response RESPONSE) or (failed CONDITION),
+  ;; the one repeated, kept for ran-out. Nothing joins the history.
+  (define (retry state wait-ms outcome)
+    (let ((request (exchange-request state)))
+      (list 'next
+            (remade state request (exchange-transfers state) (exchange-history state) request
+                    (exchange-followed state) (exchange-attempts state) outcome)
+            request wait-ms)))
+
+  ;; step-method : State -> Symbol
+  ;; The method of STATE's step: a redirect's may differ from the call's.
+  (define (step-method state) (curl-request-method (exchange-request state)))
+
+  ;; attempts-left? : State -> Boolean
+  ;; Whether STATE has a policy, and its step has made fewer transfers than
+  ;; the policy's attempts.
+  (define (attempts-left? state)
+    (let ((policy (exchange-policy state)))
+      (and policy (< (exchange-attempts state) (http-retry-attempts policy)))))
+
+  ;; status-retry : State Response Integer Integer Real
+  ;;                -> (U (List 'next State Request Natural) #f)
+  ;; RESPONSE's retry, or #f: attempts left, its status among the policy's
+  ;; statuses and the step's method among its methods, and the wait ending
+  ;; before the bound. The wait is its first Retry-After's, A to Z folded,
+  ;; when one can be read, else the backoff; a Retry-After longer than
+  ;; max-backoff-ms is no retry, and jitter never shortens one.
+  (define (status-retry state response now-ns utc-s draw)
+    (let ((policy (exchange-policy state)))
+      (and (attempts-left? state)
+           (memv (http-response-status response) (http-retry-statuses policy))
+           (memq (step-method state) (http-retry-methods policy))
+           (let* ((after (first-header (http-response-headers response) "Retry-After"))
+                  (asked (and after (retry-after-ms after utc-s)))
+                  (wait (or asked (backoff-wait policy (exchange-attempts state) draw))))
+             (and (or (not asked) (<= asked (http-retry-max-backoff-ms policy)))
+                  (wait-fits? state now-ns wait)
+                  (retry state wait (list 'response response)))))))
+
+  ;; retried-failure? : Condition Symbol Retry -> Boolean
+  ;; Whether C, a transfer's failure that is not the bound's, is one a
+  ;; retry may repeat for METHOD: perform-failed, of the connect,
+  ;; send-receive or timeout class, with a request size of 0, nothing sent,
+  ;; for any method; above 0, or #f, unknown, for a method in POLICY's
+  ;; methods alone.
+  (define (retried-failure? c method policy)
+    (and (curl-transfer-error? c)
+         (eq? (curl-transfer-error-reason c) 'perform-failed)
+         (or (curl-connect-error? c) (curl-send-receive-error? c) (curl-timeout? c))
+         (or (eqv? (curl-transfer-error-request-size c) 0)
+             (and (memq method (http-retry-methods policy)) #t))))
+
+  ;; failure-retry : State Condition Integer Real -> (U (List 'next State Request Natural) #f)
+  ;; C's retry, or #f: attempts left, a failure retried-failure? takes, and
+  ;; the backoff ending before the bound.
+  (define (failure-retry state c now-ns draw)
+    (and (attempts-left? state)
+         (retried-failure? c (step-method state) (exchange-policy state))
+         (let ((wait (backoff-wait (exchange-policy state) (exchange-attempts state) draw)))
+           (and (wait-fits? state now-ns wait)
+                (retry state wait (list 'failed c))))))
+
   ;; exchange-step : State Outcome Integer Integer Real
   ;;                 -> (U (List 'done Response) (List 'fail Condition)
   ;;                       (List 'next State Request Natural))
   ;; What the call does after OUTCOME, at NOW-NS, a monotonic time in ns,
   ;; UTC-S, the UTC time in seconds, with DRAW, a number in [0, 1), for a
   ;; retry's jitter. A response or a failure from the await counts a
-  ;; transfer; a refused submit does not. A response is done, or a redirect,
-  ;; by the rules in the header; a failure or a refusal fails, with the
-  ;; call's context, and &http-timeout for a 28 that is the bound's. UTC-S
-  ;; and DRAW are read by retries alone.
+  ;; transfer, for the call and its step; a refused submit does not. A
+  ;; response is a retry, by the rules in the header, else done or a
+  ;; redirect; a failure is a retry, unless it is a 28 at the bound, else it
+  ;; fails, with the call's context, and &http-timeout for a 28 that is the
+  ;; bound's; a refusal fails. UTC-S and DRAW are read by retries alone.
   (define (exchange-step state outcome now-ns utc-s draw)
     (check-state 'exchange-step state)
     (check-ns 'exchange-step now-ns)
@@ -585,13 +963,21 @@
     (let ((what (cadr outcome)))
       (case (car outcome)
         ((response)
-         (let ((state (counted state)))
-           (redirected state (response-of state what))))
+         (let* ((state (counted state))
+                (response (response-of state what)))
+           (or (status-retry state response now-ns utc-s draw)
+               (redirected state response))))
         ((failed)
          (let ((state (counted state)))
-           (list 'fail (if (bound-timeout? state what now-ns)
-                           (condition (make-http-timeout (exchange-bound state)) what
-                                      (exchange-condition state))
-                           (condition what (exchange-condition state))))))
+           (cond
+            ((and (bound-timeout? state what now-ns) (exchange-retried state)
+                  (eqv? (curl-transfer-error-request-size what) 0))
+             (ran-out state))
+            ((bound-timeout? state what now-ns)
+             (list 'fail (condition (make-http-timeout (exchange-bound state)) what
+                                    (exchange-condition state))))
+            (else
+             (or (failure-retry state what now-ns draw)
+                 (list 'fail (condition what (exchange-condition state))))))))
         (else
          (list 'fail (condition what (exchange-condition state))))))))

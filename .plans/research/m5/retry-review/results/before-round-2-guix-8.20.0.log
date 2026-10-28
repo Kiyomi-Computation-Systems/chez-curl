@@ -1,0 +1,7 @@
+[before-round-2-guix-8.20.0] tick-storm fresh: mode fresh, runs 100: ((compounded . 76) (raw-transfer-error . 24)); ticks sent 304, reached the caller 280, lost 24
+[before-round-2-guix-8.20.0] tick-storm constant: mode constant, runs 100: ((compounded . 76) (raw-transfer-error . 24)); ticks sent 292, reached the caller 268, lost 24
+[before-round-2-guix-8.20.0] tick-storm prearm: mode prearm, runs 100: ((compounded . 67) (raw-transfer-error . 11) ((assertion exchange-step ((failed tick))) . 22)); ticks sent 361, reached the caller 304, lost 57
+[before-round-2-guix-8.20.0] false-storm: mode false, runs 100: (((assertion exchange-step ((failed #f))) . 100)); ticks sent 233, reached the caller 133, lost 100
+[before-round-2-guix-8.20.0] ranout-post-live: raised after 3008 ms: code 7, request-size 0, http-timeout? #f, exchange (post 2)
+[before-round-2-guix-8.20.0] listener: {"listening":20003,"at":500}
+[before-round-2-guix-8.20.0] listener: {"received":"POST /order HTTP/1.1\r\nHost: 127.0.0.1:20003\r\nAccept: */*\r\nContent-Length: 6\r\n\r\nitem=1"}

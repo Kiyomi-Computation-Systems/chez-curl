@@ -1,6 +1,6 @@
 #!r6rs
 ;;; (http-client): chez-curl's high level (ADR-0007, ADR-0010, ADR-0025; the
-;;; M5 plan, sections 3.1 to 3.4). It reaches the low level through (curl)
+;;; M5 plan, sections 3.1 to 3.5). It reaches the low level through (curl)
 ;;; alone, and holds no native object of its own.
 ;;;
 ;;; A session owns one engine, and the defaults its calls share. Every call
@@ -8,8 +8,34 @@
 ;;; starts a thread a caller did not ask for. A call blocks its caller's
 ;;; thread until its response, which it answers whatever the status: a
 ;;; status is data. Its timeout-ms bounds the whole call, from its start:
-;;; each transfer gets the time left, a redirect's among them. Nothing is
-;;; retried, before retries come.
+;;; each transfer gets the time left, a redirect's and a retry's among them,
+;;; and a retry's wait must end before it.
+;;;
+;;; Nothing is retried unless the session or the call names a policy
+;;; (ADR-0026), and libcurl may still resend a request on its own: on a
+;;; reused connection that died before any response byte, and on an HTTP/2
+;;; stream refused with REFUSED_STREAM, five times more, a post's among them
+;;; (ADR-0026, amended 2026-10-28). With a policy, a step, one URL, makes
+;;; the policy's attempts at most, and a redirect starts the count again
+;;; (the M5 plan, section 3.5). A step retries a failure of the connect,
+;;; send-receive or timeout class, but the bound's own 28: for any method
+;;; when nothing was sent, by the failure's request size, 0; otherwise only
+;;; for a method in the policy's methods, and on libcurl 8.7.0 and 8.7.1,
+;;; whose request size is unknown, #f, a transfer that ran is read as sent.
+;;; It retries a status in the policy's statuses, 400 to 599, for a method
+;;; in its methods. Between, it waits the backoff, doubling, capped, a draw's share
+;;; of it with jitter, from the session's own generator; or a retried
+;;; status's Retry-After, delta-seconds or an HTTP-date, which one longer
+;;; than max-backoff-ms, or than the time left, makes no retry. What is not
+;;; retried is answered or raised as with no policy. A retried response
+;;; joins no history. A retry that runs out of time having sent nothing,
+;;; the bound passing before the retried request is submitted or while its
+;;; transfer has a request size of 0, answers the last response it
+;;; retried, or raises the last failure, with &http-exchange and no
+;;; &http-timeout; one whose request may have gone out raises the bound's
+;;; &http-timeout. A raised failure's request size speaks for its own
+;;; transfer alone: with more than one transfer counted, an earlier one of
+;;; the step may have sent its request.
 ;;;
 ;;; A call follows a redirect by chez-curl's rules, alike on every libcurl
 ;;; (the M5 plan, section 3.4; ADR-0008, ADR-0023 and ADR-0027): a 301,
@@ -58,11 +84,16 @@
    ;;                    redirect; 20
    ;;   allow-downgrade  whether a redirect from https to http is followed,
    ;;                    a boolean; #f (ADR-0027)
+   ;;   retry            a policy, made by make-http-retry, that a call
+   ;;                    retries by; or #f, none; #f (ADR-0026)
    ;; A key it does not take, one given twice, and one with no value are
-   ;; refused by name, as &http-request-error; then redirects and
-   ;; allow-downgrade, as &http-request-error, not-a-redirect-count and
-   ;; not-a-boolean; then each other value, as make-curl-request refuses
-   ;; it; and only then is its engine made, so a refusal leaves none.
+   ;; refused by name, as &http-request-error; then redirects,
+   ;; allow-downgrade and retry, as &http-request-error,
+   ;; not-a-redirect-count, not-a-boolean and not-a-retry-policy; then each
+   ;; other value, as make-curl-request refuses it; and only then is its
+   ;; engine made, so a refusal leaves none. Each session draws its jitter
+   ;; from a generator of its own, under a mutex of its own, so threads may
+   ;; share it.
    ;; http-session? : Any -> Boolean
    ;; http-session-close : Session -> Void
    ;; Stops the session's engine: each call in flight ends as stopped, and a
@@ -85,8 +116,9 @@
    ;; http-request : Session Symbol String Any ... -> Response
    ;; (http-request SESSION METHOD URL KEY VALUE ...): METHOD, one of get,
    ;; head, post, put, patch and delete, on URL, an http or https URL. Its
-   ;; keys are the session's, redirects and allow-downgrade among them,
-   ;; each replacing the session's value, and:
+   ;; keys are the session's, redirects, allow-downgrade and retry among
+   ;; them, each replacing the session's value, a retry of #f none over the
+   ;; session's policy, and:
    ;;   body    a bytevector, sent as it is, or a string, sent as its UTF-8
    ;;           bytes, with no Content-Type of its own
    ;;   form    a list of (NAME . VALUE) strings, sent encoded as
@@ -110,6 +142,34 @@
    ;; http-request with the method each name says.
    http-request http-get http-head http-post http-put http-patch http-delete
 
+   ;; --- the retry policy (ADR-0026) ----------------------------------------
+   ;; make-http-retry : Any ... -> Retry
+   ;; (make-http-retry KEY VALUE ...): a policy, data alone, for a session's
+   ;; or a call's retry key, with these keys, each once at most, each left
+   ;; out its default:
+   ;;   attempts        transfers per step, the first among them, an exact
+   ;;                   integer of 1 or more; 3
+   ;;   backoff-ms      the first retry's wait, doubling for each later one
+   ;;                   of the step, an exact natural; 200
+   ;;   max-backoff-ms  the backoff's cap, and the longest Retry-After
+   ;;                   waited, an exact natural; 10000
+   ;;   jitter          #t waits a uniform share of the backoff, rounded
+   ;;                   down to a whole ms ("full jitter"), #f the backoff
+   ;;                   itself; #t
+   ;;   statuses        the statuses retried, exact integers from 400 to
+   ;;                   599; (429 503)
+   ;;   methods         the methods a status, or a failure after a request
+   ;;                   was sent, is retried for, of get, head, post, put,
+   ;;                   patch and delete; (get head put delete), which RFC
+   ;;                   9110, section 9.2.2, calls idempotent
+   ;; A key it does not take, one given twice, and one with no value are
+   ;; refused by name, as &http-request-error, as a session's are; then each
+   ;; value, in that order, as &http-request-error: not-an-attempt-count,
+   ;; not-a-backoff, not-a-boolean, not-a-status-list and not-a-method-list.
+   ;; Its lists are copied.
+   ;; http-retry? : Any -> Boolean
+   make-http-retry http-retry?
+
    ;; --- the response -------------------------------------------------------
    ;; http-response? : Any -> Boolean
    ;; http-response-status : Response -> Integer
@@ -124,7 +184,8 @@
    ;;   as curl-response-timings
    ;; http-response-history : Response -> (Listof Response)
    ;;   the call's earlier responses, each a redirect it followed, oldest
-   ;;   first, each with a history of ()
+   ;;   first, each with a history of (); a response a retry repeated is not
+   ;;   among them
    ;; http-response-header : Response String -> (U String #f)
    ;;   the first header of that name, A to Z folded, or #f
    ;; http-response-text : Response -> String
@@ -149,7 +210,10 @@
    ;;   body-and-form, field form; body-not-allowed, field body or form, the
    ;;   method; not-a-body, field body; not-name-value-pairs, field form or
    ;;   params; not-a-redirect-count, field redirects; not-a-boolean, field
-   ;;   allow-downgrade; each the value as given
+   ;;   allow-downgrade or jitter; not-a-retry-policy, field retry;
+   ;;   not-an-attempt-count, field attempts; not-a-backoff, field
+   ;;   backoff-ms or max-backoff-ms; not-a-status-list, field statuses;
+   ;;   not-a-method-list, field methods; each the value as given
    &http-request-error http-request-error? http-request-error-field
    http-request-error-value http-request-error-reason http-request-error-reasons
 
@@ -181,8 +245,11 @@
    ;; http-exchange-url : &http-exchange -> Any
    ;;   the method and the URL as the caller gave them
    ;; http-exchange-history : &http-exchange -> (Listof Response)
+   ;;   the responses that redirected, oldest first: a retried one is not
+   ;;   among them
    ;; http-exchange-transfers : &http-exchange -> Natural
-   ;;   the transfers the call submitted that the engine took
+   ;;   the transfers the call submitted that the engine took, each retry's
+   ;;   among them
    &http-exchange http-exchange? http-exchange-method http-exchange-url
    http-exchange-history http-exchange-transfers)
   (import (curl)
@@ -200,7 +267,7 @@
     (let* ((settings (key-settings 'make-http-session session-keys plist))
            (policy (session-policy settings))
            (defaults (session-defaults settings)))
-      (new-http-session (make-curl-engine) defaults (car policy) (cadr policy))))
+      (new-http-session (make-curl-engine) defaults (car policy) (cadr policy) (caddr policy))))
 
   (define (http-session-close session)
     (check-session 'http-session-close session)
@@ -235,11 +302,12 @@
            (state (guard (e ((condition? e)
                              (raise (condition e (make-http-exchange method given '() 0)))))
                     (check-session 'http-request session)
-                    (let-values (((request redirects allow-downgrade)
+                    (let-values (((request redirects allow-downgrade retry)
                                   (call-request session method given plist)))
                       (make-exchange method given request (curl-request-timeout-ms request)
-                                     start redirects allow-downgrade)))))
-      (drive-exchange (http-session-engine session) state)))
+                                     start redirects allow-downgrade retry)))))
+      (drive-exchange (http-session-engine session) state
+                      (lambda () (http-session-draw session)))))
 
   (define (http-get session url . plist) (apply http-request session 'get url plist))
   (define (http-head session url . plist) (apply http-request session 'head url plist))

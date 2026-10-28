@@ -1,6 +1,6 @@
 # ADR-0019: A stalled name lookup does not stall the engine
 
-- **Status:** Accepted; amended 2026-10-25, the stand-in measured, and the Mac's probe (M3 slice 3); amended 2026-10-25, what slice 3 built; amended 2026-10-25, after the slice's review; amended 2026-10-26, a CI lane on 8.20.0; amended 2026-10-26, the lane on 8.23.0; amended 2026-10-26, the Mac's probe
+- **Status:** Accepted; amended 2026-10-25, the stand-in measured, and the Mac's probe (M3 slice 3); amended 2026-10-25, what slice 3 built; amended 2026-10-25, after the slice's review; amended 2026-10-26, a CI lane on 8.20.0; amended 2026-10-26, the lane on 8.23.0; amended 2026-10-26, the Mac's probe; amended 2026-10-28: a second late 28, about 1 s past a call's bound
 - **Date:** 2026-10-24
 - **Scope:** M3's engine and every transfer it runs (the [M3 plan](../2026-10-24-m3-plan.md))
 - **Settles:** what the engine does about libcurl's resolver thread, which blocks teardown
@@ -280,3 +280,14 @@ kept as `research/stall/results/mac-control.log` and `mac.log`.
   Integrity Protection strips it from a protected binary's own start, such as `sh`'s, so the
   child's path in `test-engine` itself is to be measured. Until decided, they run on Linux
   alone.
+
+## Amendment, 2026-10-28: a second late 28, about 1 s past a call's bound
+
+M5 slice 3's review probe `ranout-post-live.sps` makes a `post` with a retry policy and a
+3000 ms bound, its retry stalled at a listener that never answers, so the call ends at the
+bound's 28. On 8.20.0 in the container, one run raised after 4014 ms
+([`research/m5/retry-review/results/after-round-2-guix-8.20.0.log`](../research/m5/retry-review/results/after-round-2-guix-8.20.0.log)),
+right after four timer storms in the same script; three kept reruns raised after 3008, 3008 and
+3014 ms ([`late-reruns-guix-8.20.0.log`](../research/m5/retry-review/results/late-reruns-guix-8.20.0.log)).
+So a 28 came about 1 s late once more, as the 1,014 ms of 2026-10-25 did, and its cause is still
+open (the M5 plan, §10).
