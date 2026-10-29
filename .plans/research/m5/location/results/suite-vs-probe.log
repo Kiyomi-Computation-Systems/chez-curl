@@ -1,0 +1,24 @@
+# test-url-location's printed answers (every case, its shared answers emptied, 2026-10-28,
+# after ADR-0029's amendment), against probe.sps's r0 for the same Location bytes in
+# guix-8.20.0.log and docker.log, the port written as 40001. The probe resolved the bytes
+# raw; the suite resolves them encoded first. 'empty' is the probe's value: "" but on
+# 8.5.0, where its header API gave a lone CR.
+floor floor-7.85.0 as the probe 35 otherwise 4
+    utf8 '/cafÃ©' suite http://127.0.0.1:40001/caf%C3%A9 probe http://127.0.0.1:40001/caf%c3%a9
+    latin1 '/café' suite http://127.0.0.1:40001/caf%E9 probe http://127.0.0.1:40001/caf%e9
+    ctl '/x\x01y' suite http://127.0.0.1:40001/x%01y probe uc25
+    del '/x\x7fy' suite http://127.0.0.1:40001/x%7Fy probe uc25
+main ubuntu-openssl-8.5.0 as the probe 34 otherwise 5
+    utf8 '/cafÃ©' suite http://127.0.0.1:40001/caf%C3%A9 probe http://127.0.0.1:40001/caf%c3%a9
+    latin1 '/café' suite http://127.0.0.1:40001/caf%E9 probe http://127.0.0.1:40001/caf%e9
+    ctl '/x\x01y' suite http://127.0.0.1:40001/x%01y probe uc3
+    del '/x\x7fy' suite http://127.0.0.1:40001/x%7Fy probe uc3
+    empty '\r' suite http://127.0.0.1:40001/a/b/c/%0D probe uc3
+gnutls ubuntu-gnutls-8.5.0 as the probe 34 otherwise 5
+    utf8 '/cafÃ©' suite http://127.0.0.1:40001/caf%C3%A9 probe http://127.0.0.1:40001/caf%c3%a9
+    latin1 '/café' suite http://127.0.0.1:40001/caf%E9 probe http://127.0.0.1:40001/caf%e9
+    ctl '/x\x01y' suite http://127.0.0.1:40001/x%01y probe uc3
+    del '/x\x7fy' suite http://127.0.0.1:40001/x%7Fy probe uc3
+    empty '\r' suite http://127.0.0.1:40001/a/b/c/%0D probe uc3
+guix guix-8.20.0 as the probe 39 otherwise 0
+current current-8.23.0 as the probe 39 otherwise 0

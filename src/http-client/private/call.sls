@@ -1,16 +1,17 @@
 #!r6rs
 ;;; (http-client private call): a session's and a call's keys, checked; the
 ;;; session's record; the merge of a call's keys with its session's; the
-;;; form encoding; and a call made into its first request (the M5 plan,
-;;; section 3.2; ADR-0025).
+;;; form encoding; and a call made into its first request, with its
+;;; redirect policy (the M5 plan, sections 3.2 and 3.4; ADR-0025,
+;;; ADR-0027).
 ;;;
 ;;; Every check of a caller's string or list runs on a private copy, and the
 ;;; copy is what is used (ADR-0001, amended): headers, the user agent, the
 ;;; CA file's path, a body, a form and params are copied before anything
 ;;; reads them. The keys are refused by name first, as the low level refuses
-;;; its own; then the high level's own values, a body, a form and params;
-;;; then the low level's, by building a request from them, whose refusal
-;;; passes through as it was raised.
+;;; its own; then the high level's own values, a body, a form, params,
+;;; redirects and allow-downgrade; then the low level's, by building a
+;;; request from them, whose refusal passes through as it was raised.
 ;;;
 ;;; Header names are compared with A to Z folded alone, never char-downcase
 ;;; or char-foldcase, which fold U+212A KELVIN SIGN to k and U+017F LONG S
@@ -19,7 +20,8 @@
   (export session-keys call-keys key-settings string-pairs string-pairs-within ascii-ci=?
           form-encode form-type with-form-type merge-fields
           new-http-session http-session? http-session-engine http-session-defaults
-          session-defaults call-request)
+          http-session-redirects http-session-allow-downgrade
+          default-redirects session-defaults session-policy call-request)
   (import (curl)
           (rnrs)
           (http-client private conditions))
@@ -36,17 +38,32 @@
 
   ;; --- the keys --------------------------------------------------------------------
 
-  ;; session-keys : (Listof Symbol)
-  ;; The keys make-http-session takes, each a key of make-curl-request's,
-  ;; with the low level's default (the M5 plan, section 3.2). redirects,
-  ;; allow-downgrade and retry come with redirects and retries.
-  (define session-keys
+  ;; request-session-keys : (Listof Symbol)
+  ;; The session's keys that are make-curl-request's, each with the low
+  ;; level's default (the M5 plan, section 3.2).
+  (define request-session-keys
     '(headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy))
+
+  ;; policy-keys : (Listof Symbol)
+  ;; The session's keys that are the high level's own: redirects, the most
+  ;; redirects a call follows, an exact natural or #f, 20 by default; and
+  ;; allow-downgrade, whether a redirect from https to http is followed, a
+  ;; boolean, #f by default (ADR-0027). retry comes with retries.
+  (define policy-keys '(redirects allow-downgrade))
+
+  ;; session-keys : (Listof Symbol)
+  ;; The keys make-http-session takes: the request's, then the policy's.
+  (define session-keys (append request-session-keys policy-keys))
 
   ;; call-keys : (Listof Symbol)
   ;; The keys a call takes: the session's, each replacing the session's
   ;; value, then body, form and params.
   (define call-keys (append session-keys '(body form params)))
+
+  ;; default-redirects : Natural
+  ;; The most redirects a call follows when neither the session nor the
+  ;; call names a bound: 20, after the browsers' (the M5 plan, section 3.2).
+  (define default-redirects 20)
 
   ;; key-settings : Symbol (Listof Symbol) List -> (Listof (Pairof Symbol Any))
   ;; PLIST, KEY VALUE ..., as (KEY . VALUE) pairs, in its order, each key
@@ -225,17 +242,58 @@
              (put-component out (cdar rest))
              (loop (cdr rest) #f)))))))
 
+  ;; --- the policy ------------------------------------------------------------------
+
+  ;; checked-redirects : Symbol Any -> (U Natural #f)
+  ;; VALUE, a redirects value: an exact natural, or #f; anything else is
+  ;; refused as WHO, not-a-redirect-count.
+  (define (checked-redirects who value)
+    (unless (or (not value) (and (integer? value) (exact? value) (>= value 0)))
+      (refuse who 'redirects value 'not-a-redirect-count
+              "redirects is an exact natural, the most redirects a call follows, or #f, none"))
+    value)
+
+  ;; checked-allow-downgrade : Symbol Any -> Boolean
+  ;; VALUE, an allow-downgrade value, #t or #f; anything else is refused as
+  ;; WHO, not-a-boolean.
+  (define (checked-allow-downgrade who value)
+    (unless (boolean? value)
+      (refuse who 'allow-downgrade value 'not-a-boolean "allow-downgrade is #t or #f"))
+    value)
+
+  ;; policy-of : Symbol (Listof (Pairof Symbol Any)) (U Natural #f) Boolean
+  ;;             -> (List (U Natural #f) Boolean)
+  ;; SETTINGS' redirects and allow-downgrade, each checked, as WHO, in that
+  ;; order; each one SETTINGS lack is REDIRECTS or ALLOW-DOWNGRADE.
+  (define (policy-of who settings redirects allow-downgrade)
+    (let* ((r (assq 'redirects settings))
+           (a (assq 'allow-downgrade settings))
+           (redirects (if r (checked-redirects who (cdr r)) redirects))
+           (allow-downgrade (if a (checked-allow-downgrade who (cdr a)) allow-downgrade)))
+      (list redirects allow-downgrade)))
+
+  ;; session-policy : (Listof (Pairof Symbol Any)) -> (List (U Natural #f) Boolean)
+  ;; A session's redirects and allow-downgrade, from its SETTINGS, each
+  ;; checked, or the default: 20, and #f.
+  (define (session-policy settings)
+    (policy-of 'make-http-session settings default-redirects #f))
+
   ;; --- the session -----------------------------------------------------------------
 
-  ;; A session: its engine, and DEFAULTS, a request of the session's
-  ;; values, checked by make-curl-request, whose URL nothing reads.
-  ;; new-http-session : Engine Request -> Session
+  ;; A session: its engine; DEFAULTS, a request of the session's request
+  ;; keys, checked by make-curl-request, whose URL nothing reads; and its
+  ;; redirect policy, checked.
+  ;; new-http-session : Engine Request (U Natural #f) Boolean -> Session
   ;; http-session? : Any -> Boolean
   ;; http-session-engine : Session -> Engine
   ;; http-session-defaults : Session -> Request
+  ;; http-session-redirects : Session -> (U Natural #f)
+  ;; http-session-allow-downgrade : Session -> Boolean
   (define-record-type (http-session new-http-session http-session?)
     (fields (immutable engine http-session-engine)
-            (immutable defaults http-session-defaults))
+            (immutable defaults http-session-defaults)
+            (immutable redirects http-session-redirects)
+            (immutable allow-downgrade http-session-allow-downgrade))
     (sealed #t)
     (opaque #t))
 
@@ -243,11 +301,17 @@
   ;; The URL the checks' requests carry: make-curl-request parses no URL.
   (define check-url "http://localhost/")
 
+  ;; request-settings : (Listof (Pairof Symbol Any)) -> (Listof (Pairof Symbol Any))
+  ;; SETTINGS' request keys alone, in their order.
+  (define (request-settings settings)
+    (filter (lambda (setting) (memq (car setting) request-session-keys)) settings))
+
   ;; session-defaults : (Listof (Pairof Symbol Any)) -> Request
-  ;; SETTINGS, a session's keys, copied, as a request make-curl-request
-  ;; checks: its refusal raises as it was raised.
+  ;; SETTINGS' request keys, a session's, copied, as a request
+  ;; make-curl-request checks: its refusal raises as it was raised.
   (define (session-defaults settings)
-    (apply make-curl-request check-url (settings->plist (map copied-setting settings))))
+    (apply make-curl-request check-url
+           (settings->plist (map copied-setting (request-settings settings)))))
 
   ;; --- a call ----------------------------------------------------------------------
 
@@ -268,11 +332,15 @@
         (refuse 'http-request field value 'not-name-value-pairs
                 "a list of pairs of a name and a value, both strings")))
 
-  ;; call-request : Session Any Any List -> Request
+  ;; call-request : Session Any Any List
+  ;;                -> (Values Request (U Natural #f) Boolean)
   ;; The first request of a call of METHOD on URL, with PLIST's keys merged
-  ;; with SESSION's. In order, each raising as it is refused:
+  ;; with SESSION's, then the call's redirects and allow-downgrade: each the
+  ;; call's, or else the session's. In order, each raising as it is
+  ;; refused:
   ;;   1. the keys, by key-settings' rules;
   ;;   2. body, not-a-body; form, then params, not-name-value-pairs;
+  ;;      redirects, not-a-redirect-count; allow-downgrade, not-a-boolean;
   ;;   3. body and form together, body-and-form; either with get or head,
   ;;      body-not-allowed, field the one given;
   ;;   4. the method and the call's own request keys, by make-curl-request,
@@ -289,14 +357,15 @@
            (params-given (assq 'params settings))
            (body (and body-given (call-body (cdr body-given))))
            (form (and form-given (call-pairs 'form (cdr form-given))))
-           (params (and params-given (call-pairs 'params (cdr params-given)))))
+           (params (and params-given (call-pairs 'params (cdr params-given))))
+           (policy (policy-of 'http-request settings (http-session-redirects session)
+                              (http-session-allow-downgrade session))))
       (when (and body-given form-given)
         (refuse 'http-request 'form #f 'body-and-form "a body and a form together"))
       (when (and (memq method '(get head)) (or body-given form-given))
         (refuse 'http-request (if body-given 'body 'form) method 'body-not-allowed
                 "a body or a form with get or head, which send none"))
-      (let* ((own (map copied-setting
-                       (filter (lambda (setting) (memq (car setting) session-keys)) settings)))
+      (let* ((own (map copied-setting (request-settings settings)))
              (bytes (or body (and form (string->utf8 (form-encode form)))))
              (checked (apply make-curl-request check-url 'method method
                              (append (settings->plist own)
@@ -314,15 +383,17 @@
                                         (curl-url-append-query url (form-encode params))
                                         url)
                                     'url)))
-        (make-curl-request target
-                           'method method
-                           'headers headers
-                           'body bytes
-                           'user-agent (cadr merged)
-                           'timeout-ms (pick 'timeout-ms curl-request-timeout-ms)
-                           'connect-timeout-ms (pick 'connect-timeout-ms
-                                                     curl-request-connect-timeout-ms)
-                           'body-limit (pick 'body-limit curl-request-body-limit)
-                           'ca-file (pick 'ca-file curl-request-ca-file)
-                           'verify (pick 'verify curl-request-verify)
-                           'proxy (pick 'proxy curl-request-proxy))))))
+        (values (make-curl-request target
+                                   'method method
+                                   'headers headers
+                                   'body bytes
+                                   'user-agent (cadr merged)
+                                   'timeout-ms (pick 'timeout-ms curl-request-timeout-ms)
+                                   'connect-timeout-ms (pick 'connect-timeout-ms
+                                                             curl-request-connect-timeout-ms)
+                                   'body-limit (pick 'body-limit curl-request-body-limit)
+                                   'ca-file (pick 'ca-file curl-request-ca-file)
+                                   'verify (pick 'verify curl-request-verify)
+                                   'proxy (pick 'proxy curl-request-proxy))
+                (car policy)
+                (cadr policy))))))

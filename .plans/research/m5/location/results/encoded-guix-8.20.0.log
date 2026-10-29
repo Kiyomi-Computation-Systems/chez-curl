@@ -1,0 +1,47 @@
+[guix-8.20.0] libcurl 8.20.0
+[guix-8.20.0] rel-abs raw="http://127.0.0.1:40001/x/y?z=1" enc="http://127.0.0.1:40001/x/y?z=1"
+[guix-8.20.0] rel-path raw="http://127.0.0.1:40001/a/b/c/d/e" enc="http://127.0.0.1:40001/a/b/c/d/e"
+[guix-8.20.0] rel-dots raw="http://127.0.0.1:40001/a/up" enc="http://127.0.0.1:40001/a/up"
+[guix-8.20.0] rel-query raw="http://127.0.0.1:40001/a/b/c/rel-query?only=1" enc="http://127.0.0.1:40001/a/b/c/rel-query?only=1"
+[guix-8.20.0] netpath raw="http://127.0.0.1:40001/np" enc="http://127.0.0.1:40001/np"
+[guix-8.20.0] other-host raw="http://other.invalid/x" enc="http://other.invalid/x"
+[guix-8.20.0] https raw="https://127.0.0.1:1/s" enc="https://127.0.0.1:1/s"
+[guix-8.20.0] no-path raw="http://127.0.0.1:40001/" enc="http://127.0.0.1:40001/"
+[guix-8.20.0] upper-scheme raw="http://127.0.0.1:40001/UP" enc="http://127.0.0.1:40001/UP"
+[guix-8.20.0] ftp raw="ftp://127.0.0.1/f" enc="ftp://127.0.0.1/f"
+[guix-8.20.0] file raw="file:///etc/passwd" enc="file:///etc/passwd"
+[guix-8.20.0] javascript raw=(refused 5) enc=(refused 5)
+[guix-8.20.0] unknown-scheme raw=(refused 5) enc=(refused 5)
+[guix-8.20.0] padded raw="http://127.0.0.1:40001/padded" enc="http://127.0.0.1:40001/padded"
+[guix-8.20.0] tab raw="http://127.0.0.1:40001/tabbed" enc="http://127.0.0.1:40001/tabbed"
+[guix-8.20.0] space-inside raw="http://127.0.0.1:40001/a%20b/c%20d" enc="http://127.0.0.1:40001/a%20b/c%20d"
+[guix-8.20.0] utf8 raw="http://127.0.0.1:40001/caf%C3%A9" enc="http://127.0.0.1:40001/caf%C3%A9"
+[guix-8.20.0] latin1 raw="http://127.0.0.1:40001/caf%E9" enc="http://127.0.0.1:40001/caf%E9"
+[guix-8.20.0] ctl raw="http://127.0.0.1:40001/x%01y" enc="http://127.0.0.1:40001/x%01y"
+[guix-8.20.0] del raw="http://127.0.0.1:40001/x%7Fy" enc="http://127.0.0.1:40001/x%7Fy"
+[guix-8.20.0] pct raw="http://127.0.0.1:40001/already%20encoded" enc="http://127.0.0.1:40001/already%20encoded"
+[guix-8.20.0] bad-pct raw="http://127.0.0.1:40001/bad%zz" enc="http://127.0.0.1:40001/bad%zz"
+[guix-8.20.0] userinfo raw="http://u:p@127.0.0.1:40001/creds" enc="http://u:p@127.0.0.1:40001/creds"
+[guix-8.20.0] frag-abs raw="http://127.0.0.1:40001/withfrag#f" enc="http://127.0.0.1:40001/withfrag#f"
+[guix-8.20.0] bad-ipv6 raw=(refused 22) enc=(refused 22)
+[guix-8.20.0] bad-port raw=(refused 4) enc=(refused 4)
+[guix-8.20.0] backslash raw="http://127.0.0.1:40001/\\evil.invalid/x" enc="http://127.0.0.1:40001/\\evil.invalid/x"
+[guix-8.20.0] idn raw="http://café.invalid/" enc="http://café.invalid/"
+[guix-8.20.0] latin1-host raw=(refused-by-chez-curl not-utf-8) enc=(refused-by-chez-curl not-utf-8)
+[guix-8.20.0] abs-latin1-path raw=(refused-by-chez-curl not-utf-8) enc="http://h.example/caf%E9"
+[guix-8.20.0] abs-latin1-query raw=(refused-by-chez-curl not-utf-8) enc="http://h.example/?q=caf%E9"
+[guix-8.20.0] abs-utf8-path raw="http://h.example/café" enc="http://h.example/caf%C3%A9"
+[guix-8.20.0] net-latin1-path raw="http://h.example/caf%E9" enc="http://h.example/caf%E9"
+[guix-8.20.0] rel-latin1-query raw="http://127.0.0.1:40001/a/b/c/rel-latin1-query?q=caf%E9" enc="http://127.0.0.1:40001/a/b/c/rel-latin1-query?q=caf%E9"
+[guix-8.20.0] abs-ctl raw=(refused 3) enc="http://h.example/x%01y"
+[guix-8.20.0] abs-del raw=(refused 3) enc="http://h.example/x%7Fy"
+[guix-8.20.0] abs-space raw=(refused 3) enc="http://h.example/a%20b"
+[guix-8.20.0] abs-tab-inside raw=(refused 3) enc="http://h.example/a%09b"
+[guix-8.20.0] rel-tab-inside raw="http://127.0.0.1:40001/a%09b" enc="http://127.0.0.1:40001/a%09b"
+[guix-8.20.0] abs-latin1-frag raw=(refused-by-chez-curl not-utf-8) enc="http://h.example/p#caf%E9"
+[guix-8.20.0] rel-latin1-frag raw="http://127.0.0.1:40001/p#caf%E9" enc="http://127.0.0.1:40001/p#caf%E9"
+[guix-8.20.0] space-host raw=(refused 3) enc=(refused 21)
+[guix-8.20.0] abs-pct-lower raw="http://h.example/%e9" enc="http://h.example/%e9"
+[guix-8.20.0] rel-pct-lower raw="http://127.0.0.1:40001/%E9" enc="http://127.0.0.1:40001/%E9"
+[guix-8.20.0] abs-latin1-user raw=(refused-by-chez-curl not-utf-8) enc="http://caf%E9:p@h.example/"
+[guix-8.20.0] -- 45 values

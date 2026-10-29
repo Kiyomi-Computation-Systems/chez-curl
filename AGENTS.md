@@ -405,7 +405,16 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   directory passed with one public library, and failed with two.
 * `curl_url_set` of one part changes its `%XX` hex case: to lower case on
   7.85.0, 8.5.0 and 8.20.0, to upper on 8.23.0. A whole URL parsed keeps the
-  case given.
+  case given. Set as a part, a fragment's bytes go in unchecked: a space or
+  0x01 lands in the URL raw.
+* On 8.20.0 and 8.23.0, libcurl's own resolution of a lone `#F` gives what
+  `curl-url-with-fragment` gives, but raises lower-case hex. A test of the
+  lone-`#` rule needs `%e9` in its fragment, or its mutant passes there.
+* libcurl encodes a raw byte above 0x7F in a relative reference, but gives it
+  back raw in an absolute URL. A check of raw bytes needs both kinds; a
+  header's bytes are encoded before they are resolved (ADR-0029, amended).
+* libcurl gives an IPv6 host without its zone ID, a part of its own. Compare
+  the zone too, or two zones of one address read as one host.
 * libcurl decodes a host's `%XX`: `http://caf%E9.example/` comes back holding
   the byte 0xE9. Read `curl_url_get`'s answers as strict UTF-8, or refuse them.
 * An engine's queued and live counts both read 0 for a token it is setting

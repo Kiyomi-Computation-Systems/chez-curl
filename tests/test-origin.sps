@@ -356,6 +356,41 @@
           'eof)
     (exchange o 'raw (string-append (get "/raw/echo" "X-Spaced:  a b \r\n") "a body") 2000))
 
+  ;; --- the raw face: location, a status and Location headers of any bytes.
+  ;; Its head, written out here: the status line, each Location in order,
+  ;; then Content-Length: 0 and Connection: close.
+  (let ((head (lambda (code . locations)
+                (apply string-append "HTTP/1.1 " code " Redirect\r\n"
+                       (append (map (lambda (l) (string-append "Location: " l "\r\n")) locations)
+                               (list "Content-Length: 0\r\nConnection: close\r\n\r\n")))))
+        ;; every byte but CR and LF, 0x00 to 0xFF, in order
+        (bytes (filter (lambda (b) (not (memv b '(10 13)))) (iota 256)))
+        (hex2 (lambda (b upper?)
+                (let ((digits (if upper? "0123456789ABCDEF" "0123456789abcdef")))
+                  (string #\% (string-ref digits (div b 16)) (string-ref digits (mod b 16)))))))
+    (raw-row o "/raw/location?code=302&to=%2Fx" (head "302" "/x") 'eof)
+    (raw-row o "/raw/location?code=200" (head "200") 'eof)
+    (raw-row o "/raw/location?code=599&ms=0&to=a+b=c" (head "599" "a+b=c") 'eof)
+    (raw-row o "/raw/location?to=%2Ffirst&to=&code=307&to=%2Fthird" (head "307" "/first" "" "/third") 'eof)
+    (test-equal "raw /raw/location: every byte but CR and LF, 0x00 to 0xFF, each as %XX in upper-case hex, then in lower, comes back as its byte, in order"
+      (let ((value (list->string (map integer->char bytes))))
+        (list (list (head "301" value) 'eof) (list (head "301" value) 'eof)))
+      (map (lambda (upper?)
+             (exchange o 'raw
+                       (get (apply string-append "/raw/location?code=301&to="
+                                   (map (lambda (b) (hex2 b upper?)) bytes)))
+                       2000))
+           '(#t #f)))
+    (test-equal "raw /raw/location?code=302&ms=200&to=%2Fx: the whole bytes, then eof, the first at least 200 ms after connecting"
+      (list (head "302" "/x") 'eof 'late-enough)
+      (guard (e (#t (list 'raised (describe e))))
+        (let* ((p (wire-probe o 'raw (octets (get "/raw/location?code=302&ms=200&to=%2Fx")) 2000))
+               (at (arrival (probe-arrivals p) 0)))
+          (list (latin-1 (probe-bytes p)) (probe-end p)
+                (if (and at (probe-connected p) (>= (- at (probe-connected p)) 200))
+                    'late-enough
+                    (list 'first-at at 'connected (probe-connected p))))))))
+
   ;; --- the raw face: the fixed 400, for every NAME or parameter it refuses
   (for-each
    (lambda (row)
@@ -384,6 +419,21 @@
          (list "reset-after-pause ms=0" (get "/raw/reset-after-pause?ms=0"))
          (list "reset-after-pause ms=60001" (get "/raw/reset-after-pause?ms=60001"))
          (list "reset-after-pause without ms" (get "/raw/reset-after-pause"))
+         (list "location without a query" (get "/raw/location"))
+         (list "location with an empty query" (get "/raw/location?"))
+         (list "location without code" (get "/raw/location?to=%2Fx"))
+         (list "location code=199, below its range" (get "/raw/location?code=199"))
+         (list "location code=600, above its range" (get "/raw/location?code=600"))
+         (list "location code twice" (get "/raw/location?code=302&code=302"))
+         (list "location code with a leading zero" (get "/raw/location?code=0302"))
+         (list "location code that is no number" (get "/raw/location?code=3x2"))
+         (list "location ms=60001, above its range" (get "/raw/location?code=302&ms=60001"))
+         (list "location ms twice" (get "/raw/location?code=302&ms=1&ms=1"))
+         (list "location ms with a leading zero" (get "/raw/location?code=302&ms=01"))
+         (list "location with an unknown parameter" (get "/raw/location?code=302&x=1"))
+         (list "location with a pair that has no =" (get "/raw/location?code=302&to"))
+         (list "location with a % and no hex after it" (get "/raw/location?code=302&to=%zz"))
+         (list "location with a % and one hex digit" (get "/raw/location?code=302&to=a%4"))
          (list "a path outside /raw/" (get "/content-length"))
          (list "a request line of two words" "GET /raw/content-length\r\n\r\n")
          (list "a request line of four words" "GET /raw/content-length HTTP/1.1 x\r\n\r\n")
