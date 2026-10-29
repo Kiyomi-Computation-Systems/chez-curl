@@ -49,10 +49,11 @@ close-out under **Close-outs**, newest first.
       which a string sends raw and those versions refuse. I had run the suite after the
       encoding change in the container alone. The test now holds printable ASCII, and the suite
       passed on all five lanes and under Valgrind.
-    - **Owed by the Mac:** the probes, `CHEZ=chez NODE="$(asdf which node)" sh
-      .plans/research/m5/location/run.sh mac`, and `encoded.sh mac` and `zoneid.sh mac` with
-      `CHEZ=chez`; and `test-url-location`'s 8.7.1 row, which `make test` prints there (the
-      plan, §8).
+    - **The Mac, 2026-10-29:** the maintainer ran the probes and `make test` on
+      `feat/m5-slice-4`. All 64 `Location` cases agree there, `localhost` reaches 127.0.0.1, the
+      fragment probe and the 45 encoded values answer as 8.5.0's, and the zone IDs as 7.85.0's
+      and 8.5.0's; `test-url-location` printed 8.5.0's answers as its 8.7.1 row, now added on
+      this branch (ADR-0008 and ADR-0029, amended).
   - **Slice 3, retries,** is in progress on `feat/m5-slice-3`, stacked on slice 2's branch,
     whose PR #31 waits for the Mac's runs.
     - **Measured first** ([`research/m5/retry/`](research/m5/retry/)), through an engine per
@@ -97,9 +98,12 @@ close-out under **Close-outs**, newest first.
       run before and after the second fix round: before, each of four storms lost 24 to 100
       of the handler's raises, and two ended 22 and 100 of 100 calls in assertions; after,
       none.
-    - **Owed by the Mac:** `CHEZ=chez NODE="$(asdf which node)" sh
-      .plans/research/m5/retry/run.sh mac`; and `make test`, whose `test-retry` pins 8.7.1's
-      unknown request size.
+    - **The Mac, 2026-10-29:** `make test` passed `test-retry`'s 81 tests there, its 8.7.1 rows
+      among them. The retry probe's 40 transfers were all refused before they were queued: it
+      hands each the run's CA file, which a submit refuses while Apple's LibreSSL is in use,
+      and the runner set no `CURL_SSL_BACKEND`, as `make test` does. The runner now sets it on
+      macOS; owed again: `CHEZ=chez NODE="$(asdf which node)" sh
+      .plans/research/m5/retry/run.sh mac`.
   - **Slice 4, the request group and `http-parallel`,** is in progress on `feat/m5-slice-4`,
     stacked on slice 3's branch, whose PR #32 waits on #31.
     - **Measured first** ([`research/m5/group/`](research/m5/group/)), through `(curl)` alone, one
@@ -150,9 +154,11 @@ close-out under **Close-outs**, newest first.
       memory lane 32 of 32, with `check-memory-gate` 33 of 33. Round 2's lanes failed
       `test-mailbox`'s deliver-escape child once on the floor lane, under load, which then passed
       3 of 3 reruns: a timing assumption older than this slice, carried (the plan, §10).
-    - **Owed by the Mac:** `CHEZ=chez NODE="$(asdf which node)" sh
-      .plans/research/m5/group/run.sh mac 3`; and `make test NODE="$(asdf which node)"`, which
-      M5's end needs (the plan, §9).
+    - **The Mac, 2026-10-29:** the group probe ran 518 to 522 ms all at once, and 5,129 to
+      5,140 ms at most 2 live; `make test` passed 31 of 32, `test-group`'s 65 tests among them,
+      `test-url-location` failing only for the row it printed, now added on slice 2's branch.
+      Owed: `make test NODE="$(asdf which node)"` again with that row, which M5's end needs (the
+      plan, §9).
   - **Measured first** ([`research/m5/redirect-url/`](research/m5/redirect-url/)), through a C
     probe that made each transfer as the engine does, `FOLLOWLOCATION` off, on five libcurls:
     Guix's 8.20.0 in the container, and in Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with

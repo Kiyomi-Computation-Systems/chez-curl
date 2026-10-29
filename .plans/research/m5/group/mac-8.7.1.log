@@ -1,0 +1,10 @@
+[mac] origin {"node":"v20.10.0","pid":72397,"http":"127.0.0.1:64044","raw":"127.0.0.1:64045","h2c":"127.0.0.1:64046"}
+[mac] libcurl 8.7.1
+[mac] all ms=521 most-live=20 status=200 x20
+[mac] limit2 ms=5129 most-live=2 status=200 x20
+[mac] all ms=522 most-live=20 status=200 x20
+[mac] limit2 ms=5135 most-live=2 status=200 x20
+[mac] all ms=518 most-live=20 status=200 x20
+[mac] limit2 ms=5140 most-live=2 status=200 x20
+.plans/research/m5/group/run.sh: line 26: 72397 Terminated: 15          "${NODE:-node}" tests/origin.mjs < "$tmp/in" > "$tmp/ports" 2> "$tmp/origin.err"
+[mac] the origin exited 143, not 0, after its stdin closed: 143 is the watchdog's kill, 5 s on

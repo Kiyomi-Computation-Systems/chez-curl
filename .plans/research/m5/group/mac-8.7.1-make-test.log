@@ -1,0 +1,249 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (32 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-check-floors.sps
+%%%% Starting test check-floors
+# of expected passes      375
+test: pass tests/test-check-floors.sps
+=== tests/test-check-nothreads.sps
+%%%% Starting test check-nothreads
+# of expected passes      17
+test: pass tests/test-check-nothreads.sps
+=== tests/test-check-seam.sps
+%%%% Starting test check-seam
+# of expected passes      62
+test: pass tests/test-check-seam.sps
+=== tests/test-collect-safe.sps
+%%%% Starting test collect-safe
+# of expected passes      120
+test: pass tests/test-collect-safe.sps
+=== tests/test-conditions.sps
+%%%% Starting test conditions
+# of expected passes      38
+test: pass tests/test-conditions.sps
+=== tests/test-constants.sps
+%%%% Starting test constants
+# of expected passes      627
+test: pass tests/test-constants.sps
+=== tests/test-curl-testing.sps
+%%%% Starting test curl-testing
+# of expected passes      284
+test: pass tests/test-curl-testing.sps
+=== tests/test-discovery.sps
+%%%% Starting test discovery
+# of expected passes      47
+test: pass tests/test-discovery.sps
+=== tests/test-drift.sps
+%%%% Starting test drift
+# of expected passes      55
+test: pass tests/test-drift.sps
+=== tests/test-engine.sps
+%%%% Starting test engine
+test-engine: the stalled-lookup checks run on Linux alone, so none ran here (ADR-0019, amended 2026-10-25)
+# of expected passes      48
+test: pass tests/test-engine.sps
+=== tests/test-group.sps
+%%%% Starting test group
+# of expected passes      65
+test: pass tests/test-group.sps
+=== tests/test-http-client.sps
+%%%% Starting test http-client
+# of expected passes      73
+test: pass tests/test-http-client.sps
+=== tests/test-library-loading.sps
+%%%% Starting test library-loading
+# of expected passes      74
+test: pass tests/test-library-loading.sps
+=== tests/test-load-state.sps
+%%%% Starting test load-state
+# of expected passes      12
+test: pass tests/test-load-state.sps
+=== tests/test-mailbox.sps
+%%%% Starting test mailbox
+# of expected passes      26
+test: pass tests/test-mailbox.sps
+=== tests/test-manifest.sps
+%%%% Starting test manifest
+# of expected passes      4
+test: pass tests/test-manifest.sps
+=== tests/test-memory-safety.sps
+%%%% Starting test memory-safety
+# of expected passes      89
+test: pass tests/test-memory-safety.sps
+=== tests/test-native.sps
+%%%% Starting test native
+# of expected passes      16
+test: pass tests/test-native.sps
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      88
+# of skipped tests        1
+test: pass tests/test-origin-tls.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      202
+# of skipped tests        1
+test: pass tests/test-origin.sps
+=== tests/test-redirect.sps
+%%%% Starting test redirect
+# of expected passes      68
+test: pass tests/test-redirect.sps
+=== tests/test-request.sps
+%%%% Starting test request
+# of expected passes      38
+test: pass tests/test-request.sps
+=== tests/test-require-threaded.sps
+%%%% Starting test require-threaded
+# of expected passes      69
+test: pass tests/test-require-threaded.sps
+=== tests/test-retry.sps
+%%%% Starting test retry
+# of expected passes      81
+test: pass tests/test-retry.sps
+=== tests/test-transfer-tls.sps
+%%%% Starting test transfer-tls
+# of expected passes      82
+test: pass tests/test-transfer-tls.sps
+=== tests/test-transfer.sps
+%%%% Starting test transfer
+# of expected passes      225
+test: pass tests/test-transfer.sps
+=== tests/test-unsupported.sps
+%%%% Starting test unsupported
+# of expected passes      32
+test: pass tests/test-unsupported.sps
+=== tests/test-url-location.sps
+test-url-location: no row of tests/known-url-location-verdicts.sexp is for libcurl 8.7.1.
+test-url-location: if it is one to support, review its answers, and add this row,
+test-url-location: with `where` saying where it runs (ADR-0029):
+
+(libcurl
+ (where "TODO: say where this libcurl runs")
+ (version "8.7.1")
+ (answers
+  ((resolve "http://127.0.0.1:40001/a/b/c/rel-frag?q=1" (bytes "#only")) "http://127.0.0.1:40001/a/b/c/#only")
+  ((resolve "http://127.0.0.1:40001/a/b/c/javascript?q=1" (bytes "javascript:alert(1)")) (refused 5))
+  ((resolve "http://127.0.0.1:40001/a/b/c/empty?q=1" (bytes "")) (refused 3))
+  ((resolve "http://127.0.0.1:40001/a/b/c/bad-ipv6?q=1" (bytes "http://[::1/x")) (refused 22))
+  ((resolve "http://127.0.0.1:40001/a/b/c/rel-frag?q=1#orig" (bytes "#only")) "http://127.0.0.1:40001/a/b/c/#only")
+  ((resolve "http://127.0.0.1:40001/a/b/c/latin1?q=1" "/café") "http://127.0.0.1:40001/caf%c3%a9")
+  ((fragment "http://h.example/a/b?q=1" "a b") (refused 3))
+  ((fragment "http://h.example/a/b?q=1" "   ") (refused 3))
+  ((fragment "http://h.example/a/b?q=1" "\t") (refused 3))
+  ((fragment "http://h.example/a/b?q=1" "\r") (refused 3))
+  ((fragment "http://h.example/a/b?q=1" "x\x1;y") (refused 3))
+  ((fragment "http://h.example/a/b?q=1" "x\x7F;y") (refused 3))
+  ((fragment "http://h.example/a/b?q=1#old" "a b") (refused 3))
+  ((fragment "http://h.example/a/b?q=1#old" "   ") (refused 3))
+  ((fragment "http://h.example/a/b?q=1#old" "\t") (refused 3))
+  ((fragment "http://h.example/a/b?q=1#old" "\r") (refused 3))
+  ((fragment "http://h.example/a/b?q=1#old" "x\x1;y") (refused 3))
+  ((fragment "http://h.example/a/b?q=1#old" "x\x7F;y") (refused 3))
+  ((fragment "http://h.example/a/b#old%e9" "a b") (refused 3))
+  ((fragment "http://h.example/a/b#old%e9" "   ") (refused 3))
+  ((fragment "http://h.example/a/b#old%e9" "\t") (refused 3))
+  ((fragment "http://h.example/a/b#old%e9" "\r") (refused 3))
+  ((fragment "http://h.example/a/b#old%e9" "x\x1;y") (refused 3))
+  ((fragment "http://h.example/a/b#old%e9" "x\x7F;y") (refused 3))))
+
+%%%% Starting test url-location
+FAIL the loaded libcurl's version has exactly one row in tests/known-url-location-verdicts.sexp
+  expected: ("8.7.1")
+  actual:   ()
+FAIL libcurl 8.7.1: resolve (bytes "#only") against "http://127.0.0.1:40001/a/b/c/rel-frag?q=1" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ("http://127.0.0.1:40001/a/b/c/#only" ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: resolve (bytes "javascript:alert(1)") against "http://127.0.0.1:40001/a/b/c/javascript?q=1" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 5) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: resolve (bytes "") against "http://127.0.0.1:40001/a/b/c/empty?q=1" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: resolve (bytes "http://[::1/x") against "http://127.0.0.1:40001/a/b/c/bad-ipv6?q=1" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 22) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: resolve (bytes "#only") against "http://127.0.0.1:40001/a/b/c/rel-frag?q=1#orig" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ("http://127.0.0.1:40001/a/b/c/#only" ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: resolve "/café" against "http://127.0.0.1:40001/a/b/c/latin1?q=1" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ("http://127.0.0.1:40001/caf%c3%a9" ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b?q=1" to "a b" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b?q=1" to "   " is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b?q=1" to "\t" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b?q=1" to "\r" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b?q=1" to "x\x1;y" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b?q=1" to "x\x7F;y" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b?q=1#old" to "a b" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b?q=1#old" to "   " is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b?q=1#old" to "\t" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b?q=1#old" to "\r" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b?q=1#old" to "x\x1;y" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b?q=1#old" to "x\x7F;y" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b#old%e9" to "a b" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b#old%e9" to "   " is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b#old%e9" to "\t" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b#old%e9" to "\r" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b#old%e9" to "x\x1;y" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+FAIL libcurl 8.7.1: set the fragment of "http://h.example/a/b#old%e9" to "x\x7F;y" is its row's answer, and the counts are back at zero
+  expected: ((no-row "8.7.1") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  actual:   ((refused 3) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+# of expected passes      197
+# of unexpected failures  25
+suite-exit-status: exit 1 (pass 197, fail 25, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-url-location.sps (exit 1)
+=== tests/test-url-parts.sps
+%%%% Starting test url-parts
+# of expected passes      160
+test: pass tests/test-url-parts.sps
+=== tests/test-url.sps
+%%%% Starting test url
+# of expected passes      145
+test: pass tests/test-url.sps
+=== tests/test-variadic.sps
+%%%% Starting test variadic
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 1: done, the first done at 1021 ms, both at 2044 ms
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 2: done, the first done at 1019 ms, both at 1019 ms
+# of expected passes      30
+test: pass tests/test-variadic.sps
+=== tests/test-verify.sps
+%%%% Starting test verify
+# of expected passes      21
+test: pass tests/test-verify.sps
+test: ran 32, passed 31, failed 1, hung 0
+make: *** [test] Error 1
