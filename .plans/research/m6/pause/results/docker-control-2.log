@@ -1,0 +1,106 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package gcc 4:13.2.0-7ubuntu1
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+[floor-7.85.0] libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 -> /src/build/e1/ci/curl-floor/lib/libcurl.so.4.8.0, headers /src/build/e1/ci/curl-floor/include
+[floor-7.85.0] node v20.10.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[floor-7.85.0] version headers=7.85.0 runtime=7.85.0 ssl=OpenSSL/3.0.13 libz=1.3 nghttp2=1.59.0 http2=1 libz_feature=1 live_after_init=0
+[floor-7.85.0] server raw=45799 tls=45589 h2=40911
+[floor-7.85.0] case D-hold-control raw done code=0 t=38.4 status=200 ver=2 conns=1 lport=42328
+[floor-7.85.0] case D-hold-control raw summary calls=573 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=16384 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[floor-7.85.0] case D-hold-control raw live base=11425 peak_during_transfer=37513 after_done=21104 after_easy_cleanup=13261
+[floor-7.85.0] case D-hold-control raw live after_multi_cleanup=0
+[floor-7.85.0] case D-hold-control tls done code=0 t=20.1 status=200 ver=2 conns=1 lport=44484
+[floor-7.85.0] case D-hold-control tls summary calls=1023 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=16384 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[floor-7.85.0] case D-hold-control tls live base=11422 peak_during_transfer=103061 after_done=21140 after_easy_cleanup=13257
+[floor-7.85.0] case D-hold-control tls live after_multi_cleanup=0
+[floor-7.85.0] case D-hold-control h2 done code=0 t=31.4 status=200 ver=3 conns=1 lport=41102
+[floor-7.85.0] case D-hold-control h2 summary calls=1024 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=12288 max_before=12288 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[floor-7.85.0] case D-hold-control h2 live base=11421 peak_during_transfer=70641 after_done=54081 after_easy_cleanup=46025
+[floor-7.85.0] case D-hold-control h2 live after_multi_cleanup=0
+[floor-7.85.0] case D-hold-control all done live_before_global_cleanup=0
+[floor-7.85.0] case D-hold-control live_after_global_cleanup=0
+[floor-7.85.0] probe D-hold-control exit=0
+[floor-7.85.0] probe D-hold-control took about 0 s
+[floor-7.85.0] -- 1 cases run
+[floor-7.85.0] server-stderr: unfetched tag=D-hold-control.raw count raw:/body=1
+[floor-7.85.0] server-stderr: unfetched tag=D-hold-control.tls count tls:/body=1
+[floor-7.85.0] server-stderr: unfetched tag=D-hold-control.h2 count h2:/body=1
+[floor-7.85.0] server-stderr: counts h2:/body=1 raw:/body=1 tls:/body=1
+[ubuntu-openssl-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 -> /usr/lib/x86_64-linux-gnu/libcurl.so.4.8.0, headers the compiler's
+[ubuntu-openssl-8.5.0] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[ubuntu-openssl-8.5.0] version headers=8.5.0 runtime=8.5.0 ssl=OpenSSL/3.0.13 libz=1.3 nghttp2=1.59.0 http2=1 libz_feature=1 live_after_init=0
+[ubuntu-openssl-8.5.0] server raw=45945 tls=45549 h2=33849
+[ubuntu-openssl-8.5.0] case D-hold-control raw done code=0 t=29.5 status=200 ver=2 conns=1 lport=53382
+[ubuntu-openssl-8.5.0] case D-hold-control raw summary calls=577 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=16384 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[ubuntu-openssl-8.5.0] case D-hold-control raw live base=11549 peak_during_transfer=38716 after_done=21373 after_easy_cleanup=13954
+[ubuntu-openssl-8.5.0] case D-hold-control raw live after_multi_cleanup=0
+[ubuntu-openssl-8.5.0] case D-hold-control tls done code=0 t=16.2 status=200 ver=2 conns=1 lport=46180
+[ubuntu-openssl-8.5.0] case D-hold-control tls summary calls=639 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=16384 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[ubuntu-openssl-8.5.0] case D-hold-control tls live base=11531 peak_during_transfer=103805 after_done=21812 after_easy_cleanup=14368
+[ubuntu-openssl-8.5.0] case D-hold-control tls live after_multi_cleanup=0
+[ubuntu-openssl-8.5.0] case D-hold-control h2 done code=0 t=22.7 status=200 ver=3 conns=1 lport=44782
+[ubuntu-openssl-8.5.0] case D-hold-control h2 summary calls=515 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=16384 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[ubuntu-openssl-8.5.0] case D-hold-control h2 live base=11530 peak_during_transfer=5787434 after_done=5770633 after_easy_cleanup=5763016
+[ubuntu-openssl-8.5.0] case D-hold-control h2 live after_multi_cleanup=0
+[ubuntu-openssl-8.5.0] case D-hold-control all done live_before_global_cleanup=0
+[ubuntu-openssl-8.5.0] case D-hold-control live_after_global_cleanup=0
+[ubuntu-openssl-8.5.0] probe D-hold-control exit=0
+[ubuntu-openssl-8.5.0] probe D-hold-control took about 0 s
+[ubuntu-openssl-8.5.0] -- 1 cases run
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=D-hold-control.raw count raw:/body=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=D-hold-control.tls count tls:/body=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=D-hold-control.h2 count h2:/body=1
+[ubuntu-openssl-8.5.0] server-stderr: counts h2:/body=1 raw:/body=1 tls:/body=1
+[ubuntu-gnutls-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 -> /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4.8.0, headers the compiler's
+[ubuntu-gnutls-8.5.0] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[ubuntu-gnutls-8.5.0] version headers=8.5.0 runtime=8.5.0 ssl=GnuTLS/3.8.3 libz=1.3 nghttp2=1.59.0 http2=1 libz_feature=1 live_after_init=0
+[ubuntu-gnutls-8.5.0] server raw=42753 tls=38493 h2=45103
+[ubuntu-gnutls-8.5.0] case D-hold-control raw done code=0 t=29.7 status=200 ver=2 conns=1 lport=33688
+[ubuntu-gnutls-8.5.0] case D-hold-control raw summary calls=579 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=16384 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[ubuntu-gnutls-8.5.0] case D-hold-control raw live base=11393 peak_during_transfer=38490 after_done=21147 after_easy_cleanup=13806
+[ubuntu-gnutls-8.5.0] case D-hold-control raw live after_multi_cleanup=0
+[ubuntu-gnutls-8.5.0] case D-hold-control tls done code=0 t=17.0 status=200 ver=2 conns=1 lport=44470
+[ubuntu-gnutls-8.5.0] case D-hold-control tls summary calls=639 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=16384 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[ubuntu-gnutls-8.5.0] case D-hold-control tls live base=11410 peak_during_transfer=103566 after_done=21573 after_easy_cleanup=14168
+[ubuntu-gnutls-8.5.0] case D-hold-control tls live after_multi_cleanup=0
+[ubuntu-gnutls-8.5.0] case D-hold-control h2 done code=0 t=20.4 status=200 ver=3 conns=1 lport=54932
+[ubuntu-gnutls-8.5.0] case D-hold-control h2 summary calls=516 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=16384 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[ubuntu-gnutls-8.5.0] case D-hold-control h2 live base=11409 peak_during_transfer=6033555 after_done=6016754 after_easy_cleanup=6009176
+[ubuntu-gnutls-8.5.0] case D-hold-control h2 live after_multi_cleanup=0
+[ubuntu-gnutls-8.5.0] case D-hold-control all done live_before_global_cleanup=0
+[ubuntu-gnutls-8.5.0] case D-hold-control live_after_global_cleanup=0
+[ubuntu-gnutls-8.5.0] probe D-hold-control exit=0
+[ubuntu-gnutls-8.5.0] probe D-hold-control took about 0 s
+[ubuntu-gnutls-8.5.0] -- 1 cases run
+[ubuntu-gnutls-8.5.0] server-stderr: unfetched tag=D-hold-control.raw count raw:/body=1
+[ubuntu-gnutls-8.5.0] server-stderr: unfetched tag=D-hold-control.tls count tls:/body=1
+[ubuntu-gnutls-8.5.0] server-stderr: unfetched tag=D-hold-control.h2 count h2:/body=1
+[ubuntu-gnutls-8.5.0] server-stderr: counts h2:/body=1 raw:/body=1 tls:/body=1
+[current-8.23.0] libcurl /home/kishu/src/chez-curl/build/verify/current/curl-8.23.0-install/lib/libcurl.so.4 -> /home/kishu/src/chez-curl/build/verify/current/curl-8.23.0-install/lib/libcurl.so.4.8.0, headers /home/kishu/src/chez-curl/build/verify/current/curl-8.23.0-install/include
+[current-8.23.0] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[current-8.23.0] version headers=8.23.0 runtime=8.23.0 ssl=OpenSSL/3.0.13 libz=1.3 nghttp2=1.59.0 http2=1 libz_feature=1 live_after_init=0
+[current-8.23.0] server raw=36495 tls=46361 h2=41475
+[current-8.23.0] case D-hold-control raw done code=0 t=31.8 status=200 ver=2 conns=1 lport=37288
+[current-8.23.0] case D-hold-control raw summary calls=574 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=16384 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[current-8.23.0] case D-hold-control raw live base=12309 peak_during_transfer=32477 after_done=32242 after_easy_cleanup=28571
+[current-8.23.0] case D-hold-control raw live after_multi_cleanup=0
+[current-8.23.0] case D-hold-control tls done code=0 t=15.5 status=200 ver=2 conns=1 lport=33236
+[current-8.23.0] case D-hold-control tls summary calls=639 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=16384 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[current-8.23.0] case D-hold-control tls live base=12341 peak_during_transfer=35164 after_done=34929 after_easy_cleanup=31274
+[current-8.23.0] case D-hold-control tls live after_multi_cleanup=0
+[current-8.23.0] case D-hold-control h2 done code=0 t=17.0 status=200 ver=3 conns=1 lport=53936
+[current-8.23.0] case D-hold-control h2 summary calls=1024 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16375 max_before=16375 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[current-8.23.0] case D-hold-control h2 live base=12340 peak_during_transfer=91706 after_done=90999 after_easy_cleanup=87158
+[current-8.23.0] case D-hold-control h2 live after_multi_cleanup=0
+[current-8.23.0] case D-hold-control all done live_before_global_cleanup=0
+[current-8.23.0] case D-hold-control live_after_global_cleanup=0
+[current-8.23.0] probe D-hold-control exit=0
+[current-8.23.0] probe D-hold-control took about 0 s
+[current-8.23.0] -- 1 cases run
+[current-8.23.0] server-stderr: unfetched tag=D-hold-control.raw count raw:/body=1
+[current-8.23.0] server-stderr: unfetched tag=D-hold-control.tls count tls:/body=1
+[current-8.23.0] server-stderr: unfetched tag=D-hold-control.h2 count h2:/body=1
+[current-8.23.0] server-stderr: counts h2:/body=1 raw:/body=1 tls:/body=1

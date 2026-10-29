@@ -1,0 +1,647 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package gcc 4:13.2.0-7ubuntu1
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+[floor-7.85.0] libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 -> /src/build/e1/ci/curl-floor/lib/libcurl.so.4.8.0, headers /src/build/e1/ci/curl-floor/include
+[floor-7.85.0] node v20.10.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[floor-7.85.0] version headers=7.85.0 runtime=7.85.0 ssl=OpenSSL/3.0.13 libz=1.3 nghttp2=1.59.0 http2=1 libz_feature=1 live_after_init=0
+[floor-7.85.0] server raw=40775 tls=44311 h2=44069
+[floor-7.85.0] case R-reset-split:send-side-noseek:get raw done code=0 t=3.5 status=200 ver=2 conns=1 lport=35476
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw debug t=0.1 text "Found bundle for host: 0x60176f00d1e0 [serially]"
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw debug t=0.1 text "Can not multiplex, even if we wanted to"
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw debug t=0.1 text "Re-using existing connection #0 with host 127.0.0.1"
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw debug t=0.1 text "Connected to 127.0.0.1 (127.0.0.1) port 40775 (#0)"
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw prereq n=1 ev=1 t=0.1 local_port=35476 answer=OK
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw debug t=0.1 header_out bytes=181 first="POST /sink?want=8388608&tag=R-reset-split.send-side-noseek HTTP/1.1"
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw debug t=5.6 data_out events=113 bytes=1851392
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw debug t=5.6 text "Recv failure: Connection reset by peer"
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw debug t=5.6 text "Connection died, retrying a fresh connect (retry count: 1)"
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw debug t=5.6 text "necessary data rewind wasn't possible"
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw debug t=5.6 text "Closing connection 0"
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw done code=56 err="Failure when receiving data from the peer" t=5.6 status=0 ver=0 conns=0 lport=35476
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw rewind case_t get_end=3.5 post_add=104.1 post_end=109.7 get_lport=35476 post_lport=35476
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw r2 prereq_calls=1 seeks=0 reads=113 fail_t=5.6 reads_after_fail=0 new_connection=0
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw reads=113 reads_inpause=0 seeks=0 answer: (none)
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw server: req raw GET /close-after #1 conn=35476 at=82.8
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw server: close-after raw then=reset conn=35476: the next request on it is reset after 32768 body bytes
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw server: req raw POST /sink #1 conn=35476 at=185.7
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw server: reset raw /sink conn=35476 after its head and 81920 body bytes, at 4.9ms; RST
+[floor-7.85.0] case R-reset-split:send-side-noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[floor-7.85.0] case R-reset-split:send-side-seekok:get raw done code=0 t=0.4 status=200 ver=2 conns=1 lport=35504
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw debug t=0.0 text "Found bundle for host: 0x60176f00c1c0 [serially]"
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw debug t=0.0 text "Can not multiplex, even if we wanted to"
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw debug t=0.1 text "Re-using existing connection #0 with host 127.0.0.1"
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw debug t=0.1 text "Connected to 127.0.0.1 (127.0.0.1) port 40775 (#0)"
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw prereq n=1 ev=1 t=0.1 local_port=35504 answer=OK
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw debug t=0.1 header_out bytes=181 first="POST /sink?want=8388608&tag=R-reset-split.send-side-seekok HTTP/1.1"
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw debug t=1.3 data_out events=24 bytes=393216
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw debug t=1.3 text "Send failure: Connection reset by peer"
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw debug t=1.3 text "Closing connection 0"
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw done code=55 err="Failed sending data to the peer" t=1.3 status=0 ver=0 conns=0 lport=35504
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw rewind case_t get_end=0.4 post_add=101.0 post_end=102.2 get_lport=35504 post_lport=35504
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw r2 prereq_calls=1 seeks=0 reads=25 fail_t=1.3 reads_after_fail=0 new_connection=0
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw reads=25 reads_inpause=0 seeks=0 answer: (none)
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw server: req raw GET /close-after #1 conn=35504 at=192.0
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw server: close-after raw then=reset conn=35504: the next request on it is reset after 32768 body bytes
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw server: req raw POST /sink #1 conn=35504 at=293.0
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw server: reset raw /sink conn=35504 after its head and 32768 body bytes, at 0.7ms; RST
+[floor-7.85.0] case R-reset-split:send-side-seekok:post raw server: count raw:/close-after=1 raw:/sink=1
+[floor-7.85.0] case R-reset-split:recv-side-noseek:get raw done code=0 t=0.9 status=200 ver=2 conns=1 lport=35518
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw debug t=0.0 text "Found bundle for host: 0x60176f00dc60 [serially]"
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw debug t=0.1 text "Can not multiplex, even if we wanted to"
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw debug t=0.1 text "Re-using existing connection #0 with host 127.0.0.1"
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw debug t=0.1 text "Connected to 127.0.0.1 (127.0.0.1) port 40775 (#0)"
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw prereq n=1 ev=1 t=0.1 local_port=35518 answer=OK
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw debug t=0.2 header_out bytes=179 first="POST /sink?want=262144&tag=R-reset-split.recv-side-noseek HTTP/1.1"
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=1 t=0.3 room=65536 inpause=0 answer=16384 offset=16384
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=2 t=0.4 room=65536 inpause=0 answer=16384 offset=32768
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=3 t=0.5 room=65536 inpause=0 answer=16384 offset=49152
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=4 t=0.6 room=65536 inpause=0 answer=16384 offset=65536
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=5 t=0.7 room=65536 inpause=0 answer=16384 offset=81920
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=6 t=0.8 room=65536 inpause=0 answer=16384 offset=98304
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=7 t=0.9 room=65536 inpause=0 answer=16384 offset=114688
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=8 t=1.0 room=65536 inpause=0 answer=16384 offset=131072
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=9 t=1.1 room=65536 inpause=0 answer=16384 offset=147456
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=10 t=1.2 room=65536 inpause=0 answer=16384 offset=163840
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=11 t=1.3 room=65536 inpause=0 answer=16384 offset=180224
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=12 t=1.4 room=65536 inpause=0 answer=16384 offset=196608
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=13 t=1.4 room=65536 inpause=0 answer=16384 offset=212992
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=14 t=1.5 room=65536 inpause=0 answer=16384 offset=229376
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=15 t=1.6 room=65536 inpause=0 answer=16384 offset=245760
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw read n=16 t=1.7 room=65536 inpause=0 answer=16384 offset=262144
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw debug t=1.7 data_out events=16 bytes=262144
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw debug t=1.7 text "We are completely uploaded and fine"
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw debug t=4.0 text "Recv failure: Connection reset by peer"
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw debug t=4.0 text "Connection died, retrying a fresh connect (retry count: 1)"
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw debug t=4.0 text "necessary data rewind wasn't possible"
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw debug t=4.0 text "Closing connection 0"
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw done code=56 err="Failure when receiving data from the peer" t=4.0 status=0 ver=0 conns=0 lport=35518
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw rewind case_t get_end=0.9 post_add=101.4 post_end=105.5 get_lport=35518 post_lport=35518
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw r2 prereq_calls=1 seeks=0 reads=16 fail_t=4.0 reads_after_fail=0 new_connection=0
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw reads=16 reads_inpause=0 seeks=0 answer: (none)
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw server: req raw GET /close-after #1 conn=35518 at=296.3
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw server: close-after raw then=reset conn=35518: the next request on it is reset after 262144 body bytes
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw server: req raw POST /sink #1 conn=35518 at=397.4
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw server: reset raw /sink conn=35518 after its head and 262144 body bytes, at 3.5ms; RST
+[floor-7.85.0] case R-reset-split:recv-side-noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[floor-7.85.0] case R-reset-split:recv-side-seekok:get raw done code=0 t=0.5 status=200 ver=2 conns=1 lport=35528
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=0.1 text "Found bundle for host: 0x60176f00f390 [serially]"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=0.1 text "Can not multiplex, even if we wanted to"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=0.1 text "Re-using existing connection #0 with host 127.0.0.1"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=0.1 text "Connected to 127.0.0.1 (127.0.0.1) port 40775 (#0)"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw prereq n=1 ev=1 t=0.1 local_port=35528 answer=OK
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=0.2 header_out bytes=179 first="POST /sink?want=262144&tag=R-reset-split.recv-side-seekok HTTP/1.1"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=1 t=0.3 room=65536 inpause=0 answer=16384 offset=16384
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=2 t=0.4 room=65536 inpause=0 answer=16384 offset=32768
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=3 t=0.5 room=65536 inpause=0 answer=16384 offset=49152
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=4 t=0.6 room=65536 inpause=0 answer=16384 offset=65536
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=5 t=0.7 room=65536 inpause=0 answer=16384 offset=81920
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=6 t=0.8 room=65536 inpause=0 answer=16384 offset=98304
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=7 t=0.9 room=65536 inpause=0 answer=16384 offset=114688
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=8 t=1.0 room=65536 inpause=0 answer=16384 offset=131072
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=9 t=1.1 room=65536 inpause=0 answer=16384 offset=147456
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=10 t=1.2 room=65536 inpause=0 answer=16384 offset=163840
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=11 t=1.3 room=65536 inpause=0 answer=16384 offset=180224
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=12 t=1.4 room=65536 inpause=0 answer=16384 offset=196608
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=13 t=1.5 room=65536 inpause=0 answer=16384 offset=212992
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=14 t=1.5 room=65536 inpause=0 answer=16384 offset=229376
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=15 t=1.6 room=65536 inpause=0 answer=16384 offset=245760
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=16 t=1.7 room=65536 inpause=0 answer=16384 offset=262144
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=1.7 data_out events=16 bytes=262144
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=1.7 text "We are completely uploaded and fine"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=4.2 text "Recv failure: Connection reset by peer"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=4.3 text "Connection died, retrying a fresh connect (retry count: 1)"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw seek n=1 t=4.3 offset=0 origin=0 answer=OK
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=4.3 text "Closing connection 0"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=4.3 text "Issue another request to this URL: 'http://127.0.0.1:40775/sink?want=262144&tag=R-reset-split.recv-side-seekok'"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=4.4 text "Hostname 127.0.0.1 was found in DNS cache"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=4.4 text "  Trying 127.0.0.1:40775..."
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=4.5 text "Connected to 127.0.0.1 (127.0.0.1) port 40775 (#1)"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw prereq n=2 ev=2 t=4.5 local_port=35530 answer=OK
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=4.5 header_out bytes=179 first="POST /sink?want=262144&tag=R-reset-split.recv-side-seekok HTTP/1.1"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=17 t=4.6 room=65536 inpause=0 answer=16384 offset=16384
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=18 t=4.6 room=65536 inpause=0 answer=16384 offset=32768
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=19 t=4.7 room=65536 inpause=0 answer=16384 offset=49152
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=20 t=4.7 room=65536 inpause=0 answer=16384 offset=65536
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=21 t=4.7 room=65536 inpause=0 answer=16384 offset=81920
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=22 t=4.8 room=65536 inpause=0 answer=16384 offset=98304
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=23 t=4.8 room=65536 inpause=0 answer=16384 offset=114688
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=24 t=4.8 room=65536 inpause=0 answer=16384 offset=131072
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=25 t=4.9 room=65536 inpause=0 answer=16384 offset=147456
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=26 t=4.9 room=65536 inpause=0 answer=16384 offset=163840
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=27 t=4.9 room=65536 inpause=0 answer=16384 offset=180224
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=28 t=5.0 room=65536 inpause=0 answer=16384 offset=196608
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=29 t=5.0 room=65536 inpause=0 answer=16384 offset=212992
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=30 t=5.0 room=65536 inpause=0 answer=16384 offset=229376
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=31 t=5.1 room=65536 inpause=0 answer=16384 offset=245760
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw read n=32 t=5.1 room=65536 inpause=0 answer=16384 offset=262144
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=5.1 data_out events=16 bytes=262144
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=5.1 text "We are completely uploaded and fine"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=9.8 text "Mark bundle as not supporting multiuse"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=9.9 header_in "HTTP/1.1 200 OK"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=9.9 header_in "Content-Length: 252"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=9.9 header_in ""
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw debug t=9.9 text "Connection #1 to host 127.0.0.1 left intact"
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw done code=0 t=9.9 status=200 ver=2 conns=1 lport=35530
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw rewind case_t get_end=0.5 post_add=101.0 post_end=110.9 get_lport=35528 post_lport=35530
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw r2 prereq_calls=2 seeks=1 reads=32 fail_t=4.3 reads_after_fail=16 new_connection=1
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw reads=32 reads_inpause=0 seeks=1 answer: sink raw method=POST cl=262144 te=- expect=- ct=application/x-www-form-urlencoded bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw server: req raw GET /close-after #1 conn=35528 at=402.1
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw server: close-after raw then=reset conn=35528: the next request on it is reset after 262144 body bytes
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw server: req raw POST /sink #1 conn=35528 at=503.2
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw server: reset raw /sink conn=35528 after its head and 262144 body bytes, at 3.7ms; RST
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw server: req raw POST /sink #2 conn=35530 at=507.6
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw server: sink raw method=POST cl=262144 te=- expect=- ct=application/x-www-form-urlencoded bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 arr=0.0:65357,0.5:49331,0.8:65536,1.2:65536,1.4:16384
+[floor-7.85.0] case R-reset-split:recv-side-seekok:post raw server: count raw:/close-after=1 raw:/sink=2
+[floor-7.85.0] case R-reset-split all done live_before_global_cleanup=0
+[floor-7.85.0] case R-reset-split live_after_global_cleanup=0
+[floor-7.85.0] probe R-reset-split exit=0
+[floor-7.85.0] probe R-reset-split took about 0 s
+[floor-7.85.0] -- 1 cases run
+[floor-7.85.0] server-stderr: counts raw:/close-after=4 raw:/sink=5
+[ubuntu-openssl-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 -> /usr/lib/x86_64-linux-gnu/libcurl.so.4.8.0, headers the compiler's
+[ubuntu-openssl-8.5.0] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[ubuntu-openssl-8.5.0] version headers=8.5.0 runtime=8.5.0 ssl=OpenSSL/3.0.13 libz=1.3 nghttp2=1.59.0 http2=1 libz_feature=1 live_after_init=0
+[ubuntu-openssl-8.5.0] server raw=37293 tls=35965 h2=42683
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:get raw done code=0 t=2.8 status=200 ver=2 conns=1 lport=33680
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=0.0 text "Found bundle for host: 0x5eaab4961760 [serially]"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=0.1 text "Can not multiplex, even if we wanted to"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=0.1 text "Re-using existing connection with host 127.0.0.1"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw prereq n=1 ev=1 t=0.1 local_port=33680 answer=OK
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=0.1 header_out bytes=181 first="POST /sink?want=8388608&tag=R-reset-split.send-side-noseek HTTP/1.1"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=4.1 data_out events=98 bytes=1605632
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=4.2 text "Send failure: Connection reset by peer"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=4.2 text "Closing connection"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw done code=55 err="Failed sending data to the peer" t=4.2 status=0 ver=0 conns=0 lport=33680
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw rewind case_t get_end=2.8 post_add=103.3 post_end=107.5 get_lport=33680 post_lport=33680
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw r2 prereq_calls=1 seeks=0 reads=99 fail_t=4.2 reads_after_fail=0 new_connection=0
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw reads=99 reads_inpause=0 seeks=0 answer: (none)
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw server: req raw GET /close-after #1 conn=33680 at=76.8
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw server: close-after raw then=reset conn=33680: the next request on it is reset after 32768 body bytes
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw server: req raw POST /sink #1 conn=33680 at=179.1
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw server: reset raw /sink conn=33680 after its head and 81920 body bytes, at 3.6ms; RST
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:get raw done code=0 t=0.3 status=200 ver=2 conns=1 lport=33698
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=0.0 text "Found bundle for host: 0x5eaab495e5b0 [serially]"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=0.0 text "Can not multiplex, even if we wanted to"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=0.0 text "Re-using existing connection with host 127.0.0.1"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw prereq n=1 ev=1 t=0.0 local_port=33698 answer=OK
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=0.1 header_out bytes=181 first="POST /sink?want=8388608&tag=R-reset-split.send-side-seekok HTTP/1.1"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=1.1 data_out events=22 bytes=360448
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=1.1 text "Recv failure: Connection reset by peer"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=1.1 text "Connection died, retrying a fresh connect (retry count: 1)"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=1.1 text "state.rewindbeforesend = TRUE"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=1.1 text "Closing connection"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=1.1 text "Issue another request to this URL: 'http://127.0.0.1:37293/sink?want=8388608&tag=R-reset-split.send-side-seekok'"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=1.1 text "Hostname 127.0.0.1 was found in DNS cache"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=1.2 text "  Trying 127.0.0.1:37293..."
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=1.2 text "Connected to 127.0.0.1 (127.0.0.1) port 37293"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw seek n=1 t=1.2 offset=0 origin=0 answer=OK
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw prereq n=2 ev=2 t=1.2 local_port=33714 answer=OK
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=1.2 header_out bytes=181 first="POST /sink?want=8388608&tag=R-reset-split.send-side-seekok HTTP/1.1"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=23.1 data_out events=512 bytes=8388608
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=23.1 text "We are completely uploaded and fine"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=44.5 header_in "HTTP/1.1 200 OK"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=44.5 header_in "Content-Length: 1871"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=44.5 header_in ""
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=44.5 text "Connection #1 to host 127.0.0.1 left intact"
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw done code=0 t=44.5 status=200 ver=2 conns=1 lport=33714
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw rewind case_t get_end=0.3 post_add=100.9 post_end=145.4 get_lport=33698 post_lport=33714
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw r2 prereq_calls=2 seeks=1 reads=534 fail_t=1.1 reads_after_fail=512 new_connection=1
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw reads=534 reads_inpause=0 seeks=1 answer: sink raw method=POST cl=8388608 te=- expect=- ct=application/x-www-form-urlencoded bytes=8388608 sha=bdf23837181f5808331800c1ae2b4f7d7a839536b10d58491471c50dde23833a pattern=ok want_sha=ok arrivals=156
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw server: req raw GET /close-after #1 conn=33698 at=183.9
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw server: close-after raw then=reset conn=33698: the next request on it is reset after 32768 body bytes
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw server: req raw POST /sink #1 conn=33698 at=284.9
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw server: reset raw /sink conn=33698 after its head and 81920 body bytes, at 0.8ms; RST
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw server: req raw POST /sink #2 conn=33714 at=286.2
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw server: sink raw method=POST cl=8388608 te=- expect=- ct=application/x-www-form-urlencoded bytes=8388608 sha=bdf23837181f5808331800c1ae2b4f7d7a839536b10d58491471c50dde23833a pattern=ok want_sha=ok arrivals=156 arr=0.0:65355,0.6:49333,1.0:65536,1.5:65536,1.8:41984,2.1:65536,2.3:65536,2.5:41984,2.7:65536,2.9:65536,3.1:41984,3.2:65536,3.4:65536,3.6:65536,3.8:18432,3.9:65536,4.2:65536,4.4:65536,4.6:18432,4.7:65536,4.9:65536,5.1:65536,5.3:18432,5.3:65536,5.5:65536,5.7:65536,6.0:18432,6.1:65536,6.3:65536,6.6:65536,6.8:18432,6.8:65536,7.0:65536,7.2:65536,7.3:18432,7.4:65536,7.6:65536,7.7:65536,7.9:18432,8.0:65536,8.2:65536,8.4:65536,8.6:18432,8.7:65536,8.9:65536,9.1:65536,9.3:18432,9.3:65536,9.5:65536,9.7:65536,9.9:18432,10.0:65536,10.2:65536,10.4:65536,10.5:18432,10.6:65536,10.8:65536,11.0:65536,11.2:18432,11.3:65536,11.5:65536,11.7:65536,11.9:18432,12.0:65536,12.2:65536,12.4:65536,12.5:18432,12.6:65536,12.8:65536,13.0:65536,13.2:18432,13.3:65536,13.5:65536,13.7:65536,13.9:18432,13.9:65536,14.1:65536,14.3:65536,14.5:18432,14.6:65536,14.8:65536,15.0:65536,15.2:18432,15.3:65536,15.5:65536,15.7:65536,15.9:18432,15.9:65536,16.1:65536,16.3:65536,16.5:18432,16.6:65536,16.8:65536,17.0:65536,17.1:18432,17.2:65536,17.4:65536,17.6:65536,17.8:18432,17.9:65536,18.1:65536,18.3:65536,18.5:18432,18.5:65536,18.7:65536,18.9:65536,19.1:18432,19.2:65536,19.4:65536,19.6:65536,19.8:18432,19.9:65536,20.1:65536,20.3:65536,20.4:18432,20.5:65536,20.7:65536,20.9:65536,21.1:18432,21.2:65536,21.4:65536,21.6:65536,21.8:18432,21.8:65536,22.0:65536,22.2:65536,22.4:18432,22.5:65536,22.7:65536,22.9:65536,23.1:18432,23.1:65536,23.3:65536,23.5:65536,23.7:18432,23.8:65536,24.0:65536,24.2:65536,24.4:18432,24.5:65536,24.7:65536,24.8:65536,25.0:18432,25.1:65536,25.3:65536,25.5:65536,25.7:18432,25.8:65536,25.9:65536,26.1:65536,26.3:18432,26.4:65536,26.6:65536,26.8:65536,27.0:18432,27.0:13312
+[ubuntu-openssl-8.5.0] case R-reset-split:send-side-seekok:post raw server: count raw:/close-after=1 raw:/sink=2
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:get raw done code=0 t=0.4 status=200 ver=2 conns=1 lport=33742
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=0.0 text "Found bundle for host: 0x5eaab495e5b0 [serially]"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=0.0 text "Can not multiplex, even if we wanted to"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=0.1 text "Re-using existing connection with host 127.0.0.1"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw prereq n=1 ev=1 t=0.1 local_port=33742 answer=OK
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=0.1 header_out bytes=179 first="POST /sink?want=262144&tag=R-reset-split.recv-side-noseek HTTP/1.1"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=1 t=0.2 room=65536 inpause=0 answer=16384 offset=16384
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=2 t=0.2 room=65536 inpause=0 answer=16384 offset=32768
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=3 t=0.3 room=65536 inpause=0 answer=16384 offset=49152
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=4 t=0.3 room=65536 inpause=0 answer=16384 offset=65536
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=5 t=0.4 room=65536 inpause=0 answer=16384 offset=81920
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=6 t=0.4 room=65536 inpause=0 answer=16384 offset=98304
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=7 t=0.5 room=65536 inpause=0 answer=16384 offset=114688
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=8 t=0.5 room=65536 inpause=0 answer=16384 offset=131072
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=9 t=0.5 room=65536 inpause=0 answer=16384 offset=147456
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=10 t=0.6 room=65536 inpause=0 answer=16384 offset=163840
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=11 t=0.6 room=65536 inpause=0 answer=16384 offset=180224
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=12 t=0.7 room=65536 inpause=0 answer=16384 offset=196608
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=13 t=0.7 room=65536 inpause=0 answer=16384 offset=212992
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=14 t=0.8 room=65536 inpause=0 answer=16384 offset=229376
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=15 t=0.8 room=65536 inpause=0 answer=16384 offset=245760
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=16 t=0.9 room=65536 inpause=0 answer=16384 offset=262144
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=0.9 data_out events=16 bytes=262144
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=0.9 text "We are completely uploaded and fine"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.3 text "Recv failure: Connection reset by peer"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.4 text "Connection died, retrying a fresh connect (retry count: 1)"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.4 text "state.rewindbeforesend = TRUE"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.4 text "Closing connection"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.4 text "Issue another request to this URL: 'http://127.0.0.1:37293/sink?want=262144&tag=R-reset-split.recv-side-noseek'"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.4 text "Hostname 127.0.0.1 was found in DNS cache"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.4 text "  Trying 127.0.0.1:37293..."
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.5 text "Connected to 127.0.0.1 (127.0.0.1) port 37293"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.5 text "necessary data rewind wasn't possible"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.5 text "Closing connection"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw done code=65 err="Send failed since rewinding of the data stream failed" t=2.5 status=0 ver=0 conns=1 lport=33752
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw rewind case_t get_end=0.4 post_add=100.9 post_end=103.4 get_lport=33742 post_lport=33752
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw r2 prereq_calls=1 seeks=0 reads=16 fail_t=2.3 reads_after_fail=0 new_connection=1
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw reads=16 reads_inpause=0 seeks=0 answer: (none)
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw server: req raw GET /close-after #1 conn=33742 at=330.1
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw server: close-after raw then=reset conn=33742: the next request on it is reset after 262144 body bytes
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw server: req raw POST /sink #1 conn=33742 at=431.0
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw server: reset raw /sink conn=33742 after its head and 262144 body bytes, at 1.9ms; RST
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:get raw done code=0 t=0.4 status=200 ver=2 conns=1 lport=33762
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=0.0 text "Found bundle for host: 0x5eaab49655b0 [serially]"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=0.0 text "Can not multiplex, even if we wanted to"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=0.0 text "Re-using existing connection with host 127.0.0.1"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw prereq n=1 ev=1 t=0.0 local_port=33762 answer=OK
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=0.1 header_out bytes=179 first="POST /sink?want=262144&tag=R-reset-split.recv-side-seekok HTTP/1.1"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=1 t=0.1 room=65536 inpause=0 answer=16384 offset=16384
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=2 t=0.2 room=65536 inpause=0 answer=16384 offset=32768
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=3 t=0.2 room=65536 inpause=0 answer=16384 offset=49152
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=4 t=0.3 room=65536 inpause=0 answer=16384 offset=65536
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=5 t=0.3 room=65536 inpause=0 answer=16384 offset=81920
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=6 t=0.4 room=65536 inpause=0 answer=16384 offset=98304
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=7 t=0.4 room=65536 inpause=0 answer=16384 offset=114688
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=8 t=0.5 room=65536 inpause=0 answer=16384 offset=131072
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=9 t=0.5 room=65536 inpause=0 answer=16384 offset=147456
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=10 t=0.6 room=65536 inpause=0 answer=16384 offset=163840
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=11 t=0.6 room=65536 inpause=0 answer=16384 offset=180224
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=12 t=0.6 room=65536 inpause=0 answer=16384 offset=196608
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=13 t=0.7 room=65536 inpause=0 answer=16384 offset=212992
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=14 t=0.7 room=65536 inpause=0 answer=16384 offset=229376
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=15 t=0.8 room=65536 inpause=0 answer=16384 offset=245760
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=16 t=0.8 room=65536 inpause=0 answer=16384 offset=262144
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=0.8 data_out events=16 bytes=262144
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=0.8 text "We are completely uploaded and fine"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.2 text "Recv failure: Connection reset by peer"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.2 text "Connection died, retrying a fresh connect (retry count: 1)"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.2 text "state.rewindbeforesend = TRUE"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.2 text "Closing connection"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.2 text "Issue another request to this URL: 'http://127.0.0.1:37293/sink?want=262144&tag=R-reset-split.recv-side-seekok'"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.3 text "Hostname 127.0.0.1 was found in DNS cache"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.3 text "  Trying 127.0.0.1:37293..."
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.3 text "Connected to 127.0.0.1 (127.0.0.1) port 37293"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw seek n=1 t=2.3 offset=0 origin=0 answer=OK
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw prereq n=2 ev=2 t=2.3 local_port=33774 answer=OK
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.4 header_out bytes=179 first="POST /sink?want=262144&tag=R-reset-split.recv-side-seekok HTTP/1.1"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=17 t=2.4 room=65536 inpause=0 answer=16384 offset=16384
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=18 t=2.5 room=65536 inpause=0 answer=16384 offset=32768
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=19 t=2.5 room=65536 inpause=0 answer=16384 offset=49152
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=20 t=2.6 room=65536 inpause=0 answer=16384 offset=65536
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=21 t=2.6 room=65536 inpause=0 answer=16384 offset=81920
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=22 t=2.6 room=65536 inpause=0 answer=16384 offset=98304
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=23 t=2.7 room=65536 inpause=0 answer=16384 offset=114688
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=24 t=2.8 room=65536 inpause=0 answer=16384 offset=131072
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=25 t=2.8 room=65536 inpause=0 answer=16384 offset=147456
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=26 t=2.8 room=65536 inpause=0 answer=16384 offset=163840
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=27 t=2.9 room=65536 inpause=0 answer=16384 offset=180224
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=28 t=2.9 room=65536 inpause=0 answer=16384 offset=196608
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=29 t=3.0 room=65536 inpause=0 answer=16384 offset=212992
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=30 t=3.0 room=65536 inpause=0 answer=16384 offset=229376
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=31 t=3.1 room=65536 inpause=0 answer=16384 offset=245760
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=32 t=3.1 room=65536 inpause=0 answer=16384 offset=262144
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=3.1 data_out events=16 bytes=262144
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=3.1 text "We are completely uploaded and fine"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=4.7 header_in "HTTP/1.1 200 OK"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=4.7 header_in "Content-Length: 262"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=4.7 header_in ""
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=4.7 text "Connection #1 to host 127.0.0.1 left intact"
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw done code=0 t=4.7 status=200 ver=2 conns=1 lport=33774
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw rewind case_t get_end=0.4 post_add=101.0 post_end=105.7 get_lport=33762 post_lport=33774
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw r2 prereq_calls=2 seeks=1 reads=32 fail_t=2.2 reads_after_fail=16 new_connection=1
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw reads=32 reads_inpause=0 seeks=1 answer: sink raw method=POST cl=262144 te=- expect=- ct=application/x-www-form-urlencoded bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw server: req raw GET /close-after #1 conn=33762 at=434.4
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw server: close-after raw then=reset conn=33762: the next request on it is reset after 262144 body bytes
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw server: req raw POST /sink #1 conn=33762 at=535.3
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw server: reset raw /sink conn=33762 after its head and 262144 body bytes, at 1.8ms; RST
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw server: req raw POST /sink #2 conn=33774 at=537.6
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw server: sink raw method=POST cl=262144 te=- expect=- ct=application/x-www-form-urlencoded bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 arr=0.0:16384,0.2:65536,0.6:65536,0.9:16384,1.1:65536,1.4:32768
+[ubuntu-openssl-8.5.0] case R-reset-split:recv-side-seekok:post raw server: count raw:/close-after=1 raw:/sink=2
+[ubuntu-openssl-8.5.0] case R-reset-split all done live_before_global_cleanup=0
+[ubuntu-openssl-8.5.0] case R-reset-split live_after_global_cleanup=0
+[ubuntu-openssl-8.5.0] probe R-reset-split exit=0
+[ubuntu-openssl-8.5.0] probe R-reset-split took about 0 s
+[ubuntu-openssl-8.5.0] -- 1 cases run
+[ubuntu-openssl-8.5.0] server-stderr: counts raw:/close-after=4 raw:/sink=6
+[ubuntu-gnutls-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 -> /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4.8.0, headers the compiler's
+[ubuntu-gnutls-8.5.0] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[ubuntu-gnutls-8.5.0] version headers=8.5.0 runtime=8.5.0 ssl=GnuTLS/3.8.3 libz=1.3 nghttp2=1.59.0 http2=1 libz_feature=1 live_after_init=0
+[ubuntu-gnutls-8.5.0] server raw=33595 tls=34539 h2=39039
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:get raw done code=0 t=4.6 status=200 ver=2 conns=1 lport=41510
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=0.0 text "Found bundle for host: 0x60d85a02c840 [serially]"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=0.1 text "Can not multiplex, even if we wanted to"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=0.1 text "Re-using existing connection with host 127.0.0.1"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw prereq n=1 ev=1 t=0.1 local_port=41510 answer=OK
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=0.1 header_out bytes=181 first="POST /sink?want=8388608&tag=R-reset-split.send-side-noseek HTTP/1.1"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=5.0 data_out events=113 bytes=1851392
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=5.0 text "Recv failure: Connection reset by peer"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=5.0 text "Connection died, retrying a fresh connect (retry count: 1)"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=5.0 text "state.rewindbeforesend = TRUE"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=5.1 text "Closing connection"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=5.1 text "Issue another request to this URL: 'http://127.0.0.1:33595/sink?want=8388608&tag=R-reset-split.send-side-noseek'"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=5.1 text "Hostname 127.0.0.1 was found in DNS cache"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=5.1 text "  Trying 127.0.0.1:33595..."
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=5.2 text "Connected to 127.0.0.1 (127.0.0.1) port 33595"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=5.2 text "necessary data rewind wasn't possible"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw debug t=5.2 text "Closing connection"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw done code=65 err="Send failed since rewinding of the data stream failed" t=5.2 status=0 ver=0 conns=1 lport=41514
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw rewind case_t get_end=4.6 post_add=105.2 post_end=110.4 get_lport=41510 post_lport=41514
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw r2 prereq_calls=1 seeks=0 reads=113 fail_t=5.0 reads_after_fail=0 new_connection=1
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw reads=113 reads_inpause=0 seeks=0 answer: (none)
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw server: req raw GET /close-after #1 conn=41510 at=77.1
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw server: close-after raw then=reset conn=41510: the next request on it is reset after 32768 body bytes
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw server: req raw POST /sink #1 conn=41510 at=180.0
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw server: reset raw /sink conn=41510 after its head and 81920 body bytes, at 4.5ms; RST
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:get raw done code=0 t=0.2 status=200 ver=2 conns=1 lport=41526
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=0.0 text "Found bundle for host: 0x60d85a029b20 [serially]"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=0.0 text "Can not multiplex, even if we wanted to"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=0.0 text "Re-using existing connection with host 127.0.0.1"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw prereq n=1 ev=1 t=0.0 local_port=41526 answer=OK
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=0.1 header_out bytes=181 first="POST /sink?want=8388608&tag=R-reset-split.send-side-seekok HTTP/1.1"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=1.1 data_out events=22 bytes=360448
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=1.1 text "Send failure: Connection reset by peer"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw debug t=1.1 text "Closing connection"
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw done code=55 err="Failed sending data to the peer" t=1.1 status=0 ver=0 conns=0 lport=41526
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw rewind case_t get_end=0.2 post_add=100.7 post_end=101.8 get_lport=41526 post_lport=41526
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw r2 prereq_calls=1 seeks=0 reads=23 fail_t=1.1 reads_after_fail=0 new_connection=0
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw reads=23 reads_inpause=0 seeks=0 answer: (none)
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw server: req raw GET /close-after #1 conn=41526 at=186.1
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw server: close-after raw then=reset conn=41526: the next request on it is reset after 32768 body bytes
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw server: req raw POST /sink #1 conn=41526 at=287.0
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw server: reset raw /sink conn=41526 after its head and 81920 body bytes, at 0.8ms; RST
+[ubuntu-gnutls-8.5.0] case R-reset-split:send-side-seekok:post raw server: count raw:/close-after=1 raw:/sink=1
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:get raw done code=0 t=0.6 status=200 ver=2 conns=1 lport=41544
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=0.0 text "Found bundle for host: 0x60d85a0299f0 [serially]"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=0.0 text "Can not multiplex, even if we wanted to"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=0.1 text "Re-using existing connection with host 127.0.0.1"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw prereq n=1 ev=1 t=0.1 local_port=41544 answer=OK
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=0.1 header_out bytes=179 first="POST /sink?want=262144&tag=R-reset-split.recv-side-noseek HTTP/1.1"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=1 t=0.1 room=65536 inpause=0 answer=16384 offset=16384
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=2 t=0.2 room=65536 inpause=0 answer=16384 offset=32768
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=3 t=0.3 room=65536 inpause=0 answer=16384 offset=49152
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=4 t=0.3 room=65536 inpause=0 answer=16384 offset=65536
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=5 t=0.4 room=65536 inpause=0 answer=16384 offset=81920
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=6 t=0.4 room=65536 inpause=0 answer=16384 offset=98304
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=7 t=0.5 room=65536 inpause=0 answer=16384 offset=114688
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=8 t=0.5 room=65536 inpause=0 answer=16384 offset=131072
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=9 t=0.6 room=65536 inpause=0 answer=16384 offset=147456
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=10 t=0.6 room=65536 inpause=0 answer=16384 offset=163840
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=11 t=0.7 room=65536 inpause=0 answer=16384 offset=180224
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=12 t=0.8 room=65536 inpause=0 answer=16384 offset=196608
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=13 t=0.8 room=65536 inpause=0 answer=16384 offset=212992
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=14 t=0.9 room=65536 inpause=0 answer=16384 offset=229376
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=15 t=0.9 room=65536 inpause=0 answer=16384 offset=245760
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw read n=16 t=1.0 room=65536 inpause=0 answer=16384 offset=262144
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=1.0 data_out events=16 bytes=262144
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=1.0 text "We are completely uploaded and fine"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.4 text "Recv failure: Connection reset by peer"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.4 text "Connection died, retrying a fresh connect (retry count: 1)"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.4 text "state.rewindbeforesend = TRUE"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.4 text "Closing connection"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.5 text "Issue another request to this URL: 'http://127.0.0.1:33595/sink?want=262144&tag=R-reset-split.recv-side-noseek'"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.5 text "Hostname 127.0.0.1 was found in DNS cache"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.5 text "  Trying 127.0.0.1:33595..."
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.6 text "Connected to 127.0.0.1 (127.0.0.1) port 33595"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.6 text "necessary data rewind wasn't possible"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw debug t=2.6 text "Closing connection"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw done code=65 err="Send failed since rewinding of the data stream failed" t=2.6 status=0 ver=0 conns=1 lport=41548
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw rewind case_t get_end=0.6 post_add=101.2 post_end=103.7 get_lport=41544 post_lport=41548
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw r2 prereq_calls=1 seeks=0 reads=16 fail_t=2.4 reads_after_fail=0 new_connection=1
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw reads=16 reads_inpause=0 seeks=0 answer: (none)
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw server: req raw GET /close-after #1 conn=41544 at=288.8
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw server: close-after raw then=reset conn=41544: the next request on it is reset after 262144 body bytes
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw server: req raw POST /sink #1 conn=41544 at=389.9
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw server: reset raw /sink conn=41544 after its head and 262144 body bytes, at 2.0ms; RST
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:get raw done code=0 t=0.4 status=200 ver=2 conns=1 lport=41572
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=0.0 text "Found bundle for host: 0x60d85a029b20 [serially]"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=0.0 text "Can not multiplex, even if we wanted to"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=0.1 text "Re-using existing connection with host 127.0.0.1"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw prereq n=1 ev=1 t=0.1 local_port=41572 answer=OK
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=0.1 header_out bytes=179 first="POST /sink?want=262144&tag=R-reset-split.recv-side-seekok HTTP/1.1"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=1 t=0.1 room=65536 inpause=0 answer=16384 offset=16384
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=2 t=0.2 room=65536 inpause=0 answer=16384 offset=32768
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=3 t=0.2 room=65536 inpause=0 answer=16384 offset=49152
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=4 t=0.3 room=65536 inpause=0 answer=16384 offset=65536
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=5 t=0.4 room=65536 inpause=0 answer=16384 offset=81920
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=6 t=0.4 room=65536 inpause=0 answer=16384 offset=98304
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=7 t=0.5 room=65536 inpause=0 answer=16384 offset=114688
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=8 t=0.5 room=65536 inpause=0 answer=16384 offset=131072
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=9 t=0.6 room=65536 inpause=0 answer=16384 offset=147456
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=10 t=0.6 room=65536 inpause=0 answer=16384 offset=163840
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=11 t=0.7 room=65536 inpause=0 answer=16384 offset=180224
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=12 t=0.7 room=65536 inpause=0 answer=16384 offset=196608
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=13 t=0.7 room=65536 inpause=0 answer=16384 offset=212992
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=14 t=0.8 room=65536 inpause=0 answer=16384 offset=229376
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=15 t=0.8 room=65536 inpause=0 answer=16384 offset=245760
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=16 t=0.9 room=65536 inpause=0 answer=16384 offset=262144
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=0.9 data_out events=16 bytes=262144
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=0.9 text "We are completely uploaded and fine"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.4 text "Recv failure: Connection reset by peer"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.4 text "Connection died, retrying a fresh connect (retry count: 1)"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.4 text "state.rewindbeforesend = TRUE"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.4 text "Closing connection"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.4 text "Issue another request to this URL: 'http://127.0.0.1:33595/sink?want=262144&tag=R-reset-split.recv-side-seekok'"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.5 text "Hostname 127.0.0.1 was found in DNS cache"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.5 text "  Trying 127.0.0.1:33595..."
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.6 text "Connected to 127.0.0.1 (127.0.0.1) port 33595"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw seek n=1 t=2.6 offset=0 origin=0 answer=OK
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw prereq n=2 ev=2 t=2.6 local_port=41574 answer=OK
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=2.6 header_out bytes=179 first="POST /sink?want=262144&tag=R-reset-split.recv-side-seekok HTTP/1.1"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=17 t=2.7 room=65536 inpause=0 answer=16384 offset=16384
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=18 t=2.8 room=65536 inpause=0 answer=16384 offset=32768
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=19 t=2.8 room=65536 inpause=0 answer=16384 offset=49152
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=20 t=2.9 room=65536 inpause=0 answer=16384 offset=65536
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=21 t=3.0 room=65536 inpause=0 answer=16384 offset=81920
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=22 t=3.1 room=65536 inpause=0 answer=16384 offset=98304
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=23 t=3.2 room=65536 inpause=0 answer=16384 offset=114688
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=24 t=3.3 room=65536 inpause=0 answer=16384 offset=131072
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=25 t=3.4 room=65536 inpause=0 answer=16384 offset=147456
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=26 t=3.4 room=65536 inpause=0 answer=16384 offset=163840
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=27 t=3.5 room=65536 inpause=0 answer=16384 offset=180224
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=28 t=3.6 room=65536 inpause=0 answer=16384 offset=196608
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=29 t=3.7 room=65536 inpause=0 answer=16384 offset=212992
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=30 t=3.8 room=65536 inpause=0 answer=16384 offset=229376
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=31 t=3.9 room=65536 inpause=0 answer=16384 offset=245760
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw read n=32 t=4.0 room=65536 inpause=0 answer=16384 offset=262144
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=4.0 data_out events=16 bytes=262144
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=4.0 text "We are completely uploaded and fine"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=6.1 header_in "HTTP/1.1 200 OK"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=6.1 header_in "Content-Length: 252"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=6.1 header_in ""
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw debug t=6.1 text "Connection #1 to host 127.0.0.1 left intact"
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw done code=0 t=6.1 status=200 ver=2 conns=1 lport=41574
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw rewind case_t get_end=0.4 post_add=101.0 post_end=107.1 get_lport=41572 post_lport=41574
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw r2 prereq_calls=2 seeks=1 reads=32 fail_t=2.4 reads_after_fail=16 new_connection=1
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw reads=32 reads_inpause=0 seeks=1 answer: sink raw method=POST cl=262144 te=- expect=- ct=application/x-www-form-urlencoded bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw server: req raw GET /close-after #1 conn=41572 at=393.1
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw server: close-after raw then=reset conn=41572: the next request on it is reset after 262144 body bytes
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw server: req raw POST /sink #1 conn=41572 at=494.1
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw server: reset raw /sink conn=41572 after its head and 262144 body bytes, at 2.0ms; RST
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw server: req raw POST /sink #2 conn=41574 at=496.7
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw server: sink raw method=POST cl=262144 te=- expect=- ct=application/x-www-form-urlencoded bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 arr=0.0:32768,0.6:65536,1.3:65536,1.6:49152,1.8:49152
+[ubuntu-gnutls-8.5.0] case R-reset-split:recv-side-seekok:post raw server: count raw:/close-after=1 raw:/sink=2
+[ubuntu-gnutls-8.5.0] case R-reset-split all done live_before_global_cleanup=0
+[ubuntu-gnutls-8.5.0] case R-reset-split live_after_global_cleanup=0
+[ubuntu-gnutls-8.5.0] probe R-reset-split exit=0
+[ubuntu-gnutls-8.5.0] probe R-reset-split took about 0 s
+[ubuntu-gnutls-8.5.0] -- 1 cases run
+[ubuntu-gnutls-8.5.0] server-stderr: counts raw:/close-after=4 raw:/sink=5
+[current-8.23.0] libcurl /home/kishu/src/chez-curl/build/verify/current/curl-8.23.0-install/lib/libcurl.so.4 -> /home/kishu/src/chez-curl/build/verify/current/curl-8.23.0-install/lib/libcurl.so.4.8.0, headers /home/kishu/src/chez-curl/build/verify/current/curl-8.23.0-install/include
+[current-8.23.0] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[current-8.23.0] version headers=8.23.0 runtime=8.23.0 ssl=OpenSSL/3.0.13 libz=1.3 nghttp2=1.59.0 http2=1 libz_feature=1 live_after_init=0
+[current-8.23.0] server raw=39387 tls=46881 h2=39239
+[current-8.23.0] case R-reset-split:send-side-noseek:get raw done code=0 t=3.8 status=200 ver=2 conns=1 lport=41022
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw debug t=0.1 text "Reusing existing http: connection with host 127.0.0.1"
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw prereq n=1 ev=1 t=0.1 local_port=41022 answer=OK
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw debug t=0.4 header_out bytes=181 first="POST /sink?want=8388608&tag=R-reset-split.send-side-noseek HTTP/1.1"
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw debug t=4.8 data_out events=85 bytes=1392640
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw debug t=4.8 text "Send failure: Connection reset by peer"
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw debug t=4.8 text "closing connection #0"
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw done code=55 err="Failed sending data to the peer" t=4.8 status=0 ver=0 conns=0 lport=41022
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw rewind case_t get_end=3.8 post_add=104.3 post_end=109.2 get_lport=41022 post_lport=41022
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw r2 prereq_calls=1 seeks=0 reads=86 fail_t=4.8 reads_after_fail=0 new_connection=0
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw reads=86 reads_inpause=0 seeks=0 answer: (none)
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw server: req raw GET /close-after #1 conn=41022 at=72.9
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw server: close-after raw then=reset conn=41022: the next request on it is reset after 32768 body bytes
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw server: req raw POST /sink #1 conn=41022 at=175.6
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw server: reset raw /sink conn=41022 after its head and 81920 body bytes, at 3.8ms; RST
+[current-8.23.0] case R-reset-split:send-side-noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[current-8.23.0] case R-reset-split:send-side-seekok:get raw done code=0 t=0.5 status=200 ver=2 conns=1 lport=41026
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw debug t=0.1 text "Reusing existing http: connection with host 127.0.0.1"
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw prereq n=1 ev=1 t=0.1 local_port=41026 answer=OK
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw debug t=0.3 header_out bytes=181 first="POST /sink?want=8388608&tag=R-reset-split.send-side-seekok HTTP/1.1"
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw debug t=1.7 data_out events=15 bytes=245760
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw debug t=1.7 text "Send failure: Connection reset by peer"
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw debug t=1.7 text "closing connection #0"
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw done code=55 err="Failed sending data to the peer" t=1.8 status=0 ver=0 conns=0 lport=41026
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw rewind case_t get_end=0.5 post_add=101.0 post_end=102.8 get_lport=41026 post_lport=41026
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw r2 prereq_calls=1 seeks=0 reads=16 fail_t=1.7 reads_after_fail=0 new_connection=0
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw reads=16 reads_inpause=0 seeks=0 answer: (none)
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw server: req raw GET /close-after #1 conn=41026 at=181.3
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw server: close-after raw then=reset conn=41026: the next request on it is reset after 32768 body bytes
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw server: req raw POST /sink #1 conn=41026 at=282.5
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw server: reset raw /sink conn=41026 after its head and 81920 body bytes, at 1.1ms; RST
+[current-8.23.0] case R-reset-split:send-side-seekok:post raw server: count raw:/close-after=1 raw:/sink=1
+[current-8.23.0] case R-reset-split:recv-side-noseek:get raw done code=0 t=1.0 status=200 ver=2 conns=1 lport=41054
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw debug t=0.1 text "Reusing existing http: connection with host 127.0.0.1"
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw prereq n=1 ev=1 t=0.1 local_port=41054 answer=OK
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=1 t=0.2 room=65357 inpause=0 answer=16384 offset=16384
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw debug t=0.3 header_out bytes=179 first="POST /sink?want=262144&tag=R-reset-split.recv-side-noseek HTTP/1.1"
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=2 t=0.4 room=65536 inpause=0 answer=16384 offset=32768
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=3 t=0.5 room=65536 inpause=0 answer=16384 offset=49152
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=4 t=0.6 room=65536 inpause=0 answer=16384 offset=65536
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=5 t=0.7 room=65536 inpause=0 answer=16384 offset=81920
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=6 t=0.8 room=65536 inpause=0 answer=16384 offset=98304
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=7 t=0.9 room=65536 inpause=0 answer=16384 offset=114688
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=8 t=1.0 room=65536 inpause=0 answer=16384 offset=131072
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=9 t=1.1 room=65536 inpause=0 answer=16384 offset=147456
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=10 t=1.2 room=65536 inpause=0 answer=16384 offset=163840
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=11 t=1.3 room=65536 inpause=0 answer=16384 offset=180224
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=12 t=1.4 room=65536 inpause=0 answer=16384 offset=196608
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=13 t=1.5 room=65536 inpause=0 answer=16384 offset=212992
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=14 t=1.6 room=49152 inpause=0 answer=16384 offset=229376
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=15 t=1.7 room=32768 inpause=0 answer=16384 offset=245760
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw read n=16 t=1.8 room=16384 inpause=0 answer=16384 offset=262144
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw debug t=1.8 data_out events=16 bytes=262144
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw debug t=1.8 text "upload completely sent off: 262144 bytes"
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw debug t=3.0 text "Recv failure: Connection reset by peer"
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw debug t=3.0 text "Connection died, retrying a fresh connect (retry count: 1)"
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw debug t=3.0 text "shutting down connection #0"
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw debug t=3.1 text "necessary data rewind was not possible"
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw debug t=3.1 text "rewind of client reader 'cr-in' failed: 65"
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw debug t=3.1 text "Issue another request to this URL: 'http://127.0.0.1:39387/sink?want=262144&tag=R-reset-split.recv-side-noseek'"
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw done code=65 err="Send failed since rewinding of the data stream failed" t=3.1 status=0 ver=0 conns=0 lport=41054
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw rewind case_t get_end=1.0 post_add=101.6 post_end=104.7 get_lport=41054 post_lport=41054
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw r2 prereq_calls=1 seeks=0 reads=16 fail_t=3.0 reads_after_fail=0 new_connection=0
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw reads=16 reads_inpause=0 seeks=0 answer: (none)
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw server: req raw GET /close-after #1 conn=41054 at=285.7
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw server: close-after raw then=reset conn=41054: the next request on it is reset after 262144 body bytes
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw server: req raw POST /sink #1 conn=41054 at=387.2
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw server: reset raw /sink conn=41054 after its head and 262144 body bytes, at 2.3ms; RST
+[current-8.23.0] case R-reset-split:recv-side-noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[current-8.23.0] case R-reset-split:recv-side-seekok:get raw done code=0 t=0.8 status=200 ver=2 conns=1 lport=41066
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=0.1 text "Reusing existing http: connection with host 127.0.0.1"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw prereq n=1 ev=1 t=0.1 local_port=41066 answer=OK
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=1 t=0.2 room=65357 inpause=0 answer=16384 offset=16384
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=0.3 header_out bytes=179 first="POST /sink?want=262144&tag=R-reset-split.recv-side-seekok HTTP/1.1"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=2 t=0.3 room=65536 inpause=0 answer=16384 offset=32768
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=3 t=0.5 room=65536 inpause=0 answer=16384 offset=49152
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=4 t=0.6 room=65536 inpause=0 answer=16384 offset=65536
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=5 t=0.7 room=65536 inpause=0 answer=16384 offset=81920
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=6 t=0.8 room=65536 inpause=0 answer=16384 offset=98304
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=7 t=0.9 room=65536 inpause=0 answer=16384 offset=114688
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=8 t=1.0 room=65536 inpause=0 answer=16384 offset=131072
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=9 t=1.1 room=65536 inpause=0 answer=16384 offset=147456
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=10 t=1.2 room=65536 inpause=0 answer=16384 offset=163840
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=11 t=1.3 room=65536 inpause=0 answer=16384 offset=180224
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=12 t=1.4 room=65536 inpause=0 answer=16384 offset=196608
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=13 t=1.5 room=65536 inpause=0 answer=16384 offset=212992
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=14 t=1.6 room=49152 inpause=0 answer=16384 offset=229376
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=15 t=1.7 room=32768 inpause=0 answer=16384 offset=245760
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=16 t=1.8 room=16384 inpause=0 answer=16384 offset=262144
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=1.8 data_out events=16 bytes=262144
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=1.8 text "upload completely sent off: 262144 bytes"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=2.9 text "Recv failure: Connection reset by peer"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=2.9 text "Connection died, retrying a fresh connect (retry count: 1)"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=2.9 text "shutting down connection #0"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw seek n=1 t=3.0 offset=0 origin=0 answer=OK
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=3.0 text "Issue another request to this URL: 'http://127.0.0.1:39387/sink?want=262144&tag=R-reset-split.recv-side-seekok'"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=3.0 text "Hostname 127.0.0.1 was found in DNS cache"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=3.1 text "  Trying 127.0.0.1:39387..."
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=3.2 text "Established connection to 127.0.0.1 (127.0.0.1 port 39387) from 127.0.0.1 port 41078 "
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw prereq n=2 ev=2 t=3.2 local_port=41078 answer=OK
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=3.2 text "using HTTP/1.x"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=17 t=3.3 room=65357 inpause=0 answer=16384 offset=16384
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=3.4 header_out bytes=179 first="POST /sink?want=262144&tag=R-reset-split.recv-side-seekok HTTP/1.1"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=18 t=3.4 room=65536 inpause=0 answer=16384 offset=32768
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=19 t=3.6 room=65536 inpause=0 answer=16384 offset=49152
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=20 t=3.7 room=65536 inpause=0 answer=16384 offset=65536
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=21 t=3.8 room=65536 inpause=0 answer=16384 offset=81920
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=22 t=3.9 room=65536 inpause=0 answer=16384 offset=98304
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=23 t=4.0 room=65536 inpause=0 answer=16384 offset=114688
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=24 t=4.1 room=65536 inpause=0 answer=16384 offset=131072
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=25 t=4.2 room=65536 inpause=0 answer=16384 offset=147456
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=26 t=4.2 room=65536 inpause=0 answer=16384 offset=163840
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=27 t=4.3 room=65536 inpause=0 answer=16384 offset=180224
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=28 t=4.4 room=65536 inpause=0 answer=16384 offset=196608
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=29 t=4.5 room=65536 inpause=0 answer=16384 offset=212992
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=30 t=4.6 room=49152 inpause=0 answer=16384 offset=229376
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=31 t=4.7 room=32768 inpause=0 answer=16384 offset=245760
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw read n=32 t=4.8 room=16384 inpause=0 answer=16384 offset=262144
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=4.8 data_out events=16 bytes=262144
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=4.8 text "upload completely sent off: 262144 bytes"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=8.3 header_in "HTTP/1.1 200 OK"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=8.3 header_in "Content-Length: 252"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=8.3 header_in ""
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw debug t=8.3 text "Connection #1 to host 127.0.0.1:39387 left intact"
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw done code=0 t=8.3 status=200 ver=2 conns=1 lport=41078
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw rewind case_t get_end=0.8 post_add=101.4 post_end=109.7 get_lport=41066 post_lport=41078
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw r2 prereq_calls=2 seeks=1 reads=32 fail_t=2.9 reads_after_fail=16 new_connection=1
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw reads=32 reads_inpause=0 seeks=1 answer: sink raw method=POST cl=262144 te=- expect=- ct=application/x-www-form-urlencoded bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw server: req raw GET /close-after #1 conn=41066 at=391.6
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw server: close-after raw then=reset conn=41066: the next request on it is reset after 262144 body bytes
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw server: req raw POST /sink #1 conn=41066 at=492.9
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw server: reset raw /sink conn=41066 after its head and 262144 body bytes, at 2.4ms; RST
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw server: req raw POST /sink #2 conn=41078 at=496.3
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw server: sink raw method=POST cl=262144 te=- expect=- ct=application/x-www-form-urlencoded bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 arr=0.0:65357,1.0:49331,1.5:65536,2.0:65536,2.4:16384
+[current-8.23.0] case R-reset-split:recv-side-seekok:post raw server: count raw:/close-after=1 raw:/sink=2
+[current-8.23.0] case R-reset-split all done live_before_global_cleanup=0
+[current-8.23.0] case R-reset-split live_after_global_cleanup=0
+[current-8.23.0] probe R-reset-split exit=0
+[current-8.23.0] probe R-reset-split took about 0 s
+[current-8.23.0] -- 1 cases run
+[current-8.23.0] server-stderr: counts raw:/close-after=4 raw:/sink=5

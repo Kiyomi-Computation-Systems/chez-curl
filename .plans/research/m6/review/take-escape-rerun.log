@@ -1,0 +1,5 @@
+case op=some handler=returns: first read returned; source gave pieces (1 2 3); caller received pieces (1 2 3); lost ()
+case op=some handler=escapes: first read escaped; source gave pieces (1 2 3); caller received pieces (2 3); lost (1)
+case op=u8 handler=returns: first read returned; source gave pieces (1 2 3); caller received pieces (1 1 2 3); lost ()
+case op=u8 handler=escapes: first read escaped; source gave pieces (1 2 3); caller received pieces (2 3); lost (1)
+take-escape done

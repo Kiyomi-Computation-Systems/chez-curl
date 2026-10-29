@@ -171,6 +171,11 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   keyword loses to a re-export, or to a macro that takes the keyword as an
   argument. So layouts alone imports `define-ftype`, no library re-exports a
   Chez name, and layouts is held to struct forms alone.
+* A timer swept across a custom port's `read!` cannot show a keyboard interrupt
+  that escapes as a take's critical section ends: that one loses the piece the
+  take removed. A take leaves what it took in place inside its section, and
+  removes it after, the last thing before it returns; and since the producer
+  can pause in between, every look decides the resume, not the take once.
 
 **Checks and environment**
 
@@ -439,6 +444,14 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   A check that the engine holds a token reads the token, or waits past the setup.
   And a token cancelled while queued is done at once, yet counts as queued
   until the engine's next turn: read the live and transfer counts.
+* libcurl rewinds a read callback's body before its next attempt, so a
+  `PREREQFUNCTION` alone never sees a resend of a body it read from: with no
+  seek, or one that answers `CANTSEEK`, the rewind fails first, 65, or 56 on
+  7.85.0. Refuse in the seek callable, and record the reason.
+* libcurl 7.85.0 and 8.5.0 lose a write callback's refusal inside
+  `curl_easy_pause`'s replay, and end the transfer 0 without the chunk refused;
+  Ubuntu's 8.5.0 spins `curl_multi_poll` while a transfer is paused. Treat any
+  answer but 0 from `curl_easy_pause` as a failure, and pace the poll.
 
 ## Closing ritual
 

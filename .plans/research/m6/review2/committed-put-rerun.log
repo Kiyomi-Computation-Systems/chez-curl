@@ -1,0 +1,5 @@
+committed-put mode=in-hold pieces=50000 reads=99986 pauses=49986 resumes=49985 stalls=0 ms=5054.0
+committed-put mode=lent stall at piece 15834: the piece unread, the bit set, no resume queued, for 500 ms
+committed-put mode=lent stall at piece 22261: the piece unread, the bit set, no resume queued, for 500 ms
+committed-put mode=lent pieces=50000 reads=99997 pauses=49997 resumes=49996 stalls=2 ms=6093.0
+committed-put done

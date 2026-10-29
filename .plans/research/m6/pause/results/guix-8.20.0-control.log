@@ -1,0 +1,25 @@
+[guix-8.20.0] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 -> /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0, headers /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/../include
+[guix-8.20.0] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[guix-8.20.0] version headers=8.20.0 runtime=8.20.0 ssl=GnuTLS/3.8.13 libz=1.3.1 nghttp2=1.69.0 http2=1 libz_feature=1 live_after_init=0
+[guix-8.20.0] server raw=40885 tls=34135 h2=33827
+[guix-8.20.0] case D-hold-control raw done code=0 t=26.9 status=200 ver=2 conns=1 lport=35820
+[guix-8.20.0] case D-hold-control raw summary calls=520 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=16384 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[guix-8.20.0] case D-hold-control raw live base=19637 peak_during_transfer=39767 after_done=39500 after_easy_cleanup=33958
+[guix-8.20.0] case D-hold-control raw live after_multi_cleanup=0
+[guix-8.20.0] case D-hold-control tls done code=0 t=19.0 status=200 ver=2 conns=1 lport=39040
+[guix-8.20.0] case D-hold-control tls summary calls=639 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=16384 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[guix-8.20.0] case D-hold-control tls live base=19669 peak_during_transfer=42625 after_done=42358 after_easy_cleanup=36782
+[guix-8.20.0] case D-hold-control tls live after_multi_cleanup=0
+[guix-8.20.0] case D-hold-control h2 done code=0 t=18.4 status=200 ver=3 conns=1 lport=59452
+[guix-8.20.0] case D-hold-control h2 summary calls=1024 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=8388608 pattern=ok max_chunk=16375 max_before=16375 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[guix-8.20.0] case D-hold-control h2 live base=19668 peak_during_transfer=99828 after_done=99177 after_easy_cleanup=93446
+[guix-8.20.0] case D-hold-control h2 live after_multi_cleanup=0
+[guix-8.20.0] case D-hold-control all done live_before_global_cleanup=0
+[guix-8.20.0] case D-hold-control live_after_global_cleanup=0
+[guix-8.20.0] probe D-hold-control exit=0
+[guix-8.20.0] probe D-hold-control took about 0 s
+[guix-8.20.0] -- 1 cases run
+[guix-8.20.0] server-stderr: unfetched tag=D-hold-control.raw count raw:/body=1
+[guix-8.20.0] server-stderr: unfetched tag=D-hold-control.tls count tls:/body=1
+[guix-8.20.0] server-stderr: unfetched tag=D-hold-control.h2 count h2:/body=1
+[guix-8.20.0] server-stderr: counts h2:/body=1 raw:/body=1 tls:/body=1
