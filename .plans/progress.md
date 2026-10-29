@@ -102,8 +102,9 @@ close-out under **Close-outs**, newest first.
       among them. The retry probe's 40 transfers were all refused before they were queued: it
       hands each the run's CA file, which a submit refuses while Apple's LibreSSL is in use,
       and the runner set no `CURL_SSL_BACKEND`, as `make test` does. The runner now sets it on
-      macOS; owed again: `CHEZ=chez NODE="$(asdf which node)" sh
-      .plans/research/m5/retry/run.sh mac`.
+      macOS, and the rerun that day answered all 40 with 8.20.0's and 8.23.0's classes and
+      codes, an HTTP/2 `GOAWAY` a protocol error, every failure's request size `#f`, and six
+      arrivals of each request HTTP/2 refused (ADR-0022 and ADR-0026, amended).
   - **Slice 4, the request group and `http-parallel`,** is in progress on `feat/m5-slice-4`,
     stacked on slice 3's branch, whose PR #32 waits on #31.
     - **Measured first** ([`research/m5/group/`](research/m5/group/)), through `(curl)` alone, one
@@ -156,9 +157,8 @@ close-out under **Close-outs**, newest first.
       3 of 3 reruns: a timing assumption older than this slice, carried (the plan, §10).
     - **The Mac, 2026-10-29:** the group probe ran 518 to 522 ms all at once, and 5,129 to
       5,140 ms at most 2 live; `make test` passed 31 of 32, `test-group`'s 65 tests among them,
-      `test-url-location` failing only for the row it printed, now added on slice 2's branch.
-      Owed: `make test NODE="$(asdf which node)"` again with that row, which M5's end needs (the
-      plan, §9).
+      `test-url-location` failing only for the row it printed, now added on slice 2's branch;
+      rerun that day with the row, 32 of 32, the run M5's end needs (the plan, §9).
   - **Measured first** ([`research/m5/redirect-url/`](research/m5/redirect-url/)), through a C
     probe that made each transfer as the engine does, `FOLLOWLOCATION` off, on five libcurls:
     Guix's 8.20.0 in the container, and in Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with

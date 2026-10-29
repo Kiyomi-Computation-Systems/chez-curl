@@ -1,0 +1,138 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (32 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-check-floors.sps
+%%%% Starting test check-floors
+# of expected passes      375
+test: pass tests/test-check-floors.sps
+=== tests/test-check-nothreads.sps
+%%%% Starting test check-nothreads
+# of expected passes      17
+test: pass tests/test-check-nothreads.sps
+=== tests/test-check-seam.sps
+%%%% Starting test check-seam
+# of expected passes      62
+test: pass tests/test-check-seam.sps
+=== tests/test-collect-safe.sps
+%%%% Starting test collect-safe
+# of expected passes      120
+test: pass tests/test-collect-safe.sps
+=== tests/test-conditions.sps
+%%%% Starting test conditions
+# of expected passes      38
+test: pass tests/test-conditions.sps
+=== tests/test-constants.sps
+%%%% Starting test constants
+# of expected passes      627
+test: pass tests/test-constants.sps
+=== tests/test-curl-testing.sps
+%%%% Starting test curl-testing
+# of expected passes      284
+test: pass tests/test-curl-testing.sps
+=== tests/test-discovery.sps
+%%%% Starting test discovery
+# of expected passes      47
+test: pass tests/test-discovery.sps
+=== tests/test-drift.sps
+%%%% Starting test drift
+# of expected passes      55
+test: pass tests/test-drift.sps
+=== tests/test-engine.sps
+%%%% Starting test engine
+test-engine: the stalled-lookup checks run on Linux alone, so none ran here (ADR-0019, amended 2026-10-25)
+# of expected passes      48
+test: pass tests/test-engine.sps
+=== tests/test-group.sps
+%%%% Starting test group
+# of expected passes      65
+test: pass tests/test-group.sps
+=== tests/test-http-client.sps
+%%%% Starting test http-client
+# of expected passes      73
+test: pass tests/test-http-client.sps
+=== tests/test-library-loading.sps
+%%%% Starting test library-loading
+# of expected passes      74
+test: pass tests/test-library-loading.sps
+=== tests/test-load-state.sps
+%%%% Starting test load-state
+# of expected passes      12
+test: pass tests/test-load-state.sps
+=== tests/test-mailbox.sps
+%%%% Starting test mailbox
+# of expected passes      26
+test: pass tests/test-mailbox.sps
+=== tests/test-manifest.sps
+%%%% Starting test manifest
+# of expected passes      4
+test: pass tests/test-manifest.sps
+=== tests/test-memory-safety.sps
+%%%% Starting test memory-safety
+# of expected passes      89
+test: pass tests/test-memory-safety.sps
+=== tests/test-native.sps
+%%%% Starting test native
+# of expected passes      16
+test: pass tests/test-native.sps
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      88
+# of skipped tests        1
+test: pass tests/test-origin-tls.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      202
+# of skipped tests        1
+test: pass tests/test-origin.sps
+=== tests/test-redirect.sps
+%%%% Starting test redirect
+# of expected passes      68
+test: pass tests/test-redirect.sps
+=== tests/test-request.sps
+%%%% Starting test request
+# of expected passes      38
+test: pass tests/test-request.sps
+=== tests/test-require-threaded.sps
+%%%% Starting test require-threaded
+# of expected passes      69
+test: pass tests/test-require-threaded.sps
+=== tests/test-retry.sps
+%%%% Starting test retry
+# of expected passes      81
+test: pass tests/test-retry.sps
+=== tests/test-transfer-tls.sps
+%%%% Starting test transfer-tls
+# of expected passes      82
+test: pass tests/test-transfer-tls.sps
+=== tests/test-transfer.sps
+%%%% Starting test transfer
+# of expected passes      225
+test: pass tests/test-transfer.sps
+=== tests/test-unsupported.sps
+%%%% Starting test unsupported
+# of expected passes      32
+test: pass tests/test-unsupported.sps
+=== tests/test-url-location.sps
+%%%% Starting test url-location
+# of expected passes      224
+test: pass tests/test-url-location.sps
+=== tests/test-url-parts.sps
+%%%% Starting test url-parts
+# of expected passes      160
+test: pass tests/test-url-parts.sps
+=== tests/test-url.sps
+%%%% Starting test url
+# of expected passes      145
+test: pass tests/test-url.sps
+=== tests/test-variadic.sps
+%%%% Starting test variadic
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 1: done, the first done at 1020 ms, both at 2043 ms
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 2: done, the first done at 1020 ms, both at 1020 ms
+# of expected passes      30
+test: pass tests/test-variadic.sps
+=== tests/test-verify.sps
+%%%% Starting test verify
+# of expected passes      21
+test: pass tests/test-verify.sps
+test: ran 32, passed 32, failed 0, hung 0
