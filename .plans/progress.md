@@ -6,171 +6,25 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **Milestone:** M5, the high level (brief §8), per the [M5 plan](2026-10-27-m5-plan.md),
-  merged as PR #29 (`a66ef78`). Four slices: the session and the verbs; redirects; retries; the
-  request group and `http-parallel`.
-  - **Slice 1, the session and the verbs:** merged as PR #30 (`d0dd8e9`); its close-out is
-    below.
-  - **Slice 2, redirects,** is in progress on `feat/m5-slice-2`.
-    - **Measured first** ([`research/m5/location/`](research/m5/location/)), on the five Linux
-      libcurls: each of 64 `Location` cases, made by the C probe and through an engine with
-      chez-curl's own header reading, agrees byte for byte, its resolution among it; setting a
-      fragment part stores its bytes unchecked, a space and 0x01 raw, and moves its hex case
-      by version, where the URL written and parsed whole answers alike; and `localhost`
-      reaches the origin on all five (ADR-0008, amended 2026-10-28).
-    - **Decided by the maintainer, 2026-10-28,** each the recommended option: a fragment is set
-      by writing the URL and parsing it whole, a header's bytes encoded first
-      ([ADR-0029](decisions/0029-fragment-written-then-parsed-whole.md), new); and, after the
-      review below, a `Location`'s bytes are encoded the same way before they are resolved
-      (ADR-0029, amended).
-    - **Built:** `(curl)` gained `curl-url-resolve`, a string or a header's bytes, and
-      `curl-url-with-fragment`, held by `test-url-location`, 222 tests, and its own rows file;
-      and `curl-url-part` reads `zoneid`. `(http-client)` follows redirects by the plan's §3.4:
-      the `redirects` and `allow-downgrade` keys, `&http-redirect-error`, the rules in the
-      exchange's core, the history, and the shell following each redirect with the time left.
-      `tests/origin.mjs` gained `/raw/location`, a `Location` written from its query's bytes,
-      held by `test-origin`; `test-redirect`, 68 tests, holds the rules, live and by tables.
-      README.org says what follows a redirect.
-    - **Mutants:** 9 of mine on the URL functions, 9 on the redirect rules and 6 on the review's
-      fixes, and the builder's 67, each failing a named test.
-    - **Reviewed** (Opus, read-only): no blocker, two majors and nine minors. The majors: an
-      absolute `Location` with a Latin-1 byte was refused as `not-utf-8` where a relative one
-      was followed, which the maintainer settled by encoding a `Location`'s bytes; and the
-      records still called a bytevector reference the UTF-8 rule's second exception, which
-      the encoding makes none. Among the minors, each fixed and tested: two zones of one IPv6
-      address read as one host, so credentials crossed them; `Expect` survived onto a request
-      with no body; three rules no test failed without; and three records' claims, one a
-      count, one backed by no kept log.
-    - **Checks,** on the final tree: in the container, `make test` 30 of 30 and check-seam (21
-      libraries); in Docker, the floor (7.85.0), main (8.5.0), gnutls and current (8.23.0)
-      lanes 30 of 30 each, and the memory lane 30 of 30, with `check-memory-gate` 33 of 33.
-      That full run failed `test-url-location` on 7.85.0 and 8.5.0 and under Valgrind, every
-      other suite passing: its test that a string and bytes resolve alike held 0x01 and 0x7F,
-      which a string sends raw and those versions refuse. I had run the suite after the
-      encoding change in the container alone. The test now holds printable ASCII, and the suite
-      passed on all five lanes and under Valgrind.
-    - **The Mac, 2026-10-29:** the maintainer ran the probes and `make test` on
-      `feat/m5-slice-4`. All 64 `Location` cases agree there, `localhost` reaches 127.0.0.1, the
-      fragment probe and the 45 encoded values answer as 8.5.0's, and the zone IDs as 7.85.0's
-      and 8.5.0's; `test-url-location` printed 8.5.0's answers as its 8.7.1 row, now added on
-      this branch (ADR-0008 and ADR-0029, amended).
-  - **Slice 3, retries,** is in progress on `feat/m5-slice-3`, stacked on slice 2's branch,
-    whose PR #31 waits for the Mac's runs.
-    - **Measured first** ([`research/m5/retry/`](research/m5/retry/)), through an engine per
-      transfer against a probe server of plaintext, TLS and HTTP/2 faces, on the five Linux
-      libcurls: the request size is 0 exactly when nothing was sent, on every face; a close or
-      a reset is send-receive and a stall a timeout on all five; an HTTP/2 `GOAWAY` is
-      send-receive on 8.5.0 alone, a protocol error elsewhere; and libcurl resends a stream
-      HTTP/2 refused five times, a `post` among them (ADR-0022 and ADR-0026, amended
-      2026-10-28).
-    - **Built:** `make-http-retry` and the `retry` key; the rules in the exchange's core, the
-      backoff, full jitter and `Retry-After` in RFC 9110's three date forms; each session's
-      time-seeded generator under a mutex of its own; the shell's wait, a take from an empty
-      mailbox; `/raw/retry` and `/raw/attempts` at the origin; check-seam's two generator names,
-      kept to `(http-client private call)`; `test-retry`, 80 tests. `(curl)` gained
-      `curl-token-outcome`, a done token's outcome as data (ADR-0021, amended).
-    - **Reviewed three times** (Opus, read-only), each round's fixes reviewed after them:
-      - the first review: one blocker, a `&curl-error` the caller's interrupt handler raised
-        during the await read as the transfer's failure, so a `post` was resent while the first
-        still ran; one major, a retry taken with almost no time left, which lost the response
-        it retried; and ten minors, each fixed or recorded;
-      - the scoped review of the fixes: two new majors, the blocker's fix re-awaiting the token
-        inside its guard's clause, where a handler's raise was lost or misread (100 of 100 calls
-        in an assertion under a storm of raises), and "ran out" raising a failure that said
-        nothing was sent for a retry that had sent its request; and a minor, a retried 3xx;
-      - the narrow review of round 2: four minors, a timing margin, an overclaiming sentence
-        and two test gaps, each fixed.
-    - **Decided by the maintainer, 2026-10-28,** each the recommended option: a retry that runs
-      out of time answers what it retried, but only when the retry sent nothing (ADR-0026,
-      amended twice); a policy retries statuses from 400 to 599 alone; and `(curl)` exports
-      `curl-token-outcome`, which the drive reads after an unguarded wait (ADR-0021, amended).
-    - **Mutants:** the builder's 61, 13 and 5 over its three rounds, and 8 of mine, 4 on the
-      retry rules, 2 on `curl-token-outcome`, 1 on the kept outcome and 1 on the close test, each
-      failing a named test.
-    - **Checks,** on the final tree: in the container, `make test` 31 of 31 and check-seam (21
-      libraries); in Docker, the floor (7.85.0), main (8.5.0), gnutls and current (8.23.0)
-      lanes 31 of 31 each and the memory lane 31 of 31, with `check-memory-gate` 33 of 33, on
-      round 2's tree; then, after the narrow review's fixes, `test-retry`, `test-mailbox` and
-      `test-library-loading` on all five lanes, and `test-retry` under Valgrind 3 of 3. Round
-      2's tree failed `test-retry` once under Valgrind, on the very margin the narrow review
-      had flagged, the TLS stall's first attempt; it was widened.
-    - **The review's probes are kept** ([`research/m5/retry-review/`](research/m5/retry-review/)),
-      run before and after the second fix round: before, each of four storms lost 24 to 100
-      of the handler's raises, and two ended 22 and 100 of 100 calls in assertions; after,
-      none.
-    - **The Mac, 2026-10-29:** `make test` passed `test-retry`'s 81 tests there, its 8.7.1 rows
-      among them. The retry probe's 40 transfers were all refused before they were queued: it
-      hands each the run's CA file, which a submit refuses while Apple's LibreSSL is in use,
-      and the runner set no `CURL_SSL_BACKEND`, as `make test` does. The runner now sets it on
-      macOS, and the rerun that day answered all 40 with 8.20.0's and 8.23.0's classes and
-      codes, an HTTP/2 `GOAWAY` a protocol error, every failure's request size `#f`, and six
-      arrivals of each request HTTP/2 refused (ADR-0022 and ADR-0026, amended).
-  - **Slice 4, the request group and `http-parallel`,** is in progress on `feat/m5-slice-4`,
-    stacked on slice 3's branch, whose PR #32 waits on #31.
-    - **Measured first** ([`research/m5/group/`](research/m5/group/)), through `(curl)` alone, one
-      engine and one mailbox per group, 20 drips of about 500 ms, 3 runs each, on the five Linux
-      libcurls:
-      - all at once, the group ended in 506 to 516 ms; at most 2 live, in 5,063 to 5,080 ms;
-      - under the memory gate's Valgrind, on 8.20.0 and 8.5.0: 547 to 716 ms, and 5,112 to
-        5,145 ms.
-
-      So the plan's bounds hold under Valgrind too, and a suite need not know it runs there
-      (the plan, §7.1).
-    - **Built:** `call-with-request-group`, `go`, `http-await`, `http-pending?`,
-      `http-pending-done?`, `http-pending-cancel`, `http-parallel` and `&http-group-error`, by
-      the plan's §3.7 and the gaps its brief and reviews filled (§3.7, as built): the group's
-      record changed only in critical sections that wait for no transfer, each token stepped
-      once from a live set, slots and a FIFO queue on each call's clock, and the join's two
-      winds. `(curl)` gained `curl-request-check`. `tests/origin.mjs` gained `/raw/hold` and
-      `/raw/most`, held by `test-origin`; `test-group` holds 65 tests. On the final tree, 20
-      calls of 500 ms ended in 508 to 512 ms natively and 553 to 764 under the memory gate's
-      Valgrind, and at a limit of 2 in 5,043 to 5,055 and 5,122 to 5,128 ms, 3 runs each
-      ([`research/m5/group/timing/`](research/m5/group/timing/)). README.org says how calls run
-      at once.
-    - **Decided by the maintainer, 2026-10-28,** the recommended option: `http-parallel` checks
-      every spec before any submit by a new `(curl)` export, `curl-request-check`, a submit's
-      own checks without the submit, so the scheme rule keeps one owner and the environment's
-      refusal comes before the batch too (ADR-0023, amended). The builder had built `(curl)`'s
-      URL condition through the record layer instead.
-    - **Reviewed three times** (Opus, read-only), each round's fixes reviewed after them:
-      - the adversarial review: no blocker, three majors and eight minors. The majors: a raise
-        inside a call's critical section stranded the call, so the join and every await hung;
-        and no test held an escape from the join's own wait, nor the turn's sections, each
-        shown by a surviving mutant. Among the minors: a cancel's exemption from the join's raise
-        depended on whether a turn had seen the failure;
-      - the scoped review of the fixes: one major, a Chez engine's expiry then its resume let
-        `http-parallel` enter and submit calls into its closed group, then fail on a cancel's
-        answer, and let `go` enter a call there; and eight minors, four of the five surviving
-        mutants among them, shown killable;
-      - the narrow review of round 2: six minors, `go`'s `closed` raised inside its entry's
-        section, where a handler ran with interrupts off, among them.
-    - **Mutants:** the builder's campaign, 111 rerun on the final tree, kills 110; the one
-      survivor mutates a branch no path reaches, now an assertion. Of mine, 3 of the first tree
-      (one survived: a queued call's deadline missed by up to 100 ms), 3 on `curl-request-check`
-      and 2 of round 2 (both survived, each a documented outcome no test pinned), each now
-      failing a named test.
-    - **Checks,** on the final tree: in the container, `make test` 32 of 32 and check-seam (21
-      libraries), and `test-group` under the memory gate 3 of 3, 65 tests each; in Docker, the
-      floor (7.85.0), main (8.5.0), gnutls and current (8.23.0) lanes 32 of 32 each, and the
-      memory lane 32 of 32, with `check-memory-gate` 33 of 33. Round 2's lanes failed
-      `test-mailbox`'s deliver-escape child once on the floor lane, under load, which then passed
-      3 of 3 reruns: a timing assumption older than this slice, carried (the plan, §10).
-    - **The Mac, 2026-10-29:** the group probe ran 518 to 522 ms all at once, and 5,129 to
-      5,140 ms at most 2 live; `make test` passed 31 of 32, `test-group`'s 65 tests among them,
-      `test-url-location` failing only for the row it printed, now added on slice 2's branch;
-      rerun that day with the row, 32 of 32, the run M5's end needs (the plan, §9).
-  - **Measured first** ([`research/m5/redirect-url/`](research/m5/redirect-url/)), through a C
-    probe that made each transfer as the engine does, `FOLLOWLOCATION` off, on five libcurls:
-    Guix's 8.20.0 in the container, and in Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with
-    GnuTLS, and 8.23.0, 62 cases each. `CURLINFO_REDIRECT_URL` moves with the version: 7.85.0
+- **Milestone:** M6, streaming bodies and backpressure (brief §8): both directions,
+  `CURL_WRITEFUNC_PAUSE` and `curl_easy_pause`, caller code never on the engine's thread; and
+  `call-with-response-port`, which M5 carried (the M5 plan, §10). No plan yet: its plan comes
+  first, measured where it can be.
+- **M5, the high level:** **done on 2026-10-29.** Its four slices are merged (PRs #30 to #33),
+  per the [M5 plan](2026-10-27-m5-plan.md), merged as PR #29 (`a66ef78`), and the Mac has run
+  `make test` on slice 4, 32 of 32 (the M5 plan, §9). Their close-outs are below.
+  - **The plan measured first** ([`research/m5/redirect-url/`](research/m5/redirect-url/)),
+    through a C probe that made each transfer as the engine does, `FOLLOWLOCATION` off, on five
+    libcurls: Guix's 8.20.0 in the container, and in Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL
+    and with GnuTLS, and 8.23.0, 62 cases each. `CURLINFO_REDIRECT_URL` moves with the version: 7.85.0
     and 8.5.0 give it for a 3xx alone, 8.20.0 and 8.23.0 for any status with a `Location`;
     8.23.0 drops credentials from it; and every version hands back unparsed what `curl_url_set`
     refuses. Where it is a parsed URL, it is `curl_url_set`'s resolution of the first
     `Location`. So M5 resolves that header's bytes itself (ADR-0008 and ADR-0023, amended
     2026-10-27).
-  - **Decided by the maintainer, 2026-10-27,** each the recommended option: the verbs carry the
-    `http-` prefix; every call takes an explicit session; a body is bytes, a string or a form,
-    with `params` for the query, and no JSON
+  - **The plan's decisions, by the maintainer, 2026-10-27,** each the recommended option: the
+    verbs carry the `http-` prefix; every call takes an explicit session; a body is bytes, a
+    string or a form, with `params` for the query, and no JSON
     ([ADR-0025](decisions/0025-the-high-levels-surface.md), new); retries are off unless a
     session or a call asks ([ADR-0026](decisions/0026-retries-off-unless-asked.md), new); and,
     after the review below, a redirect from `https` to `http` is refused unless the caller
@@ -186,6 +40,13 @@ close-out under **Close-outs**, newest first.
     dropped across origins; and the downgrade, put to the maintainer. I checked its citations
     in the code and in curl's source, and reran its probes, which are kept in
     [`research/m5/review/`](research/m5/review/).
+  - **Carried past M5** (the M5 plan, §10): why a timeout's 28 came 1,014 ms late once
+    (ADR-0019); the stall checks on macOS; the Mac's Node not exiting when its FIFO stdin
+    closes; a curl bug report on 8.23.0's dead-connection reuse; Apple's
+    `OPENSSL_X509_TEA_DISABLE=1` (ADR-0024); slice 1's guard around a call's request building,
+    which turns a handler's continuable raise there into a compounded one, and an engine's
+    expiry there into `(curl)`'s re-entry refusal; `test-mailbox`'s deliver-escape child, which
+    failed once under load; and CI has still never run.
 - **M4, the public records and the asynchronous API:** **done on 2026-10-27.** Its four slices
   are merged (PRs #25 to #28), per the [M4 plan](2026-10-26-m4-plan.md), and the Mac has run
   slice 4 (the M4 plan, §9), on `main` at `a66ef78`: `make test` passed 25 of 26 and printed
@@ -270,6 +131,206 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-29 — M5 slice 4: the request group and `http-parallel` (PR #33, `3f32151`)
+
+- **Measured first** ([`research/m5/group/`](research/m5/group/)), through `(curl)` alone, one
+  engine and one mailbox per group, 20 drips of about 500 ms, 3 runs each, on the five Linux
+  libcurls:
+  - all at once, the group ended in 506 to 516 ms; at most 2 live, in 5,063 to 5,080 ms;
+  - under the memory gate's Valgrind, on 8.20.0 and 8.5.0: 547 to 716 ms, and 5,112 to
+    5,145 ms.
+
+  So the plan's bounds hold under Valgrind too, and a suite need not know it runs there
+  (the plan, §7.1).
+- **Built:** `call-with-request-group`, `go`, `http-await`, `http-pending?`,
+  `http-pending-done?`, `http-pending-cancel`, `http-parallel` and `&http-group-error`, by
+  the plan's §3.7 and the gaps its brief and reviews filled (§3.7, as built): the group's
+  record changed only in critical sections that wait for no transfer, each token stepped
+  once from a live set, slots and a FIFO queue on each call's clock, and the join's two
+  winds. `(curl)` gained `curl-request-check`. `tests/origin.mjs` gained `/raw/hold` and
+  `/raw/most`, held by `test-origin`; `test-group` holds 65 tests. On the final tree, 20
+  calls of 500 ms ended in 508 to 512 ms natively and 553 to 764 under the memory gate's
+  Valgrind, and at a limit of 2 in 5,043 to 5,055 and 5,122 to 5,128 ms, 3 runs each
+  ([`research/m5/group/timing/`](research/m5/group/timing/)). README.org says how calls run
+  at once.
+- **Decided by the maintainer, 2026-10-28,** the recommended option: `http-parallel` checks
+  every spec before any submit by a new `(curl)` export, `curl-request-check`, a submit's
+  own checks without the submit, so the scheme rule keeps one owner and the environment's
+  refusal comes before the batch too (ADR-0023, amended). The builder had built `(curl)`'s
+  URL condition through the record layer instead.
+- **Reviewed three times** (Opus, read-only), each round's fixes reviewed after them:
+  - the adversarial review: no blocker, three majors and eight minors. The majors: a raise
+    inside a call's critical section stranded the call, so the join and every await hung;
+    and no test held an escape from the join's own wait, nor the turn's sections, each
+    shown by a surviving mutant. Among the minors: a cancel's exemption from the join's raise
+    depended on whether a turn had seen the failure;
+  - the scoped review of the fixes: one major, a Chez engine's expiry then its resume let
+    `http-parallel` enter and submit calls into its closed group, then fail on a cancel's
+    answer, and let `go` enter a call there; and eight minors, four of the five surviving
+    mutants among them, shown killable;
+  - the narrow review of round 2: six minors, `go`'s `closed` raised inside its entry's
+    section, where a handler ran with interrupts off, among them.
+- **Mutants:** the builder's campaign, 111 rerun on the final tree, kills 110; the one
+  survivor mutates a branch no path reaches, now an assertion. Of mine, 3 of the first tree
+  (one survived: a queued call's deadline missed by up to 100 ms), 3 on `curl-request-check`
+  and 2 of round 2 (both survived, each a documented outcome no test pinned), each now
+  failing a named test.
+- **Checks,** on the final tree: in the container, `make test` 32 of 32 and check-seam (21
+  libraries), and `test-group` under the memory gate 3 of 3, 65 tests each; in Docker, the
+  floor (7.85.0), main (8.5.0), gnutls and current (8.23.0) lanes 32 of 32 each, and the
+  memory lane 32 of 32, with `check-memory-gate` 33 of 33. Round 2's lanes failed
+  `test-mailbox`'s deliver-escape child once on the floor lane, under load, which then passed
+  3 of 3 reruns: a timing assumption older than this slice, carried (the plan, §10).
+- **The Mac ran it, 2026-10-29:** the group probe ran 518 to 522 ms all at once, and 5,129 to
+  5,140 ms at most 2 live; `make test` passed 31 of 32, `test-group`'s 65 tests among them,
+  `test-url-location` failing only for the row it printed, added on slice 2's branch; rerun
+  that day with the row, 32 of 32, the run M5's end needs (the plan, §9).
+- **Four subagents:**
+
+  | Agent | Model | Tokens | Time |
+  |---|---|---|---|
+  | builder, the build and three fix rounds | Opus | 632k, 815k, 959k and 222k, as each round reported | 163 + 135 + 184 + 191 min |
+  | adversarial review | Opus | 358k | 32 min |
+  | scoped review of the fixes | Opus | 317k | 24 min |
+  | narrow review of round 2 | Opus | 275k | 23 min |
+- **Learned:**
+  - measuring first overturned the plan's premise: Valgrind barely slows a group whose time is
+    the origin's waiting, so the slice needed no way for a suite to know where it runs;
+  - a gap my brief filled, "a cancel of an ended call does nothing", contradicted the plan's
+    "a call the caller cancelled raises nothing there" whenever a turn had seen the failure:
+    the adversarial review caught a flaw in the brief, as it is there to;
+  - a sweep held by invariants alone accepts any outcome the invariants allow: two of my
+    mutants, a documented outcome swapped for another, passed it, and needed deterministic
+    tests;
+  - most findings were in the claims around the code, the docs' waits and tie order among
+    them, not in the code;
+  - my lane copy left out `.plans/`, which `test-collect-safe` reads, and three lanes failed for
+    it: a copy for the lanes holds what the tree holds.
+
+### 2026-10-29 — M5 slice 3: retries (PR #32, `dd5e7fe`)
+
+- **Measured first** ([`research/m5/retry/`](research/m5/retry/)), through an engine per
+  transfer against a probe server of plaintext, TLS and HTTP/2 faces, on the five Linux
+  libcurls: the request size is 0 exactly when nothing was sent, on every face; a close or
+  a reset is send-receive and a stall a timeout on all five; an HTTP/2 `GOAWAY` is
+  send-receive on 8.5.0 alone, a protocol error elsewhere; and libcurl resends a stream
+  HTTP/2 refused five times, a `post` among them (ADR-0022 and ADR-0026, amended
+  2026-10-28).
+- **Built:** `make-http-retry` and the `retry` key; the rules in the exchange's core, the
+  backoff, full jitter and `Retry-After` in RFC 9110's three date forms; each session's
+  time-seeded generator under a mutex of its own; the shell's wait, a take from an empty
+  mailbox; `/raw/retry` and `/raw/attempts` at the origin; check-seam's two generator names,
+  kept to `(http-client private call)`; `test-retry`, 81 tests. `(curl)` gained
+  `curl-token-outcome`, a done token's outcome as data (ADR-0021, amended).
+- **Reviewed three times** (Opus, read-only), each round's fixes reviewed after them:
+  - the first review: one blocker, a `&curl-error` the caller's interrupt handler raised
+    during the await read as the transfer's failure, so a `post` was resent while the first
+    still ran; one major, a retry taken with almost no time left, which lost the response
+    it retried; and ten minors, each fixed or recorded;
+  - the scoped review of the fixes: two new majors, the blocker's fix re-awaiting the token
+    inside its guard's clause, where a handler's raise was lost or misread (100 of 100 calls
+    in an assertion under a storm of raises), and "ran out" raising a failure that said
+    nothing was sent for a retry that had sent its request; and a minor, a retried 3xx;
+  - the narrow review of round 2: four minors, a timing margin, an overclaiming sentence
+    and two test gaps, each fixed.
+- **Decided by the maintainer, 2026-10-28,** each the recommended option: a retry that runs
+  out of time answers what it retried, but only when the retry sent nothing (ADR-0026,
+  amended twice); a policy retries statuses from 400 to 599 alone; and `(curl)` exports
+  `curl-token-outcome`, which the drive reads after an unguarded wait (ADR-0021, amended).
+- **Mutants:** the builder's 61, 13 and 5 over its three rounds, and 8 of mine, 4 on the
+  retry rules, 2 on `curl-token-outcome`, 1 on the kept outcome and 1 on the close test, each
+  failing a named test.
+- **Checks,** on the final tree: in the container, `make test` 31 of 31 and check-seam (21
+  libraries); in Docker, the floor (7.85.0), main (8.5.0), gnutls and current (8.23.0)
+  lanes 31 of 31 each and the memory lane 31 of 31, with `check-memory-gate` 33 of 33, on
+  round 2's tree; then, after the narrow review's fixes, `test-retry`, `test-mailbox` and
+  `test-library-loading` on all five lanes, and `test-retry` under Valgrind 3 of 3. Round
+  2's tree failed `test-retry` once under Valgrind, on the very margin the narrow review
+  had flagged, the TLS stall's first attempt; it was widened.
+- **The review's probes are kept** ([`research/m5/retry-review/`](research/m5/retry-review/)),
+  run before and after the second fix round: before, each of four storms lost 24 to 100
+  of the handler's raises, and two ended 22 and 100 of 100 calls in assertions; after,
+  none.
+- **The Mac ran it, 2026-10-29:** `make test` passed `test-retry`'s 81 tests there, its 8.7.1
+  rows among them. The retry probe's 40 transfers were all refused before they were queued: it
+  hands each the run's CA file, which a submit refuses while Apple's LibreSSL is in use,
+  and the runner set no `CURL_SSL_BACKEND`, as `make test` does. The runner now sets it on
+  macOS, and the rerun that day answered all 40 with 8.20.0's and 8.23.0's classes and
+  codes, an HTTP/2 `GOAWAY` a protocol error, every failure's request size `#f`, and six
+  arrivals of each request HTTP/2 refused (ADR-0022 and ADR-0026, amended).
+- **Four subagents:**
+
+  | Agent | Model | Tokens | Time |
+  |---|---|---|---|
+  | builder, the build and two fix rounds | Opus | 671k | 46 + 24 + 13 min |
+  | adversarial review | Opus | 357k | 22 min |
+  | scoped review of the fixes | Opus | 284k | 39 min |
+  | narrow review of round 2 | Opus | 247k | 23 min |
+- **Learned:**
+  - a guard around a wait catches the caller's own raises too, and so does a second wait in its
+    clause: the blocker's first fix carried the flaw into the clause, and only the scoped review
+    of the fix found it (traps.md);
+  - a probe for the Mac must carry `make test`'s environment, not only its commands: the
+    retry runner set no TLS backend, and its first run there measured nothing.
+
+### 2026-10-29 — M5 slice 2: redirects (PR #31, `7c6de58`)
+
+- **Measured first** ([`research/m5/location/`](research/m5/location/)), on the five Linux
+  libcurls: each of 64 `Location` cases, made by the C probe and through an engine with
+  chez-curl's own header reading, agrees byte for byte, its resolution among it; setting a
+  fragment part stores its bytes unchecked, a space and 0x01 raw, and moves its hex case
+  by version, where the URL written and parsed whole answers alike; and `localhost`
+  reaches the origin on all five (ADR-0008, amended 2026-10-28).
+- **Decided by the maintainer, 2026-10-28,** each the recommended option: a fragment is set
+  by writing the URL and parsing it whole, a header's bytes encoded first
+  ([ADR-0029](decisions/0029-fragment-written-then-parsed-whole.md), new); and, after the
+  review below, a `Location`'s bytes are encoded the same way before they are resolved
+  (ADR-0029, amended).
+- **Built:** `(curl)` gained `curl-url-resolve`, a string or a header's bytes, and
+  `curl-url-with-fragment`, held by `test-url-location`, 224 tests, and its own rows file;
+  and `curl-url-part` reads `zoneid`. `(http-client)` follows redirects by the plan's §3.4:
+  the `redirects` and `allow-downgrade` keys, `&http-redirect-error`, the rules in the
+  exchange's core, the history, and the shell following each redirect with the time left.
+  `tests/origin.mjs` gained `/raw/location`, a `Location` written from its query's bytes,
+  held by `test-origin`; `test-redirect`, 68 tests, holds the rules, live and by tables.
+  README.org says what follows a redirect.
+- **Mutants:** 9 of mine on the URL functions, 9 on the redirect rules and 6 on the review's
+  fixes, and the builder's 67, each failing a named test.
+- **Reviewed** (Opus, read-only): no blocker, two majors and nine minors. The majors: an
+  absolute `Location` with a Latin-1 byte was refused as `not-utf-8` where a relative one
+  was followed, which the maintainer settled by encoding a `Location`'s bytes; and the
+  records still called a bytevector reference the UTF-8 rule's second exception, which
+  the encoding makes none. Among the minors, each fixed and tested: two zones of one IPv6
+  address read as one host, so credentials crossed them; `Expect` survived onto a request
+  with no body; three rules no test failed without; and three records' claims, one a
+  count, one backed by no kept log.
+- **Checks,** on the final tree: in the container, `make test` 30 of 30 and check-seam (21
+  libraries); in Docker, the floor (7.85.0), main (8.5.0), gnutls and current (8.23.0)
+  lanes 30 of 30 each, and the memory lane 30 of 30, with `check-memory-gate` 33 of 33.
+  That full run failed `test-url-location` on 7.85.0 and 8.5.0 and under Valgrind, every
+  other suite passing: its test that a string and bytes resolve alike held 0x01 and 0x7F,
+  which a string sends raw and those versions refuse. I had run the suite after the
+  encoding change in the container alone. The test now holds printable ASCII, and the suite
+  passed on all five lanes and under Valgrind.
+- **The Mac ran it, 2026-10-29,** on `feat/m5-slice-4`, which held this slice: all 64
+  `Location` cases agree there, `localhost` reaches 127.0.0.1, the fragment probe and the 45
+  encoded values answer as 8.5.0's, and the zone IDs as 7.85.0's and 8.5.0's;
+  `test-url-location` printed 8.5.0's answers as its 8.7.1 row, added before the merge
+  (ADR-0008 and ADR-0029, amended).
+- **Two subagents:**
+
+  | Agent | Model | Tokens | Time |
+  |---|---|---|---|
+  | builder | Opus | 452k | 41 min |
+  | adversarial review | Opus | 412k | 21 min |
+- **Learned:**
+  - the measurement held every Latin-1 byte in a relative reference, and the review found
+    the absolute case answered otherwise: a measurement's cases are a claim about coverage, and
+    an asymmetry by position needs both positions;
+  - after the encoding change I reran `test-url-location` in the container alone, and the full
+    lanes then failed it on 7.85.0 and 8.5.0: a change of behaviour reruns every lane it can
+    reach, not the one at hand.
 
 ### 2026-10-28 — M5 slice 1: the session and the verbs (PR #30, `d0dd8e9`)
 
