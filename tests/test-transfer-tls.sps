@@ -69,8 +69,10 @@
 ;;;     emptied after the load, nine cases: by the file the libcurl is
 ;;;     mapped from, read here apart from the native layer's reading, a
 ;;;     libcurl under /gnu/store/ refuses a CA file, verification on, at
-;;;     submit, naming each variable set at the load; elsewhere both are
-;;;     ignored, and the transfer answers by its CA file. The library's
+;;;     submit, naming each variable set at the load, and curl-request-check
+;;;     refuses the same request alike, before it is submitted; elsewhere
+;;;     both are ignored, the check passes, and the transfer answers by its
+;;;     CA file. The library's
 ;;;     table, guix-ca-overrides, is held to this suite's copy, and
 ;;;     ca-overridden? by file, path and version; a Guix libcurl with no
 ;;;     row fails, named, its override unmeasured (ADR-0018, decision 5;
@@ -723,27 +725,37 @@
                       (cddddr transfer-library)))))
     (if d (cdr (or (assq 'fields (cddr d)) '(fields no-fields))) (list 'no-plan-record transfer-library))))
 
-;; The way from a request to set-tls-options!: prepare-transfer copies the
-;; CA file, on the caller's thread, into the plan's ninth field, and the
-;; verification into its tenth; set-transfer-options! hands set-tls-options!
-;; those two fields. A plan handed the caller's own string would be sent
-;; whatever another thread made it after the check.
-(test-equal "prepare-transfer hands the plan its snapshot: its let* binds ca-file to (ca-file-copy 'curl-submit (curl-request-ca-file request)), it checks that copy as (check-ca-environment 'curl-submit ca-file (curl-request-verify request)), make-plan takes ca-file and (curl-request-verify request) as its ninth and tenth arguments, the plan's ninth and tenth fields are ca-file and verify, and ca-file stands three times in prepare-transfer, that binding, that check and make-plan's argument"
-  '((ca-file (ca-file-copy 'curl-submit (curl-request-ca-file request)))
-    (check-ca-environment 'curl-submit ca-file (curl-request-verify request))
+;; The way from a request to set-tls-options!: request-checks, the submit's
+;; checks, which prepare-transfer calls as curl-submit and
+;; curl-request-check as itself (ADR-0023, amended 2026-10-28), copies the CA
+;; file, on the caller's thread, checks that copy and answers it;
+;; prepare-transfer puts it in the plan's ninth field, and the verification
+;; in its tenth; set-transfer-options! hands set-tls-options! those two
+;; fields. A plan handed the caller's own string would be sent whatever
+;; another thread made it after the check.
+(test-equal "the checks hand the plan their snapshot: request-checks' let* binds ca-file to (ca-file-copy who (curl-request-ca-file request)), checks that copy as (check-ca-environment who ca-file (curl-request-verify request)) and answers it, ca-file standing three times there; prepare-transfer takes it from (request-checks 'curl-submit request), make-plan takes ca-file and (curl-request-verify request) as its ninth and tenth arguments, ca-file standing twice there, and the plan's ninth and tenth fields are ca-file and verify"
+  '((ca-file (ca-file-copy who (curl-request-ca-file request)))
+    (check-ca-environment who ca-file (curl-request-verify request))
+    (values url fields ca-file)
+    3
+    (request-checks 'curl-submit request)
     (ca-file (curl-request-verify request))
-    ((immutable ca-file) (immutable verify))
-    3)
-  (let* ((d (transfer-definition 'prepare-transfer))
-         (bindings (or (let*-bindings d) '()))
+    2
+    ((immutable ca-file) (immutable verify)))
+  (let* ((checks (transfer-definition 'request-checks))
+         (d (transfer-definition 'prepare-transfer))
+         (bindings (or (let*-bindings checks) '()))
          (made (form-headed 'make-plan d)))
     (list (assq 'ca-file bindings)
-          (form-headed 'check-ca-environment d)
+          (form-headed 'check-ca-environment checks)
+          (form-headed 'values checks)
+          (symbol-count 'ca-file checks)
+          (form-headed 'request-checks d)
           (if (and made (> (length made) 10)) (list (list-ref made 9) (list-ref made 10)) (list 'make-plan made))
+          (symbol-count 'ca-file d)
           (if (and (list? plan-fields) (> (length plan-fields) 9))
               (list (list-ref plan-fields 8) (list-ref plan-fields 9))
-              plan-fields)
-          (symbol-count 'ca-file d))))
+              plan-fields))))
 
 ;; form-kind : Any -> Symbol
 ;; A form of set-transfer-options!, by what it does: pins, the pins' call;
@@ -851,6 +863,17 @@
    "exec 3>&2 2>/dev/null\n"
    "( exec \"$t\" -s KILL " (number->string child-bound) " \"$@\" </dev/null 2>&3 3>&- )\n"
    "exit $?\n"))
+
+;; checked-as : Answer -> Answer
+;; What the child's curl-request-check answers beside a transfer that
+;; answered ANSWER: the same refusal when a submit's check refused it,
+;; (request-refused ...), since the two share their checks (ADR-0023,
+;; amended 2026-10-28); else (checked), the check having passed, whatever
+;; the transfer then met.
+(define (checked-as answer)
+  (if (and (pair? answer) (eq? (car answer) 'request-refused))
+      answer
+      '(checked)))
 
 ;; child-run : (Listof String) String String String (Listof String) -> (U (List Integer (Listof Any) String) (List 'raised String))
 ;; tests/transfer-tls-env.sps on URL with CA-FILE, "-" for none, and
@@ -1302,6 +1325,7 @@
                              (cons 'CURL_SSL_BACKEND (getenv "CURL_SSL_BACKEND")))
                        (list 'recorded (list (cons "SSL_CERT_FILE" (read-as "SSL_CERT_FILE"))
                                              (cons "SSL_CERT_DIR" (read-as "SSL_CERT_DIR"))))
+                       (list 'check (checked-as (if refuses refused ignored)))
                        (list 'transfer (if refuses refused ignored) zero-counts)
                        '(done))
                  "")
@@ -1370,6 +1394,7 @@
                      (list 'environment '(SSL_CERT_FILE . #f) '(SSL_CERT_DIR . #f)
                            (cons 'CURL_SSL_BACKEND value))
                      '(recorded (("SSL_CERT_FILE" . #f) ("SSL_CERT_DIR" . #f)))
+                     (list 'check (checked-as answer))
                      (list 'transfer answer zero-counts)
                      '(done))
                "")

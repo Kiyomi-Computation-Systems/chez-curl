@@ -186,7 +186,18 @@
    ;; thread, and answers its token. With a mailbox, the token goes there
    ;; when done; with a callback too, a delivery from there calls it. A
    ;; callback without a mailbox is refused.
-   make-curl-engine curl-engine? curl-engine-stop curl-submit
+   ;; curl-request-check : Request -> Void
+   ;; Runs the checks curl-submit makes of the request on this thread, and
+   ;; raises what they raise, as a submit would: the headers' and the user
+   ;; agent's, the CA file's and the environment's it loaded with, and the
+   ;; URL's parse and scheme; its who is curl-request-check where a
+   ;; submit's is curl-submit. It copies no body and queues nothing, so a
+   ;; batch can be checked before any of it is submitted; an engine's own
+   ;; state can still refuse the submit (ADR-0023, amended 2026-10-28). A
+   ;; request shares its strings and lists with its caller, so the check
+   ;; holds for them as they were when it ran: a submit checks its own
+   ;; copies again, and refuses one changed since.
+   make-curl-engine curl-engine? curl-engine-stop curl-submit curl-request-check
 
    ;; --- the token ----------------------------------------------------------
    ;; curl-token? : Any -> Boolean

@@ -223,12 +223,14 @@
 
 ;; --- the exports ----------------------------------------------------------------------
 
-;; Written out: the M5 plan's slices 1 to 3, section 3.1, and the brief's
+;; Written out: the M5 plan's slices 1 to 4, section 3.1, and the brief's
 ;; names.
 (define http-client-exports
   '(make-http-session http-session? http-session-close call-with-http-session
     http-request http-get http-head http-post http-put http-patch http-delete
     make-http-retry http-retry?
+    call-with-request-group http-pending? http-await http-pending-done? http-pending-cancel
+    http-parallel
     http-response? http-response-status http-response-http-version http-response-url
     http-response-headers http-response-body http-response-timings http-response-history
     http-response-header http-response-text
@@ -238,10 +240,11 @@
     &http-redirect-error http-redirect-error? http-redirect-error-reason
     http-redirect-error-response http-redirect-error-location http-redirect-error-reasons
     &http-timeout http-timeout? http-timeout-timeout-ms
+    &http-group-error http-group-error? http-group-error-reason http-group-error-reasons
     &http-exchange http-exchange? http-exchange-method http-exchange-url http-exchange-history
     http-exchange-transfers))
 
-(test-equal "(http-client) exports exactly slices 1 to 3's names, none of them (curl)'s"
+(test-equal "(http-client) exports exactly slices 1 to 4's names, none of them (curl)'s, nor the group's seams"
   (list (symbols-sorted http-client-exports) '())
   (let ((exports (library-exports '(http-client))))
     (list (symbols-sorted exports)
@@ -250,7 +253,7 @@
 (test-equal "http-request-error-reasons, written out"
   '(unknown-key repeated-key missing-value body-and-form body-not-allowed not-a-body
     not-name-value-pairs not-a-redirect-count not-a-boolean not-a-retry-policy
-    not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list)
+    not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list not-a-limit)
   http-request-error-reasons)
 
 (test-equal "the conditions' types: the request error and the timeout under &http-error, under &curl-error and &error; &http-exchange under &condition alone, no error"

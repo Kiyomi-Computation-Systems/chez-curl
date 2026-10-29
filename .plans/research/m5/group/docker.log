@@ -1,0 +1,47 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package valgrind 1:3.22.0-0ubuntu3
+[floor-7.85.0] origin {"node":"v20.10.0","pid":3092,"http":"127.0.0.1:35693","raw":"127.0.0.1:37127","h2c":"127.0.0.1:36751"}
+[floor-7.85.0] libcurl 7.85.0
+[floor-7.85.0] all ms=516 most-live=20 status=200 x20 
+[floor-7.85.0] limit2 ms=5074 most-live=2 status=200 x20 
+[floor-7.85.0] all ms=509 most-live=20 status=200 x20 
+[floor-7.85.0] limit2 ms=5073 most-live=2 status=200 x20 
+[floor-7.85.0] all ms=507 most-live=20 status=200 x20 
+[floor-7.85.0] limit2 ms=5074 most-live=2 status=200 x20 
+[ubuntu-openssl-8.5.0] origin {"node":"v24.18.0","pid":3120,"http":"127.0.0.1:42343","raw":"127.0.0.1:33851","h2c":"127.0.0.1:35503"}
+[ubuntu-openssl-8.5.0] libcurl 8.5.0
+[ubuntu-openssl-8.5.0] all ms=509 most-live=20 status=200 x20 
+[ubuntu-openssl-8.5.0] limit2 ms=5074 most-live=2 status=200 x20 
+[ubuntu-openssl-8.5.0] all ms=507 most-live=20 status=200 x20 
+[ubuntu-openssl-8.5.0] limit2 ms=5063 most-live=2 status=200 x20 
+[ubuntu-openssl-8.5.0] all ms=506 most-live=20 status=200 x20 
+[ubuntu-openssl-8.5.0] limit2 ms=5070 most-live=2 status=200 x20 
+[ubuntu-gnutls-8.5.0] origin {"node":"v24.18.0","pid":3145,"http":"127.0.0.1:40539","raw":"127.0.0.1:34337","h2c":"127.0.0.1:34399"}
+[ubuntu-gnutls-8.5.0] libcurl 8.5.0
+[ubuntu-gnutls-8.5.0] all ms=514 most-live=20 status=200 x20 
+[ubuntu-gnutls-8.5.0] limit2 ms=5080 most-live=2 status=200 x20 
+[ubuntu-gnutls-8.5.0] all ms=507 most-live=20 status=200 x20 
+[ubuntu-gnutls-8.5.0] limit2 ms=5074 most-live=2 status=200 x20 
+[ubuntu-gnutls-8.5.0] all ms=510 most-live=20 status=200 x20 
+[ubuntu-gnutls-8.5.0] limit2 ms=5070 most-live=2 status=200 x20 
+[current-8.23.0] origin {"node":"v24.18.0","pid":3170,"http":"127.0.0.1:39937","raw":"127.0.0.1:40605","h2c":"127.0.0.1:33145"}
+[current-8.23.0] libcurl 8.23.0
+[current-8.23.0] all ms=514 most-live=20 status=200 x20 
+[current-8.23.0] limit2 ms=5072 most-live=2 status=200 x20 
+[current-8.23.0] all ms=508 most-live=20 status=200 x20 
+[current-8.23.0] limit2 ms=5073 most-live=2 status=200 x20 
+[current-8.23.0] all ms=509 most-live=20 status=200 x20 
+[current-8.23.0] limit2 ms=5071 most-live=2 status=200 x20 
+[ubuntu-openssl-8.5.0-valgrind] origin {"node":"v24.18.0","pid":3195,"http":"127.0.0.1:46367","raw":"127.0.0.1:41941","h2c":"127.0.0.1:38183"}
+[ubuntu-openssl-8.5.0-valgrind] under valgrind
+[ubuntu-openssl-8.5.0-valgrind] libcurl 8.5.0
+[ubuntu-openssl-8.5.0-valgrind] all ms=694 most-live=20 status=200 x20 
+[ubuntu-openssl-8.5.0-valgrind] limit2 ms=5142 most-live=2 status=200 x20 
+[ubuntu-openssl-8.5.0-valgrind] all ms=548 most-live=20 status=200 x20 
+[ubuntu-openssl-8.5.0-valgrind] limit2 ms=5127 most-live=2 status=200 x20 
+[ubuntu-openssl-8.5.0-valgrind] all ms=547 most-live=20 status=200 x20 
+[ubuntu-openssl-8.5.0-valgrind] limit2 ms=5129 most-live=2 status=200 x20 
+[ubuntu-openssl-8.5.0-valgrind] valgrind: ==3206==    definitely lost: 0 bytes in 0 blocks
+[ubuntu-openssl-8.5.0-valgrind] valgrind: ==3206== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

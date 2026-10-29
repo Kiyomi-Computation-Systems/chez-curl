@@ -1,7 +1,8 @@
 # ADR-0023: The public request is made from a property list, and carries a whole body
 
 - **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: as built
-  (M4 slice 1); amended 2026-10-27: M5 follows a redirect from its `Location`
+  (M4 slice 1); amended 2026-10-27: M5 follows a redirect from its `Location`; amended
+  2026-10-28: a submit's checks, without the submit (M5 slice 4)
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, `(curl)`'s request record, from M4
 - **Settles:** the request's public shape, and whether M4's request carries a body; the
@@ -130,3 +131,40 @@ carry it, and whether it keeps credentials, move with the version, and it hands 
 what `curl_url_set` refuses. So M5 resolves the first `Location` header's bytes itself, by
 ADR-0008's decision 4, against the URL it requested. `FOLLOWLOCATION` stays owned and off, and
 the private `follow` field stays the redirect-pin tests' alone.
+
+## Amendment, 2026-10-28: a submit's checks, without the submit (M5 slice 4)
+
+`http-parallel` checks every spec before it submits any (the M5 plan, §3.7), so that one bad
+spec never leaves the others' transfers running. A URL's parse and scheme, and the CA file's
+refusal against the environment the libcurl loaded with (ADR-0024), are checked by
+`curl-submit` alone, in `prepare-transfer`, on the caller's thread. The slice's builder raised
+the scheme's refusal by building `(curl)`'s own `&curl-url-error` through the R6RS record
+layer, from the exported type, its who, message and irritants copied from `(curl private url)`:
+the rule then lived in two places, held together by one test, and the environment's refusal
+could still come mid-batch. The slice's review proposed an export instead.
+
+**Decided by the maintainer, 2026-10-28, the recommended option: `(curl)` exports
+`curl-request-check : Request -> Void`,** which runs the checks `curl-submit` runs on a request
+on the calling thread, and raises what they raise, but copies no body and queues nothing. A
+refusal names `curl-request-check` as its who where a submit's names `curl-submit`; its type,
+reason, code and input are a submit's. `http-parallel` calls it on every spec's first request
+before any submit.
+
+- **Rejected:**
+  - keeping the record-layer build, a second owner of the scheme rule;
+  - a high-level `&http-request-error`, which would split one batch's URL refusals across two
+    classes, and differ from what `http-request` raises for the same URL;
+  - leaving the scheme to the submit, which breaks §3.7's "checked before any is submitted",
+    and would cancel transfers already running.
+- **The plan's "the low level gains four URL functions, and `curl-token-outcome`, and nothing
+  else"** gains this export too (the M5 plan, §3.1, amended).
+- **As built:** `request-checks` in `(curl private transfer)` is the checks' one owner, taking
+  the who its refusals name: `prepare-transfer` calls it as `curl-submit`, then copies the body,
+  now after every check, and makes the plan; `curl-request-check` calls it as itself, and does
+  nothing else. A URL's scheme refusal names `chez-curl` in both, as `require-http-scheme`
+  always has. A request shares its strings with its caller, so a check holds for them as they
+  were, and a submit checks its own copies again. `test-transfer` holds nine refusals of the
+  check against a submit's of the same request, each whole but its who, and that it leaves
+  nothing native and queues nothing; `test-transfer-tls` pins its Guix environment refusal
+  beside a submit's; and `test-group` holds that `http-parallel` refuses an `ftp` spec before
+  any submit, its session's generator untouched.

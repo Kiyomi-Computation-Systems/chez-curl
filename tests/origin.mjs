@@ -85,6 +85,19 @@
 //         200 OK", Content-Length, Connection: close and the body "attempts
 //         C\n", C the count so far, 0 for a key never counted, and ends. It
 //         counts nothing. A count lives as long as the origin.
+//         /raw/hold?key=KEY&ms=N holds a request N ms, 0 to 60000, counting
+//         it for KEY, as retry takes it, among the requests held now, and
+//         the most held at once. Its query is exactly key and ms, each
+//         once, in any order. The hold ends after N ms, or when the
+//         connection closes, and the request is then no longer held; it
+//         writes "HTTP/1.1 200 OK", Content-Length, Connection: close and
+//         the body "held\n", and ends. A query it refuses gets the fixed
+//         400, and counts nothing.
+//         /raw/most?key=KEY writes "HTTP/1.1 200 OK", Content-Length,
+//         Connection: close and the body "held H most M\n": for KEY, the
+//         requests held now, and the most held at once so far, 0 and 0
+//         for a key never held, and ends. It counts nothing. The counts
+//         live as long as the origin.
 //   h2c   node:http2, plaintext, by prior knowledge: the HTTP/2 routes.
 //   With --pki DIR:
 //   https, https-expired, https-wrong-host, https-untrusted
@@ -384,10 +397,12 @@ const HEAD_LIMIT = 64 * 1024;
 
 const ascii = (s) => Buffer.from(s, 'latin1');
 
-// A script is a list of steps: write these bytes, wait N ms, end (FIN),
-// reset (RST), or stall (write nothing until the client goes).
+// A script is a list of steps: write these bytes, wait N ms, hold for a key
+// N ms (count it as held for KEY while it waits), end (FIN), reset (RST),
+// or stall (write nothing until the client goes).
 const write = (s) => ({ step: 'write', bytes: typeof s === 'string' ? ascii(s) : s });
 const wait = (ms) => ({ step: 'wait', ms });
+const hold = (key, ms) => ({ step: 'hold', key, ms });
 const END = { step: 'end' };
 const RESET = { step: 'reset' };
 const STALL = { step: 'stall' };
@@ -544,11 +559,53 @@ const scripts = {
               END];
     },
   },
+
+  // concurrency: a key's requests held at once, and the most so far
+  'hold': {
+    query: holdQuery,
+    play: ({ key, ms }) => [
+      hold(key, ms),
+      write('HTTP/1.1 200 OK\r\nContent-Length: 5\r\nConnection: close\r\n\r\nheld\n'),
+      END,
+    ],
+  },
+  'most': {
+    query: attemptsQuery,
+    play: ({ key }) => {
+      const count = holds.get(key) || { now: 0, most: 0 };
+      const body = `held ${count.now} most ${count.most}\n`;
+      return [write(`HTTP/1.1 200 OK\r\nContent-Length: ${body.length}\r\nConnection: close\r\n\r\n${body}`),
+              END];
+    },
+  },
 };
 
 // attempts: the retry script's count of the requests it has read for each
 // key, by key, for as long as the origin runs.
 const attempts = new Map();
+
+// holds: the hold script's counts for each key, by key, for as long as the
+// origin runs: now, the requests held now, and most, the most held at once.
+const holds = new Map();
+
+// holdQuery: the hold script's parameters from QUERY, or null: key, as
+// retry takes it, and ms, 0 to 60000, each exactly once, in any order, and
+// nothing else.
+function holdQuery(query) {
+  if (query === undefined) return null;
+  const found = { key: null, ms: null };
+  for (const pair of query.split('&')) {
+    const at = pair.indexOf('=');
+    if (at < 0) return null;
+    const name = pair.slice(0, at);
+    const value = pair.slice(at + 1);
+    if (!Object.hasOwn(found, name) || found[name] !== null) return null;
+    const read = name === 'key' ? (retryKey(value) ? value : null) : decimal(value, 0, 60000);
+    if (read === null) return null;
+    found[name] = read;
+  }
+  return found.key === null || found.ms === null ? null : found;
+}
 
 // retryKey: whether TEXT is a key the retry script takes.
 const retryKey = (text) => /^[A-Za-z0-9._-]{1,64}$/.test(text);
@@ -716,6 +773,18 @@ async function play(socket, reset, state, steps) {
         case 'wait':
           await pause(socket, s.ms);
           break;
+        case 'hold': {
+          const count = holds.get(s.key) || { now: 0, most: 0 };
+          holds.set(s.key, count);
+          count.now += 1;
+          count.most = Math.max(count.most, count.now);
+          try {
+            await pause(socket, s.ms);
+          } finally {
+            count.now -= 1;
+          }
+          break;
+        }
         case 'end':
           socket.end();
           return;

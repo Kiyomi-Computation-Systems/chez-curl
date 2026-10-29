@@ -1,0 +1,8 @@
+[guix-8.20.0] origin {"node":"v24.18.0","pid":5,"http":"127.0.0.1:46665","raw":"127.0.0.1:41627","h2c":"127.0.0.1:42091"}
+[guix-8.20.0] libcurl 8.20.0
+[guix-8.20.0] all ms=514 most-live=20 status=200 x20 
+[guix-8.20.0] limit2 ms=5073 most-live=2 status=200 x20 
+[guix-8.20.0] all ms=510 most-live=20 status=200 x20 
+[guix-8.20.0] limit2 ms=5074 most-live=2 status=200 x20 
+[guix-8.20.0] all ms=514 most-live=20 status=200 x20 
+[guix-8.20.0] limit2 ms=5071 most-live=2 status=200 x20 

@@ -100,6 +100,59 @@ close-out under **Close-outs**, newest first.
     - **Owed by the Mac:** `CHEZ=chez NODE="$(asdf which node)" sh
       .plans/research/m5/retry/run.sh mac`; and `make test`, whose `test-retry` pins 8.7.1's
       unknown request size.
+  - **Slice 4, the request group and `http-parallel`,** is in progress on `feat/m5-slice-4`,
+    stacked on slice 3's branch, whose PR #32 waits on #31.
+    - **Measured first** ([`research/m5/group/`](research/m5/group/)), through `(curl)` alone, one
+      engine and one mailbox per group, 20 drips of about 500 ms, 3 runs each, on the five Linux
+      libcurls:
+      - all at once, the group ended in 506 to 516 ms; at most 2 live, in 5,063 to 5,080 ms;
+      - under the memory gate's Valgrind, on 8.20.0 and 8.5.0: 547 to 716 ms, and 5,112 to
+        5,145 ms.
+
+      So the plan's bounds hold under Valgrind too, and a suite need not know it runs there
+      (the plan, §7.1).
+    - **Built:** `call-with-request-group`, `go`, `http-await`, `http-pending?`,
+      `http-pending-done?`, `http-pending-cancel`, `http-parallel` and `&http-group-error`, by
+      the plan's §3.7 and the gaps its brief and reviews filled (§3.7, as built): the group's
+      record changed only in critical sections that wait for no transfer, each token stepped
+      once from a live set, slots and a FIFO queue on each call's clock, and the join's two
+      winds. `(curl)` gained `curl-request-check`. `tests/origin.mjs` gained `/raw/hold` and
+      `/raw/most`, held by `test-origin`; `test-group` holds 65 tests. On the final tree, 20
+      calls of 500 ms ended in 508 to 512 ms natively and 553 to 764 under the memory gate's
+      Valgrind, and at a limit of 2 in 5,043 to 5,055 and 5,122 to 5,128 ms, 3 runs each
+      ([`research/m5/group/timing/`](research/m5/group/timing/)). README.org says how calls run
+      at once.
+    - **Decided by the maintainer, 2026-10-28,** the recommended option: `http-parallel` checks
+      every spec before any submit by a new `(curl)` export, `curl-request-check`, a submit's
+      own checks without the submit, so the scheme rule keeps one owner and the environment's
+      refusal comes before the batch too (ADR-0023, amended). The builder had built `(curl)`'s
+      URL condition through the record layer instead.
+    - **Reviewed three times** (Opus, read-only), each round's fixes reviewed after them:
+      - the adversarial review: no blocker, three majors and eight minors. The majors: a raise
+        inside a call's critical section stranded the call, so the join and every await hung;
+        and no test held an escape from the join's own wait, nor the turn's sections, each
+        shown by a surviving mutant. Among the minors: a cancel's exemption from the join's raise
+        depended on whether a turn had seen the failure;
+      - the scoped review of the fixes: one major, a Chez engine's expiry then its resume let
+        `http-parallel` enter and submit calls into its closed group, then fail on a cancel's
+        answer, and let `go` enter a call there; and eight minors, four of the five surviving
+        mutants among them, shown killable;
+      - the narrow review of round 2: six minors, `go`'s `closed` raised inside its entry's
+        section, where a handler ran with interrupts off, among them.
+    - **Mutants:** the builder's campaign, 111 rerun on the final tree, kills 110; the one
+      survivor mutates a branch no path reaches, now an assertion. Of mine, 3 of the first tree
+      (one survived: a queued call's deadline missed by up to 100 ms), 3 on `curl-request-check`
+      and 2 of round 2 (both survived, each a documented outcome no test pinned), each now
+      failing a named test.
+    - **Checks,** on the final tree: in the container, `make test` 32 of 32 and check-seam (21
+      libraries), and `test-group` under the memory gate 3 of 3, 65 tests each; in Docker, the
+      floor (7.85.0), main (8.5.0), gnutls and current (8.23.0) lanes 32 of 32 each, and the
+      memory lane 32 of 32, with `check-memory-gate` 33 of 33. Round 2's lanes failed
+      `test-mailbox`'s deliver-escape child once on the floor lane, under load, which then passed
+      3 of 3 reruns: a timing assumption older than this slice, carried (the plan, §10).
+    - **Owed by the Mac:** `CHEZ=chez NODE="$(asdf which node)" sh
+      .plans/research/m5/group/run.sh mac 3`; and `make test NODE="$(asdf which node)"`, which
+      M5's end needs (the plan, §9).
   - **Measured first** ([`research/m5/redirect-url/`](research/m5/redirect-url/)), through a C
     probe that made each transfer as the engine does, `FOLLOWLOCATION` off, on five libcurls:
     Guix's 8.20.0 in the container, and in Docker 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with

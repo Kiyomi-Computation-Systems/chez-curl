@@ -109,6 +109,26 @@ up to =redirects= times: 20, unless the session or the call says otherwise.
   of a =post=. The body goes, and with it your =Content-= headers, =Digest=,
   =Last-Modified= and =Expect=.
 
+*** Running calls at once
+
+=call-with-request-group= runs many calls on your one thread. Its procedure
+gets =go=, which starts a call and hands back a pending one at once;
+=http-await= gives you its response. =limit= caps how many run at once, and
+the rest wait their turn, each on its own clock. =http-parallel= runs a list
+of calls and answers their responses in order.
+
+- *The group waits for every call before it returns,* and then raises the
+  first failure you never awaited. A call you cancelled raises nothing.
+- *If your procedure escapes,* the group cancels every call and waits for
+  each transfer to end. On libcurl 7.85.0 to 7.86.x a stalled name lookup can
+  hold that wait up to glibc's resolver timeout. A second Ctrl-C during it
+  gives up, and leaves those transfers running.
+- *Only the thread that made a group may use it.*
+- *=http-parallel= checks every call before it sends any,* as a send would.
+  Only a stopped or failed engine can still refuse one partway.
+- *Inside a Chez engine,* an expiry ends the whole group: once resumed, its
+  awaits raise =cancelled=, and a new =go= raises =closed=.
+
 ** License
 
 © [[https://kiyomicomputation.systems/][Kiyomi Computation Systems LLC]]. Licensed under BSD 3-Clause — see

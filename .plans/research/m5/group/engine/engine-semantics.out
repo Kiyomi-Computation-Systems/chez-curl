@@ -1,0 +1,3 @@
+(block-in-section (expire-called in-section-after-block after-section (complete done)))
+(winds (before (after timer-left 0) expire-called before body-resumed (after timer-left 999999) (complete body)))
+(critical-winds (outer-before inner-before (inner-after 2) (outer-after 1) expire-called outer-before inner-before body-resumed (inner-after 2) (outer-after 1) (complete body)))

@@ -1,0 +1,3 @@
+;; entry-window-probe.sps 2000 6000 2 4, run 2026-10-29 in the container from build/m5s4/mutants/g1-parallel-no-closed,
+;; a copy of the tree with run-parallel's closed check removed (its mutation.diff: (not (group-closed? group)) made #t):
+n 4 classes (cancelled re-entry responses) bad ((4436 (#t cancelled 3)) (4438 (#t cancelled 3)) (4440 (#t cancelled 3)) (4442 (#t cancelled 2)) (4444 (#t cancelled 2)) (4446 (#t cancelled 2)) (4448 (#t cancelled 1)) (4450 (#t cancelled 1)) (4452 (#t cancelled 1)) (4454 (#t cancelled 1)))

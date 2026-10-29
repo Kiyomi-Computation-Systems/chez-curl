@@ -473,6 +473,63 @@
            '("/raw/retry?key=refused&fail=1&how=close&x=1" "/raw/retry?key=refused&fail=101&how=close"
              "/raw/attempts?key=refused"))))
 
+  ;; --- the raw face: hold, a key's requests held for ms, counted while
+  ;; held, and most, which reads the key's count now and the most held at
+  ;; once. Each check has keys of its own: the counts live as long as the
+  ;; origin, across the scenarios.
+  (let ((held "HTTP/1.1 200 OK\r\nContent-Length: 5\r\nConnection: close\r\n\r\nheld\n")
+        (most (lambda (now at-most)
+                (let ((body (string-append "held " (number->string now) " most "
+                                           (number->string at-most) "\n")))
+                  (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: "
+                                       (number->string (string-length body))
+                                       "\r\nConnection: close\r\n\r\n" body)
+                        'eof)))))
+    (test-equal "raw /raw/hold?key=hold-one&ms=200: the whole bytes, then eof, the first at least 200 ms after connecting; most then reads none held, 1 at most"
+      (list held 'eof 'late-enough (most 0 1))
+      (guard (e (#t (list 'raised (describe e))))
+        (let* ((p (wire-probe o 'raw (octets (get "/raw/hold?key=hold-one&ms=200")) 2000))
+               (at (arrival (probe-arrivals p) 0)))
+          (list (latin-1 (probe-bytes p)) (probe-end p)
+                (if (and at (probe-connected p) (>= (- at (probe-connected p)) 200))
+                    'late-enough
+                    (list 'first-at at 'connected (probe-connected p)))
+                (exchange o 'raw (get "/raw/most?key=hold-one") 2000)))))
+    (test-equal "raw /raw/hold, one after the other: two holds of one key count 1 at most, ms=0 among them, and key and ms in either order; most reads 0 and 0 for a key never held, and counts nothing itself"
+      (list (list held 'eof) (list held 'eof) (most 0 1) (most 0 0) (most 0 1))
+      (in-order (lambda (target) (exchange o 'raw (get target) 2000))
+                '("/raw/hold?key=hold-seq&ms=50" "/raw/hold?ms=0&key=hold-seq" "/raw/most?key=hold-seq"
+                  "/raw/most?key=hold-never" "/raw/most?key=hold-seq")))
+    (test-equal "raw /raw/hold: a query it refuses gets the fixed 400 and counts nothing"
+      (list bad-request bad-request (most 0 0))
+      (in-order (lambda (target) (exchange o 'raw (get target) 2000))
+                '("/raw/hold?key=hold-refused&ms=1&x=1" "/raw/hold?key=hold-refused&ms=60001"
+                  "/raw/most?key=hold-refused")))
+    ;; Two probes in one shell, each in the background, the second's output
+    ;; on stderr: each holds 1000 ms, and both start within Node's start-up
+    ;; time of each other, far under that.
+    (test-equal "raw /raw/hold, two at once: two holds of one key, each 1000 ms, both started together, count 2 at most, each answered its whole bytes and eof; then none held"
+      (list (list held 'eof) (list held 'eof) (most 0 2))
+      (guard (e (#t (list 'raised (describe e))))
+        (let* ((port (number->string (cdr (origin-face o 'raw))))
+               (text (hex (get "/raw/hold?key=hold-two&ms=1000")))
+               (r (capture-command
+                   (list "sh" "-c"
+                         (string-append
+                          "\"$1\" tests/wire-probe.mjs 127.0.0.1 \"$2\" \"$3\" 3000 & a=$!\n"
+                          "\"$1\" tests/wire-probe.mjs 127.0.0.1 \"$2\" \"$3\" 3000 1>&2 & b=$!\n"
+                          "wait \"$a\"; sa=$?\n"
+                          "wait \"$b\"; sb=$?\n"
+                          "[ \"$sa\" -eq 0 ] && [ \"$sb\" -eq 0 ]\n")
+                         "sh" node port text))))
+          (if (= (car r) 0)
+              (let ((one (parse-wire-probe (cadr r)))
+                    (two (parse-wire-probe (caddr r))))
+                (list (list (latin-1 (probe-bytes one)) (probe-end one))
+                      (list (latin-1 (probe-bytes two)) (probe-end two))
+                      (exchange o 'raw (get "/raw/most?key=hold-two") 2000)))
+              (list 'probes-failed r))))))
+
   ;; --- the raw face: the fixed 400, for every NAME or parameter it refuses
   (for-each
    (lambda (row)
@@ -546,6 +603,22 @@
          (list "attempts with an empty key" (get "/raw/attempts?key="))
          (list "attempts with another parameter" (get "/raw/attempts?key=k&x=1"))
          (list "attempts without key" (get "/raw/attempts?x=k"))
+         (list "hold without a query" (get "/raw/hold"))
+         (list "hold without key" (get "/raw/hold?ms=1"))
+         (list "hold without ms" (get "/raw/hold?key=k"))
+         (list "hold with key twice" (get "/raw/hold?key=k&key=k&ms=1"))
+         (list "hold with ms twice" (get "/raw/hold?key=k&ms=1&ms=1"))
+         (list "hold ms=60001, above its range" (get "/raw/hold?key=k&ms=60001"))
+         (list "hold ms with a leading zero" (get "/raw/hold?key=k&ms=01"))
+         (list "hold ms that is no number" (get "/raw/hold?key=k&ms=x"))
+         (list "hold with an empty key" (get "/raw/hold?key=&ms=1"))
+         (list "hold with a key holding a char outside A-Z, a-z, 0-9, ., _ and -"
+               (get "/raw/hold?key=a%2Fb&ms=1"))
+         (list "hold with an unknown parameter" (get "/raw/hold?key=k&ms=1&x=1"))
+         (list "hold with a pair that has no =" (get "/raw/hold?key=k&ms=1&x"))
+         (list "most without a query" (get "/raw/most"))
+         (list "most with an empty key" (get "/raw/most?key="))
+         (list "most with another parameter" (get "/raw/most?key=k&x=1"))
          (list "a path outside /raw/" (get "/content-length"))
          (list "a request line of two words" "GET /raw/content-length\r\n\r\n")
          (list "a request line of four words" "GET /raw/content-length HTTP/1.1 x\r\n\r\n")

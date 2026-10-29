@@ -11,6 +11,8 @@
 ;;;   &http-redirect-error  a redirect the rules refuse to follow: reason,
 ;;;                         the response that named it, and its Location
 ;;;   &http-timeout         a call's timeout-ms passed: the bound, in ms
+;;;   &http-group-error     a request group's call refused or ended by the
+;;;                         group: reason, wrong-thread, closed or cancelled
 ;;;   &http-exchange        not an error: the context compounded onto
 ;;;                         whatever a call raises, under &condition, so a
 ;;;                         low-level failure that carries it is still no
@@ -26,6 +28,8 @@
           http-redirect-error-reason http-redirect-error-response http-redirect-error-location
           http-redirect-error-reasons
           &http-timeout make-http-timeout http-timeout? http-timeout-timeout-ms
+          &http-group-error make-http-group-error http-group-error? http-group-error-reason
+          http-group-error-reasons
           &http-exchange make-http-exchange http-exchange? http-exchange-method
           http-exchange-url http-exchange-history http-exchange-transfers)
   (import (curl)
@@ -63,10 +67,12 @@
   ;;                         integers from 400 to 599
   ;;   not-a-method-list     a policy's methods that is no list of get, head,
   ;;                         post, put, patch and delete
+  ;;   not-a-limit           a request group's or http-parallel's limit that
+  ;;                         is neither an exact positive integer nor #f
   (define http-request-error-reasons
     '(unknown-key repeated-key missing-value body-and-form body-not-allowed not-a-body
       not-name-value-pairs not-a-redirect-count not-a-boolean not-a-retry-policy
-      not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list))
+      not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list not-a-limit))
 
   ;; The fields:
   ;;
@@ -77,7 +83,8 @@
   ;;           allow-downgrade or jitter, for not-a-boolean; retry, for
   ;;           not-a-retry-policy; attempts, for not-an-attempt-count;
   ;;           backoff-ms or max-backoff-ms, for not-a-backoff; statuses,
-  ;;           for not-a-status-list; methods, for not-a-method-list
+  ;;           for not-a-status-list; methods, for not-a-method-list; limit,
+  ;;           for not-a-limit
   ;;   value   the key as given, for a key's refusal; the method, for
   ;;           body-not-allowed; the value as given, for every other reason
   ;;           but body-and-form; #f, for body-and-form
@@ -154,6 +161,40 @@
   (define-condition-type &http-timeout &http-error
     make-http-timeout http-timeout?
     (timeout-ms http-timeout-timeout-ms))
+
+  ;; http-group-error-reasons : (Listof Symbol)
+  ;; Why a request group refuses an operation, or ended a call (the M5 plan,
+  ;; section 3.7):
+  ;;
+  ;;   wrong-thread  go, http-await, http-pending-done? or
+  ;;                 http-pending-cancel called from a thread other than
+  ;;                 the one that made the group: a group is its thread's
+  ;;   closed        go called once the group's procedure has returned or
+  ;;                 escaped
+  ;;   cancelled     the await of a call that http-pending-cancel ended, or
+  ;;                 that its group ended as it escaped: compounded with the
+  ;;                 call's &http-exchange, and with its transfer's own
+  ;;                 condition when a transfer was live and ended with one
+  (define http-group-error-reasons '(wrong-thread closed cancelled))
+
+  ;; The field:
+  ;;
+  ;;   reason  one of http-group-error-reasons
+  (define-condition-type &http-group-error &http-error
+    unchecked-make-http-group-error http-group-error?
+    (reason http-group-error-reason))
+
+  ;; make-http-group-error : Symbol -> &http-group-error
+  ;; Refuses a REASON that is not one of http-group-error-reasons with an
+  ;; assertion violation, as make-http-request-error refuses its own.
+  (define (make-http-group-error reason)
+    (unless (memq reason http-group-error-reasons)
+      (assertion-violation 'make-http-group-error
+                           "not a reason a request group refuses or ends a call for" reason))
+    (unchecked-make-http-group-error reason))
+
+  ;; http-group-error? : Any -> Boolean
+  ;; http-group-error-reason : &http-group-error -> Symbol
 
   ;; make-http-exchange : Any Any (Listof Response) Natural -> &http-exchange
   ;; http-exchange? : Any -> Boolean

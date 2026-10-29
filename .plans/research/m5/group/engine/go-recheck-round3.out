@@ -1,0 +1,4 @@
+== go-recheck, round 3
+(G1 (expiries 1 result (handler interrupts-on #t (closed go)) started-after 0))
+(G2 (expiries 1 result (await0 (cancelled http-await) go1 (handler interrupts-on #t (closed go))) started-after 0))
+(G3 (expiries 2 result (go0 (handler interrupts-on #t (closed go)) go2 (handler interrupts-on #t (closed go)) returned) started-after 0))

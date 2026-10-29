@@ -368,6 +368,33 @@ it should not be a comment. (chez-cmark-gfm)
   a copy that counted `(collections)` showed one in the window. `(collect)` just before a short
   timed window opens leaves none due inside it ([research](research/m5/valgrind-collect/)).
   (chez-curl, M5 slice 1)
+* **An engine's expiry can have a window of a few ticks, which a coarse sweep steps over.**
+  On a copy of `run-parallel` without its closed check, an expiry let a resumed `http-parallel`
+  enter calls into its closed group only at fuels 4,436 to 4,454 of 2,000 to 6,000, swept by 2,
+  for four calls ([research](research/m5/group/traps/)). M5 slice 4's first engine sweep, by
+  100, missed it, and that mutant survived. A narrower window, where only a call never entered
+  is cancelled, held 3 ticks, 4,242 to 4,244 ([research](research/m5/group/engine/)), and moved
+  between runs: a sweep by 2 hit it once or not at all, and a mutant there survived one run and
+  died the next. Find the band first, then sweep it by single ticks, beside an evidence test
+  that the sweep landed there. (chez-curl, M5 slice 4)
+* **`engine-block` suspends an engine at once, even inside a critical section,** where a
+  timer's expiry waits for a later event check: the expire procedure ran before the rest of the
+  section ([research](research/m5/group/engine/), `engine-semantics.out`). A test that places
+  an expiry with `engine-block` must call it outside every section, or it tests a place no real
+  expiry reaches. An expiry runs every after thunk before the expire procedure, and every
+  before thunk again on resume. (chez-curl, M5 slice 4, its third review)
+* **A raise made inside a critical section runs its handler there, with interrupts off.** A
+  `with-exception-handler` handler around `go` saw interrupts off for the `closed` that `go`'s
+  recheck raised inside its entry's section, and on for the same refusal raised outside one
+  (`go-recheck-round2.out`, `go-recheck-round3.out`): such a handler cannot wait, and Ctrl-C
+  waits for it. A section answers a refusal as data, and the raise comes once it has ended.
+  (chez-curl, M5 slice 4, its third review)
+* **`(collect)` raises while another thread is active.** With a thread asleep inside a critical
+  section, as `call-with-engine-held`'s holder can be, `(collect)` raised "cannot collect when
+  multiple threads are active", and `(collect-rendezvous)` waited the 2,000 ms until that thread
+  left its section, then returned ([research](research/m5/group/traps/)). Collect before such a
+  thread starts, or rendezvous, which waits for it. M5 slice 4's builder met it planting a held
+  engine. (chez-curl, M5 slice 4)
 * **Under Valgrind a sleep of no time may not let another thread run.** test-url's flip test
   yielded with `(sleep (make-time 'time-duration 0 0))` so its flipper would run; in one of three
   runs on M5 slice 1's branch the flipper never did, 0 refusals of 1000, where 1 ms gave 490 to
@@ -1052,3 +1079,9 @@ it should not be a comment. (chez-cmark-gfm)
   of its own, so the engine can also move the token between the two reads: the witness read 2
   once, for one transfer ([research](research/m5/http-client/witness/)). Read the token, or
   wait past the setup. (chez-curl, M5 slice 1)
+  - **And the queue holds a token cancelled while queued after it is done.** The cancel ends
+    such a token at once, on the caller's thread, but its submit stays in the queue until the
+    engine's next turn takes it: read right after the cancel, the queued count was 1 for a done
+    token in 3 of 3 runs, and 0 within 50 ms ([research](research/m5/group/traps/)). M5 slice
+    4's turn child first read the counts `(0 1 0)` just after a group's escape. Read the live
+    and transfer counts, or let the queue settle. (chez-curl, M5 slice 4)
