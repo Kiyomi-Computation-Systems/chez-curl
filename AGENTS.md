@@ -415,6 +415,16 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   header's bytes are encoded before they are resolved (ADR-0029, amended).
 * libcurl gives an IPv6 host without its zone ID, a part of its own. Compare
   the zone too, or two zones of one address read as one host.
+* libcurl resends a request HTTP/2 refused (`RST_STREAM`, `REFUSED_STREAM`)
+  five times, a `post` among them. A count of attempts at the origin over
+  HTTP/2 counts libcurl's resends too.
+* A guard on `curl-error?` around an await also catches what the caller's
+  interrupt handler raises there, and so does a second await inside a
+  guard's clause. Wait with `curl-token-wait`, unguarded, then read the done
+  token's outcome as data, by `curl-token-outcome`.
+* A Ctrl-C made pending inside a critical section runs as the section ends,
+  inside any guard around the section. A guard that reads the section's own
+  raises goes inside it.
 * libcurl decodes a host's `%XX`: `http://caf%E9.example/` comes back holding
   the byte 0xE9. Read `curl_url_get`'s answers as strict UTF-8, or refuse them.
 * An engine's queued and live counts both read 0 for a token it is setting

@@ -1017,6 +1017,26 @@ it should not be a comment. (chez-cmark-gfm)
   libcurls; the zone is a part of its own, `CURLUPART_ZONEID`. An origin rule that compared
   hosts alone sent a call's credentials to another zone: the slice's review planted the
   redirect. (chez-curl, M5 slice 2)
+* **libcurl resends a request HTTP/2 refused, a `post` among them, five times.** A server that
+  answered each stream with `RST_STREAM`, `REFUSED_STREAM`, counted every request six times on
+  all five Linux libcurls, then libcurl failed it with 56; the request size summed the six. A check
+  that counts a retry's attempts at the origin over HTTP/2 counts libcurl's own resends too.
+  (chez-curl, M5 slice 3)
+* **A guard on `curl-error?` around an await cannot tell the transfer's failure from the
+  caller's.** An interrupt handler that ran inside the await and raised a `&curl-error`, its
+  own call's failure say, was read as the transfer's: with a retry policy the call resent a
+  `post` while the first was still live, and left one running after it escaped. The first fix,
+  to take a raise only when the token is done and awaiting it again raises that very object,
+  awaited inside the guard's clause, with interrupts on: a handler that raised there was lost or
+  misread, 100 of 100 calls in a storm raising `#f`. Wait with no guard around the wait, then
+  read the done token's outcome as data, by `curl-token-outcome`. (chez-curl, M5 slice 3, its
+  reviews)
+* **A keyboard interrupt made pending inside a critical section runs as the section ends, still
+  inside any guard wrapped around the section.** The drive's guard that read a submit's
+  refusal wrapped the submit's critical section, so a Ctrl-C handler that raised a `&curl-error`
+  as the section ended was read as the submit's refusal. The guard now sits inside the section,
+  where only the submit's own raises reach it; a SIGINT child in `test-http-client` holds it.
+  (chez-curl, M5 slice 3, its fix round)
 * **libcurl decodes a host's percent-encoding, so a UTF-8 string can come back as bytes that
   are not UTF-8.** `http://caf%E9.example/` came back from `curl_url_get` as `caf` and the byte
   0xE9, whole and as the host, on all five Linux libcurls; `%C3` alone came back as a lone

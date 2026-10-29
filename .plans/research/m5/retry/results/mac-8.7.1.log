@@ -1,0 +1,89 @@
+[mac] raw=51187 tls=51188 h2=51189 stall=51190 refused=51186
+[mac] libcurl 8.7.1
+[mac] http ok get ok 200 http/1.1
+[mac] http ok post ok 200 http/1.1
+[mac] http close-before-response get fail send-receive 52 perform-failed size=#f
+[mac] http close-before-response post fail send-receive 52 perform-failed size=#f
+[mac] http reset-before-response get fail send-receive 56 perform-failed size=#f
+[mac] http reset-before-response post fail send-receive 56 perform-failed size=#f
+[mac] http reset-after-head get fail send-receive 56 perform-failed size=#f
+[mac] http reset-after-head post fail send-receive 56 perform-failed size=#f
+[mac] http stall-before-head get fail timeout 28 perform-failed size=#f
+[mac] http stall-before-head post fail timeout 28 perform-failed size=#f
+[mac] tls ok get ok 200 http/1.1
+[mac] tls ok post ok 200 http/1.1
+[mac] tls close-before-response get fail send-receive 56 perform-failed size=#f
+[mac] tls close-before-response post fail send-receive 56 perform-failed size=#f
+[mac] tls reset-before-response get fail send-receive 56 perform-failed size=#f
+[mac] tls reset-before-response post fail send-receive 56 perform-failed size=#f
+[mac] tls reset-after-head get fail send-receive 56 perform-failed size=#f
+[mac] tls reset-after-head post fail send-receive 56 perform-failed size=#f
+[mac] tls stall-before-head get fail timeout 28 perform-failed size=#f
+[mac] tls stall-before-head post fail timeout 28 perform-failed size=#f
+[mac] h2 ok get ok 200 http/2
+[mac] h2 ok post ok 200 http/2
+[mac] h2 close-before-response get fail send-receive 56 perform-failed size=#f
+[mac] h2 close-before-response post fail send-receive 56 perform-failed size=#f
+[mac] h2 reset-before-response get fail send-receive 56 perform-failed size=#f
+[mac] h2 reset-before-response post fail send-receive 56 perform-failed size=#f
+[mac] h2 reset-after-head get fail send-receive 56 perform-failed size=#f
+[mac] h2 reset-after-head post fail send-receive 56 perform-failed size=#f
+[mac] h2 stall-before-head get fail timeout 28 perform-failed size=#f
+[mac] h2 stall-before-head post fail timeout 28 perform-failed size=#f
+[mac] h2 rst-stream get fail send-receive 56 perform-failed size=#f
+[mac] h2 rst-stream post fail send-receive 56 perform-failed size=#f
+[mac] h2 goaway get fail protocol 16 perform-failed size=#f
+[mac] h2 goaway post fail protocol 16 perform-failed size=#f
+[mac] http refused get fail connect 7 perform-failed size=#f
+[mac] tls refused get fail connect 7 perform-failed size=#f
+[mac] tls handshake-stall get fail timeout 28 perform-failed size=#f
+[mac] http refused post fail connect 7 perform-failed size=#f
+[mac] tls refused post fail connect 7 perform-failed size=#f
+[mac] tls handshake-stall post fail timeout 28 perform-failed size=#f
+[mac] -- done
+[mac] server: request http GET ok #1
+[mac] server: request http POST ok #1
+[mac] server: request http GET close-before-response #1
+[mac] server: request http POST close-before-response #1
+[mac] server: request http GET reset-before-response #1
+[mac] server: request http POST reset-before-response #1
+[mac] server: request http GET reset-after-head #1
+[mac] server: request http POST reset-after-head #1
+[mac] server: request http GET stall-before-head #1
+[mac] server: request http POST stall-before-head #1
+[mac] server: request tls GET ok #1
+[mac] server: request tls POST ok #1
+[mac] server: request tls GET close-before-response #1
+[mac] server: request tls POST close-before-response #1
+[mac] server: request tls GET reset-before-response #1
+[mac] server: request tls POST reset-before-response #1
+[mac] server: request tls GET reset-after-head #1
+[mac] server: request tls POST reset-after-head #1
+[mac] server: request tls GET stall-before-head #1
+[mac] server: request tls POST stall-before-head #1
+[mac] server: request h2 GET ok #1
+[mac] server: request h2 POST ok #1
+[mac] server: request h2 GET close-before-response #1
+[mac] server: request h2 POST close-before-response #1
+[mac] server: request h2 GET reset-before-response #1
+[mac] server: request h2 POST reset-before-response #1
+[mac] server: request h2 GET reset-after-head #1
+[mac] server: request h2 POST reset-after-head #1
+[mac] server: request h2 GET stall-before-head #1
+[mac] server: request h2 POST stall-before-head #1
+[mac] server: request h2 GET rst-stream #1
+[mac] server: request h2 GET rst-stream #2
+[mac] server: request h2 GET rst-stream #3
+[mac] server: request h2 GET rst-stream #4
+[mac] server: request h2 GET rst-stream #5
+[mac] server: request h2 GET rst-stream #6
+[mac] server: request h2 POST rst-stream #1
+[mac] server: request h2 POST rst-stream #2
+[mac] server: request h2 POST rst-stream #3
+[mac] server: request h2 POST rst-stream #4
+[mac] server: request h2 POST rst-stream #5
+[mac] server: request h2 POST rst-stream #6
+[mac] server: request h2 GET goaway #1
+[mac] server: request h2 POST goaway #1
+.plans/research/m5/retry/run.sh: line 32: 82564 Terminated: 15          "${NODE:-node}" $d/server.mjs "$tmp/pki" < "$tmp/in" > "$tmp/ports" 2> "$tmp/server.err"
+[mac] the server exited 143, not 0, after its stdin closed: 143 is the watchdog's kill, 5 s on

@@ -655,7 +655,9 @@ provisional. They bind until that record is accepted or amended.
   kept (ADR-0029). Never `curl_url_set` of the fragment part, which stores its bytes unchecked.
 - **A call's drive winds with Chez's critical `dynamic-wind`,** `(dynamic-wind #t ...)`, so a
   second escape that lands in its after thunk cannot skip the cancel; the submit and the record
-  of its token share one `critical-section`; and a call with interrupts off is refused before
+  of its token share one `critical-section`, with the guard that reads the submit's refusal
+  inside it, so a Ctrl-C handler's raise as the section ends is never read as one (slice 3's
+  fix round); and a call with interrupts off is refused before
   it submits, by `(curl)`'s own refusal of a wait there. A session's close waits, so it cannot
   wind critically: a second escape as it starts can leave the engine running, documented, not
   prevented (ADR-0025, amended 2026-10-27).
@@ -664,7 +666,18 @@ provisional. They bind until that record is accepted or amended.
   takes that default when none is set, so with more than 300 s left its 28 is not the bound's,
   and the cap keeps a bounded connect no longer than an unbounded one (the M5 plan, §3.5).
 - **Retries are off unless the session or the call names a policy** (ADR-0026). Off means
-  chez-curl adds no attempt: libcurl itself may resend on a dead reused connection.
+  chez-curl adds no attempt: libcurl itself resends on a dead reused connection, and on an
+  HTTP/2 stream refused, five times, a `post` among them (ADR-0026, amended 2026-10-28).
+- **A retry that runs out reports its last transfer truly:** when the bound passes during a
+  retry's wait or its next transfer and the retry sent nothing, the call answers the last
+  response it retried, or raises the last failure; a retry that sent its request and met the
+  bound raises its 28 with `&http-timeout`. A raised failure's request size speaks for its own
+  transfer alone: with more than one transfer counted, an earlier one may have sent the
+  request. A policy retries statuses from 400 to 599 alone (ADR-0026, amended 2026-10-28).
+- **Only a transfer's own failure is its outcome:** the drive waits with `curl-token-wait`, with
+  no guard around the wait, and reads a done token's outcome as data, by `curl-token-outcome`
+  (ADR-0021, amended 2026-10-28). A raise the caller's interrupt handler makes during the wait
+  leaves as raised, continuably, and the live token is cancelled on any escape.
 - **A redirect from `https` to `http` is refused** as `&http-redirect-error`,
   `insecure-redirect`, unless the session or the call sets `allow-downgrade` (ADR-0027).
 - **A redirect is followed from the first `Location` header's bytes,** encoded by ADR-0029's

@@ -1,0 +1,57 @@
+(import (chezscheme) (curl) (http-client)
+        (only (http-client private exchange) make-exchange exchange-submission exchange-step
+              exchange-retried make-http-response http-response-status http-response-headers)
+        (only (curl private conditions) make-classed-transfer-error))
+(define start 7000000000123)
+(define (at ms) (+ start (* ms 1000000)))
+(define U 1793188800)
+(define (bytes-of s) (string->utf8 s))
+(define (req method)
+  (make-curl-request "http://h.example/r" 'method method
+                     'body (if (memq method '(get head)) #f (bytes-of "b=1"))
+                     'timeout-ms 5000 'connect-timeout-ms 700))
+(define (st method policy redirects)
+  (make-exchange method "http://h.example/r" (req method) 5000 start redirects #f policy))
+(define (failure code size)
+  (make-classed-transfer-error 'perform-failed code #f "a failure" #f #f size))
+(define (reply status headers)
+  (make-http-response status 'http/1.1 "http://ignored.example/" headers (bytes-of "body") '((total . 1)) '()))
+(define (show a)
+  (case (car a)
+    ((done) (list 'done (http-response-status (cadr a))))
+    ((fail) (let ((c (cadr a)))
+              (list 'fail
+                    'code (and (curl-transfer-error? c) (curl-transfer-error-code c))
+                    'request-size (and (curl-transfer-error? c) (curl-transfer-error-request-size c))
+                    'http-timeout? (http-timeout? c)
+                    'transfers (and (http-exchange? c) (http-exchange-transfers c))
+                    'redirect-error (and (http-redirect-error? c) (http-redirect-error-reason c)))))
+    ((next) (list 'next 'wait (cadddr a)))
+    (else a)))
+(define plain (make-http-retry 'attempts 3 'backoff-ms 100 'max-backoff-ms 1000 'jitter #f))
+;; (a) a post: its first transfer fails with a 7, nothing sent (size 0), retried for any method;
+;; the retry sends 3 bytes, and meets the bound's 28 at 5000.
+(let* ((a (exchange-step (st 'post plain 20) (list 'failed (failure 7 0)) (at 900) U 0.0))
+       (b (exchange-step (cadr a) (list 'failed (failure 28 3)) (at 5000) U 0.0)))
+  (printf "(a) post: first ~s; then the retry, which sent 3 bytes, meets the bound: ~s~%" (show a) (show b)))
+;; the same with no policy: the first failure alone
+(let ((a (exchange-step (st 'post #f 20) (list 'failed (failure 7 0)) (at 900) U 0.0)))
+  (printf "(a) no policy: ~s~%" (show a)))
+;; (b) a policy whose statuses hold 307: a 307 with a Location is retried; the bound passes in the wait
+(define p307 (make-http-retry 'attempts 3 'backoff-ms 100 'max-backoff-ms 1000 'jitter #f 'statuses '(307 503)))
+(define r307 (reply 307 '(("Location" . "/next"))))
+(for-each
+ (lambda (redirects)
+   (let* ((a (exchange-step (st 'get p307 redirects) (list 'response r307) (at 900) U 0.0))
+          (s (and (eq? (car a) 'next) (exchange-submission (cadr a) (at 5000))))
+          (np (exchange-step (st 'get #f redirects) (list 'response r307) (at 900) U 0.0))
+          (np-later (and (eq? (car np) 'next) (exchange-submission (cadr np) (at 5000)))))
+     (printf "(b) redirects ~s: with p307 ~s, ran out: ~s; no policy: ~s~a~%"
+             redirects (show a) (and s (show s)) (show np)
+             (if np-later (format ", its follow at 5000: ~s" (show np-later)) ""))))
+ '(20 0))
+;; (b2) attempts exhausted on the 307 with time left: the third 307 goes through the redirect rules
+(let* ((a (exchange-step (st 'get p307 0) (list 'response r307) (at 100) U 0.0))
+       (b (exchange-step (cadr a) (list 'response r307) (at 300) U 0.0))
+       (c (exchange-step (cadr b) (list 'response r307) (at 500) U 0.0)))
+  (printf "(b2) redirects 0, three 307s with time left: ~s ~s ~s~%" (show a) (show b) (show c)))

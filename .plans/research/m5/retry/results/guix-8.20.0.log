@@ -1,0 +1,87 @@
+[guix-8.20.0] raw=40185 tls=42319 h2=38813 stall=44027 refused=36995
+[guix-8.20.0] libcurl 8.20.0
+[guix-8.20.0] http ok get ok 200 http/1.1
+[guix-8.20.0] http ok post ok 200 http/1.1
+[guix-8.20.0] http close-before-response get fail send-receive 52 perform-failed size=75
+[guix-8.20.0] http close-before-response post fail send-receive 52 perform-failed size=102
+[guix-8.20.0] http reset-before-response get fail send-receive 56 perform-failed size=75
+[guix-8.20.0] http reset-before-response post fail send-receive 56 perform-failed size=102
+[guix-8.20.0] http reset-after-head get fail send-receive 56 perform-failed size=70
+[guix-8.20.0] http reset-after-head post fail send-receive 56 perform-failed size=97
+[guix-8.20.0] http stall-before-head get fail timeout 28 perform-failed size=71
+[guix-8.20.0] http stall-before-head post fail timeout 28 perform-failed size=98
+[guix-8.20.0] tls ok get ok 200 http/1.1
+[guix-8.20.0] tls ok post ok 200 http/1.1
+[guix-8.20.0] tls close-before-response get fail send-receive 56 perform-failed size=75
+[guix-8.20.0] tls close-before-response post fail send-receive 56 perform-failed size=102
+[guix-8.20.0] tls reset-before-response get fail send-receive 56 perform-failed size=75
+[guix-8.20.0] tls reset-before-response post fail send-receive 56 perform-failed size=102
+[guix-8.20.0] tls reset-after-head get fail send-receive 56 perform-failed size=70
+[guix-8.20.0] tls reset-after-head post fail send-receive 56 perform-failed size=97
+[guix-8.20.0] tls stall-before-head get fail timeout 28 perform-failed size=71
+[guix-8.20.0] tls stall-before-head post fail timeout 28 perform-failed size=98
+[guix-8.20.0] h2 ok get ok 200 http/2
+[guix-8.20.0] h2 ok post ok 200 http/2
+[guix-8.20.0] h2 close-before-response get fail send-receive 56 perform-failed size=73
+[guix-8.20.0] h2 close-before-response post fail send-receive 56 perform-failed size=100
+[guix-8.20.0] h2 reset-before-response get fail send-receive 56 perform-failed size=73
+[guix-8.20.0] h2 reset-before-response post fail send-receive 56 perform-failed size=100
+[guix-8.20.0] h2 reset-after-head get fail send-receive 56 perform-failed size=68
+[guix-8.20.0] h2 reset-after-head post fail send-receive 56 perform-failed size=95
+[guix-8.20.0] h2 stall-before-head get fail timeout 28 perform-failed size=69
+[guix-8.20.0] h2 stall-before-head post fail timeout 28 perform-failed size=96
+[guix-8.20.0] h2 rst-stream get fail send-receive 56 perform-failed size=372
+[guix-8.20.0] h2 rst-stream post fail send-receive 56 perform-failed size=534
+[guix-8.20.0] h2 goaway get fail protocol 16 perform-failed size=58
+[guix-8.20.0] h2 goaway post fail protocol 16 perform-failed size=85
+[guix-8.20.0] http refused get fail connect 7 perform-failed size=0
+[guix-8.20.0] tls refused get fail connect 7 perform-failed size=0
+[guix-8.20.0] tls handshake-stall get fail timeout 28 perform-failed size=0
+[guix-8.20.0] http refused post fail connect 7 perform-failed size=0
+[guix-8.20.0] tls refused post fail connect 7 perform-failed size=0
+[guix-8.20.0] tls handshake-stall post fail timeout 28 perform-failed size=0
+[guix-8.20.0] -- done
+[guix-8.20.0] server: request http GET ok #1
+[guix-8.20.0] server: request http POST ok #1
+[guix-8.20.0] server: request http GET close-before-response #1
+[guix-8.20.0] server: request http POST close-before-response #1
+[guix-8.20.0] server: request http GET reset-before-response #1
+[guix-8.20.0] server: request http POST reset-before-response #1
+[guix-8.20.0] server: request http GET reset-after-head #1
+[guix-8.20.0] server: request http POST reset-after-head #1
+[guix-8.20.0] server: request http GET stall-before-head #1
+[guix-8.20.0] server: request http POST stall-before-head #1
+[guix-8.20.0] server: request tls GET ok #1
+[guix-8.20.0] server: request tls POST ok #1
+[guix-8.20.0] server: request tls GET close-before-response #1
+[guix-8.20.0] server: request tls POST close-before-response #1
+[guix-8.20.0] server: request tls GET reset-before-response #1
+[guix-8.20.0] server: request tls POST reset-before-response #1
+[guix-8.20.0] server: request tls GET reset-after-head #1
+[guix-8.20.0] server: request tls POST reset-after-head #1
+[guix-8.20.0] server: request tls GET stall-before-head #1
+[guix-8.20.0] server: request tls POST stall-before-head #1
+[guix-8.20.0] server: request h2 GET ok #1
+[guix-8.20.0] server: request h2 POST ok #1
+[guix-8.20.0] server: request h2 GET close-before-response #1
+[guix-8.20.0] server: request h2 POST close-before-response #1
+[guix-8.20.0] server: request h2 GET reset-before-response #1
+[guix-8.20.0] server: request h2 POST reset-before-response #1
+[guix-8.20.0] server: request h2 GET reset-after-head #1
+[guix-8.20.0] server: request h2 POST reset-after-head #1
+[guix-8.20.0] server: request h2 GET stall-before-head #1
+[guix-8.20.0] server: request h2 POST stall-before-head #1
+[guix-8.20.0] server: request h2 GET rst-stream #1
+[guix-8.20.0] server: request h2 GET rst-stream #2
+[guix-8.20.0] server: request h2 GET rst-stream #3
+[guix-8.20.0] server: request h2 GET rst-stream #4
+[guix-8.20.0] server: request h2 GET rst-stream #5
+[guix-8.20.0] server: request h2 GET rst-stream #6
+[guix-8.20.0] server: request h2 POST rst-stream #1
+[guix-8.20.0] server: request h2 POST rst-stream #2
+[guix-8.20.0] server: request h2 POST rst-stream #3
+[guix-8.20.0] server: request h2 POST rst-stream #4
+[guix-8.20.0] server: request h2 POST rst-stream #5
+[guix-8.20.0] server: request h2 POST rst-stream #6
+[guix-8.20.0] server: request h2 GET goaway #1
+[guix-8.20.0] server: request h2 POST goaway #1

@@ -51,10 +51,22 @@
   ;;                         each of a name and a value, both strings
   ;;   not-a-redirect-count  a redirects that is neither an exact natural
   ;;                         nor #f
-  ;;   not-a-boolean         an allow-downgrade that is neither #t nor #f
+  ;;   not-a-boolean         an allow-downgrade, or a policy's jitter, that
+  ;;                         is neither #t nor #f
+  ;;   not-a-retry-policy    a retry that is neither a policy, made by
+  ;;                         make-http-retry, nor #f
+  ;;   not-an-attempt-count  a policy's attempts that is no exact integer of
+  ;;                         1 or more
+  ;;   not-a-backoff         a policy's backoff-ms or max-backoff-ms that is
+  ;;                         no exact natural
+  ;;   not-a-status-list     a policy's statuses that is no list of exact
+  ;;                         integers from 400 to 599
+  ;;   not-a-method-list     a policy's methods that is no list of get, head,
+  ;;                         post, put, patch and delete
   (define http-request-error-reasons
     '(unknown-key repeated-key missing-value body-and-form body-not-allowed not-a-body
-      not-name-value-pairs not-a-redirect-count not-a-boolean))
+      not-name-value-pairs not-a-redirect-count not-a-boolean not-a-retry-policy
+      not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list))
 
   ;; The fields:
   ;;
@@ -62,11 +74,13 @@
   ;;           form, for body-and-form; body or form, for body-not-allowed,
   ;;           whichever the call gave; body, for not-a-body; form or params,
   ;;           for not-name-value-pairs; redirects, for not-a-redirect-count;
-  ;;           allow-downgrade, for not-a-boolean
+  ;;           allow-downgrade or jitter, for not-a-boolean; retry, for
+  ;;           not-a-retry-policy; attempts, for not-an-attempt-count;
+  ;;           backoff-ms or max-backoff-ms, for not-a-backoff; statuses,
+  ;;           for not-a-status-list; methods, for not-a-method-list
   ;;   value   the key as given, for a key's refusal; the method, for
-  ;;           body-not-allowed; the value as given, for not-a-body,
-  ;;           not-name-value-pairs, not-a-redirect-count and not-a-boolean;
-  ;;           #f, for body-and-form
+  ;;           body-not-allowed; the value as given, for every other reason
+  ;;           but body-and-form; #f, for body-and-form
   ;;   reason  one of http-request-error-reasons
   (define-condition-type &http-request-error &http-error
     unchecked-make-http-request-error http-request-error?
@@ -148,8 +162,9 @@
   ;; http-exchange-history : &http-exchange -> (Listof Response)
   ;; http-exchange-transfers : &http-exchange -> Natural
   ;; A call's context: its method and URL as the caller gave them, the
-  ;; responses before the last, oldest first, and how many transfers it
-  ;; submitted that the engine took. Under &condition, not &http-error: it
+  ;; responses before the last that redirected, oldest first, and how many
+  ;; transfers it submitted that the engine took, each retry's among them.
+  ;; Under &condition, not &http-error: it
   ;; is compounded onto what a call raises, the low level's conditions
   ;; among it (the M5 plan, section 3.3).
   (define-condition-type &http-exchange &condition

@@ -3,7 +3,8 @@
 ;;; M5 plan, sections 3.1 to 3.3, 3.6 and 4): sessions, the verbs, the keys
 ;;; and their merge, the encodings, the response, the conditions, the
 ;;; call's bound, the functional core and the shell for one call. Redirects,
-;;; slice 2's, are tests/test-redirect.sps'.
+;;; slice 2's, are tests/test-redirect.sps', and retries, slice 3's,
+;;; tests/test-retry.sps'.
 ;;;
 ;;;   - (http-client)'s exports, written out;
 ;;;   - sessions: their keys refused by name, a bad value refused with no
@@ -222,11 +223,12 @@
 
 ;; --- the exports ----------------------------------------------------------------------
 
-;; Written out: the M5 plan's slices 1 and 2, section 3.1, and the brief's
+;; Written out: the M5 plan's slices 1 to 3, section 3.1, and the brief's
 ;; names.
 (define http-client-exports
   '(make-http-session http-session? http-session-close call-with-http-session
     http-request http-get http-head http-post http-put http-patch http-delete
+    make-http-retry http-retry?
     http-response? http-response-status http-response-http-version http-response-url
     http-response-headers http-response-body http-response-timings http-response-history
     http-response-header http-response-text
@@ -239,7 +241,7 @@
     &http-exchange http-exchange? http-exchange-method http-exchange-url http-exchange-history
     http-exchange-transfers))
 
-(test-equal "(http-client) exports exactly slices 1 and 2's names, none of them (curl)'s"
+(test-equal "(http-client) exports exactly slices 1 to 3's names, none of them (curl)'s"
   (list (symbols-sorted http-client-exports) '())
   (let ((exports (library-exports '(http-client))))
     (list (symbols-sorted exports)
@@ -247,7 +249,8 @@
 
 (test-equal "http-request-error-reasons, written out"
   '(unknown-key repeated-key missing-value body-and-form body-not-allowed not-a-body
-    not-name-value-pairs not-a-redirect-count not-a-boolean)
+    not-name-value-pairs not-a-redirect-count not-a-boolean not-a-retry-policy
+    not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list)
   http-request-error-reasons)
 
 (test-equal "the conditions' types: the request error and the timeout under &http-error, under &curl-error and &error; &http-exchange under &condition alone, no error"
@@ -260,7 +263,7 @@
           (list (serious-condition? c) (error? c) (curl-error? c) (http-error? c) (http-timeout? c)
                 (http-exchange? c)))))
 
-(test-equal "make-http-request-error refuses a reason that is not one of the nine, an assertion violation"
+(test-equal "make-http-request-error refuses a reason that is not one of the fourteen, an assertion violation"
   '(raised (assertion make-http-request-error))
   (outcome (lambda () (make-http-request-error 'key 'k 'unknown))))
 
@@ -273,14 +276,14 @@
 ;; Before any session is made here: no engine runs, so the multi count is
 ;; the suite's own evidence that a refusal made none.
 
-(test-equal "make-http-session refuses an unknown key by name, retry, body, method, redirect, a string among them, each as &http-request-error, field key, with no engine made"
+(test-equal "make-http-session refuses an unknown key by name, retries, body, method, redirect, a string among them, each as &http-request-error, field key, with no engine made"
   (map (lambda (key) (list (list 'raised '(http-error) (list 'http-request-error 'key key 'unknown-key)) 0))
-       (list 'retry 'body 'method 'redirect "timeout-ms" "redirects"))
+       (list 'retries 'body 'method 'redirect "timeout-ms" "redirects"))
   (in-order (lambda (key)
               (let* ((refused (outcome (lambda () (make-http-session key 1))))
                      (multi (count-of 'multi)))
                 (list refused multi)))
-            (list 'retry 'body 'method 'redirect "timeout-ms" "redirects")))
+            (list 'retries 'body 'method 'redirect "timeout-ms" "redirects")))
 
 (test-equal "make-http-session refuses a repeated key and a key with no value by name, and an unknown key before a missing value, with no engine made"
   (list '(raised (http-error) (http-request-error key timeout-ms repeated-key))
@@ -359,11 +362,11 @@
 (test-equal "call-with-http-session refuses no procedure last, and a refused key, with no engine made"
   (list '(raised (assertion call-with-http-session))
         '(raised (assertion call-with-http-session))
-        '(raised (http-error) (http-request-error key retry unknown-key))
+        '(raised (http-error) (http-request-error key retries unknown-key))
         0)
   (let* ((none (outcome (lambda () (call-with-http-session))))
          (no-procedure (outcome (lambda () (call-with-http-session 'timeout-ms 5000))))
-         (refused-key (outcome (lambda () (call-with-http-session 'retry 3 (lambda (s) s)))))
+         (refused-key (outcome (lambda () (call-with-http-session 'retries 3 (lambda (s) s)))))
          (multi (count-of 'multi)))
     (list none no-procedure refused-key multi)))
 
@@ -909,6 +912,77 @@
     (write (list 'counts (native-counts)))
     (newline)))
 
+;; raise-child : (Listof Datum)
+;; escape-child's program, but its Ctrl-C handler raises a &curl-error of
+;; its own making where escape-child's escapes: the handler runs as the
+;; submit's critical section ends, once the submit has taken the mutex.
+;; Prints (raise SAME COMPOUNDED WHEN SETTLED): SAME, whether the call
+;; raised that very object; COMPOUNDED, whether what it raised carries an
+;; &http-exchange; then (counts COUNTS), once the session is closed.
+(define raise-child
+  '((import (chezscheme) (curl) (http-client)
+            (only (http-client private call) http-session-engine)
+            (only (curl private engine) call-with-engine-held curl-engine-live-count
+                  curl-engine-queued-count)
+            (only (curl private conditions) make-curl-engine-error)
+            (curl private counters))
+    (define url (car (command-line-arguments)))
+    (define (now-ms)
+      (let ((t (current-time 'time-monotonic)))
+        (+ (* (time-second t) 1000) (div (time-nanosecond t) 1000000))))
+    (define (held engine) (+ (curl-engine-queued-count engine) (curl-engine-live-count engine)))
+    (define session (make-http-session 'timeout-ms 30000))
+    (define engine (http-session-engine session))
+    (define lock (make-mutex))
+    (define holding #f)
+    (define letting-go #f)
+    (define released #f)
+    (define (flag get) (critical-section (with-mutex lock (get))))
+    (fork-thread
+     (lambda ()
+       (call-with-engine-held engine
+         (lambda ()
+           (critical-section (with-mutex lock (set! holding #t)))
+           (sleep (make-time 'time-duration 0 3))
+           (critical-section (with-mutex lock (set! letting-go #t)))))
+       (critical-section (with-mutex lock (set! released #t)))))
+    (let spin ()
+      (unless (flag (lambda () holding))
+        (sleep (make-time 'time-duration 1000000 0))
+        (spin)))
+    (define planted (condition (make-curl-engine-error 'stopped #f)
+                               (make-message-condition "planted by the child's Ctrl-C handler")))
+    (define when-raised #f)
+    (define caught
+      (guard (e (#t e))
+        (keyboard-interrupt-handler
+         (lambda ()
+           (set! when-raised (if (flag (lambda () letting-go)) 'after-release 'before-release))
+           (raise planted)))
+        (write (list 'ready (get-process-id)))
+        (newline)
+        (flush-output-port (current-output-port))
+        (http-get session url)
+        'returned))
+    (keyboard-interrupt-handler void)
+    (let spin ()
+      (unless (flag (lambda () released))
+        (sleep (make-time 'time-duration 1000000 0))
+        (spin)))
+    (sleep (make-time 'time-duration 500000000 0))
+    (define settled
+      (let ((deadline (+ (now-ms) 3000)))
+        (let loop ()
+          (cond ((= (held engine) 0) 'cancelled)
+                ((> (now-ms) deadline) 'still-live)
+                (else (sleep (make-time 'time-duration 10000000 0)) (loop))))))
+    (write (list 'raise (eq? caught planted) (and (condition? caught) (http-exchange? caught))
+                 when-raised settled))
+    (newline)
+    (http-session-close session)
+    (write (list 'counts (native-counts)))
+    (newline)))
+
 ;; interrupt-script : String
 ;; sh -c INTERRUPT-SCRIPT sh COMMAND...: COMMAND under GNU timeout
 ;; (gtimeout on macOS), killed with SIGKILL after 60 s, its output in a
@@ -934,18 +1008,19 @@
    "rm -f \"$out\"\n"
    "exit $status\n"))
 
-;; run-escape-child : String -> (List Integer (Listof Any) String)
-;; escape-child, written to a directory of its own, run on URL under
-;; interrupt-script: its exit status, what it printed but its ready
+;; run-escape-child : String [(Listof Datum)] -> (List Integer (Listof Any) String)
+;; escape-child, or PROGRAM, written to a directory of its own, run on URL
+;; under interrupt-script: its exit status, what it printed but its ready
 ;; line, read as data, and the script's stderr.
-(define (run-escape-child url)
+(define (run-escape-child url . program-forms)
   (guard (e (#t (list 'raised (describe e) "")))
     (call-with-temp-directory
      (lambda (dir)
        (let ((program (string-append dir "/escape-child.sps")))
          (call-with-output-file program
            (lambda (port)
-             (for-each (lambda (form) (write form port) (newline port)) escape-child)))
+             (for-each (lambda (form) (write form port) (newline port))
+                       (if (pair? program-forms) (car program-forms) escape-child))))
          (let ((r (capture-command (list "sh" "-c" interrupt-script "sh" (getenv "CHEZ")
                                          "--libdirs" (library-path) "--program" program url))))
            (list (car r) (read-all (cadr r)) (caddr r))))))))
@@ -1133,8 +1208,8 @@
             (more (- (transfers-started) started)))
        (append refusals (list more))))
 
-   (test-equal "a call's keys refused by name, compounded with &http-exchange: unknown, retry among them before slice 3; repeated; missing a value"
-     (list (list 'raised '(http-error) '(http-request-error key retry unknown-key)
+   (test-equal "a call's keys refused by name, compounded with &http-exchange: unknown, retries among them, beside the retry a call takes; repeated; missing a value"
+     (list (list 'raised '(http-error) '(http-request-error key retries unknown-key)
                  (list 'exchange 'get echo '() 0))
            (list 'raised '(http-error) '(http-request-error key body repeated-key)
                  (list 'exchange 'post echo '() 0))
@@ -1142,7 +1217,7 @@
                  (list 'exchange 'post echo '() 0))
            (list 'raised '(http-error) '(http-request-error key method unknown-key)
                  (list 'exchange 'get echo '() 0)))
-     (list (outcome (lambda () (http-get s echo 'retry 3)))
+     (list (outcome (lambda () (http-get s echo 'retries 3)))
            (outcome (lambda () (http-post s echo 'body "a" 'body "b")))
            (outcome (lambda () (http-post s echo 'timeout-ms 1000 'form)))
            (outcome (lambda () (http-get s echo 'method 'post)))))
@@ -1425,6 +1500,12 @@
                                                      (curl-string . 0) (transfer . 0) (multi . 0))))
            "")
      (run-escape-child long-drip))
+
+   (test-equal "SIGINT while a call's submit blocks inside its critical section, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object and not compounded with &http-exchange, as the section ends, after the submit took the mutex; the drive still cancels the transfer; the child's counts zero"
+     (list 0 '((raise #t #f after-release cancelled) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0)
+                                                             (curl-string . 0) (transfer . 0) (multi . 0))))
+           "")
+     (run-escape-child long-drip raise-child))
 
    (test-equal "the suite's session closes, and every count is zero after"
      zero-counts

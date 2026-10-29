@@ -1,0 +1,7 @@
+[after-round-2-guix-8.20.0] tick-storm fresh: mode fresh, runs 100: ((compounded . 100)); ticks sent 337, reached the caller 337, lost 0
+[after-round-2-guix-8.20.0] tick-storm constant: mode constant, runs 100: ((compounded . 100)); ticks sent 344, reached the caller 344, lost 0
+[after-round-2-guix-8.20.0] tick-storm prearm: mode prearm, runs 100: ((compounded . 100)); ticks sent 320, reached the caller 320, lost 0
+[after-round-2-guix-8.20.0] false-storm: mode false, runs 100: ((returned . 100)); ticks sent 322, reached the caller 322, lost 0
+[after-round-2-guix-8.20.0] ranout-post-live: raised after 4014 ms: code 28, request-size 85, http-timeout? #t, exchange (post 2)
+[after-round-2-guix-8.20.0] listener: {"listening":20003,"at":500}
+[after-round-2-guix-8.20.0] listener: {"received":"POST /order HTTP/1.1\r\nHost: 127.0.0.1:20003\r\nAccept: */*\r\nContent-Length: 6\r\n\r\nitem=1"}

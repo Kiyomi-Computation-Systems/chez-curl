@@ -350,6 +350,23 @@
                   (string-append (at "engine-elsewhere" "http-client/h.sls") ": (http-client h) "
                                  (library-only "fork-thread" "(curl private engine)"))))
 
+   (list "generator-listed"
+         "rule (f), passing: make-pseudo-random-generator and pseudo-random-generator-next! imported by (http-client private call), the one library listed for each, with critical-section, make-mutex and with-mutex beside them"
+         (holds 1 1))
+   (list "generator-elsewhere"
+         "rule (f): make-pseudo-random-generator and pseudo-random-generator-next! each imported by another (http-client ...) library, and both by a (curl ...) one; the listed library, importing both, is not named"
+         (refused 4
+                  (string-append (at "generator-elsewhere" "curl/x.sls") ": (curl x) "
+                                 (library-only "make-pseudo-random-generator" "(http-client private call)"))
+                  (string-append (at "generator-elsewhere" "curl/x.sls") ": (curl x) "
+                                 (library-only "pseudo-random-generator-next!" "(http-client private call)"))
+                  (string-append (at "generator-elsewhere" "http-client/private/drive.sls")
+                                 ": (http-client private drive) "
+                                 (library-only "make-pseudo-random-generator" "(http-client private call)"))
+                  (string-append (at "generator-elsewhere" "http-client/private/exchange.sls")
+                                 ": (http-client private exchange) "
+                                 (library-only "pseudo-random-generator-next!" "(http-client private call)"))))
+
    ;; --- rule (g): no library exports a name it imports from (chezscheme) ---
    (list "export-chez"
          "rule (g): a name imported from (chezscheme) exported, plain or as a rename spec's internal name, in either family, each in export order; a name from (rnrs), a rename of a library's own definition to a (chezscheme) name, and a definition named like a (chezscheme) binding are not named"
@@ -645,13 +662,26 @@
 
 ;; The entries above are held to src/'s imports, so an entry dropped with
 ;; nothing else changed passes there: the name then becomes one every
-;; library may import. So the list's names are written out here.
-(test-equal "library-only-chez-names, written out: define-ftype, foreign-alloc, foreign-free, foreign-procedure, foreign-entry, load-shared-object, ftype-set!, foreign-callable, foreign-callable-entry-point, lock-object, fork-thread, disable-interrupts and enable-interrupts, each kept to its libraries"
-  '(define-ftype foreign-alloc foreign-free foreign-procedure foreign-entry load-shared-object ftype-set!
-    foreign-callable foreign-callable-entry-point lock-object fork-thread disable-interrupts
-    enable-interrupts)
-  (guard (e (#t (list 'malformed (describe e))))
-    (map car declared-library-only)))
+;; library may import. And a library added to an entry passes there too,
+;; once that library imports the name. So the list is written out here
+;; whole, each name with its libraries.
+(test-equal "library-only-chez-names, written out whole: define-ftype, foreign-alloc, foreign-free, foreign-procedure, foreign-entry, load-shared-object, ftype-set!, foreign-callable, foreign-callable-entry-point, lock-object, fork-thread, disable-interrupts, enable-interrupts, make-pseudo-random-generator and pseudo-random-generator-next!, each with the libraries it is kept to"
+  '((define-ftype (curl private layouts))
+    (foreign-alloc (curl private memory))
+    (foreign-free (curl private memory))
+    (foreign-procedure (curl private native))
+    (foreign-entry (curl private native))
+    (load-shared-object (curl private native))
+    (ftype-set! (curl private native))
+    (foreign-callable (curl private transfer))
+    (foreign-callable-entry-point (curl private transfer))
+    (lock-object (curl private transfer))
+    (fork-thread (curl private engine))
+    (disable-interrupts (curl private engine))
+    (enable-interrupts (curl private engine))
+    (make-pseudo-random-generator (http-client private call))
+    (pseudo-random-generator-next! (http-client private call)))
+  declared-library-only)
 
 (test-equal "rnrs-libraries is the (rnrs ...) libraries this Chez has, but (rnrs eval)"
   (sorted-libraries

@@ -63,6 +63,28 @@
 //         Content-Length: 0 and Connection: close, and ends. A pair that is
 //         no NAME=VALUE, an unknown name, a repeat of code or ms, a value out
 //         of range, and a malformed %, get the fixed 400.
+//         /raw/retry?key=KEY&fail=N&how=HOW[&code=CODE][&after=BYTES][&then=THEN]
+//         fails the first N requests for KEY, then answers 200, or stalls.
+//         Its query, every pair NAME=VALUE, each name once at most: key, 1
+//         to 64 of A-Z, a-z, 0-9, ., _ and -; fail, 0 to 100; how, close,
+//         reset or status; code, 200 to 599, with how=status alone, which
+//         needs it; after, with how=status alone, percent-decoded as
+//         location's to is; then, ok, the default, or stall. The
+//         origin counts each request for KEY whose query it takes, on raw
+//         and raw-tls alike, and C is the count with this one. While C is N
+//         or less, the request fails by HOW: close ends the connection with
+//         nothing written; reset resets it with nothing written; status
+//         writes "HTTP/1.1 CODE Retry", a Retry-After header holding after's
+//         bytes as they are when after is given, then Content-Length,
+//         Connection: close and the body "attempt C\n", and ends. Past N,
+//         with then=ok, it writes "HTTP/1.1 200 OK", Content-Length,
+//         Connection: close and the body "attempt C\n", and ends; with
+//         then=stall it writes nothing, and leaves the connection to the
+//         client. A query it refuses gets the fixed 400, and counts nothing.
+//         /raw/attempts?key=KEY, KEY as retry takes it, writes "HTTP/1.1
+//         200 OK", Content-Length, Connection: close and the body "attempts
+//         C\n", C the count so far, 0 for a key never counted, and ends. It
+//         counts nothing. A count lives as long as the origin.
 //   h2c   node:http2, plaintext, by prior knowledge: the HTTP/2 routes.
 //   With --pki DIR:
 //   https, https-expired, https-wrong-host, https-untrusted
@@ -496,7 +518,89 @@ const scripts = {
       return [...(ms > 0 ? [wait(ms)] : []), write(Buffer.concat(head)), END];
     },
   },
+
+  // retries: a key's first requests fail, then it answers 200; and its count
+  'retry': {
+    query: retryQuery,
+    play: ({ key, fail, how, code, after, then }) => {
+      const count = (attempts.get(key) || 0) + 1;
+      attempts.set(key, count);
+      const body = `attempt ${count}\n`;
+      const tail = `Content-Length: ${body.length}\r\nConnection: close\r\n\r\n${body}`;
+      if (count > fail) return then === 'stall' ? [STALL] : [write(`HTTP/1.1 200 OK\r\n${tail}`), END];
+      if (how === 'close') return [END];
+      if (how === 'reset') return [RESET];
+      const head = [ascii(`HTTP/1.1 ${code} Retry\r\n`)];
+      if (after !== null) head.push(ascii('Retry-After: '), after, ascii('\r\n'));
+      head.push(ascii(tail));
+      return [write(Buffer.concat(head)), END];
+    },
+  },
+  'attempts': {
+    query: attemptsQuery,
+    play: ({ key }) => {
+      const body = `attempts ${attempts.get(key) || 0}\n`;
+      return [write(`HTTP/1.1 200 OK\r\nContent-Length: ${body.length}\r\nConnection: close\r\n\r\n${body}`),
+              END];
+    },
+  },
 };
+
+// attempts: the retry script's count of the requests it has read for each
+// key, by key, for as long as the origin runs.
+const attempts = new Map();
+
+// retryKey: whether TEXT is a key the retry script takes.
+const retryKey = (text) => /^[A-Za-z0-9._-]{1,64}$/.test(text);
+
+// decimal: TEXT's value when it is a decimal natural with no leading zero,
+// within LOW to HIGH, or null.
+function decimal(text, low, high) {
+  if (!/^(0|[1-9][0-9]*)$/.test(text)) return null;
+  const n = Number(text);
+  return n >= low && n <= high ? n : null;
+}
+
+// retryQuery: the retry script's parameters from QUERY, or null: key, fail
+// and how exactly once; code exactly once with how=status, and never
+// otherwise; after at most once, with how=status alone, its bytes; then at
+// most once, ok or stall, ok when absent.
+function retryQuery(query) {
+  if (query === undefined) return null;
+  const found = { key: null, fail: null, how: null, code: null, after: null, then: null };
+  for (const pair of query.split('&')) {
+    const at = pair.indexOf('=');
+    if (at < 0) return null;
+    const name = pair.slice(0, at);
+    const value = pair.slice(at + 1);
+    if (!Object.hasOwn(found, name) || found[name] !== null) return null;
+    let read;
+    switch (name) {
+      case 'key': read = retryKey(value) ? value : null; break;
+      case 'fail': read = decimal(value, 0, 100); break;
+      case 'how': read = ['close', 'reset', 'status'].includes(value) ? value : null; break;
+      case 'code': read = decimal(value, 200, 599); break;
+      case 'then': read = ['ok', 'stall'].includes(value) ? value : null; break;
+      default: read = percentDecoded(value); break;
+    }
+    if (read === null) return null;
+    found[name] = read;
+  }
+  if (found.key === null || found.fail === null || found.how === null) return null;
+  if (found.how === 'status' ? found.code === null : found.code !== null || found.after !== null) {
+    return null;
+  }
+  if (found.then === null) found.then = 'ok';
+  return found;
+}
+
+// attemptsQuery: the attempts script's key from QUERY, exactly key=KEY, or
+// null.
+function attemptsQuery(query) {
+  if (query === undefined || !query.startsWith('key=')) return null;
+  const key = query.slice(4);
+  return retryKey(key) ? { key } : null;
+}
 
 // percentDecoded: TEXT, a query value read as Latin-1, as bytes: each %XX,
 // in either case, its byte, and every other char its own; null for a %

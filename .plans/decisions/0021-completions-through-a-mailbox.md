@@ -1,7 +1,8 @@
 # ADR-0021: Completions reach callers through a mailbox the caller drains
 
 - **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26:
-  measured before slice 2 built on it
+  measured before slice 2 built on it; amended 2026-10-28: a done token's outcome as data (M5
+  slice 3)
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, `(curl)`'s asynchronous API, from M4
 - **Settles:** how a completion callback runs on a caller's thread, which ADR-0012 left to M4;
@@ -123,3 +124,30 @@ in Docker `ubuntu:24.04` (8.5.0, Valgrind 3.22)
     there runs as it ends (`timer.ss` and `keyboard.ss`, there). A sweep of the timer from 1
     to 300 ticks escaped before the take at 1 to 6, after it had returned at 7 to 26, and never
     between; from 27, the take and the call after it ended before the timer ran out.
+
+## Amendment, 2026-10-28: a done token's outcome as data (M5 slice 3)
+
+M5 slice 3's high level awaited a token inside a guard that took any `&curl-error` as the
+transfer's failure. Its review showed a caller's interrupt handler that raised a `&curl-error`
+there, its own call's failure say, being read as the transfer's: with a retry policy the call
+resent a `post` while the first still ran. The fix that checked the raise against the token's own
+outcome awaited the token again inside the guard's clause, with interrupts on, and the scoped
+review showed a handler raising there was lost or misread: 100 of 100 calls in a storm of timer
+handlers raising `#f` ended in an assertion, and in storms raising other values, 24 to 57 of the
+raises were lost ([`research/m5/retry-review/`](../research/m5/retry-review/),
+`results/before-round-2-guix-8.20.0.log`). A done token's outcome could be read only by
+awaiting it, which raises a failure, and `curl-token-await` refuses inside a critical section.
+
+**Decided by the maintainer, 2026-10-28, the recommended option: `(curl)` exports
+`curl-token-outcome : Token -> (U Response Condition #f)`,** a done token's outcome as data: the
+response `curl-token-await` answers, or the condition it raises, the same object; `#f` while the
+token is not done. It never waits and never raises, so it may run inside a critical section. A
+caller waits with `curl-token-wait`, with no guard around the wait, so a handler's raise leaves
+as raised, then reads the outcome.
+
+- **Rejected:** keeping the check by a second await, and documenting the window it leaves.
+- **`test-mailbox` holds it:** `#f` while live, inside `critical-section` too; once done, the
+  response and the condition, each `eq?` to what await answers or raises; and a refusal of what
+  is no token. A copy of the condition, and an await in its place, each fail it.
+- **The plan's "the low level gains four URL functions, and nothing else"** gains this one export
+  (the M5 plan, §3.1, amended).

@@ -1,0 +1,351 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+[floor-7.85.0] raw=33323 tls=36317 h2=45737 stall=43945 refused=44313
+[floor-7.85.0] libcurl 7.85.0
+[floor-7.85.0] http ok get ok 200 http/1.1
+[floor-7.85.0] http ok post ok 200 http/1.1
+[floor-7.85.0] http close-before-response get fail send-receive 52 perform-failed size=75
+[floor-7.85.0] http close-before-response post fail send-receive 52 perform-failed size=102
+[floor-7.85.0] http reset-before-response get fail send-receive 56 perform-failed size=75
+[floor-7.85.0] http reset-before-response post fail send-receive 56 perform-failed size=102
+[floor-7.85.0] http reset-after-head get fail send-receive 56 perform-failed size=70
+[floor-7.85.0] http reset-after-head post fail send-receive 56 perform-failed size=97
+[floor-7.85.0] http stall-before-head get fail timeout 28 perform-failed size=71
+[floor-7.85.0] http stall-before-head post fail timeout 28 perform-failed size=98
+[floor-7.85.0] tls ok get ok 200 http/1.1
+[floor-7.85.0] tls ok post ok 200 http/1.1
+[floor-7.85.0] tls close-before-response get fail send-receive 56 perform-failed size=75
+[floor-7.85.0] tls close-before-response post fail send-receive 56 perform-failed size=102
+[floor-7.85.0] tls reset-before-response get fail send-receive 56 perform-failed size=75
+[floor-7.85.0] tls reset-before-response post fail send-receive 56 perform-failed size=102
+[floor-7.85.0] tls reset-after-head get fail send-receive 56 perform-failed size=70
+[floor-7.85.0] tls reset-after-head post fail send-receive 56 perform-failed size=97
+[floor-7.85.0] tls stall-before-head get fail timeout 28 perform-failed size=71
+[floor-7.85.0] tls stall-before-head post fail timeout 28 perform-failed size=98
+[floor-7.85.0] h2 ok get ok 200 http/2
+[floor-7.85.0] h2 ok post ok 200 http/2
+[floor-7.85.0] h2 close-before-response get fail send-receive 56 perform-failed size=73
+[floor-7.85.0] h2 close-before-response post fail send-receive 56 perform-failed size=93
+[floor-7.85.0] h2 reset-before-response get fail send-receive 56 perform-failed size=73
+[floor-7.85.0] h2 reset-before-response post fail send-receive 56 perform-failed size=93
+[floor-7.85.0] h2 reset-after-head get fail send-receive 56 perform-failed size=68
+[floor-7.85.0] h2 reset-after-head post fail send-receive 56 perform-failed size=88
+[floor-7.85.0] h2 stall-before-head get fail timeout 28 perform-failed size=69
+[floor-7.85.0] h2 stall-before-head post fail timeout 28 perform-failed size=89
+[floor-7.85.0] h2 rst-stream get fail send-receive 56 perform-failed size=372
+[floor-7.85.0] h2 rst-stream post fail send-receive 56 perform-failed size=492
+[floor-7.85.0] h2 goaway get fail protocol 92 perform-failed size=58
+[floor-7.85.0] h2 goaway post fail protocol 92 perform-failed size=78
+[floor-7.85.0] http refused get fail connect 7 perform-failed size=0
+[floor-7.85.0] tls refused get fail connect 7 perform-failed size=0
+[floor-7.85.0] tls handshake-stall get fail timeout 28 perform-failed size=0
+[floor-7.85.0] http refused post fail connect 7 perform-failed size=0
+[floor-7.85.0] tls refused post fail connect 7 perform-failed size=0
+[floor-7.85.0] tls handshake-stall post fail timeout 28 perform-failed size=0
+[floor-7.85.0] -- done
+[floor-7.85.0] server: request http GET ok #1
+[floor-7.85.0] server: request http POST ok #1
+[floor-7.85.0] server: request http GET close-before-response #1
+[floor-7.85.0] server: request http POST close-before-response #1
+[floor-7.85.0] server: request http GET reset-before-response #1
+[floor-7.85.0] server: request http POST reset-before-response #1
+[floor-7.85.0] server: request http GET reset-after-head #1
+[floor-7.85.0] server: request http POST reset-after-head #1
+[floor-7.85.0] server: request http GET stall-before-head #1
+[floor-7.85.0] server: request http POST stall-before-head #1
+[floor-7.85.0] server: request tls GET ok #1
+[floor-7.85.0] server: request tls POST ok #1
+[floor-7.85.0] server: request tls GET close-before-response #1
+[floor-7.85.0] server: request tls POST close-before-response #1
+[floor-7.85.0] server: request tls GET reset-before-response #1
+[floor-7.85.0] server: request tls POST reset-before-response #1
+[floor-7.85.0] server: request tls GET reset-after-head #1
+[floor-7.85.0] server: request tls POST reset-after-head #1
+[floor-7.85.0] server: request tls GET stall-before-head #1
+[floor-7.85.0] server: request tls POST stall-before-head #1
+[floor-7.85.0] server: request h2 GET ok #1
+[floor-7.85.0] server: request h2 POST ok #1
+[floor-7.85.0] server: request h2 GET close-before-response #1
+[floor-7.85.0] server: request h2 POST close-before-response #1
+[floor-7.85.0] server: request h2 GET reset-before-response #1
+[floor-7.85.0] server: request h2 POST reset-before-response #1
+[floor-7.85.0] server: request h2 GET reset-after-head #1
+[floor-7.85.0] server: request h2 POST reset-after-head #1
+[floor-7.85.0] server: request h2 GET stall-before-head #1
+[floor-7.85.0] server: request h2 POST stall-before-head #1
+[floor-7.85.0] server: request h2 GET rst-stream #1
+[floor-7.85.0] server: request h2 GET rst-stream #2
+[floor-7.85.0] server: request h2 GET rst-stream #3
+[floor-7.85.0] server: request h2 GET rst-stream #4
+[floor-7.85.0] server: request h2 GET rst-stream #5
+[floor-7.85.0] server: request h2 GET rst-stream #6
+[floor-7.85.0] server: request h2 POST rst-stream #1
+[floor-7.85.0] server: request h2 POST rst-stream #2
+[floor-7.85.0] server: request h2 POST rst-stream #3
+[floor-7.85.0] server: request h2 POST rst-stream #4
+[floor-7.85.0] server: request h2 POST rst-stream #5
+[floor-7.85.0] server: request h2 POST rst-stream #6
+[floor-7.85.0] server: request h2 GET goaway #1
+[floor-7.85.0] server: request h2 POST goaway #1
+[ubuntu-openssl-8.5.0] raw=39183 tls=36507 h2=34867 stall=42967 refused=39229
+[ubuntu-openssl-8.5.0] libcurl 8.5.0
+[ubuntu-openssl-8.5.0] http ok get ok 200 http/1.1
+[ubuntu-openssl-8.5.0] http ok post ok 200 http/1.1
+[ubuntu-openssl-8.5.0] http close-before-response get fail send-receive 52 perform-failed size=75
+[ubuntu-openssl-8.5.0] http close-before-response post fail send-receive 52 perform-failed size=102
+[ubuntu-openssl-8.5.0] http reset-before-response get fail send-receive 56 perform-failed size=75
+[ubuntu-openssl-8.5.0] http reset-before-response post fail send-receive 56 perform-failed size=102
+[ubuntu-openssl-8.5.0] http reset-after-head get fail send-receive 56 perform-failed size=70
+[ubuntu-openssl-8.5.0] http reset-after-head post fail send-receive 56 perform-failed size=97
+[ubuntu-openssl-8.5.0] http stall-before-head get fail timeout 28 perform-failed size=71
+[ubuntu-openssl-8.5.0] http stall-before-head post fail timeout 28 perform-failed size=98
+[ubuntu-openssl-8.5.0] tls ok get ok 200 http/1.1
+[ubuntu-openssl-8.5.0] tls ok post ok 200 http/1.1
+[ubuntu-openssl-8.5.0] tls close-before-response get fail send-receive 52 perform-failed size=75
+[ubuntu-openssl-8.5.0] tls close-before-response post fail send-receive 52 perform-failed size=102
+[ubuntu-openssl-8.5.0] tls reset-before-response get fail send-receive 56 perform-failed size=75
+[ubuntu-openssl-8.5.0] tls reset-before-response post fail send-receive 56 perform-failed size=102
+[ubuntu-openssl-8.5.0] tls reset-after-head get fail send-receive 56 perform-failed size=70
+[ubuntu-openssl-8.5.0] tls reset-after-head post fail send-receive 56 perform-failed size=97
+[ubuntu-openssl-8.5.0] tls stall-before-head get fail timeout 28 perform-failed size=71
+[ubuntu-openssl-8.5.0] tls stall-before-head post fail timeout 28 perform-failed size=98
+[ubuntu-openssl-8.5.0] h2 ok get ok 200 http/2
+[ubuntu-openssl-8.5.0] h2 ok post ok 200 http/2
+[ubuntu-openssl-8.5.0] h2 close-before-response get fail send-receive 56 perform-failed size=73
+[ubuntu-openssl-8.5.0] h2 close-before-response post fail send-receive 56 perform-failed size=100
+[ubuntu-openssl-8.5.0] h2 reset-before-response get fail send-receive 56 perform-failed size=73
+[ubuntu-openssl-8.5.0] h2 reset-before-response post fail send-receive 56 perform-failed size=100
+[ubuntu-openssl-8.5.0] h2 reset-after-head get fail send-receive 56 perform-failed size=68
+[ubuntu-openssl-8.5.0] h2 reset-after-head post fail send-receive 56 perform-failed size=95
+[ubuntu-openssl-8.5.0] h2 stall-before-head get fail timeout 28 perform-failed size=69
+[ubuntu-openssl-8.5.0] h2 stall-before-head post fail timeout 28 perform-failed size=96
+[ubuntu-openssl-8.5.0] h2 rst-stream get fail send-receive 56 perform-failed size=372
+[ubuntu-openssl-8.5.0] h2 rst-stream post fail send-receive 56 perform-failed size=534
+[ubuntu-openssl-8.5.0] h2 goaway get fail send-receive 56 perform-failed size=58
+[ubuntu-openssl-8.5.0] h2 goaway post fail send-receive 56 perform-failed size=85
+[ubuntu-openssl-8.5.0] http refused get fail connect 7 perform-failed size=0
+[ubuntu-openssl-8.5.0] tls refused get fail connect 7 perform-failed size=0
+[ubuntu-openssl-8.5.0] tls handshake-stall get fail timeout 28 perform-failed size=0
+[ubuntu-openssl-8.5.0] http refused post fail connect 7 perform-failed size=0
+[ubuntu-openssl-8.5.0] tls refused post fail connect 7 perform-failed size=0
+[ubuntu-openssl-8.5.0] tls handshake-stall post fail timeout 28 perform-failed size=0
+[ubuntu-openssl-8.5.0] -- done
+[ubuntu-openssl-8.5.0] server: request http GET ok #1
+[ubuntu-openssl-8.5.0] server: request http POST ok #1
+[ubuntu-openssl-8.5.0] server: request http GET close-before-response #1
+[ubuntu-openssl-8.5.0] server: request http POST close-before-response #1
+[ubuntu-openssl-8.5.0] server: request http GET reset-before-response #1
+[ubuntu-openssl-8.5.0] server: request http POST reset-before-response #1
+[ubuntu-openssl-8.5.0] server: request http GET reset-after-head #1
+[ubuntu-openssl-8.5.0] server: request http POST reset-after-head #1
+[ubuntu-openssl-8.5.0] server: request http GET stall-before-head #1
+[ubuntu-openssl-8.5.0] server: request http POST stall-before-head #1
+[ubuntu-openssl-8.5.0] server: request tls GET ok #1
+[ubuntu-openssl-8.5.0] server: request tls POST ok #1
+[ubuntu-openssl-8.5.0] server: request tls GET close-before-response #1
+[ubuntu-openssl-8.5.0] server: request tls POST close-before-response #1
+[ubuntu-openssl-8.5.0] server: request tls GET reset-before-response #1
+[ubuntu-openssl-8.5.0] server: request tls POST reset-before-response #1
+[ubuntu-openssl-8.5.0] server: request tls GET reset-after-head #1
+[ubuntu-openssl-8.5.0] server: request tls POST reset-after-head #1
+[ubuntu-openssl-8.5.0] server: request tls GET stall-before-head #1
+[ubuntu-openssl-8.5.0] server: request tls POST stall-before-head #1
+[ubuntu-openssl-8.5.0] server: request h2 GET ok #1
+[ubuntu-openssl-8.5.0] server: request h2 POST ok #1
+[ubuntu-openssl-8.5.0] server: request h2 GET close-before-response #1
+[ubuntu-openssl-8.5.0] server: request h2 POST close-before-response #1
+[ubuntu-openssl-8.5.0] server: request h2 GET reset-before-response #1
+[ubuntu-openssl-8.5.0] server: request h2 POST reset-before-response #1
+[ubuntu-openssl-8.5.0] server: request h2 GET reset-after-head #1
+[ubuntu-openssl-8.5.0] server: request h2 POST reset-after-head #1
+[ubuntu-openssl-8.5.0] server: request h2 GET stall-before-head #1
+[ubuntu-openssl-8.5.0] server: request h2 POST stall-before-head #1
+[ubuntu-openssl-8.5.0] server: request h2 GET rst-stream #1
+[ubuntu-openssl-8.5.0] server: request h2 GET rst-stream #2
+[ubuntu-openssl-8.5.0] server: request h2 GET rst-stream #3
+[ubuntu-openssl-8.5.0] server: request h2 GET rst-stream #4
+[ubuntu-openssl-8.5.0] server: request h2 GET rst-stream #5
+[ubuntu-openssl-8.5.0] server: request h2 GET rst-stream #6
+[ubuntu-openssl-8.5.0] server: request h2 POST rst-stream #1
+[ubuntu-openssl-8.5.0] server: request h2 POST rst-stream #2
+[ubuntu-openssl-8.5.0] server: request h2 POST rst-stream #3
+[ubuntu-openssl-8.5.0] server: request h2 POST rst-stream #4
+[ubuntu-openssl-8.5.0] server: request h2 POST rst-stream #5
+[ubuntu-openssl-8.5.0] server: request h2 POST rst-stream #6
+[ubuntu-openssl-8.5.0] server: request h2 GET goaway #1
+[ubuntu-openssl-8.5.0] server: request h2 POST goaway #1
+[ubuntu-gnutls-8.5.0] raw=45365 tls=37029 h2=46395 stall=40337 refused=38005
+[ubuntu-gnutls-8.5.0] libcurl 8.5.0
+[ubuntu-gnutls-8.5.0] http ok get ok 200 http/1.1
+[ubuntu-gnutls-8.5.0] http ok post ok 200 http/1.1
+[ubuntu-gnutls-8.5.0] http close-before-response get fail send-receive 52 perform-failed size=75
+[ubuntu-gnutls-8.5.0] http close-before-response post fail send-receive 52 perform-failed size=102
+[ubuntu-gnutls-8.5.0] http reset-before-response get fail send-receive 56 perform-failed size=75
+[ubuntu-gnutls-8.5.0] http reset-before-response post fail send-receive 56 perform-failed size=102
+[ubuntu-gnutls-8.5.0] http reset-after-head get fail send-receive 56 perform-failed size=70
+[ubuntu-gnutls-8.5.0] http reset-after-head post fail send-receive 56 perform-failed size=97
+[ubuntu-gnutls-8.5.0] http stall-before-head get fail timeout 28 perform-failed size=71
+[ubuntu-gnutls-8.5.0] http stall-before-head post fail timeout 28 perform-failed size=98
+[ubuntu-gnutls-8.5.0] tls ok get ok 200 http/1.1
+[ubuntu-gnutls-8.5.0] tls ok post ok 200 http/1.1
+[ubuntu-gnutls-8.5.0] tls close-before-response get fail send-receive 56 perform-failed size=75
+[ubuntu-gnutls-8.5.0] tls close-before-response post fail send-receive 56 perform-failed size=102
+[ubuntu-gnutls-8.5.0] tls reset-before-response get fail send-receive 56 perform-failed size=75
+[ubuntu-gnutls-8.5.0] tls reset-before-response post fail send-receive 56 perform-failed size=102
+[ubuntu-gnutls-8.5.0] tls reset-after-head get fail send-receive 56 perform-failed size=70
+[ubuntu-gnutls-8.5.0] tls reset-after-head post fail send-receive 56 perform-failed size=97
+[ubuntu-gnutls-8.5.0] tls stall-before-head get fail timeout 28 perform-failed size=71
+[ubuntu-gnutls-8.5.0] tls stall-before-head post fail timeout 28 perform-failed size=98
+[ubuntu-gnutls-8.5.0] h2 ok get ok 200 http/2
+[ubuntu-gnutls-8.5.0] h2 ok post ok 200 http/2
+[ubuntu-gnutls-8.5.0] h2 close-before-response get fail send-receive 56 perform-failed size=73
+[ubuntu-gnutls-8.5.0] h2 close-before-response post fail send-receive 56 perform-failed size=100
+[ubuntu-gnutls-8.5.0] h2 reset-before-response get fail send-receive 56 perform-failed size=73
+[ubuntu-gnutls-8.5.0] h2 reset-before-response post fail send-receive 56 perform-failed size=100
+[ubuntu-gnutls-8.5.0] h2 reset-after-head get fail send-receive 56 perform-failed size=68
+[ubuntu-gnutls-8.5.0] h2 reset-after-head post fail send-receive 56 perform-failed size=95
+[ubuntu-gnutls-8.5.0] h2 stall-before-head get fail timeout 28 perform-failed size=69
+[ubuntu-gnutls-8.5.0] h2 stall-before-head post fail timeout 28 perform-failed size=96
+[ubuntu-gnutls-8.5.0] h2 rst-stream get fail send-receive 56 perform-failed size=372
+[ubuntu-gnutls-8.5.0] h2 rst-stream post fail send-receive 56 perform-failed size=534
+[ubuntu-gnutls-8.5.0] h2 goaway get fail send-receive 56 perform-failed size=58
+[ubuntu-gnutls-8.5.0] h2 goaway post fail send-receive 56 perform-failed size=85
+[ubuntu-gnutls-8.5.0] http refused get fail connect 7 perform-failed size=0
+[ubuntu-gnutls-8.5.0] tls refused get fail connect 7 perform-failed size=0
+[ubuntu-gnutls-8.5.0] tls handshake-stall get fail timeout 28 perform-failed size=0
+[ubuntu-gnutls-8.5.0] http refused post fail connect 7 perform-failed size=0
+[ubuntu-gnutls-8.5.0] tls refused post fail connect 7 perform-failed size=0
+[ubuntu-gnutls-8.5.0] tls handshake-stall post fail timeout 28 perform-failed size=0
+[ubuntu-gnutls-8.5.0] -- done
+[ubuntu-gnutls-8.5.0] server: request http GET ok #1
+[ubuntu-gnutls-8.5.0] server: request http POST ok #1
+[ubuntu-gnutls-8.5.0] server: request http GET close-before-response #1
+[ubuntu-gnutls-8.5.0] server: request http POST close-before-response #1
+[ubuntu-gnutls-8.5.0] server: request http GET reset-before-response #1
+[ubuntu-gnutls-8.5.0] server: request http POST reset-before-response #1
+[ubuntu-gnutls-8.5.0] server: request http GET reset-after-head #1
+[ubuntu-gnutls-8.5.0] server: request http POST reset-after-head #1
+[ubuntu-gnutls-8.5.0] server: request http GET stall-before-head #1
+[ubuntu-gnutls-8.5.0] server: request http POST stall-before-head #1
+[ubuntu-gnutls-8.5.0] server: request tls GET ok #1
+[ubuntu-gnutls-8.5.0] server: request tls POST ok #1
+[ubuntu-gnutls-8.5.0] server: request tls GET close-before-response #1
+[ubuntu-gnutls-8.5.0] server: request tls POST close-before-response #1
+[ubuntu-gnutls-8.5.0] server: request tls GET reset-before-response #1
+[ubuntu-gnutls-8.5.0] server: request tls POST reset-before-response #1
+[ubuntu-gnutls-8.5.0] server: request tls GET reset-after-head #1
+[ubuntu-gnutls-8.5.0] server: request tls POST reset-after-head #1
+[ubuntu-gnutls-8.5.0] server: request tls GET stall-before-head #1
+[ubuntu-gnutls-8.5.0] server: request tls POST stall-before-head #1
+[ubuntu-gnutls-8.5.0] server: request h2 GET ok #1
+[ubuntu-gnutls-8.5.0] server: request h2 POST ok #1
+[ubuntu-gnutls-8.5.0] server: request h2 GET close-before-response #1
+[ubuntu-gnutls-8.5.0] server: request h2 POST close-before-response #1
+[ubuntu-gnutls-8.5.0] server: request h2 GET reset-before-response #1
+[ubuntu-gnutls-8.5.0] server: request h2 POST reset-before-response #1
+[ubuntu-gnutls-8.5.0] server: request h2 GET reset-after-head #1
+[ubuntu-gnutls-8.5.0] server: request h2 POST reset-after-head #1
+[ubuntu-gnutls-8.5.0] server: request h2 GET stall-before-head #1
+[ubuntu-gnutls-8.5.0] server: request h2 POST stall-before-head #1
+[ubuntu-gnutls-8.5.0] server: request h2 GET rst-stream #1
+[ubuntu-gnutls-8.5.0] server: request h2 GET rst-stream #2
+[ubuntu-gnutls-8.5.0] server: request h2 GET rst-stream #3
+[ubuntu-gnutls-8.5.0] server: request h2 GET rst-stream #4
+[ubuntu-gnutls-8.5.0] server: request h2 GET rst-stream #5
+[ubuntu-gnutls-8.5.0] server: request h2 GET rst-stream #6
+[ubuntu-gnutls-8.5.0] server: request h2 POST rst-stream #1
+[ubuntu-gnutls-8.5.0] server: request h2 POST rst-stream #2
+[ubuntu-gnutls-8.5.0] server: request h2 POST rst-stream #3
+[ubuntu-gnutls-8.5.0] server: request h2 POST rst-stream #4
+[ubuntu-gnutls-8.5.0] server: request h2 POST rst-stream #5
+[ubuntu-gnutls-8.5.0] server: request h2 POST rst-stream #6
+[ubuntu-gnutls-8.5.0] server: request h2 GET goaway #1
+[ubuntu-gnutls-8.5.0] server: request h2 POST goaway #1
+[current-8.23.0] raw=37261 tls=43785 h2=37513 stall=35237 refused=33207
+[current-8.23.0] libcurl 8.23.0
+[current-8.23.0] http ok get ok 200 http/1.1
+[current-8.23.0] http ok post ok 200 http/1.1
+[current-8.23.0] http close-before-response get fail send-receive 52 perform-failed size=75
+[current-8.23.0] http close-before-response post fail send-receive 52 perform-failed size=102
+[current-8.23.0] http reset-before-response get fail send-receive 56 perform-failed size=75
+[current-8.23.0] http reset-before-response post fail send-receive 56 perform-failed size=102
+[current-8.23.0] http reset-after-head get fail send-receive 56 perform-failed size=70
+[current-8.23.0] http reset-after-head post fail send-receive 56 perform-failed size=97
+[current-8.23.0] http stall-before-head get fail timeout 28 perform-failed size=71
+[current-8.23.0] http stall-before-head post fail timeout 28 perform-failed size=98
+[current-8.23.0] tls ok get ok 200 http/1.1
+[current-8.23.0] tls ok post ok 200 http/1.1
+[current-8.23.0] tls close-before-response get fail send-receive 56 perform-failed size=75
+[current-8.23.0] tls close-before-response post fail send-receive 56 perform-failed size=102
+[current-8.23.0] tls reset-before-response get fail send-receive 56 perform-failed size=75
+[current-8.23.0] tls reset-before-response post fail send-receive 56 perform-failed size=102
+[current-8.23.0] tls reset-after-head get fail send-receive 56 perform-failed size=70
+[current-8.23.0] tls reset-after-head post fail send-receive 56 perform-failed size=97
+[current-8.23.0] tls stall-before-head get fail timeout 28 perform-failed size=71
+[current-8.23.0] tls stall-before-head post fail timeout 28 perform-failed size=98
+[current-8.23.0] h2 ok get ok 200 http/2
+[current-8.23.0] h2 ok post ok 200 http/2
+[current-8.23.0] h2 close-before-response get fail send-receive 56 perform-failed size=73
+[current-8.23.0] h2 close-before-response post fail send-receive 56 perform-failed size=100
+[current-8.23.0] h2 reset-before-response get fail send-receive 56 perform-failed size=73
+[current-8.23.0] h2 reset-before-response post fail send-receive 56 perform-failed size=100
+[current-8.23.0] h2 reset-after-head get fail send-receive 56 perform-failed size=68
+[current-8.23.0] h2 reset-after-head post fail send-receive 56 perform-failed size=95
+[current-8.23.0] h2 stall-before-head get fail timeout 28 perform-failed size=69
+[current-8.23.0] h2 stall-before-head post fail timeout 28 perform-failed size=96
+[current-8.23.0] h2 rst-stream get fail send-receive 56 perform-failed size=372
+[current-8.23.0] h2 rst-stream post fail send-receive 56 perform-failed size=534
+[current-8.23.0] h2 goaway get fail protocol 16 perform-failed size=58
+[current-8.23.0] h2 goaway post fail protocol 16 perform-failed size=85
+[current-8.23.0] http refused get fail connect 7 perform-failed size=0
+[current-8.23.0] tls refused get fail connect 7 perform-failed size=0
+[current-8.23.0] tls handshake-stall get fail timeout 28 perform-failed size=0
+[current-8.23.0] http refused post fail connect 7 perform-failed size=0
+[current-8.23.0] tls refused post fail connect 7 perform-failed size=0
+[current-8.23.0] tls handshake-stall post fail timeout 28 perform-failed size=0
+[current-8.23.0] -- done
+[current-8.23.0] server: request http GET ok #1
+[current-8.23.0] server: request http POST ok #1
+[current-8.23.0] server: request http GET close-before-response #1
+[current-8.23.0] server: request http POST close-before-response #1
+[current-8.23.0] server: request http GET reset-before-response #1
+[current-8.23.0] server: request http POST reset-before-response #1
+[current-8.23.0] server: request http GET reset-after-head #1
+[current-8.23.0] server: request http POST reset-after-head #1
+[current-8.23.0] server: request http GET stall-before-head #1
+[current-8.23.0] server: request http POST stall-before-head #1
+[current-8.23.0] server: request tls GET ok #1
+[current-8.23.0] server: request tls POST ok #1
+[current-8.23.0] server: request tls GET close-before-response #1
+[current-8.23.0] server: request tls POST close-before-response #1
+[current-8.23.0] server: request tls GET reset-before-response #1
+[current-8.23.0] server: request tls POST reset-before-response #1
+[current-8.23.0] server: request tls GET reset-after-head #1
+[current-8.23.0] server: request tls POST reset-after-head #1
+[current-8.23.0] server: request tls GET stall-before-head #1
+[current-8.23.0] server: request tls POST stall-before-head #1
+[current-8.23.0] server: request h2 GET ok #1
+[current-8.23.0] server: request h2 POST ok #1
+[current-8.23.0] server: request h2 GET close-before-response #1
+[current-8.23.0] server: request h2 POST close-before-response #1
+[current-8.23.0] server: request h2 GET reset-before-response #1
+[current-8.23.0] server: request h2 POST reset-before-response #1
+[current-8.23.0] server: request h2 GET reset-after-head #1
+[current-8.23.0] server: request h2 POST reset-after-head #1
+[current-8.23.0] server: request h2 GET stall-before-head #1
+[current-8.23.0] server: request h2 POST stall-before-head #1
+[current-8.23.0] server: request h2 GET rst-stream #1
+[current-8.23.0] server: request h2 GET rst-stream #2
+[current-8.23.0] server: request h2 GET rst-stream #3
+[current-8.23.0] server: request h2 GET rst-stream #4
+[current-8.23.0] server: request h2 GET rst-stream #5
+[current-8.23.0] server: request h2 GET rst-stream #6
+[current-8.23.0] server: request h2 POST rst-stream #1
+[current-8.23.0] server: request h2 POST rst-stream #2
+[current-8.23.0] server: request h2 POST rst-stream #3
+[current-8.23.0] server: request h2 POST rst-stream #4
+[current-8.23.0] server: request h2 POST rst-stream #5
+[current-8.23.0] server: request h2 POST rst-stream #6
+[current-8.23.0] server: request h2 GET goaway #1
+[current-8.23.0] server: request h2 POST goaway #1
