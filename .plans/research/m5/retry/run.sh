@@ -8,7 +8,16 @@
 #
 # On the Mac, against Apple's libcurl, which discovery finds:
 #   CHEZ=chez NODE="$(asdf which node)" sh .plans/research/m5/retry/run.sh mac
+# The probe hands every request the run's CA file, which a submit refuses
+# while Apple's LibreSSL is in use (ADR-0018, amended), so on macOS this sets
+# CURL_SSL_BACKEND=secure-transport, as make test does, unless it is set.
+# The first Mac run, 2026-10-29, had no such line, and every request was
+# refused (results/mac-8.7.1-refused.log).
 set -u
+if [ "$(uname -s)" = Darwin ]; then
+  CURL_SSL_BACKEND=${CURL_SSL_BACKEND:-secure-transport}
+  export CURL_SSL_BACKEND
+fi
 [ "$#" -eq 1 ] || { echo "usage: run.sh LANE" >&2; exit 2; }
 d=.plans/research/m5/retry
 [ -f $d/probe.sps ] || { echo "run.sh: run it from the repository's root" >&2; exit 2; }
