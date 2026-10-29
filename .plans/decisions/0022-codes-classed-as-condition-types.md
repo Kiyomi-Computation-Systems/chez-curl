@@ -1,6 +1,6 @@
 # ADR-0022: libcurl's codes are classed as condition types
 
-- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: a failure carries its request size, and the table as built (M4 slice 1); amended 2026-10-27: 8.7.1 reports no request size; amended 2026-10-28: the request size and the classes over TLS and HTTP/2 (M5 slice 3)
+- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: a failure carries its request size, and the table as built (M4 slice 1); amended 2026-10-27: 8.7.1 reports no request size; amended 2026-10-28: the request size and the classes over TLS and HTTP/2 (M5 slice 3), and on the Mac (2026-10-29)
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, what a failed transfer raises, from M4
 - **Settles:** the brief's "error taxonomy mapping `CURLE_*` to conditions" (§8, M4); the
@@ -227,3 +227,11 @@ with GnuTLS, Guix's 8.20.0 and 8.23.0: 40 transfers each, a `get` and a `post` o
 - **An HTTP/2 `RST_STREAM` with `REFUSED_STREAM`** is resent by libcurl itself, 5 times more,
   then fails with 56, send-receive: the server counted six of each request, and its request
   size is six sends', on all five, a `post`'s among them (ADR-0026, amended).
+- **The Mac, 2026-10-29:** Apple's 8.7.1, its runner setting `CURL_SSL_BACKEND=secure-transport`
+  as `make test` does, answered all 40 with 8.20.0's and 8.23.0's classes and codes: a close
+  over TLS 56, and an HTTP/2 `GOAWAY` 16, protocol, so no retry takes it there. Every failure's
+  request size is `#f`, unknown, a refused connect's among them, as the amendment of 2026-10-27
+  says of 8.7.x; the server counted six of each request HTTP/2 refused
+  ([results/mac-8.7.1.log](../research/m5/retry/results/mac-8.7.1.log)). The runner's first run
+  there set no backend, and every submit refused its CA file
+  ([results/mac-8.7.1-refused.log](../research/m5/retry/results/mac-8.7.1-refused.log)).

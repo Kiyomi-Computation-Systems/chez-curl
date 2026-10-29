@@ -56,7 +56,8 @@ The plan's review read in libcurl's source that it resends a request on a reused
 died before any response byte, a `post` among them. M5 slice 3 measured a second resend of its
 own ([research](../research/m5/retry/)): a server that answers each HTTP/2 stream with
 `RST_STREAM`, `REFUSED_STREAM`, which says the request was not processed, counted every
-request six times, on 7.85.0, 8.5.0, 8.20.0 and 8.23.0, a `post`'s as a `get`'s, before libcurl
+request six times, on 7.85.0, 8.5.0, 8.20.0 and 8.23.0, and on the Mac's 8.7.1 (2026-10-29,
+[results/mac-8.7.1.log](../research/m5/retry/results/mac-8.7.1.log)), a `post`'s as a `get`'s, before libcurl
 failed it with 56; the request size sums the six. So "off adds no attempt" holds of chez-curl
 alone, as decided, and a policy's attempts multiply libcurl's: a `get` retried 3 times can reach
 such a server 18 times. M8's documentation says so (the M5 plan, §10, amended).
