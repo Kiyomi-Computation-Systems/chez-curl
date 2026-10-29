@@ -1,6 +1,6 @@
 #!r6rs
 ;;; (http-client): chez-curl's high level (ADR-0007, ADR-0010, ADR-0025; the
-;;; M5 plan, sections 3.1 to 3.5). It reaches the low level through (curl)
+;;; M5 plan, sections 3.1 to 3.7). It reaches the low level through (curl)
 ;;; alone, and holds no native object of its own.
 ;;;
 ;;; A session owns one engine, and the defaults its calls share. Every call
@@ -70,6 +70,22 @@
 ;;; cancelled, with its &http-exchange and the transfer counted. A call made
 ;;; with interrupts off, inside a critical section, is refused before it
 ;;; submits anything: its await could not wait there.
+;;;
+;;; A request group runs many calls at once on one thread, with no thread
+;;; per call (ADR-0012; the M5 plan, section 3.7):
+;;; call-with-request-group calls its procedure with go, which starts a
+;;; call and answers its pending at once, and http-await answers one. Its
+;;; calls share one mailbox (ADR-0021), and whichever the thread waits for,
+;;; it drives them all: each step of a call, a redirect's and a retry's
+;;; among them, is the one-call shell's, and a submit's refusal is its own
+;;; call's failure alone. A limit queues the calls past it, each on its
+;;; clock. The group does not return while one of its calls is live: when
+;;; its procedure returns, it awaits every call and raises the first
+;;; failure no await answered; when its procedure escapes, it cancels
+;;; every call, waits for each transfer to end, then lets the escape go
+;;; on. http-parallel runs a list of calls so, checked first, and answers
+;;; their responses in order, or raises the first failure once the rest
+;;; have ended.
 (library (http-client)
   (export
    ;; --- sessions (ADR-0025) ------------------------------------------------
@@ -170,6 +186,114 @@
    ;; http-retry? : Any -> Boolean
    make-http-retry http-retry?
 
+   ;; --- the request group (the M5 plan, section 3.7) ----------------------
+   ;; call-with-request-group : Session Any ... (Go -> Any) -> Any
+   ;; (call-with-request-group SESSION KEY VALUE ... PROC): PROC's values,
+   ;; called with go, on a group of SESSION's on this thread, once every
+   ;; call it started has ended and no transfer of its is live. Its one key:
+   ;;   limit  the most calls in flight, an exact positive integer; or #f,
+   ;;          no limit; #f
+   ;; A key it does not take, one given twice, and one with no value are
+   ;; refused by name, as &http-request-error, then a limit, not-a-limit.
+   ;; It refuses inside a critical section, as an assertion violation from
+   ;; call-with-request-group, before anything else.
+   ;;   go : Symbol String Any ... -> Pending
+   ;;   (go METHOD URL KEY VALUE ...): starts a call, as http-request takes
+   ;;   one, its clock started then, and answers its pending at once. Its
+   ;;   method, keys and URL are checked first, as http-request checks them:
+   ;;   a refusal raises from go, compounded with &http-exchange, and starts
+   ;;   no call. Past the limit, the call waits its turn, first in, first
+   ;;   out, on its clock: its bound passing first fails it with
+   ;;   &http-timeout. A call holds its slot until it ends, through every
+   ;;   redirect, retry and retry's wait. From its first submit on, what
+   ;;   becomes of it, a submit's refusal among it, is its own answer, never
+   ;;   raised by go; and so is anything else its own code raises later, in
+   ;;   a step or a submit, as its failure. go waits for no transfer, only
+   ;;   for brief holds of the engine's mutex, for its submit, and of the
+   ;;   session's, for a refused submit's draw; and it copies the call's
+   ;;   body. A condition a caller's interrupt handler or timer raises
+   ;;   while go checks the call is compounded as the checks' own are, as
+   ;;   http-request's is (the M5 plan, section 10, carried).
+   ;; The group's thread drives every call whenever it awaits one, polls one
+   ;; or joins, so a redirect or a retry of one call proceeds while another
+   ;; is awaited. When PROC returns, the group awaits every call, then
+   ;; raises the first call to fail that no await answered, compounded as
+   ;; the call raised it: the first the group saw fail, ties seen together
+   ;; in the order of their latest submits, a redirect's or a retry's among
+   ;; them. A call the caller cancelled
+   ;; raises nothing there, whether it had failed first or not. When PROC
+   ;; raises or escapes, the group cancels every live transfer, ends every
+   ;; call as cancelled, waits for each transfer to end, then lets the
+   ;; raise leave. A handler installed outside the group by
+   ;; with-exception-handler runs before that, where the raise is made,
+   ;; inside the group: it sees the calls as they were. A Chez engine's
+   ;; expiry is an escape too: around a group, it ends the whole group and
+   ;; closes it. Once the engine is resumed, an await raises cancelled; a go
+   ;; that had not yet entered its call raises closed, and one that had
+   ;; answers its pending, whose await raises cancelled. An expiry inside a
+   ;; call's checks, whose URL parse runs
+   ;; in (curl)'s critical winds, leaves the parse behind: the resumed call
+   ;; raises (curl)'s refusal to re-enter it, an assertion violation from
+   ;; call-with-parsed-url (the M5 plan, section 10, carried). A group is its
+   ;; thread's: go, http-await,
+   ;; http-pending-done? and http-pending-cancel from another thread raise
+   ;; &http-group-error, wrong-thread, and go once PROC has returned or
+   ;; escaped, closed. The join can wait: a cancel ends a transfer once
+   ;; libcurl has let go of it, which a stalled name lookup holds up to
+   ;; glibc's resolver timeout on libcurl 7.85.0 to 7.86.x (ADR-0019); and a
+   ;; second Ctrl-C whose handler escapes during that wait abandons it,
+   ;; leaving those transfers live: a documented limit, not prevented.
+   ;; http-pending? : Any -> Boolean
+   ;; http-await : Pending -> Response
+   ;;   the call's response, or a raise of its condition, once it has ended,
+   ;;   the group driven meanwhile; the same any number of times, after the
+   ;;   group has returned too. A cancelled call's raises &http-group-error,
+   ;;   cancelled, with its &http-exchange, once a transfer live at the
+   ;;   cancel has ended, and compounded with that transfer's own
+   ;;   condition. It refuses inside a critical section.
+   ;; http-pending-done? : Pending -> Boolean
+   ;;   one turn of the group, with no wait, then whether the call has
+   ;;   ended, a cancelled one among them: a caller that polls it moves the
+   ;;   group on. It refuses inside a critical section.
+   ;; http-pending-cancel : Pending -> Void
+   ;;   ends the call as cancelled: its live transfer cancelled, or its
+   ;;   turn or its retry's wait dropped. A call that has ended keeps its
+   ;;   answer, which its await gives, but one that failed is no longer
+   ;;   raised by the join. It waits for no transfer: a live transfer's
+   ;;   cancel is a message, under the engine's mutex; a transfer still
+   ;;   queued in the engine, not yet taken in by its thread, is completed
+   ;;   at once, under the engine's mutex, into the group's mailbox, under
+   ;;   the mailbox's nested inside it; and a call waiting for a slot, or in
+   ;;   a retry's wait, has no transfer, and its cancel holds no mutex.
+   call-with-request-group http-pending? http-await http-pending-done? http-pending-cancel
+
+   ;; http-parallel : Session (Listof (Pairof Symbol (Pairof String (Listof Any)))) Any ...
+   ;;                 -> (Listof Response)
+   ;; (http-parallel SESSION SPECS KEY VALUE ...): each spec (METHOD URL KEY
+   ;; VALUE ...), as http-request takes them, run in one group, its one key
+   ;; limit, as call-with-request-group's; the responses, in SPECS' order.
+   ;; Every spec is checked before any is submitted: SPECS and each spec
+   ;; must be a list, else an assertion violation from http-parallel; each
+   ;; call's method, keys and URL as go checks them; then its first request
+   ;; by (curl)'s curl-request-check, as a submit would check it, its URL's
+   ;; scheme and its CA file against the environment (ADR-0024) among it;
+   ;; each refusal compounded with &http-exchange (ADR-0023, amended
+   ;; 2026-10-28). A refusal only an engine makes, its stop or its
+   ;; failure, can still come once the calls run, as a failure among them.
+   ;; The first call to fail raises, as it raised, once every other is
+   ;; cancelled and its transfer has ended: the first the group saw fail,
+   ;; ties in the order of their latest submits. A condition a caller's
+   ;; interrupt handler or timer raises during the checks is compounded as
+   ;; the checks' own are, as http-request's is (the M5 plan, section 10,
+   ;; carried). An escape ends its group, a Chez engine's expiry among them:
+   ;; resumed, it enters no call more, submits none it had not, and raises
+   ;; its first failure, if any, or else the cancel of its first call, in
+   ;; SPECS' order, not done; an expiry inside the checks makes the resumed
+   ;; call raise
+   ;; (curl)'s refusal to re-enter a URL's parse, as go's does. It refuses
+   ;; inside a critical section, before anything else.
+   http-parallel
+
    ;; --- the response -------------------------------------------------------
    ;; http-response? : Any -> Boolean
    ;; http-response-status : Response -> Integer
@@ -213,7 +337,8 @@
    ;;   allow-downgrade or jitter; not-a-retry-policy, field retry;
    ;;   not-an-attempt-count, field attempts; not-a-backoff, field
    ;;   backoff-ms or max-backoff-ms; not-a-status-list, field statuses;
-   ;;   not-a-method-list, field methods; each the value as given
+   ;;   not-a-method-list, field methods; not-a-limit, field limit; each
+   ;;   the value as given
    &http-request-error http-request-error? http-request-error-field
    http-request-error-value http-request-error-reason http-request-error-reasons
 
@@ -239,6 +364,16 @@
    ;; http-timeout-timeout-ms : &http-timeout -> Positive-Integer
    &http-timeout http-timeout? http-timeout-timeout-ms
 
+   ;; &http-group-error: a request group's refusal, or its call's cancel.
+   ;; http-group-error? : Any -> Boolean
+   ;; http-group-error-reason : &http-group-error -> Symbol
+   ;; http-group-error-reasons : (Listof Symbol)
+   ;;   wrong-thread, a group's operation from another thread than its
+   ;;   own, its irritants that thread's id and this one's; closed, go once
+   ;;   the group's procedure has returned or escaped; cancelled, the await
+   ;;   of a call http-pending-cancel or its group's escape ended
+   &http-group-error http-group-error? http-group-error-reason http-group-error-reasons
+
    ;; &http-exchange: what a call raises carries it, under &condition.
    ;; http-exchange? : Any -> Boolean
    ;; http-exchange-method : &http-exchange -> Any
@@ -262,6 +397,27 @@
   ;; check-session : Symbol Any -> Void
   (define (check-session who x)
     (unless (http-session? x) (assertion-violation who "not a session" x)))
+
+  ;; call-state : Session Any Any List Boolean -> State
+  ;; A call's exchange, as http-request and go make one, its clock started
+  ;; first: its bound runs from here. The caller's URL is read once, into a
+  ;; copy, which both the context and the request are made from. With
+  ;; CHECK?, the first request also passes (curl)'s curl-request-check, a
+  ;; submit's own checks, for http-parallel's checks before any submit
+  ;; (ADR-0023, amended 2026-10-28). Every condition raised, a check's, the
+  ;; URL's or the low level's, is compounded with &http-exchange, with no
+  ;; transfer made.
+  (define (call-state session method url plist check?)
+    (let* ((start (monotonic-ns))
+           (given (if (string? url) (string-copy url) url)))
+      (guard (e ((condition? e)
+                 (raise (condition e (make-http-exchange method given '() 0)))))
+        (check-session 'http-request session)
+        (let-values (((request redirects allow-downgrade retry)
+                      (call-request session method given plist)))
+          (when check? (curl-request-check request))
+          (make-exchange method given request (curl-request-timeout-ms request)
+                         start redirects allow-downgrade retry)))))
 
   (define (make-http-session . plist)
     (let* ((settings (key-settings 'make-http-session session-keys plist))
@@ -290,24 +446,87 @@
           (lambda () (http-session-close session))))))
 
   ;; http-request : Session Any Any Any ... -> Response
-  ;; The clock is read first: the call's bound runs from its start. The
-  ;; caller's URL is read once, into a copy, which both the context and the
-  ;; request are made from. Every condition raised before the drive, a
-  ;; check's, the URL's or the low level's, is compounded with
-  ;; &http-exchange, with no transfer made; in the drive, (curl)'s are
-  ;; compounded by the core, and the drive's own refusal by the drive.
+  ;; The call's exchange, by call-state, then the drive: in the drive,
+  ;; (curl)'s conditions are compounded by the core, and the drive's own
+  ;; refusal by the drive.
   (define (http-request session method url . plist)
-    (let* ((start (monotonic-ns))
-           (given (if (string? url) (string-copy url) url))
-           (state (guard (e ((condition? e)
-                             (raise (condition e (make-http-exchange method given '() 0)))))
-                    (check-session 'http-request session)
-                    (let-values (((request redirects allow-downgrade retry)
-                                  (call-request session method given plist)))
-                      (make-exchange method given request (curl-request-timeout-ms request)
-                                     start redirects allow-downgrade retry)))))
+    (let ((state (call-state session method url plist #f)))
       (drive-exchange (http-session-engine session) state
                       (lambda () (http-session-draw session)))))
+
+  ;; call-with-request-group : Session Any ... (Go -> Any) -> Any
+  ;; Refuses a critical section first, then its arguments, then its keys;
+  ;; then the group, on the session's engine, drawing from its generator,
+  ;; each go's call made by call-state.
+  (define (call-with-request-group . arguments)
+    (require-interrupts 'call-with-request-group)
+    (when (or (null? arguments) (null? (cdr arguments)))
+      (assertion-violation 'call-with-request-group
+                           "a session, then the keys, then a procedure of go, are required"
+                           arguments))
+    (let* ((session (car arguments))
+           (reversed (reverse (cdr arguments)))
+           (proc (car reversed))
+           (plist (reverse (cdr reversed))))
+      (check-session 'call-with-request-group session)
+      (unless (procedure? proc)
+        (assertion-violation 'call-with-request-group
+                             "the last argument is a procedure, of go" proc))
+      (let ((limit (group-limit 'call-with-request-group plist)))
+        (call-with-group (http-session-engine session) limit
+                         (lambda () (http-session-draw session))
+                         (lambda (method url plist) (call-state session method url plist #f))
+                         proc))))
+
+  ;; spec-copies : Any -> (Listof (Pairof Any (Pairof Any List)))
+  ;; A copy of SPECS, a list of specs, each a list of a method, a URL, then
+  ;; keys: fresh pairs, each list judged by list?, which answers #f for an
+  ;; improper or circular one and raises nothing, so no guard is needed,
+  ;; and an interrupt handler's raise there leaves as raised, never read as
+  ;; a refusal; then measured by length and copied within that bound, so a
+  ;; list another thread changes after cannot loop the copy. Anything else
+  ;; is an assertion violation from http-parallel.
+  (define (spec-copies specs)
+    (let ((copy (lambda (x)
+                  (and (list? x)
+                       (let loop ((rest x) (left (length x)) (copied '()))
+                         (cond ((and (null? rest) (= left 0)) (reverse copied))
+                               ((or (= left 0) (not (pair? rest))) #f)
+                               (else (loop (cdr rest) (- left 1) (cons (car rest) copied)))))))))
+      (let ((outer (copy specs)))
+        (unless outer
+          (assertion-violation 'http-parallel "the specs are a list" specs))
+        (let loop ((rest outer) (copied '()))
+          (if (null? rest)
+              (reverse copied)
+              (let ((spec (copy (car rest))))
+                (unless (and spec (>= (length spec) 2))
+                  (assertion-violation 'http-parallel
+                                       "a spec is a list of a method, a URL, then keys"
+                                       (car rest)))
+                (loop (cdr rest) (cons spec copied))))))))
+
+  ;; http-parallel : Session (Listof (Pairof Symbol (Pairof String (Listof Any)))) Any ...
+  ;;                 -> (Listof Response)
+  ;; Refuses a critical section first, then the session, its keys and the
+  ;; specs' shape; then makes every spec's call by call-state, in order,
+  ;; each first request checked by curl-request-check, before any is
+  ;; submitted; then runs them in one group.
+  (define (http-parallel session specs . plist)
+    (require-interrupts 'http-parallel)
+    (check-session 'http-parallel session)
+    (let* ((limit (group-limit 'http-parallel plist))
+           (copies (spec-copies specs))
+           (states (let loop ((rest copies) (made '()))
+                     (if (null? rest)
+                         (reverse made)
+                         (let ((spec (car rest)))
+                           (loop (cdr rest)
+                                 (cons (call-state session (car spec) (cadr spec) (cddr spec) #t)
+                                       made)))))))
+      (run-parallel (http-session-engine session) limit
+                    (lambda () (http-session-draw session))
+                    states)))
 
   (define (http-get session url . plist) (apply http-request session 'get url plist))
   (define (http-head session url . plist) (apply http-request session 'head url plist))

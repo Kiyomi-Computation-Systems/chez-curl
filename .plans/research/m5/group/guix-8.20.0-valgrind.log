@@ -1,0 +1,11 @@
+[guix-8.20.0-valgrind] origin {"node":"v24.18.0","pid":5,"http":"127.0.0.1:39453","raw":"127.0.0.1:40687","h2c":"127.0.0.1:33235"}
+[guix-8.20.0-valgrind] under valgrind
+[guix-8.20.0-valgrind] libcurl 8.20.0
+[guix-8.20.0-valgrind] all ms=716 most-live=20 status=200 x20 
+[guix-8.20.0-valgrind] limit2 ms=5141 most-live=2 status=200 x20 
+[guix-8.20.0-valgrind] all ms=548 most-live=20 status=200 x20 
+[guix-8.20.0-valgrind] limit2 ms=5112 most-live=2 status=200 x20 
+[guix-8.20.0-valgrind] all ms=547 most-live=20 status=200 x20 
+[guix-8.20.0-valgrind] limit2 ms=5145 most-live=2 status=200 x20 
+[guix-8.20.0-valgrind] valgrind: ==16==    definitely lost: 0 bytes in 0 blocks
+[guix-8.20.0-valgrind] valgrind: ==16== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)

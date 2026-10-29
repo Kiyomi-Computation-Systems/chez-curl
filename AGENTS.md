@@ -285,14 +285,21 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   `sleep` or `curl_multi_poll` early. glibc's `system` ignores SIGINT
   process-wide while its command runs.
 * A sweep's evidence that it reached a place needs a control run that cannot
-  reach it, or a narrower reach passes too.
+  reach it, or a narrower reach passes too. An engine's expiry can matter in a
+  window 3 to 20 ticks wide, which moves between runs: find the band, then sweep
+  it a tick at a time. `engine-block` suspends at once, even inside a critical
+  section, where no expiry lands: place it outside every section.
+* A raise inside a critical section runs its handler there, with interrupts
+  off. Answer a refusal from inside a section as data, and raise once it ends.
 * `with-mutex` takes its mutex before its own `dynamic-wind`, so an escape
   between them leaves the mutex held. Hold a mutex through `critical-section`
   around `with-mutex`, and never wait while holding one.
 * Valgrind runs one thread at a time, so a thread that never sleeps starves
   the rest. Pace a collecting or racing thread.
 * Under Valgrind a collection takes about 140 ms, so a short timed window
-  can catch one. `(collect)` just before it opens.
+  can catch one. `(collect)` just before it opens, before any thread that
+  sleeps in a critical section starts: `(collect)` raises while another thread
+  is active, and `(collect-rendezvous)` waits for it.
 * Under Valgrind a sleep of no time can hand the lock straight back, and
   starve the other thread. A thread that must let another run sleeps 1 ms.
 * One protocol pin hides the other's removal in a redirect test: libcurl
@@ -430,6 +437,8 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * An engine's queued and live counts both read 0 for a token it is setting
   up: the turn takes the queue, then enters the transfer in its table later.
   A check that the engine holds a token reads the token, or waits past the setup.
+  And a token cancelled while queued is done at once, yet counts as queued
+  until the engine's next turn: read the live and transfer counts.
 
 ## Closing ritual
 

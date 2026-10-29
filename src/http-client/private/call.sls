@@ -2,9 +2,9 @@
 ;;; (http-client private call): a session's and a call's keys, checked; the
 ;;; session's record, with its jitter generator; the retry policy, made
 ;;; from its keys; the merge of a call's keys with its session's; the form
-;;; encoding; and a call made into its first request, with its redirect
-;;; and retry policies (the M5 plan, sections 3.2, 3.4 and 3.5; ADR-0025,
-;;; ADR-0026, ADR-0027).
+;;; encoding; a call made into its first request, with its redirect and
+;;; retry policies; and a request group's limit (the M5 plan, sections 3.2,
+;;; 3.4, 3.5 and 3.7; ADR-0025, ADR-0026, ADR-0027).
 ;;;
 ;;; Every check of a caller's string or list runs on a private copy, and the
 ;;; copy is what is used (ADR-0001, amended): headers, the user agent, the
@@ -36,7 +36,8 @@
           new-http-session http-session? http-session-engine http-session-defaults
           http-session-redirects http-session-allow-downgrade http-session-retry
           http-session-draw http-session-generator
-          default-redirects session-defaults session-policy call-request)
+          default-redirects session-defaults session-policy call-request
+          group-keys group-limit)
   (import (curl)
           (rnrs)
           (only (chezscheme) critical-section make-mutex with-mutex make-pseudo-random-generator
@@ -308,6 +309,29 @@
   ;; each checked, or the default: 20, #f and #f.
   (define (session-policy settings)
     (policy-of 'make-http-session settings default-redirects #f #f))
+
+  ;; --- a request group's keys (the M5 plan, section 3.7) ---------------------------
+
+  ;; group-keys : (Listof Symbol)
+  ;; The keys call-with-request-group and http-parallel take: limit alone.
+  (define group-keys '(limit))
+
+  ;; group-limit : Symbol List -> (U Positive-Integer #f)
+  ;; A group's limit, the most calls in flight, from PLIST, KEY VALUE ...,
+  ;; refused as WHO: its keys first, by key-settings' rules, then the
+  ;; value, an exact positive integer, or #f for none, the default; anything
+  ;; else is &http-request-error, field limit, not-a-limit, its value as
+  ;; given.
+  (define (group-limit who plist)
+    (let* ((settings (key-settings who group-keys plist))
+           (hit (assq 'limit settings)))
+      (if hit
+          (let ((v (cdr hit)))
+            (unless (or (not v) (and (integer? v) (exact? v) (positive? v)))
+              (refuse who 'limit v 'not-a-limit
+                      "limit is an exact positive integer, the most calls in flight, or #f, none"))
+            v)
+          #f)))
 
   ;; --- the retry policy (ADR-0026; the M5 plan, section 3.5) -----------------------
 

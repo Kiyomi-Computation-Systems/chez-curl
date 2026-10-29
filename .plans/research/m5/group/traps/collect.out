@@ -1,0 +1,2 @@
+collect: cannot collect when multiple threads are active
+collect-rendezvous: returned after 2000 ms

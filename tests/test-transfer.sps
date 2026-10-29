@@ -1080,6 +1080,108 @@
            (refusal (lambda () (curl-submit engine r)))))
        '((header ca-file url) (ca-file url) (url))))
 
+;; curl-request-check runs request-checks, the submit's own (ADR-0023,
+;; amended 2026-10-28). Each row makes one request wrong, after its
+;; constructor's check where the field allows it, and both the check and a
+;; submit are given that same request: what each raised is compared whole,
+;; its type, field, value, reason, input, code, message and irritants, but
+;; for its who, which is curl-request-check where a submit's is
+;; curl-submit. A refusal that names no who of its own, a URL's, names
+;; chez-curl in both.
+
+;; raised-fields : (-> Any) -> (U 'no-raise (Listof Any))
+;; What THUNK raised, as data: whether it is a request error, a URL error
+;; and an assertion violation; the request error's field, value and reason;
+;; the URL error's input, reason, code and message; then the message, the
+;; irritants and the who.
+(define (raised-fields thunk)
+  (guard (e ((condition? e)
+             (list (curl-request-error? e) (curl-url-error? e) (assertion-violation? e)
+                   (and (curl-request-error? e)
+                        (list (curl-request-error-field e) (curl-request-error-value e)
+                              (curl-request-error-reason e)))
+                   (and (curl-url-error? e)
+                        (list (curl-url-error-input e) (curl-url-error-reason e) (curl-url-error-code e)
+                              (curl-url-error-message e)))
+                   (and (message-condition? e) (condition-message e))
+                   (and (irritants-condition? e) (condition-irritants e))
+                   (and (who-condition? e) (condition-who e))))
+            (#t (list 'non-condition e)))
+    (thunk)
+    'no-raise))
+
+;; as-checked : (Listof Any) -> (Listof Any)
+;; A submit's raised-fields with its who curl-submit read as the check's.
+(define (as-checked fields)
+  (if (and (pair? fields) (= (length fields) 8) (eq? (list-ref fields 7) 'curl-submit))
+      (append (reverse (cdr (reverse fields))) '(curl-request-check))
+      fields))
+
+;; check-rows : (Listof (List Symbol (-> Any)))
+;; Each a name, and a maker of the wrong request, or of a thing no request.
+(define check-rows
+  (list (list 'not-a-token
+              (lambda () (let* ((name (string-copy "X-Name"))
+                                (r (make-curl-request "http://127.0.0.1:1/x" 'headers (list (cons name "v")))))
+                           (string-set! name 1 #\space) r)))
+        (list 'line-break
+              (lambda () (let* ((agent (string-copy "an-agent"))
+                                (r (make-curl-request "http://127.0.0.1:1/x" 'user-agent agent)))
+                           (string-set! agent 2 #\newline) r)))
+        (list 'ca-file-embedded-nul
+              (lambda () (let* ((path (string-copy "/x/ca.pem"))
+                                (r (make-curl-request "http://127.0.0.1:1/x" 'ca-file path)))
+                           (string-set! path 4 #\nul) r)))
+        (list 'pkcs11-url
+              (lambda () (let* ((path (string-copy "/x/ca.pem"))
+                                (r (make-curl-request "http://127.0.0.1:1/x" 'ca-file path)))
+                           (let loop ((i 0))
+                             (when (< i 7)
+                               (string-set! path i (string-ref "PKCS11:" i))
+                               (loop (+ i 1))))
+                           r)))
+        (list 'scheme-not-http (lambda () (make-curl-request "ftp://127.0.0.1:1/x")))
+        (list 'bad-port-number (lambda () (make-curl-request "http://127.0.0.1:99999/x")))
+        (list 'url-embedded-nul
+              (lambda () (let* ((url (string-copy "http://127.0.0.1:1/x"))
+                                (r (make-curl-request url)))
+                           (string-set! url 7 #\nul) r)))
+        (list 'headers-improper
+              (lambda () (let* ((headers (list (cons "X-A" "1") (cons "X-B" "2")))
+                                (r (make-curl-request "http://127.0.0.1:1/x" 'headers headers)))
+                           (set-cdr! (cdr headers) 'tail) r)))
+        (list 'not-a-request (lambda () 'not-a-request))))
+
+(test-equal "curl-request-check refuses what a submit refuses, each refusal whole but its who, curl-request-check for curl-submit: a header's name, the user agent, the CA file's NUL and its pkcs11: prefix, the URL's scheme, its port and its NUL, an improper header list, and no request; nothing native at the raise or after, and the submit queued nothing"
+  (append (map (lambda (row) (list (car row) 'alike)) check-rows)
+          (list (list running-counts 0)))
+  (let* ((started (transfers-started))
+         (rows (let loop ((rest check-rows) (done '()))
+                 (if (null? rest)
+                     (reverse done)
+                     (let* ((row (car rest))
+                            (r ((cadr row)))
+                            (checked (raised-fields (lambda () (curl-request-check r))))
+                            (submitted (raised-fields (lambda () (curl-submit engine r)))))
+                       (loop (cdr rest)
+                             (cons (list (car row)
+                                         (if (and (pair? checked) (equal? checked (as-checked submitted)))
+                                             'alike
+                                             (list 'checked checked 'submitted submitted)))
+                                   done)))))))
+    (append rows (list (list (native-counts) (- (transfers-started) started))))))
+
+(test-equal "curl-request-check of a request every check takes returns, leaves nothing native, the CURLU it parses freed, starts no transfer and queues nothing on any engine: the engine's queue stays empty, and the request, submitted after, runs"
+  (list 'returned running-counts 0 0 '(refused perform-failed 7))
+  (let* ((r (make-curl-request "http://127.0.0.1:1/x" 'headers '(("X-A" . "1")) 'user-agent "a/1"
+                               'body (make-bytevector 16 0) 'method 'post))
+         (started (transfers-started))
+         (checked (guard (e (#t (list 'raised (describe e)))) (curl-request-check r) 'returned))
+         (counts (native-counts))
+         (made (- (transfers-started) started))
+         (queued (curl-engine-queued-count engine)))
+    (list checked counts made queued (answer-of (lambda () (perform r))))))
+
 (test-equal "values that hold every char U+0001 to U+00FF but CR and LF are taken, as a header value and as a user agent, and nothing native is made"
   (list (list 'no-raise 'no-raise running-counts) (list 'no-raise 'no-raise running-counts))
   (list (refusal (header-request "X-Value" every-byte-but-cr-lf))
@@ -1550,12 +1652,18 @@
               'the-making-reversed
               (list 'made made 'freed freed)))))
 
-(test-equal "prepare-transfer, read from transfer.sls, checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the CA file against the environment the libcurl loaded with, then the URL, parsed and its scheme checked; then it makes the plan, the request's hatch settings in it as they are"
-  '(curl-request? snapshot ca-file-copy check-ca-environment call-with-parsed-url
-    require-http-scheme make-plan curl-request-options)
-  (symbols-in '(curl-request? snapshot ca-file-copy checked-settings check-ca-environment call-with-parsed-url
-                require-http-scheme make-plan curl-request-options)
-              (transfer-definition 'prepare-transfer)))
+(test-equal "prepare-transfer and curl-request-check, read from transfer.sls, share the checks' one owner, request-checks, which checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the CA file against the environment the libcurl loaded with, then the URL, parsed and its scheme checked; prepare-transfer calls it as curl-submit, then copies the body and makes the plan, the request's hatch settings in it as they are; curl-request-check calls it as curl-request-check, and does nothing else"
+  ;; Each definition's header names it first, a symbol like the rest.
+  '((request-checks curl-request? snapshot ca-file-copy check-ca-environment call-with-parsed-url
+                    require-http-scheme)
+    (request-checks curl-submit bytevector-copy make-plan curl-request-options)
+    (curl-request-check request-checks curl-request-check))
+  (let ((names '(request-checks curl-submit curl-request-check curl-request? snapshot ca-file-copy
+                 checked-settings check-ca-environment call-with-parsed-url require-http-scheme
+                 bytevector-copy make-plan curl-request-options curl-submit-queue)))
+    (list (symbols-in names (transfer-definition 'request-checks))
+          (symbols-in names (transfer-definition 'prepare-transfer))
+          (symbols-in names (transfer-definition 'curl-request-check)))))
 
 ;; pin-names : (Listof String)
 (define pin-names '("PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"))

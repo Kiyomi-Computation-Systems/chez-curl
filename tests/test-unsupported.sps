@@ -242,6 +242,20 @@
         (guard (e (#t (list 'raised (describe e))))
           (>= (length (library-exports '(curl))) 100))))
 
+;; curl-request-check, (curl)'s export from M5 slice 4's fix round (ADR-0023,
+;; amended 2026-10-28), runs a submit's checks alone. A request's options
+;; were checked as they were attached, and are private copies: the check
+;; has nothing of theirs to read, applies none, and leaves nothing native:
+;; the CURLU it parses is freed before it returns.
+(test-equal "curl-request-check, among (curl)'s exports and no binding of the hatch, takes a request carrying the hatch's options, as a submit's checks do, applying none: nothing native is left, the CURLU it parses freed"
+  (list #t '() taken)
+  (list (and (memq 'curl-request-check (library-exports '(curl))) #t)
+        (guard (e (#t (list 'raised (describe e))))
+          (let ((env (environment '(curl))))
+            (bound-to-hatch '(curl-request-check) (lambda (name) (eval name env)))))
+        (refusal (lambda ()
+                   (curl-request-check (curl-request-with-options base '(("LOW_SPEED_TIME" . 7))))))))
+
 (test-equal "bound-to-hatch, the reader: a name bound to the hatch under another name is found; one bound to another procedure, and one that raises, as syntax does, are not"
   '(renamed)
   (bound-to-hatch '(renamed make-curl-request syntax)

@@ -323,6 +323,13 @@ provisional. They bind until that record is accepted or amended.
   the response carries them (ADR-0022, amended 2026-10-26, from M4 slice 1). On libcurl 8.7.0
   and 8.7.1, whose count reads 0 for every transfer, a transfer that ran carries `#f`, unknown,
   and one refused while it was set up still 0 (ADR-0022, amended 2026-10-27).
+- **A submit's caller-side checks have one owner,** `request-checks`, which `curl-submit`
+  (through `prepare-transfer`) and `curl-request-check` share: what is no request, the URL's
+  copy, the headers' and the user agent's snapshot, the CA file's copy and its refusal against
+  the environment the libcurl loaded with, then the URL's parse and scheme. `curl-request-check`
+  raises what a submit would, its who `curl-request-check` where a submit's is `curl-submit`,
+  and copies no body and queues nothing; a submit copies the body after every check (ADR-0023,
+  amended 2026-10-28).
 
 ## The escape hatch
 
@@ -689,3 +696,33 @@ provisional. They bind until that record is accepted or amended.
 - **An origin is the scheme, the host A to Z folded, its zone ID and the port,** each by
   `curl-url-part`: libcurl gives an IPv6 host without its zone, so a rule that compares hosts
   alone sends a call's credentials to another zone (ADR-0008, amended 2026-10-28).
+- **A request group costs no thread, and is its thread's** (the M5 plan, §3.7): its calls
+  share one mailbox, and whichever call the thread awaits drives them all. `go`, `http-await`,
+  `http-pending-done?` and `http-pending-cancel` from another thread raise `&http-group-error`,
+  `wrong-thread`, and `go` once the group's procedure has returned or escaped, `closed`.
+- **Each token is stepped once:** a turn looks at every live token before it takes; a token is
+  stepped only from the group's live set, taken out first, and any other notice is dropped; no
+  guard surrounds a wait or a take, so a notice an escape loses, which ADR-0021 allows, is
+  found by the next look (the M5 plan, §3.7).
+- **Every change to a group's record is one critical section,** which waits for nothing but a
+  mutex's brief hold: a step with what it submits, a due submit, a queued call's expiry, each
+  admission, each entry, a cancel. A guard inside each call's section ends that call with
+  whatever its own step or submit raises, so no raise strands a call where the join would wait
+  for good; no interrupt handler runs there, so it reads only the code's own raises.
+- **A group's join is two winds:** an inner critical one, whose after thunk closes the group,
+  cancels every live token and ends every unended call, and an outer plain one, whose after
+  thunk waits for every token to end. A second escape during that wait abandons it: documented,
+  not prevented. An escape closes the group for good, a Chez engine's expiry among them: a
+  resumed `go` that had not entered its call raises `closed`, once its entry's section has
+  ended, and one resumed after its entry answers its pending, whose await raises `cancelled`;
+  a resumed `http-parallel` enters no more. A refusal found inside a section is answered as
+  data, and raised once the section ends, so a handler runs with interrupts on.
+- **A slot is held from a call's first submit until it ends,** through its redirects, retries and
+  waits; a call past the limit queues, first in, first out, on its own clock, and its deadline
+  fails it without a slot.
+- **`http-parallel` checks every spec before it submits any,** its keys and its first request by
+  `curl-request-check`, so only an engine's stop or failure can refuse one mid-batch (ADR-0023,
+  amended 2026-10-28). It answers responses only when every call is done; otherwise it raises
+  the first failure, else the cancel of the first call in SPECS' order that is not done.
+- **A caller's cancel exempts a call from the join's raise,** whatever the turns saw of it; the
+  call keeps its answer, which its await still gives.

@@ -1,0 +1,41 @@
+;; Where a second escape lands in a request group's unwind: escape-twice's rows,
+;; as tests/test-group.sps makes them, for ticks 1 to 80, printed. Run from the
+;; repository's root, in the container, against src/ or a mutant's copy of it:
+;;   scripts/guix-env sh -c '$CHEZ --libdirs src:tests:build/scheme-libs --program PROBE' < /dev/null
+(import (chezscheme) (curl) (http-client) (curl-testing)
+        (only (http-client private drive) http-pending-phase)
+        (curl private counters))
+(define (now-ms) (let ((t (current-time 'time-monotonic))) (+ (* (time-second t) 1000) (div (time-nanosecond t) 1000000))))
+(define (pause-ms ms) (sleep (make-time 'time-duration (* (mod ms 1000) 1000000) (div ms 1000))))
+(define (count-of kind) (cdr (assq kind (native-counts))))
+(define (ended-within ms)
+  (let ((deadline (+ (now-ms) ms)))
+    (let loop ()
+      (cond ((= (count-of 'transfer) 0) 'ended)
+            ((> (now-ms) deadline) 'still-live)
+            (else (pause-ms 10) (loop))))))
+(define (escape-twice url ticks)
+  (let* ((own (make-http-session 'timeout-ms 30000))
+         (t0 (now-ms)) (phase 'first) (pending #f) (seen 'none) (previous (timer-interrupt-handler)))
+    (call/cc (lambda (twice)
+       (call/cc (lambda (once)
+          (timer-interrupt-handler
+           (lambda ()
+             (case phase
+               ((first) (if (and (>= (- (now-ms) t0) 100) (= (count-of 'transfer) 1))
+                            (begin (set! phase 'second) (set-timer ticks) (once 'once))
+                            (set-timer 200)))
+               ((second) (set! phase 'done)
+                (set! seen (if (and pending (eq? (http-pending-phase pending) 'ended)) 'after 'before))
+                (twice 'twice))
+               (else #f))))
+          (set-timer 200)
+          (call-with-request-group own (lambda (go) (set! pending (go 'get url)) (http-await pending)))))
+       (set-timer 0)))
+    (set-timer 0) (set! phase 'done) (timer-interrupt-handler previous)
+    (let ((ended (ended-within 3000))) (http-session-close own) (list ticks seen ended))))
+(call-with-origin
+ (lambda (o)
+   (let* ((f (origin-face o 'raw))
+          (url (string-append "http://" (car f) ":" (number->string (cdr f)) "/raw/pause-mid-body?ms=10000")))
+     (do ((i 1 (+ i 1))) ((> i 80)) (write (escape-twice url i)) (newline)))))

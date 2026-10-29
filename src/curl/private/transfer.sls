@@ -158,7 +158,7 @@
           curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
           curl-request-fault curl-request-follow curl-request-with-fault curl-request-following
           request-keys request-methods sent-header-lines timing-infos
-          prepare-transfer start-transfer! finish-transfer free-transfer!
+          prepare-transfer curl-request-check start-transfer! finish-transfer free-transfer!
           live-transfer-easy live-transfer-chunks transfer-ended planted-fault transfers-started
           abandon-transfer-easy!
           curl-response? curl-response-status curl-response-http-version
@@ -1461,32 +1461,62 @@
 
   ;; prepare-transfer : Request -> Plan
   ;; REQUEST's plan, checked on the caller's thread, before anything is
-  ;; queued (M3 plan, section 3.4). In order: the snapshot of the headers
-  ;; and the user agent, the CA file's copy, the CA file against the
-  ;; environment the libcurl loaded with, by
-  ;; check-ca-environment, then the URL's copy, parsed by
-  ;; call-with-parsed-url and checked by
-  ;; require-http-scheme, its CURLU freed before this returns (ADR-0008,
-  ;; amended 2026-10-24). Each refusal raises here. The body is copied, so
+  ;; queued (M3 plan, section 3.4): request-checks', as curl-submit, which
+  ;; curl-request-check shares (ADR-0023, amended 2026-10-28): the snapshot
+  ;; of the headers and the user agent, the CA file's copy, the CA file
+  ;; against the environment the libcurl loaded with, then the URL's copy,
+  ;; parsed and its scheme checked, its CURLU freed before this returns
+  ;; (ADR-0008, amended 2026-10-24). Each refusal raises here. Then the
+  ;; body is copied, after every check, so
   ;; the caller's bytevector may change once this returns (ADR-0023,
   ;; decision 4); a request's method and the presence of its body cannot
   ;; change, so body-not-allowed needs no second check.
   (define (prepare-transfer request)
+    (let-values (((url fields ca-file) (request-checks 'curl-submit request)))
+      (let ((body (let ((body (curl-request-body request))) (and body (bytevector-copy body)))))
+        (make-plan url (curl-request-method request) (car fields) (cdr fields) body
+                   (curl-request-timeout-ms request) (curl-request-connect-timeout-ms request)
+                   (curl-request-body-limit request) ca-file (curl-request-verify request)
+                   (curl-request-proxy request)
+                   (curl-request-options request) (curl-request-fault request)
+                   (curl-request-follow request)))))
+
+  ;; request-checks : Symbol Request -> (Values String (Pairof Headers (U String #f)) (U String #f))
+  ;; The checks a submit makes of REQUEST on the caller's thread, as WHO,
+  ;; their one owner: prepare-transfer's, as WHO curl-submit, and
+  ;; curl-request-check's (ADR-0023, amended 2026-10-28). In order: what is
+  ;; no request, an assertion violation; the URL's copy; the snapshot of the
+  ;; headers and the user agent; the CA file's copy, then the CA file
+  ;; against the environment the libcurl loaded with, by
+  ;; check-ca-environment; then the URL, parsed by call-with-parsed-url and
+  ;; checked by require-http-scheme, its CURLU freed before this returns.
+  ;; Each refusal raises here, as WHO where its check names one. Answers the
+  ;; checked copies: the URL, the fields, and the CA file. The body is no
+  ;; check's: a submit copies it after.
+  (define (request-checks who request)
     (unless (curl-request? request)
-      (assertion-violation 'curl-submit "not a request" request))
+      (assertion-violation who "not a request" request))
     (let* ((url (string-copy (curl-request-url request)))
-           (fields (snapshot 'curl-submit (curl-request-headers request)
-                             (curl-request-user-agent request)))
-           (ca-file (ca-file-copy 'curl-submit (curl-request-ca-file request)))
-           (body (let ((body (curl-request-body request))) (and body (bytevector-copy body)))))
-      (check-ca-environment 'curl-submit ca-file (curl-request-verify request))
+           (fields (snapshot who (curl-request-headers request) (curl-request-user-agent request)))
+           (ca-file (ca-file-copy who (curl-request-ca-file request))))
+      (check-ca-environment who ca-file (curl-request-verify request))
       (call-with-parsed-url url (lambda (handle) (require-http-scheme handle url)))
-      (make-plan url (curl-request-method request) (car fields) (cdr fields) body
-                 (curl-request-timeout-ms request) (curl-request-connect-timeout-ms request)
-                 (curl-request-body-limit request) ca-file (curl-request-verify request)
-                 (curl-request-proxy request)
-                 (curl-request-options request) (curl-request-fault request)
-                 (curl-request-follow request))))
+      (values url fields ca-file)))
+
+  ;; curl-request-check : Request -> Void
+  ;; Returns once REQUEST passes every check curl-submit makes of it on the
+  ;; caller's thread, request-checks', and raises what a submit would
+  ;; raise, its who curl-request-check where a submit's is curl-submit: so a
+  ;; caller may check a batch before it submits any. It copies no body and
+  ;; queues nothing, on no engine; the CURLU it parses is freed before it
+  ;; returns. A refusal that depends on no state of an engine is all it can
+  ;; make: a submit can still be refused by its engine's state. Its copies
+  ;; are its own, dropped once it returns: a request shares its strings and
+  ;; lists with its caller, so the check holds for them as they were then,
+  ;; and a submit makes and checks copies of its own again.
+  (define (curl-request-check request)
+    (request-checks 'curl-request-check request)
+    (if #f #f))
 
   ;; sends-body? : Symbol (U Bytevector #f) -> Boolean
   ;; Whether a transfer of METHOD with BODY sets the body's options: post,
