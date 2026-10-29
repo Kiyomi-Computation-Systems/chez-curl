@@ -6,7 +6,8 @@
   2026-10-24: the caller checks, the engine parses (M3); amended 2026-10-27: a redirect's
   `Location`, measured (the M5 plan), and on the Mac; amended 2026-10-27: a URL's parts,
   measured, and every answer UTF-8 or refused (M5 slice 1); amended 2026-10-28: the `Location`
-  through chez-curl's own reading, and `localhost`, measured (M5 slice 2)
+  through chez-curl's own reading, and `localhost`, measured (M5 slice 2), and on the Mac
+  (2026-10-29)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D2 (brief §10)
@@ -362,3 +363,18 @@ string. The first `Location` header, A to Z folded, was resolved from that strin
   The slice's review found the origin rule comparing hosts alone, so a call's credentials
   crossed zones. `curl-url-part` now reads `zoneid` too, and another zone is another host. An
   empty zone, `%25` inside one and `%30` read otherwise on 8.23.0.
+- **The Mac, 2026-10-29:** the maintainer ran slice 2's probes against Apple's 8.7.1, on
+  `feat/m5-slice-4`, which holds slice 2 ([results/mac-8.7.1.log](../research/m5/location/results/mac-8.7.1.log),
+  [encoded-mac-8.7.1.log](../research/m5/location/results/encoded-mac-8.7.1.log),
+  [zoneid-mac-8.7.1.log](../research/m5/location/results/zoneid-mac-8.7.1.log)):
+  - all 64 cases agree there too, the C probe by `-lcurl` against `probe.sps`; the C probe's
+    lines answer as 8.5.0's but for the six its redirect-URL run found on 2026-10-27, an empty
+    `Location` read as empty, 100 for the 110,000 bytes, and `EFFECTIVE_URL` keeping the
+    credentials;
+  - `localhost` and `[::ffff:127.0.0.1]` reach a server on 127.0.0.1, as on the five;
+  - the fragment probe answers as 8.5.0's, all 54 lines;
+  - an IPv6 host comes back without its zone ID, the zone a part of its own, every line as
+    7.85.0's and 8.5.0's: `FE80` kept in upper case, an empty zone read as `25`, and `%30`
+    kept;
+  - `test-url-location` printed 8.5.0's answers for its 24 varying cases, now the rows file's
+    8.7.1 row, and every other suite of `make test` passed there.

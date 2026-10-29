@@ -1,6 +1,6 @@
 # ADR-0029: A fragment is set by writing the URL, then parsing it whole
 
-- **Status:** Accepted; amended 2026-10-28: a `Location`'s bytes are encoded by the same rule before they are resolved
+- **Status:** Accepted; amended 2026-10-28: a `Location`'s bytes are encoded by the same rule before they are resolved; measured on the Mac, 2026-10-29
 - **Date:** 2026-10-28
 - **Scope:** chez-curl v1, `(curl)`'s `curl-url-with-fragment`, and so `(http-client)`'s two
   fragment rules for a redirect, from M5 slice 2; and, by the amendment, `curl-url-resolve`'s
@@ -121,3 +121,10 @@ The maintainer chose to encode, the recommended option:
 - **`test-redirect`** follows 0x01, 0x7F and a Latin-1 path, relative and absolute, alike on
   every libcurl, where its rows pinned 0x01 and 0x7F as refused on 7.85.0 and 8.5.0.
 - **The encoder is `encoded-bytes`,** named for both its uses; it was `fragment-encoded`.
+- **The Mac, 2026-10-29:** Apple's 8.7.1 ran `encoded.sps` on the built tree, where
+  `curl-url-resolve` encodes a bytevector itself, so its raw and encoded columns give one answer,
+  as the probe's header says, and the raw column measures nothing there. Encoded first, all 45
+  answer as 8.5.0's ([results/encoded-mac-8.7.1.log](../research/m5/location/results/encoded-mac-8.7.1.log)).
+  Its fragment probe answers as 8.5.0's, all 54 lines: setting the part stores its bytes
+  unchecked, and lowers its hex case ([results/mac-8.7.1.log](../research/m5/location/results/mac-8.7.1.log));
+  and `test-url-location`'s 8.7.1 row is 8.5.0's answers.

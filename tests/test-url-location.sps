@@ -24,9 +24,9 @@
 ;;;
 ;;;   - shared-answers holds the answer every recorded libcurl gives;
 ;;;   - tests/known-url-location-verdicts.sexp holds a row per libcurl
-;;;     version, with that version's answer to each case shared-answers
-;;;     leaves out. It is a file of its own, so the row of a libcurl not yet
-;;;     run, the Mac's 8.7.1, fails this suite alone.
+;;;     version, 7.85.0, 8.5.0, 8.20.0, 8.23.0 and Apple's 8.7.1, with that
+;;;     version's answer to each case shared-answers leaves out. It is a file
+;;;     of its own, so a libcurl not yet run fails this suite alone.
 ;;;
 ;;; The two cover the cases exactly, each once. A libcurl whose version has
 ;;; no row fails here, and the suite prints the row it would need on the
@@ -543,8 +543,8 @@
   'read
   (if (eq? (car file-result) 'data) 'read file-result))
 
-(test-equal "it holds rows for 7.85.0, 8.5.0 and 8.23.0, the libcurls the lanes run, and 8.20.0, the container's; Apple's 8.7.1 is owed until the Mac runs it"
-  '("7.85.0" "8.5.0" "8.20.0" "8.23.0")
+(test-equal "it holds rows for 7.85.0, 8.5.0 and 8.23.0, the libcurls the lanes run, 8.20.0, the container's, and 8.7.1, Apple's"
+  '("7.85.0" "8.5.0" "8.20.0" "8.23.0" "8.7.1")
   (map (lambda (row) (if (eq? (row-problem row) 'ok) (row-version row) row)) rows))
 
 (let loop ((i 1) (rest rows))

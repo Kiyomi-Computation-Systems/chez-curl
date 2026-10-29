@@ -1,0 +1,17 @@
+[mac] libcurl 8.7.1
+[mac] "http://[fe80::1%25eth0]/" url="http://[fe80::1%25eth0]/" host="[fe80::1]" zoneid="eth0"
+[mac] "http://[fe80::1%25eth1]/" url="http://[fe80::1%25eth1]/" host="[fe80::1]" zoneid="eth1"
+[mac] "http://[fe80::1]/" url="http://[fe80::1]/" host="[fe80::1]" zoneid=absent
+[mac] "http://[FE80::1%25ETH0]/" url="http://[FE80::1%25ETH0]/" host="[FE80::1]" zoneid="ETH0"
+[mac] "http://[fe80::1%25eth0]:8080/p" url="http://[fe80::1%25eth0]:8080/p" host="[fe80::1]" zoneid="eth0"
+[mac] "http://[fe80::1%eth0]/" url="http://[fe80::1%25eth0]/" host="[fe80::1]" zoneid="eth0"
+[mac] "http://[fe80::1%25]/" url="http://[fe80::1%2525]/" host="[fe80::1]" zoneid="25"
+[mac] "http://[fe80::1%2525x]/" url="http://[fe80::1%2525x]/" host="[fe80::1]" zoneid="25x"
+[mac] "http://[::1%25lo]/" url="http://[::1%25lo]/" host="[::1]" zoneid="lo"
+[mac] "http://h.example/" url="http://h.example/" host="h.example" zoneid=absent
+[mac] "http://127.0.0.1/" url="http://127.0.0.1/" host="127.0.0.1" zoneid=absent
+[mac] "http://[fe80::1%25en%30]/" url="http://[fe80::1%25en%30]/" host="[fe80::1]" zoneid="en%30"
+[mac] resolve "/c" => "http://[fe80::1%25eth0]/c"
+[mac] resolve "//[fe80::1%25eth1]/c" => "http://[fe80::1%25eth1]/c"
+[mac] resolve "//[fe80::1]/c" => "http://[fe80::1]/c"
+[mac] resolve "http://[fe80::1%25eth0]/c" => "http://[fe80::1%25eth0]/c"
