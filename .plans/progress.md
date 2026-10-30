@@ -33,7 +33,8 @@ close-out under **Close-outs**, newest first.
     HTTP/2 transfer on a connection of its own and neither failing the other; `make test` passed
     32 of 33. `test-stream` failed one test: 8.7.1 handed a refused chunk to the write callable
     again after `curl_easy_pause` answered 23, and the stream took it past the failure. The
-    callable now refuses every call once a reason is recorded; the Mac reruns `test-stream`.
+    callable now refuses every call once a reason is recorded (80304e9), and the Mac's rerun
+    passed `test-stream`, 73 of 73. Slice 1 owes the Mac nothing more.
   - **The plan measured first** ([`research/m6/`](research/m6/)):
     - a C probe whose loop steps as the engine does, 30 cases on the five Linux libcurls, two
       runs each ([`pause/`](research/m6/pause/));
