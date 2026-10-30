@@ -1,0 +1,78 @@
+[guix-8.20.0] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[guix-8.20.0] server {"node":"v24.18.0","pid":34,"http":"127.0.0.1:34835","raw":"127.0.0.1:36039","https":"127.0.0.1:34251","h2":"127.0.0.1:39773","proxy":"127.0.0.1:46433"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+[guix-8.20.0] libcurl 8.20.0 GnuTLS/3.8.13
+[guix-8.20.0] paced run=1 face=http pacing=on window-ms=3000.163 cpu-ms=0.374 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[guix-8.20.0] paced run=1 face=http pacing=on delays submit-ms=(0.337 0.296 0.275 0.248 0.252 0.183 0.225 0.27)
+[guix-8.20.0] paced run=1 face=http pacing=on delays submit-taken-ms=(0.222 0.209 0.191 0.181 0.169 0.093 0.127 0.186)
+[guix-8.20.0] paced run=1 face=http pacing=on delays cancel-ms=(0.166 0.152 0.146 0.139 0.086 0.078 0.066 0.116)
+[guix-8.20.0] paced run=1 face=http pacing=on delays resume-ms=(0.132 0.079 0.089 0.045 0.022 0.117 0.019 0.021)
+[guix-8.20.0] paced run=1 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=340 resumes=340 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[guix-8.20.0] paced run=1 face=http pacing=off window-ms=3000.088 cpu-ms=0.227 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[guix-8.20.0] paced run=1 face=http pacing=off delays submit-ms=(0.264 0.174 0.236 0.218 0.221 0.241 0.205 0.213)
+[guix-8.20.0] paced run=1 face=http pacing=off delays submit-taken-ms=(0.167 0.081 0.159 0.146 0.146 0.159 0.131 0.139)
+[guix-8.20.0] paced run=1 face=http pacing=off delays cancel-ms=(0.178 0.144 0.094 0.15 0.145 0.148 0.168 0.139)
+[guix-8.20.0] paced run=1 face=http pacing=off delays resume-ms=(0.091 0.096 0.092 0.1 0.094 0.041 0.09 0.086)
+[guix-8.20.0] paced run=1 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=255 resumes=255 passed-over=0 queued-polls=6 queued-poll-max-ms=0.006 queued-polls-100ms=0 status=200
+[guix-8.20.0] paced run=1 face=h2 pacing=on window-ms=3000.082 cpu-ms=0.315 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[guix-8.20.0] paced run=1 face=h2 pacing=on delays submit-ms=(0.451 0.187 0.378 0.346 0.244 0.154 0.238 0.248)
+[guix-8.20.0] paced run=1 face=h2 pacing=on delays submit-taken-ms=(0.186 0.098 0.204 0.171 0.163 0.077 0.16 0.165)
+[guix-8.20.0] paced run=1 face=h2 pacing=on delays cancel-ms=(0.643 0.353 1.035 0.595 1.06 0.637 1.094 0.584)
+[guix-8.20.0] paced run=1 face=h2 pacing=on delays resume-ms=(0.038 0.085 0.128 0.109 0.016 0.016 0.017 0.098)
+[guix-8.20.0] paced run=1 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=253 resumes=253 passed-over=0 queued-polls=3 queued-poll-max-ms=1005.029 queued-polls-100ms=2 status=200
+[guix-8.20.0] paced run=1 face=h2 pacing=off window-ms=3000.077 cpu-ms=0.235 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[guix-8.20.0] paced run=1 face=h2 pacing=off delays submit-ms=(0.255 0.19 0.172 0.16 0.506 0.2 0.206 0.247)
+[guix-8.20.0] paced run=1 face=h2 pacing=off delays submit-taken-ms=(0.156 0.108 0.098 0.085 0.429 0.127 0.131 0.154)
+[guix-8.20.0] paced run=1 face=h2 pacing=off delays cancel-ms=(0.186 0.106 0.096 0.094 0.149 0.14 0.138 0.22)
+[guix-8.20.0] paced run=1 face=h2 pacing=off delays resume-ms=(0.082 0.028 0.022 0.02 0.089 0.116 0.084 0.095)
+[guix-8.20.0] paced run=1 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=499 resumes=499 passed-over=0 queued-polls=2 queued-poll-max-ms=1005.026 queued-polls-100ms=2 status=200
+[guix-8.20.0] paced run=2 face=http pacing=on window-ms=3000.087 cpu-ms=0.325 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[guix-8.20.0] paced run=2 face=http pacing=on delays submit-ms=(0.368 0.451 0.458 0.416 0.396 0.392 0.366 0.397)
+[guix-8.20.0] paced run=2 face=http pacing=on delays submit-taken-ms=(0.182 0.246 0.271 0.233 0.23 0.228 0.21 0.237)
+[guix-8.20.0] paced run=2 face=http pacing=on delays cancel-ms=(0.293 0.249 0.24 0.247 0.236 0.232 0.224 0.231)
+[guix-8.20.0] paced run=2 face=http pacing=on delays resume-ms=(0.145 0.043 0.122 0.141 0.124 0.126 0.126 0.143)
+[guix-8.20.0] paced run=2 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=304 resumes=304 passed-over=0 queued-polls=4 queued-poll-max-ms=0.011 queued-polls-100ms=0 status=200
+[guix-8.20.0] paced run=2 face=http pacing=off window-ms=3000.084 cpu-ms=0.268 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[guix-8.20.0] paced run=2 face=http pacing=off delays submit-ms=(0.41 0.208 0.206 0.211 0.216 0.236 0.231 0.218)
+[guix-8.20.0] paced run=2 face=http pacing=off delays submit-taken-ms=(0.201 0.125 0.132 0.127 0.13 0.155 0.14 0.139)
+[guix-8.20.0] paced run=2 face=http pacing=off delays cancel-ms=(0.165 0.138 0.141 0.078 0.149 0.185 0.165 0.081)
+[guix-8.20.0] paced run=2 face=http pacing=off delays resume-ms=(0.101 0.086 0.087 0.016 0.118 0.092 0.105 0.102)
+[guix-8.20.0] paced run=2 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=333 resumes=333 passed-over=0 queued-polls=2 queued-poll-max-ms=0.005 queued-polls-100ms=0 status=200
+[guix-8.20.0] paced run=2 face=h2 pacing=on window-ms=3000.114 cpu-ms=0.469 proc-stat-ms=0 turns=3 polls=2 fast-polls=0 paced=0 still-paused=#t
+[guix-8.20.0] paced run=2 face=h2 pacing=on delays submit-ms=(0.482 0.391 0.29 0.285 0.269 0.312 0.208 0.219)
+[guix-8.20.0] paced run=2 face=h2 pacing=on delays submit-taken-ms=(0.256 0.226 0.203 0.205 0.194 0.211 0.133 0.141)
+[guix-8.20.0] paced run=2 face=h2 pacing=on delays cancel-ms=(0.582 0.892 0.094 1.251 0.893 0.631 0.722 0.7)
+[guix-8.20.0] paced run=2 face=h2 pacing=on delays resume-ms=(0.126 0.116 0.097 0.1 0.024 0.02 0.016 0.017)
+[guix-8.20.0] paced run=2 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=272 resumes=272 passed-over=0 queued-polls=1 queued-poll-max-ms=0.007 queued-polls-100ms=0 status=200
+[guix-8.20.0] paced run=2 face=h2 pacing=off window-ms=3000.089 cpu-ms=0.32 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[guix-8.20.0] paced run=2 face=h2 pacing=off delays submit-ms=(0.403 0.382 0.356 0.333 0.374 0.329 0.349 0.317)
+[guix-8.20.0] paced run=2 face=h2 pacing=off delays submit-taken-ms=(0.191 0.196 0.173 0.164 0.2 0.161 0.183 0.226)
+[guix-8.20.0] paced run=2 face=h2 pacing=off delays cancel-ms=(0.277 0.347 0.246 0.257 0.284 0.249 0.337 0.126)
+[guix-8.20.0] paced run=2 face=h2 pacing=off delays resume-ms=(0.121 0.13 0.119 0.117 0.13 0.132 0.095 0.099)
+[guix-8.20.0] paced run=2 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=503 resumes=503 passed-over=0 queued-polls=2 queued-poll-max-ms=1005.061 queued-polls-100ms=2 status=200
+[guix-8.20.0] paced run=3 face=http pacing=on window-ms=3000.084 cpu-ms=0.254 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[guix-8.20.0] paced run=3 face=http pacing=on delays submit-ms=(0.249 0.2 0.222 0.202 0.219 0.223 0.212 0.221)
+[guix-8.20.0] paced run=3 face=http pacing=on delays submit-taken-ms=(0.164 0.106 0.136 0.133 0.145 0.142 0.153 0.146)
+[guix-8.20.0] paced run=3 face=http pacing=on delays cancel-ms=(0.152 0.223 0.155 0.149 0.141 0.141 0.141 0.149)
+[guix-8.20.0] paced run=3 face=http pacing=on delays resume-ms=(0.034 0.024 0.08 0.092 0.097 0.103 0.087 0.083)
+[guix-8.20.0] paced run=3 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=285 resumes=285 passed-over=0 queued-polls=6 queued-poll-max-ms=0.011 queued-polls-100ms=0 status=200
+[guix-8.20.0] paced run=3 face=http pacing=off window-ms=3000.084 cpu-ms=0.34 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[guix-8.20.0] paced run=3 face=http pacing=off delays submit-ms=(0.397 0.388 0.356 0.349 0.164 0.222 0.166 0.225)
+[guix-8.20.0] paced run=3 face=http pacing=off delays submit-taken-ms=(0.222 0.197 0.194 0.185 0.097 0.142 0.075 0.143)
+[guix-8.20.0] paced run=3 face=http pacing=off delays cancel-ms=(0.248 0.229 0.234 0.146 0.146 0.143 0.169 0.143)
+[guix-8.20.0] paced run=3 face=http pacing=off delays resume-ms=(0.117 0.143 0.146 0.025 0.082 0.111 0.029 0.105)
+[guix-8.20.0] paced run=3 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=264 resumes=264 passed-over=0 queued-polls=1 queued-poll-max-ms=0.012 queued-polls-100ms=0 status=200
+[guix-8.20.0] paced run=3 face=h2 pacing=on window-ms=3000.073 cpu-ms=0.334 proc-stat-ms=10 turns=3 polls=2 fast-polls=0 paced=0 still-paused=#t
+[guix-8.20.0] paced run=3 face=h2 pacing=on delays submit-ms=(0.45 0.467 0.529 0.445 0.226 0.418 0.278 0.255)
+[guix-8.20.0] paced run=3 face=h2 pacing=on delays submit-taken-ms=(0.246 0.269 0.321 0.241 0.136 0.296 0.176 0.166)
+[guix-8.20.0] paced run=3 face=h2 pacing=on delays cancel-ms=(0.902 0.55 0.666 0.575 1.009 0.166 0.624 0.146)
+[guix-8.20.0] paced run=3 face=h2 pacing=on delays resume-ms=(0.136 0.123 0.176 0.048 0.051 0.043 0.032 0.042)
+[guix-8.20.0] paced run=3 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=259 resumes=259 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[guix-8.20.0] paced run=3 face=h2 pacing=off window-ms=3000.112 cpu-ms=0.272 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[guix-8.20.0] paced run=3 face=h2 pacing=off delays submit-ms=(0.295 0.235 0.265 0.265 0.365 0.352 0.366 0.379)
+[guix-8.20.0] paced run=3 face=h2 pacing=off delays submit-taken-ms=(0.17 0.143 0.191 0.188 0.205 0.194 0.204 0.211)
+[guix-8.20.0] paced run=3 face=h2 pacing=off delays cancel-ms=(0.099 0.164 0.166 0.155 0.222 0.21 0.228 0.225)
+[guix-8.20.0] paced run=3 face=h2 pacing=off delays resume-ms=(0.021 0.088 0.097 0.095 0.098 0.104 0.096 0.095)
+[guix-8.20.0] paced run=3 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=484 resumes=484 passed-over=0 queued-polls=6 queued-poll-max-ms=1005.051 queued-polls-100ms=3 status=200
+[guix-8.20.0] paced done
+[guix-8.20.0] paced exited 0 after about 53 s

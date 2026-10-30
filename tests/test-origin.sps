@@ -165,6 +165,62 @@
 (define bad-request
   '("HTTP/1.1 400 Bad Request\r\nContent-Length: 12\r\nConnection: close\r\n\r\nbad request\n" eof))
 
+;; pattern-text : Natural -> String
+;; The first N bytes of the stream scripts' body, byte i being i mod 251,
+;; as Latin-1 text, written here, never read from the origin.
+(define (pattern-text n)
+  (let loop ((i (- n 1)) (chars '()))
+    (if (< i 0)
+        (list->string chars)
+        (loop (- i 1) (cons (integer->char (mod i 251)) chars)))))
+
+;; counted-text : String -> String
+;; The raw face's 200 with BODY, Content-Length and Connection: close.
+(define (counted-text body)
+  (string-append "HTTP/1.1 200 OK\r\nContent-Length: " (number->string (string-length body))
+                 "\r\nConnection: close\r\n\r\n" body))
+
+;; last-word : String -> String
+;; TEXT's last word before its final newline.
+(define (last-word text)
+  (let* ((end (let loop ((i (string-length text)))
+                (if (and (> i 0) (char=? (string-ref text (- i 1)) #\newline)) (loop (- i 1)) i)))
+         (start (let loop ((i end))
+                  (if (and (> i 0) (not (char=? (string-ref text (- i 1)) #\space))) (loop (- i 1)) i))))
+    (substring text start end)))
+
+;; report-fields : String -> (U (List Natural (U Natural Symbol)) #f)
+;; The stalls script's answer's two values, written and stalled, from the
+;; whole response: (W S), S a natural or none; #f for any other answer.
+(define (report-fields response)
+  (let* ((at (let loop ((i 0))
+               (cond ((> (+ i 4) (string-length response)) #f)
+                     ((string=? (substring response i (+ i 4)) "\r\n\r\n") (+ i 4))
+                     (else (loop (+ i 1))))))
+         (body (and at (substring response at (string-length response))))
+         (port (and body (open-string-input-port body)))
+         (words (and port (let loop ((found '()))
+                            (let ((datum (guard (e (#t 'unreadable)) (read port))))
+                              (if (eof-object? datum) (reverse found) (loop (cons datum found))))))))
+    (and words (= (length words) 4) (eq? (car words) 'written) (eq? (caddr words) 'stalled)
+         (integer? (cadr words)) (or (integer? (cadddr words)) (eq? (cadddr words) 'none))
+         (list (cadr words) (cadddr words)))))
+
+;; non-reader : String
+;; Node's own client, run as node -e NON-READER HOST PORT TARGET: it
+;; connects, sends a GET of TARGET, reads nothing, and after 1000 ms goes,
+;; exiting 0; a connection error exits 1.
+(define non-reader
+  (string-append
+   "const net = require('node:net');"
+   "const [host, port, target] = process.argv.slice(1);"
+   "const socket = net.connect(Number(port), host, () => {"
+   "  socket.write(`GET ${target} HTTP/1.1\\r\\nHost: 127.0.0.1\\r\\n\\r\\n`);"
+   "  socket.pause();"
+   "  setTimeout(() => { socket.destroy(); process.exit(0); }, 1000);"
+   "});"
+   "socket.on('error', () => process.exit(1));"))
+
 (test-equal "CHEZ names the Chez to spawn"
   'set
   (if (and chez (not (string=? chez ""))) 'set 'unset))
@@ -619,10 +675,157 @@
          (list "most without a query" (get "/raw/most"))
          (list "most with an empty key" (get "/raw/most?key="))
          (list "most with another parameter" (get "/raw/most?key=k&x=1"))
+         (list "pattern without a query" (get "/raw/pattern"))
+         (list "pattern without key" (get "/raw/pattern?bytes=1&chunk=1"))
+         (list "pattern without bytes" (get "/raw/pattern?key=k&chunk=1"))
+         (list "pattern without chunk" (get "/raw/pattern?key=k&bytes=1"))
+         (list "pattern bytes=0, below its range" (get "/raw/pattern?key=k&bytes=0&chunk=1"))
+         (list "pattern bytes=268435457, above its range" (get "/raw/pattern?key=k&bytes=268435457&chunk=1"))
+         (list "pattern chunk=0, below its range" (get "/raw/pattern?key=k&bytes=1&chunk=0"))
+         (list "pattern chunk=1048577, above its range" (get "/raw/pattern?key=k&bytes=1&chunk=1048577"))
+         (list "pattern delay=60001, above its range" (get "/raw/pattern?key=k&bytes=1&chunk=1&delay=60001"))
+         (list "pattern gap=60001, above its range" (get "/raw/pattern?key=k&bytes=1&chunk=1&gap=60001"))
+         (list "pattern with an unknown framing" (get "/raw/pattern?key=k&bytes=1&chunk=1&framing=close"))
+         (list "pattern with bytes twice" (get "/raw/pattern?key=k&bytes=1&bytes=1&chunk=1"))
+         (list "pattern with framing twice" (get "/raw/pattern?key=k&bytes=1&chunk=1&framing=length&framing=length"))
+         (list "pattern with an unknown parameter" (get "/raw/pattern?key=k&bytes=1&chunk=1&x=1"))
+         (list "pattern bytes with a leading zero" (get "/raw/pattern?key=k&bytes=01&chunk=1"))
+         (list "pattern with an empty key" (get "/raw/pattern?key=&bytes=1&chunk=1"))
+         (list "stalls without a query" (get "/raw/stalls"))
+         (list "stalls with another parameter" (get "/raw/stalls?key=k&x=1"))
+         (list "early with a parameter" (get "/raw/early?x=1"))
          (list "a path outside /raw/" (get "/content-length"))
          (list "a request line of two words" "GET /raw/content-length\r\n\r\n")
          (list "a request line of four words" "GET /raw/content-length HTTP/1.1 x\r\n\r\n")
          (list "garbage" (string-append (string #\nul #\x1 #\xff) " garbage\r\n\r\n"))))
+
+  ;; --- the raw face: the stream scripts (the M6 plan, section 4.2). The
+  ;; pattern's body is byte i mod 251, written by hand here; its record is
+  ;; the stalls script's answer.
+  (raw-row o "/raw/pattern?key=p1&bytes=600&chunk=256"
+           (string-append "HTTP/1.1 200 OK\r\nContent-Length: 600\r\nConnection: close\r\n\r\n"
+                          (pattern-text 600))
+           'eof)
+  (raw-row o "/raw/stalls?key=p1" (counted-text "written 600 stalled none\n") 'eof)
+  (raw-row o "/raw/pattern?key=p2&bytes=600&chunk=256&framing=chunked"
+           (string-append "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n"
+                          "100\r\n" (substring (pattern-text 600) 0 256) "\r\n"
+                          "100\r\n" (substring (pattern-text 600) 256 512) "\r\n"
+                          "58\r\n" (substring (pattern-text 600) 512 600) "\r\n"
+                          "0\r\n\r\n")
+           'eof)
+  (raw-row o "/raw/pattern?key=p3&bytes=1&chunk=1&framing=length"
+           (string-append "HTTP/1.1 200 OK\r\nContent-Length: 1\r\nConnection: close\r\n\r\n"
+                          (pattern-text 1))
+           'eof)
+  (raw-row o "/raw/stalls?key=p-never" (counted-text "written 0 stalled none\n") 'eof)
+  (raw-row o "/raw/early"
+           (string-append "HTTP/1.1 100 Continue\r\n\r\n"
+                          "HTTP/1.1 103 Early Hints\r\nLink: </style.css>; rel=preload; as=style\r\n\r\n"
+                          "HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\nearly\n")
+           'eof)
+  ;; The delay and the gap: lower bounds alone, as the drips' are. The body
+  ;; comes at least DELAY ms after the probe connected, and its last write
+  ;; at least DELAY plus each GAP; the head comes before the body, in an
+  ;; arrival of its own.
+  (test-equal "raw /raw/pattern?key=p4&bytes=3&chunk=1&delay=300&gap=100: the whole bytes, then eof; the head before the body, which comes 300 ms or more after the probe connected, its last byte 500 ms or more"
+    (list (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: 3\r\nConnection: close\r\n\r\n"
+                               (pattern-text 3))
+                'eof)
+          'head-first 'body-after-delay 'last-after-gaps)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((p (wire-probe o 'raw (octets (get "/raw/pattern?key=p4&bytes=3&chunk=1&delay=300&gap=100")) 2000))
+             (head (string-length "HTTP/1.1 200 OK\r\nContent-Length: 3\r\nConnection: close\r\n\r\n"))
+             (connected (probe-connected p))
+             (first (arrival (probe-arrivals p) head))
+             (last (arrival (probe-arrivals p) (+ head 2))))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (and first (< (arrival (probe-arrivals p) (- head 1)) first)) 'head-first
+                  (list 'head (arrival (probe-arrivals p) (- head 1)) 'body first))
+              (if (and first (>= (- first connected) 300)) 'body-after-delay (list 'connected connected 'body first))
+              (if (and last (>= (- last connected) 500)) 'last-after-gaps (list 'connected connected 'last last))))))
+  ;; Where the writes stalled: a client that reads nothing, Node's own, as
+  ;; the probe always reads. It sends its request, reads nothing for
+  ;; 1000 ms, then goes; the record then names the offset of the first write
+  ;; the kernel had not taken 100 ms on, short of the body's end, and the
+  ;; bytes it took, at least that offset.
+  (test-equal "raw /raw/pattern of 64 MiB, 65536 bytes a write, to a client that reads nothing: /raw/stalls then names an offset short of the body's end, past 0, where its writes first stalled, and bytes taken at least that offset, and short of the end"
+    '(stalled offset-in-range written-from-offset written-short)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((f (origin-face o 'raw))
+             (run (capture-command
+                   (list node "-e" non-reader (car f) (number->string (cdr f))
+                         "/raw/pattern?key=p5&bytes=67108864&chunk=65536")))
+             (answer (exchange o 'raw (get "/raw/stalls?key=p5") 2000))
+             (fields (and (pair? answer) (string? (car answer)) (report-fields (car answer)))))
+        (if (not (and (= (car run) 0) fields))
+            (list 'no-report run answer)
+            (let ((written (car fields)) (stalled (cadr fields)))
+              (list (if (integer? stalled) 'stalled (list 'stalled stalled))
+                    (if (and (integer? stalled) (< 0 stalled 67108864)) 'offset-in-range stalled)
+                    (if (and (integer? stalled) (>= written stalled)) 'written-from-offset (list written stalled))
+                    (if (< written 67108864) 'written-short written)))))))
+
+  ;; --- the http face: the stream routes, and the CONNECT proxy
+  (http-row o "/pattern/600" (get "/pattern/600" close)
+            (string-append "HTTP/1.1 200 OK\r\nContent-Length: 600\r\nConnection: close\r\n\r\n"
+                           (pattern-text 600)))
+  (http-row o "/pattern/600?delay=0" (get "/pattern/600?delay=0" close)
+            (string-append "HTTP/1.1 200 OK\r\nContent-Length: 600\r\nConnection: close\r\n\r\n"
+                           (pattern-text 600)))
+  (test-equal "http /pattern/40000?delay=300: the whole bytes, then eof; the head flushed before the body, which comes 300 ms or more after the probe connected"
+    (list (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: 40000\r\nConnection: close\r\n\r\n"
+                               (pattern-text 40000))
+                'eof)
+          'head-first 'body-after-delay)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((p (wire-probe o 'http (octets (get "/pattern/40000?delay=300" close)) 2000))
+             (head (string-length "HTTP/1.1 200 OK\r\nContent-Length: 40000\r\nConnection: close\r\n\r\n"))
+             (first (arrival (probe-arrivals p) head)))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (and first (< (arrival (probe-arrivals p) (- head 1)) first)) 'head-first
+                  (list 'head (arrival (probe-arrivals p) (- head 1)) 'body first))
+              (if (and first (>= (- first (probe-connected p)) 300)) 'body-after-delay
+                  (list 'connected (probe-connected p) 'body first))))))
+  (http-row o "/early, a 100, a 103 with Link, then the final head"
+            (get "/early" close)
+            (string-append "HTTP/1.1 100 Continue\r\n\r\n"
+                           "HTTP/1.1 103 Early Hints\r\nLink: </style.css>; rel=preload; as=style\r\n\r\n"
+                           "HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\nearly\n"))
+  (for-each
+   (lambda (target)
+     (http-row o (string-append target ": not a stream route, 404") (get target close)
+               "HTTP/1.1 404 Not Found\r\nContent-Length: 10\r\nConnection: close\r\n\r\nnot found\n"))
+   '("/pattern/0" "/pattern/01" "/pattern/268435457" "/pattern/600?delay=60001" "/pattern/600?x=1"
+     "/pattern/600?delay=" "/pattern" "/early?x=1" "/connects?x=1" "/connection"))
+  (test-equal "the CONNECT proxy: a tunnel to the raw face, its request sent behind the CONNECT, gets the tunnel's 200, then raw's bytes, then eof, and is counted; a CONNECT to 127.0.0.1:1, no face of the origin, and to another host, each gets a 403, and the end, and is not; /connects tells each count"
+    (let ((connects (lambda (n) (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: "
+                                                      (number->string (string-length (string-append "connects " (number->string n) "\n")))
+                                                      "\r\nConnection: close\r\n\r\nconnects " (number->string n) "\n")
+                                       'eof)))
+          (refused '("HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n" eof)))
+      (list 'counted
+            '("HTTP/1.1 200 Connection Established\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\nhello\n" eof)
+            'one-more refused refused 'no-more))
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((count (lambda ()
+                      (let ((a (exchange o 'http (get "/connects" close) 2000)))
+                        (and (pair? a) (string? (car a))
+                             (let ((n (string->number (last-word (car a))))) n)))))
+             (c0 (count))
+             (port (number->string (cdr (origin-face o 'raw))))
+             (tunnel (exchange o 'http (string-append "CONNECT 127.0.0.1:" port " HTTP/1.1\r\nHost: 127.0.0.1:" port
+                                                      "\r\n\r\n" (get "/raw/content-length"))
+                               2000))
+             (c1 (count))
+             (nowhere (exchange o 'http "CONNECT 127.0.0.1:1 HTTP/1.1\r\nHost: 127.0.0.1:1\r\n\r\n" 2000))
+             (elsewhere (exchange o 'http (string-append "CONNECT 127.0.0.2:" port " HTTP/1.1\r\nHost: 127.0.0.2:" port "\r\n\r\n") 2000))
+             (c2 (count)))
+        (list (if (integer? c0) 'counted c0)
+              tunnel
+              (if (and (integer? c0) (eqv? c1 (+ c0 1))) 'one-more (list c0 c1))
+              nowhere elsewhere
+              (if (eqv? c2 c1) 'no-more (list c1 c2))))))
 
   ;; --- the raw face: the request head's 64 KiB limit, from both sides. The
   ;; padding is counted from the lengths of the text around it, so each head

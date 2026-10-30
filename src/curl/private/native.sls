@@ -82,6 +82,12 @@
 ;;; 2026-10-24); the rest plain. A multi handle is counted as multi.
 ;;; curl_multi_setopt is bound once, for a long, through bind-variadic,
 ;;; last, with the easy setopts (ADR-0019; ADR-0001, amended 2026-10-25).
+;;; curl_easy_pause, the engine's resume (the M6 plan, section 3.4), is
+;;; bound through bind-blocking too: it never waits on the network, but it
+;;; hands what it held to the callables before it returns, decoding it on
+;;; the way, and its replay of a gzip body ran 21.647 ms, holding another
+;;; thread's collection while it ran, when the call was plain (the plan's
+;;; section 4.1, as measured).
 ;;;
 ;;; Each handle's thread (ADR-0012, decision 3; M3 plan, section 3.3). Each
 ;;; easy, multi and CURLU handle and each string list native makes is
@@ -136,7 +142,8 @@
           curl-slist-append curl-slist-free-all
           curl-multi-init curl-multi-cleanup curl-multi-add-handle curl-multi-remove-handle
           curl-multi-perform curl-multi-poll curl-multi-wakeup curl-multi-info-read
-          curl-multi-strerror curl-multi-setopt-long)
+          curl-multi-strerror curl-multi-setopt-long
+          curl-easy-pause)
   (import (curl private require-threaded)
           (except (rnrs) dynamic-wind)
           (only (chezscheme) critical-section dynamic-wind ftype-ref ftype-set! ftype-sizeof
@@ -798,6 +805,12 @@
   (define raw-curl-multi-strerror
     (load-step (bind-required "curl_multi_strerror" (int) uptr info)))
 
+  ;; CURLcode curl_easy_pause(CURL *handle, int action), 7.18.0: the
+  ;; engine's resume, __collect_safe, since the callables run inside it
+  ;; (the M6 plan, section 3.4).
+  (define raw-curl-easy-pause
+    (load-step (bind-blocking "curl_easy_pause" (uptr int) int info)))
+
   ;; CURLcode curl_easy_setopt(CURL *handle, CURLoption option, ...),
   ;; variadic after option: bound once per value type. curl_off_t is 64
   ;; bits on every platform chez-curl supports. Bound last, so a library
@@ -1147,6 +1160,16 @@
   ;; libcurl's text for the CURLMcode CODE, copied; #f for NULL.
   (define (curl-multi-strerror code)
     (c-text (raw-curl-multi-strerror code)))
+
+  ;; curl-easy-pause : Positive-Integer Integer -> Integer
+  ;; EASY, this thread's, given the new pause state ACTION, a CURLPAUSE_*
+  ;; mask from (curl private constants): the CURLcode. Resuming, libcurl
+  ;; hands the bytes it held to the transfer's callables before it returns,
+  ;; on this thread. It takes the whole state: CURLPAUSE_CONT unpauses both
+  ;; directions (ADR-0012, amended 2026-10-29).
+  (define (curl-easy-pause easy action)
+    (check-owner 'curl-easy-pause easy 'easy)
+    (raw-curl-easy-pause easy action))
 
 
   ;; --- 7. the two API probes, then check-apis --------------------------------------------

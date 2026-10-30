@@ -27,12 +27,26 @@
 //
 // The faces:
 //   http  node:http. Deterministic: no Date, headers in a fixed order, and
-//         Connection: close back when Node will close.
+//         Connection: close back when Node will close. It is also a CONNECT
+//         proxy to this origin's own faces alone: CONNECT 127.0.0.1:PORT, PORT
+//         one of them, gets "HTTP/1.1 200 Connection Established", then both
+//         ways piped; any other target gets a 403, and the end.
 //           GET /status/CODE             200-599: status CODE, body "status CODE\n"
 //           GET /redirect/CODE?to=TARGET 300-308: Location: TARGET, decoded,
 //                                        body "redirect CODE\n"
 //           GET /chunked                 three writes, each its own chunk
 //           ANY /echo                    the request as Node parsed it
+//           GET /pattern/N[?delay=MS]    1 to 268435456: 200, Content-Length N,
+//                                        the body N bytes, byte i being i mod
+//                                        251, written 16384 bytes a write, a
+//                                        write Node holds awaiting its drain;
+//                                        the head flushed first, then MS ms, 0
+//                                        to 60000, before the body: Node holds
+//                                        a head back until a body's first write
+//           GET /early                   a 100 Continue, a 103 Early Hints with
+//                                        a Link header, then 200, body "early\n"
+//           GET /connects                200, body "connects N\n": the CONNECT
+//                                        tunnels the http face has opened
 //           anything else                404, body "not found\n"
 //         A target in absolute form, http://AUTHORITY then its path, as a
 //         client sends one to a proxy, is routed by that path, / when it
@@ -98,6 +112,28 @@
 //         requests held now, and the most held at once so far, 0 and 0
 //         for a key never held, and ends. It counts nothing. The counts
 //         live as long as the origin.
+//         /raw/pattern?key=KEY&bytes=N&chunk=C[&delay=MS][&gap=MS][&framing=F]
+//         writes "HTTP/1.1 200 OK", Content-Length: N, or with
+//         framing=chunked Transfer-Encoding: chunked, then Connection: close,
+//         and the head's end; then MS ms; then the body, N bytes, byte i
+//         being i mod 251, C bytes a write, each its own chunk when chunked,
+//         GAP ms apart, each write awaited until the kernel takes it; then
+//         the last chunk, when chunked, and the end. Its query, every pair
+//         NAME=VALUE, each name once at most: key, as retry takes it; bytes,
+//         1 to 268435456; chunk, 1 to 1048576; delay and gap, 0 to 60000, 0
+//         when left out; framing, length, the default, or chunked. For KEY it
+//         records the body's bytes the kernel has taken, and where its writes
+//         first stalled: the body's offset at a write the kernel had not
+//         taken 100 ms after it began, the client reading no more. A query it
+//         refuses gets the fixed 400, and records nothing.
+//         /raw/stalls?key=KEY writes "HTTP/1.1 200 OK", Content-Length,
+//         Connection: close and the body "written W stalled S\n": for KEY's
+//         latest pattern, the bytes the kernel took, and the offset where its
+//         writes first stalled, or none; 0 and none for a key never seen. It
+//         records nothing. The records live as long as the origin.
+//         /raw/early writes a 100 Continue, a 103 Early Hints with a Link
+//         header, waits 50 ms, then writes a 200 with Content-Length: 6,
+//         Connection: close and the body "early\n", and ends.
 //   h2c   node:http2, plaintext, by prior knowledge: the HTTP/2 routes.
 //   With --pki DIR:
 //   https, https-expired, https-wrong-host, https-untrusted
@@ -120,8 +156,15 @@
 // answers :status, location, content-length; /echo's body is each rawHeaders
 // pair as "name: value\n", pseudo-headers included, in order, then "\n", then
 // the request body. 204 and 304 send no content-length and no body, 205
-// content-length: 0. Anything else, /chunked included, is 404, "not found\n".
-// No date, and no header beyond these.
+// content-length: 0. /pattern/N[?delay=MS] answers :status and
+// content-length, then the body as http writes it; /early sends a 100's
+// HEADERS, a 103's with link, then :status 200 and content-length, and
+// "early\n"; /connection[?delay=MS], HTTP/2's alone, answers :status and
+// content-length at once, then, MS ms on, "connection K\n", K the
+// connection's number among this face's, from 1, so two streams share a
+// connection exactly when they answer one K. Anything else, /chunked and
+// /connects included, is 404, "not found\n". No date, and no header beyond
+// these.
 //
 // The suites (tests/test-origin.sps, tests/test-origin-tls.sps) hold their
 // own copy of each scenario's bytes, written separately from these. They
@@ -219,8 +262,41 @@ function route(target) {
   }
   if (path === '/chunked' && query === undefined) return { kind: 'chunked' };
   if (path === '/echo') return { kind: 'echo' };
+  if ((m = /^\/pattern\/([1-9][0-9]*)$/.exec(path))) {
+    const bytes = decimal(m[1], 1, 268435456);
+    const delay = delayQuery(query);
+    return bytes === null || delay === null ? { kind: 'not-found' } : { kind: 'pattern', bytes, delay };
+  }
+  if (path === '/early' && query === undefined) return { kind: 'early' };
+  if (path === '/connects' && query === undefined) return { kind: 'connects' };
+  if (path === '/connection') {
+    const delay = delayQuery(query);
+    return delay === null ? { kind: 'not-found' } : { kind: 'connection', delay };
+  }
   return { kind: 'not-found' };
 }
+
+// delayQuery: MS from a query that is exactly delay=MS, 0 to 60000; 0 for
+// no query; null for any other.
+function delayQuery(query) {
+  if (query === undefined) return 0;
+  if (!query.startsWith('delay=')) return null;
+  return decimal(query.slice(6), 0, 60000);
+}
+
+// patternBlock: 251 bytes, 0 to 250, which the pattern repeats.
+const patternBlock = Buffer.from(Array.from({ length: 251 }, (_, i) => i));
+
+// patternBytes: the first N bytes of the pattern, byte i being i mod 251.
+function patternBytes(n) {
+  return Buffer.alloc(n).fill(patternBlock);
+}
+
+// sleep: resolves after MS ms.
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// The CONNECT tunnels the http face has opened, for as long as it runs.
+let connects = 0;
 
 // redirectTarget: the decoded TARGET of a query that is exactly to=TARGET,
 // or null.
@@ -280,6 +356,14 @@ function respond(req, res, body) {
       res.write('gamma\n');
       return res.end();
     }
+    case 'pattern':
+      return pattern(res, r.bytes, r.delay);
+    case 'early':
+      res.writeContinue();
+      res.writeEarlyHints({ link: '</style.css>; rel=preload; as=style' });
+      return text(res, 200, 'early\n');
+    case 'connects':
+      return text(res, 200, `connects ${connects}\n`);
     case 'echo': {
       let lines = `${req.method} ${req.url} HTTP/${req.httpVersion}\n`;
       for (let i = 0; i < req.rawHeaders.length; i += 2) {
@@ -294,6 +378,33 @@ function respond(req, res, body) {
   }
 }
 
+// pattern: a 200 whose body is the first BYTES of the pattern, its head
+// flushed, then, DELAY ms on, the body, 16384 bytes a write, a write Node
+// holds back awaiting its drain. A response the client has gone from writes
+// no more.
+function pattern(res, bytes, delay) {
+  res.sendDate = false;
+  const connection = res.shouldKeepAlive ? 'keep-alive' : 'close';
+  res.writeHead(200, ['Content-Length', String(bytes), 'Connection', connection]);
+  res.flushHeaders();
+  const body = patternBytes(bytes);
+  const gone = () => res.destroyed || res.writableEnded;
+  (async () => {
+    if (delay > 0) await sleep(delay);
+    for (let at = 0; at < bytes; at += 16384) {
+      if (gone()) return;
+      if (!res.write(body.subarray(at, Math.min(at + 16384, bytes)))) {
+        await new Promise((resolve) => {
+          const done = () => { res.off('drain', done); res.off('close', done); resolve(); };
+          res.on('drain', done);
+          res.on('close', done);
+        });
+      }
+    }
+    if (!gone()) res.end();
+  })().catch((err) => fatal('a pattern failed', err));
+}
+
 function wellFormed(req, res) {
   const chunks = [];
   req.on('error', () => res.destroy());
@@ -303,6 +414,31 @@ function wellFormed(req, res) {
 
 const httpServer = http.createServer(wellFormed);
 httpServer.on('connection', track);
+
+// The CONNECT proxy, to this origin's own faces alone: a target of
+// 127.0.0.1:PORT, PORT one of theirs, is tunnelled, both ways piped, and
+// counted once its far end connects; any other gets a 403, and the end.
+httpServer.on('connect', (req, client, early) => {
+  track(client);
+  client.on('error', () => client.destroy());
+  const m = /^127\.0\.0\.1:([1-9][0-9]*)$/.exec(req.url);
+  const ports = new Set(faces.map(([, server]) => server.address() && server.address().port));
+  if (!m || !ports.has(Number(m[1]))) {
+    client.end('HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n');
+    return;
+  }
+  const far = net.connect(Number(m[1]), HOST, () => {
+    connects += 1;
+    client.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+    if (early && early.length > 0) far.write(early);
+    far.pipe(client);
+    client.pipe(far);
+  });
+  track(far);
+  far.on('error', () => { far.destroy(); client.destroy(); });
+  client.on('close', () => far.destroy());
+  far.on('close', () => client.destroy());
+});
 
 // httpsServer: an https face serving LEAF, with ALPN http/1.1 alone. A TLS
 // error ends that connection only.
@@ -341,9 +477,49 @@ function h2Text(stream, status, body, headers = []) {
   }
 }
 
+// h2Pattern: an HTTP/2 200 whose body is the first BYTES of the pattern,
+// its HEADERS sent at once, then, DELAY ms on, the body as http writes it.
+function h2Pattern(stream, bytes, delay) {
+  if (stream.destroyed) return;
+  stream.respond({ ':status': 200, 'content-length': String(bytes) }, { sendDate: false });
+  const body = patternBytes(bytes);
+  const gone = () => stream.destroyed || stream.writableEnded;
+  (async () => {
+    if (delay > 0) await sleep(delay);
+    for (let at = 0; at < bytes; at += 16384) {
+      if (gone()) return;
+      if (!stream.write(body.subarray(at, Math.min(at + 16384, bytes)))) {
+        await new Promise((resolve) => {
+          const done = () => { stream.off('drain', done); stream.off('close', done); resolve(); };
+          stream.on('drain', done);
+          stream.on('close', done);
+        });
+      }
+    }
+    if (!gone()) stream.end();
+  })().catch((err) => fatal('a pattern failed', err));
+}
+
 function h2Respond(stream, headers, rawHeaders, body) {
   const r = route(headers[':path']);
   switch (r.kind) {
+    case 'pattern':
+      return h2Pattern(stream, r.bytes, r.delay);
+    case 'early':
+      if (stream.destroyed) return;
+      stream.additionalHeaders({ ':status': 100 });
+      stream.additionalHeaders({ ':status': 103, link: '</style.css>; rel=preload; as=style' });
+      return h2Text(stream, 200, 'early\n');
+    case 'connection': {
+      if (stream.destroyed) return;
+      const bytes = Buffer.from(`connection ${stream.session.connectionNumber}\n`, 'latin1');
+      stream.respond({ ':status': 200, 'content-length': String(bytes.length) }, { sendDate: false });
+      (async () => {
+        if (r.delay > 0) await sleep(r.delay);
+        if (!stream.destroyed) stream.end(bytes);
+      })().catch((err) => fatal('a connection answer failed', err));
+      return;
+    }
     case 'status':
       return h2Text(stream, r.code, `status ${r.code}\n`);
     case 'redirect':
@@ -369,10 +545,16 @@ function h2Stream(stream, headers, flags, rawHeaders) {
   stream.on('end', () => h2Respond(stream, headers, rawHeaders, Buffer.concat(chunks)));
 }
 
-// h2Face: SERVER, with the listeners every HTTP/2 face shares.
+// h2Face: SERVER, with the listeners every HTTP/2 face shares. Each session
+// is numbered, from 1, among its face's, for /connection.
 function h2Face(server) {
+  let sessionsSeen = 0;
   server.on('connection', track);
-  server.on('session', trackSession);
+  server.on('session', (session) => {
+    sessionsSeen += 1;
+    session.connectionNumber = sessionsSeen;
+    trackSession(session);
+  });
   server.on('sessionError', (err, session) => session.destroy());
   server.on('stream', h2Stream);
   return server;
@@ -399,8 +581,11 @@ const ascii = (s) => Buffer.from(s, 'latin1');
 
 // A script is a list of steps: write these bytes, wait N ms, hold for a key
 // N ms (count it as held for KEY while it waits), end (FIN), reset (RST),
-// or stall (write nothing until the client goes).
+// or stall (write nothing until the client goes); and the pattern's, write
+// bytes of a body, recording for a pattern's record the bytes the kernel
+// took and where a write first stalled.
 const write = (s) => ({ step: 'write', bytes: typeof s === 'string' ? ascii(s) : s });
+const measured = (record, bytes, offset) => ({ step: 'measured', record, bytes, offset });
 const wait = (ms) => ({ step: 'wait', ms });
 const hold = (key, ms) => ({ step: 'hold', key, ms });
 const END = { step: 'end' };
@@ -578,7 +763,83 @@ const scripts = {
               END];
     },
   },
+
+  // streams: a large body a write at a time, and where its writes stalled
+  'pattern': {
+    query: patternQuery,
+    play: ({ key, bytes, chunk, delay, gap, framing }) => {
+      const record = { written: 0, stalled: null };
+      stalls.set(key, record);
+      const chunked = framing === 'chunked';
+      const steps = [write(`HTTP/1.1 200 OK\r\n${chunked ? 'Transfer-Encoding: chunked' : `Content-Length: ${bytes}`}\r\nConnection: close\r\n\r\n`)];
+      if (delay > 0) steps.push(wait(delay));
+      const body = patternBytes(bytes);
+      for (let at = 0; at < bytes; at += chunk) {
+        if (at > 0 && gap > 0) steps.push(wait(gap));
+        const piece = body.subarray(at, Math.min(at + chunk, bytes));
+        if (chunked) steps.push(write(`${piece.length.toString(16)}\r\n`));
+        steps.push(measured(record, piece, at));
+        if (chunked) steps.push(write('\r\n'));
+      }
+      if (chunked) steps.push(write('0\r\n\r\n'));
+      steps.push(END);
+      return steps;
+    },
+  },
+  'stalls': {
+    query: attemptsQuery,
+    play: ({ key }) => {
+      const record = stalls.get(key) || { written: 0, stalled: null };
+      const body = `written ${record.written} stalled ${record.stalled === null ? 'none' : record.stalled}\n`;
+      return [write(`HTTP/1.1 200 OK\r\nContent-Length: ${body.length}\r\nConnection: close\r\n\r\n${body}`),
+              END];
+    },
+  },
+
+  // heads before the final one
+  'early': {
+    play: () => [write('HTTP/1.1 100 Continue\r\n\r\n'
+                       + 'HTTP/1.1 103 Early Hints\r\nLink: </style.css>; rel=preload; as=style\r\n\r\n'),
+                 wait(50),
+                 write('HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\nearly\n'),
+                 END],
+  },
 };
+
+// stalls: the pattern script's latest record for each key, by key, for as
+// long as the origin runs: written, the body's bytes the kernel took, and
+// stalled, the offset of the first write it had not taken 100 ms after the
+// write began, or null.
+const stalls = new Map();
+
+// patternQuery: the pattern script's parameters from QUERY, or null: key,
+// as retry takes it, bytes, 1 to 268435456, and chunk, 1 to 1048576, each
+// exactly once; delay and gap, 0 to 60000, and framing, length or chunked,
+// at most once each, 0, 0 and length when absent.
+function patternQuery(query) {
+  if (query === undefined) return null;
+  const found = { key: null, bytes: null, chunk: null, delay: null, gap: null, framing: null };
+  for (const pair of query.split('&')) {
+    const at = pair.indexOf('=');
+    if (at < 0) return null;
+    const name = pair.slice(0, at);
+    const value = pair.slice(at + 1);
+    if (!Object.hasOwn(found, name) || found[name] !== null) return null;
+    let read;
+    switch (name) {
+      case 'key': read = retryKey(value) ? value : null; break;
+      case 'bytes': read = decimal(value, 1, 268435456); break;
+      case 'chunk': read = decimal(value, 1, 1048576); break;
+      case 'framing': read = ['length', 'chunked'].includes(value) ? value : null; break;
+      default: read = decimal(value, 0, 60000); break;
+    }
+    if (read === null) return null;
+    found[name] = read;
+  }
+  if (found.key === null || found.bytes === null || found.chunk === null) return null;
+  return { key: found.key, bytes: found.bytes, chunk: found.chunk, delay: found.delay || 0,
+           gap: found.gap || 0, framing: found.framing || 'length' };
+}
 
 // attempts: the retry script's count of the requests it has read for each
 // key, by key, for as long as the origin runs.
@@ -770,6 +1031,21 @@ async function play(socket, reset, state, steps) {
         case 'write':
           await new Promise((resolve) => socket.write(s.bytes, () => resolve()));
           break;
+        case 'measured': {
+          // The kernel takes the bytes when the write's callback comes, with
+          // no error; a write it has not taken 100 ms on is where the
+          // client stopped reading, and the first such is recorded.
+          const record = s.record;
+          const timer = setTimeout(() => {
+            if (record.stalled === null) record.stalled = s.offset;
+          }, 100);
+          await new Promise((resolve) => socket.write(s.bytes, (err) => {
+            clearTimeout(timer);
+            if (!err) record.written += s.bytes.length;
+            resolve();
+          }));
+          break;
+        }
         case 'wait':
           await pause(socket, s.ms);
           break;

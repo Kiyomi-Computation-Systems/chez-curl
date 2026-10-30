@@ -1,0 +1,10 @@
+[guix-8.20.0] prototype build/m6s1/src from proto.patch a4067e7990b6a422474e4b4d5caaac48c115c05b60446787963cdf39beeaefc7
+[guix-8.20.0] server {"node":"v24.18.0","pid":34,"http":"127.0.0.1:45121","raw":"127.0.0.1:36155","https":"127.0.0.1:39039","h2":"127.0.0.1:35427","proxy":"127.0.0.1:44399"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+Terminated
+[guix-8.20.0] libcurl 8.20.0 GnuTLS/3.8.13
+[guix-8.20.0] replay run=1 stream-buffer=1 mode=alone bytes=9715712 whole=#f zeros=#t end=eof resumes=588 codes=(0) pauses=589 longest-call-ms=5.914 longest-call-appended=16384 median-call-ms=0.771 failed reason=perform-failed code=28
+[guix-8.20.0] replay run=1 stream-buffer=1 mode=plain bytes=10747904 whole=#f zeros=#t end=eof resumes=642 codes=(0) pauses=643 longest-call-ms=7.247 longest-call-appended=16384 median-call-ms=0.821 failed reason=perform-failed code=28
+[guix-8.20.0] replay run=1 stream-buffer=1 mode=plain collects control n=6285 median-ms=0.005 max-ms=1.905; in-call n=734 median-ms=0.948 max-ms=5.509 max-past-call-end-ms=0.8; all n=1882752 max-ms=34.184
+[guix-8.20.0] replay exited 143 after about 710 s
+

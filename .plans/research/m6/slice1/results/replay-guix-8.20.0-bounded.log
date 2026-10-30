@@ -1,0 +1,16 @@
+[guix-8.20.0] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[guix-8.20.0] server {"node":"v24.18.0","pid":34,"http":"127.0.0.1:41417","raw":"127.0.0.1:46015","https":"127.0.0.1:42947","h2":"127.0.0.1:37727","proxy":"127.0.0.1:39309"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+[guix-8.20.0] libcurl 8.20.0 GnuTLS/3.8.13
+[guix-8.20.0] replay run=1 stream-buffer=1 mode=alone bytes=1048576 whole=#t zeros=#t end=eof drain-ms=8094.049 resumes=63 codes=(0) pauses=63 queued-polls=8 queued-poll-max-ms=1005.034 queued-polls-100ms=8 longest-call-ms=0.165 longest-call-appended=16384 median-call-ms=0.016 status=200
+[guix-8.20.0] replay run=1 stream-buffer=1 mode=plain bytes=1048576 whole=#t zeros=#t end=eof drain-ms=1021.197 resumes=63 codes=(0) pauses=63 queued-polls=2 queued-poll-max-ms=1005.038 queued-polls-100ms=1 longest-call-ms=0.383 longest-call-appended=16384 median-call-ms=0.018 status=200
+[guix-8.20.0] replay run=1 stream-buffer=1 mode=plain collects control n=6217 median-ms=0.006 max-ms=6.859; in-call n=6 median-ms=0.203 max-ms=0.351 max-past-call-end-ms=0.277; all n=12586 max-ms=6.859
+[guix-8.20.0] replay run=1 stream-buffer=1 mode=collect-safe bytes=1048576 whole=#t zeros=#t end=eof drain-ms=10138.767 resumes=62 codes=(0) pauses=62 queued-polls=12 queued-poll-max-ms=1005.049 queued-polls-100ms=10 longest-call-ms=0.631 longest-call-appended=16384 median-call-ms=0.034 status=200
+[guix-8.20.0] replay run=1 stream-buffer=1 mode=collect-safe collects control n=6276 median-ms=0.006 max-ms=0.172; in-call n=16 median-ms=0.199 max-ms=0.548 max-past-call-end-ms=0; all n=69832 max-ms=0.64
+[guix-8.20.0] replay run=1 stream-buffer=65536 mode=alone bytes=1048576 whole=#t zeros=#t end=eof drain-ms=5055.242 resumes=42 codes=(0) pauses=42 queued-polls=5 queued-poll-max-ms=1005.065 queued-polls-100ms=5 longest-call-ms=0.38 longest-call-appended=49152 median-call-ms=0.008 status=200
+[guix-8.20.0] replay run=1 stream-buffer=65536 mode=plain bytes=1048576 whole=#t zeros=#t end=eof drain-ms=4057.459 resumes=45 codes=(0) pauses=45 queued-polls=5 queued-poll-max-ms=1005.035 queued-polls-100ms=4 longest-call-ms=0.779 longest-call-appended=81920 median-call-ms=0.016 status=200
+[guix-8.20.0] replay run=1 stream-buffer=65536 mode=plain collects control n=6305 median-ms=0.005 max-ms=0.261; in-call n=10 median-ms=0.417 max-ms=0.535 max-past-call-end-ms=0.458; all n=31809 max-ms=0.535
+[guix-8.20.0] replay run=1 stream-buffer=65536 mode=collect-safe bytes=1048576 whole=#t zeros=#t end=eof drain-ms=10117.934 resumes=25 codes=(0) pauses=25 queued-polls=10 queued-poll-max-ms=1005.069 queued-polls-100ms=10 longest-call-ms=0.727 longest-call-appended=49152 median-call-ms=0.134 status=200
+[guix-8.20.0] replay run=1 stream-buffer=65536 mode=collect-safe collects control n=6227 median-ms=0.006 max-ms=0.232; in-call n=20 median-ms=0.153 max-ms=0.547 max-past-call-end-ms=-0.009; all n=69731 max-ms=0.547
+[guix-8.20.0] replay done
+[guix-8.20.0] replay exited 0 after about 45 s

@@ -1,0 +1,87 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[ubuntu-openssl-8.5.0-valgrind] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[ubuntu-openssl-8.5.0-valgrind] server {"node":"v24.18.0","pid":3123,"http":"127.0.0.1:36623","raw":"127.0.0.1:41349","https":"127.0.0.1:35531","h2":"127.0.0.1:45233","proxy":"127.0.0.1:33385"}
+[ubuntu-openssl-8.5.0-valgrind] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4
+[ubuntu-openssl-8.5.0-valgrind] under valgrind valgrind-3.22.0
+[ubuntu-openssl-8.5.0-valgrind] libcurl 8.5.0 OpenSSL/3.0.13
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=http pacing=on window-ms=3000.807 cpu-ms=366.315 proc-stat-ms=360 turns=2515 polls=2515 fast-polls=2515 paced=2515 still-paused=#t
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=http pacing=on delays submit-ms=(4.483 1.981 3.289 1.95 2.145 2.024 1.866 2.25)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=http pacing=on delays submit-taken-ms=(2.231 1.027 2.356 0.953 1.013 0.917 0.978 1.374)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=http pacing=on delays cancel-ms=(20.917 0.763 0.393 0.506 1.312 1.167 1.219 1.152)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=http pacing=on delays resume-ms=(4.812 1.97 2.042 1.056 1.148 1.913 2.023 1.978)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=23 resumes=23 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=http pacing=off window-ms=3062.128 cpu-ms=3066.984 proc-stat-ms=3060 turns=50921 polls=50921 fast-polls=50917 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=http pacing=off delays submit-ms=(24.381 1.881 1.462 1.907 1.947 1.942 2.035 1.77)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=http pacing=off delays submit-taken-ms=(11.146 0.857 0.687 0.814 1.181 0.907 1.256 1.014)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=http pacing=off delays cancel-ms=(8.9 0.668 0.747 0.484 0.449 0.433 3.85 0.415)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=http pacing=off delays resume-ms=(7.093 1.665 1.193 2.171 2.318 1.05 1.018 0.93)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=14 resumes=14 passed-over=0 queued-polls=1 queued-poll-max-ms=0.153 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=h2 pacing=on window-ms=3000.646 cpu-ms=4.275 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=h2 pacing=on delays submit-ms=(5.346 2.836 3.138 4.013 3.797 3.086 3.151 3.104)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=h2 pacing=on delays submit-taken-ms=(2.836 0.704 0.93 1.53 1.707 1.501 1.148 1.536)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=h2 pacing=on delays cancel-ms=(8.943 0.804 1.414 0.658 0.632 0.631 0.626 0.863)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=h2 pacing=on delays resume-ms=(2.269 2.042 1.523 2.049 1.956 2.093 2.045 2.085)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=175 resumes=175 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=h2 pacing=off window-ms=3000.135 cpu-ms=1.072 proc-stat-ms=10 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=h2 pacing=off delays submit-ms=(2.779 3.642 3.778 3.028 2.538 2.746 2.248 2.892)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=h2 pacing=off delays submit-taken-ms=(1.18 1.651 2.204 1.13 1.107 1.069 1.045 1.023)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=h2 pacing=off delays cancel-ms=(0.805 0.617 0.674 0.645 0.679 0.611 0.614 0.616)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=h2 pacing=off delays resume-ms=(1.572 2.075 2.171 1.952 1.985 1.969 1.953 1.984)
+[ubuntu-openssl-8.5.0-valgrind] paced run=1 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=175 resumes=175 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=http pacing=on window-ms=3000.134 cpu-ms=369.516 proc-stat-ms=360 turns=2506 polls=2506 fast-polls=2506 paced=2506 still-paused=#t
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=http pacing=on delays submit-ms=(2.451 1.959 1.89 1.38 1.158 2.732 1.926 1.784)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=http pacing=on delays submit-taken-ms=(1.322 0.943 0.838 0.688 0.505 1.064 0.64 0.99)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=http pacing=on delays cancel-ms=(0.517 0.909 0.82 0.556 1.326 0.743 0.363 1.262)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=http pacing=on delays resume-ms=(1.568 0.916 1.194 0.909 0.656 1.117 1.907 2.051)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=16 resumes=16 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=http pacing=off window-ms=3065.336 cpu-ms=3066.227 proc-stat-ms=3060 turns=49796 polls=49796 fast-polls=49795 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=http pacing=off delays submit-ms=(1.639 2.198 1.91 1.935 1.936 1.925 1.899 1.903)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=http pacing=off delays submit-taken-ms=(0.896 1.153 1.104 1.161 1.154 1.142 1.129 1.125)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=http pacing=off delays cancel-ms=(0.73 0.716 0.516 1.275 0.61 0.527 0.411 0.47)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=http pacing=off delays resume-ms=(2.21 1.052 1.08 2.019 2.094 1.259 1.187 1.163)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=13 resumes=13 passed-over=0 queued-polls=2 queued-poll-max-ms=0.045 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=h2 pacing=on window-ms=3000.143 cpu-ms=1.183 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=h2 pacing=on delays submit-ms=(3.346 2.59 2.626 2.701 3.21 2.539 2.584 2.634)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=h2 pacing=on delays submit-taken-ms=(1.695 1.049 1.047 1.069 1.668 1.181 1.047 1.014)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=h2 pacing=on delays cancel-ms=(0.664 0.855 0.73 0.641 0.622 0.657 0.633 0.682)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=h2 pacing=on delays resume-ms=(1.626 2.05 2.073 2.11 1.946 2.078 2.108 2.074)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=175 resumes=175 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=h2 pacing=off window-ms=3000.131 cpu-ms=1.454 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=h2 pacing=off delays submit-ms=(2.889 2.604 2.555 2.595 3.123 2.616 2.719 2.614)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=h2 pacing=off delays submit-taken-ms=(1.259 1.059 1.049 1.049 1.06 1.044 1.142 1.066)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=h2 pacing=off delays cancel-ms=(0.797 0.651 0.626 0.633 0.797 0.614 0.63 0.655)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=h2 pacing=off delays resume-ms=(1.55 2.033 2.094 2.119 2.064 2.115 2.1 2.037)
+[ubuntu-openssl-8.5.0-valgrind] paced run=2 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=175 resumes=175 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=http pacing=on window-ms=3000.176 cpu-ms=365.542 proc-stat-ms=360 turns=2510 polls=2510 fast-polls=2510 paced=2510 still-paused=#t
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=http pacing=on delays submit-ms=(1.987 1.996 1.839 1.746 1.762 1.914 1.982 1.818)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=http pacing=on delays submit-taken-ms=(1.04 0.593 0.972 0.861 0.674 0.999 0.991 0.927)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=http pacing=on delays cancel-ms=(0.691 1.176 1.612 0.85 1.281 1.348 0.472 1.346)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=http pacing=on delays resume-ms=(1.385 1.93 1.644 0.995 0.837 1.899 2.003 1.953)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=14 resumes=14 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=http pacing=off window-ms=3039.842 cpu-ms=3039.639 proc-stat-ms=3040 turns=48796 polls=48796 fast-polls=48794 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=http pacing=off delays submit-ms=(1.488 1.92 1.458 2.068 1.593 1.597 1.518 2.332)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=http pacing=off delays submit-taken-ms=(0.703 1.155 0.687 1.29 0.815 0.8 0.74 1.309)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=http pacing=off delays cancel-ms=(0.472 0.733 0.709 0.502 0.528 0.495 0.527 0.536)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=http pacing=off delays resume-ms=(1.148 1.222 1.991 1.297 0.953 1.194 0.983 1.899)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=12 resumes=12 passed-over=0 queued-polls=3 queued-poll-max-ms=0.043 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=h2 pacing=on window-ms=3000.148 cpu-ms=1.361 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=h2 pacing=on delays submit-ms=(2.75 2.679 2.621 2.562 2.647 4.276 2.698 2.668)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=h2 pacing=on delays submit-taken-ms=(1.152 1.109 1.106 1.035 1.066 2.223 1.093 1.134)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=h2 pacing=on delays cancel-ms=(0.643 0.619 0.644 0.621 0.692 0.637 0.723 0.719)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=h2 pacing=on delays resume-ms=(1.571 2.051 2.085 1.986 3.193 2.5 2.134 2.133)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=175 resumes=175 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=h2 pacing=off window-ms=3000.149 cpu-ms=1.281 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=h2 pacing=off delays submit-ms=(2.814 2.584 2.703 3.257 2.689 2.702 2.832 2.695)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=h2 pacing=off delays submit-taken-ms=(1.17 1.024 1.159 1.613 1.058 1.151 1.184 1.104)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=h2 pacing=off delays cancel-ms=(0.668 0.635 0.656 0.643 0.639 0.727 0.606 0.704)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=h2 pacing=off delays resume-ms=(1.581 2.104 2.068 1.572 2.059 2.063 2.135 2.083)
+[ubuntu-openssl-8.5.0-valgrind] paced run=3 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=175 resumes=175 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0-valgrind] paced done
+[ubuntu-openssl-8.5.0-valgrind] paced exited 0 after about 72 s
+[ubuntu-openssl-8.5.0-valgrind] valgrind: ==3148== Command: /src/build/e1/ci/chez-threads/bin/scheme --libdirs build/m6s1/src --program .plans/research/m6/slice1/paced.sps 127.0.0.1:36623 127.0.0.1:41349 127.0.0.1:35531 127.0.0.1:45233 127.0.0.1:33385 /tmp/m6s1.94xJh6/pki/ca.pem 3
+[ubuntu-openssl-8.5.0-valgrind] valgrind: ==3148==    definitely lost: 0 bytes in 0 blocks
+[ubuntu-openssl-8.5.0-valgrind] valgrind: ==3148== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

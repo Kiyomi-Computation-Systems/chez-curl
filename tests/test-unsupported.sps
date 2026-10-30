@@ -293,7 +293,8 @@
 ;; owned-names : (Listof String)
 ;; Every option chez-curl owns, and every owned setting's twin, written out
 ;; here (ADR-0009, amended): the options the transfer always sets and the
-;; pins' bitmasks; each request field's; the twins; the options slice 4's
+;; pins' bitmasks; each request field's, stream-buffer's header callable and
+;; its data among them (the M6 plan, section 3.3); the twins; the options slice 4's
 ;; review found, twins and the hazards kept from the hatch (amended
 ;; 2026-10-27); every proxy TLS option.
 (define owned-names
@@ -301,7 +302,7 @@
     "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
     "CURLU" "NOBODY" "CUSTOMREQUEST" "HTTPHEADER" "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "USERAGENT"
     "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "CAINFO" "CAPATH"
-    "SSL_VERIFYPEER" "SSL_VERIFYHOST" "PROXY" "FOLLOWLOCATION"
+    "SSL_VERIFYPEER" "SSL_VERIFYHOST" "PROXY" "HEADERFUNCTION" "HEADERDATA" "FOLLOWLOCATION"
     "TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "PUT" "UPLOAD"
     "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE" "INFILESIZE_LARGE"
     "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
@@ -344,12 +345,18 @@
         (map attach '((("FILE" . 1)) (("RTSPHEADER" "x")) (("url" . "x")) (("Url" . "x"))
                       (("cainfo" . "x"))))))
 
-(test-equal "an option of a type the hatch does not take is refused as unsupported-type: an object, STDERR; a callback pointer, HEADERDATA; a function, XFERINFOFUNCTION"
+(test-equal "WRITEHEADER, HEADERDATA's alias, is refused as owned-option, by id: a streamed response's header callable reads its key there (the M6 plan, section 3.3)"
+  (list 'same (refused-as "WRITEHEADER" 'owned-option))
+  (list (let ((a (curl-easy-option "WRITEHEADER")) (b (curl-easy-option "HEADERDATA")))
+          (if (and a b (= (car a) (car b))) 'same (list a b)))
+        (attach '(("WRITEHEADER" . 1)))))
+
+(test-equal "an option of a type the hatch does not take is refused as unsupported-type: an object, STDERR; a callback pointer, DEBUGDATA; a function, XFERINFOFUNCTION"
   (list '(object cbptr function)
-        (refused-as "STDERR" 'unsupported-type) (refused-as "HEADERDATA" 'unsupported-type)
+        (refused-as "STDERR" 'unsupported-type) (refused-as "DEBUGDATA" 'unsupported-type)
         (refused-as "XFERINFOFUNCTION" 'unsupported-type))
-  (cons (map type-of '("STDERR" "HEADERDATA" "XFERINFOFUNCTION"))
-        (map attach '((("STDERR" . 1)) (("HEADERDATA" . 1)) (("XFERINFOFUNCTION" . 1))))))
+  (cons (map type-of '("STDERR" "DEBUGDATA" "XFERINFOFUNCTION"))
+        (map attach '((("STDERR" . 1)) (("DEBUGDATA" . 1)) (("XFERINFOFUNCTION" . 1))))))
 
 (test-equal "an option of each type the hatch takes is attached, its setting a copy of the value given: a long, LOW_SPEED_TIME; enumerated values, IPRESOLVE; an off_t, MAX_RECV_SPEED_LARGE; a string, COOKIE; a string list, HTTP200ALIASES; a blob, SSLCERT_BLOB"
   (list '(long values off-t string slist blob)

@@ -218,7 +218,11 @@
     (curlm-unknown-option . "CURLM_UNKNOWN_OPTION")
     (curlmsg-done . "CURLMSG_DONE")
     (curlmopt-max-total-connections . "CURLMOPT_MAX_TOTAL_CONNECTIONS")
-    (curlmopt-quick-exit . "CURLMOPT_QUICK_EXIT")))
+    (curlmopt-quick-exit . "CURLMOPT_QUICK_EXIT")
+    (curlmopt-pipelining . "CURLMOPT_PIPELINING")
+    (curlpipe-nothing . "CURLPIPE_NOTHING")
+    (curl-writefunc-pause . "CURL_WRITEFUNC_PAUSE")
+    (curlpause-cont . "CURLPAUSE_CONT")))
 
 ;; c-name-aliases : (Listof (Pairof Symbol String))
 ;; Each export whose row names a C constant other than the export's own
@@ -1119,6 +1123,7 @@
     ("curl_multi_wakeup" ("CURLMcode" ("CURLM *")))
     ("curl_multi_info_read" ("CURLMsg *" ("CURLM *" "int *")))
     ("curl_multi_strerror" ("const char *" ("CURLMcode")))
+    ("curl_easy_pause" ("CURLcode" ("CURL *" "int")))
     ("memcpy" ("void *" ("void *" "const void *" "size_t")))
     ("strlen" ("size_t" ("const char *")))))
 
@@ -1130,7 +1135,8 @@
 ;; same _Static_assert(_Generic(...)) as an entry's; the Scheme side holds
 ;; the callable's Chez types to it through c-type-map, as a binding's.
 (define callable-rows
-  '((write-body "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *")))))
+  '((write-body "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *")))
+    (read-head "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *")))))
 
 ;; c-type-map : (Listof (Pairof String (Listof Symbol)))
 ;; The one fixed map from a C type, as a header spells it, to the Chez types
@@ -2018,8 +2024,9 @@
 
 ;; Written out here, not read from the table: a row loosened along with the
 ;; callable it holds would otherwise pass.
-(test-equal "callable-rows is exactly write-body, held to curl_write_callback: size_t (char *, size_t, size_t, void *)"
-  '((write-body "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *"))))
+(test-equal "callable-rows is exactly write-body and read-head, the header callable, each held to curl_write_callback: size_t (char *, size_t, size_t, void *), the typedef CURLOPT_HEADERFUNCTION's callback has too"
+  '((write-body "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *")))
+    (read-head "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *"))))
   callable-rows)
 
 (for-each

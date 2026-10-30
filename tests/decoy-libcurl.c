@@ -428,6 +428,15 @@ const char *curl_multi_strerror(CURLMcode code)
 }
 #endif
 
+/* Bound by the load and never called there: the engine's resume. */
+#ifndef DECOY_LACKS_curl_easy_pause
+CURLcode curl_easy_pause(CURL *easy, int action)
+{
+  called("curl_easy_pause(%s,%d)", HANDLE_NAME(easy), action);
+  return CURLE_BAD_FUNCTION_ARGUMENT;
+}
+#endif
+
 /* Variadic, bound by the load and never called, as curl_easy_setopt. */
 #ifndef DECOY_LACKS_curl_multi_setopt
 CURLMcode curl_multi_setopt(CURLM *multi, CURLMoption option, ...)

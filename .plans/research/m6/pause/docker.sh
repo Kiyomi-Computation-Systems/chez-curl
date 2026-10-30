@@ -9,7 +9,8 @@
 # read-only; the repository is mounted read-only too. Runs run.sh on the
 # floor (7.85.0, under Node 20.10.0, as the floor lane runs), Ubuntu's 8.5.0
 # with OpenSSL and with GnuTLS, and 8.23.0, each against its own headers.
-# CASES, when set, is handed to run.sh.
+# CASES, when set, is handed to run.sh, and so is PAUSE_NO_MULTIPLEX
+# (probe.c's opt-in switch, added for M6 slice 1), empty when unset.
 # The container's own lane runs on the host:
 #   scripts/guix-env sh -c 'CURL_LIB=$CHEZ_CURL_LIBCURL sh .plans/research/m6/pause/run.sh guix-8.20.0' < /dev/null
 set -eu
@@ -25,7 +26,8 @@ node=$(scripts/guix-env sh -c 'command -v node' < /dev/null)
 case $node in /gnu/store/*) ;; *) echo "docker.sh: node is not in the store: '$node'" >&2; exit 1 ;; esac
 root=$PWD
 exec docker run --rm -v "$root:/src:ro" -v "$root:$root:ro" -v /gnu/store:/gnu/store:ro \
-  -e GUIX_NODE="$node" -e CURRENT="$current" -e CASES="${CASES:-}" ubuntu:24.04 sh -c '
+  -e GUIX_NODE="$node" -e CURRENT="$current" -e CASES="${CASES:-}" \
+  -e PAUSE_NO_MULTIPLEX="${PAUSE_NO_MULTIPLEX:-}" ubuntu:24.04 sh -c '
 set -eu
 export DEBIAN_FRONTEND=noninteractive
 cd /src

@@ -5,7 +5,8 @@
   (M0 slice 4), and with what a binding may hand C from Chez's heap (M0 slice 5). Amended
   2026-10-17 with what the reader holds the binding macros to (M0 slice 6). Amended
   2026-10-23 with M2 slice 1's rows, and with how control leaves the write callable (M2 slice 2).
-  Amended 2026-10-24: `curl_multi_perform` can block (the M3 plan).
+  Amended 2026-10-24: `curl_multi_perform` can block (the M3 plan). Amended 2026-10-30:
+  `curl_easy_pause` and the header callable (M6 slice 1).
 - **Date:** 2026-10-04
 - **Corrected:** 2026-10-04. The E5 series is chez-http-server's, not chez-libuv's. Its
   figures are restated from that spike report, which ran on macOS only.
@@ -547,3 +548,21 @@ The slice's adversarial review found that it deadlocks, and the maintainer chose
   `make-condition`, `condition-wait` or `condition-broadcast`, since none is needed.
   `(curl private engine)` imports `sleep`, and alone imports `disable-interrupts` and
   `enable-interrupts`, to ask whether a wait may start.
+
+## Amendment, 2026-10-30: `curl_easy_pause` and the header callable (M6 slice 1)
+
+M6 streams a response (ADR-0030). Its first slice binds `curl_easy_pause` and makes a second
+callable, the header callable, `read-head`.
+
+- **`curl_easy_pause` blocks on nothing,** but it runs the write and header callables, and from
+  8.20.0 libcurl's content decoders, before it returns (the M6 plan, §2.2). Slice 1 measured a
+  gzip body under the hatch's `ACCEPT_ENCODING`, paused 1 s, on the five Linux libcurls
+  ([research](../research/m6/slice1/)): the longest call took 21.647 ms. Bound plain, a
+  collection another thread asked for during a call ended up to 7.024 ms after the call
+  returned; bound `__collect_safe`, 1.271 ms. So it is bound `__collect_safe`, through
+  `bind-blocking`, and its row names that wrapper, as the four multi calls' do. The engine
+  calls it holding no mutex and outside any critical section (ADR-0012, amended 2026-10-29).
+- **The header callable** is `__collect_safe`, since `curl_multi_perform` and `curl_easy_pause`
+  fire it; it is locked where it is defined and never unlocked, held to `curl_write_callback`'s
+  typedef, and its whole body runs under a guard that records what is raised and answers 0, as
+  the write callable's does. It runs no procedure a caller supplied.

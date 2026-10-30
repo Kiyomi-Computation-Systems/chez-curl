@@ -485,7 +485,95 @@
            (request scheme "POST" "/echo?x=1" '(("x-two" . "a")) "body")
            (answer (join (list #vu8(#x88 #x0f #x0d 2)
                                (octets (number->string (string-length echoed)))))
-                   echoed)))))
+                   echoed))
+     ;; The stream routes (the M6 plan, section 4.2): content-length 600 is
+     ;; a Huffman literal, 0x82 70 00; a body under 16384 bytes is one DATA
+     ;; frame. A longer body's frames, written a write at a time, end the
+     ;; stream as the writes' drains fall, so its END_STREAM races the
+     ;; probe's half-close; tests/test-stream.sps reads such bodies whole.
+     (list "GET /pattern/600: :status 200, content-length 600, then the body, byte i being i mod 251"
+           (request scheme "GET" "/pattern/600" '() #f)
+           (answer #vu8(#x88 #x0f #x0d #x82 #x70 #x00) (pattern-text 600)))
+     ;; :status 100 and 103 are literals with incremental indexing of static
+     ;; name 8, 0x48, their values Huffman: 08 01 is "100", 08 19 "103";
+     ;; link is static name 45 with incremental indexing, 0x6d, its value 27
+     ;; bytes of Huffman code, 0x9b.
+     (list "GET /early: a 100's HEADERS, a 103's with its link, then :status 200, content-length 6, and early"
+           (request scheme "GET" "/early" '() #f)
+           (join (list (frame SETTINGS 0 0 #vu8()) (frame SETTINGS ACK 0 #vu8())
+                       (frame HEADERS END-HEADERS 1 #vu8(#x48 #x82 #x08 #x01))
+                       (frame HEADERS END-HEADERS 1
+                              (u8-list->bytevector
+                               '(#x48 #x82 #x08 #x19 #x6d #x9b #xff #xf8 #xc2 #x13 #xea #x82 #xae #x44 #x23 #xfe
+                                 #xfe #xd4 #xb0 #xb4 #x41 #x5d #x85 #xa0 #xe3 #x93 #xed #x41 #xa2 #x04 #x27
+                                 #xd5 #x05)))
+                       (frame HEADERS END-HEADERS 1 #vu8(#x88 #x0f #x0d 1 #x36))
+                       (frame DATA END-STREAM 1 (octets "early\n")))))
+     (list "GET /connects, an HTTP/1.1 route, 404" (request scheme "GET" "/connects" '() #f)
+           (answer #vu8(#x8d #x0f #x0d 2 #x31 #x30) "not found\n"))
+     (list "GET /pattern/600?delay=60001, out of range, 404" (request scheme "GET" "/pattern/600?delay=60001" '() #f)
+           (answer #vu8(#x8d #x0f #x0d 2 #x31 #x30) "not found\n")))))
+
+;; pattern-text : Natural -> String
+;; The first N bytes of the stream routes' body, byte i being i mod 251, as
+;; Latin-1 text, written here, never read from the origin.
+(define (pattern-text n)
+  (let loop ((i (- n 1)) (chars '()))
+    (if (< i 0)
+        (list->string chars)
+        (loop (- i 1) (cons (integer->char (mod i 251)) chars)))))
+
+;; connection-number : Bytevector -> (U Natural #f)
+;; K from the frames of an answer to /connection: the DATA frame's
+;; "connection K\n", after the SETTINGS, the ACK and the HEADERS of
+;; :status 200 and content-length; #f for any other bytes.
+(define (connection-number bytes)
+  (let ((before (join (list (frame SETTINGS 0 0 #vu8()) (frame SETTINGS ACK 0 #vu8())))))
+    (and (> (bytevector-length bytes) (+ (bytevector-length before) 9))
+         (let* ((rest (let ((r (make-bytevector (- (bytevector-length bytes) (bytevector-length before)))))
+                        (bytevector-copy! bytes (bytevector-length before) r 0 (bytevector-length r))
+                        r))
+                (headers-length (+ 9 (bytevector-u8-ref rest 2)))
+                (data-at headers-length))
+           (and (> (bytevector-length rest) (+ data-at 9))
+                (= (bytevector-u8-ref rest 3) HEADERS)
+                (= (bytevector-u8-ref rest (+ data-at 3)) DATA)
+                (let* ((n (bytevector-u8-ref rest (+ data-at 2)))
+                       (text (list->string (map integer->char
+                                                (let loop ((i 0) (found '()))
+                                                  (if (= i n) (reverse found)
+                                                      (loop (+ i 1) (cons (bytevector-u8-ref rest (+ data-at 9 i)) found))))))))
+                  (and (> (string-length text) 12)
+                       (string=? (substring text 0 11) "connection ")
+                       (char=? (string-ref text (- (string-length text) 1)) #\newline)
+                       (string->number (substring text 11 (- (string-length text) 1))))))))))
+
+;; data-by-stream : Bytevector -> (Listof (Pairof Natural String))
+;; Each stream's DATA payloads in BYTES, frames read one after another,
+;; joined as Latin-1 text, by stream, in the order each stream first sends
+;; one.
+(define (data-by-stream bytes)
+  (let loop ((at 0) (found '()))
+    (if (> (+ at 9) (bytevector-length bytes))
+        (reverse found)
+        (let* ((n (+ (* 65536 (bytevector-u8-ref bytes at)) (* 256 (bytevector-u8-ref bytes (+ at 1)))
+                     (bytevector-u8-ref bytes (+ at 2))))
+               (type (bytevector-u8-ref bytes (+ at 3)))
+               (stream (+ (* 16777216 (mod (bytevector-u8-ref bytes (+ at 5)) 128))
+                          (* 65536 (bytevector-u8-ref bytes (+ at 6)))
+                          (* 256 (bytevector-u8-ref bytes (+ at 7))) (bytevector-u8-ref bytes (+ at 8))))
+               (text (if (<= (+ at 9 n) (bytevector-length bytes))
+                         (list->string (let chars ((i 0) (cs '()))
+                                         (if (= i n) (reverse cs)
+                                             (chars (+ i 1) (cons (integer->char (bytevector-u8-ref bytes (+ at 9 i))) cs)))))
+                         "")))
+          (loop (+ at 9 n)
+                (if (= type DATA)
+                    (let ((entry (assv stream found)))
+                      (if entry
+                          (map (lambda (e) (if (eq? e entry) (cons stream (string-append (cdr e) text)) e)) found)
+                          (cons (cons stream text) found)))
+                    found))))))
 
 ;; h2-exchange : Origin Symbol Bytevector (U #f List) -> (List String End)
 ;; Sends BYTES to FACE with --half-close, and answers the bytes received, as
@@ -686,6 +774,58 @@
           (list (hex (caddr row)) 'eof)
           (h2-exchange o face (cadr row) tls)))
       (h2-rows scheme)))
+   '(h2c h2) '("http" "https") (list #f h2-tls))
+  ;; /connection numbers each connection among its face's: two connections
+  ;; one after the other answer K and K + 1, with :status 200 and
+  ;; content-length first; with delay, the HEADERS come at once and the
+  ;; DATA after it, the probe kept reading, not half-closed, until idle.
+  (for-each
+   (lambda (face scheme tls)
+     (test-equal (string-append (symbol->string face) " GET /connection: two connections, one after the other, answer connection K and connection K + 1, then eof; with delay=300, its HEADERS at once, its DATA 300 ms or more after the probe connected")
+       '(numbered consecutive delayed)
+       (guard (e (#t (list 'raised (describe e))))
+         (let* ((one (parameterize ((wire-probe-tls tls))
+                       (wire-probe-half-close o face (request scheme "GET" "/connection" '() #f) 2000)))
+                (two (parameterize ((wire-probe-tls tls))
+                       (wire-probe-half-close o face (request scheme "GET" "/connection" '() #f) 2000)))
+                (k1 (connection-number (probe-bytes one)))
+                (k2 (connection-number (probe-bytes two)))
+                (late (parameterize ((wire-probe-tls tls))
+                        (wire-probe o face (request scheme "GET" "/connection?delay=300" '() #f) 600)))
+                (k3 (connection-number (probe-bytes late)))
+                (data-at (+ 9 9 9 (bytevector-u8-ref (probe-bytes late) 20))))
+           (list (if (and k1 (eq? (probe-end one) 'eof)) 'numbered (list (hex (probe-bytes one)) (probe-end one)))
+                 (if (and k1 k2 (= k2 (+ k1 1))) 'consecutive (list k1 k2))
+                 (if (and k3 (= k3 (+ k2 1))
+                          (>= (- (arrival (probe-arrivals late) data-at) (probe-connected late)) 300))
+                     'delayed
+                     (list k3 (probe-arrivals late) (probe-connected late))))))))
+   '(h2c h2) '("http" "https") (list #f h2-tls))
+  ;; Two streams on one connection answer one K: the number is the
+  ;; connection's, not the stream's.
+  (for-each
+   (lambda (face scheme tls)
+     (test-equal (string-append (symbol->string face) " GET /connection twice on one connection, streams 1 and 3: each answers connection K, one K")
+       '(one-connection)
+       (guard (e (#t (list 'raised (describe e))))
+         (let* ((once (request scheme "GET" "/connection" '() #f))
+                ;; The HEADERS frame's block, as request wrote it for stream 1:
+                ;; literals without indexing, so stream 3 may send it again.
+                (block-at (+ (bytevector-length preface) 9 9))
+                (block (let ((b (make-bytevector (- (bytevector-length once) block-at))))
+                         (bytevector-copy! once block-at b 0 (bytevector-length b))
+                         b))
+                (p (parameterize ((wire-probe-tls tls))
+                     (wire-probe-half-close o face (join (list once (frame HEADERS (+ END-HEADERS END-STREAM) 3 block)))
+                                            2000)))
+                (data (data-by-stream (probe-bytes p)))
+                (one (assv 1 data))
+                (three (assv 3 data)))
+           (list (if (and one three (> (string-length (cdr one)) 11)
+                          (string=? (substring (cdr one) 0 11) "connection ")
+                          (string=? (cdr one) (cdr three)))
+                     'one-connection
+                     (list data (probe-end p))))))))
    '(h2c h2) '("http" "https") (list #f h2-tls))
   ;; Without the unknownProtocol listener, Node writes such a client an
   ;; HTTP/1.0 403, "Missing ALPN Protocol", then closes (measured): these

@@ -475,6 +475,7 @@
        (cons "curl_multi_wakeup" (list version-call init-call backend-call))
        (cons "curl_multi_info_read" (list version-call init-call backend-call))
        (cons "curl_multi_strerror" (list version-call init-call backend-call))
+       (cons "curl_easy_pause" (list version-call init-call backend-call))
        (cons "curl_multi_setopt" (list version-call init-call backend-call))))
 
 ;; --- the real libcurl ---------------------------------------------------------------
@@ -836,7 +837,7 @@
     (environment '(curl))
     (list-sort symbol<? (library-exports '(curl)))))
 
-(test-equal "(curl) exports loaded-libcurl, the info record's accessors, the request, four URL functions and the response, the engine, the submit's checks alone, the token and the mailbox, and the conditions, a failed transfer's classes and the engine's among them; none of their constructors, nor the request's private fields, nor the engine's seams, counts and faults"
+(test-equal "(curl) exports loaded-libcurl, the info record's accessors, the request, four URL functions and the response, the engine, the submit's checks alone, the token, its streamed response's head, pieces and port, and the mailbox, and the conditions, a failed transfer's classes and the engine's among them; none of their constructors, nor the request's private fields, nor the engine's seams, counts and faults"
   (list-sort symbol<?
              '(loaded-libcurl
                libcurl-info? libcurl-info-path libcurl-info-source libcurl-info-version
@@ -854,6 +855,7 @@
                curl-request-url curl-request-method curl-request-headers curl-request-body
                curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
                curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
+               curl-request-stream-buffer
                curl-url-part curl-url-append-query curl-url-resolve curl-url-with-fragment
                curl-response? curl-response-status curl-response-http-version
                curl-response-effective-url curl-response-headers curl-response-body
@@ -861,6 +863,9 @@
                make-curl-engine curl-engine? curl-engine-stop curl-submit curl-request-check
                curl-token? curl-token-await curl-token-wait curl-token-cancel curl-token-done?
                curl-token-outcome
+               curl-token-head-wait curl-token-head curl-head? curl-head-status
+               curl-head-http-version curl-head-headers curl-token-next-piece
+               curl-token-body-port
                make-curl-mailbox curl-mailbox? curl-mailbox-take curl-mailbox-deliver
                &curl-embedded-nul curl-embedded-nul? curl-embedded-nul-string
                &curl-url-error curl-url-error? curl-url-error-input curl-url-error-reason

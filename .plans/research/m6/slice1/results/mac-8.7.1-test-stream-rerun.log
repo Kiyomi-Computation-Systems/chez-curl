@@ -1,0 +1,15 @@
+# The maintainer's Mac, 2026-10-30, on feat/m6-slice-1 at 80304e9, the fix:
+#   make test NODE="$(asdf which node)" SUITES=tests/test-stream.sps
+# Apple's libcurl 8.7.1, SecureTransport, Node 20.10.0. Pasted from the terminal.
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-stream.sps
+%%%% Starting test stream
+(sweep piece plain call-ticks 6 escaped-kept 12 escaped-lost 0 returned 41)
+(sweep port plain call-ticks 138 escaped-kept 276 escaped-lost 0 returned 41)
+(sweep piece planted call-ticks 9 escaped-kept 12 escaped-lost 6 returned 41)
+# of expected passes      73
+test: pass tests/test-stream.sps
+test: ran 1, passed 1, failed 0, hung 0

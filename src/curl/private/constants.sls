@@ -34,7 +34,8 @@
           curlinfo-namelookup-time-t curlinfo-connect-time-t curlinfo-appconnect-time-t
           curlinfo-starttransfer-time-t curlinfo-total-time-t curlinfo-request-size
           curlm-ok curlm-unknown-option curlmsg-done
-          curlmopt-max-total-connections curlmopt-quick-exit)
+          curlmopt-max-total-connections curlmopt-quick-exit curlmopt-pipelining curlpipe-nothing
+          curl-writefunc-pause curlpause-cont)
   (import (curl private require-threaded)
           (rnrs))
 
@@ -438,5 +439,30 @@
   ;;                                     makes its multi handle (ADR-0019). Older
   ;;                                     headers lack it, so tests/test-constants.sps
   ;;                                     checks it where the headers have it
+  ;; curlmopt-pipelining : Positive-Integer
+  ;;                                     CURLMOPT_PIPELINING, 3, since 7.16.0: the
+  ;;                                     engine sets it to CURLPIPE_NOTHING on
+  ;;                                     libcurl 8.7.0 and 8.7.1, which then
+  ;;                                     multiplexes nothing (ADR-0030, amended
+  ;;                                     2026-10-29)
+  ;; curlpipe-nothing : Natural          CURLPIPE_NOTHING, 0: no HTTP/1.1
+  ;;                                     pipelining, and no HTTP/2 multiplexing
   (define curlmopt-max-total-connections 13)
-  (define curlmopt-quick-exit 21))
+  (define curlmopt-quick-exit 21)
+  (define curlmopt-pipelining 3)
+  (define curlpipe-nothing 0)
+
+  ;; The response stream's (the M6 plan, sections 3.2 and 3.4), curl/curl.h.
+  ;;
+  ;; curl-writefunc-pause : Positive-Integer
+  ;;                                     CURL_WRITEFUNC_PAUSE, 0x10000001: what the
+  ;;                                     write callable answers for a chunk it
+  ;;                                     will not take yet, which pauses the
+  ;;                                     transfer's receiving; libcurl hands the
+  ;;                                     chunk again once it is resumed
+  ;; curlpause-cont : Natural            CURLPAUSE_CONT, 0: curl_easy_pause's new
+  ;;                                     state with neither direction paused.
+  ;;                                     The call takes the whole state, not a
+  ;;                                     change (ADR-0012, amended 2026-10-29)
+  (define curl-writefunc-pause #x10000001)
+  (define curlpause-cont 0))

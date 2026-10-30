@@ -457,6 +457,22 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   and fails the connection: on 8.7.x the engine does not multiplex. And 8.7.1
   ignores a failed rewind and resends a streamed body from its middle; only the
   prerequest callable sees that attempt.
+* Guix's 8.20.0 reads back, inside `curl_multi_perform`, a `curl_multi_wakeup`
+  made before it, and the poll after it waits up to 1000 ms. Upstream's 8.20.0
+  and the other lanes keep it. The engine looks at its queue between its read
+  and its poll, and skips the poll when a message is queued.
+* A caller's `Expect: 100-continue` makes libcurl resend a request inside one
+  transfer on a 417, as an auth round or a redirect does: a streamed response
+  then published the 417's head and the resend's body. A stream refuses it.
+  7.85.0 and 8.5.0 wait on `100-continue` anywhere in the value, 8.20.0 and
+  8.23.0 only on a list element: match the floor's way.
+* A custom port serves bytes Chez has already buffered to any thread, without
+  calling `read!`: a thread rule checked in `read!` holds only for the reads
+  that reach it, and for the close. Another thread's `get-bytevector-n` that
+  needs more takes the buffered bytes, raises at `read!`, and loses them.
+* Apple's 8.7.1 hands a chunk the write callback refused inside
+  `curl_easy_pause`'s replay to it again, after the call: a callable refuses
+  every call once a reason is recorded, or the stream takes it past the failure.
 
 ## Closing ritual
 

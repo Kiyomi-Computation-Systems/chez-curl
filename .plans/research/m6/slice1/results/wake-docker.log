@@ -1,0 +1,29 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[floor-7.85.0] libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 headers /src/build/e1/ci/curl-floor/lib/../include; server {"node":"v20.10.0","pid":3126,"http":"127.0.0.1:42797","raw":"127.0.0.1:37603","https":"127.0.0.1:42481","h2":"127.0.0.1:45091","proxy":"127.0.0.1:45829"}
+[floor-7.85.0] query=pattern=zero&gzip=1 wake where=none version=7.85.0 timed-polls=0 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[floor-7.85.0] query=pattern=zero&gzip=1 wake where=before-poll version=7.85.0 timed-polls=15 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[floor-7.85.0] query=pattern=zero&gzip=1 wake where=after version=7.85.0 timed-polls=14 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[floor-7.85.0] query=pattern=zero&gzip=1 wake where=pause version=7.85.0 timed-polls=14 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[floor-7.85.0] query=gap=50 wake where=plain version=7.85.0 timed-polls=637597 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.5 resumes=0 bytes=262144 code=0
+[ubuntu-openssl-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 headers the compiler's; server {"node":"v24.18.0","pid":3204,"http":"127.0.0.1:34939","raw":"127.0.0.1:45187","https":"127.0.0.1:40169","h2":"127.0.0.1:38965","proxy":"127.0.0.1:45845"}
+[ubuntu-openssl-8.5.0] query=pattern=zero&gzip=1 wake where=none version=8.5.0 timed-polls=0 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[ubuntu-openssl-8.5.0] query=pattern=zero&gzip=1 wake where=before-poll version=8.5.0 timed-polls=15 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[ubuntu-openssl-8.5.0] query=pattern=zero&gzip=1 wake where=after version=8.5.0 timed-polls=14 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[ubuntu-openssl-8.5.0] query=pattern=zero&gzip=1 wake where=pause version=8.5.0 timed-polls=14 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[ubuntu-openssl-8.5.0] query=gap=50 wake where=plain version=8.5.0 timed-polls=759436 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=0 bytes=262144 code=0
+[ubuntu-gnutls-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 headers the compiler's; server {"node":"v24.18.0","pid":3279,"http":"127.0.0.1:45895","raw":"127.0.0.1:43835","https":"127.0.0.1:34869","h2":"127.0.0.1:44421","proxy":"127.0.0.1:45037"}
+[ubuntu-gnutls-8.5.0] query=pattern=zero&gzip=1 wake where=none version=8.5.0 timed-polls=0 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[ubuntu-gnutls-8.5.0] query=pattern=zero&gzip=1 wake where=before-poll version=8.5.0 timed-polls=15 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[ubuntu-gnutls-8.5.0] query=pattern=zero&gzip=1 wake where=after version=8.5.0 timed-polls=14 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[ubuntu-gnutls-8.5.0] query=pattern=zero&gzip=1 wake where=pause version=8.5.0 timed-polls=14 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[ubuntu-gnutls-8.5.0] query=gap=50 wake where=plain version=8.5.0 timed-polls=773996 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.1 resumes=0 bytes=262144 code=0
+[current-8.23.0] libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 headers /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/../include; server {"node":"v24.18.0","pid":3355,"http":"127.0.0.1:35639","raw":"127.0.0.1:38029","https":"127.0.0.1:37859","h2":"127.0.0.1:35849","proxy":"127.0.0.1:45925"}
+[current-8.23.0] query=pattern=zero&gzip=1 wake where=none version=8.23.0 timed-polls=0 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[current-8.23.0] query=pattern=zero&gzip=1 wake where=before-poll version=8.23.0 timed-polls=15 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[current-8.23.0] query=pattern=zero&gzip=1 wake where=after version=8.23.0 timed-polls=14 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[current-8.23.0] query=pattern=zero&gzip=1 wake where=pause version=8.23.0 timed-polls=14 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[current-8.23.0] query=gap=50 wake where=plain version=8.23.0 timed-polls=588122 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=0 bytes=262144 code=0

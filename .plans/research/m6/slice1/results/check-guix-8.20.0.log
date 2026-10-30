@@ -1,0 +1,14 @@
+[guix-8.20.0] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[guix-8.20.0] server {"node":"v24.18.0","pid":34,"http":"127.0.0.1:35421","raw":"127.0.0.1:46551","https":"127.0.0.1:41797","h2":"127.0.0.1:33591","proxy":"127.0.0.1:33179"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+[guix-8.20.0] libcurl 8.20.0 GnuTLS/3.8.13
+[guix-8.20.0] check face=http reader=next-piece bytes=4194304 pieces=265 pattern=ok whole=#t pauses=173 resumes=173 max-buffered=63488 status=200 version=http/1.1 body=#f
+[guix-8.20.0] check face=http reader=port bytes=4194304 pieces=529 pattern=ok whole=#t pauses=173 resumes=173 max-buffered=63488 status=200 version=http/1.1 body=#f
+[guix-8.20.0] check face=raw reader=next-piece bytes=4194304 pieces=260 pattern=ok whole=#t pauses=190 resumes=190 max-buffered=63488 status=200 version=http/1.1 body=#f
+[guix-8.20.0] check face=raw reader=port bytes=4194304 pieces=513 pattern=ok whole=#t pauses=147 resumes=147 max-buffered=65430 status=200 version=http/1.1 body=#f
+[guix-8.20.0] check face=https reader=next-piece bytes=4194304 pieces=256 pattern=ok whole=#t pauses=252 resumes=252 max-buffered=49152 status=200 version=http/1.1 body=#f
+[guix-8.20.0] check face=https reader=port bytes=4194304 pieces=512 pattern=ok whole=#t pauses=244 resumes=244 max-buffered=49152 status=200 version=http/1.1 body=#f
+[guix-8.20.0] check face=h2 reader=next-piece bytes=4194304 pieces=486 pattern=ok whole=#t pauses=63 resumes=63 max-buffered=65527 status=200 version=http/2 body=#f
+[guix-8.20.0] check face=h2 reader=port bytes=4194304 pieces=757 pattern=ok whole=#t pauses=60 resumes=60 max-buffered=65527 status=200 version=http/2 body=#f
+[guix-8.20.0] check done
+[guix-8.20.0] check exited 0 after about 0 s

@@ -3,7 +3,8 @@
 - **Status:** Accepted; amended 2026-10-24: stopping an engine (the M3 plan); amended
   2026-10-26: completions reach callers through a mailbox (the M4 plan); amended 2026-10-26:
   the engine's thread and SIGINT (M4 slice 2); amended 2026-10-29: resuming a paused transfer,
-  and pacing a poll that spins (the M6 plan)
+  and pacing a poll that spins (the M6 plan); amended 2026-10-30: a look at the queue before
+  the poll (M6 slice 1)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, from M3 (the engine)
 - **Settles:** the brief's §2 items 1 to 3 and the caller-code rule of its §5. The brief
@@ -221,3 +222,39 @@ plan:
 
 **Rejected:** leaving the loop as it is, and documenting that a paused stream costs a core on
 8.5.0; and refusing streams on a libcurl that carries the bug, which is Ubuntu 24.04's own.
+
+## Amendment, 2026-10-30: a look at the queue before the poll (M6 slice 1)
+
+Decision 2 woke the poll by `curl_multi_wakeup`, and libcurl's documentation says it "wakes up a
+sleeping `curl_multi_poll`". M6 slice 1 measured, before it built
+([research](../research/m6/slice1/)):
+
+- **On Guix's 8.20.0 with GnuTLS, the container's libcurl, `curl_multi_perform` reads back a
+  wakeup made before it in the turn,** so the poll after it waits for libcurl's own events, up
+  to its 1000 ms bound. A C loop that steps as the engine does, with no Chez, woke its poll once
+  a turn:
+  - made inside `curl_easy_pause`, or between that call and the perform, 14 of 14 polls lasted
+    100 ms or more, the longest 1005.0 to 1005.1 ms, in each of three runs;
+  - made before every perform with no pause, 15 of 18 polls waited for the next bytes, up to
+    50.8 ms, in each;
+  - made after the perform, the control, 15 of 15 ended at once, in each.
+
+  Marks written around each libcurl call place the eventfd's `read` inside
+  `curl_multi_perform`, under `strace`.
+- **7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, 8.23.0, and upstream's 8.20.0 built
+  with OpenSSL keep the wakeup** in every case.
+- **The prototype streamed through it badly:** a drain of 1 MiB took 1,021 to 10,139 ms, with
+  1 to 10 polls of 100 ms or more, each up to 1,005 ms, that began with a message queued; and
+  one run made 588 resumes, then failed with 28 at its bound. A submit, a cancel or a stop made while the engine's
+  thread is in its perform is exposed the same way, and has been since M3.
+
+Decided by the maintainer, 2026-10-30, the recommended option: **after the read, and before the
+poll, the engine looks at its queue under its mutex, and when a message is queued it skips the
+poll and begins its next turn.** A message queued before the look is seen by it. One queued
+after the look makes its wakeup after the perform, which every libcurl measured keeps, so the
+poll ends at once. A turn that skipped its poll took a message at its next start, so it never
+paces. The wakeup stays, as the poll's way to end for a message queued after the look.
+
+**Rejected:** a poll capped at about 10 ms, which bounds the loss but wakes every engine about
+100 times a second on every libcurl; and documenting a delay of up to 1 s on Guix's 8.20.0,
+which the slice's tests of a resume's delay would then need rows for.
