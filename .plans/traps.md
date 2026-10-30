@@ -1164,3 +1164,11 @@ it should not be a comment. (chez-cmark-gfm)
   more look ended it `(body-limit 23)` ([research](research/m6/slice1-review/replay-limit-race.sps)).
   A test that reads a stream's outcome drains it with `curl-token-next-piece`, which looks, first.
   (chez-curl, M6 slice 1's review)
+* **Apple's 8.7.1 hands a chunk the write callback refused inside `curl_easy_pause`'s replay to it
+  again, after the call answered 23.** The plan's probe saw it in the next perform
+  ([research](research/m6/pause/results/mac-8.7.1.log), `W-replay-error`); slice 1's engine,
+  which takes such a transfer out at once, met it there anyway, and the stream appended the
+  refused chunk after the failure was recorded
+  ([research](research/m6/slice1/results/mac-8.7.1-make-test.log)). No Linux libcurl calls the
+  callback again. A callable refuses every call once its transfer has a reason recorded.
+  (chez-curl, M6 slice 1, the Mac's run)

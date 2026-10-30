@@ -1,0 +1,56 @@
+[mac] node v20.10.0 uname Darwin arm64 CURL_SSL_BACKEND=secure-transport
+[mac] version headers=8.7.1 runtime=8.7.1 ssl=SecureTransport (LibreSSL/3.3.6) libz=1.2.12 nghttp2=1.68.1 http2=1 libz_feature=1 live_after_init=0
+[mac] server raw=64922 tls=64923 h2=64924
+[mac] multi pipelining=0 (PAUSE_NO_MULTIPLEX=1) rc=0
+[mac] case D-hold-mux:pipewait1:B h2 done code=0 t=44.6 status=200 ver=3 conns=1 lport=64926
+[mac] case D-hold-mux:pipewait1:A h2 done code=0 t=2106.0 status=200 ver=3 conns=1 lport=64925
+[mac] case D-hold-mux:pipewait1:A h2 summary calls=1025 inpause_calls=1 while_paused_calls=0 pauses=1 resumes=1 repaused_inside=0 total=8388608 pattern=ok max_chunk=12288 max_before=0 first_after=4096 max_after=12288 redelivery_equal=1 longer=0 shorter=0 differs=0
+[mac] case D-hold-mux:pipewait1:B h2 summary calls=128 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=1048576 pattern=ok max_chunk=12288 max_before=12288 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[mac] case D-hold-mux:pipewait1:A h2 mux case_t A_paused_at=32.5 A_resumed_at=2032.5 A_end=2106.0 B_end=44.6 B_done_while_A_paused=1 A_lport=64925 B_lport=64926
+[mac] case D-hold-mux:pipewait1:A h2 live in_callback_at_pause=144281 after_pausing_perform=148426 before_resume=147231 peak_during_pause=148703
+[mac] case D-hold-mux:pipewait1:A h2 server: req h2 GET /body #1 conn=64925 at=275.4
+[mac] case D-hold-mux:pipewait1:A h2 server: body h2 n=8388608 mode=h2-length chunk=4096 gap=0 delay=0 gzip=0 wire=8388608 written=8388608 first_false=16384 drains_long=1 [557056:2001.2] drains_short=511 sum=67.1ms total=2092.0ms aborted=0
+[mac] case D-hold-mux:pipewait1:A h2 server: count h2:/body=1
+[mac] case D-hold-mux:pipewait1:B h2 server: req h2 GET /body #1 conn=64926 at=294.3
+[mac] case D-hold-mux:pipewait1:B h2 server: body h2 n=1048576 mode=h2-length chunk=4096 gap=0 delay=0 gzip=0 wire=1048576 written=1048576 first_false=16384 drains_long=0 [] drains_short=64 sum=9.2ms total=11.3ms aborted=0
+[mac] case D-hold-mux:pipewait1:B h2 server: count h2:/body=1
+[mac] case D-hold-mux:pipewait1 conns prefix=D-hold-mux.pipewait1. n=2 h2:64925,h2:64926
+[mac] multi pipelining=0 (PAUSE_NO_MULTIPLEX=1) rc=0
+[mac] case D-hold-mux:pipewait0:B h2 done code=0 t=17.3 status=200 ver=3 conns=1 lport=64931
+[mac] case D-hold-mux:pipewait0:A h2 done code=0 t=2079.9 status=200 ver=3 conns=1 lport=64930
+[mac] case D-hold-mux:pipewait0:A h2 summary calls=1024 inpause_calls=1 while_paused_calls=0 pauses=1 resumes=1 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=0 first_after=16384 max_after=16384 redelivery_equal=0 longer=1 shorter=0 differs=0
+[mac] case D-hold-mux:pipewait0:B h2 summary calls=128 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=1048576 pattern=ok max_chunk=12288 max_before=12288 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[mac] case D-hold-mux:pipewait0:A h2 mux case_t A_paused_at=6.2 A_resumed_at=2006.2 A_end=2079.9 B_end=17.3 B_done_while_A_paused=1 A_lport=64930 B_lport=64931
+[mac] case D-hold-mux:pipewait0:A h2 live in_callback_at_pause=144281 after_pausing_perform=160717 before_resume=159522 peak_during_pause=160994
+[mac] case D-hold-mux:pipewait0:A h2 server: req h2 GET /body #1 conn=64930 at=2377.3
+[mac] case D-hold-mux:pipewait0:A h2 server: body h2 n=8388608 mode=h2-length chunk=4096 gap=0 delay=0 gzip=0 wire=8388608 written=8388608 first_false=16384 drains_long=1 [819200:1999.0] drains_short=511 sum=70.2ms total=2073.7ms aborted=0
+[mac] case D-hold-mux:pipewait0:A h2 server: count h2:/body=1
+[mac] case D-hold-mux:pipewait0:B h2 server: req h2 GET /body #1 conn=64931 at=2377.7
+[mac] case D-hold-mux:pipewait0:B h2 server: body h2 n=1048576 mode=h2-length chunk=4096 gap=0 delay=0 gzip=0 wire=1048576 written=1048576 first_false=16384 drains_long=0 [] drains_short=64 sum=10.2ms total=10.9ms aborted=0
+[mac] case D-hold-mux:pipewait0:B h2 server: count h2:/body=1
+[mac] case D-hold-mux:pipewait0 conns prefix=D-hold-mux.pipewait0. n=2 h2:64930,h2:64931
+[mac] case D-hold-mux all done live_before_global_cleanup=0
+[mac] case D-hold-mux live_after_global_cleanup=0
+[mac] probe D-hold-mux exit=0
+[mac] probe D-hold-mux took about 4 s
+[mac] multi pipelining=0 (PAUSE_NO_MULTIPLEX=1) rc=0
+[mac] case W-h2-error:A h2 call n=1 t=9.2 size=16332 answer=CURL_WRITEFUNC_ERROR
+[mac] case W-h2-error:A h2 done code=56 err="Failure when receiving data from the peer" t=9.2 status=200 ver=3 conns=1 lport=64941
+[mac] case W-h2-error:B h2 done code=0 t=1357.9 status=200 ver=3 conns=1 lport=64942
+[mac] case W-h2-error:A h2 summary calls=1 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=0 pattern=ok max_chunk=0 max_before=0 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[mac] case W-h2-error:B h2 summary calls=128 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=1048576 pattern=ok max_chunk=16375 max_before=16375 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[mac] case W-h2-error:B h2 h2-error case_t A_end=9.2 B_end=1357.9 A_code=56 B_code=0 A_lport=64941 B_lport=64942 B_total=1048576
+[mac] case W-h2-error:A h2 server: req h2 GET /body #1 conn=64941 at=4479.0
+[mac] case W-h2-error:A h2 server: log: 1 request(s) of this tag still open after 3 s
+[mac] case W-h2-error:A h2 server: count h2:/body=1
+[mac] case W-h2-error:B h2 server: req h2 GET /body #1 conn=64942 at=4479.4
+[mac] case W-h2-error:B h2 server: body h2 n=1048576 mode=h2-length chunk=16384 gap=20 delay=0 gzip=0 wire=1048576 written=1048576 first_false=16384 drains_long=0 [] drains_short=64 sum=24.5ms total=1348.2ms aborted=0
+[mac] case W-h2-error:B h2 server: count h2:/body=1
+[mac] case W-h2-error conns prefix=W-h2-error. n=2 h2:64941,h2:64942
+[mac] case W-h2-error all done live_before_global_cleanup=0
+[mac] case W-h2-error live_after_global_cleanup=0
+[mac] probe W-h2-error exit=0
+[mac] probe W-h2-error took about 4 s
+[mac] -- 2 cases run
+.plans/research/m6/pause/run.sh: line 51: 17102 Terminated: 15          "${NODE:-node}" "$d/server.mjs" "$tmp/pki" < "$tmp/in" > "$tmp/ports" 2> "$tmp/server.err"
+[mac] the server exited 143, not 0, after its stdin closed: 143 is the watchdog's kill, 5 s on

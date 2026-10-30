@@ -1808,9 +1808,13 @@
   ;; stream-chunk! : Natural Sink Positive-Integer Natural -> Natural
   ;; The write callable's step for a streamed response's chunk of N bytes at
   ;; DATA, for KEY's transfer (the M6 plan, section 3.2): first a test
-  ;; seam's stall, armed by stream-plant-stall!; at the call the
-  ;; request's fault names, counting every call with bytes, a replay's
-  ;; among them, it raises (planted-fault N); then, the buffer full, it
+  ;; seam's stall, armed by stream-plant-stall!; once a reason is
+  ;; recorded against the transfer, it refuses every later call, answering
+  ;; 0, verdict refused: Apple's 8.7.1 hands a chunk the callable refused
+  ;; inside curl_easy_pause's replay to it again, after the call, and the
+  ;; stream took it, past the failure (the Mac's make test, 2026-10-30); at
+  ;; the call the request's fault names, counting every call with bytes, a
+  ;; replay's among them, it raises (planted-fault N); then, the buffer full, it
   ;; answers CURL_WRITEFUNC_PAUSE, its check and the receive bit in one
   ;; hold, and libcurl hands the chunk again once resumed; then, for bytes
   ;; that would take it past its limit, it records body-limit and answers
@@ -1824,6 +1828,9 @@
         (sink-log-set! sink (tally (sink-log sink) verdict (get-thread-id))))
       (sink-offers-set! sink offer)
       (cond
+        ((sink-recorded sink)
+         (log! 'refused)
+         0)
         ((and (chunk-fault? (sink-fault sink)) (= offer (sink-fault sink)))
          (log! 'raised)
          (raise (planted-fault (sink-fault sink))))

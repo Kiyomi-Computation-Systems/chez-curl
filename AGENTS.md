@@ -470,6 +470,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   calling `read!`: a thread rule checked in `read!` holds only for the reads
   that reach it, and for the close. Another thread's `get-bytevector-n` that
   needs more takes the buffered bytes, raises at `read!`, and loses them.
+* Apple's 8.7.1 hands a chunk the write callback refused inside
+  `curl_easy_pause`'s replay to it again, after the call: a callable refuses
+  every call once a reason is recorded, or the stream takes it past the failure.
 
 ## Closing ritual
 
