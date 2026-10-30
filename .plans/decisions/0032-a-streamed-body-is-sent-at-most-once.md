@@ -42,9 +42,13 @@ Guix's 8.20.0 and 8.23.0, two runs each:
   the server saw one request. With no seek, or one that answers `CANTSEEK`, it ran once: the
   failed rewind ends the transfer first (the amendment below).
 
-Read in 8.7.1's source, not measured: its follow step drops the result of the reset that
-rewinds the body (`lib/transfer.c:915`), so a resend may read on from mid-stream without
-rewinding, and send a request whose body is not the one given. The Mac measures it.
+Read in 8.7.1's source: its follow step drops the result of the reset that rewinds the body
+(`lib/transfer.c:915`), so a resend may read on from mid-stream without rewinding, and send a
+request whose body is not the one given. The Mac measured it on the plan's PR, 2026-10-29
+([log](../research/m6/pause/results/mac-8.7.1-split.log)): after a reset 81,920 bytes into an
+8 MiB body, libcurl logged the failed rewind, 65, and sent a second request carrying the body's
+last 7,389,184 bytes, which ended 26 when the body ran out; an HTTP/2 refused stream reached the
+server twice. The prerequest callable ran for each second attempt, before its head was sent.
 
 ## Decision
 

@@ -452,6 +452,11 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   `curl_easy_pause`'s replay, and end the transfer 0 without the chunk refused;
   Ubuntu's 8.5.0 spins `curl_multi_poll` while a transfer is paused. Treat any
   answer but 0 from `curl_easy_pause` as a failure, and pace the poll.
+* On Apple's 8.7.1, a write callback's error on one HTTP/2 stream fails its
+  sibling, and a paused stream beside an active one fills libcurl's 64 MiB cap
+  and fails the connection: on 8.7.x the engine does not multiplex. And 8.7.1
+  ignores a failed rewind and resends a streamed body from its middle; only the
+  prerequest callable sees that attempt.
 
 ## Closing ritual
 

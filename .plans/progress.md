@@ -44,7 +44,13 @@ close-out under **Close-outs**, newest first.
     each lost a resume, which its models measured and I reran
     ([`research/m6/review2/`](research/m6/review2/)); and a 301 or 302 keeps a `put`'s body,
     which the at-most-once rule had covered only for a 307 or 308.
-  - **Owed:** the Mac's pause probe, on the plan's PR (the plan, §7).
+  - **The Mac ran the pause probe, 2026-10-29,** on the plan's PR, against Apple's 8.7.1, every
+    case exiting 0 (the plan, §2.4). Two of the source's readings were worse than read: 8.7.1
+    ignores a failed rewind and resends a streamed body from its middle, which only the
+    prerequest callable sees; and one HTTP/2 stream's trouble fails its whole connection, a
+    paused stream beside an active one filling libcurl's 64 MiB cap, or a write callback's error,
+    the body limit's among them (curl #13292). **Decided by the maintainer, the recommended
+    option:** on 8.7.0 and 8.7.1 the engine does not multiplex (ADR-0030, amended).
   - **Closed from M5's carried list:** the curl bug report on 8.23.0's dead-connection reuse;
     curl fixed it after 8.23.0 (ef6b17cf).
 - **M5, the high level:** **done on 2026-10-29.** Its four slices are merged (PRs #30 to #33),

@@ -1,6 +1,6 @@
 # ADR-0030: A streamed body is a request's key, and the token's operations
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-10-29: no multiplexing on 8.7.0 and 8.7.1, from the Mac's run
 - **Date:** 2026-10-29
 - **Scope:** chez-curl v1, `(curl)`, from M6
 - **Settles:** how the low level offers a body streamed in either direction (brief §2 item 7,
@@ -101,3 +101,30 @@ The plan names each procedure and key, and the slices may revise the names.
   piece a reader has in hand. What libcurl holds below it is libcurl's, and the M6 plan records
   it by protocol and version.
 - **A request built for a whole body is unchanged,** and so is every M4 and M5 caller.
+
+## Amendment, 2026-10-29: no multiplexing on 8.7.0 and 8.7.1, from the Mac's run
+
+Decision 5 documented the memory a paused HTTP/2 stream holds beside an active one, as libcurl's
+bound. The Mac then ran the plan's pause probe against Apple's 8.7.1, on the plan's PR
+([log](../research/m6/pause/results/mac-8.7.1.log)), and the bound turned out to be no bound
+there:
+
+- **A paused stream beside an active one filled libcurl's 64 MiB cap and failed the connection:**
+  its live bytes reached 67,187,470, the active stream ended 56 after 234 ms, and the paused one
+  ended 18 once resumed, the server's writes stopping at 73,465,856 bytes. The source reading
+  had predicted the open window (`curl-8.7.1/lib/http2.c:1255-1259`); the probe showed it takes
+  the siblings with it.
+- **A write callback's error on one HTTP/2 stream failed its sibling:** the stream that refused
+  ended 56, and the other, on the same connection, 16 (curl #13292, fixed in 8.8.0, read in the
+  source reading). chez-curl's body-limit refusal is such an error, so on the Mac a body limit on
+  one HTTP/2 call could fail another call sharing its connection, before M6 too.
+- **On separate connections** both ended 0, and the paused stream held 148,703 bytes.
+
+**Decided by the maintainer, 2026-10-29, the recommended option:** when the loaded libcurl is
+8.7.0 or 8.7.1, the engine sets `CURLMOPT_PIPELINING` to 0 on its multi handle, so every
+HTTP/2 transfer there has a connection of its own. A pause stays bounded, and one stream's
+error reaches no other. Elsewhere decision 5 stands. M6's first slice builds it, and measures it
+on the Mac.
+
+**Rejected:** a streamed transfer over HTTP/1.1 on 8.7.x, which bounds the pause but leaves the
+body limit's error failing siblings; and documenting it, which leaves both.

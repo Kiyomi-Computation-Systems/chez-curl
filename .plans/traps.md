@@ -1110,3 +1110,16 @@ it should not be a comment. (chez-cmark-gfm)
   Treat any answer but 0 from `curl_easy_pause` as the transfer's failure. And **Ubuntu's 8.5.0
   spins `curl_multi_poll` while a transfer is paused,** 6.2 to 7.0 million returns in 3 s at
   100% of a core, which curl fixed in 8.6.0 (#12632). (chez-curl, the M6 plan)
+* **On Apple's 8.7.1, one HTTP/2 stream's trouble fails its whole connection.** A write
+  callback's error on one stream failed the other on the same connection with 16 (curl #13292,
+  fixed in 8.8.0), so a body limit on one call could fail another; and a paused stream beside an
+  active one filled libcurl's 64 MiB cap in 234 ms on loopback, and the active stream ended 56
+  ([research](research/m6/pause/results/mac-8.7.1.log)). Every Linux libcurl failed the refusing
+  stream alone. On 8.7.0 and 8.7.1 the engine does not multiplex (ADR-0030, amended).
+  (chez-curl, the M6 plan, the Mac's run)
+* **And 8.7.1 resends a streamed body from its middle:** it logs the failed rewind, 65, and sends
+  the request again, reading on where the body stood. A reset after 81,920 bytes of an 8 MiB
+  body brought a second request with its last 7,389,184 bytes
+  ([research](research/m6/pause/results/mac-8.7.1-split.log)). The Linux libcurls end with 65
+  before the next attempt. Only the prerequest callable sees that attempt, and it runs before
+  the attempt's head is sent. (chez-curl, the M6 plan, the Mac's run)

@@ -773,5 +773,9 @@ provisional. They bind until that record is accepted or amended.
   sends the surplus (ADR-0031).
 - **A call's `timeout-ms` bounds the whole call, a consumer's reading included** (ADR-0031).
 - **Below the token the bound is libcurl's, and documented:** a paused HTTP/2 stream beside an
-  active one keeps receiving, up to its flow-control window on the Linux libcurls, and on 8.7.1,
-  by its source, to libcurl's 64 MiB cap (ADR-0030, decision 5).
+  active one keeps receiving, up to its flow-control window on the Linux libcurls (ADR-0030,
+  decision 5).
+- **On 8.7.0 and 8.7.1 the engine does not multiplex:** it sets `CURLMOPT_PIPELINING` to 0 on
+  its multi handle, since on Apple's 8.7.1 a paused HTTP/2 stream beside an active one filled
+  libcurl's 64 MiB cap and failed the connection, and a write callback's error on one stream
+  failed its sibling (ADR-0030, amended 2026-10-29).
