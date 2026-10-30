@@ -1,0 +1,32 @@
+lent-take mode=planted stall at piece 1: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=planted stall at piece 2: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=planted stall at piece 3: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=planted pieces=5 bytes=80 offers=9 pauses=4 resumes=4 stalls=4 rearms=0 ms=2001.0
+lent-take mode=control pieces=50000 bytes=800000 offers=99847 pauses=49847 resumes=49847 stalls=0 rearms=0 ms=5011.0
+lent-take mode=lent stall at piece 1093: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=lent stall at piece 1208: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=lent stall at piece 5893: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=lent pieces=50000 bytes=800000 offers=99955 pauses=49955 resumes=49955 stalls=44 rearms=0 ms=27051.0
+lent-take mode=fixed pieces=50000 bytes=800000 offers=99932 pauses=49932 resumes=49932 stalls=0 rearms=67 ms=5066.0
+lent-take mode=shared stall at piece 1120: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=shared stall at piece 2533: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=shared stall at piece 3826: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=shared pieces=50000 bytes=800000 offers=99972 pauses=49972 resumes=49972 stalls=45 rearms=0 drift=0 ms=27563.0
+lent-take done
+exit 0
+lent-take mode=planted stall at piece 1: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=planted stall at piece 2: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=planted stall at piece 3: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=planted pieces=5 bytes=80 offers=9 pauses=4 resumes=4 stalls=4 rearms=0 ms=2001.0
+lent-take mode=control pieces=50000 bytes=800000 offers=99861 pauses=49861 resumes=49861 stalls=0 rearms=0 ms=5106.0
+lent-take mode=lent stall at piece 171: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=lent stall at piece 1134: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=lent stall at piece 1627: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=lent pieces=50000 bytes=800000 offers=99952 pauses=49952 resumes=49952 stalls=45 rearms=0 ms=27566.0
+lent-take mode=fixed pieces=50000 bytes=800000 offers=99947 pauses=49947 resumes=49947 stalls=0 rearms=27 ms=5074.0
+lent-take mode=shared stall at piece 209: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=shared stall at piece 1316: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=shared stall at piece 4069: no piece, the bit set, no resume queued, for 500 ms
+lent-take mode=shared pieces=50000 bytes=800000 offers=99983 pauses=49983 resumes=49983 stalls=38 rearms=0 drift=0 ms=24056.0
+lent-take done
+exit 0

@@ -400,6 +400,18 @@ it should not be a comment. (chez-cmark-gfm)
   runs on M5 slice 1's branch the flipper never did, 0 refusals of 1000, where 1 ms gave 490 to
   500 in each of six ([research](research/m5/valgrind-yield/)). A thread that must let another
   run sleeps for real. (chez-curl, M5 slice 1)
+* **A timer's sweep cannot show what a keyboard interrupt does as a critical section ends.** The
+  M6 plan's port probe swept a timer's expiry across a custom port's `read!` a tick at a time and
+  lost no byte, on every path ([research](research/m6/ports/), C10). Its review then blocked a
+  `read!`'s take on its mutex, as `locked` holds one, sent SIGINT, and let the holder go: a
+  handler that escaped as the take's section ended lost the piece the take had removed, under
+  `get-bytevector-some` and `get-u8` alike, 3 runs of 3, two the review's and one mine
+  ([research](research/m6/review/)); one that returned lost none. A take that must not lose
+  leaves what it took in place inside its section, and removes it after, the last thing before it
+  returns. That opens a second trap: the producer side can pause between the take's section and
+  its removal, so a resume the take decides once is never queued. The second review's model of
+  that take stalled 44, 45 and 55 times in 50,000 pieces ([research](research/m6/review2/));
+  deciding the resume at every look, 0. (chez-curl, the M6 plan's two reviews)
 
 ## Checks and environment
 
@@ -1085,3 +1097,29 @@ it should not be a comment. (chez-cmark-gfm)
     token in 3 of 3 runs, and 0 within 50 ms ([research](research/m5/group/traps/)). M5 slice
     4's turn child first read the counts `(0 1 0)` just after a group's escape. Read the live
     and transfer counts, or let the queue settle. (chez-curl, M5 slice 4)
+* **libcurl rewinds a read callback's body before its next attempt, so a `PREREQFUNCTION` alone
+  never sees a resend of a body it read from.** The M6 plan's first design refused a streamed body's
+  second attempt in the prerequest callable, with no `SEEKFUNCTION`. On all five Linux libcurls
+  the rewind failed first: `prereq_calls=1` and 65, or 56 on 7.85.0, with no seek and with one
+  that answers `CANTSEEK` ([research](research/m6/pause/results/round2/)). The 42 the design
+  cited came only where a seek had restarted the body. Refuse in the seek callable, and record
+  the reason, so it wins over libcurl's code. (chez-curl, the M6 plan's review)
+* **libcurl 7.85.0 and 8.5.0 lose a refusal the write callback makes inside `curl_easy_pause`'s
+  replay:** the call answered 23, and the transfer then ended 0 without the chunk it refused,
+  16,307 to 16,384 bytes, where 8.20.0 and 8.23.0 ended it with 23 ([research](research/m6/pause/results/round2/)).
+  Treat any answer but 0 from `curl_easy_pause` as the transfer's failure. And **Ubuntu's 8.5.0
+  spins `curl_multi_poll` while a transfer is paused,** 6.2 to 7.0 million returns in 3 s at
+  100% of a core, which curl fixed in 8.6.0 (#12632). (chez-curl, the M6 plan)
+* **On Apple's 8.7.1, one HTTP/2 stream's trouble fails its whole connection.** A write
+  callback's error on one stream failed the other on the same connection with 16 (curl #13292,
+  fixed in 8.8.0), so a body limit on one call could fail another; and a paused stream beside an
+  active one filled libcurl's 64 MiB cap in 234 ms on loopback, and the active stream ended 56
+  ([research](research/m6/pause/results/mac-8.7.1.log)). Every Linux libcurl failed the refusing
+  stream alone. On 8.7.0 and 8.7.1 the engine does not multiplex (ADR-0030, amended).
+  (chez-curl, the M6 plan, the Mac's run)
+* **And 8.7.1 resends a streamed body from its middle:** it logs the failed rewind, 65, and sends
+  the request again, reading on where the body stood. A reset after 81,920 bytes of an 8 MiB
+  body brought a second request with its last 7,389,184 bytes
+  ([research](research/m6/pause/results/mac-8.7.1-split.log)). The Linux libcurls end with 65
+  before the next attempt. Only the prerequest callable sees that attempt, and it runs before
+  the attempt's head is sent. (chez-curl, the M6 plan, the Mac's run)

@@ -1,0 +1,23 @@
+# The M6 plan's source reading: what its unkept trees were (2026-10-29).
+# Upstream curl 8.5.0, downloaded from https://curl.se/download/curl-8.5.0.tar.xz:
+42ab8db9e20d8290a3b633e7fbb3cec15db34df65fd1015ef8ac1e4723750eeb  curl-8.5.0.tar.xz
+# First release tags of the commits the plan and ADR-0032 cite, by git tag --contains in a treeless clone of curl/curl:
+8e2d7b9f 2024-01-04 http: adjust_pollset fix: curl-8_6_0
+5e4e6296 2026-05-19 cfilters: fix busy loop on blocked transfers: curl-8_21_0
+17af2bca 2024-05-23 http: write last header line late: curl-8_9_0
+b5265b24 2025-11-23 speedcheck: do not trigger low speed cancel on transfers with CURL_READFUNC_PAUSE: curl-8_18_0
+cdd905a9 2024-01-22 transfer: make the select_bits_paused condition check both directions: curl-8_6_0
+2f1e94ea 2026-06-25 conncache: connection alive checks intervals: curl-8_22_0
+ef6b17cf 2026-10-15 conncache: poll an idle connection for pending input on every reuse: no release tag
+# 8.5.0's lib/cf-socket.c, lines 1240-1250, the adjust_pollset #12632 fixed in 8.6.0:
+                                      struct easy_pollset *ps)
+{
+  struct cf_socket_ctx *ctx = cf->ctx;
+
+  if(ctx->sock != CURL_SOCKET_BAD) {
+    if(!cf->connected)
+      Curl_pollset_set_out_only(data, ps, ctx->sock);
+    else
+      Curl_pollset_add_in(data, ps, ctx->sock);
+    CURL_TRC_CF(data, cf, "adjust_pollset -> %d socks", ps->num);
+  }

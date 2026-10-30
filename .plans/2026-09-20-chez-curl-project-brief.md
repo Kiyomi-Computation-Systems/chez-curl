@@ -1,7 +1,7 @@
 # chez-curl: a libcurl-backed async HTTP client for Chez Scheme — project brief
 
 Date: 2026-09-20
-Status: accepted for M0 and M1. [ADR-0001 to ADR-0029](decisions/) record what was settled (from 2026-10-04). [The harness plan](2026-10-04-harness-plan.md) says what M0 copies from the siblings, [the M1 plan](2026-10-18-m1-plan.md) how M1 builds §7, [the M2 plan](2026-10-19-m2-plan.md), a draft, how M2 builds §8's M2, [the M3 plan](2026-10-24-m3-plan.md), a draft, how M3 builds §8's M3, [the M4 plan](2026-10-26-m4-plan.md), a draft, how M4 builds §8's M4, and [the M5 plan](2026-10-27-m5-plan.md), a draft, how M5 builds §8's M5. This brief is kept in step with them; where it and a record disagree, the record wins. ADR-0013 was accepted from spike E1 (§5) on 2026-10-24.
+Status: accepted for M0 and M1. [ADR-0001 to ADR-0032](decisions/) record what was settled (from 2026-10-04). [The harness plan](2026-10-04-harness-plan.md) says what M0 copies from the siblings, [the M1 plan](2026-10-18-m1-plan.md) how M1 builds §7, [the M2 plan](2026-10-19-m2-plan.md), a draft, how M2 builds §8's M2, [the M3 plan](2026-10-24-m3-plan.md), a draft, how M3 builds §8's M3, [the M4 plan](2026-10-26-m4-plan.md), a draft, how M4 builds §8's M4, [the M5 plan](2026-10-27-m5-plan.md), a draft, how M5 builds §8's M5, and [the M6 plan](2026-10-29-m6-plan.md), a draft, how M6 builds §8's M6. This brief is kept in step with them; where it and a record disagree, the record wins. ADR-0013 was accepted from spike E1 (§5) on 2026-10-24.
 Consumers: Chez applications that need to *make* HTTP requests; the first is ad-hoc scripting. `chez-http-server`'s black-box lane does not use it (ADR-0011)
 Dependencies: libcurl ≥ 7.85.0, any TLS backend (ADR-0003); Chez ≥ 10.4.0, threaded (ADR-0001). No C shim: nothing is compiled (ADR-0001). **Not** chez-libuv, **not** chez-httparse — see §3.
 Evidence behind this brief: measured on the maintainer's Mac 2026-09-20 — system libcurl 8.7.1, `Features: alt-svc AsynchDNS GSS-API HSTS HTTP2 HTTPS-proxy IPv6 Kerberos Largefile libz MultiSSL NTLM SPNEGO SSL threadsafe UnixSockets`; SDK headers include `curl.h multi.h easy.h urlapi.h header.h options.h`; `pkg-config --libs libcurl` → `-lcurl`; `(threaded?)` → `#t` on Chez 10.4.1. Plus chez-http-server's E5 spike series, run through chez-libuv's binding on macOS arm64 and cited in §5. The Linux development host (Guix Chez 10.4.0, Guix libcurl 8.20.0 with GnuTLS, no Node outside Guix) was measured on 2026-10-04; those numbers live in ADR-0001, ADR-0002, ADR-0005 and ADR-0006.
@@ -184,8 +184,8 @@ backoff, auth and cookie jars live here, because they are policy and the low lev
 ;; the common case, one line
 (http-parallel s (list spec ...))       ; -> (list response ...)
 
-;; streaming, closing what it opens (M6)
-(call-with-response-port s req (lambda (port) ...))
+;; streaming, closing what it opens (M6; ADR-0031)
+(call-with-response-port s 'get url (lambda (response port) ...))
 ```
 
 `call-with-request-group` is the piece worth designing carefully: it is a nursery, and its

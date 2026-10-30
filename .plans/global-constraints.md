@@ -726,3 +726,56 @@ provisional. They bind until that record is accepted or amended.
   the first failure, else the cancel of the first call in SPECS' order that is not done.
 - **A caller's cancel exempts a call from the join's raise,** whatever the turns saw of it; the
   call keeps its answer, which its await still gives.
+
+## Streams
+
+- **A streamed body is a request's key, and the token's operations** (ADR-0030, from M6): the
+  response's by `stream-buffer`, the request's by `body` `stream` with `body-length`. One
+  `curl-submit` answers one kind of token. A request stays data: each submit makes its own
+  stream.
+- **The callables only copy and signal** (ADR-0012, decision 4): the write callable fills a
+  bounded buffer, and answers `CURL_WRITEFUNC_PAUSE` when it is full; the read callable gives
+  what is buffered, never past `body-length`, and answers `CURL_READFUNC_PAUSE` when there is
+  none; the header callable publishes the first final head; the seek and prerequest callables
+  refuse a resend once a byte was handed. Each is `__collect_safe`, locked, in
+  `(curl private transfer)` alone, under a guard that records what is raised. A reason a callable
+  records wins over libcurl's code.
+- **Resume is the engine's fourth message,** naming its token, never a handle, carried out
+  after the cancels and before the perform for a token still live, by `curl_easy_pause` with the
+  transfer's whole pause state, holding no mutex and outside any critical section. Any answer but
+  0 fails the transfer,
+  `pause-failed`: 7.85.0 and 8.5.0 lose a refusal made inside the replay, and end 0 (ADR-0012,
+  amended 2026-10-29). The pause bits and the resume's flag live under the stream's mutex; the
+  lock order is the engine's mutex, then a stream's (the M6 plan, §3.4).
+- **The engine paces a poll that spins:** a poll under 1 ms, while a transfer is paused, in a
+  turn that took no message and moved no byte, is followed by a sleep of 1 ms. Ubuntu's 8.5.0
+  spins otherwise (ADR-0012, amended 2026-10-29).
+- **Every stream wait is a bounded poll that answers as data,** and none raises the transfer's
+  failure, which the token's outcome holds; the port alone raises it (ADR-0030, decision 4).
+- **A take leaves what it took in place inside its hold, and removes it after,** the last thing
+  before it returns, by writing fields the engine never writes, so a keyboard interrupt that
+  escapes as the hold ends loses nothing; and **every look decides the resume,** not the take
+  alone, since the write callable can pause in between. A put commits inside its hold, and
+  `curl-token-body-count` tells what was committed (the M6 plan, §3.5; `traps.md`).
+- **A port belongs to the thread that made it,** its close cancels its token, and its ends stick:
+  0 at a response's end, the failure raised at a failure's, every time after. A raise from a
+  read loses bytes inside `get-bytevector-n`, `-n!` and `-all`, never inside
+  `get-bytevector-some`, `-some!` or `get-u8` (the M6 plan, §3.5).
+- **A streamed body is sent at most once** (ADR-0032, amended 2026-10-29): `FRESH_CONNECT`,
+  owned; a seek callable that refuses the rewind, and a prerequest callable that refuses a
+  later attempt, once the read callable has handed libcurl a byte, each recording
+  `body-not-replayable`. The high level calls a producer only once libcurl asks for the body,
+  never retries such a call once its producer was called or libcurl had asked by a head, and
+  raises `&http-redirect-error`, `body-not-replayable`, for every redirect whose next request
+  keeps the body, as `body-dropped?` decides (ADR-0032, amended).
+- **chez-curl counts a streamed body:** short of `body-length`, or past it, is
+  `body-length-mismatch`, alike on every libcurl, where libcurl alone stalls, answers 26, or
+  sends the surplus (ADR-0031).
+- **A call's `timeout-ms` bounds the whole call, a consumer's reading included** (ADR-0031).
+- **Below the token the bound is libcurl's, and documented:** a paused HTTP/2 stream beside an
+  active one keeps receiving, up to its flow-control window on the Linux libcurls (ADR-0030,
+  decision 5).
+- **On 8.7.0 and 8.7.1 the engine does not multiplex:** it sets `CURLMOPT_PIPELINING` to 0 on
+  its multi handle, since on Apple's 8.7.1 a paused HTTP/2 stream beside an active one filled
+  libcurl's 64 MiB cap and failed the connection, and a write callback's error on one stream
+  failed its sibling (ADR-0030, amended 2026-10-29).

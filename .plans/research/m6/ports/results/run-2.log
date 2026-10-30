@@ -1,0 +1,1009 @@
+run.sh: started 2026-10-29T13:56:14Z on Linux 7.1.1-76070101-generic x86_64, 18 CPUs; CHEZ=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme
+I3: scheme-version Chez Scheme Version 10.4.0 machine-type ta6le threaded? #t optimize-level 0
+I3: file-buffer-size default 8192
+I3: custom-port-buffer-size default 128
+I3: transcoded-port-buffer-size default 1024
+I3: forked under parameterize 333/77 sees (333 77)
+I3: I3 done
+I3: exit status 0, wall 60 ms
+C1: file-buffer-size 8192 custom-port-buffer-size 128
+C1: get-u8 x2: read! calls 1
+C1: get-u8 x2: call 1 count 128 start 0 bvlen 128 bv port-buffer returned 128
+C1: get-u8 x2: values 0 1
+C1: get-u8 x129: read! calls 2
+C1: get-u8 x129: call 1 count 128 start 0 bvlen 128 bv port-buffer returned 128
+C1: get-u8 x129: call 2 count 128 start 0 bvlen 128 bv port-buffer returned 128
+C1: lookahead-u8: read! calls 1
+C1: lookahead-u8: call 1 count 128 start 0 bvlen 128 bv port-buffer returned 128
+C1: lookahead-u8: value 0
+C1: get-bytevector-some: read! calls 1
+C1: get-bytevector-some: call 1 count 8192 start 0 bvlen 8192 bv the-result returned 8192
+C1: get-bytevector-some: result bytevector of 8192 content-ok #t
+C1: get-u8 then get-bytevector-some: read! calls 0
+C1: get-u8 then get-bytevector-some: get-u8 0, result bytevector of 127 content-ok #t
+C1: get-bytevector-some! 0 1000: read! calls 1
+C1: get-bytevector-some! 0 1000: call 1 count 1000 start 0 bvlen 1000 bv caller-bv returned 1000
+C1: get-bytevector-some! 0 1000: result 1000 content-ok #t
+C1: get-bytevector-some! 10 1000: read! calls 1
+C1: get-bytevector-some! 10 1000: call 1 count 1000 start 10 bvlen 1010 bv caller-bv returned 1000
+C1: get-bytevector-some! 10 1000: result 1000 content-ok #t
+C1: get-bytevector-n 10 (1 per read!): read! calls 10
+C1: get-bytevector-n 10 (1 per read!): call 1 count 10 start 0 bvlen 10 bv the-result returned 1
+C1: get-bytevector-n 10 (1 per read!): call 2 count 9 start 1 bvlen 10 bv the-result returned 1
+C1: get-bytevector-n 10 (1 per read!): call 3 count 8 start 2 bvlen 10 bv the-result returned 1
+C1: get-bytevector-n 10 (1 per read!): call 4 count 7 start 3 bvlen 10 bv the-result returned 1
+C1: get-bytevector-n 10 (1 per read!): call 5 count 6 start 4 bvlen 10 bv the-result returned 1
+C1: get-bytevector-n 10 (1 per read!): call 6 count 5 start 5 bvlen 10 bv the-result returned 1
+C1: get-bytevector-n 10 (1 per read!): call 7 count 4 start 6 bvlen 10 bv the-result returned 1
+C1: get-bytevector-n 10 (1 per read!): call 8 count 3 start 7 bvlen 10 bv the-result returned 1
+C1: get-bytevector-n 10 (1 per read!): call 9 count 2 start 8 bvlen 10 bv the-result returned 1
+C1: get-bytevector-n 10 (1 per read!): call 10 count 1 start 9 bvlen 10 bv the-result returned 1
+C1: get-bytevector-n 10 (1 per read!): result bytevector of 10 content-ok #t
+C1: get-bytevector-n 10 (3 per read!): read! calls 4
+C1: get-bytevector-n 10 (3 per read!): call 1 count 10 start 0 bvlen 10 bv the-result returned 3
+C1: get-bytevector-n 10 (3 per read!): call 2 count 7 start 3 bvlen 10 bv the-result returned 3
+C1: get-bytevector-n 10 (3 per read!): call 3 count 4 start 6 bvlen 10 bv the-result returned 3
+C1: get-bytevector-n 10 (3 per read!): call 4 count 1 start 9 bvlen 10 bv the-result returned 1
+C1: get-bytevector-n 10 (3 per read!): result bytevector of 10 content-ok #t
+C1: get-bytevector-n! 0 10 (3 per read!): read! calls 4
+C1: get-bytevector-n! 0 10 (3 per read!): call 1 count 10 start 0 bvlen 10 bv caller-bv returned 3
+C1: get-bytevector-n! 0 10 (3 per read!): call 2 count 7 start 3 bvlen 10 bv caller-bv returned 3
+C1: get-bytevector-n! 0 10 (3 per read!): call 3 count 4 start 6 bvlen 10 bv caller-bv returned 3
+C1: get-bytevector-n! 0 10 (3 per read!): call 4 count 1 start 9 bvlen 10 bv caller-bv returned 1
+C1: get-bytevector-n! 0 10 (3 per read!): result 10 content-ok #t
+C1: get-bytevector-n 20000 (5000 per read!): read! calls 4
+C1: get-bytevector-n 20000 (5000 per read!): call 1 count 8192 start 0 bvlen 8192 bv fresh-1 returned 5000
+C1: get-bytevector-n 20000 (5000 per read!): call 2 count 8192 start 0 bvlen 8192 bv fresh-2 returned 5000
+C1: get-bytevector-n 20000 (5000 per read!): call 3 count 8192 start 0 bvlen 8192 bv fresh-3 returned 5000
+C1: get-bytevector-n 20000 (5000 per read!): call 4 count 5000 start 0 bvlen 8192 bv fresh-4 returned 5000
+C1: get-bytevector-n 20000 (5000 per read!): result bytevector of 20000 content-ok #t
+C1: get-bytevector-all (20000 bytes, 5000 per read!): read! calls 5
+C1: get-bytevector-all (20000 bytes, 5000 per read!): call 1 count 8192 start 0 bvlen 8192 bv fresh-1 returned 5000
+C1: get-bytevector-all (20000 bytes, 5000 per read!): call 2 count 8192 start 0 bvlen 8192 bv fresh-2 returned 5000
+C1: get-bytevector-all (20000 bytes, 5000 per read!): call 3 count 8192 start 0 bvlen 8192 bv fresh-3 returned 5000
+C1: get-bytevector-all (20000 bytes, 5000 per read!): call 4 count 8192 start 0 bvlen 8192 bv fresh-4 returned 5000
+C1: get-bytevector-all (20000 bytes, 5000 per read!): call 5 count 8192 start 0 bvlen 8192 bv fresh-5 returned 0
+C1: get-bytevector-all (20000 bytes, 5000 per read!): result bytevector of 20000 content-ok #t
+C1: made under custom-port-buffer-size 16, get-u8 outside: read! calls 1
+C1: made under custom-port-buffer-size 16, get-u8 outside: call 1 count 16 start 0 bvlen 16 bv port-buffer returned 16
+C1: made under custom-port-buffer-size 16: (custom-port-buffer-size) now 128
+C1: get-bytevector-some under file-buffer-size 100: read! calls 1
+C1: get-bytevector-some under file-buffer-size 100: call 1 count 100 start 0 bvlen 100 bv the-result returned 100
+C1: get-bytevector-some under file-buffer-size 100: result bytevector of 100
+C1: C1 done
+C1: exit status 0, wall 56 ms
+C2: script (0 3 0 3 0), then 0 for ever
+C2: get-u8: #1 get-u8 -> eof; read! answered (0)
+C2: get-u8: #2 get-u8 -> 1; read! answered (3)
+C2: get-u8: #3 get-u8 -> 2; read! answered ()
+C2: get-u8: #4 get-u8 -> 3; read! answered ()
+C2: get-u8: #5 get-u8 -> eof; read! answered (0)
+C2: get-u8: #6 get-u8 -> 4; read! answered (3)
+C2: get-u8: total read! calls 4
+C2: lookahead-u8: #1 lookahead-u8 -> eof; read! answered (0)
+C2: lookahead-u8: #2 lookahead-u8 -> eof; read! answered ()
+C2: lookahead-u8: #3 lookahead-u8 -> eof; read! answered ()
+C2: lookahead-u8: #4 lookahead-u8 -> eof; read! answered ()
+C2: lookahead-u8: #5 lookahead-u8 -> eof; read! answered ()
+C2: lookahead-u8: #6 lookahead-u8 -> eof; read! answered ()
+C2: lookahead-u8: total read! calls 1
+C2: port-eof?: #1 port-eof? -> #t; read! answered (0)
+C2: port-eof?: #2 port-eof? -> #t; read! answered ()
+C2: port-eof?: #3 port-eof? -> #t; read! answered ()
+C2: port-eof?: #4 port-eof? -> #t; read! answered ()
+C2: port-eof?: #5 port-eof? -> #t; read! answered ()
+C2: port-eof?: #6 port-eof? -> #t; read! answered ()
+C2: port-eof?: total read! calls 1
+C2: lookahead-u8/get-u8: #1 lookahead-u8 -> eof; read! answered (0)
+C2: lookahead-u8/get-u8: #2 lookahead-u8 -> eof; read! answered ()
+C2: lookahead-u8/get-u8: #3 get-u8 -> eof; read! answered ()
+C2: lookahead-u8/get-u8: #4 get-u8 -> 1; read! answered (3)
+C2: lookahead-u8/get-u8: #5 lookahead-u8 -> 2; read! answered ()
+C2: lookahead-u8/get-u8: #6 get-u8 -> 2; read! answered ()
+C2: lookahead-u8/get-u8: #7 get-u8 -> 3; read! answered ()
+C2: lookahead-u8/get-u8: #8 get-u8 -> eof; read! answered (0)
+C2: lookahead-u8/get-u8: #9 get-u8 -> 4; read! answered (3)
+C2: lookahead-u8/get-u8: #10 get-u8 -> 5; read! answered ()
+C2: lookahead-u8/get-u8: total read! calls 4
+C2: get-bytevector-some: #1 get-bytevector-some -> eof; read! answered (0)
+C2: get-bytevector-some: #2 get-bytevector-some -> bytevector (1 2 3); read! answered (3)
+C2: get-bytevector-some: #3 get-bytevector-some -> eof; read! answered (0)
+C2: get-bytevector-some: #4 get-bytevector-some -> bytevector (4 5 6); read! answered (3)
+C2: get-bytevector-some: #5 get-bytevector-some -> eof; read! answered (0)
+C2: get-bytevector-some: #6 get-bytevector-some -> eof; read! answered (0)
+C2: get-bytevector-some: total read! calls 6
+C2: get-bytevector-some!: #1 get-bytevector-some! 10 -> eof; read! answered (0)
+C2: get-bytevector-some!: #2 get-bytevector-some! 10 -> (3 (1 2 3 0 0 0 0 0 0 0)); read! answered (3)
+C2: get-bytevector-some!: #3 get-bytevector-some! 10 -> eof; read! answered (0)
+C2: get-bytevector-some!: #4 get-bytevector-some! 10 -> (3 (4 5 6 0 0 0 0 0 0 0)); read! answered (3)
+C2: get-bytevector-some!: #5 get-bytevector-some! 10 -> eof; read! answered (0)
+C2: get-bytevector-some!: #6 get-bytevector-some! 10 -> eof; read! answered (0)
+C2: get-bytevector-some!: total read! calls 6
+C2: get-bytevector-n 10: #1 get-bytevector-n 10 -> eof; read! answered (0)
+C2: get-bytevector-n 10: #2 get-bytevector-n 10 -> bytevector (1 2 3); read! answered (3 0)
+C2: get-bytevector-n 10: #3 get-bytevector-n 10 -> eof; read! answered ()
+C2: get-bytevector-n 10: #4 get-bytevector-n 10 -> bytevector (4 5 6); read! answered (3 0)
+C2: get-bytevector-n 10: #5 get-bytevector-n 10 -> eof; read! answered ()
+C2: get-bytevector-n 10: #6 get-bytevector-n 10 -> eof; read! answered (0)
+C2: get-bytevector-n 10: total read! calls 6
+C2: get-bytevector-n! 10: #1 get-bytevector-n! 10 -> eof; read! answered (0)
+C2: get-bytevector-n! 10: #2 get-bytevector-n! 10 -> (3 (1 2 3 0 0 0 0 0 0 0)); read! answered (3 0)
+C2: get-bytevector-n! 10: #3 get-bytevector-n! 10 -> eof; read! answered ()
+C2: get-bytevector-n! 10: #4 get-bytevector-n! 10 -> (3 (4 5 6 0 0 0 0 0 0 0)); read! answered (3 0)
+C2: get-bytevector-n! 10: #5 get-bytevector-n! 10 -> eof; read! answered ()
+C2: get-bytevector-n! 10: #6 get-bytevector-n! 10 -> eof; read! answered (0)
+C2: get-bytevector-n! 10: total read! calls 6
+C2: get-bytevector-n 20000: #1 get-bytevector-n 20000 -> eof; read! answered (0)
+C2: get-bytevector-n 20000: #2 get-bytevector-n 20000 -> bytevector (1 2 3); read! answered (3 0)
+C2: get-bytevector-n 20000: #3 get-bytevector-n 20000 -> bytevector (4 5 6); read! answered (3 0)
+C2: get-bytevector-n 20000: #4 get-bytevector-n 20000 -> eof; read! answered (0)
+C2: get-bytevector-n 20000: #5 get-bytevector-n 20000 -> eof; read! answered (0)
+C2: get-bytevector-n 20000: #6 get-bytevector-n 20000 -> eof; read! answered (0)
+C2: get-bytevector-n 20000: total read! calls 8
+C2: get-bytevector-all: #1 get-bytevector-all -> eof; read! answered (0)
+C2: get-bytevector-all: #2 get-bytevector-all -> bytevector (1 2 3); read! answered (3 0)
+C2: get-bytevector-all: #3 get-bytevector-all -> bytevector (4 5 6); read! answered (3 0)
+C2: get-bytevector-all: #4 get-bytevector-all -> eof; read! answered (0)
+C2: get-bytevector-all: #5 get-bytevector-all -> eof; read! answered (0)
+C2: get-bytevector-all: #6 get-bytevector-all -> eof; read! answered (0)
+C2: get-bytevector-all: total read! calls 8
+C2: C2 done
+C2: exit status 0, wall 45 ms
+C3: get-u8, read! returns count+1: (raised get-u8 "invalid result ~s from read! on ~s" (129 the-port) (&assertion not-&error &violation not-&non-continuable)); read! calls 1; port-closed? #f input-size 0
+C3: get-u8, read! returns -1: (raised get-u8 "invalid result ~s from read! on ~s" (-1 the-port) (&assertion not-&error &violation not-&non-continuable)); read! calls 1; port-closed? #f input-size 0
+C3: get-u8, read! returns 1.0: (raised get-u8 "invalid result ~s from read! on ~s" (1.0 the-port) (&assertion not-&error &violation not-&non-continuable)); read! calls 1; port-closed? #f input-size 0
+C3: get-u8, read! returns 'x: (raised get-u8 "invalid result ~s from read! on ~s" (x the-port) (&assertion not-&error &violation not-&non-continuable)); read! calls 1; port-closed? #f input-size 0
+C3: get-bytevector-some, read! returns count+1: (raised get-bytevector-some "invalid result ~s from read! on ~s" (8193 the-port) (&assertion not-&error &violation not-&non-continuable)); read! calls 1; port-closed? #f input-size 0
+C3: handler returns from the count+1 raise: (outer-saw #f (not-&assertion not-&error &violation &non-continuable))
+C3: then read! returns 1 (byte 42): returned 42; read! calls 1; port-closed? #f
+C3: then read! returns 0: returned #!eof; read! calls 1; port-closed? #f
+C3: C3 done
+C3: exit status 0, wall 48 ms
+I4: get-bytevector-n 10: op call 1 -> (1 2 3 4 5 6 7 8 9); read! calls 4; 203 ms
+I4: get-bytevector-n 10: op call 2 -> eof; read! calls 0; 0 ms
+I4: get-bytevector-n 10: totals: op calls 2 read! calls 4 read! wait 203 ms polls 40 wall 203 ms
+I4: get-bytevector-some: op call 1 -> (1 2 3); read! calls 1; 51 ms
+I4: get-bytevector-some: op call 2 -> (4 5 6); read! calls 1; 50 ms
+I4: get-bytevector-some: op call 3 -> (7 8 9); read! calls 1; 51 ms
+I4: get-bytevector-some: op call 4 -> eof; read! calls 1; 51 ms
+I4: get-bytevector-some: totals: op calls 4 read! calls 4 read! wait 203 ms polls 40 wall 203 ms
+I4: get-u8: op call 1 -> 1; read! calls 1; 51 ms
+I4: get-u8: op call 2 -> 2; read! calls 0; 0 ms
+I4: get-u8: op call 3 -> 3; read! calls 0; 0 ms
+I4: get-u8: op call 4 -> 4; read! calls 1; 50 ms
+I4: get-u8: op call 5 -> 5; read! calls 0; 0 ms
+I4: get-u8: op call 6 -> 6; read! calls 0; 0 ms
+I4: get-u8: op call 7 -> 7; read! calls 1; 51 ms
+I4: get-u8: op call 8 -> 8; read! calls 0; 0 ms
+I4: get-u8: op call 9 -> 9; read! calls 0; 0 ms
+I4: get-u8: op call 10 -> eof; read! calls 1; 51 ms
+I4: get-u8: totals: op calls 10 read! calls 4 read! wait 203 ms polls 40 wall 203 ms
+I4: get-bytevector-all: op call 1 -> (1 2 3 4 5 6 7 8 9); read! calls 4; 203 ms
+I4: get-bytevector-all: op call 2 -> eof; read! calls 1; 51 ms
+I4: get-bytevector-all: totals: op calls 2 read! calls 5 read! wait 254 ms polls 50 wall 254 ms
+I4: I4 done
+I4: exit status 0, wall 914 ms
+C4: new port: output-size 127 output-buffer length 128
+C4: 127 put-u8: write! calls 0; output-index after 127
+C4: 128th put-u8: write! calls 1; output-index after 0
+C4: 128th put-u8: call 1 start 0 count 128 bvlen 128 bv port-buffer answered 128
+C4: flush an empty buffer: write! calls 0; output-index after 0
+C4: put-bytevector 256, buffer empty: write! calls 1; output-index after 0
+C4: put-bytevector 256, buffer empty: call 1 start 0 count 256 bvlen 256 bv caller-bv answered 256
+C4: put-bytevector 257, buffer empty: write! calls 1; output-index after 0
+C4: put-bytevector 257, buffer empty: call 1 start 0 count 257 bvlen 257 bv caller-bv answered 257
+C4: put-bytevector 200, buffer empty: write! calls 1; output-index after 0
+C4: put-bytevector 200, buffer empty: call 1 start 0 count 200 bvlen 200 bv caller-bv answered 200
+C4: put-bytevector 127, buffer empty: write! calls 0; output-index after 127
+C4: put-bytevector 100, buffer empty: write! calls 0; output-index after 100
+C4: flush 100 buffered: write! calls 1; output-index after 0
+C4: flush 100 buffered: call 1 start 0 count 100 bvlen 128 bv port-buffer answered 100
+C4: put-bytevector 50 then 100: write! calls 2; output-index after 0
+C4: put-bytevector 50 then 100: call 1 start 0 count 50 bvlen 128 bv port-buffer answered 50
+C4: put-bytevector 50 then 100: call 2 start 0 count 100 bvlen 100 bv caller-bv answered 100
+C4: flush 10, write! answers 0 once: write! calls 2; output-index after 0
+C4: flush 10, write! answers 0 once: call 1 start 0 count 10 bvlen 128 bv port-buffer answered 0
+C4: flush 10, write! answers 0 once: call 2 start 0 count 10 bvlen 128 bv port-buffer answered 10
+C4: flush 10, write! answers 0 five times: write! calls 6
+C4: flush 10, write! takes 4 at most: write! calls 3; output-index after 0
+C4: flush 10, write! takes 4 at most: call 1 start 0 count 10 bvlen 128 bv port-buffer answered 4
+C4: flush 10, write! takes 4 at most: call 2 start 4 count 6 bvlen 128 bv port-buffer answered 4
+C4: flush 10, write! takes 4 at most: call 3 start 8 count 2 bvlen 128 bv port-buffer answered 2
+C4: close-port with 5 buffered: write! calls 1; output-index after closed
+C4: close-port with 5 buffered: call 1 start 0 count 5 bvlen 128 bv other answered 5
+C4: close-port with 5 buffered: write! was handed the port's buffer as it was before the close: #t
+C4: close-port with 5 buffered: close calls 1
+C4: close-port again: close calls 1, write! calls 1
+C4: C4 done
+C4: exit status 0, wall 72 ms
+C5: put 50: write! calls () output-index 50
+C5: put 300, write! raises on 300: (raised write!-raised)
+C5: after the raise: write! calls (50 300) output-index 50 sent so far 50 bytes, runs ((1 . 50))
+C5: flush with a write! that succeeds: nothing-raised
+C5: after the flush: write! calls (50 300 50) output-index 0 sent 100 bytes, runs (first . length) ((1 . 50) (1 . 50))
+C5: the first 50 sent equal the second 50 sent: #t
+C5: 10 buffered, flush with a raising write!: (raised write!-raised)
+C5: close-port, write! still raising: (raised write!-raised); close calls 0 port-closed? #f
+C5:   write! calls so far (10 10); output-index 10
+C5: close-port, write! now succeeds: nothing-raised; close calls 1 port-closed? #t
+C5:   write! calls (10 10 10) sent (1 2 3 4 5 6 7 8 9 10)
+C5: close raises: close-port (raised close-raised); close calls 1 port-closed? #f write! calls (5)
+C5: close-port again: nothing-raised; close calls 2 port-closed? #t write! calls (5) sent (1 2 3 4 5)
+C5: C5 done
+C5: exit status 0, wall 56 ms
+C6: control: one explicit close-port of an output port with 10 buffered: write! calls 1 close calls 1
+C6: control: one explicit close-port of an input port: close calls 2
+C6: made 2000 ports (1000 output with 10 bytes buffered each), held strongly, after a collection: live 2000; write! calls 0 close calls 0
+C6: after two (collect (collect-maximum-generation)): live 0 of 2000; write! calls 0 close calls 0
+C6: child exit stdout: child: 10 bytes buffered in child-out; ending by exit
+C6: child exit stdout: child-exit-status=0
+C6: child exit stderr: ""
+C6: child falloff stdout: child: 10 bytes buffered in child-out; ending by falloff
+C6: child falloff stdout: child-exit-status=0
+C6: child falloff stderr: ""
+C6: child raise stdout: child: 10 bytes buffered in child-out; ending by raise
+C6: child raise stdout: child-exit-status=255
+C6: child raise stderr: "Exception occurred with non-condition value child-raised\n"
+C6: C6 done
+C6: exit status 0, wall 191 ms
+C7: A get-u8: first read -> 10
+C7: A get-u8: closer thread -> (closed port-closed? #t)
+C7: A get-u8: close handler -> (close-called read!-running? #t)
+C7: A get-u8: read! after its wait -> (release #t port-closed? #t)
+C7: A get-u8: port-closed? #t binary-port-input-count 4
+C7: A get-u8: get-u8 #2 on the closed port -> 11
+C7: A get-u8: get-u8 #3 on the closed port -> 12
+C7: A get-u8: get-u8 #4 on the closed port -> 13
+C7: A get-u8: get-u8 #5 on the closed port -> 14
+C7: A get-u8: get-u8 #6 on the closed port -> (raised (get-u8 "not permitted on closed port ~s"))
+C7: A get-u8: lookahead-u8 -> (raised (lookahead-u8 "not permitted on closed port ~s"))
+C7: A get-u8: get-bytevector-some -> (raised (get-bytevector-some "not permitted on closed port ~s"))
+C7: A' get-u8: first read -> 10
+C7: A' get-u8: closer thread -> (closed port-closed? #t)
+C7: A' get-u8: close handler -> (close-called read!-running? #t)
+C7: A' get-u8: read! after its wait -> (release #t port-closed? #t)
+C7: A' get-u8: port-closed? #t binary-port-input-count 4
+C7: A' get-u8: get-bytevector-some with 4 buffered -> (raised (get-bytevector-some "not permitted on closed port ~s"))
+C7: A' get-u8: then get-u8 -> 11
+C7: B get-bytevector-some: first read -> (10 11 12 13 14)
+C7: B get-bytevector-some: closer thread -> (closed port-closed? #t)
+C7: B get-bytevector-some: close handler -> (close-called read!-running? #t)
+C7: B get-bytevector-some: read! after its wait -> (release #t port-closed? #t)
+C7: B get-bytevector-some: port-closed? #t binary-port-input-count 0
+C7: B get-bytevector-some: second get-bytevector-some -> (raised (get-bytevector-some "not permitted on closed port ~s"))
+C7: B get-bytevector-some: get-u8 -> (raised (get-u8 "not permitted on closed port ~s"))
+C7: C race get-only: trials 2000; port-closed? #f right after close-port returned: 0
+C7: C race get-only: reader raised on the closed port 2000; ran 100000 iterations with no raise 0; no answer in 5 s 0
+C7: C race get-only: reader raised something else: ()
+C7: C race get-only: port-closed? #f once the reader stopped: 0
+C7: C race get-only: close calls per trial after a second close-port, counts: ((0 . 0) (1 . 2000) (2 . 0) (3 . 0))
+C7: C race get-only: reader iterations before the close, min 1 max 1175; closes after the reader had finished 0
+C7: C race toggle: trials 2000; port-closed? #f right after close-port returned: 209
+C7: C race toggle: reader raised on the closed port 1102; ran 100000 iterations with no raise 898; no answer in 5 s 0
+C7: C race toggle: reader raised something else: ()
+C7: C race toggle: port-closed? #f once the reader stopped: 898
+C7: C race toggle: close calls per trial after a second close-port, counts: ((0 . 0) (1 . 1102) (2 . 898) (3 . 0))
+C7: C race toggle: reader iterations before the close, min 1 max 7126; closes after the reader had finished 0
+C7: C7 done
+C7: exit status 0, wall 16366 ms
+C8: part 1: get-u8 plainly: read! saw disable-count 1
+C8: part 1: get-u8 inside critical-section: read! saw disable-count 2
+C8: part 1: get-u8 inside two critical-sections: read! saw disable-count 3
+C8: part 1: get-u8 inside with-interrupts-disabled: read! saw disable-count 2
+C8: part 1: get-u8 inside with-mutex: read! saw disable-count 1
+C8: part 1: get-u8 plainly, again: read! saw disable-count 1
+C8: part 2: plain, (collect): get-u8 -> 1 after 104 ms; read! -> (collector-answered-after 104 ms 10 polls)
+C8: part 2: plain, (collect): collector thread -> (ok 3 ms collections 1 main-in-read!-before #t after #t)
+C8: part 2: plain, (collect-rendezvous): get-u8 -> 1 after 101 ms; read! -> (collector-answered-after 101 ms 10 polls)
+C8: part 2: plain, (collect-rendezvous): collector thread -> (ok 1 ms collections 1 main-in-read!-before #t after #t)
+C8: part 2: critical-section, (collect): get-u8 -> 1 after 100 ms; read! -> (collector-answered-after 100 ms 10 polls)
+C8: part 2: critical-section, (collect): collector thread -> (raised (collect "cannot collect when multiple threads are active"))
+C8: part 2: critical-section, (collect-rendezvous): get-u8 -> 1 after 503 ms; read! -> (bound-passed-after 503 ms 50 polls)
+C8: part 2: critical-section, (collect-rendezvous): collector thread -> (ok 403 ms collections 1 main-in-read!-before #t after #f)
+C8: part 2 x20: plain, collect: ok 20 raised () hung 0; collector ms (0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0)
+C8: part 2 x20: plain, rendezvous: ok 20 raised () hung 0; collector ms (0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
+C8: C8 done
+C8: exit status 0, wall 4215 ms
+C9: get-bytevector-n 10: call 1 -> raised read!-raised
+C9: get-bytevector-n 10: call 2 -> (4 5 6)
+C9: get-bytevector-n 10: call 3 -> eof
+C9: get-bytevector-n 10: read! took (1 2 3 4 5 6); caller was handed (4 5 6); lost (1 2 3)
+C9: get-bytevector-n! 10: after the raise the caller's bv holds (1 2 3 0 0 0 0 0 0 0)
+C9: get-bytevector-n! 10: call 1 -> raised read!-raised
+C9: get-bytevector-n! 10: call 2 -> count 3 bytes (4 5 6)
+C9: get-bytevector-n! 10: call 3 -> eof
+C9: get-bytevector-n! 10: read! took (1 2 3 4 5 6); caller was handed (4 5 6); lost (1 2 3)
+C9: get-bytevector-some! 10: call 1 -> count 3 bytes (1 2 3)
+C9: get-bytevector-some! 10: call 2 -> raised read!-raised
+C9: get-bytevector-some! 10: call 3 -> count 3 bytes (4 5 6)
+C9: get-bytevector-some! 10: call 4 -> eof
+C9: get-bytevector-some! 10: read! took (1 2 3 4 5 6); caller was handed (1 2 3 4 5 6); lost ()
+C9: get-bytevector-some: call 1 -> (1 2 3)
+C9: get-bytevector-some: call 2 -> raised read!-raised
+C9: get-bytevector-some: call 3 -> (4 5 6)
+C9: get-bytevector-some: call 4 -> eof
+C9: get-bytevector-some: read! took (1 2 3 4 5 6); caller was handed (1 2 3 4 5 6); lost ()
+C9: get-bytevector-all: call 1 -> raised read!-raised
+C9: get-bytevector-all: call 2 -> (4 5 6)
+C9: get-bytevector-all: call 3 -> eof
+C9: get-bytevector-all: read! took (1 2 3 4 5 6); caller was handed (4 5 6); lost (1 2 3)
+C9: get-u8: call 1 -> (1)
+C9: get-u8: call 2 -> (2)
+C9: get-u8: call 3 -> (3)
+C9: get-u8: call 4 -> raised read!-raised
+C9: get-u8: call 5 -> (4)
+C9: get-u8: call 6 -> (5)
+C9: get-u8: call 7 -> (6)
+C9: get-u8: call 8 -> eof
+C9: get-u8: read! took (1 2 3 4 5 6); caller was handed (1 2 3 4 5 6); lost ()
+C9: C9 done
+C9: exit status 0, wall 50 ms
+C10: get-bytevector-some coarse: T 1..261 (14 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some coarse: T 281..561 (15 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some coarse: T 581..4001 (172 runs): landed not-fired returned taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some coarse: runs 201; landed before 14 in-read! 0 after-read! 0 after-op 15 not-fired 172; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some: first coarse tick landing past read!'s take 281; fine sweep 131..381 a tick at a time
+C10: get-bytevector-some fine: T 131 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 132 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 133 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 134 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 135 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 136 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 137 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 138 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 139 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 140 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 141 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 142 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 143 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 144 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 145 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 146 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 147 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 148 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 149 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 150 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 151 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 152 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 153 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 154 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 155 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 156 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 157 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 158 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 159 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 160 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 161 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 162 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 163 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 164 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 165 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 166 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 167 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 168 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 169 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 170 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 171 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 172 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 173 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 174 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 175 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 176 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 177 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 178 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 179 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 180 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 181 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 182 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 183 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 184 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 185 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 186 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 187 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 188 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 189 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 190 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 191 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 192 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 193 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 194 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 195 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 196 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 197 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 198 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 199 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 200 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 201 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 202 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 203 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 204 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 205 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 206 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 207 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 208 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 209 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 210 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 211 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 212 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 213 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 214 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 215 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 216 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 217 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 218 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 219 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 220 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 221 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 222 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 223 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 224 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 225 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 226 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 227 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 228 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 229 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 230 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 231 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 232 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 233 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 234 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 235 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 236 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 237 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 238 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 239 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 240 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 241 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 242 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 243 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 244 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 245 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 246 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 247 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 248 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 249 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 250 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 251 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 252 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 253 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 254 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 255 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 256 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 257 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 258 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 259 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 260 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 261 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 262 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 263 landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 264 landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 265 landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 266 landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 267 landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 268 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 269 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 270 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 271 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 272 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 273 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 274 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 275 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 276 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 277 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 278 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 279 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 280 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 281 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 282 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 283 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 284 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 285 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 286 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 287 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 288 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 289 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 290 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 291 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 292 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 293 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 294 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 295 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 296 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 297 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 298 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 299 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 300 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 301 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 302 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 303 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 304 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 305 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 306 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 307 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 308 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 309 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 310 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 311 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 312 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 313 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 314 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 315 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 316 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 317 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 318 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 319 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 320 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 321 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 322 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 323 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 324 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 325 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 326 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 327 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 328 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 329 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 330 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 331 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 332 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 333 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 334 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 335 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 336 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 337 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 338 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 339 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 340 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 341 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 342 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 343 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 344 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 345 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 346 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 347 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 348 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 349 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 350 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 351 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 352 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 353 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 354 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 355 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 356 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 357 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 358 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 359 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 360 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 361 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 362 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 363 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 364 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 365 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 366 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 367 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 368 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 369 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 370 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 371 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 372 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 373 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 374 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 375 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 376 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 377 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 378 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 379 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 380 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 381 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 131..262 (132 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 263..267 (5 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: T 268..381 (114 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine: runs 251; landed before 132 in-read! 5 after-read! 0 after-op 114 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some fine pass 2: T 131..262 (132 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine pass 2: T 263..267 (5 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine pass 2: T 268..381 (114 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some fine pass 2: runs 251; landed before 132 in-read! 5 after-read! 0 after-op 114 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some control, no escape: T 131..262 (132 runs): landed before returned taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some control, no escape: T 263..267 (5 runs): landed in-read! returned taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some control, no escape: T 268..381 (114 runs): landed after-op returned taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some control, no escape: runs 251; landed before 132 in-read! 5 after-read! 0 after-op 114 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some: collections during its sweeps 1
+C10: get-bytevector-some! coarse: T 1..1 (1 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! coarse: T 21..301 (15 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! coarse: T 321..4001 (185 runs): landed not-fired returned taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! coarse: runs 201; landed before 1 in-read! 0 after-read! 0 after-op 15 not-fired 185; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some!: first coarse tick landing past read!'s take 21; fine sweep 1..251 a tick at a time
+C10: get-bytevector-some! fine: T 1 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine: T 2 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine: T 3 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine: T 4 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine: T 5 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine: T 6 landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine: T 7 landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine: T 8 landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine: T 9 landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine: T 10 landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine: T 11 landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine: T 12 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 13 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 14 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 15 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 16 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 17 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 18 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 19 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 20 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 21 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 22 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 23 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 24 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 25 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 26 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 27 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 28 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 29 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 30 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 31 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 32 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 33 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 34 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 35 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 36 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 37 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 38 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 39 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 40 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 41 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 42 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 43 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 44 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 45 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 46 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 47 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 48 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 49 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 50 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 51 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 52 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 53 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 54 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 55 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 56 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 57 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 58 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 59 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 60 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 61 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 62 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 63 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 64 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 65 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 66 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 67 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 68 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 69 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 70 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 71 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 72 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 73 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 74 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 75 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 76 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 77 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 78 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 79 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 80 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 81 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 82 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 83 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 84 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 85 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 86 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 87 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 88 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 89 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 90 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 91 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 92 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 93 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 94 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 95 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 96 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 97 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 98 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 99 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 100 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 101 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 102 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 103 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 104 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 105 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 106 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 107 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 108 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 109 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 110 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 111 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 112 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 113 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 114 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 115 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 116 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 117 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 118 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 119 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 120 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 121 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 122 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 123 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 124 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 125 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 126 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 127 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 128 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 129 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 130 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 131 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 132 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 133 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 134 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 135 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 136 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 137 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 138 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 139 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 140 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 141 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 142 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 143 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 144 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 145 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 146 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 147 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 148 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 149 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 150 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 151 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 152 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 153 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 154 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 155 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 156 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 157 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 158 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 159 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 160 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 161 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 162 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 163 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 164 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 165 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 166 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 167 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 168 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 169 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 170 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 171 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 172 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 173 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 174 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 175 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 176 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 177 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 178 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 179 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 180 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 181 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 182 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 183 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 184 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 185 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 186 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 187 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 188 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 189 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 190 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 191 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 192 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 193 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 194 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 195 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 196 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 197 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 198 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 199 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 200 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 201 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 202 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 203 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 204 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 205 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 206 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 207 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 208 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 209 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 210 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 211 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 212 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 213 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 214 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 215 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 216 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 217 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 218 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 219 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 220 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 221 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 222 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 223 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 224 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 225 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 226 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 227 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 228 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 229 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 230 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 231 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 232 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 233 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 234 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 235 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 236 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 237 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 238 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 239 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 240 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 241 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 242 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 243 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 244 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 245 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 246 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 247 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 248 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 249 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 250 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 251 landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: T 1..6 (6 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine: T 7..11 (5 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine: T 12..251 (240 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine: runs 251; landed before 6 in-read! 5 after-read! 0 after-op 240 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some! fine pass 2: T 1..6 (6 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine pass 2: T 7..11 (5 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some! fine pass 2: T 12..251 (240 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! fine pass 2: runs 251; landed before 6 in-read! 5 after-read! 0 after-op 240 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some! control, no escape: T 1..6 (6 runs): landed before returned taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! control, no escape: T 7..11 (5 runs): landed in-read! returned taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! control, no escape: T 12..251 (240 runs): landed after-op returned taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some! control, no escape: runs 251; landed before 6 in-read! 5 after-read! 0 after-op 240 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some!: collections during its sweeps 1
+C10: get-u8 coarse: T 1..1 (1 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8 coarse: T 21..301 (15 runs): landed after-op escaped taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8 coarse: T 321..4001 (185 runs): landed not-fired returned taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8 coarse: runs 201; landed before 1 in-read! 0 after-read! 0 after-op 15 not-fired 185; runs that lost bytes 0, bytes lost 0
+C10: get-u8: first coarse tick landing past read!'s take 21; fine sweep 1..251 a tick at a time
+C10: get-u8 fine: T 1..5 (5 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8 fine: T 6..10 (5 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8 fine: T 11..251 (241 runs): landed after-op escaped taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8 fine: runs 251; landed before 5 in-read! 5 after-read! 0 after-op 241 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-u8 fine pass 2: T 1..5 (5 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8 fine pass 2: T 6..10 (5 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8 fine pass 2: T 11..251 (241 runs): landed after-op escaped taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8 fine pass 2: runs 251; landed before 5 in-read! 5 after-read! 0 after-op 241 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-u8 control, no escape: T 1..5 (5 runs): landed before returned taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8 control, no escape: T 6..10 (5 runs): landed in-read! returned taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8 control, no escape: T 11..251 (241 runs): landed after-op returned taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8 control, no escape: runs 251; landed before 5 in-read! 5 after-read! 0 after-op 241 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-u8: collections during its sweeps 0
+C10: get-bytevector-some, planted read! coarse: T 1..261 (14 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, planted read! coarse: T 281..561 (15 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, planted read! coarse: T 581..4001 (172 runs): landed not-fired returned taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, planted read! coarse: runs 201; landed before 14 in-read! 0 after-read! 0 after-op 15 not-fired 172; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some, planted read!: first coarse tick landing past read!'s take 281; fine sweep 131..381 a tick at a time
+C10: get-bytevector-some, planted read! fine: T 131..262 (132 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, planted read! fine: T 263..267 (5 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, planted read! fine: T 268..270 (3 runs): landed after-read! escaped taken 5 received 0 buffered 0 lost 5 in-bv -
+C10: get-bytevector-some, planted read! fine: T 271..381 (111 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, planted read! fine: runs 251; landed before 132 in-read! 5 after-read! 3 after-op 111 not-fired 0; runs that lost bytes 3, bytes lost 15
+C10: get-bytevector-some, planted read! fine pass 2: T 131..262 (132 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, planted read! fine pass 2: T 263..267 (5 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, planted read! fine pass 2: T 268..270 (3 runs): landed after-read! escaped taken 5 received 0 buffered 0 lost 5 in-bv -
+C10: get-bytevector-some, planted read! fine pass 2: T 271..381 (111 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, planted read! fine pass 2: runs 251; landed before 132 in-read! 5 after-read! 3 after-op 111 not-fired 0; runs that lost bytes 3, bytes lost 15
+C10: get-bytevector-some, planted read! control, no escape: T 131..262 (132 runs): landed before returned taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, planted read! control, no escape: T 263..267 (5 runs): landed in-read! returned taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, planted read! control, no escape: T 268..270 (3 runs): landed after-read! returned taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, planted read! control, no escape: T 271..381 (111 runs): landed after-op returned taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, planted read! control, no escape: runs 251; landed before 132 in-read! 5 after-read! 3 after-op 111 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some, planted read!: collections during its sweeps 1
+C10: get-bytevector-some!, planted read! coarse: T 1..1 (1 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some!, planted read! coarse: T 21..301 (15 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, planted read! coarse: T 321..4001 (185 runs): landed not-fired returned taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, planted read! coarse: runs 201; landed before 1 in-read! 0 after-read! 0 after-op 15 not-fired 185; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some!, planted read!: first coarse tick landing past read!'s take 21; fine sweep 1..251 a tick at a time
+C10: get-bytevector-some!, planted read! fine: T 1..6 (6 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some!, planted read! fine: T 7..11 (5 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some!, planted read! fine: T 12..14 (3 runs): landed after-read! escaped taken 5 received 0 buffered 0 lost 5 in-bv #t
+C10: get-bytevector-some!, planted read! fine: T 15..251 (237 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, planted read! fine: runs 251; landed before 6 in-read! 5 after-read! 3 after-op 237 not-fired 0; runs that lost bytes 3, bytes lost 15
+C10: get-bytevector-some!, planted read! fine pass 2: T 1..6 (6 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some!, planted read! fine pass 2: T 7..11 (5 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some!, planted read! fine pass 2: T 12..14 (3 runs): landed after-read! escaped taken 5 received 0 buffered 0 lost 5 in-bv #t
+C10: get-bytevector-some!, planted read! fine pass 2: T 15..251 (237 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, planted read! fine pass 2: runs 251; landed before 6 in-read! 5 after-read! 3 after-op 237 not-fired 0; runs that lost bytes 3, bytes lost 15
+C10: get-bytevector-some!, planted read! control, no escape: T 1..6 (6 runs): landed before returned taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, planted read! control, no escape: T 7..11 (5 runs): landed in-read! returned taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, planted read! control, no escape: T 12..14 (3 runs): landed after-read! returned taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, planted read! control, no escape: T 15..251 (237 runs): landed after-op returned taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, planted read! control, no escape: runs 251; landed before 6 in-read! 5 after-read! 3 after-op 237 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some!, planted read!: collections during its sweeps 0
+C10: get-u8, planted read! coarse: T 1..1 (1 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8, planted read! coarse: T 21..301 (15 runs): landed after-op escaped taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, planted read! coarse: T 321..4001 (185 runs): landed not-fired returned taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, planted read! coarse: runs 201; landed before 1 in-read! 0 after-read! 0 after-op 15 not-fired 185; runs that lost bytes 0, bytes lost 0
+C10: get-u8, planted read!: first coarse tick landing past read!'s take 21; fine sweep 1..251 a tick at a time
+C10: get-u8, planted read! fine: T 1..5 (5 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8, planted read! fine: T 6..10 (5 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8, planted read! fine: T 11..13 (3 runs): landed after-read! escaped taken 5 received 0 buffered 0 lost 5 in-bv -
+C10: get-u8, planted read! fine: T 14..251 (238 runs): landed after-op escaped taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, planted read! fine: runs 251; landed before 5 in-read! 5 after-read! 3 after-op 238 not-fired 0; runs that lost bytes 3, bytes lost 15
+C10: get-u8, planted read! fine pass 2: T 1..5 (5 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8, planted read! fine pass 2: T 6..10 (5 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8, planted read! fine pass 2: T 11..13 (3 runs): landed after-read! escaped taken 5 received 0 buffered 0 lost 5 in-bv -
+C10: get-u8, planted read! fine pass 2: T 14..251 (238 runs): landed after-op escaped taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, planted read! fine pass 2: runs 251; landed before 5 in-read! 5 after-read! 3 after-op 238 not-fired 0; runs that lost bytes 3, bytes lost 15
+C10: get-u8, planted read! control, no escape: T 1..5 (5 runs): landed before returned taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, planted read! control, no escape: T 6..10 (5 runs): landed in-read! returned taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, planted read! control, no escape: T 11..13 (3 runs): landed after-read! returned taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, planted read! control, no escape: T 14..251 (238 runs): landed after-op returned taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, planted read! control, no escape: runs 251; landed before 5 in-read! 5 after-read! 3 after-op 238 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-u8, planted read!: collections during its sweeps 0
+C10: get-bytevector-some, sleepy read! coarse: T 1..261 (14 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, sleepy read! coarse: T 281..2001 (87 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, sleepy read! coarse: T 2021..2301 (15 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, sleepy read! coarse: T 2321..4001 (85 runs): landed not-fired returned taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, sleepy read! coarse: runs 201; landed before 14 in-read! 87 after-read! 0 after-op 15 not-fired 85; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some, sleepy read!: first coarse tick landing past read!'s take 2021; fine sweep 1871..2121 a tick at a time
+C10: get-bytevector-some, sleepy read! fine: T 1871..2004 (134 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, sleepy read! fine: T 2005..2121 (117 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, sleepy read! fine: runs 251; landed before 0 in-read! 134 after-read! 0 after-op 117 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some, sleepy read! fine pass 2: T 1871..2004 (134 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, sleepy read! fine pass 2: T 2005..2121 (117 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, sleepy read! fine pass 2: runs 251; landed before 0 in-read! 134 after-read! 0 after-op 117 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some, sleepy read! control, no escape: T 1871..2004 (134 runs): landed in-read! returned taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, sleepy read! control, no escape: T 2005..2121 (117 runs): landed after-op returned taken 5 received 5 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some, sleepy read! control, no escape: runs 251; landed before 0 in-read! 134 after-read! 0 after-op 117 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some, sleepy read!: collections during its sweeps 1
+C10: get-bytevector-some!, sleepy read! coarse: T 1..1 (1 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some!, sleepy read! coarse: T 21..2001 (100 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some!, sleepy read! coarse: T 2021..2301 (15 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, sleepy read! coarse: T 2321..4001 (85 runs): landed not-fired returned taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, sleepy read! coarse: runs 201; landed before 1 in-read! 100 after-read! 0 after-op 15 not-fired 85; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some!, sleepy read!: first coarse tick landing past read!'s take 2021; fine sweep 1871..2121 a tick at a time
+C10: get-bytevector-some!, sleepy read! fine: T 1871..2004 (134 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some!, sleepy read! fine: T 2005..2121 (117 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, sleepy read! fine: runs 251; landed before 0 in-read! 134 after-read! 0 after-op 117 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some!, sleepy read! fine pass 2: T 1871..2004 (134 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-bytevector-some!, sleepy read! fine pass 2: T 2005..2121 (117 runs): landed after-op escaped taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, sleepy read! fine pass 2: runs 251; landed before 0 in-read! 134 after-read! 0 after-op 117 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some!, sleepy read! control, no escape: T 1871..2004 (134 runs): landed in-read! returned taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, sleepy read! control, no escape: T 2005..2121 (117 runs): landed after-op returned taken 5 received 5 buffered 0 lost 0 in-bv #t
+C10: get-bytevector-some!, sleepy read! control, no escape: runs 251; landed before 0 in-read! 134 after-read! 0 after-op 117 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-bytevector-some!, sleepy read!: collections during its sweeps 0
+C10: get-u8, sleepy read! coarse: T 1..1 (1 runs): landed before escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8, sleepy read! coarse: T 21..2001 (100 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8, sleepy read! coarse: T 2021..2301 (15 runs): landed after-op escaped taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, sleepy read! coarse: T 2321..4001 (85 runs): landed not-fired returned taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, sleepy read! coarse: runs 201; landed before 1 in-read! 100 after-read! 0 after-op 15 not-fired 85; runs that lost bytes 0, bytes lost 0
+C10: get-u8, sleepy read!: first coarse tick landing past read!'s take 2021; fine sweep 1871..2121 a tick at a time
+C10: get-u8, sleepy read! fine: T 1871..2004 (134 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8, sleepy read! fine: T 2005..2121 (117 runs): landed after-op escaped taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, sleepy read! fine: runs 251; landed before 0 in-read! 134 after-read! 0 after-op 117 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-u8, sleepy read! fine pass 2: T 1871..2004 (134 runs): landed in-read! escaped taken 0 received 0 buffered 0 lost 0 in-bv -
+C10: get-u8, sleepy read! fine pass 2: T 2005..2121 (117 runs): landed after-op escaped taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, sleepy read! fine pass 2: runs 251; landed before 0 in-read! 134 after-read! 0 after-op 117 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-u8, sleepy read! control, no escape: T 1871..2004 (134 runs): landed in-read! returned taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, sleepy read! control, no escape: T 2005..2121 (117 runs): landed after-op returned taken 5 received 1 buffered 4 lost 0 in-bv -
+C10: get-u8, sleepy read! control, no escape: runs 251; landed before 0 in-read! 134 after-read! 0 after-op 117 not-fired 0; runs that lost bytes 0, bytes lost 0
+C10: get-u8, sleepy read!: collections during its sweeps 1
+C10: C10 done
+C10: exit status 0, wall 5933 ms

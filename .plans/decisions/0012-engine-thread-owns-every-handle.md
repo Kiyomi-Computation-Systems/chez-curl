@@ -2,7 +2,8 @@
 
 - **Status:** Accepted; amended 2026-10-24: stopping an engine (the M3 plan); amended
   2026-10-26: completions reach callers through a mailbox (the M4 plan); amended 2026-10-26:
-  the engine's thread and SIGINT (M4 slice 2)
+  the engine's thread and SIGINT (M4 slice 2); amended 2026-10-29: resuming a paused transfer,
+  and pacing a poll that spins (the M6 plan)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, from M3 (the engine)
 - **Settles:** the brief's §2 items 1 to 3 and the caller-code rule of its §5. The brief
@@ -178,3 +179,45 @@ The stalled lookup's case is Linux's alone, with no `LD_PRELOAD` on macOS, and t
 not read, with no `/proc`. The runner then hung after its last line, in an unbounded wait for
 the origin to exit once its stdin, a FIFO, was closed; why the origin did not exit there is
 unmeasured. That wait now has a bound.
+
+## Amendment, 2026-10-29: resuming a paused transfer, and pacing a poll that spins (the M6 plan)
+
+M6 streams bodies (ADR-0030), so decision 4's pause and resume are built. The M6 plan measured
+them first ([research](../research/m6/pause/)), through a C probe whose loop steps as the engine
+does, on 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with GnuTLS, Guix's 8.20.0 and 8.23.0, two
+runs each:
+
+- **`curl_easy_pause` hands the bytes it held to the write callback before it returns,** on
+  all five: so the callbacks run on the engine's thread, inside that call, as inside a perform.
+  It answers 43 for a transfer that is done, removed, or never added, and 0 for one not paused.
+- **A refusal inside that replay is lost on 7.85.0 and 8.5.0:** `curl_easy_pause` answers 23,
+  and the transfer then ends 0 without the chunk it refused, 16,307 to 16,384 bytes. 8.20.0 and
+  8.23.0 end it with 23.
+- **On Ubuntu's 8.5.0, both builds, a paused transfer makes the poll spin:** `curl_multi_poll`
+  returned at once 6.2 to 7.0 million times in a 3 s pause, every return under 1 ms, the
+  probe's CPU 2,998 to 3,000 ms, over plaintext, TLS and HTTP/2. 7.85.0, 8.20.0 and 8.23.0
+  polled 3 to 5 times, at 0.1 to 0.2 ms of CPU. curl fixed it in 8.6.0 (#12632), read in its
+  source by the plan.
+
+Decided by the maintainer, 2026-10-29, the recommended option, and settled with it by the
+plan:
+
+1. **Resume is the fourth message,** as decision 2 said, and names its token, never a handle.
+   The engine carries it out after the cancels and before the perform, for a token still live,
+   as a cancel is; one for a token taken out since is passed over, since its easy handle is
+   freed in the turn its transfer ends. It clears both directions' pause bits and calls
+   `curl_easy_pause` with `CURLPAUSE_CONT`, since the call takes the new state, not a change:
+   `CURLPAUSE_SEND_CONT` and `CURLPAUSE_CONT` are both 0; a callable that still cannot go on
+   pauses again inside the call (after the plan's second review). Any answer but 0, a 43 among
+   them,
+   fails the transfer, with the code, and takes it out; a reason a callable recorded inside the
+   call wins over it (after the plan's review).
+2. **The engine paces a poll that spins:** when a poll returns in under 1 ms while a transfer is
+   paused, in a turn that took no message and in which no callable moved a byte, the engine
+   sleeps 1 ms before its next poll. A message that arrives then waits at most that millisecond
+   more. Chez's sleep, with interrupts on, deactivates the thread, so other threads' collections
+   go on. M6's first slice measures the CPU and the delay on every lane, under the memory gate's
+   Valgrind too, and a test holds the CPU and the delay under bounds on 8.5.0.
+
+**Rejected:** leaving the loop as it is, and documenting that a paused stream costs a core on
+8.5.0; and refusing streams on a libcurl that carries the bug, which is Ubuntu 24.04's own.

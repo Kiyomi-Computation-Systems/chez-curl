@@ -6,10 +6,53 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **Milestone:** M6, streaming bodies and backpressure (brief §8): both directions,
-  `CURL_WRITEFUNC_PAUSE` and `curl_easy_pause`, caller code never on the engine's thread; and
-  `call-with-response-port`, which M5 carried (the M5 plan, §10). No plan yet: its plan comes
-  first, measured where it can be.
+- **Milestone:** M6, streaming bodies and backpressure (brief §8), by the
+  [M6 plan](2026-10-29-m6-plan.md), a draft, in three slices: the response stream with the
+  engine's resume and paced poll; the request stream; the high level. Next: slice 1.
+  - **The plan measured first** ([`research/m6/`](research/m6/)):
+    - a C probe whose loop steps as the engine does, 30 cases on the five Linux libcurls, two
+      runs each ([`pause/`](research/m6/pause/));
+    - ten cases of Chez's custom ports ([`ports/`](research/m6/ports/));
+    - a reading of libcurl's source and changelog from 7.85.0 to 8.23.0, Apple's 8.7.1 among
+      them, not measured ([`source-reading.md`](research/m6/source-reading.md)).
+
+    Pause and resume work both ways on all five, and backpressure reaches the server over
+    HTTP/1.1. The engine must own what libcurl does not do alike:
+    - Ubuntu's 8.5.0 spins its poll at 100% of a core while a transfer is paused;
+    - 7.85.0 and 8.5.0 lose a refusal made inside a replay;
+    - a body short of its length stalls on 7.85.0 and 8.5.0;
+    - libcurl's own resend fails a streamed body with 65.
+  - **The plan's decisions, by the maintainer, 2026-10-29,** each the recommended option:
+    - a stream is a request's key and the token's operations
+      ([ADR-0030](decisions/0030-streams-are-request-keys-and-token-operations.md), new), with
+      HTTP/2's memory below the token documented;
+    - `call-with-response-port` hands PROC the response and a port; a producer thunk is a call's
+      `body`; `timeout-ms` bounds the whole call, reading included
+      ([ADR-0031](decisions/0031-the-high-levels-streams.md), new);
+    - a streamed body is sent at most once
+      ([ADR-0032](decisions/0032-a-streamed-body-is-sent-at-most-once.md), new, amended after
+      the review);
+    - the engine paces a poll that spins (ADR-0012, amended).
+  - **An adversarial review of the plan** (Opus, read-only), before it merged: one blocker,
+    eight majors and a set of minors, each answered in the plan (§10) and its records. The
+    blocker: libcurl rewinds a body before its next attempt, so the prerequest callable the
+    at-most-once rule rested on never saw a resend; a seek callable now refuses it. I checked its
+    log lines and its citations, and reran its probe, which is kept in
+    [`research/m6/review/`](research/m6/review/).
+  - **A second review, of those revisions** (Opus, read-only): the blocker's fix closed, and four
+    new majors, each answered. Among them: the lent take, and a put committed after its hold,
+    each lost a resume, which its models measured and I reran
+    ([`research/m6/review2/`](research/m6/review2/)); and a 301 or 302 keeps a `put`'s body,
+    which the at-most-once rule had covered only for a 307 or 308.
+  - **The Mac ran the pause probe, 2026-10-29,** on the plan's PR, against Apple's 8.7.1, every
+    case exiting 0 (the plan, §2.4). Two of the source's readings were worse than read: 8.7.1
+    ignores a failed rewind and resends a streamed body from its middle, which only the
+    prerequest callable sees; and one HTTP/2 stream's trouble fails its whole connection, a
+    paused stream beside an active one filling libcurl's 64 MiB cap, or a write callback's error,
+    the body limit's among them (curl #13292). **Decided by the maintainer, the recommended
+    option:** on 8.7.0 and 8.7.1 the engine does not multiplex (ADR-0030, amended).
+  - **Closed from M5's carried list:** the curl bug report on 8.23.0's dead-connection reuse;
+    curl fixed it after 8.23.0 (ef6b17cf).
 - **M5, the high level:** **done on 2026-10-29.** Its four slices are merged (PRs #30 to #33),
   per the [M5 plan](2026-10-27-m5-plan.md), merged as PR #29 (`a66ef78`), and the Mac has run
   `make test` on slice 4, 32 of 32 (the M5 plan, §9). Their close-outs are below.
