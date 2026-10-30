@@ -1,0 +1,62 @@
+wake where=after version=8.20.0 timed-polls=14 polls-100ms-or-more=14 polls-5ms-or-more=14 longest-ms=1005.3 resumes=15 bytes=262144 code=0
+the wakeup's eventfd is 4
+06:39:57.085433 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:39:57.085787 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:39:57.086118 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:39:57.086339 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:39:58.091684 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:39:58.092036 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:39:58.092425 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:39:58.092635 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:39:59.097995 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:39:59.098059 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:39:59.098095 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:39:59.098231 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:40:00.102463 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:40:00.102836 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:40:00.103182 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:40:00.103627 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:40:01.108817 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:40:01.108975 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:40:01.109000 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:40:01.109161 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:40:02.111093 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:40:02.111168 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:40:02.111200 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:40:02.111243 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:40:03.116484 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:40:03.116837 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:40:03.116887 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:40:03.116937 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:40:04.122284 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:40:04.122610 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:40:04.122919 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:40:04.122980 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:40:05.128311 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:40:05.128639 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:40:05.128992 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:40:05.129223 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:40:06.134553 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:40:06.134887 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:40:06.135238 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:40:06.135427 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:40:07.136342 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:40:07.136700 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:40:07.136970 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:40:07.137059 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:40:08.138517 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:40:08.138625 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:40:08.138672 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:40:08.138740 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:40:09.143577 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:40:09.143984 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:40:09.144390 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:40:09.144710 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:40:10.147236 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:40:10.147652 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:40:10.148011 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:40:10.148109 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:40:11.154025 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:40:11.154422 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:40:11.154648 read(4, 0x7ffe94ab6c70, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:40:11.155391 write(1, "wake where=after version=8.20.0 "..., 140) = 140

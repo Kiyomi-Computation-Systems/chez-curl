@@ -1,0 +1,79 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[floor-7.85.0] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[floor-7.85.0] server {"node":"v20.10.0","pid":3123,"http":"127.0.0.1:37731","raw":"127.0.0.1:35261","https":"127.0.0.1:37779","h2":"127.0.0.1:45377","proxy":"127.0.0.1:45131"}
+[floor-7.85.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4
+[floor-7.85.0] libcurl 7.85.0 OpenSSL/3.0.13
+[floor-7.85.0] check face=http reader=next-piece bytes=4194304 pieces=273 pattern=ok whole=#t pauses=69 resumes=69 max-buffered=58368 status=200 version=http/1.1 body=#f
+[floor-7.85.0] check face=http reader=port bytes=4194304 pieces=545 pattern=ok whole=#t pauses=57 resumes=57 max-buffered=58368 status=200 version=http/1.1 body=#f
+[floor-7.85.0] check face=raw reader=next-piece bytes=4194304 pieces=273 pattern=ok whole=#t pauses=68 resumes=68 max-buffered=58368 status=200 version=http/1.1 body=#f
+[floor-7.85.0] check face=raw reader=port bytes=4194304 pieces=516 pattern=ok whole=#t pauses=64 resumes=64 max-buffered=64512 status=200 version=http/1.1 body=#f
+[floor-7.85.0] check face=https reader=next-piece bytes=4194304 pieces=256 pattern=ok whole=#t pauses=64 resumes=64 max-buffered=49152 status=200 version=http/1.1 body=#f
+[floor-7.85.0] check face=https reader=port bytes=4194304 pieces=512 pattern=ok whole=#t pauses=247 resumes=247 max-buffered=49152 status=200 version=http/1.1 body=#f
+[floor-7.85.0] check face=h2 reader=next-piece bytes=4194304 pieces=513 pattern=ok whole=#t pauses=107 resumes=107 max-buffered=65527 status=200 version=http/2 body=#f
+[floor-7.85.0] check face=h2 reader=port bytes=4194304 pieces=769 pattern=ok whole=#t pauses=116 resumes=116 max-buffered=65527 status=200 version=http/2 body=#f
+[floor-7.85.0] check done
+[floor-7.85.0] check exited 0 after about 0 s
+[ubuntu-openssl-8.5.0] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[ubuntu-openssl-8.5.0] server {"node":"v24.18.0","pid":3196,"http":"127.0.0.1:34003","raw":"127.0.0.1:45899","https":"127.0.0.1:46849","h2":"127.0.0.1:43117","proxy":"127.0.0.1:41803"}
+[ubuntu-openssl-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4
+[ubuntu-openssl-8.5.0] libcurl 8.5.0 OpenSSL/3.0.13
+[ubuntu-openssl-8.5.0] check face=http reader=next-piece bytes=4194304 pieces=265 pattern=ok whole=#t pauses=66 resumes=66 max-buffered=62464 status=200 version=http/1.1 body=#f
+[ubuntu-openssl-8.5.0] check face=http reader=port bytes=4194304 pieces=535 pattern=ok whole=#t pauses=72 resumes=72 max-buffered=65329 status=200 version=http/1.1 body=#f
+[ubuntu-openssl-8.5.0] check face=raw reader=next-piece bytes=4194304 pieces=274 pattern=ok whole=#t pauses=65 resumes=65 max-buffered=65394 status=200 version=http/1.1 body=#f
+[ubuntu-openssl-8.5.0] check face=raw reader=port bytes=4194304 pieces=546 pattern=ok whole=#t pauses=77 resumes=77 max-buffered=58368 status=200 version=http/1.1 body=#f
+[ubuntu-openssl-8.5.0] check face=https reader=next-piece bytes=4194304 pieces=256 pattern=ok whole=#t pauses=81 resumes=81 max-buffered=49152 status=200 version=http/1.1 body=#f
+[ubuntu-openssl-8.5.0] check face=https reader=port bytes=4194304 pieces=512 pattern=ok whole=#t pauses=70 resumes=70 max-buffered=49152 status=200 version=http/1.1 body=#f
+[ubuntu-openssl-8.5.0] check face=h2 reader=next-piece bytes=4194304 pieces=258 pattern=ok whole=#t pauses=82 resumes=82 max-buffered=49152 status=200 version=http/2 body=#f
+[ubuntu-openssl-8.5.0] check face=h2 reader=port bytes=4194304 pieces=514 pattern=ok whole=#t pauses=80 resumes=80 max-buffered=65527 status=200 version=http/2 body=#f
+[ubuntu-openssl-8.5.0] check done
+[ubuntu-openssl-8.5.0] check exited 0 after about 1 s
+[ubuntu-gnutls-8.5.0] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[ubuntu-gnutls-8.5.0] server {"node":"v24.18.0","pid":3266,"http":"127.0.0.1:44605","raw":"127.0.0.1:35425","https":"127.0.0.1:45567","h2":"127.0.0.1:45713","proxy":"127.0.0.1:33857"}
+[ubuntu-gnutls-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4
+[ubuntu-gnutls-8.5.0] libcurl 8.5.0 GnuTLS/3.8.3
+[ubuntu-gnutls-8.5.0] check face=http reader=next-piece bytes=4194304 pieces=265 pattern=ok whole=#t pauses=68 resumes=68 max-buffered=62464 status=200 version=http/1.1 body=#f
+[ubuntu-gnutls-8.5.0] check face=http reader=port bytes=4194304 pieces=535 pattern=ok whole=#t pauses=71 resumes=71 max-buffered=65329 status=200 version=http/1.1 body=#f
+[ubuntu-gnutls-8.5.0] check face=raw reader=next-piece bytes=4194304 pieces=257 pattern=ok whole=#t pauses=66 resumes=66 max-buffered=65430 status=200 version=http/1.1 body=#f
+[ubuntu-gnutls-8.5.0] check face=raw reader=port bytes=4194304 pieces=547 pattern=ok whole=#t pauses=68 resumes=68 max-buffered=65394 status=200 version=http/1.1 body=#f
+[ubuntu-gnutls-8.5.0] check face=https reader=next-piece bytes=4194304 pieces=256 pattern=ok whole=#t pauses=66 resumes=66 max-buffered=49152 status=200 version=http/1.1 body=#f
+[ubuntu-gnutls-8.5.0] check face=https reader=port bytes=4194304 pieces=512 pattern=ok whole=#t pauses=76 resumes=76 max-buffered=49152 status=200 version=http/1.1 body=#f
+[ubuntu-gnutls-8.5.0] check face=h2 reader=next-piece bytes=4194304 pieces=258 pattern=ok whole=#t pauses=81 resumes=81 max-buffered=65527 status=200 version=http/2 body=#f
+[ubuntu-gnutls-8.5.0] check face=h2 reader=port bytes=4194304 pieces=513 pattern=ok whole=#t pauses=83 resumes=83 max-buffered=49152 status=200 version=http/2 body=#f
+[ubuntu-gnutls-8.5.0] check done
+[ubuntu-gnutls-8.5.0] check exited 0 after about 1 s
+[current-8.23.0] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[current-8.23.0] server {"node":"v24.18.0","pid":3335,"http":"127.0.0.1:41069","raw":"127.0.0.1:36867","https":"127.0.0.1:35831","h2":"127.0.0.1:42827","proxy":"127.0.0.1:37715"}
+[current-8.23.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4
+[current-8.23.0] libcurl 8.23.0 OpenSSL/3.0.13
+[current-8.23.0] check face=http reader=next-piece bytes=4194304 pieces=265 pattern=ok whole=#t pauses=170 resumes=170 max-buffered=63488 status=200 version=http/1.1 body=#f
+[current-8.23.0] check face=http reader=port bytes=4194304 pieces=529 pattern=ok whole=#t pauses=124 resumes=124 max-buffered=62464 status=200 version=http/1.1 body=#f
+[current-8.23.0] check face=raw reader=next-piece bytes=4194304 pieces=257 pattern=ok whole=#t pauses=179 resumes=179 max-buffered=65430 status=200 version=http/1.1 body=#f
+[current-8.23.0] check face=raw reader=port bytes=4194304 pieces=528 pattern=ok whole=#t pauses=195 resumes=195 max-buffered=61440 status=200 version=http/1.1 body=#f
+[current-8.23.0] check face=https reader=next-piece bytes=4194304 pieces=256 pattern=ok whole=#t pauses=242 resumes=242 max-buffered=49152 status=200 version=http/1.1 body=#f
+[current-8.23.0] check face=https reader=port bytes=4194304 pieces=512 pattern=ok whole=#t pauses=196 resumes=196 max-buffered=49152 status=200 version=http/1.1 body=#f
+[current-8.23.0] check face=h2 reader=next-piece bytes=4194304 pieces=491 pattern=ok whole=#t pauses=66 resumes=66 max-buffered=65527 status=200 version=http/2 body=#f
+[current-8.23.0] check face=h2 reader=port bytes=4194304 pieces=745 pattern=ok whole=#t pauses=64 resumes=64 max-buffered=65527 status=200 version=http/2 body=#f
+[current-8.23.0] check done
+[current-8.23.0] check exited 0 after about 0 s
+[ubuntu-openssl-8.5.0-valgrind] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[ubuntu-openssl-8.5.0-valgrind] server {"node":"v24.18.0","pid":3405,"http":"127.0.0.1:35733","raw":"127.0.0.1:41541","https":"127.0.0.1:36863","h2":"127.0.0.1:33749","proxy":"127.0.0.1:44933"}
+[ubuntu-openssl-8.5.0-valgrind] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4
+[ubuntu-openssl-8.5.0-valgrind] under valgrind valgrind-3.22.0
+[ubuntu-openssl-8.5.0-valgrind] libcurl 8.5.0 OpenSSL/3.0.13
+[ubuntu-openssl-8.5.0-valgrind] check face=http reader=next-piece bytes=4194304 pieces=258 pattern=ok whole=#t pauses=8 resumes=8 max-buffered=65329 status=200 version=http/1.1 body=#f
+[ubuntu-openssl-8.5.0-valgrind] check face=http reader=port bytes=4194304 pieces=535 pattern=ok whole=#t pauses=2 resumes=2 max-buffered=65329 status=200 version=http/1.1 body=#f
+[ubuntu-openssl-8.5.0-valgrind] check face=raw reader=next-piece bytes=4194304 pieces=274 pattern=ok whole=#t pauses=6 resumes=6 max-buffered=58368 status=200 version=http/1.1 body=#f
+[ubuntu-openssl-8.5.0-valgrind] check face=raw reader=port bytes=4194304 pieces=547 pattern=ok whole=#t pauses=4 resumes=4 max-buffered=49294 status=200 version=http/1.1 body=#f
+[ubuntu-openssl-8.5.0-valgrind] check face=https reader=next-piece bytes=4194304 pieces=256 pattern=ok whole=#t pauses=8 resumes=8 max-buffered=49152 status=200 version=http/1.1 body=#f
+[ubuntu-openssl-8.5.0-valgrind] check face=https reader=port bytes=4194304 pieces=512 pattern=ok whole=#t pauses=0 resumes=0 max-buffered=32768 status=200 version=http/1.1 body=#f
+[ubuntu-openssl-8.5.0-valgrind] check face=h2 reader=next-piece bytes=4194304 pieces=257 pattern=ok whole=#t pauses=84 resumes=84 max-buffered=65380 status=200 version=http/2 body=#f
+[ubuntu-openssl-8.5.0-valgrind] check face=h2 reader=port bytes=4194304 pieces=513 pattern=ok whole=#t pauses=84 resumes=84 max-buffered=65380 status=200 version=http/2 body=#f
+[ubuntu-openssl-8.5.0-valgrind] check done
+[ubuntu-openssl-8.5.0-valgrind] check exited 0 after about 14 s
+[ubuntu-openssl-8.5.0-valgrind] valgrind: ==3429== Command: /src/build/e1/ci/chez-threads/bin/scheme --libdirs build/m6s1/src --program .plans/research/m6/slice1/check.sps 127.0.0.1:35733 127.0.0.1:41541 127.0.0.1:36863 127.0.0.1:33749 127.0.0.1:44933 /tmp/m6s1.O6KyQk/pki/ca.pem
+[ubuntu-openssl-8.5.0-valgrind] valgrind: ==3429==    definitely lost: 0 bytes in 0 blocks
+[ubuntu-openssl-8.5.0-valgrind] valgrind: ==3429== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

@@ -1,0 +1,4 @@
+(owner 0 127)
+(other (raised wrong-thread))
+(owner-next 128 1)
+exit 0

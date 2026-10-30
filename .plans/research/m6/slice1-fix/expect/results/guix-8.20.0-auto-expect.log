@@ -1,0 +1,10 @@
+== server: expect417-server.mjs, answering 417 to every request that carries Expect
+(version "8.20.0")
+(put-5 (head 200) (body "second\n") (outcome 200))
+(patch-5 (head 200) (body "second\n") (outcome 200))
+(post-5 (head 200) (body "second\n") (outcome 200))
+(post-1.5MiB (head 200) (body "second\n") (outcome 200))
+server: request PUT /x HTTP/1.1 expect=no
+server: request PATCH /x HTTP/1.1 expect=no
+server: request POST /x HTTP/1.1 expect=no
+server: request POST /x HTTP/1.1 expect=no

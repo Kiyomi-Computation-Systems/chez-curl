@@ -188,10 +188,10 @@
 ;; into foreign memory: native fills each struct curl_blob, in a counted
 ;; block it frees (the M4 plan, section 3.8). foreign-callable,
 ;; foreign-callable-entry-point and lock-object belong to (curl private
-;; transfer), whose one callable, write-body, is locked where it is defined
-;; and held to its row in tests/foreign-conventions.sls (M2 plan, sections
-;; 3.5 and 3.6): a callable made anywhere else is one no lock and no row
-;; covers. fork-thread belongs to (curl private engine), whose one thread
+;; transfer), whose callables, write-body and, from M6, read-head, are each
+;; locked where it is defined and held to its row in
+;; tests/foreign-conventions.sls (M2 plan, sections 3.5 and 3.6): a callable
+;; made anywhere else is one no lock and no row covers. fork-thread belongs to (curl private engine), whose one thread
 ;; runs every transfer submitted to it (M3 plan, section 3.9): a thread
 ;; started anywhere else is one no engine owns. So do disable-interrupts
 ;; and enable-interrupts, which the engine uses only to ask whether a wait

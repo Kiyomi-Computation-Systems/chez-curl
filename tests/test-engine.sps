@@ -838,10 +838,24 @@
               (list 'engine-error 'failed (planted-engine-fault step))
               'at-once 0 #f running-counts)
         (let* ((faulty (make-faulty-curl-engine step))
-               (t (curl-submit faulty (request (if (memq step '(cancel poll)) (drip 100 10) status)))))
+               (t (curl-submit faulty (cond ((memq step '(cancel poll)) (request (drip 100 10)))
+                                            ;; The resume step is reached by a streamed
+                                            ;; response, paused, and a take that drains
+                                            ;; it (the M6 plan, section 3.4).
+                                            ((eq? step 'resume)
+                                             (curl-request-with (request (drip 100 10)) 'stream-buffer 1))
+                                            (else (request status))))))
           (when (eq? step 'cancel)
             (pause-ms 100)
             (curl-token-cancel t))
+          (when (eq? step 'resume)
+            (let wait ((i 0))
+              (unless (or (> i 10000)
+                          (let ((stats (curl-token-stream-stats t)))
+                            (and (cdr (assq 'paused stats)) (not (cdr (assq 'queued stats))))))
+                (pause-ms 1)
+                (wait (+ i 1))))
+            (curl-token-next-piece t 5000))
           ;; The first stop waits for the engine's thread to end its
           ;; cleanup; the second must return at once. A collection that
           ;; lands in the second's window takes about 140 ms under Valgrind

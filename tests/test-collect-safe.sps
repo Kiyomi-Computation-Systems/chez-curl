@@ -1229,18 +1229,25 @@
   ".plans/decisions/0013-collect-safe-blocking-calls.md: `curl_multi_perform`, `curl_multi_remove_handle` and `curl_multi_cleanup` can block, so each is `__collect_safe`.")
 (define e1-plain-citation
   ".plans/decisions/0013-collect-safe-blocking-calls.md: These stay plain: `curl_multi_init`, `curl_multi_add_handle`, `curl_multi_wakeup`, `curl_multi_info_read`, and `curl_easy_cleanup` of a handle removed from a multi handle the caller made.")
+;; curl_easy_pause, the engine's resume (the M6 plan, section 3.4): its
+;; replay runs the callables inside it, as a perform does, and a replay of
+;; a gzip body ran 21.647 ms, holding another thread's collection when the
+;; call was plain (the plan's section 4.1, as measured).
+(define pause-citation
+  ".plans/decisions/0012-engine-thread-owns-every-handle.md: so the callbacks run on the engine's thread, inside that call, as inside a perform.")
 
 ;; The calls that can block (M3 plan, section 3.2), each bound through
 ;; bind-blocking.
 (define blocking-entries
   '("curl_multi_poll" "curl_multi_perform" "curl_multi_remove_handle" "curl_multi_cleanup"))
 
-(test-equal "the table's rows that name a binder are the four variadic ones, through bind-variadic, and the four multi calls that can block, __collect_safe, each citing what showed it can block, through bind-blocking"
+(test-equal "the table's rows that name a binder are the four variadic ones, through bind-variadic, the four multi calls that can block, __collect_safe, each citing what showed it can block, and curl_easy_pause, __collect_safe, citing its replay of the callables, each through bind-blocking"
   (append (map (lambda (key) (list key '(bound-by bind-variadic))) variadic-entries)
           (list (list "curl_multi_poll" '(__collect_safe) can-block-citation '(bound-by bind-blocking))
                 (list "curl_multi_perform" '(__collect_safe) e1-can-block-citation '(bound-by bind-blocking))
                 (list "curl_multi_remove_handle" '(__collect_safe) e1-can-block-citation '(bound-by bind-blocking))
-                (list "curl_multi_cleanup" '(__collect_safe) e1-can-block-citation '(bound-by bind-blocking))))
+                (list "curl_multi_cleanup" '(__collect_safe) e1-can-block-citation '(bound-by bind-blocking))
+                (list "curl_easy_pause" '(__collect_safe) pause-citation '(bound-by bind-blocking))))
   (guard (e (#t (list 'unreadable (describe e))))
     (append
      (map (lambda (row) (list (car row) (list-ref row (- (length row) 1))))
@@ -1251,27 +1258,36 @@
                                 (exists (tagged? 'bound-by) (cdddr row))))
              conventions-table))))
 
-(test-equal "the scan of src/ finds each of the four multi calls that can block bound once, through bind-blocking, with __collect_safe, and curl_easy_perform bound nowhere"
-  (append (map (lambda (key) (list key '(((__collect_safe) bind-blocking)))) blocking-entries)
+(test-equal "the scan of src/ finds each of the four multi calls that can block, and curl_easy_pause, bound once, through bind-blocking, with __collect_safe, and curl_easy_perform bound nowhere"
+  (append (map (lambda (key) (list key '(((__collect_safe) bind-blocking))))
+               (append blocking-entries '("curl_easy_pause")))
           (list (list "curl_easy_perform" '())))
   (map (lambda (key) (list key (bound-via key)))
-       (append blocking-entries '("curl_easy_perform"))))
+       (append blocking-entries '("curl_easy_pause" "curl_easy_perform"))))
 
 ;; ADR-0013's decision 2, as spike E1 held it, written out here.
 (define callback-citation
   ".plans/decisions/0013-collect-safe-blocking-calls.md: So the engine's write callable is `__collect_safe`, as its perform is.")
 
-(test-equal "the table's one callable row is write-body's: __collect_safe, citing ADR-0013's decision 2 as spike E1 held it, with no mark and no binder"
-  `((write-body (__collect_safe) ,callback-citation))
+(define header-callable-citation
+  ".plans/decisions/0030-streams-are-request-keys-and-token-operations.md: beside `write-body`, and the seek and prerequest callables ADR-0032 adds, each `__collect_safe` and locked, in `(curl private transfer)` alone (ADR-0013).")
+
+(test-equal "the table's two callable rows are write-body's, citing ADR-0013's decision 2 as spike E1 held it, and read-head's, the header callable, citing ADR-0030's callables, each __collect_safe, with no mark and no binder"
+  `((write-body (__collect_safe) ,callback-citation)
+    (read-head (__collect_safe) ,header-callable-citation))
   (guard (e (#t (list 'unreadable (describe e))))
     (filter (lambda (row) (symbol? (car row))) conventions-table)))
 
-(test-equal "the scan of src/ finds write-body defined once, a foreign-callable with __collect_safe, in (curl private transfer)"
-  '(((__collect_safe) foreign-callable "src/curl/private/transfer.sls"))
+(test-equal "the scan of src/ finds write-body and read-head each defined once, a foreign-callable with __collect_safe, in (curl private transfer)"
+  '((write-body ((__collect_safe) foreign-callable "src/curl/private/transfer.sls"))
+    (read-head ((__collect_safe) foreign-callable "src/curl/private/transfer.sls")))
   (guard (e (#t (list 'unreadable (describe e))))
     (if (eq? (car src-check) 'returned)
-        (map (lambda (b) (list (cadr b) (list-ref b 3) (caddr b)))
-             (filter (lambda (b) (eq? (car b) 'write-body)) (car (cadr src-check))))
+        (map (lambda (name)
+               (cons name
+                     (map (lambda (b) (list (cadr b) (list-ref b 3) (caddr b)))
+                          (filter (lambda (b) (eq? (car b) name)) (car (cadr src-check))))))
+             '(write-body read-head))
         src-check)))
 
 (test-equal "the table's rows for slice 2's other entries, curl_easy_strerror, curl_easy_nextheader, curl_slist_append and curl_slist_free_all, are each plain, citing ADR-0013's cannot-block sentence, with no mark and no binder"
@@ -1315,9 +1331,9 @@
   (guard (e (#t (list 'unreadable (describe e))))
     (filter (lambda (row) (equal? (car row) "curl_multi_strerror")) conventions-table)))
 
-(test-equal "the table's __collect_safe entries are exactly the calls that can block: curl_multi_poll, and the three E1 measured"
+(test-equal "the table's __collect_safe entries are exactly the calls that can block, curl_multi_poll and the three E1 measured, and curl_easy_pause, whose replay runs the callables"
   (list-sort string<? '("curl_multi_poll" "curl_multi_perform"
-                        "curl_multi_remove_handle" "curl_multi_cleanup"))
+                        "curl_multi_remove_handle" "curl_multi_cleanup" "curl_easy_pause"))
   (guard (e (#t (list 'unreadable (describe e))))
     (list-sort string<?
                (map car (filter (lambda (row) (and (string? (car row))

@@ -1,0 +1,919 @@
+diff -ruN orig/src/curl/private/conditions.sls work/src/curl/private/conditions.sls
+--- orig/src/curl/private/conditions.sls	2026-10-30 05:24:11.434087096 -0400
++++ work/src/curl/private/conditions.sls	2026-10-30 05:24:20.716195219 -0400
+@@ -343,7 +343,7 @@
+   ;;   stopped          its engine stopped before it ended
+   (define curl-transfer-error-reasons
+     '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle
+-      cancelled stopped))
++      cancelled stopped pause-failed))
+ 
+   ;; The fields:
+   ;;
+diff -ruN orig/src/curl/private/constants.sls work/src/curl/private/constants.sls
+--- orig/src/curl/private/constants.sls	2026-10-30 05:24:11.434561422 -0400
++++ work/src/curl/private/constants.sls	2026-10-30 05:24:20.716062640 -0400
+@@ -34,7 +34,8 @@
+           curlinfo-namelookup-time-t curlinfo-connect-time-t curlinfo-appconnect-time-t
+           curlinfo-starttransfer-time-t curlinfo-total-time-t curlinfo-request-size
+           curlm-ok curlm-unknown-option curlmsg-done
+-          curlmopt-max-total-connections curlmopt-quick-exit)
++          curlmopt-max-total-connections curlmopt-quick-exit
++          curl-writefunc-pause curlpause-cont)
+   (import (curl private require-threaded)
+           (rnrs))
+ 
+@@ -439,4 +440,10 @@
+   ;;                                     headers lack it, so tests/test-constants.sps
+   ;;                                     checks it where the headers have it
+   (define curlmopt-max-total-connections 13)
+-  (define curlmopt-quick-exit 21))
++  (define curlmopt-quick-exit 21)
++
++  ;; M6 slice 1's prototype (.plans/research/m6/slice1/): unchecked here.
++  ;; curl-writefunc-pause : Positive-Integer   CURL_WRITEFUNC_PAUSE, 0x10000001
++  ;; curlpause-cont : Natural                  CURLPAUSE_CONT, 0
++  (define curl-writefunc-pause #x10000001)
++  (define curlpause-cont 0))
+diff -ruN orig/src/curl/private/engine.sls work/src/curl/private/engine.sls
+--- orig/src/curl/private/engine.sls	2026-10-30 05:24:11.433973047 -0400
++++ work/src/curl/private/engine.sls	2026-10-30 06:10:53.355360440 -0400
+@@ -124,7 +124,10 @@
+           call-with-mailbox-held
+           make-faulty-curl-engine engine-fault-steps planted-engine-fault
+           make-curl-engine-without-quick-exit make-curl-engine-answering-quick-exit
+-          curl-engine-quick-exit multi-quick-exit-verdict)
++          curl-engine-quick-exit multi-quick-exit-verdict
++          curl-token-next-piece curl-token-body-port curl-token-head curl-token-head-wait
++          call-with-stream-held curl-token-stream-stats curl-engine-probe
++          set-engine-pacing! set-engine-pause-binding! set-take-removes-inside-hold!)
+   (import (curl private require-threaded)
+           (rnrs)
+           (only (chezscheme) critical-section disable-interrupts enable-interrupts fork-thread
+@@ -231,7 +234,86 @@
+             (mutable stale engine-stale engine-stale-set!)
+             (immutable without engine-without)
+             (mutable quick-exit engine-quick-exit engine-quick-exit-set!)
+-            (immutable answer engine-answer)))
++            (immutable answer engine-answer)
++            (immutable probe engine-probe)
++            (immutable stamps engine-stamps)
++            (mutable batch-stamps engine-batch-stamps engine-batch-stamps-set!)))
++
++  ;; --- the prototype's probe (M6 slice 1) --------------------------------------------
++  ;;
++  ;; An engine's counts, written by its thread alone, plainly: its turns, its
++  ;; polls, those under 1 ms, its paced sleeps, the resumes passed over;
++  ;; and, under the engine's mutex, its events, oldest last: (KIND TOKEN
++  ;; QUEUED-NS TAKEN-NS ACTED-NS . MORE), KIND submit, its transfer added to
++  ;; the multi handle at ACTED; cancel, its token completed at ACTED; resume,
++  ;; curl_easy_pause called at ACTED, MORE its return's time, its code, and
++  ;; the stream's bytes appended before the call and after it.
++  ;; Every time is the monotonic clock's, in ns. QUEUED is when the message
++  ;; was queued, under the engine's mutex; TAKEN when the turn took it.
++  ;; And the polls that began with a message already queued, whose wakeup
++  ;; should have ended them at once: how many, the longest, in ns, how many
++  ;; lasted 100 ms or more, and for each of those an event (queued-poll #f
++  ;; START END QUEUE-LENGTH).
++  (define-record-type engine-probe-record
++    (fields (mutable turns) (mutable polls) (mutable fast-polls) (mutable paced)
++            (mutable passed) (mutable events) (mutable event-count)
++            (mutable queued-polls) (mutable queued-poll-max) (mutable queued-polls-long)))
++
++  ;; The prototype's switches, process-wide, each set before an engine runs:
++  ;; the paced poll, on unless turned off; the binding of curl_easy_pause,
++  ;; plain, the plan's, or collect-safe, the contrast; and the control's
++  ;; take, which removes the piece inside its hold.
++  (define pacing #t)
++  (define pause-binding 'plain)
++  (define take-inside #f)
++
++  ;; set-engine-pacing! : Boolean -> Void
++  (define (set-engine-pacing! on) (set! pacing (and on #t)))
++
++  ;; set-engine-pause-binding! : (U 'plain 'collect-safe) -> Void
++  (define (set-engine-pause-binding! which)
++    (unless (memq which '(plain collect-safe))
++      (assertion-violation 'set-engine-pause-binding! "plain or collect-safe" which))
++    (set! pause-binding which))
++
++  ;; set-take-removes-inside-hold! : Boolean -> Void
++  (define (set-take-removes-inside-hold! on) (set! take-inside (and on #t)))
++
++  ;; record-event! : Engine List -> Void
++  (define (record-event! engine event)
++    (let ((probe (engine-probe engine)))
++      (locked (curl-engine-lock engine)
++        (lambda ()
++          (when (< (engine-probe-record-event-count probe) 400000)
++            (engine-probe-record-event-count-set! probe (+ (engine-probe-record-event-count probe) 1))
++            (engine-probe-record-events-set! probe (cons event (engine-probe-record-events probe))))))))
++
++  ;; curl-engine-probe : Engine -> (Listof (Pairof Symbol Any))
++  ;; ENGINE's counts, and its events, oldest first.
++  (define (curl-engine-probe engine)
++    (let ((probe (engine-probe engine)))
++      (locked (curl-engine-lock engine)
++        (lambda ()
++          (list (cons 'turns (engine-probe-record-turns probe))
++                (cons 'polls (engine-probe-record-polls probe))
++                (cons 'fast-polls (engine-probe-record-fast-polls probe))
++                (cons 'paced (engine-probe-record-paced probe))
++                (cons 'passed-over (engine-probe-record-passed probe))
++                (cons 'queued-polls (engine-probe-record-queued-polls probe))
++                (cons 'queued-poll-max-ns (engine-probe-record-queued-poll-max probe))
++                (cons 'queued-polls-100ms (engine-probe-record-queued-polls-long probe))
++                (cons 'events (reverse (engine-probe-record-events probe))))))))
++
++  ;; stamp! : Engine Message -> Message
++  ;; MESSAGE, its queueing time recorded; the caller holds ENGINE's mutex.
++  (define (stamp! engine message)
++    (hashtable-set! (engine-stamps engine) message (monotonic-ns))
++    message)
++
++  ;; batch-stamp : Engine Message -> (Pairof (U Integer #f) (U Integer #f))
++  (define (batch-stamp engine message)
++    (let ((hit (assq message (engine-batch-stamps engine))))
++      (if hit (cdr hit) (cons #f #f))))
+ 
+   ;; A token: its engine and its plan; under the engine's mutex, its state,
+   ;; queued, live or done, its outcome, a response or a condition, and its
+@@ -431,7 +513,9 @@
+     (require-interrupts-on 'make-curl-engine)
+     (loaded-libcurl)
+     (let ((engine (make-engine-record (make-mutex) '() 'starting #f #f #f
+-                                      (make-eqv-hashtable) fault '() #f 0 without #f answer)))
++                                      (make-eqv-hashtable) fault '() #f 0 without #f answer
++                                      (make-engine-probe-record 0 0 0 0 0 '() 0 0 0 0)
++                                      (make-eq-hashtable) '())))
+       (fork-thread (lambda () (run-engine engine)))
+       (wait-until 'make-curl-engine (curl-engine-lock engine) (lambda () (memq (engine-state engine) '(running failed))) #f)
+       (let ((failure (locked (curl-engine-lock engine)
+@@ -476,7 +560,7 @@
+               (lambda ()
+                 (case (engine-state engine)
+                   ((running)
+-                   (curl-engine-queue-set! engine (cons (cons 'submit token) (curl-engine-queue engine)))
++                   (curl-engine-queue-set! engine (cons (stamp! engine (cons 'submit token)) (curl-engine-queue engine)))
+                    (curl-multi-wakeup (engine-multi engine))
+                    #f)
+                   ((failing failed) (engine-failure engine))
+@@ -513,6 +597,127 @@
+                   (lambda () (eq? (token-state token) 'done))
+                   deadline)))
+ 
++  ;; --- the response stream (M6 slice 1's prototype; the M6 plan, 3.2 to 3.5) ---------
++
++  ;; token-stream : Symbol Token -> Stream
++  (define (token-stream who token)
++    (check-token who token)
++    (or (plan-stream (curl-token-plan token))
++        (assertion-violation who "the token's request does not stream its response" token)))
++
++  ;; look : Token Stream -> (List Boolean (U Pair #f) (U Bytevector #f))
++  ;; One look, in one critical section: whether TOKEN is done, read first,
++  ;; in a hold of the engine's mutex; then the stream's hold, which picks
++  ;; the next piece, leaving it in place, and decides the resume; then, when
++  ;; it queues one, the queueing hold of the engine's mutex. The holds come
++  ;; one after the other, never nested: the engine's, then the stream's.
++  (define (look token stream)
++    (let ((engine (curl-token-engine token)))
++      (critical-section
++       (let* ((done (locked (curl-engine-lock engine) (lambda () (eq? (token-state token) 'done))))
++              (seen (stream-look! stream take-inside)))
++         (when (caddr seen)
++           (locked (curl-engine-lock engine)
++             (lambda ()
++               (when (and (eq? (token-state token) 'live) (eq? (engine-state engine) 'running))
++                 (curl-engine-queue-set! engine (cons (stamp! engine (cons 'resume token))
++                                                      (curl-engine-queue engine)))
++                 (curl-multi-wakeup (engine-multi engine))))))
++         (list done (car seen) (cadr seen))))))
++
++  ;; curl-token-next-piece : Token Natural -> (U Bytevector Eof #f)
++  ;; The lent take (the M6 plan, section 3.5): the next piece, which the
++  ;; caller owns; the eof object once every piece is taken and TOKEN is
++  ;; done; or #f once MS milliseconds pass. Each look decides the resume.
++  ;; The piece stays in the stream through the look's section, and the
++  ;; removal is the last thing before the return.
++  (define (curl-token-next-piece token ms)
++    (let ((stream (token-stream 'curl-token-next-piece token))
++          (deadline (deadline-after 'curl-token-next-piece ms)))
++      (require-interrupts-on 'curl-token-next-piece)
++      (let loop ((pause 50000))
++        (let* ((seen (look token stream)) (node (cadr seen)) (piece (caddr seen)))
++          (cond (piece
++                 (unless take-inside (stream-remove! stream node piece))
++                 piece)
++                ((car seen) (eof-object))
++                (else
++                 (let ((left (- deadline (monotonic-ns))))
++                   (and (> left 0)
++                        (begin
++                          (sleep (make-time 'time-duration (min pause left) 0))
++                          (loop (min (* pause 2) 10000000)))))))))))
++
++  ;; curl-token-body-port : Token -> Binary-Input-Port
++  ;; A custom binary input port over TOKEN's pieces: a read copies from the
++  ;; piece at hand, or takes the next by the lent take, waiting, each look
++  ;; deciding the resume. At the end it answers 0 for a response, and
++  ;; raises a failure. Its close cancels TOKEN. The prototype's: no thread
++  ;; rule, and no refusal inside a critical section but the wait's.
++  (define (curl-token-body-port token)
++    (let ((stream (token-stream 'curl-token-body-port token))
++          (at-hand #f)
++          (offset 0))
++      (define (read! bv start count)
++        (if (and at-hand (< offset (bytevector-length at-hand)))
++            (let ((k (min count (- (bytevector-length at-hand) offset))))
++              (bytevector-copy! at-hand offset bv start k)
++              (set! offset (+ offset k))
++              k)
++            (begin
++              (require-interrupts-on 'curl-token-body-port)
++              (let loop ((pause 50000))
++                (let* ((seen (look token stream)) (node (cadr seen)) (piece (caddr seen)))
++                  (cond (piece
++                         (let ((k (min count (bytevector-length piece))))
++                           (bytevector-copy! piece 0 bv start k)
++                           (set! at-hand piece)
++                           (set! offset k)
++                           (unless take-inside (stream-remove! stream node piece))
++                           k))
++                        ((car seen)
++                         (let ((outcome (curl-token-outcome token)))
++                           (if (curl-response? outcome) 0 (raise outcome))))
++                        (else
++                         (sleep (make-time 'time-duration pause 0))
++                         (loop (min (* pause 2) 10000000)))))))))
++      (make-custom-binary-input-port "curl-token-body" read! #f #f
++                                     (lambda () (curl-token-cancel token)))))
++
++  ;; curl-token-head : Token -> (U Head #f)
++  ;; TOKEN's final head once the header callable has published it.
++  (define (curl-token-head token)
++    (let ((stream (token-stream 'curl-token-head token)))
++      (locked (curl-engine-lock (curl-token-engine token)) (lambda () (stream-head stream)))))
++
++  ;; curl-token-head-wait : Token Natural -> Boolean
++  ;; Whether TOKEN's head has arrived, or TOKEN is done, within MS ms.
++  (define (curl-token-head-wait token ms)
++    (let ((stream (token-stream 'curl-token-head-wait token))
++          (deadline (deadline-after 'curl-token-head-wait ms)))
++      (and (wait-until 'curl-token-head-wait (curl-engine-lock (curl-token-engine token))
++                       (lambda () (or (stream-head stream) (eq? (token-state token) 'done)))
++                       deadline)
++           #t)))
++
++  ;; call-with-stream-held : Token (-> Any) -> Any
++  ;; THUNK's answer, run holding TOKEN's stream's mutex, through locked: a
++  ;; test seam, private, as call-with-engine-held is, so a take can be
++  ;; blocked inside its section.
++  (define (call-with-stream-held token thunk)
++    (locked (stream-lock (token-stream 'call-with-stream-held token)) thunk))
++
++  ;; curl-token-stream-stats : Token -> (Listof (Pairof Symbol Any))
++  ;; The stream's counts, and its engine-thread fields, read once TOKEN is
++  ;; done: the head's time, the first piece's, and each head's empty line.
++  (define (curl-token-stream-stats token)
++    (let ((stream (token-stream 'curl-token-stream-stats token)))
++      (append (stream-stats stream)
++              (list (cons 'head-ns (locked (curl-engine-lock (curl-token-engine token))
++                                     (lambda () (stream-head-ns stream))))
++                    (cons 'first-piece-ns (stream-first-piece-ns stream))
++                    (cons 'trace (reverse (stream-trace stream)))))))
++
+   ;; --- the mailbox (ADR-0021) ------------------------------------------------------------
+ 
+   ;; make-curl-mailbox : -> Mailbox
+@@ -599,7 +804,7 @@
+              (complete-locked! engine token (transfer-ended 'cancelled) '()))
+             ((live)
+              (when (eq? (engine-state engine) 'running)
+-               (curl-engine-queue-set! engine (cons (cons 'cancel token) (curl-engine-queue engine)))
++               (curl-engine-queue-set! engine (cons (stamp! engine (cons 'cancel token)) (curl-engine-queue engine)))
+                (curl-multi-wakeup (engine-multi engine))))
+             (else #f))))))
+ 
+@@ -700,26 +905,91 @@
+   ;; turns : Engine Positive-Integer -> Void
+   ;; The loop, steps 1 to 6, until a stop.
+   (define (turns engine multi)
+-    (let turn ()
+-      (let ((messages (take-queue! engine)))
+-        (if (assq 'stop messages)
+-            (shut-down! engine multi messages)
+-            (begin
+-              (for-each (lambda (message)
+-                          (when (eq? (car message) 'submit) (set-up! engine multi (cdr message))))
+-                        messages)
+-              (for-each (lambda (message)
+-                          (when (eq? (car message) 'cancel) (cancel! engine multi (cdr message))))
+-                        messages)
+-              (engine-batch-set! engine '())
+-              (unless (live-empty? engine) (fault-at! engine 'perform))
+-              (let-values (((code running) (curl-multi-perform multi (engine-slot engine))))
+-                (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_perform code)))
+-              (read-finished! engine multi)
+-              (unless (live-empty? engine) (fault-at! engine 'poll))
+-              (let ((code (curl-multi-poll multi 1000)))
+-                (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_poll code)))
+-              (turn))))))
++    (let ((probe (engine-probe engine)))
++      (let turn ()
++        (engine-probe-record-turns-set! probe (+ (engine-probe-record-turns probe) 1))
++        (let* ((moved (callable-moves))
++               (messages (take-queue! engine)))
++          (if (assq 'stop messages)
++              (shut-down! engine multi messages)
++              (begin
++                (for-each (lambda (message)
++                            (when (eq? (car message) 'submit) (set-up! engine multi (cdr message) message)))
++                          messages)
++                (for-each (lambda (message)
++                            (when (eq? (car message) 'cancel) (cancel! engine multi (cdr message) message)))
++                          messages)
++                (for-each (lambda (message)
++                            (when (eq? (car message) 'resume) (resume! engine multi message)))
++                          messages)
++                (engine-batch-set! engine '())
++                (engine-batch-stamps-set! engine '())
++                (unless (live-empty? engine) (fault-at! engine 'perform))
++                (let-values (((code running) (curl-multi-perform multi (engine-slot engine))))
++                  (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_perform code)))
++                (read-finished! engine multi)
++                (unless (live-empty? engine) (fault-at! engine 'poll))
++                (let* ((waiting (locked (curl-engine-lock engine)
++                                  (lambda () (length (curl-engine-queue engine)))))
++                       (p0 (monotonic-ns))
++                       (code (curl-multi-poll multi 1000))
++                       (p1 (monotonic-ns)))
++                  (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_poll code))
++                  (engine-probe-record-polls-set! probe (+ (engine-probe-record-polls probe) 1))
++                  (when (> waiting 0)
++                    (engine-probe-record-queued-polls-set! probe (+ (engine-probe-record-queued-polls probe) 1))
++                    (when (> (- p1 p0) (engine-probe-record-queued-poll-max probe))
++                      (engine-probe-record-queued-poll-max-set! probe (- p1 p0)))
++                    (when (>= (- p1 p0) 100000000)
++                      (engine-probe-record-queued-polls-long-set! probe (+ (engine-probe-record-queued-polls-long probe) 1))
++                      (record-event! engine (list 'queued-poll #f p0 p1 waiting))))
++                  (when (< (- p1 p0) 1000000)
++                    (engine-probe-record-fast-polls-set! probe (+ (engine-probe-record-fast-polls probe) 1))
++                    ;; The paced poll (the M6 plan, section 3.4).
++                    (when (and pacing (null? messages) (= moved (callable-moves)) (any-paused? engine))
++                      (engine-probe-record-paced-set! probe (+ (engine-probe-record-paced probe) 1))
++                      (sleep (make-time 'time-duration 1000000 0)))))
++                (turn)))))))
++
++  ;; any-paused? : Engine -> Boolean
++  ;; Whether a live transfer of ENGINE's is paused, either way: each
++  ;; stream's bits read in a hold of its own, after the table's.
++  (define (any-paused? engine)
++    (exists (lambda (keyed)
++              (let ((stream (live-transfer-stream (cddr keyed))))
++                (and stream (stream-paused? stream))))
++            (live-entries engine)))
++
++  ;; resume! : Engine Positive-Integer Message -> Void
++  ;; The resume step, for the token MESSAGE names, while it is live: in one
++  ;; hold of its stream's mutex both bits and the flag cleared; then,
++  ;; holding no mutex and outside any critical section, curl_easy_pause with
++  ;; CURLPAUSE_CONT, its time and answer recorded. An answer but 0 fails
++  ;; the transfer: a reason a callable recorded, else pause-failed. A token
++  ;; taken out since is passed over, and counted.
++  (define (resume! engine multi message)
++    (let* ((token (cdr message))
++           (live (token-live token))
++           (stream (and live (live-transfer-stream live)))
++           (easy (and live (live-transfer-easy live)))
++           (stamp (batch-stamp engine message)))
++      (if (not (and stream easy))
++          (let ((probe (engine-probe engine)))
++            (engine-probe-record-passed-set! probe (+ (engine-probe-record-passed probe) 1)))
++          (begin
++            (stream-clear-pause! stream)
++            (let* ((a0 (stream-appended-now stream))
++                   (t0 (monotonic-ns))
++                   (code (if (eq? pause-binding 'collect-safe)
++                             (curl-easy-pause-collect-safe easy curlpause-cont)
++                             (curl-easy-pause easy curlpause-cont)))
++                   (t1 (monotonic-ns))
++                   (a1 (stream-appended-now stream)))
++              (record-event! engine (list 'resume token (car stamp) (cdr stamp) t0 t1 code a0 a1))
++              (unless (eqv? code curle-ok)
++                (let* ((outcome (pause-failed-outcome live code))
++                       (chunks (take-out! engine multi token)))
++                  (complete! engine token outcome chunks))))))))
+ 
+   ;; multi-failed : Symbol Integer -> Nothing
+   (define (multi-failed entry code)
+@@ -737,13 +1007,21 @@
+            (locked (curl-engine-lock engine)
+              (lambda ()
+                (unless (null? (curl-engine-queue engine)) (fault-at! engine 'take))
+-               (let ((messages (reverse (curl-engine-queue engine))))
++               (let ((messages (reverse (curl-engine-queue engine)))
++                     (now (monotonic-ns)))
+                  (curl-engine-queue-set! engine '())
+                  (for-each (lambda (message)
+                              (when (and (eq? (car message) 'submit)
+                                         (eq? (token-state (cdr message)) 'queued))
+                                (token-state-set! (cdr message) 'live)))
+                            messages)
++                 (engine-batch-stamps-set!
++                  engine
++                  (map (lambda (message)
++                         (let ((queued (hashtable-ref (engine-stamps engine) message #f)))
++                           (hashtable-delete! (engine-stamps engine) message)
++                           (cons message (cons queued now))))
++                       messages))
+                  messages)))))
+       (engine-batch-set! engine messages)
+       messages))
+@@ -757,18 +1035,21 @@
+   ;; MULTI. A token already done, cancelled while queued, is passed over. A
+   ;; raise from start-transfer!, which has freed what it made, completes the
+   ;; token with it: the transfer's own failure, not the engine's.
+-  (define (set-up! engine multi token)
++  (define (set-up! engine multi token message)
+     (unless (curl-token-done? token)
+       (fault-at! engine 'setup)
+       (let ((live (guard (e (#t (complete! engine token e '()) #f))
+                     (start-transfer! (curl-token-plan token)
+-                                     (not (memq 'transfer (engine-without engine)))))))
++                                     (not (memq 'transfer (engine-without engine)))
++                                     (curl-engine-lock engine)))))
+         (when live
+           (token-live-set! token live)
+           (locked (curl-engine-lock engine)
+             (lambda () (hashtable-set! (engine-live engine) (live-transfer-easy live) (cons token live))))
+           (let ((code (curl-multi-add-handle multi (live-transfer-easy live))))
+-            (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_add_handle code)))))))
++            (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_add_handle code)))
++          (let ((stamp (batch-stamp engine message)))
++            (record-event! engine (list 'submit token (car stamp) (cdr stamp) (monotonic-ns))))))))
+ 
+   ;; take-out! : Engine Positive-Integer Token -> (Listof Any)
+   ;; TOKEN's live transfer removed from MULTI, freed, then taken out of the
+@@ -791,12 +1072,14 @@
+   ;; Step 3: TOKEN's transfer, while it is live, taken out, and TOKEN
+   ;; completed as cancelled. A token done since, its transfer having ended
+   ;; in the turn the cancel came in, is left, and counted as stale.
+-  (define (cancel! engine multi token)
++  (define (cancel! engine multi token message)
+     (if (token-live token)
+         (begin
+           (fault-at! engine 'cancel)
+           (let ((chunks (take-out! engine multi token)))
+-            (complete! engine token (transfer-ended 'cancelled) chunks)))
++            (complete! engine token (transfer-ended 'cancelled) chunks)
++            (let ((stamp (batch-stamp engine message)))
++              (record-event! engine (list 'cancel token (car stamp) (cdr stamp) (monotonic-ns))))))
+         (locked (curl-engine-lock engine)
+           (lambda () (engine-stale-set! engine (+ (engine-stale engine) 1))))))
+ 
+@@ -831,7 +1114,7 @@
+                   (complete! engine (cdr message) (transfer-ended 'stopped) '())))
+               messages)
+     (for-each (lambda (message)
+-                (when (eq? (car message) 'cancel) (cancel! engine multi (cdr message))))
++                (when (eq? (car message) 'cancel) (cancel! engine multi (cdr message) message)))
+               messages)
+     (engine-batch-set! engine '())
+     (for-each (lambda (keyed)
+diff -ruN orig/src/curl/private/native.sls work/src/curl/private/native.sls
+--- orig/src/curl/private/native.sls	2026-10-30 05:24:11.434708164 -0400
++++ work/src/curl/private/native.sls	2026-10-30 05:24:30.532080553 -0400
+@@ -136,7 +136,8 @@
+           curl-slist-append curl-slist-free-all
+           curl-multi-init curl-multi-cleanup curl-multi-add-handle curl-multi-remove-handle
+           curl-multi-perform curl-multi-poll curl-multi-wakeup curl-multi-info-read
+-          curl-multi-strerror curl-multi-setopt-long)
++          curl-multi-strerror curl-multi-setopt-long
++          curl-easy-pause curl-easy-pause-collect-safe)
+   (import (curl private require-threaded)
+           (except (rnrs) dynamic-wind)
+           (only (chezscheme) critical-section dynamic-wind ftype-ref ftype-set! ftype-sizeof
+@@ -798,6 +799,15 @@
+   (define raw-curl-multi-strerror
+     (load-step (bind-required "curl_multi_strerror" (int) uptr info)))
+ 
++  ;; M6 slice 1's prototype: CURLcode curl_easy_pause(CURL *handle, int
++  ;; bitmask), 7.18.0, bound plain, as the M6 plan's section 3.4 binds it;
++  ;; and a __collect_safe twin, for the measurement's contrast alone.
++  (define raw-curl-easy-pause
++    (load-step (bind-required "curl_easy_pause" (uptr int) int info)))
++
++  (define raw-curl-easy-pause-collect-safe
++    (load-step (bind-blocking "curl_easy_pause" (uptr int) int info)))
++
+   ;; CURLcode curl_easy_setopt(CURL *handle, CURLoption option, ...),
+   ;; variadic after option: bound once per value type. curl_off_t is 64
+   ;; bits on every platform chez-curl supports. Bound last, so a library
+@@ -1143,6 +1153,19 @@
+     (check-owner 'curl-multi-setopt multi 'multi)
+     (raw-curl-multi-setopt-long multi option value))
+ 
++  ;; curl-easy-pause : Positive-Integer Integer -> Integer
++  ;; curl-easy-pause-collect-safe : Positive-Integer Integer -> Integer
++  ;; EASY, this thread's, and the new pause state BITMASK: the CURLcode.
++  ;; The prototype's (M6 slice 1): the plain binding, and its
++  ;; __collect_safe twin.
++  (define (curl-easy-pause easy bitmask)
++    (check-owner 'curl-easy-pause easy 'easy)
++    (raw-curl-easy-pause easy bitmask))
++
++  (define (curl-easy-pause-collect-safe easy bitmask)
++    (check-owner 'curl-easy-pause easy 'easy)
++    (raw-curl-easy-pause-collect-safe easy bitmask))
++
+   ;; curl-multi-strerror : Integer -> (U String #f)
+   ;; libcurl's text for the CURLMcode CODE, copied; #f for NULL.
+   (define (curl-multi-strerror code)
+diff -ruN orig/src/curl/private/transfer.sls work/src/curl/private/transfer.sls
+--- orig/src/curl/private/transfer.sls	2026-10-30 05:24:11.433590481 -0400
++++ work/src/curl/private/transfer.sls	2026-10-30 05:37:03.779876250 -0400
+@@ -169,12 +169,19 @@
+           tls-settings setopt-accepted? quick-exit-pin pinned-settings quick-exit-known?
+           quick-exits-set guix-ca-overrides ca-overridden? pkcs11-prefix? overriding-variables
+           keychain-fallback? request-size-unreliable reported-request-size
+-          curl-request-with-options hatch-types option-named hatch-settings-of)
++          curl-request-with-options hatch-types option-named hatch-settings-of
++          curl-request-with-stream-buffer request-stream-buffer plan-stream live-transfer-stream
++          stream? stream-lock stream-limit stream-look! stream-remove! stream-clear-pause!
++          stream-paused? stream-stats stream-head stream-head-ns stream-trace
++          stream-first-piece-ns curl-head? curl-head-status curl-head-http-version
++          curl-head-headers callable-moves pause-failed-outcome stream-appended-now)
+   (import (curl private require-threaded)
+           (rnrs)
+           (rnrs mutable-strings)
++          (rnrs mutable-pairs)
+           (only (chezscheme) critical-section foreign-callable foreign-callable-entry-point
+-                lock-object make-mutex with-mutex foreign-sizeof get-thread-id)
++                lock-object make-mutex with-mutex foreign-sizeof get-thread-id
++                make-weak-eq-hashtable current-time time-second time-nanosecond)
+           (curl private conditions)
+           (curl private constants)
+           (curl private counters)
+@@ -714,6 +721,33 @@
+     (request-like 'curl-request-following request '() (curl-request-url request)
+                   (curl-request-fault request) #t (curl-request-options request)))
+ 
++  ;; --- the prototype's stream-buffer (M6 slice 1) ---------------------------------
++
++  ;; The requests that stream their response, each with its stream-buffer,
++  ;; in a weak table under its mutex: the prototype's private way to set
++  ;; it, in place of the slice's key.
++  (define stream-requests (make-weak-eq-hashtable))
++  (define stream-requests-lock (make-mutex))
++
++  ;; curl-request-with-stream-buffer : Request Positive-Integer -> Request
++  ;; A new request, REQUEST's fields kept, that streams its response,
++  ;; buffering at most N bytes or one chunk. The hatch's options go on
++  ;; before this: curl-request-with-options makes a request of its own.
++  (define (curl-request-with-stream-buffer request n)
++    (unless (curl-request? request)
++      (assertion-violation 'curl-request-with-stream-buffer "not a request" request))
++    (unless (and (integer? n) (exact? n) (positive? n))
++      (assertion-violation 'curl-request-with-stream-buffer "a stream-buffer is a positive exact integer" n))
++    (let ((copy (request-like 'curl-request-with-stream-buffer request '() (curl-request-url request)
++                              (curl-request-fault request) (curl-request-follow request)
++                              (curl-request-options request))))
++      (locked stream-requests-lock (lambda () (hashtable-set! stream-requests copy n)))
++      copy))
++
++  ;; request-stream-buffer : Request -> (U Positive-Integer #f)
++  (define (request-stream-buffer request)
++    (locked stream-requests-lock (lambda () (hashtable-ref stream-requests request #f))))
++
+   ;; --- the response -----------------------------------------------------------------
+ 
+   ;; curl-response? : Any -> Boolean
+@@ -1350,7 +1384,155 @@
+   ;; recorded, #f or (REASON . OBJECT).
+   (define-record-type sink
+     (fields (immutable limit) (immutable fault)
+-            (mutable received) (mutable chunks) (mutable log) (mutable recorded)))
++            (mutable received) (mutable chunks) (mutable log) (mutable recorded)
++            (immutable stream) (mutable easy)))
++
++  ;; --- the response stream (M6 slice 1's prototype; the M6 plan, 3.2 to 3.5) ---
++
++  ;; monotonic-ns : -> Integer
++  (define (monotonic-ns)
++    (let ((t (current-time 'time-monotonic)))
++      (+ (* (time-second t) 1000000000) (time-nanosecond t))))
++
++  ;; A head: the first final head's status, HTTP version and headers.
++  (define-record-type (curl-head make-curl-head curl-head?)
++    (fields (immutable status curl-head-status)
++            (immutable http-version curl-head-http-version)
++            (immutable headers curl-head-headers)))
++
++  ;; A stream: its mutex and its stream-buffer; under the mutex, written by
++  ;; the engine's thread, the queue's tail, the bytes appended, the pause
++  ;; bits and the one resume-queued flag (the taker sets it too, under the
++  ;; mutex), and the probe's counts; written by the taker alone, outside
++  ;; any hold, the queue's front, a sentinel pair before the next piece, the
++  ;; bytes taken and the pieces given; on the engine's thread alone, the
++  ;; engine's mutex the head is published under, the easy handle the header
++  ;; callable reads, whether the head is published, the trace of every
++  ;; head's empty line, (CODE . NS) newest first, and the first piece's
++  ;; time; and under the engine's mutex, the head and its time.
++  (define-record-type stream
++    (fields (immutable lock stream-lock)
++            (immutable limit stream-limit)
++            (mutable tail stream-tail stream-tail-set!)
++            (mutable appended stream-appended stream-appended-set!)
++            (mutable recv-paused stream-recv-paused stream-recv-paused-set!)
++            (mutable send-paused stream-send-paused stream-send-paused-set!)
++            (mutable resume-queued stream-resume-queued stream-resume-queued-set!)
++            (mutable offers stream-offers stream-offers-set!)
++            (mutable pauses stream-pauses stream-pauses-set!)
++            (mutable pieces-in stream-pieces-in stream-pieces-in-set!)
++            (mutable max-buffered stream-max-buffered stream-max-buffered-set!)
++            (mutable front stream-front stream-front-set!)
++            (mutable taken stream-taken stream-taken-set!)
++            (mutable given stream-given stream-given-set!)
++            (mutable head-lock stream-head-lock stream-head-lock-set!)
++            (mutable published stream-published stream-published-set!)
++            (mutable trace stream-trace stream-trace-set!)
++            (mutable first-piece-ns stream-first-piece-ns stream-first-piece-ns-set!)
++            (mutable head stream-head stream-head-set!)
++            (mutable head-ns stream-head-ns stream-head-ns-set!)))
++
++  ;; make-response-stream : Positive-Integer -> Stream
++  (define (make-response-stream limit)
++    (let ((sentinel (cons #f '())))
++      (make-stream (make-mutex) limit sentinel 0 #f #f #f 0 0 0 0 sentinel 0 0 #f #f '() #f #f #f)))
++
++  ;; stream-offer! : Stream Positive-Integer Positive-Integer -> Boolean
++  ;; The write callable's step for a chunk of N bytes at DATA, in one hold
++  ;; of the stream's mutex: taken, #t, when the buffer is empty or holds
++  ;; less than the stream-buffer with it added, copied once by the checked
++  ;; copy into a fresh bytevector, appended; else the receive bit set, #f.
++  (define (stream-offer! stream data n)
++    (locked (stream-lock stream)
++      (lambda ()
++        (stream-offers-set! stream (+ (stream-offers stream) 1))
++        (let ((buffered (- (stream-appended stream) (stream-taken stream))))
++          (if (or (= buffered 0) (< (+ buffered n) (stream-limit stream)))
++              (let* ((piece (make-bytevector n)) (node (cons piece '())))
++                (copy-foreign->bytevector! data piece 0 n)
++                (set-cdr! (stream-tail stream) node)
++                (stream-tail-set! stream node)
++                (stream-appended-set! stream (+ (stream-appended stream) n))
++                (stream-pieces-in-set! stream (+ (stream-pieces-in stream) 1))
++                (when (> (+ buffered n) (stream-max-buffered stream))
++                  (stream-max-buffered-set! stream (+ buffered n)))
++                #t)
++              (begin
++                (stream-recv-paused-set! stream #t)
++                (stream-pauses-set! stream (+ (stream-pauses stream) 1))
++                #f))))))
++
++  ;; stream-look! : Stream Boolean -> (List (U Pair #f) (U Bytevector #f) Boolean)
++  ;; A taker's look, in one hold of the stream's mutex: the node of the next
++  ;; piece and the piece, left in place, or #f and #f; and whether the look
++  ;; queues a resume: the transfer paused for receiving, no resume queued,
++  ;; and the buffer, as the taker counts it, the piece removed, at or below
++  ;; half the stream-buffer; then it sets the flag, here. INSIDE is the
++  ;; control's take, which removes the piece inside the hold. The caller
++  ;; runs it inside its critical section, and queues the resume after it,
++  ;; in that section.
++  (define (stream-look! stream inside)
++    (locked (stream-lock stream)
++      (lambda ()
++        (let* ((node (cdr (stream-front stream)))
++               (piece (and (pair? node) (car node)))
++               (after (- (stream-appended stream) (stream-taken stream)
++                         (if piece (bytevector-length piece) 0)))
++               (queue (and (stream-recv-paused stream) (not (stream-resume-queued stream))
++                           (<= after (div (stream-limit stream) 2)))))
++          (when queue (stream-resume-queued-set! stream #t))
++          (when (and inside piece) (stream-remove! stream node piece))
++          (list (and piece node) piece queue)))))
++
++  ;; stream-remove! : Stream Pair Bytevector -> Void
++  ;; The taker's removal of PIECE, at NODE: plain writes of the fields only
++  ;; the taker writes, the last thing a take does before it returns.
++  (define (stream-remove! stream node piece)
++    (stream-front-set! stream node)
++    (stream-taken-set! stream (+ (stream-taken stream) (bytevector-length piece)))
++    (stream-given-set! stream (+ (stream-given stream) 1)))
++
++  ;; stream-clear-pause! : Stream -> Void
++  ;; The resume step's hold: both bits and the flag cleared, in one hold.
++  (define (stream-clear-pause! stream)
++    (locked (stream-lock stream)
++      (lambda ()
++        (stream-recv-paused-set! stream #f)
++        (stream-send-paused-set! stream #f)
++        (stream-resume-queued-set! stream #f))))
++
++  ;; stream-appended-now : Stream -> Natural
++  ;; The bytes the write callable has appended, read in a hold.
++  (define (stream-appended-now stream)
++    (locked (stream-lock stream) (lambda () (stream-appended stream))))
++
++  ;; stream-paused? : Stream -> Boolean
++  (define (stream-paused? stream)
++    (locked (stream-lock stream)
++      (lambda () (or (stream-recv-paused stream) (stream-send-paused stream)))))
++
++  ;; stream-stats : Stream -> (Listof (Pairof Symbol Any))
++  ;; The probe's counts, read in one hold; taken and given are the taker's.
++  (define (stream-stats stream)
++    (locked (stream-lock stream)
++      (lambda ()
++        (list (cons 'offers (stream-offers stream)) (cons 'pauses (stream-pauses stream))
++              (cons 'pieces-in (stream-pieces-in stream)) (cons 'appended (stream-appended stream))
++              (cons 'taken (stream-taken stream)) (cons 'given (stream-given stream))
++              (cons 'max-buffered (stream-max-buffered stream))
++              (cons 'recv-paused (stream-recv-paused stream))
++              (cons 'resume-queued (stream-resume-queued stream))))))
++
++  ;; How many times a callable has moved a byte, ever, under sinks-lock:
++  ;; the paced poll's evidence that a turn moved one.
++  (define callable-move-count 0)
++
++  ;; callable-moves : -> Natural
++  (define (callable-moves) (locked sinks-lock (lambda () callable-move-count)))
++
++  ;; bump-moves! : -> Void
++  (define (bump-moves!)
++    (locked sinks-lock (lambda () (set! callable-move-count (+ callable-move-count 1)))))
+ 
+   ;; The live transfers, by key, and the next key, under the mutex. Every
+   ;; engine's thread reads it: one callable serves them all.
+@@ -1429,12 +1611,23 @@
+                (log! 'refused)
+                (record! key 'body-limit #f)
+                0)
++              ((sink-stream sink)
++               (let ((stream (sink-stream sink)))
++                 (if (stream-offer! stream data n)
++                     (begin
++                       (unless (stream-first-piece-ns stream)
++                         (stream-first-piece-ns-set! stream (monotonic-ns)))
++                       (sink-received-set! sink (+ (sink-received sink) n))
++                       (bump-moves!)
++                       n)
++                     curl-writefunc-pause)))
+               (else
+                (let ((chunk (make-bytevector n)))
+                  (copy-foreign->bytevector! data chunk 0 n)
+                  (log! 'accepted)
+                  (sink-received-set! sink (+ (sink-received sink) n))
+                  (sink-chunks-set! sink (cons chunk (sink-chunks sink)))
++                 (bump-moves!)
+                  n))))))
+       (uptr size_t size_t uptr)
+       size_t))
+@@ -1447,6 +1640,64 @@
+   ;; write-body-entry : Positive-Integer
+   (define write-body-entry (foreign-callable-entry-point write-body))
+ 
++  ;; empty-line? : Positive-Integer Natural -> Boolean
++  ;; Whether the N bytes at DATA are "\r\n" or "\n", read by the checked copy.
++  (define (empty-line? data n)
++    (and (<= 1 n 2)
++         (let ((bytes (make-bytevector n)))
++           (copy-foreign->bytevector! data bytes 0 n)
++           (if (= n 1)
++               (= (bytevector-u8-ref bytes 0) 10)
++               (and (= (bytevector-u8-ref bytes 0) 13) (= (bytevector-u8-ref bytes 1) 10))))))
++
++  ;; head-line! : Sink Stream -> Void
++  ;; At a head's empty line: CURLINFO_RESPONSE_CODE, traced; below 200, a
++  ;; 1xx head's, or 0, a proxy's CONNECT head's, nothing more. At the first
++  ;; final head, its status, version and every CURLH_HEADER header of
++  ;; request -1, as finish-transfer reads them, published on the stream in
++  ;; one critical section, under the engine's mutex. It reads no length.
++  (define (head-line! sink stream)
++    (let* ((easy (sink-easy sink))
++           (code (info-long easy curlinfo-response-code)))
++      (stream-trace-set! stream (cons (cons code (monotonic-ns)) (stream-trace stream)))
++      (when (and (>= code 200) (not (stream-published stream)))
++        (let* ((version (http-version-symbol (info-long easy curlinfo-http-version)))
++               (headers (response-headers easy))
++               (head (make-curl-head code version headers)))
++          (stream-published-set! stream #t)
++          (locked (or (stream-head-lock stream) (stream-lock stream))
++            (lambda ()
++              (stream-head-set! stream head)
++              (stream-head-ns-set! stream (monotonic-ns))))))))
++
++  ;; read-head : Code
++  ;; libcurl's header callback for a streamed response: SIZE times NITEMS
++  ;; bytes of a head's line at DATA, for the transfer KEY names. It reads
++  ;; nothing but an empty line, where head-line! reads the head. No raise
++  ;; leaves it: a guard records what is raised and answers 0, which fails
++  ;; the transfer. It runs no procedure a caller supplied.
++  (define read-head
++    (foreign-callable __collect_safe
++      (lambda (data size nitems key)
++        (let ((n (* size nitems)))
++          (guard (e (#t (record! key 'callback-raised e) 0))
++            (let ((sink (sink-of key)))
++              (if (not sink)
++                  0
++                  (let ((stream (sink-stream sink)))
++                    (when (and stream (empty-line? data n))
++                      (head-line! sink stream))
++                    n))))))
++      (uptr size_t size_t uptr)
++      size_t))
++
++  ;; Locked where it is defined, and never unlocked, as write-body is.
++  (define read-head-locked
++    (begin (lock-object read-head) #t))
++
++  ;; read-head-entry : Positive-Integer
++  (define read-head-entry (foreign-callable-entry-point read-head))
++
+   ;; --- the plan, on the caller's thread -------------------------------------------------
+ 
+   ;; A plan is what a submit checked: fresh copies of the request's URL,
+@@ -1457,7 +1708,7 @@
+     (fields (immutable url) (immutable method) (immutable headers) (immutable agent)
+             (immutable body) (immutable timeout-ms) (immutable connect-timeout-ms)
+             (immutable body-limit) (immutable ca-file) (immutable verify) (immutable proxy)
+-            (immutable settings) (immutable fault) (immutable follow)))
++            (immutable settings) (immutable fault) (immutable follow) (immutable stream)))
+ 
+   ;; prepare-transfer : Request -> Plan
+   ;; REQUEST's plan, checked on the caller's thread, before anything is
+@@ -1479,7 +1730,8 @@
+                    (curl-request-body-limit request) ca-file (curl-request-verify request)
+                    (curl-request-proxy request)
+                    (curl-request-options request) (curl-request-fault request)
+-                   (curl-request-follow request)))))
++                   (curl-request-follow request)
++                   (let ((n (request-stream-buffer request))) (and n (make-response-stream n)))))))
+ 
+   ;; request-checks : Symbol Request -> (Values String (Pairof Headers (U String #f)) (U String #f))
+   ;; The checks a submit makes of REQUEST on the caller's thread, as WHO,
+@@ -1583,6 +1835,11 @@
+     (let ((sink (live-transfer-sink live)))
+       (if sink (reverse (sink-log sink)) '())))
+ 
++  ;; live-transfer-stream : Live -> (U Stream #f)
++  (define (live-transfer-stream live)
++    (let ((sink (live-transfer-sink live)))
++      (and sink (sink-stream sink))))
++
+   ;; method-settings : Symbol (U Bytevector #f) -> (Listof (Pairof String (U Integer String Bytevector)))
+   ;; The settings METHOD and BODY make, in order, as data: NOBODY at 1 for
+   ;; head; CUSTOMREQUEST at the method's name, upcased, for put, patch and
+@@ -1626,6 +1883,9 @@
+     (set-option! easy (field-option 'url) url buffer)
+     (set-option! easy "WRITEFUNCTION" write-body-entry buffer)
+     (set-option! easy "WRITEDATA" key buffer)
++    (when (plan-stream plan)
++      (set-option! easy "HEADERFUNCTION" read-head-entry buffer)
++      (set-option! easy "HEADERDATA" key buffer))
+     (for-each (lambda (setting)
+                 (let ((value (cdr setting)))
+                   (cond ((string? value) (set-string-option! easy (car setting) value buffer))
+@@ -1673,11 +1933,13 @@
+   ;; frees what was
+   ;; made, by free-transfer!, then raises again: the URL's refusal, or a
+   ;; &curl-transfer-error, setopt-failed, unknown-option or no-handle.
+-  (define (start-transfer! plan quick-exit)
++  (define (start-transfer! plan quick-exit head-lock)
+     (let ((live (make-live-transfer plan #f #f #f #f 0 '() #f)))
++      (when (plan-stream plan) (stream-head-lock-set! (plan-stream plan) head-lock))
+       (guard (e (#t (free-transfer! live) (raise e)))
+         (critical-section
+-         (let ((sink (make-sink (plan-body-limit plan) (plan-fault plan) 0 '() '() #f)))
++         (let ((sink (make-sink (plan-body-limit plan) (plan-fault plan) 0 '() '() #f
++                                (plan-stream plan) #f)))
+            (locked sinks-lock
+              (lambda ()
+                (let ((key next-key))
+@@ -1730,7 +1992,8 @@
+         (critical-section
+          (let ((easy (curl-easy-init)))
+            (when (eqv? easy 0) (fail 'no-handle #f #f #f #f))
+-           (live-transfer-easy-set! live easy)))
++           (live-transfer-easy-set! live easy)
++           (sink-easy-set! (live-transfer-sink live) easy)))
+         (set-transfer-options! (live-transfer-easy live) plan (live-transfer-key live)
+                                (live-transfer-buffer live) (live-transfer-header-list live)
+                                (live-transfer-lists live) (live-transfer-url live) quick-exit)
+@@ -1869,4 +2132,13 @@
+                 (headers (response-headers easy))
+                 (timings (map (lambda (timing) (cons (car timing) (info-off-t easy (cdr timing))))
+                               timing-infos)))
+-           (make-curl-response status version effective headers (sink-body sink) timings)))))))
++           (make-curl-response status version effective headers
++                               (if (sink-stream sink) #f (sink-body sink)) timings))))))
++
++  ;; pause-failed-outcome : Live Integer -> Condition
++  ;; What LIVE's transfer fails with once curl_easy_pause answered CODE, not
++  ;; 0: a reason a callable recorded, inside the call or before it, wins;
++  ;; else pause-failed, with CODE (the M6 plan, section 3.4).
++  (define (pause-failed-outcome live code)
++    (record! (live-transfer-key live) 'pause-failed #f)
++    (finish-transfer live code)))

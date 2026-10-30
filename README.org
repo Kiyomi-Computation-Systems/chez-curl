@@ -91,6 +91,53 @@ anything the request's own keys do not cover:
 - *A path is opened as given,* and chez-curl does not check it: a path of
   =/dev/stdin= names your program's stdin.
 
+*** Reading a response as it arrives
+
+Give a request a =stream-buffer=, a size in bytes, and its token hands you
+the body in pieces as it arrives, instead of keeping it whole:
+
+#+begin_src scheme
+(import (curl))
+
+(define engine (make-curl-engine))
+(define token
+  (curl-submit engine (make-curl-request "https://example.com/big"
+                                         'stream-buffer 65536)))
+
+(curl-token-head-wait token 10000)        ; the head comes first
+(curl-head-status (curl-token-head token))
+
+(let loop ()
+  (let ((piece (curl-token-next-piece token 10000)))
+    (when (bytevector? piece)             ; the eof object at the end
+      (loop))))
+
+(curl-token-outcome token)                ; the response, its body #f, or the failure
+#+end_src
+
+- *A full buffer pauses the transfer,* and taking pieces resumes it. Over
+  HTTP/1.1 the server then waits too. Over HTTP/2, a paused stream that
+  shares its connection with a busy one keeps receiving into libcurl's
+  memory, up to its window: tens of megabytes.
+- *The timeout runs while you are not reading.* =timeout-ms= ends a paused
+  transfer as any other.
+- *=curl-token-body-port= reads the pieces through a binary input port.* Read
+  it with =get-bytevector-some= or =get-u8=: when the transfer fails, a
+  =get-bytevector-n=, =-n!= or =-all= call loses the bytes it had read.
+- *The port is its thread's.* Read and close it on the thread that made it.
+  Another thread's close raises =&curl-wrong-thread=, and so does any read of
+  its that needs more than the port had buffered. Bytes the port had already
+  buffered go to whichever thread reads them, and a =get-bytevector-n=,
+  =-n!= or =-all= from another thread that takes them, then raises, loses
+  them. Closing it cancels the transfer. A port you never
+  close leaves its transfer paused until its timeout, or its engine's stop.
+- *One request per transfer.* A =stream-buffer= is refused beside the
+  hatch's =HTTPAUTH= or =PROXYAUTH=, or an =Expect= header holding
+  =100-continue=: each can make libcurl send the request twice, and the
+  stream's head would be the first answer's.
+- *libcurl 8.7.0 and 8.7.1, the Mac's,* give each HTTP/2 transfer a connection
+  of its own: there one paused stream could fail its neighbours.
+
 *** What follows a redirect
 
 =(http-client)= follows a 301, 302, 303, 307 or 308 that has a =Location=,

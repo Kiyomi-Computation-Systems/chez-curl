@@ -1,0 +1,317 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[floor-7.85.0] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[floor-7.85.0] server {"node":"v20.10.0","pid":3123,"http":"127.0.0.1:36013","raw":"127.0.0.1:42115","https":"127.0.0.1:42559","h2":"127.0.0.1:34227","proxy":"127.0.0.1:37751"}
+[floor-7.85.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4
+[floor-7.85.0] libcurl 7.85.0 OpenSSL/3.0.13
+[floor-7.85.0] paced run=1 face=http pacing=on window-ms=3000.082 cpu-ms=0.369 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[floor-7.85.0] paced run=1 face=http pacing=on delays submit-ms=(0.406 0.222 0.361 0.213 0.155 0.155 0.148 0.389)
+[floor-7.85.0] paced run=1 face=http pacing=on delays submit-taken-ms=(0.218 0.139 0.208 0.145 0.085 0.086 0.077 0.232)
+[floor-7.85.0] paced run=1 face=http pacing=on delays cancel-ms=(0.165 0.229 0.209 0.081 0.084 0.081 0.237 0.235)
+[floor-7.85.0] paced run=1 face=http pacing=on delays resume-ms=(0.032 0.106 0.107 0.026 0.03 0.046 0.124 0.126)
+[floor-7.85.0] paced run=1 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=166 resumes=166 passed-over=0 queued-polls=1 queued-poll-max-ms=0.005 queued-polls-100ms=0 status=200
+[floor-7.85.0] paced run=1 face=http pacing=off window-ms=3000.083 cpu-ms=0.382 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[floor-7.85.0] paced run=1 face=http pacing=off delays submit-ms=(0.222 0.213 0.277 0.206 0.204 0.213 0.21 0.162)
+[floor-7.85.0] paced run=1 face=http pacing=off delays submit-taken-ms=(0.123 0.139 0.191 0.137 0.135 0.141 0.135 0.09)
+[floor-7.85.0] paced run=1 face=http pacing=off delays cancel-ms=(0.163 0.151 0.142 0.165 0.144 0.144 0.173 0.16)
+[floor-7.85.0] paced run=1 face=http pacing=off delays resume-ms=(0.107 0.11 0.1 0.031 0.039 0.088 0.118 0.034)
+[floor-7.85.0] paced run=1 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=334 resumes=334 passed-over=0 queued-polls=4 queued-poll-max-ms=0.009 queued-polls-100ms=0 status=200
+[floor-7.85.0] paced run=1 face=h2 pacing=on window-ms=3000.084 cpu-ms=0.284 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[floor-7.85.0] paced run=1 face=h2 pacing=on delays submit-ms=(0.296 0.194 0.254 0.2 0.256 0.183 0.269 0.218)
+[floor-7.85.0] paced run=1 face=h2 pacing=on delays submit-taken-ms=(0.201 0.129 0.183 0.118 0.174 0.124 0.17 0.133)
+[floor-7.85.0] paced run=1 face=h2 pacing=on delays cancel-ms=(0.374 0.962 1.019 0.094 1.125 0.282 0.339 0.249)
+[floor-7.85.0] paced run=1 face=h2 pacing=on delays resume-ms=(0.042 0.028 0.021 0.099 0.05 0.028 0.07 0.031)
+[floor-7.85.0] paced run=1 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=252 resumes=252 passed-over=0 queued-polls=38 queued-poll-max-ms=0.009 queued-polls-100ms=0 status=200
+[floor-7.85.0] paced run=1 face=h2 pacing=off window-ms=3000.14 cpu-ms=0.374 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[floor-7.85.0] paced run=1 face=h2 pacing=off delays submit-ms=(0.298 0.245 0.263 0.213 0.276 0.271 0.238 0.241)
+[floor-7.85.0] paced run=1 face=h2 pacing=off delays submit-taken-ms=(0.208 0.163 0.153 0.145 0.197 0.179 0.157 0.158)
+[floor-7.85.0] paced run=1 face=h2 pacing=off delays cancel-ms=(0.083 0.161 0.167 0.212 0.176 0.098 0.172 0.162)
+[floor-7.85.0] paced run=1 face=h2 pacing=off delays resume-ms=(0.094 0.094 0.063 0.075 0.095 0.092 0.107 0.117)
+[floor-7.85.0] paced run=1 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=239 resumes=239 passed-over=0 queued-polls=178 queued-poll-max-ms=0.011 queued-polls-100ms=0 status=200
+[floor-7.85.0] paced run=2 face=http pacing=on window-ms=3000.082 cpu-ms=0.296 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[floor-7.85.0] paced run=2 face=http pacing=on delays submit-ms=(0.264 0.144 0.177 0.212 0.226 0.229 0.232 0.223)
+[floor-7.85.0] paced run=2 face=http pacing=on delays submit-taken-ms=(0.174 0.074 0.09 0.137 0.151 0.15 0.155 0.151)
+[floor-7.85.0] paced run=2 face=http pacing=on delays cancel-ms=(0.163 0.15 0.162 0.153 0.183 0.098 0.161 0.157)
+[floor-7.85.0] paced run=2 face=http pacing=on delays resume-ms=(0.031 0.037 0.032 0.09 0.093 0.028 0.095 0.095)
+[floor-7.85.0] paced run=2 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=135 resumes=135 passed-over=0 queued-polls=2 queued-poll-max-ms=0.007 queued-polls-100ms=0 status=200
+[floor-7.85.0] paced run=2 face=http pacing=off window-ms=3000.103 cpu-ms=0.349 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[floor-7.85.0] paced run=2 face=http pacing=off delays submit-ms=(0.268 0.185 0.25 0.435 0.436 0.402 0.376 0.361)
+[floor-7.85.0] paced run=2 face=http pacing=off delays submit-taken-ms=(0.178 0.107 0.161 0.265 0.281 0.244 0.226 0.215)
+[floor-7.85.0] paced run=2 face=http pacing=off delays cancel-ms=(0.153 0.074 0.149 0.255 0.295 0.231 0.221 0.228)
+[floor-7.85.0] paced run=2 face=http pacing=off delays resume-ms=(0.037 0.101 0.034 0.08 0.121 0.118 0.117 0.117)
+[floor-7.85.0] paced run=2 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=349 resumes=349 passed-over=0 queued-polls=1 queued-poll-max-ms=0.002 queued-polls-100ms=0 status=200
+[floor-7.85.0] paced run=2 face=h2 pacing=on window-ms=3000.103 cpu-ms=0.418 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[floor-7.85.0] paced run=2 face=h2 pacing=on delays submit-ms=(0.443 0.236 0.472 0.4 0.466 0.401 0.381 0.566)
+[floor-7.85.0] paced run=2 face=h2 pacing=on delays submit-taken-ms=(0.268 0.151 0.3 0.236 0.293 0.237 0.22 0.266)
+[floor-7.85.0] paced run=2 face=h2 pacing=on delays cancel-ms=(1.12 0.151 1.02 0.503 0.582 0.254 0.144 0.345)
+[floor-7.85.0] paced run=2 face=h2 pacing=on delays resume-ms=(0.102 0.169 0.114 0.125 0.147 0.131 0.112 0.118)
+[floor-7.85.0] paced run=2 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=229 resumes=229 passed-over=0 queued-polls=47 queued-poll-max-ms=0.014 queued-polls-100ms=0 status=200
+[floor-7.85.0] paced run=2 face=h2 pacing=off window-ms=3000.085 cpu-ms=0.302 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[floor-7.85.0] paced run=2 face=h2 pacing=off delays submit-ms=(0.277 0.258 0.265 0.261 0.231 0.226 0.229 0.221)
+[floor-7.85.0] paced run=2 face=h2 pacing=off delays submit-taken-ms=(0.187 0.172 0.172 0.162 0.145 0.147 0.148 0.142)
+[floor-7.85.0] paced run=2 face=h2 pacing=off delays cancel-ms=(0.175 0.163 0.163 0.16 0.158 0.173 0.152 0.16)
+[floor-7.85.0] paced run=2 face=h2 pacing=off delays resume-ms=(0.097 0.032 0.094 0.097 0.091 0.102 0.108 0.087)
+[floor-7.85.0] paced run=2 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=232 resumes=232 passed-over=0 queued-polls=179 queued-poll-max-ms=0.025 queued-polls-100ms=0 status=200
+[floor-7.85.0] paced run=3 face=http pacing=on window-ms=3000.098 cpu-ms=0.304 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[floor-7.85.0] paced run=3 face=http pacing=on delays submit-ms=(0.209 0.338 0.218 0.235 0.198 0.369 0.254 0.349)
+[floor-7.85.0] paced run=3 face=http pacing=on delays submit-taken-ms=(0.122 0.267 0.147 0.158 0.13 0.199 0.096 0.188)
+[floor-7.85.0] paced run=3 face=http pacing=on delays cancel-ms=(0.154 0.149 0.149 0.156 0.147 0.231 0.221 0.254)
+[floor-7.85.0] paced run=3 face=http pacing=on delays resume-ms=(0.042 0.09 0.032 0.027 0.151 0.054 0.157 0.127)
+[floor-7.85.0] paced run=3 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=131 resumes=131 passed-over=0 queued-polls=5 queued-poll-max-ms=0.008 queued-polls-100ms=0 status=200
+[floor-7.85.0] paced run=3 face=http pacing=off window-ms=3000.091 cpu-ms=0.429 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[floor-7.85.0] paced run=3 face=http pacing=off delays submit-ms=(0.464 0.402 0.39 0.367 0.363 0.226 0.258 0.253)
+[floor-7.85.0] paced run=3 face=http pacing=off delays submit-taken-ms=(0.294 0.245 0.239 0.216 0.215 0.154 0.175 0.171)
+[floor-7.85.0] paced run=3 face=http pacing=off delays cancel-ms=(0.293 0.234 0.22 0.35 0.227 0.164 0.117 0.148)
+[floor-7.85.0] paced run=3 face=http pacing=off delays resume-ms=(0.116 0.162 0.112 0.118 0.119 0.087 0.122 0.12)
+[floor-7.85.0] paced run=3 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=440 resumes=440 passed-over=0 queued-polls=7 queued-poll-max-ms=0.009 queued-polls-100ms=0 status=200
+[floor-7.85.0] paced run=3 face=h2 pacing=on window-ms=3000.082 cpu-ms=0.288 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[floor-7.85.0] paced run=3 face=h2 pacing=on delays submit-ms=(0.212 0.229 0.238 0.172 0.231 0.216 0.229 0.251)
+[floor-7.85.0] paced run=3 face=h2 pacing=on delays submit-taken-ms=(0.124 0.15 0.151 0.093 0.149 0.142 0.143 0.166)
+[floor-7.85.0] paced run=3 face=h2 pacing=on delays cancel-ms=(1.047 0.951 0.79 0.476 0.546 0.433 0.3 0.12)
+[floor-7.85.0] paced run=3 face=h2 pacing=on delays resume-ms=(0.101 0.114 0.019 0.097 0.092 0.088 0.119 0.091)
+[floor-7.85.0] paced run=3 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=256 resumes=256 passed-over=0 queued-polls=47 queued-poll-max-ms=0.005 queued-polls-100ms=0 status=200
+[floor-7.85.0] paced run=3 face=h2 pacing=off window-ms=3000.095 cpu-ms=0.378 proc-stat-ms=0 turns=3 polls=3 fast-polls=0 paced=0 still-paused=#t
+[floor-7.85.0] paced run=3 face=h2 pacing=off delays submit-ms=(0.28 0.45 0.437 0.525 0.417 0.423 0.569 0.425)
+[floor-7.85.0] paced run=3 face=h2 pacing=off delays submit-taken-ms=(0.19 0.209 0.246 0.419 0.248 0.251 0.267 0.256)
+[floor-7.85.0] paced run=3 face=h2 pacing=off delays cancel-ms=(0.33 0.255 0.265 0.258 0.286 0.257 0.278 0.264)
+[floor-7.85.0] paced run=3 face=h2 pacing=off delays resume-ms=(0.143 0.14 0.109 0.126 0.138 0.143 0.12 0.134)
+[floor-7.85.0] paced run=3 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=234 resumes=234 passed-over=0 queued-polls=183 queued-poll-max-ms=0.015 queued-polls-100ms=0 status=200
+[floor-7.85.0] paced done
+[floor-7.85.0] paced exited 0 after about 44 s
+[ubuntu-openssl-8.5.0] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[ubuntu-openssl-8.5.0] server {"node":"v24.18.0","pid":3200,"http":"127.0.0.1:42499","raw":"127.0.0.1:34403","https":"127.0.0.1:33055","h2":"127.0.0.1:33243","proxy":"127.0.0.1:41501"}
+[ubuntu-openssl-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4
+[ubuntu-openssl-8.5.0] libcurl 8.5.0 OpenSSL/3.0.13
+[ubuntu-openssl-8.5.0] paced run=1 face=http pacing=on window-ms=3000.059 cpu-ms=39.214 proc-stat-ms=40 turns=2794 polls=2794 fast-polls=2794 paced=2794 still-paused=#t
+[ubuntu-openssl-8.5.0] paced run=1 face=http pacing=on delays submit-ms=(1.164 0.966 1.095 0.698 0.618 1.105 0.43 1.077)
+[ubuntu-openssl-8.5.0] paced run=1 face=http pacing=on delays submit-taken-ms=(1.107 0.855 1.034 0.612 0.546 0.975 0.362 1.003)
+[ubuntu-openssl-8.5.0] paced run=1 face=http pacing=on delays cancel-ms=(0.536 0.371 0.407 0.78 0.634 0.234 0.085 0.566)
+[ubuntu-openssl-8.5.0] paced run=1 face=http pacing=on delays resume-ms=(0.726 0.828 0.825 0.708 0.623 0.898 0.696 0.103)
+[ubuntu-openssl-8.5.0] paced run=1 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=147 resumes=147 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0] paced run=1 face=http pacing=off window-ms=3000.099 cpu-ms=2999.301 proc-stat-ms=3000 turns=3048513 polls=3048513 fast-polls=3048513 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0] paced run=1 face=http pacing=off delays submit-ms=(0.237 0.223 0.22 0.208 0.229 0.243 0.207 0.216)
+[ubuntu-openssl-8.5.0] paced run=1 face=http pacing=off delays submit-taken-ms=(0.161 0.161 0.16 0.149 0.163 0.167 0.146 0.156)
+[ubuntu-openssl-8.5.0] paced run=1 face=http pacing=off delays cancel-ms=(0.072 0.084 0.087 0.074 0.09 0.075 0.073 0.075)
+[ubuntu-openssl-8.5.0] paced run=1 face=http pacing=off delays resume-ms=(0.019 0.017 0.015 0.029 0.015 0.028 0.014 0.016)
+[ubuntu-openssl-8.5.0] paced run=1 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=348 resumes=348 passed-over=0 queued-polls=179 queued-poll-max-ms=0.004 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0] paced run=1 face=h2 pacing=on window-ms=3000.108 cpu-ms=32.736 proc-stat-ms=30 turns=2825 polls=2825 fast-polls=2825 paced=2825 still-paused=#t
+[ubuntu-openssl-8.5.0] paced run=1 face=h2 pacing=on delays submit-ms=(0.915 0.432 0.449 0.486 0.462 0.488 0.313 0.265)
+[ubuntu-openssl-8.5.0] paced run=1 face=h2 pacing=on delays submit-taken-ms=(0.768 0.274 0.288 0.312 0.302 0.293 0.214 0.187)
+[ubuntu-openssl-8.5.0] paced run=1 face=h2 pacing=on delays cancel-ms=(0.203 0.241 0.231 0.238 0.232 0.248 0.127 0.131)
+[ubuntu-openssl-8.5.0] paced run=1 face=h2 pacing=on delays resume-ms=(0.123 0.131 0.131 0.131 0.13 0.13 0.093 0.085)
+[ubuntu-openssl-8.5.0] paced run=1 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=168 resumes=168 passed-over=0 queued-polls=6 queued-poll-max-ms=0.003 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0] paced run=1 face=h2 pacing=off window-ms=3000.064 cpu-ms=2999.126 proc-stat-ms=3000 turns=3240573 polls=3240573 fast-polls=3240573 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0] paced run=1 face=h2 pacing=off delays submit-ms=(0.135 0.162 0.236 0.185 0.169 0.165 0.155 0.252)
+[ubuntu-openssl-8.5.0] paced run=1 face=h2 pacing=off delays submit-taken-ms=(0.088 0.094 0.132 0.103 0.094 0.092 0.085 0.161)
+[ubuntu-openssl-8.5.0] paced run=1 face=h2 pacing=off delays cancel-ms=(0.078 0.055 0.094 0.061 0.057 0.065 0.209 0.133)
+[ubuntu-openssl-8.5.0] paced run=1 face=h2 pacing=off delays resume-ms=(0.014 0.051 0.014 0.029 0.031 0.034 0.098 0.032)
+[ubuntu-openssl-8.5.0] paced run=1 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=503 resumes=503 passed-over=0 queued-polls=4 queued-poll-max-ms=0.009 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0] paced run=2 face=http pacing=on window-ms=3000.063 cpu-ms=28.676 proc-stat-ms=40 turns=2829 polls=2829 fast-polls=2829 paced=2829 still-paused=#t
+[ubuntu-openssl-8.5.0] paced run=2 face=http pacing=on delays submit-ms=(0.866 0.188 0.86 0.476 0.251 0.978 1.03 0.27)
+[ubuntu-openssl-8.5.0] paced run=2 face=http pacing=on delays submit-taken-ms=(0.749 0.129 0.781 0.338 0.16 0.85 0.881 0.134)
+[ubuntu-openssl-8.5.0] paced run=2 face=http pacing=on delays cancel-ms=(0.584 0.531 1.023 1.011 1.049 0.172 1.009 1.106)
+[ubuntu-openssl-8.5.0] paced run=2 face=http pacing=on delays resume-ms=(1.035 0.689 0.307 0.139 0.682 0.238 0.68 0.291)
+[ubuntu-openssl-8.5.0] paced run=2 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=147 resumes=147 passed-over=0 queued-polls=2 queued-poll-max-ms=0.002 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0] paced run=2 face=http pacing=off window-ms=3000.137 cpu-ms=3000.16 proc-stat-ms=3000 turns=3167883 polls=3167883 fast-polls=3167883 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0] paced run=2 face=http pacing=off delays submit-ms=(0.157 0.177 0.132 0.15 0.138 0.128 0.136 0.151)
+[ubuntu-openssl-8.5.0] paced run=2 face=http pacing=off delays submit-taken-ms=(0.099 0.119 0.083 0.098 0.088 0.082 0.086 0.099)
+[ubuntu-openssl-8.5.0] paced run=2 face=http pacing=off delays cancel-ms=(0.082 0.096 0.091 0.094 0.083 0.09 0.089 0.07)
+[ubuntu-openssl-8.5.0] paced run=2 face=http pacing=off delays resume-ms=(0.042 0.01 0.018 0.02 0.011 0.017 0.014 0.012)
+[ubuntu-openssl-8.5.0] paced run=2 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=346 resumes=346 passed-over=0 queued-polls=167 queued-poll-max-ms=0.004 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0] paced run=2 face=h2 pacing=on window-ms=3000.096 cpu-ms=26.66 proc-stat-ms=20 turns=2831 polls=2831 fast-polls=2831 paced=2832 still-paused=#t
+[ubuntu-openssl-8.5.0] paced run=2 face=h2 pacing=on delays submit-ms=(1.008 0.245 0.223 0.219 0.235 0.231 0.222 0.23)
+[ubuntu-openssl-8.5.0] paced run=2 face=h2 pacing=on delays submit-taken-ms=(0.911 0.163 0.148 0.139 0.157 0.154 0.147 0.151)
+[ubuntu-openssl-8.5.0] paced run=2 face=h2 pacing=on delays cancel-ms=(0.104 0.128 0.163 0.127 0.124 0.112 0.116 0.115)
+[ubuntu-openssl-8.5.0] paced run=2 face=h2 pacing=on delays resume-ms=(0.103 0.102 0.078 0.082 0.089 0.085 0.095 0.089)
+[ubuntu-openssl-8.5.0] paced run=2 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=166 resumes=166 passed-over=0 queued-polls=6 queued-poll-max-ms=0.003 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0] paced run=2 face=h2 pacing=off window-ms=3000.023 cpu-ms=2999.728 proc-stat-ms=3000 turns=3147064 polls=3147064 fast-polls=3147064 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0] paced run=2 face=h2 pacing=off delays submit-ms=(0.149 0.199 0.229 0.231 0.251 0.24 0.213 0.264)
+[ubuntu-openssl-8.5.0] paced run=2 face=h2 pacing=off delays submit-taken-ms=(0.089 0.114 0.148 0.156 0.159 0.152 0.141 0.18)
+[ubuntu-openssl-8.5.0] paced run=2 face=h2 pacing=off delays cancel-ms=(0.059 0.118 0.117 0.154 0.15 0.121 0.137 0.123)
+[ubuntu-openssl-8.5.0] paced run=2 face=h2 pacing=off delays resume-ms=(0.098 0.092 0.101 0.097 0.104 0.103 0.121 0.091)
+[ubuntu-openssl-8.5.0] paced run=2 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=493 resumes=493 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0] paced run=3 face=http pacing=on window-ms=3000.074 cpu-ms=37.568 proc-stat-ms=30 turns=2820 polls=2820 fast-polls=2820 paced=2820 still-paused=#t
+[ubuntu-openssl-8.5.0] paced run=3 face=http pacing=on delays submit-ms=(0.625 1.228 0.638 0.719 0.626 0.302 0.157 0.813)
+[ubuntu-openssl-8.5.0] paced run=3 face=http pacing=on delays submit-taken-ms=(0.508 1.132 0.548 0.66 0.551 0.23 0.094 0.749)
+[ubuntu-openssl-8.5.0] paced run=3 face=http pacing=on delays cancel-ms=(0.166 0.886 0.841 0.746 0.264 1.087 0.781 0.299)
+[ubuntu-openssl-8.5.0] paced run=3 face=http pacing=on delays resume-ms=(0.862 0.409 0.815 0.571 0.87 0.629 0.381 0.673)
+[ubuntu-openssl-8.5.0] paced run=3 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=147 resumes=147 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0] paced run=3 face=http pacing=off window-ms=3000.076 cpu-ms=2999.701 proc-stat-ms=3000 turns=3045567 polls=3045568 fast-polls=3045564 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0] paced run=3 face=http pacing=off delays submit-ms=(0.147 0.146 0.241 0.235 0.226 0.212 0.218 0.249)
+[ubuntu-openssl-8.5.0] paced run=3 face=http pacing=off delays submit-taken-ms=(0.089 0.094 0.166 0.169 0.159 0.148 0.157 0.176)
+[ubuntu-openssl-8.5.0] paced run=3 face=http pacing=off delays cancel-ms=(0.067 0.13 0.095 0.083 0.08 0.09 0.061 0.091)
+[ubuntu-openssl-8.5.0] paced run=3 face=http pacing=off delays resume-ms=(0.019 0.018 0.02 0.015 0.017 0.018 0.018 0.015)
+[ubuntu-openssl-8.5.0] paced run=3 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=348 resumes=348 passed-over=0 queued-polls=169 queued-poll-max-ms=0.004 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0] paced run=3 face=h2 pacing=on window-ms=3000.08 cpu-ms=27.507 proc-stat-ms=30 turns=2831 polls=2831 fast-polls=2831 paced=2831 still-paused=#t
+[ubuntu-openssl-8.5.0] paced run=3 face=h2 pacing=on delays submit-ms=(0.779 0.197 0.202 0.206 0.212 0.372 0.261 0.238)
+[ubuntu-openssl-8.5.0] paced run=3 face=h2 pacing=on delays submit-taken-ms=(0.689 0.102 0.131 0.135 0.135 0.296 0.15 0.152)
+[ubuntu-openssl-8.5.0] paced run=3 face=h2 pacing=on delays cancel-ms=(0.14 0.043 0.11 0.134 0.201 0.043 0.119 0.076)
+[ubuntu-openssl-8.5.0] paced run=3 face=h2 pacing=on delays resume-ms=(0.101 0.084 0.088 0.092 0.104 0.094 0.11 0.151)
+[ubuntu-openssl-8.5.0] paced run=3 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=161 resumes=161 passed-over=0 queued-polls=9 queued-poll-max-ms=0.011 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0] paced run=3 face=h2 pacing=off window-ms=3000.082 cpu-ms=2999.395 proc-stat-ms=2990 turns=3115691 polls=3115692 fast-polls=3115692 paced=0 still-paused=#t
+[ubuntu-openssl-8.5.0] paced run=3 face=h2 pacing=off delays submit-ms=(0.186 0.256 0.386 0.321 0.323 0.189 0.225 0.269)
+[ubuntu-openssl-8.5.0] paced run=3 face=h2 pacing=off delays submit-taken-ms=(0.129 0.171 0.188 0.16 0.162 0.095 0.151 0.189)
+[ubuntu-openssl-8.5.0] paced run=3 face=h2 pacing=off delays cancel-ms=(0.145 0.127 0.179 0.173 0.116 0.071 0.068 0.114)
+[ubuntu-openssl-8.5.0] paced run=3 face=h2 pacing=off delays resume-ms=(0.094 0.041 0.119 0.119 0.102 0.089 0.048 0.092)
+[ubuntu-openssl-8.5.0] paced run=3 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=445 resumes=445 passed-over=0 queued-polls=22 queued-poll-max-ms=0.007 queued-polls-100ms=0 status=200
+[ubuntu-openssl-8.5.0] paced done
+[ubuntu-openssl-8.5.0] paced exited 0 after about 44 s
+[ubuntu-gnutls-8.5.0] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[ubuntu-gnutls-8.5.0] server {"node":"v24.18.0","pid":3274,"http":"127.0.0.1:37353","raw":"127.0.0.1:46173","https":"127.0.0.1:43903","h2":"127.0.0.1:35751","proxy":"127.0.0.1:42985"}
+[ubuntu-gnutls-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4
+[ubuntu-gnutls-8.5.0] libcurl 8.5.0 GnuTLS/3.8.3
+[ubuntu-gnutls-8.5.0] paced run=1 face=http pacing=on window-ms=3000.061 cpu-ms=33.592 proc-stat-ms=20 turns=2824 polls=2824 fast-polls=2824 paced=2824 still-paused=#t
+[ubuntu-gnutls-8.5.0] paced run=1 face=http pacing=on delays submit-ms=(0.512 0.555 1.078 0.782 0.598 0.275 0.185 0.765)
+[ubuntu-gnutls-8.5.0] paced run=1 face=http pacing=on delays submit-taken-ms=(0.441 0.492 0.8 0.722 0.541 0.177 0.119 0.685)
+[ubuntu-gnutls-8.5.0] paced run=1 face=http pacing=on delays cancel-ms=(1.026 0.852 1.133 0.797 0.476 0.144 0.837 0.233)
+[ubuntu-gnutls-8.5.0] paced run=1 face=http pacing=on delays resume-ms=(0.277 0.962 0.687 0.673 0.538 0.775 0.256 0.623)
+[ubuntu-gnutls-8.5.0] paced run=1 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=147 resumes=147 passed-over=0 queued-polls=1 queued-poll-max-ms=0.002 queued-polls-100ms=0 status=200
+[ubuntu-gnutls-8.5.0] paced run=1 face=http pacing=off window-ms=3000.07 cpu-ms=2998.766 proc-stat-ms=3000 turns=3057601 polls=3057601 fast-polls=3057601 paced=0 still-paused=#t
+[ubuntu-gnutls-8.5.0] paced run=1 face=http pacing=off delays submit-ms=(0.185 0.122 0.137 0.228 0.133 0.15 0.135 0.133)
+[ubuntu-gnutls-8.5.0] paced run=1 face=http pacing=off delays submit-taken-ms=(0.125 0.069 0.082 0.158 0.082 0.097 0.079 0.082)
+[ubuntu-gnutls-8.5.0] paced run=1 face=http pacing=off delays cancel-ms=(0.068 0.063 0.058 0.28 0.094 0.069 0.072 0.056)
+[ubuntu-gnutls-8.5.0] paced run=1 face=http pacing=off delays resume-ms=(0.013 0.016 0.035 0.017 0.006 0.011 0.008 0.008)
+[ubuntu-gnutls-8.5.0] paced run=1 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=311 resumes=311 passed-over=0 queued-polls=146 queued-poll-max-ms=0.021 queued-polls-100ms=0 status=200
+[ubuntu-gnutls-8.5.0] paced run=1 face=h2 pacing=on window-ms=3000.064 cpu-ms=33.566 proc-stat-ms=30 turns=2824 polls=2824 fast-polls=2824 paced=2824 still-paused=#t
+[ubuntu-gnutls-8.5.0] paced run=1 face=h2 pacing=on delays submit-ms=(1.176 0.215 0.165 0.176 0.207 0.184 0.203 0.164)
+[ubuntu-gnutls-8.5.0] paced run=1 face=h2 pacing=on delays submit-taken-ms=(1.087 0.131 0.094 0.122 0.125 0.108 0.121 0.099)
+[ubuntu-gnutls-8.5.0] paced run=1 face=h2 pacing=on delays cancel-ms=(0.073 0.077 0.077 0.084 0.109 0.125 0.056 0.053)
+[ubuntu-gnutls-8.5.0] paced run=1 face=h2 pacing=on delays resume-ms=(0.021 0.028 0.04 0.039 0.054 0.036 0.029 0.027)
+[ubuntu-gnutls-8.5.0] paced run=1 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=174 resumes=174 passed-over=0 queued-polls=8 queued-poll-max-ms=0.009 queued-polls-100ms=0 status=200
+[ubuntu-gnutls-8.5.0] paced run=1 face=h2 pacing=off window-ms=3000.073 cpu-ms=3000.273 proc-stat-ms=2990 turns=3149694 polls=3149694 fast-polls=3149690 paced=0 still-paused=#t
+[ubuntu-gnutls-8.5.0] paced run=1 face=h2 pacing=off delays submit-ms=(0.256 0.267 0.24 0.236 0.251 0.247 0.253 0.224)
+[ubuntu-gnutls-8.5.0] paced run=1 face=h2 pacing=off delays submit-taken-ms=(0.175 0.171 0.158 0.163 0.156 0.158 0.173 0.152)
+[ubuntu-gnutls-8.5.0] paced run=1 face=h2 pacing=off delays cancel-ms=(0.157 0.132 0.114 0.159 0.149 0.115 0.134 0.084)
+[ubuntu-gnutls-8.5.0] paced run=1 face=h2 pacing=off delays resume-ms=(0.12 0.101 0.107 0.101 0.087 0.097 0.12 0.031)
+[ubuntu-gnutls-8.5.0] paced run=1 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=505 resumes=505 passed-over=0 queued-polls=1 queued-poll-max-ms=0.004 queued-polls-100ms=0 status=200
+[ubuntu-gnutls-8.5.0] paced run=2 face=http pacing=on window-ms=3000.073 cpu-ms=33.841 proc-stat-ms=40 turns=2824 polls=2824 fast-polls=2824 paced=2824 still-paused=#t
+[ubuntu-gnutls-8.5.0] paced run=2 face=http pacing=on delays submit-ms=(0.802 0.723 0.943 0.783 0.228 0.55 0.431 0.495)
+[ubuntu-gnutls-8.5.0] paced run=2 face=http pacing=on delays submit-taken-ms=(0.706 0.649 0.857 0.716 0.155 0.489 0.367 0.32)
+[ubuntu-gnutls-8.5.0] paced run=2 face=http pacing=on delays cancel-ms=(0.395 0.886 1.039 0.707 1.085 0.296 1.033 0.656)
+[ubuntu-gnutls-8.5.0] paced run=2 face=http pacing=on delays resume-ms=(0.609 0.977 0.965 0.532 0.818 0.919 0.56 0.126)
+[ubuntu-gnutls-8.5.0] paced run=2 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=141 resumes=141 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[ubuntu-gnutls-8.5.0] paced run=2 face=http pacing=off window-ms=3000.068 cpu-ms=2998.743 proc-stat-ms=3000 turns=3024957 polls=3024957 fast-polls=3024957 paced=0 still-paused=#t
+[ubuntu-gnutls-8.5.0] paced run=2 face=http pacing=off delays submit-ms=(0.181 0.343 0.137 0.136 0.129 0.132 0.138 0.129)
+[ubuntu-gnutls-8.5.0] paced run=2 face=http pacing=off delays submit-taken-ms=(0.123 0.291 0.09 0.09 0.085 0.087 0.092 0.079)
+[ubuntu-gnutls-8.5.0] paced run=2 face=http pacing=off delays cancel-ms=(0.062 0.051 0.076 0.059 0.062 0.066 0.065 0.068)
+[ubuntu-gnutls-8.5.0] paced run=2 face=http pacing=off delays resume-ms=(0.017 0.014 0.019 0.01 0.011 0.014 0.014 0.013)
+[ubuntu-gnutls-8.5.0] paced run=2 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=304 resumes=304 passed-over=0 queued-polls=153 queued-poll-max-ms=0.006 queued-polls-100ms=0 status=200
+[ubuntu-gnutls-8.5.0] paced run=2 face=h2 pacing=on window-ms=3000.066 cpu-ms=26.594 proc-stat-ms=30 turns=2832 polls=2832 fast-polls=2832 paced=2832 still-paused=#t
+[ubuntu-gnutls-8.5.0] paced run=2 face=h2 pacing=on delays submit-ms=(0.541 0.223 0.168 0.169 0.538 0.347 0.18 0.222)
+[ubuntu-gnutls-8.5.0] paced run=2 face=h2 pacing=on delays submit-taken-ms=(0.459 0.144 0.085 0.094 0.22 0.195 0.105 0.148)
+[ubuntu-gnutls-8.5.0] paced run=2 face=h2 pacing=on delays cancel-ms=(0.068 0.06 0.06 0.065 0.158 0.145 0.064 0.132)
+[ubuntu-gnutls-8.5.0] paced run=2 face=h2 pacing=on delays resume-ms=(0.031 0.027 0.03 0.119 0.102 0.137 0.097 0.142)
+[ubuntu-gnutls-8.5.0] paced run=2 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=166 resumes=166 passed-over=0 queued-polls=7 queued-poll-max-ms=0.007 queued-polls-100ms=0 status=200
+[ubuntu-gnutls-8.5.0] paced run=2 face=h2 pacing=off window-ms=3000.068 cpu-ms=2998.696 proc-stat-ms=3000 turns=3136166 polls=3136166 fast-polls=3136166 paced=0 still-paused=#t
+[ubuntu-gnutls-8.5.0] paced run=2 face=h2 pacing=off delays submit-ms=(0.196 0.237 0.242 0.271 0.204 0.235 0.157 0.174)
+[ubuntu-gnutls-8.5.0] paced run=2 face=h2 pacing=off delays submit-taken-ms=(0.135 0.161 0.17 0.198 0.132 0.161 0.086 0.098)
+[ubuntu-gnutls-8.5.0] paced run=2 face=h2 pacing=off delays cancel-ms=(0.061 0.113 0.119 0.123 0.112 0.072 0.057 0.059)
+[ubuntu-gnutls-8.5.0] paced run=2 face=h2 pacing=off delays resume-ms=(0.113 0.095 0.086 0.104 0.09 0.088 0.036 0.023)
+[ubuntu-gnutls-8.5.0] paced run=2 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=507 resumes=507 passed-over=0 queued-polls=1 queued-poll-max-ms=0.004 queued-polls-100ms=0 status=200
+[ubuntu-gnutls-8.5.0] paced run=3 face=http pacing=on window-ms=3000.077 cpu-ms=35.486 proc-stat-ms=30 turns=2821 polls=2821 fast-polls=2821 paced=2821 still-paused=#t
+[ubuntu-gnutls-8.5.0] paced run=3 face=http pacing=on delays submit-ms=(1.129 0.482 0.325 1.042 0.319 0.474 0.99 0.572)
+[ubuntu-gnutls-8.5.0] paced run=3 face=http pacing=on delays submit-taken-ms=(1.045 0.406 0.256 0.972 0.243 0.415 0.936 0.521)
+[ubuntu-gnutls-8.5.0] paced run=3 face=http pacing=on delays cancel-ms=(0.669 0.868 0.628 0.211 0.377 0.536 0.637 0.345)
+[ubuntu-gnutls-8.5.0] paced run=3 face=http pacing=on delays resume-ms=(0.094 0.156 0.993 0.353 0.382 0.45 0.124 0.917)
+[ubuntu-gnutls-8.5.0] paced run=3 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=151 resumes=151 passed-over=0 queued-polls=1 queued-poll-max-ms=0.002 queued-polls-100ms=0 status=200
+[ubuntu-gnutls-8.5.0] paced run=3 face=http pacing=off window-ms=3000.04 cpu-ms=2999.405 proc-stat-ms=3010 turns=3019801 polls=3019801 fast-polls=3019801 paced=0 still-paused=#t
+[ubuntu-gnutls-8.5.0] paced run=3 face=http pacing=off delays submit-ms=(0.158 0.16 0.141 0.132 0.146 0.142 0.138 0.132)
+[ubuntu-gnutls-8.5.0] paced run=3 face=http pacing=off delays submit-taken-ms=(0.1 0.103 0.088 0.079 0.09 0.088 0.087 0.082)
+[ubuntu-gnutls-8.5.0] paced run=3 face=http pacing=off delays cancel-ms=(0.084 0.054 0.054 0.061 0.065 0.064 0.065 0.068)
+[ubuntu-gnutls-8.5.0] paced run=3 face=http pacing=off delays resume-ms=(0.017 0.013 0.012 0.015 0.017 0.012 0.015 0.011)
+[ubuntu-gnutls-8.5.0] paced run=3 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=347 resumes=347 passed-over=0 queued-polls=164 queued-poll-max-ms=0.004 queued-polls-100ms=0 status=200
+[ubuntu-gnutls-8.5.0] paced run=3 face=h2 pacing=on window-ms=3000.077 cpu-ms=23.521 proc-stat-ms=20 turns=2835 polls=2835 fast-polls=2835 paced=2835 still-paused=#t
+[ubuntu-gnutls-8.5.0] paced run=3 face=h2 pacing=on delays submit-ms=(0.603 0.259 0.257 0.237 0.289 0.253 0.147 0.245)
+[ubuntu-gnutls-8.5.0] paced run=3 face=h2 pacing=on delays submit-taken-ms=(0.523 0.167 0.181 0.162 0.212 0.164 0.077 0.157)
+[ubuntu-gnutls-8.5.0] paced run=3 face=h2 pacing=on delays cancel-ms=(0.054 0.14 0.136 0.134 0.111 0.06 0.057 0.118)
+[ubuntu-gnutls-8.5.0] paced run=3 face=h2 pacing=on delays resume-ms=(0.097 0.089 0.096 0.105 0.03 0.023 0.037 0.091)
+[ubuntu-gnutls-8.5.0] paced run=3 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=167 resumes=167 passed-over=0 queued-polls=4 queued-poll-max-ms=0.007 queued-polls-100ms=0 status=200
+[ubuntu-gnutls-8.5.0] paced run=3 face=h2 pacing=off window-ms=3000.068 cpu-ms=2998.767 proc-stat-ms=3000 turns=3165048 polls=3165048 fast-polls=3165048 paced=0 still-paused=#t
+[ubuntu-gnutls-8.5.0] paced run=3 face=h2 pacing=off delays submit-ms=(0.162 0.424 0.361 0.416 0.362 0.432 0.377 0.211)
+[ubuntu-gnutls-8.5.0] paced run=3 face=h2 pacing=off delays submit-taken-ms=(0.101 0.261 0.208 0.256 0.21 0.35 0.226 0.137)
+[ubuntu-gnutls-8.5.0] paced run=3 face=h2 pacing=off delays cancel-ms=(0.206 0.173 0.151 0.152 0.151 0.151 0.131 0.112)
+[ubuntu-gnutls-8.5.0] paced run=3 face=h2 pacing=off delays resume-ms=(0.118 0.112 0.097 0.097 0.16 0.112 0.085 0.09)
+[ubuntu-gnutls-8.5.0] paced run=3 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=493 resumes=493 passed-over=0 queued-polls=6 queued-poll-max-ms=0.004 queued-polls-100ms=0 status=200
+[ubuntu-gnutls-8.5.0] paced done
+[ubuntu-gnutls-8.5.0] paced exited 0 after about 45 s
+[current-8.23.0] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[current-8.23.0] server {"node":"v24.18.0","pid":3348,"http":"127.0.0.1:34195","raw":"127.0.0.1:34547","https":"127.0.0.1:40829","h2":"127.0.0.1:43041","proxy":"127.0.0.1:45709"}
+[current-8.23.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4
+[current-8.23.0] libcurl 8.23.0 OpenSSL/3.0.13
+[current-8.23.0] paced run=1 face=http pacing=on window-ms=3000.092 cpu-ms=0.264 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[current-8.23.0] paced run=1 face=http pacing=on delays submit-ms=(0.38 0.174 0.254 0.24 0.218 0.263 0.15 0.212)
+[current-8.23.0] paced run=1 face=http pacing=on delays submit-taken-ms=(0.189 0.088 0.167 0.158 0.142 0.19 0.074 0.139)
+[current-8.23.0] paced run=1 face=http pacing=on delays cancel-ms=(0.132 0.208 0.152 0.255 0.149 0.158 0.151 0.157)
+[current-8.23.0] paced run=1 face=http pacing=on delays resume-ms=(0.154 0.1 0.091 0.148 0.107 0.092 0.096 0.091)
+[current-8.23.0] paced run=1 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=273 resumes=273 passed-over=0 queued-polls=5 queued-poll-max-ms=0.012 queued-polls-100ms=0 status=200
+[current-8.23.0] paced run=1 face=http pacing=off window-ms=3000.082 cpu-ms=0.318 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[current-8.23.0] paced run=1 face=http pacing=off delays submit-ms=(0.387 0.291 0.32 0.384 0.28 0.211 0.184 0.2)
+[current-8.23.0] paced run=1 face=http pacing=off delays submit-taken-ms=(0.214 0.113 0.162 0.216 0.194 0.12 0.095 0.131)
+[current-8.23.0] paced run=1 face=http pacing=off delays cancel-ms=(0.253 0.239 0.243 0.205 0.199 0.166 0.165 0.138)
+[current-8.23.0] paced run=1 face=http pacing=off delays resume-ms=(0.122 0.119 0.118 0.086 0.085 0.087 0.088 0.085)
+[current-8.23.0] paced run=1 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=339 resumes=339 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[current-8.23.0] paced run=1 face=h2 pacing=on window-ms=3000.083 cpu-ms=0.33 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[current-8.23.0] paced run=1 face=h2 pacing=on delays submit-ms=(0.371 0.225 0.233 0.245 0.238 0.239 0.295 0.201)
+[current-8.23.0] paced run=1 face=h2 pacing=on delays submit-taken-ms=(0.189 0.147 0.151 0.156 0.157 0.152 0.207 0.127)
+[current-8.23.0] paced run=1 face=h2 pacing=on delays cancel-ms=(0.253 0.32 0.142 0.133 0.194 1.075 0.73 0.842)
+[current-8.23.0] paced run=1 face=h2 pacing=on delays resume-ms=(0.098 0.027 0.09 0.093 0.085 0.124 0.092 0.031)
+[current-8.23.0] paced run=1 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=207 resumes=207 passed-over=0 queued-polls=55 queued-poll-max-ms=0.008 queued-polls-100ms=0 status=200
+[current-8.23.0] paced run=1 face=h2 pacing=off window-ms=3000.073 cpu-ms=0.326 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[current-8.23.0] paced run=1 face=h2 pacing=off delays submit-ms=(0.413 0.364 0.232 0.236 0.227 0.213 0.348 0.23)
+[current-8.23.0] paced run=1 face=h2 pacing=off delays submit-taken-ms=(0.22 0.178 0.132 0.134 0.127 0.122 0.177 0.142)
+[current-8.23.0] paced run=1 face=h2 pacing=off delays cancel-ms=(0.22 0.272 0.125 0.172 0.154 0.166 0.264 0.196)
+[current-8.23.0] paced run=1 face=h2 pacing=off delays resume-ms=(0.128 0.13 0.085 0.025 0.085 0.082 0.144 0.016)
+[current-8.23.0] paced run=1 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=255 resumes=255 passed-over=0 queued-polls=165 queued-poll-max-ms=0.009 queued-polls-100ms=0 status=200
+[current-8.23.0] paced run=2 face=http pacing=on window-ms=3000.088 cpu-ms=0.355 proc-stat-ms=10 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[current-8.23.0] paced run=2 face=http pacing=on delays submit-ms=(0.385 0.339 0.321 0.216 0.237 0.216 0.264 0.341)
+[current-8.23.0] paced run=2 face=http pacing=on delays submit-taken-ms=(0.201 0.177 0.163 0.142 0.152 0.136 0.176 0.182)
+[current-8.23.0] paced run=2 face=http pacing=on delays cancel-ms=(0.157 0.235 0.377 0.161 0.154 0.168 0.153 0.152)
+[current-8.23.0] paced run=2 face=http pacing=on delays resume-ms=(0.025 0.046 0.032 0.126 0.023 0.019 0.023 0.098)
+[current-8.23.0] paced run=2 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=321 resumes=321 passed-over=0 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200
+[current-8.23.0] paced run=2 face=http pacing=off window-ms=3000.132 cpu-ms=0.324 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[current-8.23.0] paced run=2 face=http pacing=off delays submit-ms=(0.417 0.342 0.432 0.223 0.219 0.242 0.214 0.24)
+[current-8.23.0] paced run=2 face=http pacing=off delays submit-taken-ms=(0.216 0.157 0.163 0.15 0.146 0.166 0.131 0.156)
+[current-8.23.0] paced run=2 face=http pacing=off delays cancel-ms=(0.257 0.241 0.143 0.181 0.142 0.159 0.165 0.168)
+[current-8.23.0] paced run=2 face=http pacing=off delays resume-ms=(0.058 0.118 0.025 0.023 0.087 0.103 0.028 0.03)
+[current-8.23.0] paced run=2 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=243 resumes=243 passed-over=0 queued-polls=8 queued-poll-max-ms=0.012 queued-polls-100ms=0 status=200
+[current-8.23.0] paced run=2 face=h2 pacing=on window-ms=3000.089 cpu-ms=0.272 proc-stat-ms=0 turns=3 polls=2 fast-polls=0 paced=0 still-paused=#t
+[current-8.23.0] paced run=2 face=h2 pacing=on delays submit-ms=(0.242 0.226 0.238 0.238 0.227 0.239 0.218 0.246)
+[current-8.23.0] paced run=2 face=h2 pacing=on delays submit-taken-ms=(0.11 0.144 0.137 0.144 0.144 0.153 0.14 0.164)
+[current-8.23.0] paced run=2 face=h2 pacing=on delays cancel-ms=(0.068 1.157 0.49 0.772 0.727 0.567 0.454 0.617)
+[current-8.23.0] paced run=2 face=h2 pacing=on delays resume-ms=(0.024 0.019 0.089 0.017 0.021 0.015 0.023 0.023)
+[current-8.23.0] paced run=2 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=220 resumes=220 passed-over=0 queued-polls=55 queued-poll-max-ms=0.006 queued-polls-100ms=0 status=200
+[current-8.23.0] paced run=2 face=h2 pacing=off window-ms=3000.089 cpu-ms=0.25 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[current-8.23.0] paced run=2 face=h2 pacing=off delays submit-ms=(0.247 0.25 0.242 0.236 0.235 0.269 0.171 0.235)
+[current-8.23.0] paced run=2 face=h2 pacing=off delays submit-taken-ms=(0.159 0.155 0.153 0.15 0.149 0.178 0.091 0.153)
+[current-8.23.0] paced run=2 face=h2 pacing=off delays cancel-ms=(0.165 0.163 0.159 0.174 0.155 0.158 0.186 0.15)
+[current-8.23.0] paced run=2 face=h2 pacing=off delays resume-ms=(0.089 0.087 0.102 0.085 0.032 0.025 0.087 0.089)
+[current-8.23.0] paced run=2 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=257 resumes=257 passed-over=0 queued-polls=160 queued-poll-max-ms=0.011 queued-polls-100ms=0 status=200
+[current-8.23.0] paced run=3 face=http pacing=on window-ms=3000.077 cpu-ms=0.331 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[current-8.23.0] paced run=3 face=http pacing=on delays submit-ms=(0.401 0.46 0.547 0.533 0.425 0.375 0.404 0.157)
+[current-8.23.0] paced run=3 face=http pacing=on delays submit-taken-ms=(0.215 0.277 0.33 0.309 0.249 0.205 0.21 0.069)
+[current-8.23.0] paced run=3 face=http pacing=on delays cancel-ms=(0.316 0.352 0.339 0.335 0.304 0.309 0.09 0.079)
+[current-8.23.0] paced run=3 face=http pacing=on delays resume-ms=(0.146 0.082 0.153 0.193 0.151 0.129 0.016 0.037)
+[current-8.23.0] paced run=3 face=http pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=413 resumes=413 passed-over=0 queued-polls=13 queued-poll-max-ms=0.007 queued-polls-100ms=0 status=200
+[current-8.23.0] paced run=3 face=http pacing=off window-ms=3000.071 cpu-ms=0.316 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[current-8.23.0] paced run=3 face=http pacing=off delays submit-ms=(0.381 0.4 0.446 0.437 0.499 0.393 0.411 0.345)
+[current-8.23.0] paced run=3 face=http pacing=off delays submit-taken-ms=(0.195 0.218 0.258 0.25 0.292 0.209 0.236 0.181)
+[current-8.23.0] paced run=3 face=http pacing=off delays cancel-ms=(0.302 0.305 0.345 0.319 0.36 0.309 0.26 0.24)
+[current-8.23.0] paced run=3 face=http pacing=off delays resume-ms=(0.183 0.134 0.156 0.148 0.092 0.066 0.135 0.055)
+[current-8.23.0] paced run=3 face=http pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=226 resumes=226 passed-over=0 queued-polls=7 queued-poll-max-ms=0.013 queued-polls-100ms=0 status=200
+[current-8.23.0] paced run=3 face=h2 pacing=on window-ms=3000.142 cpu-ms=0.254 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[current-8.23.0] paced run=3 face=h2 pacing=on delays submit-ms=(0.246 0.208 0.212 0.229 0.229 0.232 0.235 0.198)
+[current-8.23.0] paced run=3 face=h2 pacing=on delays submit-taken-ms=(0.158 0.134 0.137 0.144 0.147 0.143 0.147 0.107)
+[current-8.23.0] paced run=3 face=h2 pacing=on delays cancel-ms=(0.07 0.289 0.888 0.161 0.778 0.663 0.67 0.127)
+[current-8.23.0] paced run=3 face=h2 pacing=on delays resume-ms=(0.091 0.083 0.099 0.016 0.02 0.017 0.018 0.091)
+[current-8.23.0] paced run=3 face=h2 pacing=on drained bytes=8388608 whole=#t pattern=ok end=eof pauses=198 resumes=198 passed-over=0 queued-polls=55 queued-poll-max-ms=0.012 queued-polls-100ms=0 status=200
+[current-8.23.0] paced run=3 face=h2 pacing=off window-ms=3000.083 cpu-ms=0.343 proc-stat-ms=0 turns=2 polls=2 fast-polls=0 paced=0 still-paused=#t
+[current-8.23.0] paced run=3 face=h2 pacing=off delays submit-ms=(0.404 0.253 0.246 0.374 0.423 0.419 0.384 0.409)
+[current-8.23.0] paced run=3 face=h2 pacing=off delays submit-taken-ms=(0.221 0.147 0.167 0.254 0.269 0.282 0.256 0.275)
+[current-8.23.0] paced run=3 face=h2 pacing=off delays cancel-ms=(0.177 0.15 0.213 0.247 0.273 0.247 0.236 0.226)
+[current-8.23.0] paced run=3 face=h2 pacing=off delays resume-ms=(0.091 0.107 0.166 0.132 0.153 0.147 0.141 0.16)
+[current-8.23.0] paced run=3 face=h2 pacing=off drained bytes=8388608 whole=#t pattern=ok end=eof pauses=264 resumes=264 passed-over=0 queued-polls=169 queued-poll-max-ms=0.013 queued-polls-100ms=0 status=200
+[current-8.23.0] paced done
+[current-8.23.0] paced exited 0 after about 44 s

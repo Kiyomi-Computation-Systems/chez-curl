@@ -9,6 +9,26 @@ close-out under **Close-outs**, newest first.
 - **Milestone:** M6, streaming bodies and backpressure (brief §8), by the
   [M6 plan](2026-10-29-m6-plan.md), a draft, in three slices: the response stream with the
   engine's resume and paced poll; the request stream; the high level. Next: slice 1.
+  - **Slice 1 measured first, 2026-10-30** (the plan, §4.1, as measured;
+    [`research/m6/slice1/`](research/m6/slice1/)), on a prototype of the plan's §3.2 to §3.5, a
+    patch on a copy of `src/`, on the five Linux lanes and under Valgrind. Its numbers set the
+    tests' bounds: pacing cuts 8.5.0's CPU over a 3 s pause from about 3,000 ms to 23.5 to 39.2;
+    a message during a pause acts within 1.251 ms natively; the head equals `finish-transfer`'s
+    on every face; the lent take lost nothing in 90 cases of 90; 64 MiB streams whole. Bound
+    plain, `curl_easy_pause`'s gzip replay, up to 21.6 ms, held collections, so it is bound
+    `__collect_safe`. And Guix's 8.20.0 reads back, inside `curl_multi_perform`, a wakeup made
+    before it, so the poll waits up to 1000 ms, which I reran and placed by trace. **Decided by
+    the maintainer, the recommended option:** the engine looks at its queue before it polls
+    (ADR-0012, amended 2026-10-30).
+  - **Slice 1 built, 2026-10-30,** uncommitted: the `stream-buffer` key, the head, the
+    buffered write callable, the header callable, resume, the look, the paced poll, the lent
+    take, `curl-token-next-piece`, the port, `pause-failed`, `stream-with-rounds`, and no
+    multiplexing on 8.7.x; `test-stream`, 73 tests (the plan, §4.2, as built). Reviewed twice
+    (Opus, read-only): the first found one major, a caller's `Expect: 100-continue` makes libcurl
+    resend a request inside one transfer on a 417, now refused (the plan, §3.2), and six minors;
+    the second, of the fixes, four minors. On the final tree: the container's `make test` 33 of
+    33 and the checks, and the five Docker lanes 33 of 33, the memory lane too, then the touched
+    suites again on each. The Mac's `make test` and its multiplexing probe come on the PR (§7).
   - **The plan measured first** ([`research/m6/`](research/m6/)):
     - a C probe whose loop steps as the engine does, 30 cases on the five Linux libcurls, two
       runs each ([`pause/`](research/m6/pause/));

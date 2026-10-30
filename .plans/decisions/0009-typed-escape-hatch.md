@@ -1,6 +1,6 @@
 # ADR-0009: A typed escape hatch for unwrapped options, in the low level only
 
-- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built; amended 2026-10-27, the hatch, measured, decided and built (M4 slice 4); amended 2026-10-27, the Mac's runs
+- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built; amended 2026-10-27, the hatch, measured, decided and built (M4 slice 4); amended 2026-10-27, the Mac's runs; amended 2026-10-30, the header callable's options are owned (M6 slice 1)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, `(curl ...)` only
 - **Settles:** D3 (brief §10)
@@ -420,3 +420,12 @@ The maintainer ran M4 slice 4's owed checks on the Mac (Apple M1, macOS 26.7.1, 
 - **8.7.1's options table** (`options-mac-8.7.1.log`): 8.5.0's options, by name, id and type,
   and one more, `SERVER_RESPONSE_TIMEOUT_MS` (324). Every option it lists is in a Linux table,
   so the classification above covers each.
+
+## Amendment, 2026-10-30: the header callable's options are owned (M6 slice 1)
+
+A request that streams its response sets `HEADERFUNCTION` and `HEADERDATA` to its header
+callable and the transfer's key (the M6 plan, §3.2). Both are the `stream-buffer` field's
+options, so the hatch refuses each as `owned-option`, on every request, beside `WRITEFUNCTION`
+and `WRITEDATA`. Either is a callback pointer, which the hatch's types never took; owned, its
+refusal names the reason. Slice 2 owns the read, seek and prerequest callables' options the
+same way.

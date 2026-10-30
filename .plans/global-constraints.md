@@ -86,9 +86,11 @@ provisional. They bind until that record is accepted or amended.
     The four variadic rows name `bind-variadic`, and the four multi calls that can block,
     `curl_multi_poll`, `curl_multi_perform`, `curl_multi_remove_handle` and
     `curl_multi_cleanup`, name `bind-blocking`, whose template carries `__collect_safe`
-    (ADR-0013, amended 2026-10-25).
-  - A callable is the whole right-hand side of `(define name ...)`. The one callable,
-    `write-body`, is locked with `lock-object` where it is defined, and never unlocked.
+    (ADR-0013, amended 2026-10-25), and so does `curl_easy_pause`, from M6 (ADR-0013, amended
+    2026-10-30).
+  - A callable is the whole right-hand side of `(define name ...)`. Each callable, `write-body`
+    and, from M6, the header callable `read-head`, is locked with `lock-object` where it is
+    defined, and never unlocked.
 - **Every macro `src/` defines is a row of `known-macros`,** in
   `tests/foreign-conventions.sls`: a binder (a known wrapper) or a plain macro, defined at
   a library body's top level in the file its row names. Any other `define-syntax`, and every `let-syntax` and `letrec-syntax`, fails.
@@ -148,7 +150,7 @@ provisional. They bind until that record is accepted or amended.
   in the header's own spelling and checked against it. The suite holds each binding's Chez types
   to its row through `c-type-map`, which it writes out, with the enum names and the variadic
   lists. A new binding needs a row (ADR-0001, amended). A callable has one too: `write-body`
-  is held to `curl_write_callback`'s typedef.
+  and `read-head` are each held to `curl_write_callback`'s typedef.
 - **`test-collect-safe` reads every binding's types as an allowlist,** and refuses a
   crossing, a type that hands C a pointer into Chez's heap, unless its row is marked.
   - A bytevector's data (`u8*`, `u16*`, `u32*`) needs `(bytevector-crossing CITATION)`:
@@ -361,7 +363,9 @@ provisional. They bind until that record is accepted or amended.
   refused too, an option with an id of its own that sets the same thing: `MAXFILESIZE`,
   `TIMEOUT`, `HTTPGET`, `POST`, `UPLOAD`, `PUT`, `CAINFO_BLOB` and `SSL_OPTIONS` today, and
   with them the transfer's callable and data, `WRITEFUNCTION`, `WRITEDATA` and `ERRORBUFFER`
-  (ADR-0009, amended 2026-10-23 and 2026-10-24).
+  (ADR-0009, amended 2026-10-23 and 2026-10-24), and from M6 slice 1 the `stream-buffer`
+  field's header callable and its data, `HEADERFUNCTION` and `HEADERDATA` (ADR-0009, amended
+  2026-10-30).
   M4 adds, each in its slice: the body's options, `CUSTOMREQUEST`, `CONNECTTIMEOUT_MS`, `PROXY`,
   `FOLLOWLOCATION`, and every `PROXY_SSL_*` and `PROXY_CA*` option, with their twins, among the
   string, list and blob options too (ADR-0009, amended 2026-10-26). Slice 1 built its own, and
@@ -551,7 +555,10 @@ provisional. They bind until that record is accepted or amended.
   the calling thread, is gone (the M3 plan, §5.4; ADR-0012).
 - **Messages cross threads, handle calls don't.** Submit, cancel, resume and stop are
   queued under the engine's mutex, then `curl_multi_wakeup` wakes the poll. That wakeup is
-  the only libcurl call a caller's thread makes on an engine's handle (ADR-0012). A cancel
+  the only libcurl call a caller's thread makes on an engine's handle (ADR-0012). Between its
+  read and its poll the engine looks at its queue under its mutex, and skips the poll when a
+  message is queued: Guix's 8.20.0 reads back, inside `curl_multi_perform`, a wakeup made
+  before it, and the poll then waits up to 1000 ms (ADR-0012, amended 2026-10-30). A cancel
   of a token still queued is no message: the caller's thread completes it, under the
   engine's mutex, and nothing native is made for it (the M3 plan, §3.5).
 - **One central check enforces it.** An operation on an engine-owned handle from any other
@@ -605,8 +612,12 @@ provisional. They bind until that record is accepted or amended.
   - they are `curl_multi_poll`, `curl_multi_perform`, `curl_multi_remove_handle` and
     `curl_multi_cleanup`. The last three each waited 9 to 10 s while a name lookup stalled.
     They are bound through `bind-blocking` (ADR-0019);
-  - so is every callback a `__collect_safe` call can invoke. The write callback fires inside
-    `curl_multi_perform` alone;
+  - so is every callback a `__collect_safe` call can invoke. The write and header callables fire
+    inside `curl_multi_perform`, and inside `curl_easy_pause`'s replay, from M6;
+  - `curl_easy_pause` blocks on nothing, but its replay runs the callables and libcurl's
+    decoders, up to 21.6 ms for a gzip body: bound plain, it held another thread's collection
+    until it returned. It is bound `__collect_safe` through `bind-blocking` (ADR-0013, amended
+    2026-10-30);
   - one callable may serve a `__collect_safe` call and a plain one;
   - `curl_multi_init`, `curl_multi_add_handle`, `curl_multi_wakeup`, `curl_multi_info_read`,
     and `curl_easy_cleanup` of a handle removed from the engine's multi handle, stay plain,
@@ -733,6 +744,14 @@ provisional. They bind until that record is accepted or amended.
   response's by `stream-buffer`, the request's by `body` `stream` with `body-length`. One
   `curl-submit` answers one kind of token. A request stays data: each submit makes its own
   stream.
+- **One transfer, one request:** a request that streams its response refuses, as
+  `&curl-request-error`, `stream-with-rounds`, every way libcurl makes a second request inside
+  one transfer: the private `follow` field, the hatch's `HTTPAUTH` and `PROXYAUTH`, and a caller
+  `Expect` header whose value holds `100-continue` anywhere, folded A to Z alone, whose 417
+  libcurl answers with a resend. Each is refused by every path that puts the two together, and
+  the header again at submit (the M6 plan, §3.2).
+- **A streamed transfer's failure may be `pause-failed`,** `curl_easy_pause` having answered
+  other than 0, a reason of no class (ADR-0012, amended 2026-10-29).
 - **The callables only copy and signal** (ADR-0012, decision 4): the write callable fills a
   bounded buffer, and answers `CURL_WRITEFUNC_PAUSE` when it is full; the read callable gives
   what is buffered, never past `body-length`, and answers `CURL_READFUNC_PAUSE` when there is
@@ -757,7 +776,10 @@ provisional. They bind until that record is accepted or amended.
   escapes as the hold ends loses nothing; and **every look decides the resume,** not the take
   alone, since the write callable can pause in between. A put commits inside its hold, and
   `curl-token-body-count` tells what was committed (the M6 plan, §3.5; `traps.md`).
-- **A port belongs to the thread that made it,** its close cancels its token, and its ends stick:
+- **A port belongs to the thread that made it:** a read that reaches `read!`, or a close, from
+  another raises `&curl-wrong-thread`; bytes Chez has already buffered are served to any thread,
+  which no hook can see, and another thread's `get-bytevector-n`, `-n!` or `-all` that takes
+  them, then raises at `read!`, loses them. Its close cancels its token, and its ends stick:
   0 at a response's end, the failure raised at a failure's, every time after. A raise from a
   read loses bytes inside `get-bytevector-n`, `-n!` and `-all`, never inside
   `get-bytevector-some`, `-some!` or `get-u8` (the M6 plan, §3.5).

@@ -107,21 +107,34 @@
 ;;; PROXY to "", which reads none of them, and a proxy's TLS stays
 ;;; libcurl's verified default, its options owned.
 ;;;
-;;; write-body is the one callable (M2 plan, section 3.5): __collect_safe,
-;;; since curl_multi_perform, where it fires, is (ADR-0013, accepted
-;;; 2026-10-24), locked where it is defined and never unlocked, and handed
-;;; the transfer's key, an integer, as its WRITEDATA, so no Scheme object
-;;; crosses into C. It runs no procedure a caller supplied (ADR-0012,
-;;; decision 4). It logs each chunk libcurl hands it, its length, the thread
-;;; it ran on and what became of it, as data the engine hands the token. No
-;;; raise leaves it: its whole body runs under a guard that records
+;;; The callables (M2 plan, section 3.5; ADR-0030): write-body for every
+;;; transfer, and read-head, the header callable, for a streamed response
+;;; alone. Each is __collect_safe, since curl_multi_perform and
+;;; curl_easy_pause, where they fire, are (ADR-0013, accepted 2026-10-24),
+;;; locked where it is defined and never unlocked, and handed the
+;;; transfer's key, an integer, as its WRITEDATA or HEADERDATA, so no Scheme
+;;; object crosses into C. Neither runs a procedure a caller supplied
+;;; (ADR-0012, decision 4). write-body logs each chunk libcurl hands it, its
+;;; length, the thread it ran on and what became of it, as data the engine
+;;; hands the token; for a stream, a count of each verdict and its threads.
+;;; No raise leaves either: its whole body runs under a guard that records
 ;;; anything raised against the key and returns 0. libcurl then answers
 ;;; CURLE_WRITE_ERROR, 23, and the transfer fails with what was recorded. A
 ;;; request's fault plants such a raise, at the chunk it names. The body
 ;;; limit takes the same path: CURLOPT_MAXFILESIZE_LARGE is the limit plus
 ;;; one (M2 plan, section 5.3), so a declared length past that is refused
 ;;; before its body, and the callable refuses the first byte past the limit
-;;; itself, on every libcurl.
+;;; itself, on every libcurl, a stream's bytes counted as a whole body's.
+;;;
+;;; A streamed response (ADR-0030; the M6 plan, sections 3.2 to 3.5): a
+;;; request's stream-buffer gives each submit a stream of its own, made
+;;; with its plan. write-body fills its bounded buffer, a queue of pieces,
+;;; each a fresh bytevector the checked copy filled once, and answers
+;;; CURL_WRITEFUNC_PAUSE when it is full, the check and the receive bit in
+;;; one hold of the stream's mutex; read-head publishes the first final
+;;; head. A taker leaves a piece in place inside its look's hold and removes
+;;; it after, writing fields only the taker writes; every look decides the
+;;; resume. The engine's token operations take from it.
 ;;;
 ;;; The hatch (ADR-0009; the M4 plan, section 3.7): curl-request-with-options,
 ;;; which (curl unsupported) exports, attaches options to a request by name.
@@ -169,12 +182,20 @@
           tls-settings setopt-accepted? quick-exit-pin pinned-settings quick-exit-known?
           quick-exits-set guix-ca-overrides ca-overridden? pkcs11-prefix? overriding-variables
           keychain-fallback? request-size-unreliable reported-request-size
-          curl-request-with-options hatch-types option-named hatch-settings-of)
+          curl-request-with-options hatch-types option-named hatch-settings-of
+          curl-request-stream-buffer
+          curl-head? curl-head-status curl-head-http-version curl-head-headers
+          plan-stream live-transfer-stream response-stream? stream-lock stream-limit stream-look!
+          stream-remove! stream-clear-pause! stream-resumed! stream-paused? stream-head
+          stream-stats resume-failure stream-verdicts expect-continue? ascii-folded
+          curl-request-with-head-fault planted-head-fault stream-plant-stall! stream-stall-state)
   (import (curl private require-threaded)
           (rnrs)
           (rnrs mutable-strings)
+          (rnrs mutable-pairs)
           (only (chezscheme) critical-section foreign-callable foreign-callable-entry-point
-                lock-object make-mutex with-mutex foreign-sizeof get-thread-id)
+                lock-object make-mutex with-mutex foreign-sizeof get-thread-id current-time
+                time-second time-nanosecond make-time sleep)
           (curl private conditions)
           (curl private constants)
           (curl private counters)
@@ -267,6 +288,7 @@
                          ((unknown-key) "not a key a request takes")
                          ((repeated-key) "a key given twice")
                          ((missing-value) "a key given last, with no value after it")
+                         ((stream-with-rounds) "a streamed response takes one request in its transfer: follow, HTTPAUTH, PROXYAUTH and an Expect of 100-continue would make a second, whose head the stream would not publish")
                          (else "a body with get or head, which send none")))
                       (make-irritants-condition (list value)))))
 
@@ -498,7 +520,8 @@
   ;; The keys make-curl-request and curl-request-with take, in the record's
   ;; order. tests/test-request.sps writes it out.
   (define request-keys
-    '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy))
+    '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
+      stream-buffer))
 
   ;; timeout? : Any -> Boolean
   ;; X is a timeout: #f, none, or a positive exact integer a long holds.
@@ -535,7 +558,8 @@
   ;; curl-request-ca-file : Request -> (U String #f)
   ;; curl-request-verify : Request -> Boolean
   ;; curl-request-proxy : Request -> (U 'environment #f)
-  ;; curl-request-fault : Request -> (U Positive-Integer #f)   private
+  ;; curl-request-stream-buffer : Request -> (U Positive-Integer #f)
+  ;; curl-request-fault : Request -> (U Positive-Integer (List 'head Positive-Integer) #f)   private
   ;; curl-request-follow : Request -> Boolean                  private
   ;; curl-request-options : Request -> (Listof Hatch-Setting)  private
   ;;
@@ -578,15 +602,31 @@
   ;;                       (ADR-0024, decision 1). A proxy's TLS is libcurl's
   ;;                       verified default, against its system store: neither
   ;;                       ca-file nor verify reaches it
+  ;;   stream-buffer       a positive exact integer, the bytes of the
+  ;;                       response's body the token buffers, read as it
+  ;;                       arrives, a piece at a time or through a port; or
+  ;;                       #f, the default, which keeps the whole body
+  ;;                       (ADR-0030). Beside the private follow field, the
+  ;;                       hatch's HTTPAUTH or PROXYAUTH, or an Expect header
+  ;;                       whose value holds 100-continue, in any ASCII case,
+  ;;                       it is refused as stream-with-rounds, however the
+  ;;                       two came together: each makes a second request
+  ;;                       inside the transfer, whose head the stream would
+  ;;                       not publish (the M6 plan, section 3.2)
   ;;
   ;; The defaults set no policy: libcurl's own stand (ADR-0023, decision 3).
   ;; The keys are refused first, by request-settings' rules, then a URL
   ;; that is not a string, then a wrong type for method, body, timeout-ms,
-  ;; connect-timeout-ms, body-limit, ca-file, verify or proxy, each an
-  ;; assertion violation, the empty string as a CA file among them; then a
-  ;; body with get or head, body-not-allowed; then snapshot's rules for the
+  ;; connect-timeout-ms, body-limit, ca-file, verify, proxy or
+  ;; stream-buffer, each an assertion violation, the empty string as a CA
+  ;; file among them; then a body with get or head, body-not-allowed; then a
+  ;; stream-buffer beside follow, HTTPAUTH or PROXYAUTH, stream-with-rounds,
+  ;; checked here, where every constructor's request is checked, the
+  ;; private ones' and the hatch's among them; then snapshot's rules for the
   ;; headers and the user agent, their types first, as assertion
-  ;; violations; then ca-file-copy's for the CA file. Each refusal of a value is a
+  ;; violations; then an Expect header holding 100-continue beside
+  ;; stream-buffer, stream-with-rounds, by expect-continue?, which a submit
+  ;; checks again on its own copies; then ca-file-copy's for the CA file. Each refusal of a value is a
   ;; &curl-request-error naming the field. The record keeps the caller's
   ;; objects; a submit checks them again, as a plan.
   ;;
@@ -616,17 +656,18 @@
             (immutable ca-file curl-request-ca-file)
             (immutable verify curl-request-verify)
             (immutable proxy curl-request-proxy)
+            (immutable stream-buffer curl-request-stream-buffer)
             (immutable fault curl-request-fault)
             (immutable follow curl-request-follow)
             (immutable options curl-request-options)))
 
-  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any Any (Listof Hatch-Setting) -> Request
+  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any Any Any (Listof Hatch-Setting) -> Request
   ;; A request of these fields, checked as WHO by make-curl-request's rules,
   ;; after the keys. OPTIONS, the hatch's, were checked as they were
   ;; attached, and are private copies, so they are kept as they are.
   (define (checked-request who url method headers body user-agent timeout-ms
-                           connect-timeout-ms body-limit ca-file verify proxy fault follow
-                           options)
+                           connect-timeout-ms body-limit ca-file verify proxy stream-buffer fault
+                           follow options)
     (define (wrong message irritant) (assertion-violation who message irritant))
     (unless (string? url) (wrong "a URL is a string" url))
     (unless (memq method request-methods)
@@ -646,16 +687,94 @@
     (unless (boolean? verify) (wrong "verify is #t or #f" verify))
     (unless (or (eq? proxy 'environment) (not proxy))
       (wrong "a proxy is environment, the environment's, or #f, none" proxy))
-    (unless (or (not fault) (and (integer? fault) (exact? fault) (positive? fault)))
-      (wrong "a fault is a positive exact integer, the chunk it raises at, or #f: a request holds no procedure"
+    (unless (or (not stream-buffer)
+                (and (integer? stream-buffer) (exact? stream-buffer) (positive? stream-buffer)))
+      (wrong "a stream-buffer is a positive exact integer, the bytes a token buffers, or #f, the whole body"
+             stream-buffer))
+    (unless (or (not fault) (chunk-fault? fault) (head-fault? fault))
+      (wrong "a fault is a positive exact integer, the chunk it raises at, (head N), the head's line it raises at, or #f: a request holds no procedure"
              fault))
     (unless (boolean? follow) (wrong "follow is #t or #f" follow))
     (when (and body (memq method '(get head)))
       (refuse-field who 'body method 'body-not-allowed))
-    (snapshot who headers user-agent)
+    (when (and stream-buffer (or follow (exists rounds-setting? options)))
+      (refuse-field who 'stream-buffer stream-buffer 'stream-with-rounds))
+    (check-expect-round who stream-buffer (car (snapshot who headers user-agent)))
     (ca-file-copy who ca-file)
     (new-curl-request url method headers body user-agent timeout-ms connect-timeout-ms
-                      body-limit ca-file verify proxy fault follow options))
+                      body-limit ca-file verify proxy stream-buffer fault follow options))
+
+  ;; chunk-fault? : Any -> Boolean
+  ;; X is a fault the write callable raises at: the chunk's number, a
+  ;; positive exact integer.
+  (define (chunk-fault? x) (and (integer? x) (exact? x) (positive? x)))
+
+  ;; head-fault? : Any -> Boolean
+  ;; X is a fault the header callable raises at, (head N), N the head's
+  ;; line, counting from 1, a positive exact integer.
+  (define (head-fault? x)
+    (and (list? x) (= (length x) 2) (eq? (car x) 'head) (chunk-fault? (cadr x))))
+
+  ;; ascii-folded : String -> String
+  ;; S with A to Z as a to z, and every other char as it is: how an Expect
+  ;; header's name and value are compared, as libcurl compares them. Never
+  ;; string-ci=? nor char-foldcase, which fold U+017F LONG S to s and
+  ;; U+212A KELVIN SIGN to k (traps.md).
+  (define (ascii-folded s)
+    (list->string (map ascii-downcase (string->list s))))
+
+  ;; expect-continue? : (Listof (Pairof String String)) -> Boolean
+  ;; Whether HEADERS, checked copies, name Expect, in any ASCII case, with a
+  ;; value that holds 100-continue, in any ASCII case, anywhere in it:
+  ;; libcurl then waits for a 100 before a body, and on a 417 resends the
+  ;; request, without it, inside the same transfer; a get, or a delete
+  ;; with no body, it sends once, the 417 final (slice 1's second review,
+  ;; on 8.20.0), and the rule refuses those too. 7.85.0 and 8.5.0 match it so,
+  ;; anywhere in the value, "x100-continue" and "100-continue;q=1" among
+  ;; them; 8.20.0 and 8.23.0 as an element of a comma-separated list alone,
+  ;; as M6 slice 1's Expect probe measured. This holds the wider rule, on
+  ;; every Expect header, not only the first, which libcurl reads. Pure.
+  (define (expect-continue? headers)
+    (exists (lambda (header)
+              (and (string=? (ascii-folded (car header)) "expect")
+                   (holds-text? (ascii-folded (cdr header)) "100-continue")))
+            headers))
+
+  ;; holds-text? : String String -> Boolean
+  ;; Whether TEXT holds PART, char for char, at some position.
+  (define (holds-text? text part)
+    (let ((n (string-length text)) (k (string-length part)))
+      (let loop ((i 0))
+        (and (<= (+ i k) n)
+             (or (string=? (substring text i (+ i k)) part)
+                 (loop (+ i 1)))))))
+
+  ;; check-expect-round : Symbol (U Positive-Integer #f) (Listof (Pairof String String)) -> Void
+  ;; Refuses, as WHO, a streamed response, STREAM-BUFFER, beside HEADERS, the
+  ;; snapshot's copies, that name Expect: 100-continue: stream-with-rounds,
+  ;; whatever the method, since a 417 makes libcurl resend a request that
+  ;; sends a body inside the transfer, and the head
+  ;; published would be the 417's (the M6 plan, section 3.2: one transfer,
+  ;; one request). Checked as the request is made, and again at submit on
+  ;; the submit's own copies, since a caller's string may change between.
+  (define (check-expect-round who stream-buffer headers)
+    (when (and stream-buffer (expect-continue? headers))
+      (refuse-field who 'stream-buffer stream-buffer 'stream-with-rounds)))
+
+  ;; rounds-option-names : (Listof String)
+  ;; The hatch's options that make libcurl send a second request inside one
+  ;; transfer, an auth round: HTTPAUTH, the server's, and PROXYAUTH, the
+  ;; proxy's (the M6 plan, section 3.2). M7 revisits auth.
+  (define rounds-option-names '("HTTPAUTH" "PROXYAUTH"))
+
+  ;; rounds-setting? : Hatch-Setting -> Boolean
+  ;; Whether SETTING, a hatch setting, is one of rounds-option-names, by
+  ;; id in the loaded libcurl, so an alias is one too.
+  (define (rounds-setting? setting)
+    (exists (lambda (name)
+              (let ((option (option-found name)))
+                (and option (eqv? (car option) (hatch-setting-id setting)))))
+            rounds-option-names))
 
   ;; request-like : Symbol Request (Listof (Pairof Symbol Any)) String Any Any (Listof Hatch-Setting) -> Request
   ;; REQUEST with SETTINGS' keys replaced, URL, FAULT, FOLLOW and OPTIONS
@@ -674,13 +793,14 @@
                      (given 'ca-file curl-request-ca-file)
                      (given 'verify curl-request-verify)
                      (given 'proxy curl-request-proxy)
+                     (given 'stream-buffer curl-request-stream-buffer)
                      fault follow options))
 
   ;; default-request : Request
   ;; Every key at its default, for a URL nothing reads: what
   ;; make-curl-request replaces keys in.
   (define default-request
-    (new-curl-request "" 'get '() #f #f #f #f #f #f #t 'environment #f #f '()))
+    (new-curl-request "" 'get '() #f #f #f #f #f #f #t 'environment #f #f #f '()))
 
   (define (make-curl-request url . plist)
     (request-like 'make-curl-request default-request
@@ -699,7 +819,24 @@
   (define (curl-request-with-fault request fault)
     (unless (curl-request? request)
       (assertion-violation 'curl-request-with-fault "not a request" request))
+    (unless (or (not fault) (chunk-fault? fault))
+      (assertion-violation 'curl-request-with-fault
+                           "a fault is a positive exact integer, the chunk it raises at, or #f: a request holds no procedure"
+                           fault))
     (request-like 'curl-request-with-fault request '() (curl-request-url request) fault
+                  (curl-request-follow request) (curl-request-options request)))
+
+  ;; curl-request-with-head-fault : Request Positive-Integer -> Request
+  ;; REQUEST with its private fault (head N): the header callable raises
+  ;; (planted-head-fault N) at the head's line N, counting from 1, for a
+  ;; streamed response, so a test can watch its guard record it. A test
+  ;; seam; (curl) does not export it.
+  (define (curl-request-with-head-fault request n)
+    (unless (curl-request? request)
+      (assertion-violation 'curl-request-with-head-fault "not a request" request))
+    (unless (chunk-fault? n)
+      (assertion-violation 'curl-request-with-head-fault "a head's line is a positive exact integer" n))
+    (request-like 'curl-request-with-head-fault request '() (curl-request-url request) (list 'head n)
                   (curl-request-follow request) (curl-request-options request)))
 
   ;; curl-request-following : Request -> Request
@@ -721,14 +858,14 @@
   ;; curl-response-http-version : Response -> (U Symbol Integer #f)
   ;; curl-response-effective-url : Response -> (U String #f)
   ;; curl-response-headers : Response -> (Listof (Pairof String String))
-  ;; curl-response-body : Response -> Bytevector
+  ;; curl-response-body : Response -> (U Bytevector #f)
   ;; curl-response-timings : Response -> (Listof (Pairof Symbol Natural))
   ;; What a transfer answered: RESPONSE_CODE; HTTP_VERSION, by
   ;; http-version-symbol; EFFECTIVE_URL, read as UTF-8; every header of the
   ;; last request, CURLH_HEADER's, as Latin-1 strings in libcurl's order;
-  ;; the body; and its timings, timing-infos' names in its order, each the
-  ;; microseconds from the transfer's start to that phase's end, as libcurl
-  ;; reports them (M4 plan, section 3.3).
+  ;; the body, #f for a streamed one; and its timings, timing-infos' names
+  ;; in its order, each the microseconds from the transfer's start to that
+  ;; phase's end, as libcurl reports them (M4 plan, section 3.3).
   (define-record-type (curl-response make-curl-response curl-response?)
     (fields (immutable status curl-response-status)
             (immutable http-version curl-response-http-version)
@@ -897,13 +1034,16 @@
   ;; them: ca-file CAINFO, its path, then CAPATH, cleared; verify
   ;; SSL_VERIFYPEER, then SSL_VERIFYHOST (ADR-0018). proxy sets PROXY, to ""
   ;; when it is #f (ADR-0024, decision 1). follow is the private field's (M4
-  ;; plan, section 3.2).
+  ;; plan, section 3.2). stream-buffer sets the header callable and its
+  ;; data, the transfer's key, for a streamed response alone (the M6 plan,
+  ;; sections 3.2 and 3.3).
   (define request-field-options
     '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST") (headers "HTTPHEADER")
       (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS") (user-agent "USERAGENT")
       (timeout-ms "TIMEOUT_MS") (connect-timeout-ms "CONNECTTIMEOUT_MS")
       (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
-      (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY") (follow "FOLLOWLOCATION")))
+      (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY")
+      (stream-buffer "HEADERFUNCTION" "HEADERDATA") (follow "FOLLOWLOCATION")))
 
   ;; field-options : Symbol -> (Listof String)
   ;; FIELD's options, in request-field-options' order.
@@ -1342,18 +1482,32 @@
         ((slist) (set-option! easy name list buffer))
         (else (set-option! easy name value buffer)))))
 
-  ;; --- the transfers write-body serves ------------------------------------------------
+  ;; --- the transfers the callables serve ------------------------------------------------
 
-  ;; A sink is what one transfer's callable writes to: its limit and its
+  ;; A sink is what one transfer's callables write to: its limit and its
   ;; planted fault, the bytes received, the chunks kept, newest first, the
-  ;; log of every chunk libcurl handed it, newest first, and what was
-  ;; recorded, #f or (REASON . OBJECT).
+  ;; log of what libcurl handed it, and what was recorded, #f or (REASON .
+  ;; OBJECT); its response stream, #f for a whole body; the counter its
+  ;; engine reads, a vector of one natural, bumped for every callable's
+  ;; call that took bytes, which tells the paced poll that a turn moved
+  ;; one (the M6 plan, section 3.4); and, for a stream, the write
+  ;; callable's calls so far, which a planted fault counts, the easy
+  ;; handle the header callable reads, whether it has published the head,
+  ;; and the head's lines so far, which a planted (head N) counts. Every
+  ;; field but the stream's is the engine thread's alone.
+  ;;
+  ;; The log of a whole body keeps every chunk, (LENGTH THREAD VERDICT),
+  ;; newest first; a stream's keeps, for each verdict, how many calls had
+  ;; it and the threads they ran on, so a long stream's log stays small
+  ;; (the M6 plan, section 3.2).
   (define-record-type sink
     (fields (immutable limit) (immutable fault)
-            (mutable received) (mutable chunks) (mutable log) (mutable recorded)))
+            (mutable received) (mutable chunks) (mutable log) (mutable recorded)
+            (immutable stream) (immutable moves) (mutable offers) (mutable easy)
+            (mutable published) (mutable lines)))
 
   ;; The live transfers, by key, and the next key, under the mutex. Every
-  ;; engine's thread reads it: one callable serves them all.
+  ;; engine's thread reads it: each callable serves them all.
   (define sinks (make-eqv-hashtable))
   (define sinks-lock (make-mutex))
   (define next-key 1)
@@ -1388,21 +1542,311 @@
 
   ;; record! : Natural Symbol Any -> Void
   ;; REASON and OBJECT recorded against KEY's transfer, unless something is
-  ;; recorded already. It never raises: write-body's guard calls it.
+  ;; recorded already. It never raises: the callables' guards call it.
   (define (record! key reason object)
     (guard (e (#t #f))
       (let ((sink (sink-of key)))
         (when (and sink (not (sink-recorded sink)))
           (sink-recorded-set! sink (cons reason object))))))
 
+  ;; moved! : Sink -> Void
+  ;; SINK's engine's counter, bumped: a callable took bytes. The engine's
+  ;; thread alone runs the callables and reads it, so it needs no mutex.
+  (define (moved! sink)
+    (let ((moves (sink-moves sink)))
+      (vector-set! moves 0 (+ (vector-ref moves 0) 1))))
+
   ;; planted-fault : Positive-Integer -> (List 'planted-fault Positive-Integer)
   ;; What write-body raises at the chunk N a request's fault names: data, so
   ;; a test can tell it from every other raise.
   (define (planted-fault n) (list 'planted-fault n))
 
+  ;; planted-head-fault : Positive-Integer -> (List 'planted-head-fault Positive-Integer)
+  ;; What read-head raises at the head's line N a request's (head N) names:
+  ;; data, as planted-fault's.
+  (define (planted-head-fault n) (list 'planted-head-fault n))
+
+  ;; --- the response stream (ADR-0030; the M6 plan, sections 3.2 to 3.5) ----------------
+
+  ;; curl-head? : Any -> Boolean
+  ;; curl-head-status : Head -> Integer
+  ;; curl-head-http-version : Head -> (U Symbol Integer #f)
+  ;; curl-head-headers : Head -> (Listof (Pairof String String))
+  ;; A streamed response's final head, read by the header callable at its
+  ;; empty line, as finish-transfer reads a response's: RESPONSE_CODE;
+  ;; HTTP_VERSION, by http-version-symbol; and every CURLH_HEADER header of
+  ;; request -1, as Latin-1 strings in libcurl's order. It reads no length:
+  ;; 8.7.1 writes the empty line before it reads one (the M6 plan, section
+  ;; 2.2).
+  (define-record-type (curl-head make-curl-head curl-head?)
+    (fields (immutable status curl-head-status)
+            (immutable http-version curl-head-http-version)
+            (immutable headers curl-head-headers)))
+
+  ;; A response stream, made at submit, one per submit, with its plan
+  ;; (ADR-0030, decision 1): its mutex and its stream-buffer, LIMIT. Its
+  ;; pieces are a queue of pairs, (PIECE . NEXT), behind a sentinel pair.
+  ;;
+  ;;   - Under its mutex, the engine's thread writes the queue's tail, the
+  ;;     bytes appended, and the receive bit, set by the write callable in
+  ;;     the hold that found the buffer full; the pauses, and the most the
+  ;;     buffer held as an append left it; the head, once, and when, and
+  ;;     when the first piece was appended, each a monotonic time in ns; and
+  ;;     the resumes carried out, with the last one's delay.
+  ;;   - Under its mutex too, the flag that a resume is queued, and when:
+  ;;     a look sets it, and the resume step clears it, with the bit, in
+  ;;     one hold (the M6 plan, section 3.4).
+  ;;   - Under its mutex, a test seam's stall: #f, or a vector of its
+  ;;     milliseconds and its phase, armed, stalling or done.
+  ;;   - The taker alone writes the queue's front, the pair before the next
+  ;;     piece, and the bytes taken, outside any hold, the last thing a take
+  ;;     does (section 3.5). The buffer is the bytes appended less those
+  ;;     taken: the engine reads the taker's count, and a count it reads
+  ;;     late is a buffer it takes for fuller, which pauses, and a later
+  ;;     look resumes.
+  ;;
+  ;; One taker at a time: the engine's token operations take from it, and a
+  ;; test seam's plant, data on the token, never a procedure, may hold one up.
+  ;;
+  ;; response-stream? : Any -> Boolean
+  ;; stream-lock : Stream -> Mutex
+  ;; stream-limit : Stream -> Positive-Integer
+  (define-record-type (response-stream make-stream-record response-stream?)
+    (fields (immutable lock stream-lock)
+            (immutable limit stream-limit)
+            (mutable tail stream-tail stream-tail-set!)
+            (mutable appended stream-appended stream-appended-set!)
+            (mutable paused stream-paused stream-paused-set!)
+            (mutable pauses stream-pauses stream-pauses-set!)
+            (mutable most stream-most stream-most-set!)
+            (mutable queued stream-queued stream-queued-set!)
+            (mutable queued-at stream-queued-at stream-queued-at-set!)
+            (mutable resumes stream-resumes stream-resumes-set!)
+            (mutable last-resume stream-last-resume stream-last-resume-set!)
+            (mutable head stream-head-field stream-head-set!)
+            (mutable head-at stream-head-at stream-head-at-set!)
+            (mutable first-at stream-first-at stream-first-at-set!)
+            (mutable front stream-front stream-front-set!)
+            (mutable taken stream-taken stream-taken-set!)
+            (mutable stall stream-stall stream-stall-set!)))
+
+  ;; monotonic-ns : -> Integer
+  (define (monotonic-ns)
+    (let ((t (current-time 'time-monotonic)))
+      (+ (* (time-second t) 1000000000) (time-nanosecond t))))
+
+  ;; make-response-stream : Positive-Integer -> Stream
+  ;; An empty stream that buffers LIMIT bytes, or one chunk.
+  (define (make-response-stream limit)
+    (let ((sentinel (cons #f '())))
+      (make-stream-record (make-mutex) limit sentinel 0 #f 0 0 #f #f 0 #f #f #f #f sentinel 0 #f)))
+
+  ;; stream-plant-stall! : Stream Positive-Integer -> Void
+  ;; A test seam, private: the write callable's next call for STREAM sleeps
+  ;; MS milliseconds before anything else, in its phase stalling, holding
+  ;; nothing, then sets it done. Armed while the transfer is paused, that
+  ;; call is the replay inside curl_easy_pause, so a test can watch what the
+  ;; resume step holds while a replay runs long (the M6 plan, section 3.4).
+  (define (stream-plant-stall! stream ms)
+    (unless (and (integer? ms) (exact? ms) (positive? ms))
+      (assertion-violation 'stream-plant-stall! "a stall is a positive exact integer of milliseconds" ms))
+    (locked (stream-lock stream) (lambda () (stream-stall-set! stream (vector ms 'armed)))))
+
+  ;; stream-stall-state : Stream -> (U #f 'armed 'stalling 'done)
+  ;; The stall's phase, read in a hold; #f, never armed.
+  (define (stream-stall-state stream)
+    (locked (stream-lock stream)
+      (lambda () (let ((stall (stream-stall stream))) (and stall (vector-ref stall 1))))))
+
+  ;; stall-if-armed! : Stream -> Void
+  ;; The write callable's first step: an armed stall taken, in one hold,
+  ;; then slept out holding nothing, then marked done.
+  (define (stall-if-armed! stream)
+    (let ((ms (locked (stream-lock stream)
+                (lambda ()
+                  (let ((stall (stream-stall stream)))
+                    (and stall (eq? (vector-ref stall 1) 'armed)
+                         (begin (vector-set! stall 1 'stalling) (vector-ref stall 0))))))))
+      (when ms
+        (sleep (make-time 'time-duration (* (mod ms 1000) 1000000) (div ms 1000)))
+        (locked (stream-lock stream) (lambda () (vector-set! (stream-stall stream) 1 'done))))))
+
+  ;; stream-room! : Stream Positive-Integer -> Boolean
+  ;; The write callable's check for a chunk of N bytes, in one hold: #t
+  ;; when the buffer is empty, or holds less than the stream-buffer with
+  ;; the chunk added; else #f, with the receive bit set and the pause
+  ;; counted, in the same hold (the M6 plan, section 3.2).
+  (define (stream-room! stream n)
+    (locked (stream-lock stream)
+      (lambda ()
+        (let ((buffered (- (stream-appended stream) (stream-taken stream))))
+          (or (= buffered 0)
+              (< (+ buffered n) (stream-limit stream))
+              (begin
+                (stream-paused-set! stream #t)
+                (stream-pauses-set! stream (+ (stream-pauses stream) 1))
+                #f))))))
+
+  ;; stream-append! : Stream Bytevector -> Void
+  ;; PIECE at the queue's tail, in one hold, counted as appended, and the
+  ;; most the buffer has held, as the append leaves it, kept.
+  (define (stream-append! stream piece)
+    (locked (stream-lock stream)
+      (lambda ()
+        (let ((node (cons piece '())))
+          (unless (stream-first-at stream) (stream-first-at-set! stream (monotonic-ns)))
+          (set-cdr! (stream-tail stream) node)
+          (stream-tail-set! stream node)
+          (stream-appended-set! stream (+ (stream-appended stream) (bytevector-length piece)))
+          (let ((buffered (- (stream-appended stream) (stream-taken stream))))
+            (when (> buffered (stream-most stream))
+              (stream-most-set! stream buffered)))))))
+
+  ;; stream-look! : Stream Integer -> (List (U Pair #f) (U Bytevector #f) Boolean)
+  ;; A taker's look, in one hold of the stream's mutex: the pair holding the
+  ;; next piece and the piece, both left in place, or #f and #f; and whether
+  ;; this look queues a resume (the M6 plan, section 3.5): the transfer
+  ;; paused for receiving, no resume queued, and the buffer, as the taker
+  ;; will count it once this piece is removed, at or below half of the
+  ;; stream-buffer. Then it sets the flag, and NOW, a monotonic time in ns,
+  ;; as the time it was queued, in the same hold: its caller queues the
+  ;; resume in its next hold, of the engine's mutex, inside the same
+  ;; critical section.
+  (define (stream-look! stream now)
+    (locked (stream-lock stream)
+      (lambda ()
+        (let* ((node (cdr (stream-front stream)))
+               (piece (and (pair? node) (car node)))
+               (after (- (stream-appended stream) (stream-taken stream)
+                         (if piece (bytevector-length piece) 0)))
+               (queue (and (stream-paused stream) (not (stream-queued stream))
+                           (<= (* 2 after) (stream-limit stream)))))
+          (when queue
+            (stream-queued-set! stream #t)
+            (stream-queued-at-set! stream now))
+          (list (and piece node) piece queue)))))
+
+  ;; stream-remove! : Stream Pair Bytevector -> Void
+  ;; PIECE, held at NODE, taken out of STREAM: the front moved to NODE, and
+  ;; its bytes counted as taken, plain writes of the taker's own fields and
+  ;; nothing else, so no event check falls between them. A take calls it
+  ;; last, after its hold, so an escape as that hold's critical section
+  ;; ends leaves the piece for the next take (the M6 plan, section 3.5).
+  (define (stream-remove! stream node piece)
+    (stream-front-set! stream node)
+    (stream-taken-set! stream (+ (stream-taken stream) (bytevector-length piece))))
+
+  ;; stream-clear-pause! : Stream -> (U Integer #f)
+  ;; The resume step's hold: the receive bit and the resume's flag cleared
+  ;; together; answers when the flag was set, #f when it was not.
+  (define (stream-clear-pause! stream)
+    (locked (stream-lock stream)
+      (lambda ()
+        (let ((at (and (stream-queued stream) (stream-queued-at stream))))
+          (stream-paused-set! stream #f)
+          (stream-queued-set! stream #f)
+          at))))
+
+  ;; stream-resumed! : Stream (U Integer #f) Integer -> Void
+  ;; A resume carried out, its curl_easy_pause called at CALLED, a
+  ;; monotonic time in ns, for a flag set at QUEUED: counted, and its delay
+  ;; kept as the last.
+  (define (stream-resumed! stream queued called)
+    (locked (stream-lock stream)
+      (lambda ()
+        (stream-resumes-set! stream (+ (stream-resumes stream) 1))
+        (stream-last-resume-set! stream (and queued (- called queued))))))
+
+  ;; stream-paused? : Stream -> Boolean
+  ;; Whether its transfer is paused for receiving, read in a hold.
+  (define (stream-paused? stream)
+    (locked (stream-lock stream) (lambda () (stream-paused stream))))
+
+  ;; stream-head : Stream -> (U Head #f)
+  ;; Its final head once the header callable has published it, read in a
+  ;; hold of its mutex, the lock it is published under.
+  (define (stream-head stream)
+    (locked (stream-lock stream) (lambda () (stream-head-field stream))))
+
+  ;; stream-stats : Stream -> (Listof (Pairof Symbol Any))
+  ;; What a test reads of STREAM, in one hold: the bytes appended and
+  ;; taken, the most the buffer held, the write callable's pauses, the
+  ;; resumes carried out and the last one's delay in ns, the receive bit,
+  ;; the resume's flag, whether a head is published, and when it was, and
+  ;; when the first piece was appended, each a monotonic time in ns or #f.
+  (define (stream-stats stream)
+    (locked (stream-lock stream)
+      (lambda ()
+        (list (cons 'appended (stream-appended stream)) (cons 'taken (stream-taken stream))
+              (cons 'most (stream-most stream)) (cons 'pauses (stream-pauses stream))
+              (cons 'resumes (stream-resumes stream))
+              (cons 'last-resume-ns (stream-last-resume stream))
+              (cons 'paused (stream-paused stream)) (cons 'queued (stream-queued stream))
+              (cons 'head (and (stream-head-field stream) #t))
+              (cons 'head-at (stream-head-at stream)) (cons 'first-at (stream-first-at stream))))))
+
+  ;; stream-verdicts : (Listof Symbol)
+  ;; What the write callable did with a streamed chunk, in its log's order:
+  ;; accepted, appended to the stream; paused, the buffer full; refused,
+  ;; past the body limit; raised, at a planted fault.
+  (define stream-verdicts '(accepted paused refused raised))
+
+  ;; tally : (Listof (List Symbol Natural (Listof Integer))) Symbol Integer
+  ;;         -> (Listof (List Symbol Natural (Listof Integer)))
+  ;; LOG, a stream's, with one more call of VERDICT, on THREAD.
+  (define (tally log verdict thread)
+    (let ((entry (assq verdict log)))
+      (if entry
+          (map (lambda (e)
+                 (if (eq? e entry)
+                     (list verdict (+ (cadr e) 1)
+                           (if (memv thread (caddr e)) (caddr e) (cons thread (caddr e))))
+                     e))
+               log)
+          (cons (list verdict 1 (list thread)) log))))
+
+  ;; stream-chunk! : Natural Sink Positive-Integer Natural -> Natural
+  ;; The write callable's step for a streamed response's chunk of N bytes at
+  ;; DATA, for KEY's transfer (the M6 plan, section 3.2): first a test
+  ;; seam's stall, armed by stream-plant-stall!; at the call the
+  ;; request's fault names, counting every call with bytes, a replay's
+  ;; among them, it raises (planted-fault N); then, the buffer full, it
+  ;; answers CURL_WRITEFUNC_PAUSE, its check and the receive bit in one
+  ;; hold, and libcurl hands the chunk again once resumed; then, for bytes
+  ;; that would take it past its limit, it records body-limit and answers
+  ;; 0; otherwise it copies them once, by the checked copy, into a fresh
+  ;; bytevector, the piece a caller takes, appends it, and answers N.
+  (define (stream-chunk! key sink data n)
+    (stall-if-armed! (sink-stream sink))
+    (let ((stream (sink-stream sink))
+          (offer (+ (sink-offers sink) 1)))
+      (define (log! verdict)
+        (sink-log-set! sink (tally (sink-log sink) verdict (get-thread-id))))
+      (sink-offers-set! sink offer)
+      (cond
+        ((and (chunk-fault? (sink-fault sink)) (= offer (sink-fault sink)))
+         (log! 'raised)
+         (raise (planted-fault (sink-fault sink))))
+        ((not (stream-room! stream n))
+         (log! 'paused)
+         curl-writefunc-pause)
+        ((and (sink-limit sink) (> (+ (sink-received sink) n) (sink-limit sink)))
+         (log! 'refused)
+         (record! key 'body-limit #f)
+         0)
+        (else
+         (let ((piece (make-bytevector n)))
+           (copy-foreign->bytevector! data piece 0 n)
+           (stream-append! stream piece)
+           (sink-received-set! sink (+ (sink-received sink) n))
+           (moved! sink)
+           (log! 'accepted)
+           n)))))
+
   ;; write-body : Code
   ;; libcurl's curl_write_callback for every transfer: DATA, SIZE times
-  ;; NMEMB bytes of body, for the transfer KEY names. It logs each chunk,
+  ;; NMEMB bytes of body, for the transfer KEY names. For a streamed
+  ;; response, stream-chunk!'s answer. For a whole body it logs each chunk,
   ;; (LENGTH THREAD VERDICT), THREAD its get-thread-id, then: at the chunk
   ;; the transfer's fault names, it raises (planted-fault N), verdict
   ;; raised; for bytes that would take it past its limit, it records
@@ -1422,7 +1866,8 @@
             (cond
               ((not sink) 0)
               ((= n 0) 0)
-              ((and (sink-fault sink) (= (+ (length (sink-log sink)) 1) (sink-fault sink)))
+              ((sink-stream sink) (stream-chunk! key sink data n))
+              ((and (chunk-fault? (sink-fault sink)) (= (+ (length (sink-log sink)) 1) (sink-fault sink)))
                (log! 'raised)
                (raise (planted-fault (sink-fault sink))))
               ((and (sink-limit sink) (> (+ (sink-received sink) n) (sink-limit sink)))
@@ -1435,6 +1880,7 @@
                  (log! 'accepted)
                  (sink-received-set! sink (+ (sink-received sink) n))
                  (sink-chunks-set! sink (cons chunk (sink-chunks sink)))
+                 (moved! sink)
                  n))))))
       (uptr size_t size_t uptr)
       size_t))
@@ -1447,17 +1893,90 @@
   ;; write-body-entry : Positive-Integer
   (define write-body-entry (foreign-callable-entry-point write-body))
 
+  ;; empty-line? : Positive-Integer Natural -> Boolean
+  ;; Whether the N bytes at DATA are "\r\n" or "\n", a head's end, read by
+  ;; the checked copy.
+  (define (empty-line? data n)
+    (and (<= 1 n 2)
+         (let ((bytes (make-bytevector n)))
+           (copy-foreign->bytevector! data bytes 0 n)
+           (if (= n 1)
+               (= (bytevector-u8-ref bytes 0) 10)
+               (and (= (bytevector-u8-ref bytes 0) 13) (= (bytevector-u8-ref bytes 1) 10))))))
+
+  ;; head-line! : Sink Stream -> Void
+  ;; At a head's empty line: CURLINFO_RESPONSE_CODE; below 200, a 1xx
+  ;; head's, or 0, a proxy's CONNECT head's, nothing more: the next head is
+  ;; awaited. At the first final head, its status, version and headers, as
+  ;; finish-transfer reads a response's, published on the stream in one
+  ;; hold of its mutex, a critical section (the M6 plan, section 3.2).
+  (define (head-line! sink stream)
+    (let* ((easy (sink-easy sink))
+           (status (info-long easy curlinfo-response-code)))
+      (when (>= status 200)
+        (let* ((version (http-version-symbol (info-long easy curlinfo-http-version)))
+               (head (make-curl-head status version (response-headers easy))))
+          (sink-published-set! sink #t)
+          (locked (stream-lock stream)
+            (lambda ()
+              (stream-head-set! stream head)
+              (stream-head-at-set! stream (monotonic-ns))))))))
+
+  ;; read-head : Code
+  ;; libcurl's header callback for a streamed response, which alone sets it:
+  ;; SIZE times NITEMS bytes of a head's line at DATA, for the transfer KEY
+  ;; names. It reads nothing but a head's empty line, before the head is
+  ;; published, where head-line! reads it, and answers the line's length.
+  ;; At the line a request's private (head N) names, counting every line
+  ;; it is handed, it raises (planted-head-fault N), for the guard's test.
+  ;; __collect_safe, locked where it is defined, as write-body: it fires
+  ;; inside curl_multi_perform and curl_easy_pause (ADR-0030,
+  ;; consequences). No raise leaves it: its body runs under a guard that
+  ;; records what is raised as callback-raised and answers 0, which fails
+  ;; the transfer. It runs no procedure a caller supplied.
+  (define read-head
+    (foreign-callable __collect_safe
+      (lambda (data size nitems key)
+        (guard (e (#t (record! key 'callback-raised e) 0))
+          (let ((sink (sink-of key)) (n (* size nitems)))
+            (cond
+              ((not sink) 0)
+              (else
+               (sink-lines-set! sink (+ (sink-lines sink) 1))
+               (when (and (head-fault? (sink-fault sink))
+                          (= (sink-lines sink) (cadr (sink-fault sink))))
+                 (raise (planted-head-fault (cadr (sink-fault sink)))))
+               (let ((stream (sink-stream sink)))
+                 (when (and stream (not (sink-published sink)) (empty-line? data n))
+                   (head-line! sink stream)))
+               (moved! sink)
+               n)))))
+      (uptr size_t size_t uptr)
+      size_t))
+
+  ;; Locked where it is defined, and never unlocked, as write-body is.
+  (define read-head-locked
+    (begin (lock-object read-head) #t))
+
+  ;; read-head-entry : Positive-Integer
+  (define read-head-entry (foreign-callable-entry-point read-head))
+
   ;; --- the plan, on the caller's thread -------------------------------------------------
 
   ;; A plan is what a submit checked: fresh copies of the request's URL,
   ;; headers, user agent, CA file and body, its other fields, the hatch's
   ;; settings, private copies checked as they were attached, and its private
-  ;; fields.
+  ;; fields; and, for a request with a stream-buffer, the submit's own
+  ;; response stream, made with it, so a stream operation on a token still
+  ;; queued has a stream to look at (ADR-0030, decision 1).
   (define-record-type plan
     (fields (immutable url) (immutable method) (immutable headers) (immutable agent)
             (immutable body) (immutable timeout-ms) (immutable connect-timeout-ms)
             (immutable body-limit) (immutable ca-file) (immutable verify) (immutable proxy)
-            (immutable settings) (immutable fault) (immutable follow)))
+            (immutable settings) (immutable fault) (immutable follow) (immutable stream)))
+
+  ;; plan-stream : Plan -> (U Stream #f)
+  ;; The plan's response stream, #f for a whole body.
 
   ;; prepare-transfer : Request -> Plan
   ;; REQUEST's plan, checked on the caller's thread, before anything is
@@ -1470,23 +1989,31 @@
   ;; body is copied, after every check, so
   ;; the caller's bytevector may change once this returns (ADR-0023,
   ;; decision 4); a request's method and the presence of its body cannot
-  ;; change, so body-not-allowed needs no second check.
+  ;; change, so body-not-allowed needs no second check. Last, a request with
+  ;; a stream-buffer gets a fresh stream, this submit's alone. A request's
+  ;; fields are immutable, so stream-with-rounds, checked as it was made,
+  ;; holds here too.
   (define (prepare-transfer request)
     (let-values (((url fields ca-file) (request-checks 'curl-submit request)))
-      (let ((body (let ((body (curl-request-body request))) (and body (bytevector-copy body)))))
+      (let ((body (let ((body (curl-request-body request))) (and body (bytevector-copy body))))
+            (limit (curl-request-stream-buffer request)))
         (make-plan url (curl-request-method request) (car fields) (cdr fields) body
                    (curl-request-timeout-ms request) (curl-request-connect-timeout-ms request)
                    (curl-request-body-limit request) ca-file (curl-request-verify request)
                    (curl-request-proxy request)
                    (curl-request-options request) (curl-request-fault request)
-                   (curl-request-follow request)))))
+                   (curl-request-follow request)
+                   (and limit (make-response-stream limit))))))
 
   ;; request-checks : Symbol Request -> (Values String (Pairof Headers (U String #f)) (U String #f))
   ;; The checks a submit makes of REQUEST on the caller's thread, as WHO,
   ;; their one owner: prepare-transfer's, as WHO curl-submit, and
   ;; curl-request-check's (ADR-0023, amended 2026-10-28). In order: what is
   ;; no request, an assertion violation; the URL's copy; the snapshot of the
-  ;; headers and the user agent; the CA file's copy, then the CA file
+  ;; headers and the user agent; the CA file's copy; an Expect header
+  ;; holding 100-continue in the snapshot's copies beside a stream-buffer,
+  ;; stream-with-rounds, by check-expect-round, since the caller's strings
+  ;; may have changed since the request was made; then the CA file
   ;; against the environment the libcurl loaded with, by
   ;; check-ca-environment; then the URL, parsed by call-with-parsed-url and
   ;; checked by require-http-scheme, its CURLU freed before this returns.
@@ -1499,6 +2026,7 @@
     (let* ((url (string-copy (curl-request-url request)))
            (fields (snapshot who (curl-request-headers request) (curl-request-user-agent request)))
            (ca-file (ca-file-copy who (curl-request-ca-file request))))
+      (check-expect-round who (curl-request-stream-buffer request) (car fields))
       (check-ca-environment who ca-file (curl-request-verify request))
       (call-with-parsed-url url (lambda (handle) (require-http-scheme handle url)))
       (values url fields ca-file)))
@@ -1579,9 +2107,24 @@
   ;; write-body's log of LIVE's chunks, oldest first: each chunk's length,
   ;; the get-thread-id of the thread it ran on, and its verdict, accepted,
   ;; refused or raised (M3 plan, section 3.6).
+  ;; For a streamed response it is the log of each verdict instead, in
+  ;; stream-verdicts' order: (VERDICT COUNT THREADS), how many of the write
+  ;; callable's calls had it and the get-thread-ids they ran on, newest
+  ;; first, for each verdict any call had (the M6 plan, section 3.2).
   (define (live-transfer-chunks live)
     (let ((sink (live-transfer-sink live)))
-      (if sink (reverse (sink-log sink)) '())))
+      (cond ((not sink) '())
+            ((sink-stream sink)
+             (fold-right (lambda (verdict found)
+                           (let ((entry (assq verdict (sink-log sink))))
+                             (if entry (cons entry found) found)))
+                         '() stream-verdicts))
+            (else (reverse (sink-log sink))))))
+
+  ;; live-transfer-stream : Live -> (U Stream #f)
+  ;; LIVE's response stream, #f for a whole body.
+  (define (live-transfer-stream live)
+    (plan-stream (live-transfer-plan live)))
 
   ;; method-settings : Symbol (U Bytevector #f) -> (Listof (Pairof String (U Integer String Bytevector)))
   ;; The settings METHOD and BODY make, in order, as data: NOBODY at 1 for
@@ -1609,7 +2152,8 @@
   ;; set-transfer-options! : Positive-Integer Plan Positive-Integer Positive-Integer Natural (Listof (Pairof Hatch-Setting Positive-Integer)) Positive-Integer Boolean -> Void
   ;; Every setting PLAN's transfer makes on EASY, in order: the pins first,
   ;; QUICK_EXIT among them as QUICK-EXIT says, then ERRORBUFFER at BUFFER,
-  ;; CURLU at URL, WRITEFUNCTION and WRITEDATA at KEY; then method-settings'
+  ;; CURLU at URL, WRITEFUNCTION and WRITEDATA at KEY; for a streamed
+  ;; response, HEADERFUNCTION and HEADERDATA at KEY; then method-settings'
   ;; for the plan's method and body, a string through a C string and the
   ;; body through a counted copy, call-with-foreign-bytes'; and as the
   ;; request asks, HTTPHEADER at HEADER-LIST, USERAGENT, TIMEOUT_MS,
@@ -1626,6 +2170,9 @@
     (set-option! easy (field-option 'url) url buffer)
     (set-option! easy "WRITEFUNCTION" write-body-entry buffer)
     (set-option! easy "WRITEDATA" key buffer)
+    (when (plan-stream plan)
+      (set-option! easy "HEADERFUNCTION" read-head-entry buffer)
+      (set-option! easy "HEADERDATA" key buffer))
     (for-each (lambda (setting)
                 (let ((value (cdr setting)))
                   (cond ((string? value) (set-string-option! easy (car setting) value buffer))
@@ -1661,9 +2208,10 @@
                                    buffer))
               (plan-settings plan)))
 
-  ;; start-transfer! : Plan Boolean -> Live
+  ;; start-transfer! : Plan Boolean (Vector Natural) -> Live
   ;; PLAN's transfer, made on this thread, the engine's, ready for its
-  ;; multi handle: its key and sink, its URL parsed again and its scheme
+  ;; multi handle: its key and sink, whose callables bump MOVES, the
+  ;; engine's counter, its URL parsed again and its scheme
   ;; checked again, its error buffer, zeroed, its header list, a string list
   ;; for each hatch setting of a non-empty list, of UTF-8 copies, counted as
   ;; slist (ADR-0009, decision 4), and its easy handle, set by
@@ -1673,11 +2221,12 @@
   ;; frees what was
   ;; made, by free-transfer!, then raises again: the URL's refusal, or a
   ;; &curl-transfer-error, setopt-failed, unknown-option or no-handle.
-  (define (start-transfer! plan quick-exit)
+  (define (start-transfer! plan quick-exit moves)
     (let ((live (make-live-transfer plan #f #f #f #f 0 '() #f)))
       (guard (e (#t (free-transfer! live) (raise e)))
         (critical-section
-         (let ((sink (make-sink (plan-body-limit plan) (plan-fault plan) 0 '() '() #f)))
+         (let ((sink (make-sink (plan-body-limit plan) (plan-fault plan) 0 '() '() #f
+                                (plan-stream plan) moves 0 #f #f 0)))
            (locked sinks-lock
              (lambda ()
                (let ((key next-key))
@@ -1730,7 +2279,8 @@
         (critical-section
          (let ((easy (curl-easy-init)))
            (when (eqv? easy 0) (fail 'no-handle #f #f #f #f))
-           (live-transfer-easy-set! live easy)))
+           (live-transfer-easy-set! live easy)
+           (sink-easy-set! (live-transfer-sink live) easy)))
         (set-transfer-options! (live-transfer-easy live) plan (live-transfer-key live)
                                (live-transfer-buffer live) (live-transfer-header-list live)
                                (live-transfer-lists live) (live-transfer-url live) quick-exit)
@@ -1846,9 +2396,10 @@
   ;; callback-raised; else, for a CODE but CURLE_OK, perform-failed; each
   ;; failure of its class, with its request size, REQUEST_SIZE, or #f on a
   ;; libcurl whose answer to it is unreliable, ran-request-size's; else the
-  ;; response, with its timings, timing-infos', each read as a curl_off_t.
-  ;; The answer is data: the engine completes the token with it, and an
-  ;; awaiting thread raises a condition.
+  ;; response, with its timings, timing-infos', each read as a curl_off_t,
+  ;; and its body, or #f for a streamed response, whose pieces the token
+  ;; held. The answer is data: the engine completes the token with it, and
+  ;; an awaiting thread raises a condition.
   (define (finish-transfer live code)
     (let* ((sink (live-transfer-sink live))
            (buffer (live-transfer-buffer live))
@@ -1869,4 +2420,23 @@
                 (headers (response-headers easy))
                 (timings (map (lambda (timing) (cons (car timing) (info-off-t easy (cdr timing))))
                               timing-infos)))
-           (make-curl-response status version effective headers (sink-body sink) timings)))))))
+           (make-curl-response status version effective headers
+                               (and (not (sink-stream sink)) (sink-body sink)) timings))))))
+
+  ;; resume-failure : Live Integer -> Condition
+  ;; What LIVE's transfer fails with once curl_easy_pause answered CODE,
+  ;; not 0, as the engine resumed it (the M6 plan, section 3.4): a reason a
+  ;; callable recorded, inside the call or before it, wins, as in
+  ;; finish-transfer, the raised object for callback-raised; else
+  ;; pause-failed, with CODE. Each with its request size, as a transfer that
+  ;; ran: ran-request-size's. Read on the engine's thread, before anything
+  ;; is freed.
+  (define (resume-failure live code)
+    (let* ((sink (live-transfer-sink live))
+           (recorded (sink-recorded sink))
+           (easy (live-transfer-easy live)))
+      (if recorded
+          (failure (car recorded) code #f (live-transfer-buffer live)
+                   (and (eq? (car recorded) 'callback-raised) (cdr recorded))
+                   (ran-request-size easy))
+          (failure 'pause-failed code #f (live-transfer-buffer live) #f (ran-request-size easy))))))

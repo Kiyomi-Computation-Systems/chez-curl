@@ -1,0 +1,6 @@
+[guix-8.20.0] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 headers /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/../include; server {"node":"v24.18.0","pid":51,"http":"127.0.0.1:41927","raw":"127.0.0.1:36395","https":"127.0.0.1:38829","h2":"127.0.0.1:41699","proxy":"127.0.0.1:46383"}
+[guix-8.20.0] query=pattern=zero&gzip=1 wake where=none version=8.20.0 timed-polls=0 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[guix-8.20.0] query=pattern=zero&gzip=1 wake where=before-poll version=8.20.0 timed-polls=15 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[guix-8.20.0] query=pattern=zero&gzip=1 wake where=after version=8.20.0 timed-polls=14 polls-100ms-or-more=14 polls-5ms-or-more=14 longest-ms=1005.0 resumes=15 bytes=262144 code=0
+[guix-8.20.0] query=pattern=zero&gzip=1 wake where=pause version=8.20.0 timed-polls=14 polls-100ms-or-more=14 polls-5ms-or-more=14 longest-ms=1005.0 resumes=15 bytes=262144 code=0
+[guix-8.20.0] query=gap=50 wake where=plain version=8.20.0 timed-polls=18 polls-100ms-or-more=0 polls-5ms-or-more=15 longest-ms=50.8 resumes=0 bytes=262144 code=0

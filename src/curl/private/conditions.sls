@@ -286,6 +286,15 @@
   ;;                 LibreSSL the TLS backend in use, which checks the
   ;;                 keychain when a CA file fails (ADR-0024, amended
   ;;                 2026-10-27); the irritants name the backend
+  ;;   stream-with-rounds
+  ;;                 a request that streams its response, stream-buffer,
+  ;;                 beside a second request inside its transfer: the
+  ;;                 private follow field, the hatch's HTTPAUTH or
+  ;;                 PROXYAUTH, or an Expect header whose value holds
+  ;;                 100-continue, in any ASCII case, refused whatever the
+  ;;                 method: a request that sends a body is sent again on a
+  ;;                 417. Each would publish the head of the round before
+  ;;                 the last (the M6 plan, section 3.2)
   ;;
   ;; A value is scanned left to right, and its first offending char decides;
   ;; only when none offends are its ends checked.
@@ -293,16 +302,17 @@
     '(embedded-nul line-break not-latin-1 not-a-token surrounding-whitespace duplicates-field
       framing-header owned-option unsupported-type unknown-option repeated-option
       unknown-key repeated-key missing-value body-not-allowed pkcs11-url environment-override
-      keychain-fallback))
+      keychain-fallback stream-with-rounds))
 
   ;; The fields:
   ;;
   ;;   field   Symbol: the field refused, header-name, header-value,
   ;;           user-agent, ca-file, or options, the hatch's; key for
   ;;           unknown-key, repeated-key and missing-value; body for
-  ;;           body-not-allowed
+  ;;           body-not-allowed; stream-buffer for stream-with-rounds
   ;;   value   the string refused, whole, or the option's name; the key, as
-  ;;           given, for a key's refusal; the method, for body-not-allowed
+  ;;           given, for a key's refusal; the method, for body-not-allowed;
+  ;;           the stream-buffer, for stream-with-rounds
   ;;   reason  one of curl-request-error-reasons
   (define-condition-type &curl-request-error &curl-error
     unchecked-make-curl-request-error curl-request-error?
@@ -341,16 +351,21 @@
   ;;   cancelled        the caller cancelled it before it ended (M3 plan,
   ;;                    section 3.5)
   ;;   stopped          its engine stopped before it ended
+  ;;   pause-failed     curl_easy_pause answered other than 0 when the engine
+  ;;                    resumed a streamed transfer, and no callable recorded
+  ;;                    a reason inside the call, which would win; the code
+  ;;                    is the call's (ADR-0012, amended 2026-10-29)
   (define curl-transfer-error-reasons
     '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle
-      cancelled stopped))
+      cancelled stopped pause-failed))
 
   ;; The fields:
   ;;
   ;;   reason        one of curl-transfer-error-reasons
   ;;   code          (U Integer #f): the CURLcode, a number, since codes
   ;;                 past the headers' have no name; #f when libcurl answered
-  ;;                 none (unknown-option, no-handle, cancelled, stopped)
+  ;;                 none (unknown-option, no-handle, cancelled, stopped);
+  ;;                 curl_easy_pause's answer for a failure in a resume
   ;;   option        (U String #f): the option's name, without CURLOPT_
   ;;   strerror      (U String #f): curl_easy_strerror's text for the code
   ;;   error-buffer  (U String #f): CURLOPT_ERRORBUFFER's text, read as
@@ -358,7 +373,8 @@
   ;;   recorded      what the callable recorded: the raised object for
   ;;                 callback-raised, else #f
   ;;   request-size  (U Natural #f): for a transfer that ran, perform-failed,
-  ;;                 body-limit or callback-raised, CURLINFO_REQUEST_SIZE:
+  ;;                 body-limit, callback-raised or pause-failed,
+  ;;                 CURLINFO_REQUEST_SIZE:
   ;;                 the bytes of request libcurl sent, its body's among
   ;;                 them, summed over every attempt it made, a resend on a
   ;;                 fresh connection after a dead one included, and 0 when
@@ -394,7 +410,7 @@
   ;; make-curl-transfer-error : Symbol (U Integer #f) (U String #f) (U String #f)
   ;;                            (U String #f) Any (U Natural #f) -> &curl-transfer-error
   ;; The base type, unclassed. Refuses a REASON that is not one of the
-  ;; eight with an assertion violation. It checks nothing else, so a code a
+  ;; nine with an assertion violation. It checks nothing else, so a code a
   ;; later libcurl answers still reaches the caller.
   (define (make-curl-transfer-error reason code option strerror error-buffer recorded
                                     request-size)
@@ -532,7 +548,7 @@
   ;; perform-failed, the class its CODE has, or the base type for a code no
   ;; class names; for body-limit, too-large, whatever its code; for every
   ;; other reason, the base type, a setopt-failed whose code a class names
-  ;; among them. A REASON not among the eight is an assertion violation.
+  ;; among them. A REASON not among the nine is an assertion violation.
   (define (make-classed-transfer-error reason code option strerror error-buffer recorded
                                        request-size)
     (check-transfer-error 'make-classed-transfer-error reason curl-transfer-error-reasons)

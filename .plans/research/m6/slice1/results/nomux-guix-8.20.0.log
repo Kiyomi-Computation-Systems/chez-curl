@@ -1,0 +1,56 @@
+[guix-8.20.0] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 -> /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0, headers /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/../include
+[guix-8.20.0] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[guix-8.20.0] version headers=8.20.0 runtime=8.20.0 ssl=GnuTLS/3.8.13 libz=1.3.1 nghttp2=1.69.0 http2=1 libz_feature=1 live_after_init=0
+[guix-8.20.0] server raw=33289 tls=44947 h2=40431
+[guix-8.20.0] multi pipelining=0 (PAUSE_NO_MULTIPLEX=1) rc=0
+[guix-8.20.0] case D-hold-mux:pipewait1:B h2 done code=0 t=25.7 status=200 ver=3 conns=1 lport=56700
+[guix-8.20.0] case D-hold-mux:pipewait1:A h2 done code=0 t=2044.4 status=200 ver=3 conns=1 lport=56694
+[guix-8.20.0] case D-hold-mux:pipewait1:A h2 summary calls=1025 inpause_calls=1 while_paused_calls=0 pauses=1 resumes=1 repaused_inside=0 total=8388608 pattern=ok max_chunk=16375 max_before=0 first_after=4096 max_after=16375 redelivery_equal=1 longer=0 shorter=0 differs=0
+[guix-8.20.0] case D-hold-mux:pipewait1:B h2 summary calls=128 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=1048576 pattern=ok max_chunk=16375 max_before=16375 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[guix-8.20.0] case D-hold-mux:pipewait1:A h2 mux case_t A_paused_at=20.6 A_resumed_at=2020.6 A_end=2044.4 B_end=25.7 B_done_while_A_paused=1 A_lport=56694 B_lport=56700
+[guix-8.20.0] case D-hold-mux:pipewait1:A h2 live in_callback_at_pause=164165 after_pausing_perform=168310 before_resume=168071 peak_during_pause=169321
+[guix-8.20.0] case D-hold-mux:pipewait1:A h2 server: req h2 GET /body #1 conn=56694 at=88.7
+[guix-8.20.0] case D-hold-mux:pipewait1:A h2 server: body h2 n=8388608 mode=h2-length chunk=4096 gap=0 delay=0 gzip=0 wire=8388608 written=8388608 first_false=65536 drains_long=1 [2686976:1996.9] drains_short=127 sum=21.4ms total=2034.2ms aborted=0
+[guix-8.20.0] case D-hold-mux:pipewait1:A h2 server: count h2:/body=1
+[guix-8.20.0] case D-hold-mux:pipewait1:B h2 server: req h2 GET /body #1 conn=56700 at=101.9
+[guix-8.20.0] case D-hold-mux:pipewait1:B h2 server: body h2 n=1048576 mode=h2-length chunk=4096 gap=0 delay=0 gzip=0 wire=1048576 written=1048576 first_false=65536 drains_long=0 [] drains_short=16 sum=2.7ms total=4.5ms aborted=0
+[guix-8.20.0] case D-hold-mux:pipewait1:B h2 server: count h2:/body=1
+[guix-8.20.0] case D-hold-mux:pipewait1 conns prefix=D-hold-mux.pipewait1. n=2 h2:56694,h2:56700
+[guix-8.20.0] multi pipelining=0 (PAUSE_NO_MULTIPLEX=1) rc=0
+[guix-8.20.0] case D-hold-mux:pipewait0:B h2 done code=0 t=8.0 status=200 ver=3 conns=1 lport=56722
+[guix-8.20.0] case D-hold-mux:pipewait0:A h2 done code=0 t=2023.7 status=200 ver=3 conns=1 lport=56710
+[guix-8.20.0] case D-hold-mux:pipewait0:A h2 summary calls=1025 inpause_calls=2 while_paused_calls=0 pauses=1 resumes=1 repaused_inside=0 total=8388608 pattern=ok max_chunk=16384 max_before=0 first_after=16384 max_after=16384 redelivery_equal=0 longer=1 shorter=0 differs=0
+[guix-8.20.0] case D-hold-mux:pipewait0:B h2 summary calls=128 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=1048576 pattern=ok max_chunk=16375 max_before=16375 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[guix-8.20.0] case D-hold-mux:pipewait0:A h2 mux case_t A_paused_at=4.5 A_resumed_at=2004.5 A_end=2023.7 B_end=8.0 B_done_while_A_paused=1 A_lport=56710 B_lport=56722
+[guix-8.20.0] case D-hold-mux:pipewait0:A h2 live in_callback_at_pause=164325 after_pausing_perform=184814 before_resume=184575 peak_during_pause=185226
+[guix-8.20.0] case D-hold-mux:pipewait0:A h2 server: req h2 GET /body #1 conn=56710 at=2134.9
+[guix-8.20.0] case D-hold-mux:pipewait0:A h2 server: body h2 n=8388608 mode=h2-length chunk=4096 gap=0 delay=0 gzip=0 wire=8388608 written=8388608 first_false=65536 drains_long=1 [2752512:2003.1] drains_short=127 sum=11.6ms total=2016.5ms aborted=0
+[guix-8.20.0] case D-hold-mux:pipewait0:A h2 server: count h2:/body=1
+[guix-8.20.0] case D-hold-mux:pipewait0:B h2 server: req h2 GET /body #1 conn=56722 at=2136.0
+[guix-8.20.0] case D-hold-mux:pipewait0:B h2 server: body h2 n=1048576 mode=h2-length chunk=4096 gap=0 delay=0 gzip=0 wire=1048576 written=1048576 first_false=65536 drains_long=0 [] drains_short=16 sum=2.6ms total=3.0ms aborted=0
+[guix-8.20.0] case D-hold-mux:pipewait0:B h2 server: count h2:/body=1
+[guix-8.20.0] case D-hold-mux:pipewait0 conns prefix=D-hold-mux.pipewait0. n=2 h2:56710,h2:56722
+[guix-8.20.0] case D-hold-mux all done live_before_global_cleanup=0
+[guix-8.20.0] case D-hold-mux live_after_global_cleanup=0
+[guix-8.20.0] probe D-hold-mux exit=0
+[guix-8.20.0] probe D-hold-mux took about 4 s
+[guix-8.20.0] multi pipelining=0 (PAUSE_NO_MULTIPLEX=1) rc=0
+[guix-8.20.0] case W-h2-error:A h2 call n=1 t=4.2 size=16323 answer=CURL_WRITEFUNC_ERROR
+[guix-8.20.0] case W-h2-error:A h2 done code=23 err="Failed writing received data to disk/application" t=4.2 status=200 ver=3 conns=1 lport=56734
+[guix-8.20.0] case W-h2-error:B h2 done code=0 t=1276.5 status=200 ver=3 conns=1 lport=56750
+[guix-8.20.0] case W-h2-error:A h2 summary calls=1 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=0 pattern=ok max_chunk=0 max_before=0 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[guix-8.20.0] case W-h2-error:B h2 summary calls=128 inpause_calls=0 while_paused_calls=0 pauses=0 resumes=0 repaused_inside=0 total=1048576 pattern=ok max_chunk=16375 max_before=16375 first_after=0 max_after=0 redelivery_equal=0 longer=0 shorter=0 differs=0
+[guix-8.20.0] case W-h2-error:B h2 h2-error case_t A_end=4.2 B_end=1276.5 A_code=23 B_code=0 A_lport=56734 B_lport=56750 B_total=1048576
+[guix-8.20.0] case W-h2-error:A h2 server: req h2 GET /body #1 conn=56734 at=4172.6
+[guix-8.20.0] case W-h2-error:A h2 server: body h2 n=8388608 mode=h2-length chunk=65536 gap=0 delay=0 gzip=0 wire=8388608 written=589824 first_false=65536 drains_long=0 [] drains_short=9 sum=1.5ms total=-ms aborted=1
+[guix-8.20.0] case W-h2-error:A h2 server: count h2:/body=1
+[guix-8.20.0] case W-h2-error:B h2 server: req h2 GET /body #1 conn=56750 at=4173.7
+[guix-8.20.0] case W-h2-error:B h2 server: body h2 n=1048576 mode=h2-length chunk=16384 gap=20 delay=0 gzip=0 wire=1048576 written=1048576 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=1272.2ms aborted=0
+[guix-8.20.0] case W-h2-error:B h2 server: count h2:/body=1
+[guix-8.20.0] case W-h2-error conns prefix=W-h2-error. n=2 h2:56734,h2:56750
+[guix-8.20.0] case W-h2-error all done live_before_global_cleanup=0
+[guix-8.20.0] case W-h2-error live_after_global_cleanup=0
+[guix-8.20.0] probe W-h2-error exit=0
+[guix-8.20.0] probe W-h2-error took about 1 s
+[guix-8.20.0] -- 2 cases run
+[guix-8.20.0] server-stderr: counts h2:/body=6

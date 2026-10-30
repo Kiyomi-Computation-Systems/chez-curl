@@ -53,6 +53,10 @@
 //     answer. (A cut at the first body byte raced the client's send: one
 //     run of four met it as a send failure, the rest as a recv failure.)
 //   /log?tag=TAG   above; HTTP/1.0 is fine, and it closes.
+//   /conns?prefix=P   (M6 slice 1) one line, "conns prefix=P n=N LIST": the
+//     connections every tag beginning P used, each FACE:PORT, the client's
+//     port, sorted; counted as /log is not, and taken as /log is. Nothing
+//     else changed: no other answer reads the set it keeps.
 // Round 2 (2026-10-29), each new route used only by round 2's cases:
 //   /close-after?then=reset[&at=N]
 //     as then=kill, but the next request on the connection is reset (RST,
@@ -126,7 +130,7 @@ function begin(face, method, target, connPort, t0) {
   const { path, params } = parseTarget(target);
   const tag = params.get('tag') || '-';
   const r = { face, method, path, params, tag, t0: t0 === undefined ? now() : t0, ended: false, dispatching: false };
-  if (path === '/log') { r.log = () => {}; r.end = () => {}; return r; }
+  if (path === '/log' || path === '/conns') { r.log = () => {}; r.end = () => {}; return r; }
   const e = tagOf(tag);
   const fk = `${face} ${path}`;
   const n = (e.counts.get(fk) || 0) + 1;
@@ -136,6 +140,8 @@ function begin(face, method, target, connPort, t0) {
   r.end = () => { if (!r.ended) { r.ended = true; e.inflight--; } };
   e.inflight++;
   r.log(`req ${face} ${method} ${path} #${n} conn=${connPort} at=${ms(r.t0 - T0)}${params.get('mono') === '1' ? ` mono=${process.hrtime.bigint()}` : ''}`);
+  if (!e.conns) e.conns = new Set();
+  e.conns.add(`${face}:${connPort}`);
   r.entry = e;
   return r;
 }
@@ -222,6 +228,13 @@ function bodyParams(r) {
   const delay = Number(r.params.get('delay') || '0');
   const gz = r.params.get('gzip') === '1';
   return { n, mode, k, gap, delay, gz, data: gz ? gzipped(n) : pattern(n) };
+}
+
+function answerConns(params) {
+  const prefix = params.get('prefix') || '';
+  const all = new Set();
+  for (const [tag, e] of tags) if (tag.startsWith(prefix) && e.conns) for (const c of e.conns) all.add(c);
+  return `conns prefix=${prefix} n=${all.size} ${[...all].sort().join(',') || '-'}\n`;
 }
 
 async function answerLog(params) {
@@ -472,6 +485,11 @@ async function dispatchH1(conn, q) {
     }
     case '/log': {
       const body = await answerLog(r.params);
+      s.end(`HTTP/1.1 200 OK\r\nContent-Length: ${Buffer.byteLength(body)}\r\nConnection: close\r\n\r\n${body}`);
+      return;
+    }
+    case '/conns': {
+      const body = answerConns(r.params);
       s.end(`HTTP/1.1 200 OK\r\nContent-Length: ${Buffer.byteLength(body)}\r\nConnection: close\r\n\r\n${body}`);
       return;
     }

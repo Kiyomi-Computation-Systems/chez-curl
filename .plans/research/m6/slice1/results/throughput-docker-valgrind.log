@@ -1,0 +1,27 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[ubuntu-openssl-8.5.0-valgrind] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[ubuntu-openssl-8.5.0-valgrind] server {"node":"v24.18.0","pid":3123,"http":"127.0.0.1:37665","raw":"127.0.0.1:38371","https":"127.0.0.1:38661","h2":"127.0.0.1:38977","proxy":"127.0.0.1:39527"}
+[ubuntu-openssl-8.5.0-valgrind] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4
+[ubuntu-openssl-8.5.0-valgrind] under valgrind valgrind-3.22.0
+[ubuntu-openssl-8.5.0-valgrind] libcurl 8.5.0 OpenSSL/3.0.13
+[ubuntu-openssl-8.5.0-valgrind] throughput run=1 face=http stream-buffer=65536 wall-ms=4277.994 bytes=67108864 whole=#t pattern=ok end=eof pieces=4275 pauses=61 resumes=61 passed-over=0 max-buffered=61440 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[ubuntu-openssl-8.5.0-valgrind] throughput run=1 face=http stream-buffer=1048576 wall-ms=3950.395 bytes=67108864 whole=#t pattern=ok end=eof pieces=4225 pauses=0 resumes=0 passed-over=0 max-buffered=357376 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[ubuntu-openssl-8.5.0-valgrind] throughput run=1 face=https stream-buffer=65536 wall-ms=9072.647 bytes=67108864 whole=#t pattern=ok end=eof pieces=4096 pauses=31 resumes=31 passed-over=0 max-buffered=49152 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[ubuntu-openssl-8.5.0-valgrind] throughput run=1 face=https stream-buffer=1048576 wall-ms=8327.126 bytes=67108864 whole=#t pattern=ok end=eof pieces=4096 pauses=0 resumes=0 passed-over=0 max-buffered=360448 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[ubuntu-openssl-8.5.0-valgrind] throughput run=1 face=h2 stream-buffer=65536 wall-ms=8837.515 bytes=67108864 whole=#t pattern=ok end=eof pieces=4102 pauses=1355 resumes=1355 passed-over=0 max-buffered=65379 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/2
+[ubuntu-openssl-8.5.0-valgrind] throughput run=1 face=h2 stream-buffer=1048576 wall-ms=8319.531 bytes=67108864 whole=#t pattern=ok end=eof pieces=4102 pauses=63 resumes=63 passed-over=0 max-buffered=1048419 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/2
+[ubuntu-openssl-8.5.0-valgrind] throughput run=2 face=http stream-buffer=65536 wall-ms=3847.984 bytes=67108864 whole=#t pattern=ok end=eof pieces=4275 pauses=59 resumes=59 passed-over=0 max-buffered=61440 queued-polls=1 queued-poll-max-ms=0.031 queued-polls-100ms=0 status=200 version=http/1.1
+[ubuntu-openssl-8.5.0-valgrind] throughput run=2 face=http stream-buffer=1048576 wall-ms=3922.694 bytes=67108864 whole=#t pattern=ok end=eof pieces=4275 pauses=0 resumes=0 passed-over=0 max-buffered=176128 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[ubuntu-openssl-8.5.0-valgrind] throughput run=2 face=https stream-buffer=65536 wall-ms=8245.859 bytes=67108864 whole=#t pattern=ok end=eof pieces=4096 pauses=14 resumes=14 passed-over=0 max-buffered=49152 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[ubuntu-openssl-8.5.0-valgrind] throughput run=2 face=https stream-buffer=1048576 wall-ms=8367.01 bytes=67108864 whole=#t pattern=ok end=eof pieces=4096 pauses=0 resumes=0 passed-over=0 max-buffered=245760 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[ubuntu-openssl-8.5.0-valgrind] throughput run=2 face=h2 stream-buffer=65536 wall-ms=8823.261 bytes=67108864 whole=#t pattern=ok end=eof pieces=4102 pauses=1355 resumes=1355 passed-over=0 max-buffered=65379 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/2
+[ubuntu-openssl-8.5.0-valgrind] throughput run=2 face=h2 stream-buffer=1048576 wall-ms=8354.079 bytes=67108864 whole=#t pattern=ok end=eof pieces=4102 pauses=63 resumes=63 passed-over=0 max-buffered=1048419 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/2
+[ubuntu-openssl-8.5.0-valgrind] throughput done
+[ubuntu-openssl-8.5.0-valgrind] throughput exited 0 after about 94 s
+[ubuntu-openssl-8.5.0-valgrind] valgrind: ==3148== Command: /src/build/e1/ci/chez-threads/bin/scheme --libdirs build/m6s1/src --program .plans/research/m6/slice1/throughput.sps 127.0.0.1:37665 127.0.0.1:38371 127.0.0.1:38661 127.0.0.1:38977 127.0.0.1:39527 /tmp/m6s1.PZbb4j/pki/ca.pem 2
+[ubuntu-openssl-8.5.0-valgrind] valgrind: ==3148==    definitely lost: 0 bytes in 0 blocks
+[ubuntu-openssl-8.5.0-valgrind] valgrind: ==3148== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

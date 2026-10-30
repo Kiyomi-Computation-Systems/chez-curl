@@ -1,0 +1,19 @@
+(version "8.20.0")
+(empty-small stream 200 "second\n" 200)
+(empty-big stream 200 "second\n" 200)
+(none-big-post stream 200 "second\n" 200)
+(none-big-put stream 200 "second\n" 200)
+(none-small-put stream 200 "second\n" 200)
+(refused refused stream-with-rounds)
+(get-whole whole 417)
+(delete-whole whole 417)
+(post-whole whole (raised "Number of redirects hit maximum amount"))
+exit 0
+      1 request DELETE /delete-whole HTTP/1.1 expect=yes
+      1 request GET /get-whole HTTP/1.1 expect=yes
+      1 request POST /empty-big HTTP/1.1 expect=no
+      1 request POST /empty-small HTTP/1.1 expect=no
+      1 request POST /none-big-post HTTP/1.1 expect=no
+     31 request POST /post-whole HTTP/1.1 expect=yes
+      1 request PUT /none-big-put HTTP/1.1 expect=no
+      1 request PUT /none-small-put HTTP/1.1 expect=no

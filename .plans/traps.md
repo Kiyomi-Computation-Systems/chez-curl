@@ -1123,3 +1123,44 @@ it should not be a comment. (chez-cmark-gfm)
   ([research](research/m6/pause/results/mac-8.7.1-split.log)). The Linux libcurls end with 65
   before the next attempt. Only the prerequest callable sees that attempt, and it runs before
   the attempt's head is sent. (chez-curl, the M6 plan, the Mac's run)
+* **Guix's libcurl 8.20.0 reads back, inside `curl_multi_perform`, a `curl_multi_wakeup` made
+  before it,** so the `curl_multi_poll` after it waits for libcurl's own events, up to its
+  bound. A C loop stepping as the engine does, waking its poll once a turn inside
+  `curl_easy_pause` or between that call and the perform, saw 14 of 14 polls last 100 ms or
+  more, up to 1005.1 ms, in each of three runs; a wakeup made after the perform ended the poll
+  at once, 15 of 15. Marks around each call place the eventfd's `read` inside the perform, under
+  `strace`. 7.85.0, both 8.5.0 builds, 8.23.0 and upstream's 8.20.0 with OpenSSL keep it
+  ([research](research/m6/slice1/results/)). The M6 prototype's drains of 1 MiB took up to
+  10,139 ms for it. The engine looks at its queue between its read and its poll, and skips the
+  poll when a message is queued (ADR-0012, amended 2026-10-30). (chez-curl, M6 slice 1)
+* **A caller's `Expect: 100-continue` makes libcurl resend a request inside one transfer on a
+  417,** as an auth round or a followed redirect does. A streamed `post` naming it, against a
+  server that answered 417 once, published the 417's head while its pieces and outcome were the
+  resend's 200, on 7.85.0, 8.5.0 and Guix's 8.20.0; against one that answered 417 every time,
+  two transfers made 62 requests on 8.20.0, then each failed: "Number of redirects hit maximum
+  amount"
+  ([research](research/m6/slice1-review/results/)). The M6 plan's "one transfer, one request"
+  rule had listed only auth and redirects. A stream refuses the header as `stream-with-rounds`.
+  (chez-curl, M6 slice 1's review)
+* **A custom port serves bytes Chez has buffered to any thread, without calling `read!`.** After
+  the owner's `get-u8`, another thread's `get-u8`, `lookahead-u8` and `get-bytevector-n` returned
+  the buffered bytes and raised nothing, though `read!` checks the thread
+  ([research](research/m6/slice1-review/port-thread.sps)). A thread rule held in `read!` holds
+  only for reads that reach it, and for the close. And another thread's `get-bytevector-n` that
+  needs more than was buffered takes the buffered bytes, then raises at `read!`, and loses them:
+  the owner's next byte was 128, after 127 buffered
+  ([research](research/m6/slice1-review2/results/port-overread-guix-8.20.0.log)). (chez-curl,
+  M6 slice 1's reviews)
+* **Which `Expect` values make libcurl wait for a 100 moves with the version.** 7.85.0 and both
+  8.5.0 builds waited on `100-continue` anywhere in the value, in any ASCII case:
+  `x100-continue`, `y100-continuez`, `a 100-continue` and `100-continue;q=1`; 8.20.0 and 8.23.0
+  only on an element of a comma list ([research](research/m6/slice1-fix/expect/results/)). A
+  rule held by one version's matching misses the other's: the stream's refusal matches the
+  floor's, which covers the newer. (chez-curl, M6 slice 1's fix round)
+* **A take, then a wait for the token's end, can wait out its bound on a stream.** The take's
+  look queues a resume while the take still lends its piece; if the engine's replay runs before
+  the take removes it, the replay counts the piece, pauses again, and no further look queues the
+  next resume. The review's probe held the take at the gate seam: `(done-within-3s #f)`, then one
+  more look ended it `(body-limit 23)` ([research](research/m6/slice1-review/replay-limit-race.sps)).
+  A test that reads a stream's outcome drains it with `curl-token-next-piece`, which looks, first.
+  (chez-curl, M6 slice 1's review)

@@ -1,0 +1,535 @@
+[main-files] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 -> /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0, headers /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/../include
+[main-files] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[main-files] version headers=8.20.0 runtime=8.20.0 ssl=GnuTLS/3.8.13 libz=1.3.1 nghttp2=1.69.0 http2=1 libz_feature=1 live_after_init=0
+[main-files] server raw=37457 tls=36423 h2=37299
+[main-files] case R-reset-mid:noseek:get raw done code=0 t=4.3 status=200 ver=2 conns=1 lport=35722
+[main-files] case R-reset-mid:noseek:post raw debug t=0.1 text "Reusing existing http: connection with host 127.0.0.1"
+[main-files] case R-reset-mid:noseek:post raw prereq n=1 ev=1 t=0.1 local_port=35722 answer=OK
+[main-files] case R-reset-mid:noseek:post raw read n=1 ev=2 t=0.2 room=65369 inpause=0 answer=16384 offset=16384
+[main-files] case R-reset-mid:noseek:post raw debug t=0.2 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.noseek HTTP/1.1"
+[main-files] case R-reset-mid:noseek:post raw read n=2 ev=3 t=0.3 room=65536 inpause=0 answer=16384 offset=32768
+[main-files] case R-reset-mid:noseek:post raw read n=3 ev=4 t=0.4 room=65536 inpause=0 answer=16384 offset=49152
+[main-files] case R-reset-mid:noseek:post raw read n=4 ev=5 t=0.4 room=65536 inpause=0 answer=16384 offset=65536
+[main-files] case R-reset-mid:noseek:post raw read n=5 ev=6 t=0.5 room=65536 inpause=0 answer=16384 offset=81920
+[main-files] case R-reset-mid:noseek:post raw read n=6 ev=7 t=0.5 room=65536 inpause=0 answer=16384 offset=98304
+[main-files] case R-reset-mid:noseek:post raw read n=7 ev=8 t=0.6 room=65536 inpause=0 answer=16384 offset=114688
+[main-files] case R-reset-mid:noseek:post raw read n=8 ev=9 t=0.6 room=65536 inpause=0 answer=16384 offset=131072
+[main-files] case R-reset-mid:noseek:post raw read n=9 ev=10 t=0.7 room=65536 inpause=0 answer=16384 offset=147456
+[main-files] case R-reset-mid:noseek:post raw read n=10 ev=11 t=0.7 room=65536 inpause=0 answer=16384 offset=163840
+[main-files] case R-reset-mid:noseek:post raw read n=11 ev=12 t=0.8 room=65536 inpause=0 answer=16384 offset=180224
+[main-files] case R-reset-mid:noseek:post raw read n=12 ev=13 t=0.9 room=65536 inpause=0 answer=16384 offset=196608
+[main-files] case R-reset-mid:noseek:post raw read n=13 ev=14 t=0.9 room=65536 inpause=0 answer=16384 offset=212992
+[main-files] case R-reset-mid:noseek:post raw read n=14 ev=15 t=1.0 room=49152 inpause=0 answer=16384 offset=229376
+[main-files] case R-reset-mid:noseek:post raw read n=15 ev=16 t=1.0 room=32768 inpause=0 answer=16384 offset=245760
+[main-files] case R-reset-mid:noseek:post raw read n=16 ev=17 t=1.0 room=16384 inpause=0 answer=16384 offset=262144
+[main-files] case R-reset-mid:noseek:post raw debug t=1.1 data_out events=16 bytes=262144
+[main-files] case R-reset-mid:noseek:post raw debug t=1.1 text "upload completely sent off: 262144 bytes"
+[main-files] case R-reset-mid:noseek:post raw debug t=1.7 text "Recv failure: Connection reset by peer"
+[main-files] case R-reset-mid:noseek:post raw debug t=1.7 text "Connection died, retrying a fresh connect (retry count: 1)"
+[main-files] case R-reset-mid:noseek:post raw debug t=1.7 text "shutting down connection #0"
+[main-files] case R-reset-mid:noseek:post raw debug t=1.8 text "necessary data rewind was not possible"
+[main-files] case R-reset-mid:noseek:post raw debug t=1.8 text "rewind of client reader 'cr-in' failed: 65"
+[main-files] case R-reset-mid:noseek:post raw debug t=1.8 text "Issue another request to this URL: 'http://127.0.0.1:37457/sink?want=262144&tag=R-reset-mid.noseek'"
+[main-files] case R-reset-mid:noseek:post raw done code=65 err="Send failed since rewinding of the data stream failed" t=1.8 status=0 ver=0 conns=0 lport=35722
+[main-files] case R-reset-mid:noseek:post raw rewind case_t get_end=4.3 post_add=104.8 post_end=106.6 get_lport=35722 post_lport=35722
+[main-files] case R-reset-mid:noseek:post raw r2 prereq_calls=1 seeks=0 reads=16 fail_t=1.7 reads_after_fail=0 new_connection=0
+[main-files] case R-reset-mid:noseek:post raw reads=16 reads_inpause=0 seeks=0 answer: (none)
+[main-files] case R-reset-mid:noseek:post raw server: req raw GET /close-after #1 conn=35722 at=81.3
+[main-files] case R-reset-mid:noseek:post raw server: close-after raw then=reset conn=35722: the next request on it is reset after 32768 body bytes
+[main-files] case R-reset-mid:noseek:post raw server: req raw POST /sink #1 conn=35722 at=184.0
+[main-files] case R-reset-mid:noseek:post raw server: reset raw /sink conn=35722 after its head and 32768 body bytes, at 1.0ms; RST
+[main-files] case R-reset-mid:noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[main-files] case R-reset-mid:seekok:get raw done code=0 t=0.4 status=200 ver=2 conns=1 lport=35732
+[main-files] case R-reset-mid:seekok:post raw debug t=0.0 text "Reusing existing http: connection with host 127.0.0.1"
+[main-files] case R-reset-mid:seekok:post raw prereq n=1 ev=1 t=0.1 local_port=35732 answer=OK
+[main-files] case R-reset-mid:seekok:post raw read n=1 ev=2 t=0.2 room=65369 inpause=0 answer=16384 offset=16384
+[main-files] case R-reset-mid:seekok:post raw debug t=0.2 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.seekok HTTP/1.1"
+[main-files] case R-reset-mid:seekok:post raw read n=2 ev=3 t=0.2 room=65536 inpause=0 answer=16384 offset=32768
+[main-files] case R-reset-mid:seekok:post raw read n=3 ev=4 t=0.3 room=65536 inpause=0 answer=16384 offset=49152
+[main-files] case R-reset-mid:seekok:post raw read n=4 ev=5 t=0.4 room=65536 inpause=0 answer=16384 offset=65536
+[main-files] case R-reset-mid:seekok:post raw read n=5 ev=6 t=0.4 room=65536 inpause=0 answer=16384 offset=81920
+[main-files] case R-reset-mid:seekok:post raw read n=6 ev=7 t=0.5 room=65536 inpause=0 answer=16384 offset=98304
+[main-files] case R-reset-mid:seekok:post raw read n=7 ev=8 t=0.5 room=65536 inpause=0 answer=16384 offset=114688
+[main-files] case R-reset-mid:seekok:post raw read n=8 ev=9 t=0.6 room=65536 inpause=0 answer=16384 offset=131072
+[main-files] case R-reset-mid:seekok:post raw read n=9 ev=10 t=0.6 room=65536 inpause=0 answer=16384 offset=147456
+[main-files] case R-reset-mid:seekok:post raw read n=10 ev=11 t=0.7 room=65536 inpause=0 answer=16384 offset=163840
+[main-files] case R-reset-mid:seekok:post raw read n=11 ev=12 t=0.7 room=65536 inpause=0 answer=16384 offset=180224
+[main-files] case R-reset-mid:seekok:post raw read n=12 ev=13 t=0.8 room=65536 inpause=0 answer=16384 offset=196608
+[main-files] case R-reset-mid:seekok:post raw read n=13 ev=14 t=0.8 room=65536 inpause=0 answer=16384 offset=212992
+[main-files] case R-reset-mid:seekok:post raw read n=14 ev=15 t=0.9 room=49152 inpause=0 answer=16384 offset=229376
+[main-files] case R-reset-mid:seekok:post raw read n=15 ev=16 t=0.9 room=32768 inpause=0 answer=16384 offset=245760
+[main-files] case R-reset-mid:seekok:post raw read n=16 ev=17 t=1.0 room=16384 inpause=0 answer=16384 offset=262144
+[main-files] case R-reset-mid:seekok:post raw debug t=1.0 data_out events=15 bytes=245760
+[main-files] case R-reset-mid:seekok:post raw debug t=1.0 text "Send failure: Connection reset by peer"
+[main-files] case R-reset-mid:seekok:post raw debug t=1.0 text "closing connection #0"
+[main-files] case R-reset-mid:seekok:post raw done code=55 err="Failed sending data to the peer" t=1.0 status=0 ver=0 conns=0 lport=35732
+[main-files] case R-reset-mid:seekok:post raw rewind case_t get_end=0.4 post_add=100.9 post_end=101.9 get_lport=35732 post_lport=35732
+[main-files] case R-reset-mid:seekok:post raw r2 prereq_calls=1 seeks=0 reads=16 fail_t=1.0 reads_after_fail=0 new_connection=0
+[main-files] case R-reset-mid:seekok:post raw reads=16 reads_inpause=0 seeks=0 answer: (none)
+[main-files] case R-reset-mid:seekok:post raw server: req raw GET /close-after #1 conn=35732 at=186.3
+[main-files] case R-reset-mid:seekok:post raw server: close-after raw then=reset conn=35732: the next request on it is reset after 32768 body bytes
+[main-files] case R-reset-mid:seekok:post raw server: req raw POST /sink #1 conn=35732 at=287.4
+[main-files] case R-reset-mid:seekok:post raw server: reset raw /sink conn=35732 after its head and 32768 body bytes, at 0.4ms; RST
+[main-files] case R-reset-mid:seekok:post raw server: count raw:/close-after=1 raw:/sink=1
+[main-files] case R-reset-mid all done live_before_global_cleanup=0
+[main-files] case R-reset-mid live_after_global_cleanup=0
+[main-files] probe R-reset-mid exit=0
+[main-files] probe R-reset-mid took about 0 s
+[main-files] -- 1 cases run
+[main-files] server-stderr: counts raw:/close-after=2 raw:/sink=2
+[switch-unset] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 -> /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0, headers /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/../include
+[switch-unset] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[switch-unset] version headers=8.20.0 runtime=8.20.0 ssl=GnuTLS/3.8.13 libz=1.3.1 nghttp2=1.69.0 http2=1 libz_feature=1 live_after_init=0
+[switch-unset] server raw=33307 tls=37089 h2=33127
+[switch-unset] case R-reset-mid:noseek:get raw done code=0 t=4.3 status=200 ver=2 conns=1 lport=50798
+[switch-unset] case R-reset-mid:noseek:post raw debug t=0.0 text "Reusing existing http: connection with host 127.0.0.1"
+[switch-unset] case R-reset-mid:noseek:post raw prereq n=1 ev=1 t=0.1 local_port=50798 answer=OK
+[switch-unset] case R-reset-mid:noseek:post raw read n=1 ev=2 t=0.2 room=65369 inpause=0 answer=16384 offset=16384
+[switch-unset] case R-reset-mid:noseek:post raw debug t=0.2 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.noseek HTTP/1.1"
+[switch-unset] case R-reset-mid:noseek:post raw read n=2 ev=3 t=0.3 room=65536 inpause=0 answer=16384 offset=32768
+[switch-unset] case R-reset-mid:noseek:post raw read n=3 ev=4 t=0.3 room=65536 inpause=0 answer=16384 offset=49152
+[switch-unset] case R-reset-mid:noseek:post raw read n=4 ev=5 t=0.4 room=65536 inpause=0 answer=16384 offset=65536
+[switch-unset] case R-reset-mid:noseek:post raw read n=5 ev=6 t=0.4 room=65536 inpause=0 answer=16384 offset=81920
+[switch-unset] case R-reset-mid:noseek:post raw read n=6 ev=7 t=0.5 room=65536 inpause=0 answer=16384 offset=98304
+[switch-unset] case R-reset-mid:noseek:post raw read n=7 ev=8 t=0.5 room=65536 inpause=0 answer=16384 offset=114688
+[switch-unset] case R-reset-mid:noseek:post raw read n=8 ev=9 t=0.6 room=65536 inpause=0 answer=16384 offset=131072
+[switch-unset] case R-reset-mid:noseek:post raw read n=9 ev=10 t=0.6 room=65536 inpause=0 answer=16384 offset=147456
+[switch-unset] case R-reset-mid:noseek:post raw read n=10 ev=11 t=0.7 room=65536 inpause=0 answer=16384 offset=163840
+[switch-unset] case R-reset-mid:noseek:post raw read n=11 ev=12 t=0.7 room=65536 inpause=0 answer=16384 offset=180224
+[switch-unset] case R-reset-mid:noseek:post raw read n=12 ev=13 t=0.8 room=65536 inpause=0 answer=16384 offset=196608
+[switch-unset] case R-reset-mid:noseek:post raw read n=13 ev=14 t=0.8 room=65536 inpause=0 answer=16384 offset=212992
+[switch-unset] case R-reset-mid:noseek:post raw read n=14 ev=15 t=0.9 room=49152 inpause=0 answer=16384 offset=229376
+[switch-unset] case R-reset-mid:noseek:post raw read n=15 ev=16 t=0.9 room=32768 inpause=0 answer=16384 offset=245760
+[switch-unset] case R-reset-mid:noseek:post raw read n=16 ev=17 t=1.0 room=16384 inpause=0 answer=16384 offset=262144
+[switch-unset] case R-reset-mid:noseek:post raw debug t=1.0 data_out events=16 bytes=262144
+[switch-unset] case R-reset-mid:noseek:post raw debug t=1.0 text "upload completely sent off: 262144 bytes"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.8 text "Recv failure: Connection reset by peer"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.8 text "Connection died, retrying a fresh connect (retry count: 1)"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.8 text "shutting down connection #0"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.8 text "necessary data rewind was not possible"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.8 text "rewind of client reader 'cr-in' failed: 65"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.8 text "Issue another request to this URL: 'http://127.0.0.1:33307/sink?want=262144&tag=R-reset-mid.noseek'"
+[switch-unset] case R-reset-mid:noseek:post raw done code=65 err="Send failed since rewinding of the data stream failed" t=2.8 status=0 ver=0 conns=0 lport=50798
+[switch-unset] case R-reset-mid:noseek:post raw rewind case_t get_end=4.3 post_add=104.9 post_end=107.7 get_lport=50798 post_lport=50798
+[switch-unset] case R-reset-mid:noseek:post raw r2 prereq_calls=1 seeks=0 reads=16 fail_t=2.8 reads_after_fail=0 new_connection=0
+[switch-unset] case R-reset-mid:noseek:post raw reads=16 reads_inpause=0 seeks=0 answer: (none)
+[switch-unset] case R-reset-mid:noseek:post raw server: req raw GET /close-after #1 conn=50798 at=78.5
+[switch-unset] case R-reset-mid:noseek:post raw server: close-after raw then=reset conn=50798: the next request on it is reset after 32768 body bytes
+[switch-unset] case R-reset-mid:noseek:post raw server: req raw POST /sink #1 conn=50798 at=181.2
+[switch-unset] case R-reset-mid:noseek:post raw server: reset raw /sink conn=50798 after its head and 49152 body bytes, at 1.8ms; RST
+[switch-unset] case R-reset-mid:noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[switch-unset] case R-reset-mid:seekok:get raw done code=0 t=0.5 status=200 ver=2 conns=1 lport=50814
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.0 text "Reusing existing http: connection with host 127.0.0.1"
+[switch-unset] case R-reset-mid:seekok:post raw prereq n=1 ev=1 t=0.1 local_port=50814 answer=OK
+[switch-unset] case R-reset-mid:seekok:post raw read n=1 ev=2 t=0.2 room=65369 inpause=0 answer=16384 offset=16384
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.2 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.seekok HTTP/1.1"
+[switch-unset] case R-reset-mid:seekok:post raw read n=2 ev=3 t=0.2 room=65536 inpause=0 answer=16384 offset=32768
+[switch-unset] case R-reset-mid:seekok:post raw read n=3 ev=4 t=0.3 room=65536 inpause=0 answer=16384 offset=49152
+[switch-unset] case R-reset-mid:seekok:post raw read n=4 ev=5 t=0.3 room=65536 inpause=0 answer=16384 offset=65536
+[switch-unset] case R-reset-mid:seekok:post raw read n=5 ev=6 t=0.4 room=65536 inpause=0 answer=16384 offset=81920
+[switch-unset] case R-reset-mid:seekok:post raw read n=6 ev=7 t=0.4 room=65536 inpause=0 answer=16384 offset=98304
+[switch-unset] case R-reset-mid:seekok:post raw read n=7 ev=8 t=0.5 room=65536 inpause=0 answer=16384 offset=114688
+[switch-unset] case R-reset-mid:seekok:post raw read n=8 ev=9 t=0.5 room=65536 inpause=0 answer=16384 offset=131072
+[switch-unset] case R-reset-mid:seekok:post raw read n=9 ev=10 t=0.6 room=65536 inpause=0 answer=16384 offset=147456
+[switch-unset] case R-reset-mid:seekok:post raw read n=10 ev=11 t=0.6 room=65536 inpause=0 answer=16384 offset=163840
+[switch-unset] case R-reset-mid:seekok:post raw read n=11 ev=12 t=0.7 room=65536 inpause=0 answer=16384 offset=180224
+[switch-unset] case R-reset-mid:seekok:post raw read n=12 ev=13 t=0.7 room=65536 inpause=0 answer=16384 offset=196608
+[switch-unset] case R-reset-mid:seekok:post raw read n=13 ev=14 t=0.8 room=65536 inpause=0 answer=16384 offset=212992
+[switch-unset] case R-reset-mid:seekok:post raw read n=14 ev=15 t=0.8 room=49152 inpause=0 answer=16384 offset=229376
+[switch-unset] case R-reset-mid:seekok:post raw read n=15 ev=16 t=0.9 room=32768 inpause=0 answer=16384 offset=245760
+[switch-unset] case R-reset-mid:seekok:post raw read n=16 ev=17 t=0.9 room=16384 inpause=0 answer=16384 offset=262144
+[switch-unset] case R-reset-mid:seekok:post raw debug t=1.0 data_out events=15 bytes=245760
+[switch-unset] case R-reset-mid:seekok:post raw debug t=1.0 text "Send failure: Connection reset by peer"
+[switch-unset] case R-reset-mid:seekok:post raw debug t=1.0 text "closing connection #0"
+[switch-unset] case R-reset-mid:seekok:post raw done code=55 err="Failed sending data to the peer" t=1.0 status=0 ver=0 conns=0 lport=50814
+[switch-unset] case R-reset-mid:seekok:post raw rewind case_t get_end=0.5 post_add=101.0 post_end=102.0 get_lport=50814 post_lport=50814
+[switch-unset] case R-reset-mid:seekok:post raw r2 prereq_calls=1 seeks=0 reads=16 fail_t=1.0 reads_after_fail=0 new_connection=0
+[switch-unset] case R-reset-mid:seekok:post raw reads=16 reads_inpause=0 seeks=0 answer: (none)
+[switch-unset] case R-reset-mid:seekok:post raw server: req raw GET /close-after #1 conn=50814 at=184.8
+[switch-unset] case R-reset-mid:seekok:post raw server: close-after raw then=reset conn=50814: the next request on it is reset after 32768 body bytes
+[switch-unset] case R-reset-mid:seekok:post raw server: req raw POST /sink #1 conn=50814 at=286.0
+[switch-unset] case R-reset-mid:seekok:post raw server: reset raw /sink conn=50814 after its head and 32768 body bytes, at 0.4ms; RST
+[switch-unset] case R-reset-mid:seekok:post raw server: count raw:/close-after=1 raw:/sink=1
+[switch-unset] case R-reset-mid all done live_before_global_cleanup=0
+[switch-unset] case R-reset-mid live_after_global_cleanup=0
+[switch-unset] probe R-reset-mid exit=0
+[switch-unset] probe R-reset-mid took about 1 s
+[switch-unset] -- 1 cases run
+[switch-unset] server-stderr: counts raw:/close-after=2 raw:/sink=2
+[main-files] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 -> /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0, headers /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/../include
+[main-files] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[main-files] version headers=8.20.0 runtime=8.20.0 ssl=GnuTLS/3.8.13 libz=1.3.1 nghttp2=1.69.0 http2=1 libz_feature=1 live_after_init=0
+[main-files] server raw=42841 tls=43513 h2=45397
+[main-files] case R-reset-mid:noseek:get raw done code=0 t=3.1 status=200 ver=2 conns=1 lport=46952
+[main-files] case R-reset-mid:noseek:post raw debug t=0.1 text "Reusing existing http: connection with host 127.0.0.1"
+[main-files] case R-reset-mid:noseek:post raw prereq n=1 ev=1 t=0.1 local_port=46952 answer=OK
+[main-files] case R-reset-mid:noseek:post raw read n=1 ev=2 t=0.3 room=65369 inpause=0 answer=16384 offset=16384
+[main-files] case R-reset-mid:noseek:post raw debug t=0.4 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.noseek HTTP/1.1"
+[main-files] case R-reset-mid:noseek:post raw read n=2 ev=3 t=0.5 room=65536 inpause=0 answer=16384 offset=32768
+[main-files] case R-reset-mid:noseek:post raw read n=3 ev=4 t=0.6 room=65536 inpause=0 answer=16384 offset=49152
+[main-files] case R-reset-mid:noseek:post raw read n=4 ev=5 t=0.7 room=65536 inpause=0 answer=16384 offset=65536
+[main-files] case R-reset-mid:noseek:post raw read n=5 ev=6 t=0.8 room=65536 inpause=0 answer=16384 offset=81920
+[main-files] case R-reset-mid:noseek:post raw read n=6 ev=7 t=0.9 room=65536 inpause=0 answer=16384 offset=98304
+[main-files] case R-reset-mid:noseek:post raw read n=7 ev=8 t=1.0 room=65536 inpause=0 answer=16384 offset=114688
+[main-files] case R-reset-mid:noseek:post raw read n=8 ev=9 t=1.1 room=65536 inpause=0 answer=16384 offset=131072
+[main-files] case R-reset-mid:noseek:post raw read n=9 ev=10 t=1.2 room=65536 inpause=0 answer=16384 offset=147456
+[main-files] case R-reset-mid:noseek:post raw read n=10 ev=11 t=1.3 room=65536 inpause=0 answer=16384 offset=163840
+[main-files] case R-reset-mid:noseek:post raw read n=11 ev=12 t=1.4 room=65536 inpause=0 answer=16384 offset=180224
+[main-files] case R-reset-mid:noseek:post raw read n=12 ev=13 t=1.5 room=65536 inpause=0 answer=16384 offset=196608
+[main-files] case R-reset-mid:noseek:post raw read n=13 ev=14 t=1.6 room=65536 inpause=0 answer=16384 offset=212992
+[main-files] case R-reset-mid:noseek:post raw read n=14 ev=15 t=1.6 room=49152 inpause=0 answer=16384 offset=229376
+[main-files] case R-reset-mid:noseek:post raw read n=15 ev=16 t=1.7 room=32768 inpause=0 answer=16384 offset=245760
+[main-files] case R-reset-mid:noseek:post raw read n=16 ev=17 t=1.8 room=16384 inpause=0 answer=16384 offset=262144
+[main-files] case R-reset-mid:noseek:post raw debug t=1.8 data_out events=16 bytes=262144
+[main-files] case R-reset-mid:noseek:post raw debug t=1.9 text "upload completely sent off: 262144 bytes"
+[main-files] case R-reset-mid:noseek:post raw debug t=6.5 text "Recv failure: Connection reset by peer"
+[main-files] case R-reset-mid:noseek:post raw debug t=6.5 text "Connection died, retrying a fresh connect (retry count: 1)"
+[main-files] case R-reset-mid:noseek:post raw debug t=6.5 text "shutting down connection #0"
+[main-files] case R-reset-mid:noseek:post raw debug t=6.6 text "necessary data rewind was not possible"
+[main-files] case R-reset-mid:noseek:post raw debug t=6.6 text "rewind of client reader 'cr-in' failed: 65"
+[main-files] case R-reset-mid:noseek:post raw debug t=6.6 text "Issue another request to this URL: 'http://127.0.0.1:42841/sink?want=262144&tag=R-reset-mid.noseek'"
+[main-files] case R-reset-mid:noseek:post raw done code=65 err="Send failed since rewinding of the data stream failed" t=6.6 status=0 ver=0 conns=0 lport=46952
+[main-files] case R-reset-mid:noseek:post raw rewind case_t get_end=3.1 post_add=103.7 post_end=110.3 get_lport=46952 post_lport=46952
+[main-files] case R-reset-mid:noseek:post raw r2 prereq_calls=1 seeks=0 reads=16 fail_t=6.5 reads_after_fail=0 new_connection=0
+[main-files] case R-reset-mid:noseek:post raw reads=16 reads_inpause=0 seeks=0 answer: (none)
+[main-files] case R-reset-mid:noseek:post raw server: req raw GET /close-after #1 conn=46952 at=78.4
+[main-files] case R-reset-mid:noseek:post raw server: close-after raw then=reset conn=46952: the next request on it is reset after 32768 body bytes
+[main-files] case R-reset-mid:noseek:post raw server: req raw POST /sink #1 conn=46952 at=180.8
+[main-files] case R-reset-mid:noseek:post raw server: reset raw /sink conn=46952 after its head and 81920 body bytes, at 5.4ms; RST
+[main-files] case R-reset-mid:noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[main-files] case R-reset-mid:seekok:get raw done code=0 t=0.6 status=200 ver=2 conns=1 lport=46964
+[main-files] case R-reset-mid:seekok:post raw debug t=0.0 text "Reusing existing http: connection with host 127.0.0.1"
+[main-files] case R-reset-mid:seekok:post raw prereq n=1 ev=1 t=0.0 local_port=46964 answer=OK
+[main-files] case R-reset-mid:seekok:post raw read n=1 ev=2 t=0.1 room=65369 inpause=0 answer=16384 offset=16384
+[main-files] case R-reset-mid:seekok:post raw debug t=0.2 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.seekok HTTP/1.1"
+[main-files] case R-reset-mid:seekok:post raw read n=2 ev=3 t=0.2 room=65536 inpause=0 answer=16384 offset=32768
+[main-files] case R-reset-mid:seekok:post raw read n=3 ev=4 t=0.3 room=65536 inpause=0 answer=16384 offset=49152
+[main-files] case R-reset-mid:seekok:post raw read n=4 ev=5 t=0.4 room=65536 inpause=0 answer=16384 offset=65536
+[main-files] case R-reset-mid:seekok:post raw read n=5 ev=6 t=0.4 room=65536 inpause=0 answer=16384 offset=81920
+[main-files] case R-reset-mid:seekok:post raw read n=6 ev=7 t=0.4 room=65536 inpause=0 answer=16384 offset=98304
+[main-files] case R-reset-mid:seekok:post raw read n=7 ev=8 t=0.5 room=65536 inpause=0 answer=16384 offset=114688
+[main-files] case R-reset-mid:seekok:post raw read n=8 ev=9 t=0.5 room=65536 inpause=0 answer=16384 offset=131072
+[main-files] case R-reset-mid:seekok:post raw read n=9 ev=10 t=0.6 room=65536 inpause=0 answer=16384 offset=147456
+[main-files] case R-reset-mid:seekok:post raw read n=10 ev=11 t=0.6 room=65536 inpause=0 answer=16384 offset=163840
+[main-files] case R-reset-mid:seekok:post raw read n=11 ev=12 t=0.7 room=65536 inpause=0 answer=16384 offset=180224
+[main-files] case R-reset-mid:seekok:post raw read n=12 ev=13 t=0.7 room=65536 inpause=0 answer=16384 offset=196608
+[main-files] case R-reset-mid:seekok:post raw read n=13 ev=14 t=0.8 room=65536 inpause=0 answer=16384 offset=212992
+[main-files] case R-reset-mid:seekok:post raw debug t=0.8 data_out events=12 bytes=196608
+[main-files] case R-reset-mid:seekok:post raw debug t=0.8 text "Send failure: Connection reset by peer"
+[main-files] case R-reset-mid:seekok:post raw debug t=0.8 text "closing connection #0"
+[main-files] case R-reset-mid:seekok:post raw done code=55 err="Failed sending data to the peer" t=0.8 status=0 ver=0 conns=0 lport=46964
+[main-files] case R-reset-mid:seekok:post raw rewind case_t get_end=0.6 post_add=101.2 post_end=102.0 get_lport=46964 post_lport=46964
+[main-files] case R-reset-mid:seekok:post raw r2 prereq_calls=1 seeks=0 reads=13 fail_t=0.8 reads_after_fail=0 new_connection=0
+[main-files] case R-reset-mid:seekok:post raw reads=13 reads_inpause=0 seeks=0 answer: (none)
+[main-files] case R-reset-mid:seekok:post raw server: req raw GET /close-after #1 conn=46964 at=188.6
+[main-files] case R-reset-mid:seekok:post raw server: close-after raw then=reset conn=46964: the next request on it is reset after 32768 body bytes
+[main-files] case R-reset-mid:seekok:post raw server: req raw POST /sink #1 conn=46964 at=289.8
+[main-files] case R-reset-mid:seekok:post raw server: reset raw /sink conn=46964 after its head and 32768 body bytes, at 0.4ms; RST
+[main-files] case R-reset-mid:seekok:post raw server: count raw:/close-after=1 raw:/sink=1
+[main-files] case R-reset-mid all done live_before_global_cleanup=0
+[main-files] case R-reset-mid live_after_global_cleanup=0
+[main-files] probe R-reset-mid exit=0
+[main-files] probe R-reset-mid took about 0 s
+[main-files] -- 1 cases run
+[main-files] server-stderr: counts raw:/close-after=2 raw:/sink=2
+[switch-unset] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 -> /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0, headers /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/../include
+[switch-unset] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[switch-unset] version headers=8.20.0 runtime=8.20.0 ssl=GnuTLS/3.8.13 libz=1.3.1 nghttp2=1.69.0 http2=1 libz_feature=1 live_after_init=0
+[switch-unset] server raw=45861 tls=44097 h2=43213
+[switch-unset] case R-reset-mid:noseek:get raw done code=0 t=2.8 status=200 ver=2 conns=1 lport=44752
+[switch-unset] case R-reset-mid:noseek:post raw debug t=0.0 text "Reusing existing http: connection with host 127.0.0.1"
+[switch-unset] case R-reset-mid:noseek:post raw prereq n=1 ev=1 t=0.1 local_port=44752 answer=OK
+[switch-unset] case R-reset-mid:noseek:post raw read n=1 ev=2 t=0.1 room=65369 inpause=0 answer=16384 offset=16384
+[switch-unset] case R-reset-mid:noseek:post raw debug t=0.2 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.noseek HTTP/1.1"
+[switch-unset] case R-reset-mid:noseek:post raw read n=2 ev=3 t=0.2 room=65536 inpause=0 answer=16384 offset=32768
+[switch-unset] case R-reset-mid:noseek:post raw read n=3 ev=4 t=0.2 room=65536 inpause=0 answer=16384 offset=49152
+[switch-unset] case R-reset-mid:noseek:post raw read n=4 ev=5 t=0.2 room=65536 inpause=0 answer=16384 offset=65536
+[switch-unset] case R-reset-mid:noseek:post raw read n=5 ev=6 t=0.3 room=65536 inpause=0 answer=16384 offset=81920
+[switch-unset] case R-reset-mid:noseek:post raw read n=6 ev=7 t=0.3 room=65536 inpause=0 answer=16384 offset=98304
+[switch-unset] case R-reset-mid:noseek:post raw read n=7 ev=8 t=0.3 room=65536 inpause=0 answer=16384 offset=114688
+[switch-unset] case R-reset-mid:noseek:post raw read n=8 ev=9 t=0.3 room=65536 inpause=0 answer=16384 offset=131072
+[switch-unset] case R-reset-mid:noseek:post raw read n=9 ev=10 t=0.3 room=65536 inpause=0 answer=16384 offset=147456
+[switch-unset] case R-reset-mid:noseek:post raw read n=10 ev=11 t=0.4 room=65536 inpause=0 answer=16384 offset=163840
+[switch-unset] case R-reset-mid:noseek:post raw read n=11 ev=12 t=0.4 room=65536 inpause=0 answer=16384 offset=180224
+[switch-unset] case R-reset-mid:noseek:post raw read n=12 ev=13 t=0.4 room=65536 inpause=0 answer=16384 offset=196608
+[switch-unset] case R-reset-mid:noseek:post raw read n=13 ev=14 t=0.4 room=65536 inpause=0 answer=16384 offset=212992
+[switch-unset] case R-reset-mid:noseek:post raw read n=14 ev=15 t=0.5 room=49152 inpause=0 answer=16384 offset=229376
+[switch-unset] case R-reset-mid:noseek:post raw read n=15 ev=16 t=0.5 room=32768 inpause=0 answer=16384 offset=245760
+[switch-unset] case R-reset-mid:noseek:post raw read n=16 ev=17 t=0.5 room=16384 inpause=0 answer=16384 offset=262144
+[switch-unset] case R-reset-mid:noseek:post raw debug t=0.5 data_out events=16 bytes=262144
+[switch-unset] case R-reset-mid:noseek:post raw debug t=0.5 text "upload completely sent off: 262144 bytes"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.2 text "Recv failure: Connection reset by peer"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.3 text "Connection died, retrying a fresh connect (retry count: 1)"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.3 text "shutting down connection #0"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.3 text "necessary data rewind was not possible"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.3 text "rewind of client reader 'cr-in' failed: 65"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.3 text "Issue another request to this URL: 'http://127.0.0.1:45861/sink?want=262144&tag=R-reset-mid.noseek'"
+[switch-unset] case R-reset-mid:noseek:post raw done code=65 err="Send failed since rewinding of the data stream failed" t=2.3 status=0 ver=0 conns=0 lport=44752
+[switch-unset] case R-reset-mid:noseek:post raw rewind case_t get_end=2.8 post_add=103.4 post_end=105.7 get_lport=44752 post_lport=44752
+[switch-unset] case R-reset-mid:noseek:post raw r2 prereq_calls=1 seeks=0 reads=16 fail_t=2.2 reads_after_fail=0 new_connection=0
+[switch-unset] case R-reset-mid:noseek:post raw reads=16 reads_inpause=0 seeks=0 answer: (none)
+[switch-unset] case R-reset-mid:noseek:post raw server: req raw GET /close-after #1 conn=44752 at=82.9
+[switch-unset] case R-reset-mid:noseek:post raw server: close-after raw then=reset conn=44752: the next request on it is reset after 32768 body bytes
+[switch-unset] case R-reset-mid:noseek:post raw server: req raw POST /sink #1 conn=44752 at=185.3
+[switch-unset] case R-reset-mid:noseek:post raw server: reset raw /sink conn=44752 after its head and 65369 body bytes, at 1.5ms; RST
+[switch-unset] case R-reset-mid:noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[switch-unset] case R-reset-mid:seekok:get raw done code=0 t=0.4 status=200 ver=2 conns=1 lport=44760
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.0 text "Reusing existing http: connection with host 127.0.0.1"
+[switch-unset] case R-reset-mid:seekok:post raw prereq n=1 ev=1 t=0.1 local_port=44760 answer=OK
+[switch-unset] case R-reset-mid:seekok:post raw read n=1 ev=2 t=0.1 room=65369 inpause=0 answer=16384 offset=16384
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.2 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.seekok HTTP/1.1"
+[switch-unset] case R-reset-mid:seekok:post raw read n=2 ev=3 t=0.2 room=65536 inpause=0 answer=16384 offset=32768
+[switch-unset] case R-reset-mid:seekok:post raw read n=3 ev=4 t=0.2 room=65536 inpause=0 answer=16384 offset=49152
+[switch-unset] case R-reset-mid:seekok:post raw read n=4 ev=5 t=0.2 room=65536 inpause=0 answer=16384 offset=65536
+[switch-unset] case R-reset-mid:seekok:post raw read n=5 ev=6 t=0.3 room=65536 inpause=0 answer=16384 offset=81920
+[switch-unset] case R-reset-mid:seekok:post raw read n=6 ev=7 t=0.3 room=65536 inpause=0 answer=16384 offset=98304
+[switch-unset] case R-reset-mid:seekok:post raw read n=7 ev=8 t=0.3 room=65536 inpause=0 answer=16384 offset=114688
+[switch-unset] case R-reset-mid:seekok:post raw read n=8 ev=9 t=0.3 room=65536 inpause=0 answer=16384 offset=131072
+[switch-unset] case R-reset-mid:seekok:post raw read n=9 ev=10 t=0.4 room=65536 inpause=0 answer=16384 offset=147456
+[switch-unset] case R-reset-mid:seekok:post raw read n=10 ev=11 t=0.4 room=65536 inpause=0 answer=16384 offset=163840
+[switch-unset] case R-reset-mid:seekok:post raw read n=11 ev=12 t=0.4 room=65536 inpause=0 answer=16384 offset=180224
+[switch-unset] case R-reset-mid:seekok:post raw read n=12 ev=13 t=0.4 room=65536 inpause=0 answer=16384 offset=196608
+[switch-unset] case R-reset-mid:seekok:post raw read n=13 ev=14 t=0.5 room=65536 inpause=0 answer=16384 offset=212992
+[switch-unset] case R-reset-mid:seekok:post raw read n=14 ev=15 t=0.5 room=49152 inpause=0 answer=16384 offset=229376
+[switch-unset] case R-reset-mid:seekok:post raw read n=15 ev=16 t=0.5 room=32768 inpause=0 answer=16384 offset=245760
+[switch-unset] case R-reset-mid:seekok:post raw read n=16 ev=17 t=0.5 room=16384 inpause=0 answer=16384 offset=262144
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.5 data_out events=16 bytes=262144
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.5 text "upload completely sent off: 262144 bytes"
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.9 text "Recv failure: Connection reset by peer"
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.9 text "Connection died, retrying a fresh connect (retry count: 1)"
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.9 text "shutting down connection #0"
+[switch-unset] case R-reset-mid:seekok:post raw seek n=1 ev=18 t=1.0 offset=0 origin=0 answer=OK
+[switch-unset] case R-reset-mid:seekok:post raw debug t=1.0 text "Issue another request to this URL: 'http://127.0.0.1:45861/sink?want=262144&tag=R-reset-mid.seekok'"
+[switch-unset] case R-reset-mid:seekok:post raw debug t=1.0 text "Hostname 127.0.0.1 was found in DNS cache"
+[switch-unset] case R-reset-mid:seekok:post raw debug t=1.0 text "  Trying 127.0.0.1:45861..."
+[switch-unset] case R-reset-mid:seekok:post raw debug t=1.1 text "Established connection to 127.0.0.1 (127.0.0.1 port 45861) from 127.0.0.1 port 44770 "
+[switch-unset] case R-reset-mid:seekok:post raw prereq n=2 ev=19 t=1.1 local_port=44770 answer=OK
+[switch-unset] case R-reset-mid:seekok:post raw debug t=1.1 text "using HTTP/1.x"
+[switch-unset] case R-reset-mid:seekok:post raw read n=17 ev=20 t=1.1 room=65369 inpause=0 answer=16384 offset=16384
+[switch-unset] case R-reset-mid:seekok:post raw debug t=1.1 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.seekok HTTP/1.1"
+[switch-unset] case R-reset-mid:seekok:post raw read n=18 ev=21 t=1.1 room=65536 inpause=0 answer=16384 offset=32768
+[switch-unset] case R-reset-mid:seekok:post raw read n=19 ev=22 t=1.1 room=65536 inpause=0 answer=16384 offset=49152
+[switch-unset] case R-reset-mid:seekok:post raw read n=20 ev=23 t=1.2 room=65536 inpause=0 answer=16384 offset=65536
+[switch-unset] case R-reset-mid:seekok:post raw read n=21 ev=24 t=1.2 room=65536 inpause=0 answer=16384 offset=81920
+[switch-unset] case R-reset-mid:seekok:post raw read n=22 ev=25 t=1.2 room=65536 inpause=0 answer=16384 offset=98304
+[switch-unset] case R-reset-mid:seekok:post raw read n=23 ev=26 t=1.2 room=65536 inpause=0 answer=16384 offset=114688
+[switch-unset] case R-reset-mid:seekok:post raw read n=24 ev=27 t=1.3 room=65536 inpause=0 answer=16384 offset=131072
+[switch-unset] case R-reset-mid:seekok:post raw read n=25 ev=28 t=1.3 room=65536 inpause=0 answer=16384 offset=147456
+[switch-unset] case R-reset-mid:seekok:post raw read n=26 ev=29 t=1.3 room=65536 inpause=0 answer=16384 offset=163840
+[switch-unset] case R-reset-mid:seekok:post raw read n=27 ev=30 t=1.3 room=65536 inpause=0 answer=16384 offset=180224
+[switch-unset] case R-reset-mid:seekok:post raw read n=28 ev=31 t=1.3 room=65536 inpause=0 answer=16384 offset=196608
+[switch-unset] case R-reset-mid:seekok:post raw read n=29 ev=32 t=1.4 room=65536 inpause=0 answer=16384 offset=212992
+[switch-unset] case R-reset-mid:seekok:post raw read n=30 ev=33 t=1.4 room=49152 inpause=0 answer=16384 offset=229376
+[switch-unset] case R-reset-mid:seekok:post raw read n=31 ev=34 t=1.4 room=32768 inpause=0 answer=16384 offset=245760
+[switch-unset] case R-reset-mid:seekok:post raw read n=32 ev=35 t=1.4 room=16384 inpause=0 answer=16384 offset=262144
+[switch-unset] case R-reset-mid:seekok:post raw debug t=1.4 data_out events=16 bytes=262144
+[switch-unset] case R-reset-mid:seekok:post raw debug t=1.4 text "upload completely sent off: 262144 bytes"
+[switch-unset] case R-reset-mid:seekok:post raw debug t=5.1 header_in "HTTP/1.1 200 OK"
+[switch-unset] case R-reset-mid:seekok:post raw debug t=5.2 header_in "Content-Length: 252"
+[switch-unset] case R-reset-mid:seekok:post raw debug t=5.2 header_in ""
+[switch-unset] case R-reset-mid:seekok:post raw debug t=5.2 text "Connection #1 to host 127.0.0.1:45861 left intact"
+[switch-unset] case R-reset-mid:seekok:post raw done code=0 t=5.2 status=200 ver=2 conns=1 lport=44770
+[switch-unset] case R-reset-mid:seekok:post raw rewind case_t get_end=0.4 post_add=100.9 post_end=106.1 get_lport=44760 post_lport=44770
+[switch-unset] case R-reset-mid:seekok:post raw r2 prereq_calls=2 seeks=1 reads=32 fail_t=0.9 reads_after_fail=16 new_connection=1
+[switch-unset] case R-reset-mid:seekok:post raw reads=32 reads_inpause=0 seeks=1 answer: sink raw method=POST cl=262144 te=- expect=- ct=application/x-www-form-urlencoded bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5
+[switch-unset] case R-reset-mid:seekok:post raw server: req raw GET /close-after #1 conn=44760 at=191.3
+[switch-unset] case R-reset-mid:seekok:post raw server: close-after raw then=reset conn=44760: the next request on it is reset after 32768 body bytes
+[switch-unset] case R-reset-mid:seekok:post raw server: req raw POST /sink #1 conn=44760 at=292.3
+[switch-unset] case R-reset-mid:seekok:post raw server: reset raw /sink conn=44760 after its head and 32768 body bytes, at 0.5ms; RST
+[switch-unset] case R-reset-mid:seekok:post raw server: req raw POST /sink #2 conn=44770 at=293.2
+[switch-unset] case R-reset-mid:seekok:post raw server: sink raw method=POST cl=262144 te=- expect=- ct=application/x-www-form-urlencoded bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 arr=0.0:65369,0.7:49319,1.1:65536,1.7:41984,2.0:39936
+[switch-unset] case R-reset-mid:seekok:post raw server: count raw:/close-after=1 raw:/sink=2
+[switch-unset] case R-reset-mid all done live_before_global_cleanup=0
+[switch-unset] case R-reset-mid live_after_global_cleanup=0
+[switch-unset] probe R-reset-mid exit=0
+[switch-unset] probe R-reset-mid took about 0 s
+[switch-unset] -- 1 cases run
+[switch-unset] server-stderr: counts raw:/close-after=2 raw:/sink=3
+[main-files] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 -> /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0, headers /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/../include
+[main-files] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[main-files] version headers=8.20.0 runtime=8.20.0 ssl=GnuTLS/3.8.13 libz=1.3.1 nghttp2=1.69.0 http2=1 libz_feature=1 live_after_init=0
+[main-files] server raw=44707 tls=33333 h2=34809
+[main-files] case R-reset-mid:noseek:get raw done code=0 t=2.8 status=200 ver=2 conns=1 lport=42148
+[main-files] case R-reset-mid:noseek:post raw debug t=0.0 text "Reusing existing http: connection with host 127.0.0.1"
+[main-files] case R-reset-mid:noseek:post raw prereq n=1 ev=1 t=0.1 local_port=42148 answer=OK
+[main-files] case R-reset-mid:noseek:post raw read n=1 ev=2 t=0.2 room=65369 inpause=0 answer=16384 offset=16384
+[main-files] case R-reset-mid:noseek:post raw debug t=0.2 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.noseek HTTP/1.1"
+[main-files] case R-reset-mid:noseek:post raw read n=2 ev=3 t=0.3 room=65536 inpause=0 answer=16384 offset=32768
+[main-files] case R-reset-mid:noseek:post raw read n=3 ev=4 t=0.3 room=65536 inpause=0 answer=16384 offset=49152
+[main-files] case R-reset-mid:noseek:post raw read n=4 ev=5 t=0.4 room=65536 inpause=0 answer=16384 offset=65536
+[main-files] case R-reset-mid:noseek:post raw read n=5 ev=6 t=0.4 room=65536 inpause=0 answer=16384 offset=81920
+[main-files] case R-reset-mid:noseek:post raw read n=6 ev=7 t=0.5 room=65536 inpause=0 answer=16384 offset=98304
+[main-files] case R-reset-mid:noseek:post raw read n=7 ev=8 t=0.5 room=65536 inpause=0 answer=16384 offset=114688
+[main-files] case R-reset-mid:noseek:post raw read n=8 ev=9 t=0.6 room=65536 inpause=0 answer=16384 offset=131072
+[main-files] case R-reset-mid:noseek:post raw read n=9 ev=10 t=0.6 room=65536 inpause=0 answer=16384 offset=147456
+[main-files] case R-reset-mid:noseek:post raw read n=10 ev=11 t=0.7 room=65536 inpause=0 answer=16384 offset=163840
+[main-files] case R-reset-mid:noseek:post raw read n=11 ev=12 t=0.7 room=65536 inpause=0 answer=16384 offset=180224
+[main-files] case R-reset-mid:noseek:post raw read n=12 ev=13 t=0.8 room=65536 inpause=0 answer=16384 offset=196608
+[main-files] case R-reset-mid:noseek:post raw read n=13 ev=14 t=0.8 room=65536 inpause=0 answer=16384 offset=212992
+[main-files] case R-reset-mid:noseek:post raw read n=14 ev=15 t=0.9 room=49152 inpause=0 answer=16384 offset=229376
+[main-files] case R-reset-mid:noseek:post raw read n=15 ev=16 t=0.9 room=32768 inpause=0 answer=16384 offset=245760
+[main-files] case R-reset-mid:noseek:post raw read n=16 ev=17 t=1.0 room=16384 inpause=0 answer=16384 offset=262144
+[main-files] case R-reset-mid:noseek:post raw debug t=1.0 data_out events=16 bytes=262144
+[main-files] case R-reset-mid:noseek:post raw debug t=1.0 text "upload completely sent off: 262144 bytes"
+[main-files] case R-reset-mid:noseek:post raw debug t=2.4 text "Recv failure: Connection reset by peer"
+[main-files] case R-reset-mid:noseek:post raw debug t=2.4 text "Connection died, retrying a fresh connect (retry count: 1)"
+[main-files] case R-reset-mid:noseek:post raw debug t=2.4 text "shutting down connection #0"
+[main-files] case R-reset-mid:noseek:post raw debug t=2.5 text "necessary data rewind was not possible"
+[main-files] case R-reset-mid:noseek:post raw debug t=2.5 text "rewind of client reader 'cr-in' failed: 65"
+[main-files] case R-reset-mid:noseek:post raw debug t=2.5 text "Issue another request to this URL: 'http://127.0.0.1:44707/sink?want=262144&tag=R-reset-mid.noseek'"
+[main-files] case R-reset-mid:noseek:post raw done code=65 err="Send failed since rewinding of the data stream failed" t=2.5 status=0 ver=0 conns=0 lport=42148
+[main-files] case R-reset-mid:noseek:post raw rewind case_t get_end=2.8 post_add=103.4 post_end=105.9 get_lport=42148 post_lport=42148
+[main-files] case R-reset-mid:noseek:post raw r2 prereq_calls=1 seeks=0 reads=16 fail_t=2.4 reads_after_fail=0 new_connection=0
+[main-files] case R-reset-mid:noseek:post raw reads=16 reads_inpause=0 seeks=0 answer: (none)
+[main-files] case R-reset-mid:noseek:post raw server: req raw GET /close-after #1 conn=42148 at=76.2
+[main-files] case R-reset-mid:noseek:post raw server: close-after raw then=reset conn=42148: the next request on it is reset after 32768 body bytes
+[main-files] case R-reset-mid:noseek:post raw server: req raw POST /sink #1 conn=42148 at=178.3
+[main-files] case R-reset-mid:noseek:post raw server: reset raw /sink conn=42148 after its head and 32768 body bytes, at 1.5ms; RST
+[main-files] case R-reset-mid:noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[main-files] case R-reset-mid:seekok:get raw done code=0 t=0.5 status=200 ver=2 conns=1 lport=42160
+[main-files] case R-reset-mid:seekok:post raw debug t=0.0 text "Reusing existing http: connection with host 127.0.0.1"
+[main-files] case R-reset-mid:seekok:post raw prereq n=1 ev=1 t=0.1 local_port=42160 answer=OK
+[main-files] case R-reset-mid:seekok:post raw read n=1 ev=2 t=0.1 room=65369 inpause=0 answer=16384 offset=16384
+[main-files] case R-reset-mid:seekok:post raw debug t=0.2 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.seekok HTTP/1.1"
+[main-files] case R-reset-mid:seekok:post raw read n=2 ev=3 t=0.2 room=65536 inpause=0 answer=16384 offset=32768
+[main-files] case R-reset-mid:seekok:post raw read n=3 ev=4 t=0.3 room=65536 inpause=0 answer=16384 offset=49152
+[main-files] case R-reset-mid:seekok:post raw read n=4 ev=5 t=0.3 room=65536 inpause=0 answer=16384 offset=65536
+[main-files] case R-reset-mid:seekok:post raw read n=5 ev=6 t=0.4 room=65536 inpause=0 answer=16384 offset=81920
+[main-files] case R-reset-mid:seekok:post raw read n=6 ev=7 t=0.5 room=65536 inpause=0 answer=16384 offset=98304
+[main-files] case R-reset-mid:seekok:post raw read n=7 ev=8 t=0.5 room=65536 inpause=0 answer=16384 offset=114688
+[main-files] case R-reset-mid:seekok:post raw read n=8 ev=9 t=0.5 room=65536 inpause=0 answer=16384 offset=131072
+[main-files] case R-reset-mid:seekok:post raw read n=9 ev=10 t=0.6 room=65536 inpause=0 answer=16384 offset=147456
+[main-files] case R-reset-mid:seekok:post raw read n=10 ev=11 t=0.6 room=65536 inpause=0 answer=16384 offset=163840
+[main-files] case R-reset-mid:seekok:post raw read n=11 ev=12 t=0.7 room=65536 inpause=0 answer=16384 offset=180224
+[main-files] case R-reset-mid:seekok:post raw read n=12 ev=13 t=0.7 room=65536 inpause=0 answer=16384 offset=196608
+[main-files] case R-reset-mid:seekok:post raw read n=13 ev=14 t=0.8 room=65536 inpause=0 answer=16384 offset=212992
+[main-files] case R-reset-mid:seekok:post raw read n=14 ev=15 t=0.8 room=49152 inpause=0 answer=16384 offset=229376
+[main-files] case R-reset-mid:seekok:post raw read n=15 ev=16 t=0.9 room=32768 inpause=0 answer=16384 offset=245760
+[main-files] case R-reset-mid:seekok:post raw read n=16 ev=17 t=0.9 room=16384 inpause=0 answer=16384 offset=262144
+[main-files] case R-reset-mid:seekok:post raw debug t=0.9 data_out events=16 bytes=262144
+[main-files] case R-reset-mid:seekok:post raw debug t=0.9 text "upload completely sent off: 262144 bytes"
+[main-files] case R-reset-mid:seekok:post raw debug t=1.0 text "Recv failure: Connection reset by peer"
+[main-files] case R-reset-mid:seekok:post raw debug t=1.1 text "Connection died, retrying a fresh connect (retry count: 1)"
+[main-files] case R-reset-mid:seekok:post raw debug t=1.1 text "shutting down connection #0"
+[main-files] case R-reset-mid:seekok:post raw seek n=1 ev=18 t=1.1 offset=0 origin=0 answer=OK
+[main-files] case R-reset-mid:seekok:post raw debug t=1.1 text "Issue another request to this URL: 'http://127.0.0.1:44707/sink?want=262144&tag=R-reset-mid.seekok'"
+[main-files] case R-reset-mid:seekok:post raw debug t=1.1 text "Hostname 127.0.0.1 was found in DNS cache"
+[main-files] case R-reset-mid:seekok:post raw debug t=1.1 text "  Trying 127.0.0.1:44707..."
+[main-files] case R-reset-mid:seekok:post raw debug t=1.2 text "Established connection to 127.0.0.1 (127.0.0.1 port 44707) from 127.0.0.1 port 42176 "
+[main-files] case R-reset-mid:seekok:post raw prereq n=2 ev=19 t=1.2 local_port=42176 answer=OK
+[main-files] case R-reset-mid:seekok:post raw debug t=1.2 text "using HTTP/1.x"
+[main-files] case R-reset-mid:seekok:post raw read n=17 ev=20 t=1.2 room=65369 inpause=0 answer=16384 offset=16384
+[main-files] case R-reset-mid:seekok:post raw debug t=1.2 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.seekok HTTP/1.1"
+[main-files] case R-reset-mid:seekok:post raw read n=18 ev=21 t=1.3 room=65536 inpause=0 answer=16384 offset=32768
+[main-files] case R-reset-mid:seekok:post raw read n=19 ev=22 t=1.3 room=65536 inpause=0 answer=16384 offset=49152
+[main-files] case R-reset-mid:seekok:post raw read n=20 ev=23 t=1.4 room=65536 inpause=0 answer=16384 offset=65536
+[main-files] case R-reset-mid:seekok:post raw read n=21 ev=24 t=1.4 room=65536 inpause=0 answer=16384 offset=81920
+[main-files] case R-reset-mid:seekok:post raw read n=22 ev=25 t=1.4 room=65536 inpause=0 answer=16384 offset=98304
+[main-files] case R-reset-mid:seekok:post raw read n=23 ev=26 t=1.5 room=65536 inpause=0 answer=16384 offset=114688
+[main-files] case R-reset-mid:seekok:post raw read n=24 ev=27 t=1.5 room=65536 inpause=0 answer=16384 offset=131072
+[main-files] case R-reset-mid:seekok:post raw read n=25 ev=28 t=1.6 room=65536 inpause=0 answer=16384 offset=147456
+[main-files] case R-reset-mid:seekok:post raw read n=26 ev=29 t=1.6 room=65536 inpause=0 answer=16384 offset=163840
+[main-files] case R-reset-mid:seekok:post raw read n=27 ev=30 t=1.6 room=65536 inpause=0 answer=16384 offset=180224
+[main-files] case R-reset-mid:seekok:post raw read n=28 ev=31 t=1.7 room=65536 inpause=0 answer=16384 offset=196608
+[main-files] case R-reset-mid:seekok:post raw read n=29 ev=32 t=1.7 room=65536 inpause=0 answer=16384 offset=212992
+[main-files] case R-reset-mid:seekok:post raw read n=30 ev=33 t=1.8 room=49152 inpause=0 answer=16384 offset=229376
+[main-files] case R-reset-mid:seekok:post raw read n=31 ev=34 t=1.8 room=32768 inpause=0 answer=16384 offset=245760
+[main-files] case R-reset-mid:seekok:post raw read n=32 ev=35 t=1.9 room=16384 inpause=0 answer=16384 offset=262144
+[main-files] case R-reset-mid:seekok:post raw debug t=1.9 data_out events=16 bytes=262144
+[main-files] case R-reset-mid:seekok:post raw debug t=1.9 text "upload completely sent off: 262144 bytes"
+[main-files] case R-reset-mid:seekok:post raw debug t=4.9 header_in "HTTP/1.1 200 OK"
+[main-files] case R-reset-mid:seekok:post raw debug t=4.9 header_in "Content-Length: 252"
+[main-files] case R-reset-mid:seekok:post raw debug t=4.9 header_in ""
+[main-files] case R-reset-mid:seekok:post raw debug t=4.9 text "Connection #1 to host 127.0.0.1:44707 left intact"
+[main-files] case R-reset-mid:seekok:post raw done code=0 t=4.9 status=200 ver=2 conns=1 lport=42176
+[main-files] case R-reset-mid:seekok:post raw rewind case_t get_end=0.5 post_add=100.7 post_end=105.6 get_lport=42160 post_lport=42176
+[main-files] case R-reset-mid:seekok:post raw r2 prereq_calls=2 seeks=1 reads=32 fail_t=1.1 reads_after_fail=16 new_connection=1
+[main-files] case R-reset-mid:seekok:post raw reads=32 reads_inpause=0 seeks=1 answer: sink raw method=POST cl=262144 te=- expect=- ct=application/x-www-form-urlencoded bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5
+[main-files] case R-reset-mid:seekok:post raw server: req raw GET /close-after #1 conn=42160 at=182.1
+[main-files] case R-reset-mid:seekok:post raw server: close-after raw then=reset conn=42160: the next request on it is reset after 32768 body bytes
+[main-files] case R-reset-mid:seekok:post raw server: req raw POST /sink #1 conn=42160 at=282.8
+[main-files] case R-reset-mid:seekok:post raw server: reset raw /sink conn=42160 after its head and 49152 body bytes, at 0.6ms; RST
+[main-files] case R-reset-mid:seekok:post raw server: req raw POST /sink #2 conn=42176 at=283.8
+[main-files] case R-reset-mid:seekok:post raw server: sink raw method=POST cl=262144 te=- expect=- ct=application/x-www-form-urlencoded bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 arr=0.0:65369,0.7:49319,1.2:65536,1.7:65536,2.1:16384
+[main-files] case R-reset-mid:seekok:post raw server: count raw:/close-after=1 raw:/sink=2
+[main-files] case R-reset-mid all done live_before_global_cleanup=0
+[main-files] case R-reset-mid live_after_global_cleanup=0
+[main-files] probe R-reset-mid exit=0
+[main-files] probe R-reset-mid took about 1 s
+[main-files] -- 1 cases run
+[main-files] server-stderr: counts raw:/close-after=2 raw:/sink=3
+[switch-unset] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 -> /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0, headers /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/../include
+[switch-unset] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset
+[switch-unset] version headers=8.20.0 runtime=8.20.0 ssl=GnuTLS/3.8.13 libz=1.3.1 nghttp2=1.69.0 http2=1 libz_feature=1 live_after_init=0
+[switch-unset] server raw=41115 tls=45397 h2=34655
+[switch-unset] case R-reset-mid:noseek:get raw done code=0 t=3.2 status=200 ver=2 conns=1 lport=38622
+[switch-unset] case R-reset-mid:noseek:post raw debug t=0.0 text "Reusing existing http: connection with host 127.0.0.1"
+[switch-unset] case R-reset-mid:noseek:post raw prereq n=1 ev=1 t=0.1 local_port=38622 answer=OK
+[switch-unset] case R-reset-mid:noseek:post raw read n=1 ev=2 t=0.2 room=65369 inpause=0 answer=16384 offset=16384
+[switch-unset] case R-reset-mid:noseek:post raw debug t=0.2 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.noseek HTTP/1.1"
+[switch-unset] case R-reset-mid:noseek:post raw read n=2 ev=3 t=0.3 room=65536 inpause=0 answer=16384 offset=32768
+[switch-unset] case R-reset-mid:noseek:post raw read n=3 ev=4 t=0.3 room=65536 inpause=0 answer=16384 offset=49152
+[switch-unset] case R-reset-mid:noseek:post raw read n=4 ev=5 t=0.4 room=65536 inpause=0 answer=16384 offset=65536
+[switch-unset] case R-reset-mid:noseek:post raw read n=5 ev=6 t=0.4 room=65536 inpause=0 answer=16384 offset=81920
+[switch-unset] case R-reset-mid:noseek:post raw read n=6 ev=7 t=0.5 room=65536 inpause=0 answer=16384 offset=98304
+[switch-unset] case R-reset-mid:noseek:post raw read n=7 ev=8 t=0.5 room=65536 inpause=0 answer=16384 offset=114688
+[switch-unset] case R-reset-mid:noseek:post raw read n=8 ev=9 t=0.6 room=65536 inpause=0 answer=16384 offset=131072
+[switch-unset] case R-reset-mid:noseek:post raw read n=9 ev=10 t=0.6 room=65536 inpause=0 answer=16384 offset=147456
+[switch-unset] case R-reset-mid:noseek:post raw read n=10 ev=11 t=0.7 room=65536 inpause=0 answer=16384 offset=163840
+[switch-unset] case R-reset-mid:noseek:post raw read n=11 ev=12 t=0.7 room=65536 inpause=0 answer=16384 offset=180224
+[switch-unset] case R-reset-mid:noseek:post raw read n=12 ev=13 t=0.8 room=65536 inpause=0 answer=16384 offset=196608
+[switch-unset] case R-reset-mid:noseek:post raw read n=13 ev=14 t=0.8 room=65536 inpause=0 answer=16384 offset=212992
+[switch-unset] case R-reset-mid:noseek:post raw read n=14 ev=15 t=0.9 room=49152 inpause=0 answer=16384 offset=229376
+[switch-unset] case R-reset-mid:noseek:post raw read n=15 ev=16 t=0.9 room=32768 inpause=0 answer=16384 offset=245760
+[switch-unset] case R-reset-mid:noseek:post raw read n=16 ev=17 t=1.0 room=16384 inpause=0 answer=16384 offset=262144
+[switch-unset] case R-reset-mid:noseek:post raw debug t=1.0 data_out events=16 bytes=262144
+[switch-unset] case R-reset-mid:noseek:post raw debug t=1.0 text "upload completely sent off: 262144 bytes"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.7 text "Recv failure: Connection reset by peer"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.7 text "Connection died, retrying a fresh connect (retry count: 1)"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.7 text "shutting down connection #0"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.7 text "necessary data rewind was not possible"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.7 text "rewind of client reader 'cr-in' failed: 65"
+[switch-unset] case R-reset-mid:noseek:post raw debug t=2.7 text "Issue another request to this URL: 'http://127.0.0.1:41115/sink?want=262144&tag=R-reset-mid.noseek'"
+[switch-unset] case R-reset-mid:noseek:post raw done code=65 err="Send failed since rewinding of the data stream failed" t=2.7 status=0 ver=0 conns=0 lport=38622
+[switch-unset] case R-reset-mid:noseek:post raw rewind case_t get_end=3.2 post_add=103.7 post_end=106.5 get_lport=38622 post_lport=38622
+[switch-unset] case R-reset-mid:noseek:post raw r2 prereq_calls=1 seeks=0 reads=16 fail_t=2.7 reads_after_fail=0 new_connection=0
+[switch-unset] case R-reset-mid:noseek:post raw reads=16 reads_inpause=0 seeks=0 answer: (none)
+[switch-unset] case R-reset-mid:noseek:post raw server: req raw GET /close-after #1 conn=38622 at=83.5
+[switch-unset] case R-reset-mid:noseek:post raw server: close-after raw then=reset conn=38622: the next request on it is reset after 32768 body bytes
+[switch-unset] case R-reset-mid:noseek:post raw server: req raw POST /sink #1 conn=38622 at=186.1
+[switch-unset] case R-reset-mid:noseek:post raw server: reset raw /sink conn=38622 after its head and 32768 body bytes, at 1.7ms; RST
+[switch-unset] case R-reset-mid:noseek:post raw server: count raw:/close-after=1 raw:/sink=1
+[switch-unset] case R-reset-mid:seekok:get raw done code=0 t=0.4 status=200 ver=2 conns=1 lport=38642
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.0 text "Reusing existing http: connection with host 127.0.0.1"
+[switch-unset] case R-reset-mid:seekok:post raw prereq n=1 ev=1 t=0.1 local_port=38642 answer=OK
+[switch-unset] case R-reset-mid:seekok:post raw read n=1 ev=2 t=0.2 room=65369 inpause=0 answer=16384 offset=16384
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.2 header_out bytes=167 first="POST /sink?want=262144&tag=R-reset-mid.seekok HTTP/1.1"
+[switch-unset] case R-reset-mid:seekok:post raw read n=2 ev=3 t=0.2 room=65536 inpause=0 answer=16384 offset=32768
+[switch-unset] case R-reset-mid:seekok:post raw read n=3 ev=4 t=0.3 room=65536 inpause=0 answer=16384 offset=49152
+[switch-unset] case R-reset-mid:seekok:post raw read n=4 ev=5 t=0.3 room=65536 inpause=0 answer=16384 offset=65536
+[switch-unset] case R-reset-mid:seekok:post raw read n=5 ev=6 t=0.4 room=65536 inpause=0 answer=16384 offset=81920
+[switch-unset] case R-reset-mid:seekok:post raw read n=6 ev=7 t=0.4 room=65536 inpause=0 answer=16384 offset=98304
+[switch-unset] case R-reset-mid:seekok:post raw read n=7 ev=8 t=0.5 room=65536 inpause=0 answer=16384 offset=114688
+[switch-unset] case R-reset-mid:seekok:post raw read n=8 ev=9 t=0.5 room=65536 inpause=0 answer=16384 offset=131072
+[switch-unset] case R-reset-mid:seekok:post raw read n=9 ev=10 t=0.6 room=65536 inpause=0 answer=16384 offset=147456
+[switch-unset] case R-reset-mid:seekok:post raw read n=10 ev=11 t=0.7 room=65536 inpause=0 answer=16384 offset=163840
+[switch-unset] case R-reset-mid:seekok:post raw read n=11 ev=12 t=0.7 room=65536 inpause=0 answer=16384 offset=180224
+[switch-unset] case R-reset-mid:seekok:post raw read n=12 ev=13 t=0.8 room=65536 inpause=0 answer=16384 offset=196608
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.8 data_out events=11 bytes=180224
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.8 text "Send failure: Connection reset by peer"
+[switch-unset] case R-reset-mid:seekok:post raw debug t=0.8 text "closing connection #0"
+[switch-unset] case R-reset-mid:seekok:post raw done code=55 err="Failed sending data to the peer" t=0.8 status=0 ver=0 conns=0 lport=38642
+[switch-unset] case R-reset-mid:seekok:post raw rewind case_t get_end=0.4 post_add=101.0 post_end=101.8 get_lport=38642 post_lport=38642
+[switch-unset] case R-reset-mid:seekok:post raw r2 prereq_calls=1 seeks=0 reads=12 fail_t=0.8 reads_after_fail=0 new_connection=0
+[switch-unset] case R-reset-mid:seekok:post raw reads=12 reads_inpause=0 seeks=0 answer: (none)
+[switch-unset] case R-reset-mid:seekok:post raw server: req raw GET /close-after #1 conn=38642 at=189.8
+[switch-unset] case R-reset-mid:seekok:post raw server: close-after raw then=reset conn=38642: the next request on it is reset after 32768 body bytes
+[switch-unset] case R-reset-mid:seekok:post raw server: req raw POST /sink #1 conn=38642 at=290.8
+[switch-unset] case R-reset-mid:seekok:post raw server: reset raw /sink conn=38642 after its head and 32768 body bytes, at 0.4ms; RST
+[switch-unset] case R-reset-mid:seekok:post raw server: count raw:/close-after=1 raw:/sink=1
+[switch-unset] case R-reset-mid all done live_before_global_cleanup=0
+[switch-unset] case R-reset-mid live_after_global_cleanup=0
+[switch-unset] probe R-reset-mid exit=0
+[switch-unset] probe R-reset-mid took about 0 s
+[switch-unset] -- 1 cases run
+[switch-unset] server-stderr: counts raw:/close-after=2 raw:/sink=2

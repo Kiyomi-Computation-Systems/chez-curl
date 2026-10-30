@@ -1,0 +1,52 @@
+wake where=after version=8.20.0 timed-polls=14 polls-100ms-or-more=14 polls-5ms-or-more=14 longest-ms=1005.6 resumes=15 bytes=262144 code=0
+== where=after, the wakeup's eventfd is 4
+06:55:32.821659 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:55:32.821682 M-perform-start
+06:55:32.821888 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:55:32.821935 read(4, 0x7fff1dd9be50, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:55:32.821971 M-perform-end
+06:55:32.821995 M-poll-start
+06:55:32.822022 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:55:33.827313 M-poll-end
+06:55:33.827677 M-pause-start
+06:55:33.828050 M-pause-end
+06:55:33.828267 M-wake
+06:55:33.828299 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:55:33.828324 M-perform-start
+06:55:33.828359 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:55:33.828381 read(4, 0x7fff1dd9be50, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:55:33.828413 M-perform-end
+06:55:33.828433 M-poll-start
+06:55:33.828457 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 0 (Timeout)
+06:55:34.833650 M-poll-end
+06:55:34.833809 M-pause-start
+06:55:34.833857 M-pause-end
+06:55:34.833884 M-wake
+06:55:34.833903 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:55:34.833919 M-perform-start
+wake where=before-poll version=8.20.0 timed-polls=15 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.1 resumes=15 bytes=262144 code=0
+== where=before-poll, the wakeup's eventfd is 4
+06:55:46.922407 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:55:46.922426 M-poll-start
+06:55:46.922446 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 2 ([{fd=4, revents=POLLIN}, {fd=4, revents=POLLIN}])
+06:55:46.922487 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:55:46.922505 read(4, 0x7ffe92085550, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:55:46.922522 M-poll-end
+06:55:46.922539 M-pause-start
+06:55:46.922576 M-pause-end
+06:55:46.922594 M-perform-start
+06:55:46.922611 read(4, 0x7ffe92085470, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:55:46.922629 M-perform-end
+06:55:46.922646 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:55:46.922662 M-poll-start
+06:55:46.922679 poll([{fd=4, events=POLLIN}, {fd=4, events=POLLIN}], 2, 1000) = 2 ([{fd=4, revents=POLLIN}, {fd=4, revents=POLLIN}])
+06:55:46.922698 read(4, "\1\0\0\0\0\0\0\0", 64) = 8
+06:55:46.922714 read(4, 0x7ffe92085550, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:55:46.922730 M-poll-end
+06:55:46.922747 M-pause-start
+06:55:46.922771 M-pause-end
+06:55:46.922789 M-perform-start
+06:55:46.922806 read(4, 0x7ffe92085470, 64) = -1 EAGAIN (Resource temporarily unavailable)
+06:55:46.922823 M-perform-end
+06:55:46.922841 write(4, "\1\0\0\0\0\0\0\0", 8) = 8
+06:55:46.922858 M-poll-start

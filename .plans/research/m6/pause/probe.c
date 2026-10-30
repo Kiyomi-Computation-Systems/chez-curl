@@ -40,7 +40,15 @@
    Times are ms from the transfer's add, or from the case's start where a
    line says so. "server:" lines are server.mjs's log for the transfer's
    tag, fetched by GET /log on the raw face over a plain socket after the
-   transfer, so no libcurl call stands between. */
+   transfer, so no libcurl call stands between.
+
+   PAUSE_NO_MULTIPLEX=1 in the environment (added for M6 slice 1, the M6
+   plan's sections 3.4 and 7) sets CURLMOPT_PIPELINING to 0, CURLPIPE_NOTHING,
+   on every multi handle the probe makes, printing a line for each, as the
+   engine does on 8.7.0 and 8.7.1; and after D-hold-mux's and W-h2-error's
+   transfers it asks the server how many connections the case's tags used,
+   printing "conns" lines. Unset, or anything but 1, every case runs as
+   before. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -755,7 +763,50 @@ static void sink_line(xfer *x, int with_arrivals) {
   SAY(x, "reads=%d reads_inpause=%d seeks=%d answer: %s", x->reads, x->reads_inpause, x->seeks, x->resp_len ? x->resp : "(none)");
 }
 
-static CURLM *new_multi(void) { return curl_multi_init(); }
+static int no_multiplex(void) {
+  const char *v = getenv("PAUSE_NO_MULTIPLEX");
+  return v && !strcmp(v, "1");
+}
+
+static CURLM *new_multi(void) {
+  CURLM *m = curl_multi_init();
+  if(m && no_multiplex()) {
+    CURLMcode rc = curl_multi_setopt(m, CURLMOPT_PIPELINING, (long)CURLPIPE_NOTHING);
+    printf("multi pipelining=0 (PAUSE_NO_MULTIPLEX=1) rc=%d\n", (int)rc);
+  }
+  return m;
+}
+
+/* server_conns: GET /conns?prefix=PREFIX on the raw face, over a plain
+   socket, its answer printed as one line under LABEL: the connections, by
+   face and client port, every tag beginning PREFIX used. With
+   PAUSE_NO_MULTIPLEX=1 alone. */
+static void server_conns(const char *label, const char *prefix) {
+  int fd;
+  struct sockaddr_in sa;
+  struct timeval tv = { 6, 0 };
+  char req[400], buf[4096], *body;
+  size_t n = 0;
+  ssize_t k;
+  if(!no_multiplex()) return;
+  fd = socket(AF_INET, SOCK_STREAM, 0);
+  memset(&sa, 0, sizeof sa);
+  sa.sin_family = AF_INET;
+  sa.sin_port = htons((unsigned short)P_RAW);
+  sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
+  if(connect(fd, (struct sockaddr *)&sa, sizeof sa)) { printf("case %s conns: fetch failed to connect\n", label); close(fd); return; }
+  snprintf(req, sizeof req, "GET /conns?prefix=%s HTTP/1.0\r\nHost: 127.0.0.1\r\n\r\n", prefix);
+  if(write(fd, req, strlen(req)) != (ssize_t)strlen(req)) { printf("case %s conns: fetch write failed\n", label); close(fd); return; }
+  while(n < sizeof buf - 1 && (k = read(fd, buf + n, sizeof buf - 1 - n)) > 0) n += (size_t)k;
+  close(fd);
+  buf[n] = 0;
+  body = strstr(buf, "\r\n\r\n");
+  if(!body) { printf("case %s conns: no head (%zu bytes)\n", label, n); return; }
+  body += 4;
+  if(*body && body[strlen(body) - 1] == '\n') body[strlen(body) - 1] = 0;
+  printf("case %s %s\n", label, body);
+}
 
 /* ---------------------------------------------------------------- cases */
 
@@ -870,6 +921,12 @@ static void d_hold_mux(void) {
         (long long)xs[0]->live_cb_pause, (long long)xs[0]->live_after_pause, (long long)xs[0]->live_before_resume, (long long)xs[0]->peak_in_pause);
     server_log(xs[0]);
     server_log(xs[1]);
+    {
+      char label[64], prefix[64];
+      snprintf(label, sizeof label, "D-hold-mux:pipewait%d", pw);
+      snprintf(prefix, sizeof prefix, "D-hold-mux.pipewait%d.", pw);
+      server_conns(label, prefix);
+    }
     drop(xs[0]);
     drop(xs[1]);
     curl_multi_cleanup(m);
@@ -1675,6 +1732,7 @@ static void w_h2_error(void) {
       (int)xs[0]->code, (int)xs[1]->code, xs[0]->lport_seen, xs[1]->lport_seen, (long long)xs[1]->total);
   server_log(xs[0]);
   server_log(xs[1]);
+  server_conns("W-h2-error", "W-h2-error.");
   drop(xs[0]);
   drop(xs[1]);
   curl_multi_cleanup(m);

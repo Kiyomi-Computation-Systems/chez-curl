@@ -1,0 +1,19 @@
+# TREE=build/m6s1-review/tree sh .plans/research/m6/slice1-review/docker-417.sh  (2026-10-30, the slice's tree as reviewed)
+== floor /home/kishu/src/chez-curl/build/e1/ci/curl-floor/lib/libcurl.so.4
+(version "7.85.0")
+(head 417)
+(body "second\n")
+(outcome 200)
+(whole 200 "second\n")
+server: request POST /x HTTP/1.1 expect=yes
+server: request POST /x HTTP/1.1 expect=no
+server: request POST /x HTTP/1.1 expect=no
+== main /usr/lib/x86_64-linux-gnu/libcurl.so.4
+(version "8.5.0")
+(head 417)
+(body "second\n")
+(outcome 200)
+(whole 200 "second\n")
+server: request POST /x HTTP/1.1 expect=yes
+server: request POST /x HTTP/1.1 expect=no
+server: request POST /x HTTP/1.1 expect=no

@@ -101,6 +101,12 @@
    ;;   proxy               environment, through the proxy http_proxy,
    ;;                       https_proxy or all_proxy names, by libcurl's
    ;;                       rules; or #f, direct; environment
+   ;;   stream-buffer       the bytes of the response's body the token
+   ;;                       buffers, a positive exact integer, read as it
+   ;;                       arrives through the token; or #f, the whole body
+   ;;                       in the response; #f. Refused beside a hatch's
+   ;;                       HTTPAUTH or PROXYAUTH, or an Expect header whose
+   ;;                       value holds 100-continue, as stream-with-rounds
    ;; A key it does not take, one given twice, and one with no value are
    ;; refused by name, as &curl-request-error, before anything else.
    ;; curl-request-with : Request Symbol Any ... -> Request
@@ -117,10 +123,12 @@
    ;; curl-request-ca-file : Request -> (U String #f)
    ;; curl-request-verify : Request -> Boolean
    ;; curl-request-proxy : Request -> (U 'environment #f)
+   ;; curl-request-stream-buffer : Request -> (U Positive-Integer #f)
    make-curl-request curl-request-with curl-request?
    curl-request-url curl-request-method curl-request-headers curl-request-body
    curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
    curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
+   curl-request-stream-buffer
 
    ;; --- URLs (ADR-0008) ----------------------------------------------------
    ;; curl-url-part : String Symbol -> (U String Natural #f)
@@ -160,12 +168,13 @@
    ;; curl-response-http-version : Response -> (U 'http/1.0 'http/1.1 'http/2 'http/3 Integer #f)
    ;; curl-response-effective-url : Response -> (U String #f)
    ;; curl-response-headers : Response -> (Listof (Pairof String String))
-   ;; curl-response-body : Response -> Bytevector
+   ;; curl-response-body : Response -> (U Bytevector #f)
    ;; curl-response-timings : Response -> (Listof (Pairof Symbol Natural))
    ;; The timings are name-lookup, connect, tls-handshake, first-byte and
    ;; total, in that order, each the microseconds from the transfer's start
    ;; to that phase's end, and 0 for a phase the transfer skipped: the
-   ;; handshake without TLS, and the first three on a connection reused.
+   ;; handshake without TLS, and the first three on a connection reused. A
+   ;; streamed response's body is #f: its token held the pieces.
    curl-response? curl-response-status curl-response-http-version
    curl-response-effective-url curl-response-headers curl-response-body
    curl-response-timings
@@ -221,6 +230,48 @@
    ;; run inside a critical section.
    curl-token? curl-token-await curl-token-wait curl-token-cancel curl-token-done?
    curl-token-outcome
+
+   ;; --- a streamed response (ADR-0030) ----------------------------------------
+   ;; A token whose request has a stream-buffer holds its response's body as
+   ;; pieces, at most stream-buffer bytes or one chunk of libcurl's, 16 KiB,
+   ;; whichever is more, and the piece a reader holds. A full buffer pauses
+   ;; the transfer; a read that drains it to half resumes it. Over HTTP/1.1
+   ;; the server's writes then stall; over HTTP/2 a paused stream beside an
+   ;; active one keeps receiving, into libcurl's memory, up to its window.
+   ;; The transfer's timeout runs while it is paused. Each wait answers as
+   ;; data and never raises the transfer's failure, which the outcome holds;
+   ;; the port alone raises it. A token whose request does not stream its
+   ;; response refuses each of these, an assertion violation.
+   ;; curl-token-head-wait : Token Natural -> Boolean
+   ;; Whether the final head has arrived, or the transfer has ended, within
+   ;; the milliseconds given.
+   ;; curl-token-head : Token -> (U Head #f)
+   ;; The final head once it has arrived; never waits. A 1xx head and a
+   ;; proxy's CONNECT head are passed over.
+   ;; curl-head? : Any -> Boolean
+   ;; curl-head-status : Head -> Integer
+   ;; curl-head-http-version : Head -> (U 'http/1.0 'http/1.1 'http/2 'http/3 Integer #f)
+   ;; curl-head-headers : Head -> (Listof (Pairof String String))
+   ;; As the response's accessors read them.
+   ;; curl-token-next-piece : Token Natural -> (U Bytevector Eof #f)
+   ;; The next piece, a bytevector of a byte or more, the caller's to keep;
+   ;; the eof object once every piece is taken and the transfer has ended,
+   ;; however it ended; #f once the milliseconds given pass.
+   ;; curl-token-body-port : Token -> Binary-Input-Port
+   ;; A binary input port over the pieces, made once per token, read and
+   ;; closed only on the thread that made it: another thread's close raises
+   ;; &curl-wrong-thread, and so does any read of its that needs more than
+   ;; the port had buffered; bytes the port had buffered go to whichever
+   ;; thread reads them, and a get-bytevector-n, -n! or -all from another
+   ;; thread that takes them, then raises, loses them. At the end it answers the end
+   ;; for a response, every time, and raises the failure for one that
+   ;; failed, every time. Its close cancels the transfer. A port never
+   ;; closed leaves its transfer paused until its timeout or its engine's
+   ;; stop. A failure raised in get-bytevector-n, -n! or -all loses the
+   ;; bytes that call had read; get-bytevector-some, -some! and get-u8 lose
+   ;; none.
+   curl-token-head-wait curl-token-head curl-head? curl-head-status curl-head-http-version
+   curl-head-headers curl-token-next-piece curl-token-body-port
 
    ;; --- the mailbox (ADR-0021) ---------------------------------------------
    ;; make-curl-mailbox : -> Mailbox

@@ -1,0 +1,25 @@
+[guix-8.20.0-valgrind] prototype build/m6s1/src from proto.patch 715a9e73fcaaf4ae4de62ab851add589b74c1f707fe2dc631d10523061c1a5c0
+[guix-8.20.0-valgrind] server {"node":"v24.18.0","pid":34,"http":"127.0.0.1:41751","raw":"127.0.0.1:35681","https":"127.0.0.1:41063","h2":"127.0.0.1:38205","proxy":"127.0.0.1:33227"}
+[guix-8.20.0-valgrind] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+[guix-8.20.0-valgrind] under valgrind valgrind-3.27.0
+[guix-8.20.0-valgrind] libcurl 8.20.0 GnuTLS/3.8.13
+[guix-8.20.0-valgrind] throughput run=1 face=http stream-buffer=65536 wall-ms=4509.079 bytes=67108864 whole=#t pattern=ok end=eof pieces=4099 pauses=227 resumes=227 passed-over=0 max-buffered=49152 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[guix-8.20.0-valgrind] throughput run=1 face=http stream-buffer=1048576 wall-ms=4095.947 bytes=67108864 whole=#t pattern=ok end=eof pieces=4275 pauses=0 resumes=0 passed-over=0 max-buffered=221184 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[guix-8.20.0-valgrind] throughput run=1 face=https stream-buffer=65536 wall-ms=8899.232 bytes=67108864 whole=#t pattern=ok end=eof pieces=4096 pauses=42 resumes=42 passed-over=0 max-buffered=49152 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[guix-8.20.0-valgrind] throughput run=1 face=https stream-buffer=1048576 wall-ms=8354.724 bytes=67108864 whole=#t pattern=ok end=eof pieces=4096 pauses=0 resumes=0 passed-over=0 max-buffered=278528 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[guix-8.20.0-valgrind] throughput run=1 face=h2 stream-buffer=65536 wall-ms=9479.968 bytes=67108864 whole=#t pattern=ok end=eof pieces=8192 pauses=25 resumes=25 passed-over=0 max-buffered=65509 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/2
+[guix-8.20.0-valgrind] throughput run=1 face=h2 stream-buffer=1048576 wall-ms=9319.009 bytes=67108864 whole=#t pattern=ok end=eof pieces=8192 pauses=0 resumes=0 passed-over=0 max-buffered=131072 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/2
+[guix-8.20.0-valgrind] throughput run=2 face=http stream-buffer=65536 wall-ms=4143.114 bytes=67108864 whole=#t pattern=ok end=eof pieces=4275 pauses=152 resumes=152 passed-over=0 max-buffered=65328 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[guix-8.20.0-valgrind] throughput run=2 face=http stream-buffer=1048576 wall-ms=4098.047 bytes=67108864 whole=#t pattern=ok end=eof pieces=4275 pauses=0 resumes=0 passed-over=0 max-buffered=270336 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[guix-8.20.0-valgrind] throughput run=2 face=https stream-buffer=65536 wall-ms=8438.888 bytes=67108864 whole=#t pattern=ok end=eof pieces=4096 pauses=55 resumes=55 passed-over=0 max-buffered=49152 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[guix-8.20.0-valgrind] throughput run=2 face=https stream-buffer=1048576 wall-ms=8347.615 bytes=67108864 whole=#t pattern=ok end=eof pieces=4096 pauses=0 resumes=0 passed-over=0 max-buffered=344064 queued-polls=0 queued-poll-max-ms=0 queued-polls-100ms=0 status=200 version=http/1.1
+[guix-8.20.0-valgrind] throughput run=2 face=h2 stream-buffer=65536 wall-ms=9389.13 bytes=67108864 whole=#t pattern=ok end=eof pieces=8188 pauses=33 resumes=33 passed-over=0 max-buffered=65527 queued-polls=1 queued-poll-max-ms=0.046 queued-polls-100ms=0 status=200 version=http/2
+[guix-8.20.0-valgrind] throughput run=2 face=h2 stream-buffer=1048576 wall-ms=9318.621 bytes=67108864 whole=#t pattern=ok end=eof pieces=8192 pauses=0 resumes=0 passed-over=0 max-buffered=131072 queued-polls=1 queued-poll-max-ms=0.121 queued-polls-100ms=0 status=200 version=http/2
+[guix-8.20.0-valgrind] throughput done
+[guix-8.20.0-valgrind] throughput exited 0 after about 97 s
+[guix-8.20.0-valgrind] valgrind: ==55== Command: /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme --libdirs build/m6s1/src --program .plans/research/m6/slice1/throughput.sps 127.0.0.1:41751 127.0.0.1:35681 127.0.0.1:41063 127.0.0.1:38205 127.0.0.1:33227 /tmp/m6s1.TbsK5p/pki/ca.pem 2
+[guix-8.20.0-valgrind] valgrind: ==55==    definitely lost: 0 bytes in 0 blocks
+[guix-8.20.0-valgrind] valgrind: ==55== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] valgrind: --55-- used_suppression:      1 guix-glibc-locpath tests/guix-glibc-locpath.supp:16 suppressed: 171 bytes in 1 blocks
+[guix-8.20.0-valgrind] valgrind: --55-- used_suppression:      1 dtv-addr-tail /gnu/store/gsixr2n0a6aacsiy6lky6d1fjh7svqyd-valgrind-3.27.0/libexec/valgrind/default.supp:1573 suppressed: 80 bytes in 1 blocks
+[guix-8.20.0-valgrind] valgrind: ==55== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)

@@ -301,11 +301,22 @@
   ;; what makes them arrive there.
   (define variadic-after-2
     (cite adr-0001 "Variadic entry points are bound once per value type, with `(__varargs_after 2)`."))
-  ;; write-body, (curl private transfer)'s one callable, is invoked from
-  ;; inside curl_multi_perform, a __collect_safe call, so it reactivates the
-  ;; thread (CSUG). Spike E1 saw it fire there and nowhere else.
+  ;; write-body, (curl private transfer)'s callable for every transfer, is
+  ;; invoked from inside curl_multi_perform, a __collect_safe call, so it
+  ;; reactivates the thread (CSUG). Spike E1 saw it fire there and nowhere
+  ;; else; from M6 it fires inside curl_easy_pause too.
   (define callback-in-perform
     (cite adr-0013 "So the engine's write callable is `__collect_safe`, as its perform is."))
+  ;; The M6 plan's, section 3.4: curl_easy_pause runs the callables inside
+  ;; it, as curl_multi_perform does, and is __collect_safe through
+  ;; bind-blocking; and the header callable, read-head, which fires inside
+  ;; either, is __collect_safe as write-body is (ADR-0030, consequences).
+  (define adr-0012 ".plans/decisions/0012-engine-thread-owns-every-handle.md")
+  (define adr-0030 ".plans/decisions/0030-streams-are-request-keys-and-token-operations.md")
+  (define pause-replays
+    (cite adr-0012 "so the callbacks run on the engine's thread, inside that call, as inside a perform."))
+  (define stream-callables
+    (cite adr-0030 "beside `write-body`, and the seek and prerequest callables ADR-0032 adds, each `__collect_safe` and locked, in `(curl private transfer)` alone (ADR-0013)."))
 
   ;; conventions-table : (Listof Row)
   ;; A Row is (List (U String Symbol) (Listof Convention) String), then
@@ -332,7 +343,8 @@
   ;; binding made any other way, directly with the convention included, is
   ;; the wrong binder, and make check-variadic's mutation of that template
   ;; reaches every binding of them. The four multi calls that can block
-  ;; name bind-blocking, whose template carries __collect_safe, likewise.
+  ;; name bind-blocking, whose template carries __collect_safe, likewise,
+  ;; and so does curl_easy_pause, which runs the callables inside it.
   (define conventions-table
     (list (list "curl_version_info" '() cannot-block)
           (list "curl_global_init" '() cannot-block)
@@ -348,6 +360,7 @@
           (list "curl_multi_perform" '(__collect_safe) e1-can-block '(bound-by bind-blocking))
           (list "curl_multi_remove_handle" '(__collect_safe) e1-can-block '(bound-by bind-blocking))
           (list "curl_multi_cleanup" '(__collect_safe) e1-can-block '(bound-by bind-blocking))
+          (list "curl_easy_pause" '(__collect_safe) pause-replays '(bound-by bind-blocking))
           (list "curl_multi_init" '() e1-plain)
           (list "curl_multi_add_handle" '() e1-plain)
           (list "curl_multi_wakeup" '() e1-plain)
@@ -365,7 +378,8 @@
           (list "curl_easy_nextheader" '() cannot-block)
           (list "curl_slist_append" '() cannot-block)
           (list "curl_slist_free_all" '() cannot-block)
-          (list 'write-body '(__collect_safe) callback-in-perform)))
+          (list 'write-body '(__collect_safe) callback-in-perform)
+          (list 'read-head '(__collect_safe) stream-callables)))
 
   ;; known-macros : (Listof (List Symbol Kind String))
   ;; Every macro src/ may define: its name, its kind, and the file below

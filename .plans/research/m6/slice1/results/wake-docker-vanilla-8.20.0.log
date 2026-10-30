@@ -1,0 +1,11 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[vanilla-8.20.0] libcurl /src/build/verify/current/curl-8.20.0-install/lib/libcurl.so.4 headers /src/build/verify/current/curl-8.20.0-install/include; server {"node":"v24.18.0","pid":3124,"http":"127.0.0.1:40025","raw":"127.0.0.1:45161","https":"127.0.0.1:38775","h2":"127.0.0.1:44765","proxy":"127.0.0.1:37695"}
+[vanilla-8.20.0] query=pattern=zero&gzip=1 wake where=none version=8.20.0 timed-polls=0 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[vanilla-8.20.0] query=pattern=zero&gzip=1 wake where=before-poll version=8.20.0 timed-polls=15 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[vanilla-8.20.0] query=pattern=zero&gzip=1 wake where=after version=8.20.0 timed-polls=14 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[vanilla-8.20.0] query=pattern=zero&gzip=1 wake where=pause version=8.20.0 timed-polls=14 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=15 bytes=262144 code=0
+[vanilla-8.20.0] query=gap=50 wake where=plain version=8.20.0 timed-polls=660755 polls-100ms-or-more=0 polls-5ms-or-more=0 longest-ms=0.0 resumes=0 bytes=262144 code=0
