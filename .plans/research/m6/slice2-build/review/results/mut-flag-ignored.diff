@@ -1,0 +1,11 @@
+--- base/src/curl/private/transfer.sls	2026-10-30 19:16:57.196007369 -0400
++++ src/curl/private/transfer.sls	2026-10-31 07:47:46.739917168 -0400
+@@ -2150,7 +2150,7 @@
+   ;; transfer paused for sending and none queued; then the flag is set, at
+   ;; NOW, in the same hold (the M6 plan, section 3.3).
+   (define (upload-decide! up now)
+-    (and (upload-paused up) (not (upload-flag up))
++    (and (upload-paused up)
+          (begin (upload-raise-flag! up now) #t)))
+ 
+   ;; upload-put! : Upload Bytevector Integer -> (List (U 'taken 'full 'refused 'ended 'closed) Boolean)

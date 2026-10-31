@@ -310,7 +310,10 @@
   ;; The M6 plan's, section 3.4: curl_easy_pause runs the callables inside
   ;; it, as curl_multi_perform does, and is __collect_safe through
   ;; bind-blocking; and the header callable, read-head, which fires inside
-  ;; either, is __collect_safe as write-body is (ADR-0030, consequences).
+  ;; either, is __collect_safe as write-body is (ADR-0030, consequences),
+  ;; and so are the request stream's, M6 slice 2's: read-body, the read
+  ;; callable, seek-body and prereq-body, which fire inside
+  ;; curl_multi_perform.
   (define adr-0012 ".plans/decisions/0012-engine-thread-owns-every-handle.md")
   (define adr-0030 ".plans/decisions/0030-streams-are-request-keys-and-token-operations.md")
   (define pause-replays
@@ -379,7 +382,10 @@
           (list "curl_slist_append" '() cannot-block)
           (list "curl_slist_free_all" '() cannot-block)
           (list 'write-body '(__collect_safe) callback-in-perform)
-          (list 'read-head '(__collect_safe) stream-callables)))
+          (list 'read-head '(__collect_safe) stream-callables)
+          (list 'read-body '(__collect_safe) stream-callables)
+          (list 'seek-body '(__collect_safe) stream-callables)
+          (list 'prereq-body '(__collect_safe) stream-callables)))
 
   ;; known-macros : (Listof (List Symbol Kind String))
   ;; Every macro src/ may define: its name, its kind, and the file below

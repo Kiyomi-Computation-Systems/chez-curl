@@ -6,7 +6,8 @@
   2026-10-17 with what the reader holds the binding macros to (M0 slice 6). Amended
   2026-10-23 with M2 slice 1's rows, and with how control leaves the write callable (M2 slice 2).
   Amended 2026-10-24: `curl_multi_perform` can block (the M3 plan). Amended 2026-10-30:
-  `curl_easy_pause` and the header callable (M6 slice 1).
+  `curl_easy_pause` and the header callable (M6 slice 1). Amended 2026-10-31: the read, seek
+  and prerequest callables (M6 slice 2).
 - **Date:** 2026-10-04
 - **Corrected:** 2026-10-04. The E5 series is chez-http-server's, not chez-libuv's. Its
   figures are restated from that spike report, which ran on macOS only.
@@ -566,3 +567,25 @@ callable, the header callable, `read-head`.
   fire it; it is locked where it is defined and never unlocked, held to `curl_write_callback`'s
   typedef, and its whole body runs under a guard that records what is raised and answers 0, as
   the write callable's does. It runs no procedure a caller supplied.
+
+## Amendment, 2026-10-31: the read, seek and prerequest callables (M6 slice 2)
+
+M6's second slice streams a request's body (ADR-0030, ADR-0032) through three more callables in
+`(curl private transfer)`: the read callable `read-body`, held to `curl_read_callback`'s typedef;
+the seek callable `seek-body`, to `curl_seek_callback`'s; and the prerequest callable
+`prereq-body`, to `curl_prereq_callback`'s. libcurl fires each inside `curl_multi_perform`, a
+`__collect_safe` call; `curl_easy_pause` calls none of them, by the source (the M6 plan, §2.2),
+and slice 2's measurement saw no read inside it in 320 transfers of 320 (its `check`). So each is
+`__collect_safe`, as the write and header callables are, locked where it is defined and never
+unlocked, and handed the transfer's key as its data, so no Scheme object crosses into C. Each
+whole body runs under a guard that records what is raised and answers the value that refuses the
+transfer: `CURL_READFUNC_ABORT`, `CURL_SEEKFUNC_CANTSEEK` and `CURL_PREREQFUNC_ABORT`. None runs
+a procedure a caller supplied. `test-constants` holds each typedef, and `test-collect-safe` each
+row.
+
+A private test seam, `make-curl-engine-holding-prereq`, sleeps inside the prerequest callable, so
+a test can hold the engine's thread between connect and send, as a collection could. The turn
+calls `curl_multi_perform` outside every critical section and hold, so the sleep holds no mutex,
+and the seam checks interrupts are on first, so the sleep deactivates the thread and other
+threads' collections go on. No caller's engine has it.
+

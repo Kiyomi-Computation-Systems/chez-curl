@@ -1,0 +1,11 @@
+--- src/curl/private/transfer.sls	2026-10-31 10:21:37.000340568 -0400
++++ src/curl/private/transfer.sls	2026-10-31 10:23:44.213901550 -0400
+@@ -2012,7 +2012,7 @@
+           (locked (stream-lock stream)
+             (lambda ()
+               (stream-head-set! stream (make-curl-head status version headers
+-                                                       (and up (upload-asked up) #t)))
++                                                       (and up (not (eqv? (upload-length up) 0)) #t)))
+               (stream-head-at-set! stream (monotonic-ns))))))))
+ 
+   ;; read-head : Code

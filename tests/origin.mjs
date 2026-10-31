@@ -47,7 +47,24 @@
 //                                        a Link header, then 200, body "early\n"
 //           GET /connects                200, body "connects N\n": the CONNECT
 //                                        tunnels the http face has opened
+//           ANY /sink?key=K[&list=1]     the body read whole, then 200 with
+//                                        its summary line (the sinks, below)
+//           GET /seen?key=K              200, body "seen C\n", C the count for
+//                                        K so far, 0 for one never counted;
+//                                        it counts nothing
+//           GET /close-after?then=HOW    http's alone: 200, Content-Length: 3,
+//                                        "ok\n", kept alive; and by HOW, fin
+//                                        destroys the socket 50 ms after the
+//                                        response is written; kill reads the
+//                                        connection's next request whole, then
+//                                        destroys it unanswered; cuthead
+//                                        destroys it, resethead resets it, as
+//                                        its head arrives. That request counts
+//                                        as any does; the mark is used once
 //           anything else                404, body "not found\n"
+//         The queries of these three, and of HTTP/2's /answer and /refuse,
+//         are NAME=VALUE pairs, each name once at most and one the route
+//         names, every name it requires given, else 404.
 //         A target in absolute form, http://AUTHORITY then its path, as a
 //         client sends one to a proxy, is routed by that path, / when it
 //         has none, so the face can stand in for a plain proxy; /echo's
@@ -134,6 +151,31 @@
 //         /raw/early writes a 100 Continue, a 103 Early Hints with a Link
 //         header, waits 50 ms, then writes a 200 with Content-Length: 6,
 //         Connection: close and the body "early\n", and ends.
+//         /raw/sink?key=KEY[&hold=MS][&list=1], KEY as retry takes it, counts
+//         for KEY as its head arrives (the sinks, below); with hold, reads
+//         nothing for MS ms, 0 to 60000, the socket paused, so the kernel's
+//         buffers fill and the client's writes stall; then reads the body by
+//         the head's framing: Content-Length, Transfer-Encoding: chunked, its
+//         extensions and trailers taken and dropped, or none, no body; then
+//         writes "HTTP/1.1 200 OK", Content-Length, Connection: close and the
+//         summary line, and ends. Framing it cannot read gets the fixed 400,
+//         the request counted all the same. A client that closes or resets
+//         first ends the script, which writes nothing more.
+//         /raw/answer?status=S&close=C, S 200 to 599, C 0 or 1, each once,
+//         writes, as the head arrives, "HTTP/1.1 S Answer", Content-Length,
+//         Connection: close when C is 1, and the body "answer S\n"; then, C
+//         1, ends; C 0, reads the body to its framing's end, then ends.
+//         The scripts that read a body, these two, alone keep the bytes that
+//         follow the head; every other script reads none.
+//         /raw/arm?status=S, S 200 to 599, once, arms the raw face, whichever
+//         face the request came on: the next connection the raw face accepts
+//         gets "HTTP/1.1 S Early", Content-Length, Connection: close and the
+//         body "early S\n" as it is accepted, before a byte of its request
+//         is read; then the face ends its side and drops what the client
+//         sends, until the client ends. One connection, then the face plays
+//         scripts again; a second arm before that replaces the first. The
+//         arm itself writes "HTTP/1.1 200 OK", Content-Length: 6, Connection:
+//         close and "armed\n", and ends.
 //   h2c   node:http2, plaintext, by prior knowledge: the HTTP/2 routes.
 //   With --pki DIR:
 //   https, https-expired, https-wrong-host, https-untrusted
@@ -162,14 +204,42 @@
 // "early\n"; /connection[?delay=MS], HTTP/2's alone, answers :status and
 // content-length at once, then, MS ms on, "connection K\n", K the
 // connection's number among this face's, from 1, so two streams share a
-// connection exactly when they answer one K. Anything else, /chunked and
-// /connects included, is 404, "not found\n". No date, and no header beyond
-// these.
+// connection exactly when they answer one K. /sink and /seen are http's,
+// with content-length. /answer?status=S, HTTP/2's alone, answers S,
+// content-length and "answer S\n", or for 204, 304 and 205 as /status does,
+// as the headers arrive, ending its side; it then reads the body, if any,
+// and answers nothing more. It counts nothing.
+// /refuse?key=K&at=N, HTTP/2's alone, N 0 to 268435456, counts as /sink
+// does; the first request for K is reset with RST_STREAM REFUSED_STREAM
+// once N DATA bytes have come, N 0 as its headers arrive, before any DATA;
+// a later one, or a first whose body ends short of N, is answered as /sink.
+// Anything else, /chunked, /connects and /close-after included, is 404,
+// "not found\n". No date, and no header beyond these.
+//
+// The sinks. A body's summary is one line, then "\n":
+//   sink FACE method=M cl=CL te=TE expect=E ct=CT bytes=N sha256=HEX pattern=P arrivals=A gap=G@B seen=C
+// with " list=T:N,..." after it, each arrival in order, for list=1. FACE is
+// the face's name; M the method as received; CL, TE, E and CT the request's
+// Content-Length, Transfer-Encoding, Expect and Content-Type: the name in
+// any case, each value trimmed of spaces and tabs, repeats joined by ",",
+// whitespace in a value as "_", and "-" when absent. N is the body's bytes,
+// HEX their SHA-256 in lower-case hex, and P ok when every byte i is i mod
+// 251, else bad@I, I the first that is not. An arrival is the body bytes of
+// one data event: node:http's, an HTTP/2 stream's, or the bytes one socket
+// data event decodes to on the raw faces; A counts them. G is the longest
+// wait between one arrival and the next, the head's arrival the first, and
+// B the body bytes before it, the first such wait when two are longest, or
+// "-" for no body. T is an arrival's time since the head's, and G, ms to
+// one decimal. One count for each key K, across every face, lives as long as
+// the origin: each /sink, /refuse and /raw/sink request whose query names
+// key=K counts once for K as its head arrives, and C is K's count as the
+// line is written. A query a route refuses counts nothing.
 //
 // The suites (tests/test-origin.sps, tests/test-origin-tls.sps) hold their
 // own copy of each scenario's bytes, written separately from these. They
 // never read them from here, so changing a script here fails them.
 
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import http from 'node:http';
 import http2 from 'node:http2';
@@ -273,8 +343,45 @@ function route(target) {
     const delay = delayQuery(query);
     return delay === null ? { kind: 'not-found' } : { kind: 'connection', delay };
   }
+  const queried = (kind, found) => (found === null ? { kind: 'not-found' } : { kind, ...found });
+  if (path === '/sink') return queried('sink', queryOf(query, { key: keyValue, list: oneValue }, ['key']));
+  if (path === '/seen') return queried('seen', queryOf(query, { key: keyValue }, ['key']));
+  if (path === '/answer') {
+    return queried('answer', queryOf(query, { status: (v) => decimal(v, 200, 599) }, ['status']));
+  }
+  if (path === '/refuse') {
+    return queried('refuse', queryOf(query, { key: keyValue, at: (v) => decimal(v, 0, 268435456) }, ['key', 'at']));
+  }
+  if (path === '/close-after') {
+    const then = (v) => (['fin', 'kill', 'cuthead', 'resethead'].includes(v) ? v : null);
+    return queried('close-after', queryOf(query, { then }, ['then']));
+  }
   return { kind: 'not-found' };
 }
+
+// queryOf: QUERY's pairs, each NAME=VALUE, the value after the first =, as
+// READERS read them, by name; or null for a pair with no =, a name READERS
+// does not hold, a name twice, a value its reader refuses (answers null),
+// or a name of REQUIRED missing. A name left out is absent from the answer.
+function queryOf(query, readers, required) {
+  if (query === undefined) return required.length === 0 ? {} : null;
+  const found = {};
+  for (const pair of query.split('&')) {
+    const at = pair.indexOf('=');
+    if (at < 0) return null;
+    const name = pair.slice(0, at);
+    if (!Object.hasOwn(readers, name) || Object.hasOwn(found, name)) return null;
+    const value = readers[name](pair.slice(at + 1));
+    if (value === null) return null;
+    found[name] = value;
+  }
+  return required.every((name) => Object.hasOwn(found, name)) ? found : null;
+}
+
+// keyValue: a key, as retry takes it, or null. oneValue: true for 1, the
+// one value list takes, or null.
+const keyValue = (text) => (retryKey(text) ? text : null);
+const oneValue = (text) => (text === '1' ? true : null);
 
 // delayQuery: MS from a query that is exactly delay=MS, 0 to 60000; 0 for
 // no query; null for any other.
@@ -315,6 +422,93 @@ function redirectTarget(query) {
 
 // noBody: the statuses that carry no body.
 const noBody = new Set([204, 304]);
+
+// --- the sinks: a body's record, its summary, and the counts by key -------
+
+// counts: the sink requests counted for each key, by key, on every face,
+// for as long as the origin runs.
+const counts = new Map();
+
+// countFor: counts one more request for KEY; answers the count with it.
+function countFor(key) {
+  const n = (counts.get(key) || 0) + 1;
+  counts.set(key, n);
+  return n;
+}
+
+// tenthsSince: the ms from START, a performance.now(), to now, in tenths,
+// rounded. tenthsText: tenths T as ms to one decimal.
+const tenthsSince = (start) => Math.round((performance.now() - start) * 10);
+const tenthsText = (t) => `${Math.floor(t / 10)}.${t % 10}`;
+
+// bodyRecord: an empty record of a request's body: its bytes, their
+// SHA-256, the first byte that is not the pattern's, and its arrivals, each
+// [TENTHS, BYTES], TENTHS since the head's arrival.
+function bodyRecord() {
+  return { bytes: 0, hash: createHash('sha256'), bad: null, arrivals: [] };
+}
+
+// arrive: one arrival into RECORD, AT tenths since the head: PIECES, the
+// body bytes of one data event, in order. No bytes, no arrival.
+function arrive(record, pieces, at) {
+  let n = 0;
+  for (const piece of pieces) {
+    if (record.bad === null) {
+      for (let i = 0; i < piece.length; i++) {
+        if (piece[i] !== (record.bytes + i) % 251) {
+          record.bad = record.bytes + i;
+          break;
+        }
+      }
+    }
+    record.hash.update(piece);
+    record.bytes += piece.length;
+    n += piece.length;
+  }
+  if (n > 0) record.arrivals.push([at, n]);
+}
+
+// headerValue: NAME's value among PAIRS, a flat list of names and values as
+// received: the name in any case, each value trimmed of spaces and tabs,
+// repeats joined by ","; null when absent.
+function headerValue(pairs, name) {
+  const values = [];
+  for (let i = 0; i + 1 < pairs.length; i += 2) {
+    if (pairs[i].toLowerCase() === name) values.push(pairs[i + 1].replace(/^[ \t]+|[ \t]+$/g, ''));
+  }
+  return values.length === 0 ? null : values.join(',');
+}
+
+// summary: the sink's line for a request on FACE, with METHOD, the header
+// PAIRS and the body's RECORD, then "\n": its fields as the header says, C
+// being KEY's count now, and the arrivals listed when LIST.
+function summary(face, method, pairs, record, key, list) {
+  const field = (name) => {
+    const value = headerValue(pairs, name);
+    return value === null ? '-' : value.replace(/[\t\n\v\f\r ]/g, '_');
+  };
+  let gap = '-';
+  let previous = 0;
+  let longest = -1;
+  let before = 0;
+  let sum = 0;
+  for (const [at, n] of record.arrivals) {
+    if (at - previous > longest) {
+      longest = at - previous;
+      before = sum;
+    }
+    previous = at;
+    sum += n;
+  }
+  if (record.arrivals.length > 0) gap = `${tenthsText(longest)}@${before}`;
+  const pattern = record.bad === null ? 'ok' : `bad@${record.bad}`;
+  const line = [`sink ${face}`, `method=${method}`, `cl=${field('content-length')}`,
+                `te=${field('transfer-encoding')}`, `expect=${field('expect')}`, `ct=${field('content-type')}`,
+                `bytes=${record.bytes}`, `sha256=${record.hash.digest('hex')}`, `pattern=${pattern}`,
+                `arrivals=${record.arrivals.length}`, `gap=${gap}`, `seen=${counts.get(key) || 0}`];
+  if (list) line.push(`list=${record.arrivals.map(([at, n]) => `${tenthsText(at)}:${n}`).join(',')}`);
+  return `${line.join(' ')}\n`;
+}
 
 // --- the well-formed HTTP/1.1 faces: http and the https faces -------------
 
@@ -364,6 +558,8 @@ function respond(req, res, body) {
       return text(res, 200, 'early\n');
     case 'connects':
       return text(res, 200, `connects ${connects}\n`);
+    case 'seen':
+      return text(res, 200, `seen ${counts.get(r.key) || 0}\n`);
     case 'echo': {
       let lines = `${req.method} ${req.url} HTTP/${req.httpVersion}\n`;
       for (let i = 0; i < req.rawHeaders.length; i += 2) {
@@ -374,6 +570,8 @@ function respond(req, res, body) {
       return send(res, 200, ['Content-Length', String(bytes.length)], bytes);
     }
     default:
+      // /answer and /refuse are HTTP/2's routes, and /close-after http's,
+      // which wellFormed serves.
       return text(res, 404, 'not found\n');
   }
 }
@@ -405,14 +603,47 @@ function pattern(res, bytes, delay) {
   })().catch((err) => fatal('a pattern failed', err));
 }
 
-function wellFormed(req, res) {
-  const chunks = [];
-  req.on('error', () => res.destroy());
-  req.on('data', (chunk) => chunks.push(chunk));
-  req.on('end', () => respond(req, res, Buffer.concat(chunks)));
+// marks: the http face's connections a /close-after has marked, by socket,
+// and how the next request on each is cut: kill, cuthead or resethead.
+const marks = new WeakMap();
+
+// wellFormed: FACE's request listener. A request on a marked connection is
+// counted as any is, then cut, the mark used: as its head arrives, or, for
+// kill, once its body is read whole.
+function wellFormed(face) {
+  return (req, res) => {
+    const headAt = performance.now();
+    const socket = req.socket;
+    const mark = marks.get(socket);
+    marks.delete(socket);
+    const r = route(req.url);
+    if (r.kind === 'sink') countFor(r.key);
+    req.on('error', () => res.destroy());
+    if (mark === 'cuthead') return socket.destroy();
+    if (mark === 'resethead') return socket.resetAndDestroy();
+    const closeAfter = mark === undefined && r.kind === 'close-after' && face === 'http';
+    if (closeAfter) {
+      // The mark goes on as the head arrives, so a request sent behind this
+      // one, before its answer, is cut too.
+      if (r.then !== 'fin') marks.set(socket, r.then);
+      else res.on('finish', () => pause(socket, 50).then(() => socket.destroy()));
+    }
+    const record = bodyRecord();
+    const chunks = [];
+    req.on('data', (chunk) => {
+      if (r.kind === 'sink') arrive(record, [chunk], tenthsSince(headAt));
+      else chunks.push(chunk);
+    });
+    req.on('end', () => {
+      if (mark === 'kill') return socket.destroy();
+      if (r.kind === 'sink') return text(res, 200, summary(face, req.method, req.rawHeaders, record, r.key, r.list));
+      if (closeAfter) return text(res, 200, 'ok\n');
+      return respond(req, res, Buffer.concat(chunks));
+    });
+  };
 }
 
-const httpServer = http.createServer(wellFormed);
+const httpServer = http.createServer(wellFormed('http'));
 httpServer.on('connection', track);
 
 // The CONNECT proxy, to this origin's own faces alone: a target of
@@ -440,10 +671,10 @@ httpServer.on('connect', (req, client, early) => {
   far.on('close', () => client.destroy());
 });
 
-// httpsServer: an https face serving LEAF, with ALPN http/1.1 alone. A TLS
-// error ends that connection only.
-function httpsServer(leafOf) {
-  const server = https.createServer({ ...leafOf.options, ALPNProtocols: ['http/1.1'] }, wellFormed);
+// httpsServer: the https face NAME serving LEAF, with ALPN http/1.1 alone.
+// A TLS error ends that connection only.
+function httpsServer(name, leafOf) {
+  const server = https.createServer({ ...leafOf.options, ALPNProtocols: ['http/1.1'] }, wellFormed(name));
   server.on('connection', track);
   server.on('secureConnection', track);
   server.on('tlsClientError', (err, socket) => socket.destroy());
@@ -524,6 +755,8 @@ function h2Respond(stream, headers, rawHeaders, body) {
       return h2Text(stream, r.code, `status ${r.code}\n`);
     case 'redirect':
       return h2Text(stream, r.code, `redirect ${r.code}\n`, ['location', r.target]);
+    case 'seen':
+      return h2Text(stream, 200, `seen ${counts.get(r.key) || 0}\n`);
     case 'echo': {
       let lines = '';
       for (let i = 0; i < rawHeaders.length; i += 2) lines += `${rawHeaders[i]}: ${rawHeaders[i + 1]}\n`;
@@ -532,22 +765,57 @@ function h2Respond(stream, headers, rawHeaders, body) {
       return h2Send(stream, 200, ['content-length', String(bytes.length)], bytes);
     }
     default:
-      // /chunked is an HTTP/1.1 route.
+      // /chunked and /close-after are HTTP/1.1 routes.
       return h2Text(stream, 404, 'not found\n');
   }
 }
 
-function h2Stream(stream, headers, flags, rawHeaders) {
-  const chunks = [];
-  // A stream error ends this stream only.
-  stream.on('error', () => stream.destroy());
-  stream.on('data', (chunk) => chunks.push(chunk));
-  stream.on('end', () => h2Respond(stream, headers, rawHeaders, Buffer.concat(chunks)));
+// h2Stream: FACE's stream listener. /answer answers as the headers arrive,
+// then reads the body; /sink and /refuse count as they arrive, and read the
+// body, or refuse the stream; every other route reads the body whole, then
+// answers.
+function h2Stream(face) {
+  return (stream, headers, flags, rawHeaders) => {
+    const headAt = performance.now();
+    // A stream error ends this stream only.
+    stream.on('error', () => stream.destroy());
+    const r = route(headers[':path']);
+    if (r.kind === 'answer') {
+      // Read while the answer goes, so that Node, which closes a stream it
+      // has answered when nothing reads it, keeps the stream open.
+      stream.on('data', () => {});
+      return h2Text(stream, r.status, `answer ${r.status}\n`);
+    }
+    if (r.kind === 'sink' || r.kind === 'refuse') {
+      const seenNow = countFor(r.key);
+      const refuseAt = r.kind === 'refuse' && seenNow === 1 ? r.at : null;
+      if (refuseAt === 0) return stream.close(http2.constants.NGHTTP2_REFUSED_STREAM);
+      const record = bodyRecord();
+      let refused = false;
+      stream.on('data', (chunk) => {
+        if (refused) return;
+        arrive(record, [chunk], tenthsSince(headAt));
+        if (refuseAt !== null && record.bytes >= refuseAt) {
+          refused = true;
+          stream.close(http2.constants.NGHTTP2_REFUSED_STREAM);
+        }
+      });
+      stream.on('end', () => {
+        if (!refused) h2Text(stream, 200, summary(face, headers[':method'], rawHeaders, record, r.key, r.list));
+      });
+      return undefined;
+    }
+    const chunks = [];
+    stream.on('data', (chunk) => chunks.push(chunk));
+    stream.on('end', () => h2Respond(stream, headers, rawHeaders, Buffer.concat(chunks)));
+    return undefined;
+  };
 }
 
-// h2Face: SERVER, with the listeners every HTTP/2 face shares. Each session
-// is numbered, from 1, among its face's, for /connection.
-function h2Face(server) {
+// h2Face: SERVER, the face NAME, with the listeners every HTTP/2 face
+// shares. Each session is numbered, from 1, among its face's, for
+// /connection.
+function h2Face(server, name) {
   let sessionsSeen = 0;
   server.on('connection', track);
   server.on('session', (session) => {
@@ -556,14 +824,14 @@ function h2Face(server) {
     trackSession(session);
   });
   server.on('sessionError', (err, session) => session.destroy());
-  server.on('stream', h2Stream);
+  server.on('stream', h2Stream(name));
   return server;
 }
 
-const h2cServer = h2Face(http2.createServer());
+const h2cServer = h2Face(http2.createServer(), 'h2c');
 
-function h2Server(leafOf) {
-  const server = h2Face(http2.createSecureServer({ ...leafOf.options, allowHTTP1: false }));
+function h2Server(name, leafOf) {
+  const server = h2Face(http2.createSecureServer({ ...leafOf.options, allowHTTP1: false }), name);
   server.on('secureConnection', track);
   server.on('tlsClientError', (err, socket) => socket.destroy());
   // A client that did not choose h2: destroyed with nothing written. With
@@ -581,13 +849,18 @@ const ascii = (s) => Buffer.from(s, 'latin1');
 
 // A script is a list of steps: write these bytes, wait N ms, hold for a key
 // N ms (count it as held for KEY while it waits), end (FIN), reset (RST),
-// or stall (write nothing until the client goes); and the pattern's, write
+// or stall (write nothing until the client goes); the pattern's, write
 // bytes of a body, recording for a pattern's record the bytes the kernel
-// took and where a write first stalled.
+// took and where a write first stalled; and the sinks', read nothing for N
+// ms, read the request's body and write its summary, or read it and drop
+// it, each of these two ending the script when the client goes first.
 const write = (s) => ({ step: 'write', bytes: typeof s === 'string' ? ascii(s) : s });
 const measured = (record, bytes, offset) => ({ step: 'measured', record, bytes, offset });
 const wait = (ms) => ({ step: 'wait', ms });
 const hold = (key, ms) => ({ step: 'hold', key, ms });
+const pauseReading = (ms) => ({ step: 'pause-reading', ms });
+const sinkBody = (conn, head, key, list) => ({ step: 'sink', conn, head, key, list });
+const readOut = (conn, head) => ({ step: 'read-out', conn, head });
 const END = { step: 'end' };
 const RESET = { step: 'reset' };
 const STALL = { step: 'stall' };
@@ -600,7 +873,8 @@ const badRequest = [
 // The scripts, by NAME. Each takes its parameters, by name: every one listed,
 // each a decimal natural within its range, and no other; or, with a query
 // function, what that reads from the query, null for one it refuses. play
-// gets the parameters and the request head's bytes.
+// gets the parameters, the request head's bytes and the connection's
+// record, whose input a script that reads the body sets.
 const scripts = {
   // framing
   'content-length': { play: () => [write('HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\nhello\n'), END] },
@@ -804,7 +1078,166 @@ const scripts = {
                  write('HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\nearly\n'),
                  END],
   },
+
+  // sinks: a key's request body, read and summed up; and an answer that
+  // comes before the body
+  'sink': {
+    query: (query) => queryOf(query, { key: keyValue, hold: (v) => decimal(v, 0, 60000), list: oneValue }, ['key']),
+    play: ({ key, hold: ms, list }, head, conn) => {
+      countFor(key);
+      conn.input = inputOf();
+      return [...(ms > 0 ? [pauseReading(ms)] : []), sinkBody(conn, head, key, list === true), END];
+    },
+  },
+  'arm': {
+    query: (query) => queryOf(query, { status: (v) => decimal(v, 200, 599) }, ['status']),
+    play: ({ status }) => {
+      earlyArm = status;
+      return [write('HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\narmed\n'), END];
+    },
+  },
+  'answer': {
+    query: (query) => queryOf(query, {
+      status: (v) => decimal(v, 200, 599),
+      close: (v) => decimal(v, 0, 1),
+    }, ['status', 'close']),
+    play: ({ status, close }, head, conn) => {
+      const body = `answer ${status}\n`;
+      const answer = write(`HTTP/1.1 ${status} Answer\r\nContent-Length: ${body.length}\r\n`
+                           + `${close === 1 ? 'Connection: close\r\n' : ''}\r\n${body}`);
+      if (close === 1) return [answer, END];
+      conn.input = inputOf();
+      return [answer, readOut(conn, head), END];
+    },
+  },
 };
+
+// --- the raw faces' request bodies -----------------------------------------
+
+// inputOf: a body-reading script's input: the bytes of each socket data
+// event after the head, with when it came, a performance.now(), in order,
+// and whether the client has ended or the socket closed.
+function inputOf() {
+  return { items: [], ended: false, wake: null };
+}
+
+function wakeInput(input) {
+  const wake = input.wake;
+  input.wake = null;
+  if (wake) wake();
+}
+
+function feed(input, chunk, at) {
+  input.items.push([chunk, at]);
+  wakeInput(input);
+}
+
+function closeInput(input) {
+  input.ended = true;
+  wakeInput(input);
+}
+
+// nextItem: INPUT's next [CHUNK, AT], waiting for one; null once the
+// client has ended and every one is taken.
+async function nextItem(input) {
+  while (input.items.length === 0) {
+    if (input.ended) return null;
+    await new Promise((resolve) => { input.wake = resolve; });
+  }
+  return input.items.shift();
+}
+
+// headPairs: the request head HEAD's header lines as a flat list of names
+// and values, each value all after the line's first colon; a line with no
+// name before a colon is skipped.
+function headPairs(head) {
+  const pairs = [];
+  for (const line of head.toString('latin1').split('\r\n').slice(1)) {
+    const at = line.indexOf(':');
+    if (at > 0) pairs.push(line.slice(0, at), line.slice(at + 1));
+  }
+  return pairs;
+}
+
+// framingOf: a request body's framing from its header PAIRS: chunked for a
+// Transfer-Encoding of chunked, in any case; a length for a Content-Length
+// of decimal digits; none for neither; null for any other.
+function framingOf(pairs) {
+  const te = headerValue(pairs, 'transfer-encoding');
+  if (te !== null) return te.toLowerCase() === 'chunked' ? { kind: 'chunked' } : null;
+  const cl = headerValue(pairs, 'content-length');
+  if (cl !== null) return /^[0-9]{1,15}$/.test(cl) ? { kind: 'length', length: Number(cl) } : null;
+  return { kind: 'none' };
+}
+
+// readBody: reads a request's body from INPUT by FRAMING, handing TAKE each
+// data event's body bytes, as PIECES and AT, when they came. Answers done at
+// the framing's end, gone when the client ends first, or bad for chunked
+// framing it cannot read: a size line that is not 1 to 8 hex digits and an
+// extension, no CRLF after a chunk's bytes, or a line past HEAD_LIMIT.
+async function readBody(input, framing, take) {
+  if (framing.kind === 'none') return 'done';
+  if (framing.kind === 'length') {
+    let left = framing.length;
+    while (left > 0) {
+      const item = await nextItem(input);
+      if (item === null) return 'gone';
+      const piece = item[0].subarray(0, Math.min(left, item[0].length));
+      left -= piece.length;
+      take([piece], item[1]);
+    }
+    return 'done';
+  }
+  // chunked: a size line, its bytes and a CRLF, and so on, to a size of 0,
+  // then trailer lines to an empty one
+  let state = 'size';
+  let left = 0;
+  let line = [];
+  let lineBytes = 0;
+  for (;;) {
+    const item = await nextItem(input);
+    if (item === null) return 'gone';
+    const [chunk, at] = item;
+    const pieces = [];
+    let i = 0;
+    while (i < chunk.length) {
+      if (state === 'data') {
+        const piece = chunk.subarray(i, i + Math.min(left, chunk.length - i));
+        pieces.push(piece);
+        i += piece.length;
+        left -= piece.length;
+        if (left === 0) state = 'data-end';
+      } else {
+        const lf = chunk.indexOf(0x0a, i);
+        const stop = lf < 0 ? chunk.length : lf + 1;
+        line.push(chunk.subarray(i, stop));
+        lineBytes += stop - i;
+        i = stop;
+        if (lineBytes > HEAD_LIMIT) return 'bad';
+        if (lf >= 0) {
+          const text = Buffer.concat(line).toString('latin1');
+          line = [];
+          lineBytes = 0;
+          if (!text.endsWith('\r\n')) return 'bad';
+          const content = text.slice(0, -2);
+          if (state === 'size') {
+            const m = /^([0-9A-Fa-f]{1,8})(?:[ \t]*;.*)?$/.exec(content);
+            if (!m) return 'bad';
+            left = parseInt(m[1], 16);
+            state = left === 0 ? 'trailers' : 'data';
+          } else if (state === 'data-end') {
+            if (content !== '') return 'bad';
+            state = 'size';
+          } else if (content === '') {
+            take(pieces, at);
+            return 'done';
+          }
+        }
+      }
+    }
+    take(pieces, at);
+  }
+}
 
 // stalls: the pattern script's latest record for each key, by key, for as
 // long as the origin runs: written, the body's bytes the kernel took, and
@@ -983,8 +1416,9 @@ function parameters(spec, query) {
   return names.every((name) => Object.hasOwn(found, name)) ? found : null;
 }
 
-// scriptFor: the steps for the request head HEAD, its CRLF CRLF included.
-function scriptFor(head) {
+// scriptFor: the steps for the request head HEAD, its CRLF CRLF included, on
+// the connection CONN.
+function scriptFor(head, conn) {
   const text = head.toString('latin1');
   const parts = text.slice(0, text.indexOf('\r\n')).split(' ');
   if (parts.length !== 3) return badRequest;
@@ -992,7 +1426,16 @@ function scriptFor(head) {
   if (!m || !Object.hasOwn(scripts, m[1])) return badRequest;
   const script = scripts[m[1]];
   const found = script.query ? script.query(m[2]) : parameters(script.params || {}, m[2]);
-  return found === null ? badRequest : script.play(found, head);
+  return found === null ? badRequest : script.play(found, head, conn);
+}
+
+// sinkAnswer: the sink's whole response for the request head HEAD on CONN,
+// its header PAIRS and its body's RECORD.
+function sinkAnswer(conn, head, pairs, record, key, list) {
+  const method = head.toString('latin1').split(' ', 1)[0];
+  const body = ascii(summary(conn.face, method, pairs, record, key, list));
+  return Buffer.concat([ascii(`HTTP/1.1 200 OK\r\nContent-Length: ${body.length}\r\nConnection: close\r\n\r\n`),
+                        body]);
 }
 
 // pause: resolves after MS ms by the clock, never sooner, or when SOCKET
@@ -1061,6 +1504,30 @@ async function play(socket, reset, state, steps) {
           }
           break;
         }
+        case 'pause-reading':
+          // Nothing read: the kernel's buffers fill, and the client's
+          // writes stall.
+          socket.pause();
+          await pause(socket, s.ms);
+          socket.resume();
+          break;
+        case 'sink': {
+          const record = bodyRecord();
+          const pairs = headPairs(s.head);
+          const framing = framingOf(pairs);
+          const result = framing === null ? 'bad' : await readBody(s.conn.input, framing, (pieces, at) => {
+            arrive(record, pieces, Math.round((at - s.conn.headAt) * 10));
+          });
+          if (result === 'gone' || socket.destroyed || !socket.writable) return;
+          const bytes = result === 'bad' ? badRequest[0].bytes : sinkAnswer(s.conn, s.head, pairs, record, s.key, s.list);
+          await new Promise((resolve) => socket.write(bytes, () => resolve()));
+          break;
+        }
+        case 'read-out': {
+          const framing = framingOf(headPairs(s.head));
+          if (framing !== null && (await readBody(s.conn.input, framing, () => {})) === 'gone') return;
+          break;
+        }
         case 'end':
           socket.end();
           return;
@@ -1079,27 +1546,41 @@ async function play(socket, reset, state, steps) {
   }
 }
 
-// serveRaw: reads a request head from SOCKET, and plays its script, with
-// RESET as the script's reset.
-function serveRaw(socket, reset) {
+// serveRaw: reads a request head from SOCKET, on the raw face FACE, and
+// plays its script, with RESET as the script's reset. The bytes after the
+// head go to the script's input when it has one, and nowhere otherwise.
+function serveRaw(face, socket, reset) {
   // With allowHalfOpen, the client's FIN leaves this side open: a script that
   // is playing goes on; otherwise this side ends too.
   const state = { playing: false, clientEnded: false };
+  const conn = { face, headAt: 0, input: null };
   socket.on('end', () => {
     state.clientEnded = true;
+    if (conn.input) closeInput(conn.input);
     if (!state.playing) socket.end();
+  });
+  socket.on('close', () => {
+    if (conn.input) closeInput(conn.input);
   });
   let head = Buffer.alloc(0);
   let started = false;
   socket.on('data', (chunk) => {
-    if (started) return;
+    const at = performance.now();
+    if (started) {
+      if (conn.input) feed(conn.input, chunk, at);
+      return;
+    }
     head = Buffer.concat([head, chunk]);
     const end = head.subarray(0, HEAD_LIMIT).indexOf('\r\n\r\n');
     if (end >= 0) {
       started = true;
+      conn.headAt = at;
       const request = Buffer.from(head.subarray(0, end + 4));
+      const rest = Buffer.from(head.subarray(end + 4));
       head = null;
-      play(socket, reset, state, scriptFor(request)).catch((err) => fatal('a script failed', err));
+      const steps = scriptFor(request, conn);
+      if (conn.input && rest.length > 0) feed(conn.input, rest, at);
+      play(socket, reset, state, steps).catch((err) => fatal('a script failed', err));
     } else if (head.length >= HEAD_LIMIT) {
       started = true;
       head = null;
@@ -1119,9 +1600,29 @@ function rawSocket(socket) {
   return socket;
 }
 
+// earlyArm: the status /raw/arm set for the raw face's next connection,
+// or null.
+let earlyArm = null;
+
+// answerAtOnce: SOCKET's whole answer, STATUS, written as it is accepted,
+// before any byte of its request is read; then this side ended, and the
+// client's bytes read and dropped until it ends.
+function answerAtOnce(socket, status) {
+  const body = `early ${status}\n`;
+  socket.on('data', () => {});
+  socket.on('end', () => { if (!socket.destroyed) socket.end(); });
+  socket.end(`HTTP/1.1 ${status} Early\r\nContent-Length: ${body.length}\r\nConnection: close\r\n\r\n${body}`);
+}
+
 const rawServer = net.createServer({ allowHalfOpen: true }, (socket) => {
   rawSocket(socket);
-  serveRaw(socket, () => socket.resetAndDestroy());
+  if (earlyArm !== null) {
+    const status = earlyArm;
+    earlyArm = null;
+    answerAtOnce(socket, status);
+    return;
+  }
+  serveRaw('raw', socket, () => socket.resetAndDestroy());
 });
 
 // rawTlsServer: raw's scripts over TLS, with LEAF and ALPN http/1.1 alone.
@@ -1140,7 +1641,7 @@ function rawTlsServer(leafOf) {
       socket.destroy();
       raw.destroy();
     });
-    serveRaw(socket, () => raw.resetAndDestroy());
+    serveRaw('raw-tls', socket, () => raw.resetAndDestroy());
   });
 }
 
@@ -1153,12 +1654,12 @@ if (pki !== null) {
   const expired = leaf('expired');
   const wrongHost = leaf('wrong-host');
   const untrusted = leaf('untrusted');
-  faces.push(['https', httpsServer(good)],
-             ['https-expired', httpsServer(expired)],
-             ['https-wrong-host', httpsServer(wrongHost)],
-             ['https-untrusted', httpsServer(untrusted)],
+  faces.push(['https', httpsServer('https', good)],
+             ['https-expired', httpsServer('https-expired', expired)],
+             ['https-wrong-host', httpsServer('https-wrong-host', wrongHost)],
+             ['https-untrusted', httpsServer('https-untrusted', untrusted)],
              ['raw-tls', rawTlsServer(good)],
-             ['h2', h2Server(good)]);
+             ['h2', h2Server('h2', good)]);
 }
 
 function listen(server, name) {

@@ -294,7 +294,9 @@
 ;; Every option chez-curl owns, and every owned setting's twin, written out
 ;; here (ADR-0009, amended): the options the transfer always sets and the
 ;; pins' bitmasks; each request field's, stream-buffer's header callable and
-;; its data among them (the M6 plan, section 3.3); the twins; the options slice 4's
+;; its data among them (the M6 plan, section 3.3), and a streamed body's
+;; read, seek and prerequest callables, their data and FRESH_CONNECT (M6
+;; slice 2); the twins; the options slice 4's
 ;; review found, twins and the hazards kept from the hatch (amended
 ;; 2026-10-27); every proxy TLS option.
 (define owned-names
@@ -303,6 +305,7 @@
     "CURLU" "NOBODY" "CUSTOMREQUEST" "HTTPHEADER" "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "USERAGENT"
     "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "CAINFO" "CAPATH"
     "SSL_VERIFYPEER" "SSL_VERIFYHOST" "PROXY" "HEADERFUNCTION" "HEADERDATA" "FOLLOWLOCATION"
+    "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA" "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT"
     "TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "PUT" "UPLOAD"
     "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE" "INFILESIZE_LARGE"
     "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
@@ -350,6 +353,12 @@
   (list (let ((a (curl-easy-option "WRITEHEADER")) (b (curl-easy-option "HEADERDATA")))
           (if (and a b (= (car a) (car b))) 'same (list a b)))
         (attach '(("WRITEHEADER" . 1)))))
+
+(test-equal "INFILE, READDATA's alias, is refused as owned-option, by id: a streamed body's read callable reads its key there (M6 slice 2)"
+  (list 'same (refused-as "INFILE" 'owned-option))
+  (list (let ((a (curl-easy-option "INFILE")) (b (curl-easy-option "READDATA")))
+          (if (and a b (= (car a) (car b))) 'same (list a b)))
+        (attach '(("INFILE" . 1)))))
 
 (test-equal "an option of a type the hatch does not take is refused as unsupported-type: an object, STDERR; a callback pointer, DEBUGDATA; a function, XFERINFOFUNCTION"
   (list '(object cbptr function)

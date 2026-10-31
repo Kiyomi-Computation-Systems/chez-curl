@@ -1,0 +1,61 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[floor-7.85.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[floor-7.85.0] libdirs src
+[floor-7.85.0] server {"node":"v20.10.0","pid":3123,"http":"127.0.0.1:43121","raw":"127.0.0.1:37909","https":"127.0.0.1:33643","h2":"127.0.0.1:37979"}
+[floor-7.85.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4
+[floor-7.85.0] libcurl 7.85.0 OpenSSL/3.0.13
+[floor-7.85.0] unpaced run=1 engine=make-curl-engine bytes=1048576 end=eof resumes=15 status=200 engine-state=running
+[floor-7.85.0] unpaced run=1 engine=make-curl-engine-unpaced bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unpaced))) engine-state=failed
+[floor-7.85.0] unpaced run=1 engine=make-curl-engine-unmultiplexed bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unmultiplexed))) engine-state=failed
+[floor-7.85.0] unpaced run=2 engine=make-curl-engine bytes=1048576 end=eof resumes=19 status=200 engine-state=running
+[floor-7.85.0] unpaced run=2 engine=make-curl-engine-unpaced bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unpaced))) engine-state=failing
+[floor-7.85.0] unpaced run=2 engine=make-curl-engine-unmultiplexed bytes=98304 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unmultiplexed))) engine-state=failed
+[floor-7.85.0] unpaced done
+[floor-7.85.0] unpaced exited 0 after about 1 s
+[floor-7.85.0] server-stderr: counts raw:/body=6
+[ubuntu-openssl-8.5.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[ubuntu-openssl-8.5.0] libdirs src
+[ubuntu-openssl-8.5.0] server {"node":"v24.18.0","pid":3192,"http":"127.0.0.1:33307","raw":"127.0.0.1:34577","https":"127.0.0.1:37731","h2":"127.0.0.1:33951"}
+[ubuntu-openssl-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4
+[ubuntu-openssl-8.5.0] libcurl 8.5.0 OpenSSL/3.0.13
+[ubuntu-openssl-8.5.0] unpaced run=1 engine=make-curl-engine bytes=1048576 end=eof resumes=17 status=200 engine-state=running
+[ubuntu-openssl-8.5.0] unpaced run=1 engine=make-curl-engine-unpaced bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unpaced))) engine-state=failed
+[ubuntu-openssl-8.5.0] unpaced run=1 engine=make-curl-engine-unmultiplexed bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unmultiplexed))) engine-state=failed
+[ubuntu-openssl-8.5.0] unpaced run=2 engine=make-curl-engine bytes=1048576 end=eof resumes=17 status=200 engine-state=running
+[ubuntu-openssl-8.5.0] unpaced run=2 engine=make-curl-engine-unpaced bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unpaced))) engine-state=failed
+[ubuntu-openssl-8.5.0] unpaced run=2 engine=make-curl-engine-unmultiplexed bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unmultiplexed))) engine-state=failed
+[ubuntu-openssl-8.5.0] unpaced done
+[ubuntu-openssl-8.5.0] unpaced exited 0 after about 0 s
+[ubuntu-openssl-8.5.0] server-stderr: counts raw:/body=6
+[ubuntu-gnutls-8.5.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[ubuntu-gnutls-8.5.0] libdirs src
+[ubuntu-gnutls-8.5.0] server {"node":"v24.18.0","pid":3258,"http":"127.0.0.1:36235","raw":"127.0.0.1:36947","https":"127.0.0.1:44091","h2":"127.0.0.1:39877"}
+[ubuntu-gnutls-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4
+[ubuntu-gnutls-8.5.0] libcurl 8.5.0 GnuTLS/3.8.3
+[ubuntu-gnutls-8.5.0] unpaced run=1 engine=make-curl-engine bytes=1048576 end=eof resumes=16 status=200 engine-state=running
+[ubuntu-gnutls-8.5.0] unpaced run=1 engine=make-curl-engine-unpaced bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unpaced))) engine-state=failed
+[ubuntu-gnutls-8.5.0] unpaced run=1 engine=make-curl-engine-unmultiplexed bytes=81876 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unmultiplexed))) engine-state=failed
+[ubuntu-gnutls-8.5.0] unpaced run=2 engine=make-curl-engine bytes=1048576 end=eof resumes=18 status=200 engine-state=running
+[ubuntu-gnutls-8.5.0] unpaced run=2 engine=make-curl-engine-unpaced bytes=98304 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unpaced))) engine-state=failed
+[ubuntu-gnutls-8.5.0] unpaced run=2 engine=make-curl-engine-unmultiplexed bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unmultiplexed))) engine-state=failed
+[ubuntu-gnutls-8.5.0] unpaced done
+[ubuntu-gnutls-8.5.0] unpaced exited 0 after about 1 s
+[ubuntu-gnutls-8.5.0] server-stderr: counts raw:/body=6
+[current-8.23.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[current-8.23.0] libdirs src
+[current-8.23.0] server {"node":"v24.18.0","pid":3324,"http":"127.0.0.1:37431","raw":"127.0.0.1:38507","https":"127.0.0.1:42497","h2":"127.0.0.1:33469"}
+[current-8.23.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4
+[current-8.23.0] libcurl 8.23.0 OpenSSL/3.0.13
+[current-8.23.0] unpaced run=1 engine=make-curl-engine bytes=1048576 end=eof resumes=19 status=200 engine-state=running
+[current-8.23.0] unpaced run=1 engine=make-curl-engine-unpaced bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unpaced))) engine-state=failed
+[current-8.23.0] unpaced run=1 engine=make-curl-engine-unmultiplexed bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unmultiplexed))) engine-state=failed
+[current-8.23.0] unpaced run=2 engine=make-curl-engine bytes=1048576 end=eof resumes=13 status=200 engine-state=running
+[current-8.23.0] unpaced run=2 engine=make-curl-engine-unpaced bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unpaced))) engine-state=failed
+[current-8.23.0] unpaced run=2 engine=make-curl-engine-unmultiplexed bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unmultiplexed))) engine-state=failed
+[current-8.23.0] unpaced done
+[current-8.23.0] unpaced exited 0 after about 0 s
+[current-8.23.0] server-stderr: counts raw:/body=6

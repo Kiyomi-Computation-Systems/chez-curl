@@ -1,0 +1,24 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-upload.sps
+%%%% Starting test upload
+FAIL the head's body-asked bit with the answer first, by version, on 7.85.0: on an engine whose prerequest callable holds 200 ms once connected, the raw face's answer, written as it accepts, lands before the request; 7.85.0 and 8.5.0 read it and stop sending, never asking, #f; 8.20.0 and 8.23.0 ask with the head, #t; each ends with the early status, 200 and 413, sized and chunked, the hold made once; a libcurl with no row fails, showing what it measured
+  expected: ((sized 200 #f never (response 200 http/1.1) 1) (chunked 200 #f never (response 200 http/1.1) 1) (sized 413 #f never (response 413 http/1.1) 1) (chunked 413 #f never (response 413 http/1.1) 1))
+  actual:   ((sized 200 #t asked (response 200 http/1.1) 1) (chunked 200 #f never (response 200 http/1.1) 1) (sized 413 #t asked (response 413 http/1.1) 1) (chunked 413 #t asked (response 413 http/1.1) 1))
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 973)
+(throughput http chunked ms 867)
+(throughput https sized ms 822)
+(throughput https chunked ms 779)
+(throughput h2 sized ms 287)
+(throughput h2 chunked ms 277)
+(read-lock collections-while-live 996)
+# of expected passes      57
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 57, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-upload.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

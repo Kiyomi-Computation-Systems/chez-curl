@@ -89,8 +89,9 @@ provisional. They bind until that record is accepted or amended.
     (ADR-0013, amended 2026-10-25), and so does `curl_easy_pause`, from M6 (ADR-0013, amended
     2026-10-30).
   - A callable is the whole right-hand side of `(define name ...)`. Each callable, `write-body`
-    and, from M6, the header callable `read-head`, is locked with `lock-object` where it is
-    defined, and never unlocked.
+    and, from M6, the header callable `read-head` and the read, seek and prerequest callables
+    `read-body`, `seek-body` and `prereq-body` (ADR-0013, amended 2026-10-31), is locked with
+    `lock-object` where it is defined, and never unlocked.
 - **Every macro `src/` defines is a row of `known-macros`,** in
   `tests/foreign-conventions.sls`: a binder (a known wrapper) or a plain macro, defined at
   a library body's top level in the file its row names. Any other `define-syntax`, and every `let-syntax` and `letrec-syntax`, fails.
@@ -365,7 +366,10 @@ provisional. They bind until that record is accepted or amended.
   with them the transfer's callable and data, `WRITEFUNCTION`, `WRITEDATA` and `ERRORBUFFER`
   (ADR-0009, amended 2026-10-23 and 2026-10-24), and from M6 slice 1 the `stream-buffer`
   field's header callable and its data, `HEADERFUNCTION` and `HEADERDATA` (ADR-0009, amended
-  2026-10-30).
+  2026-10-30), and from M6 slice 2 the `body` field's read, seek and prerequest callables and
+  their data, `READFUNCTION`, `READDATA` (`INFILE` its alias), `SEEKFUNCTION`, `SEEKDATA`,
+  `PREREQFUNCTION` and `PREREQDATA`, with `FRESH_CONNECT`, on every request; `POST`, `UPLOAD`
+  and `INFILESIZE_LARGE` are now fields' options, not twins (ADR-0009, amended 2026-10-31).
   M4 adds, each in its slice: the body's options, `CUSTOMREQUEST`, `CONNECTTIMEOUT_MS`, `PROXY`,
   `FOLLOWLOCATION`, and every `PROXY_SSL_*` and `PROXY_CA*` option, with their twins, among the
   string, list and blob options too (ADR-0009, amended 2026-10-26). Slice 1 built its own, and
@@ -792,7 +796,18 @@ provisional. They bind until that record is accepted or amended.
   keeps the body, as `body-dropped?` decides (ADR-0032, amended).
 - **chez-curl counts a streamed body:** short of `body-length`, or past it, is
   `body-length-mismatch`, alike on every libcurl, where libcurl alone stalls, answers 26, or
-  sends the surplus (ADR-0031).
+  sends the surplus (ADR-0031). A put past the length raises `&curl-request-error`
+  `body-length-mismatch`, and its transfer fails with `body-length-mismatch` unless another
+  reason came first: the outcome reads the refusal too, since libcurl calls the read callable no
+  more once it has read the length whole, and closes the request stream in that hold, so a put
+  after answers `done` (ADR-0030, amended 2026-10-31). A put after `curl-token-end-body!` on a
+  live token is an assertion violation.
+- **A put answers `done` only once its token is done,** so its outcome is there to read.
+- **The head tells whether libcurl had asked for the body by then,** `curl-head-body-asked?`,
+  read in the hold that publishes the final head; the high level's at-most-once rule reads it
+  (ADR-0030, amended 2026-10-31; ADR-0032, decision 3). It tells whether libcurl had asked,
+  never a guess from the request: an answer that comes before the first ask reads `#f` on
+  7.85.0 and 8.5.0, `#t` on 8.20.0 and 8.23.0, which ask with the head.
 - **A call's `timeout-ms` bounds the whole call, a consumer's reading included** (ADR-0031).
 - **Below the token the bound is libcurl's, and documented:** a paused HTTP/2 stream beside an
   active one keeps receiving, up to its flow-control window on the Linux libcurls (ADR-0030,

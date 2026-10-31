@@ -138,6 +138,58 @@ the body in pieces as it arrives, instead of keeping it whole:
 - *libcurl 8.7.0 and 8.7.1, the Mac's,* give each HTTP/2 transfer a connection
   of its own: there one paused stream could fail its neighbours.
 
+*** Sending a body as it is produced
+
+Give a request =body= ='stream=, and its token takes the body from your
+puts, a piece at a time, instead of a bytevector whole. =body-length= is
+its length, sent as =Content-Length=; leave it =#f= to send it chunked:
+
+#+begin_src scheme
+(import (curl))
+
+(define engine (make-curl-engine))
+(define token
+  (curl-submit engine (make-curl-request "https://example.com/upload"
+                                         'method 'put 'body 'stream
+                                         'body-length 11)))
+
+(curl-token-room-wait token 10000)        ; #t once libcurl asks for the body
+(curl-token-put-piece! token (string->utf8 "hello "))
+(curl-token-put-piece! token (string->utf8 "world"))
+(curl-token-end-body! token)
+(curl-token-await token)                  ; the response, or the failure
+#+end_src
+
+- *It is sent at most once, on a fresh connection.* A piece handed to
+  libcurl is gone from chez-curl, so a resend libcurl wants after that, for
+  a dead connection or a refused HTTP/2 stream, fails the transfer as
+  =body-not-replayable=. The upload never reuses a pooled connection, so
+  each opens one, and over TLS a handshake; once it ends, a later transfer
+  may reuse that connection, over HTTP/1.1 or HTTP/2, or share it over
+  HTTP/2 while it runs.
+- *A put waits while the buffer holds 64 KiB.* Give it a bound, in
+  milliseconds, and it answers =#f= when the bound passes.
+- *=done= means the transfer has ended.* A put that answers =done= took
+  nothing; =curl-token-outcome= tells how the transfer ended.
+- *The timeout runs while you are not putting.* =timeout-ms= ends a waiting
+  upload as any other.
+- *The length is checked.* An end short of =body-length=, or a piece past
+  it, fails the transfer as =body-length-mismatch=; the put past it raises.
+- *An early answer ends the upload.* A server may answer, a 413 say, before
+  the body is sent. Then every later put answers =done=. Some libcurls end
+  such a transfer only at your next put or end.
+- *=curl-token-body-count= tells what your puts committed* to chez-curl's
+  buffer, not what reached the server.
+- *An early success can cut the body.* A 200 that arrives while your upload
+  waits can end the transfer as a success with the body cut: over HTTP/1.1,
+  a 200 with a close, on Ubuntu's 8.5.0, 8.20.0 and 8.23.0; over HTTP/2, a
+  200 that ends its stream, on 8.5.0. On 7.85.0 the transfer waits for your
+  next put; over HTTP/2 its upload then never ends, and the timeout ends it.
+  A server that must have the whole body should say so in its answer.
+- *Over HTTP/2, a transfer that streams both ways sends only while you read.*
+  With a =stream-buffer= too, read the response's pieces, or the upload
+  stops at the peer's window.
+
 *** What follows a redirect
 
 =(http-client)= follows a 301, 302, 303, 307 or 308 that has a =Location=,

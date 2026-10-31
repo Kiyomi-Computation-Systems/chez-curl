@@ -1,0 +1,23 @@
+asked2 libcurl 8.5.0 OpenSSL/3.0.13
+asked2 status=200 framing=sized run=1 armed=200 head=200 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=200
+asked2 status=200 framing=sized run=2 armed=200 head=200 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=200
+asked2 status=200 framing=sized run=3 armed=200 head=200 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=200
+asked2 status=200 framing=sized run=4 armed=200 head=200 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=200
+asked2 status=200 framing=sized run=5 armed=200 head=200 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=200
+asked2 status=200 framing=chunked run=1 armed=200 head=200 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=200
+asked2 status=200 framing=chunked run=2 armed=200 head=200 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=200
+asked2 status=200 framing=chunked run=3 armed=200 head=200 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=200
+asked2 status=200 framing=chunked run=4 armed=200 head=200 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=200
+asked2 status=200 framing=chunked run=5 armed=200 head=200 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=200
+asked2 status=413 framing=sized run=1 armed=200 head=413 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=413
+asked2 status=413 framing=sized run=2 armed=200 head=413 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=413
+asked2 status=413 framing=sized run=3 armed=200 head=413 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=413
+asked2 status=413 framing=sized run=4 armed=200 head=413 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=413
+asked2 status=413 framing=sized run=5 armed=200 head=413 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=413
+asked2 status=413 framing=chunked run=1 armed=200 head=413 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=413
+asked2 status=413 framing=chunked run=2 armed=200 head=413 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=413
+asked2 status=413 framing=chunked run=3 armed=200 head=413 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=413
+asked2 status=413 framing=chunked run=4 armed=200 head=413 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=413
+asked2 status=413 framing=chunked run=5 armed=200 head=413 bit=#f asked-by-head-wait=#f ever-asked=#f handed=0 outcome=413
+asked2 counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+exit 0

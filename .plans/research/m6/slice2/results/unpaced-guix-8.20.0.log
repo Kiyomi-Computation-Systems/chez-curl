@@ -1,0 +1,14 @@
+[guix-8.20.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[guix-8.20.0] libdirs src
+[guix-8.20.0] server {"node":"v24.18.0","pid":34,"http":"127.0.0.1:44413","raw":"127.0.0.1:34613","https":"127.0.0.1:44879","h2":"127.0.0.1:33979"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+[guix-8.20.0] libcurl 8.20.0 GnuTLS/3.8.13
+[guix-8.20.0] unpaced run=1 engine=make-curl-engine bytes=1048576 end=eof resumes=19 status=200 engine-state=running
+[guix-8.20.0] unpaced run=1 engine=make-curl-engine-unpaced bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unpaced))) engine-state=failed
+[guix-8.20.0] unpaced run=1 engine=make-curl-engine-unmultiplexed bytes=163840 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unmultiplexed))) engine-state=failed
+[guix-8.20.0] unpaced run=2 engine=make-curl-engine bytes=1048576 end=eof resumes=15 status=200 engine-state=running
+[guix-8.20.0] unpaced run=2 engine=make-curl-engine-unpaced bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unpaced))) engine-state=failed
+[guix-8.20.0] unpaced run=2 engine=make-curl-engine-unmultiplexed bytes=65536 end=eof resumes=0 engine-error reason=failed raised=("improperly formed alist ~s" ((unmultiplexed))) engine-state=failed
+[guix-8.20.0] unpaced done
+[guix-8.20.0] unpaced exited 0 after about 0 s
+[guix-8.20.0] server-stderr: counts raw:/body=6

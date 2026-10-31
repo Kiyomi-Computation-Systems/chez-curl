@@ -40,7 +40,7 @@
         (only (curl private transfer) curl-request-fault curl-request-follow
               curl-request-with-fault curl-request-following request-keys request-methods
               sent-header-lines timing-infos live-transfer-count request-size-unreliable
-              reported-request-size)
+              reported-request-size method-settings sends-body?)
         (curl private counters))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
@@ -229,9 +229,9 @@
 
 ;; --- the keys --------------------------------------------------------------------------
 
-(test-equal "the keys are exactly method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy and stream-buffer, in order"
+(test-equal "the keys are exactly method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer and body-length, in order"
   '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
-    stream-buffer)
+    stream-buffer body-length)
   request-keys)
 
 (test-equal "the methods are exactly get, head, post, put, patch and delete, in order"
@@ -245,10 +245,10 @@
         (curl-request-body r) (curl-request-user-agent r) (curl-request-timeout-ms r)
         (curl-request-connect-timeout-ms r) (curl-request-body-limit r) (curl-request-ca-file r)
         (curl-request-verify r) (curl-request-proxy r) (curl-request-stream-buffer r)
-        (curl-request-fault r) (curl-request-follow r)))
+        (curl-request-body-length r) (curl-request-fault r) (curl-request-follow r)))
 
-(test-equal "a request with no key takes every default: get, no headers, no body, no user agent, no timeouts, no body limit, the system store, verification on, the environment's proxy, the whole body kept; and no fault, no following"
-  (list '("http://a/b" get () #f #f #f #f #f #f #t environment #f #f #f) running-counts)
+(test-equal "a request with no key takes every default: get, no headers, no body, no user agent, no timeouts, no body limit, the system store, verification on, the environment's proxy, the whole body kept, no body-length; and no fault, no following"
+  (list '("http://a/b" get () #f #f #f #f #f #f #t environment #f #f #f #f) running-counts)
   (with-counts (request-fields (make-curl-request "http://a/b"))))
 
 ;; Each value differs from its default. verify's and proxy's are both #f,
@@ -259,8 +259,8 @@
         'proxy #f 'stream-buffer 65536))
 
 (test-equal "each key sets its own field, in any order"
-  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f #f)
-        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f #f))
+  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f #f #f)
+        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f #f #f))
   (list (request-fields (apply make-curl-request "http://a/b" all-keys))
         (request-fields (apply make-curl-request "http://a/b"
                        (let loop ((rest all-keys) (pairs '()))
@@ -379,13 +379,90 @@
         (failed (lambda () (curl-request-with (make-curl-request "http://a/") 'proxy 'direct)))
         (native-counts)))
 
+;; --- body stream and body-length (ADR-0030; the M6 plan, section 3.1) --------------------
+
+(test-equal "body takes stream with post, put, patch and delete, and body-length sets its own field beside it: a natural, 0 and 2^63 - 2 among them, or #f, the default, kept by curl-request-with when not given and replaced when given; the other fields keep their defaults; nothing native made"
+  (list '((post stream 7) (put stream 0) (patch stream 9223372036854775806) (delete stream #f))
+        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 7 #f #f)
+        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 5 #f #f)
+        '("http://a/b" post () stream #f #f #f #f #f #t environment #f #f #f #f)
+        running-counts)
+  (list (map (lambda (args)
+               (let ((r (make-curl-request "http://a/" 'method (car args) 'body 'stream 'body-length (cadr args))))
+                 (list (curl-request-method r) (curl-request-body r) (curl-request-body-length r))))
+             (list '(post 7) '(put 0) (list 'patch (- (expt 2 63) 2)) '(delete #f)))
+        (request-fields (curl-request-with (make-curl-request "http://a/b" 'method 'post 'body 'stream 'body-length 7)))
+        (request-fields (curl-request-with (make-curl-request "http://a/b" 'method 'post 'body 'stream 'body-length 7)
+                                           'body-length 5))
+        (request-fields (curl-request-with (make-curl-request "http://a/b" 'method 'post 'body 'stream 'body-length 7)
+                                           'body-length #f))
+        (native-counts)))
+
+(test-equal "body-length's wrong types are assertion violations, from make-curl-request and curl-request-with, before anything native: -1, 2^63 - 1, 1.5, 7.0, \"7\", #t and stream; a body that is a symbol but stream, an assertion violation too"
+  (list (vector->list (make-vector 7 '(assertion-violation make-curl-request)))
+        '(assertion-violation curl-request-with)
+        '((assertion-violation make-curl-request) (assertion-violation make-curl-request))
+        running-counts)
+  (list (map (lambda (v) (failed (lambda () (make-curl-request "http://a/" 'method 'post 'body 'stream 'body-length v))))
+             (list -1 (- (expt 2 63) 1) 1.5 7.0 "7" #t 'stream))
+        (failed (lambda () (curl-request-with (make-curl-request "http://a/" 'method 'post 'body 'stream) 'body-length -1)))
+        (list (failed (lambda () (make-curl-request "http://a/" 'method 'post 'body 'streams)))
+              (failed (lambda () (make-curl-request "http://a/" 'method 'post 'body 'Stream))))
+        (native-counts)))
+
+(test-equal "a streamed body with get or head is refused as body-not-allowed, naming body and the method; with the method left out, get"
+  '((request-refused body get body-not-allowed)
+    (request-refused body head body-not-allowed)
+    (request-refused body get body-not-allowed))
+  (list (failed (lambda () (make-curl-request "http://a/" 'method 'get 'body 'stream)))
+        (failed (lambda () (make-curl-request "http://a/" 'method 'head 'body 'stream 'body-length 1)))
+        (failed (lambda () (make-curl-request "http://a/" 'body 'stream)))))
+
+(test-equal "a body-length beside a body that does not stream is refused as body-length-without-stream, naming body-length and its value, 0 among them, however the two came together: made beside a whole body or none, a whole body given to a streamed one by curl-request-with, a body-length added to a whole one, and body #f given to a streamed one; body-length #f clears the refusal"
+  '((request-refused body-length 10 body-length-without-stream)
+    (request-refused body-length 0 body-length-without-stream)
+    (request-refused body-length 10 body-length-without-stream)
+    (request-refused body-length 4 body-length-without-stream)
+    (request-refused body-length 10 body-length-without-stream)
+    (returned #vu8(1)))
+  (list (failed (lambda () (make-curl-request "http://a/" 'method 'post 'body #vu8(1) 'body-length 10)))
+        (failed (lambda () (make-curl-request "http://a/" 'method 'post 'body-length 0)))
+        (failed (lambda () (curl-request-with (make-curl-request "http://a/" 'method 'post 'body 'stream 'body-length 10)
+                                              'body #vu8(1))))
+        (failed (lambda () (curl-request-with (make-curl-request "http://a/" 'method 'post 'body #vu8(1)) 'body-length 4)))
+        (failed (lambda () (curl-request-with (make-curl-request "http://a/" 'method 'post 'body 'stream 'body-length 10)
+                                              'body #f)))
+        (list 'returned
+              (curl-request-body (curl-request-with (make-curl-request "http://a/" 'method 'post 'body 'stream 'body-length 10)
+                                                    'body #vu8(1) 'body-length #f)))))
+
+(test-equal "method-settings for a streamed body, written out: post, POST and POSTFIELDSIZE_LARGE at the length; put, UPLOAD and INFILESIZE_LARGE; patch and delete, POST, CUSTOMREQUEST and POSTFIELDSIZE_LARGE; the length -1 for none, chunked; and a whole body's, unchanged, for post and put"
+  '(((post 7) (("POST" . 1) ("POSTFIELDSIZE_LARGE" . 7)))
+    ((post #f) (("POST" . 1) ("POSTFIELDSIZE_LARGE" . -1)))
+    ((put 0) (("UPLOAD" . 1) ("INFILESIZE_LARGE" . 0)))
+    ((put #f) (("UPLOAD" . 1) ("INFILESIZE_LARGE" . -1)))
+    ((patch 5) (("POST" . 1) ("CUSTOMREQUEST" . "PATCH") ("POSTFIELDSIZE_LARGE" . 5)))
+    ((delete #f) (("POST" . 1) ("CUSTOMREQUEST" . "DELETE") ("POSTFIELDSIZE_LARGE" . -1)))
+    (whole-post (("POSTFIELDSIZE_LARGE" . 2) ("COPYPOSTFIELDS" . #vu8(1 2))))
+    (whole-put (("CUSTOMREQUEST" . "PUT") ("POSTFIELDSIZE_LARGE" . 0) ("COPYPOSTFIELDS" . #vu8()))))
+  (append (map (lambda (args) (list args (method-settings (car args) 'stream (cadr args))))
+               '((post 7) (post #f) (put 0) (put #f) (patch 5) (delete #f)))
+          (list (list 'whole-post (method-settings 'post #vu8(1 2) #f))
+                (list 'whole-put (method-settings 'put #f #f)))))
+
+(test-equal "sends-body?: a streamed body is sent by post, put, patch and delete, as a whole one is, delete's alone only with one"
+  '(#t #t #t #t #f #t #f #f)
+  (list (sends-body? 'post 'stream) (sends-body? 'put 'stream) (sends-body? 'patch 'stream)
+        (sends-body? 'delete 'stream) (sends-body? 'delete #f) (sends-body? 'delete #vu8())
+        (sends-body? 'get #f) (sends-body? 'head #f)))
+
 ;; --- curl-request-with, and the private constructors -----------------------------------
 
 (define base (apply make-curl-request "http://a/b" all-keys))
 
 (test-equal "curl-request-with replaces the keys given and keeps the rest; with none, every field"
-  (list '("http://a/b" patch (("X-A" . "1")) #vu8(4) "agent" 4000 10 9 "ca.pem" #f #f 65536 #f #f)
-        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f #f))
+  (list '("http://a/b" patch (("X-A" . "1")) #vu8(4) "agent" 4000 10 9 "ca.pem" #f #f 65536 #f #f #f)
+        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f #f #f))
   (list (request-fields (curl-request-with base 'connect-timeout-ms 10 'method 'patch 'body #vu8(4)))
         (request-fields (curl-request-with base))))
 
@@ -409,9 +486,9 @@
 (define whole (curl-request-with base 'stream-buffer #f))
 
 (test-equal "the private constructors set the fault and following, keep every other field, and curl-request-with keeps both"
-  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 2 #f)
-        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f #f #f #t)
-        '("http://a/b" delete (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f #f 2 #t))
+  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f 2 #f)
+        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f #f #f #f #t)
+        '("http://a/b" delete (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f #f #f 2 #t))
   (list (request-fields (curl-request-with-fault base 2))
         (request-fields (curl-request-following whole))
         (request-fields (curl-request-with (curl-request-following (curl-request-with-fault whole 2))
@@ -419,7 +496,7 @@
 
 ;; --- the header lines --------------------------------------------------------------------
 
-(test-equal "sent-header-lines: each header as its line, then, for a body, Content-Type: and Expect:, each unless a header of that name, in any case, is given"
+(test-equal "sent-header-lines: each header as its line, then, for a body, whole or streamed, a streamed delete's too, Content-Type: and Expect:, each unless a header of that name, in any case, is given"
   '(()
     ()
     ("X-A: 1" "Content-Type:" "Expect:")
@@ -431,7 +508,9 @@
     ("Content-Type: text/plain" "Expect:")
     ("content-type: x" "EXPECT: 100-continue")
     ("X-E;" "expect: y" "Content-Type:")
-    ("X-A: 1"))
+    ("X-A: 1")
+    ("Content-Type:" "Expect:")
+    ("Content-Type: text/plain" "Expect:"))
   (list (sent-header-lines '() 'get #f)
         (sent-header-lines '() 'head #f)
         (sent-header-lines '(("X-A" . "1")) 'post #f)
@@ -443,7 +522,9 @@
         (sent-header-lines '(("Content-Type" . "text/plain")) 'post #vu8(1))
         (sent-header-lines '(("content-type" . "x") ("EXPECT" . "100-continue")) 'put #vu8(1))
         (sent-header-lines '(("X-E" . "") ("expect" . "y")) 'patch #f)
-        (sent-header-lines '(("X-A" . "1")) 'get #f)))
+        (sent-header-lines '(("X-A" . "1")) 'get #f)
+        (sent-header-lines '() 'delete 'stream)
+        (sent-header-lines '(("Content-Type" . "text/plain")) 'put 'stream)))
 
 (test-equal "the timings are name-lookup, connect, tls-handshake, first-byte and total, in order, each read from its CURLINFO_*_TIME_T"
   '((name-lookup . 6291507) (connect . 6291508) (tls-handshake . 6291512)

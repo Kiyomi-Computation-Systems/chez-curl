@@ -1,0 +1,171 @@
+# The maintainer's Mac, 2026-10-31, on feat/m6-slice-2 at 8c3c8f0 (PR #37):
+#   git fetch origin && git switch feat/m6-slice-2 && make test NODE="$(asdf which node)"
+# Apple's libcurl 8.7.1, Node 20.10.0 through asdf. Pasted from the terminal, from
+# make's first line on.
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (34 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-check-floors.sps
+%%%% Starting test check-floors
+# of expected passes      375
+test: pass tests/test-check-floors.sps
+=== tests/test-check-nothreads.sps
+%%%% Starting test check-nothreads
+# of expected passes      17
+test: pass tests/test-check-nothreads.sps
+=== tests/test-check-seam.sps
+%%%% Starting test check-seam
+# of expected passes      62
+test: pass tests/test-check-seam.sps
+=== tests/test-collect-safe.sps
+%%%% Starting test collect-safe
+# of expected passes      120
+test: pass tests/test-collect-safe.sps
+=== tests/test-conditions.sps
+%%%% Starting test conditions
+# of expected passes      38
+test: pass tests/test-conditions.sps
+=== tests/test-constants.sps
+%%%% Starting test constants
+# of expected passes      681
+test: pass tests/test-constants.sps
+=== tests/test-curl-testing.sps
+%%%% Starting test curl-testing
+# of expected passes      284
+test: pass tests/test-curl-testing.sps
+=== tests/test-discovery.sps
+%%%% Starting test discovery
+# of expected passes      47
+test: pass tests/test-discovery.sps
+=== tests/test-drift.sps
+%%%% Starting test drift
+# of expected passes      55
+test: pass tests/test-drift.sps
+=== tests/test-engine.sps
+%%%% Starting test engine
+test-engine: the stalled-lookup checks run on Linux alone, so none ran here (ADR-0019, amended 2026-10-25)
+# of expected passes      49
+test: pass tests/test-engine.sps
+=== tests/test-group.sps
+%%%% Starting test group
+# of expected passes      65
+test: pass tests/test-group.sps
+=== tests/test-http-client.sps
+%%%% Starting test http-client
+# of expected passes      73
+test: pass tests/test-http-client.sps
+=== tests/test-library-loading.sps
+%%%% Starting test library-loading
+# of expected passes      75
+test: pass tests/test-library-loading.sps
+=== tests/test-load-state.sps
+%%%% Starting test load-state
+# of expected passes      12
+test: pass tests/test-load-state.sps
+=== tests/test-mailbox.sps
+%%%% Starting test mailbox
+# of expected passes      26
+test: pass tests/test-mailbox.sps
+=== tests/test-manifest.sps
+%%%% Starting test manifest
+# of expected passes      4
+test: pass tests/test-manifest.sps
+=== tests/test-memory-safety.sps
+%%%% Starting test memory-safety
+# of expected passes      89
+test: pass tests/test-memory-safety.sps
+=== tests/test-native.sps
+%%%% Starting test native
+# of expected passes      16
+test: pass tests/test-native.sps
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      124
+# of skipped tests        1
+test: pass tests/test-origin-tls.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      285
+# of skipped tests        1
+test: pass tests/test-origin.sps
+=== tests/test-redirect.sps
+%%%% Starting test redirect
+# of expected passes      68
+test: pass tests/test-redirect.sps
+=== tests/test-request.sps
+%%%% Starting test request
+# of expected passes      45
+test: pass tests/test-request.sps
+=== tests/test-require-threaded.sps
+%%%% Starting test require-threaded
+# of expected passes      69
+test: pass tests/test-require-threaded.sps
+=== tests/test-retry.sps
+%%%% Starting test retry
+# of expected passes      81
+test: pass tests/test-retry.sps
+=== tests/test-stream.sps
+%%%% Starting test stream
+(sweep piece plain call-ticks 6 escaped-kept 12 escaped-lost 0 returned 41)
+(sweep port plain call-ticks 138 escaped-kept 276 escaped-lost 0 returned 41)
+(sweep piece planted call-ticks 9 escaped-kept 12 escaped-lost 6 returned 41)
+# of expected passes      74
+test: pass tests/test-stream.sps
+=== tests/test-transfer-tls.sps
+%%%% Starting test transfer-tls
+# of expected passes      82
+test: pass tests/test-transfer-tls.sps
+=== tests/test-transfer.sps
+%%%% Starting test transfer
+# of expected passes      225
+test: pass tests/test-transfer.sps
+=== tests/test-unsupported.sps
+%%%% Starting test unsupported
+# of expected passes      34
+test: pass tests/test-unsupported.sps
+=== tests/test-upload.sps
+%%%% Starting test upload
+FAIL the head's body-asked bit with the answer first, by version, on 8.7.1: on an engine whose prerequest callable holds 200 ms once connected, the raw face's answer, written as it accepts, lands before the request; 7.85.0 and 8.5.0 read it and stop sending, never asking, #f; 8.20.0 and 8.23.0 ask with the head, #t; each ends with the early status, 200 and 413, sized and chunked, the hold made once; a libcurl with no row fails, showing what it measured
+  expected: (a-row-for "8.7.1")
+  actual:   (no-row-for "8.7.1" measured ((sized 200 #t asked (response 200 http/1.1) 1) (chunked 200 #t asked (response 200 http/1.1) 1) (sized 413 #t asked (response 413 http/1.1) 1) (chunked 413 #t asked (response 413 http/1.1) 1)))
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+FAIL an answer while the body is sent, the read paused, sized and chunked, by version, on 8.7.1: each cell ends within 1 s on its own, or waits for the producer's put of the rest, and how it ends; once done, a put and room-wait answer done; a libcurl with no row fails, showing every cell it measured
+  expected: (a-row-for "8.7.1")
+  actual:   (no-row-for "8.7.1" measured ((sized raw-413-close own 413) (chunked raw-413-close own 413) (sized raw-413-keep waits 413) (chunked raw-413-keep waits 413) (sized raw-200-close own 200) (chunked raw-200-close own 200) (sized raw-200-keep waits 200) (chunked raw-200-keep waits 200) (sized h2-413 waits 413) (chunked h2-413 waits 413) (sized h2-200 waits 200) (chunked h2-200 waits 200)))
+(throughput http sized ms 1631)
+(throughput http chunked ms 1492)
+(throughput https sized ms 1545)
+(throughput https chunked ms 1336)
+(throughput h2 sized ms 319)
+(throughput h2 chunked ms 318)
+(read-lock collections-while-live 991)
+# of expected passes      56
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 56, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-upload.sps (exit 1)
+=== tests/test-url-location.sps
+%%%% Starting test url-location
+# of expected passes      224
+test: pass tests/test-url-location.sps
+=== tests/test-url-parts.sps
+%%%% Starting test url-parts
+# of expected passes      160
+test: pass tests/test-url-parts.sps
+=== tests/test-url.sps
+%%%% Starting test url
+# of expected passes      145
+test: pass tests/test-url.sps
+=== tests/test-variadic.sps
+%%%% Starting test variadic
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 1: done, the first done at 1030 ms, both at 2062 ms
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 2: done, the first done at 1032 ms, both at 1033 ms
+# of expected passes      30
+test: pass tests/test-variadic.sps
+=== tests/test-verify.sps
+%%%% Starting test verify
+# of expected passes      21
+test: pass tests/test-verify.sps
+test: ran 34, passed 33, failed 1, hung 0
+make: *** [test] Error 1

@@ -222,7 +222,14 @@
     (curlmopt-pipelining . "CURLMOPT_PIPELINING")
     (curlpipe-nothing . "CURLPIPE_NOTHING")
     (curl-writefunc-pause . "CURL_WRITEFUNC_PAUSE")
-    (curlpause-cont . "CURLPAUSE_CONT")))
+    (curlpause-cont . "CURLPAUSE_CONT")
+    (curl-readfunc-pause . "CURL_READFUNC_PAUSE")
+    (curl-readfunc-abort . "CURL_READFUNC_ABORT")
+    (curl-seekfunc-ok . "CURL_SEEKFUNC_OK")
+    (curl-seekfunc-cantseek . "CURL_SEEKFUNC_CANTSEEK")
+    (curl-prereqfunc-ok . "CURL_PREREQFUNC_OK")
+    (curl-prereqfunc-abort . "CURL_PREREQFUNC_ABORT")
+    (seek-set . "SEEK_SET")))
 
 ;; c-name-aliases : (Listof (Pairof Symbol String))
 ;; Each export whose row names a C constant other than the export's own
@@ -1136,7 +1143,10 @@
 ;; the callable's Chez types to it through c-type-map, as a binding's.
 (define callable-rows
   '((write-body "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *")))
-    (read-head "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *")))))
+    (read-head "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *")))
+    (read-body "curl_read_callback" ("size_t" ("char *" "size_t" "size_t" "void *")))
+    (seek-body "curl_seek_callback" ("int" ("void *" "curl_off_t" "int")))
+    (prereq-body "curl_prereq_callback" ("int" ("void *" "char *" "char *" "int" "int")))))
 
 ;; c-type-map : (Listof (Pairof String (Listof Symbol)))
 ;; The one fixed map from a C type, as a header spells it, to the Chez types
@@ -2024,9 +2034,12 @@
 
 ;; Written out here, not read from the table: a row loosened along with the
 ;; callable it holds would otherwise pass.
-(test-equal "callable-rows is exactly write-body and read-head, the header callable, each held to curl_write_callback: size_t (char *, size_t, size_t, void *), the typedef CURLOPT_HEADERFUNCTION's callback has too"
+(test-equal "callable-rows is exactly write-body and read-head, the header callable, each held to curl_write_callback: size_t (char *, size_t, size_t, void *), the typedef CURLOPT_HEADERFUNCTION's callback has too; read-body, the read callable, to curl_read_callback, the same shape; seek-body to curl_seek_callback, int (void *, curl_off_t, int); and prereq-body to curl_prereq_callback, int (void *, char *, char *, int, int)"
   '((write-body "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *")))
-    (read-head "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *"))))
+    (read-head "curl_write_callback" ("size_t" ("char *" "size_t" "size_t" "void *")))
+    (read-body "curl_read_callback" ("size_t" ("char *" "size_t" "size_t" "void *")))
+    (seek-body "curl_seek_callback" ("int" ("void *" "curl_off_t" "int")))
+    (prereq-body "curl_prereq_callback" ("int" ("void *" "char *" "char *" "int" "int"))))
   callable-rows)
 
 (for-each

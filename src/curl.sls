@@ -80,8 +80,11 @@
    ;; default, libcurl's own:
    ;;   method              get, head, post, put, patch or delete; get
    ;;   headers             (Listof (Pairof String String)), Latin-1; ()
-   ;;   body                Bytevector, or #f; #f. post, put and patch send an
-   ;;                       empty one for #f; get and head refuse one
+   ;;   body                Bytevector, stream, or #f; #f. post, put and patch
+   ;;                       send an empty one for #f; get and head refuse one.
+   ;;                       stream: the token's puts give the body as it is
+   ;;                       produced, sent at most once, on a connection of
+   ;;                       its own
    ;;   user-agent          a non-empty Latin-1 string, or #f; #f
    ;;   timeout-ms          the whole transfer's bound, or #f; #f
    ;;   connect-timeout-ms  the connection phase's bound, its TLS handshake
@@ -107,6 +110,10 @@
    ;;                       in the response; #f. Refused beside a hatch's
    ;;                       HTTPAUTH or PROXYAUTH, or an Expect header whose
    ;;                       value holds 100-continue, as stream-with-rounds
+   ;;   body-length         a streamed body's length, an exact natural below
+   ;;                       2^63 - 1, sent as Content-Length; or #f, chunked
+   ;;                       over HTTP/1.1; #f. Refused beside a body that does
+   ;;                       not stream, as body-length-without-stream
    ;; A key it does not take, one given twice, and one with no value are
    ;; refused by name, as &curl-request-error, before anything else.
    ;; curl-request-with : Request Symbol Any ... -> Request
@@ -115,7 +122,7 @@
    ;; curl-request-url : Request -> String
    ;; curl-request-method : Request -> Symbol
    ;; curl-request-headers : Request -> (Listof (Pairof String String))
-   ;; curl-request-body : Request -> (U Bytevector #f)
+   ;; curl-request-body : Request -> (U Bytevector 'stream #f)
    ;; curl-request-user-agent : Request -> (U String #f)
    ;; curl-request-timeout-ms : Request -> (U Positive-Integer #f)
    ;; curl-request-connect-timeout-ms : Request -> (U Positive-Integer #f)
@@ -124,11 +131,12 @@
    ;; curl-request-verify : Request -> Boolean
    ;; curl-request-proxy : Request -> (U 'environment #f)
    ;; curl-request-stream-buffer : Request -> (U Positive-Integer #f)
+   ;; curl-request-body-length : Request -> (U Natural #f)
    make-curl-request curl-request-with curl-request?
    curl-request-url curl-request-method curl-request-headers curl-request-body
    curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
    curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
-   curl-request-stream-buffer
+   curl-request-stream-buffer curl-request-body-length
 
    ;; --- URLs (ADR-0008) ----------------------------------------------------
    ;; curl-url-part : String Symbol -> (U String Natural #f)
@@ -253,6 +261,10 @@
    ;; curl-head-http-version : Head -> (U 'http/1.0 'http/1.1 'http/2 'http/3 Integer #f)
    ;; curl-head-headers : Head -> (Listof (Pairof String String))
    ;; As the response's accessors read them.
+   ;; curl-head-body-asked? : Head -> Boolean
+   ;; Whether libcurl had asked for the request's streamed body by this
+   ;; head: #t when the request streams its body and libcurl had asked;
+   ;; #f otherwise, a request whose body does not stream among them.
    ;; curl-token-next-piece : Token Natural -> (U Bytevector Eof #f)
    ;; The next piece, a bytevector of a byte or more, the caller's to keep;
    ;; the eof object once every piece is taken and the transfer has ended,
@@ -271,7 +283,39 @@
    ;; bytes that call had read; get-bytevector-some, -some! and get-u8 lose
    ;; none.
    curl-token-head-wait curl-token-head curl-head? curl-head-status curl-head-http-version
-   curl-head-headers curl-token-next-piece curl-token-body-port
+   curl-head-headers curl-head-body-asked? curl-token-next-piece curl-token-body-port
+
+   ;; --- a streamed request body (ADR-0030, ADR-0032) -------------------------
+   ;; A token whose request has body stream takes its body from puts, into
+   ;; a buffer of 64 KiB. libcurl asks for it with the request's head, or
+   ;; once it has sent it, by version; an empty buffer pauses the transfer's sending, and a put or the
+   ;; end resumes it. It is sent at most once, on a connection of its own: a
+   ;; resend libcurl wants once a byte was handed fails the transfer,
+   ;; body-not-replayable. The transfer's timeout runs while the producer
+   ;; waits. An answer that ends the transfer early ends the upload: every
+   ;; later put answers done, and curl-token-body-count says what was taken.
+   ;; Over HTTP/2, a transfer that streams both ways sends only while its
+   ;; response is read. A token whose request does not stream its body
+   ;; refuses each of these, an assertion violation.
+   ;; curl-token-room-wait : Token Natural -> (U #t #f 'done)
+   ;; #t once libcurl has asked for the body and the buffer has room; done
+   ;; once the transfer has ended; #f once the milliseconds given pass.
+   ;; curl-token-put-piece! : Token Bytevector [Natural] -> (U #t #f 'done)
+   ;; The piece, a bytevector of a byte or more, copied into the buffer,
+   ;; waiting while it is full, at most the milliseconds given, when given:
+   ;; #t once taken, #f once they pass, done once the transfer has ended,
+   ;; the piece not taken. A piece past the body-length is refused,
+   ;; &curl-request-error, body-length-mismatch, and fails the transfer
+   ;; with that reason; a put after the end, on a live token, is an
+   ;; assertion violation.
+   ;; curl-token-end-body! : Token -> Void
+   ;; The body's end; once the transfer has ended, or a second time,
+   ;; nothing. An end short of the body-length fails the transfer,
+   ;; body-length-mismatch.
+   ;; curl-token-body-count : Token -> Natural
+   ;; The bytes the puts have committed: after a put an interrupt handler
+   ;; escaped from, whether its piece was taken.
+   curl-token-room-wait curl-token-put-piece! curl-token-end-body! curl-token-body-count
 
    ;; --- the mailbox (ADR-0021) ---------------------------------------------
    ;; make-curl-mailbox : -> Mailbox

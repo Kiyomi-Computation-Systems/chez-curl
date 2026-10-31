@@ -1,6 +1,8 @@
 # ADR-0030: A streamed body is a request's key, and the token's operations
 
-- **Status:** Accepted; amended 2026-10-29: no multiplexing on 8.7.0 and 8.7.1, from the Mac's run
+- **Status:** Accepted; amended 2026-10-29: no multiplexing on 8.7.0 and 8.7.1, from the Mac's run;
+  amended 2026-10-31: a put past `body-length` fails the transfer, read as its outcome is; and
+  the head tells whether libcurl had asked for the body, `curl-head-body-asked?`
 - **Date:** 2026-10-29
 - **Scope:** chez-curl v1, `(curl)`, from M6
 - **Settles:** how the low level offers a body streamed in either direction (brief §2 item 7,
@@ -128,3 +130,64 @@ on the Mac.
 
 **Rejected:** a streamed transfer over HTTP/1.1 on 8.7.x, which bounds the pause but leaves the
 body limit's error failing siblings; and documenting it, which leaves both.
+
+## Amendment, 2026-10-31: a put past `body-length` fails the transfer, read as its outcome is
+
+The M6 plan (§3.3) had a put past `body-length` set a refusal that the read callable, on the
+engine's thread, then records as `body-length-mismatch`, answering `CURL_READFUNC_ABORT`. M6 slice
+2's build found the gap: once libcurl has read the declared length whole, it calls the read
+callable no more, so a put past the length made after that, before the server answers, reached
+nothing. A mutant that leaves the refusal to the read callable alone ended such a transfer 200,
+1,000 bytes handed, with the put refused (`tests/test-upload.sps`), on Guix's 8.20.0, on 7.85.0
+and on Ubuntu's 8.5.0 with OpenSSL, though 7.85.0 and 8.5.0 offer 65,536 bytes to a sized
+body's last byte.
+
+**Decided by the maintainer, 2026-10-31, the recommended option:** the transfer's outcome reads
+the refusal as it is read, on the engine's thread, and closes the request stream in the same
+hold of its mutex. A put past the length that comes first raises `&curl-request-error`
+`body-length-mismatch`, and the transfer fails with `&curl-transfer-error`
+`body-length-mismatch`, whatever libcurl answered, the code beside it libcurl's own, 0 among
+them, unless a callable recorded another reason first, which wins. A put that comes after finds
+the request stream closed, waits, as on a full buffer, until the token is done, and answers
+`done`, so its outcome is there to read. So a put that raises always means its transfer failed,
+on every libcurl. A length of 0, for which
+libcurl never asks, fails the same way once a put is refused before the outcome.
+
+**Rejected:** keeping the server's answer once libcurl has read the length whole, and
+documenting the race. The put would raise beside a 200, and whether the transfer failed would
+depend on when the put came.
+
+## Amendment, 2026-10-31: the head tells whether libcurl had asked for the body
+
+The M6 plan's §3.2 has the header callable record, at the first final head, whether libcurl had
+asked for the request's body by then. ADR-0032's decision 3 and the plan's §3.6 rest on that bit:
+the high level never sends a streamed body again once libcurl had asked for it by a head. Slice
+1 built the head before there was a request stream, slice 2's list named no part of the bit,
+and `check-seam` lets `(http-client)` import `(curl)` alone, where §3.1 listed no accessor for
+it. M6 slice 2's adversarial review found the gap.
+
+**Decided by the maintainer, 2026-10-31, the recommended option:** slice 2 builds it. The
+header callable reads, in the hold that publishes the final head, whether the read callable has
+been called, and `(curl)` gains `curl-head-body-asked? : Head -> Boolean`: `#t` when the request
+streams its body and libcurl had asked for it by that head, else `#f`. libcurl's first ask comes
+with the request's head on 8.20.0 and 8.23.0, and after it is sent on 7.85.0 and 8.5.0 (the
+plan's §3.7). Measured on the five Linux libcurls
+([research](../research/m6/slice2-build/results/)):
+
+- **As a caller meets it,** the bit read `#t` natively for every streamed body of a byte or
+  more, servers that answer before reading it among them, even one that answers as it accepts
+  the connection, 100 runs of 100: libcurl's request and first ask came before the answer. It
+  read `#f` for a whole body, none, and a streamed length of 0, which libcurl never asks for.
+  But which comes first is a race: under the memory gate's Valgrind, on 8.5.0, the answer at
+  accept came first and the bit read `#f`, never asked, 20 of 20. In all 240 runs kept, held and
+  unheld, Valgrind among them, the bit told whether libcurl had asked, which is what
+  test-upload holds there.
+- **With the engine's thread held 200 ms between connect and send,** by a private seam, as a
+  collection could hold it, the answer arrived first: on 7.85.0 and both 8.5.0 builds the bit
+  read `#f` and libcurl never asked, 20 of 20 each; on 8.20.0 and 8.23.0, which ask with the
+  head, `#t`. test-upload pins it by version through that seam. On Apple's 8.7.1, the Mac's
+  run read `#t`, asked, held, as on 8.20.0
+  ([log](../research/m6/slice2-build/results/mac-8.7.1-make-test.log)).
+
+**Rejected:** leaving it to slice 3, which uses it; slice 2 would merge with the gap open.
+

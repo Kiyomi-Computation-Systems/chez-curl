@@ -1,0 +1,32 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+chez-curl: libcurl loaded and accepted
+  path:     /usr/lib/x86_64-linux-gnu/libcurl.so.4 (system)
+  version:  8.5.0
+  TLS:      OpenSSL/3.0.13
+  features: ipv6 ssl libz ntlm asynchdns spnego largefile idn tlsauth-srp http2 gssapi kerberos5 unix-sockets psl https-proxy brotli altsvc zstd hsts threadsafe
+  host:     x86_64-pc-linux-gnu
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-upload.sps
+%%%% Starting test upload
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+FAIL a length of 0: libcurl never asks, and the origin reads Content-Length: 0 and no byte, a 200; and on another submit, a put, made while the engine is held, the token queued, is refused as past the length, the piece not taken, and the transfer, which libcurl ends 0, fails as body-length-mismatch, the refusal's, with the origin's one request; the counts 0
+  expected: ("0" "0" (response 200 http/1.1) (request-refused body-length 0 body-length-mismatch) (transfer-error body-length-mismatch 0 none) 1 0)
+  actual:   ("0" "0" (response 200 http/1.1) (request-refused body-length 0 body-length-mismatch) (response 200 http/1.1) 1 0)
+FAIL a put past the length once libcurl has read the length whole, and calls the read callable no more, still fails the transfer: 1,000 bytes put to a raw script that holds its answer 1,000 ms, all handed, then a put of 1 byte, refused; the transfer, which libcurl ends 0 with the answer, fails as body-length-mismatch; a put after the outcome answers done
+  expected: ((returned #t) handed (request-refused body-length 1000 body-length-mismatch) (transfer-error body-length-mismatch 0 none) done 1000)
+  actual:   ((returned #t) handed (request-refused body-length 1000 body-length-mismatch) (response 200 http/1.1) done 1000)
+(throughput http sized ms 1050)
+(throughput http chunked ms 993)
+(throughput https sized ms 783)
+(throughput https chunked ms 729)
+(throughput h2 sized ms 237)
+(throughput h2 chunked ms 225)
+# of expected passes      50
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 50, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-upload.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

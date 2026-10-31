@@ -1,0 +1,81 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[floor-7.85.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[floor-7.85.0] server {"node":"v20.10.0","pid":3123,"http":"127.0.0.1:41817","raw":"127.0.0.1:44611","https":"127.0.0.1:43351","h2":"127.0.0.1:46053"}
+[floor-7.85.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4
+[floor-7.85.0] libcurl 7.85.0 OpenSSL/3.0.13
+[floor-7.85.0] escape run=1 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[floor-7.85.0] escape run=1 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[floor-7.85.0] escape run=1 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[floor-7.85.0] escape run=1 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[floor-7.85.0] escape run=2 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[floor-7.85.0] escape run=2 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[floor-7.85.0] escape run=2 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[floor-7.85.0] escape run=2 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[floor-7.85.0] escape run=3 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[floor-7.85.0] escape run=3 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[floor-7.85.0] escape run=3 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[floor-7.85.0] escape run=3 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[floor-7.85.0] escape done
+[floor-7.85.0] escape exited 0 after about 3 s
+[floor-7.85.0] server-stderr: counts raw:/sink=12
+[ubuntu-openssl-8.5.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[ubuntu-openssl-8.5.0] server {"node":"v24.18.0","pid":3211,"http":"127.0.0.1:35397","raw":"127.0.0.1:45901","https":"127.0.0.1:36213","h2":"127.0.0.1:34915"}
+[ubuntu-openssl-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4
+[ubuntu-openssl-8.5.0] libcurl 8.5.0 OpenSSL/3.0.13
+[ubuntu-openssl-8.5.0] escape run=1 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-openssl-8.5.0] escape run=1 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-openssl-8.5.0] escape run=1 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-openssl-8.5.0] escape run=1 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[ubuntu-openssl-8.5.0] escape run=2 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-openssl-8.5.0] escape run=2 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-openssl-8.5.0] escape run=2 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-openssl-8.5.0] escape run=2 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[ubuntu-openssl-8.5.0] escape run=3 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-openssl-8.5.0] escape run=3 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-openssl-8.5.0] escape run=3 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-openssl-8.5.0] escape run=3 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[ubuntu-openssl-8.5.0] escape done
+[ubuntu-openssl-8.5.0] escape exited 0 after about 3 s
+[ubuntu-openssl-8.5.0] server-stderr: counts raw:/sink=12
+[ubuntu-gnutls-8.5.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[ubuntu-gnutls-8.5.0] server {"node":"v24.18.0","pid":3296,"http":"127.0.0.1:46879","raw":"127.0.0.1:40005","https":"127.0.0.1:43879","h2":"127.0.0.1:37271"}
+[ubuntu-gnutls-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4
+[ubuntu-gnutls-8.5.0] libcurl 8.5.0 GnuTLS/3.8.3
+[ubuntu-gnutls-8.5.0] escape run=1 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-gnutls-8.5.0] escape run=1 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-gnutls-8.5.0] escape run=1 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-gnutls-8.5.0] escape run=1 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[ubuntu-gnutls-8.5.0] escape run=2 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-gnutls-8.5.0] escape run=2 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-gnutls-8.5.0] escape run=2 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-gnutls-8.5.0] escape run=2 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[ubuntu-gnutls-8.5.0] escape run=3 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-gnutls-8.5.0] escape run=3 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-gnutls-8.5.0] escape run=3 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[ubuntu-gnutls-8.5.0] escape run=3 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[ubuntu-gnutls-8.5.0] escape done
+[ubuntu-gnutls-8.5.0] escape exited 0 after about 3 s
+[ubuntu-gnutls-8.5.0] server-stderr: counts raw:/sink=12
+[current-8.23.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[current-8.23.0] server {"node":"v24.18.0","pid":3381,"http":"127.0.0.1:44865","raw":"127.0.0.1:44711","https":"127.0.0.1:42629","h2":"127.0.0.1:32809"}
+[current-8.23.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4
+[current-8.23.0] libcurl 8.23.0 OpenSSL/3.0.13
+[current-8.23.0] escape run=1 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[current-8.23.0] escape run=1 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[current-8.23.0] escape run=1 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[current-8.23.0] escape run=1 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[current-8.23.0] escape run=2 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[current-8.23.0] escape run=2 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[current-8.23.0] escape run=2 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[current-8.23.0] escape run=2 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[current-8.23.0] escape run=3 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[current-8.23.0] escape run=3 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[current-8.23.0] escape run=3 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[current-8.23.0] escape run=3 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[current-8.23.0] escape done
+[current-8.23.0] escape exited 0 after about 3 s
+[current-8.23.0] server-stderr: counts raw:/sink=12

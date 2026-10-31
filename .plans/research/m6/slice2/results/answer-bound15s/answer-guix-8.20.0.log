@@ -1,0 +1,487 @@
+[guix-8.20.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[guix-8.20.0] server {"node":"v24.18.0","pid":34,"http":"127.0.0.1:35457","raw":"127.0.0.1:41989","https":"127.0.0.1:43647","h2":"127.0.0.1:34311"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+[guix-8.20.0] libcurl 8.20.0 GnuTLS/3.8.13
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=sized asked=#t done-within-3s=#t done-ms=5.152 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=sized server: req raw POST /answer #1 conn=45640 at=360.5
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=sized server: answer raw conn=45640 sent 413 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=sized server: aborted raw /answer conn=45640 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=chunked asked=#t done-within-3s=#t done-ms=2.455 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=chunked server: req raw POST /answer #1 conn=45652 at=369.6
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=chunked server: answer raw conn=45652 sent 413 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=chunked server: aborted raw /answer conn=45652 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-head framing=sized asked=#t done-within-3s=#t done-ms=2.374 head-ms=2.322 head-status=413 status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-head framing=sized server: req raw POST /answer #1 conn=45682 at=376.1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-head framing=sized server: answer raw conn=45682 sent 413 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-head framing=sized server: aborted raw /answer conn=45682 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-head framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-head framing=chunked asked=#t done-within-3s=#t done-ms=2.348 head-ms=2.248 head-status=413 status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-head framing=chunked server: req raw POST /answer #1 conn=45688 at=380.8
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-head framing=chunked server: answer raw conn=45688 sent 413 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-head framing=chunked server: aborted raw /answer conn=45688 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-head framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-end framing=sized asked=#t done-within-3s=#t done-ms=2.149 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-end framing=sized server: req raw POST /answer #1 conn=45708 at=385.9
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-end framing=sized server: answer raw conn=45708 sent 413 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-end framing=sized server: aborted raw /answer conn=45708 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-end framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-end framing=chunked asked=#t done-within-3s=#t done-ms=2.123 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-end framing=chunked server: req raw POST /answer #1 conn=45730 at=390.2
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-end framing=chunked server: answer raw conn=45730 sent 413 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-end framing=chunked server: aborted raw /answer conn=45730 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=paused-end framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=giving framing=sized asked=#t done-within-3s=- done-ms=1.485 head-ms=- head-status=- status=413 version=http/1.1 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 10.777)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=giving framing=sized server: req raw POST /answer #1 conn=45752 at=394.9
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=giving framing=sized server: answer raw conn=45752 sent 413 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=giving framing=sized server: aborted raw /answer conn=45752 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=giving framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=giving framing=chunked asked=#t done-within-3s=- done-ms=1.495 head-ms=- head-status=- status=413 version=http/1.1 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 10.457)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=giving framing=chunked server: req raw POST /answer #1 conn=45774 at=409.7
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=giving framing=chunked server: answer raw conn=45774 sent 413 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=giving framing=chunked server: aborted raw /answer conn=45774 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413&close=1 mode=giving framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-rest framing=sized asked=#t done-within-3s=#t done-ms=2.109 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-rest framing=sized server: req raw POST /answer #1 conn=45802 at=421.9
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-rest framing=sized server: answer raw conn=45802 sent 413 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-rest framing=sized server: aborted raw /answer conn=45802 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-rest framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-rest framing=chunked asked=#t done-within-3s=#t done-ms=1.7 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-rest framing=chunked server: req raw POST /answer #1 conn=45820 at=424.8
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-rest framing=chunked server: answer raw conn=45820 sent 413 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-rest framing=chunked server: aborted raw /answer conn=45820 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-rest framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-head framing=sized asked=#t done-within-3s=#t done-ms=1.432 head-ms=1.389 head-status=413 status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-head framing=sized server: req raw POST /answer #1 conn=45832 at=428.1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-head framing=sized server: answer raw conn=45832 sent 413 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-head framing=sized server: aborted raw /answer conn=45832 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-head framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-head framing=chunked asked=#t done-within-3s=#t done-ms=1.557 head-ms=1.497 head-status=413 status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-head framing=chunked server: req raw POST /answer #1 conn=45850 at=431.5
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-head framing=chunked server: answer raw conn=45850 sent 413 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-head framing=chunked server: aborted raw /answer conn=45850 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-head framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-end framing=sized asked=#t done-within-3s=#t done-ms=1.375 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-end framing=sized server: req raw POST /answer #1 conn=45868 at=434.4
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-end framing=sized server: answer raw conn=45868 sent 413 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-end framing=sized server: aborted raw /answer conn=45868 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-end framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-end framing=chunked asked=#t done-within-3s=#t done-ms=1.458 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-end framing=chunked server: req raw POST /answer #1 conn=45886 at=437.3
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-end framing=chunked server: answer raw conn=45886 sent 413 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-end framing=chunked server: aborted raw /answer conn=45886 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=paused-end framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=giving framing=sized asked=#t done-within-3s=- done-ms=1.442 head-ms=- head-status=- status=413 version=http/1.1 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 10.501)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=giving framing=sized server: req raw POST /answer #1 conn=45906 at=440.1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=giving framing=sized server: answer raw conn=45906 sent 413 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=giving framing=sized server: aborted raw /answer conn=45906 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=giving framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=giving framing=chunked asked=#t done-within-3s=- done-ms=1.533 head-ms=- head-status=- status=413 version=http/1.1 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 10.543)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=giving framing=chunked server: req raw POST /answer #1 conn=45918 at=451.6
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=giving framing=chunked server: answer raw conn=45918 sent 413 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=giving framing=chunked server: aborted raw /answer conn=45918 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=413 mode=giving framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=sized asked=#t done-within-3s=#t done-ms=1.662 head-ms=- head-status=- status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=sized server: req raw POST /answer #1 conn=45936 at=463.4
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=sized server: answer raw conn=45936 sent 200 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=sized server: aborted raw /answer conn=45936 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=chunked asked=#t done-within-3s=#t done-ms=1.626 head-ms=- head-status=- status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=chunked server: req raw POST /answer #1 conn=45962 at=466.7
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=chunked server: answer raw conn=45962 sent 200 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=chunked server: aborted raw /answer conn=45962 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-head framing=sized asked=#t done-within-3s=#t done-ms=1.501 head-ms=1.448 head-status=200 status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-head framing=sized server: req raw POST /answer #1 conn=45976 at=470.9
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-head framing=sized server: answer raw conn=45976 sent 200 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-head framing=sized server: aborted raw /answer conn=45976 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-head framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-head framing=chunked asked=#t done-within-3s=#t done-ms=1.886 head-ms=1.811 head-status=200 status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-head framing=chunked server: req raw POST /answer #1 conn=45992 at=474.5
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-head framing=chunked server: answer raw conn=45992 sent 200 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-head framing=chunked server: aborted raw /answer conn=45992 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-head framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-end framing=sized asked=#t done-within-3s=#t done-ms=1.432 head-ms=- head-status=- status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-end framing=sized server: req raw POST /answer #1 conn=46004 at=477.9
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-end framing=sized server: answer raw conn=46004 sent 200 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-end framing=sized server: aborted raw /answer conn=46004 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-end framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-end framing=chunked asked=#t done-within-3s=#t done-ms=1.572 head-ms=- head-status=- status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-end framing=chunked server: req raw POST /answer #1 conn=46026 at=480.8
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-end framing=chunked server: answer raw conn=46026 sent 200 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-end framing=chunked server: aborted raw /answer conn=46026 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=paused-end framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=giving framing=sized asked=#t done-within-3s=- done-ms=1.402 head-ms=- head-status=- status=200 version=http/1.1 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 10.553)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=giving framing=sized server: req raw POST /answer #1 conn=46052 at=483.7
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=giving framing=sized server: answer raw conn=46052 sent 200 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=giving framing=sized server: aborted raw /answer conn=46052 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=giving framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=giving framing=chunked asked=#t done-within-3s=- done-ms=1.549 head-ms=- head-status=- status=200 version=http/1.1 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 10.506)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=giving framing=chunked server: req raw POST /answer #1 conn=46076 at=495.1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=giving framing=chunked server: answer raw conn=46076 sent 200 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=giving framing=chunked server: aborted raw /answer conn=46076 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200&close=1 mode=giving framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-rest framing=sized asked=#t done-within-3s=#f done-ms=3017.334 head-ms=- head-status=- status=200 version=http/1.1 committed=1000000 committed-before-end=1000000 handed=1000000 reads=37 pauses=16 resumes=16 resumes-before-done=16 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-rest framing=sized server: req raw POST /answer #1 conn=46082 at=507.0
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-rest framing=sized server: answer raw conn=46082 sent 200 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-rest framing=sized server: answer raw body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-rest framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-rest framing=chunked asked=#t done-within-3s=#f done-ms=3016.639 head-ms=- head-status=- status=200 version=http/1.1 committed=1000000 committed-before-end=1000000 handed=1000000 reads=44 pauses=13 resumes=13 resumes-before-done=13 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-rest framing=chunked server: req raw POST /answer #1 conn=55870 at=3526.7
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-rest framing=chunked server: answer raw conn=55870 sent 200 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-rest framing=chunked server: answer raw body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-rest framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-head framing=sized asked=#t done-within-3s=#f done-ms=3018.99 head-ms=1.528 head-status=200 status=200 version=http/1.1 committed=1000000 committed-before-end=1000000 handed=1000000 reads=33 pauses=16 resumes=16 resumes-before-done=16 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-head framing=sized server: req raw POST /answer #1 conn=55888 at=6545.6
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-head framing=sized server: answer raw conn=55888 sent 200 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-head framing=sized server: answer raw body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-head framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-head framing=chunked asked=#t done-within-3s=#f done-ms=3028.84 head-ms=2.357 head-status=200 status=200 version=http/1.1 committed=1000000 committed-before-end=1000000 handed=1000000 reads=42 pauses=14 resumes=14 resumes-before-done=14 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-head framing=chunked server: req raw POST /answer #1 conn=55900 at=9568.4
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-head framing=chunked server: answer raw conn=55900 sent 200 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-head framing=chunked server: answer raw body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-head framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-end framing=sized asked=#t done-within-3s=#f done-ms=3000.553 head-ms=- head-status=- failed reason=body-length-mismatch code=42 request-size=151 error="operation aborted by callback" committed=0 committed-before-end=0 handed=0 reads=2 pauses=1 resumes=1 resumes-before-done=1 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-end framing=sized server: req raw POST /answer #1 conn=45818 at=12598.6
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-end framing=sized server: answer raw conn=45818 sent 200 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-end framing=sized server: aborted raw /answer conn=45818 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-end framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-end framing=chunked asked=#t done-within-3s=#f done-ms=3001.079 head-ms=- head-status=- status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=2 pauses=1 resumes=1 resumes-before-done=1 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-end framing=chunked server: req raw POST /answer #1 conn=45824 at=15602.1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-end framing=chunked server: answer raw conn=45824 sent 200 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-end framing=chunked server: answer raw body read whole after the early answer: 0 bytes
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=paused-end framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=giving framing=sized asked=#t done-within-3s=- done-ms=627.577 head-ms=- head-status=- status=200 version=http/1.1 committed=1000000 committed-before-end=1000000 handed=1000000 reads=124 pauses=62 resumes=62 resumes-before-done=62 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=giving framing=sized server: req raw POST /answer #1 conn=45844 at=18606.1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=giving framing=sized server: answer raw conn=45844 sent 200 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=giving framing=sized server: answer raw body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=giving framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=giving framing=chunked asked=#t done-within-3s=- done-ms=629.898 head-ms=- head-status=- status=200 version=http/1.1 committed=1000000 committed-before-end=1000000 handed=1000000 reads=126 pauses=63 resumes=63 resumes-before-done=63 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=giving framing=chunked server: req raw POST /answer #1 conn=45856 at=19246.0
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=giving framing=chunked server: answer raw conn=45856 sent 200 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=giving framing=chunked server: answer raw body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=1 face=raw path=/answer?status=200 mode=giving framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-rest framing=sized asked=#t done-within-3s=#t done-ms=7.608 head-ms=- head-status=- status=413 version=http/2 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-rest framing=sized server: req h2 POST /answer #1 conn=51932 at=19881.5
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-rest framing=sized server: answer h2 conn=51932 sent 413 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-rest framing=sized server: aborted h2 /answer conn=51932 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-rest framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-rest framing=chunked asked=#t done-within-3s=#t done-ms=7.399 head-ms=- head-status=- status=413 version=http/2 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-rest framing=chunked server: req h2 POST /answer #1 conn=51948 at=19893.0
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-rest framing=chunked server: answer h2 conn=51948 sent 413 as the headers arrived, content-length -
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-rest framing=chunked server: aborted h2 /answer conn=51948 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-rest framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-head framing=sized asked=#t done-within-3s=#t done-ms=4.941 head-ms=4.909 head-status=413 status=413 version=http/2 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-head framing=sized server: req h2 POST /answer #1 conn=51962 at=19898.4
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-head framing=sized server: answer h2 conn=51962 sent 413 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-head framing=sized server: aborted h2 /answer conn=51962 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-head framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-head framing=chunked asked=#t done-within-3s=#t done-ms=4.26 head-ms=4.227 head-status=413 status=413 version=http/2 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-head framing=chunked server: req h2 POST /answer #1 conn=51976 at=19904.8
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-head framing=chunked server: answer h2 conn=51976 sent 413 as the headers arrived, content-length -
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-head framing=chunked server: aborted h2 /answer conn=51976 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-head framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-end framing=sized asked=#t done-within-3s=#t done-ms=4.696 head-ms=- head-status=- status=413 version=http/2 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-end framing=sized server: req h2 POST /answer #1 conn=51982 at=19910.4
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-end framing=sized server: answer h2 conn=51982 sent 413 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-end framing=sized server: aborted h2 /answer conn=51982 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-end framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-end framing=chunked asked=#t done-within-3s=#t done-ms=4.739 head-ms=- head-status=- status=413 version=http/2 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-end framing=chunked server: req h2 POST /answer #1 conn=51986 at=19916.7
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-end framing=chunked server: answer h2 conn=51986 sent 413 as the headers arrived, content-length -
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-end framing=chunked server: aborted h2 /answer conn=51986 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=paused-end framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=giving framing=sized asked=#t done-within-3s=- done-ms=4.2 head-ms=- head-status=- status=413 version=http/2 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 13.802)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=giving framing=sized server: req h2 POST /answer #1 conn=51996 at=19923.9
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=giving framing=sized server: answer h2 conn=51996 sent 413 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=giving framing=sized server: aborted h2 /answer conn=51996 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=giving framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=giving framing=chunked asked=#t done-within-3s=- done-ms=3.724 head-ms=- head-status=- status=413 version=http/2 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 13.75)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=giving framing=chunked server: req h2 POST /answer #1 conn=52008 at=19939.2
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=giving framing=chunked server: answer h2 conn=52008 sent 413 as the headers arrived, content-length -
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=giving framing=chunked server: aborted h2 /answer conn=52008 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=413 mode=giving framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-rest framing=sized asked=#t done-within-3s=#f done-ms=3015.068 head-ms=- head-status=- status=200 version=http/2 committed=1000000 committed-before-end=1000000 handed=1000000 reads=19 pauses=2 resumes=2 resumes-before-done=2 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-rest framing=sized server: req h2 POST /answer #1 conn=52024 at=19954.0
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-rest framing=sized server: answer h2 conn=52024 sent 200 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-rest framing=sized server: answer h2 body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-rest framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-rest framing=chunked asked=#t done-within-3s=#f done-ms=3015.761 head-ms=- head-status=- failed reason=perform-failed code=55 request-size=1000126 error=#f committed=1000000 committed-before-end=1000000 handed=1000000 reads=20 pauses=1 resumes=1 resumes-before-done=1 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-rest framing=chunked server: req h2 POST /answer #1 conn=51220 at=22974.7
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-rest framing=chunked server: answer h2 conn=51220 sent 200 as the headers arrived, content-length -
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-rest framing=chunked server: answer h2 body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-rest framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-head framing=sized asked=#t done-within-3s=#f done-ms=3014.108 head-ms=7.375 head-status=200 status=200 version=http/2 committed=1000000 committed-before-end=1000000 handed=1000000 reads=25 pauses=2 resumes=2 resumes-before-done=2 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-head framing=sized server: req h2 POST /answer #1 conn=51232 at=25992.1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-head framing=sized server: answer h2 conn=51232 sent 200 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-head framing=sized server: answer h2 body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-head framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-head framing=chunked asked=#t done-within-3s=#f done-ms=3020.512 head-ms=7.449 head-status=200 status=200 version=http/2 committed=1000000 committed-before-end=1000000 handed=1000000 reads=28 pauses=6 resumes=6 resumes-before-done=6 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-head framing=chunked server: req h2 POST /answer #1 conn=51246 at=29007.6
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-head framing=chunked server: answer h2 conn=51246 sent 200 as the headers arrived, content-length -
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-head framing=chunked server: answer h2 body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-head framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-end framing=sized asked=#t done-within-3s=#f done-ms=3007.138 head-ms=- head-status=- failed reason=body-length-mismatch code=42 request-size=148 error="operation aborted by callback" committed=0 committed-before-end=0 handed=0 reads=2 pauses=1 resumes=1 resumes-before-done=1 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-end framing=sized server: req h2 POST /answer #1 conn=48876 at=32029.6
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-end framing=sized server: answer h2 conn=48876 sent 200 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-end framing=sized server: aborted h2 /answer conn=48876 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-end framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-end framing=chunked asked=#t done-within-3s=#f done-ms=3007.303 head-ms=- head-status=- failed reason=perform-failed code=55 request-size=125 error=#f committed=0 committed-before-end=0 handed=0 reads=2 pauses=1 resumes=1 resumes-before-done=1 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-end framing=chunked server: req h2 POST /answer #1 conn=48888 at=35040.0
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-end framing=chunked server: answer h2 conn=48888 sent 200 as the headers arrived, content-length -
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-end framing=chunked server: answer h2 body read whole after the early answer: 0 bytes
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=paused-end framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=giving framing=sized asked=#t done-within-3s=- done-ms=627.321 head-ms=- head-status=- failed reason=perform-failed code=55 request-size=999568 error=#f committed=1000000 committed-before-end=1000000 handed=1000000 reads=124 pauses=62 resumes=62 resumes-before-done=62 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=giving framing=sized server: req h2 POST /answer #1 conn=48902 at=38050.7
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=giving framing=sized server: answer h2 conn=48902 sent 200 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=giving framing=sized server: answer h2 body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=giving framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=giving framing=chunked asked=#t done-within-3s=- done-ms=638.287 head-ms=- head-status=- failed reason=perform-failed code=55 request-size=1000121 error=#f committed=1000000 committed-before-end=1000000 handed=1000000 reads=126 pauses=63 resumes=63 resumes-before-done=63 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=giving framing=chunked server: req h2 POST /answer #1 conn=48910 at=38689.9
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=giving framing=chunked server: answer h2 conn=48910 sent 200 as the headers arrived, content-length -
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=giving framing=chunked server: answer h2 body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=1 face=h2 path=/answer?status=200 mode=giving framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=sized asked=#t done-within-3s=#t done-ms=2.565 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=sized server: req raw POST /answer #1 conn=35492 at=39328.1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=sized server: answer raw conn=35492 sent 413 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=sized server: aborted raw /answer conn=35492 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=chunked asked=#t done-within-3s=#t done-ms=2.139 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=chunked server: req raw POST /answer #1 conn=35514 at=39333.3
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=chunked server: answer raw conn=35514 sent 413 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=chunked server: aborted raw /answer conn=35514 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-rest framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-head framing=sized asked=#t done-within-3s=#t done-ms=1.976 head-ms=1.872 head-status=413 status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-head framing=sized server: req raw POST /answer #1 conn=35538 at=39337.7
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-head framing=sized server: answer raw conn=35538 sent 413 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-head framing=sized server: aborted raw /answer conn=35538 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-head framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-head framing=chunked asked=#t done-within-3s=#t done-ms=2.211 head-ms=2.054 head-status=413 status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-head framing=chunked server: req raw POST /answer #1 conn=35564 at=39341.4
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-head framing=chunked server: answer raw conn=35564 sent 413 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-head framing=chunked server: aborted raw /answer conn=35564 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-head framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-end framing=sized asked=#t done-within-3s=#t done-ms=1.856 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-end framing=sized server: req raw POST /answer #1 conn=35584 at=39344.8
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-end framing=sized server: answer raw conn=35584 sent 413 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-end framing=sized server: aborted raw /answer conn=35584 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-end framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-end framing=chunked asked=#t done-within-3s=#t done-ms=1.804 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-end framing=chunked server: req raw POST /answer #1 conn=35606 at=39348.2
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-end framing=chunked server: answer raw conn=35606 sent 413 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-end framing=chunked server: aborted raw /answer conn=35606 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=paused-end framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=giving framing=sized asked=#t done-within-3s=- done-ms=1.558 head-ms=- head-status=- status=413 version=http/1.1 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 10.498)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=giving framing=sized server: req raw POST /answer #1 conn=35632 at=39351.1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=giving framing=sized server: answer raw conn=35632 sent 413 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=giving framing=sized server: aborted raw /answer conn=35632 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=giving framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=giving framing=chunked asked=#t done-within-3s=- done-ms=1.504 head-ms=- head-status=- status=413 version=http/1.1 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 10.494)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=giving framing=chunked server: req raw POST /answer #1 conn=35658 at=39363.0
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=giving framing=chunked server: answer raw conn=35658 sent 413 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=giving framing=chunked server: aborted raw /answer conn=35658 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413&close=1 mode=giving framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-rest framing=sized asked=#t done-within-3s=#t done-ms=1.572 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-rest framing=sized server: req raw POST /answer #1 conn=35688 at=39373.6
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-rest framing=sized server: answer raw conn=35688 sent 413 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-rest framing=sized server: aborted raw /answer conn=35688 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-rest framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-rest framing=chunked asked=#t done-within-3s=#t done-ms=1.459 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-rest framing=chunked server: req raw POST /answer #1 conn=35698 at=39376.4
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-rest framing=chunked server: answer raw conn=35698 sent 413 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-rest framing=chunked server: aborted raw /answer conn=35698 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-rest framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-head framing=sized asked=#t done-within-3s=#t done-ms=1.395 head-ms=1.354 head-status=413 status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-head framing=sized server: req raw POST /answer #1 conn=35716 at=39379.3
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-head framing=sized server: answer raw conn=35716 sent 413 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-head framing=sized server: aborted raw /answer conn=35716 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-head framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-head framing=chunked asked=#t done-within-3s=#t done-ms=1.764 head-ms=1.721 head-status=413 status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-head framing=chunked server: req raw POST /answer #1 conn=35732 at=39382.4
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-head framing=chunked server: answer raw conn=35732 sent 413 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-head framing=chunked server: aborted raw /answer conn=35732 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-head framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-end framing=sized asked=#t done-within-3s=#t done-ms=1.505 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-end framing=sized server: req raw POST /answer #1 conn=35738 at=39385.2
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-end framing=sized server: answer raw conn=35738 sent 413 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-end framing=sized server: aborted raw /answer conn=35738 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-end framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-end framing=chunked asked=#t done-within-3s=#t done-ms=1.434 head-ms=- head-status=- status=413 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-end framing=chunked server: req raw POST /answer #1 conn=35762 at=39388.0
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-end framing=chunked server: answer raw conn=35762 sent 413 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-end framing=chunked server: aborted raw /answer conn=35762 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=paused-end framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=giving framing=sized asked=#t done-within-3s=- done-ms=1.428 head-ms=- head-status=- status=413 version=http/1.1 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 10.502)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=giving framing=sized server: req raw POST /answer #1 conn=35778 at=39390.8
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=giving framing=sized server: answer raw conn=35778 sent 413 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=giving framing=sized server: aborted raw /answer conn=35778 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=giving framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=giving framing=chunked asked=#t done-within-3s=- done-ms=1.519 head-ms=- head-status=- status=413 version=http/1.1 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 10.742)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=giving framing=chunked server: req raw POST /answer #1 conn=35786 at=39402.2
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=giving framing=chunked server: answer raw conn=35786 sent 413 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=giving framing=chunked server: aborted raw /answer conn=35786 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=413 mode=giving framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=sized asked=#t done-within-3s=#t done-ms=1.634 head-ms=- head-status=- status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=sized server: req raw POST /answer #1 conn=35808 at=39413.9
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=sized server: answer raw conn=35808 sent 200 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=sized server: aborted raw /answer conn=35808 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=chunked asked=#t done-within-3s=#t done-ms=1.659 head-ms=- head-status=- status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=chunked server: req raw POST /answer #1 conn=35834 at=39417.1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=chunked server: answer raw conn=35834 sent 200 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=chunked server: aborted raw /answer conn=35834 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-rest framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-head framing=sized asked=#t done-within-3s=#t done-ms=1.445 head-ms=1.399 head-status=200 status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-head framing=sized server: req raw POST /answer #1 conn=35838 at=39419.8
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-head framing=sized server: answer raw conn=35838 sent 200 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-head framing=sized server: aborted raw /answer conn=35838 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-head framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-head framing=chunked asked=#t done-within-3s=#t done-ms=1.457 head-ms=1.405 head-status=200 status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-head framing=chunked server: req raw POST /answer #1 conn=35862 at=39422.7
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-head framing=chunked server: answer raw conn=35862 sent 200 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-head framing=chunked server: aborted raw /answer conn=35862 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-head framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-end framing=sized asked=#t done-within-3s=#t done-ms=1.443 head-ms=- head-status=- status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-end framing=sized server: req raw POST /answer #1 conn=35888 at=39425.6
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-end framing=sized server: answer raw conn=35888 sent 200 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-end framing=sized server: aborted raw /answer conn=35888 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-end framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-end framing=chunked asked=#t done-within-3s=#t done-ms=1.651 head-ms=- head-status=- status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-end framing=chunked server: req raw POST /answer #1 conn=35900 at=39428.6
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-end framing=chunked server: answer raw conn=35900 sent 200 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-end framing=chunked server: aborted raw /answer conn=35900 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=paused-end framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=giving framing=sized asked=#t done-within-3s=- done-ms=1.428 head-ms=- head-status=- status=200 version=http/1.1 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 10.497)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=giving framing=sized server: req raw POST /answer #1 conn=35920 at=39431.5
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=giving framing=sized server: answer raw conn=35920 sent 200 as the head arrived, framing length cl=1000000, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=giving framing=sized server: aborted raw /answer conn=35920 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=giving framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=giving framing=chunked asked=#t done-within-3s=- done-ms=1.424 head-ms=- head-status=- status=200 version=http/1.1 committed=16384 committed-before-end=16384 handed=0 reads=1 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 10.496)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=giving framing=chunked server: req raw POST /answer #1 conn=35942 at=39442.9
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=giving framing=chunked server: answer raw conn=35942 sent 200 as the head arrived, framing chunked cl=-, then FIN
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=giving framing=chunked server: aborted raw /answer conn=35942 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200&close=1 mode=giving framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-rest framing=sized asked=#t done-within-3s=#f done-ms=3019.572 head-ms=- head-status=- status=200 version=http/1.1 committed=1000000 committed-before-end=1000000 handed=1000000 reads=34 pauses=17 resumes=17 resumes-before-done=17 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-rest framing=sized server: req raw POST /answer #1 conn=35954 at=39454.2
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-rest framing=sized server: answer raw conn=35954 sent 200 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-rest framing=sized server: answer raw body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-rest framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-rest framing=chunked asked=#t done-within-3s=#f done-ms=3018.714 head-ms=- head-status=- status=200 version=http/1.1 committed=1000000 committed-before-end=1000000 handed=1000000 reads=46 pauses=15 resumes=15 resumes-before-done=15 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-rest framing=chunked server: req raw POST /answer #1 conn=34698 at=42477.4
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-rest framing=chunked server: answer raw conn=34698 sent 200 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-rest framing=chunked server: answer raw body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-rest framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-head framing=sized asked=#t done-within-3s=#f done-ms=3019.251 head-ms=2.227 head-status=200 status=200 version=http/1.1 committed=1000000 committed-before-end=1000000 handed=1000000 reads=32 pauses=15 resumes=15 resumes-before-done=15 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-head framing=sized server: req raw POST /answer #1 conn=34710 at=45499.7
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-head framing=sized server: answer raw conn=34710 sent 200 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-head framing=sized server: answer raw body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-head framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-head framing=chunked asked=#t done-within-3s=#f done-ms=3017.174 head-ms=1.611 head-status=200 status=200 version=http/1.1 committed=1000000 committed-before-end=1000000 handed=1000000 reads=46 pauses=15 resumes=15 resumes-before-done=15 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-head framing=chunked server: req raw POST /answer #1 conn=34734 at=48520.9
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-head framing=chunked server: answer raw conn=34734 sent 200 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-head framing=chunked server: answer raw body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-head framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-end framing=sized asked=#t done-within-3s=#f done-ms=3000.967 head-ms=- head-status=- failed reason=body-length-mismatch code=42 request-size=151 error="operation aborted by callback" committed=0 committed-before-end=0 handed=0 reads=2 pauses=1 resumes=1 resumes-before-done=1 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-end framing=sized server: req raw POST /answer #1 conn=34766 at=51541.6
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-end framing=sized server: answer raw conn=34766 sent 200 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-end framing=sized server: aborted raw /answer conn=34766 head+0 body bytes, then the connection closed
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-end framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-end framing=chunked asked=#t done-within-3s=#f done-ms=3000.81 head-ms=- head-status=- status=200 version=http/1.1 committed=0 committed-before-end=0 handed=0 reads=2 pauses=1 resumes=1 resumes-before-done=1 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-end framing=chunked server: req raw POST /answer #1 conn=37328 at=54545.4
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-end framing=chunked server: answer raw conn=37328 sent 200 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-end framing=chunked server: answer raw body read whole after the early answer: 0 bytes
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=paused-end framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=giving framing=sized asked=#t done-within-3s=- done-ms=621.099 head-ms=- head-status=- status=200 version=http/1.1 committed=1000000 committed-before-end=1000000 handed=1000000 reads=124 pauses=62 resumes=62 resumes-before-done=62 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=giving framing=sized server: req raw POST /answer #1 conn=37334 at=57547.2
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=giving framing=sized server: answer raw conn=37334 sent 200 as the head arrived, framing length cl=1000000, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=giving framing=sized server: answer raw body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=giving framing=sized server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=giving framing=chunked asked=#t done-within-3s=- done-ms=632.648 head-ms=- head-status=- status=200 version=http/1.1 committed=1000000 committed-before-end=1000000 handed=1000000 reads=126 pauses=63 resumes=63 resumes-before-done=63 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=giving framing=chunked server: req raw POST /answer #1 conn=37358 at=58181.3
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=giving framing=chunked server: answer raw conn=37358 sent 200 as the head arrived, framing chunked cl=-, keep-alive
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=giving framing=chunked server: answer raw body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=2 face=raw path=/answer?status=200 mode=giving framing=chunked server: count raw:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-rest framing=sized asked=#t done-within-3s=#t done-ms=5.304 head-ms=- head-status=- status=413 version=http/2 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-rest framing=sized server: req h2 POST /answer #1 conn=49178 at=58818.1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-rest framing=sized server: answer h2 conn=49178 sent 413 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-rest framing=sized server: aborted h2 /answer conn=49178 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-rest framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-rest framing=chunked asked=#t done-within-3s=#t done-ms=5.868 head-ms=- head-status=- status=413 version=http/2 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-rest framing=chunked server: req h2 POST /answer #1 conn=49188 at=58825.8
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-rest framing=chunked server: answer h2 conn=49188 sent 413 as the headers arrived, content-length -
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-rest framing=chunked server: aborted h2 /answer conn=49188 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-rest framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-head framing=sized asked=#t done-within-3s=#t done-ms=7.887 head-ms=7.799 head-status=413 status=413 version=http/2 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-head framing=sized server: req h2 POST /answer #1 conn=49190 at=58836.5
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-head framing=sized server: answer h2 conn=49190 sent 413 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-head framing=sized server: aborted h2 /answer conn=49190 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-head framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-head framing=chunked asked=#t done-within-3s=#t done-ms=4.658 head-ms=4.594 head-status=413 status=413 version=http/2 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-head framing=chunked server: req h2 POST /answer #1 conn=49198 at=58842.7
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-head framing=chunked server: answer h2 conn=49198 sent 413 as the headers arrived, content-length -
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-head framing=chunked server: aborted h2 /answer conn=49198 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-head framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-end framing=sized asked=#t done-within-3s=#t done-ms=4.888 head-ms=- head-status=- status=413 version=http/2 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-end framing=sized server: req h2 POST /answer #1 conn=49208 at=58850.2
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-end framing=sized server: answer h2 conn=49208 sent 413 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-end framing=sized server: aborted h2 /answer conn=49208 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-end framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-end framing=chunked asked=#t done-within-3s=#t done-ms=4.731 head-ms=- head-status=- status=413 version=http/2 committed=0 committed-before-end=0 handed=0 reads=1 pauses=1 resumes=0 resumes-before-done=0 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-end framing=chunked server: req h2 POST /answer #1 conn=49222 at=58856.3
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-end framing=chunked server: answer h2 conn=49222 sent 413 as the headers arrived, content-length -
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-end framing=chunked server: aborted h2 /answer conn=49222 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=paused-end framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=giving framing=sized asked=#t done-within-3s=- done-ms=4.259 head-ms=- head-status=- status=413 version=http/2 committed=16384 committed-before-end=16384 handed=16384 reads=2 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 13.826)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=giving framing=sized server: req h2 POST /answer #1 conn=49228 at=58863.8
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=giving framing=sized server: answer h2 conn=49228 sent 413 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=giving framing=sized server: aborted h2 /answer conn=49228 head+16384 body bytes, then the stream closed
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=giving framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=giving framing=chunked asked=#t done-within-3s=- done-ms=4.369 head-ms=- head-status=- status=413 version=http/2 committed=16384 committed-before-end=16384 handed=16384 reads=2 pauses=1 resumes=1 resumes-before-done=1 put-answers=((16384 done 13.834)) after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=giving framing=chunked server: req h2 POST /answer #1 conn=49238 at=58880.2
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=giving framing=chunked server: answer h2 conn=49238 sent 413 as the headers arrived, content-length -
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=giving framing=chunked server: aborted h2 /answer conn=49238 head+16384 body bytes, then the stream closed
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=413 mode=giving framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-rest framing=sized asked=#t done-within-3s=#f done-ms=3010.412 head-ms=- head-status=- failed reason=perform-failed code=55 request-size=983189 error=#f committed=1000000 committed-before-end=1000000 handed=1000000 reads=28 pauses=1 resumes=1 resumes-before-done=1 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-rest framing=sized server: req h2 POST /answer #1 conn=49250 at=58895.5
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-rest framing=sized server: answer h2 conn=49250 sent 200 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-rest framing=sized server: answer h2 body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-rest framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-rest framing=chunked asked=#t done-within-3s=#f done-ms=3014.57 head-ms=- head-status=- status=200 version=http/2 committed=1000000 committed-before-end=1000000 handed=1000000 reads=25 pauses=3 resumes=3 resumes-before-done=3 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-rest framing=chunked server: req h2 POST /answer #1 conn=44910 at=61910.3
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-rest framing=chunked server: answer h2 conn=44910 sent 200 as the headers arrived, content-length -
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-rest framing=chunked server: answer h2 body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-rest framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-head framing=sized asked=#t done-within-3s=#f done-ms=3012.852 head-ms=7.632 head-status=200 status=200 version=http/2 committed=1000000 committed-before-end=1000000 handed=1000000 reads=19 pauses=1 resumes=1 resumes-before-done=1 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-head framing=sized server: req h2 POST /answer #1 conn=44912 at=64928.6
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-head framing=sized server: answer h2 conn=44912 sent 200 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-head framing=sized server: answer h2 body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-head framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-head framing=chunked asked=#t done-within-3s=#f done-ms=3023.176 head-ms=4.539 head-status=200 failed reason=perform-failed code=55 request-size=1000126 error=#f committed=1000000 committed-before-end=1000000 handed=1000000 reads=35 pauses=15 resumes=15 resumes-before-done=15 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-head framing=chunked server: req h2 POST /answer #1 conn=44916 at=67941.2
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-head framing=chunked server: answer h2 conn=44916 sent 200 as the headers arrived, content-length -
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-head framing=chunked server: answer h2 body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-head framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-end framing=sized asked=#t done-within-3s=#f done-ms=3004.021 head-ms=- head-status=- failed reason=body-length-mismatch code=42 request-size=148 error="operation aborted by callback" committed=0 committed-before-end=0 handed=0 reads=2 pauses=1 resumes=1 resumes-before-done=1 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-end framing=sized server: req h2 POST /answer #1 conn=44918 at=70967.9
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-end framing=sized server: answer h2 conn=44918 sent 200 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-end framing=sized server: aborted h2 /answer conn=44918 head+0 body bytes, then the stream closed
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-end framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-end framing=chunked asked=#t done-within-3s=#f done-ms=3004.068 head-ms=- head-status=- failed reason=perform-failed code=55 request-size=125 error=#f committed=0 committed-before-end=0 handed=0 reads=2 pauses=1 resumes=1 resumes-before-done=1 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-end framing=chunked server: req h2 POST /answer #1 conn=50960 at=73975.2
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-end framing=chunked server: answer h2 conn=50960 sent 200 as the headers arrived, content-length -
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-end framing=chunked server: answer h2 body read whole after the early answer: 0 bytes
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=paused-end framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=giving framing=sized asked=#t done-within-3s=- done-ms=628.361 head-ms=- head-status=- failed reason=perform-failed code=55 request-size=999568 error=#f committed=1000000 committed-before-end=1000000 handed=1000000 reads=124 pauses=62 resumes=62 resumes-before-done=62 put-answers=() after-done-put=done after-done-room-wait=done ended=#f
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=giving framing=sized server: req h2 POST /answer #1 conn=50970 at=76984.7
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=giving framing=sized server: answer h2 conn=50970 sent 200 as the headers arrived, content-length 1000000
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=giving framing=sized server: answer h2 body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=giving framing=sized server: count h2:/answer=1
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=giving framing=chunked asked=#t done-within-3s=- done-ms=635.87 head-ms=- head-status=- failed reason=perform-failed code=55 request-size=1000121 error=#f committed=1000000 committed-before-end=1000000 handed=1000000 reads=126 pauses=63 resumes=63 resumes-before-done=63 put-answers=() after-done-put=done after-done-room-wait=done ended=#t
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=giving framing=chunked server: req h2 POST /answer #1 conn=50976 at=77622.5
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=giving framing=chunked server: answer h2 conn=50976 sent 200 as the headers arrived, content-length -
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=giving framing=chunked server: answer h2 body read whole after the early answer: 1000000 bytes
+[guix-8.20.0] answer run=2 face=h2 path=/answer?status=200 mode=giving framing=chunked server: count h2:/answer=1
+[guix-8.20.0] answer done
+[guix-8.20.0] answer exited 0 after about 78 s
+[guix-8.20.0] server-stderr: counts h2:/answer=32 raw:/answer=64

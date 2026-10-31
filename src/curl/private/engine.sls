@@ -153,7 +153,11 @@
           curl-engine-arm-late-message! curl-engine-late-message
           curl-token-stream-stats call-with-stream-held curl-token-plant! curl-token-gate
           curl-token-open-gate! curl-token-plant-stall! curl-token-stall-state
-          curl-engine-probe-turns! curl-engine-probe)
+          curl-engine-probe-turns! curl-engine-probe
+          curl-token-room-wait curl-token-put-piece! curl-token-end-body! curl-token-body-count
+          curl-token-upload-stats call-with-upload-held make-curl-engine-reusing
+          make-curl-engine-rewinding curl-token-plant-put! make-curl-engine-stalling-completion
+          make-curl-engine-holding-prereq curl-engine-prereq-holds)
   (import (curl private require-threaded)
           (rnrs)
           (only (chezscheme) critical-section disable-interrupts enable-interrupts fork-thread
@@ -249,8 +253,14 @@
   ;; other test seam. Then, from M6 (the plan's section 3.4): its seams, a
   ;; list, empty but for a test seam's, of unpaced, which turns the paced
   ;; poll off, unmultiplexed, which sets CURLMOPT_PIPELINING to 0 on any
-  ;; libcurl, and (pause-answer . CODE), a CURLcode its thread takes in
-  ;; place of curl_easy_pause's answer; its counter of callables' calls that
+  ;; libcurl, (pause-answer . CODE), a CURLcode its thread takes in
+  ;; place of curl_easy_pause's answer, reusing, which leaves FRESH_CONNECT
+  ;; off a streamed body, rewinding, which lets its seek callable
+  ;; answer OK once bytes were handed, (completion-stall . MS), a
+  ;; sleep between a finished transfer's outcome and its completion, and
+  ;; (prereq-hold . HOLD) beside (prereq-holds . COUNT), the hold a
+  ;; streamed body's prerequest callable makes at its first attempt and
+  ;; the count of those made; its counter of callables' calls that
   ;; took bytes, a vector of one natural its thread alone writes and reads;
   ;; and, under the mutex, whether its multi handle multiplexes, default or
   ;; off, #f until its thread decides; the paced sleeps it has made; the
@@ -607,6 +617,73 @@
   ;; the setting by behaviour (ADR-0030, amended 2026-10-29).
   (define (make-curl-engine-unmultiplexed) (start-engine #f '() #f '(unmultiplexed)))
 
+  ;; make-curl-engine-reusing : -> Engine
+  ;; make-curl-engine's, but a streamed body's transfer leaves FRESH_CONNECT
+  ;; off, so it may go on a pooled connection: a test seam, private, so the
+  ;; test can watch the seek callable refuse libcurl's resend on a dead one
+  ;; (ADR-0032, amended). No request reaches it: FRESH_CONNECT is owned.
+  (define (make-curl-engine-reusing) (start-engine #f '() #f '(reusing)))
+
+  ;; make-curl-engine-rewinding : -> Engine
+  ;; make-curl-engine-reusing's, and its seek callable answers OK for an
+  ;; offset of 0 from SEEK_SET once bytes were handed too: a test seam,
+  ;; private, which puts libcurl's resend in front of the prerequest
+  ;; callable on every libcurl (ADR-0032, amended).
+  (define (make-curl-engine-rewinding) (start-engine #f '() #f '(reusing rewinding)))
+
+  ;; make-curl-engine-stalling-completion : Positive-Integer -> Engine
+  ;; make-curl-engine's, but its thread sleeps MS milliseconds between
+  ;; reading each finished transfer's outcome and completing its token: a
+  ;; test seam, private, so a test can put on a token whose request stream
+  ;; has closed but which is not yet done (completion-stall!).
+  (define (make-curl-engine-stalling-completion ms)
+    (unless (and (integer? ms) (exact? ms) (positive? ms))
+      (assertion-violation 'make-curl-engine-stalling-completion "a stall is a positive exact integer of milliseconds" ms))
+    (start-engine #f '() #f (list (cons 'completion-stall ms))))
+
+  ;; make-curl-engine-holding-prereq : Positive-Integer -> Engine
+  ;; make-curl-engine's, but a streamed body's prerequest callable, at its
+  ;; transfer's first attempt, once connected and before the request is
+  ;; sent, sleeps MS milliseconds, then answers as it would: a test seam,
+  ;; private, which stands for this thread paused there, by a collection
+  ;; say, so that an answer written as the connection is accepted lands
+  ;; before the request leaves; the head's body-asked bit then reads #f on
+  ;; 7.85.0 and 8.5.0, which stop sending once they read it (M6 slice 2's
+  ;; measurement). The sleep is HOLD, (prereq-hold . HOLD) in its seams,
+  ;; which the callable calls outside its upload's hold. It is safe there:
+  ;; the callable runs on this engine's thread, inside curl_multi_perform,
+  ;; which the engine's turn calls outside every critical section and hold;
+  ;; so it holds no mutex, and no caller's put, take or await waits on it,
+  ;; for each polls in holds of its own; and with interrupts on, which HOLD
+  ;; checks first, Chez's sleep deactivates the thread, so other threads'
+  ;; collections go on meanwhile. The thread takes no message while it
+  ;; sleeps, as completion-stall! does, and runs no caller code. Each hold
+  ;; made is counted, under a mutex of its own taken after the sleep, for
+  ;; curl-engine-prereq-holds.
+  (define (make-curl-engine-holding-prereq ms)
+    (unless (and (integer? ms) (exact? ms) (positive? ms))
+      (assertion-violation 'make-curl-engine-holding-prereq "a hold is a positive exact integer of milliseconds" ms))
+    (let ((count (vector (make-mutex) 0)))
+      (start-engine #f '() #f
+                    (list (cons 'prereq-hold
+                                (lambda ()
+                                  (require-interrupts-on 'make-curl-engine-holding-prereq)
+                                  (sleep (make-time 'time-duration (* (mod ms 1000) 1000000) (div ms 1000)))
+                                  (locked (vector-ref count 0)
+                                    (lambda () (vector-set! count 1 (+ (vector-ref count 1) 1))))))
+                          (cons 'prereq-holds count)))))
+
+  ;; curl-engine-prereq-holds : Engine -> Natural
+  ;; How many holds ENGINE's prerequest seam has made: 0 for an engine
+  ;; without it. A private accessor, so a test sees the hold was made where
+  ;; it holds, and never on a caller's engine.
+  (define (curl-engine-prereq-holds engine)
+    (let ((seam (find (lambda (seam) (and (pair? seam) (eq? (car seam) 'prereq-holds)))
+                      (engine-seams engine))))
+      (if seam
+          (let ((count (cdr seam))) (locked (vector-ref count 0) (lambda () (vector-ref count 1))))
+          0)))
+
   ;; make-curl-engine-answering-pause : Integer -> Engine
   ;; make-curl-engine's, but its thread takes CODE, a CURLcode, in place of
   ;; curl_easy_pause's answer at every resume, after making the call: a test
@@ -939,6 +1016,171 @@
   (define (curl-token-stall-state token)
     (stream-stall-state (token-stream 'curl-token-stall-state token)))
 
+  ;; --- the request stream (ADR-0030; the M6 plan, sections 3.3 to 3.5) -------------------
+
+  ;; token-upload : Symbol Any -> Upload
+  ;; TOKEN's request stream; a token whose request does not stream its body
+  ;; is an assertion violation from WHO, as is what is no token.
+  (define (token-upload who token)
+    (check-token who token)
+    (or (plan-upload (curl-token-plan token))
+        (assertion-violation who "the token's request does not stream its body: give it body stream"
+                             token)))
+
+  ;; token-done? : Engine Token -> Boolean
+  ;; Whether TOKEN is done, read in a hold of ENGINE's mutex.
+  (define (token-done? engine token)
+    (locked (curl-engine-lock engine) (lambda () (eq? (token-state token) 'done))))
+
+  ;; queue-resume! : Engine Token -> Void
+  ;; The queueing hold: a resume for TOKEN, while it is live and its engine
+  ;; runs, with the wakeup, in one hold of ENGINE's mutex. Its callers make
+  ;; it inside the critical section of the stream hold that decided it, one
+  ;; hold after the other, never nested (the M6 plan, section 3.4).
+  (define (queue-resume! engine token)
+    (locked (curl-engine-lock engine)
+      (lambda ()
+        (when (and (eq? (token-state token) 'live) (eq? (engine-state engine) 'running))
+          (curl-engine-queue-set! engine (cons (cons 'resume token) (curl-engine-queue engine)))
+          (curl-multi-wakeup (engine-multi engine))))))
+
+  ;; curl-token-room-wait : Token Natural -> (U #t #f 'done)
+  ;; #t once libcurl has asked for TOKEN's body and the request's buffer
+  ;; has room; done once TOKEN is done, read first; #f once MS milliseconds
+  ;; pass (the M6 plan, section 3.1). It waits as await does, polling, and
+  ;; refuses to wait inside a critical section; each read holds the
+  ;; engine's mutex, then the stream's, the lock order. A token whose
+  ;; request does not stream its body is an assertion violation.
+  (define (curl-token-room-wait token ms)
+    (let* ((who 'curl-token-room-wait)
+           (up (token-upload who token))
+           (deadline (deadline-after who ms)))
+      (wait-until who (curl-token-engine-lock token)
+                  (lambda ()
+                    (cond ((eq? (token-state token) 'done) 'done)
+                          ((upload-room? up) #t)
+                          (else #f)))
+                  deadline)))
+
+  ;; curl-token-put-piece! : Token Bytevector [Natural] -> (U #t #f 'done)
+  ;; PIECE, a bytevector of a byte or more, copied first, so the caller
+  ;; keeps it, then put into TOKEN's request buffer, waiting while that
+  ;; holds upload-buffer-limit bytes or more, at most MS milliseconds when
+  ;; given: #t once taken; #f once MS pass; done once TOKEN is done, the
+  ;; piece not taken (the M6 plan, sections 3.1 and 3.3). Each try is one
+  ;; critical section of up to three holds, one after another: the
+  ;; engine's, whether TOKEN is done; the stream's, which commits the piece
+  ;; with its resume decision, so a handler that escapes as the section
+  ;; ends leaves it committed, and curl-token-body-count counts it (section
+  ;; 3.5); and the engine's again, to queue the resume. A piece that would
+  ;; take the body past its body-length raises &curl-request-error,
+  ;; body-length-mismatch, naming body-length and the length, the piece
+  ;; not taken, once the refusal is set and a resume queued, so the read
+  ;; callable fails the transfer with that reason, or, once libcurl reads
+  ;; no more, the transfer's outcome does (reason-of), unless another reason
+  ;; came first; it is checked before the room. Once the engine's thread
+  ;; has read the outcome, or freed the transfer, a put takes nothing: it
+  ;; waits, as for room, until TOKEN is done, and answers done, or #f once
+  ;; MS pass, so a done always finds TOKEN's outcome there. A put after
+  ;; curl-token-end-body! on a live token is an assertion violation; on a
+  ;; token done it answers done, and on a closed request stream it waits,
+  ;; then answers done.
+  ;; A wait sleeps between tries, refused inside a critical section, as
+  ;; every wait. A token whose request does not stream its body, and what
+  ;; is no piece, are assertion violations, before anything.
+  (define curl-token-put-piece!
+    (case-lambda
+      ((token piece) (put-piece token piece #f))
+      ((token piece ms) (put-piece token piece ms))))
+
+  ;; put-piece : Token Any (U Natural #f) -> (U #t #f 'done)
+  (define (put-piece token piece ms)
+    (let* ((who 'curl-token-put-piece!)
+           (up (token-upload who token))
+           (deadline (and ms (deadline-after who ms))))
+      (unless (and (bytevector? piece) (> (bytevector-length piece) 0))
+        (assertion-violation who "a piece is a bytevector of a byte or more" piece))
+      (let ((copy (bytevector-copy piece)) (engine (curl-token-engine token)))
+        (let loop ((pause 50000))
+          (let* ((answer (critical-section
+                          (if (token-done? engine token)
+                              '(done #f)
+                              (let ((answer (upload-put! up copy (monotonic-ns))))
+                                (when (cadr answer) (queue-resume! engine token))
+                                answer))))
+                 (seen (car answer)))
+            ;; The split plant's commit, a test seam's, after the section.
+            (when (pair? (cddr answer)) (upload-split-commit! up (caddr answer) copy))
+            (case seen
+              ((taken) #t)
+              ((done) 'done)
+              ((refused)
+               (let ((length (plan-body-length (curl-token-plan token))))
+                 (raise (condition (make-curl-request-error 'body-length length 'body-length-mismatch)
+                                   (make-who-condition who)
+                                   (make-message-condition
+                                    "a piece past the streamed body's body-length, not taken: the transfer fails, with body-length-mismatch unless another reason came first")
+                                   (make-irritants-condition (list length (bytevector-length copy)))))))
+              ((ended)
+               (assertion-violation who "the token's body has ended: curl-token-end-body! was called" token))
+              (else
+               ;; full, or closed: the request stream closed as the engine's
+               ;; thread read the outcome, the token not yet done; either
+               ;; waits, and the next try that finds TOKEN done answers done.
+               (let ((left (and deadline (- deadline (monotonic-ns)))))
+                 (if (and left (<= left 0))
+                     #f
+                     (begin
+                       (require-interrupts-on who)
+                       (sleep (make-time 'time-duration (if left (min pause left) pause) 0))
+                       (loop (min (* pause 2) 10000000))))))))))))
+
+  ;; curl-token-end-body! : Token -> Void
+  ;; TOKEN's body's end, in one critical section: nothing on a token done,
+  ;; or a second time; else the end set, and a resume queued when the
+  ;; transfer is paused for sending and none is (the M6 plan, section 3.3).
+  ;; The read callable then answers the end, or, short of the body-length,
+  ;; fails the transfer with body-length-mismatch. A token whose request
+  ;; does not stream its body is an assertion violation.
+  (define (curl-token-end-body! token)
+    (let* ((up (token-upload 'curl-token-end-body! token)) (engine (curl-token-engine token)))
+      (critical-section
+       (unless (token-done? engine token)
+         (when (upload-end! up (monotonic-ns)) (queue-resume! engine token))))
+      (if #f #f)))
+
+  ;; curl-token-body-count : Token -> Natural
+  ;; The bytes TOKEN's puts have committed (the M6 plan, section 3.5): a
+  ;; caller that caught an escape from a put reads here whether it was
+  ;; taken. A token whose request does not stream its body is an
+  ;; assertion violation.
+  (define (curl-token-body-count token)
+    (upload-count (token-upload 'curl-token-body-count token)))
+
+  ;; curl-token-upload-stats : Token -> (Listof (Pairof Symbol Any))
+  ;; upload-stats of TOKEN's request stream: a private accessor.
+  (define (curl-token-upload-stats token)
+    (upload-stats (token-upload 'curl-token-upload-stats token)))
+
+  ;; curl-token-plant-put! : Token (U #f 'split) -> Void
+  ;; A test seam, private: the plant TOKEN's next puts meet: split, a put
+  ;; that commits its piece after its section, in two plain writes with a
+  ;; loop between, the timer sweep's planted control (the M6 plan, section
+  ;; 3.5); #f, none, the put's own path.
+  (define (curl-token-plant-put! token plant)
+    (let ((up (token-upload 'curl-token-plant-put! token)))
+      (unless (memq plant '(#f split))
+        (assertion-violation 'curl-token-plant-put! "a put's plant is #f or split" plant))
+      (upload-plant-split! up (eq? plant 'split))))
+
+  ;; call-with-upload-held : Token (-> Any) -> Any
+  ;; THUNK's answer, run holding TOKEN's request stream's mutex, through
+  ;; locked, so a put on another thread blocks inside its critical
+  ;; section: a test seam, private, as call-with-stream-held is the take's.
+  ;; THUNK must not touch TOKEN's engine, whose mutex comes first.
+  (define (call-with-upload-held token thunk)
+    (locked (upload-lock (token-upload 'call-with-upload-held token)) thunk))
+
   ;; --- the mailbox (ADR-0021) ------------------------------------------------------------
 
   ;; make-curl-mailbox : -> Mailbox
@@ -1143,11 +1385,15 @@
   ;; message, while a transfer is paused and no callable took a byte since
   ;; the turn began, is followed by a sleep of 1 ms, unless the test seam
   ;; turned it off. Ubuntu's 8.5.0 spins otherwise (ADR-0012, amended
-  ;; 2026-10-29). While the probe, a test seam, has turns left, each turn
-  ;; that reaches the poll wakes it first, and records what it decided.
+  ;; 2026-10-29). While the probe, a test seam, has turns left as a turn
+  ;; begins, that turn wakes its poll first, if it reaches it, and records
+  ;; what it decided.
   (define (turns engine multi)
     (let turn ()
       (let* ((moved (vector-ref (engine-moves engine) 0))
+             ;; Read before the take: a probe armed after it would count
+             ;; a turn whose batch took no mark of the seam's.
+             (probed (probing? engine))
              (messages (take-queue! engine)))
         (if (assq 'stop messages)
             (shut-down! engine multi messages)
@@ -1172,8 +1418,7 @@
               (read-finished! engine multi)
               (unless (locked (curl-engine-lock engine) (lambda () (pair? (curl-engine-queue engine))))
                 (unless (live-empty? engine) (fault-at! engine 'poll))
-                (let* ((probed (probing? engine))
-                       (woken (and probed (begin (curl-multi-wakeup multi) #t)))
+                (let* ((woken (and probed (begin (curl-multi-wakeup multi) #t)))
                        (before (monotonic-ns))
                        (code (curl-multi-poll multi 1000))
                        (after (monotonic-ns))
@@ -1193,21 +1438,22 @@
               (turn))))))
 
   ;; any-paused? : Engine -> Boolean
-  ;; Whether a live transfer of ENGINE's is paused for receiving: each
-  ;; stream's bit read in a hold of its own, after the table's.
+  ;; Whether a live transfer of ENGINE's is paused, for receiving or for
+  ;; sending: each transfer's bits read in a hold of its own, after the
+  ;; table's (the M6 plan, section 3.4).
   (define (any-paused? engine)
-    (exists (lambda (keyed)
-              (let ((stream (live-transfer-stream (cddr keyed))))
-                (and stream (stream-paused? stream))))
+    (exists (lambda (keyed) (live-transfer-paused? (cddr keyed)))
             (live-entries engine)))
 
   ;; resume! : Engine Positive-Integer Token -> Boolean
   ;; The resume step for TOKEN, while it is live (the M6 plan, section
-  ;; 3.4; ADR-0012, amended 2026-10-29): in one hold of its stream's mutex,
-  ;; the receive bit and the resume's flag cleared; then, holding no mutex
+  ;; 3.4; ADR-0012, amended 2026-10-29): in one hold of its streams' one
+  ;; mutex, both bits, the receive bit and the send bit, and the resume's
+  ;; flag cleared; then, holding no mutex
   ;; and outside any critical section, curl_easy_pause with CURLPAUSE_CONT,
   ;; inside which the callables take what libcurl held, and pause again,
-  ;; setting the bit, for what they cannot take. An answer but 0, or the
+  ;; setting the bit, for what they cannot take; the read callable runs at
+  ;; the next perform, never inside the call (the M6 plan, section 2.2). An answer but 0, or the
   ;; test seam's in its place, fails the transfer by resume-failure, a
   ;; reason a callable recorded winning over pause-failed, and takes it out.
   ;; #t once carried out. A token taken out since its resume was queued,
@@ -1215,26 +1461,48 @@
   ;; #f.
   (define (resume! engine multi token)
     (let* ((live (token-live token))
-           (easy (and live (live-transfer-easy live)))
-           (stream (and live (live-transfer-stream live))))
-      (if (not (and easy stream))
+           (easy (and live (live-transfer-easy live))))
+      (if (not (and easy (or (live-transfer-stream live) (live-transfer-upload live))))
           (begin
             (locked (curl-engine-lock engine)
               (lambda () (engine-passed-set! engine (+ (engine-passed engine) 1))))
             #f)
           (begin
             (fault-at! engine 'resume)
-            (let* ((queued (stream-clear-pause! stream))
+            (let* ((queued (clear-pauses! live))
                    (called (monotonic-ns))
                    (answer (curl-easy-pause easy curlpause-cont))
-                   (seam (assq 'pause-answer (engine-seams engine)))
+                   (seam (pause-answer-seam engine))
                    (code (if seam (cdr seam) answer)))
-              (stream-resumed! stream queued called)
+              (resumed! live queued called)
               (unless (eqv? code curle-ok)
                 (let* ((outcome (guard (e (#t e)) (resume-failure live code)))
                        (chunks (take-out! engine multi token)))
                   (complete! engine token outcome chunks)))
               #t)))))
+
+  ;; completion-stall! : Engine -> Void
+  ;; The completion's test seam: with ENGINE's (completion-stall . MS), its
+  ;; thread sleeps MS milliseconds between reading a finished transfer's
+  ;; outcome and completing its token, holding nothing, so a test can catch
+  ;; a token whose outcome is read, its request stream closed, and not yet
+  ;; done. Without it, nothing.
+  (define (completion-stall! engine)
+    (let ((seam (find (lambda (seam) (and (pair? seam) (eq? (car seam) 'completion-stall)))
+                      (engine-seams engine))))
+      (when seam
+        (let ((ms (cdr seam)))
+          (sleep (make-time 'time-duration (* (mod ms 1000) 1000000) (div ms 1000)))))))
+
+  ;; pause-answer-seam : Engine -> (U (Pairof 'pause-answer Integer) #f)
+  ;; ENGINE's (pause-answer . CODE) seam, or #f. Its seams hold symbols
+  ;; and pairs alike, unpaced and unmultiplexed beside it, so each is
+  ;; looked at as what it is: assq raised "improperly formed alist" on a
+  ;; bare symbol, and those engines failed at their first resume (M6 slice
+  ;; 2's measurement).
+  (define (pause-answer-seam engine)
+    (find (lambda (seam) (and (pair? seam) (eq? (car seam) 'pause-answer)))
+          (engine-seams engine)))
 
   ;; queue-late! : Engine -> Void
   ;; The look's test seam: once armed, a mark queued from this thread, with
@@ -1297,7 +1565,8 @@
       (let ((live (guard (e (#t (complete! engine token e '()) #f))
                     (start-transfer! (curl-token-plan token)
                                      (not (memq 'transfer (engine-without engine)))
-                                     (engine-moves engine)))))
+                                     (engine-moves engine)
+                                     (engine-seams engine)))))
         (when live
           (token-live-set! token live)
           (locked (curl-engine-lock engine)
@@ -1351,6 +1620,7 @@
                 (fault-at! engine 'read)
                 (let* ((token (car entry))
                        (outcome (guard (e (#t e)) (finish-transfer (cdr entry) (caddr message))))
+                       (_ (completion-stall! engine))
                        (chunks (take-out! engine multi token)))
                   (complete! engine token outcome chunks)))))
           (drain)))))

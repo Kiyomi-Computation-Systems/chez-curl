@@ -1,6 +1,6 @@
 # ADR-0009: A typed escape hatch for unwrapped options, in the low level only
 
-- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built; amended 2026-10-27, the hatch, measured, decided and built (M4 slice 4); amended 2026-10-27, the Mac's runs; amended 2026-10-30, the header callable's options are owned (M6 slice 1)
+- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built; amended 2026-10-27, the hatch, measured, decided and built (M4 slice 4); amended 2026-10-27, the Mac's runs; amended 2026-10-30, the header callable's options are owned (M6 slice 1); amended 2026-10-31, a streamed body's options are owned (M6 slice 2)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, `(curl ...)` only
 - **Settles:** D3 (brief §10)
@@ -429,3 +429,15 @@ options, so the hatch refuses each as `owned-option`, on every request, beside `
 and `WRITEDATA`. Either is a callback pointer, which the hatch's types never took; owned, its
 refusal names the reason. Slice 2 owns the read, seek and prerequest callables' options the
 same way.
+
+## Amendment, 2026-10-31: a streamed body's options are owned (M6 slice 2)
+
+A request whose body streams sets `READFUNCTION`, `READDATA`, `SEEKFUNCTION`, `SEEKDATA`,
+`PREREQFUNCTION` and `PREREQDATA` to its callables and the transfer's key, and `FRESH_CONNECT`
+to 1 (the M6 plan, §3.3; ADR-0032, amended). Each is the `body` field's option, so the hatch
+refuses each as `owned-option`, on every request, a whole body's too: `FRESH_CONNECT` is no
+longer the hatch's to set. `INFILE`, `READDATA`'s alias, shares its id and is refused with it.
+The method field's options gain `POST` and `UPLOAD`, which a streamed `post`, `patch` or
+`delete` and a streamed `put` set, and `body-length` sets `INFILESIZE_LARGE` for a streamed
+`put`; the three leave the twins' list. `test-unsupported` and `test-transfer` write each out.
+

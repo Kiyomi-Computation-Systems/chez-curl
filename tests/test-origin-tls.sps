@@ -426,18 +426,30 @@
 ;; and :authority are literals without indexing of static names 4 and 1, 0x04
 ;; and 0x01; every other pair a literal without indexing of a new name, 0x00.
 (define (request scheme method path headers body)
-  (let ((block (join (append
-                      (list (u8-list->bytevector (list (if (string=? method "GET") #x82 #x83)
-                                                       (if (string=? scheme "http") #x86 #x87)
-                                                       #x04))
-                            (hpack-text path)
-                            #vu8(#x01)
-                            (hpack-text "localhost"))
-                      (map (lambda (pair) (join (list #vu8(#x00) (hpack-text (car pair)) (hpack-text (cdr pair)))))
-                           headers)))))
+  (let ((block (request-block scheme method path headers)))
     (join (append (list preface (frame SETTINGS 0 0 #vu8())
                         (frame HEADERS (if body END-HEADERS (+ END-HEADERS END-STREAM)) 1 block))
                   (if body (list (frame DATA END-STREAM 1 (octets body))) '())))))
+
+;; request-block : String String String (Listof (Pair String String)) -> Bytevector
+;; The HPACK block of request's HEADERS frame.
+(define (request-block scheme method path headers)
+  (join (append
+         (list (u8-list->bytevector (list (if (string=? method "GET") #x82 #x83)
+                                          (if (string=? scheme "http") #x86 #x87)
+                                          #x04))
+               (hpack-text path)
+               #vu8(#x01)
+               (hpack-text "localhost"))
+         (map (lambda (pair) (join (list #vu8(#x00) (hpack-text (car pair)) (hpack-text (cdr pair)))))
+              headers))))
+
+;; h2-start : String String String (Listof (Pair String String)) -> Bytevector
+;; As request with a body, up to its DATA: the preface, an empty SETTINGS
+;; frame, and the HEADERS frame, END_HEADERS alone, leaving stream 1 open.
+(define (h2-start scheme method path headers)
+  (join (list preface (frame SETTINGS 0 0 #vu8())
+              (frame HEADERS END-HEADERS 1 (request-block scheme method path headers)))))
 
 ;; answer : Bytevector (U String #f) -> Bytevector
 ;; What the origin sends back on stream 1, after its SETTINGS and the ACK of
@@ -604,6 +616,399 @@
 ;; A partial ClientHello: a TLS handshake record's header, then the start of
 ;; a ClientHello that says it is longer.
 (define partial-client-hello #vu8(#x16 #x03 #x01 #x00 #xc8 #x01 #x00 #x00 #xc4 #x03 #x03))
+
+;; --- the sinks' summaries (the M6 plan, slice 2) -----------------------------
+;; This suite's own copy of test-origin.sps's: a summary line holds times,
+;; which no run can fix, the G of gap=G@B and each list entry's T. shape
+;; writes each as ~ once it is a time as the origin writes one, so a test
+;; asserts the rest of the line, and the response around it, whole, and
+;; judges the times by bounds.
+
+;; digit? : Char -> Boolean
+(define (digit? c) (and (char<=? #\0 c) (char<=? c #\9)))
+
+;; time? : String -> Boolean
+;; Whether TEXT is ms to one decimal: digits, no leading zero but a lone 0,
+;; a dot, one digit.
+(define (time? text)
+  (let ((n (string-length text)))
+    (and (>= n 3)
+         (char=? (string-ref text (- n 2)) #\.)
+         (digit? (string-ref text (- n 1)))
+         (for-all digit? (string->list (substring text 0 (- n 2))))
+         (or (= n 3) (not (char=? (string-ref text 0) #\0))))))
+
+;; tenths : String -> Integer
+(define (tenths text)
+  (let ((n (string-length text)))
+    (+ (* 10 (string->number (substring text 0 (- n 2)))) (string->number (substring text (- n 1) n)))))
+
+;; split-text : String Char -> (Listof String)
+(define (split-text text sep)
+  (let loop ((i 0) (start 0) (pieces '()))
+    (cond ((= i (string-length text)) (reverse (cons (substring text start i) pieces)))
+          ((char=? (string-ref text i) sep) (loop (+ i 1) (+ i 1) (cons (substring text start i) pieces)))
+          (else (loop (+ i 1) start pieces)))))
+
+;; join-text : (Listof String) String -> String
+(define (join-text pieces sep)
+  (if (null? pieces)
+      ""
+      (fold-left (lambda (joined piece) (string-append joined sep piece)) (car pieces) (cdr pieces))))
+
+;; shape : String -> (List String (Listof String))
+;; A summary line TEXT with the G of its gap=G@B and the T of each of its
+;; list's T:N as ~, each one time? takes, and those times, in order.
+(define (shape text)
+  (let ((times '()))
+    (define (timed t)
+      (if (time? t) (begin (set! times (cons t times)) "~") t))
+    (define (each-in-order proc items)
+      (let loop ((rest items) (done '()))
+        (if (null? rest) (reverse done) (let ((d (proc (car rest)))) (loop (cdr rest) (cons d done))))))
+    (let ((shaped
+           (each-in-order
+            (lambda (word)
+              (cond ((starts? "gap=" word)
+                     (let ((parts (split-text (substring word 4 (string-length word)) #\@)))
+                       (if (= (length parts) 2) (string-append "gap=" (timed (car parts)) "@" (cadr parts)) word)))
+                    ((starts? "list=" word)
+                     (string-append
+                      "list="
+                      (join-text (each-in-order
+                                  (lambda (entry)
+                                    (let ((parts (split-text entry #\:)))
+                                      (if (= (length parts) 2) (string-append (timed (car parts)) ":" (cadr parts)) entry)))
+                                  (split-text (substring word 5 (string-length word)) #\,))
+                                 ",")))
+                    (else word)))
+            (split-text text #\space))))
+      (list (join-text shaped " ") (reverse times)))))
+
+;; fill : String (Listof String) -> String
+;; TEMPLATE with each ~ the next of TIMES, while they last.
+(define (fill template times)
+  (let loop ((chars (string->list template)) (times times) (out '()))
+    (cond ((null? chars) (list->string (reverse out)))
+          ((and (char=? (car chars) #\~) (pair? times))
+           (loop (cdr chars) (cdr times) (append (reverse (string->list (car times))) out)))
+          (else (loop (cdr chars) times (cons (car chars) out))))))
+
+;; shape-response : String -> (List String (Listof String))
+;; A whole HTTP/1.1 response TEXT, its head's Content-Length line written
+;; Content-Length: L when it is the body's length, and its body shaped; and
+;; the body's times.
+(define (shape-response text)
+  (let ((at (let loop ((i 0))
+              (cond ((> (+ i 4) (string-length text)) #f)
+                    ((string=? (substring text i (+ i 4)) "\r\n\r\n") i)
+                    (else (loop (+ i 1)))))))
+    (if (not at)
+        (list text '())
+        (let* ((body (substring text (+ at 4) (string-length text)))
+               (length-line (string-append "Content-Length: " (number->string (string-length body))))
+               ;; Each line but the last keeps its CR.
+               (lines (map (lambda (line)
+                             (cond ((string=? line length-line) "Content-Length: L")
+                                   ((string=? line (string-append length-line "\r")) "Content-Length: L\r")
+                                   (else line)))
+                           (split-text (substring text 0 at) #\newline)))
+               (shaped (shape body)))
+          (list (string-append (join-text lines "\n") "\r\n\r\n" (car shaped)) (cadr shaped))))))
+
+;; sink-exchange : Origin Symbol String Natural (U #f List) -> List
+;; TEXT sent to FACE, as exchange sends it: the response shaped, how the
+;; connection ended, and the response's times.
+(define (sink-exchange o face text idle tls)
+  (let ((got (exchange o face text idle tls)))
+    (if (eq? (car got) 'raised)
+        got
+        (let ((shaped (shape-response (car got))))
+          (list (car shaped) (cadr got) (cadr shaped))))))
+
+;; split-probe : Origin Symbol Bytevector Natural Natural Natural (Listof String) -> Probe
+;; The probe, with OPTIONS and --split OFFSET:MS, against FACE: BYTES' first
+;; OFFSET, then, MS ms after the kernel took them, the rest. It raises when
+;; the probe does not exit 0, or parse-wire-probe refuses its output.
+(define (split-probe o face bytes offset ms idle options)
+  (let* ((f (origin-face o face))
+         (answer (capture-command
+                  (append (list node "tests/wire-probe.mjs") options
+                          (list "--split" (string-append (number->string offset) ":" (number->string ms))
+                                (car f) (number->string (cdr f)) (hex bytes) (number->string idle))))))
+    (unless (= (car answer) 0) (error 'split-probe "the probe did not exit 0" answer))
+    (parse-wire-probe (cadr answer))))
+
+;; post : String String ... -> String
+(define (post target . headers)
+  (apply string-append "POST " target " HTTP/1.1\r\nHost: 127.0.0.1\r\n" (append headers (list "\r\n"))))
+
+;; digit-code : Char -> (Pair Natural Natural)
+;; A decimal digit's HPACK Huffman code (RFC 7541, appendix B), as its bits
+;; and their value: 0 to 2 are 5 bits, 00000 to 00010, and 3 to 9 six,
+;; 011001 to 011111.
+(define (digit-code c)
+  (let ((d (- (char->integer c) 48)))
+    (if (< d 3) (cons 5 d) (cons 6 (+ 22 d)))))
+
+;; huffman-digits : String -> Bytevector
+;; TEXT, decimal digits, in HPACK's Huffman code, the last byte padded with
+;; 1 bits.
+(define (huffman-digits text)
+  (let loop ((chars (string->list text)) (value 0) (bits 0))
+    (if (null? chars)
+        (let* ((pad (mod (- 8 (mod bits 8)) 8))
+               (all (+ (* value (expt 2 pad)) (- (expt 2 pad) 1)))
+               (n (div (+ bits pad) 8)))
+          (let collect ((j 0) (bytes '()))
+            (if (= j n)
+                (u8-list->bytevector (reverse bytes))
+                (collect (+ j 1) (cons (mod (div all (expt 256 (- n 1 j))) 256) bytes)))))
+        (let ((code (digit-code (car chars))))
+          (loop (cdr chars) (+ (* value (expt 2 (car code))) (cdr code)) (+ bits (car code)))))))
+
+;; content-length-field : Natural -> Bytevector
+;; content-length N as nghttp2 writes it: static name 28 without indexing,
+;; 0x0f 0x0d, then the digits, Huffman-coded only when that is shorter, as
+;; measured on Node 20.10.0 and 24.18.0: 600 is 0x82 0x70 0x00, and 11, 164,
+;; 165, 166 and 167 are their digits as they are.
+(define (content-length-field n)
+  (let* ((digits (number->string n))
+         (huffman (huffman-digits digits)))
+    (if (< (bytevector-length huffman) (string-length digits))
+        (join (list #vu8(#x0f #x0d) (u8-list->bytevector (list (+ #x80 (bytevector-length huffman)))) huffman))
+        (join (list #vu8(#x0f #x0d) (u8-list->bytevector (list (string-length digits))) (octets digits))))))
+
+;; h2-sink : Bytevector String -> (List String (U Symbol List) Natural)
+;; From BYTES a probe got for one sink request on stream 1: its DATA, the
+;; summary, shaped; whether BYTES are whole the answer that summary makes,
+;; :status 200 and its content-length, then the summary, with TEMPLATE's ~
+;; each of the summary's times in turn; and how many times it held.
+(define (h2-sink bytes template)
+  (let* ((data (assv 1 (data-by-stream bytes)))
+         (shaped (shape (if data (cdr data) "")))
+         (body (fill template (cadr shaped)))
+         (want (answer (join (list #vu8(#x88) (content-length-field (string-length body)))) body)))
+    (list (car shaped)
+          (if (bytevector=? want bytes) 'whole-frames (list 'frames (hex bytes) 'want (hex want)))
+          (length (cadr shaped)))))
+
+;; The SHA-256 values, computed on the host (sha256sum, and Python's
+;; hashlib, agreeing), never by the origin.
+(define sha-p10 "1f825aa2f0020ef7cf91dfa30da4668d791c5d4824fc8e41354b89ec05795ab3")
+(define sha-p10-bad7 "140d0e63c9a8ee404243d667825bb70b26fdb28e3dbed1daef57f17fe12fc931")
+(define sha-abcdefg "7d1a54127b222502f5b79b5fb0803061152a44f92b37e23c6527baf665d4da9a")
+(define sha-body "230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5")
+
+;; seen-text : Natural -> (List String Symbol)
+;; An HTTP/1.1 face's answer to /seen with Connection: close.
+(define (seen-text c)
+  (let ((body (string-append "seen " (number->string c) "\n")))
+    (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: " (number->string (string-length body))
+                         "\r\nConnection: close\r\n\r\n" body)
+          'eof)))
+
+;; h2-seen : Natural -> (List String Symbol)
+;; An HTTP/2 face's answer to /seen as h2-exchange reads it: content-length
+;; 7, its one digit as it is.
+(define (h2-seen c)
+  (list (hex (answer #vu8(#x88 #x0f #x0d 1 #x37) (string-append "seen " (number->string c) "\n"))) 'eof))
+
+(define h2-not-found (lambda () (list (hex (answer #vu8(#x8d #x0f #x0d 2 #x31 #x30) "not found\n")) 'eof)))
+
+(define (sink-scenarios o)
+  (define p10 (pattern-text 10))
+  (define bad7 (string-append (substring p10 0 7) "x" (substring p10 8 10)))
+  (define not-found-close
+    '("HTTP/1.1 404 Not Found\r\nContent-Length: 10\r\nConnection: close\r\n\r\nnot found\n" eof))
+
+  ;; --- https: /sink and /seen over TLS, and the routes it does not serve
+  (test-equal "https /sink: 10 bytes, byte 7 an x: the summary, sink https, pattern=bad@7, one arrival, then eof; /seen then reads 1"
+    (list (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: L\r\nConnection: close\r\n\r\n"
+                               "sink https method=POST cl=10 te=- expect=- ct=- bytes=10 sha256=" sha-p10-bad7
+                               " pattern=bad@7 arrivals=1 gap=~@0 seen=1\n")
+                'eof 1)
+          (seen-text 1))
+    (let* ((r (sink-exchange o 'https (string-append (post "/sink?key=ts-https" "Content-Length: 10\r\n" close) bad7)
+                             2000 http1-tls))
+           (seen (exchange o 'https (get "/seen?key=ts-https" close) 2000 http1-tls)))
+      (list (if (= (length r) 3) (list (car r) (cadr r) (length (caddr r))) r) seen)))
+  (test-equal "https: /close-after is http's alone, and /answer and /refuse HTTP/2's: each 404, the refuse counting nothing"
+    (list not-found-close not-found-close not-found-close (seen-text 0))
+    (let* ((a (exchange o 'https (get "/close-after?then=fin" close) 2000 http1-tls))
+           (b (exchange o 'https (get "/answer?status=200" close) 2000 http1-tls))
+           (c (exchange o 'https (get "/refuse?key=ts-https-refuse&at=0" close) 2000 http1-tls))
+           (d (exchange o 'https (get "/seen?key=ts-https-refuse" close) 2000 http1-tls)))
+      (list a b c d)))
+
+  ;; --- raw-tls: /raw/sink and /raw/answer over TLS. The probe's one write
+  ;; is one TLS record, one data event, the head's.
+  (test-equal "raw-tls /raw/sink, 10 bytes of the pattern: the summary, sink raw-tls, one arrival at 0.0 ms, then eof; HTTP/2's /seen reads its count"
+    (list (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: L\r\nConnection: close\r\n\r\n"
+                               "sink raw-tls method=POST cl=10 te=- expect=- ct=- bytes=10 sha256=" sha-p10
+                               " pattern=ok arrivals=1 gap=~@0 seen=1\n")
+                'eof '("0.0"))
+          (h2-seen 1))
+    (let* ((r (sink-exchange o 'raw-tls (string-append (post "/raw/sink?key=ts-rawtls" "Content-Length: 10\r\n") p10)
+                             2000 http1-tls))
+           (seen (h2-exchange o 'h2 (request "https" "GET" "/seen?key=ts-rawtls" '() #f) h2-tls)))
+      (list r seen)))
+  (test-equal "raw-tls /raw/answer?status=413&close=1, a body after its head: the answer, Connection: close, then eof"
+    '("HTTP/1.1 413 Answer\r\nContent-Length: 11\r\nConnection: close\r\n\r\nanswer 413\n" eof)
+    (exchange o 'raw-tls (string-append (post "/raw/answer?status=413&close=1" "Content-Length: 10\r\n") p10) 2000 http1-tls))
+
+  ;; --- HTTP/2, on h2c and h2. Each answer's HEADERS, measured on Node
+  ;; 20.10.0 and 24.18.0, which agree: :status 200 0x88; :status 413 and
+  ;; 599 a literal with incremental indexing of static name 8, 0x48, then
+  ;; the three digits as they are, 0x03 and them, Huffman being no shorter;
+  ;; content-length as content-length-field writes it.
+  (for-each
+   (lambda (face scheme tls options)
+     (define (named what) (string-append (symbol->string face) " " what))
+     (define (key what) (string-append (symbol->string face) "-" what))
+     (define (half-closed bytes)
+       (parameterize ((wire-probe-tls tls)) (wire-probe-half-close o face bytes 2000)))
+     (test-equal (named "POST /sink?list=1, 7 bytes in one DATA frame, with a Content-Type: the summary, whole frames, its one arrival listed, then eof")
+       (list (string-append "sink " (symbol->string face) " method=POST cl=7 te=- expect=- ct=text/plain;_charset=x bytes=7 sha256="
+                            sha-abcdefg " pattern=bad@0 arrivals=1 gap=~@0 seen=1 list=~:7\n")
+             'whole-frames 2 'eof)
+       (guard (e (#t (list 'raised (describe e))))
+         (let ((p (half-closed (request scheme "POST" (string-append "/sink?key=" (key "one") "&list=1")
+                                        '(("content-length" . "7") ("content-type" . "text/plain; charset=x"))
+                                        "abcdefg"))))
+           (append (h2-sink (probe-bytes p) (string-append "sink " (symbol->string face) " method=POST cl=7 te=- expect=- ct=text/plain;_charset=x bytes=7 sha256="
+                                                           sha-abcdefg " pattern=bad@0 arrivals=1 gap=~@0 seen=1 list=~:7\n"))
+                   (list (probe-end p))))))
+     (test-equal (named "GET /seen: 1 for the key /sink counted, and 0 for one never counted")
+       (list (h2-seen 1) (h2-seen 0))
+       (let* ((one (h2-exchange o face (request scheme "GET" (string-append "/seen?key=" (key "one")) '() #f) tls))
+              (never (h2-exchange o face (request scheme "GET" (string-append "/seen?key=" (key "never")) '() #f) tls)))
+         (list one never)))
+     ;; DATA of 3 bytes, then, 300 ms on, DATA of 4 that ends the stream: the
+     ;; longest wait is before the second, 3 bytes in; half the split, as a
+     ;; lower bound.
+     ;; The first DATA's event comes a little after the headers', so G, the
+     ;; wait before the second, is the second's time less the first's.
+     (test-equal (named "POST /sink?list=1, its DATA split 3 then 4 bytes, 300 ms apart: two arrivals, gap=G@3, G the second's time less the first's, 150 ms or more")
+       (list (string-append "sink " (symbol->string face) " method=POST cl=7 te=- expect=- ct=- bytes=7 sha256="
+                            sha-abcdefg " pattern=bad@0 arrivals=2 gap=~@3 seen=1 list=~:3,~:4\n")
+             'whole-frames 3 'eof 'gap-between-the-two 'gap-long-enough)
+       (guard (e (#t (list 'raised (describe e))))
+         (let* ((template (string-append "sink " (symbol->string face) " method=POST cl=7 te=- expect=- ct=- bytes=7 sha256="
+                                         sha-abcdefg " pattern=bad@0 arrivals=2 gap=~@3 seen=1 list=~:3,~:4\n"))
+                (first (join (list (h2-start scheme "POST" (string-append "/sink?key=" (key "gap") "&list=1")
+                                             '(("content-length" . "7")))
+                                   (frame DATA 0 1 (octets "abc")))))
+                (p (split-probe o face (join (list first (frame DATA END-STREAM 1 (octets "defg"))))
+                                (bytevector-length first) 300 2000 (cons "--half-close" options)))
+                (data (assv 1 (data-by-stream (probe-bytes p))))
+                (times (cadr (shape (if data (cdr data) "")))))
+           (append (h2-sink (probe-bytes p) template)
+                   (list (probe-end p)
+                         (if (and (= (length times) 3)
+                                  (= (tenths (car times)) (- (tenths (caddr times)) (tenths (cadr times)))))
+                             'gap-between-the-two (list 'times times))
+                         (if (and (= (length times) 3) (>= (tenths (car times)) 1500)) 'gap-long-enough
+                             (list 'times times)))))))
+     ;; The answer's frames end before the body is sent, 300 ms on, and the
+     ;; stream stays open for it: the probe's half-close, after the body,
+     ;; ends the connection.
+     (test-equal (named "POST /answer?status=413, its HEADERS without END_STREAM: the answer, whole frames, before its DATA is sent 300 ms on; eof only after")
+       (list (list (hex (answer #vu8(#x48 #x03 #x34 #x31 #x33 #x0f #x0d 2 #x31 #x31) "answer 413\n")) 'eof)
+             'answered-before 'ended-after)
+       (guard (e (#t (list 'raised (describe e))))
+         (let* ((first (h2-start scheme "POST" "/answer?status=413" '(("content-length" . "5"))))
+                (p (split-probe o face (join (list first (frame DATA END-STREAM 1 (octets "hello"))))
+                                (bytevector-length first) 300 2000 (cons "--half-close" options)))
+                (last (arrival (probe-arrivals p) (- (bytevector-length (probe-bytes p)) 1))))
+           (list (list (hex (probe-bytes p)) (probe-end p))
+                 (if (and last (< (- last (probe-connected p)) 300)) 'answered-before
+                     (list 'connected (probe-connected p) 'last last))
+                 (if (>= (- (probe-ended p) (probe-connected p)) 300) 'ended-after
+                     (list 'connected (probe-connected p) 'ended (probe-ended p)))))))
+     ;; 204 carries no body and no content-length, as /status's does.
+     (test-equal (named "GET /answer: 200 and 599 with content-length and answer S, 204 its HEADERS alone, ending the stream")
+       (list (list (hex (answer #vu8(#x88 #x0f #x0d 2 #x31 #x31) "answer 200\n")) 'eof)
+             (list (hex (answer #vu8(#x48 #x03 #x35 #x39 #x39 #x0f #x0d 2 #x31 #x31) "answer 599\n")) 'eof)
+             (list (hex (answer #vu8(#x89) #f)) 'eof))
+       (let* ((a (h2-exchange o face (request scheme "GET" "/answer?status=200" '() #f) tls))
+              (b (h2-exchange o face (request scheme "GET" "/answer?status=599" '() #f) tls))
+              (c (h2-exchange o face (request scheme "GET" "/answer?status=204" '() #f) tls)))
+         (list a b c)))
+     ;; RST_STREAM on stream 1, its code REFUSED_STREAM, 7, and nothing else
+     ;; for the stream; then the next request for the key is read whole and
+     ;; answered as /sink, the second counted.
+     (test-equal (named "POST /refuse?at=0, its HEADERS alone: RST_STREAM REFUSED_STREAM on stream 1 and nothing else, then eof; the key's next request answered as /sink, seen=2")
+       (list (list (hex (join (list (frame SETTINGS 0 0 #vu8()) (frame SETTINGS ACK 0 #vu8())
+                                    (frame RST-STREAM 0 1 #vu8(0 0 0 7)))))
+                   'eof)
+             (list (string-append "sink " (symbol->string face) " method=POST cl=4 te=- expect=- ct=- bytes=4 sha256="
+                                  sha-body " pattern=bad@0 arrivals=1 gap=~@0 seen=2\n")
+                   'whole-frames 1 'eof))
+       (guard (e (#t (list 'raised (describe e))))
+         (let* ((target (string-append "/refuse?key=" (key "r0") "&at=0"))
+                (refused (h2-exchange o face (h2-start scheme "POST" target '(("content-length" . "4"))) tls))
+                (p (half-closed (request scheme "POST" target '(("content-length" . "4")) "body"))))
+           (list refused
+                 (append (h2-sink (probe-bytes p) (string-append "sink " (symbol->string face) " method=POST cl=4 te=- expect=- ct=- bytes=4 sha256="
+                                                                 sha-body " pattern=bad@0 arrivals=1 gap=~@0 seen=2\n"))
+                         (list (probe-end p)))))))
+     ;; DATA of 3 bytes, then, 300 ms on, DATA of 4: at=5 refuses only once
+     ;; the second has come.
+     (test-equal (named "POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart: RST_STREAM REFUSED_STREAM only after the second, then eof; the key's next request answered as /sink, seen=2")
+       (list (list (hex (join (list (frame SETTINGS 0 0 #vu8()) (frame SETTINGS ACK 0 #vu8())
+                                    (frame RST-STREAM 0 1 #vu8(0 0 0 7)))))
+                   'eof)
+             'refused-after
+             (list (string-append "sink " (symbol->string face) " method=POST cl=7 te=- expect=- ct=- bytes=7 sha256="
+                                  sha-abcdefg " pattern=bad@0 arrivals=1 gap=~@0 seen=2\n")
+                   'whole-frames 1 'eof))
+       (guard (e (#t (list 'raised (describe e))))
+         (let* ((target (string-append "/refuse?key=" (key "r5") "&at=5"))
+                (first (join (list (h2-start scheme "POST" target '(("content-length" . "7"))) (frame DATA 0 1 (octets "abc")))))
+                (refused (split-probe o face (join (list first (frame DATA END-STREAM 1 (octets "defg"))))
+                                      (bytevector-length first) 300 2000 (cons "--half-close" options)))
+                (reset-at (arrival (probe-arrivals refused) 18))
+                (p (half-closed (request scheme "POST" target '(("content-length" . "7")) "abcdefg"))))
+           (list (list (hex (probe-bytes refused)) (probe-end refused))
+                 (if (and reset-at (>= (- reset-at (probe-connected refused)) 300)) 'refused-after
+                     (list 'connected (probe-connected refused) 'reset-at reset-at))
+                 (append (h2-sink (probe-bytes p) (string-append "sink " (symbol->string face) " method=POST cl=7 te=- expect=- ct=- bytes=7 sha256="
+                                                                 sha-abcdefg " pattern=bad@0 arrivals=1 gap=~@0 seen=2\n"))
+                         (list (probe-end p)))))))
+     ;; DATA of exactly N bytes, 3, and the stream left open: refused at it.
+     (test-equal (named "POST /refuse?at=3, DATA of 3 bytes and the stream left open: RST_STREAM REFUSED_STREAM on stream 1, then eof")
+       (list (hex (join (list (frame SETTINGS 0 0 #vu8()) (frame SETTINGS ACK 0 #vu8())
+                              (frame RST-STREAM 0 1 #vu8(0 0 0 7)))))
+             'eof)
+       (h2-exchange o face (join (list (h2-start scheme "POST" (string-append "/refuse?key=" (key "r3") "&at=3")
+                                                 '(("content-length" . "7")))
+                                       (frame DATA 0 1 (octets "abc"))))
+                    tls))
+     (test-equal (named "POST /refuse?at=100, a first request whose 7 bytes end short of 100: answered as /sink, seen=1")
+       (list (string-append "sink " (symbol->string face) " method=POST cl=7 te=- expect=- ct=- bytes=7 sha256="
+                            sha-abcdefg " pattern=bad@0 arrivals=1 gap=~@0 seen=1\n")
+             'whole-frames 1 'eof)
+       (guard (e (#t (list 'raised (describe e))))
+         (let ((p (half-closed (request scheme "POST" (string-append "/refuse?key=" (key "short") "&at=100")
+                                        '(("content-length" . "7")) "abcdefg"))))
+           (append (h2-sink (probe-bytes p) (string-append "sink " (symbol->string face) " method=POST cl=7 te=- expect=- ct=- bytes=7 sha256="
+                                                           sha-abcdefg " pattern=bad@0 arrivals=1 gap=~@0 seen=1\n"))
+                   (list (probe-end p))))))
+     (test-equal (named "a query /sink, /seen, /answer or /refuse refuses, and /close-after, an HTTP/1.1 route: each 404, a refused /refuse counting nothing")
+       (append (map (lambda (n) (h2-not-found)) '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15)) (list (h2-seen 0)))
+       (let loop ((targets (list "/sink" "/sink?key=" "/sink?key=k&list=0" "/seen" "/seen?key=k&x=1" "/answer"
+                                 "/answer?status=199" "/answer?status=600" "/answer?status=200&status=200"
+                                 (string-append "/refuse?key=" (key "refused"))
+                                 (string-append "/refuse?key=" (key "refused") "&at=268435457")
+                                 (string-append "/refuse?key=" (key "refused") "&at=0&at=0")
+                                 "/refuse?at=0" "/close-after?then=fin" "/close-after?then=kill"
+                                 (string-append "/seen?key=" (key "refused"))))
+                  (answers '()))
+         (if (null? targets)
+             (reverse answers)
+             (loop (cdr targets) (cons (h2-exchange o face (request scheme "GET" (car targets) '() #f) tls) answers))))))
+   '(h2c h2) '("http" "https") (list #f h2-tls) '(() ("--tls" "localhost" "--alpn" "h2"))))
 
 (define (scenarios o)
   ;; --- the certificates, by openssl: one row per TLS face
@@ -915,6 +1320,9 @@
            (list bad (next))))))
    '(h2c h2) '("http" "https") (list #f h2-tls))
 
+  ;; --- the sinks
+  (sink-scenarios o)
+
   ;; --- lifecycle: loopback
   (test-equal "loopback only: every face's announced address is 127.0.0.1"
     (map (lambda (face) "127.0.0.1") every-face)
@@ -976,7 +1384,7 @@
                      ("localhost")))))))))))
 
 (define probe-usage
-  "usage: node tests/wire-probe.mjs [--reset | --half-close] [--tls SERVERNAME [--alpn LIST]] [--deadline MS] HOST PORT HEX IDLE-MS\n")
+  "usage: node tests/wire-probe.mjs [--reset | --half-close] [--tls SERVERNAME [--alpn LIST]] [--split OFFSET:MS] [--deadline MS] HOST PORT HEX IDLE-MS\n")
 
 (test-equal "the probe refuses each misuse of --tls and --alpn with exit 2, its problem and its usage on stderr"
   (map (lambda (problem) (list 2 "" (string-append "wire-probe: " problem "\n" probe-usage)))

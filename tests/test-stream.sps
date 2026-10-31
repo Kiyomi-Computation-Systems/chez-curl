@@ -763,6 +763,22 @@
                           (if (= passed (curl-engine-passed-resumes engine)) 'none-passed
                               (list passed (curl-engine-passed-resumes engine)))))))))
 
+  ;; The seamed engines resume too (M6 slice 2's measurement, unpaced.sps):
+  ;; resume! read its pause-answer seam by assq, which raised on these
+  ;; engines' bare-symbol seams, failing each at its first resume.
+  (test-equal "each seamed engine resumes: 1 MiB at a stream-buffer of 1 byte, so every take that drains the buffer resumes it, on make-curl-engine-unpaced's engine and on make-curl-engine-unmultiplexed's, each whole and in order, a 200, resumed"
+    '((1048576 in-order eof (response 200 http/1.1 #f) resumed)
+      (1048576 in-order eof (response 200 http/1.1 #f) resumed))
+    (map (lambda (make)
+           (on-own-engine make
+             (lambda (own)
+               (let* ((t (curl-submit own (stream-request o 'http "/pattern/1048576" 'stream-buffer 1)))
+                      (d (drain-pieces t 20000)))
+                 (curl-token-wait t 10000)
+                 (append d (list (outcome-of t)
+                                 (if (> (stat t 'resumes) 0) 'resumed (curl-token-stream-stats t))))))))
+         (list make-curl-engine-unpaced make-curl-engine-unmultiplexed)))
+
   (test-equal "a resume for a token taken out since is passed over: a cancel and then a take that queues a resume, while the engine is held, reach one turn, which carries out the cancel first; the token ends cancelled, its piece taken, the rest of what it held still readable, then the end"
     '(piece-taken (transfer-error cancelled #f none) one-passed in-order eof)
     (on-own-engine make-curl-engine
@@ -1386,21 +1402,23 @@
             r)))
     ;; The control: pacing off, by a test seam. The libcurls the plan
     ;; measured, by version: 8.5.0 spins, at a core's whole time; the others
-    ;; poll a few times. A libcurl with no row fails, naming its version.
+    ;; poll a few times. A libcurl with no row fails, naming its version, and
+    ;; shows what it measured: the expected value names the row it lacks,
+    ;; which no measurement can give.
     (let ((spin-rows '(("7.85.0" . quiet) ("8.5.0" . spins) ("8.7.1" . quiet) ("8.20.0" . quiet)
                        ("8.23.0" . quiet))))
       (test-equal (string-append "the paced poll's control: pacing off, by a test seam, the CPU through the same pause, on "
                                  (if (string? version) version (written version))
-                                 ", as its row says: 1,000 ms or more where 8.5.0's poll spins, under 500 ms where it does not")
+                                 ", as its row says: 1,000 ms or more where 8.5.0's poll spins, under 500 ms where it does not; a libcurl with no row fails, showing what it measured")
         (let ((row (and (string? version) (assoc version spin-rows))))
-          (if row (list #t #t (cdr row)) (list 'no-row-for version)))
-        (let ((r (pause-cpu make-curl-engine-unpaced))
-              (row (and (string? version) (assoc version spin-rows))))
-          (cond ((not row) (list 'no-row-for version))
-                ((and (list? r) (= (length r) 3))
-                 (list (car r) (cadr r)
-                       (cond ((>= (caddr r) 1000) 'spins) ((< (caddr r) 500) 'quiet) (else (caddr r)))))
-                (else r))))))
+          (if row (list #t #t (cdr row)) (list 'a-row-for version)))
+        (let* ((row (and (string? version) (assoc version spin-rows)))
+               (r (pause-cpu make-curl-engine-unpaced))
+               (measured (if (and (list? r) (= (length r) 3))
+                             (list (car r) (cadr r)
+                                   (cond ((>= (caddr r) 1000) 'spins) ((< (caddr r) 500) 'quiet) (else (caddr r))))
+                             r)))
+          (if row measured (list 'no-row-for version 'measured measured))))))
 
   ;; --- the paced poll's rule, by the probe seam: each probed turn wakes
   ;; its own poll, which then returns at once, and records whether it paced.
