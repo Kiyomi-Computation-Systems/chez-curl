@@ -185,8 +185,9 @@ plan's §3.7). Measured on the five Linux libcurls
 - **With the engine's thread held 200 ms between connect and send,** by a private seam, as a
   collection could hold it, the answer arrived first: on 7.85.0 and both 8.5.0 builds the bit
   read `#f` and libcurl never asked, 20 of 20 each; on 8.20.0 and 8.23.0, which ask with the
-  head, `#t`. test-upload pins it by version through that seam. Apple's 8.7.1 is not
-  measured.
+  head, `#t`. test-upload pins it by version through that seam. On Apple's 8.7.1, the Mac's
+  run read `#t`, asked, held, as on 8.20.0
+  ([log](../research/m6/slice2-build/results/mac-8.7.1-make-test.log)).
 
 **Rejected:** leaving it to slice 3, which uses it; slice 2 would merge with the gap open.
 

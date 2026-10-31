@@ -49,6 +49,10 @@ close-out under **Close-outs**, newest first.
       an answer sent at accept raced libcurl's request. With the engine's thread held after
       connect by a private seam, the bit reads `#f` on 7.85.0 and 8.5.0, `#t` on 8.20.0 and
       8.23.0, which test-upload pins by version.
+    - **Pushed as PR #37** (`8c3c8f0`). **The Mac ran it, 2026-10-31** (the plan, §7):
+      `make test` passed 33 of 34, test-upload failing only its two tests with no 8.7.1 row,
+      each printing the row it measured. The rows are added from that run, and the Mac reruns
+      test-upload.
   - **The plan measured first** ([`research/m6/`](research/m6/)):
     - a C probe whose loop steps as the engine does, 30 cases on the five Linux libcurls, two
       runs each ([`pause/`](research/m6/pause/));

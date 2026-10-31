@@ -777,7 +777,8 @@
                          (curl-engine-prereq-holds own)))))))
         (cases '((200 sized) (200 chunked) (413 sized) (413 chunked)))
         ;; (VERSION BIT ASK): every case's bit and ask, on that libcurl.
-        (held-rows '(("7.85.0" #f never) ("8.5.0" #f never) ("8.20.0" #t asked) ("8.23.0" #t asked))))
+        (held-rows '(("7.85.0" #f never) ("8.5.0" #f never) ("8.7.1" #t asked) ("8.20.0" #t asked)
+                     ("8.23.0" #t asked))))
     (test-equal (string-append "the head's body-asked bit with the answer first, by version, on "
                                (if (string? version) version (written version))
                                ": on an engine whose prerequest callable holds 200 ms once connected, the raw face's answer, written as it accepts, lands before the request; 7.85.0 and 8.5.0 read it and stop sending, never asking, #f; 8.20.0 and 8.23.0 ask with the head, #t; each ends with the early status, 200 and 413, sized and chunked, the hold made once; a libcurl with no row fails, showing what it measured")
@@ -1213,8 +1214,11 @@
   ;; its cell asserts the wait alone. 8.5.0's HTTP/2 413 waited in every
   ;; native run, but under the memory gate's Valgrind ended on its own in 1
   ;; of 10 cells (build/m6s2b/logs/memlock-1.log), so its kind is either,
-  ;; and its status alone held. A libcurl with no row fails, naming its
-  ;; version, and showing every cell it measured.
+  ;; and its status alone held. Apple's 8.7.1's row is the Mac's run on
+  ;; slice 2's PR, its framings alike in every cell
+  ;; (.plans/research/m6/slice2-build/results/mac-8.7.1-make-test.log). A
+  ;; libcurl with no row fails, naming its version, and showing every cell
+  ;; it measured.
   (let ((answer-cases
          '((raw-413-close raw "/raw/answer?status=413&close=1")
            (raw-413-keep raw "/raw/answer?status=413&close=0")
@@ -1227,6 +1231,8 @@
                      (raw-200-keep waits 200) (h2-413 waits 413) (h2-200 waits 28))
            ("8.5.0" (raw-413-close own 413) (raw-413-keep waits 413) (raw-200-close own 200)
                     (raw-200-keep waits 200) (h2-413 either 413) (h2-200 own 200))
+           ("8.7.1" (raw-413-close own 413) (raw-413-keep waits 413) (raw-200-close own 200)
+                    (raw-200-keep waits 200) (h2-413 waits 413) (h2-200 waits 200))
            ("8.20.0" (raw-413-close own 413) (raw-413-keep own 413) (raw-200-close own 200)
                      (raw-200-keep waits 200) (h2-413 own 413) (h2-200 waits))
            ("8.23.0" (raw-413-close own 413) (raw-413-keep own 413) (raw-200-close own 200)
