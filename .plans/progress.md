@@ -51,8 +51,10 @@ close-out under **Close-outs**, newest first.
       8.23.0, which test-upload pins by version.
     - **Pushed as PR #37** (`8c3c8f0`). **The Mac ran it, 2026-10-31** (the plan, §7):
       `make test` passed 33 of 34, test-upload failing only its two tests with no 8.7.1 row,
-      each printing the row it measured. The rows are added from that run, and the Mac reruns
-      test-upload.
+      each printing the row it measured. The rows were added from that run (`8379e10`). The
+      Mac's rerun of test-upload held every cell but HTTP/2's 200, sized, which ended 55
+      where it had ended 200: 8.7.1's splits as 8.20.0's does, so its cell now asserts the wait
+      alone, and the Mac runs test-upload a third time.
   - **The plan measured first** ([`research/m6/`](research/m6/)):
     - a C probe whose loop steps as the engine does, 30 cases on the five Linux libcurls, two
       runs each ([`pause/`](research/m6/pause/));

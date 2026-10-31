@@ -1210,13 +1210,14 @@
   ;; within 1 s with nothing put, own, or waited, and the status it ended
   ;; with, or 28 at the bound, once the producer put the rest. Measured:
   ;; an own end within 9.2 ms, a waiting one 0.6 to 8.3 ms after its first
-  ;; put. 8.20.0's HTTP/2 200 then ends 200 or 55, split between runs, so
-  ;; its cell asserts the wait alone. 8.5.0's HTTP/2 413 waited in every
+  ;; put. 8.20.0's HTTP/2 200 then ends 200 or 55, split between runs, and
+  ;; so does 8.7.1's, so each cell asserts the wait alone. 8.5.0's HTTP/2 413 waited in every
   ;; native run, but under the memory gate's Valgrind ended on its own in 1
   ;; of 10 cells (build/m6s2b/logs/memlock-1.log), so its kind is either,
-  ;; and its status alone held. Apple's 8.7.1's row is the Mac's run on
-  ;; slice 2's PR, its framings alike in every cell
-  ;; (.plans/research/m6/slice2-build/results/mac-8.7.1-make-test.log). A
+  ;; and its status alone held. Apple's 8.7.1's row is the Mac's two runs
+  ;; on slice 2's PR, its framings alike in every cell but HTTP/2's 200,
+  ;; 200 in the first, 55 sized in the second
+  ;; (.plans/research/m6/slice2-build/results/mac-8.7.1-*.log). A
   ;; libcurl with no row fails, naming its version, and showing every cell
   ;; it measured.
   (let ((answer-cases
@@ -1232,7 +1233,7 @@
            ("8.5.0" (raw-413-close own 413) (raw-413-keep waits 413) (raw-200-close own 200)
                     (raw-200-keep waits 200) (h2-413 either 413) (h2-200 own 200))
            ("8.7.1" (raw-413-close own 413) (raw-413-keep waits 413) (raw-200-close own 200)
-                    (raw-200-keep waits 200) (h2-413 waits 413) (h2-200 waits 200))
+                    (raw-200-keep waits 200) (h2-413 waits 413) (h2-200 waits))
            ("8.20.0" (raw-413-close own 413) (raw-413-keep own 413) (raw-200-close own 200)
                      (raw-200-keep waits 200) (h2-413 own 413) (h2-200 waits))
            ("8.23.0" (raw-413-close own 413) (raw-413-keep own 413) (raw-200-close own 200)

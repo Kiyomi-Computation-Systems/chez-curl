@@ -130,6 +130,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * A full TCP buffer is not a stable full: a stalled upload took more after a
   put on it timed out. A test that needs libcurl to stop asking for the body
   holds it where it never asks: an `https` request to a plaintext face.
+* A row read from one run cannot show a cell that splits: 8.7.1's HTTP/2 200
+  ended 200, then 55. Take a new row from two runs at least, and hold a cell
+  they disagree on to what both showed.
 
 **Chez and the FFI**
 

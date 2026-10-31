@@ -181,6 +181,12 @@ it should not be a comment. (chez-cmark-gfm)
   transfer where it never asks: an `https` request to a plaintext face, whose handshake never
   ends. (chez-curl, M6 slice 2's build)
 
+* **A row read from one run cannot show a cell that splits.** 8.7.1's rows in test-upload were
+  read from the Mac's first run, whose HTTP/2 200 ended 200 in both framings; the rerun's sized
+  cell ended 55 ([research](research/m6/slice2-build/results/)). 8.20.0's cell had split the
+  same way across the measurement's runs. A new row comes from two runs at least, and a cell
+  they disagree on asserts only what both showed. (chez-curl, M6 slice 2, the Mac's runs)
+
 ## Chez and the FFI
 
 * **`foreign-procedure` resolves its entry point when the expression is evaluated,
