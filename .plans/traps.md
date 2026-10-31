@@ -163,6 +163,24 @@ it should not be a comment. (chez-cmark-gfm)
   itself, and the test passed. It now also sweeps a transfer refused at connect, which never
   calls back, and requires the whole transfer to land inside more often. (chez-curl)
 
+* **A by-version test passes on every libcurl it has no row for, when both sides answer "no
+  row".** Slice 1's `spin-rows` control and slice 2's answer table and attempt rows each computed
+  `(no-row-for VERSION)` as the expected value and as the actual one, so a missing row matched
+  itself. The review's mutant deleted 8.20.0's rows, and test-upload and test-stream still passed
+  on 8.20.0, 52 and 74 tests, as on the base
+  ([research](research/m6/slice2-build/review/results/mut-no-row.log)). The 8.7.1 row slice 2
+  left for the Mac would have passed there, measuring nothing. A missing row's expected value is
+  one no measurement can give, and its actual value is the measurement, so the failure prints the
+  row to add. (chez-curl, M6 slice 2's review)
+
+* **A full TCP buffer is not a stable full.** A put on an upload whose server read nothing waited
+  on a full buffer and timed out; a later put was taken anyway, libcurl having handed 2,031,616
+  bytes, in 7 runs of 7, one at 1,966,080
+  ([research](research/m6/slice2-build/results/full-buffer-repro-guix-8.20.0.log)). Why the
+  room came back is not shown. A test that needs libcurl to stop asking for the body holds the
+  transfer where it never asks: an `https` request to a plaintext face, whose handshake never
+  ends. (chez-curl, M6 slice 2's build)
+
 ## Chez and the FFI
 
 * **`foreign-procedure` resolves its entry point when the expression is evaluated,
@@ -1172,3 +1190,23 @@ it should not be a comment. (chez-cmark-gfm)
   ([research](research/m6/slice1/results/mac-8.7.1-make-test.log)). No Linux libcurl calls the
   callback again. A callable refuses every call once its transfer has a reason recorded.
   (chez-curl, M6 slice 1, the Mac's run)
+* **libcurl calls a read callback no more once it has read a sized body whole.** A put past
+  `body-length` made after that, before the server answered, reached no callable, and a mutant
+  that left its refusal to the read callback ended the transfer 200, on 7.85.0, Ubuntu's 8.5.0
+  and Guix's 8.20.0 ([research](research/m6/slice2-build/results/)), though 7.85.0 and 8.5.0 offer
+  65,536 bytes to the body's last byte. A refusal the read callback owns is read where the
+  outcome is, too (ADR-0030, amended 2026-10-31). (chez-curl, M6 slice 2's build)
+* **7.85.0's poll spins during a paused HTTP/2 upload only once DATA has gone.** With pacing
+  off, an upload paused after 4,096 bytes spun in 8 runs of 10, 2,000 ms of CPU in a 2 s pause;
+  one paused before its first byte, in none of 10
+  ([research](research/m6/slice2-build/results/)). A control that pauses first measures nothing.
+  (chez-curl, M6 slice 2's build)
+* **A server's answer written as it accepts a connection races the client's request.** Natively
+  on loopback, libcurl's request and its first ask for the body came first in 100 runs of 100,
+  on all five Linux libcurls, so the early answer never reached the header callable first. Under
+  the memory gate's Valgrind on 8.5.0 the answer came first, 20 of 20, and a 0 ms sleep after
+  connect let it come first once in 4 on 7.85.0
+  ([research](research/m6/slice2-build/results/)). A test that needs the answer first holds the
+  client after connect, by a seam; one that cannot hold it asserts what holds both ways.
+  (chez-curl, M6 slice 2's build)
+

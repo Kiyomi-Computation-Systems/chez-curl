@@ -1,0 +1,407 @@
+[guix-8.20.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[guix-8.20.0] server {"node":"v24.18.0","pid":34,"http":"127.0.0.1:44139","raw":"127.0.0.1:43047","https":"127.0.0.1:45605","h2":"127.0.0.1:36611"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+[guix-8.20.0] libcurl 8.20.0 GnuTLS/3.8.13
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=off status=200 version=http/1.1 attempts=1 seeks=0 reads=9 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=off events: P1:ok:port39320:send0:handed0@0.596 R65399/0:pause@0.629 Z0:send1@1.786 R65536/65536:65536@1.801 R65536/32768:32768@1.857 R65536/0:pause@1.88 Z0:send1@2.955 R65536/65536:65536@2.964 R65536/0:pause@2.993 Z0:send1@4.893 R65536/65536:65536@4.902 R32768/0:pause@4.947 E@5.298 Z0:send1@6.317 R32768/32768:32768@6.329 
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=off server: req raw GET /close-after #1 conn=39318 at=359.9
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=off server: close-after raw then=fin conn=39318: closing 50 ms on
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=off server: req raw POST /sink #1 conn=39320 at=564.9
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=off server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.0 last=5.7 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=off status=200 version=http/1.1 attempts=1 seeks=0 reads=8 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=off events: P1:ok:port39342:send0:handed0@0.827 R65398/0:pause@0.871 Z0:send1@2.482 R65536/65536:65536@2.507 R65536/0:pause@2.562 Z0:send1@3.822 R65536/65536:65536@3.83 R65536/0:pause@3.881 Z0:send1@5.081 R65536/65536:65536@5.085 R65536/0:pause@5.117 E@5.513 Z0:send1@6.214 R65536/65536:65536@6.217 
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=off server: req raw GET /close-after #1 conn=39334 at=575.9
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=off server: close-after raw then=fin conn=39334: closing 50 ms on
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=off server: req raw POST /sink #1 conn=39342 at=2077.8
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=off server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.4 last=5.0 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=off status=200 version=http/1.1 attempts=1 seeks=0 reads=12 pauses=5 resumes=5 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=off events: P1:ok:port39374:send0:handed0@0.421 R65394/0:pause@0.438 Z0:send1@500.822 R65536/16384:16384@500.851 R65536/0:pause@500.901 Z0:send1@502.067 R65536/65536:65536@502.073 R65536/0:pause@502.12 Z0:send1@503.505 R65536/65536:65536@503.54 R65536/16384:16384@503.664 R65536/0:pause@503.694 Z0:send1@504.951 R65536/65536:65536@504.978 R32768/16384:16384@505.099 R16384/0:pause@505.146 E@505.243 Z0:send1@506.413 R16384/16384:16384@506.442 
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=off server: req raw GET /close-after #1 conn=39366 at=2086.7
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=off server: close-after raw then=fin conn=39366: closing 50 ms on
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=off server: req raw POST /sink #1 conn=39374 at=2288.4
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=off server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=499.8 last=505.3 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=off failed reason=body-not-replayable code=65 request-size=262282 error="seek callback returned error 2" attempts=1 seeks=1 reads=12 pauses=5 resumes=5 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=off events: P1:ok:port39404:send0:handed0@0.564 R65398/0:pause@0.607 Z0:send1@1.051 R65536/16384:16384@1.082 R65536/16384:16384@1.184 R65536/0:pause@1.242 Z0:send1@2.579 R65536/65536:65536@2.616 R65536/16384:16384@2.757 R65536/0:pause@2.804 Z0:send1@4.166 R65536/65536:65536@4.201 R65536/0:pause@4.344 Z0:send1@5.486 R65536/65536:65536@5.52 R16384/0:pause@5.648 E@5.778 Z0:send1@6.89 R16384/16384:16384@6.926 S0/0:cantseek@7.792 
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=off server: req raw GET /close-after #1 conn=39404 at=2804.8
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=off server: close-after raw then=kill conn=39404: the next request on it is cut
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=off server: req raw POST /sink #1 conn=39404 at=3007.4
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=off server: killed raw /sink conn=39404 after reading it whole, its head and 262144 body bytes, at 6.6ms; no answer
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=off failed reason=body-not-replayable code=65 request-size=262283 error="seek callback returned error 2" attempts=1 seeks=1 reads=11 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=off events: P1:ok:port39418:send0:handed0@0.639 R65397/0:pause@0.697 Z0:send1@1.046 R65536/16384:16384@1.074 R65536/16384:16384@1.165 R65536/0:pause@1.218 Z0:send1@2.546 R65536/65536:65536@2.588 R65536/16384:16384@2.741 R65536/0:pause@2.786 Z0:send1@4.058 R65536/65536:65536@4.094 R65536/16384:16384@4.24 R65536/0:pause@4.31 E@4.917 Z0:send1@5.46 R65536/65536:65536@5.496 S0/0:cantseek@7.003 
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=off server: req raw GET /close-after #1 conn=39418 at=3019.6
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=off server: close-after raw then=kill conn=39418: the next request on it is cut
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=off server: req raw POST /sink #1 conn=39418 at=4521.8
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=off server: killed raw /sink conn=39418 after reading it whole, its head and 262144 body bytes, at 5.8ms; no answer
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=off status=200 version=http/1.1 attempts=2 seeks=1 reads=11 pauses=4 resumes=3 handed=262144 committed=262144 resend-read-unpaused=yes odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=off events: P1:ok:port39430:send0:handed0@0.602 R65390/0:pause@0.647 S0/0:ok@1.687 P2:ok:port39440:send1:handed0@3.053 R65390/0:pause@3.102 Z0:send1@500.97 R65536/49152:49152@501.017 R65536/32768:32768@501.163 R65536/16384:16384@501.228 R65536/16384:16384@501.269 R65536/0:pause@501.314 Z0:send1@502.451 R65536/65536:65536@502.474 R65536/0:pause@502.576 Z0:send1@503.708 R65536/65536:65536@503.742 E@503.845 R16384/16384:16384@503.877 
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=off server: req raw GET /close-after #1 conn=39430 at=4532.7
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=off server: close-after raw then=cuthead conn=39430: the next request on it is cut at its head
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=off server: req raw POST /sink #1 conn=39430 at=4734.9
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=off server: cut-head raw /sink conn=39430 at its head, framing length, by FIN, at 0.3ms
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=off server: req raw POST /sink #2 conn=39440 at=4737.3
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=off server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=498.0 last=501.0 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=off server: count raw:/close-after=1 raw:/sink=2
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=off status=200 version=http/1.1 attempts=2 seeks=1 reads=14 pauses=7 resumes=6 handed=262144 committed=262144 resend-read-unpaused=yes odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=off events: P1:ok:port39454:send0:handed0@0.54 R65388/0:pause@0.584 S0/0:ok@1.736 P2:ok:port39462:send1:handed0@3.117 R65388/0:pause@3.158 Z0:send1@500.997 R65536/16384:16384@501.042 R65536/0:pause@501.152 Z0:send1@501.167 R65536/16384:16384@501.182 R65536/0:pause@501.236 Z0:send1@502.468 R65536/65536:65536@502.488 R65536/0:pause@502.596 Z0:send1@503.752 R65536/65536:65536@503.768 R65536/16384:16384@503.847 R65536/0:pause@503.878 Z0:send1@505.072 R65536/65536:65536@505.086 R16384/0:pause@505.178 E@505.303 Z0:send1@506.457 R16384/16384:16384@506.498 
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=off server: req raw GET /close-after #1 conn=39454 at=5243.0
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=off server: close-after raw then=resethead conn=39454: the next request on it is cut at its head
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=off server: req raw POST /sink #1 conn=39454 at=5445.0
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=off server: cut-head raw /sink conn=39454 at its head, framing length, by RST, at 0.2ms
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=off server: req raw POST /sink #2 conn=39462 at=5447.6
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=off server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=498.0 last=503.4 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=off server: count raw:/close-after=1 raw:/sink=2
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=off failed reason=body-not-replayable code=65 request-size=32908 error="Recv failure: Connection reset by peer" attempts=1 seeks=1 reads=4 pauses=2 resumes=2 handed=32768 committed=98304 resend-read-unpaused=na odd-answers=((98304 done))
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=off events: P1:ok:port39490:send0:handed0@0.647 R65396/0:pause@0.692 Z0:send1@1.062 R65536/16384:16384@1.09 R65536/16384:16384@1.181 R65536/0:pause@1.236 Z0:send1@2.547 S0/0:cantseek@2.666 
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=off server: req raw GET /close-after #1 conn=39490 at=5956.6
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=off server: close-after raw then=reset conn=39490: the next request on it is reset after 32768 body bytes
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=off server: req raw POST /sink #1 conn=39490 at=6058.9
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=off server: reset raw /sink conn=39490 after its head and 32768 body bytes, at 0.8ms; RST
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=off failed reason=body-not-replayable code=65 request-size=32915 error="Recv failure: Connection reset by peer" attempts=1 seeks=1 reads=4 pauses=2 resumes=2 handed=32768 committed=98304 resend-read-unpaused=na odd-answers=((98304 done))
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=off events: P1:ok:port39502:send0:handed0@0.598 R65389/0:pause@0.641 Z0:send1@1.036 R65536/16384:16384@1.065 R65536/16384:16384@1.156 R65536/0:pause@1.212 Z0:send1@2.518 S0/0:cantseek@2.661 
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=off server: req raw GET /close-after #1 conn=39502 at=6064.7
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=off server: close-after raw then=reset conn=39502: the next request on it is reset after 32768 body bytes
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=off server: req raw POST /sink #1 conn=39502 at=6166.8
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=off server: reset raw /sink conn=39502 after its head and 32768 body bytes, at 0.7ms; RST
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=off failed reason=body-not-replayable code=65 request-size=262285 error="Recv failure: Connection reset by peer" attempts=1 seeks=1 reads=12 pauses=5 resumes=5 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=off events: P1:ok:port39532:send0:handed0@0.546 R65395/0:pause@0.595 Z0:send1@1.073 R65536/16384:16384@1.11 R65536/0:pause@1.201 Z0:send1@2.371 R65536/65536:65536@2.398 R65536/16384:16384@2.52 R65536/0:pause@2.582 Z0:send1@3.812 R65536/65536:65536@3.838 R65536/16384:16384@3.948 R65536/0:pause@3.989 Z0:send1@5.229 R65536/65536:65536@5.264 R16384/0:pause@5.381 E@5.529 Z0:send1@6.617 R16384/16384:16384@6.636 S0/0:cantseek@7.122 
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=off server: req raw GET /close-after #1 conn=39532 at=6172.5
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=off server: close-after raw then=reset conn=39532: the next request on it is reset after 262144 body bytes
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=off server: req raw POST /sink #1 conn=39532 at=6274.5
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=off server: reset raw /sink conn=39532 after its head and 262144 body bytes, at 6.1ms; RST
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=8 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=on events: P1:ok:port39554:send0:handed0@0.483 R65400/0:pause@0.506 Z0:send1@2.032 R65536/65536:65536@2.043 R65536/0:pause@2.086 Z0:send1@3.319 R65536/65536:65536@3.327 R65536/0:pause@3.363 Z0:send1@4.599 R65536/65536:65536@4.606 R65536/0:pause@4.636 E@5.126 Z0:send1@5.782 R65536/65536:65536@5.789 
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=on server: req raw GET /close-after #1 conn=39550 at=6284.1
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=on server: close-after raw then=fin conn=39550: closing 50 ms on
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=on server: req raw POST /sink #1 conn=39554 at=6485.1
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.4 last=5.2 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200 fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=9 pauses=3 resumes=3 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=on events: P1:ok:port42150:send0:handed0@0.863 R65399/0:pause@0.907 Z0:send1@2.315 R65536/65536:65536@2.355 R65536/49152:49152@2.519 R65536/16384:16384@2.592 R65536/16384:16384@2.6 R65536/0:pause@2.605 Z0:send1@3.704 R65536/65536:65536@3.71 R49152/0:pause@3.729 E@3.821 Z0:send1@4.798 R49152/49152:49152@4.81 
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=on server: req raw GET /close-after #1 conn=39564 at=6494.5
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=on server: close-after raw then=fin conn=39564: closing 50 ms on
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=on server: req raw POST /sink #1 conn=42150 at=7996.4
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.3 last=4.2 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap1500 fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=15 pauses=5 resumes=5 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=on events: P1:ok:port42184:send0:handed0@0.504 R65395/0:pause@0.529 Z0:send1@501.189 R65536/16384:16384@501.237 R65536/16384:16384@501.352 R65536/0:pause@501.419 Z0:send1@516.513 R65536/32768:32768@516.552 R65536/32768:32768@516.699 R65536/16384:16384@516.764 R65536/16384:16384@516.798 R65536/0:pause@516.858 Z0:send1@516.869 R65536/16384:16384@516.883 R65536/0:pause@516.921 Z0:send1@518.059 R65536/65536:65536@518.091 R49152/16384:16384@518.22 R32768/0:pause@518.269 E@518.378 Z0:send1@519.421 R32768/32768:32768@519.452 
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=on server: req raw GET /close-after #1 conn=42168 at=8005.3
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=on server: close-after raw then=fin conn=42168: closing 50 ms on
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=on server: req raw POST /sink #1 conn=42184 at=8206.6
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=500.8 last=519.0 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-fin-gap200-late fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=9 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=on events: P1:ok:port42206:send0:handed0@0.74 R65399/0:pause@0.784 Z0:send1@2.375 R65536/65536:65536@2.412 R65536/16384:16384@2.57 R65536/0:pause@2.623 Z0:send1@3.734 R65536/65536:65536@3.763 R65536/0:pause@3.878 Z0:send1@5.164 R65536/65536:65536@5.195 R49152/0:pause@5.314 E@6.198 Z0:send1@7.146 R49152/49152:49152@7.163 
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=on server: req raw GET /close-after #1 conn=42194 at=8731.4
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=on server: close-after raw then=kill conn=42194: the next request on it is cut
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=on server: req raw POST /sink #1 conn=42206 at=8933.8
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.4 last=6.2 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap200 fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=9 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=on events: P1:ok:port42226:send0:handed0@0.663 R65398/0:pause@0.707 Z0:send1@2.29 R65536/65536:65536@2.317 R65536/16384:16384@2.453 R65536/0:pause@2.506 Z0:send1@3.653 R65536/65536:65536@3.683 R65536/0:pause@3.828 Z0:send1@4.977 R65536/65536:65536@4.993 R49152/0:pause@5.106 E@5.571 Z0:send1@6.553 R49152/49152:49152@6.587 
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=on server: req raw GET /close-after #1 conn=42220 at=8945.7
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=on server: close-after raw then=kill conn=42220: the next request on it is cut
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=on server: req raw POST /sink #1 conn=42226 at=10447.9
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.4 last=5.8 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-kill-gap1500 fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=14 pauses=5 resumes=5 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=on events: P1:ok:port42252:send0:handed0@0.727 R65391/0:pause@0.771 Z0:send1@501.326 R65536/32768:32768@501.374 R65536/16384:16384@501.509 R65536/16384:16384@501.579 R65536/16384:16384@501.624 R65536/0:pause@501.672 Z0:send1@501.683 R65536/16384:16384@501.697 R65536/0:pause@501.739 Z0:send1@502.839 R65536/65536:65536@502.856 R65536/0:pause@502.946 Z0:send1@504.071 R65536/65536:65536@504.081 R32768/16384:16384@504.128 R16384/0:pause@504.152 E@504.207 Z0:send1@505.295 R16384/16384:16384@505.324 
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=on server: req raw GET /close-after #1 conn=42240 at=10458.9
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=on server: close-after raw then=cuthead conn=42240: the next request on it is cut at its head
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=on server: req raw POST /sink #1 conn=42252 at=10661.5
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=500.3 last=504.1 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-cuthead-gap200-late fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=11 pauses=5 resumes=5 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=on events: P1:ok:port42280:send0:handed0@0.752 R65389/0:pause@0.799 Z0:send1@501.749 R65536/16384:16384@501.795 R65536/16384:16384@501.913 R65536/0:pause@501.963 Z0:send1@503.133 R65536/65536:65536@503.172 R65536/0:pause@503.316 Z0:send1@504.463 R65536/65536:65536@504.479 R65536/0:pause@504.587 Z0:send1@505.898 R65536/65536:65536@505.928 R32768/0:pause@506.045 E@506.374 Z0:send1@507.259 R32768/32768:32768@507.275 
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=on server: req raw GET /close-after #1 conn=42270 at=11169.8
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=on server: close-after raw then=resethead conn=42270: the next request on it is cut at its head
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=on server: req raw POST /sink #1 conn=42280 at=11371.3
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=501.0 last=506.4 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-resethead-gap200-late fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=9 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=on events: P1:ok:port42300:send0:handed0@0.575 R65397/0:pause@0.601 Z0:send1@2.09 R65536/65536:65536@2.1 R65536/0:pause@2.154 Z0:send1@3.316 R65536/65536:65536@3.32 R65536/16384:16384@3.356 R65536/0:pause@3.366 Z0:send1@4.611 R65536/65536:65536@4.614 R49152/0:pause@4.647 E@5.24 Z0:send1@5.918 R49152/49152:49152@5.923 
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=on server: req raw GET /close-after #1 conn=42298 at=11883.4
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=on server: close-after raw then=reset conn=42298: the next request on it is reset after 32768 body bytes
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=on server: req raw POST /sink #1 conn=42300 at=11985.3
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.2 last=5.1 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768 fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=267 pauses=126 resumes=126 handed=8388608 committed=8388608 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=on events: P1:ok:port42318:send0:handed0@0.852 R65390/0:pause@0.896 Z0:send1@2.628 R65536/65536:65536@2.672 R65536/16384:16384@2.834 R65536/0:pause@2.881 Z0:send1@4.157 R65536/65536:65536@4.19 R65536/16384:16384@4.323 R65536/0:pause@4.376 Z0:send1@5.658 R65536/65536:65536@5.687 R65536/0:pause@5.81 Z0:send1@6.943 R65536/65536:65536@6.959 R65536/0:pause@7.043 Z0:send1@8.209 R65536/65536:65536@8.222 R65536/0:pause@8.326 Z0:send1@9.589 R65536/65536:65536@9.622 R65536/16384:16384@9.754 R65536/0:pause@9.82 Z0:send1@11.058 R65536/65536:65536@11.094 R65536/16384:16384@11.276 R65536/0:pause@11.33 Z0:send1@12.452 R65536/65536:65536@12.486 R65536/0:pause@12.629 Z0:send1@13.744 R65536/65536:65536@13.778 R65536/0:pause@13.918 Z0:send1@13.931 R65536/16384:16384@13.945 R65536/0:pause@13.997 Z0:send1@15.239 R65536/65536:65536@15.257 R65536/0:pause@15.361 Z0:send1@16.536 R65536/65536:65536@16.567 R65536/0:pause@16.671 Z0:send1@17.82 R65536/65536:65536@17.838 R65536/0:pause@17.942 Z0:send1@19.112 R65536/65536:65536@19.13 R65536/0:pause@19.222 Z0:send1@20.397 R65536/65536:65536@20.425 R65536/0:pause@20.515 Z0:send1@21.731 R65536/65536:65536@21.747 R65536/0:pause@21.833 Z0:send1@23.013 R65536/65536:65536@23.029 R65536/0:pause@23.117 Z0:send1@24.303 R65536/65536:65536@24.32 R65536/16384:16384@24.417 ...325-more... R65536/0:pause@157.785 Z0:send1@158.955 R65536/65536:65536@158.968 R65536/0:pause@159.044 Z0:send1@160.346 R65536/65536:65536@160.363 R49152/0:pause@160.445 E@160.889 Z0:send1@161.729 R49152/49152:49152@161.741 
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=on server: req raw GET /close-after #1 conn=42314 at=11996.9
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=on server: close-after raw then=reset conn=42314: the next request on it is reset after 32768 body bytes
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=on server: req raw POST /sink #1 conn=42318 at=12099.4
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=on server: sink raw method=POST cl=8388608 te=- expect=- ct=- bytes=8388608 sha=bdf23837181f5808331800c1ae2b4f7d7a839536b10d58491471c50dde23833a pattern=ok want_sha=ok arrivals=134 first=1.6 last=160.5 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-reset-at32768-8MiB fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=9 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=on events: P1:ok:port42340:send0:handed0@0.374 R65396/0:pause@0.397 Z0:send1@1.769 R65536/65536:65536@1.789 R65536/16384:16384@1.845 R65536/0:pause@1.87 Z0:send1@2.957 R65536/65536:65536@2.974 R65536/0:pause@3.035 Z0:send1@4.121 R65536/65536:65536@4.129 R49152/0:pause@4.166 E@4.34 Z0:send1@5.289 R49152/49152:49152@5.31 
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=on server: req raw GET /close-after #1 conn=42334 at=12305.7
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=on server: close-after raw then=reset conn=42334: the next request on it is reset after 262144 body bytes
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=on server: req raw POST /sink #1 conn=42340 at=12407.6
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.2 last=4.7 arr=omitted
+[guix-8.20.0] rewind run=1 case=pooled-reset-at262144 fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=1 case=h2-refuse-at32768 fresh=on clears-send=on failed reason=body-not-replayable code=65 request-size=114827 error="seek callback returned error 2" attempts=1 seeks=1 reads=4 pauses=2 resumes=2 handed=131072 committed=196608 resend-read-unpaused=na odd-answers=((196608 done))
+[guix-8.20.0] rewind run=1 case=h2-refuse-at32768 fresh=on clears-send=on events: P1:ok:port57924:send0:handed0@4.399 R65397/0:pause@4.427 Z0:send1@7.821 R65536/65536:65536@7.887 R65536/0:pause@8.064 Z0:send1@9.196 R65536/65536:65536@9.224 S0/0:cantseek@9.895 
+[guix-8.20.0] rewind run=1 case=h2-refuse-at32768 fresh=on clears-send=on server: req h2 POST /refuse #1 conn=57924 at=12421.4
+[guix-8.20.0] rewind run=1 case=h2-refuse-at32768 fresh=on clears-send=on server: refuse h2 conn=57924 RST_STREAM REFUSED_STREAM after 32768 DATA bytes
+[guix-8.20.0] rewind run=1 case=h2-refuse-at32768 fresh=on clears-send=on server: count h2:/refuse=1
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=on status=200 version=http/2 attempts=2 seeks=1 reads=6 pauses=2 resumes=1 handed=262144 committed=262144 resend-read-unpaused=yes odd-answers=()
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=on events: P1:ok:port57928:send0:handed0@2.52 R65391/0:pause@2.559 S0/0:ok@4.93 P2:ok:port57930:send1:handed0@8.96 R65391/0:pause@8.975 Z0:send1@503.706 R65536/65536:65536@503.77 R65536/65536:65536@507.238 R65536/65536:65536@508.035 E@508.211 R65536/65536:65536@508.897 
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=on server: req h2 POST /refuse #1 conn=57928 at=12429.7
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=on server: refuse h2 conn=57928 RST_STREAM REFUSED_STREAM at its headers, before any DATA
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=on server: req h2 POST /refuse #2 conn=57930 at=12436.1
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=on server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=34 first=495.2 last=500.8 arr=omitted
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=on server: count h2:/refuse=2
+[guix-8.20.0] rewind run=1 case=h2-refuse-at32768 fresh=off clears-send=on failed reason=body-not-replayable code=65 request-size=98444 error="seek callback returned error 2" attempts=1 seeks=1 reads=4 pauses=2 resumes=2 handed=98304 committed=163840 resend-read-unpaused=na odd-answers=((163840 done))
+[guix-8.20.0] rewind run=1 case=h2-refuse-at32768 fresh=off clears-send=on events: P1:ok:port57934:send0:handed0@4.267 R65396/0:pause@4.314 Z0:send1@7.823 R65536/65536:65536@7.945 R65536/32768:32768@8.264 R65536/0:pause@8.317 Z0:send1@9.555 S0/0:cantseek@9.752 
+[guix-8.20.0] rewind run=1 case=h2-refuse-at32768 fresh=off clears-send=on server: req h2 POST /refuse #1 conn=57934 at=12948.6
+[guix-8.20.0] rewind run=1 case=h2-refuse-at32768 fresh=off clears-send=on server: refuse h2 conn=57934 RST_STREAM REFUSED_STREAM after 32768 DATA bytes
+[guix-8.20.0] rewind run=1 case=h2-refuse-at32768 fresh=off clears-send=on server: count h2:/refuse=1
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=off clears-send=on status=200 version=http/2 attempts=2 seeks=1 reads=14 pauses=4 resumes=3 handed=262144 committed=262144 resend-read-unpaused=yes odd-answers=()
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=off clears-send=on events: P1:ok:port57942:send0:handed0@4.569 R65390/0:pause@4.626 S0/0:ok@7.011 P2:ok:port57952:send1:handed0@11.262 R65390/0:pause@11.283 Z0:send1@507.254 R65536/16384:16384@507.297 R65536/0:pause@507.407 Z0:send1@508.504 R65536/65536:65536@508.515 R65536/32768:32768@509.053 R65536/16384:16384@509.251 R65536/32768:32768@509.617 R65536/32768:32768@509.955 R65536/16384:16384@510.272 R49152/16384:16384@510.309 R32768/16384:16384@510.569 R16384/0:pause@510.601 E@510.699 Z0:send1@511.762 R16384/16384:16384@511.773 
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=off clears-send=on server: req h2 POST /refuse #1 conn=57942 at=12960.8
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=off clears-send=on server: refuse h2 conn=57942 RST_STREAM REFUSED_STREAM at its headers, before any DATA
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=off clears-send=on server: req h2 POST /refuse #2 conn=57952 at=12967.1
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=off clears-send=on server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=37 first=496.1 last=500.5 arr=omitted
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=off clears-send=on server: count h2:/refuse=2
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=off status=200 version=http/2 attempts=2 seeks=1 reads=10 pauses=4 resumes=3 handed=262144 committed=262144 resend-read-unpaused=yes odd-answers=()
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=off events: P1:ok:port57962:send0:handed0@6.747 R65390/0:pause@6.834 S0/0:ok@9.529 P2:ok:port57974:send1:handed0@14.335 R65390/0:pause@14.352 Z0:send1@507.152 R65536/32768:32768@507.193 R65536/16384:16384@507.282 R65536/0:pause@507.298 Z0:send1@508.384 R65536/65536:65536@508.401 R65536/0:pause@508.454 Z0:send1@509.597 R65536/65536:65536@509.626 R65536/49152:49152@509.917 E@509.985 R32768/32768:32768@510.102 
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=off server: req h2 POST /refuse #1 conn=57962 at=13479.3
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=off server: refuse h2 conn=57962 RST_STREAM REFUSED_STREAM at its headers, before any DATA
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=off server: req h2 POST /refuse #2 conn=57974 at=13486.6
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=off server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=31 first=492.8 last=496.0 arr=omitted
+[guix-8.20.0] rewind run=1 case=h2-refuse-at0-late fresh=on clears-send=off server: count h2:/refuse=2
+[guix-8.20.0] rewind run=1 case=h2-control-sink-late fresh=on clears-send=on status=200 version=http/2 attempts=1 seeks=0 reads=8 pauses=2 resumes=2 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=1 case=h2-control-sink-late fresh=on clears-send=on events: P1:ok:port57984:send0:handed0@3.833 R65396/0:pause@3.873 Z0:send1@507.295 R65536/32768:32768@507.362 R65536/16384:16384@507.66 R65536/0:pause@507.756 Z0:send1@508.877 R65536/65536:65536@508.96 R65536/32768:32768@509.233 R65536/65536:65536@510.227 E@510.574 R49152/49152:49152@511.12 
+[guix-8.20.0] rewind run=1 case=h2-control-sink-late fresh=on clears-send=on server: req h2 POST /sink #1 conn=57984 at=13990.4
+[guix-8.20.0] rewind run=1 case=h2-control-sink-late fresh=on clears-send=on server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=32 first=503.5 last=508.5 arr=omitted
+[guix-8.20.0] rewind run=1 case=h2-control-sink-late fresh=on clears-send=on server: count h2:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=off status=200 version=http/1.1 attempts=1 seeks=0 reads=8 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=off events: P1:ok:port42462:send0:handed0@0.841 R65399/0:pause@0.872 Z0:send1@2.506 R65536/65536:65536@2.525 R65536/0:pause@2.624 Z0:send1@3.844 R65536/65536:65536@3.853 R65536/0:pause@3.907 Z0:send1@5.141 R65536/65536:65536@5.15 R65536/0:pause@5.201 E@5.961 Z0:send1@6.458 R65536/65536:65536@6.465 
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=off server: req raw GET /close-after #1 conn=42450 at=14503.4
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=off server: close-after raw then=fin conn=42450: closing 50 ms on
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=off server: req raw POST /sink #1 conn=42462 at=14705.1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=off server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.5 last=5.4 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=off status=200 version=http/1.1 attempts=1 seeks=0 reads=8 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=off events: P1:ok:port42496:send0:handed0@0.869 R65398/0:pause@0.953 Z0:send1@2.663 R65536/65536:65536@2.68 R65536/0:pause@2.744 Z0:send1@4.085 R65536/65536:65536@4.091 R65536/0:pause@4.134 Z0:send1@5.335 R65536/65536:65536@5.339 R65536/0:pause@5.372 E@5.732 Z0:send1@6.583 R65536/65536:65536@6.587 
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=off server: req raw GET /close-after #1 conn=42484 at=14715.6
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=off server: close-after raw then=fin conn=42484: closing 50 ms on
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=off server: req raw POST /sink #1 conn=42496 at=16218.0
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=off server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.5 last=5.4 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=off status=200 version=http/1.1 attempts=1 seeks=0 reads=12 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=off events: P1:ok:port42516:send0:handed0@0.783 R65394/0:pause@0.825 Z0:send1@501.349 R65536/32768:32768@501.384 R65536/32768:32768@501.504 R65536/16384:16384@501.539 R65536/0:pause@501.554 Z0:send1@502.754 R65536/65536:65536@502.771 R65536/16384:16384@502.86 R65536/0:pause@502.881 Z0:send1@504.12 R65536/65536:65536@504.136 R32768/16384:16384@504.184 R16384/0:pause@504.205 E@504.225 Z0:send1@505.35 R16384/16384:16384@505.364 
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=off server: req raw GET /close-after #1 conn=42510 at=16227.2
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=off server: close-after raw then=fin conn=42510: closing 50 ms on
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=off server: req raw POST /sink #1 conn=42516 at=16429.7
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=off server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=500.3 last=504.1 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=off failed reason=body-not-replayable code=65 request-size=262282 error="seek callback returned error 2" attempts=1 seeks=1 reads=12 pauses=2 resumes=2 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=off events: P1:ok:port42534:send0:handed0@0.421 R65398/0:pause@0.463 Z0:send1@0.702 R65536/32768:32768@0.723 R65536/32768:32768@0.807 R65536/16384:16384@0.875 R65536/16384:16384@0.914 R65536/16384:16384@0.956 R65536/16384:16384@0.995 R65536/16384:16384@1.031 R65536/0:pause@1.058 Z0:send1@2.166 R65536/65536:65536@2.191 R49152/32768:32768@2.282 E@2.297 R16384/16384:16384@2.325 S0/0:cantseek@4.329 
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=off server: req raw GET /close-after #1 conn=42534 at=16937.4
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=off server: close-after raw then=kill conn=42534: the next request on it is cut
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=off server: req raw POST /sink #1 conn=42534 at=17138.3
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=off server: killed raw /sink conn=42534 after reading it whole, its head and 262144 body bytes, at 3.5ms; no answer
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=off failed reason=body-not-replayable code=65 request-size=262283 error="seek callback returned error 2" attempts=1 seeks=1 reads=10 pauses=5 resumes=5 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=off events: P1:ok:port42552:send0:handed0@0.294 R65397/0:pause@0.32 Z0:send1@0.508 R65536/16384:16384@0.518 R65536/0:pause@0.55 Z0:send1@1.656 R65536/65536:65536@1.663 R65536/0:pause@1.702 Z0:send1@2.968 R65536/65536:65536@2.972 R65536/0:pause@3.005 Z0:send1@4.265 R65536/65536:65536@4.269 R49152/0:pause@4.296 E@4.607 Z0:send1@5.522 R49152/49152:49152@5.526 S0/0:cantseek@5.798 
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=off server: req raw GET /close-after #1 conn=42552 at=17146.2
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=off server: close-after raw then=kill conn=42552: the next request on it is cut
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=off server: req raw POST /sink #1 conn=42552 at=18647.3
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=off server: killed raw /sink conn=42552 after reading it whole, its head and 262144 body bytes, at 5.3ms; no answer
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=off status=200 version=http/1.1 attempts=2 seeks=1 reads=14 pauses=5 resumes=4 handed=262144 committed=262144 resend-read-unpaused=yes odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=off events: P1:ok:port47724:send0:handed0@0.554 R65390/0:pause@0.597 S0/0:ok@1.388 P2:ok:port47740:send1:handed0@2.685 R65390/0:pause@2.721 Z0:send1@500.994 R65536/49152:49152@501.038 R65536/32768:32768@501.182 R65536/16384:16384@501.247 R65536/16384:16384@501.314 R65536/16384:16384@501.357 R65536/0:pause@501.395 Z0:send1@502.534 R65536/65536:65536@502.564 R65536/16384:16384@502.708 R49152/0:pause@502.751 Z0:send1@502.761 R49152/16384:16384@502.773 R32768/0:pause@502.808 E@502.903 Z0:send1@503.942 R32768/32768:32768@503.971 
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=off server: req raw GET /close-after #1 conn=47724 at=18654.9
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=off server: close-after raw then=cuthead conn=47724: the next request on it is cut at its head
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=off server: req raw POST /sink #1 conn=47724 at=18856.1
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=off server: cut-head raw /sink conn=47724 at its head, framing length, by FIN, at 0.2ms
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=off server: req raw POST /sink #2 conn=47740 at=18858.0
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=off server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=498.5 last=501.4 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=off server: count raw:/close-after=1 raw:/sink=2
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=off status=200 version=http/1.1 attempts=2 seeks=1 reads=12 pauses=3 resumes=2 handed=262144 committed=262144 resend-read-unpaused=yes odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=off events: P1:ok:port47746:send0:handed0@0.481 R65388/0:pause@0.506 S0/0:ok@0.939 P2:ok:port47756:send1:handed0@2.282 R65388/0:pause@2.319 Z0:send1@500.954 R65536/49152:49152@500.998 R65536/49152:49152@501.156 R65536/16384:16384@501.241 R65536/16384:16384@501.292 R65536/16384:16384@501.327 R65536/16384:16384@501.383 R65536/0:pause@501.409 Z0:send1@502.547 R65536/65536:65536@502.579 R32768/16384:16384@502.671 E@502.689 R16384/16384:16384@502.709 
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=off server: req raw GET /close-after #1 conn=47746 at=19365.0
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=off server: close-after raw then=resethead conn=47746: the next request on it is cut at its head
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=off server: req raw POST /sink #1 conn=47746 at=19566.7
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=off server: cut-head raw /sink conn=47746 at its head, framing length, by RST, at 0.1ms
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=off server: req raw POST /sink #2 conn=47756 at=19568.5
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=off server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=498.9 last=500.7 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=off server: count raw:/close-after=1 raw:/sink=2
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=off failed reason=body-not-replayable code=65 request-size=262284 error="Recv failure: Connection reset by peer" attempts=1 seeks=1 reads=13 pauses=1 resumes=1 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=off events: P1:ok:port47784:send0:handed0@0.486 R65396/0:pause@0.529 Z0:send1@0.817 R65536/65536:65536@0.845 R65536/32768:32768@0.979 R65536/16384:16384@1.033 R65536/16384:16384@1.076 R65536/16384:16384@1.115 R65536/16384:16384@1.153 R65536/16384:16384@1.191 R65536/16384:16384@1.22 R65536/16384:16384@1.254 R49152/16384:16384@1.28 R32768/16384:16384@1.312 E@1.333 R16384/16384:16384@1.338 S0/0:cantseek@2.168 
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=off server: req raw GET /close-after #1 conn=47784 at=20071.8
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=off server: close-after raw then=reset conn=47784: the next request on it is reset after 32768 body bytes
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=off server: req raw POST /sink #1 conn=47784 at=20173.6
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=off server: reset raw /sink conn=47784 after its head and 65536 body bytes, at 1.1ms; RST
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=off failed reason=body-not-replayable code=65 request-size=82067 error="Recv failure: Connection reset by peer" attempts=1 seeks=1 reads=5 pauses=3 resumes=3 handed=81920 committed=147456 resend-read-unpaused=na odd-answers=((147456 done))
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=off events: P1:ok:port47796:send0:handed0@0.552 R65389/0:pause@0.594 Z0:send1@0.853 R65536/16384:16384@0.873 R65536/0:pause@0.94 Z0:send1@2.173 R65536/65536:65536@2.213 R65536/0:pause@2.358 Z0:send1@3.666 S0/0:cantseek@3.784 
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=off server: req raw GET /close-after #1 conn=47796 at=20178.0
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=off server: close-after raw then=reset conn=47796: the next request on it is reset after 32768 body bytes
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=off server: req raw POST /sink #1 conn=47796 at=20279.3
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=off server: reset raw /sink conn=47796 after its head and 81920 body bytes, at 2.5ms; RST
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=off get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=off failed reason=body-not-replayable code=65 request-size=262285 error="Recv failure: Connection reset by peer" attempts=1 seeks=1 reads=13 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=off events: P1:ok:port47816:send0:handed0@0.539 R65395/0:pause@0.594 Z0:send1@0.847 R65536/16384:16384@0.858 R65536/16384:16384@0.888 R65536/16384:16384@0.911 R65536/0:pause@0.925 Z0:send1@2.015 R65536/65536:65536@2.026 R65536/32768:32768@2.2 R65536/16384:16384@2.287 R65536/16384:16384@2.341 R65536/0:pause@2.403 Z0:send1@3.506 R65536/65536:65536@3.524 R16384/0:pause@3.634 E@3.682 Z0:send1@4.77 R16384/16384:16384@4.789 S0/0:cantseek@5.334 
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=off server: req raw GET /close-after #1 conn=47816 at=20286.3
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=off server: close-after raw then=reset conn=47816: the next request on it is reset after 262144 body bytes
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=off server: req raw POST /sink #1 conn=47816 at=20388.2
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=off server: reset raw /sink conn=47816 after its head and 262144 body bytes, at 4.3ms; RST
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=off server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=8 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=on events: P1:ok:port47836:send0:handed0@0.582 R65400/0:pause@0.607 Z0:send1@1.821 R65536/65536:65536@1.842 R65536/0:pause@1.904 Z0:send1@3.026 R65536/65536:65536@3.032 R65536/0:pause@3.066 Z0:send1@4.313 R65536/65536:65536@4.317 R65536/0:pause@4.353 E@4.728 Z0:send1@5.575 R65536/65536:65536@5.578 
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=on server: req raw GET /close-after #1 conn=47832 at=20396.1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=on server: close-after raw then=fin conn=47832: closing 50 ms on
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=on server: req raw POST /sink #1 conn=47836 at=20598.4
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.8 last=4.7 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200 fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=9 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=on events: P1:ok:port47852:send0:handed0@0.924 R65399/0:pause@0.995 Z0:send1@2.612 R65536/65536:65536@2.651 R65536/16384:16384@2.833 R65536/0:pause@2.892 Z0:send1@4.065 R65536/65536:65536@4.1 R65536/0:pause@4.225 Z0:send1@5.406 R65536/65536:65536@5.423 R49152/0:pause@5.526 E@5.992 Z0:send1@6.686 R49152/49152:49152@6.699 
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=on server: req raw GET /close-after #1 conn=47850 at=20607.3
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=on server: close-after raw then=fin conn=47850: closing 50 ms on
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=on server: req raw POST /sink #1 conn=47852 at=22109.9
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.5 last=5.5 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap1500 fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=12 pauses=5 resumes=5 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=on events: P1:ok:port47874:send0:handed0@0.843 R65395/0:pause@0.887 Z0:send1@501.689 R65536/16384:16384@501.737 R65536/16384:16384@501.859 R65536/0:pause@501.919 Z0:send1@503.22 R65536/65536:65536@503.253 R65536/0:pause@503.412 Z0:send1@504.716 R65536/65536:65536@504.753 R65536/0:pause@504.879 Z0:send1@506.042 R65536/65536:65536@506.059 R32768/16384:16384@506.182 R16384/0:pause@506.237 E@506.354 Z0:send1@507.448 R16384/16384:16384@507.469 
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=on server: req raw GET /close-after #1 conn=47862 at=22122.1
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=on server: close-after raw then=fin conn=47862: closing 50 ms on
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=on server: req raw POST /sink #1 conn=47874 at=22324.6
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=500.8 last=506.3 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-fin-gap200-late fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=10 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=on events: P1:ok:port47908:send0:handed0@0.758 R65399/0:pause@0.801 Z0:send1@2.268 R65536/65536:65536@2.306 R65536/16384:16384@2.449 R65536/0:pause@2.496 Z0:send1@3.778 R65536/65536:65536@3.809 R65536/16384:16384@3.93 R65536/0:pause@3.968 Z0:send1@5.125 R65536/65536:65536@5.144 R32768/0:pause@5.231 E@5.643 Z0:send1@6.641 R32768/32768:32768@6.651 
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=on server: req raw GET /close-after #1 conn=47906 at=22835.6
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=on server: close-after raw then=kill conn=47906: the next request on it is cut
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=on server: req raw POST /sink #1 conn=47908 at=23037.5
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.4 last=5.7 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap200 fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=9 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=on events: P1:ok:port47936:send0:handed0@0.722 R65398/0:pause@0.768 Z0:send1@2.381 R65536/65536:65536@2.407 R65536/16384:16384@2.524 R65536/0:pause@2.566 Z0:send1@3.658 R65536/65536:65536@3.671 R65536/0:pause@3.757 Z0:send1@4.916 R65536/65536:65536@4.928 R49152/0:pause@5.006 E@5.229 Z0:send1@6.182 R49152/49152:49152@6.194 
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=on server: req raw GET /close-after #1 conn=47924 at=23045.7
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=on server: close-after raw then=kill conn=47924: the next request on it is cut
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=on server: req raw POST /sink #1 conn=47936 at=24547.5
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.5 last=5.2 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-kill-gap1500 fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=12 pauses=5 resumes=5 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=on events: P1:ok:port47976:send0:handed0@0.743 R65391/0:pause@0.787 Z0:send1@501.641 R65536/16384:16384@501.685 R65536/16384:16384@501.794 R65536/0:pause@501.854 Z0:send1@503.125 R65536/65536:65536@503.164 R65536/16384:16384@503.318 R65536/0:pause@503.368 Z0:send1@504.669 R65536/65536:65536@504.706 R65536/0:pause@504.844 Z0:send1@505.965 R65536/65536:65536@505.995 R16384/0:pause@506.114 E@506.251 Z0:send1@507.343 R16384/16384:16384@507.359 
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=on server: req raw GET /close-after #1 conn=47962 at=24557.2
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=on server: close-after raw then=cuthead conn=47962: the next request on it is cut at its head
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=on server: req raw POST /sink #1 conn=47976 at=24759.1
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=500.8 last=506.3 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-cuthead-gap200-late fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=11 pauses=5 resumes=5 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=on events: P1:ok:port48002:send0:handed0@0.663 R65389/0:pause@0.709 Z0:send1@501.197 R65536/16384:16384@501.242 R65536/16384:16384@501.369 R65536/0:pause@501.428 Z0:send1@502.615 R65536/65536:65536@502.63 R65536/0:pause@502.736 Z0:send1@503.934 R65536/65536:65536@503.964 R65536/0:pause@504.091 Z0:send1@505.227 R65536/65536:65536@505.234 R32768/0:pause@505.303 E@505.73 Z0:send1@506.7 R32768/32768:32768@506.709 
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=on server: req raw GET /close-after #1 conn=48000 at=25271.5
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=on server: close-after raw then=resethead conn=48000: the next request on it is cut at its head
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=on server: req raw POST /sink #1 conn=48002 at=25473.7
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=500.5 last=505.7 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-resethead-gap200-late fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=10 pauses=4 resumes=4 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=on events: P1:ok:port48032:send0:handed0@0.627 R65397/0:pause@0.672 Z0:send1@2.389 R65536/65536:65536@2.426 R65536/0:pause@2.549 Z0:send1@4.427 R65536/65536:65536@4.456 R65536/16384:16384@4.534 R65536/0:pause@4.551 Z0:send1@5.648 R65536/65536:65536@5.676 R49152/16384:16384@5.802 R32768/0:pause@5.821 E@5.908 Z0:send1@7.015 R32768/32768:32768@7.024 
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=on server: req raw GET /close-after #1 conn=48018 at=25982.2
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=on server: close-after raw then=reset conn=48018: the next request on it is reset after 32768 body bytes
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=on server: req raw POST /sink #1 conn=48032 at=26083.5
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.6 last=6.1 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768 fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=273 pauses=130 resumes=130 handed=8388608 committed=8388608 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=on events: P1:ok:port48064:send0:handed0@0.402 R65390/0:pause@0.423 Z0:send1@1.85 R65536/65536:65536@1.876 R65536/0:pause@1.945 Z0:send1@3.067 R65536/65536:65536@3.081 R65536/0:pause@3.146 Z0:send1@4.337 R65536/65536:65536@4.35 R65536/0:pause@4.393 Z0:send1@5.586 R65536/65536:65536@5.598 R65536/0:pause@5.641 Z0:send1@6.84 R65536/65536:65536@6.851 R65536/0:pause@6.893 Z0:send1@8.089 R65536/65536:65536@8.1 R65536/0:pause@8.153 Z0:send1@9.333 R65536/65536:65536@9.345 R65536/0:pause@9.385 Z0:send1@10.592 R65536/65536:65536@10.604 R65536/0:pause@10.657 Z0:send1@11.842 R65536/65536:65536@11.854 R65536/0:pause@11.896 Z0:send1@13.091 R65536/65536:65536@13.103 R65536/0:pause@13.163 Z0:send1@14.334 R65536/65536:65536@14.358 R65536/0:pause@14.403 Z0:send1@15.582 R65536/65536:65536@15.596 R65536/0:pause@15.64 Z0:send1@16.847 R65536/65536:65536@16.86 R65536/0:pause@16.909 Z0:send1@18.089 R65536/65536:65536@18.093 R65536/0:pause@18.121 Z0:send1@19.31 R65536/65536:65536@19.317 R65536/0:pause@19.349 Z0:send1@20.636 R65536/65536:65536@20.648 R65536/0:pause@20.705 Z0:send1@21.904 R65536/65536:65536@21.917 R65536/0:pause@21.956 Z0:send1@23.325 R65536/65536:65536@23.338 R65536/0:pause@23.381 Z0:send1@24.46 R65536/65536:65536@24.479 R65536/0:pause@24.524 Z0:send1@25.594 ...335-more... R65536/0:pause@151.931 Z0:send1@153.118 R65536/65536:65536@153.131 R65536/0:pause@153.208 Z0:send1@154.368 R65536/65536:65536@154.38 R49152/0:pause@154.454 E@154.683 Z0:send1@155.62 R49152/49152:49152@155.632 
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=on server: req raw GET /close-after #1 conn=48052 at=26094.2
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=on server: close-after raw then=reset conn=48052: the next request on it is reset after 32768 body bytes
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=on server: req raw POST /sink #1 conn=48064 at=26195.5
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=on server: sink raw method=POST cl=8388608 te=- expect=- ct=- bytes=8388608 sha=bdf23837181f5808331800c1ae2b4f7d7a839536b10d58491471c50dde23833a pattern=ok want_sha=ok arrivals=138 first=1.2 last=154.8 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-reset-at32768-8MiB fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=on get status=200 version=http/1.1
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=on status=200 version=http/1.1 attempts=1 seeks=0 reads=9 pauses=3 resumes=3 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=on events: P1:ok:port48088:send0:handed0@0.706 R65396/0:pause@0.749 Z0:send1@2.63 R65536/65536:65536@2.671 R65536/0:pause@2.831 Z0:send1@4.654 R65536/65536:65536@4.69 R65536/32768:32768@4.823 R65536/16384:16384@4.875 R65536/0:pause@4.907 Z0:send1@6.044 R65536/65536:65536@6.072 E@6.136 R16384/16384:16384@6.221 
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=on server: req raw GET /close-after #1 conn=48080 at=26366.1
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=on server: close-after raw then=reset conn=48080: the next request on it is reset after 262144 body bytes
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=on server: req raw POST /sink #1 conn=48088 at=26468.4
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=on server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.8 last=5.9 arr=omitted
+[guix-8.20.0] rewind run=2 case=pooled-reset-at262144 fresh=on server: count raw:/close-after=1 raw:/sink=1
+[guix-8.20.0] rewind run=2 case=h2-refuse-at32768 fresh=on clears-send=on failed reason=body-not-replayable code=65 request-size=114827 error="seek callback returned error 2" attempts=1 seeks=1 reads=4 pauses=1 resumes=1 handed=163840 committed=163840 resend-read-unpaused=na odd-answers=((163840 done))
+[guix-8.20.0] rewind run=2 case=h2-refuse-at32768 fresh=on clears-send=on events: P1:ok:port43198:send0:handed0@7.382 R65397/0:pause@7.471 Z0:send1@13.385 R65536/32768:32768@13.419 R65536/65536:65536@13.662 R65536/65536:65536@14.65 S0/0:cantseek@14.85 
+[guix-8.20.0] rewind run=2 case=h2-refuse-at32768 fresh=on clears-send=on server: req h2 POST /refuse #1 conn=43198 at=26487.6
+[guix-8.20.0] rewind run=2 case=h2-refuse-at32768 fresh=on clears-send=on server: refuse h2 conn=43198 RST_STREAM REFUSED_STREAM after 32768 DATA bytes
+[guix-8.20.0] rewind run=2 case=h2-refuse-at32768 fresh=on clears-send=on server: count h2:/refuse=1
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=on status=200 version=http/2 attempts=2 seeks=1 reads=9 pauses=2 resumes=1 handed=262144 committed=262144 resend-read-unpaused=yes odd-answers=()
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=on events: P1:ok:port43202:send0:handed0@6.519 R65391/0:pause@6.615 S0/0:ok@9.278 P2:ok:port43212:send1:handed0@13.305 R65391/0:pause@13.321 Z0:send1@507.018 R65536/16384:16384@507.063 R65536/32768:32768@507.18 R65536/16384:16384@507.262 R65536/65536:65536@507.778 R65536/16384:16384@507.985 R65536/65536:65536@508.247 E@508.481 R49152/49152:49152@508.575 
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=on server: req h2 POST /refuse #1 conn=43202 at=26504.0
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=on server: refuse h2 conn=43202 RST_STREAM REFUSED_STREAM at its headers, before any DATA
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=on server: req h2 POST /refuse #2 conn=43212 at=26510.4
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=on server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=493.8 last=496.2 arr=omitted
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=on server: count h2:/refuse=2
+[guix-8.20.0] rewind run=2 case=h2-refuse-at32768 fresh=off clears-send=on failed reason=body-not-replayable code=65 request-size=114828 error="seek callback returned error 2" attempts=1 seeks=1 reads=6 pauses=1 resumes=1 handed=180224 committed=245760 resend-read-unpaused=na odd-answers=((245760 done))
+[guix-8.20.0] rewind run=2 case=h2-refuse-at32768 fresh=off clears-send=on events: P1:ok:port43220:send0:handed0@5.563 R65396/0:pause@5.61 Z0:send1@7.007 R65536/49152:49152@7.162 R65536/65536:65536@7.609 R65536/16384:16384@7.767 R49152/16384:16384@7.808 R32768/65536:32768@8.717 S0/0:cantseek@9.271 
+[guix-8.20.0] rewind run=2 case=h2-refuse-at32768 fresh=off clears-send=on server: req h2 POST /refuse #1 conn=43220 at=27016.8
+[guix-8.20.0] rewind run=2 case=h2-refuse-at32768 fresh=off clears-send=on server: refuse h2 conn=43220 RST_STREAM REFUSED_STREAM after 32768 DATA bytes
+[guix-8.20.0] rewind run=2 case=h2-refuse-at32768 fresh=off clears-send=on server: count h2:/refuse=1
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=off clears-send=on status=200 version=http/2 attempts=2 seeks=1 reads=9 pauses=3 resumes=2 handed=262144 committed=262144 resend-read-unpaused=yes odd-answers=()
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=off clears-send=on events: P1:ok:port43222:send0:handed0@5.316 R65390/0:pause@5.362 S0/0:ok@7.727 P2:ok:port43238:send1:handed0@13.436 R65390/0:pause@13.457 Z0:send1@507.026 R65536/16384:16384@507.068 R65536/32768:32768@507.177 R65536/16384:16384@507.241 R65536/65536:65536@507.85 R65536/0:pause@508.062 Z0:send1@509.185 R65536/65536:65536@509.246 E@509.524 R65536/65536:65536@509.734 
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=off clears-send=on server: req h2 POST /refuse #1 conn=43222 at=27029.1
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=off clears-send=on server: refuse h2 conn=43222 RST_STREAM REFUSED_STREAM at its headers, before any DATA
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=off clears-send=on server: req h2 POST /refuse #2 conn=43238 at=27036.8
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=off clears-send=on server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=34 first=493.6 last=496.6 arr=omitted
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=off clears-send=on server: count h2:/refuse=2
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=off status=200 version=http/2 attempts=2 seeks=1 reads=7 pauses=2 resumes=1 handed=262144 committed=262144 resend-read-unpaused=yes odd-answers=()
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=off events: P1:ok:port43242:send0:handed0@2.309 R65390/0:pause@2.328 S0/0:ok@4.628 P2:ok:port43246:send1:handed0@8.474 R65390/0:pause@8.487 Z0:send1@503.826 R65536/65536:65536@503.887 R65536/65536:65536@505.596 R65536/49152:49152@506.142 R65536/65536:65536@506.844 E@506.957 R16384/16384:16384@508.056 
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=off server: req h2 POST /refuse #1 conn=43242 at=27539.8
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=off server: refuse h2 conn=43242 RST_STREAM REFUSED_STREAM at its headers, before any DATA
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=off server: req h2 POST /refuse #2 conn=43246 at=27545.9
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=off server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=34 first=495.8 last=501.0 arr=omitted
+[guix-8.20.0] rewind run=2 case=h2-refuse-at0-late fresh=on clears-send=off server: count h2:/refuse=2
+[guix-8.20.0] rewind run=2 case=h2-control-sink-late fresh=on clears-send=on status=200 version=http/2 attempts=1 seeks=0 reads=7 pauses=1 resumes=1 handed=262144 committed=262144 resend-read-unpaused=na odd-answers=()
+[guix-8.20.0] rewind run=2 case=h2-control-sink-late fresh=on clears-send=on events: P1:ok:port59092:send0:handed0@5.775 R65396/0:pause@5.81 Z0:send1@506.945 R65536/32768:32768@506.984 R65536/16384:16384@507.121 R65536/16384:16384@507.155 R65536/65536:65536@508.234 R65536/65536:65536@508.972 E@509.396 R65536/65536:65536@510.23 
+[guix-8.20.0] rewind run=2 case=h2-control-sink-late fresh=on clears-send=on server: req h2 POST /sink #1 conn=59092 at=28059.8
+[guix-8.20.0] rewind run=2 case=h2-control-sink-late fresh=on clears-send=on server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=34 first=501.2 last=505.6 arr=omitted
+[guix-8.20.0] rewind run=2 case=h2-control-sink-late fresh=on clears-send=on server: count h2:/sink=1
+[guix-8.20.0] rewind done
+[guix-8.20.0] rewind exited 0 after about 29 s
+[guix-8.20.0] server-stderr: counts h2:/refuse=16 h2:/sink=2 raw:/close-after=40 raw:/sink=44

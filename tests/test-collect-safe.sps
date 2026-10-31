@@ -1272,22 +1272,28 @@
 (define header-callable-citation
   ".plans/decisions/0030-streams-are-request-keys-and-token-operations.md: beside `write-body`, and the seek and prerequest callables ADR-0032 adds, each `__collect_safe` and locked, in `(curl private transfer)` alone (ADR-0013).")
 
-(test-equal "the table's two callable rows are write-body's, citing ADR-0013's decision 2 as spike E1 held it, and read-head's, the header callable, citing ADR-0030's callables, each __collect_safe, with no mark and no binder"
+(test-equal "the table's five callable rows are write-body's, citing ADR-0013's decision 2 as spike E1 held it, and read-head's, the header callable, read-body's, the read callable, seek-body's and prereq-body's, each citing ADR-0030's callables, each __collect_safe, with no mark and no binder"
   `((write-body (__collect_safe) ,callback-citation)
-    (read-head (__collect_safe) ,header-callable-citation))
+    (read-head (__collect_safe) ,header-callable-citation)
+    (read-body (__collect_safe) ,header-callable-citation)
+    (seek-body (__collect_safe) ,header-callable-citation)
+    (prereq-body (__collect_safe) ,header-callable-citation))
   (guard (e (#t (list 'unreadable (describe e))))
     (filter (lambda (row) (symbol? (car row))) conventions-table)))
 
-(test-equal "the scan of src/ finds write-body and read-head each defined once, a foreign-callable with __collect_safe, in (curl private transfer)"
+(test-equal "the scan of src/ finds write-body, read-head, read-body, seek-body and prereq-body each defined once, a foreign-callable with __collect_safe, in (curl private transfer)"
   '((write-body ((__collect_safe) foreign-callable "src/curl/private/transfer.sls"))
-    (read-head ((__collect_safe) foreign-callable "src/curl/private/transfer.sls")))
+    (read-head ((__collect_safe) foreign-callable "src/curl/private/transfer.sls"))
+    (read-body ((__collect_safe) foreign-callable "src/curl/private/transfer.sls"))
+    (seek-body ((__collect_safe) foreign-callable "src/curl/private/transfer.sls"))
+    (prereq-body ((__collect_safe) foreign-callable "src/curl/private/transfer.sls")))
   (guard (e (#t (list 'unreadable (describe e))))
     (if (eq? (car src-check) 'returned)
         (map (lambda (name)
                (cons name
                      (map (lambda (b) (list (cadr b) (list-ref b 3) (caddr b)))
                           (filter (lambda (b) (eq? (car b) name)) (car (cadr src-check))))))
-             '(write-body read-head))
+             '(write-body read-head read-body seek-body prereq-body))
         src-check)))
 
 (test-equal "the table's rows for slice 2's other entries, curl_easy_strerror, curl_easy_nextheader, curl_slist_append and curl_slist_free_all, are each plain, citing ADR-0013's cannot-block sentence, with no mark and no binder"

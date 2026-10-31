@@ -35,7 +35,9 @@
           curlinfo-starttransfer-time-t curlinfo-total-time-t curlinfo-request-size
           curlm-ok curlm-unknown-option curlmsg-done
           curlmopt-max-total-connections curlmopt-quick-exit curlmopt-pipelining curlpipe-nothing
-          curl-writefunc-pause curlpause-cont)
+          curl-writefunc-pause curlpause-cont
+          curl-readfunc-pause curl-readfunc-abort curl-seekfunc-ok curl-seekfunc-cantseek
+          curl-prereqfunc-ok curl-prereqfunc-abort seek-set)
   (import (curl private require-threaded)
           (rnrs))
 
@@ -465,4 +467,36 @@
   ;;                                     The call takes the whole state, not a
   ;;                                     change (ADR-0012, amended 2026-10-29)
   (define curl-writefunc-pause #x10000001)
-  (define curlpause-cont 0))
+  (define curlpause-cont 0)
+
+  ;; The request stream's (the M6 plan, sections 3.3 and 3.4), curl/curl.h,
+  ;; each the same from 7.85.0 to 8.23.0, and stdio.h's SEEK_SET, which
+  ;; curl.h names for a seek callback's origin.
+  ;;
+  ;; curl-readfunc-pause : Positive-Integer
+  ;;                                     CURL_READFUNC_PAUSE, 0x10000001: what the
+  ;;                                     read callable answers with nothing
+  ;;                                     buffered and no end, which pauses the
+  ;;                                     transfer's sending until it is resumed
+  ;; curl-readfunc-abort : Positive-Integer
+  ;;                                     CURL_READFUNC_ABORT, 0x10000000: what it
+  ;;                                     answers to fail the transfer, which
+  ;;                                     libcurl ends with 42
+  ;; curl-seekfunc-ok : Natural          CURL_SEEKFUNC_OK, 0: the seek callable's
+  ;;                                     answer for a rewind that is a no-op
+  ;; curl-seekfunc-cantseek : Positive-Integer
+  ;;                                     CURL_SEEKFUNC_CANTSEEK, 2: its refusal
+  ;; curl-prereqfunc-ok : Natural        CURL_PREREQFUNC_OK, 0: the prerequest
+  ;;                                     callable's answer for an attempt that
+  ;;                                     may go on, since 7.80.0
+  ;; curl-prereqfunc-abort : Positive-Integer
+  ;;                                     CURL_PREREQFUNC_ABORT, 1: its refusal
+  ;; seek-set : Natural                  SEEK_SET, 0, stdio.h: the origin of a
+  ;;                                     rewind to the body's start
+  (define curl-readfunc-pause #x10000001)
+  (define curl-readfunc-abort #x10000000)
+  (define curl-seekfunc-ok 0)
+  (define curl-seekfunc-cantseek 2)
+  (define curl-prereqfunc-ok 0)
+  (define curl-prereqfunc-abort 1)
+  (define seek-set 0))

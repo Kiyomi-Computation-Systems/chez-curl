@@ -1,0 +1,23 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+control libcurl 7.85.0 OpenSSL/3.0.13
+control setting=unpaced run=1 room=#t cpu-ms=1.2353889999999978 paced=0 resumes=1 outcome=200
+control setting=unpaced run=2 room=#t cpu-ms=0.19980599999996684 paced=0 resumes=1 outcome=200
+control setting=unpaced run=3 room=#t cpu-ms=0.20771899999999732 paced=0 resumes=1 outcome=200
+control setting=unpaced run=4 room=#t cpu-ms=0.3754900000000134 paced=0 resumes=1 outcome=200
+control setting=unpaced run=5 room=#t cpu-ms=0.15980600000000322 paced=0 resumes=1 outcome=200
+control setting=unpaced run=6 room=#t cpu-ms=0.18843700000002173 paced=0 resumes=1 outcome=200
+control setting=unpaced run=7 room=#t cpu-ms=0.23594500000001517 paced=0 resumes=1 outcome=200
+control setting=unpaced run=8 room=#t cpu-ms=0.19061499999997977 paced=0 resumes=1 outcome=200
+control setting=unpaced run=9 room=#t cpu-ms=0.1821560000000204 paced=0 resumes=1 outcome=200
+control setting=unpaced run=10 room=#t cpu-ms=0.18323700000001963 paced=0 resumes=1 outcome=200
+control setting=paced run=1 room=#t cpu-ms=0.278761999999972 paced=1 resumes=1 outcome=200
+control setting=paced run=2 room=#t cpu-ms=0.17333600000000615 paced=1 resumes=1 outcome=200
+control setting=paced run=3 room=#t cpu-ms=0.2562080000000151 paced=1 resumes=1 outcome=200
+control setting=paced run=4 room=#t cpu-ms=0.26353000000000293 paced=1 resumes=1 outcome=200
+control setting=paced run=5 room=#t cpu-ms=0.24269900000001599 paced=1 resumes=1 outcome=200
+control setting=paced run=6 room=#t cpu-ms=0.272705999999971 paced=1 resumes=1 outcome=200
+control setting=paced run=7 room=#t cpu-ms=0.1797109999999975 paced=1 resumes=1 outcome=200
+control setting=paced run=8 room=#t cpu-ms=0.26383799999996427 paced=1 resumes=1 outcome=200
+control setting=paced run=9 room=#t cpu-ms=0.2569700000000239 paced=1 resumes=1 outcome=200
+control setting=paced run=10 room=#t cpu-ms=0.349804000000006 paced=1 resumes=1 outcome=200
+control counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))

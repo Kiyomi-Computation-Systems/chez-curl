@@ -1,0 +1,19 @@
+[guix-8.20.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[guix-8.20.0] server {"node":"v24.18.0","pid":34,"http":"127.0.0.1:36895","raw":"127.0.0.1:42139","https":"127.0.0.1:45829","h2":"127.0.0.1:35961"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+[guix-8.20.0] libcurl 8.20.0 GnuTLS/3.8.13
+[guix-8.20.0] escape run=1 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[guix-8.20.0] escape run=1 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[guix-8.20.0] escape run=1 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[guix-8.20.0] escape run=1 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[guix-8.20.0] escape run=2 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[guix-8.20.0] escape run=2 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[guix-8.20.0] escape run=2 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[guix-8.20.0] escape run=2 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[guix-8.20.0] escape run=3 handler=returns put=committed-in-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[guix-8.20.0] escape run=3 handler=escapes put=committed-in-hold asked=#t paused=#t first=escaped count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[guix-8.20.0] escape run=3 handler=returns put=control-commits-after-hold asked=#t paused=#t first=(returned #t) count-after-first=5 puts-2-3=(#t #t) count-at-end=15 handed=15 status=200 server: bytes=15 pattern=ok want_sha=ok 
+[guix-8.20.0] escape run=3 handler=escapes put=control-commits-after-hold asked=#t paused=#t first=escaped count-after-first=0 puts-2-3=(#t #t) count-at-end=10 handed=10 status=200 server: bytes=10 pattern=bad@0 want_sha=bad 
+[guix-8.20.0] escape done
+[guix-8.20.0] escape exited 0 after about 3 s
+[guix-8.20.0] server-stderr: counts raw:/sink=12

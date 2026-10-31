@@ -8,33 +8,47 @@ close-out under **Close-outs**, newest first.
 
 - **Milestone:** M6, streaming bodies and backpressure (brief §8), by the
   [M6 plan](2026-10-29-m6-plan.md), a draft, in three slices: the response stream with the
-  engine's resume and paced poll; the request stream; the high level. Next: slice 1.
-  - **Slice 1 measured first, 2026-10-30** (the plan, §4.1, as measured;
-    [`research/m6/slice1/`](research/m6/slice1/)), on a prototype of the plan's §3.2 to §3.5, a
-    patch on a copy of `src/`, on the five Linux lanes and under Valgrind. Its numbers set the
-    tests' bounds: pacing cuts 8.5.0's CPU over a 3 s pause from about 3,000 ms to 23.5 to 39.2;
-    a message during a pause acts within 1.251 ms natively; the head equals `finish-transfer`'s
-    on every face; the lent take lost nothing in 90 cases of 90; 64 MiB streams whole. Bound
-    plain, `curl_easy_pause`'s gzip replay, up to 21.6 ms, held collections, so it is bound
-    `__collect_safe`. And Guix's 8.20.0 reads back, inside `curl_multi_perform`, a wakeup made
-    before it, so the poll waits up to 1000 ms, which I reran and placed by trace. **Decided by
-    the maintainer, the recommended option:** the engine looks at its queue before it polls
-    (ADR-0012, amended 2026-10-30).
-  - **Slice 1 built, 2026-10-30,** uncommitted: the `stream-buffer` key, the head, the
-    buffered write callable, the header callable, resume, the look, the paced poll, the lent
-    take, `curl-token-next-piece`, the port, `pause-failed`, `stream-with-rounds`, and no
-    multiplexing on 8.7.x; `test-stream`, 73 tests (the plan, §4.2, as built). Reviewed twice
-    (Opus, read-only): the first found one major, a caller's `Expect: 100-continue` makes libcurl
-    resend a request inside one transfer on a 417, now refused (the plan, §3.2), and six minors;
-    the second, of the fixes, four minors. On the final tree: the container's `make test` 33 of
-    33 and the checks, and the five Docker lanes 33 of 33, the memory lane too, then the touched
-    suites again on each. Pushed as PR #36.
-  - **The Mac ran it on the PR, 2026-10-30** (the plan, §7): the multiplexing probe passed, each
-    HTTP/2 transfer on a connection of its own and neither failing the other; `make test` passed
-    32 of 33. `test-stream` failed one test: 8.7.1 handed a refused chunk to the write callable
-    again after `curl_easy_pause` answered 23, and the stream took it past the failure. The
-    callable now refuses every call once a reason is recorded (80304e9), and the Mac's rerun
-    passed `test-stream`, 73 of 73. Slice 1 owes the Mac nothing more.
+  engine's resume and paced poll; the request stream; the high level.
+  - **Slice 1 is merged** (PR #36, `f0c69d3`): the response stream, the engine's resume, the
+    look and the paced poll. The Mac has run it. Its close-out is below.
+  - **Slice 2, the request stream** (the plan, §5), on `feat/m6-slice-2`.
+    - **Measured first, 2026-10-30** (the plan, §5.1, as measured;
+      [`research/m6/slice2/`](research/m6/slice2/)): an Opus agent, on a prototype of §3.3, two
+      runs on each of the five Linux lanes, and under Valgrind on 8.5.0 and 8.20.0. It
+      confirmed §3.3's framing, the offer cap, `FRESH_CONNECT`, the seek's refusal and the
+      committed put, and that libcurl's own resend starts unpaused. It found:
+      - an early answer ends the transfer, or not, by version;
+      - 8.5.0 resends a refused HTTP/2 stream with no seek in 4 runs of 8, and only the
+        prerequest callable stops it;
+      - 7.85.0 spins its poll during a paused HTTP/2 upload, which the pacing answers;
+      - a paused receive stops an HTTP/2 send on every lane.
+
+      It also found a defect in main, which I reproduced: the unpaced and unmultiplexed test
+      engines fail at their first resume. The plan's §3.7 gains six rows. Nothing needed a
+      decision.
+    - **Built, 2026-10-30 to 31,** uncommitted (the plan, §5.2, as built):
+      - the `body` `stream` and `body-length` keys;
+      - the read, seek and prerequest callables, and `FRESH_CONNECT` owned;
+      - `curl-token-room-wait`, `curl-token-put-piece!`, `curl-token-end-body!` and
+        `curl-token-body-count`;
+      - `curl-head-body-asked?`;
+      - `body-length-mismatch` and `body-not-replayable`;
+      - test-upload, 58 tests.
+
+      **Decided by the maintainer, 2026-10-31,** each the recommended option (ADR-0030,
+      amended):
+      - a put past `body-length` fails the transfer, read as its outcome is, since libcurl calls
+        the read callable no more once it has the length;
+      - slice 2 builds the head's body-asked bit, which slice 3's at-most-once rule needs.
+
+      Reviewed (Opus, read-only): no blocker. One major: the by-version tests passed on a
+      libcurl with no row, slice 1's `spin-rows` too, so the Mac's run would have measured
+      nothing. Fixed in a round by the builder. A scoped review of that round (Opus,
+      read-only) found the body-asked test could not tell the bit from "the body streams";
+      **decided by the maintainer, the recommended option:** measure and pin it now. Unheld,
+      an answer sent at accept raced libcurl's request. With the engine's thread held after
+      connect by a private seam, the bit reads `#f` on 7.85.0 and 8.5.0, `#t` on 8.20.0 and
+      8.23.0, which test-upload pins by version.
   - **The plan measured first** ([`research/m6/`](research/m6/)):
     - a C probe whose loop steps as the engine does, 30 cases on the five Linux libcurls, two
       runs each ([`pause/`](research/m6/pause/));
@@ -200,6 +214,80 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-30 — M6 slice 1: the response stream, resume and the paced poll (PR #36, `f0c69d3`)
+
+- **Measured first** (the M6 plan, §4.1, as measured;
+  [`research/m6/slice1/`](research/m6/slice1/)), by an Opus agent, on a prototype of the plan's
+  §3.2 to §3.5, a patch on a copy of `src/`, on the five Linux lanes and under the memory gate's
+  Valgrind on 8.5.0 and 8.20.0:
+  - pacing cut 8.5.0's CPU over a 3 s pause from about 3,000 ms to 23.5 to 39.2 ms, and a submit,
+    a cancel or a resume during a pause acted within 1.251 ms natively;
+  - the head read in the header callable equalled `finish-transfer`'s on every face;
+  - the lent take lost nothing in 90 cases of 90;
+  - 64 MiB streamed whole within 1.63 s natively and 9.48 s under Valgrind;
+  - `curl_easy_pause`'s gzip replay ran up to 21.6 ms and, bound plain, held collections, so
+    it is bound `__collect_safe`.
+
+  And Guix's 8.20.0 reads back, inside `curl_multi_perform`, a wakeup made before it, so the
+  poll after waits up to 1000 ms. The agent placed the read in `curl_multi_poll`. Its own
+  control, a wakeup made after the perform and kept, said otherwise, and my trace with marks
+  around each call placed it in the perform.
+- **Decided by the maintainer, 2026-10-30,** the recommended option: the engine looks at its
+  queue between its read and its poll, and skips the poll when a message is queued (ADR-0012,
+  amended).
+- **Built** (the plan, §4.2, as built), by an Opus builder:
+  - the `stream-buffer` key, the head and its header callable, the buffered write callable;
+  - the resume message and step, the look, the paced poll;
+  - the lent take, `curl-token-next-piece`, the port;
+  - `pause-failed` and `stream-with-rounds`;
+  - `CURLMOPT_PIPELINING` at 0 on 8.7.x.
+
+  `tests/origin.mjs` gained the raw pattern, stall and early scripts, a CONNECT tunnel and
+  `/connection`, each held by `test-origin`. `test-stream` holds 73 tests. README.org says how
+  to read a response as it arrives. ADR-0009, ADR-0012 and ADR-0013 are amended.
+- **Reviewed twice** (Opus, read-only):
+  - the adversarial review: one major and six minors. The major: a caller's
+    `Expect: 100-continue` makes libcurl resend inside one transfer on a 417, so a stream
+    published the 417's head and the resend's body; a stream now refuses one, matched as the
+    floor matches (the plan, §3.2);
+  - the scoped review of the fixes: four minors, which I fixed. The port's docs still
+    overclaimed its thread rule: another thread's over-reading `get-bytevector-n` loses the
+    bytes Chez had buffered, now pinned.
+- **Mutants:** 70, over four rounds, every one killed on the final suite. `no-look` waited
+  1,005.116 ms for a message queued in the perform; `resume-sleeps-100ms` failed the delay bound
+  on every lane; the paced poll's four conditions are each killed on every libcurl through a
+  probe seam, beside the CPU bound on 8.5.0. One of mine first passed wrongly: I ran a copy
+  through the main tree's `scripts/guix-env`, which mounts its own repository.
+- **Checks,** on the final tree: in the container, `make test` 33 of 33, check-seam,
+  check-suites and check-floors; in Docker, the floor, main, gnutls and current lanes 33 of 33
+  each, and the memory lane 33 of 33, `check-memory-gate` in 33 cases. `test-curl-testing`
+  failed once on the current lane: an origin stub that announces garbage wrote nothing within
+  5 s, under load. It passed in every later run, and is carried.
+- **The Mac ran it, 2026-10-30** (the plan, §7):
+  - the multiplexing probe passed: each HTTP/2 transfer on a connection of its own, and neither
+    a paused stream nor a write error failed the other;
+  - `make test` passed 32 of 33: 8.7.1 hands a chunk refused inside the replay to the write
+    callable again after `curl_easy_pause` answered 23, and the stream took it past the
+    failure. The callable now refuses every call once a reason is recorded (`80304e9`), and the
+    rerun passed `test-stream`, 73 of 73.
+- **Five subagents:**
+
+  | Agent | Model | Tokens | Time |
+  |---|---|---|---|
+  | measurements | Opus | 682k | 94 min |
+  | builder | Opus | 936k | 152 min |
+  | adversarial review | Opus | 449k | 25 min |
+  | builder, fix round | Opus | 373k | 119 min |
+  | scoped review of the fixes | Opus | 277k | 14 min |
+- **Learned:**
+  - measuring first found an engine-wide flaw: Guix's lost wakeup had cost submits and cancels
+    since M3, and only resumes made it common enough to see;
+  - an agent's numbers can be right while its mechanism is wrong; test the mechanism against
+    the agent's own controls before it goes into a record;
+  - both reviews' findings were gaps in my brief, not in the builder's code, and each needed a
+    probe against libcurl or Chez to show;
+  - the Mac found an 8.7.1 behaviour no Linux lane can show, before the merge.
 
 ### 2026-10-29 — M5 slice 4: the request group and `http-parallel` (PR #33, `3f32151`)
 

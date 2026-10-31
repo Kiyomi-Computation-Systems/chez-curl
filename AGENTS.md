@@ -124,6 +124,12 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   its answer, and bound every wait for one.
 * Claude Code's Write tool drops trailing whitespace. Build a fixture whose
   point is a trailing space in code, and check its bytes.
+* A by-version test passes on every libcurl it has no row for when both its
+  sides answer "no row". A missing row's expected value is one no measurement
+  gives, and its actual value is the measurement, so the failure prints the row.
+* A full TCP buffer is not a stable full: a stalled upload took more after a
+  put on it timed out. A test that needs libcurl to stop asking for the body
+  holds it where it never asks: an `https` request to a plaintext face.
 
 **Chez and the FFI**
 
@@ -473,6 +479,15 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * Apple's 8.7.1 hands a chunk the write callback refused inside
   `curl_easy_pause`'s replay to it again, after the call: a callable refuses
   every call once a reason is recorded, or the stream takes it past the failure.
+* libcurl calls a read callback no more once it has read a sized body whole,
+  so a put past the length made after that reaches no callable. A refusal the
+  read callable owns is read where the outcome is, too.
+* 7.85.0's poll spins during a paused HTTP/2 upload only once DATA has gone: a
+  pacing control that pauses before its first byte measures nothing.
+* A server's answer written as it accepts a connection races the client's
+  request: natively libcurl's went first 100 of 100, under Valgrind the answer
+  did, 20 of 20. A test that needs the answer first holds the client after
+  connect; one that cannot asserts what holds both ways.
 
 ## Closing ritual
 

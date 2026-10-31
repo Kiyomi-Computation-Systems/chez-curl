@@ -1,0 +1,11 @@
+--- src/curl/private/transfer.sls	2026-10-31 08:08:08.175842174 -0400
++++ src/curl/private/transfer.sls	2026-10-31 10:21:37.000340568 -0400
+@@ -2478,7 +2478,7 @@
+     (foreign-callable __collect_safe
+       (lambda (key primary-ip local-ip primary-port local-port)
+         (guard (e (#t (record! key 'callback-raised e) curl-prereqfunc-abort))
+-          (let* ((sink (sink-of key)) (up (and sink (sink-upload sink))))
++          (let* ((sink (sink-of key)) (up (and sink (sink-upload sink))) (held (sleep (make-time (quote time-duration) 200000000 0))))
+             (if (not up)
+                 curl-prereqfunc-abort
+                 (let ((seen (locked (upload-lock up)

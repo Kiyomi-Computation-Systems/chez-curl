@@ -1,0 +1,1057 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[floor-7.85.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[floor-7.85.0] server {"node":"v20.10.0","pid":3123,"http":"127.0.0.1:43699","raw":"127.0.0.1:38477","https":"127.0.0.1:38995","h2":"127.0.0.1:38427"}
+[floor-7.85.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4
+[floor-7.85.0] libcurl 7.85.0 OpenSSL/3.0.13
+[floor-7.85.0] check run=1 face=http method=post framing=sized room-wait=#t puts-refused=() ms=24.999 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=http method=post framing=sized server: req http POST /sink #1 conn=38130 at=398.8
+[floor-7.85.0] check run=1 face=http method=post framing=sized server: sink http method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.1 last=5.4 arr=omitted
+[floor-7.85.0] check run=1 face=http method=post framing=sized server: count http:/sink=1
+[floor-7.85.0] check run=1 face=http method=post framing=chunked room-wait=#t puts-refused=() ms=4.942 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=http method=post framing=chunked server: req http POST /sink #1 conn=38138 at=426.9
+[floor-7.85.0] check run=1 face=http method=post framing=chunked server: sink http method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=9 first=0.2 last=3.7 arr=omitted
+[floor-7.85.0] check run=1 face=http method=post framing=chunked server: count http:/sink=1
+[floor-7.85.0] check run=1 face=http method=put framing=sized room-wait=#t puts-refused=() ms=4.771 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=http method=put framing=sized server: req http PUT /sink #1 conn=38152 at=433.1
+[floor-7.85.0] check run=1 face=http method=put framing=sized server: sink http method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=0.1 last=3.7 arr=omitted
+[floor-7.85.0] check run=1 face=http method=put framing=sized server: count http:/sink=1
+[floor-7.85.0] check run=1 face=http method=put framing=chunked room-wait=#t puts-refused=() ms=14.574 status=200 version=http/1.1 committed=262144 handed=262144 reads=16 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=http method=put framing=chunked server: req http PUT /sink #1 conn=38156 at=439.5
+[floor-7.85.0] check run=1 face=http method=put framing=chunked server: sink http method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=13 first=0.4 last=8.1 arr=omitted
+[floor-7.85.0] check run=1 face=http method=put framing=chunked server: count http:/sink=1
+[floor-7.85.0] check run=1 face=http method=patch framing=sized room-wait=#t puts-refused=() ms=5.938 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=http method=patch framing=sized server: req http PATCH /sink #1 conn=38164 at=456.0
+[floor-7.85.0] check run=1 face=http method=patch framing=sized server: sink http method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.2 last=4.6 arr=omitted
+[floor-7.85.0] check run=1 face=http method=patch framing=sized server: count http:/sink=1
+[floor-7.85.0] check run=1 face=http method=patch framing=chunked room-wait=#t puts-refused=() ms=5.928 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=http method=patch framing=chunked server: req http PATCH /sink #1 conn=38174 at=462.9
+[floor-7.85.0] check run=1 face=http method=patch framing=chunked server: sink http method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=0.1 last=4.8 arr=omitted
+[floor-7.85.0] check run=1 face=http method=patch framing=chunked server: count http:/sink=1
+[floor-7.85.0] check run=1 face=http method=delete framing=sized room-wait=#t puts-refused=() ms=6.104 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=http method=delete framing=sized server: req http DELETE /sink #1 conn=38188 at=470.2
+[floor-7.85.0] check run=1 face=http method=delete framing=sized server: sink http method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.1 last=4.9 arr=omitted
+[floor-7.85.0] check run=1 face=http method=delete framing=sized server: count http:/sink=1
+[floor-7.85.0] check run=1 face=http method=delete framing=chunked room-wait=#t puts-refused=() ms=7.757 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=http method=delete framing=chunked server: req http DELETE /sink #1 conn=38194 at=477.1
+[floor-7.85.0] check run=1 face=http method=delete framing=chunked server: sink http method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=0.1 last=5.0 arr=omitted
+[floor-7.85.0] check run=1 face=http method=delete framing=chunked server: count http:/sink=1
+[floor-7.85.0] check run=1 face=raw method=post framing=sized room-wait=#t puts-refused=() ms=6.103 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=raw method=post framing=sized server: req raw POST /sink #1 conn=44762 at=487.1
+[floor-7.85.0] check run=1 face=raw method=post framing=sized server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.0 last=4.2 arr=omitted
+[floor-7.85.0] check run=1 face=raw method=post framing=sized server: count raw:/sink=1
+[floor-7.85.0] check run=1 face=raw method=post framing=chunked room-wait=#t puts-refused=() ms=6.067 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=raw method=post framing=chunked server: req raw POST /sink #1 conn=44768 at=493.7
+[floor-7.85.0] check run=1 face=raw method=post framing=chunked server: sink raw method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=0.1 last=4.9 arr=omitted
+[floor-7.85.0] check run=1 face=raw method=post framing=chunked server: count raw:/sink=1
+[floor-7.85.0] check run=1 face=raw method=put framing=sized room-wait=#t puts-refused=() ms=6.132 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=raw method=put framing=sized server: req raw PUT /sink #1 conn=44786 at=500.6
+[floor-7.85.0] check run=1 face=raw method=put framing=sized server: sink raw method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.1 last=5.0 arr=omitted
+[floor-7.85.0] check run=1 face=raw method=put framing=sized server: count raw:/sink=1
+[floor-7.85.0] check run=1 face=raw method=put framing=chunked room-wait=#t puts-refused=() ms=6.216 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=raw method=put framing=chunked server: req raw PUT /sink #1 conn=44794 at=508.1
+[floor-7.85.0] check run=1 face=raw method=put framing=chunked server: sink raw method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=0.2 last=5.1 arr=omitted
+[floor-7.85.0] check run=1 face=raw method=put framing=chunked server: count raw:/sink=1
+[floor-7.85.0] check run=1 face=raw method=patch framing=sized room-wait=#t puts-refused=() ms=6.259 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=raw method=patch framing=sized server: req raw PATCH /sink #1 conn=44798 at=515.2
+[floor-7.85.0] check run=1 face=raw method=patch framing=sized server: sink raw method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.2 last=5.2 arr=omitted
+[floor-7.85.0] check run=1 face=raw method=patch framing=sized server: count raw:/sink=1
+[floor-7.85.0] check run=1 face=raw method=patch framing=chunked room-wait=#t puts-refused=() ms=5.822 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=raw method=patch framing=chunked server: req raw PATCH /sink #1 conn=44812 at=522.5
+[floor-7.85.0] check run=1 face=raw method=patch framing=chunked server: sink raw method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=0.3 last=4.5 arr=omitted
+[floor-7.85.0] check run=1 face=raw method=patch framing=chunked server: count raw:/sink=1
+[floor-7.85.0] check run=1 face=raw method=delete framing=sized room-wait=#t puts-refused=() ms=6.275 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=raw method=delete framing=sized server: req raw DELETE /sink #1 conn=44840 at=529.6
+[floor-7.85.0] check run=1 face=raw method=delete framing=sized server: sink raw method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.1 last=5.0 arr=omitted
+[floor-7.85.0] check run=1 face=raw method=delete framing=sized server: count raw:/sink=1
+[floor-7.85.0] check run=1 face=raw method=delete framing=chunked room-wait=#t puts-refused=() ms=6.233 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=raw method=delete framing=chunked server: req raw DELETE /sink #1 conn=44862 at=536.7
+[floor-7.85.0] check run=1 face=raw method=delete framing=chunked server: sink raw method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=0.1 last=5.1 arr=omitted
+[floor-7.85.0] check run=1 face=raw method=delete framing=chunked server: count raw:/sink=1
+[floor-7.85.0] check run=1 face=https method=post framing=sized room-wait=#t puts-refused=() ms=12.52 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=https method=post framing=sized server: req https POST /sink #1 conn=39202 at=547.7
+[floor-7.85.0] check run=1 face=https method=post framing=sized server: sink https method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.9 last=7.7 arr=omitted
+[floor-7.85.0] check run=1 face=https method=post framing=sized server: count https:/sink=1
+[floor-7.85.0] check run=1 face=https method=post framing=chunked room-wait=#t puts-refused=() ms=13.164 status=200 version=http/1.1 committed=262144 handed=262144 reads=15 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=https method=post framing=chunked server: req https POST /sink #1 conn=48112 at=562.7
+[floor-7.85.0] check run=1 face=https method=post framing=chunked server: sink https method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=22 first=3.0 last=8.6 arr=omitted
+[floor-7.85.0] check run=1 face=https method=post framing=chunked server: count https:/sink=1
+[floor-7.85.0] check run=1 face=https method=put framing=sized room-wait=#t puts-refused=() ms=11.437 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=https method=put framing=sized server: req https PUT /sink #1 conn=48124 at=577.1
+[floor-7.85.0] check run=1 face=https method=put framing=sized server: sink https method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=3.2 last=6.9 arr=omitted
+[floor-7.85.0] check run=1 face=https method=put framing=sized server: count https:/sink=1
+[floor-7.85.0] check run=1 face=https method=put framing=chunked room-wait=#t puts-refused=() ms=9.269 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=https method=put framing=chunked server: req https PUT /sink #1 conn=48130 at=589.7
+[floor-7.85.0] check run=1 face=https method=put framing=chunked server: sink https method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=1.2 last=5.6 arr=omitted
+[floor-7.85.0] check run=1 face=https method=put framing=chunked server: count https:/sink=1
+[floor-7.85.0] check run=1 face=https method=patch framing=sized room-wait=#t puts-refused=() ms=8.42 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=https method=patch framing=sized server: req https PATCH /sink #1 conn=48146 at=600.1
+[floor-7.85.0] check run=1 face=https method=patch framing=sized server: sink https method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=4.8 arr=omitted
+[floor-7.85.0] check run=1 face=https method=patch framing=sized server: count https:/sink=1
+[floor-7.85.0] check run=1 face=https method=patch framing=chunked room-wait=#t puts-refused=() ms=9.226 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=https method=patch framing=chunked server: req https PATCH /sink #1 conn=48156 at=608.5
+[floor-7.85.0] check run=1 face=https method=patch framing=chunked server: sink https method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=2.9 last=6.6 arr=omitted
+[floor-7.85.0] check run=1 face=https method=patch framing=chunked server: count https:/sink=1
+[floor-7.85.0] check run=1 face=https method=delete framing=sized room-wait=#t puts-refused=() ms=7.595 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=https method=delete framing=sized server: req https DELETE /sink #1 conn=48160 at=618.5
+[floor-7.85.0] check run=1 face=https method=delete framing=sized server: sink https method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=5.0 arr=omitted
+[floor-7.85.0] check run=1 face=https method=delete framing=sized server: count https:/sink=1
+[floor-7.85.0] check run=1 face=https method=delete framing=chunked room-wait=#t puts-refused=() ms=11.502 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=https method=delete framing=chunked server: req https DELETE /sink #1 conn=48170 at=636.4
+[floor-7.85.0] check run=1 face=https method=delete framing=chunked server: sink https method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=1.2 last=7.2 arr=omitted
+[floor-7.85.0] check run=1 face=https method=delete framing=chunked server: count https:/sink=1
+[floor-7.85.0] check run=1 face=h2 method=post framing=sized room-wait=#t puts-refused=() ms=8.124 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=h2 method=post framing=sized server: req h2 POST /sink #1 conn=44752 at=651.0
+[floor-7.85.0] check run=1 face=h2 method=post framing=sized server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=0.3 last=2.2 arr=omitted
+[floor-7.85.0] check run=1 face=h2 method=post framing=sized server: count h2:/sink=1
+[floor-7.85.0] check run=1 face=h2 method=post framing=chunked room-wait=#t puts-refused=() ms=6.245 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=h2 method=post framing=chunked server: req h2 POST /sink #1 conn=44754 at=660.3
+[floor-7.85.0] check run=1 face=h2 method=post framing=chunked server: sink h2 method=POST cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=0.8 last=2.5 arr=omitted
+[floor-7.85.0] check run=1 face=h2 method=post framing=chunked server: count h2:/sink=1
+[floor-7.85.0] check run=1 face=h2 method=put framing=sized room-wait=#t puts-refused=() ms=9.709 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=h2 method=put framing=sized server: req h2 PUT /sink #1 conn=44760 at=667.7
+[floor-7.85.0] check run=1 face=h2 method=put framing=sized server: sink h2 method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=36 first=2.3 last=6.3 arr=omitted
+[floor-7.85.0] check run=1 face=h2 method=put framing=sized server: count h2:/sink=1
+[floor-7.85.0] check run=1 face=h2 method=put framing=chunked room-wait=#t puts-refused=() ms=9.644 status=200 version=http/2 committed=262144 handed=262144 reads=9 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=h2 method=put framing=chunked server: req h2 PUT /sink #1 conn=44764 at=678.2
+[floor-7.85.0] check run=1 face=h2 method=put framing=chunked server: sink h2 method=PUT cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=36 first=2.3 last=6.3 arr=omitted
+[floor-7.85.0] check run=1 face=h2 method=put framing=chunked server: count h2:/sink=1
+[floor-7.85.0] check run=1 face=h2 method=patch framing=sized room-wait=#t puts-refused=() ms=8.594 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=h2 method=patch framing=sized server: req h2 PATCH /sink #1 conn=44780 at=690.7
+[floor-7.85.0] check run=1 face=h2 method=patch framing=sized server: sink h2 method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=0.8 last=4.0 arr=omitted
+[floor-7.85.0] check run=1 face=h2 method=patch framing=sized server: count h2:/sink=1
+[floor-7.85.0] check run=1 face=h2 method=patch framing=chunked room-wait=#t puts-refused=() ms=7.638 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=h2 method=patch framing=chunked server: req h2 PATCH /sink #1 conn=44784 at=700.5
+[floor-7.85.0] check run=1 face=h2 method=patch framing=chunked server: sink h2 method=PATCH cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=2.2 last=4.0 arr=omitted
+[floor-7.85.0] check run=1 face=h2 method=patch framing=chunked server: count h2:/sink=1
+[floor-7.85.0] check run=1 face=h2 method=delete framing=sized room-wait=#t puts-refused=() ms=7.7 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=h2 method=delete framing=sized server: req h2 DELETE /sink #1 conn=44800 at=708.9
+[floor-7.85.0] check run=1 face=h2 method=delete framing=sized server: sink h2 method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=2.4 last=4.2 arr=omitted
+[floor-7.85.0] check run=1 face=h2 method=delete framing=sized server: count h2:/sink=1
+[floor-7.85.0] check run=1 face=h2 method=delete framing=chunked room-wait=#t puts-refused=() ms=7.677 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=1 face=h2 method=delete framing=chunked server: req h2 DELETE /sink #1 conn=44806 at=718.1
+[floor-7.85.0] check run=1 face=h2 method=delete framing=chunked server: sink h2 method=DELETE cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=2.4 last=4.3 arr=omitted
+[floor-7.85.0] check run=1 face=h2 method=delete framing=chunked server: count h2:/sink=1
+[floor-7.85.0] check run=2 face=http method=post framing=sized room-wait=#t puts-refused=() ms=6.334 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=http method=post framing=sized server: req http POST /sink #1 conn=44326 at=724.8
+[floor-7.85.0] check run=2 face=http method=post framing=sized server: sink http method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.1 last=5.0 arr=omitted
+[floor-7.85.0] check run=2 face=http method=post framing=sized server: count http:/sink=1
+[floor-7.85.0] check run=2 face=http method=post framing=chunked room-wait=#t puts-refused=() ms=6.146 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=http method=post framing=chunked server: req http POST /sink #1 conn=44334 at=732.0
+[floor-7.85.0] check run=2 face=http method=post framing=chunked server: sink http method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=0.1 last=4.8 arr=omitted
+[floor-7.85.0] check run=2 face=http method=post framing=chunked server: count http:/sink=1
+[floor-7.85.0] check run=2 face=http method=put framing=sized room-wait=#t puts-refused=() ms=6.076 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=http method=put framing=sized server: req http PUT /sink #1 conn=44340 at=739.5
+[floor-7.85.0] check run=2 face=http method=put framing=sized server: sink http method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.1 last=4.9 arr=omitted
+[floor-7.85.0] check run=2 face=http method=put framing=sized server: count http:/sink=1
+[floor-7.85.0] check run=2 face=http method=put framing=chunked room-wait=#t puts-refused=() ms=6.317 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=http method=put framing=chunked server: req http PUT /sink #1 conn=44348 at=746.4
+[floor-7.85.0] check run=2 face=http method=put framing=chunked server: sink http method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=0.1 last=5.0 arr=omitted
+[floor-7.85.0] check run=2 face=http method=put framing=chunked server: count http:/sink=1
+[floor-7.85.0] check run=2 face=http method=patch framing=sized room-wait=#t puts-refused=() ms=6.267 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=http method=patch framing=sized server: req http PATCH /sink #1 conn=44350 at=753.7
+[floor-7.85.0] check run=2 face=http method=patch framing=sized server: sink http method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.1 last=5.0 arr=omitted
+[floor-7.85.0] check run=2 face=http method=patch framing=sized server: count http:/sink=1
+[floor-7.85.0] check run=2 face=http method=patch framing=chunked room-wait=#t puts-refused=() ms=6.217 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=http method=patch framing=chunked server: req http PATCH /sink #1 conn=44362 at=760.8
+[floor-7.85.0] check run=2 face=http method=patch framing=chunked server: sink http method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=0.1 last=5.0 arr=omitted
+[floor-7.85.0] check run=2 face=http method=patch framing=chunked server: count http:/sink=1
+[floor-7.85.0] check run=2 face=http method=delete framing=sized room-wait=#t puts-refused=() ms=6.149 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=http method=delete framing=sized server: req http DELETE /sink #1 conn=44374 at=767.8
+[floor-7.85.0] check run=2 face=http method=delete framing=sized server: sink http method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.1 last=5.0 arr=omitted
+[floor-7.85.0] check run=2 face=http method=delete framing=sized server: count http:/sink=1
+[floor-7.85.0] check run=2 face=http method=delete framing=chunked room-wait=#t puts-refused=() ms=6.476 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=http method=delete framing=chunked server: req http DELETE /sink #1 conn=44386 at=775.5
+[floor-7.85.0] check run=2 face=http method=delete framing=chunked server: sink http method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=11 first=0.1 last=5.0 arr=omitted
+[floor-7.85.0] check run=2 face=http method=delete framing=chunked server: count http:/sink=1
+[floor-7.85.0] check run=2 face=raw method=post framing=sized room-wait=#t puts-refused=() ms=6.293 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=raw method=post framing=sized server: req raw POST /sink #1 conn=39164 at=782.8
+[floor-7.85.0] check run=2 face=raw method=post framing=sized server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.2 last=5.1 arr=omitted
+[floor-7.85.0] check run=2 face=raw method=post framing=sized server: count raw:/sink=1
+[floor-7.85.0] check run=2 face=raw method=post framing=chunked room-wait=#t puts-refused=() ms=6.225 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=raw method=post framing=chunked server: req raw POST /sink #1 conn=39176 at=790.0
+[floor-7.85.0] check run=2 face=raw method=post framing=chunked server: sink raw method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=0.1 last=5.1 arr=omitted
+[floor-7.85.0] check run=2 face=raw method=post framing=chunked server: count raw:/sink=1
+[floor-7.85.0] check run=2 face=raw method=put framing=sized room-wait=#t puts-refused=() ms=5.933 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=raw method=put framing=sized server: req raw PUT /sink #1 conn=39184 at=797.1
+[floor-7.85.0] check run=2 face=raw method=put framing=sized server: sink raw method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=0.1 last=4.9 arr=omitted
+[floor-7.85.0] check run=2 face=raw method=put framing=sized server: count raw:/sink=1
+[floor-7.85.0] check run=2 face=raw method=put framing=chunked room-wait=#t puts-refused=() ms=5.767 status=200 version=http/1.1 committed=262144 handed=262144 reads=16 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=raw method=put framing=chunked server: req raw PUT /sink #1 conn=39204 at=804.3
+[floor-7.85.0] check run=2 face=raw method=put framing=chunked server: sink raw method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=9 first=0.1 last=4.8 arr=omitted
+[floor-7.85.0] check run=2 face=raw method=put framing=chunked server: count raw:/sink=1
+[floor-7.85.0] check run=2 face=raw method=patch framing=sized room-wait=#t puts-refused=() ms=4.78 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=raw method=patch framing=sized server: req raw PATCH /sink #1 conn=39226 at=811.0
+[floor-7.85.0] check run=2 face=raw method=patch framing=sized server: sink raw method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.1 last=3.6 arr=omitted
+[floor-7.85.0] check run=2 face=raw method=patch framing=sized server: count raw:/sink=1
+[floor-7.85.0] check run=2 face=raw method=patch framing=chunked room-wait=#t puts-refused=() ms=6.237 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=raw method=patch framing=chunked server: req raw PATCH /sink #1 conn=39248 at=817.2
+[floor-7.85.0] check run=2 face=raw method=patch framing=chunked server: sink raw method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=0.2 last=5.0 arr=omitted
+[floor-7.85.0] check run=2 face=raw method=patch framing=chunked server: count raw:/sink=1
+[floor-7.85.0] check run=2 face=raw method=delete framing=sized room-wait=#t puts-refused=() ms=6.252 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=raw method=delete framing=sized server: req raw DELETE /sink #1 conn=39278 at=824.3
+[floor-7.85.0] check run=2 face=raw method=delete framing=sized server: sink raw method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.1 last=5.1 arr=omitted
+[floor-7.85.0] check run=2 face=raw method=delete framing=sized server: count raw:/sink=1
+[floor-7.85.0] check run=2 face=raw method=delete framing=chunked room-wait=#t puts-refused=() ms=6.235 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=raw method=delete framing=chunked server: req raw DELETE /sink #1 conn=39298 at=831.5
+[floor-7.85.0] check run=2 face=raw method=delete framing=chunked server: sink raw method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=0.1 last=5.1 arr=omitted
+[floor-7.85.0] check run=2 face=raw method=delete framing=chunked server: count raw:/sink=1
+[floor-7.85.0] check run=2 face=https method=post framing=sized room-wait=#t puts-refused=() ms=12.839 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=https method=post framing=sized server: req https POST /sink #1 conn=48174 at=842.6
+[floor-7.85.0] check run=2 face=https method=post framing=sized server: sink https method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=3.2 last=8.3 arr=omitted
+[floor-7.85.0] check run=2 face=https method=post framing=sized server: count https:/sink=1
+[floor-7.85.0] check run=2 face=https method=post framing=chunked room-wait=#t puts-refused=() ms=8.783 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=https method=post framing=chunked server: req https POST /sink #1 conn=48188 at=856.4
+[floor-7.85.0] check run=2 face=https method=post framing=chunked server: sink https method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=1.1 last=4.9 arr=omitted
+[floor-7.85.0] check run=2 face=https method=post framing=chunked server: count https:/sink=1
+[floor-7.85.0] check run=2 face=https method=put framing=sized room-wait=#t puts-refused=() ms=9.279 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=https method=put framing=sized server: req https PUT /sink #1 conn=48204 at=864.9
+[floor-7.85.0] check run=2 face=https method=put framing=sized server: sink https method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.7 last=6.5 arr=omitted
+[floor-7.85.0] check run=2 face=https method=put framing=sized server: count https:/sink=1
+[floor-7.85.0] check run=2 face=https method=put framing=chunked room-wait=#t puts-refused=() ms=7.976 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=https method=put framing=chunked server: req https PUT /sink #1 conn=48216 at=875.4
+[floor-7.85.0] check run=2 face=https method=put framing=chunked server: sink https method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=21 first=1.1 last=5.0 arr=omitted
+[floor-7.85.0] check run=2 face=https method=put framing=chunked server: count https:/sink=1
+[floor-7.85.0] check run=2 face=https method=patch framing=sized room-wait=#t puts-refused=() ms=7.331 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=https method=patch framing=sized server: req https PATCH /sink #1 conn=48218 at=883.8
+[floor-7.85.0] check run=2 face=https method=patch framing=sized server: sink https method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=4.8 arr=omitted
+[floor-7.85.0] check run=2 face=https method=patch framing=sized server: count https:/sink=1
+[floor-7.85.0] check run=2 face=https method=patch framing=chunked room-wait=#t puts-refused=() ms=7.29 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=https method=patch framing=chunked server: req https PATCH /sink #1 conn=48220 at=891.9
+[floor-7.85.0] check run=2 face=https method=patch framing=chunked server: sink https method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=21 first=1.2 last=4.9 arr=omitted
+[floor-7.85.0] check run=2 face=https method=patch framing=chunked server: count https:/sink=1
+[floor-7.85.0] check run=2 face=https method=delete framing=sized room-wait=#t puts-refused=() ms=7.369 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=https method=delete framing=sized server: req https DELETE /sink #1 conn=48234 at=900.1
+[floor-7.85.0] check run=2 face=https method=delete framing=sized server: sink https method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=4.8 arr=omitted
+[floor-7.85.0] check run=2 face=https method=delete framing=sized server: count https:/sink=1
+[floor-7.85.0] check run=2 face=https method=delete framing=chunked room-wait=#t puts-refused=() ms=7.581 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=https method=delete framing=chunked server: req https DELETE /sink #1 conn=48240 at=908.4
+[floor-7.85.0] check run=2 face=https method=delete framing=chunked server: sink https method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=1.1 last=5.1 arr=omitted
+[floor-7.85.0] check run=2 face=https method=delete framing=chunked server: count https:/sink=1
+[floor-7.85.0] check run=2 face=h2 method=post framing=sized room-wait=#t puts-refused=() ms=8.556 status=200 version=http/2 committed=262144 handed=262144 reads=9 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=h2 method=post framing=sized server: req h2 POST /sink #1 conn=44822 at=918.5
+[floor-7.85.0] check run=2 face=h2 method=post framing=sized server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=34 first=0.9 last=4.6 arr=omitted
+[floor-7.85.0] check run=2 face=h2 method=post framing=sized server: count h2:/sink=1
+[floor-7.85.0] check run=2 face=h2 method=post framing=chunked room-wait=#t puts-refused=() ms=6.668 status=200 version=http/2 committed=262144 handed=262144 reads=9 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=h2 method=post framing=chunked server: req h2 POST /sink #1 conn=44828 at=928.0
+[floor-7.85.0] check run=2 face=h2 method=post framing=chunked server: sink h2 method=POST cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=36 first=2.6 last=3.6 arr=omitted
+[floor-7.85.0] check run=2 face=h2 method=post framing=chunked server: count h2:/sink=1
+[floor-7.85.0] check run=2 face=h2 method=put framing=sized room-wait=#t puts-refused=() ms=7.696 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=h2 method=put framing=sized server: req h2 PUT /sink #1 conn=44830 at=936.1
+[floor-7.85.0] check run=2 face=h2 method=put framing=sized server: sink h2 method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=2.6 last=4.6 arr=omitted
+[floor-7.85.0] check run=2 face=h2 method=put framing=sized server: count h2:/sink=1
+[floor-7.85.0] check run=2 face=h2 method=put framing=chunked room-wait=#t puts-refused=() ms=7.818 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=h2 method=put framing=chunked server: req h2 PUT /sink #1 conn=44840 at=945.8
+[floor-7.85.0] check run=2 face=h2 method=put framing=chunked server: sink h2 method=PUT cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=36 first=2.1 last=4.0 arr=omitted
+[floor-7.85.0] check run=2 face=h2 method=put framing=chunked server: count h2:/sink=1
+[floor-7.85.0] check run=2 face=h2 method=patch framing=sized room-wait=#t puts-refused=() ms=7.759 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=h2 method=patch framing=sized server: req h2 PATCH /sink #1 conn=44846 at=955.1
+[floor-7.85.0] check run=2 face=h2 method=patch framing=sized server: sink h2 method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=36 first=2.1 last=4.1 arr=omitted
+[floor-7.85.0] check run=2 face=h2 method=patch framing=sized server: count h2:/sink=1
+[floor-7.85.0] check run=2 face=h2 method=patch framing=chunked room-wait=#t puts-refused=() ms=7.892 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=h2 method=patch framing=chunked server: req h2 PATCH /sink #1 conn=44848 at=964.1
+[floor-7.85.0] check run=2 face=h2 method=patch framing=chunked server: sink h2 method=PATCH cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=2.0 last=3.9 arr=omitted
+[floor-7.85.0] check run=2 face=h2 method=patch framing=chunked server: count h2:/sink=1
+[floor-7.85.0] check run=2 face=h2 method=delete framing=sized room-wait=#t puts-refused=() ms=8.765 status=200 version=http/2 committed=262144 handed=262144 reads=10 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=h2 method=delete framing=sized server: req h2 DELETE /sink #1 conn=44856 at=973.5
+[floor-7.85.0] check run=2 face=h2 method=delete framing=sized server: sink h2 method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=34 first=1.0 last=4.8 arr=omitted
+[floor-7.85.0] check run=2 face=h2 method=delete framing=sized server: count h2:/sink=1
+[floor-7.85.0] check run=2 face=h2 method=delete framing=chunked room-wait=#t puts-refused=() ms=8.647 status=200 version=http/2 committed=262144 handed=262144 reads=10 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[floor-7.85.0] check run=2 face=h2 method=delete framing=chunked server: req h2 DELETE /sink #1 conn=44868 at=982.8
+[floor-7.85.0] check run=2 face=h2 method=delete framing=chunked server: sink h2 method=DELETE cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=2.4 last=5.6 arr=omitted
+[floor-7.85.0] check run=2 face=h2 method=delete framing=chunked server: count h2:/sink=1
+[floor-7.85.0] check done
+[floor-7.85.0] check exited 0 after about 1 s
+[floor-7.85.0] server-stderr: counts h2:/sink=16 http:/sink=16 https:/sink=16 raw:/sink=16
+[ubuntu-openssl-8.5.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[ubuntu-openssl-8.5.0] server {"node":"v24.18.0","pid":3251,"http":"127.0.0.1:36897","raw":"127.0.0.1:40687","https":"127.0.0.1:38037","h2":"127.0.0.1:38079"}
+[ubuntu-openssl-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4
+[ubuntu-openssl-8.5.0] libcurl 8.5.0 OpenSSL/3.0.13
+[ubuntu-openssl-8.5.0] check run=1 face=http method=post framing=sized room-wait=#t puts-refused=() ms=18.205 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=http method=post framing=sized server: req http POST /sink #1 conn=58636 at=363.8
+[ubuntu-openssl-8.5.0] check run=1 face=http method=post framing=sized server: sink http method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=0.8 last=5.1 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=http method=post framing=sized server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=http method=post framing=chunked room-wait=#t puts-refused=() ms=9.085 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=http method=post framing=chunked server: req http POST /sink #1 conn=58640 at=382.3
+[ubuntu-openssl-8.5.0] check run=1 face=http method=post framing=chunked server: sink http method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=9 first=1.2 last=6.3 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=http method=post framing=chunked server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=http method=put framing=sized room-wait=#t puts-refused=() ms=5.627 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=http method=put framing=sized server: req http PUT /sink #1 conn=58650 at=392.7
+[ubuntu-openssl-8.5.0] check run=1 face=http method=put framing=sized server: sink http method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.1 last=4.5 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=http method=put framing=sized server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=http method=put framing=chunked room-wait=#t puts-refused=() ms=6.477 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=http method=put framing=chunked server: req http PUT /sink #1 conn=58666 at=400.1
+[ubuntu-openssl-8.5.0] check run=1 face=http method=put framing=chunked server: sink http method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.7 last=5.1 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=http method=put framing=chunked server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=http method=patch framing=sized room-wait=#t puts-refused=() ms=5.642 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=http method=patch framing=sized server: req http PATCH /sink #1 conn=58674 at=409.2
+[ubuntu-openssl-8.5.0] check run=1 face=http method=patch framing=sized server: sink http method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=0.4 last=3.8 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=http method=patch framing=sized server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=http method=patch framing=chunked room-wait=#t puts-refused=() ms=5.644 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=http method=patch framing=chunked server: req http PATCH /sink #1 conn=58680 at=415.4
+[ubuntu-openssl-8.5.0] check run=1 face=http method=patch framing=chunked server: sink http method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=9 first=1.1 last=4.5 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=http method=patch framing=chunked server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=http method=delete framing=sized room-wait=#t puts-refused=() ms=5.61 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=http method=delete framing=sized server: req http DELETE /sink #1 conn=58684 at=422.3
+[ubuntu-openssl-8.5.0] check run=1 face=http method=delete framing=sized server: sink http method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.2 last=4.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=http method=delete framing=sized server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=http method=delete framing=chunked room-wait=#t puts-refused=() ms=8.199 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=http method=delete framing=chunked server: req http DELETE /sink #1 conn=58698 at=429.2
+[ubuntu-openssl-8.5.0] check run=1 face=http method=delete framing=chunked server: sink http method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.1 last=5.5 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=http method=delete framing=chunked server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=post framing=sized room-wait=#t puts-refused=() ms=7.288 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=post framing=sized server: req raw POST /sink #1 conn=54592 at=438.6
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=post framing=sized server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.2 last=4.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=post framing=sized server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=post framing=chunked room-wait=#t puts-refused=() ms=5.744 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=post framing=chunked server: req raw POST /sink #1 conn=54614 at=447.3
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=post framing=chunked server: sink raw method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.2 last=4.8 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=post framing=chunked server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=put framing=sized room-wait=#t puts-refused=() ms=6.518 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=put framing=sized server: req raw PUT /sink #1 conn=54636 at=454.2
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=put framing=sized server: sink raw method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.3 last=5.5 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=put framing=sized server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=put framing=chunked room-wait=#t puts-refused=() ms=5.658 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=put framing=chunked server: req raw PUT /sink #1 conn=54660 at=462.0
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=put framing=chunked server: sink raw method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=4.7 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=put framing=chunked server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=patch framing=sized room-wait=#t puts-refused=() ms=5.965 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=patch framing=sized server: req raw PATCH /sink #1 conn=54668 at=469.0
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=patch framing=sized server: sink raw method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.3 last=4.9 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=patch framing=sized server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=patch framing=chunked room-wait=#t puts-refused=() ms=6.345 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=patch framing=chunked server: req raw PATCH /sink #1 conn=54686 at=476.0
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=patch framing=chunked server: sink raw method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.3 last=4.2 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=patch framing=chunked server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=delete framing=sized room-wait=#t puts-refused=() ms=5.685 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=delete framing=sized server: req raw DELETE /sink #1 conn=54708 at=483.9
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=delete framing=sized server: sink raw method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.2 last=4.7 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=delete framing=sized server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=delete framing=chunked room-wait=#t puts-refused=() ms=8.158 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=delete framing=chunked server: req raw DELETE /sink #1 conn=54728 at=491.0
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=delete framing=chunked server: sink raw method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.2 last=5.8 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=raw method=delete framing=chunked server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=https method=post framing=sized room-wait=#t puts-refused=() ms=12.196 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=https method=post framing=sized server: req https POST /sink #1 conn=52118 at=505.0
+[ubuntu-openssl-8.5.0] check run=1 face=https method=post framing=sized server: sink https method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.8 last=5.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=https method=post framing=sized server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=https method=post framing=chunked room-wait=#t puts-refused=() ms=7.358 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=https method=post framing=chunked server: req https POST /sink #1 conn=52134 at=515.7
+[ubuntu-openssl-8.5.0] check run=1 face=https method=post framing=chunked server: sink https method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=21 first=1.2 last=3.9 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=https method=post framing=chunked server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=https method=put framing=sized room-wait=#t puts-refused=() ms=9.156 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=https method=put framing=sized server: req https PUT /sink #1 conn=52142 at=523.7
+[ubuntu-openssl-8.5.0] check run=1 face=https method=put framing=sized server: sink https method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.3 last=6.1 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=https method=put framing=sized server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=https method=put framing=chunked room-wait=#t puts-refused=() ms=8.938 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=https method=put framing=chunked server: req https PUT /sink #1 conn=52144 at=533.8
+[ubuntu-openssl-8.5.0] check run=1 face=https method=put framing=chunked server: sink https method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=21 first=2.4 last=6.1 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=https method=put framing=chunked server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=https method=patch framing=sized room-wait=#t puts-refused=() ms=8.493 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=https method=patch framing=sized server: req https PATCH /sink #1 conn=52148 at=544.4
+[ubuntu-openssl-8.5.0] check run=1 face=https method=patch framing=sized server: sink https method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=5.0 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=https method=patch framing=sized server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=https method=patch framing=chunked room-wait=#t puts-refused=() ms=6.319 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=https method=patch framing=chunked server: req https PATCH /sink #1 conn=52152 at=553.1
+[ubuntu-openssl-8.5.0] check run=1 face=https method=patch framing=chunked server: sink https method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=21 first=1.2 last=3.9 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=https method=patch framing=chunked server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=https method=delete framing=sized room-wait=#t puts-refused=() ms=13.825 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=https method=delete framing=sized server: req https DELETE /sink #1 conn=52156 at=560.4
+[ubuntu-openssl-8.5.0] check run=1 face=https method=delete framing=sized server: sink https method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=11.3 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=https method=delete framing=sized server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=https method=delete framing=chunked room-wait=#t puts-refused=() ms=8.892 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=https method=delete framing=chunked server: req https DELETE /sink #1 conn=52164 at=577.3
+[ubuntu-openssl-8.5.0] check run=1 face=https method=delete framing=chunked server: sink https method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=21 first=1.2 last=5.1 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=https method=delete framing=chunked server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=post framing=sized room-wait=#t puts-refused=() ms=8.123 status=200 version=http/2 committed=262144 handed=262144 reads=5 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=post framing=sized server: req h2 POST /sink #1 conn=33046 at=587.4
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=post framing=sized server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=0.3 last=1.7 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=post framing=sized server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=post framing=chunked room-wait=#t puts-refused=() ms=6.516 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=post framing=chunked server: req h2 POST /sink #1 conn=33050 at=595.8
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=post framing=chunked server: sink h2 method=POST cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=36 first=1.1 last=3.0 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=post framing=chunked server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=put framing=sized room-wait=#t puts-refused=() ms=7.309 status=200 version=http/2 committed=262144 handed=262144 reads=5 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=put framing=sized server: req h2 PUT /sink #1 conn=33056 at=603.0
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=put framing=sized server: sink h2 method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=2.5 last=3.9 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=put framing=sized server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=put framing=chunked room-wait=#t puts-refused=() ms=5.532 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=put framing=chunked server: req h2 PUT /sink #1 conn=33064 at=610.9
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=put framing=chunked server: sink h2 method=PUT cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=36 first=1.2 last=2.5 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=put framing=chunked server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=patch framing=sized room-wait=#t puts-refused=() ms=5.52 status=200 version=http/2 committed=262144 handed=262144 reads=5 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=patch framing=sized server: req h2 PATCH /sink #1 conn=33074 at=617.7
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=patch framing=sized server: sink h2 method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.1 last=2.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=patch framing=sized server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=patch framing=chunked room-wait=#t puts-refused=() ms=5.476 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=patch framing=chunked server: req h2 PATCH /sink #1 conn=33080 at=624.1
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=patch framing=chunked server: sink h2 method=PATCH cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=36 first=1.2 last=2.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=patch framing=chunked server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=delete framing=sized room-wait=#t puts-refused=() ms=7.833 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=delete framing=sized server: req h2 DELETE /sink #1 conn=33086 at=631.6
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=delete framing=sized server: sink h2 method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=34 first=2.3 last=4.8 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=delete framing=sized server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=delete framing=chunked room-wait=#t puts-refused=() ms=8.077 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=delete framing=chunked server: req h2 DELETE /sink #1 conn=33096 at=640.1
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=delete framing=chunked server: sink h2 method=DELETE cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=1.0 last=4.8 arr=omitted
+[ubuntu-openssl-8.5.0] check run=1 face=h2 method=delete framing=chunked server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=http method=post framing=sized room-wait=#t puts-refused=() ms=6.4 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=http method=post framing=sized server: req http POST /sink #1 conn=58708 at=647.9
+[ubuntu-openssl-8.5.0] check run=2 face=http method=post framing=sized server: sink http method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.1 last=5.3 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=http method=post framing=sized server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=http method=post framing=chunked room-wait=#t puts-refused=() ms=5.931 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=http method=post framing=chunked server: req http POST /sink #1 conn=58722 at=655.0
+[ubuntu-openssl-8.5.0] check run=2 face=http method=post framing=chunked server: sink http method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=10 first=1.2 last=4.7 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=http method=post framing=chunked server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=http method=put framing=sized room-wait=#t puts-refused=() ms=5.83 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=http method=put framing=sized server: req http PUT /sink #1 conn=58724 at=661.7
+[ubuntu-openssl-8.5.0] check run=2 face=http method=put framing=sized server: sink http method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.2 last=4.9 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=http method=put framing=sized server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=http method=put framing=chunked room-wait=#t puts-refused=() ms=5.854 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=http method=put framing=chunked server: req http PUT /sink #1 conn=58736 at=668.5
+[ubuntu-openssl-8.5.0] check run=2 face=http method=put framing=chunked server: sink http method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=11 first=1.3 last=5.0 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=http method=put framing=chunked server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=http method=patch framing=sized room-wait=#t puts-refused=() ms=5.748 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=http method=patch framing=sized server: req http PATCH /sink #1 conn=58740 at=674.9
+[ubuntu-openssl-8.5.0] check run=2 face=http method=patch framing=sized server: sink http method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=4.7 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=http method=patch framing=sized server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=http method=patch framing=chunked room-wait=#t puts-refused=() ms=5.887 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=http method=patch framing=chunked server: req http PATCH /sink #1 conn=58744 at=681.2
+[ubuntu-openssl-8.5.0] check run=2 face=http method=patch framing=chunked server: sink http method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=9 first=1.3 last=4.8 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=http method=patch framing=chunked server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=http method=delete framing=sized room-wait=#t puts-refused=() ms=5.911 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=http method=delete framing=sized server: req http DELETE /sink #1 conn=58752 at=687.9
+[ubuntu-openssl-8.5.0] check run=2 face=http method=delete framing=sized server: sink http method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=4.9 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=http method=delete framing=sized server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=http method=delete framing=chunked room-wait=#t puts-refused=() ms=6.522 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=http method=delete framing=chunked server: req http DELETE /sink #1 conn=58760 at=694.6
+[ubuntu-openssl-8.5.0] check run=2 face=http method=delete framing=chunked server: sink http method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=9 first=1.5 last=5.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=http method=delete framing=chunked server: count http:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=post framing=sized room-wait=#t puts-refused=() ms=5.687 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=post framing=sized server: req raw POST /sink #1 conn=54934 at=702.2
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=post framing=sized server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.3 last=4.7 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=post framing=sized server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=post framing=chunked room-wait=#t puts-refused=() ms=5.668 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=post framing=chunked server: req raw POST /sink #1 conn=54948 at=708.4
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=post framing=chunked server: sink raw method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=4.8 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=post framing=chunked server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=put framing=sized room-wait=#t puts-refused=() ms=6.117 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=put framing=sized server: req raw PUT /sink #1 conn=54958 at=715.4
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=put framing=sized server: sink raw method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.3 last=4.8 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=put framing=sized server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=put framing=chunked room-wait=#t puts-refused=() ms=6.465 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=put framing=chunked server: req raw PUT /sink #1 conn=54984 at=722.0
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=put framing=chunked server: sink raw method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=5.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=put framing=chunked server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=patch framing=sized room-wait=#t puts-refused=() ms=5.585 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=patch framing=sized server: req raw PATCH /sink #1 conn=54998 at=729.5
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=patch framing=sized server: sink raw method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.2 last=4.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=patch framing=sized server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=patch framing=chunked room-wait=#t puts-refused=() ms=5.623 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=patch framing=chunked server: req raw PATCH /sink #1 conn=55012 at=735.7
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=patch framing=chunked server: sink raw method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.2 last=4.7 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=patch framing=chunked server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=delete framing=sized room-wait=#t puts-refused=() ms=6.511 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=delete framing=sized server: req raw DELETE /sink #1 conn=55040 at=742.0
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=delete framing=sized server: sink raw method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.3 last=5.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=delete framing=sized server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=delete framing=chunked room-wait=#t puts-refused=() ms=5.597 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=delete framing=chunked server: req raw DELETE /sink #1 conn=55048 at=749.3
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=delete framing=chunked server: sink raw method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.2 last=4.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=raw method=delete framing=chunked server: count raw:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=https method=post framing=sized room-wait=#t puts-refused=() ms=8.953 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=https method=post framing=sized server: req https POST /sink #1 conn=52170 at=757.3
+[ubuntu-openssl-8.5.0] check run=2 face=https method=post framing=sized server: sink https method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=6.4 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=https method=post framing=sized server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=https method=post framing=chunked room-wait=#t puts-refused=() ms=7.213 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=https method=post framing=chunked server: req https POST /sink #1 conn=52186 at=767.0
+[ubuntu-openssl-8.5.0] check run=2 face=https method=post framing=chunked server: sink https method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=21 first=1.2 last=4.9 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=https method=post framing=chunked server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=https method=put framing=sized room-wait=#t puts-refused=() ms=7.202 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=https method=put framing=sized server: req https PUT /sink #1 conn=52202 at=774.9
+[ubuntu-openssl-8.5.0] check run=2 face=https method=put framing=sized server: sink https method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=4.9 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=https method=put framing=sized server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=https method=put framing=chunked room-wait=#t puts-refused=() ms=7.715 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=https method=put framing=chunked server: req https PUT /sink #1 conn=52212 at=782.7
+[ubuntu-openssl-8.5.0] check run=2 face=https method=put framing=chunked server: sink https method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=21 first=1.2 last=5.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=https method=put framing=chunked server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=https method=patch framing=sized room-wait=#t puts-refused=() ms=7.176 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=https method=patch framing=sized server: req https PATCH /sink #1 conn=52214 at=791.6
+[ubuntu-openssl-8.5.0] check run=2 face=https method=patch framing=sized server: sink https method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=4.9 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=https method=patch framing=sized server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=https method=patch framing=chunked room-wait=#t puts-refused=() ms=7.209 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=https method=patch framing=chunked server: req https PATCH /sink #1 conn=52230 at=799.4
+[ubuntu-openssl-8.5.0] check run=2 face=https method=patch framing=chunked server: sink https method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=21 first=1.2 last=5.1 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=https method=patch framing=chunked server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=https method=delete framing=sized room-wait=#t puts-refused=() ms=12.28 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=https method=delete framing=sized server: req https DELETE /sink #1 conn=52240 at=811.0
+[ubuntu-openssl-8.5.0] check run=2 face=https method=delete framing=sized server: sink https method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.8 last=6.4 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=https method=delete framing=sized server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=https method=delete framing=chunked room-wait=#t puts-refused=() ms=7.211 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=https method=delete framing=chunked server: req https DELETE /sink #1 conn=52254 at=820.7
+[ubuntu-openssl-8.5.0] check run=2 face=https method=delete framing=chunked server: sink https method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=21 first=1.2 last=5.2 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=https method=delete framing=chunked server: count https:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=post framing=sized room-wait=#t puts-refused=() ms=7.302 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=post framing=sized server: req h2 POST /sink #1 conn=33110 at=829.0
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=post framing=sized server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=34 first=1.1 last=4.3 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=post framing=sized server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=post framing=chunked room-wait=#t puts-refused=() ms=8.784 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=post framing=chunked server: req h2 POST /sink #1 conn=33118 at=839.6
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=post framing=chunked server: sink h2 method=POST cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=1.0 last=3.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=post framing=chunked server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=put framing=sized room-wait=#t puts-refused=() ms=5.466 status=200 version=http/2 committed=262144 handed=262144 reads=5 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=put framing=sized server: req h2 PUT /sink #1 conn=33130 at=847.2
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=put framing=sized server: sink h2 method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.2 last=2.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=put framing=sized server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=put framing=chunked room-wait=#t puts-refused=() ms=8.123 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=put framing=chunked server: req h2 PUT /sink #1 conn=33132 at=853.6
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=put framing=chunked server: sink h2 method=PUT cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=1.1 last=4.8 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=put framing=chunked server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=patch framing=sized room-wait=#t puts-refused=() ms=5.656 status=200 version=http/2 committed=262144 handed=262144 reads=5 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=patch framing=sized server: req h2 PATCH /sink #1 conn=33144 at=862.4
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=patch framing=sized server: sink h2 method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.2 last=2.7 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=patch framing=sized server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=patch framing=chunked room-wait=#t puts-refused=() ms=5.603 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=patch framing=chunked server: req h2 PATCH /sink #1 conn=33158 at=869.1
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=patch framing=chunked server: sink h2 method=PATCH cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.2 last=2.7 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=patch framing=chunked server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=delete framing=sized room-wait=#t puts-refused=() ms=5.775 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=delete framing=sized server: req h2 DELETE /sink #1 conn=33172 at=875.5
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=delete framing=sized server: sink h2 method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=1.2 last=3.8 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=delete framing=sized server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=delete framing=chunked room-wait=#t puts-refused=() ms=4.35 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=delete framing=chunked server: req h2 DELETE /sink #1 conn=33182 at=881.8
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=delete framing=chunked server: sink h2 method=DELETE cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=36 first=1.1 last=2.6 arr=omitted
+[ubuntu-openssl-8.5.0] check run=2 face=h2 method=delete framing=chunked server: count h2:/sink=1
+[ubuntu-openssl-8.5.0] check done
+[ubuntu-openssl-8.5.0] check exited 0 after about 1 s
+[ubuntu-openssl-8.5.0] server-stderr: counts h2:/sink=16 http:/sink=16 https:/sink=16 raw:/sink=16
+[ubuntu-gnutls-8.5.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[ubuntu-gnutls-8.5.0] server {"node":"v24.18.0","pid":3376,"http":"127.0.0.1:39163","raw":"127.0.0.1:38137","https":"127.0.0.1:37659","h2":"127.0.0.1:45323"}
+[ubuntu-gnutls-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4
+[ubuntu-gnutls-8.5.0] libcurl 8.5.0 GnuTLS/3.8.3
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=post framing=sized room-wait=#t puts-refused=() ms=13.018 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=post framing=sized server: req http POST /sink #1 conn=45256 at=377.1
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=post framing=sized server: sink http method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=0.5 last=4.9 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=post framing=sized server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=post framing=chunked room-wait=#t puts-refused=() ms=6.773 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=post framing=chunked server: req http POST /sink #1 conn=45262 at=394.6
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=post framing=chunked server: sink http method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=10 first=1.3 last=5.6 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=post framing=chunked server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=put framing=sized room-wait=#t puts-refused=() ms=6.01 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=put framing=sized server: req http PUT /sink #1 conn=45278 at=402.8
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=put framing=sized server: sink http method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.1 last=4.9 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=put framing=sized server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=put framing=chunked room-wait=#t puts-refused=() ms=8.45 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=put framing=chunked server: req http PUT /sink #1 conn=45286 at=412.0
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=put framing=chunked server: sink http method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=2.8 last=6.6 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=put framing=chunked server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=patch framing=sized room-wait=#t puts-refused=() ms=9.221 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=patch framing=sized server: req http PATCH /sink #1 conn=45302 at=424.2
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=patch framing=sized server: sink http method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=0.2 last=3.7 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=patch framing=sized server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=patch framing=chunked room-wait=#t puts-refused=() ms=6.116 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=patch framing=chunked server: req http PATCH /sink #1 conn=45308 at=433.5
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=patch framing=chunked server: sink http method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=10 first=1.1 last=5.0 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=patch framing=chunked server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=delete framing=sized room-wait=#t puts-refused=() ms=6.509 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=delete framing=sized server: req http DELETE /sink #1 conn=45324 at=441.4
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=delete framing=sized server: sink http method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.3 last=5.0 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=delete framing=sized server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=delete framing=chunked room-wait=#t puts-refused=() ms=16.043 status=200 version=http/1.1 committed=262144 handed=262144 reads=15 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=delete framing=chunked server: req http DELETE /sink #1 conn=45338 at=449.1
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=delete framing=chunked server: sink http method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=9 first=1.2 last=11.7 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=http method=delete framing=chunked server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=post framing=sized room-wait=#t puts-refused=() ms=5.687 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=post framing=sized server: req raw POST /sink #1 conn=50014 at=466.4
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=post framing=sized server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.2 last=4.9 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=post framing=sized server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=post framing=chunked room-wait=#t puts-refused=() ms=6.54 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=post framing=chunked server: req raw POST /sink #1 conn=50034 at=473.6
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=post framing=chunked server: sink raw method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.2 last=5.5 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=post framing=chunked server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=put framing=sized room-wait=#t puts-refused=() ms=6.459 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=put framing=sized server: req raw PUT /sink #1 conn=50052 at=480.9
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=put framing=sized server: sink raw method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.2 last=5.5 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=put framing=sized server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=put framing=chunked room-wait=#t puts-refused=() ms=5.635 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=put framing=chunked server: req raw PUT /sink #1 conn=50064 at=488.1
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=put framing=chunked server: sink raw method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=4.7 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=put framing=chunked server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=patch framing=sized room-wait=#t puts-refused=() ms=7.286 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=patch framing=sized server: req raw PATCH /sink #1 conn=50082 at=494.6
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=patch framing=sized server: sink raw method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.2 last=6.3 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=patch framing=sized server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=patch framing=chunked room-wait=#t puts-refused=() ms=6.479 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=patch framing=chunked server: req raw PATCH /sink #1 conn=50102 at=502.8
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=patch framing=chunked server: sink raw method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=5.5 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=patch framing=chunked server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=delete framing=sized room-wait=#t puts-refused=() ms=5.647 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=delete framing=sized server: req raw DELETE /sink #1 conn=50112 at=510.2
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=delete framing=sized server: sink raw method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.3 last=4.7 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=delete framing=sized server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=delete framing=chunked room-wait=#t puts-refused=() ms=6.452 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=delete framing=chunked server: req raw DELETE /sink #1 conn=50116 at=516.7
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=delete framing=chunked server: sink raw method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=5.5 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=raw method=delete framing=chunked server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=post framing=sized room-wait=#t puts-refused=() ms=13.166 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=post framing=sized server: req https POST /sink #1 conn=33220 at=528.2
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=post framing=sized server: sink https method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=3.8 last=8.1 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=post framing=sized server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=post framing=chunked room-wait=#t puts-refused=() ms=11.61 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=post framing=chunked server: req https POST /sink #1 conn=33230 at=540.9
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=post framing=chunked server: sink https method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=2.6 last=8.7 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=post framing=chunked server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=put framing=sized room-wait=#t puts-refused=() ms=9.28 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=put framing=sized server: req https PUT /sink #1 conn=33246 at=553.6
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=put framing=sized server: sink https method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.3 last=6.2 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=put framing=sized server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=put framing=chunked room-wait=#t puts-refused=() ms=9.582 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=put framing=chunked server: req https PUT /sink #1 conn=33260 at=563.5
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=put framing=chunked server: sink https method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=2.6 last=6.9 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=put framing=chunked server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=patch framing=sized room-wait=#t puts-refused=() ms=9.227 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=patch framing=sized server: req https PATCH /sink #1 conn=33268 at=575.7
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=patch framing=sized server: sink https method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.3 last=6.1 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=patch framing=sized server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=patch framing=chunked room-wait=#t puts-refused=() ms=9.327 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=patch framing=chunked server: req https PATCH /sink #1 conn=33272 at=585.6
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=patch framing=chunked server: sink https method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=2.5 last=6.6 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=patch framing=chunked server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=delete framing=sized room-wait=#t puts-refused=() ms=16.999 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=delete framing=sized server: req https DELETE /sink #1 conn=33280 at=596.1
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=delete framing=sized server: sink https method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=10.6 last=13.8 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=delete framing=sized server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=delete framing=chunked room-wait=#t puts-refused=() ms=7.442 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=delete framing=chunked server: req https DELETE /sink #1 conn=33282 at=616.0
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=delete framing=chunked server: sink https method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=23 first=1.2 last=3.8 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=https method=delete framing=chunked server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=post framing=sized room-wait=#t puts-refused=() ms=9.695 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=post framing=sized server: req h2 POST /sink #1 conn=48072 at=625.8
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=post framing=sized server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=36 first=0.3 last=2.4 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=post framing=sized server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=post framing=chunked room-wait=#t puts-refused=() ms=6.689 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=post framing=chunked server: req h2 POST /sink #1 conn=48082 at=635.2
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=post framing=chunked server: sink h2 method=POST cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.2 last=3.1 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=post framing=chunked server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=put framing=sized room-wait=#t puts-refused=() ms=5.766 status=200 version=http/2 committed=262144 handed=262144 reads=5 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=put framing=sized server: req h2 PUT /sink #1 conn=48086 at=642.5
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=put framing=sized server: sink h2 method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.1 last=2.9 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=put framing=sized server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=put framing=chunked room-wait=#t puts-refused=() ms=4.148 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=put framing=chunked server: req h2 PUT /sink #1 conn=48092 at=648.9
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=put framing=chunked server: sink h2 method=PUT cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.1 last=2.2 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=put framing=chunked server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=patch framing=sized room-wait=#t puts-refused=() ms=10.363 status=200 version=http/2 committed=262144 handed=262144 reads=5 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=patch framing=sized server: req h2 PATCH /sink #1 conn=48096 at=653.4
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=patch framing=sized server: sink h2 method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=34 first=4.2 last=8.1 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=patch framing=sized server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=patch framing=chunked room-wait=#t puts-refused=() ms=8.966 status=200 version=http/2 committed=262144 handed=262144 reads=9 pauses=3 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=patch framing=chunked server: req h2 PATCH /sink #1 conn=48110 at=668.8
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=patch framing=chunked server: sink h2 method=PATCH cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.1 last=5.2 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=patch framing=chunked server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=delete framing=sized room-wait=#t puts-refused=() ms=7.94 status=200 version=http/2 committed=262144 handed=262144 reads=5 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=delete framing=sized server: req h2 DELETE /sink #1 conn=48118 at=678.6
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=delete framing=sized server: sink h2 method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=2.7 last=4.9 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=delete framing=sized server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=delete framing=chunked room-wait=#t puts-refused=() ms=7.963 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=delete framing=chunked server: req h2 DELETE /sink #1 conn=48134 at=688.1
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=delete framing=chunked server: sink h2 method=DELETE cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=2.6 last=4.5 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=1 face=h2 method=delete framing=chunked server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=post framing=sized room-wait=#t puts-refused=() ms=5.965 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=post framing=sized server: req http POST /sink #1 conn=45350 at=695.6
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=post framing=sized server: sink http method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.1 last=4.7 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=post framing=sized server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=post framing=chunked room-wait=#t puts-refused=() ms=5.806 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=post framing=chunked server: req http POST /sink #1 conn=45366 at=702.4
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=post framing=chunked server: sink http method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=9 first=1.0 last=4.8 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=post framing=chunked server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=put framing=sized room-wait=#t puts-refused=() ms=5.789 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=put framing=sized server: req http PUT /sink #1 conn=45372 at=708.7
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=put framing=sized server: sink http method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.1 last=4.8 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=put framing=sized server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=put framing=chunked room-wait=#t puts-refused=() ms=6.007 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=put framing=chunked server: req http PUT /sink #1 conn=45380 at=715.4
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=put framing=chunked server: sink http method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=11 first=1.3 last=5.2 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=put framing=chunked server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=patch framing=sized room-wait=#t puts-refused=() ms=6.922 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=patch framing=sized server: req http PATCH /sink #1 conn=45394 at=722.9
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=patch framing=sized server: sink http method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.5 last=5.4 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=patch framing=sized server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=patch framing=chunked room-wait=#t puts-refused=() ms=6.259 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=patch framing=chunked server: req http PATCH /sink #1 conn=45410 at=730.7
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=patch framing=chunked server: sink http method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=11 first=1.2 last=5.4 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=patch framing=chunked server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=delete framing=sized room-wait=#t puts-refused=() ms=6.198 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=delete framing=sized server: req http DELETE /sink #1 conn=45426 at=737.8
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=delete framing=sized server: sink http method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.2 last=5.3 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=delete framing=sized server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=delete framing=chunked room-wait=#t puts-refused=() ms=6.146 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=delete framing=chunked server: req http DELETE /sink #1 conn=45438 at=744.8
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=delete framing=chunked server: sink http method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=11 first=1.3 last=5.4 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=http method=delete framing=chunked server: count http:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=post framing=sized room-wait=#t puts-refused=() ms=6.254 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=post framing=sized server: req raw POST /sink #1 conn=50340 at=751.8
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=post framing=sized server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=5.3 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=post framing=sized server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=post framing=chunked room-wait=#t puts-refused=() ms=5.813 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=post framing=chunked server: req raw POST /sink #1 conn=50356 at=758.9
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=post framing=chunked server: sink raw method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.2 last=4.7 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=post framing=chunked server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=put framing=sized room-wait=#t puts-refused=() ms=5.597 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=put framing=sized server: req raw PUT /sink #1 conn=50380 at=765.9
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=put framing=sized server: sink raw method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=4.7 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=put framing=sized server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=put framing=chunked room-wait=#t puts-refused=() ms=5.421 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=put framing=chunked server: req raw PUT /sink #1 conn=50388 at=772.4
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=put framing=chunked server: sink raw method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.1 last=4.5 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=put framing=chunked server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=patch framing=sized room-wait=#t puts-refused=() ms=5.446 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=patch framing=sized server: req raw PATCH /sink #1 conn=50406 at=778.5
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=patch framing=sized server: sink raw method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.1 last=4.5 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=patch framing=sized server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=patch framing=chunked room-wait=#t puts-refused=() ms=6.099 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=patch framing=chunked server: req raw PATCH /sink #1 conn=50420 at=785.3
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=patch framing=chunked server: sink raw method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.2 last=5.3 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=patch framing=chunked server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=delete framing=sized room-wait=#t puts-refused=() ms=6.503 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=delete framing=sized server: req raw DELETE /sink #1 conn=50444 at=792.4
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=delete framing=sized server: sink raw method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.4 last=5.2 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=delete framing=sized server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=delete framing=chunked room-wait=#t puts-refused=() ms=6.099 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=delete framing=chunked server: req raw DELETE /sink #1 conn=50460 at=799.8
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=delete framing=chunked server: sink raw method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.3 last=5.2 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=raw method=delete framing=chunked server: count raw:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=post framing=sized room-wait=#t puts-refused=() ms=8.478 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=post framing=sized server: req https POST /sink #1 conn=33296 at=809.8
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=post framing=sized server: sink https method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=5.1 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=post framing=sized server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=post framing=chunked room-wait=#t puts-refused=() ms=11.769 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=post framing=chunked server: req https POST /sink #1 conn=33300 at=819.4
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=post framing=chunked server: sink https method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=1.2 last=6.8 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=post framing=chunked server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=put framing=sized room-wait=#t puts-refused=() ms=8.902 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=put framing=sized server: req https PUT /sink #1 conn=33306 at=830.6
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=put framing=sized server: sink https method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.1 last=6.6 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=put framing=sized server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=put framing=chunked room-wait=#t puts-refused=() ms=6.985 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=put framing=chunked server: req https PUT /sink #1 conn=33308 at=841.4
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=put framing=chunked server: sink https method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=22 first=1.1 last=3.9 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=put framing=chunked server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=patch framing=sized room-wait=#t puts-refused=() ms=9.939 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=patch framing=sized server: req https PATCH /sink #1 conn=33324 at=848.8
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=patch framing=sized server: sink https method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.7 last=7.2 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=patch framing=sized server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=patch framing=chunked room-wait=#t puts-refused=() ms=11.863 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=patch framing=chunked server: req https PATCH /sink #1 conn=33340 at=862.7
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=patch framing=chunked server: sink https method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=23 first=2.5 last=6.6 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=patch framing=chunked server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=delete framing=sized room-wait=#t puts-refused=() ms=6.968 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=delete framing=sized server: req https DELETE /sink #1 conn=33346 at=873.4
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=delete framing=sized server: sink https method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=3.1 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=delete framing=sized server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=delete framing=chunked room-wait=#t puts-refused=() ms=7.973 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=delete framing=chunked server: req https DELETE /sink #1 conn=33354 at=881.7
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=delete framing=chunked server: sink https method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=22 first=1.1 last=4.8 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=https method=delete framing=chunked server: count https:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=post framing=sized room-wait=#t puts-refused=() ms=5.451 status=200 version=http/2 committed=262144 handed=262144 reads=5 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=post framing=sized server: req h2 POST /sink #1 conn=48144 at=889.3
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=post framing=sized server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.2 last=3.3 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=post framing=sized server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=post framing=chunked room-wait=#t puts-refused=() ms=4.159 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=post framing=chunked server: req h2 POST /sink #1 conn=48150 at=895.8
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=post framing=chunked server: sink h2 method=POST cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=37 first=1.0 last=2.0 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=post framing=chunked server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=put framing=sized room-wait=#t puts-refused=() ms=7.631 status=200 version=http/2 committed=262144 handed=262144 reads=5 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=put framing=sized server: req h2 PUT /sink #1 conn=48158 at=901.5
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=put framing=sized server: sink h2 method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=2.7 last=4.5 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=put framing=sized server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=put framing=chunked room-wait=#t puts-refused=() ms=7.676 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=put framing=chunked server: req h2 PUT /sink #1 conn=48160 at=910.0
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=put framing=chunked server: sink h2 method=PUT cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=2.7 last=4.6 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=put framing=chunked server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=patch framing=sized room-wait=#t puts-refused=() ms=7.8 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=patch framing=sized server: req h2 PATCH /sink #1 conn=48164 at=918.8
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=patch framing=sized server: sink h2 method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=36 first=2.6 last=4.7 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=patch framing=sized server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=patch framing=chunked room-wait=#t puts-refused=() ms=7.73 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=patch framing=chunked server: req h2 PATCH /sink #1 conn=48170 at=928.1
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=patch framing=chunked server: sink h2 method=PATCH cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=2.5 last=4.6 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=patch framing=chunked server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=delete framing=sized room-wait=#t puts-refused=() ms=7.945 status=200 version=http/2 committed=262144 handed=262144 reads=5 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=delete framing=sized server: req h2 DELETE /sink #1 conn=48182 at=936.7
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=delete framing=sized server: sink h2 method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=2.6 last=4.9 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=delete framing=sized server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=delete framing=chunked room-wait=#t puts-refused=() ms=7.793 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=delete framing=chunked server: req h2 DELETE /sink #1 conn=48186 at=945.6
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=delete framing=chunked server: sink h2 method=DELETE cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=2.7 last=4.7 arr=omitted
+[ubuntu-gnutls-8.5.0] check run=2 face=h2 method=delete framing=chunked server: count h2:/sink=1
+[ubuntu-gnutls-8.5.0] check done
+[ubuntu-gnutls-8.5.0] check exited 0 after about 1 s
+[ubuntu-gnutls-8.5.0] server-stderr: counts h2:/sink=16 http:/sink=16 https:/sink=16 raw:/sink=16
+[current-8.23.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[current-8.23.0] server {"node":"v24.18.0","pid":3502,"http":"127.0.0.1:41657","raw":"127.0.0.1:37071","https":"127.0.0.1:33005","h2":"127.0.0.1:46589"}
+[current-8.23.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4
+[current-8.23.0] libcurl 8.23.0 OpenSSL/3.0.13
+[current-8.23.0] check run=1 face=http method=post framing=sized room-wait=#t puts-refused=() ms=18.614 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=http method=post framing=sized server: req http POST /sink #1 conn=47436 at=336.7
+[current-8.23.0] check run=1 face=http method=post framing=sized server: sink http method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.8 last=5.2 arr=omitted
+[current-8.23.0] check run=1 face=http method=post framing=sized server: count http:/sink=1
+[current-8.23.0] check run=1 face=http method=post framing=chunked room-wait=#t puts-refused=() ms=11.211 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=http method=post framing=chunked server: req http POST /sink #1 conn=47442 at=358.3
+[current-8.23.0] check run=1 face=http method=post framing=chunked server: sink http method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.8 last=6.3 arr=omitted
+[current-8.23.0] check run=1 face=http method=post framing=chunked server: count http:/sink=1
+[current-8.23.0] check run=1 face=http method=put framing=sized room-wait=#t puts-refused=() ms=6.633 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=http method=put framing=sized server: req http PUT /sink #1 conn=47458 at=371.7
+[current-8.23.0] check run=1 face=http method=put framing=sized server: sink http method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.1 last=3.6 arr=omitted
+[current-8.23.0] check run=1 face=http method=put framing=sized server: count http:/sink=1
+[current-8.23.0] check run=1 face=http method=put framing=chunked room-wait=#t puts-refused=() ms=5.046 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=http method=put framing=chunked server: req http PUT /sink #1 conn=47468 at=381.0
+[current-8.23.0] check run=1 face=http method=put framing=chunked server: sink http method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.2 last=3.6 arr=omitted
+[current-8.23.0] check run=1 face=http method=put framing=chunked server: count http:/sink=1
+[current-8.23.0] check run=1 face=http method=patch framing=sized room-wait=#t puts-refused=() ms=7.381 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=http method=patch framing=sized server: req http PATCH /sink #1 conn=47478 at=387.3
+[current-8.23.0] check run=1 face=http method=patch framing=sized server: sink http method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.0 last=6.1 arr=omitted
+[current-8.23.0] check run=1 face=http method=patch framing=sized server: count http:/sink=1
+[current-8.23.0] check run=1 face=http method=patch framing=chunked room-wait=#t puts-refused=() ms=6.78 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=http method=patch framing=chunked server: req http PATCH /sink #1 conn=47482 at=396.1
+[current-8.23.0] check run=1 face=http method=patch framing=chunked server: sink http method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.2 last=5.4 arr=omitted
+[current-8.23.0] check run=1 face=http method=patch framing=chunked server: count http:/sink=1
+[current-8.23.0] check run=1 face=http method=delete framing=sized room-wait=#t puts-refused=() ms=6.561 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=http method=delete framing=sized server: req http DELETE /sink #1 conn=47490 at=404.3
+[current-8.23.0] check run=1 face=http method=delete framing=sized server: sink http method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.8 last=5.1 arr=omitted
+[current-8.23.0] check run=1 face=http method=delete framing=sized server: count http:/sink=1
+[current-8.23.0] check run=1 face=http method=delete framing=chunked room-wait=#t puts-refused=() ms=6.228 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=http method=delete framing=chunked server: req http DELETE /sink #1 conn=47500 at=411.8
+[current-8.23.0] check run=1 face=http method=delete framing=chunked server: sink http method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=9 first=1.1 last=5.1 arr=omitted
+[current-8.23.0] check run=1 face=http method=delete framing=chunked server: count http:/sink=1
+[current-8.23.0] check run=1 face=raw method=post framing=sized room-wait=#t puts-refused=() ms=6.299 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=raw method=post framing=sized server: req raw POST /sink #1 conn=51872 at=419.3
+[current-8.23.0] check run=1 face=raw method=post framing=sized server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.3 last=5.1 arr=omitted
+[current-8.23.0] check run=1 face=raw method=post framing=sized server: count raw:/sink=1
+[current-8.23.0] check run=1 face=raw method=post framing=chunked room-wait=#t puts-refused=() ms=6.231 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=raw method=post framing=chunked server: req raw POST /sink #1 conn=51894 at=427.2
+[current-8.23.0] check run=1 face=raw method=post framing=chunked server: sink raw method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.2 last=5.2 arr=omitted
+[current-8.23.0] check run=1 face=raw method=post framing=chunked server: count raw:/sink=1
+[current-8.23.0] check run=1 face=raw method=put framing=sized room-wait=#t puts-refused=() ms=6.329 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=raw method=put framing=sized server: req raw PUT /sink #1 conn=51906 at=434.7
+[current-8.23.0] check run=1 face=raw method=put framing=sized server: sink raw method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.2 last=5.1 arr=omitted
+[current-8.23.0] check run=1 face=raw method=put framing=sized server: count raw:/sink=1
+[current-8.23.0] check run=1 face=raw method=put framing=chunked room-wait=#t puts-refused=() ms=6.235 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=raw method=put framing=chunked server: req raw PUT /sink #1 conn=51930 at=442.4
+[current-8.23.0] check run=1 face=raw method=put framing=chunked server: sink raw method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.3 last=5.3 arr=omitted
+[current-8.23.0] check run=1 face=raw method=put framing=chunked server: count raw:/sink=1
+[current-8.23.0] check run=1 face=raw method=patch framing=sized room-wait=#t puts-refused=() ms=6.8 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=raw method=patch framing=sized server: req raw PATCH /sink #1 conn=51958 at=449.8
+[current-8.23.0] check run=1 face=raw method=patch framing=sized server: sink raw method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.3 last=5.7 arr=omitted
+[current-8.23.0] check run=1 face=raw method=patch framing=sized server: count raw:/sink=1
+[current-8.23.0] check run=1 face=raw method=patch framing=chunked room-wait=#t puts-refused=() ms=6.297 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=raw method=patch framing=chunked server: req raw PATCH /sink #1 conn=51968 at=458.2
+[current-8.23.0] check run=1 face=raw method=patch framing=chunked server: sink raw method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.3 last=5.4 arr=omitted
+[current-8.23.0] check run=1 face=raw method=patch framing=chunked server: count raw:/sink=1
+[current-8.23.0] check run=1 face=raw method=delete framing=sized room-wait=#t puts-refused=() ms=5.841 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=raw method=delete framing=sized server: req raw DELETE /sink #1 conn=51976 at=465.9
+[current-8.23.0] check run=1 face=raw method=delete framing=sized server: sink raw method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.2 last=4.8 arr=omitted
+[current-8.23.0] check run=1 face=raw method=delete framing=sized server: count raw:/sink=1
+[current-8.23.0] check run=1 face=raw method=delete framing=chunked room-wait=#t puts-refused=() ms=9.113 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=raw method=delete framing=chunked server: req raw DELETE /sink #1 conn=51994 at=473.5
+[current-8.23.0] check run=1 face=raw method=delete framing=chunked server: sink raw method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.8 last=7.9 arr=omitted
+[current-8.23.0] check run=1 face=raw method=delete framing=chunked server: count raw:/sink=1
+[current-8.23.0] check run=1 face=https method=post framing=sized room-wait=#t puts-refused=() ms=12.458 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=https method=post framing=sized server: req https POST /sink #1 conn=35546 at=489.1
+[current-8.23.0] check run=1 face=https method=post framing=sized server: sink https method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=3.2 last=6.1 arr=omitted
+[current-8.23.0] check run=1 face=https method=post framing=sized server: count https:/sink=1
+[current-8.23.0] check run=1 face=https method=post framing=chunked room-wait=#t puts-refused=() ms=7.722 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=https method=post framing=chunked server: req https POST /sink #1 conn=35560 at=502.0
+[current-8.23.0] check run=1 face=https method=post framing=chunked server: sink https method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=21 first=1.4 last=4.3 arr=omitted
+[current-8.23.0] check run=1 face=https method=post framing=chunked server: count https:/sink=1
+[current-8.23.0] check run=1 face=https method=put framing=sized room-wait=#t puts-refused=() ms=7.349 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=https method=put framing=sized server: req https PUT /sink #1 conn=35562 at=511.0
+[current-8.23.0] check run=1 face=https method=put framing=sized server: sink https method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.3 last=3.9 arr=omitted
+[current-8.23.0] check run=1 face=https method=put framing=sized server: count https:/sink=1
+[current-8.23.0] check run=1 face=https method=put framing=chunked room-wait=#t puts-refused=() ms=10.748 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=https method=put framing=chunked server: req https PUT /sink #1 conn=35572 at=519.7
+[current-8.23.0] check run=1 face=https method=put framing=chunked server: sink https method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=22 first=1.3 last=6.3 arr=omitted
+[current-8.23.0] check run=1 face=https method=put framing=chunked server: count https:/sink=1
+[current-8.23.0] check run=1 face=https method=patch framing=sized room-wait=#t puts-refused=() ms=12.855 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=https method=patch framing=sized server: req https PATCH /sink #1 conn=35576 at=533.7
+[current-8.23.0] check run=1 face=https method=patch framing=sized server: sink https method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.7 last=7.9 arr=omitted
+[current-8.23.0] check run=1 face=https method=patch framing=sized server: count https:/sink=1
+[current-8.23.0] check run=1 face=https method=patch framing=chunked room-wait=#t puts-refused=() ms=7.332 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=https method=patch framing=chunked server: req https PATCH /sink #1 conn=35590 at=546.5
+[current-8.23.0] check run=1 face=https method=patch framing=chunked server: sink https method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=21 first=1.2 last=4.2 arr=omitted
+[current-8.23.0] check run=1 face=https method=patch framing=chunked server: count https:/sink=1
+[current-8.23.0] check run=1 face=https method=delete framing=sized room-wait=#t puts-refused=() ms=23.689 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=https method=delete framing=sized server: req https DELETE /sink #1 conn=35596 at=567.5
+[current-8.23.0] check run=1 face=https method=delete framing=sized server: sink https method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=6.8 arr=omitted
+[current-8.23.0] check run=1 face=https method=delete framing=sized server: count https:/sink=1
+[current-8.23.0] check run=1 face=https method=delete framing=chunked room-wait=#t puts-refused=() ms=10.63 status=200 version=http/1.1 committed=262144 handed=262144 reads=15 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=https method=delete framing=chunked server: req https DELETE /sink #1 conn=35608 at=581.3
+[current-8.23.0] check run=1 face=https method=delete framing=chunked server: sink https method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=22 first=1.4 last=7.1 arr=omitted
+[current-8.23.0] check run=1 face=https method=delete framing=chunked server: count https:/sink=1
+[current-8.23.0] check run=1 face=h2 method=post framing=sized room-wait=#t puts-refused=() ms=10.281 status=200 version=http/2 committed=262144 handed=262144 reads=11 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=h2 method=post framing=sized server: req h2 POST /sink #1 conn=50410 at=595.7
+[current-8.23.0] check run=1 face=h2 method=post framing=sized server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=0.3 last=2.9 arr=omitted
+[current-8.23.0] check run=1 face=h2 method=post framing=sized server: count h2:/sink=1
+[current-8.23.0] check run=1 face=h2 method=post framing=chunked room-wait=#t puts-refused=() ms=9.218 status=200 version=http/2 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=h2 method=post framing=chunked server: req h2 POST /sink #1 conn=50420 at=605.7
+[current-8.23.0] check run=1 face=h2 method=post framing=chunked server: sink h2 method=POST cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=31 first=1.1 last=4.9 arr=omitted
+[current-8.23.0] check run=1 face=h2 method=post framing=chunked server: count h2:/sink=1
+[current-8.23.0] check run=1 face=h2 method=put framing=sized room-wait=#t puts-refused=() ms=8.722 status=200 version=http/2 committed=262144 handed=262144 reads=10 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=h2 method=put framing=sized server: req h2 PUT /sink #1 conn=50436 at=616.4
+[current-8.23.0] check run=1 face=h2 method=put framing=sized server: sink h2 method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=30 first=1.2 last=5.0 arr=omitted
+[current-8.23.0] check run=1 face=h2 method=put framing=sized server: count h2:/sink=1
+[current-8.23.0] check run=1 face=h2 method=put framing=chunked room-wait=#t puts-refused=() ms=11.007 status=200 version=http/2 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=h2 method=put framing=chunked server: req h2 PUT /sink #1 conn=50442 at=627.0
+[current-8.23.0] check run=1 face=h2 method=put framing=chunked server: sink h2 method=PUT cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=1.1 last=5.8 arr=omitted
+[current-8.23.0] check run=1 face=h2 method=put framing=chunked server: count h2:/sink=1
+[current-8.23.0] check run=1 face=h2 method=patch framing=sized room-wait=#t puts-refused=() ms=8.371 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=h2 method=patch framing=sized server: req h2 PATCH /sink #1 conn=50450 at=639.3
+[current-8.23.0] check run=1 face=h2 method=patch framing=sized server: sink h2 method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.2 last=3.4 arr=omitted
+[current-8.23.0] check run=1 face=h2 method=patch framing=sized server: count h2:/sink=1
+[current-8.23.0] check run=1 face=h2 method=patch framing=chunked room-wait=#t puts-refused=() ms=6.649 status=200 version=http/2 committed=262144 handed=262144 reads=9 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=h2 method=patch framing=chunked server: req h2 PATCH /sink #1 conn=50462 at=649.3
+[current-8.23.0] check run=1 face=h2 method=patch framing=chunked server: sink h2 method=PATCH cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.1 last=3.3 arr=omitted
+[current-8.23.0] check run=1 face=h2 method=patch framing=chunked server: count h2:/sink=1
+[current-8.23.0] check run=1 face=h2 method=delete framing=sized room-wait=#t puts-refused=() ms=8.649 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=h2 method=delete framing=sized server: req h2 DELETE /sink #1 conn=50464 at=657.5
+[current-8.23.0] check run=1 face=h2 method=delete framing=sized server: sink h2 method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=32 first=2.2 last=5.2 arr=omitted
+[current-8.23.0] check run=1 face=h2 method=delete framing=sized server: count h2:/sink=1
+[current-8.23.0] check run=1 face=h2 method=delete framing=chunked room-wait=#t puts-refused=() ms=7.822 status=200 version=http/2 committed=262144 handed=262144 reads=10 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=1 face=h2 method=delete framing=chunked server: req h2 DELETE /sink #1 conn=50474 at=668.0
+[current-8.23.0] check run=1 face=h2 method=delete framing=chunked server: sink h2 method=DELETE cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.0 last=3.9 arr=omitted
+[current-8.23.0] check run=1 face=h2 method=delete framing=chunked server: count h2:/sink=1
+[current-8.23.0] check run=2 face=http method=post framing=sized room-wait=#t puts-refused=() ms=6.493 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=http method=post framing=sized server: req http POST /sink #1 conn=47504 at=675.1
+[current-8.23.0] check run=2 face=http method=post framing=sized server: sink http method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.1 last=5.4 arr=omitted
+[current-8.23.0] check run=2 face=http method=post framing=sized server: count http:/sink=1
+[current-8.23.0] check run=2 face=http method=post framing=chunked room-wait=#t puts-refused=() ms=4.829 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=http method=post framing=chunked server: req http POST /sink #1 conn=47514 at=682.9
+[current-8.23.0] check run=2 face=http method=post framing=chunked server: sink http method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=10 first=1.1 last=3.8 arr=omitted
+[current-8.23.0] check run=2 face=http method=post framing=chunked server: count http:/sink=1
+[current-8.23.0] check run=2 face=http method=put framing=sized room-wait=#t puts-refused=() ms=6.069 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=http method=put framing=sized server: req http PUT /sink #1 conn=47526 at=688.8
+[current-8.23.0] check run=2 face=http method=put framing=sized server: sink http method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=4.9 arr=omitted
+[current-8.23.0] check run=2 face=http method=put framing=sized server: count http:/sink=1
+[current-8.23.0] check run=2 face=http method=put framing=chunked room-wait=#t puts-refused=() ms=6.317 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=http method=put framing=chunked server: req http PUT /sink #1 conn=47542 at=696.3
+[current-8.23.0] check run=2 face=http method=put framing=chunked server: sink http method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=9 first=1.3 last=5.3 arr=omitted
+[current-8.23.0] check run=2 face=http method=put framing=chunked server: count http:/sink=1
+[current-8.23.0] check run=2 face=http method=patch framing=sized room-wait=#t puts-refused=() ms=5.808 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=http method=patch framing=sized server: req http PATCH /sink #1 conn=47548 at=703.7
+[current-8.23.0] check run=2 face=http method=patch framing=sized server: sink http method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.2 last=4.9 arr=omitted
+[current-8.23.0] check run=2 face=http method=patch framing=sized server: count http:/sink=1
+[current-8.23.0] check run=2 face=http method=patch framing=chunked room-wait=#t puts-refused=() ms=6.25 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=http method=patch framing=chunked server: req http PATCH /sink #1 conn=47564 at=710.5
+[current-8.23.0] check run=2 face=http method=patch framing=chunked server: sink http method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=9 first=1.2 last=5.4 arr=omitted
+[current-8.23.0] check run=2 face=http method=patch framing=chunked server: count http:/sink=1
+[current-8.23.0] check run=2 face=http method=delete framing=sized room-wait=#t puts-refused=() ms=6.494 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=http method=delete framing=sized server: req http DELETE /sink #1 conn=47578 at=718.1
+[current-8.23.0] check run=2 face=http method=delete framing=sized server: sink http method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=5.0 arr=omitted
+[current-8.23.0] check run=2 face=http method=delete framing=sized server: count http:/sink=1
+[current-8.23.0] check run=2 face=http method=delete framing=chunked room-wait=#t puts-refused=() ms=6.28 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=http method=delete framing=chunked server: req http DELETE /sink #1 conn=47588 at=725.1
+[current-8.23.0] check run=2 face=http method=delete framing=chunked server: sink http method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=10 first=1.3 last=5.4 arr=omitted
+[current-8.23.0] check run=2 face=http method=delete framing=chunked server: count http:/sink=1
+[current-8.23.0] check run=2 face=raw method=post framing=sized room-wait=#t puts-refused=() ms=6.192 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=raw method=post framing=sized server: req raw POST /sink #1 conn=52242 at=732.2
+[current-8.23.0] check run=2 face=raw method=post framing=sized server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.3 last=5.0 arr=omitted
+[current-8.23.0] check run=2 face=raw method=post framing=sized server: count raw:/sink=1
+[current-8.23.0] check run=2 face=raw method=post framing=chunked room-wait=#t puts-refused=() ms=6.443 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=raw method=post framing=chunked server: req raw POST /sink #1 conn=52250 at=739.3
+[current-8.23.0] check run=2 face=raw method=post framing=chunked server: sink raw method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.4 last=5.5 arr=omitted
+[current-8.23.0] check run=2 face=raw method=post framing=chunked server: count raw:/sink=1
+[current-8.23.0] check run=2 face=raw method=put framing=sized room-wait=#t puts-refused=() ms=6.244 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=raw method=put framing=sized server: req raw PUT /sink #1 conn=52272 at=747.2
+[current-8.23.0] check run=2 face=raw method=put framing=sized server: sink raw method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.2 last=5.0 arr=omitted
+[current-8.23.0] check run=2 face=raw method=put framing=sized server: count raw:/sink=1
+[current-8.23.0] check run=2 face=raw method=put framing=chunked room-wait=#t puts-refused=() ms=6.181 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=raw method=put framing=chunked server: req raw PUT /sink #1 conn=52290 at=754.7
+[current-8.23.0] check run=2 face=raw method=put framing=chunked server: sink raw method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.3 last=5.3 arr=omitted
+[current-8.23.0] check run=2 face=raw method=put framing=chunked server: count raw:/sink=1
+[current-8.23.0] check run=2 face=raw method=patch framing=sized room-wait=#t puts-refused=() ms=6.557 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=raw method=patch framing=sized server: req raw PATCH /sink #1 conn=52306 at=761.9
+[current-8.23.0] check run=2 face=raw method=patch framing=sized server: sink raw method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.2 last=5.2 arr=omitted
+[current-8.23.0] check run=2 face=raw method=patch framing=sized server: count raw:/sink=1
+[current-8.23.0] check run=2 face=raw method=patch framing=chunked room-wait=#t puts-refused=() ms=6.509 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=raw method=patch framing=chunked server: req raw PATCH /sink #1 conn=52332 at=769.2
+[current-8.23.0] check run=2 face=raw method=patch framing=chunked server: sink raw method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.2 last=5.5 arr=omitted
+[current-8.23.0] check run=2 face=raw method=patch framing=chunked server: count raw:/sink=1
+[current-8.23.0] check run=2 face=raw method=delete framing=sized room-wait=#t puts-refused=() ms=5.651 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=raw method=delete framing=sized server: req raw DELETE /sink #1 conn=52356 at=776.5
+[current-8.23.0] check run=2 face=raw method=delete framing=sized server: sink raw method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.2 last=4.7 arr=omitted
+[current-8.23.0] check run=2 face=raw method=delete framing=sized server: count raw:/sink=1
+[current-8.23.0] check run=2 face=raw method=delete framing=chunked room-wait=#t puts-refused=() ms=6.474 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=raw method=delete framing=chunked server: req raw DELETE /sink #1 conn=52376 at=783.0
+[current-8.23.0] check run=2 face=raw method=delete framing=chunked server: sink raw method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.2 last=5.5 arr=omitted
+[current-8.23.0] check run=2 face=raw method=delete framing=chunked server: count raw:/sink=1
+[current-8.23.0] check run=2 face=https method=post framing=sized room-wait=#t puts-refused=() ms=8.833 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=https method=post framing=sized server: req https POST /sink #1 conn=35612 at=792.9
+[current-8.23.0] check run=2 face=https method=post framing=sized server: sink https method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=5.3 arr=omitted
+[current-8.23.0] check run=2 face=https method=post framing=sized server: count https:/sink=1
+[current-8.23.0] check run=2 face=https method=post framing=chunked room-wait=#t puts-refused=() ms=9.422 status=200 version=http/1.1 committed=262144 handed=262144 reads=15 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=https method=post framing=chunked server: req https POST /sink #1 conn=35628 at=802.9
+[current-8.23.0] check run=2 face=https method=post framing=chunked server: sink https method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=22 first=1.3 last=6.3 arr=omitted
+[current-8.23.0] check run=2 face=https method=post framing=chunked server: count https:/sink=1
+[current-8.23.0] check run=2 face=https method=put framing=sized room-wait=#t puts-refused=() ms=9.259 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=5 resumes=5 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=https method=put framing=sized server: req https PUT /sink #1 conn=35632 at=813.2
+[current-8.23.0] check run=2 face=https method=put framing=sized server: sink https method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.3 last=6.2 arr=omitted
+[current-8.23.0] check run=2 face=https method=put framing=sized server: count https:/sink=1
+[current-8.23.0] check run=2 face=https method=put framing=chunked room-wait=#t puts-refused=() ms=9.493 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=https method=put framing=chunked server: req https PUT /sink #1 conn=35634 at=824.8
+[current-8.23.0] check run=2 face=https method=put framing=chunked server: sink https method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=2.4 last=6.5 arr=omitted
+[current-8.23.0] check run=2 face=https method=put framing=chunked server: count https:/sink=1
+[current-8.23.0] check run=2 face=https method=patch framing=sized room-wait=#t puts-refused=() ms=9.258 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=https method=patch framing=sized server: req https PATCH /sink #1 conn=35644 at=835.6
+[current-8.23.0] check run=2 face=https method=patch framing=sized server: sink https method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.5 last=6.4 arr=omitted
+[current-8.23.0] check run=2 face=https method=patch framing=sized server: count https:/sink=1
+[current-8.23.0] check run=2 face=https method=patch framing=chunked room-wait=#t puts-refused=() ms=8.09 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=https method=patch framing=chunked server: req https PATCH /sink #1 conn=35660 at=845.9
+[current-8.23.0] check run=2 face=https method=patch framing=chunked server: sink https method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=2.4 last=5.3 arr=omitted
+[current-8.23.0] check run=2 face=https method=patch framing=chunked server: count https:/sink=1
+[current-8.23.0] check run=2 face=https method=delete framing=sized room-wait=#t puts-refused=() ms=9.859 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=https method=delete framing=sized server: req https DELETE /sink #1 conn=35664 at=855.5
+[current-8.23.0] check run=2 face=https method=delete framing=sized server: sink https method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.4 last=6.7 arr=omitted
+[current-8.23.0] check run=2 face=https method=delete framing=sized server: count https:/sink=1
+[current-8.23.0] check run=2 face=https method=delete framing=chunked room-wait=#t puts-refused=() ms=9.425 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=https method=delete framing=chunked server: req https DELETE /sink #1 conn=35668 at=866.2
+[current-8.23.0] check run=2 face=https method=delete framing=chunked server: sink https method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=2.5 last=6.6 arr=omitted
+[current-8.23.0] check run=2 face=https method=delete framing=chunked server: count https:/sink=1
+[current-8.23.0] check run=2 face=h2 method=post framing=sized room-wait=#t puts-refused=() ms=6.815 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=h2 method=post framing=sized server: req h2 POST /sink #1 conn=50476 at=876.5
+[current-8.23.0] check run=2 face=h2 method=post framing=sized server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=30 first=1.0 last=3.5 arr=omitted
+[current-8.23.0] check run=2 face=h2 method=post framing=sized server: count h2:/sink=1
+[current-8.23.0] check run=2 face=h2 method=post framing=chunked room-wait=#t puts-refused=() ms=7.593 status=200 version=http/2 committed=262144 handed=262144 reads=10 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=h2 method=post framing=chunked server: req h2 POST /sink #1 conn=50492 at=884.9
+[current-8.23.0] check run=2 face=h2 method=post framing=chunked server: sink h2 method=POST cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=31 first=1.1 last=3.8 arr=omitted
+[current-8.23.0] check run=2 face=h2 method=post framing=chunked server: count h2:/sink=1
+[current-8.23.0] check run=2 face=h2 method=put framing=sized room-wait=#t puts-refused=() ms=7.647 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=h2 method=put framing=sized server: req h2 PUT /sink #1 conn=50508 at=894.4
+[current-8.23.0] check run=2 face=h2 method=put framing=sized server: sink h2 method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=32 first=1.2 last=3.8 arr=omitted
+[current-8.23.0] check run=2 face=h2 method=put framing=sized server: count h2:/sink=1
+[current-8.23.0] check run=2 face=h2 method=put framing=chunked room-wait=#t puts-refused=() ms=9.609 status=200 version=http/2 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=h2 method=put framing=chunked server: req h2 PUT /sink #1 conn=50522 at=902.9
+[current-8.23.0] check run=2 face=h2 method=put framing=chunked server: sink h2 method=PUT cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=32 first=2.3 last=6.6 arr=omitted
+[current-8.23.0] check run=2 face=h2 method=put framing=chunked server: count h2:/sink=1
+[current-8.23.0] check run=2 face=h2 method=patch framing=sized room-wait=#t puts-refused=() ms=8.401 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=h2 method=patch framing=sized server: req h2 PATCH /sink #1 conn=50524 at=914.0
+[current-8.23.0] check run=2 face=h2 method=patch framing=sized server: sink h2 method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=2.3 last=5.1 arr=omitted
+[current-8.23.0] check run=2 face=h2 method=patch framing=sized server: count h2:/sink=1
+[current-8.23.0] check run=2 face=h2 method=patch framing=chunked room-wait=#t puts-refused=() ms=8.219 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=h2 method=patch framing=chunked server: req h2 PATCH /sink #1 conn=50526 at=923.5
+[current-8.23.0] check run=2 face=h2 method=patch framing=chunked server: sink h2 method=PATCH cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=32 first=2.3 last=5.1 arr=omitted
+[current-8.23.0] check run=2 face=h2 method=patch framing=chunked server: count h2:/sink=1
+[current-8.23.0] check run=2 face=h2 method=delete framing=sized room-wait=#t puts-refused=() ms=8.284 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=h2 method=delete framing=sized server: req h2 DELETE /sink #1 conn=50532 at=932.6
+[current-8.23.0] check run=2 face=h2 method=delete framing=sized server: sink h2 method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=32 first=2.3 last=5.2 arr=omitted
+[current-8.23.0] check run=2 face=h2 method=delete framing=sized server: count h2:/sink=1
+[current-8.23.0] check run=2 face=h2 method=delete framing=chunked room-wait=#t puts-refused=() ms=10.149 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[current-8.23.0] check run=2 face=h2 method=delete framing=chunked server: req h2 DELETE /sink #1 conn=50544 at=941.9
+[current-8.23.0] check run=2 face=h2 method=delete framing=chunked server: sink h2 method=DELETE cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=32 first=2.3 last=6.0 arr=omitted
+[current-8.23.0] check run=2 face=h2 method=delete framing=chunked server: count h2:/sink=1
+[current-8.23.0] check done
+[current-8.23.0] check exited 0 after about 1 s
+[current-8.23.0] server-stderr: counts h2:/sink=16 http:/sink=16 https:/sink=16 raw:/sink=16

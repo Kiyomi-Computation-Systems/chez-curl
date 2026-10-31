@@ -1,0 +1,263 @@
+[guix-8.20.0] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[guix-8.20.0] server {"node":"v24.18.0","pid":34,"http":"127.0.0.1:43327","raw":"127.0.0.1:43773","https":"127.0.0.1:39099","h2":"127.0.0.1:40185"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+[guix-8.20.0] libcurl 8.20.0 GnuTLS/3.8.13
+[guix-8.20.0] check run=1 face=http method=post framing=sized room-wait=#t puts-refused=() ms=12.615 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=http method=post framing=sized server: req http POST /sink #1 conn=46638 at=355.9
+[guix-8.20.0] check run=1 face=http method=post framing=sized server: sink http method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=0.5 last=4.5 arr=omitted
+[guix-8.20.0] check run=1 face=http method=post framing=sized server: count http:/sink=1
+[guix-8.20.0] check run=1 face=http method=post framing=chunked room-wait=#t puts-refused=() ms=8.783 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=http method=post framing=chunked server: req http POST /sink #1 conn=46648 at=370.4
+[guix-8.20.0] check run=1 face=http method=post framing=chunked server: sink http method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=11 first=1.3 last=5.0 arr=omitted
+[guix-8.20.0] check run=1 face=http method=post framing=chunked server: count http:/sink=1
+[guix-8.20.0] check run=1 face=http method=put framing=sized room-wait=#t puts-refused=() ms=5.609 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=http method=put framing=sized server: req http PUT /sink #1 conn=46654 at=381.5
+[guix-8.20.0] check run=1 face=http method=put framing=sized server: sink http method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=0.8 last=4.1 arr=omitted
+[guix-8.20.0] check run=1 face=http method=put framing=sized server: count http:/sink=1
+[guix-8.20.0] check run=1 face=http method=put framing=chunked room-wait=#t puts-refused=() ms=5.64 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=http method=put framing=chunked server: req http PUT /sink #1 conn=46666 at=389.6
+[guix-8.20.0] check run=1 face=http method=put framing=chunked server: sink http method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.1 last=4.6 arr=omitted
+[guix-8.20.0] check run=1 face=http method=put framing=chunked server: count http:/sink=1
+[guix-8.20.0] check run=1 face=http method=patch framing=sized room-wait=#t puts-refused=() ms=7.272 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=http method=patch framing=sized server: req http PATCH /sink #1 conn=46682 at=397.5
+[guix-8.20.0] check run=1 face=http method=patch framing=sized server: sink http method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.1 last=4.5 arr=omitted
+[guix-8.20.0] check run=1 face=http method=patch framing=sized server: count http:/sink=1
+[guix-8.20.0] check run=1 face=http method=patch framing=chunked room-wait=#t puts-refused=() ms=5.692 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=http method=patch framing=chunked server: req http PATCH /sink #1 conn=46688 at=406.8
+[guix-8.20.0] check run=1 face=http method=patch framing=chunked server: sink http method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=10 first=1.1 last=4.6 arr=omitted
+[guix-8.20.0] check run=1 face=http method=patch framing=chunked server: count http:/sink=1
+[guix-8.20.0] check run=1 face=http method=delete framing=sized room-wait=#t puts-refused=() ms=6.039 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=http method=delete framing=sized server: req http DELETE /sink #1 conn=46694 at=413.8
+[guix-8.20.0] check run=1 face=http method=delete framing=sized server: sink http method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.2 last=4.8 arr=omitted
+[guix-8.20.0] check run=1 face=http method=delete framing=sized server: count http:/sink=1
+[guix-8.20.0] check run=1 face=http method=delete framing=chunked room-wait=#t puts-refused=() ms=5.163 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=http method=delete framing=chunked server: req http DELETE /sink #1 conn=46708 at=421.2
+[guix-8.20.0] check run=1 face=http method=delete framing=chunked server: sink http method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=9 first=1.4 last=4.0 arr=omitted
+[guix-8.20.0] check run=1 face=http method=delete framing=chunked server: count http:/sink=1
+[guix-8.20.0] check run=1 face=raw method=post framing=sized room-wait=#t puts-refused=() ms=7.497 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=raw method=post framing=sized server: req raw POST /sink #1 conn=54016 at=427.0
+[guix-8.20.0] check run=1 face=raw method=post framing=sized server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.3 last=4.7 arr=omitted
+[guix-8.20.0] check run=1 face=raw method=post framing=sized server: count raw:/sink=1
+[guix-8.20.0] check run=1 face=raw method=post framing=chunked room-wait=#t puts-refused=() ms=6.738 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=raw method=post framing=chunked server: req raw POST /sink #1 conn=54040 at=435.5
+[guix-8.20.0] check run=1 face=raw method=post framing=chunked server: sink raw method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.3 last=5.8 arr=omitted
+[guix-8.20.0] check run=1 face=raw method=post framing=chunked server: count raw:/sink=1
+[guix-8.20.0] check run=1 face=raw method=put framing=sized room-wait=#t puts-refused=() ms=6.181 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=raw method=put framing=sized server: req raw PUT /sink #1 conn=54066 at=443.1
+[guix-8.20.0] check run=1 face=raw method=put framing=sized server: sink raw method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.3 last=5.1 arr=omitted
+[guix-8.20.0] check run=1 face=raw method=put framing=sized server: count raw:/sink=1
+[guix-8.20.0] check run=1 face=raw method=put framing=chunked room-wait=#t puts-refused=() ms=6.041 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=raw method=put framing=chunked server: req raw PUT /sink #1 conn=54098 at=450.2
+[guix-8.20.0] check run=1 face=raw method=put framing=chunked server: sink raw method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.3 last=5.2 arr=omitted
+[guix-8.20.0] check run=1 face=raw method=put framing=chunked server: count raw:/sink=1
+[guix-8.20.0] check run=1 face=raw method=patch framing=sized room-wait=#t puts-refused=() ms=6.148 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=raw method=patch framing=sized server: req raw PATCH /sink #1 conn=54126 at=457.1
+[guix-8.20.0] check run=1 face=raw method=patch framing=sized server: sink raw method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.3 last=4.9 arr=omitted
+[guix-8.20.0] check run=1 face=raw method=patch framing=sized server: count raw:/sink=1
+[guix-8.20.0] check run=1 face=raw method=patch framing=chunked room-wait=#t puts-refused=() ms=6.013 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=raw method=patch framing=chunked server: req raw PATCH /sink #1 conn=54140 at=464.1
+[guix-8.20.0] check run=1 face=raw method=patch framing=chunked server: sink raw method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.3 last=5.2 arr=omitted
+[guix-8.20.0] check run=1 face=raw method=patch framing=chunked server: count raw:/sink=1
+[guix-8.20.0] check run=1 face=raw method=delete framing=sized room-wait=#t puts-refused=() ms=5.998 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=raw method=delete framing=sized server: req raw DELETE /sink #1 conn=54168 at=471.0
+[guix-8.20.0] check run=1 face=raw method=delete framing=sized server: sink raw method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.3 last=5.0 arr=omitted
+[guix-8.20.0] check run=1 face=raw method=delete framing=sized server: count raw:/sink=1
+[guix-8.20.0] check run=1 face=raw method=delete framing=chunked room-wait=#t puts-refused=() ms=6.056 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=raw method=delete framing=chunked server: req raw DELETE /sink #1 conn=54192 at=478.0
+[guix-8.20.0] check run=1 face=raw method=delete framing=chunked server: sink raw method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.3 last=5.2 arr=omitted
+[guix-8.20.0] check run=1 face=raw method=delete framing=chunked server: count raw:/sink=1
+[guix-8.20.0] check run=1 face=https method=post framing=sized room-wait=#t puts-refused=() ms=10.829 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=https method=post framing=sized server: req https POST /sink #1 conn=46072 at=489.0
+[guix-8.20.0] check run=1 face=https method=post framing=sized server: sink https method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.7 last=5.9 arr=omitted
+[guix-8.20.0] check run=1 face=https method=post framing=sized server: count https:/sink=1
+[guix-8.20.0] check run=1 face=https method=post framing=chunked room-wait=#t puts-refused=() ms=9.31 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=https method=post framing=chunked server: req https POST /sink #1 conn=46082 at=498.9
+[guix-8.20.0] check run=1 face=https method=post framing=chunked server: sink https method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=2.3 last=6.2 arr=omitted
+[guix-8.20.0] check run=1 face=https method=post framing=chunked server: count https:/sink=1
+[guix-8.20.0] check run=1 face=https method=put framing=sized room-wait=#t puts-refused=() ms=9.359 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=https method=put framing=sized server: req https PUT /sink #1 conn=46086 at=509.1
+[guix-8.20.0] check run=1 face=https method=put framing=sized server: sink https method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.5 last=6.4 arr=omitted
+[guix-8.20.0] check run=1 face=https method=put framing=sized server: count https:/sink=1
+[guix-8.20.0] check run=1 face=https method=put framing=chunked room-wait=#t puts-refused=() ms=9.492 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=https method=put framing=chunked server: req https PUT /sink #1 conn=46098 at=519.4
+[guix-8.20.0] check run=1 face=https method=put framing=chunked server: sink https method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=2.8 last=6.7 arr=omitted
+[guix-8.20.0] check run=1 face=https method=put framing=chunked server: count https:/sink=1
+[guix-8.20.0] check run=1 face=https method=patch framing=sized room-wait=#t puts-refused=() ms=9.38 status=200 version=http/1.1 committed=262144 handed=262144 reads=8 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=https method=patch framing=sized server: req https PATCH /sink #1 conn=46112 at=530.4
+[guix-8.20.0] check run=1 face=https method=patch framing=sized server: sink https method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.5 last=6.4 arr=omitted
+[guix-8.20.0] check run=1 face=https method=patch framing=sized server: count https:/sink=1
+[guix-8.20.0] check run=1 face=https method=patch framing=chunked room-wait=#t puts-refused=() ms=9.885 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=https method=patch framing=chunked server: req https PATCH /sink #1 conn=46118 at=540.7
+[guix-8.20.0] check run=1 face=https method=patch framing=chunked server: sink https method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=2.7 last=6.8 arr=omitted
+[guix-8.20.0] check run=1 face=https method=patch framing=chunked server: count https:/sink=1
+[guix-8.20.0] check run=1 face=https method=delete framing=sized room-wait=#t puts-refused=() ms=22.316 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=https method=delete framing=sized server: req https DELETE /sink #1 conn=46134 at=551.4
+[guix-8.20.0] check run=1 face=https method=delete framing=sized server: sink https method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=15.7 last=19.5 arr=omitted
+[guix-8.20.0] check run=1 face=https method=delete framing=sized server: count https:/sink=1
+[guix-8.20.0] check run=1 face=https method=delete framing=chunked room-wait=#t puts-refused=() ms=8.612 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=https method=delete framing=chunked server: req https DELETE /sink #1 conn=46140 at=576.4
+[guix-8.20.0] check run=1 face=https method=delete framing=chunked server: sink https method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=1.1 last=4.8 arr=omitted
+[guix-8.20.0] check run=1 face=https method=delete framing=chunked server: count https:/sink=1
+[guix-8.20.0] check run=1 face=h2 method=post framing=sized room-wait=#t puts-refused=() ms=14.712 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=h2 method=post framing=sized server: req h2 POST /sink #1 conn=41712 at=588.9
+[guix-8.20.0] check run=1 face=h2 method=post framing=sized server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.8 last=5.1 arr=omitted
+[guix-8.20.0] check run=1 face=h2 method=post framing=sized server: count h2:/sink=1
+[guix-8.20.0] check run=1 face=h2 method=post framing=chunked room-wait=#t puts-refused=() ms=9.16 status=200 version=http/2 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=h2 method=post framing=chunked server: req h2 POST /sink #1 conn=41720 at=601.5
+[guix-8.20.0] check run=1 face=h2 method=post framing=chunked server: sink h2 method=POST cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=1.1 last=5.1 arr=omitted
+[guix-8.20.0] check run=1 face=h2 method=post framing=chunked server: count h2:/sink=1
+[guix-8.20.0] check run=1 face=h2 method=put framing=sized room-wait=#t puts-refused=() ms=10.893 status=200 version=http/2 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=h2 method=put framing=sized server: req h2 PUT /sink #1 conn=41722 at=609.9
+[guix-8.20.0] check run=1 face=h2 method=put framing=sized server: sink h2 method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=2.2 last=7.1 arr=omitted
+[guix-8.20.0] check run=1 face=h2 method=put framing=sized server: count h2:/sink=1
+[guix-8.20.0] check run=1 face=h2 method=put framing=chunked room-wait=#t puts-refused=() ms=8.04 status=200 version=http/2 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=h2 method=put framing=chunked server: req h2 PUT /sink #1 conn=41726 at=621.7
+[guix-8.20.0] check run=1 face=h2 method=put framing=chunked server: sink h2 method=PUT cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=1.0 last=5.4 arr=omitted
+[guix-8.20.0] check run=1 face=h2 method=put framing=chunked server: count h2:/sink=1
+[guix-8.20.0] check run=1 face=h2 method=patch framing=sized room-wait=#t puts-refused=() ms=9.714 status=200 version=http/2 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=h2 method=patch framing=sized server: req h2 PATCH /sink #1 conn=41732 at=630.3
+[guix-8.20.0] check run=1 face=h2 method=patch framing=sized server: sink h2 method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=35 first=1.1 last=5.7 arr=omitted
+[guix-8.20.0] check run=1 face=h2 method=patch framing=sized server: count h2:/sink=1
+[guix-8.20.0] check run=1 face=h2 method=patch framing=chunked room-wait=#t puts-refused=() ms=12.588 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=h2 method=patch framing=chunked server: req h2 PATCH /sink #1 conn=41734 at=643.9
+[guix-8.20.0] check run=1 face=h2 method=patch framing=chunked server: sink h2 method=PATCH cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=34 first=3.3 last=6.1 arr=omitted
+[guix-8.20.0] check run=1 face=h2 method=patch framing=chunked server: count h2:/sink=1
+[guix-8.20.0] check run=1 face=h2 method=delete framing=sized room-wait=#t puts-refused=() ms=6.477 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=h2 method=delete framing=sized server: req h2 DELETE /sink #1 conn=41736 at=654.5
+[guix-8.20.0] check run=1 face=h2 method=delete framing=sized server: sink h2 method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=1.1 last=3.5 arr=omitted
+[guix-8.20.0] check run=1 face=h2 method=delete framing=sized server: count h2:/sink=1
+[guix-8.20.0] check run=1 face=h2 method=delete framing=chunked room-wait=#t puts-refused=() ms=8.45 status=200 version=http/2 committed=262144 handed=262144 reads=7 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=1 face=h2 method=delete framing=chunked server: req h2 DELETE /sink #1 conn=41750 at=663.8
+[guix-8.20.0] check run=1 face=h2 method=delete framing=chunked server: sink h2 method=DELETE cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=34 first=1.1 last=3.8 arr=omitted
+[guix-8.20.0] check run=1 face=h2 method=delete framing=chunked server: count h2:/sink=1
+[guix-8.20.0] check run=2 face=http method=post framing=sized room-wait=#t puts-refused=() ms=5.601 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=http method=post framing=sized server: req http POST /sink #1 conn=46714 at=670.5
+[guix-8.20.0] check run=2 face=http method=post framing=sized server: sink http method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.1 last=4.5 arr=omitted
+[guix-8.20.0] check run=2 face=http method=post framing=sized server: count http:/sink=1
+[guix-8.20.0] check run=2 face=http method=post framing=chunked room-wait=#t puts-refused=() ms=6.451 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=http method=post framing=chunked server: req http POST /sink #1 conn=46720 at=676.9
+[guix-8.20.0] check run=2 face=http method=post framing=chunked server: sink http method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.1 last=5.3 arr=omitted
+[guix-8.20.0] check run=2 face=http method=post framing=chunked server: count http:/sink=1
+[guix-8.20.0] check run=2 face=http method=put framing=sized room-wait=#t puts-refused=() ms=5.6 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=http method=put framing=sized server: req http PUT /sink #1 conn=46728 at=684.8
+[guix-8.20.0] check run=2 face=http method=put framing=sized server: sink http method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=0.9 last=4.3 arr=omitted
+[guix-8.20.0] check run=2 face=http method=put framing=sized server: count http:/sink=1
+[guix-8.20.0] check run=2 face=http method=put framing=chunked room-wait=#t puts-refused=() ms=4.7 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=http method=put framing=chunked server: req http PUT /sink #1 conn=46736 at=691.3
+[guix-8.20.0] check run=2 face=http method=put framing=chunked server: sink http method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.2 last=3.9 arr=omitted
+[guix-8.20.0] check run=2 face=http method=put framing=chunked server: count http:/sink=1
+[guix-8.20.0] check run=2 face=http method=patch framing=sized room-wait=#t puts-refused=() ms=6.828 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=http method=patch framing=sized server: req http PATCH /sink #1 conn=46744 at=697.7
+[guix-8.20.0] check run=2 face=http method=patch framing=sized server: sink http method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.1 last=5.4 arr=omitted
+[guix-8.20.0] check run=2 face=http method=patch framing=sized server: count http:/sink=1
+[guix-8.20.0] check run=2 face=http method=patch framing=chunked room-wait=#t puts-refused=() ms=5.618 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=http method=patch framing=chunked server: req http PATCH /sink #1 conn=46748 at=704.9
+[guix-8.20.0] check run=2 face=http method=patch framing=chunked server: sink http method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=9 first=1.3 last=4.8 arr=omitted
+[guix-8.20.0] check run=2 face=http method=patch framing=chunked server: count http:/sink=1
+[guix-8.20.0] check run=2 face=http method=delete framing=sized room-wait=#t puts-refused=() ms=4.694 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=http method=delete framing=sized server: req http DELETE /sink #1 conn=46750 at=711.3
+[guix-8.20.0] check run=2 face=http method=delete framing=sized server: sink http method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.3 last=3.8 arr=omitted
+[guix-8.20.0] check run=2 face=http method=delete framing=sized server: count http:/sink=1
+[guix-8.20.0] check run=2 face=http method=delete framing=chunked room-wait=#t puts-refused=() ms=5.595 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=http method=delete framing=chunked server: req http DELETE /sink #1 conn=46758 at=717.3
+[guix-8.20.0] check run=2 face=http method=delete framing=chunked server: sink http method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=11 first=1.3 last=3.3 arr=omitted
+[guix-8.20.0] check run=2 face=http method=delete framing=chunked server: count http:/sink=1
+[guix-8.20.0] check run=2 face=raw method=post framing=sized room-wait=#t puts-refused=() ms=5.659 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=raw method=post framing=sized server: req raw POST /sink #1 conn=54384 at=723.3
+[guix-8.20.0] check run=2 face=raw method=post framing=sized server: sink raw method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=4.8 arr=omitted
+[guix-8.20.0] check run=2 face=raw method=post framing=sized server: count raw:/sink=1
+[guix-8.20.0] check run=2 face=raw method=post framing=chunked room-wait=#t puts-refused=() ms=8.983 status=200 version=http/1.1 committed=262144 handed=262144 reads=13 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=raw method=post framing=chunked server: req raw POST /sink #1 conn=54406 at=730.9
+[guix-8.20.0] check run=2 face=raw method=post framing=chunked server: sink raw method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=8 first=1.2 last=7.3 arr=omitted
+[guix-8.20.0] check run=2 face=raw method=post framing=chunked server: count raw:/sink=1
+[guix-8.20.0] check run=2 face=raw method=put framing=sized room-wait=#t puts-refused=() ms=8.976 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=raw method=put framing=sized server: req raw PUT /sink #1 conn=54424 at=739.8
+[guix-8.20.0] check run=2 face=raw method=put framing=sized server: sink raw method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=5 first=1.3 last=6.4 arr=omitted
+[guix-8.20.0] check run=2 face=raw method=put framing=sized server: count raw:/sink=1
+[guix-8.20.0] check run=2 face=raw method=put framing=chunked room-wait=#t puts-refused=() ms=6.473 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=raw method=put framing=chunked server: req raw PUT /sink #1 conn=54440 at=749.7
+[guix-8.20.0] check run=2 face=raw method=put framing=chunked server: sink raw method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.2 last=5.5 arr=omitted
+[guix-8.20.0] check run=2 face=raw method=put framing=chunked server: count raw:/sink=1
+[guix-8.20.0] check run=2 face=raw method=patch framing=sized room-wait=#t puts-refused=() ms=6.435 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=raw method=patch framing=sized server: req raw PATCH /sink #1 conn=54456 at=757.0
+[guix-8.20.0] check run=2 face=raw method=patch framing=sized server: sink raw method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.3 last=5.5 arr=omitted
+[guix-8.20.0] check run=2 face=raw method=patch framing=sized server: count raw:/sink=1
+[guix-8.20.0] check run=2 face=raw method=patch framing=chunked room-wait=#t puts-refused=() ms=6.431 status=200 version=http/1.1 committed=262144 handed=262144 reads=14 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=raw method=patch framing=chunked server: req raw PATCH /sink #1 conn=54468 at=764.4
+[guix-8.20.0] check run=2 face=raw method=patch framing=chunked server: sink raw method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=7 first=1.1 last=5.2 arr=omitted
+[guix-8.20.0] check run=2 face=raw method=patch framing=chunked server: count raw:/sink=1
+[guix-8.20.0] check run=2 face=raw method=delete framing=sized room-wait=#t puts-refused=() ms=6.465 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=raw method=delete framing=sized server: req raw DELETE /sink #1 conn=54498 at=771.2
+[guix-8.20.0] check run=2 face=raw method=delete framing=sized server: sink raw method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.1 last=5.4 arr=omitted
+[guix-8.20.0] check run=2 face=raw method=delete framing=sized server: count raw:/sink=1
+[guix-8.20.0] check run=2 face=raw method=delete framing=chunked room-wait=#t puts-refused=() ms=4.676 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=raw method=delete framing=chunked server: req raw DELETE /sink #1 conn=54526 at=778.2
+[guix-8.20.0] check run=2 face=raw method=delete framing=chunked server: sink raw method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=6 first=1.3 last=4.0 arr=omitted
+[guix-8.20.0] check run=2 face=raw method=delete framing=chunked server: count raw:/sink=1
+[guix-8.20.0] check run=2 face=https method=post framing=sized room-wait=#t puts-refused=() ms=8.878 status=200 version=http/1.1 committed=262144 handed=262144 reads=9 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=https method=post framing=sized server: req https POST /sink #1 conn=46152 at=786.9
+[guix-8.20.0] check run=2 face=https method=post framing=sized server: sink https method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=4.2 arr=omitted
+[guix-8.20.0] check run=2 face=https method=post framing=sized server: count https:/sink=1
+[guix-8.20.0] check run=2 face=https method=post framing=chunked room-wait=#t puts-refused=() ms=7.975 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=https method=post framing=chunked server: req https POST /sink #1 conn=46156 at=796.5
+[guix-8.20.0] check run=2 face=https method=post framing=chunked server: sink https method=POST cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=19 first=1.2 last=4.4 arr=omitted
+[guix-8.20.0] check run=2 face=https method=post framing=chunked server: count https:/sink=1
+[guix-8.20.0] check run=2 face=https method=put framing=sized room-wait=#t puts-refused=() ms=6.938 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=https method=put framing=sized server: req https PUT /sink #1 conn=46158 at=804.5
+[guix-8.20.0] check run=2 face=https method=put framing=sized server: sink https method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=1.2 last=3.8 arr=omitted
+[guix-8.20.0] check run=2 face=https method=put framing=sized server: count https:/sink=1
+[guix-8.20.0] check run=2 face=https method=put framing=chunked room-wait=#t puts-refused=() ms=8.056 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=https method=put framing=chunked server: req https PUT /sink #1 conn=46170 at=811.9
+[guix-8.20.0] check run=2 face=https method=put framing=chunked server: sink https method=PUT cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=2.7 last=5.4 arr=omitted
+[guix-8.20.0] check run=2 face=https method=put framing=chunked server: count https:/sink=1
+[guix-8.20.0] check run=2 face=https method=patch framing=sized room-wait=#t puts-refused=() ms=12.162 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=https method=patch framing=sized server: req https PATCH /sink #1 conn=46184 at=824.0
+[guix-8.20.0] check run=2 face=https method=patch framing=sized server: sink https method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.7 last=6.2 arr=omitted
+[guix-8.20.0] check run=2 face=https method=patch framing=sized server: count https:/sink=1
+[guix-8.20.0] check run=2 face=https method=patch framing=chunked room-wait=#t puts-refused=() ms=8.905 status=200 version=http/1.1 committed=262144 handed=262144 reads=12 pauses=4 resumes=4 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=https method=patch framing=chunked server: req https PATCH /sink #1 conn=46198 at=834.0
+[guix-8.20.0] check run=2 face=https method=patch framing=chunked server: sink https method=PATCH cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=2.6 last=6.2 arr=omitted
+[guix-8.20.0] check run=2 face=https method=patch framing=chunked server: count https:/sink=1
+[guix-8.20.0] check run=2 face=https method=delete framing=sized room-wait=#t puts-refused=() ms=8.098 status=200 version=http/1.1 committed=262144 handed=262144 reads=10 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=https method=delete framing=sized server: req https DELETE /sink #1 conn=46206 at=844.0
+[guix-8.20.0] check run=2 face=https method=delete framing=sized server: sink https method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=16 first=2.3 last=5.1 arr=omitted
+[guix-8.20.0] check run=2 face=https method=delete framing=sized server: count https:/sink=1
+[guix-8.20.0] check run=2 face=https method=delete framing=chunked room-wait=#t puts-refused=() ms=7.357 status=200 version=http/1.1 committed=262144 handed=262144 reads=11 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=https method=delete framing=chunked server: req https DELETE /sink #1 conn=46212 at=853.2
+[guix-8.20.0] check run=2 face=https method=delete framing=chunked server: sink https method=DELETE cl=- te=chunked expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=20 first=1.2 last=4.0 arr=omitted
+[guix-8.20.0] check run=2 face=https method=delete framing=chunked server: count https:/sink=1
+[guix-8.20.0] check run=2 face=h2 method=post framing=sized room-wait=#t puts-refused=() ms=8.631 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=h2 method=post framing=sized server: req h2 POST /sink #1 conn=41756 at=862.0
+[guix-8.20.0] check run=2 face=h2 method=post framing=sized server: sink h2 method=POST cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=32 first=1.1 last=2.9 arr=omitted
+[guix-8.20.0] check run=2 face=h2 method=post framing=sized server: count h2:/sink=1
+[guix-8.20.0] check run=2 face=h2 method=post framing=chunked room-wait=#t puts-refused=() ms=8.15 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=h2 method=post framing=chunked server: req h2 POST /sink #1 conn=41762 at=870.6
+[guix-8.20.0] check run=2 face=h2 method=post framing=chunked server: sink h2 method=POST cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=32 first=2.2 last=4.9 arr=omitted
+[guix-8.20.0] check run=2 face=h2 method=post framing=chunked server: count h2:/sink=1
+[guix-8.20.0] check run=2 face=h2 method=put framing=sized room-wait=#t puts-refused=() ms=6.716 status=200 version=http/2 committed=262144 handed=262144 reads=5 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=h2 method=put framing=sized server: req h2 PUT /sink #1 conn=41776 at=880.5
+[guix-8.20.0] check run=2 face=h2 method=put framing=sized server: sink h2 method=PUT cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=32 first=1.1 last=2.8 arr=omitted
+[guix-8.20.0] check run=2 face=h2 method=put framing=sized server: count h2:/sink=1
+[guix-8.20.0] check run=2 face=h2 method=put framing=chunked room-wait=#t puts-refused=() ms=8.139 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=h2 method=put framing=chunked server: req h2 PUT /sink #1 conn=41788 at=887.3
+[guix-8.20.0] check run=2 face=h2 method=put framing=chunked server: sink h2 method=PUT cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=32 first=2.3 last=4.9 arr=omitted
+[guix-8.20.0] check run=2 face=h2 method=put framing=chunked server: count h2:/sink=1
+[guix-8.20.0] check run=2 face=h2 method=patch framing=sized room-wait=#t puts-refused=() ms=8.067 status=200 version=http/2 committed=262144 handed=262144 reads=6 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=h2 method=patch framing=sized server: req h2 PATCH /sink #1 conn=41794 at=896.3
+[guix-8.20.0] check run=2 face=h2 method=patch framing=sized server: sink h2 method=PATCH cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=32 first=2.3 last=4.9 arr=omitted
+[guix-8.20.0] check run=2 face=h2 method=patch framing=sized server: count h2:/sink=1
+[guix-8.20.0] check run=2 face=h2 method=patch framing=chunked room-wait=#t puts-refused=() ms=9.227 status=200 version=http/2 committed=262144 handed=262144 reads=10 pauses=3 resumes=3 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=h2 method=patch framing=chunked server: req h2 PATCH /sink #1 conn=41804 at=905.0
+[guix-8.20.0] check run=2 face=h2 method=patch framing=chunked server: sink h2 method=PATCH cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=34 first=1.1 last=5.8 arr=omitted
+[guix-8.20.0] check run=2 face=h2 method=patch framing=chunked server: count h2:/sink=1
+[guix-8.20.0] check run=2 face=h2 method=delete framing=sized room-wait=#t puts-refused=() ms=6.718 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=2 resumes=2 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=h2 method=delete framing=sized server: req h2 DELETE /sink #1 conn=41808 at=916.1
+[guix-8.20.0] check run=2 face=h2 method=delete framing=sized server: sink h2 method=DELETE cl=262144 te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=32 first=1.1 last=3.2 arr=omitted
+[guix-8.20.0] check run=2 face=h2 method=delete framing=sized server: count h2:/sink=1
+[guix-8.20.0] check run=2 face=h2 method=delete framing=chunked room-wait=#t puts-refused=() ms=10.506 status=200 version=http/2 committed=262144 handed=262144 reads=8 pauses=1 resumes=1 attempts=1 seeks=0 reads-in-pause=0
+[guix-8.20.0] check run=2 face=h2 method=delete framing=chunked server: req h2 DELETE /sink #1 conn=41822 at=925.8
+[guix-8.20.0] check run=2 face=h2 method=delete framing=chunked server: sink h2 method=DELETE cl=- te=- expect=- ct=- bytes=262144 sha=31a1f9dea0169551092d05e8bf4a446228c8c3eb4c9b713c66adcb7fd53c89be pattern=ok want_sha=ok arrivals=33 first=3.4 last=5.5 arr=omitted
+[guix-8.20.0] check run=2 face=h2 method=delete framing=chunked server: count h2:/sink=1
+[guix-8.20.0] check done
+[guix-8.20.0] check exited 0 after about 1 s
+[guix-8.20.0] server-stderr: counts h2:/sink=16 http:/sink=16 https:/sink=16 raw:/sink=16

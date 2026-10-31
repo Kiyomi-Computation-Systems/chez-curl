@@ -5,10 +5,13 @@
 // (measured on 20.10.0 and 24.18.0).
 //
 //   node tests/wire-probe.mjs [--reset | --half-close] [--tls SERVERNAME [--alpn LIST]]
-//                             [--deadline MS] HOST PORT HEX IDLE-MS
+//                             [--split OFFSET:MS] [--deadline MS] HOST PORT HEX IDLE-MS
 //
 // It connects to HOST:PORT and sends HEX's bytes once (none for an empty
-// HEX). HEX is pairs of lower-case hex digits, or @FILE: a file holding
+// HEX). With --split OFFSET:MS, two positive naturals, OFFSET fewer than
+// HEX's bytes, it sends the first OFFSET of them, then, MS ms by the clock
+// after the kernel took those, the rest; the idle bound starts again as
+// the rest goes. HEX is pairs of lower-case hex digits, or @FILE: a file holding
 // them, read whole, for bytes too many for one argument. It ends the
 // connection itself when IDLE-MS pass with no data, or when the whole run
 // reaches --deadline MS, 30000 when not given: a peer that keeps sending
@@ -65,7 +68,7 @@ const ms = () => Math.floor(performance.now() - started);
 
 function usage(problem) {
   process.stderr.write(
-    `wire-probe: ${problem}\nusage: node tests/wire-probe.mjs [--reset | --half-close] [--tls SERVERNAME [--alpn LIST]] [--deadline MS] HOST PORT HEX IDLE-MS\n`);
+    `wire-probe: ${problem}\nusage: node tests/wire-probe.mjs [--reset | --half-close] [--tls SERVERNAME [--alpn LIST]] [--split OFFSET:MS] [--deadline MS] HOST PORT HEX IDLE-MS\n`);
   process.exit(2);
 }
 
@@ -86,6 +89,7 @@ let halfClose = false;
 let servername = null;
 let alpn = null;
 let deadline = 30000;
+let split = null;
 for (;;) {
   if (args[0] === '--reset' && !reset) {
     reset = true;
@@ -104,6 +108,11 @@ for (;;) {
   } else if (args[0] === '--deadline') {
     if (args.length < 2 || !positive.test(args[1])) usage('--deadline takes a positive natural, its milliseconds');
     deadline = Number(args[1]);
+    args = args.slice(2);
+  } else if (args[0] === '--split' && split === null) {
+    const m = args.length < 2 ? null : /^([1-9][0-9]*):([1-9][0-9]*)$/.exec(args[1]);
+    if (!m) usage('--split takes OFFSET:MS, two positive naturals');
+    split = { offset: Number(m[1]), ms: Number(m[2]) };
     args = args.slice(2);
   } else {
     break;
@@ -141,6 +150,9 @@ if (hexArg.startsWith('@')) {
   }
 }
 if (!/^([0-9a-f]{2})*$/.test(hex)) usage('HEX is not pairs of lower-case hex digits');
+if (split !== null && split.offset >= hex.length / 2) {
+  usage(`--split's OFFSET, ${split.offset}, is not fewer than HEX's ${hex.length / 2} bytes`);
+}
 if (!positive.test(idleText)) usage(`IDLE-MS is ${JSON.stringify(idleText)}, not a positive natural`);
 const idle = Number(idleText);
 
@@ -150,6 +162,7 @@ let connected = false;
 let done = false;
 let offset = 0;
 let timer = null;
+let splitTimer = null;
 
 // The socket: TCP, or TLS over it, verifying nothing, with SNI SERVERNAME and
 // ALPN's protocols when given. Either way half-open, so that its own end does
@@ -172,6 +185,7 @@ function finish(line, resetting) {
   done = true;
   clearTimeout(timer);
   clearTimeout(whole);
+  clearTimeout(splitTimer);
   say(line);
   if (resetting) socket.resetAndDestroy();
   else socket.destroy();
@@ -194,13 +208,36 @@ function sent() {
   else if (halfClose && !done) socket.end();
 }
 
+// after: calls THEN once MS ms have passed by the clock, never sooner: a
+// timer can fire early by the loop's cached time, so it is rearmed for what
+// is left.
+function after(msToWait, then) {
+  const start = performance.now();
+  const check = () => {
+    const left = msToWait - (performance.now() - start);
+    if (left > 0) splitTimer = setTimeout(check, Math.ceil(left));
+    else then();
+  };
+  splitTimer = setTimeout(check, msToWait);
+}
+
 socket.on(servername === null ? 'connect' : 'secureConnect', () => {
   connected = true;
   say(`(connected ${ms()})`);
   const bytes = Buffer.from(hex, 'hex');
   arm();
   if (bytes.length === 0) sent();
-  else socket.write(bytes, (err) => { if (!err) sent(); });
+  else if (split === null) socket.write(bytes, (err) => { if (!err) sent(); });
+  else {
+    socket.write(bytes.subarray(0, split.offset), (err) => {
+      if (err) return;
+      after(split.ms, () => {
+        if (done) return;
+        arm();
+        socket.write(bytes.subarray(split.offset), (err2) => { if (!err2) sent(); });
+      });
+    });
+  }
 });
 
 socket.on('data', (chunk) => {

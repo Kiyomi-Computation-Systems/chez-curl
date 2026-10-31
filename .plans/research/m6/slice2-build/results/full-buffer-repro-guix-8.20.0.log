@@ -1,0 +1,21 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-upload.sps
+%%%% Starting test upload
+FAIL a put waiting on a full buffer answers done once its token is done: the buffer filled as above, a put with a bound of 10,000 ms waits, a cancel from another thread 300 ms on ends the token, and the put answers done within 5 s, the piece not taken
+  expected: (full done within-5-s not-taken (transfer-error cancelled #f none))
+  actual:   (full #t within-5-s (2031616 2097152) (transfer-error cancelled #f none))
+(throughput http sized ms 1051)
+(throughput http chunked ms 841)
+(throughput https sized ms 886)
+(throughput https chunked ms 809)
+(throughput h2 sized ms 329)
+(throughput h2 chunked ms 354)
+# of expected passes      47
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 47, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-upload.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

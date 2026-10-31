@@ -11,7 +11,9 @@
 ;;;   &curl-url-error             a URL refused: by libcurl's URL API, or by
 ;;;                               chez-curl's own checks (ADR-0008)
 ;;;   &curl-request-error         a request's field refused, before anything
-;;;                               native is made (M2 plan, section 5.3)
+;;;                               native is made (M2 plan, section 5.3); or
+;;;                               a piece put past a streamed body's length,
+;;;                               on a token live (the M6 plan, section 3.3)
 ;;;   &curl-transfer-error        a transfer that failed: libcurl's code and
 ;;;                               texts, what the write callable recorded,
 ;;;                               and the bytes of request sent (M2 plan,
@@ -295,6 +297,17 @@
   ;;                 method: a request that sends a body is sent again on a
   ;;                 417. Each would publish the head of the round before
   ;;                 the last (the M6 plan, section 3.2)
+  ;;   body-length-without-stream
+  ;;                 a body-length beside a body that does not stream, a
+  ;;                 bytevector or none: libcurl frames a whole body from
+  ;;                 its own length (the M6 plan, section 3.1)
+  ;;   body-length-mismatch
+  ;;                 a piece put past a streamed body's body-length, not
+  ;;                 taken; the transfer then fails with the same reason,
+  ;;                 unless another came first: by the read callable's abort
+  ;;                 while libcurl still reads the body, else as its outcome
+  ;;                 is read (the M6 plan, section 3.3; ADR-0030, amended
+  ;;                 2026-10-31)
   ;;
   ;; A value is scanned left to right, and its first offending char decides;
   ;; only when none offends are its ends checked.
@@ -302,17 +315,20 @@
     '(embedded-nul line-break not-latin-1 not-a-token surrounding-whitespace duplicates-field
       framing-header owned-option unsupported-type unknown-option repeated-option
       unknown-key repeated-key missing-value body-not-allowed pkcs11-url environment-override
-      keychain-fallback stream-with-rounds))
+      keychain-fallback stream-with-rounds body-length-without-stream body-length-mismatch))
 
   ;; The fields:
   ;;
   ;;   field   Symbol: the field refused, header-name, header-value,
   ;;           user-agent, ca-file, or options, the hatch's; key for
   ;;           unknown-key, repeated-key and missing-value; body for
-  ;;           body-not-allowed; stream-buffer for stream-with-rounds
+  ;;           body-not-allowed; stream-buffer for stream-with-rounds;
+  ;;           body-length for body-length-without-stream and
+  ;;           body-length-mismatch
   ;;   value   the string refused, whole, or the option's name; the key, as
   ;;           given, for a key's refusal; the method, for body-not-allowed;
-  ;;           the stream-buffer, for stream-with-rounds
+  ;;           the stream-buffer, for stream-with-rounds; the body-length,
+  ;;           for body-length-without-stream and body-length-mismatch
   ;;   reason  one of curl-request-error-reasons
   (define-condition-type &curl-request-error &curl-error
     unchecked-make-curl-request-error curl-request-error?
@@ -355,9 +371,25 @@
   ;;                    resumed a streamed transfer, and no callable recorded
   ;;                    a reason inside the call, which would win; the code
   ;;                    is the call's (ADR-0012, amended 2026-10-29)
+  ;;   body-length-mismatch
+  ;;                    a streamed body ended short of its body-length, or a
+  ;;                    piece was put past it, alike on every libcurl (the M6
+  ;;                    plan, section 3.3): the read callable recorded it and
+  ;;                    aborted the transfer, the code 42; or, for a piece
+  ;;                    put once libcurl had read the length whole, and
+  ;;                    called the read callable no more, the outcome reads
+  ;;                    the put's refusal, the code libcurl's own, 0 among
+  ;;                    them (ADR-0030, amended 2026-10-31)
+  ;;   body-not-replayable
+  ;;                    libcurl wanted to send a streamed body again, by a
+  ;;                    rewind or a later attempt, once the read callable had
+  ;;                    handed it a byte: the seek or the prerequest callable
+  ;;                    recorded it and refused (ADR-0032)
+  ;; A reason a callable recorded wins over libcurl's code, which the code
+  ;; field still carries.
   (define curl-transfer-error-reasons
     '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle
-      cancelled stopped pause-failed))
+      cancelled stopped pause-failed body-length-mismatch body-not-replayable))
 
   ;; The fields:
   ;;
@@ -373,7 +405,8 @@
   ;;   recorded      what the callable recorded: the raised object for
   ;;                 callback-raised, else #f
   ;;   request-size  (U Natural #f): for a transfer that ran, perform-failed,
-  ;;                 body-limit, callback-raised or pause-failed,
+  ;;                 body-limit, callback-raised, pause-failed,
+  ;;                 body-length-mismatch or body-not-replayable,
   ;;                 CURLINFO_REQUEST_SIZE:
   ;;                 the bytes of request libcurl sent, its body's among
   ;;                 them, summed over every attempt it made, a resend on a
@@ -410,7 +443,7 @@
   ;; make-curl-transfer-error : Symbol (U Integer #f) (U String #f) (U String #f)
   ;;                            (U String #f) Any (U Natural #f) -> &curl-transfer-error
   ;; The base type, unclassed. Refuses a REASON that is not one of the
-  ;; nine with an assertion violation. It checks nothing else, so a code a
+  ;; eleven with an assertion violation. It checks nothing else, so a code a
   ;; later libcurl answers still reaches the caller.
   (define (make-curl-transfer-error reason code option strerror error-buffer recorded
                                     request-size)
@@ -548,7 +581,7 @@
   ;; perform-failed, the class its CODE has, or the base type for a code no
   ;; class names; for body-limit, too-large, whatever its code; for every
   ;; other reason, the base type, a setopt-failed whose code a class names
-  ;; among them. A REASON not among the nine is an assertion violation.
+  ;; among them. A REASON not among the eleven is an assertion violation.
   (define (make-classed-transfer-error reason code option strerror error-buffer recorded
                                        request-size)
     (check-transfer-error 'make-classed-transfer-error reason curl-transfer-error-reasons)

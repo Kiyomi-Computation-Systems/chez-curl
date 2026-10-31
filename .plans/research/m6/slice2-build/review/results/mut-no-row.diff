@@ -1,0 +1,31 @@
+--- base/tests/test-upload.sps	2026-10-30 19:56:30.182553220 -0400
++++ tests/test-upload.sps	2026-10-31 07:59:40.039251177 -0400
+@@ -938,7 +938,7 @@
+     ;; libcurl's rewind. Apple's 8.7.1 drops the rewind's result and goes
+     ;; on to a second attempt, which the prerequest callable refuses (the
+     ;; plan's section 2.4); the Linux libcurls end at the seek.
+-    (let ((attempt-rows '(("7.85.0" . 1) ("8.5.0" . 1) ("8.7.1" . 2) ("8.20.0" . 1) ("8.23.0" . 1))))
++    (let ((attempt-rows '(("7.85.0" . 1) ("8.5.0" . 1) ("8.7.1" . 2) ("8.23.0" . 1))))
+       (test-equal (string-append "at most once, by a test seam that leaves FRESH_CONNECT off: the streamed post reuses the marked connection, the origin reads it whole and cuts it, and libcurl's resend is refused by the seek, body-not-replayable, of no class, with one request at the origin; the prerequest callable's calls as "
+                                  (if (string? version) version (written version)) "'s row says")
+         (let ((row (and (string? version) (assoc version attempt-rows))))
+@@ -1058,8 +1058,6 @@
+                      (raw-200-keep waits 200) (h2-413 waits 413) (h2-200 waits 28))
+            ("8.5.0" (raw-413-close own 413) (raw-413-keep waits 413) (raw-200-close own 200)
+                     (raw-200-keep waits 200) (h2-413 waits 413) (h2-200 own 200))
+-           ("8.20.0" (raw-413-close own 413) (raw-413-keep own 413) (raw-200-close own 200)
+-                     (raw-200-keep waits 200) (h2-413 own 413) (h2-200 waits))
+            ("8.23.0" (raw-413-close own 413) (raw-413-keep own 413) (raw-200-close own 200)
+                      (raw-200-keep waits 200) (h2-413 own 413) (h2-200 waits 200)))))
+     (test-equal (string-append "an answer while the body is sent, the read paused, sized and chunked, by version, on "
+--- base/tests/test-stream.sps	2026-10-30 16:28:29.128575328 -0400
++++ tests/test-stream.sps	2026-10-31 07:59:40.039564094 -0400
+@@ -1403,7 +1403,7 @@
+     ;; The control: pacing off, by a test seam. The libcurls the plan
+     ;; measured, by version: 8.5.0 spins, at a core's whole time; the others
+     ;; poll a few times. A libcurl with no row fails, naming its version.
+-    (let ((spin-rows '(("7.85.0" . quiet) ("8.5.0" . spins) ("8.7.1" . quiet) ("8.20.0" . quiet)
++    (let ((spin-rows '(("7.85.0" . quiet) ("8.5.0" . spins) ("8.7.1" . quiet)
+                        ("8.23.0" . quiet))))
+       (test-equal (string-append "the paced poll's control: pacing off, by a test seam, the CPU through the same pause, on "
+                                  (if (string? version) version (written version))

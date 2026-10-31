@@ -1,0 +1,11 @@
+--- src/curl/private/transfer.sls	2026-10-30 19:16:57.196007369 -0400
++++ src/curl/private/transfer.sls	2026-10-31 07:31:13.873006167 -0400
+@@ -2979,7 +2979,7 @@
+     (let* ((up (sink-upload sink))
+            (refused (and up (upload-close! up))))
+       (or (sink-recorded sink)
+-          (and refused (cons 'body-length-mismatch #f)))))
++          (and refused #f))))
+ 
+   ;; finish-transfer : Live Integer -> (U Response Condition)
+   ;; What LIVE's transfer ended with, CODE being the CURLcode

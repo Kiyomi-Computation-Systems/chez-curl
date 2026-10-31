@@ -1,0 +1,37 @@
+[guix-8.20.0-valgrind] prototype build/m6s2/src from proto.patch 75a493ac5e344424962cc747c47b63303cea01cbd1592306d57b28249758a87a
+[guix-8.20.0-valgrind] server {"node":"v24.18.0","pid":34,"http":"127.0.0.1:36329","raw":"127.0.0.1:37233","https":"127.0.0.1:34871","h2":"127.0.0.1:41917"}
+[guix-8.20.0-valgrind] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+[guix-8.20.0-valgrind] under valgrind valgrind-3.27.0
+[guix-8.20.0-valgrind] libcurl 8.20.0 GnuTLS/3.8.13
+[guix-8.20.0-valgrind] throughput run=1 face=http framing=sized asked=#t done-ms=2130.123 puts-ms=1952.828 status=200 version=http/1.1 committed=67108864 handed=67108864 reads=1617 pauses=593 resumes=593 fulls=3512 most=65536
+[guix-8.20.0-valgrind] throughput run=1 face=http framing=sized server: sink http method=POST cl=67108864 te=- expect=- ct=- bytes=67108864 sha=98dc891b284e4d84ac25b0c0a24fdbe39a7f0dbd643ad5e8aa06e02fc6258254 pattern=ok want_sha=ok arrivals=1025 first=29.3 last=1803.6 arr=omitted
+[guix-8.20.0-valgrind] throughput run=1 face=http framing=chunked asked=#t done-ms=1065.256 puts-ms=985.608 status=200 version=http/1.1 committed=67108864 handed=67108864 reads=1085 pauses=26 resumes=26 fulls=1477 most=71716
+[guix-8.20.0-valgrind] throughput run=1 face=http framing=chunked server: sink http method=POST cl=- te=chunked expect=- ct=- bytes=67108864 sha=98dc891b284e4d84ac25b0c0a24fdbe39a7f0dbd643ad5e8aa06e02fc6258254 pattern=ok want_sha=ok arrivals=1061 first=3.5 last=979.5 arr=omitted
+[guix-8.20.0-valgrind] throughput run=1 face=https framing=sized asked=#t done-ms=4922.148 puts-ms=4880.333 status=200 version=http/1.1 committed=67108864 handed=67108864 reads=1033 pauses=9 resumes=9 fulls=4067 most=65536
+[guix-8.20.0-valgrind] throughput run=1 face=https framing=sized server: sink https method=POST cl=67108864 te=- expect=- ct=- bytes=67108864 sha=98dc891b284e4d84ac25b0c0a24fdbe39a7f0dbd643ad5e8aa06e02fc6258254 pattern=ok want_sha=ok arrivals=4096 first=19.8 last=4485.6 arr=omitted
+[guix-8.20.0-valgrind] throughput run=1 face=https framing=chunked asked=#t done-ms=4736.598 puts-ms=4694.378 status=200 version=http/1.1 committed=67108864 handed=67108864 reads=1037 pauses=5 resumes=5 fulls=4050 most=71620
+[guix-8.20.0-valgrind] throughput run=1 face=https framing=chunked server: sink https method=POST cl=- te=chunked expect=- ct=- bytes=67108864 sha=98dc891b284e4d84ac25b0c0a24fdbe39a7f0dbd643ad5e8aa06e02fc6258254 pattern=ok want_sha=ok arrivals=4103 first=2.7 last=4670.9 arr=omitted
+[guix-8.20.0-valgrind] throughput run=1 face=h2 framing=sized asked=#t done-ms=5575.035 puts-ms=5497.595 status=200 version=http/2 committed=67108864 handed=67108864 reads=1026 pauses=2 resumes=2 fulls=4468 most=65536
+[guix-8.20.0-valgrind] throughput run=1 face=h2 framing=sized server: sink h2 method=POST cl=67108864 te=- expect=- ct=- bytes=67108864 sha=98dc891b284e4d84ac25b0c0a24fdbe39a7f0dbd643ad5e8aa06e02fc6258254 pattern=ok want_sha=ok arrivals=8212 first=10.2 last=5438.1 arr=omitted
+[guix-8.20.0-valgrind] throughput run=1 face=h2 framing=chunked asked=#t done-ms=5432.601 puts-ms=5388.119 status=200 version=http/2 committed=67108864 handed=67108864 reads=1031 pauses=6 resumes=6 fulls=4545 most=65536
+[guix-8.20.0-valgrind] throughput run=1 face=h2 framing=chunked server: sink h2 method=POST cl=- te=- expect=- ct=- bytes=67108864 sha=98dc891b284e4d84ac25b0c0a24fdbe39a7f0dbd643ad5e8aa06e02fc6258254 pattern=ok want_sha=ok arrivals=8217 first=8.1 last=5367.1 arr=omitted
+[guix-8.20.0-valgrind] throughput run=2 face=http framing=sized asked=#t done-ms=1167.87 puts-ms=1133.061 status=200 version=http/1.1 committed=67108864 handed=67108864 reads=1353 pauses=329 resumes=329 fulls=2679 most=65536
+[guix-8.20.0-valgrind] throughput run=2 face=http framing=sized server: sink http method=POST cl=67108864 te=- expect=- ct=- bytes=67108864 sha=98dc891b284e4d84ac25b0c0a24fdbe39a7f0dbd643ad5e8aa06e02fc6258254 pattern=ok want_sha=ok arrivals=1094 first=0.4 last=1130.1 arr=omitted
+[guix-8.20.0-valgrind] throughput run=2 face=http framing=chunked asked=#t done-ms=867.492 puts-ms=832.393 status=200 version=http/1.1 committed=67108864 handed=67108864 reads=1034 pauses=3 resumes=3 fulls=1299 most=70168
+[guix-8.20.0-valgrind] throughput run=2 face=http framing=chunked server: sink http method=POST cl=- te=chunked expect=- ct=- bytes=67108864 sha=98dc891b284e4d84ac25b0c0a24fdbe39a7f0dbd643ad5e8aa06e02fc6258254 pattern=ok want_sha=ok arrivals=1047 first=2.3 last=827.2 arr=omitted
+[guix-8.20.0-valgrind] throughput run=2 face=https framing=sized asked=#t done-ms=4462.209 puts-ms=4421.013 status=200 version=http/1.1 committed=67108864 handed=67108864 reads=1026 pauses=2 resumes=2 fulls=4060 most=65536
+[guix-8.20.0-valgrind] throughput run=2 face=https framing=sized server: sink https method=POST cl=67108864 te=- expect=- ct=- bytes=67108864 sha=98dc891b284e4d84ac25b0c0a24fdbe39a7f0dbd643ad5e8aa06e02fc6258254 pattern=ok want_sha=ok arrivals=4096 first=2.6 last=4392.1 arr=omitted
+[guix-8.20.0-valgrind] throughput run=2 face=https framing=chunked asked=#t done-ms=4660.074 puts-ms=4617.527 status=200 version=http/1.1 committed=67108864 handed=67108864 reads=1043 pauses=9 resumes=9 fulls=4058 most=69508
+[guix-8.20.0-valgrind] throughput run=2 face=https framing=chunked server: sink https method=POST cl=- te=chunked expect=- ct=- bytes=67108864 sha=98dc891b284e4d84ac25b0c0a24fdbe39a7f0dbd643ad5e8aa06e02fc6258254 pattern=ok want_sha=ok arrivals=4105 first=2.6 last=4588.8 arr=omitted
+[guix-8.20.0-valgrind] throughput run=2 face=h2 framing=sized asked=#t done-ms=5337.894 puts-ms=5293.712 status=200 version=http/2 committed=67108864 handed=67108864 reads=1032 pauses=8 resumes=8 fulls=4463 most=65536
+[guix-8.20.0-valgrind] throughput run=2 face=h2 framing=sized server: sink h2 method=POST cl=67108864 te=- expect=- ct=- bytes=67108864 sha=98dc891b284e4d84ac25b0c0a24fdbe39a7f0dbd643ad5e8aa06e02fc6258254 pattern=ok want_sha=ok arrivals=8215 first=2.5 last=5261.4 arr=omitted
+[guix-8.20.0-valgrind] throughput run=2 face=h2 framing=chunked asked=#t done-ms=5373.667 puts-ms=5328.828 status=200 version=http/2 committed=67108864 handed=67108864 reads=1028 pauses=3 resumes=3 fulls=4550 most=65536
+[guix-8.20.0-valgrind] throughput run=2 face=h2 framing=chunked server: sink h2 method=POST cl=- te=- expect=- ct=- bytes=67108864 sha=98dc891b284e4d84ac25b0c0a24fdbe39a7f0dbd643ad5e8aa06e02fc6258254 pattern=ok want_sha=ok arrivals=8213 first=3.1 last=5306.7 arr=omitted
+[guix-8.20.0-valgrind] throughput done
+[guix-8.20.0-valgrind] throughput exited 0 after about 55 s
+[guix-8.20.0-valgrind] valgrind: ==54== Command: /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme --libdirs build/m6s2/src --program .plans/research/m6/slice2/throughput.sps 127.0.0.1:36329 127.0.0.1:37233 127.0.0.1:34871 127.0.0.1:41917 /tmp/m6s2.N5vJ19/pki/ca.pem 2
+[guix-8.20.0-valgrind] valgrind: ==54==    definitely lost: 0 bytes in 0 blocks
+[guix-8.20.0-valgrind] valgrind: ==54== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] valgrind: --54-- used_suppression:      1 guix-glibc-locpath tests/guix-glibc-locpath.supp:16 suppressed: 171 bytes in 1 blocks
+[guix-8.20.0-valgrind] valgrind: ==54== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[guix-8.20.0-valgrind] server-stderr: counts h2:/sink=4 http:/sink=4 https:/sink=4
