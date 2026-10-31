@@ -1,0 +1,22 @@
+# The maintainer's Mac, 2026-10-31, on feat/m6-slice-2 at e075862 (PR #37), 8.7.1's
+# HTTP/2 200 cell held to its wait:
+#   git pull --ff-only && make test NODE="$(asdf which node)" SUITES=tests/test-upload.sps
+# Apple's libcurl 8.7.1. Pasted from the terminal, from make's first line on.
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-upload.sps
+%%%% Starting test upload
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 1565)
+(throughput http chunked ms 1478)
+(throughput https sized ms 1514)
+(throughput https chunked ms 1174)
+(throughput h2 sized ms 318)
+(throughput h2 chunked ms 302)
+(read-lock collections-while-live 994)
+# of expected passes      58
+test: pass tests/test-upload.sps
+test: ran 1, passed 1, failed 0, hung 0

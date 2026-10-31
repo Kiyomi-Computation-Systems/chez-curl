@@ -54,7 +54,8 @@ close-out under **Close-outs**, newest first.
       each printing the row it measured. The rows were added from that run (`8379e10`). The
       Mac's rerun of test-upload held every cell but HTTP/2's 200, sized, which ended 55
       where it had ended 200: 8.7.1's splits as 8.20.0's does, so its cell now asserts the wait
-      alone, and the Mac runs test-upload a third time.
+      alone. The third run, on `e075862`, passed test-upload, 58 of 58. Slice 2 owes the Mac
+      nothing more.
   - **The plan measured first** ([`research/m6/`](research/m6/)):
     - a C probe whose loop steps as the engine does, 30 cases on the five Linux libcurls, two
       runs each ([`pause/`](research/m6/pause/));
