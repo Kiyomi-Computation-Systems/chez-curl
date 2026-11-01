@@ -34,8 +34,7 @@
         (srfi :64)
         (curl-testing)
         (only (chezscheme) current-time getenv input-port-ready? machine-type make-time
-              open-process-ports sleep time-nanosecond time-second fork-thread make-mutex
-              with-mutex))
+              open-process-ports sleep time-nanosecond time-second))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
 ;; counts into one.
@@ -1153,23 +1152,26 @@
 (define released-text
   '("HTTP/1.1 200 OK\r\nContent-Length: 9\r\nConnection: close\r\n\r\nreleased\n" eof))
 
-;; later : Natural (-> Any) -> (-> Any)
-;; THUNK run on a thread of its own, MS ms from now; answers a procedure
-;; that waits for its answer, up to 10 s: what THUNK answered, or raised,
-;; as data, or (no-answer). A thread that raises dies naming no test, so
-;; every raise is its answer (traps.md).
-(define (later ms thunk)
-  (let ((mx (make-mutex)) (box #f))
-    (fork-thread
-     (lambda ()
-       (let ((got (guard (e (#t (list 'raised (describe e)))) (pause-ms ms) (thunk))))
-         (with-mutex mx (set! box (list got))))))
+;; spawned-probe : Origin Symbol String Natural -> (-> Probe)
+;; A wire probe of TEXT to FACE, idle bound IDLE ms, started through
+;; open-process-ports, not capture-command, so that another probe can run
+;; while it waits: on the Mac, a release made 800 ms into a 5 s probe,
+;; both through capture-command, seemed to arrive after it, as if Apple's
+;; system(3) ran one call at a time (the Mac's run, 2026-11-01;
+;; .plans/research/m6/slice3-build/). Answers a thunk that reads
+;; the probe's output to its end, closes its pipes, and parses it.
+(define (spawned-probe o face text idle)
+  (let-values (((to from err pid)
+                (open-process-ports
+                 (string-append "exec " (shell-word node) " tests/wire-probe.mjs --deadline "
+                                (number->string (wire-probe-deadline))
+                                " 127.0.0.1 " (number->string (cdr (origin-face o face)))
+                                " " (shell-word (hex text)) " " (number->string idle))
+                 (buffer-mode block) #f)))
     (lambda ()
-      (let wait ((left 10000))
-        (let ((got (with-mutex mx box)))
-          (cond (got (car got))
-                ((<= left 0) '(no-answer))
-                (else (pause-ms 10) (wait (- left 10)))))))))
+      (let ((out (get-bytevector-all from)))
+        (for-each (lambda (port) (guard (e (#t #f)) (close-port port))) (list to from err))
+        (parse-wire-probe (if (eof-object? out) "" (latin-1 out)))))))
 
 ;; seen-of : Origin String -> (List String Symbol)
 (define (seen-of o key)
@@ -1721,12 +1723,12 @@
   (test-equal "raw /raw/answer-at?status=200&after=0&close=0&hold=KEY, a POST of 10 bytes with its head: the answer but its last byte at once, the last 200 ms or more later, once /raw/release?key=KEY, from another connection 800 ms on, has answered released; then eof"
     (list (list (early-text "200" #f #f) 'eof) 'held-until-released released-text)
     (guard (e (#t (list 'raised (describe e))))
-      (let* ((release (later 800 (lambda () (exchange o 'raw (get "/raw/release?key=hold-1") 2000))))
-             (p (wire-probe o 'raw (octets (string-append (post "/raw/answer-at?status=200&after=0&close=0&hold=hold-1"
+      (let* ((finish (spawned-probe o 'raw (string-append (post "/raw/answer-at?status=200&after=0&close=0&hold=hold-1"
                                                                 "Content-Length: 10\r\n")
-                                                          p10))
-                            5000))
-             (released (release))
+                                                          p10)
+                                       5000))
+             (released (begin (pause-ms 800) (exchange o 'raw (get "/raw/release?key=hold-1") 2000)))
+             (p (finish))
              (n (string-length (early-text "200" #f #f)))
              (last (arrival (probe-arrivals p) (- n 1)))
              (before (arrival (probe-arrivals p) (- n 2))))

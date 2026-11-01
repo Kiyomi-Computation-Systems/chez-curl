@@ -1,0 +1,188 @@
+# The maintainer's Mac, 2026-11-01, on feat/m6-slice-3 at b4a5e08 (PR #38):
+#   git fetch origin && git switch feat/m6-slice-3 && make test NODE="$(asdf which node)"
+# Apple's libcurl 8.7.1, Node 20.10.0 through asdf. Pasted from the terminal, from
+# make's first line on; each passing suite's lines kept as printed.
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (35 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-check-floors.sps
+%%%% Starting test check-floors
+# of expected passes      375
+test: pass tests/test-check-floors.sps
+=== tests/test-check-nothreads.sps
+%%%% Starting test check-nothreads
+# of expected passes      17
+test: pass tests/test-check-nothreads.sps
+=== tests/test-check-seam.sps
+%%%% Starting test check-seam
+# of expected passes      62
+test: pass tests/test-check-seam.sps
+=== tests/test-collect-safe.sps
+%%%% Starting test collect-safe
+# of expected passes      120
+test: pass tests/test-collect-safe.sps
+=== tests/test-conditions.sps
+%%%% Starting test conditions
+# of expected passes      38
+test: pass tests/test-conditions.sps
+=== tests/test-constants.sps
+%%%% Starting test constants
+# of expected passes      681
+test: pass tests/test-constants.sps
+=== tests/test-curl-testing.sps
+%%%% Starting test curl-testing
+# of expected passes      284
+test: pass tests/test-curl-testing.sps
+=== tests/test-discovery.sps
+%%%% Starting test discovery
+# of expected passes      47
+test: pass tests/test-discovery.sps
+=== tests/test-drift.sps
+%%%% Starting test drift
+# of expected passes      55
+test: pass tests/test-drift.sps
+=== tests/test-engine.sps
+%%%% Starting test engine
+test-engine: the stalled-lookup checks run on Linux alone, so none ran here (ADR-0019, amended 2026-10-25)
+# of expected passes      49
+test: pass tests/test-engine.sps
+=== tests/test-group.sps
+%%%% Starting test group
+# of expected passes      65
+test: pass tests/test-group.sps
+=== tests/test-http-client.sps
+%%%% Starting test http-client
+# of expected passes      73
+test: pass tests/test-http-client.sps
+=== tests/test-library-loading.sps
+%%%% Starting test library-loading
+# of expected passes      75
+test: pass tests/test-library-loading.sps
+=== tests/test-load-state.sps
+%%%% Starting test load-state
+# of expected passes      12
+test: pass tests/test-load-state.sps
+=== tests/test-mailbox.sps
+%%%% Starting test mailbox
+# of expected passes      26
+test: pass tests/test-mailbox.sps
+=== tests/test-manifest.sps
+%%%% Starting test manifest
+# of expected passes      4
+test: pass tests/test-manifest.sps
+=== tests/test-memory-safety.sps
+%%%% Starting test memory-safety
+# of expected passes      89
+test: pass tests/test-memory-safety.sps
+=== tests/test-native.sps
+%%%% Starting test native
+# of expected passes      16
+test: pass tests/test-native.sps
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      155
+# of skipped tests        1
+test: pass tests/test-origin-tls.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+FAIL raw /raw/answer-at?status=200&after=0&close=0&hold=KEY, a POST of 10 bytes with its head: the answer but its last byte at once, the last 200 ms or more later, once /raw/release?key=KEY, from another connection 800 ms on, has answered released; then eof
+  expected: (("HTTP/1.1 200 Early\r\nContent-Length: 10\r\n\r\nearly 200\n" eof) held-until-released ("HTTP/1.1 200 OK\r\nContent-Length: 9\r\nConnection: close\r\n\r\nreleased\n" eof))
+  actual:   (("HTTP/1.1 200 Early\r\nContent-Length: 10\r\n\r\nearly 200" timeout) (before 2 last 2) ("HTTP/1.1 200 OK\r\nContent-Length: 9\r\nConnection: close\r\n\r\nreleased\n" eof))
+# of expected passes      326
+# of unexpected failures  1
+# of skipped tests        1
+suite-exit-status: exit 1 (pass 326, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-origin.sps (exit 1)
+=== tests/test-redirect.sps
+%%%% Starting test redirect
+(head-predicate-rows 114)
+# of expected passes      69
+test: pass tests/test-redirect.sps
+=== tests/test-request.sps
+%%%% Starting test request
+# of expected passes      45
+test: pass tests/test-request.sps
+=== tests/test-require-threaded.sps
+%%%% Starting test require-threaded
+# of expected passes      69
+test: pass tests/test-require-threaded.sps
+=== tests/test-retry.sps
+%%%% Starting test retry
+(head-predicate-rows 98)
+# of expected passes      82
+test: pass tests/test-retry.sps
+=== tests/test-stream-call.sps
+%%%% Starting test stream-call
+FAIL a producer is never called for a refused connect, and the connect is retried, as nothing was sent: three transfers, the low level's 7, with &http-exchange
+  expected: (0 (raised (curl-transfer-error connect perform-failed 7) (exchange post "http://127.0.0.1:1/" () 3)))
+  actual:   (0 (raised (curl-transfer-error connect perform-failed 7) (exchange post "http://127.0.0.1:1/" () 1)))
+(stream-call-throughput raw ms 521)
+(stream-call-throughput h2 ms 647)
+(stream-call-idle-cpu ms 12193/500)
+FAIL h2, by version, on 8.7.1: a final 303 over HTTP/2, answered once 65,536 bytes of a 4 MiB body arrived, redirects #f: through call-with-response-port with a producer, PROC handed the 303, its body read through the port; through http-request with a whole body; 28 at the bound of 3000 ms, &http-timeout, on 8.20.0 and 8.23.0, the 303 and its body on 7.85.0 and 8.5.0; a libcurl with no row fails, showing what it measured
+  expected: (a-row-for "8.7.1")
+  actual:   (no-row-for "8.7.1" measured ((303 (text "early 303\n")) (303 "early 303\n")))
+FAIL raw, held, by version, on 8.7.1: a 307 written as the connection is accepted, before libcurl's first ask on 7.85.0 and 8.5.0, four times: the hop cancelled at its head, the producer never called, the 307 followed with the body, which the sink reads whole, the producer's first call in the next request; on 8.20.0 and 8.23.0, which ask with the head, body-not-replayable; and a 200 kept alive, so written, fed when libcurl asks after it on 7.85.0 and 8.5.0, its first call after PROC has the head, ending 200 on every libcurl; a libcurl with no row fails, showing what it measured
+  expected: (a-row-for "8.7.1")
+  actual:   (no-row-for "8.7.1" measured (((body-not-replayable 307) (body-not-replayable 307) (body-not-replayable 307) (body-not-replayable 307)) (200 "early 200\n" after-the-head)))
+# of expected passes      74
+# of unexpected failures  3
+suite-exit-status: exit 1 (pass 74, fail 3, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-stream-call.sps (exit 1)
+=== tests/test-stream.sps
+%%%% Starting test stream
+(sweep piece plain call-ticks 6 escaped-kept 12 escaped-lost 0 returned 41)
+(sweep port plain call-ticks 138 escaped-kept 276 escaped-lost 0 returned 41)
+(sweep piece planted call-ticks 9 escaped-kept 12 escaped-lost 6 returned 41)
+# of expected passes      74
+test: pass tests/test-stream.sps
+=== tests/test-transfer-tls.sps
+%%%% Starting test transfer-tls
+# of expected passes      82
+test: pass tests/test-transfer-tls.sps
+=== tests/test-transfer.sps
+%%%% Starting test transfer
+# of expected passes      225
+test: pass tests/test-transfer.sps
+=== tests/test-unsupported.sps
+%%%% Starting test unsupported
+# of expected passes      34
+test: pass tests/test-unsupported.sps
+=== tests/test-upload.sps
+%%%% Starting test upload
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 1746)
+(throughput http chunked ms 1521)
+(throughput https sized ms 1375)
+(throughput https chunked ms 1565)
+(throughput h2 sized ms 329)
+(throughput h2 chunked ms 296)
+(read-lock collections-while-live 994)
+# of expected passes      58
+test: pass tests/test-upload.sps
+=== tests/test-url-location.sps
+%%%% Starting test url-location
+# of expected passes      224
+test: pass tests/test-url-location.sps
+=== tests/test-url-parts.sps
+%%%% Starting test url-parts
+# of expected passes      160
+test: pass tests/test-url-parts.sps
+=== tests/test-url.sps
+%%%% Starting test url
+# of expected passes      145
+test: pass tests/test-url.sps
+=== tests/test-variadic.sps
+%%%% Starting test variadic
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 1: done, the first done at 1034 ms, both at 2069 ms
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 2: done, the first done at 1031 ms, both at 1031 ms
+# of expected passes      30
+test: pass tests/test-variadic.sps
+=== tests/test-verify.sps
+%%%% Starting test verify
+# of expected passes      21
+test: pass tests/test-verify.sps
+test: ran 35, passed 33, failed 2, hung 0
+make: *** [test] Error 1

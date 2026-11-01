@@ -1146,8 +1146,12 @@
             (list (if (and (producer-first-at p) (>= (producer-first-at p) 200)) 'after-the-hold (producer-first-at p))
                   (whole (sink-fields (latin-1 (http-response-body r))) 2000)))))))
 
-  (test-equal "a producer is never called for a refused connect, and the connect is retried, as nothing was sent: three transfers, the low level's 7, with &http-exchange"
-    (list 0 (list 'raised '(curl-transfer-error connect perform-failed 7) (list 'exchange 'post nowhere '() 3)))
+  ;; On 8.7.0 and 8.7.1 the request size is unknown, so a post's failure is
+  ;; never retried there (ADR-0022, amended; test-retry's
+  ;; unknown-size-versions): the Mac's run made one transfer.
+  (test-equal (string-append "a producer is never called for a refused connect, and the connect is retried, as nothing was sent: three transfers, the low level's 7, with &http-exchange; on 8.7.0 and 8.7.1, whose request size is unknown, one, on " version-text)
+    (list 0 (list 'raised '(curl-transfer-error connect perform-failed 7)
+                  (list 'exchange 'post nowhere '() (if (member version '("8.7.0" "8.7.1")) 1 3))))
     (guard (e (#t (list 'raised (describe e))))
       (with-session (append base-keys (list 'retry (make-http-retry 'backoff-ms 10 'jitter #f)))
         (lambda (s)
@@ -1592,12 +1596,14 @@
   ;; --- libcurl's HTTP/2 3xx that never ends while a body is owed
   ;; (ADR-0031, amended 2026-10-31): on 8.20.0 and 8.23.0 a 3xx over HTTP/2
   ;; that arrives before the body is sent whole never ends but at the
-  ;; call's bound; 7.85.0 and 8.5.0 end it with the 3xx. Each row is the
-  ;; slice's measurement (research/m6/slice3/, verify/). A final 303, with
+  ;; call's bound; 7.85.0, 8.5.0 and Apple's 8.7.1 end it with the 3xx. Each
+  ;; row is the slice's measurement (research/m6/slice3/, verify/), 8.7.1's
+  ;; the Mac's run (research/m6/slice3-build/results/). A final 303, with
   ;; redirects #f, its Location kept: (PRODUCER WHOLE), each 303 and its
   ;; body, or 28 at the bound.
   (let ((rows '(("7.85.0" (303 (text "early 303\n")) (303 "early 303\n"))
                 ("8.5.0" (303 (text "early 303\n")) (303 "early 303\n"))
+                ("8.7.1" (303 (text "early 303\n")) (303 "early 303\n"))
                 ("8.20.0" (303 (raised 28 http-timeout)) (raised 28 http-timeout))
                 ("8.23.0" (303 (raised 28 http-timeout)) (raised 28 http-timeout))))
         (path (string-append "/answer-at?status=303&after=65536&to=" (pct "/pattern/1000")))
@@ -1610,7 +1616,7 @@
                                 (if (find (lambda (x) (and (pair? x) (eq? (car x) 'http-timeout))) d) 'http-timeout 'no-timeout))))
                        (else r)))))
     (test-equal (string-append "h2, by version, on " version-text
-                               ": a final 303 over HTTP/2, answered once 65,536 bytes of a 4 MiB body arrived, redirects #f: through call-with-response-port with a producer, PROC handed the 303, its body read through the port; through http-request with a whole body; 28 at the bound of 3000 ms, &http-timeout, on 8.20.0 and 8.23.0, the 303 and its body on 7.85.0 and 8.5.0; a libcurl with no row fails, showing what it measured")
+                               ": a final 303 over HTTP/2, answered once 65,536 bytes of a 4 MiB body arrived, redirects #f: through call-with-response-port with a producer, PROC handed the 303, its body read through the port; through http-request with a whole body; 28 at the bound of 3000 ms, &http-timeout, on 8.20.0 and 8.23.0, the 303 and its body on 7.85.0, 8.5.0 and 8.7.1; a libcurl with no row fails, showing what it measured")
       (let ((row (and (string? version) (assoc version rows))))
         (if row (cdr row) (list 'a-row-for version)))
       (let* ((measured
@@ -1638,15 +1644,18 @@
   ;; plan, section 6.1): the raw face, armed, answers the next connection as
   ;; it accepts it; the engine holds the prerequest callable 200 ms once
   ;; connected, so the answer is read before libcurl's first ask on 7.85.0
-  ;; and 8.5.0, whose head's bit is then #f; 8.20.0 and 8.23.0 ask with the
-  ;; request's head, once the hold ends and before the head is read, and
-  ;; their bit is #t.
+  ;; and 8.5.0, whose head's bit is then #f; 8.7.1, 8.20.0 and 8.23.0 ask
+  ;; with the request's head, once the hold ends and before the head is
+  ;; read, and their bit is #t. 8.7.1's row is the Mac's run; its 200 read
+  ;; after-the-head once, and is held to either, as 8.20.0's and 8.23.0's
+  ;; are, since a row from one run cannot show a cell that splits.
   (let ((rows '(("7.85.0" (followed 200 whole-body ((307 #f #f ()))) (200 "early 200\n" after-the-head))
                 ("8.5.0" (followed 200 whole-body ((307 #f #f ()))) (200 "early 200\n" after-the-head))
+                ("8.7.1" (body-not-replayable 307) (200 "early 200\n" either))
                 ("8.20.0" (body-not-replayable 307) (200 "early 200\n" either))
                 ("8.23.0" (body-not-replayable 307) (200 "early 200\n" either)))))
     (test-equal (string-append "raw, held, by version, on " version-text
-                               ": a 307 written as the connection is accepted, before libcurl's first ask on 7.85.0 and 8.5.0, four times: the hop cancelled at its head, the producer never called, the 307 followed with the body, which the sink reads whole, the producer's first call in the next request; on 8.20.0 and 8.23.0, which ask with the head, body-not-replayable; and a 200 kept alive, so written, fed when libcurl asks after it on 7.85.0 and 8.5.0, its first call after PROC has the head, ending 200 on every libcurl; a libcurl with no row fails, showing what it measured")
+                               ": a 307 written as the connection is accepted, before libcurl's first ask on 7.85.0 and 8.5.0, four times: the hop cancelled at its head, the producer never called, the 307 followed with the body, which the sink reads whole, the producer's first call in the next request; on 8.7.1, 8.20.0 and 8.23.0, which ask with the head, body-not-replayable; and a 200 kept alive, so written, fed when libcurl asks after it on 7.85.0 and 8.5.0, its first call after PROC has the head, ending 200 on every libcurl; a libcurl with no row fails, showing what it measured")
       (let ((row (and (string? version) (assoc version rows))))
         (if row (list (make-list-of 4 (cadr row)) (caddr row)) (list 'a-row-for version)))
       (let* ((measured

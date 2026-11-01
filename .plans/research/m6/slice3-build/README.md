@@ -22,3 +22,5 @@ them [`../slice3/verify/`](../slice3/verify/). The programs ran from git-ignored
 | `results/retain-final.log` | the scoped review's retain probe on the final tree: 0.0 MB retained |
 | `results/mut-{seam-unarmed,before-cancel}-final.{diff,log}` | my mutants of round 5's two fixes on the final tree: each failed the test named for its rule |
 | `mutants/` | the builder's mutation log, `mutants.md`, and its round 3, 4 and 5 tables |
+| `results/mac-8.7.1-make-test.log` | the maintainer's Mac on the PR at b4a5e08: 33 of 35, test-stream-call's two by-version tests printing 8.7.1's rows, its refused connect one transfer, and test-origin's hold never released |
+| `mac-system.sps`, `results/mac-system-guix.log` | two threads' calls of Chez's `system`, each `sleep 1`: on Linux they end together, about 1,002 ms; run on the Mac to see whether its libc runs them one at a time |

@@ -58,6 +58,12 @@ close-out under **Close-outs**, newest first.
 
       The scoped review found no blocker and one major: a test seam kept the last call's body
       alive, 64.1 MB.
+    - **Pushed as PR #38** (`b4a5e08`). **The Mac ran it, 2026-11-01** (the plan, §7): 33 of
+      35. test-stream-call's two by-version tests printed 8.7.1's rows, which are added: 8.7.1
+      ends the HTTP/2 3xx, and asks with the head. Its refused connect made one transfer, by
+      8.7.x's unknown request size, which the test now holds. test-origin's hold never saw its
+      release, which seems to have waited behind the probe's own `system` call; the probe now
+      starts through `open-process-ports`.
   - **The plan measured first** ([`research/m6/`](research/m6/)):
     - a C probe whose loop steps as the engine does, 30 cases on the five Linux libcurls, two
       runs each ([`pause/`](research/m6/pause/));
