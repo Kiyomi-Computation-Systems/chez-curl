@@ -1225,3 +1225,11 @@ it should not be a comment. (chez-cmark-gfm)
   server sent `Location` with its 3xx alone, which could not tell the status from the header: a
   probe that crossed them showed the status alone matters. A server that varies two things
   together hides which one a client answers. (chez-curl, M6 slice 3's measurements)
+* **On macOS, two threads' calls of `system` run one after the other.** Each of two Chez
+  threads ran `system "sleep 1"` at once: on Linux both ended at about 1,002 ms, on the Mac the
+  second at about 2,035 ms, 3 runs of 3 ([research](research/m6/slice3-build/results/), the
+  `mac-system-*` logs). A test-origin check made a release through capture-command 800 ms into
+  a 5 s probe run the same way: on Linux the release arrived in time; on the Mac it ran only
+  once the probe had given up, and the check failed though `/raw/release` answered `released`.
+  A check that needs two commands running at once starts the long one through
+  `open-process-ports`, which does not call `system`. (chez-curl, M6 slice 3, the Mac's run)

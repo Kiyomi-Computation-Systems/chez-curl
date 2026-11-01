@@ -1155,10 +1155,10 @@
 ;; spawned-probe : Origin Symbol String Natural -> (-> Probe)
 ;; A wire probe of TEXT to FACE, idle bound IDLE ms, started through
 ;; open-process-ports, not capture-command, so that another probe can run
-;; while it waits: on the Mac, a release made 800 ms into a 5 s probe,
-;; both through capture-command, seemed to arrive after it, as if Apple's
-;; system(3) ran one call at a time (the Mac's run, 2026-11-01;
-;; .plans/research/m6/slice3-build/). Answers a thunk that reads
+;; while it waits: on the Mac, two threads' system calls run one after the
+;; other, so a release made 800 ms into a 5 s probe, both through
+;; capture-command, arrived after it (traps.md; the Mac's run, 2026-11-01).
+;; Answers a thunk that reads
 ;; the probe's output to its end, closes its pipes, and parses it.
 (define (spawned-probe o face text idle)
   (let-values (((to from err pid)

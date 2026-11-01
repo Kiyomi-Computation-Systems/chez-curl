@@ -62,8 +62,10 @@ close-out under **Close-outs**, newest first.
       35. test-stream-call's two by-version tests printed 8.7.1's rows, which are added: 8.7.1
       ends the HTTP/2 3xx, and asks with the head. Its refused connect made one transfer, by
       8.7.x's unknown request size, which the test now holds. test-origin's hold never saw its
-      release, which seems to have waited behind the probe's own `system` call; the probe now
-      starts through `open-process-ports`.
+      release: on the Mac two threads' `system` calls run one after the other, which a timing
+      check then measured (`traps.md`). The probe now starts through `open-process-ports`. The
+      rerun passed test-stream-call and test-origin, 77 and 327, and Apple's curl 8.7.1 ended
+      the bug report's 303 at once.
   - **The plan measured first** ([`research/m6/`](research/m6/)):
     - a C probe whose loop steps as the engine does, 30 cases on the five Linux libcurls, two
       runs each ([`pause/`](research/m6/pause/));

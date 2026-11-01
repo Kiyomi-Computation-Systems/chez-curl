@@ -53,8 +53,10 @@ curl exits 0 within 6 ms, and the server sees the stream reset at once.
 - **curl 8.20.0** (GnuTLS, nghttp2 1.69.0) and **curl 8.23.0** (OpenSSL 3.0.13, nghttp2 1.59.0):
   the wait, on the command-line tool and through libcurl's multi interface, with a body from
   `COPYPOSTFIELDS` or from a read callback.
-- **curl 8.5.0** (Ubuntu 24.04's, OpenSSL and GnuTLS builds) and **7.85.0** (built from its
-  release, OpenSSL): every 3xx completes at once. Not bisected between 8.5.0 and 8.20.0.
+- **curl 8.5.0** (Ubuntu 24.04's, OpenSSL and GnuTLS builds), **7.85.0** (built from its
+  release, OpenSSL) and **Apple's 8.7.1** (macOS 26, SecureTransport, nghttp2 1.68.1): every 3xx
+  completes at once; 8.7.1's tool exited 0 in 5 to 8 ms for the 303, after "stop sending" and
+  "abort upload after having sent 130921 bytes". Not bisected between 8.7.1 and 8.20.0.
 - Over HTTP/1.1 the same server's 3xx completes at once on every version above, through libcurl.
 - `CURLOPT_KEEP_SENDING_ON_ERROR` set to 1 avoids the wait on 8.20.0 (a body from
   `COPYPOSTFIELDS`): the transfer completes with the 3xx within 50 ms.
@@ -101,6 +103,6 @@ Linux x86_64 (Guix; Ubuntu 24.04 in Docker), Node 24.18.0 and 20.10.0 as the ser
 ---
 
 Evidence in this repository: `early-3xx-cli.sh` and `early-3xx-server.mjs` (the reproduction),
-`results/early-3xx-cli-guix-8.20.0.log` and `results/early-3xx-cli-docker.log` (curl's tool on
-8.20.0, 8.23.0 and 7.85.0), `results/whole-*.log` (a whole body through libcurl's multi
+`results/early-3xx-cli-guix-8.20.0.log`, `results/early-3xx-cli-docker.log` and
+`results/early-3xx-cli-mac-8.7.1.log` (curl's tool on 8.20.0, 8.23.0, 7.85.0 and Apple's 8.7.1), `results/whole-*.log` (a whole body through libcurl's multi
 interface, on 7.85.0, 8.5.0, 8.20.0 and 8.23.0), `results/verbose-guix.log` and `results/keepsend-guix.log`.

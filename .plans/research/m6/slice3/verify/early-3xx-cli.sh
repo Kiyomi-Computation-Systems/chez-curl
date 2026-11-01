@@ -25,7 +25,10 @@ for status in 303 307 413 200; do
   echo "status=$status curl_exit=$? $out stderr=$(tr '\n' ' ' < "$tmp/err.$status")"
   "$curl" -sS -v --http2-prior-knowledge -X POST --data-binary @"$tmp/body" -m 5 -o /dev/null \
     "http://127.0.0.1:$port/" 2>&1 | grep -E 'stop sending|abort upload|timed out|HTTP/2 [0-9]' | sed "s/^/  status=$status verbose: /"
+  # The Mac's Node does not exit when its FIFO stdin closes (the M6 plan,
+  # section 9), so the server is ended by a signal, not by its stdin.
   exec 3>&-
-  wait "$pid"
+  kill "$pid" 2>/dev/null
+  wait "$pid" 2>/dev/null
   sed "s/^/  status=$status server: /" "$tmp/server.$status"
 done
