@@ -11,7 +11,8 @@
 # CHEZ_CURL_LIBCURL and C_INCLUDE_PATH set for the lane; its output goes to
 # build/cifix/out/TAG.log. MUT_FILE and MUT_SED, when set, run sed -i
 # MUT_SED on that file of the copy first, and refuse a sed that changes
-# nothing. One container, with --rm; no other is touched.
+# nothing. OVERLAY, FROM:TO, copies FROM over TO in the copy first,
+# each a path from the root. One container, with --rm; no other is touched.
 set -eu
 [ "$#" -ge 3 ] || { echo "usage: docker.sh LANE TAG COMMAND..." >&2; exit 2; }
 lane=$1 tag=$2
@@ -25,7 +26,7 @@ case ${NODE_BIN:-node22} in
 esac
 exec docker run --rm -v "$root:/src:ro" -v "$root/build/cifix/out:/out" \
   -e LANE="$lane" -e TAG="$tag" -e NODEP="$node" -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
-  -e MUT_FILE="${MUT_FILE:-}" -e MUT_SED="${MUT_SED:-}" \
+  -e MUT_FILE="${MUT_FILE:-}" -e MUT_SED="${MUT_SED:-}" -e OVERLAY="${OVERLAY:-}" \
   ${DOCKER_ARGS:-} ubuntu:24.04 sh -c '
 set -eu
 export DEBIAN_FRONTEND=noninteractive
@@ -48,6 +49,10 @@ w=/work/tree
 mkdir -p $w
 (cd /src && tar cf - --exclude=./.git --exclude=./build --exclude=./.claude .) | (cd $w && tar xf -)
 mkdir -p $w/build/cifix && cp -r /src/build/cifix/*.sps $w/build/cifix/ 2>/dev/null || true
+if [ -n "$OVERLAY" ]; then
+  cp /src/${OVERLAY%%:*} $w/${OVERLAY#*:}
+  echo "overlay: ${OVERLAY%%:*} over ${OVERLAY#*:}" > /work/overlay.note
+fi
 if [ -n "$MUT_FILE" ]; then
   cp $w/$MUT_FILE /work/mut.orig
   sed -i "$MUT_SED" $w/$MUT_FILE
@@ -56,6 +61,7 @@ fi
 chown -R "$user" /work
 sysctl net.ipv4.tcp_rmem net.ipv4.tcp_wmem net.core.rmem_max net.core.wmem_max net.core.rmem_default net.core.wmem_default net.ipv4.tcp_moderate_rcvbuf > /out/$TAG.log 2>&1 || true
 echo "lane $LANE node $($NODEP --version) envs $envs" >> /out/$TAG.log
+[ -n "$OVERLAY" ] && cat /work/overlay.note >> /out/$TAG.log
 [ -n "$MUT_FILE" ] && { echo "mutant: $MUT_FILE: $MUT_SED"; diff /work/mut.orig $w/$MUT_FILE || true; } >> /out/$TAG.log
 su "$user" -c "cd $w && export CHEZ=$ci/chez-threads/bin/scheme NODE=$NODEP CC=gcc $envs && $*" >> /out/$TAG.log 2>&1 && echo "exit 0" >> /out/$TAG.log || echo "exit $?" >> /out/$TAG.log
 chown "$HOST_UID:$HOST_GID" /out/$TAG.log

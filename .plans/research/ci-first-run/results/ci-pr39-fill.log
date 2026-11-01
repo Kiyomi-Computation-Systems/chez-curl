@@ -1,0 +1,14 @@
+# PR #39 at 1dcf451, the current job (124965511070), its kernel, TCP buffers, the fill's trace and its failure, from the job's log
+2026-11-01T20:15:37.9656466Z kernel: 7.0.0-1017-azure
+2026-11-01T20:15:37.9666216Z net.ipv4.tcp_rmem = 4096	131072	33554432
+2026-11-01T20:15:37.9666876Z net.ipv4.tcp_wmem = 4096	16384	4194304
+2026-11-01T20:15:37.9667324Z net.core.rmem_max = 1048576
+2026-11-01T20:15:37.9667901Z net.core.wmem_max = 4194304
+2026-11-01T20:15:37.9668306Z net.ipv4.tcp_moderate_rcvbuf = 1
+2026-11-01T20:15:38.4238669Z   version:  8.23.0
+2026-11-01T20:22:08.6794171Z (fill never-full 33554432 ms 5898 retried ((2031616 1049) (2097152 2050) (2162688 3051) (2228224 4051) (2293760 5052)) mib (18 1049 5072 5097 5125 5154 5182 5212 5240 5269 5297 5326 5354 5383 5410 5438 5470 5498 5527 5556 5584 5612 5639 5668 5696 5725 5753 5782 5810 5842 5870 5898))
+2026-11-01T20:22:08.6824973Z FAIL a put waits while the buffer is full: to a raw sink that reads nothing for 5,000 ms, 64 KiB puts fill the kernel's buffers and the request's, and a put answers #f at its bound of 500 ms, libcurl taking nothing more, the buffer holding 65,536 bytes or more; then 32 MiB whole, and once done a put, room-wait and end answer done and nothing
+2026-11-01T20:22:08.6830467Z   actual:   ((#t (never-full 33554432)) held-bounded (never-full 33554432) whole-body ((returned done) (returned done) (returned unspecified)) 33554432)
+2026-11-01T20:22:41.3764567Z test: ran 35, passed 34, failed 1, hung 0
+# the gnutls job (124965511043) on the same run: its fill
+2026-11-01T20:21:16.3900703Z (fill #f 2031616 ms 1049 retried () mib (18))

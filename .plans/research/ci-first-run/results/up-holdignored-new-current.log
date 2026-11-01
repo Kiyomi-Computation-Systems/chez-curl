@@ -1,0 +1,39 @@
+net.ipv4.tcp_rmem = 4096	131072	33554432
+net.ipv4.tcp_wmem = 4096	16384	4194304
+net.core.rmem_max = 4194304
+net.core.wmem_max = 4194304
+net.core.rmem_default = 212992
+net.core.wmem_default = 212992
+net.ipv4.tcp_moderate_rcvbuf = 1
+lane current node v22.23.4 envs CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include
+mutant: tests/origin.mjs: 1248s|return \[...(ms > 0 ? \[pauseReading(ms)\] : \[\]), sinkBody|return [sinkBody|
+1248c1248
+<       return [...(ms > 0 ? [pauseReading(ms)] : []), sinkBody(conn, head, key, list === true), END];
+---
+>       return [sinkBody(conn, head, key, list === true), END];
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-upload.sps
+%%%% Starting test upload
+(fill never-full 33554432 ms 546 retried () mib (20 35 52 70 90 108 122 137 149 161 173 190 207 219 235 255 275 296 318 338 359 379 400 419 436 456 476 496 511 523 535 546))
+FAIL a put waits while the buffer is full: to a raw sink that reads nothing for 5,000 ms, 64 KiB puts fill the kernel's buffers and the request's, and a put answers #f at its bound of 500 ms, libcurl taking nothing through it, the buffer holding 65,536 bytes or more; then 32 MiB whole, and once done a put, room-wait and end answer done and nothing
+  expected: (full-at-bound held-bounded put whole-body ((returned done) (returned done) (returned unspecified)) 33554432)
+  actual:   ((#t (never-full 33554432)) held-bounded (never-full 33554432) whole-body ((returned done) (returned done) (returned unspecified)) 33554432)
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 920)
+(throughput http chunked ms 813)
+(throughput https sized ms 1005)
+(throughput https chunked ms 972)
+(throughput h2 sized ms 533)
+(throughput h2 chunked ms 510)
+(read-lock collections-while-live 995)
+# of expected passes      57
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 57, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-upload.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1
+exit 2

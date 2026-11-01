@@ -1,0 +1,30 @@
+net.ipv4.tcp_rmem = 4096	131072	33554432
+net.ipv4.tcp_wmem = 4096	16384	4194304
+net.core.rmem_max = 4194304
+net.core.wmem_max = 4194304
+net.core.rmem_default = 212992
+net.core.wmem_default = 212992
+net.ipv4.tcp_moderate_rcvbuf = 1
+lane main node v22.23.4 envs 
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-retry.sps
+test-memory: FAIL tests/test-retry.sps (exit 1)
+  log: build/memory/test-retry.log
+  Valgrind's log: build/memory/test-retry.valgrind
+  ==4761==    definitely lost: 0 bytes in 0 blocks
+  ==4761==         suppressed: 0 bytes in 0 blocks
+  ==4761== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+  | FAIL a retry that runs out of time having sent nothing, live, on 8.5.0: two TLS handshakes stall at the raw face, the second until the call's bound of 1500 ms, and the call raises the first 28 it retried, nothing sent, with two transfers and no &http-timeout; on 8.7.0 and 8.7.1, &http-timeout
+  |   expected: ((raised (curl-transfer-error timeout perform-failed 28 zero) (exchange get "https://127.0.0.1:45277/stall" () 2)) at-the-bound)
+  |   actual:   ((raised (http-error) (http-timeout 1500) (curl-transfer-error timeout perform-failed 28 zero) (exchange get "https://127.0.0.1:45277/stall" () 1)) at-the-bound)
+  | %%%% Starting test retry
+  | (head-predicate-rows 98)
+  | FAIL a retry that runs out of time having sent nothing, live, on 8.5.0: two TLS handshakes stall at the raw face, the second until the call's bound of 1500 ms, and the call raises the first 28 it retried, nothing sent, with two transfers and no &http-timeout; on 8.7.0 and 8.7.1, &http-timeout
+  |   expected: ((raised (curl-transfer-error timeout perform-failed 28 zero) (exchange get "https://127.0.0.1:45277/stall" () 2)) at-the-bound)
+  |   actual:   ((raised (http-error) (http-timeout 1500) (curl-transfer-error timeout perform-failed 28 zero) (exchange get "https://127.0.0.1:45277/stall" () 1)) at-the-bound)
+  | # of expected passes      81
+  | # of unexpected failures  1
+  | suite-exit-status: exit 1 (pass 81, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test-memory: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:443: test-memory] Error 1
+exit 2

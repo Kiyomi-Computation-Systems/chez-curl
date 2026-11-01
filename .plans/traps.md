@@ -181,6 +181,15 @@ it should not be a comment. (chez-cmark-gfm)
   transfer where it never asks: an `https` request to a plaintext face, whose handshake never
   ends. (chez-curl, M6 slice 2's build)
 
+  The test slice 2 kept on the kernel failed on CI's runner, 3 runs of 3, on 8.23.0 alone. Its
+  fill called the buffer full only after a put timed out and a further 500 ms passed with
+  nothing taken. There the kernel let one 64 KiB piece more in every second, at 1,049, 2,050,
+  3,051, 4,051 and 5,052 ms, so that quiet never came before the sink began to read at 5 s
+  ([research](research/ci-first-run/)). 8.5.0 stalled at once on the same runner, and here a
+  kernel lets more in once at most, then holds. The fill now asks only that nothing be taken through the put's own
+  500 ms bound. A check of a full kernel asks no more of it than one bound shorter than a
+  second. (chez-curl, CI's first run)
+
 * **A row read from one run cannot show a cell that splits.** 8.7.1's rows in test-upload were
   read from the Mac's first run, whose HTTP/2 200 ended 200 in both framings; the rerun's sized
   cell ended 55 ([research](research/m6/slice2-build/results/)). 8.20.0's cell had split the

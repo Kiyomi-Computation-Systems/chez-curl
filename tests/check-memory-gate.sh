@@ -12,8 +12,8 @@
 #   b  leak         the same for the leak plant, with its loss record
 #   b  fails        a program that Valgrind finds clean but that exits 1
 #                   is named FAIL with its exit, its FAIL line with its
-#                   expected and actual values, 15 lines before its end,
-#                   and its last lines shown
+#                   expected and actual values, 18 lines before its end,
+#                   and its last lines, a FAIL among them, each line once
 #   c  suppression  tests/guix-glibc-locpath.supp holds exactly its one
 #                   entry: one name, one kind, these four frames, nothing
 #                   else
@@ -224,6 +224,7 @@ cat >"$fails" <<'EOF'
   (when (<= i 12)
     (display "fails: line ") (display i) (newline)
     (loop (+ i 1))))
+(display "FAIL a late check\n  expected: (late 1)\n  actual:   (late 2)\n")
 (display "fails: exits 1, with no memory defect")
 (newline)
 (exit 1)
@@ -618,9 +619,13 @@ want_lines "test-memory: FAIL $fails (exit 1)
 test-memory: pass $after
 $(count_line 2 1 1 0)"
 want_in "$out" "  | fails: exits 1, with no memory defect" "test-memory's own output, the program's last lines"
-want_in "$out" "  | FAIL a planted check" "test-memory's own output, the suite's FAIL line, 15 lines before its end"
+want_in "$out" "  | FAIL a planted check" "test-memory's own output, the suite's FAIL line, 18 lines before its end"
 want_in "$out" "  |   expected: (planted 1)" "test-memory's own output, the FAIL's expected value"
 want_in "$out" "  |   actual:   (planted 2)" "test-memory's own output, the FAIL's actual value"
+for f in "  | FAIL a planted check" "  | FAIL a late check"; do
+  n=$(grep -cxF -- "$f" "$out")
+  [ "$n" = 1 ] || problem "test-memory's own output shows \"$f\" $n times, not once"
+done
 want_in "$out" "ERROR SUMMARY: 0 errors from 0 contexts" "test-memory's own output, Valgrind's verdict"
 verdict "b fails: test-memory names a program that exits 1 FAIL, with its exit, its FAIL lines and its last lines, and runs the suite after it"
 

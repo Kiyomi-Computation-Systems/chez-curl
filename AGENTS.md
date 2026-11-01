@@ -128,8 +128,10 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   sides answer "no row". A missing row's expected value is one no measurement
   gives, and its actual value is the measurement, so the failure prints the row.
 * A full TCP buffer is not a stable full: a stalled upload took more after a
-  put on it timed out. A test that needs libcurl to stop asking for the body
-  holds it where it never asks: an `https` request to a plaintext face.
+  put on it timed out, and on CI's runner 64 KiB more every second. A test
+  that needs libcurl to stop asking for the body holds it where it never asks:
+  an `https` request to a plaintext face. A check of a full kernel asks for no
+  quiet longer than one put's bound, under a second.
 * A row read from one run cannot show a cell that splits: 8.7.1's HTTP/2 200
   ended 200, then 55. Take a new row from two runs at least, and hold a cell
   they disagree on to what both showed.

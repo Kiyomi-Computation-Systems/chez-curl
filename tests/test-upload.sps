@@ -334,15 +334,17 @@
 
 ;; fill-until-stalled : Token Natural -> (U (List #f Natural) List)
 ;; The pattern put in 64 KiB pieces, each with a bound of 500 ms, until
-;; the buffer is full and libcurl takes nothing more: a put answers #f at
-;; its bound, and the bytes handed, read before that put, stay as they
-;; were through it and a further 500 ms, so the buffer still holds what
-;; refused the put, and a slow turn of the engine's is not taken for a
-;; full kernel. Answers (#f AT), AT the offset of the piece not taken;
-;; (never-full N) once N bytes were taken.
+;; the buffer is full and libcurl takes nothing through a put: the put
+;; answers #f at its bound, and the bytes handed, read before it, are as
+;; they were, so the buffer held what refused the put for its whole
+;; bound. It asks no more of the kernel: a kernel full on loopback lets
+;; more in about a second on, on CI's runner every second (traps.md), so
+;; a quiet past the put's bound would never come. A put that answers #f
+;; while libcurl took bytes is tried again. Answers (#f AT), AT the offset
+;; of the piece not taken; (never-full N) once N bytes were taken.
 ;; It prints (fill ANSWER AT ms MS retried ((AT MS) ...) mib (MS ...)):
 ;; how it ended, where and how long after its start, each put that answered
-;; #f while libcurl went on taking, and when each MiB was taken.
+;; #f while libcurl took bytes, and when each MiB was taken.
 (define (fill-until-stalled token n)
   (let ((t0 (now-ms)))
     (define (ended answer at retried marks)
@@ -358,11 +360,8 @@
                    (let ((next (+ at 65536)))
                      (loop next retried (if (= 0 (mod next 1048576)) (cons (- (now-ms) t0) marks) marks))))
                   ((not (eq? a #f)) (ended (list a at) at retried marks))
-                  (else
-                   (pause-ms 500)
-                   (if (= handed (ustat token 'handed))
-                       (ended (list #f at) at retried marks)
-                       (loop at (cons (list at (- (now-ms) t0)) retried) marks)))))))))
+                  ((= handed (ustat token 'handed)) (ended (list #f at) at retried marks))
+                  (else (loop at (cons (list at (- (now-ms) t0)) retried) marks))))))))
 
 ;; ustat : Token Symbol -> Any
 (define (ustat token key)
@@ -849,7 +848,7 @@
           (list early done (outcome-of t))))))
 
   ;; --- a put that waits while the buffer is full
-  (test-equal "a put waits while the buffer is full: to a raw sink that reads nothing for 5,000 ms, 64 KiB puts fill the kernel's buffers and the request's, and a put answers #f at its bound of 500 ms, libcurl taking nothing more, the buffer holding 65,536 bytes or more; then 32 MiB whole, and once done a put, room-wait and end answer done and nothing"
+  (test-equal "a put waits while the buffer is full: to a raw sink that reads nothing for 5,000 ms, 64 KiB puts fill the kernel's buffers and the request's, and a put answers #f at its bound of 500 ms, libcurl taking nothing through it, the buffer holding 65,536 bytes or more; then 32 MiB whole, and once done a put, room-wait and end answer done and nothing"
     '(full-at-bound held-bounded put whole-body
       ((returned done) (returned done) (returned unspecified)) 33554432)
     (on-own-engine make-curl-engine

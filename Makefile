@@ -426,9 +426,9 @@ check-variadic: deps ## Remove (__varargs_after 2) from bind-variadic's template
 # A FAIL also prints, from Valgrind's log, its first error, the definite
 # loss, the suppressed total and its error summary, and, unless the exit
 # was Valgrind's, the suite's FAIL lines with the indented lines after
-# each, its expected and actual values, 40 lines at most, then its last
-# lines, so a CI log says why, and names the tests that failed. It fails if
-# any suite failed or hung, or if none was named.
+# each, its expected and actual values, 40 lines at most, then its last 10
+# lines, each line once, so a CI log says why, and names the tests that
+# failed. It fails if any suite failed or hung, or if none was named.
 #
 # Valgrind also takes options and files that its command line does not
 # show, and one of them can hide a leak (measured: a suppression in
@@ -576,8 +576,12 @@ test-memory: deps ## Run every MEMORY_SUITES suite under Valgrind; fail on any e
 	            else print "  (the log holds no Valgrind ERROR SUMMARY)" }' "$$vlog"; \
 	    fi; \
 	    if [ $$rc -ne 9 ]; then \
-	      awk '/^FAIL / { shown = 1; print; next } shown && /^  / { print; next } { shown = 0 }' "$$log" | head -n 40 | sed 's/^/  | /'; \
-	      tail -n 10 "$$log" | sed 's/^/  | /'; \
+	      awk '{ line[NR] = $$0 } \
+	        END { from = NR - 9; if (from < 1) from = 1; \
+	          for (i = 1; i < from && shown < 40; i++) { \
+	            if (line[i] ~ /^FAIL /) inside = 1; else if (line[i] !~ /^  /) inside = 0; \
+	            if (inside) { print line[i]; shown++ } } \
+	          for (i = from; i <= NR; i++) print line[i] }' "$$log" | sed 's/^/  | /'; \
 	    fi; \
 	  fi; \
 	done; \

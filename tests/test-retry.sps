@@ -1524,30 +1524,31 @@
    ;; An https request to the raw face stalls in its TLS handshake, since
    ;; the raw face reads a ClientHello as part of a head it waits for: a 28
    ;; with nothing sent, a request size of 0. The call's connect timeout of
-   ;; 900 ms ends the first attempt before the bound of 1500, as the
+   ;; 2000 ms ends the first attempt before the bound of 3500, as the
    ;; transfer's own, which is retried after 100 ms; the retry has at most
-   ;; 500 ms left, under its connect timeout, so its 28 is the bound's, again
+   ;; 1400 ms left, under its connect timeout, so its 28 is the bound's, again
    ;; with nothing sent, and the call raises the 28 it retried, with no
-   ;; &http-timeout. The first attempt has 500 ms to spare: under Valgrind
-   ;; and load its 28 came at about 800 ms of a 600 ms timeout (the slice's
-   ;; third review), which a bound of 1000 left 100 ms for. On 8.7.0 and
+   ;; &http-timeout. The first attempt has 1400 ms to spare: under Valgrind
+   ;; and load its 28 came about 200 ms late (the slice's third review), and
+   ;; on CI's memory lane about 540 ms late, which a spare of 500 failed
+   ;; (research/ci-first-run). On 8.7.0 and
    ;; 8.7.1 the size is unknown, so the retry may have sent its request,
    ;; and the call raises the bound's &http-timeout.
    (let ((url (guard (e (#t "https://no-raw-face/stall"))
                 (let ((f (origin-face o 'raw)))
                   (string-append "https://" (car f) ":" (number->string (cdr f)) "/stall")))))
      (test-equal (string-append "a retry that runs out of time having sent nothing, live, on " version
-                                ": two TLS handshakes stall at the raw face, the second until the call's bound of 1500 ms, and the call raises the first 28 it retried, nothing sent, with two transfers and no &http-timeout; on 8.7.0 and 8.7.1, &http-timeout")
+                                ": two TLS handshakes stall at the raw face, the second until the call's bound of 3500 ms, and the call raises the first 28 it retried, nothing sent, with two transfers and no &http-timeout; on 8.7.0 and 8.7.1, &http-timeout")
        (list (if size-known?
                  (list 'raised '(curl-transfer-error timeout perform-failed 28 zero) (list 'exchange 'get url '() 2))
-                 (list 'raised '(http-error) '(http-timeout 1500) '(curl-transfer-error timeout perform-failed 28 unknown)
+                 (list 'raised '(http-error) '(http-timeout 3500) '(curl-transfer-error timeout perform-failed 28 unknown)
                        (list 'exchange 'get url '() 2)))
              'at-the-bound)
        (with-session (list 'timeout-ms 20000
                            'retry (make-http-retry 'backoff-ms 100 'max-backoff-ms 5000 'jitter #f))
          (lambda (own)
-           (let ((r (timed (lambda () (http-get own url 'timeout-ms 1500 'connect-timeout-ms 900)))))
-             (list (car r) (if (and (>= (cadr r) 1500) (< (cadr r) 2300)) 'at-the-bound (list 'took (cadr r)))))))))
+           (let ((r (timed (lambda () (http-get own url 'timeout-ms 3500 'connect-timeout-ms 2000)))))
+             (list (car r) (if (and (>= (cadr r) 3500) (< (cadr r) 4300)) 'at-the-bound (list 'took (cadr r)))))))))
 
    ;; --- a storm of the caller's own raises during the await
 
