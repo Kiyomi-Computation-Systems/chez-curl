@@ -24,9 +24,12 @@
 ;;;                             300000; as it is, with no bound
 ;;;     (fail CONDITION)        no time left: &http-timeout; for a retry,
 ;;;                             which has sent nothing, the failure it
-;;;                             repeated
+;;;                             repeated; for a retry of a response whose
+;;;                             body is #f, a streamed call's hop cancelled
+;;;                             at its head, &http-timeout, as with no time
+;;;                             left for any request
 ;;;     (done RESPONSE)         no time left for a retry of a response: the
-;;;                             response it repeated
+;;;                             response it repeated, its body read
 ;;;
 ;;;   (exchange-step STATE OUTCOME NOW-NS UTC-S DRAW), OUTCOME one of
 ;;;   (response RESPONSE) or (failed CONDITION) from a transfer's await, or
@@ -42,6 +45,12 @@
 ;;;                                   pass, a natural: 0 for a redirect;
 ;;;                                   for a retry, its wait, which ends
 ;;;                                   before the bound
+;;;
+;;;   (exchange-steps-past? STATE HEAD NOW-NS UTC-S DRAW), a streamed
+;;;   transfer's head, its body and timings #f: whether exchange-step
+;;;   answers next for it, so the call steps past it, by exchange-step
+;;;   itself (the M6 plan, section 3.6). exchange-raised is what a call
+;;;   raises for a failure no rule steps, once its head was handed on.
 ;;;
 ;;; Every fail is (condition [HTTP-TIMEOUT] C EXCHANGE), built here: C what
 ;;; the transfer or the submit raised, when there is one, and EXCHANGE the
@@ -95,9 +104,14 @@
 ;;;     bad-location;
 ;;;   - from https to http fails as insecure-redirect, unless the call
 ;;;     allows a downgrade;
+;;;   - a step that streams its body from a producer counted as called, by
+;;;     exchange-called?, fails a redirect that keeps the body as
+;;;     body-not-replayable, before any other refusal (ADR-0032, decision 3,
+;;;     amended);
 ;;;   - a 301 or a 302 makes a post a get, without its body; a 303 makes
 ;;;     every method but head a get, without its body; every other method,
-;;;     and a 307 and a 308, keep the method and the body. Without the body
+;;;     and a 307 and a 308, keep the method and the body, a streamed
+;;;     body's body-length with it. Without the body
 ;;;     go the headers named Content-*, Digest, Last-Modified and Expect, A
 ;;;     to Z folded: a 100-continue asks for a body there is none of (RFC
 ;;;     9110, section 10.1.1);
@@ -151,16 +165,21 @@
 ;;; request or that request's transfer failing with the bound's 28 and a
 ;;; request size of 0, the call answers the last response the retry
 ;;; repeated, or raises the last failure with its &http-exchange, and no
-;;; &http-timeout. A bound's 28 whose request size is above 0, or #f,
-;;; unknown, means the retry may have reached the server: it raises with
-;;; &http-timeout, so the last transfer's own "nothing sent" is never
+;;; &http-timeout. But a streamed call whose retry runs out so after its
+;;; hop was cancelled at its head, the retried response's body #f, at its
+;;; submission or at the bound's 28 with nothing sent, fails with
+;;; &http-timeout, as with no time left for any request (decided by the
+;;; maintainer, 2026-11-01). A bound's 28 whose request size is above 0,
+;;; or #f, unknown, means the retry may have reached the server: it raises
+;;; with &http-timeout, so the last transfer's own "nothing sent" is never
 ;;; claimed for it. A raised failure's size speaks for its own transfer
 ;;; alone: an earlier transfer of the step, retried for a method in the
 ;;; policy's methods, may have sent its request, which &http-exchange's
 ;;; transfer count above 1 says may be so (the slice's third review). A
 ;;; redirect clears the kept outcome, so a later transfer's bound is the
 ;;; plain &http-timeout; a retried transfer that ends any other way goes
-;;; through the rules. Not retried: any
+;;; through the rules. Not retried: a step that streams its body from a
+;;; producer counted as called (ADR-0032, decision 3, amended); any
 ;;; other class, a code no class names, any reason but perform-failed, a
 ;;; refused submit, the engine's stop among them, a redirect the rules
 ;;; refuse, and the bound's 28. What is not retried is as with no policy: a
@@ -171,13 +190,13 @@
   (export make-exchange exchange? exchange-method exchange-url exchange-request
           exchange-bound exchange-start-ns exchange-transfers exchange-history
           exchange-flight exchange-redirects exchange-allow-downgrade exchange-followed
-          exchange-policy exchange-attempts exchange-retried
-          exchange-deadline exchange-condition
-          exchange-submission exchange-step
+          exchange-policy exchange-attempts exchange-retried exchange-called?
+          exchange-mark-called exchange-deadline exchange-condition exchange-live-condition
+          exchange-submission exchange-step exchange-steps-past? exchange-raised
           retry-after-ms http-date-seconds backoff-wait
           make-http-response http-response? http-response-status http-response-http-version
           http-response-url http-response-headers http-response-body http-response-timings
-          http-response-history http-response-header http-response-text)
+          http-response-history http-response-header http-response-text http-response-with)
   (import (curl)
           (rnrs)
           (http-client private conditions)
@@ -188,15 +207,18 @@
   ;; --- the response ----------------------------------------------------------------
 
   ;; make-http-response : Integer (U Symbol Integer #f) String
-  ;;                      (Listof (Pairof String String)) Bytevector
-  ;;                      (Listof (Pairof Symbol Natural)) (Listof Response) -> Response
+  ;;                      (Listof (Pairof String String)) (U Bytevector #f)
+  ;;                      (U (Listof (Pairof Symbol Natural)) #f) (Listof Response) -> Response
   ;; http-response? : Any -> Boolean
   ;; http-response-status : Response -> Integer
   ;; http-response-http-version : Response -> (U 'http/1.0 'http/1.1 'http/2 'http/3 Integer #f)
   ;; http-response-url : Response -> String
   ;; http-response-headers : Response -> (Listof (Pairof String String))
-  ;; http-response-body : Response -> Bytevector
-  ;; http-response-timings : Response -> (Listof (Pairof Symbol Natural))
+  ;; http-response-body : Response -> (U Bytevector #f)
+  ;;   #f for a head's response: call-with-response-port's, whose body
+  ;;   streams through its port, and a hop a call cancelled at its head
+  ;; http-response-timings : Response -> (U (Listof (Pairof Symbol Natural)) #f)
+  ;;   #f where the body is #f: the transfer had not ended
   ;; http-response-history : Response -> (Listof Response)
   (define-record-type (http-response make-http-response http-response?)
     (fields (immutable status http-response-status)
@@ -224,11 +246,27 @@
   ;; http-response-text : Response -> String
   ;; RESPONSE's body decoded as UTF-8 by utf8->string: a malformed sequence
   ;; read as U+FFFD, and a leading byte-order mark dropped. It reads no
-  ;; charset.
+  ;; charset. A response whose body is #f, a head's, is an assertion
+  ;; violation: its body streamed, or was never read (the M6 plan, section
+  ;; 3.1).
   (define (http-response-text response)
     (unless (http-response? response)
       (assertion-violation 'http-response-text "not a response" response))
-    (utf8->string (http-response-body response)))
+    (let ((body (http-response-body response)))
+      (unless (bytevector? body)
+        (assertion-violation 'http-response-text
+          "the response's body was not read: it streams through call-with-response-port's port, or its hop was cancelled at its head"
+          response))
+      (utf8->string body)))
+
+  ;; http-response-with : Response (U Bytevector #f) (U (Listof (Pairof Symbol Natural)) #f)
+  ;;                      -> Response
+  ;; R with BODY and TIMINGS in place of its own: a head's response once its
+  ;; body has been read whole.
+  (define (http-response-with r body timings)
+    (make-http-response (http-response-status r) (http-response-http-version r)
+                        (http-response-url r) (http-response-headers r) body timings
+                        (http-response-history r)))
 
   ;; without-history : Response -> Response
   ;; R, with a history of (), as the history holds it.
@@ -267,6 +305,13 @@
   ;;   would answer it or the transfer's condition as raised, which the
   ;;   call answers or raises if its bound passes before the retry ends;
   ;;   #f before any retry of the step, and again after a redirect
+  ;; exchange-called? : State -> Boolean
+  ;;   whether the call's producer counts as called: the drive called it,
+  ;;   or libcurl had asked for the body by a head, by the head's bit
+  ;;   (ADR-0032, decision 3, amended). A step whose request streams its
+  ;;   body from that producer is then never sent again: no retry takes it,
+  ;;   and a redirect that keeps the body raises body-not-replayable. It
+  ;;   stays set for the call: the producer is the call's one
   (define-record-type (exchange make-exchange-state exchange?)
     (fields (immutable method exchange-method)
             (immutable url exchange-url)
@@ -281,7 +326,8 @@
             (immutable followed exchange-followed)
             (immutable policy exchange-policy)
             (immutable attempts exchange-attempts)
-            (immutable retried exchange-retried))
+            (immutable retried exchange-retried)
+            (immutable called exchange-called?))
     (sealed #t))
 
   ;; ns? : Any -> Boolean
@@ -315,18 +361,43 @@
        (unless (or (not retry) (http-retry? retry))
          (assertion-violation 'make-exchange "retry is a policy, or #f" retry))
        (make-exchange-state method url request timeout-ms start-ns 0 '() request redirects
-                            allow-downgrade 0 retry 0 #f))))
+                            allow-downgrade 0 retry 0 #f #f))))
 
   ;; remade : State Request Natural (Listof Response) Request Natural Natural
   ;;          (U (List Symbol Any) #f) -> State
   ;; STATE with its step's request, transfers, history, request in flight,
   ;; redirects followed, the step's attempts and its retried outcome
-  ;; replaced.
+  ;; replaced; whether its producer counts as called kept.
   (define (remade state request transfers history flight followed attempts retried)
     (make-exchange-state (exchange-method state) (exchange-url state) request
                          (exchange-bound state) (exchange-start-ns state) transfers history
                          flight (exchange-redirects state) (exchange-allow-downgrade state)
-                         followed (exchange-policy state) attempts retried))
+                         followed (exchange-policy state) attempts retried
+                         (exchange-called? state)))
+
+  ;; exchange-mark-called : State -> State
+  ;; STATE, its producer counted as called (ADR-0032, decision 3, amended):
+  ;; the shell marks it once it has called the producer, or a head said
+  ;; libcurl had asked for the body. A state whose producer counts as
+  ;; called already is answered as it is.
+  (define (exchange-mark-called state)
+    (check-state 'exchange-mark-called state)
+    (if (exchange-called? state)
+        state
+        (make-exchange-state (exchange-method state) (exchange-url state) (exchange-request state)
+                             (exchange-bound state) (exchange-start-ns state)
+                             (exchange-transfers state) (exchange-history state)
+                             (exchange-flight state) (exchange-redirects state)
+                             (exchange-allow-downgrade state) (exchange-followed state)
+                             (exchange-policy state) (exchange-attempts state)
+                             (exchange-retried state) #t)))
+
+  ;; spent? : State -> Boolean
+  ;; Whether STATE's step request streams its body from the call's
+  ;; producer, and that producer counts as called: a step that must never
+  ;; be sent again (ADR-0032, decision 3, amended).
+  (define (spent? state)
+    (and (exchange-called? state) (eq? (curl-request-body (exchange-request state)) 'stream)))
 
   ;; exchange-deadline : State -> (U Integer #f)
   ;; The monotonic time, in ns, at which STATE's bound passes, or #f.
@@ -339,6 +410,14 @@
   (define (exchange-condition state)
     (make-http-exchange (exchange-method state) (exchange-url state) (exchange-history state)
                         (exchange-transfers state)))
+
+  ;; exchange-live-condition : State -> &http-exchange
+  ;; STATE's context with the transfer in flight counted: what a streamed
+  ;; call compounds onto a refusal of its own, a producer's bad answer, made
+  ;; while that transfer is live, the engine having taken it.
+  (define (exchange-live-condition state)
+    (check-state 'exchange-live-condition state)
+    (exchange-condition (counted state)))
 
   ;; with-flight : State Request -> State
   (define (with-flight state request)
@@ -368,12 +447,17 @@
   ;; sends anything: the outcome the retry repeated, as with no policy. Its
   ;; response, as the call would have answered it then; or its failure,
   ;; compounded with STATE's &http-exchange, which counts every transfer,
-  ;; and no &http-timeout.
+  ;; and no &http-timeout. A response whose body is #f, a streamed call's
+  ;; hop cancelled at its head, is no answer: the call fails with its
+  ;; &http-timeout instead, as with no time left for any request (decided
+  ;; by the maintainer, 2026-11-01).
   (define (ran-out state)
     (let ((last (exchange-retried state)))
-      (if (eq? (car last) 'response)
-          (list 'done (cadr last))
-          (list 'fail (condition (cadr last) (exchange-condition state))))))
+      (cond ((and (eq? (car last) 'response) (not (http-response-body (cadr last))))
+             (list 'fail (condition (make-http-timeout (exchange-bound state))
+                                    (exchange-condition state))))
+            ((eq? (car last) 'response) (list 'done (cadr last)))
+            (else (list 'fail (condition (cadr last) (exchange-condition state)))))))
 
   ;; exchange-submission : State Integer
   ;;                       -> (U (List 'submit State Request) (List 'fail Condition)
@@ -429,6 +513,23 @@
                      (timeout (curl-request-timeout-ms flight)))
                  (and connect timeout (>= connect timeout)))
                (>= now-ns deadline)))))
+
+  ;; exchange-raised : State Condition Integer -> Condition
+  ;; What a call raises for C, the failure of its transfer in flight, read
+  ;; at NOW-NS once the call has handed that transfer's head on, to
+  ;; call-with-response-port's procedure, so no rule steps it and no retry
+  ;; takes it: C compounded with STATE's context, that transfer counted,
+  ;; and with &http-timeout first when C is a 28 that is the call's bound's,
+  ;; by bound-timeout?'s rule (the M6 plan, section 3.6).
+  (define (exchange-raised state c now-ns)
+    (check-state 'exchange-raised state)
+    (check-ns 'exchange-raised now-ns)
+    (unless (condition? c)
+      (assertion-violation 'exchange-raised "a transfer's failure is a condition" c))
+    (let ((counted (counted state)))
+      (if (bound-timeout? counted c now-ns)
+          (condition (make-http-timeout (exchange-bound counted)) c (exchange-condition counted))
+          (condition c (exchange-condition counted)))))
 
   ;; response-of : State (U Curl-Response Response) -> Response
   ;; The call's response: R's status, version, headers, body and timings,
@@ -579,6 +680,8 @@
                   (case reason
                     ((too-many-redirects) "the call has followed as many redirects as it may")
                     ((bad-location) "the Location names no http or https URL the call can follow")
+                    ((body-not-replayable)
+                     "a redirect whose next request keeps a streamed body its producer has given, or libcurl asked for: it is sent at most once")
                     (else "a redirect from https to http, which the call does not allow")))
                  (append (if url-error (list url-error) '())
                          (list (exchange-condition state))))))
@@ -586,8 +689,10 @@
   ;; next-request : Request String Integer Boolean Boolean -> Request
   ;; The request a STATUS redirect to URL makes from LAST, the step's: its
   ;; method, its body and its body's headers kept or dropped by
-  ;; body-dropped?; its credential headers dropped when ACROSS, to another
-  ;; origin; its Host when ANOTHER-HOST; every other key LAST's.
+  ;; body-dropped?, a streamed body's body-length with it; its credential
+  ;; headers dropped when ACROSS, to another origin; its Host when
+  ;; ANOTHER-HOST; every other key LAST's, its stream-buffer among them (the
+  ;; M6 plan, section 3.6).
   (define (next-request last url status across another-host)
     (let* ((method (curl-request-method last))
            (dropped (body-dropped? status method))
@@ -601,6 +706,8 @@
                          'method (if dropped 'get method)
                          'headers headers
                          'body (if dropped #f (curl-request-body last))
+                         'body-length (if dropped #f (curl-request-body-length last))
+                         'stream-buffer (curl-request-stream-buffer last)
                          'user-agent (curl-request-user-agent last)
                          'timeout-ms (curl-request-timeout-ms last)
                          'connect-timeout-ms (curl-request-connect-timeout-ms last)
@@ -657,8 +764,11 @@
   ;;              -> (U (List 'done Response) (List 'fail Condition) (List 'next State Request 0))
   ;; What RESPONSE, the call's response with STATE's history, makes of the
   ;; call: done, unless it is a redirect; for a redirect, done with no
-  ;; bound, too-many-redirects once the bound's are followed, else follow's
-  ;; answer.
+  ;; bound; then, first, body-not-replayable, when the step streams its body
+  ;; from a producer that counts as called and the redirect keeps the body,
+  ;; by body-dropped?: a 307 or 308, and a 301 or 302 of every method but
+  ;; post (ADR-0032, decision 3, amended); then too-many-redirects once the
+  ;; bound's are followed; else follow's answer.
   (define (redirected state response)
     (let ((status (http-response-status response))
           (location (location-of (http-response-headers response)))
@@ -666,6 +776,8 @@
       (cond ((not (memv status redirect-statuses)) (list 'done response))
             ((or (not location) (blank? location)) (list 'done response))
             ((not bound) (list 'done response))
+            ((and (spent? state) (not (body-dropped? status (step-method state))))
+             (refuse-redirect state 'body-not-replayable response location #f))
             ((>= (exchange-followed state) bound)
              (refuse-redirect state 'too-many-redirects response location #f))
             (else (follow state response status location)))))
@@ -886,11 +998,14 @@
   (define (step-method state) (curl-request-method (exchange-request state)))
 
   ;; attempts-left? : State -> Boolean
-  ;; Whether STATE has a policy, and its step has made fewer transfers than
-  ;; the policy's attempts.
+  ;; Whether STATE has a policy, its step has made fewer transfers than the
+  ;; policy's attempts, and its step may be sent again: no step that
+  ;; streams its body from a producer counted as called is (ADR-0032,
+  ;; decision 3, amended), whatever the policy says.
   (define (attempts-left? state)
     (let ((policy (exchange-policy state)))
-      (and policy (< (exchange-attempts state) (http-retry-attempts policy)))))
+      (and policy (< (exchange-attempts state) (http-retry-attempts policy))
+           (not (spent? state)))))
 
   ;; status-retry : State Response Integer Integer Real
   ;;                -> (U (List 'next State Request Natural) #f)
@@ -980,4 +1095,19 @@
              (or (failure-retry state what now-ns draw)
                  (list 'fail (condition what (exchange-condition state))))))))
         (else
-         (list 'fail (condition what (exchange-condition state))))))))
+         (list 'fail (condition what (exchange-condition state)))))))
+
+  ;; exchange-steps-past? : State Response Integer Integer Real -> Boolean
+  ;; Whether the call steps past RESPONSE, a streamed transfer's head, its
+  ;; body and timings #f, at NOW-NS and UTC-S with DRAW: #t when
+  ;; exchange-step answers next for it with the same values, a redirect it
+  ;; follows or a retry it takes, so the head is a hop's; #f when it answers
+  ;; done or fail, so the call ends with this response, handed on, or
+  ;; raises. A pure predicate, by exchange-step's own rules: the shell
+  ;; reads the clocks, the draw and the head's bit once, at the head, and
+  ;; steps a hop by exchange-step with the same values, so the two cannot
+  ;; disagree (the M6 plan, section 3.6). STATE is the step's state before
+  ;; the head, its producer marked called when the head says libcurl had
+  ;; asked for the body.
+  (define (exchange-steps-past? state response now-ns utc-s draw)
+    (eq? (car (exchange-step state (list 'response response) now-ns utc-s draw)) 'next)))

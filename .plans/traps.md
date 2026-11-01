@@ -1216,3 +1216,20 @@ it should not be a comment. (chez-cmark-gfm)
   client after connect, by a seam; one that cannot hold it asserts what holds both ways.
   (chez-curl, M6 slice 2's build)
 
+* **On 8.20.0 and 8.23.0, an HTTP/2 3xx that arrives before a request's body is sent whole never
+  ends the transfer.** libcurl logs "HTTP error before end of send, stop sending", aborts the
+  upload, holds the whole response, then waits for its timeout: "Operation timed out after 5006
+  milliseconds with 10 out of 10 bytes received", or for ever with none. A 413 or a 503 ends at
+  once; 7.85.0 and 8.5.0 end every one. A whole body meets it as a streamed one does, and so does
+  curl's own command-line tool ([verify](research/m6/slice3/verify/results/)). The measurement's
+  server sent `Location` with its 3xx alone, which could not tell the status from the header: a
+  probe that crossed them showed the status alone matters. A server that varies two things
+  together hides which one a client answers. (chez-curl, M6 slice 3's measurements)
+* **On macOS, two threads' calls of `system` run one after the other.** Each of two Chez
+  threads ran `system "sleep 1"` at once: on Linux both ended at about 1,002 ms, on the Mac the
+  second at about 2,035 ms, 3 runs of 3 ([research](research/m6/slice3-build/results/), the
+  `mac-system-*` logs). A test-origin check made a release through capture-command 800 ms into
+  a 5 s probe run the same way: on Linux the release arrived in time; on the Mac it ran only
+  once the probe had given up, and the check failed though `/raw/release` answered `released`.
+  A check that needs two commands running at once starts the long one through
+  `open-process-ports`, which does not call `system`. (chez-curl, M6 slice 3, the Mac's run)

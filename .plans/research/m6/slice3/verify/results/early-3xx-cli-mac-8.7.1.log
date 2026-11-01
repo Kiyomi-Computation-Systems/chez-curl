@@ -1,0 +1,11 @@
+# The maintainer's Mac, 2026-11-01, on feat/m6-slice-3 at b4a5e08, then again at 6c97418:
+#   CURL=/usr/bin/curl NODE="$(asdf which node)" sh .plans/research/m6/slice3/verify/early-3xx-cli.sh
+# Apple's curl 8.7.1. Each run printed the 303's lines, then waited, the server's Node
+# not exiting when its FIFO stdin closed (the M6 plan, section 9), and was ended by Ctrl-C;
+# the script now ends its server by a signal. The first run's lines; the second's were
+# the same but time_total=0.005478.
+curl 8.7.1 (x86_64-apple-darwin25.0) libcurl/8.7.1 (SecureTransport) LibreSSL/3.3.6 zlib/1.2.12 nghttp2/1.68.1
+status=303 curl_exit=0 http_code=303 size_download=10 time_total=0.008497 stderr=
+  status=303 verbose: < HTTP/2 303
+  status=303 verbose: * HTTP error before end of send, stop sending
+  status=303 verbose: * abort upload after having sent 130921 bytes

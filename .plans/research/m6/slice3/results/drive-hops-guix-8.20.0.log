@@ -1,0 +1,209 @@
+[guix-8.20.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[guix-8.20.0] libdirs src:tests:build/scheme-libs
+[guix-8.20.0] server {"node":"v24.18.0","pid":28,"http":"127.0.0.1:41215","raw":"127.0.0.1:39157","https":"127.0.0.1:46855","h2":"127.0.0.1:34145","closed":"127.0.0.1:44275"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 node v24.18.0
+[guix-8.20.0] drive libcurl 8.20.0 GnuTLS/3.8.13 cases=(c) slices=(10) sched=strict runs=2 faces=(raw https h2) framings=(sized chunked) bound=8000 control-bound=5000 sizes=4194304,16777216,4194304 c-statuses=(301 302 303 307 308 413 503) c-wheres=(h2) hop-cancel=#f
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=1 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=18.089 seen-head-ms=20.323 end-ms=8003.926 head-to-end-ms=7985.837 total-ms=8008.648 up=131072 down=10 MBps=0.02 cpu-ms=41.466 proc-stat-ms=40 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=399/401 req-waits=396/400 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8008.645 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=1 server: req h2 POST /answer-at #1 conn=44206 at=396.4
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=1 server: answer-at h2 conn=44206 answered 301 at=65536 t=7.2 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=1 server: aborted h2 /answer-at conn=44206 head+65536 body bytes, 0 after the answer, then the stream closed at 7994.6ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: req h2 GET /body #1 conn=44206 at=8391.3
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.4ms total=1.7ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=1 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=12.426 seen-head-ms=13.662 end-ms=8006.757 head-to-end-ms=7994.331 total-ms=8010.327 up=131072 down=10 MBps=0.02 cpu-ms=36.442 proc-stat-ms=40 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8010.326 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=58702 at=8408.6
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=1 server: answer-at h2 conn=58702 answered 301 at=65536 t=6.8 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=1 server: aborted h2 /answer-at conn=58702 head+65536 body bytes, 0 after the answer, then the stream closed at 8001.9ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: req h2 GET /body #1 conn=58702 at=16411.5
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.5ms total=1.1ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=1 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=12.388 seen-head-ms=13.68 end-ms=8008.59 head-to-end-ms=7996.202 total-ms=8012.6 up=131072 down=10 MBps=0.02 cpu-ms=43.831 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8012.598 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=1 server: req h2 POST /answer-at #1 conn=47668 at=16424.1
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=1 server: answer-at h2 conn=47668 answered 302 at=65536 t=5.4 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=1 server: aborted h2 /answer-at conn=47668 head+65536 body bytes, 0 after the answer, then the stream closed at 8001.7ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: req h2 GET /body #1 conn=47668 at=24428.0
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.7ms total=1.4ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=1 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=12.268 seen-head-ms=13.688 end-ms=8006.183 head-to-end-ms=7993.915 total-ms=8009.645 up=131072 down=10 MBps=0.02 cpu-ms=53.336 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8009.644 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=47670 at=24437.9
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=1 server: answer-at h2 conn=47670 answered 302 at=65536 t=8.1 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=1 server: aborted h2 /answer-at conn=47670 head+65536 body bytes, 0 after the answer, then the stream closed at 8002.9ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: req h2 GET /body #1 conn=47670 at=32441.7
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.4ms total=0.9ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=1 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=11.964 seen-head-ms=11.984 end-ms=8007.138 head-to-end-ms=7995.173 total-ms=8011.118 up=131072 down=10 MBps=0.02 cpu-ms=49.48 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8011.116 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=1 server: req h2 POST /answer-at #1 conn=48664 at=32452.1
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=1 server: answer-at h2 conn=48664 answered 303 at=65536 t=7.1 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=1 server: aborted h2 /answer-at conn=48664 head+65536 body bytes, 0 after the answer, then the stream closed at 8003.1ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: req h2 GET /body #1 conn=48664 at=40456.6
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.2ms total=1.0ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=1 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=12.322 seen-head-ms=13.61 end-ms=8008.119 head-to-end-ms=7995.798 total-ms=8011.37 up=131072 down=10 MBps=0.02 cpu-ms=42.46 proc-stat-ms=40 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8011.368 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=58526 at=40468.1
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=1 server: answer-at h2 conn=58526 answered 303 at=65536 t=6.4 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=1 server: aborted h2 /answer-at conn=58526 head+65536 body bytes, 0 after the answer, then the stream closed at 8002.2ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: req h2 GET /body #1 conn=58526 at=48472.4
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.3ms total=0.6ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=1 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.58 seen-head-ms=13.723 end-ms=8009.119 head-to-end-ms=7996.539 total-ms=8013.134 up=131072 down=10 MBps=0.02 cpu-ms=46.8 proc-stat-ms=40 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8013.132 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=1 server: req h2 POST /answer-at #1 conn=50272 at=48483.2
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=1 server: answer-at h2 conn=50272 answered 307 at=65536 t=6.1 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=1 server: aborted h2 /answer-at conn=50272 head+65536 body bytes, 0 after the answer, then the stream closed at 8001.8ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: req h2 GET /body #1 conn=50272 at=56487.9
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.3ms total=0.6ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=1 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.137 seen-head-ms=13.706 end-ms=8007.26 head-to-end-ms=7995.123 total-ms=8008.708 up=131072 down=10 MBps=0.02 cpu-ms=50.3 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8008.707 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=53518 at=56498.2
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=1 server: answer-at h2 conn=53518 answered 307 at=65536 t=7.1 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=1 server: aborted h2 /answer-at conn=53518 head+65536 body bytes, 0 after the answer, then the stream closed at 8003.4ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: req h2 GET /body #1 conn=53518 at=64502.1
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.2ms total=0.5ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=1 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.476 seen-head-ms=13.63 end-ms=8003.891 head-to-end-ms=7991.414 total-ms=8005.339 up=131072 down=10 MBps=0.02 cpu-ms=52.4 proc-stat-ms=60 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8005.337 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=1 server: req h2 POST /answer-at #1 conn=53532 at=64511.2
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=1 server: answer-at h2 conn=53532 answered 308 at=65536 t=5.5 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=1 server: aborted h2 /answer-at conn=53532 head+65536 body bytes, 0 after the answer, then the stream closed at 7998.3ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: req h2 GET /body #1 conn=53532 at=72509.8
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.2ms total=0.5ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=1 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.237 seen-head-ms=13.689 end-ms=8010.12 head-to-end-ms=7997.883 total-ms=8012.553 up=131072 down=10 MBps=0.02 cpu-ms=46.762 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8012.552 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=54742 at=72517.8
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=1 server: answer-at h2 conn=54742 answered 308 at=65536 t=7.7 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=1 server: aborted h2 /answer-at conn=54742 head+65536 body bytes, 0 after the answer, then the stream closed at 8004.1ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: req h2 GET /body #1 conn=54742 at=80525.3
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.2ms total=0.5ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=413 framing=sized run=1 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=11.794 seen-head-ms=11.968 end-ms=11.987 head-to-end-ms=0.193 total-ms=11.989 up=65536 down=10 MBps=5.47 cpu-ms=3.494 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[guix-8.20.0] drive case=c where=h2 status=413 framing=sized run=1 server: req h2 POST /answer-at #1 conn=42696 at=80534.1
+[guix-8.20.0] drive case=c where=h2 status=413 framing=sized run=1 server: answer-at h2 conn=42696 answered 413 at=65536 t=6.8 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=413 framing=sized run=1 server: aborted h2 /answer-at conn=42696 head+65536 body bytes, 0 after the answer, then the stream closed at 7.9ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=413 framing=sized run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=413 framing=chunked run=1 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=11.594 seen-head-ms=11.945 end-ms=11.949 head-to-end-ms=0.356 total-ms=11.95 up=65536 down=10 MBps=5.49 cpu-ms=1.719 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[guix-8.20.0] drive case=c where=h2 status=413 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=42698 at=80544.7
+[guix-8.20.0] drive case=c where=h2 status=413 framing=chunked run=1 server: answer-at h2 conn=42698 answered 413 at=65536 t=9.1 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=413 framing=chunked run=1 server: aborted h2 /answer-at conn=42698 head+65536 body bytes, 0 after the answer, then the stream closed at 10.2ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=413 framing=chunked run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=503 framing=sized run=1 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=12.421 seen-head-ms=13.615 end-ms=13.629 head-to-end-ms=1.208 total-ms=13.63 up=65536 down=10 MBps=4.81 cpu-ms=4.642 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[guix-8.20.0] drive case=c where=h2 status=503 framing=sized run=1 server: req h2 POST /answer-at #1 conn=42700 at=80561.5
+[guix-8.20.0] drive case=c where=h2 status=503 framing=sized run=1 server: answer-at h2 conn=42700 answered 503 at=65536 t=6.2 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=503 framing=sized run=1 server: aborted h2 /answer-at conn=42700 head+65536 body bytes, 0 after the answer, then the stream closed at 7.5ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=503 framing=sized run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=503 framing=chunked run=1 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=12.313 seen-head-ms=13.59 end-ms=13.604 head-to-end-ms=1.291 total-ms=13.605 up=65536 down=10 MBps=4.82 cpu-ms=4.871 proc-stat-ms=10 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[guix-8.20.0] drive case=c where=h2 status=503 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=42714 at=80576.5
+[guix-8.20.0] drive case=c where=h2 status=503 framing=chunked run=1 server: answer-at h2 conn=42714 answered 503 at=65536 t=6.0 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=503 framing=chunked run=1 server: aborted h2 /answer-at conn=42714 head+65536 body bytes, 0 after the answer, then the stream closed at 7.2ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=503 framing=chunked run=1 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=2 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=12.117 seen-head-ms=13.621 end-ms=8005.683 head-to-end-ms=7993.567 total-ms=8007.966 up=131072 down=10 MBps=0.02 cpu-ms=53.667 proc-stat-ms=60 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8007.965 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=2 server: req h2 POST /answer-at #1 conn=42720 at=80589.6
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=2 server: answer-at h2 conn=42720 answered 301 at=65536 t=7.2 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=2 server: aborted h2 /answer-at conn=42720 head+65536 body bytes, 0 after the answer, then the stream closed at 8001.9ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: req h2 GET /body #1 conn=42720 at=88591.8
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.3ms total=0.5ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=2 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=11.842 seen-head-ms=11.926 end-ms=8008.47 head-to-end-ms=7996.628 total-ms=8010.801 up=131072 down=10 MBps=0.02 cpu-ms=47.581 proc-stat-ms=40 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8010.8 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=47630 at=88598.5
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=2 server: answer-at h2 conn=47630 answered 301 at=65536 t=8.1 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=2 server: aborted h2 /answer-at conn=47630 head+65536 body bytes, 0 after the answer, then the stream closed at 8003.8ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: req h2 GET /body #1 conn=47630 at=96604.8
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.2ms total=0.5ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=2 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=13.849 seen-head-ms=13.887 end-ms=8006.328 head-to-end-ms=7992.48 total-ms=8009.177 up=131072 down=10 MBps=0.02 cpu-ms=54.839 proc-stat-ms=60 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8009.175 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=2 server: req h2 POST /answer-at #1 conn=38618 at=96612.8
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=2 server: answer-at h2 conn=38618 answered 302 at=65536 t=8.3 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=2 server: aborted h2 /answer-at conn=38618 head+65536 body bytes, 0 after the answer, then the stream closed at 8003.9ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: req h2 GET /body #1 conn=38618 at=104617.2
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.3ms total=0.6ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=2 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=12.133 seen-head-ms=13.706 end-ms=8008.838 head-to-end-ms=7996.704 total-ms=8011.822 up=131072 down=10 MBps=0.02 cpu-ms=45.694 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8011.82 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=38620 at=104628.4
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=2 server: answer-at h2 conn=38620 answered 302 at=65536 t=7.3 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=2 server: aborted h2 /answer-at conn=38620 head+65536 body bytes, 0 after the answer, then the stream closed at 8003.5ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: req h2 GET /body #1 conn=38620 at=112634.4
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.2ms total=0.6ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=2 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=12.653 seen-head-ms=13.692 end-ms=8007.097 head-to-end-ms=7994.444 total-ms=8009.353 up=131072 down=10 MBps=0.02 cpu-ms=50.211 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8009.352 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=2 server: req h2 POST /answer-at #1 conn=40626 at=112647.4
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=2 server: answer-at h2 conn=40626 answered 303 at=65536 t=5.8 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=2 server: aborted h2 /answer-at conn=40626 head+65536 body bytes, 0 after the answer, then the stream closed at 8001.7ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: req h2 GET /body #1 conn=40626 at=120649.7
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.5ms total=1.0ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=2 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=11.799 seen-head-ms=11.946 end-ms=8007.254 head-to-end-ms=7995.455 total-ms=8011.309 up=131072 down=10 MBps=0.02 cpu-ms=45.098 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8011.306 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=42172 at=120660.7
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=2 server: answer-at h2 conn=42172 answered 303 at=65536 t=6.4 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=2 server: aborted h2 /answer-at conn=42172 head+65536 body bytes, 0 after the answer, then the stream closed at 8000.4ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: req h2 GET /body #1 conn=42172 at=128664.5
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.3ms total=0.6ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=2 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.31 seen-head-ms=13.619 end-ms=8009.852 head-to-end-ms=7997.542 total-ms=8012.086 up=131072 down=10 MBps=0.02 cpu-ms=47.154 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8012.085 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=2 server: req h2 POST /answer-at #1 conn=49682 at=128675.4
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=2 server: answer-at h2 conn=49682 answered 307 at=65536 t=7.7 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=2 server: aborted h2 /answer-at conn=49682 head+65536 body bytes, 0 after the answer, then the stream closed at 8003.9ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: req h2 GET /body #1 conn=49682 at=136682.6
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.5ms total=1.0ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=2 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.154 seen-head-ms=13.648 end-ms=8010.405 head-to-end-ms=7998.251 total-ms=8012.798 up=131072 down=10 MBps=0.02 cpu-ms=36.01 proc-stat-ms=40 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8012.797 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=42094 at=136692.6
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=2 server: answer-at h2 conn=42094 answered 307 at=65536 t=7.1 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=2 server: aborted h2 /answer-at conn=42094 head+65536 body bytes, 0 after the answer, then the stream closed at 8003.6ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: req h2 GET /body #1 conn=42094 at=144699.6
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.2ms total=0.4ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=2 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.108 seen-head-ms=13.692 end-ms=8009.672 head-to-end-ms=7997.565 total-ms=8012.489 up=131072 down=10 MBps=0.02 cpu-ms=50.264 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8012.486 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=2 server: req h2 POST /answer-at #1 conn=42110 at=144711.6
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=2 server: answer-at h2 conn=42110 answered 308 at=65536 t=5.5 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=2 server: aborted h2 /answer-at conn=42110 head+65536 body bytes, 0 after the answer, then the stream closed at 8001.6ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: req h2 GET /body #1 conn=42110 at=152716.7
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.5ms total=0.9ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=2 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.739 seen-head-ms=13.7 end-ms=8007.844 head-to-end-ms=7995.105 total-ms=8011.818 up=131072 down=10 MBps=0.02 cpu-ms=56.179 proc-stat-ms=60 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8011.816 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=35850 at=152729.6
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=2 server: answer-at h2 conn=35850 answered 308 at=65536 t=6.0 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=2 server: aborted h2 /answer-at conn=35850 head+65536 body bytes, 0 after the answer, then the stream closed at 8001.9ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: req h2 GET /body #1 conn=35850 at=160732.5
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=65536 drains_long=0 [] drains_short=1 sum=0.3ms total=0.6ms aborted=0
+[guix-8.20.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: count h2:/body=1
+[guix-8.20.0] drive case=c where=h2 status=413 framing=sized run=2 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=12.415 seen-head-ms=13.616 end-ms=13.633 head-to-end-ms=1.218 total-ms=13.634 up=65536 down=10 MBps=4.81 cpu-ms=3.796 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[guix-8.20.0] drive case=c where=h2 status=413 framing=sized run=2 server: req h2 POST /answer-at #1 conn=50906 at=160745.0
+[guix-8.20.0] drive case=c where=h2 status=413 framing=sized run=2 server: answer-at h2 conn=50906 answered 413 at=65536 t=7.0 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=413 framing=sized run=2 server: aborted h2 /answer-at conn=50906 head+65536 body bytes, 0 after the answer, then the stream closed at 8.3ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=413 framing=sized run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=413 framing=chunked run=2 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=11.827 seen-head-ms=11.954 end-ms=11.969 head-to-end-ms=0.142 total-ms=11.97 up=65536 down=10 MBps=5.48 cpu-ms=2.169 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[guix-8.20.0] drive case=c where=h2 status=413 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=50920 at=160758.0
+[guix-8.20.0] drive case=c where=h2 status=413 framing=chunked run=2 server: answer-at h2 conn=50920 answered 413 at=65536 t=8.6 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=413 framing=chunked run=2 server: aborted h2 /answer-at conn=50920 head+65536 body bytes, 0 after the answer, then the stream closed at 9.8ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=413 framing=chunked run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=503 framing=sized run=2 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=12.472 seen-head-ms=13.627 end-ms=13.642 head-to-end-ms=1.17 total-ms=13.643 up=65536 down=10 MBps=4.8 cpu-ms=2.376 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[guix-8.20.0] drive case=c where=h2 status=503 framing=sized run=2 server: req h2 POST /answer-at #1 conn=50930 at=160772.0
+[guix-8.20.0] drive case=c where=h2 status=503 framing=sized run=2 server: answer-at h2 conn=50930 answered 503 at=65536 t=8.8 after=65536 content-length 4194304
+[guix-8.20.0] drive case=c where=h2 status=503 framing=sized run=2 server: aborted h2 /answer-at conn=50930 head+65536 body bytes, 0 after the answer, then the stream closed at 10.0ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=503 framing=sized run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive case=c where=h2 status=503 framing=chunked run=2 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=12.137 seen-head-ms=13.618 end-ms=13.633 head-to-end-ms=1.497 total-ms=13.635 up=65536 down=10 MBps=4.81 cpu-ms=2.822 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[guix-8.20.0] drive case=c where=h2 status=503 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=50932 at=160787.4
+[guix-8.20.0] drive case=c where=h2 status=503 framing=chunked run=2 server: answer-at h2 conn=50932 answered 503 at=65536 t=8.7 after=65536 content-length -
+[guix-8.20.0] drive case=c where=h2 status=503 framing=chunked run=2 server: aborted h2 /answer-at conn=50932 head+65536 body bytes, 0 after the answer, then the stream closed at 9.9ms, rst=5
+[guix-8.20.0] drive case=c where=h2 status=503 framing=chunked run=2 server: count h2:/answer-at=1
+[guix-8.20.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[guix-8.20.0] drive done
+[guix-8.20.0] drive exited 0 after about 161 s (124 is timeout's)
+[guix-8.20.0] server-stderr: counts h2:/answer-at=28 h2:/body=20

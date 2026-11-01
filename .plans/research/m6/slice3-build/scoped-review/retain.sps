@@ -1,0 +1,26 @@
+;;; Probe: does drive-last-token's vector keep the last streamed call's
+;;; token, and with it the plan's private copy of a whole body, reachable
+;;; after the call has returned and its session closed? RAW: the raw face.
+(import (chezscheme) (curl) (http-client) (only (http-client private drive) drive-last-token))
+(define raw (car (command-line-arguments)))
+(define (full) (collect (collect-maximum-generation)) (collect (collect-maximum-generation)) (bytes-allocated))
+(define (mb n) (exact->inexact (/ (round (* 10 (/ n 1048576))) 10)))
+(define base (full))
+(let ((s (make-http-session 'proxy #f 'timeout-ms 60000)))
+  (call-with-response-port s 'post (string-append raw "/raw/sink?key=retain-1")
+    'body (make-bytevector (* 64 1024 1024) 7)
+    (lambda (r p) (get-bytevector-all p) 'done))
+  (http-session-close s))
+(define after-big (full))
+(define held (drive-last-token))
+(define held? (and held #t))
+(set! held #f)
+(let ((s (make-http-session 'proxy #f 'timeout-ms 60000)))
+  (call-with-response-port s 'get (string-append raw "/raw/content-length")
+    (lambda (r p) (get-bytevector-all p)))
+  (http-session-close s))
+(define after-small (full))
+(write (list 'last-token-set held?
+             'retained-mb-after-the-64-mib-call (mb (- after-big base))
+             'retained-mb-after-a-small-streamed-call (mb (- after-small base))))
+(newline)

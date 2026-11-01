@@ -1,0 +1,11 @@
+--- a/src/http-client/private/drive.sls	2026-11-01 06:38:31.706854003 -0500
++++ b/src/http-client/private/drive.sls	2026-11-01 08:08:58.940096911 -0500
+@@ -877,7 +877,7 @@
+                  (utc (utc-seconds))
+                  (now (monotonic-ns))
+                  (asked (and head (curl-head-body-asked? head)))
+-                 (state (if (or asked (call-called? call)) (exchange-mark-called state) state)))
++                 (state (if (or asked #f) (exchange-mark-called state) state)))
+             (if (and ended (eq? (car ended) 'failed))
+                 (stepped (exchange-step state ended now utc drawn) now)
+                 (let ((response

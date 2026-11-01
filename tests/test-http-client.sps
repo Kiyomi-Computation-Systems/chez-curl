@@ -223,11 +223,12 @@
 
 ;; --- the exports ----------------------------------------------------------------------
 
-;; Written out: the M5 plan's slices 1 to 4, section 3.1, and the brief's
-;; names.
+;; Written out: the M5 plan's slices 1 to 4, section 3.1, the brief's
+;; names, and the M6 plan's slice 3, section 3.1: call-with-response-port.
 (define http-client-exports
   '(make-http-session http-session? http-session-close call-with-http-session
     http-request http-get http-head http-post http-put http-patch http-delete
+    call-with-response-port
     make-http-retry http-retry?
     call-with-request-group http-pending? http-await http-pending-done? http-pending-cancel
     http-parallel
@@ -244,7 +245,7 @@
     &http-exchange http-exchange? http-exchange-method http-exchange-url http-exchange-history
     http-exchange-transfers))
 
-(test-equal "(http-client) exports exactly slices 1 to 4's names, none of them (curl)'s, nor the group's seams"
+(test-equal "(http-client) exports exactly the M5 plan's names and call-with-response-port, none of them (curl)'s, nor the group's seams"
   (list (symbols-sorted http-client-exports) '())
   (let ((exports (library-exports '(http-client))))
     (list (symbols-sorted exports)
@@ -253,7 +254,8 @@
 (test-equal "http-request-error-reasons, written out"
   '(unknown-key repeated-key missing-value body-and-form body-not-allowed not-a-body
     not-name-value-pairs not-a-redirect-count not-a-boolean not-a-retry-policy
-    not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list not-a-limit)
+    not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list not-a-limit
+    stream-in-group body-length-mismatch)
   http-request-error-reasons)
 
 (test-equal "the conditions' types: the request error and the timeout under &http-error, under &curl-error and &error; &http-exchange under &condition alone, no error"
@@ -266,7 +268,7 @@
           (list (serious-condition? c) (error? c) (curl-error? c) (http-error? c) (http-timeout? c)
                 (http-exchange? c)))))
 
-(test-equal "make-http-request-error refuses a reason that is not one of the fourteen, an assertion violation"
+(test-equal "make-http-request-error refuses a reason that is not one of the seventeen, an assertion violation"
   '(raised (assertion make-http-request-error))
   (outcome (lambda () (make-http-request-error 'key 'k 'unknown))))
 

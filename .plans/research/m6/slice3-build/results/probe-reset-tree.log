@@ -1,0 +1,2 @@
+(outcome (raised (curl-transfer (perform-failed 52) (transfers 1) "Server returned nothing (no headers, no data)")) producer-calls 2 server-uploads "1\n")
+exit 0

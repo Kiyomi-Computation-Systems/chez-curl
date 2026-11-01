@@ -491,6 +491,15 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   request: natively libcurl's went first 100 of 100, under Valgrind the answer
   did, 20 of 20. A test that needs the answer first holds the client after
   connect; one that cannot asserts what holds both ways.
+* On 8.20.0 and 8.23.0, an HTTP/2 3xx that arrives before a request's body is
+  sent whole never ends the transfer: libcurl aborts the upload, holds the whole
+  response, and waits for its timeout, or for ever; a 413 ends at once. A test
+  server that varies two things together, `Location` only with a 3xx, cannot
+  show which one a client answers: cross them.
+* On macOS, two threads' calls of `system` run one after the other: a
+  capture-command made while another runs waits for it, so a release made
+  during a probe arrived after it. A check that needs two commands at once
+  starts the long one through `open-process-ports`.
 
 ## Closing ritual
 

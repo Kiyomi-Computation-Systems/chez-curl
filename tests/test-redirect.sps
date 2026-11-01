@@ -47,7 +47,7 @@
         (only (http-client private conditions) make-http-redirect-error)
         (only (http-client private exchange) make-exchange exchange-submission exchange-step
               exchange-request exchange-flight exchange-history exchange-transfers
-              exchange-followed make-http-response)
+              exchange-followed make-http-response exchange-steps-past?)
         (only (curl private transfer) transfers-started)
         (curl private counters))
 
@@ -251,7 +251,7 @@
 ;; --- the condition and the keys, pure -------------------------------------------------
 
 (test-equal "http-redirect-error-reasons, written out"
-  '(too-many-redirects bad-location insecure-redirect)
+  '(too-many-redirects bad-location insecure-redirect body-not-replayable)
   http-redirect-error-reasons)
 
 (test-equal "&http-redirect-error is under &http-error, &curl-error and &error, and is no request error, timeout or exchange; its fields are what it was made with"
@@ -262,7 +262,7 @@
           (http-redirect-error-reason c) (http-redirect-error-response c)
           (http-redirect-error-location c))))
 
-(test-equal "make-http-redirect-error refuses a reason that is not one of the three, an assertion violation"
+(test-equal "make-http-redirect-error refuses a reason that is not one of the four, an assertion violation"
   '((raised (assertion make-http-redirect-error)) (raised (assertion make-http-redirect-error)))
   (list (outcome (lambda () (make-http-redirect-error 'too-many 'r #f)))
         (outcome (lambda () (make-http-redirect-error 'unknown-key 'r #f)))))
@@ -344,10 +344,26 @@
   (make-http-response status 'http/1.1 "http://ignored.example/" headers (bytes-of "body")
                       '((total . 1)) (list 'ignored)))
 
+;; heads-seen : (Listof (List Boolean Any))
+;; Every row the tables step a response through: whether exchange-step
+;; answered next, and what exchange-steps-past? answered for the same
+;; state, clocks and draw, given the response as a head, its body and
+;; timings #f (the M6 plan, section 6.2).
+(define heads-seen '())
+
 ;; step : State Response -> Answer
-;; The core's answer to RESPONSE, 1 ms into the call.
+;; The core's answer to RESPONSE, 1 ms into the call; its row noted for the
+;; head's predicate.
 (define (step state response)
-  (exchange-step state (list 'response response) (+ table-start 1000000) 1800000000 0.0))
+  (let ((a (exchange-step state (list 'response response) (+ table-start 1000000) 1800000000 0.0))
+        (head (make-http-response (http-response-status response) (http-response-http-version response) ""
+                                  (http-response-headers response) #f #f '())))
+    (set! heads-seen
+          (cons (list (eq? (car a) 'next)
+                      (guard (e (#t (list 'raised (describe e))))
+                        (exchange-steps-past? state head (+ table-start 1000000) 1800000000 0.0)))
+                heads-seen))
+    a))
 
 ;; redirect-to : String -> (Listof (Pairof String String))
 (define (redirect-to location) (list (cons "Location" location)))
@@ -679,6 +695,14 @@
            (list (http-response-status r) (http-response-http-version r) (http-response-headers r)
                  (latin-1 (http-response-body r)) (http-response-timings r)))
          (http-response-history (cadr (list-ref answers 1))))))
+
+(test-equal "the head's predicate, exchange-steps-past?, agrees with exchange-step on every row these tables stepped a response through, the response given as a head, its body and timings #f, with the same clocks and draw: 100 rows or more, each a next exactly where the predicate answers #t (the M6 plan, section 6.2)"
+  '(agreed more-than-100)
+  (let ((apart (filter (lambda (row) (not (eq? (car row) (cadr row)))) heads-seen)))
+    ;; The rows' count, on stdout, as evidence.
+    (display (list 'head-predicate-rows (length heads-seen))) (newline)
+    (list (if (null? apart) 'agreed apart)
+          (if (> (length heads-seen) 100) 'more-than-100 (length heads-seen)))))
 
 (test-equal "make-exchange refuses a redirects that is no exact natural nor #f, and an allow-downgrade that is no boolean, each an assertion violation"
   '((raised (assertion make-exchange)) (raised (assertion make-exchange))

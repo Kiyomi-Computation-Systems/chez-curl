@@ -51,7 +51,8 @@
         (only (http-client private exchange) make-exchange exchange-submission exchange-step
               exchange-request exchange-flight exchange-history exchange-transfers
               exchange-attempts exchange-policy exchange-retried make-http-response retry-after-ms
-              http-date-seconds backoff-wait)
+              http-date-seconds backoff-wait exchange-steps-past? http-response-status
+              http-response-http-version http-response-headers)
         (only (http-client private drive) drive-exchange monotonic-ns)
         (only (curl private conditions) make-classed-transfer-error make-curl-engine-error
               make-curl-url-error)
@@ -539,13 +540,35 @@
   (make-http-response status 'http/1.1 "http://ignored.example/" headers (bytes-of "body") '((total . 1))
                       '()))
 
+;; heads-seen : (Listof (List Boolean Any))
+;; Every response row the tables step through answers, the M6 plan's
+;; section 6.2 has the head's predicate checked on: whether exchange-step
+;; answered next, and what exchange-steps-past? answered for the same
+;; state, clocks and draw, given the response as a head, its body and
+;; timings #f.
+(define heads-seen '())
+
+;; note-head! : State Response Integer Real Answer -> Void
+(define (note-head! state r now draw answer)
+  (let ((head (make-http-response (http-response-status r) (http-response-http-version r) ""
+                                  (http-response-headers r) #f #f '())))
+    (set! heads-seen
+          (cons (list (eq? (car answer) 'next)
+                      (guard (e (#t (list 'raised (describe e))))
+                        (exchange-steps-past? state head now U draw)))
+                heads-seen))))
+
 ;; fails, answers : State Condition-or-Response Natural [Real] -> Answer
 ;; The core's answer to the failure or the response MS ms into the call,
-;; at U, with DRAW, 0.0 by default.
+;; at U, with DRAW, 0.0 by default; a response's row is noted for the
+;; head's predicate.
 (define (fails state c ms . draw)
   (exchange-step state (list 'failed c) (at ms) U (if (pair? draw) (car draw) 0.0)))
 (define (answers state r ms . draw)
-  (exchange-step state (list 'response r) (at ms) U (if (pair? draw) (car draw) 0.0)))
+  (let* ((d (if (pair? draw) (car draw) 0.0))
+         (a (exchange-step state (list 'response r) (at ms) U d)))
+    (note-head! state r (at ms) d a)
+    a))
 
 ;; seen : Answer -> (Listof Any)
 ;; (next WAIT ATTEMPTS TRANSFERS), (done STATUS HISTORY), or (fail
@@ -927,6 +950,14 @@
                '(0 75 #f))
           (map (lambda (size) (after-retried (answers (rstate 'get plain) (reply 503 '()) 900) (failure 28 size)))
                '(0 75 #f))))
+
+(test-equal "the head's predicate, exchange-steps-past?, agrees with exchange-step on every response row these tables stepped, the response given as a head, its body and timings #f, with the same clocks and draw: 30 rows or more, each a next exactly where the predicate answers #t (the M6 plan, section 6.2)"
+  '(agreed more-than-30)
+  (let ((apart (filter (lambda (row) (not (eq? (car row) (cadr row)))) heads-seen)))
+    ;; The rows' count, on stdout, as evidence.
+    (display (list 'head-predicate-rows (length heads-seen))) (newline)
+    (list (if (null? apart) 'agreed apart)
+          (if (> (length heads-seen) 30) 'more-than-30 (length heads-seen)))))
 
 (test-equal "make-exchange refuses a retry that is neither a policy nor #f, an assertion violation; with seven arguments it has none"
   '((raised (assertion make-exchange)) (raised (assertion make-exchange)) none)

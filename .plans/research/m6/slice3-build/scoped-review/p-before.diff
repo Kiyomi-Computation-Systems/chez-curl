@@ -1,0 +1,34 @@
+--- /home/kishu/src/chez-curl/build/m6s3s/tree/src/http-client/private/drive.sls	2026-11-01 06:38:31.706854003 -0500
++++ /home/kishu/src/chez-curl/build/m6s3s/p-before/src/http-client/private/drive.sls	2026-11-01 08:32:10.066681768 -0500
+@@ -228,7 +228,7 @@
+ ;;; entry, takes an optional submit in place of curl-submit, so a test can
+ ;;; plant a raise in one submit.
+ (library (http-client private drive)
+-  (export drive-exchange drive-stream drive-stream-waits drive-produce-gate-set! drive-last-token
++  (export drive-exchange drive-stream drive-stream-waits drive-produce-gate-set! drive-last-token drive-before-gate-set!
+           monotonic-ns utc-seconds take-refusal?
+           require-interrupts call-with-group run-parallel
+           http-pending? http-await http-pending-done? http-pending-cancel
+@@ -633,7 +633,7 @@
+     (let ((call (leg-call leg)) (seen #f) (got #f))
+       (call-called-set! call #t)
+       (dynamic-wind #t
+-        (lambda () (call-producing-set! call #t))
++        (lambda () (call-producing-set! call #t) (when sticky? (run-before-gate!)))
+         (lambda ()
+           (set! got (list (if sticky?
+                               (with-exception-handler
+@@ -671,6 +671,13 @@
+         (vector-set! produce-gate 0 #f)
+         (g))))
+ 
++  ;; PROBE: a gate in produce!'s critical before thunk, inside the port's read.
++  (define before-gate (vector #f))
++  (define (drive-before-gate-set! thunk) (vector-set! before-gate 0 thunk))
++  (define (run-before-gate!)
++    (let ((g (vector-ref before-gate 0)))
++      (when g (vector-set! before-gate 0 #f) (g))))
++
+   ;; last-token : (Vector (U Token #f))
+   ;; The token a streamed call submitted last, for the test seam
+   ;; drive-last-token alone.

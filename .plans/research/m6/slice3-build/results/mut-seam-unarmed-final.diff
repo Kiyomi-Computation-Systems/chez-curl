@@ -1,0 +1,11 @@
+--- a/src/http-client/private/drive.sls	2026-11-01 09:25:50.566670849 -0500
++++ b/src/http-client/private/drive.sls	2026-11-01 10:31:33.972364227 -0500
+@@ -903,7 +903,7 @@
+                     (refusal (critical-section
+                               (guard (e ((curl-error? e) (list 'refused e)))
+                                 (set! token (curl-submit engine request))
+-                                (when (vector-ref last-token 0) (vector-set! last-token 1 token))
++                                (vector-set! last-token 1 token)
+                                 #f))))
+                (if refusal
+                    (let* ((drawn (draw)) (utc (utc-seconds)) (now (monotonic-ns)))

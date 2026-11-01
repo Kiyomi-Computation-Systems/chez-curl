@@ -1,0 +1,137 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[floor-7.85.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[floor-7.85.0] libdirs src:tests:build/scheme-libs
+[floor-7.85.0] server {"node":"v20.10.0","pid":3118,"http":"127.0.0.1:46607","raw":"127.0.0.1:39113","https":"127.0.0.1:46847","h2":"127.0.0.1:45843","closed":"127.0.0.1:40045"}
+[floor-7.85.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 node v20.10.0
+[floor-7.85.0] drive libcurl 7.85.0 OpenSSL/3.0.13 cases=(b-control) slices=(1 10 50) sched=strict runs=2 faces=(raw) framings=(sized) bound=60000 control-bound=3000 sizes=4194304,16777216,4194304 c-statuses=(303 413) c-wheres=(raw-keep raw-close https-keep https-close h2) hop-cancel=#f
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=1 S=1 sched=strict head=200 bit=#t got-head=#t head-ms=5.385 seen-head-ms=5.439 end-ms=3007.839 head-to-end-ms=3002.454 total-ms=3007.841 up=196608 down=196608 MBps=0.13 cpu-ms=54.795 proc-stat-ms=50 calls=3 calls-after-head=1 put=196608 put-after-head=65536 after-eof=0 state=feeding resp-waits=2853/2868 req-waits=0/6 handed=196608 asked=#t port=raised:196608:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=48824 at=409.5
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=48824 head+196608 body bytes, then the connection closed, echo written=196608
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=1 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=0.748 seen-head-ms=1.026 end-ms=3005.572 head-to-end-ms=3004.823 total-ms=3005.575 up=0 down=0 MBps=0 cpu-ms=15.347 proc-stat-ms=20 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=299/300 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=60330 at=3418.7
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=60330 head+0 body bytes, then the connection closed, echo written=0
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=1 S=50 sched=strict head=200 bit=#t got-head=#t head-ms=1.725 seen-head-ms=1.981 end-ms=3007.9 head-to-end-ms=3006.175 total-ms=3007.902 up=0 down=0 MBps=0 cpu-ms=19.316 proc-stat-ms=10 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=60/61 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=60350 at=6429.4
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=60350 head+0 body bytes, then the connection closed, echo written=0
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=2 S=1 sched=strict head=200 bit=#t got-head=#t head-ms=3.071 seen-head-ms=3.172 end-ms=3005.169 head-to-end-ms=3002.098 total-ms=3005.172 up=131072 down=131072 MBps=0.09 cpu-ms=67.245 proc-stat-ms=70 calls=2 calls-after-head=0 put=131072 put-after-head=0 after-eof=0 state=feeding resp-waits=2845/2854 req-waits=0/4 handed=131072 asked=#t port=raised:131072:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=60356 at=9440.3
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=60356 head+131072 body bytes, then the connection closed, echo written=131072
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=2 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=0.915 seen-head-ms=1.041 end-ms=3006.142 head-to-end-ms=3005.227 total-ms=3006.144 up=0 down=0 MBps=0 cpu-ms=15.65 proc-stat-ms=10 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=299/300 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=60566 at=12447.6
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=60566 head+0 body bytes, then the connection closed, echo written=0
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=2 S=50 sched=strict head=200 bit=#t got-head=#t head-ms=1.854 seen-head-ms=3.502 end-ms=3009.121 head-to-end-ms=3007.268 total-ms=3009.125 up=0 down=0 MBps=0 cpu-ms=17.794 proc-stat-ms=30 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=60/61 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=60596 at=15457.2
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=60596 head+0 body bytes, then the connection closed, echo written=0
+[floor-7.85.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[floor-7.85.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[floor-7.85.0] drive done
+[floor-7.85.0] drive exited 0 after about 18 s (124 is timeout's)
+[floor-7.85.0] server-stderr: counts raw:/echo=6
+[ubuntu-openssl-8.5.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[ubuntu-openssl-8.5.0] libdirs src:tests:build/scheme-libs
+[ubuntu-openssl-8.5.0] server {"node":"v20.10.0","pid":3196,"http":"127.0.0.1:38939","raw":"127.0.0.1:38347","https":"127.0.0.1:38789","h2":"127.0.0.1:43071","closed":"127.0.0.1:37919"}
+[ubuntu-openssl-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 node v20.10.0
+[ubuntu-openssl-8.5.0] drive libcurl 8.5.0 OpenSSL/3.0.13 cases=(b-control) slices=(1 10 50) sched=strict runs=2 faces=(raw) framings=(sized) bound=60000 control-bound=3000 sizes=4194304,16777216,4194304 c-statuses=(303 413) c-wheres=(raw-keep raw-close https-keep https-close h2) hop-cancel=#f
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=1 S=1 sched=strict head=200 bit=#t got-head=#t head-ms=3.939 seen-head-ms=4.068 end-ms=3007.206 head-to-end-ms=3003.267 total-ms=3007.209 up=196608 down=196608 MBps=0.13 cpu-ms=90.656 proc-stat-ms=90 calls=3 calls-after-head=1 put=196608 put-after-head=65536 after-eof=0 state=feeding resp-waits=2841/2855 req-waits=0/6 handed=196608 asked=#t port=raised:196608:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=40806 at=408.8
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=40806 head+196608 body bytes, then the connection closed, echo written=196608
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=1 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=1.552 seen-head-ms=1.877 end-ms=3009.139 head-to-end-ms=3007.587 total-ms=3009.141 up=0 down=0 MBps=0 cpu-ms=11.821 proc-stat-ms=10 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=299/300 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=55374 at=3419.8
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=55374 head+0 body bytes, then the connection closed, echo written=0
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=1 S=50 sched=strict head=200 bit=#t got-head=#t head-ms=2.457 seen-head-ms=3.518 end-ms=3008.769 head-to-end-ms=3006.312 total-ms=3008.772 up=0 down=0 MBps=0 cpu-ms=13.856 proc-stat-ms=20 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=60/61 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=55404 at=6433.2
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=55404 head+0 body bytes, then the connection closed, echo written=0
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=2 S=1 sched=strict head=200 bit=#t got-head=#t head-ms=1.643 seen-head-ms=1.652 end-ms=3006.353 head-to-end-ms=3004.71 total-ms=3006.355 up=65536 down=65536 MBps=0.04 cpu-ms=78.899 proc-stat-ms=80 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2845/2850 req-waits=0/2 handed=65536 asked=#t port=raised:65536:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=55424 at=9446.6
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=55424 head+65536 body bytes, then the connection closed, echo written=65536
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=2 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=1.991 seen-head-ms=3.523 end-ms=3003.211 head-to-end-ms=3001.22 total-ms=3003.213 up=0 down=0 MBps=0 cpu-ms=19.315 proc-stat-ms=10 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=299/300 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=55450 at=12455.1
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=55450 head+0 body bytes, then the connection closed, echo written=0
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=2 S=50 sched=strict head=200 bit=#t got-head=#t head-ms=2.095 seen-head-ms=3.708 end-ms=3009.584 head-to-end-ms=3007.49 total-ms=3009.588 up=0 down=0 MBps=0 cpu-ms=19.805 proc-stat-ms=20 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=60/61 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=40064 at=15462.0
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=40064 head+0 body bytes, then the connection closed, echo written=0
+[ubuntu-openssl-8.5.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[ubuntu-openssl-8.5.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[ubuntu-openssl-8.5.0] drive done
+[ubuntu-openssl-8.5.0] drive exited 0 after about 18 s (124 is timeout's)
+[ubuntu-openssl-8.5.0] server-stderr: counts raw:/echo=6
+[ubuntu-gnutls-8.5.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[ubuntu-gnutls-8.5.0] libdirs src:tests:build/scheme-libs
+[ubuntu-gnutls-8.5.0] server {"node":"v20.10.0","pid":3274,"http":"127.0.0.1:36479","raw":"127.0.0.1:45517","https":"127.0.0.1:33627","h2":"127.0.0.1:43303","closed":"127.0.0.1:46521"}
+[ubuntu-gnutls-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 node v20.10.0
+[ubuntu-gnutls-8.5.0] drive libcurl 8.5.0 GnuTLS/3.8.3 cases=(b-control) slices=(1 10 50) sched=strict runs=2 faces=(raw) framings=(sized) bound=60000 control-bound=3000 sizes=4194304,16777216,4194304 c-statuses=(303 413) c-wheres=(raw-keep raw-close https-keep https-close h2) hop-cancel=#f
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=1 S=1 sched=strict head=200 bit=#t got-head=#t head-ms=2.641 seen-head-ms=2.872 end-ms=3006.948 head-to-end-ms=3004.308 total-ms=3006.952 up=131072 down=131072 MBps=0.09 cpu-ms=76.557 proc-stat-ms=80 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=2847/2856 req-waits=0/4 handed=131072 asked=#t port=raised:131072:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=35204 at=402.2
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=35204 head+131072 body bytes, then the connection closed, echo written=131072
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=1 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=1.974 seen-head-ms=1.998 end-ms=3007.789 head-to-end-ms=3005.815 total-ms=3007.793 up=0 down=0 MBps=0 cpu-ms=18.085 proc-stat-ms=20 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=299/300 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=35230 at=3413.9
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=35230 head+0 body bytes, then the connection closed, echo written=0
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=1 S=50 sched=strict head=200 bit=#t got-head=#t head-ms=1.833 seen-head-ms=1.995 end-ms=3007.708 head-to-end-ms=3005.875 total-ms=3007.711 up=0 down=0 MBps=0 cpu-ms=18.446 proc-stat-ms=10 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=60/61 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=40576 at=6424.5
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=40576 head+0 body bytes, then the connection closed, echo written=0
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=2 S=1 sched=strict head=200 bit=#t got-head=#t head-ms=2.2 seen-head-ms=2.317 end-ms=3007.028 head-to-end-ms=3004.828 total-ms=3007.031 up=131072 down=131072 MBps=0.09 cpu-ms=58.221 proc-stat-ms=60 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=2853/2862 req-waits=0/4 handed=131072 asked=#t port=raised:131072:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=40594 at=9436.5
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=40594 head+131072 body bytes, then the connection closed, echo written=131072
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=2 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=2.009 seen-head-ms=3.644 end-ms=3008.855 head-to-end-ms=3006.846 total-ms=3008.858 up=0 down=0 MBps=0 cpu-ms=16.816 proc-stat-ms=20 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=299/300 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=40616 at=12447.4
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=40616 head+0 body bytes, then the connection closed, echo written=0
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=2 S=50 sched=strict head=200 bit=#t got-head=#t head-ms=1.869 seen-head-ms=3.511 end-ms=3007.989 head-to-end-ms=3006.12 total-ms=3007.992 up=0 down=0 MBps=0 cpu-ms=9.089 proc-stat-ms=10 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=60/61 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=33508 at=15459.8
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=33508 head+0 body bytes, then the connection closed, echo written=0
+[ubuntu-gnutls-8.5.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[ubuntu-gnutls-8.5.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[ubuntu-gnutls-8.5.0] drive done
+[ubuntu-gnutls-8.5.0] drive exited 0 after about 19 s (124 is timeout's)
+[ubuntu-gnutls-8.5.0] server-stderr: counts raw:/echo=6
+[current-8.23.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[current-8.23.0] libdirs src:tests:build/scheme-libs
+[current-8.23.0] server {"node":"v20.10.0","pid":3352,"http":"127.0.0.1:44271","raw":"127.0.0.1:44045","https":"127.0.0.1:37725","h2":"127.0.0.1:33407","closed":"127.0.0.1:36685"}
+[current-8.23.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 node v20.10.0
+[current-8.23.0] drive libcurl 8.23.0 OpenSSL/3.0.13 cases=(b-control) slices=(1 10 50) sched=strict runs=2 faces=(raw) framings=(sized) bound=60000 control-bound=3000 sizes=4194304,16777216,4194304 c-statuses=(303 413) c-wheres=(raw-keep raw-close https-keep https-close h2) hop-cancel=#f
+[current-8.23.0] drive case=b-control face=raw framing=sized run=1 S=1 sched=strict head=200 bit=#t got-head=#t head-ms=6.029 seen-head-ms=6.045 end-ms=3005.937 head-to-end-ms=2999.908 total-ms=3005.939 up=327680 down=327680 MBps=0.22 cpu-ms=61.785 proc-stat-ms=60 calls=5 calls-after-head=0 put=327680 put-after-head=0 after-eof=0 state=feeding resp-waits=2850/2873 req-waits=0/10 handed=327680 asked=#t port=raised:327680:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=49804 at=409.8
+[current-8.23.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=49804 head+327680 body bytes, then the connection closed, echo written=327680
+[current-8.23.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[current-8.23.0] drive case=b-control face=raw framing=sized run=1 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=2.088 seen-head-ms=3.519 end-ms=3007.676 head-to-end-ms=3005.588 total-ms=3007.678 up=0 down=0 MBps=0 cpu-ms=13.094 proc-stat-ms=10 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=299/300 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=49832 at=3421.1
+[current-8.23.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=49832 head+0 body bytes, then the connection closed, echo written=0
+[current-8.23.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[current-8.23.0] drive case=b-control face=raw framing=sized run=1 S=50 sched=strict head=200 bit=#t got-head=#t head-ms=2.237 seen-head-ms=3.554 end-ms=3008.657 head-to-end-ms=3006.421 total-ms=3008.661 up=0 down=0 MBps=0 cpu-ms=11.649 proc-stat-ms=20 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=60/61 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=55704 at=6432.6
+[current-8.23.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=55704 head+0 body bytes, then the connection closed, echo written=0
+[current-8.23.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[current-8.23.0] drive case=b-control face=raw framing=sized run=2 S=1 sched=strict head=200 bit=#t got-head=#t head-ms=2.415 seen-head-ms=2.525 end-ms=3005.973 head-to-end-ms=3003.558 total-ms=3005.976 up=131072 down=131072 MBps=0.09 cpu-ms=66.606 proc-stat-ms=70 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=2850/2859 req-waits=0/4 handed=131072 asked=#t port=raised:131072:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=55716 at=9444.8
+[current-8.23.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=55716 head+131072 body bytes, then the connection closed, echo written=131072
+[current-8.23.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[current-8.23.0] drive case=b-control face=raw framing=sized run=2 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=1.842 seen-head-ms=1.866 end-ms=3005.612 head-to-end-ms=3003.77 total-ms=3005.615 up=0 down=0 MBps=0 cpu-ms=12.099 proc-stat-ms=10 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=299/300 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=55734 at=12455.4
+[current-8.23.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=55734 head+0 body bytes, then the connection closed, echo written=0
+[current-8.23.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[current-8.23.0] drive case=b-control face=raw framing=sized run=2 S=50 sched=strict head=200 bit=#t got-head=#t head-ms=2.607 seen-head-ms=3.524 end-ms=3008.164 head-to-end-ms=3005.558 total-ms=3008.167 up=0 down=0 MBps=0 cpu-ms=10.859 proc-stat-ms=10 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=60/61 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=55754 at=15464.9
+[current-8.23.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=55754 head+0 body bytes, then the connection closed, echo written=0
+[current-8.23.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[current-8.23.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[current-8.23.0] drive done
+[current-8.23.0] drive exited 0 after about 18 s (124 is timeout's)
+[current-8.23.0] server-stderr: counts raw:/echo=6

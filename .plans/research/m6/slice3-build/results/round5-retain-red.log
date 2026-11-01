@@ -1,0 +1,18 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-stream-call.sps
+%%%% Starting test stream-call
+FAIL raw: drive-last-token records a streamed call's token only while a test arms it, and lets it go as the call ends: a 64 MiB whole body's post through call-with-response-port, unarmed, leaves the seam #f inside PROC and after, and under 16 MiB more retained once collected; armed, the seam answers the call's token inside PROC, #f once the call has ended, and again under 16 MiB retained
+  expected: ((unarmed #f #f retained-under-16-mib) (armed in-proc-token #f retained-under-16-mib))
+  actual:   ((unarmed in-proc-token a-token-still-held (retained 67041992)) (armed in-proc-token a-token-still-held retained-under-16-mib))
+(stream-call-throughput raw ms 491)
+(stream-call-throughput h2 ms 339)
+(stream-call-idle-cpu ms 5991839/500000)
+# of expected passes      75
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 75, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-stream-call.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

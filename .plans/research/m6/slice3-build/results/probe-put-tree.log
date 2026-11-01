@@ -1,0 +1,7 @@
+(case escapes armed #t drained (1048576 #f ((raised interrupted))) given 1048576)
+(case returns armed #t drained (1048576 #f ()) given 1048576)
+(case escapes armed #t drained (1048576 #f ((raised interrupted))) given 1048576)
+(case returns armed #t drained (1048576 #f ()) given 1048576)
+(case escapes armed #t drained (1048576 #f ((raised interrupted))) given 1048576)
+(case returns armed #t drained (1048576 #f ()) given 1048576)
+exit 0

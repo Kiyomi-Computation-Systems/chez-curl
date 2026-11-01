@@ -1,0 +1,25 @@
+# end-at-length-off
+# the producer is asked for its end only once libcurl has room again, never at once once the length is taken
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -482,8 +482,7 @@
+   ;; (ADR-0031, decision 2). It is made after the put that took the length,
+   ;; in that step, and again at the final head.
+   (define (end-at-length! leg ms sticky? state)
+-    (when (and (at-length? leg) (not (unfed-head? leg)))
+-      (produce-and-put! leg ms sticky? state)))
++    #f)
+ 
+   ;; unfed-head? : Leg -> Boolean
+   ;; Whether LEG's token has published a head not yet known final: a hop's,
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -452,8 +452,6 @@
+       (let ((token (leg-token leg)) (ms (req-bound leg)))
+         (cond
+           ((leg-held leg) (put-held! leg ms sticky? state))
+-          ((at-length? leg)
+-           (if (unfed-head? leg) (req-waited! leg #f #f) (produce-and-put! leg ms sticky? state)))
+           (else
+            (let ((room (curl-token-room-wait token ms)))
+              (cond ((eq? room 'done) (leg-phase-set! leg 'stopped) (req-waited! leg #f #f))

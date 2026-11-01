@@ -151,7 +151,10 @@
   ;; run whatever came before it. The two streams go through two files in a
   ;; directory of the call's own (make-capture-directory), removed after,
   ;; however the call ends. Any thread may call it, and calls on several at
-  ;; once share no file. `system` lets other threads collect while the
+  ;; once share no file; but on macOS they run one after the other, since
+  ;; its system(3) waits for any other thread's (measured, the M6 plan's
+  ;; section 7): a check that needs two commands at once starts the long
+  ;; one through open-process-ports. `system` lets other threads collect while the
   ;; command runs, except inside a critical section, where it holds them
   ;; all until the command ends (Chez 10.4.0's c/prim5.c; measured in spike
   ;; E1, .plans/research/e1/findings.md).

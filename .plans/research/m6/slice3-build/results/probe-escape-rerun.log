@@ -1,0 +1,13 @@
+(case A escapes armed #t drained (983040 196608 ((raised interrupted))) producer-calls 17 given 1048576 after-eof 0)
+(case A returns armed #t drained (1048576 #f ()) producer-calls 17 given 1048576 after-eof 0)
+(case B escapes armed #t drained (1048576 #f ((raised interrupted))) producer-calls 17 given 1048576 after-eof 0)
+(case B returns armed #t drained (1048576 #f ()) producer-calls 17 given 1048576 after-eof 0)
+(case A escapes armed #t drained (983040 196608 ((raised interrupted))) producer-calls 17 given 1048576 after-eof 0)
+(case A returns armed #t drained (1048576 #f ()) producer-calls 17 given 1048576 after-eof 0)
+(case B escapes armed #t drained (1048576 #f ((raised interrupted))) producer-calls 18 given 1048576 after-eof 1)
+(case B returns armed #t drained (1048576 #f ()) producer-calls 17 given 1048576 after-eof 0)
+(case A escapes armed #t drained (983040 196608 ((raised interrupted))) producer-calls 17 given 1048576 after-eof 0)
+(case A returns armed #t drained (1048576 #f ()) producer-calls 17 given 1048576 after-eof 0)
+(case B escapes armed #t drained (1048576 #f ((raised interrupted))) producer-calls 17 given 1048576 after-eof 0)
+(case B returns armed #t drained (1048576 #f ()) producer-calls 17 given 1048576 after-eof 0)
+exit 0

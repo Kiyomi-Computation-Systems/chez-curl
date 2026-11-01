@@ -1,0 +1,11 @@
+--- a/src/http-client/private/drive.sls	2026-11-01 06:38:31.706854003 -0500
++++ b/src/http-client/private/drive.sls	2026-11-01 08:08:58.940321947 -0500
+@@ -581,7 +581,7 @@
+   ;; hold, and the body has not ended, so the put raises nothing of its own,
+   ;; and no guard is around it (the M6 plan, section 3.6).
+   (define (put-held! leg ms sticky? state)
+-    (let ((answer (if (= (curl-token-body-count (leg-token leg))
++    (let ((answer (if (= -1 (curl-token-body-count (leg-token leg))
+                          (+ (leg-put leg) (bytevector-length (leg-held leg))))
+                       ;; Committed already, by a put an interrupt handler
+                       ;; escaped from as its hold ended, and caught in PROC:

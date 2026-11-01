@@ -1112,7 +1112,8 @@
                '("HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: keep-alive\r\n\r\nstatus 200\n" eof)
                (get "/status/200" close)
                '("HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\nstatus 200\n" eof))))
-  (sink-scenarios o))
+  (sink-scenarios o)
+  (duplex-scenarios o))
 
 ;; --- the sinks (the M6 plan, slice 2) -------------------------------------------
 ;; Each test has keys of its own: the counts live as long as the origin, and
@@ -1137,6 +1138,40 @@
     (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: " (number->string (string-length body))
                          "\r\nConnection: close\r\n\r\n" body)
           'eof)))
+
+;; sunk-text : Natural -> (List String Symbol)
+;; /raw/sunk's whole answer for N bytes read, and its end.
+(define (sunk-text n)
+  (let ((body (string-append "sunk " (number->string n) "\n")))
+    (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: " (number->string (string-length body))
+                         "\r\nConnection: close\r\n\r\n" body)
+          'eof)))
+
+;; released-text : (List String Symbol)
+;; /raw/release's whole answer, and its end.
+(define released-text
+  '("HTTP/1.1 200 OK\r\nContent-Length: 9\r\nConnection: close\r\n\r\nreleased\n" eof))
+
+;; spawned-probe : Origin Symbol String Natural -> (-> Probe)
+;; A wire probe of TEXT to FACE, idle bound IDLE ms, started through
+;; open-process-ports, not capture-command, so that another probe can run
+;; while it waits: on the Mac, two threads' system calls run one after the
+;; other, so a release made 800 ms into a 5 s probe, both through
+;; capture-command, arrived after it (traps.md; the Mac's run, 2026-11-01).
+;; Answers a thunk that reads
+;; the probe's output to its end, closes its pipes, and parses it.
+(define (spawned-probe o face text idle)
+  (let-values (((to from err pid)
+                (open-process-ports
+                 (string-append "exec " (shell-word node) " tests/wire-probe.mjs --deadline "
+                                (number->string (wire-probe-deadline))
+                                " 127.0.0.1 " (number->string (cdr (origin-face o face)))
+                                " " (shell-word (hex text)) " " (number->string idle))
+                 (buffer-mode block) #f)))
+    (lambda ()
+      (let ((out (get-bytevector-all from)))
+        (for-each (lambda (port) (guard (e (#t #f)) (close-port port))) (list to from err))
+        (parse-wire-probe (if (eof-object? out) "" (latin-1 out)))))))
 
 ;; seen-of : Origin String -> (List String Symbol)
 (define (seen-of o key)
@@ -1486,6 +1521,576 @@
       (in-order (lambda (thunk) (thunk))
                 (list (lambda () (exchange o 'http (after "cuthead") 300))
                       (lambda () (exchange o 'http (get "/status/200" close) 2000)))))))
+
+;; --- the stream calls' scripts (the M6 plan, slice 3) --------------------------
+;; Each test has keys of its own, as the sinks' do. A request's head goes
+;; first and the rest of it 300 ms on, by the probe's --split, so a byte
+;; read sooner than 300 ms after connecting came before the rest was sent,
+;; and one read later, after.
+
+;; early-text : String (U String #f) Boolean -> String
+;; The answer /raw/answer-at and /raw/arm write, by hand: HTTP/1.1 S Early,
+;; a Location of TO when given, Content-Length: 10, Connection: close when
+;; CLOSE?, and the body early S.
+(define (early-text status to close?)
+  (string-append "HTTP/1.1 " status " Early\r\n"
+                 (if to (string-append "Location: " to "\r\n") "")
+                 "Content-Length: 10\r\n"
+                 (if close? "Connection: close\r\n" "")
+                 "\r\nearly " status "\n"))
+
+;; uploader : String
+;; Node's own client, run as node -e UPLOADER KIND HOST PORT BYTES, KIND
+;; raw, raw-tls, h2c or h2: it posts BYTES bytes of the pattern to the
+;; face's mirror, sized, 65511 bytes a write, each awaited until its socket
+;; or stream takes it, reading nothing, until every write is taken, or none
+;; has been for 500 ms; then it reads, writes the rest, and reads the
+;; answer to its end. It prints (uploaded STALL TAKEN "HEAD" GOT CHECK):
+;; STALL is stalled and the bytes taken then, or whole; TAKEN the bytes
+;; taken in all; HEAD the response's head, or over HTTP/2 its :status and
+;; content-length; GOT the body's bytes; CHECK ok when each byte i is i mod
+;; 251, else the first that is not. An error prints (failed CODE), and 30 s
+;; on it prints (deadline); either exits 1.
+(define uploader
+  (string-append
+   "const net = require('node:net'); const tls = require('node:tls'); const http2 = require('node:http2');"
+   "const [kind, host, port, totalText] = process.argv.slice(1);"
+   "const total = Number(totalText);"
+   "const block = Buffer.alloc(65511); for (let i = 0; i < block.length; i++) block[i] = i % 251;"
+   "let taken = 0, last = performance.now(), stall = null, got = 0, bad = null, head = null, buf = Buffer.alloc(0);"
+   "let out = null, resume = null, watch = null;"
+   "const fail = (code) => { console.log(`(failed ${code})`); process.exit(1); };"
+   "setTimeout(() => { console.log('(deadline)'); process.exit(1); }, 30000);"
+   "const take = (chunk) => { for (let i = 0; i < chunk.length; i++) if (bad === null && chunk[i] !== (got + i) % 251) bad = got + i; got += chunk.length; };"
+   "const pump = () => {"
+   "  if (taken >= total) { if (kind.startsWith('h2')) out.end(); return; }"
+   "  const n = Math.min(block.length, total - taken);"
+   "  out.write(block.subarray(0, n), (err) => { if (!err) { taken += n; last = performance.now(); pump(); } });"
+   "};"
+   "const start = () => {"
+   "  last = performance.now();"
+   "  watch = setInterval(() => {"
+   "    if (taken >= total || performance.now() - last >= 500) {"
+   "      clearInterval(watch); stall = taken < total ? `stalled ${taken}` : 'whole'; resume();"
+   "    }"
+   "  }, 20);"
+   "  pump();"
+   "};"
+   "const done = () => { console.log(`(uploaded ${stall} ${taken} ${JSON.stringify(head)} ${got} ${bad === null ? 'ok' : bad})`); process.exit(0); };"
+   "if (kind.startsWith('raw')) {"
+   "  out = kind === 'raw' ? net.connect(Number(port), host)"
+   "    : tls.connect({ host, port: Number(port), servername: 'localhost', rejectUnauthorized: false, ALPNProtocols: ['http/1.1'] });"
+   "  out.on('data', (chunk) => {"
+   "    if (head === null) {"
+   "      buf = Buffer.concat([buf, chunk]); const at = buf.indexOf('\\r\\n\\r\\n'); if (at < 0) return;"
+   "      head = buf.subarray(0, at).toString('latin1'); chunk = buf.subarray(at + 4);"
+   "    }"
+   "    take(chunk);"
+   "  });"
+   "  out.pause();"
+   "  out.on('end', done);"
+   "  out.on('error', (err) => fail(err.code));"
+   "  resume = () => out.resume();"
+   "  out.on(kind === 'raw' ? 'connect' : 'secureConnect', () => {"
+   "    out.write(`POST /raw/mirror HTTP/1.1\\r\\nHost: 127.0.0.1\\r\\nContent-Length: ${total}\\r\\n\\r\\n`); start();"
+   "  });"
+   "} else {"
+   "  const session = http2.connect(`${kind === 'h2c' ? 'http' : 'https'}://${host}:${port}`, { servername: 'localhost', rejectUnauthorized: false });"
+   "  session.on('error', (err) => fail(err.code));"
+   "  out = session.request({ ':method': 'POST', ':path': '/mirror', 'content-length': String(total) });"
+   "  out.on('response', (h) => { head = `:status ${h[':status']} content-length ${h['content-length']}`; });"
+   "  out.on('data', take);"
+   "  out.pause();"
+   "  out.on('end', () => { session.close(); done(); });"
+   "  out.on('error', (err) => fail(err.code));"
+   "  resume = () => out.resume();"
+   "  session.on('connect', start);"
+   "}"))
+
+;; upload : Origin Symbol Natural -> List
+;; The uploader's line against FACE's mirror, BYTES bytes, read as data, its
+;; STALL's bytes written short-of-the-end when they are past 0 and short of
+;; BYTES; or (exit STATUS STDOUT STDERR) when it did not exit 0.
+(define (upload o face bytes)
+  (guard (e (#t (list 'raised (describe e))))
+    (let* ((f (origin-face o face))
+           (r (capture-command (list node "-e" uploader (symbol->string face) (car f)
+                                     (number->string (cdr f)) (number->string bytes)))))
+      (if (not (= (car r) 0))
+          (list 'exit r)
+          (let ((line (read (open-string-input-port (cadr r)))))
+            (if (and (list? line) (> (length line) 3) (eq? (cadr line) 'stalled)
+                     (integer? (caddr line)) (< 0 (caddr line) bytes))
+                (cons* (car line) 'stalled 'short-of-the-end (cdddr line))
+                line))))))
+
+;; without-cr : String -> String
+;; LINE without its last char when that is a CR.
+(define (without-cr line)
+  (let ((n (string-length line)))
+    (if (and (> n 0) (char=? (string-ref line (- n 1)) #\return)) (substring line 0 (- n 1)) line)))
+
+;; seq-response : String -> (List String (U Symbol List) (Listof String))
+;; A /raw/seq response TEXT: its head, its CRLF CRLF left off, the Sink
+;; line's times written ~ as shape writes them; whether its body is the
+;; first N bytes of the pattern, N its Content-Length, by same-text; and the
+;; Sink line's times.
+(define (seq-response text)
+  (let ((at (let loop ((i 0))
+              (cond ((> (+ i 4) (string-length text)) #f)
+                    ((string=? (substring text i (+ i 4)) "\r\n\r\n") i)
+                    (else (loop (+ i 1)))))))
+    (if (not at)
+        (list text 'no-head '())
+        (let* ((times '())
+               ;; Each line but the last keeps its CR.
+               (lines (in-order (lambda (line)
+                                  (if (prefix? "Sink: " line)
+                                      (let ((shaped (shape (substring (without-cr line) 6 (string-length (without-cr line))))))
+                                        (set! times (cadr shaped))
+                                        (string-append "Sink: " (car shaped)
+                                                       (if (string=? line (without-cr line)) "" "\r")))
+                                      line))
+                                (split-text (substring text 0 at) #\newline)))
+               (body (substring text (+ at 4) (string-length text)))
+               (length-line (exists (lambda (line) (and (prefix? "Content-Length: " line) (without-cr line))) lines))
+               (n (and length-line (string->number (substring length-line 16 (string-length length-line))))))
+          (list (join-text lines "\n")
+                (if n (same-text (pattern-text n) body) 'no-length)
+                times)))))
+
+(define (duplex-scenarios o)
+  (define p10 (pattern-text 10))
+
+  ;; --- the raw face: /raw/cut, a connection ended once N bytes of what
+  ;; follows the head have come, nothing written; counted as a sink counts
+  (test-equal "raw /raw/cut?key=cut-4&after=4, the body's first 4 bytes with the head and the rest 300 ms on: nothing written, eof, before the rest is sent; the request counted once for its key, by http's /seen"
+    (list (list "" 'eof) 'before-the-rest (seen-text 1))
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((head (post "/raw/cut?key=cut-4&after=4" "Content-Length: 10\r\n"))
+             (p (split-probe o 'raw (string-append head p10) (+ (string-length head) 4) 300 2000)))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (< (- (probe-ended p) (probe-connected p)) 300) 'before-the-rest
+                  (list 'connected (probe-connected p) 'ended (probe-ended p)))
+              (seen-of o "cut-4")))))
+  (test-equal "raw /raw/cut?key=cut-6&after=6, the body's first 4 bytes with the head and the rest 300 ms on: nothing written, and eof only once the rest is sent"
+    (list (list "" 'eof) 'after-the-rest)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((head (post "/raw/cut?key=cut-6&after=6" "Content-Length: 10\r\n"))
+             (p (split-probe o 'raw (string-append head p10) (+ (string-length head) 4) 300 2000)))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (>= (- (probe-ended p) (probe-connected p)) 300) 'after-the-rest
+                  (list 'connected (probe-connected p) 'ended (probe-ended p)))))))
+  (test-equal "raw /raw/cut?key=cut-0&after=0: nothing written, eof, as the head arrives, the body 300 ms on never awaited"
+    (list (list "" 'eof) 'before-the-body)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((head (post "/raw/cut?key=cut-0&after=0" "Content-Length: 10\r\n"))
+             (p (split-probe o 'raw (string-append head p10) (string-length head) 300 2000)))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (< (- (probe-ended p) (probe-connected p)) 300) 'before-the-body
+                  (list 'connected (probe-connected p) 'ended (probe-ended p)))))))
+  (test-equal "raw /raw/cut: a query it refuses gets the fixed 400, and counts nothing"
+    (append (map (lambda (target) bad-request) '(1 2 3 4 5 6 7 8 9))
+            (list (seen-text 0)))
+    (in-order (lambda (target) (if (string=? target "seen") (seen-of o "cut-refused") (exchange o 'raw (get target) 2000)))
+              '("/raw/cut" "/raw/cut?key=cut-refused" "/raw/cut?after=1" "/raw/cut?key=cut-refused&after=268435457"
+                "/raw/cut?key=cut-refused&after=01" "/raw/cut?key=cut-refused&after=1&after=1"
+                "/raw/cut?key=cut-refused&after=1&x=1" "/raw/cut?key=a%2Fb&after=1" "/raw/cut?key=cut-refused&after=x"
+                "seen")))
+
+  ;; --- the raw face: /raw/sunk, the bytes a raw sink has read for its key,
+  ;; whether or not the client went first
+  (test-equal "raw /raw/sunk?key=KEY: a sink whose client sent 4 of its 10 body bytes, wrote nothing, and was left; one sent its body whole, read 10; a key no sink has read, 0; the query counts nothing"
+    (list (list "" 'timeout) (sunk-text 4) (sunk-text 10) (sunk-text 0) (seen-text 0))
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((short (exchange o 'raw (string-append (post "/raw/sink?key=sunk-4" "Content-Length: 10\r\n")
+                                                    (substring p10 0 4))
+                              300))
+             (whole (exchange o 'raw (string-append (post "/raw/sink?key=sunk-10" "Content-Length: 10\r\n") p10) 2000))
+             (four (exchange o 'raw (get "/raw/sunk?key=sunk-4") 2000))
+             (ten (exchange o 'raw (get "/raw/sunk?key=sunk-10") 2000))
+             (none (exchange o 'raw (get "/raw/sunk?key=sunk-none") 2000))
+             (counted (seen-of o "sunk-none")))
+        (list short four ten none counted))))
+  (test-equal "raw /raw/sunk and /raw/release: a query either refuses gets the fixed 400"
+    (map (lambda (target) bad-request) '(1 2 3 4 5 6 7 8))
+    (in-order (lambda (target) (exchange o 'raw (get target) 2000))
+              '("/raw/sunk" "/raw/sunk?key=a%2Fb" "/raw/sunk?key=k&x=1" "/raw/sunk?x=1"
+                "/raw/release" "/raw/release?key=a%2Fb" "/raw/release?key=k&x=1" "/raw/release?x=1")))
+
+  ;; --- the raw face: answer-at's hold, its answer's last byte held until
+  ;; /raw/release names its key
+  (test-equal "raw /raw/answer-at?status=200&after=0&close=0&hold=KEY, a POST of 10 bytes with its head: the answer but its last byte at once, the last 200 ms or more later, once /raw/release?key=KEY, from another connection 800 ms on, has answered released; then eof"
+    (list (list (early-text "200" #f #f) 'eof) 'held-until-released released-text)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((finish (spawned-probe o 'raw (string-append (post "/raw/answer-at?status=200&after=0&close=0&hold=hold-1"
+                                                                "Content-Length: 10\r\n")
+                                                          p10)
+                                       5000))
+             (released (begin (pause-ms 800) (exchange o 'raw (get "/raw/release?key=hold-1") 2000)))
+             (p (finish))
+             (n (string-length (early-text "200" #f #f)))
+             (last (arrival (probe-arrivals p) (- n 1)))
+             (before (arrival (probe-arrivals p) (- n 2))))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (and last before (>= (- last before) 200)) 'held-until-released
+                  (list 'before before 'last last))
+              released))))
+  (test-equal "raw /raw/release?key=KEY before answer-at's hold=KEY: released, then the answer whole at once, then eof"
+    (list released-text (list (early-text "200" #f #f) 'eof))
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((released (exchange o 'raw (get "/raw/release?key=hold-2") 2000))
+             (answer (exchange o 'raw (string-append (post "/raw/answer-at?status=200&after=0&close=0&hold=hold-2"
+                                                           "Content-Length: 10\r\n")
+                                                     p10)
+                               2000)))
+        (list released answer))))
+  (test-equal "raw /raw/answer-at: a hold it refuses gets the fixed 400"
+    (list bad-request bad-request bad-request)
+    (in-order (lambda (target) (exchange o 'raw (get target) 2000))
+              '("/raw/answer-at?status=200&after=0&hold=a%2Fb" "/raw/answer-at?status=200&after=0&hold=h&hold=h"
+                "/raw/answer-at?status=200&after=0&hold=")))
+
+  ;; --- the raw face: /raw/answer-at, an answer once N body bytes have come
+  (test-equal "raw /raw/answer-at?status=303&after=0&to=%2Fx, a POST whose body comes 300 ms after its head: the answer, its Location, no Connection, before the body is sent; eof only after it"
+    (list (list (early-text "303" "/x" #f) 'eof) 'answered-before 'ended-after)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((head (post "/raw/answer-at?status=303&after=0&to=%2Fx" "Content-Length: 10\r\n"))
+             (p (split-probe o 'raw (string-append head p10) (string-length head) 300 2000))
+             (last (arrival (probe-arrivals p) (- (string-length (early-text "303" "/x" #f)) 1))))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (and last (< (- last (probe-connected p)) 300)) 'answered-before
+                  (list 'connected (probe-connected p) 'last last))
+              (if (>= (- (probe-ended p) (probe-connected p)) 300) 'ended-after
+                  (list 'connected (probe-connected p) 'ended (probe-ended p)))))))
+  (test-equal "raw /raw/answer-at?status=413&after=4&close=1, the body's first 4 bytes with the head and the rest 300 ms on: the answer with Connection: close, then eof, both before the rest is sent"
+    (list (list (early-text "413" #f #t) 'eof) 'before-the-rest)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((head (post "/raw/answer-at?status=413&after=4&close=1" "Content-Length: 10\r\n"))
+             (p (split-probe o 'raw (string-append head p10) (+ (string-length head) 4) 300 2000)))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (< (- (probe-ended p) (probe-connected p)) 300) 'before-the-rest
+                  (list 'connected (probe-connected p) 'ended (probe-ended p)))))))
+  (for-each
+   (lambda (close)
+     (test-equal (string-append "raw /raw/answer-at?status=413&after=5&close=" close
+                                ", the body's first 4 bytes with the head and the rest 300 ms on: the answer only once the rest is sent, then eof")
+       (list (list (early-text "413" #f (string=? close "1")) 'eof) 'after-the-rest)
+       (guard (e (#t (list 'raised (describe e))))
+         (let* ((head (post (string-append "/raw/answer-at?status=413&after=5&close=" close) "Content-Length: 10\r\n"))
+                (p (split-probe o 'raw (string-append head p10) (+ (string-length head) 4) 300 2000))
+                (first (arrival (probe-arrivals p) 0)))
+           (list (list (latin-1 (probe-bytes p)) (probe-end p))
+                 (if (and first (>= (- first (probe-connected p)) 300)) 'after-the-rest
+                     (list 'connected (probe-connected p) 'first first)))))))
+   '("0" "1"))
+  ;; Chunked, the answer at 4 body bytes: the first chunk, 4 bytes, with the
+  ;; head, the next chunk and the last 300 ms on.
+  (test-equal "raw /raw/answer-at?status=200&after=4, chunked, its first chunk of 4 bytes with the head and the rest 300 ms on: the answer before the rest; eof only after the last chunk"
+    (list (list (early-text "200" #f #f) 'eof) 'answered-before 'ended-after)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((first (string-append (post "/raw/answer-at?after=4&status=200" "Transfer-Encoding: chunked\r\n") "4\r\nabcd\r\n"))
+             (p (split-probe o 'raw (string-append first "6\r\nefghij\r\n0\r\n\r\n") (string-length first) 300 2000))
+             (last (arrival (probe-arrivals p) (- (string-length (early-text "200" #f #f)) 1))))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (and last (< (- last (probe-connected p)) 300)) 'answered-before
+                  (list 'connected (probe-connected p) 'last last))
+              (if (>= (- (probe-ended p) (probe-connected p)) 300) 'ended-after
+                  (list 'connected (probe-connected p) 'ended (probe-ended p)))))))
+  ;; A body shorter than N: answered at its end, its last chunk 300 ms on.
+  (test-equal "raw /raw/answer-at?status=200&after=100, a chunked body of 10 bytes whose last chunks come 300 ms after its first: the answer only at the body's end, then eof"
+    (list (list (early-text "200" #f #f) 'eof) 'at-the-end)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((first (string-append (post "/raw/answer-at?status=200&after=100" "Transfer-Encoding: chunked\r\n") "5\r\nhello\r\n"))
+             (p (split-probe o 'raw (string-append first "5\r\nworld\r\n0\r\n\r\n") (string-length first) 300 2000))
+             (at (arrival (probe-arrivals p) 0)))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (and at (>= (- at (probe-connected p)) 300)) 'at-the-end
+                  (list 'connected (probe-connected p) 'first at))))))
+  (test-equal "raw /raw/answer-at: a GET, no body, after=1 and close=1: the answer at once, then eof; after=0 and close=0 alike, with no Connection"
+    (list (list (early-text "599" #f #t) 'eof) (list (early-text "200" #f #f) 'eof))
+    (list (exchange o 'raw (get "/raw/answer-at?status=599&after=1&close=1") 2000)
+          (exchange o 'raw (get "/raw/answer-at?close=0&after=0&status=200") 2000)))
+  (let ((bytes (filter (lambda (b) (not (memv b '(10 13)))) (iota 256)))
+        (hex2 (lambda (b upper?)
+                (let ((digits (if upper? "0123456789ABCDEF" "0123456789abcdef")))
+                  (string #\% (string-ref digits (div b 16)) (string-ref digits (mod b 16)))))))
+    (test-equal "raw /raw/answer-at: to holding every byte but CR and LF, 0x00 to 0xFF, as %XX in upper-case hex, then in lower: the Location holds each byte, in order"
+      (let ((value (list->string (map integer->char bytes))))
+        (list (list (early-text "302" value #t) 'eof) (list (early-text "302" value #t) 'eof)))
+      (map (lambda (upper?)
+             (exchange o 'raw (get (apply string-append "/raw/answer-at?status=302&after=0&close=1&to="
+                                          (map (lambda (b) (hex2 b upper?)) bytes)))
+                       2000))
+           '(#t #f))))
+  ;; A chunk size that is no hex before the answer: the fixed 400 in its
+  ;; place. After it, with the answer gone, the end alone.
+  (test-equal "raw /raw/answer-at: framing it cannot read before the answer gets the fixed 400, not the answer; after it, the answer and the end"
+    (list bad-request bad-request bad-request (list (early-text "200" #f #f) 'eof))
+    (list (exchange o 'raw (post "/raw/answer-at?status=200&after=0" "Transfer-Encoding: gzip\r\n") 2000)
+          (exchange o 'raw (post "/raw/answer-at?status=200&after=1" "Content-Length: 1x\r\n") 2000)
+          (exchange o 'raw (string-append (post "/raw/answer-at?status=200&after=100" "Transfer-Encoding: chunked\r\n")
+                                          "zz\r\nhello\r\n0\r\n\r\n")
+                    2000)
+          (exchange o 'raw (string-append (post "/raw/answer-at?status=200&after=0" "Transfer-Encoding: chunked\r\n")
+                                          "zz\r\nhello\r\n0\r\n\r\n")
+                    2000)))
+  (test-equal "raw /raw/answer-at: a query it refuses gets the fixed 400"
+    (map (lambda (q) (list q bad-request))
+         '("/raw/answer-at" "/raw/answer-at?" "/raw/answer-at?after=0" "/raw/answer-at?status=200"
+           "/raw/answer-at?status=199&after=0" "/raw/answer-at?status=600&after=0" "/raw/answer-at?status=0200&after=0"
+           "/raw/answer-at?status=200&after=268435457" "/raw/answer-at?status=200&after=01"
+           "/raw/answer-at?status=200&after=x" "/raw/answer-at?status=200&after=0&close=2"
+           "/raw/answer-at?status=200&after=0&close=1&close=1" "/raw/answer-at?status=200&status=200&after=0"
+           "/raw/answer-at?status=200&after=0&after=0" "/raw/answer-at?status=200&after=0&to=%2Fa&to=%2Fb"
+           "/raw/answer-at?status=200&after=0&to=%zz" "/raw/answer-at?status=200&after=0&to=a%4"
+           "/raw/answer-at?status=200&after=0&x=1" "/raw/answer-at?status=200&after=0&close"))
+    (map (lambda (q) (list q (exchange o 'raw (get q) 2000)))
+         '("/raw/answer-at" "/raw/answer-at?" "/raw/answer-at?after=0" "/raw/answer-at?status=200"
+           "/raw/answer-at?status=199&after=0" "/raw/answer-at?status=600&after=0" "/raw/answer-at?status=0200&after=0"
+           "/raw/answer-at?status=200&after=268435457" "/raw/answer-at?status=200&after=01"
+           "/raw/answer-at?status=200&after=x" "/raw/answer-at?status=200&after=0&close=2"
+           "/raw/answer-at?status=200&after=0&close=1&close=1" "/raw/answer-at?status=200&status=200&after=0"
+           "/raw/answer-at?status=200&after=0&after=0" "/raw/answer-at?status=200&after=0&to=%2Fa&to=%2Fb"
+           "/raw/answer-at?status=200&after=0&to=%zz" "/raw/answer-at?status=200&after=0&to=a%4"
+           "/raw/answer-at?status=200&after=0&x=1" "/raw/answer-at?status=200&after=0&close")))
+
+  ;; --- the raw face: /raw/arm's mode and to
+  (test-equal "raw /raw/arm?status=303&mode=keep&to=%2Fa: the next connection gets the answer, its Location, no Connection, before its request's body is sent; the face then reads that request to its body's end, and only then the eof; the one after plays its script"
+    (list '("HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\narmed\n" eof)
+          (list (early-text "303" "/a" #f) 'eof) 'answered-before 'ended-after
+          '("HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\nhello\n" eof))
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((arm (exchange o 'raw (get "/raw/arm?status=303&mode=keep&to=%2Fa") 2000))
+             (head (post "/raw/content-length" "Content-Length: 10\r\n"))
+             (p (split-probe o 'raw (string-append head p10) (+ (string-length head) 4) 300 2000))
+             (last (arrival (probe-arrivals p) (- (string-length (early-text "303" "/a" #f)) 1)))
+             (after (exchange o 'raw (get "/raw/content-length") 2000)))
+        (list arm (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (and last (< (- last (probe-connected p)) 300)) 'answered-before
+                  (list 'connected (probe-connected p) 'last last))
+              (if (>= (- (probe-ended p) (probe-connected p)) 300) 'ended-after
+                  (list 'connected (probe-connected p) 'ended (probe-ended p)))
+              after))))
+  (test-equal "raw /raw/arm?status=200&mode=cut&after=4: the next connection gets the answer, no Connection, before its request's body is sent; once the body's first 4 bytes have come, the connection ends, nothing more written, before the rest is sent 300 ms on; the one after plays its script"
+    (list '("HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\narmed\n" eof)
+          (list (early-text "200" #f #f) 'eof) 'ended-before-the-rest
+          '("HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\nhello\n" eof))
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((arm (exchange o 'raw (get "/raw/arm?status=200&mode=cut&after=4") 2000))
+             (head (post "/raw/content-length" "Content-Length: 10\r\n"))
+             (p (split-probe o 'raw (string-append head p10) (+ (string-length head) 4) 300 2000))
+             (after (exchange o 'raw (get "/raw/content-length") 2000)))
+        (list arm (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (< (- (probe-ended p) (probe-connected p)) 300) 'ended-before-the-rest
+                  (list 'connected (probe-connected p) 'ended (probe-ended p)))
+              after))))
+  (test-equal "raw /raw/arm?status=200&mode=cut&after=6: with only the body's first 4 bytes sent with the head, the connection ends only once the rest is sent 300 ms on"
+    (list (list (early-text "200" #f #f) 'eof) 'ended-after-the-rest)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((arm (exchange o 'raw (get "/raw/arm?status=200&mode=cut&after=6") 2000))
+             (head (post "/raw/content-length" "Content-Length: 10\r\n"))
+             (p (split-probe o 'raw (string-append head p10) (+ (string-length head) 4) 300 2000)))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (>= (- (probe-ended p) (probe-connected p)) 300) 'ended-after-the-rest
+                  (list 'connected (probe-connected p) 'ended (probe-ended p)))))))
+  (test-equal "raw /raw/arm: after with no mode cut, and mode cut with no after, each get the fixed 400 and arm nothing; the next connection plays its script"
+    (list bad-request bad-request bad-request bad-request
+          '("HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\nhello\n" eof))
+    (in-order (lambda (target) (exchange o 'raw (get target) 2000))
+              '("/raw/arm?status=200&after=4" "/raw/arm?status=200&mode=keep&after=4" "/raw/arm?status=200&mode=cut"
+                "/raw/arm?status=200&mode=cut&after=268435457" "/raw/content-length")))
+  ;; Kept, the face waits for a request: one that sends nothing waits too.
+  (test-equal "raw /raw/arm?status=200&mode=keep: the next connection, sending nothing, gets the answer, no Connection, and stays open until the client goes"
+    (list '("HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\narmed\n" eof)
+          (list (early-text "200" #f #f) 'timeout))
+    (list (exchange o 'raw (get "/raw/arm?mode=keep&status=200") 2000)
+          (exchange o 'raw "" 300)))
+  (test-equal "raw /raw/arm?status=413&mode=close: the bytes of an arm with no mode, Connection: close, then eof"
+    (list '("HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\narmed\n" eof)
+          (list (early-text "413" #f #t) 'eof))
+    (list (exchange o 'raw (get "/raw/arm?status=413&mode=close") 2000)
+          (exchange o 'raw "" 2000)))
+  (let ((bytes (filter (lambda (b) (not (memv b '(10 13)))) (iota 256))))
+    (test-equal "raw /raw/arm: to holding every byte but CR and LF, 0x00 to 0xFF, as %XX: the Location holds each byte, in order, closed by default and kept with mode=keep"
+      (let ((value (list->string (map integer->char bytes))))
+        (list '("HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\narmed\n" eof)
+              (list (early-text "301" value #t) 'eof)
+              '("HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\narmed\n" eof)
+              (list (early-text "308" value #f) 'eof)))
+      (let ((to (apply string-append
+                       (map (lambda (b) (string #\% (string-ref "0123456789ABCDEF" (div b 16))
+                                                (string-ref "0123456789abcdef" (mod b 16))))
+                            bytes))))
+        (in-order (lambda (thunk) (thunk))
+                  (list (lambda () (exchange o 'raw (get (string-append "/raw/arm?status=301&to=" to)) 2000))
+                        (lambda () (exchange o 'raw "" 2000))
+                        (lambda () (exchange o 'raw (get (string-append "/raw/arm?to=" to "&mode=keep&status=308")) 2000))
+                        (lambda () (exchange o 'raw (get "/raw/content-length") 2000)))))))
+  (test-equal "raw /raw/arm: a mode or a to it refuses gets the fixed 400 and arms nothing; the next connection plays its script"
+    (append (map (lambda (q) (list q bad-request))
+                 '("/raw/arm?status=200&mode=open" "/raw/arm?status=200&mode=" "/raw/arm?status=200&mode=keep&mode=keep"
+                   "/raw/arm?status=200&to=%2Fa&to=%2Fb" "/raw/arm?status=200&to=%zz" "/raw/arm?mode=keep"))
+            '(("HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\nhello\n" eof)))
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((refused (in-order (lambda (q) (list q (exchange o 'raw (get q) 2000)))
+                                '("/raw/arm?status=200&mode=open" "/raw/arm?status=200&mode=" "/raw/arm?status=200&mode=keep&mode=keep"
+                                  "/raw/arm?status=200&to=%2Fa&to=%2Fb" "/raw/arm?status=200&to=%zz" "/raw/arm?mode=keep")))
+             (after (exchange o 'raw (get "/raw/content-length") 2000)))
+        (append refused (list after)))))
+
+  ;; --- the raw face: /raw/mirror, the body written back as it comes
+  (test-equal "raw /raw/mirror, 10 bytes by Content-Length, 4 with the head and 6 300 ms on: its head and the first 4 bytes back before the rest is sent, then the rest, then eof"
+    (list (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: 10\r\nConnection: close\r\n\r\n" p10) 'eof)
+          'first-four-before 'ended-after)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((head (post "/raw/mirror" "Content-Length: 10\r\n"))
+             (p (split-probe o 'raw (string-append head p10) (+ (string-length head) 4) 300 2000))
+             (fourth (arrival (probe-arrivals p)
+                              (+ (string-length "HTTP/1.1 200 OK\r\nContent-Length: 10\r\nConnection: close\r\n\r\n") 3))))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (and fourth (< (- fourth (probe-connected p)) 300)) 'first-four-before
+                  (list 'connected (probe-connected p) 'fourth fourth))
+              (if (>= (- (probe-ended p) (probe-connected p)) 300) 'ended-after
+                  (list 'connected (probe-connected p) 'ended (probe-ended p)))))))
+  ;; Chunked, one chunk of 10 bytes split across two writes, 300 ms apart:
+  ;; each data event's piece goes back as a chunk of its own, 5 and 5.
+  (test-equal "raw /raw/mirror, chunked, one chunk of 10 bytes split after its fifth, 300 ms apart: Transfer-Encoding: chunked, each piece back as its own chunk, the first before the rest is sent, then the last chunk and eof"
+    (list (list (string-append "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n"
+                               "5\r\nhello\r\n5\r\nworld\r\n0\r\n\r\n")
+                'eof)
+          'first-before)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((first (string-append (post "/raw/mirror" "Transfer-Encoding: chunked\r\n") "a\r\nhello"))
+             (p (split-probe o 'raw (string-append first "world\r\n0\r\n\r\n") (string-length first) 300 2000))
+             (piece (arrival (probe-arrivals p)
+                             (+ (string-length "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n5\r\nhello\r\n") -1))))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (and piece (< (- piece (probe-connected p)) 300)) 'first-before
+                  (list 'connected (probe-connected p) 'piece piece))))))
+  (test-equal "raw /raw/mirror, chunked in one write, two chunks with an extension and a trailer: the decoded pieces, each its own chunk, the extension and the trailer dropped"
+    (list (string-append "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n"
+                         "5\r\nhello\r\n6\r\n world\r\n0\r\n\r\n")
+          'eof)
+    (exchange o 'raw (string-append (post "/raw/mirror" "Transfer-Encoding: chunked\r\n")
+                                    "5;name=value\r\nhello\r\n6\r\n world\r\n0;last\r\nX-Trailer: done\r\n\r\n")
+              2000))
+  (test-equal "raw /raw/mirror, a GET with no body: Content-Length: 0, then eof; Content-Length: 0 sent alike"
+    (list '("HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n" eof)
+          '("HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n" eof))
+    (list (exchange o 'raw (get "/raw/mirror") 2000)
+          (exchange o 'raw (post "/raw/mirror" "Content-Length: 0\r\n") 2000)))
+  (test-equal "raw /raw/mirror, 64 MiB to a client that reads nothing: its upload stalls past 0 and short of the end, the face's writes and so its reads paused; once it reads, the rest goes, and the whole body comes back"
+    (list 'uploaded 'stalled 'short-of-the-end 67108864
+          "HTTP/1.1 200 OK\r\nContent-Length: 67108864\r\nConnection: close" 67108864 'ok)
+    (upload o 'raw 67108864))
+  (test-equal "raw /raw/mirror: a query, and framing it cannot read, get the fixed 400"
+    (list bad-request bad-request bad-request bad-request)
+    (list (exchange o 'raw (get "/raw/mirror?x=1") 2000)
+          (exchange o 'raw (get "/raw/mirror?") 2000)
+          (exchange o 'raw (post "/raw/mirror" "Transfer-Encoding: gzip\r\n") 2000)
+          (exchange o 'raw (post "/raw/mirror" "Content-Length: 1x\r\n") 2000)))
+
+  ;; --- the raw face: /raw/seq, a sink's summary in a header, then a body
+  (test-equal "raw /raw/seq?key=sq-post&bytes=600, 10 bytes of the pattern: Sink: the summary, Content-Length: 600, Connection: close, then 600 bytes of the pattern, then eof"
+    (list (string-append "HTTP/1.1 200 OK\r\nSink: sink raw method=POST cl=10 te=- expect=- ct=- bytes=10 sha256=" sha-p10
+                         " pattern=ok arrivals=1 gap=~@0 seen=1\r\nContent-Length: 600\r\nConnection: close")
+          'same '("0.0") 'eof)
+    (guard (e (#t (list 'raised (describe e))))
+      (let ((p (wire-probe o 'raw (octets (string-append (post "/raw/seq?key=sq-post&bytes=600" "Content-Length: 10\r\n") p10))
+                           2000)))
+        (append (seq-response (latin-1 (probe-bytes p))) (list (probe-end p))))))
+  (test-equal "raw /raw/seq?key=sq-zero&bytes=0, a GET: Sink: the summary of no body, Content-Length: 0, no body, then eof"
+    (list (string-append "HTTP/1.1 200 OK\r\nSink: sink raw method=GET cl=- te=- expect=- ct=- bytes=0 sha256=" sha-empty
+                         " pattern=ok arrivals=0 gap=- seen=1\r\nContent-Length: 0\r\nConnection: close")
+          'same '() 'eof)
+    (guard (e (#t (list 'raised (describe e))))
+      (let ((p (wire-probe o 'raw (octets (get "/raw/seq?bytes=0&key=sq-zero")) 2000)))
+        (append (seq-response (latin-1 (probe-bytes p))) (list (probe-end p))))))
+  (test-equal "raw /raw/seq?key=sq-long&bytes=100000: the pattern's 100000 bytes, past several of its writes, whole, then eof"
+    (list (string-append "HTTP/1.1 200 OK\r\nSink: sink raw method=GET cl=- te=- expect=- ct=- bytes=0 sha256=" sha-empty
+                         " pattern=ok arrivals=0 gap=- seen=1\r\nContent-Length: 100000\r\nConnection: close")
+          'same '() 'eof)
+    (guard (e (#t (list 'raised (describe e))))
+      (let ((p (wire-probe o 'raw (octets (get "/raw/seq?key=sq-long&bytes=100000")) 2000)))
+        (append (seq-response (latin-1 (probe-bytes p))) (list (probe-end p))))))
+  (test-equal "raw /raw/seq, its body split 4 then 6 bytes, 300 ms apart: the answer only once the body is whole"
+    (list (string-append "HTTP/1.1 200 OK\r\nSink: sink raw method=POST cl=10 te=- expect=- ct=- bytes=10 sha256=" sha-p10
+                         " pattern=ok arrivals=2 gap=~@4 seen=1\r\nContent-Length: 3\r\nConnection: close")
+          'same 'eof 'after-the-body)
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((head (post "/raw/seq?key=sq-split&bytes=3" "Content-Length: 10\r\n"))
+             (p (split-probe o 'raw (string-append head p10) (+ (string-length head) 4) 300 2000))
+             (got (seq-response (latin-1 (probe-bytes p))))
+             (first (arrival (probe-arrivals p) 0)))
+        (list (car got) (cadr got) (probe-end p)
+              (if (and first (>= (- first (probe-connected p)) 300)) 'after-the-body
+                  (list 'connected (probe-connected p) 'first first))))))
+  (test-equal "raw /raw/seq and /raw/sink share a key's count: seq seen=1, sink seen=2, seq seen=3; http's /seen then reads 3"
+    (list (list (string-append "HTTP/1.1 200 OK\r\nSink: sink raw method=GET cl=- te=- expect=- ct=- bytes=0 sha256=" sha-empty
+                               " pattern=ok arrivals=0 gap=- seen=1\r\nContent-Length: 1\r\nConnection: close")
+                'same '())
+          (list (string-append raw-sink-head "sink raw method=GET cl=- te=- expect=- ct=- bytes=0 sha256=" sha-empty
+                               " pattern=ok arrivals=0 gap=- seen=2\n")
+                'eof '())
+          (list (string-append "HTTP/1.1 200 OK\r\nSink: sink raw method=GET cl=- te=- expect=- ct=- bytes=0 sha256=" sha-empty
+                               " pattern=ok arrivals=0 gap=- seen=3\r\nContent-Length: 1\r\nConnection: close")
+                'same '())
+          (seen-text 3))
+    (in-order (lambda (thunk) (thunk))
+              (list (lambda () (let ((a (exchange o 'raw (get "/raw/seq?key=sq-count&bytes=1") 2000)))
+                                 (if (eq? (car a) 'raised) a (seq-response (car a)))))
+                    (lambda () (sink-exchange o 'raw (get "/raw/sink?key=sq-count") 2000))
+                    (lambda () (let ((a (exchange o 'raw (get "/raw/seq?key=sq-count&bytes=1") 2000)))
+                                 (if (eq? (car a) 'raised) a (seq-response (car a)))))
+                    (lambda () (seen-of o "sq-count")))))
+  (test-equal "raw /raw/seq: a query it refuses gets the fixed 400 and counts nothing; framing it cannot read gets the fixed 400, counted"
+    (append (map (lambda (n) bad-request) '(1 2 3 4 5 6 7 8 9 10 11))
+            (list (seen-text 0) bad-request (seen-text 1)))
+    (in-order (lambda (target)
+                (cond ((string=? target "seen") (seen-of o "sq-refused"))
+                      ((string=? target "seen-bad") (seen-of o "sq-bad"))
+                      ((string=? target "bad") (exchange o 'raw (post "/raw/seq?key=sq-bad&bytes=1" "Content-Length: 1x\r\n") 2000))
+                      (else (exchange o 'raw (get target) 2000))))
+              '("/raw/seq" "/raw/seq?" "/raw/seq?key=sq-refused" "/raw/seq?bytes=1" "/raw/seq?key=sq-refused&bytes=268435457"
+                "/raw/seq?key=sq-refused&bytes=01" "/raw/seq?key=&bytes=1" "/raw/seq?key=sq-refused&key=sq-refused&bytes=1"
+                "/raw/seq?key=sq-refused&bytes=1&bytes=1" "/raw/seq?key=sq-refused&bytes=1&x=1" "/raw/seq?key=a%2Fb&bytes=1"
+                "seen" "bad" "seen-bad")))
+
+  ;; --- the raw face: /raw/retry's slow. The gap is judged between the
+  ;; probe's arrivals: the body's first byte, then the rest, MS ms on; half
+  ;; of it as the bound, as the drips', since the probe may read the first
+  ;; late.
+  (test-equal "raw /raw/retry, how=status, slow=300: the failure's head and its body's first byte, then the rest 150 ms or more after it and 300 ms or more after connecting, then eof; the next request's 200 comes whole, as without slow"
+    (let ((body "attempt 1\n"))
+      (list (list (string-append "HTTP/1.1 503 Retry\r\nContent-Length: 10\r\nConnection: close\r\n\r\n" body) 'eof)
+            'rest-after-the-first 'rest-late-enough
+            '("HTTP/1.1 200 OK\r\nContent-Length: 10\r\nConnection: close\r\n\r\nattempt 2\n" eof)))
+    (guard (e (#t (list 'raised (describe e))))
+      (let* ((p (wire-probe o 'raw (octets (get "/raw/retry?key=slow-1&fail=1&how=status&code=503&slow=300")) 2000))
+             (head (string-length "HTTP/1.1 503 Retry\r\nContent-Length: 10\r\nConnection: close\r\n\r\n"))
+             (first (arrival (probe-arrivals p) head))
+             (rest (arrival (probe-arrivals p) (+ head 1)))
+             (next (exchange o 'raw (get "/raw/retry?key=slow-1&fail=1&how=status&code=503&slow=300") 2000)))
+        (list (list (latin-1 (probe-bytes p)) (probe-end p))
+              (if (and first rest (>= (* 2 (- rest first)) 300)) 'rest-after-the-first
+                  (list 'first first 'rest rest (probe-arrivals p)))
+              (if (and rest (>= (- rest (probe-connected p)) 300)) 'rest-late-enough
+                  (list 'connected (probe-connected p) 'rest rest))
+              next))))
+  (test-equal "raw /raw/retry, slow=0 and a Retry-After: the bytes as without slow"
+    (list (list "HTTP/1.1 429 Retry\r\nRetry-After: 1\r\nContent-Length: 10\r\nConnection: close\r\n\r\nattempt 1\n" 'eof))
+    (list (exchange o 'raw (get "/raw/retry?key=slow-0&fail=1&how=status&code=429&after=1&slow=0") 2000)))
+  (test-equal "raw /raw/retry: slow with how=close or how=reset, above its range, with a leading zero, no number, or twice, gets the fixed 400 and counts nothing"
+    (append (map (lambda (n) bad-request) '(1 2 3 4 5 6))
+            (list (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\nattempts 0\n") 'eof)))
+    (in-order (lambda (target) (exchange o 'raw (get target) 2000))
+              '("/raw/retry?key=slow-refused&fail=1&how=close&slow=1" "/raw/retry?key=slow-refused&fail=1&how=reset&slow=1"
+                "/raw/retry?key=slow-refused&fail=1&how=status&code=503&slow=60001"
+                "/raw/retry?key=slow-refused&fail=1&how=status&code=503&slow=01"
+                "/raw/retry?key=slow-refused&fail=1&how=status&code=503&slow=x"
+                "/raw/retry?key=slow-refused&fail=1&how=status&code=503&slow=1&slow=1"
+                "/raw/attempts?key=slow-refused"))))
 
 ;; The scenarios' tests run here, in a definition, and the verdict on their
 ;; origin after. SRFI-64 keeps one result per runner: tests run inside another

@@ -1,0 +1,8 @@
+# The maintainer's Mac, 2026-11-01, on feat/m6-slice-3 at 6c97418:
+#   chez --program .plans/research/m6/slice3-build/mac-system.sps
+# Homebrew's Chez 10.4.0. Pasted from the terminal.
+mac-system tarm64osx
+Darwin 25.6.0
+(main-ms 1010 thread-ms 2033 both-ms 2046)
+(main-ms 1020 thread-ms 2042 both-ms 2054)
+(main-ms 1018 thread-ms 2037 both-ms 2041)

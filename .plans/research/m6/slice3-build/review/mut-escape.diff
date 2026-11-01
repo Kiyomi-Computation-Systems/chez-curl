@@ -1,0 +1,39 @@
+--- /home/kishu/src/chez-curl/src/http-client/private/drive.sls	2026-10-31 18:45:29.720261874 -0400
++++ /home/kishu/src/chez-curl/build/m6s3r/mut-escape/src/http-client/private/drive.sls	2026-10-31 21:57:55.774760473 -0400
+@@ -226,7 +226,7 @@
+ ;;; entry, takes an optional submit in place of curl-submit, so a test can
+ ;;; plant a raise in one submit.
+ (library (http-client private drive)
+-  (export drive-exchange drive-stream drive-stream-waits monotonic-ns utc-seconds take-refusal?
++  (export drive-exchange drive-stream drive-stream-waits drive-produce-gate-set! drive-last-token monotonic-ns utc-seconds take-refusal?
+           require-interrupts call-with-group run-parallel
+           http-pending? http-await http-pending-done? http-pending-cancel
+           http-pending-mailbox http-pending-token http-pending-phase http-pending-census)
+@@ -575,6 +575,10 @@
+   ;; from resumes the producer, and is then no failure. Without STICKY?, a
+   ;; raise leaves the call as raised, and the call's own wind cancels the
+   ;; transfer.
++  (define produce-gate #f)
++  (define (drive-produce-gate-set! g) (set! produce-gate g))
++  (define last-token #f)
++  (define (drive-last-token) last-token)
+   (define (produce! leg sticky?)
+     (let ((call (leg-call leg)) (seen #f) (returned #f))
+       (call-called-set! call #t)
+@@ -594,6 +598,8 @@
+             answer))
+         (lambda ()
+           (call-producing-set! call #f)
++          ;; PROBE SEAM: a gate, run once, in the critical after thunk.
++          (when (and sticky? produce-gate) (let ((g produce-gate)) (set! produce-gate #f) (g)))
+           (when (and sticky? (not returned))
+             (when (and seen (not (call-stuck call))) (call-stuck-set! call (car seen)))
+             (curl-token-cancel (leg-token leg)))))))
+@@ -777,6 +783,7 @@
+                                   submission)))))
+       (define (leg! state request)
+         (let* ((streams (eq? (curl-request-body request) 'stream))
++               (noted (set! last-token token))
+                (leg (make-leg token call (and streams (curl-request-body-length request))
+                               (if streams 'feeding 'none) #f 0 #f #f #f)))
+           (when (and streams (call-called? call))

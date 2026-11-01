@@ -1,0 +1,228 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[current-8.23.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+sha256sum: .plans/research/m6/slice3/probe.sps: No such file or directory
+[current-8.23.0] program .plans/research/m6/slice3/probe.sps 
+[current-8.23.0] libdirs src:tests:build/scheme-libs
+[current-8.23.0] server {"node":"v20.10.0","pid":3118,"http":"127.0.0.1:37719","raw":"127.0.0.1:36631","https":"127.0.0.1:41945","h2":"127.0.0.1:37059","closed":"127.0.0.1:40741"}
+[current-8.23.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 node v20.10.0
+[current-8.23.0] probe libcurl 8.23.0 OpenSSL/3.0.13
+[current-8.23.0] probe face=h2 status=303 location=yes framing=sized run=1 head=303 bit=#t head-ms=15.339 ended-own=no end-after-head-ms=5000.014 body="early 303\n" put=131072 handed=65536 outcome=failed:cancelled:#f
+[current-8.23.0] probe face=h2 status=303 location=yes framing=chunked run=1 head=303 bit=#t head-ms=15.297 ended-own=no end-after-head-ms=5001.712 body="early 303\n" put=131072 handed=65536 outcome=failed:cancelled:#f
+[current-8.23.0] probe face=h2 status=303 location=no framing=sized run=1 head=303 bit=#t head-ms=13.896 ended-own=no end-after-head-ms=5002.154 body="early 303\n" put=131072 handed=65536 outcome=failed:cancelled:#f
+[current-8.23.0] probe face=h2 status=303 location=no framing=chunked run=1 head=303 bit=#t head-ms=13.779 ended-own=no end-after-head-ms=5002.849999999999 body="early 303\n" put=131072 handed=65536 outcome=failed:cancelled:#f
+[current-8.23.0] probe face=h2 status=307 location=yes framing=sized run=1 head=307 bit=#t head-ms=13.729 ended-own=no end-after-head-ms=5009.982 body="early 307\n" put=131072 handed=65536 outcome=failed:cancelled:#f
+[current-8.23.0] probe face=h2 status=307 location=yes framing=chunked run=1 head=307 bit=#t head-ms=13.75 ended-own=no end-after-head-ms=5002.071 body="early 307\n" put=131072 handed=65536 outcome=failed:cancelled:#f
+[current-8.23.0] probe face=h2 status=307 location=no framing=sized run=1 head=307 bit=#t head-ms=13.922 ended-own=no end-after-head-ms=5009.377 body="early 307\n" put=131072 handed=65536 outcome=failed:cancelled:#f
+[current-8.23.0] probe face=h2 status=307 location=no framing=chunked run=1 head=307 bit=#t head-ms=13.719 ended-own=no end-after-head-ms=5001.336 body="early 307\n" put=131072 handed=65536 outcome=failed:cancelled:#f
+[current-8.23.0] probe face=h2 status=413 location=yes framing=sized run=1 head=413 bit=#t head-ms=13.755 ended-own=yes end-after-head-ms=0.0129999999999999 body="early 413\n" put=65536 handed=65536 outcome=status=413
+[current-8.23.0] probe face=h2 status=413 location=yes framing=chunked run=1 head=413 bit=#t head-ms=13.722 ended-own=yes end-after-head-ms=0.012000000000000455 body="early 413\n" put=65536 handed=65536 outcome=status=413
+[current-8.23.0] probe face=h2 status=413 location=no framing=sized run=1 head=413 bit=#t head-ms=13.728 ended-own=yes end-after-head-ms=0.009000000000000341 body="early 413\n" put=65536 handed=65536 outcome=status=413
+[current-8.23.0] probe face=h2 status=413 location=no framing=chunked run=1 head=413 bit=#t head-ms=13.805 ended-own=yes end-after-head-ms=0.015000000000000568 body="early 413\n" put=65536 handed=65536 outcome=status=413
+[current-8.23.0] probe face=h2 status=200 location=yes framing=sized run=1 head=200 bit=#t head-ms=13.901 ended-own=yes end-after-head-ms=636.7270000000001 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[current-8.23.0] probe face=h2 status=200 location=yes framing=chunked run=1 head=200 bit=#t head-ms=15.291 ended-own=yes end-after-head-ms=641.2209999999999 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[current-8.23.0] probe face=h2 status=200 location=no framing=sized run=1 head=200 bit=#t head-ms=13.859 ended-own=yes end-after-head-ms=637.271 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[current-8.23.0] probe face=h2 status=200 location=no framing=chunked run=1 head=200 bit=#t head-ms=13.779 ended-own=yes end-after-head-ms=642.764 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[current-8.23.0] probe face=raw status=303 location=yes framing=sized run=1 head=303 bit=#t head-ms=13.731 ended-own=yes end-after-head-ms=0.016000000000000014 body="early 303\n" put=65536 handed=65536 outcome=status=303
+[current-8.23.0] probe face=raw status=303 location=yes framing=chunked run=1 head=303 bit=#t head-ms=12.113 ended-own=yes end-after-head-ms=0.12600000000000122 body="early 303\n" put=65536 handed=65536 outcome=status=303
+[current-8.23.0] probe face=raw status=303 location=no framing=sized run=1 head=303 bit=#t head-ms=12.154 ended-own=yes end-after-head-ms=0.0039999999999995595 body="early 303\n" put=65536 handed=65536 outcome=status=303
+[current-8.23.0] probe face=raw status=303 location=no framing=chunked run=1 head=303 bit=#t head-ms=12.145 ended-own=yes end-after-head-ms=0.0039999999999995595 body="early 303\n" put=65536 handed=65536 outcome=status=303
+[current-8.23.0] probe face=raw status=307 location=yes framing=sized run=1 head=307 bit=#t head-ms=12.016 ended-own=yes end-after-head-ms=0.0030000000000001137 body="early 307\n" put=65536 handed=65536 outcome=status=307
+[current-8.23.0] probe face=raw status=307 location=yes framing=chunked run=1 head=307 bit=#t head-ms=12.003 ended-own=yes end-after-head-ms=0.28200000000000003 body="early 307\n" put=65536 handed=65536 outcome=status=307
+[current-8.23.0] probe face=raw status=307 location=no framing=sized run=1 head=307 bit=#t head-ms=12.005 ended-own=yes end-after-head-ms=0.0029999999999983373 body="early 307\n" put=65536 handed=65536 outcome=status=307
+[current-8.23.0] probe face=raw status=307 location=no framing=chunked run=1 head=307 bit=#t head-ms=11.989 ended-own=yes end-after-head-ms=0.12099999999999866 body="early 307\n" put=65536 handed=65536 outcome=status=307
+[current-8.23.0] probe face=raw status=413 location=yes framing=sized run=1 head=413 bit=#t head-ms=12.112 ended-own=yes end-after-head-ms=0.002000000000000668 body="early 413\n" put=65536 handed=65536 outcome=status=413
+[current-8.23.0] probe face=raw status=413 location=yes framing=chunked run=1 head=413 bit=#t head-ms=12.107 ended-own=yes end-after-head-ms=0.1379999999999999 body="early 413\n" put=65536 handed=65536 outcome=status=413
+[current-8.23.0] probe face=raw status=413 location=no framing=sized run=1 head=413 bit=#t head-ms=12.053 ended-own=yes end-after-head-ms=0.13099999999999845 body="early 413\n" put=65536 handed=65536 outcome=status=413
+[current-8.23.0] probe face=raw status=413 location=no framing=chunked run=1 head=413 bit=#t head-ms=12.057 ended-own=yes end-after-head-ms=0.009000000000000341 body="early 413\n" put=65536 handed=65536 outcome=status=413
+[current-8.23.0] probe face=raw status=200 location=yes framing=sized run=1 head=200 bit=#t head-ms=12.21 ended-own=yes end-after-head-ms=636.535 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[current-8.23.0] probe face=raw status=200 location=yes framing=chunked run=1 head=200 bit=#t head-ms=13.781 ended-own=yes end-after-head-ms=641.946 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[current-8.23.0] probe face=raw status=200 location=no framing=sized run=1 head=200 bit=#t head-ms=13.828 ended-own=yes end-after-head-ms=636.783 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[current-8.23.0] probe face=raw status=200 location=no framing=chunked run=1 head=200 bit=#t head-ms=12.119 ended-own=yes end-after-head-ms=641.251 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[current-8.23.0] probe counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[current-8.23.0] probe exited 0 after about 45 s (124 is timeout's)
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-303-loc-sized-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-303-loc-chunked-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-303-noloc-sized-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-303-noloc-chunked-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-307-loc-sized-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-307-loc-chunked-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-307-noloc-sized-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-307-noloc-chunked-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-413-loc-sized-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-413-loc-chunked-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-413-noloc-sized-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-413-noloc-chunked-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-200-loc-sized-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-200-loc-chunked-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-200-noloc-sized-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-h2-200-noloc-chunked-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-303-loc-sized-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-303-loc-chunked-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-303-noloc-sized-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-303-noloc-chunked-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-307-loc-sized-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-307-loc-chunked-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-307-noloc-sized-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-307-noloc-chunked-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-413-loc-sized-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-413-loc-chunked-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-413-noloc-sized-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-413-noloc-chunked-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-200-loc-sized-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-200-loc-chunked-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-200-noloc-sized-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=probe-raw-200-noloc-chunked-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: counts h2:/answer-at=16 raw:/answer-at=16
+[floor-7.85.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+sha256sum: .plans/research/m6/slice3/probe.sps: No such file or directory
+[floor-7.85.0] program .plans/research/m6/slice3/probe.sps 
+[floor-7.85.0] libdirs src:tests:build/scheme-libs
+[floor-7.85.0] server {"node":"v20.10.0","pid":3194,"http":"127.0.0.1:41267","raw":"127.0.0.1:34061","https":"127.0.0.1:35195","h2":"127.0.0.1:36225","closed":"127.0.0.1:33221"}
+[floor-7.85.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 node v20.10.0
+[floor-7.85.0] probe libcurl 7.85.0 OpenSSL/3.0.13
+[floor-7.85.0] probe face=h2 status=303 location=yes framing=sized run=1 head=303 bit=#t head-ms=15.749 ended-own=yes end-after-head-ms=1.8710000000000004 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[floor-7.85.0] probe face=h2 status=303 location=yes framing=chunked run=1 head=303 bit=#t head-ms=15.39 ended-own=yes end-after-head-ms=5.393999999999998 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[floor-7.85.0] probe face=h2 status=303 location=no framing=sized run=1 head=303 bit=#t head-ms=15.348 ended-own=yes end-after-head-ms=6.115999999999998 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[floor-7.85.0] probe face=h2 status=303 location=no framing=chunked run=1 head=303 bit=#t head-ms=13.781 ended-own=yes end-after-head-ms=5.371999999999998 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[floor-7.85.0] probe face=h2 status=307 location=yes framing=sized run=1 head=307 bit=#t head-ms=15.34 ended-own=yes end-after-head-ms=6.087 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[floor-7.85.0] probe face=h2 status=307 location=yes framing=chunked run=1 head=307 bit=#t head-ms=13.759 ended-own=yes end-after-head-ms=5.378 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[floor-7.85.0] probe face=h2 status=307 location=no framing=sized run=1 head=307 bit=#t head-ms=13.729 ended-own=yes end-after-head-ms=6.929000000000002 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[floor-7.85.0] probe face=h2 status=307 location=no framing=chunked run=1 head=307 bit=#t head-ms=13.732 ended-own=yes end-after-head-ms=5.3770000000000024 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[floor-7.85.0] probe face=h2 status=413 location=yes framing=sized run=1 head=413 bit=#t head-ms=13.801 ended-own=yes end-after-head-ms=6.9399999999999995 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[floor-7.85.0] probe face=h2 status=413 location=yes framing=chunked run=1 head=413 bit=#t head-ms=13.713 ended-own=yes end-after-head-ms=5.372999999999999 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[floor-7.85.0] probe face=h2 status=413 location=no framing=sized run=1 head=413 bit=#t head-ms=13.686 ended-own=yes end-after-head-ms=6.9460000000000015 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[floor-7.85.0] probe face=h2 status=413 location=no framing=chunked run=1 head=413 bit=#t head-ms=13.774 ended-own=yes end-after-head-ms=5.3930000000000025 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[floor-7.85.0] probe face=h2 status=200 location=yes framing=sized run=1 head=200 bit=#t head-ms=13.725 ended-own=no end-after-head-ms=5000.468 body="early 200\n" put=262144 handed=196606 outcome=failed:cancelled:#f
+[floor-7.85.0] probe face=h2 status=200 location=yes framing=chunked run=1 head=200 bit=#t head-ms=17.322 ended-own=no end-after-head-ms=5002.207 body="early 200\n" put=262144 handed=196606 outcome=failed:cancelled:#f
+[floor-7.85.0] probe face=h2 status=200 location=no framing=sized run=1 head=200 bit=#t head-ms=15.333 ended-own=no end-after-head-ms=5002.832 body="early 200\n" put=262144 handed=196606 outcome=failed:cancelled:#f
+[floor-7.85.0] probe face=h2 status=200 location=no framing=chunked run=1 head=200 bit=#t head-ms=15.375 ended-own=no end-after-head-ms=5009.689 body="early 200\n" put=262144 handed=196606 outcome=failed:cancelled:#f
+[floor-7.85.0] probe face=raw status=303 location=yes framing=sized run=1 head=303 bit=#t head-ms=13.859 ended-own=yes end-after-head-ms=5.641 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[floor-7.85.0] probe face=raw status=303 location=yes framing=chunked run=1 head=303 bit=#t head-ms=13.857 ended-own=yes end-after-head-ms=5.6030000000000015 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[floor-7.85.0] probe face=raw status=303 location=no framing=sized run=1 head=303 bit=#t head-ms=13.739 ended-own=yes end-after-head-ms=5.349999999999998 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[floor-7.85.0] probe face=raw status=303 location=no framing=chunked run=1 head=303 bit=#t head-ms=13.677 ended-own=yes end-after-head-ms=5.439 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[floor-7.85.0] probe face=raw status=307 location=yes framing=sized run=1 head=307 bit=#t head-ms=13.847 ended-own=yes end-after-head-ms=5.831999999999999 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[floor-7.85.0] probe face=raw status=307 location=yes framing=chunked run=1 head=307 bit=#t head-ms=13.704 ended-own=yes end-after-head-ms=5.616 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[floor-7.85.0] probe face=raw status=307 location=no framing=sized run=1 head=307 bit=#t head-ms=13.714 ended-own=yes end-after-head-ms=5.3519999999999985 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[floor-7.85.0] probe face=raw status=307 location=no framing=chunked run=1 head=307 bit=#t head-ms=13.682 ended-own=yes end-after-head-ms=5.359 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[floor-7.85.0] probe face=raw status=413 location=yes framing=sized run=1 head=413 bit=#t head-ms=13.701 ended-own=yes end-after-head-ms=5.343 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[floor-7.85.0] probe face=raw status=413 location=yes framing=chunked run=1 head=413 bit=#t head-ms=12.015 ended-own=yes end-after-head-ms=5.334 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[floor-7.85.0] probe face=raw status=413 location=no framing=sized run=1 head=413 bit=#t head-ms=13.835 ended-own=yes end-after-head-ms=5.692 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[floor-7.85.0] probe face=raw status=413 location=no framing=chunked run=1 head=413 bit=#t head-ms=13.865 ended-own=yes end-after-head-ms=5.525 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[floor-7.85.0] probe face=raw status=200 location=yes framing=sized run=1 head=200 bit=#t head-ms=13.874 ended-own=yes end-after-head-ms=635.414 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[floor-7.85.0] probe face=raw status=200 location=yes framing=chunked run=1 head=200 bit=#t head-ms=13.7 ended-own=yes end-after-head-ms=642.144 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[floor-7.85.0] probe face=raw status=200 location=no framing=sized run=1 head=200 bit=#t head-ms=13.766 ended-own=yes end-after-head-ms=637.931 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[floor-7.85.0] probe face=raw status=200 location=no framing=chunked run=1 head=200 bit=#t head-ms=12.185 ended-own=yes end-after-head-ms=642.3520000000001 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[floor-7.85.0] probe counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[floor-7.85.0] probe exited 0 after about 23 s (124 is timeout's)
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-303-loc-sized-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-303-loc-chunked-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-303-noloc-sized-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-303-noloc-chunked-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-307-loc-sized-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-307-loc-chunked-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-307-noloc-sized-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-307-noloc-chunked-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-413-loc-sized-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-413-loc-chunked-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-413-noloc-sized-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-413-noloc-chunked-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-200-loc-sized-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-200-loc-chunked-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-200-noloc-sized-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-h2-200-noloc-chunked-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-303-loc-sized-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-303-loc-chunked-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-303-noloc-sized-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-303-noloc-chunked-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-307-loc-sized-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-307-loc-chunked-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-307-noloc-sized-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-307-noloc-chunked-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-413-loc-sized-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-413-loc-chunked-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-413-noloc-sized-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-413-noloc-chunked-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-200-loc-sized-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-200-loc-chunked-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-200-noloc-sized-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=probe-raw-200-noloc-chunked-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: counts h2:/answer-at=16 raw:/answer-at=16
+[ubuntu-openssl-8.5.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+sha256sum: .plans/research/m6/slice3/probe.sps: No such file or directory
+[ubuntu-openssl-8.5.0] program .plans/research/m6/slice3/probe.sps 
+[ubuntu-openssl-8.5.0] libdirs src:tests:build/scheme-libs
+[ubuntu-openssl-8.5.0] server {"node":"v20.10.0","pid":3271,"http":"127.0.0.1:39753","raw":"127.0.0.1:46721","https":"127.0.0.1:40419","h2":"127.0.0.1:33317","closed":"127.0.0.1:34201"}
+[ubuntu-openssl-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 node v20.10.0
+[ubuntu-openssl-8.5.0] probe libcurl 8.5.0 OpenSSL/3.0.13
+[ubuntu-openssl-8.5.0] probe face=h2 status=303 location=yes framing=sized run=1 head=303 bit=#t head-ms=17.225 ended-own=yes end-after-head-ms=1.0199999999999996 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[ubuntu-openssl-8.5.0] probe face=h2 status=303 location=yes framing=chunked run=1 head=303 bit=#t head-ms=15.349 ended-own=yes end-after-head-ms=5.6419999999999995 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[ubuntu-openssl-8.5.0] probe face=h2 status=303 location=no framing=sized run=1 head=303 bit=#t head-ms=13.721 ended-own=yes end-after-head-ms=5.375 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[ubuntu-openssl-8.5.0] probe face=h2 status=303 location=no framing=chunked run=1 head=303 bit=#t head-ms=13.737 ended-own=yes end-after-head-ms=6.066000000000001 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[ubuntu-openssl-8.5.0] probe face=h2 status=307 location=yes framing=sized run=1 head=307 bit=#t head-ms=13.766 ended-own=yes end-after-head-ms=5.368 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[ubuntu-openssl-8.5.0] probe face=h2 status=307 location=yes framing=chunked run=1 head=307 bit=#t head-ms=12.008 ended-own=yes end-after-head-ms=5.614000000000001 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[ubuntu-openssl-8.5.0] probe face=h2 status=307 location=no framing=sized run=1 head=307 bit=#t head-ms=12.023 ended-own=yes end-after-head-ms=5.612000000000002 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[ubuntu-openssl-8.5.0] probe face=h2 status=307 location=no framing=chunked run=1 head=307 bit=#t head-ms=12.04 ended-own=yes end-after-head-ms=5.614000000000001 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[ubuntu-openssl-8.5.0] probe face=h2 status=413 location=yes framing=sized run=1 head=413 bit=#t head-ms=12.01 ended-own=yes end-after-head-ms=5.619999999999999 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[ubuntu-openssl-8.5.0] probe face=h2 status=413 location=yes framing=chunked run=1 head=413 bit=#t head-ms=13.735 ended-own=yes end-after-head-ms=6.089000000000002 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[ubuntu-openssl-8.5.0] probe face=h2 status=413 location=no framing=sized run=1 head=413 bit=#t head-ms=13.707 ended-own=yes end-after-head-ms=6.064 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[ubuntu-openssl-8.5.0] probe face=h2 status=413 location=no framing=chunked run=1 head=413 bit=#t head-ms=21.644 ended-own=yes end-after-head-ms=0.019000000000001904 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[ubuntu-openssl-8.5.0] probe face=h2 status=200 location=yes framing=sized run=1 head=200 bit=#t head-ms=13.691 ended-own=yes end-after-head-ms=0.013999999999999346 body="early 200\n" put=65536 handed=65536 outcome=status=200
+[ubuntu-openssl-8.5.0] probe face=h2 status=200 location=yes framing=chunked run=1 head=200 bit=#t head-ms=13.714 ended-own=yes end-after-head-ms=0.009999999999999787 body="early 200\n" put=65536 handed=65536 outcome=status=200
+[ubuntu-openssl-8.5.0] probe face=h2 status=200 location=no framing=sized run=1 head=200 bit=#t head-ms=13.736 ended-own=yes end-after-head-ms=0.014999999999998792 body="early 200\n" put=65536 handed=65536 outcome=status=200
+[ubuntu-openssl-8.5.0] probe face=h2 status=200 location=no framing=chunked run=1 head=200 bit=#t head-ms=13.75 ended-own=yes end-after-head-ms=0.0129999999999999 body="early 200\n" put=65536 handed=65536 outcome=status=200
+[ubuntu-openssl-8.5.0] probe face=raw status=303 location=yes framing=sized run=1 head=303 bit=#t head-ms=12.077 ended-own=yes end-after-head-ms=5.372000000000002 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[ubuntu-openssl-8.5.0] probe face=raw status=303 location=yes framing=chunked run=1 head=303 bit=#t head-ms=13.704 ended-own=yes end-after-head-ms=5.373999999999999 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[ubuntu-openssl-8.5.0] probe face=raw status=303 location=no framing=sized run=1 head=303 bit=#t head-ms=11.975 ended-own=yes end-after-head-ms=5.381000000000002 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[ubuntu-openssl-8.5.0] probe face=raw status=303 location=no framing=chunked run=1 head=303 bit=#t head-ms=12.049 ended-own=yes end-after-head-ms=5.373999999999999 body="early 303\n" put=131072 handed=65536 outcome=status=303
+[ubuntu-openssl-8.5.0] probe face=raw status=307 location=yes framing=sized run=1 head=307 bit=#t head-ms=13.699 ended-own=yes end-after-head-ms=5.3370000000000015 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[ubuntu-openssl-8.5.0] probe face=raw status=307 location=yes framing=chunked run=1 head=307 bit=#t head-ms=13.731 ended-own=yes end-after-head-ms=5.356 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[ubuntu-openssl-8.5.0] probe face=raw status=307 location=no framing=sized run=1 head=307 bit=#t head-ms=12.038 ended-own=yes end-after-head-ms=5.385999999999999 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[ubuntu-openssl-8.5.0] probe face=raw status=307 location=no framing=chunked run=1 head=307 bit=#t head-ms=13.674 ended-own=yes end-after-head-ms=5.349 body="early 307\n" put=131072 handed=65536 outcome=status=307
+[ubuntu-openssl-8.5.0] probe face=raw status=413 location=yes framing=sized run=1 head=413 bit=#t head-ms=12.047 ended-own=yes end-after-head-ms=5.218999999999998 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[ubuntu-openssl-8.5.0] probe face=raw status=413 location=yes framing=chunked run=1 head=413 bit=#t head-ms=13.699 ended-own=yes end-after-head-ms=5.327 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[ubuntu-openssl-8.5.0] probe face=raw status=413 location=no framing=sized run=1 head=413 bit=#t head-ms=12.05 ended-own=yes end-after-head-ms=5.358999999999998 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[ubuntu-openssl-8.5.0] probe face=raw status=413 location=no framing=chunked run=1 head=413 bit=#t head-ms=12.041 ended-own=yes end-after-head-ms=5.285 body="early 413\n" put=131072 handed=65536 outcome=status=413
+[ubuntu-openssl-8.5.0] probe face=raw status=200 location=yes framing=sized run=1 head=200 bit=#t head-ms=12.039 ended-own=yes end-after-head-ms=636.758 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[ubuntu-openssl-8.5.0] probe face=raw status=200 location=yes framing=chunked run=1 head=200 bit=#t head-ms=15.334 ended-own=yes end-after-head-ms=641.701 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[ubuntu-openssl-8.5.0] probe face=raw status=200 location=no framing=sized run=1 head=200 bit=#t head-ms=12.057 ended-own=yes end-after-head-ms=648.207 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[ubuntu-openssl-8.5.0] probe face=raw status=200 location=no framing=chunked run=1 head=200 bit=#t head-ms=12.087 ended-own=yes end-after-head-ms=641.932 body="early 200\n" put=4194304 handed=4194304 outcome=status=200
+[ubuntu-openssl-8.5.0] probe counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[ubuntu-openssl-8.5.0] probe exited 0 after about 4 s (124 is timeout's)
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-303-loc-sized-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-303-loc-chunked-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-303-noloc-sized-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-303-noloc-chunked-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-307-loc-sized-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-307-loc-chunked-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-307-noloc-sized-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-307-noloc-chunked-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-413-loc-sized-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-413-loc-chunked-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-413-noloc-sized-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-413-noloc-chunked-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-200-loc-sized-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-200-loc-chunked-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-200-noloc-sized-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-h2-200-noloc-chunked-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-303-loc-sized-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-303-loc-chunked-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-303-noloc-sized-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-303-noloc-chunked-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-307-loc-sized-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-307-loc-chunked-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-307-noloc-sized-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-307-noloc-chunked-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-413-loc-sized-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-413-loc-chunked-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-413-noloc-sized-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-413-noloc-chunked-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-200-loc-sized-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-200-loc-chunked-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-200-noloc-sized-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=probe-raw-200-noloc-chunked-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: counts h2:/answer-at=16 raw:/answer-at=16
+exit 0

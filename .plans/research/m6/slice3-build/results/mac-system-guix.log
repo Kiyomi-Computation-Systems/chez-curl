@@ -1,0 +1,5 @@
+mac-system ta6le
+Linux 7.1.1-76070101-generic
+(main-ms 1002 thread-ms 1003 both-ms 1013)
+(main-ms 1003 thread-ms 1003 both-ms 1013)
+(main-ms 1002 thread-ms 1002 both-ms 1012)

@@ -9,53 +9,63 @@ close-out under **Close-outs**, newest first.
 - **Milestone:** M6, streaming bodies and backpressure (brief §8), by the
   [M6 plan](2026-10-29-m6-plan.md), a draft, in three slices: the response stream with the
   engine's resume and paced poll; the request stream; the high level.
-  - **Slice 1 is merged** (PR #36, `f0c69d3`): the response stream, the engine's resume, the
-    look and the paced poll. The Mac has run it. Its close-out is below.
-  - **Slice 2, the request stream** (the plan, §5), on `feat/m6-slice-2`.
-    - **Measured first, 2026-10-30** (the plan, §5.1, as measured;
-      [`research/m6/slice2/`](research/m6/slice2/)): an Opus agent, on a prototype of §3.3, two
-      runs on each of the five Linux lanes, and under Valgrind on 8.5.0 and 8.20.0. It
-      confirmed §3.3's framing, the offer cap, `FRESH_CONNECT`, the seek's refusal and the
-      committed put, and that libcurl's own resend starts unpaused. It found:
-      - an early answer ends the transfer, or not, by version;
-      - 8.5.0 resends a refused HTTP/2 stream with no seek in 4 runs of 8, and only the
-        prerequest callable stops it;
-      - 7.85.0 spins its poll during a paused HTTP/2 upload, which the pacing answers;
-      - a paused receive stops an HTTP/2 send on every lane.
+  - **Slices 1 and 2 are merged:** the response stream, the engine's resume, the look and the
+    paced poll (PR #36, `f0c69d3`); the request stream and the head's body-asked bit (PR #37,
+    `777fa68`). The Mac has run both. Their close-outs are below.
+  - **Slice 3, the high level** (the plan, §6), on `feat/m6-slice-3`.
+    - **Measured first, 2026-10-31** (the plan, §6.1, as measured;
+      [`research/m6/slice3/`](research/m6/slice3/)): an Opus agent, on main's own `src/` with a
+      drive of its own at the low level, on the five Linux lanes and under Valgrind on 8.5.0 and
+      8.20.0. It found:
+      - on 7.85.0 and 8.5.0 libcurl never asks for the body after an early head of 300 or more,
+        but does after an early 200 kept alive, so the final head is fed whenever libcurl asks;
+        my brief had said never, which the plan had said of a hop alone;
+      - a port that does not feed stalls a full-duplex server on every lane;
+      - strict alternation of the drive's waits costs one bound per 64 KiB; waiting 0 ms on a
+        side while the other has just moved bytes gave 24 to 213 MB/s at a 10 ms bound.
 
-      It also found a defect in main, which I reproduced: the unpaced and unmultiplexed test
-      engines fail at their first resume. The plan's §3.7 gains six rows. Nothing needed a
-      decision.
-    - **Built, 2026-10-30 to 31,** uncommitted (the plan, §5.2, as built):
-      - the `body` `stream` and `body-length` keys;
-      - the read, seek and prerequest callables, and `FRESH_CONNECT` owned;
-      - `curl-token-room-wait`, `curl-token-put-piece!`, `curl-token-end-body!` and
-        `curl-token-body-count`;
-      - `curl-head-body-asked?`;
-      - `body-length-mismatch` and `body-not-replayable`;
-      - test-upload, 58 tests.
+      I reran its counts from its logs. Its server sent `Location` with its 3xx alone, so I
+      crossed them ([`verify/`](research/m6/slice3/verify/)): on 8.20.0 and 8.23.0 an HTTP/2
+      3xx while a body is owed never ends, whole bodies too, so main's `http-request` meets it,
+      and curl's own command-line tool does too.
+    - **Decided by the maintainer, 2026-10-31,** each the recommended option (ADR-0031,
+      amended): a call that sends a body cancels each hop at its head; and libcurl's defect is
+      documented, pinned by version and reported. A curl bug report is drafted for the
+      maintainer to file ([draft](research/m6/slice3/verify/curl-bug-report.md)).
+    - **Built, 2026-10-31 to 11-01,** uncommitted (the plan, §6.2, as built): an Opus builder,
+      with an origin agent and a review of its own:
+      - `call-with-response-port`, a producer as `body` with `body-length`;
+      - the head's predicate;
+      - hops cancelled at their head in a streamed call that sends a body;
+      - `body-not-replayable` and `stream-in-group`;
+      - test-stream-call, 77 tests.
 
-      **Decided by the maintainer, 2026-10-31,** each the recommended option (ADR-0030,
+      **Decided by the maintainer** along the way, each the recommended option (ADR-0031,
       amended):
-      - a put past `body-length` fails the transfer, read as its outcome is, since libcurl calls
-        the read callable no more once it has the length;
-      - slice 2 builds the head's body-asked bit, which slice 3's at-most-once rule needs.
+      - a producer's piece past `body-length` is `&http-request-error`;
+      - a streamed call whose retry runs out after its hop was cancelled fails with
+        `&http-timeout`.
 
-      Reviewed (Opus, read-only): no blocker. One major: the by-version tests passed on a
-      libcurl with no row, slice 1's `spin-rows` too, so the Mac's run would have measured
-      nothing. Fixed in a round by the builder. A scoped review of that round (Opus,
-      read-only) found the body-asked test could not tell the bit from "the body streams";
-      **decided by the maintainer, the recommended option:** measure and pin it now. Unheld,
-      an answer sent at accept raced libcurl's request. With the engine's thread held after
-      connect by a private seam, the bit reads `#f` on 7.85.0 and 8.5.0, `#t` on 8.20.0 and
-      8.23.0, which test-upload pins by version.
-    - **Pushed as PR #37** (`8c3c8f0`). **The Mac ran it, 2026-10-31** (the plan, §7):
-      `make test` passed 33 of 34, test-upload failing only its two tests with no 8.7.1 row,
-      each printing the row it measured. The rows were added from that run (`8379e10`). The
-      Mac's rerun of test-upload held every cell but HTTP/2's 200, sized, which ended 55
-      where it had ended 200: 8.7.1's splits as 8.20.0's does, so its cell now asserts the wait
-      alone. The third run, on `e075862`, passed test-upload, 58 of 58. Slice 2 owes the Mac
-      nothing more.
+      I accepted asking the producer for its end once its puts reach the length, since libcurl
+      has asked by then.
+    - **Reviewed twice** (Opus, read-only), each finding reproduced before its fix round. The
+      adversarial review found no blocker and four majors:
+      - a Ctrl-C landing as the producer returned lost its piece, and a chunked upload
+        succeeded with a corrupt body;
+      - a failure with no head after the producer was called was untested;
+      - a survivor said unreachable was reachable;
+      - the hop's draw was unchecked.
+
+      The scoped review found no blocker and one major: a test seam kept the last call's body
+      alive, 64.1 MB.
+    - **Pushed as PR #38** (`b4a5e08`). **The Mac ran it, 2026-11-01** (the plan, §7): 33 of
+      35. test-stream-call's two by-version tests printed 8.7.1's rows, which are added: 8.7.1
+      ends the HTTP/2 3xx, and asks with the head. Its refused connect made one transfer, by
+      8.7.x's unknown request size, which the test now holds. test-origin's hold never saw its
+      release: on the Mac two threads' `system` calls run one after the other, which a timing
+      check then measured (`traps.md`). The probe now starts through `open-process-ports`. The
+      rerun passed test-stream-call and test-origin, 77 and 327, and Apple's curl 8.7.1 ended
+      the bug report's 303 at once.
   - **The plan measured first** ([`research/m6/`](research/m6/)):
     - a C probe whose loop steps as the engine does, 30 cases on the five Linux libcurls, two
       runs each ([`pause/`](research/m6/pause/));
@@ -221,6 +231,90 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-10-31 — M6 slice 2: the request stream (PR #37, `777fa68`)
+
+- **Measured first** (the M6 plan, §5.1, as measured;
+  [`research/m6/slice2/`](research/m6/slice2/)), by an Opus agent, on a prototype of the plan's
+  §3.3 and the send half of §3.4 and §3.5, two runs on each of the five Linux lanes, and under
+  Valgrind on 8.5.0 and 8.20.0:
+  - the framing held: 320 transfers of 320 whole by SHA-256, with no `Expect` nor
+    `Content-Type` sent;
+  - an early answer ends the transfer, or not, by version, which §3.7's six new rows say;
+  - with `FRESH_CONNECT` no dead pooled connection was met, 100 of 100, and every resend after
+    a byte was handed ended `body-not-replayable`, 70 of 70;
+  - 8.5.0 resent a refused HTTP/2 stream with no seek in 4 runs of 8, and only the prerequest
+    callable refused it;
+  - 7.85.0's poll spun during a paused HTTP/2 upload, which the pacing answers;
+  - a paused receive stops an HTTP/2 send on every lane.
+
+  It also found a defect in main, which I reproduced on main's own `src/`: the unpaced and
+  unmultiplexed test engines failed at their first resume, since slice 1's tests only cancelled
+  on them. Nothing needed a decision.
+- **Decided by the maintainer, 2026-10-31,** each the recommended option (ADR-0030, amended
+  twice):
+  - a put past `body-length` fails the transfer, read where the outcome is, since libcurl calls
+    the read callable no more once it has the length;
+  - slice 2 builds the head's body-asked bit, `curl-head-body-asked?`, which slice 3's
+    at-most-once rule reads; the plan had given it no slice and no accessor;
+  - its `#f` case is measured and pinned now, not left to slice 3.
+- **Built** (the plan, §5.2, as built), by an Opus builder, its origin work by an Opus agent of
+  its own in a tree copy:
+  - the `body` `stream` and `body-length` keys;
+  - the read, seek and prerequest callables, their options and `FRESH_CONNECT` owned;
+  - `curl-token-room-wait`, `curl-token-put-piece!`, `curl-token-end-body!`,
+    `curl-token-body-count` and `curl-head-body-asked?`;
+  - `body-length-mismatch` and `body-not-replayable`;
+  - the seamed engines' resume fixed, and a race in the probe seam's arming.
+
+  `tests/origin.mjs` gained the sinks, `/raw/answer`, `/answer`, `/refuse` and `/raw/arm`,
+  each held by `test-origin`. `test-upload` holds 58 tests. README.org says how to send a body
+  as it is produced. ADR-0009, ADR-0013 and ADR-0030 are amended.
+- **Reviewed twice** (Opus, read-only):
+  - the adversarial review: no blocker, one major and a set of minors. The major: every
+    by-version test, slice 1's `spin-rows` too, built both its sides from "no row" on a libcurl
+    it had no row for, so it passed there, and the Mac's run would have measured nothing. A
+    missing row now fails, printing the row. Among the minors: "once" was untested, and a put
+    answered `done` before its token was done;
+  - the scoped review of the fix round: the body-asked test could not tell the bit from "the
+    body streams and is not empty". An answer written as the origin accepts raced libcurl's
+    request: natively libcurl's went first, 100 of 100, and under Valgrind the answer did, 20
+    of 20. With the engine's thread held after connect by a private seam, the bit reads `#f` on
+    7.85.0 and 8.5.0 and `#t` on 8.20.0 and 8.23.0, pinned by version.
+- **Mutants:** of the builder's 49 on the first build, 44 were killed; the three later rounds
+  killed their 22, `close-ignored` and the review's body-asked mutant among them. Four survive,
+  each accounted for in the plan's §5.2. The origin's 64 were all killed. Of mine, 6 were killed
+  on Guix's 8.20.0, the outcome's refusal ignored on 7.85.0 and 8.5.0 too; and on the final tree,
+  8.20.0's rows deleted failed all four by-version tests.
+- **Checks,** on the final tree: in the container, `make test` 34 of 34, with check-seam,
+  check-suites and check-floors; in Docker, the floor, main, gnutls and current lanes 34 of 34
+  each, and the memory lane 34 of 34.
+- **The Mac ran it, 2026-10-31** (the plan, §7): `make test` passed 33 of 34, test-upload
+  failing only its two tests with no 8.7.1 row, each printing the row it measured, which was
+  added. The rerun held every cell but HTTP/2's 200, sized, which ended 55 where it had ended
+  200, so that cell asserts the wait alone. The third run passed test-upload, 58 of 58.
+- **Subagents,** every one Opus:
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | measurements | 782k | 87 min |
+  | builder | 930k | 295 min |
+  | the builder's origin agent | about 452k | about 55 min |
+  | the builder's internal review | about 381k | about 21 min |
+  | adversarial review | 466k | 32 min |
+  | builder, fix round, resumed | 945k, the resume's line, not the round's | 72 min |
+  | scoped review of the fixes | 251k | 19 min |
+  | round 3 | 102k | 42 min |
+  | round 4 | 206k | 36 min |
+- **Learned:**
+  - measuring first found a defect in main again, in a path slice 1's tests never reached;
+  - both of the maintainer's decisions came from gaps in the plan, not in the code: a put past
+    the length once libcurl stops reading, and a bit with no owner;
+  - the review's major was a pattern slice 1 had shipped: a by-version test whose two sides
+    agree on "no row" measures nothing;
+  - a test of a bit must be watched failing against a constant: the hold seam came from that,
+    and with it the race at accept, which Valgrind flips;
+  - one run cannot give a row: the Mac's second run split a cell the first had pinned.
 
 ### 2026-10-30 — M6 slice 1: the response stream, resume and the paced poll (PR #36, `f0c69d3`)
 

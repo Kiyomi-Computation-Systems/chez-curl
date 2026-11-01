@@ -1,0 +1,21 @@
+# The maintainer's Mac, 2026-11-01, on feat/m6-slice-3 at 6c97418 (PR #38), 8.7.1's rows
+# added and test-origin's hold through open-process-ports:
+#   git pull --ff-only && make test NODE="$(asdf which node)" SUITES="tests/test-stream-call.sps tests/test-origin.sps"
+# Apple's libcurl 8.7.1. Pasted from the terminal, from make's first line on.
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (2 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-stream-call.sps
+%%%% Starting test stream-call
+(stream-call-throughput raw ms 532)
+(stream-call-throughput h2 ms 784)
+(stream-call-idle-cpu ms 22613/1000)
+# of expected passes      77
+test: pass tests/test-stream-call.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      327
+# of skipped tests        1
+test: pass tests/test-origin.sps
+test: ran 2, passed 2, failed 0, hung 0

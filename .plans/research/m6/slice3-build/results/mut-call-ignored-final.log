@@ -1,0 +1,19 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-stream-call.sps
+%%%% Starting test stream-call
+(stream-call-throughput raw ms 486)
+(stream-call-throughput h2 ms 362)
+(stream-call-idle-cpu ms 7746221/1000000)
+FAIL raw: a failure with no head, after the producer was called: under a policy that retries a post's send-receive failure, the call raises the transfer's own failure, perform-failed, of the send-receive class, one transfer, never retried; the producer called; the origin saw one upload
+  expected: ((raised (curl-transfer-error send-receive perform-failed) (exchange post "http://127.0.0.1:33221/raw/cut?key=sc-cut&after=65536" () 1)) called "seen 1\n")
+  actual:   ((raised (assertion drive-stream)) called "seen 1\n")
+# of expected passes      74
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 74, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-stream-call.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1
+exit 2
