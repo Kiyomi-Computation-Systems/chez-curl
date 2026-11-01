@@ -1239,6 +1239,14 @@ it should not be a comment. (chez-cmark-gfm)
   client after connect, by a seam; one that cannot hold it asserts what holds both ways.
   (chez-curl, M6 slice 2's build)
 
+  An answer written as the head arrives races libcurl's first ask for the body the same way.
+  test-upload's body-asked check held `#t` for `/raw/answer`, 5 runs of 5 on each lane, and on
+  CI's memory lane 8.5.0 read the answer first once: `#f` ([research](research/ci-first-run/)),
+  which Valgrind here, at half a CPU too, did not repeat.
+  A prerequest hold does not order it: the answer waits for the head, which the hold delays too,
+  and held runs read `#t` on 7.85.0 and 8.5.0. The case now asserts what holds both ways, that
+  its bit is whether the read callable was ever asked. (chez-curl, CI's first run)
+
 * **On 8.20.0 and 8.23.0, an HTTP/2 3xx that arrives before a request's body is sent whole never
   ends the transfer.** libcurl logs "HTTP error before end of send, stop sending", aborts the
   upload, holds the whole response, then waits for its timeout: "Operation timed out after 5006

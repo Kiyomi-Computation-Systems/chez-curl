@@ -494,7 +494,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * A server's answer written as it accepts a connection races the client's
   request: natively libcurl's went first 100 of 100, under Valgrind the answer
   did, 20 of 20. A test that needs the answer first holds the client after
-  connect; one that cannot asserts what holds both ways.
+  connect; one that cannot asserts what holds both ways. An answer written as
+  the head arrives races libcurl's first ask for the body too, and a hold
+  before the request does not order it.
 * On 8.20.0 and 8.23.0, an HTTP/2 3xx that arrives before a request's body is
   sent whole never ends the transfer: libcurl aborts the upload, holds the whole
   response, and waits for its timeout, or for ever; a 413 ends at once. A test

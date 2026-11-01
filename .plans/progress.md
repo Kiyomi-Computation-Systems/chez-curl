@@ -31,10 +31,12 @@ close-out under **Close-outs**, newest first.
     540 ms late, past the 500 ms it had to spare, which half a CPU reproduced here. It is now
     2,000 ms of a 3,500 ms bound, 1,400 ms to spare, and PR #39's second run passed every job;
   - the memory lane failed two of test-upload's tests in each of two runs, which its output did
-    not name. They are still unexplained: PR #39's first memory run passed test-upload, and
-    nothing here reproduces them. `make test-memory` now prints a failing suite's FAIL lines,
-    with their expected and actual values, each line once, and `check-memory-gate` holds that,
-    so a repeat names them.
+    not name. `make test-memory` now prints a failing suite's FAIL lines, with their expected and
+    actual values, each line once, and `check-memory-gate` holds that. PR #39's third run named
+    one: the head's body-asked bit read `#f` for `/raw/answer`, whose answer, written as the head
+    arrives, came before libcurl's first ask, the race slice 2 met at accept. That case now
+    asserts its bit is whether the read callable was ever asked. Whether it was one of the two,
+    and what the other was, is not shown.
 
   **Reviewed** (Opus, read-only, 234k tokens, 17 min): no blocker, two majors and five minors,
   each answered. The majors: my records read the fill's own one-second rounds as the kernel's

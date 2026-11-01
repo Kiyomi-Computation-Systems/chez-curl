@@ -712,9 +712,15 @@
   ;; streamed body libcurl asks for, a server's answer before it reads the
   ;; body included, since the first ask comes with the head or as it is
   ;; sent; #f for a whole body, none, and a length of 0, which libcurl
-  ;; never asks for. No case's answer moves by version.
-  (test-equal "the head's body-asked bit: #t for a streamed body whose server answers before reading it, over HTTP/1.1 with a close and over HTTP/2, nothing put by the head; #t for one whose server reads it before answering, on the raw face and over HTTP/2; #f for a whole body, for none, and for a streamed length of 0, which libcurl never asks for"
-    '((raw-answer #t) (h2-answer #t) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+  ;; never asks for. No case's answer moves by version. The raw face's
+  ;; answer, written as the head arrives, races libcurl's first ask: under
+  ;; Valgrind on CI's runner it came first once, the bit #f
+  ;; (research/ci-first-run), so raw-answer's bit is whether the read
+  ;; callable was ever asked, as with the answer written at accept below:
+  ;; 7.85.0 and 8.5.0 stop sending once they read a final answer with a
+  ;; close.
+  (test-equal "the head's body-asked bit: #t for a streamed body whose server answers before reading it over HTTP/2, nothing put by the head, and over HTTP/1.1 with a close, a race, whether the read callable was ever asked; #t for one whose server reads it before answering, on the raw face and over HTTP/2; #f for a whole body, for none, and for a streamed length of 0, which libcurl never asks for"
+    '((raw-answer bit-is-ask) (h2-answer #t) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
     (map (lambda (row)
            (on-own-engine make-curl-engine
              (lambda (own)
@@ -739,7 +745,10 @@
                    (curl-token-end-body! t))
                  (let drain () (when (bytevector? (curl-token-next-piece t 5000)) (drain)))
                  (curl-token-wait t 20000)
-                 (list name asked)))))
+                 (if (eq? name 'raw-answer)
+                     (let ((ask (and (ustat t 'asked) #t)))
+                       (list name (if (and (boolean? asked) (eq? asked ask)) 'bit-is-ask (list 'bit asked 'ask ask))))
+                     (list name asked))))))
          '((raw-answer raw "/raw/answer?status=200&close=1" stream #f)
            (h2-answer h2 "/answer?status=200" stream #f)
            (raw-sink raw "/raw/sink?key=asked-raw" stream 1000)

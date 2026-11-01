@@ -1,0 +1,42 @@
+# PR #39's third run, at 613bf27, the memory job (124980298018): test-memory's lines and the failing suite's FAIL lines, from the job's log; every other job passed
+2026-11-01T21:15:16.0422594Z test-memory: pass tests/test-check-floors.sps
+2026-11-01T21:15:28.3208776Z test-memory: pass tests/test-check-nothreads.sps
+2026-11-01T21:15:45.1116899Z test-memory: pass tests/test-check-seam.sps
+2026-11-01T21:16:03.3794416Z test-memory: pass tests/test-collect-safe.sps
+2026-11-01T21:16:15.1068325Z test-memory: pass tests/test-conditions.sps
+2026-11-01T21:16:40.5791194Z test-memory: pass tests/test-constants.sps
+2026-11-01T21:17:33.6730526Z test-memory: pass tests/test-curl-testing.sps
+2026-11-01T21:17:45.6168439Z test-memory: pass tests/test-discovery.sps
+2026-11-01T21:18:04.4541799Z test-memory: pass tests/test-drift.sps
+2026-11-01T21:18:57.3357149Z test-memory: pass tests/test-engine.sps
+2026-11-01T21:20:25.7553925Z test-memory: pass tests/test-group.sps
+2026-11-01T21:21:08.6440897Z test-memory: pass tests/test-http-client.sps
+2026-11-01T21:21:56.9342057Z test-memory: pass tests/test-library-loading.sps
+2026-11-01T21:22:07.3004263Z test-memory: pass tests/test-load-state.sps
+2026-11-01T21:22:34.9730921Z test-memory: pass tests/test-mailbox.sps
+2026-11-01T21:22:45.1784418Z test-memory: pass tests/test-manifest.sps
+2026-11-01T21:23:07.1269834Z test-memory: pass tests/test-memory-safety.sps
+2026-11-01T21:23:25.8745878Z test-memory: pass tests/test-native.sps
+2026-11-01T21:24:35.5709620Z test-memory: pass tests/test-origin-tls.sps
+2026-11-01T21:26:09.6776361Z test-memory: pass tests/test-origin.sps
+2026-11-01T21:26:38.6898849Z test-memory: pass tests/test-redirect.sps
+2026-11-01T21:27:03.8659756Z test-memory: pass tests/test-request.sps
+2026-11-01T21:27:16.2385716Z test-memory: pass tests/test-require-threaded.sps
+2026-11-01T21:28:01.3260150Z test-memory: pass tests/test-retry.sps
+2026-11-01T21:29:15.6718662Z test-memory: pass tests/test-stream-call.sps
+2026-11-01T21:30:46.7101430Z test-memory: pass tests/test-stream.sps
+2026-11-01T21:31:21.9400483Z test-memory: pass tests/test-transfer-tls.sps
+2026-11-01T21:31:59.0797671Z test-memory: pass tests/test-transfer.sps
+2026-11-01T21:32:21.7672276Z test-memory: pass tests/test-unsupported.sps
+2026-11-01T21:34:35.9495838Z test-memory: FAIL tests/test-upload.sps (exit 1)
+2026-11-01T21:34:35.9521059Z   ==49037==    definitely lost: 0 bytes in 0 blocks
+2026-11-01T21:34:35.9522765Z   ==49037== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+2026-11-01T21:34:35.9554756Z   | FAIL the head's body-asked bit: #t for a streamed body whose server answers before reading it, over HTTP/1.1 with a close and over HTTP/2, nothing put by the head; #t for one whose server reads it before answering, on the raw face and over HTTP/2; #f for a whole body, for none, and for a streamed length of 0, which libcurl never asks for
+2026-11-01T21:34:35.9558563Z   |   expected: ((raw-answer #t) (h2-answer #t) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+2026-11-01T21:34:35.9559888Z   |   actual:   ((raw-answer #f) (h2-answer #t) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+2026-11-01T21:35:01.9482321Z test-memory: pass tests/test-url-location.sps
+2026-11-01T21:35:22.8420329Z test-memory: pass tests/test-url-parts.sps
+2026-11-01T21:35:42.9967549Z test-memory: pass tests/test-url.sps
+2026-11-01T21:36:00.6545879Z test-memory: pass tests/test-variadic.sps
+2026-11-01T21:36:12.3494948Z test-memory: pass tests/test-verify.sps
+2026-11-01T21:36:12.3496106Z test-memory: ran 35, passed 34, failed 1, hung 0
