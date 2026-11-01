@@ -62,9 +62,9 @@
 //                                        its head arrives. That request counts
 //                                        as any does; the mark is used once
 //           anything else                404, body "not found\n"
-//         The queries of these three, and of HTTP/2's /answer and /refuse,
-//         are NAME=VALUE pairs, each name once at most and one the route
-//         names, every name it requires given, else 404.
+//         The queries of these three, and of HTTP/2's /answer, /refuse,
+//         /answer-at and /seq, are NAME=VALUE pairs, each name once at most
+//         and one the route names, every name it requires given, else 404.
 //         A target in absolute form, http://AUTHORITY then its path, as a
 //         client sends one to a proxy, is routed by that path, / when it
 //         has none, so the face can stand in for a plain proxy; /echo's
@@ -94,20 +94,23 @@
 //         Content-Length: 0 and Connection: close, and ends. A pair that is
 //         no NAME=VALUE, an unknown name, a repeat of code or ms, a value out
 //         of range, and a malformed %, get the fixed 400.
-//         /raw/retry?key=KEY&fail=N&how=HOW[&code=CODE][&after=BYTES][&then=THEN]
+//         /raw/retry?key=KEY&fail=N&how=HOW[&code=CODE][&after=BYTES][&slow=MS][&then=THEN]
 //         fails the first N requests for KEY, then answers 200, or stalls.
 //         Its query, every pair NAME=VALUE, each name once at most: key, 1
 //         to 64 of A-Z, a-z, 0-9, ., _ and -; fail, 0 to 100; how, close,
 //         reset or status; code, 200 to 599, with how=status alone, which
 //         needs it; after, with how=status alone, percent-decoded as
-//         location's to is; then, ok, the default, or stall. The
+//         location's to is; slow, 0 to 60000, with how=status alone; then,
+//         ok, the default, or stall. The
 //         origin counts each request for KEY whose query it takes, on raw
 //         and raw-tls alike, and C is the count with this one. While C is N
 //         or less, the request fails by HOW: close ends the connection with
 //         nothing written; reset resets it with nothing written; status
 //         writes "HTTP/1.1 CODE Retry", a Retry-After header holding after's
 //         bytes as they are when after is given, then Content-Length,
-//         Connection: close and the body "attempt C\n", and ends. Past N,
+//         Connection: close and the body "attempt C\n", and ends; with
+//         slow, that answer's head and its body's first byte, then MS ms,
+//         then the rest of the body, and the end. Past N,
 //         with then=ok, it writes "HTTP/1.1 200 OK", Content-Length,
 //         Connection: close and the body "attempt C\n", and ends; with
 //         then=stall it writes nothing, and leaves the connection to the
@@ -160,22 +163,83 @@
 //         writes "HTTP/1.1 200 OK", Content-Length, Connection: close and the
 //         summary line, and ends. Framing it cannot read gets the fixed 400,
 //         the request counted all the same. A client that closes or resets
-//         first ends the script, which writes nothing more.
+//         first ends the script, which writes nothing more. The body's bytes
+//         are recorded for KEY as they are read, the latest sink's for a key,
+//         the client gone first or not, for /raw/sunk.
+//         /raw/sunk?key=KEY writes "HTTP/1.1 200 OK", Content-Length,
+//         Connection: close and the body "sunk N\n": the body bytes KEY's
+//         latest /raw/sink has read so far, 0 for a key no sink has read. It
+//         records nothing; the records live as long as the origin.
 //         /raw/answer?status=S&close=C, S 200 to 599, C 0 or 1, each once,
 //         writes, as the head arrives, "HTTP/1.1 S Answer", Content-Length,
 //         Connection: close when C is 1, and the body "answer S\n"; then, C
 //         1, ends; C 0, reads the body to its framing's end, then ends.
-//         The scripts that read a body, these two, alone keep the bytes that
-//         follow the head; every other script reads none.
-//         /raw/arm?status=S, S 200 to 599, once, arms the raw face, whichever
-//         face the request came on: the next connection the raw face accepts
-//         gets "HTTP/1.1 S Early", Content-Length, Connection: close and the
-//         body "early S\n" as it is accepted, before a byte of its request
-//         is read; then the face ends its side and drops what the client
-//         sends, until the client ends. One connection, then the face plays
-//         scripts again; a second arm before that replaces the first. The
-//         arm itself writes "HTTP/1.1 200 OK", Content-Length: 6, Connection:
-//         close and "armed\n", and ends.
+//         /raw/answer-at?status=S&after=N[&close=C][&to=BYTES], S 200 to 599
+//         and N 0 to 268435456 exactly once each, C 0 or 1 and to at most
+//         once each, C 0 when absent, to percent-decoded as location's is,
+//         reads the body by the head's framing, as /raw/sink does, and once
+//         N body bytes have come, N 0 as the head arrives, or at the body's
+//         end when it is shorter, writes "HTTP/1.1 S Early", a Location
+//         header holding to's bytes as they are when to is given,
+//         Content-Length, Connection: close when C is 1, and the body
+//         "early S\n". Then, C 1, it ends its side, and drops what the
+//         client sends until the client ends; C 0, it reads the body to its
+//         framing's end, then ends. Framing it cannot read gets the fixed
+//         400, in place of the answer when the answer has not gone. With
+//         hold=KEY, KEY as retry takes it, at most once, the answer's last
+//         byte waits until /raw/release names KEY, at once when it has; the
+//         reading goes on meanwhile, and the script ends only once that byte
+//         is written, or the client has gone: a response kept live after the
+//         body's end until a test lets it go.
+//         /raw/release?key=KEY releases KEY, for good: every answer-at held
+//         on it writes its last byte. It writes "HTTP/1.1 200 OK",
+//         Content-Length: 9, Connection: close and "released\n", and ends.
+//         /raw/mirror, which takes no query, writes, as the head arrives,
+//         "HTTP/1.1 200 OK", then Content-Length: L, L the request's own,
+//         or Transfer-Encoding: chunked for a chunked request, or
+//         Content-Length: 0 for one with no body, then Connection: close;
+//         then each data event's body pieces, as they are decoded, written
+//         back, each its own chunk when chunked; and at the body's end the
+//         last chunk, when chunked, and the end. While a write waits for the
+//         kernel to take it, the socket is paused, so a client that stops
+//         reading stops its own upload. Framing it cannot read gets the
+//         fixed 400.
+//         /raw/seq?key=KEY&bytes=N, KEY as retry takes it and N 0 to
+//         268435456, each exactly once, counts for KEY as its head arrives
+//         and reads the body whole, as /raw/sink does; then writes "HTTP/1.1
+//         200 OK", a Sink header holding the summary line without its
+//         newline, Content-Length: N and Connection: close; then N bytes of
+//         the pattern, byte i being i mod 251, 16384 bytes a write, each
+//         awaited until the kernel takes it; then ends. Framing it cannot
+//         read gets the fixed 400, the request counted all the same.
+//         /raw/cut?key=KEY&after=N, KEY as retry takes it and N 0 to
+//         268435456, each exactly once, counts for KEY as its head arrives,
+//         as a sink does; then, once N bytes of what follows the head have
+//         come, or the client has ended, or at once for N 0, ends the
+//         connection, socket.destroy(), with nothing written: a server that
+//         dies under a body it has begun to read.
+//         The scripts that read a body, these six and the arm's kept
+//         connection, alone keep the bytes that follow the head; every other
+//         script reads none.
+//         /raw/arm?status=S[&mode=MODE][&to=BYTES], S 200 to 599, once, MODE
+//         close, the default, or keep, and to, percent-decoded as location's
+//         is, at most once each, arms the raw face, whichever face the
+//         request came on: the next connection the raw face accepts gets
+//         "HTTP/1.1 S Early", a Location header holding to's bytes as they
+//         are when to is given, Content-Length, Connection: close for mode
+//         close, and the body "early S\n" as it is accepted, before a byte
+//         of its request is read. Mode close: then the face ends its side
+//         and drops what the client sends, until the client ends. Mode keep:
+//         then it reads the connection's request, its head and its body to
+//         its framing's end, as /raw/sink reads one, and ends its side. Mode
+//         cut, which alone takes after=N, 0 to 268435456, and needs it: no
+//         Connection, then it reads the request's head, and ends the
+//         connection, nothing more written, once N bytes of what follows that
+//         head have come, as /raw/cut does: an answer before libcurl's first
+//         ask, then a server that dies under the body. One
+//         connection, then the face plays scripts again; a second arm before
+//         that replaces the first. The arm itself writes "HTTP/1.1 200 OK",
+//         Content-Length: 6, Connection: close and "armed\n", and ends.
 //   h2c   node:http2, plaintext, by prior knowledge: the HTTP/2 routes.
 //   With --pki DIR:
 //   https, https-expired, https-wrong-host, https-untrusted
@@ -213,6 +277,22 @@
 // does; the first request for K is reset with RST_STREAM REFUSED_STREAM
 // once N DATA bytes have come, N 0 as its headers arrive, before any DATA;
 // a later one, or a first whose body ends short of N, is answered as /sink.
+// /answer-at?status=S&after=N[&to=PATH], HTTP/2's alone, S 200 to 599 and
+// N 0 to 268435456 exactly once each, PATH at most once, decoded as
+// /redirect's TARGET is, answers once N DATA bytes have come, N 0 as the
+// headers arrive, or at the stream's end when the body is shorter: S,
+// location PATH when given, content-length and "early S\n", or for 204,
+// 304 and 205 as /status does, ending its side; it then reads the DATA on
+// and answers nothing more. It counts nothing.
+// /mirror, HTTP/2's alone, no query, answers :status 200, and the
+// request's content-length when it gave one, as the headers arrive; then
+// each DATA chunk, written back as it arrives, the stream paused while a
+// write waits for its drain, so a client that stops reading stops its own
+// upload; and ends its side at the request's end.
+// /seq?key=K&bytes=N, HTTP/2's alone, N 0 to 268435456, counts as /sink
+// does and reads the body whole; then answers :status 200, a sink header
+// holding the summary line without its newline, content-length N, and N
+// bytes of the pattern, as /pattern/N writes them.
 // Anything else, /chunked, /connects and /close-after included, is 404,
 // "not found\n". No date, and no header beyond these.
 //
@@ -231,9 +311,9 @@
 // B the body bytes before it, the first such wait when two are longest, or
 // "-" for no body. T is an arrival's time since the head's, and G, ms to
 // one decimal. One count for each key K, across every face, lives as long as
-// the origin: each /sink, /refuse and /raw/sink request whose query names
-// key=K counts once for K as its head arrives, and C is K's count as the
-// line is written. A query a route refuses counts nothing.
+// the origin: each /sink, /refuse, /seq, /raw/sink and /raw/seq request
+// whose query names key=K counts once for K as its head arrives, and C is
+// K's count as the line is written. A query a route refuses counts nothing.
 //
 // The suites (tests/test-origin.sps, tests/test-origin-tls.sps) hold their
 // own copy of each scenario's bytes, written separately from these. They
@@ -352,6 +432,17 @@ function route(target) {
   if (path === '/refuse') {
     return queried('refuse', queryOf(query, { key: keyValue, at: (v) => decimal(v, 0, 268435456) }, ['key', 'at']));
   }
+  if (path === '/answer-at') {
+    return queried('answer-at', queryOf(query, {
+      status: (v) => decimal(v, 200, 599),
+      after: (v) => decimal(v, 0, 268435456),
+      to: headerTarget,
+    }, ['status', 'after']));
+  }
+  if (path === '/mirror' && query === undefined) return { kind: 'mirror' };
+  if (path === '/seq') {
+    return queried('seq', queryOf(query, { key: keyValue, bytes: (v) => decimal(v, 0, 268435456) }, ['key', 'bytes']));
+  }
   if (path === '/close-after') {
     const then = (v) => (['fin', 'kill', 'cuthead', 'resethead'].includes(v) ? v : null);
     return queried('close-after', queryOf(query, { then }, ['then']));
@@ -410,7 +501,15 @@ let connects = 0;
 function redirectTarget(query) {
   if (query === undefined || !query.startsWith('to=')) return null;
   const raw = query.slice(3);
-  if (raw === '' || raw.includes('&')) return null;
+  if (raw.includes('&')) return null;
+  return headerTarget(raw);
+}
+
+// headerTarget: RAW, a query value, decoded, when it is printable ASCII
+// with no space, which a header value carries unchanged; or null, for an
+// empty one too.
+function headerTarget(raw) {
+  if (raw === '') return null;
   let target;
   try {
     target = decodeURIComponent(raw);
@@ -570,8 +669,8 @@ function respond(req, res, body) {
       return send(res, 200, ['Content-Length', String(bytes.length)], bytes);
     }
     default:
-      // /answer and /refuse are HTTP/2's routes, and /close-after http's,
-      // which wellFormed serves.
+      // /answer, /refuse, /answer-at, /mirror and /seq are HTTP/2's routes,
+      // and /close-after http's, which wellFormed serves.
       return text(res, 404, 'not found\n');
   }
 }
@@ -709,10 +808,14 @@ function h2Text(stream, status, body, headers = []) {
 }
 
 // h2Pattern: an HTTP/2 200 whose body is the first BYTES of the pattern,
-// its HEADERS sent at once, then, DELAY ms on, the body as http writes it.
-function h2Pattern(stream, bytes, delay) {
+// its HEADERS sent at once, HEADERS' pairs between :status and
+// content-length, then, DELAY ms on, the body as http writes it.
+function h2Pattern(stream, bytes, delay, headers = []) {
   if (stream.destroyed) return;
-  stream.respond({ ':status': 200, 'content-length': String(bytes) }, { sendDate: false });
+  const head = { ':status': 200 };
+  for (let i = 0; i < headers.length; i += 2) head[headers[i]] = headers[i + 1];
+  head['content-length'] = String(bytes);
+  stream.respond(head, { sendDate: false });
   const body = patternBytes(bytes);
   const gone = () => stream.destroyed || stream.writableEnded;
   (async () => {
@@ -771,9 +874,10 @@ function h2Respond(stream, headers, rawHeaders, body) {
 }
 
 // h2Stream: FACE's stream listener. /answer answers as the headers arrive,
-// then reads the body; /sink and /refuse count as they arrive, and read the
-// body, or refuse the stream; every other route reads the body whole, then
-// answers.
+// then reads the body; /answer-at once N DATA bytes have come; /mirror
+// writes each DATA chunk back as it comes; /sink, /refuse and /seq count
+// as they arrive, and read the body, or refuse the stream; every other
+// route reads the body whole, then answers.
 function h2Stream(face) {
   return (stream, headers, flags, rawHeaders) => {
     const headAt = performance.now();
@@ -785,6 +889,56 @@ function h2Stream(face) {
       // has answered when nothing reads it, keeps the stream open.
       stream.on('data', () => {});
       return h2Text(stream, r.status, `answer ${r.status}\n`);
+    }
+    if (r.kind === 'answer-at') {
+      // Read before and after the answer, as /answer does, and answer once.
+      let bytes = 0;
+      let answered = false;
+      const answer = () => {
+        if (answered) return;
+        answered = true;
+        h2Text(stream, r.status, `early ${r.status}\n`, r.to === undefined ? [] : ['location', r.to]);
+      };
+      stream.on('data', (chunk) => {
+        bytes += chunk.length;
+        if (bytes >= r.after) answer();
+      });
+      stream.on('end', answer);
+      if (r.after === 0) answer();
+      return undefined;
+    }
+    if (r.kind === 'mirror') {
+      // Each DATA chunk written back as it arrives; while a write waits for
+      // its drain the stream is paused, so its window stays shut and the
+      // client's upload stops.
+      const head = { ':status': 200 };
+      if (headers['content-length'] !== undefined) head['content-length'] = headers['content-length'];
+      stream.respond(head, { sendDate: false });
+      let paused = false;
+      stream.on('data', (chunk) => {
+        if (!stream.write(chunk) && !paused) {
+          paused = true;
+          stream.pause();
+          stream.once('drain', () => {
+            paused = false;
+            stream.resume();
+          });
+        }
+      });
+      stream.on('end', () => {
+        if (!stream.destroyed) stream.end();
+      });
+      return undefined;
+    }
+    if (r.kind === 'seq') {
+      countFor(r.key);
+      const record = bodyRecord();
+      stream.on('data', (chunk) => arrive(record, [chunk], tenthsSince(headAt)));
+      stream.on('end', () => {
+        const line = summary(face, headers[':method'], rawHeaders, record, r.key, false);
+        h2Pattern(stream, r.bytes, 0, ['sink', line.slice(0, -1)]);
+      });
+      return undefined;
     }
     if (r.kind === 'sink' || r.kind === 'refuse') {
       const seenNow = countFor(r.key);
@@ -853,7 +1007,8 @@ const ascii = (s) => Buffer.from(s, 'latin1');
 // bytes of a body, recording for a pattern's record the bytes the kernel
 // took and where a write first stalled; and the sinks', read nothing for N
 // ms, read the request's body and write its summary, or read it and drop
-// it, each of these two ending the script when the client goes first.
+// it, each of these two ending the script when the client goes first; and
+// answer-at, mirror and seq, which read the body too, their scripts'.
 const write = (s) => ({ step: 'write', bytes: typeof s === 'string' ? ascii(s) : s });
 const measured = (record, bytes, offset) => ({ step: 'measured', record, bytes, offset });
 const wait = (ms) => ({ step: 'wait', ms });
@@ -996,7 +1151,7 @@ const scripts = {
   // retries: a key's first requests fail, then it answers 200; and its count
   'retry': {
     query: retryQuery,
-    play: ({ key, fail, how, code, after, then }) => {
+    play: ({ key, fail, how, code, after, then, slow }) => {
       const count = (attempts.get(key) || 0) + 1;
       attempts.set(key, count);
       const body = `attempt ${count}\n`;
@@ -1007,7 +1162,11 @@ const scripts = {
       const head = [ascii(`HTTP/1.1 ${code} Retry\r\n`)];
       if (after !== null) head.push(ascii('Retry-After: '), after, ascii('\r\n'));
       head.push(ascii(tail));
-      return [write(Buffer.concat(head)), END];
+      const answer = Buffer.concat(head);
+      if (slow === null) return [write(answer), END];
+      // The head and the body's first byte, then SLOW ms, then the rest.
+      const cut = answer.length - body.length + 1;
+      return [write(answer.subarray(0, cut)), wait(slow), write(answer.subarray(cut)), END];
     },
   },
   'attempts': {
@@ -1090,10 +1249,87 @@ const scripts = {
     },
   },
   'arm': {
-    query: (query) => queryOf(query, { status: (v) => decimal(v, 200, 599) }, ['status']),
-    play: ({ status }) => {
-      earlyArm = status;
+    query: (query) => {
+      const found = queryOf(query, {
+        status: (v) => decimal(v, 200, 599),
+        mode: (v) => (['close', 'keep', 'cut'].includes(v) ? v : null),
+        to: percentDecoded,
+        after: (v) => decimal(v, 0, 268435456),
+      }, ['status']);
+      // after with mode cut alone, which needs it
+      if (found === null || (found.mode === 'cut') !== Object.hasOwn(found, 'after')) return null;
+      return found;
+    },
+    play: ({ status, mode, to, after }) => {
+      earlyArm = { status, mode: mode || 'close', to: to || null, after: after === undefined ? null : after };
       return [write('HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\narmed\n'), END];
+    },
+  },
+  // An answer once the body's first N bytes have come, before the rest
+  // a connection ended under a body, once N bytes of it have come
+  'cut': {
+    query: (query) => queryOf(query, { key: keyValue, after: (v) => decimal(v, 0, 268435456) }, ['key', 'after']),
+    play: ({ key, after }, head, conn) => {
+      countFor(key);
+      conn.input = inputOf();
+      return [{ step: 'cut', conn, after }];
+    },
+  },
+  'answer-at': {
+    query: (query) => queryOf(query, {
+      status: (v) => decimal(v, 200, 599),
+      after: (v) => decimal(v, 0, 268435456),
+      close: (v) => decimal(v, 0, 1),
+      to: percentDecoded,
+      hold: keyValue,
+    }, ['status', 'after']),
+    play: ({ status, after, close, to, hold }, head, conn) => {
+      conn.input = inputOf();
+      const shut = close === 1;
+      return [{ step: 'answer-at', conn, head, after, close: shut, answer: earlyAnswer(status, to || null, shut),
+                hold: hold === undefined ? null : hold }, END];
+    },
+  },
+  // a raw sink's bytes read for a key, its client gone or not
+  'sunk': {
+    query: attemptsQuery,
+    play: ({ key }) => {
+      const record = sunk.get(key);
+      const body = `sunk ${record === undefined ? 0 : record.bytes}\n`;
+      return [write(`HTTP/1.1 200 OK\r\nContent-Length: ${body.length}\r\nConnection: close\r\n\r\n${body}`),
+              END];
+    },
+  },
+  // an answer-at's held last byte let go, for its key
+  'release': {
+    query: attemptsQuery,
+    play: ({ key }) => {
+      const entry = releaseEntry(key);
+      entry.released = true;
+      for (const waiter of [...entry.waiters]) waiter();
+      return [write('HTTP/1.1 200 OK\r\nContent-Length: 9\r\nConnection: close\r\n\r\nreleased\n'), END];
+    },
+  },
+  // full duplex: the body written back as it comes, reading paused while a
+  // write waits for the kernel
+  'mirror': {
+    play: (_, head, conn) => {
+      const framing = framingOf(headPairs(head));
+      if (framing === null) return badRequest;
+      conn.input = inputOf();
+      const field = framing.kind === 'chunked' ? 'Transfer-Encoding: chunked'
+        : `Content-Length: ${framing.kind === 'length' ? framing.length : 0}`;
+      return [write(`HTTP/1.1 200 OK\r\n${field}\r\nConnection: close\r\n\r\n`),
+              { step: 'mirror', conn, framing }, END];
+    },
+  },
+  // a sink, then a body: the summary in a header, then N bytes of the pattern
+  'seq': {
+    query: (query) => queryOf(query, { key: keyValue, bytes: (v) => decimal(v, 0, 268435456) }, ['key', 'bytes']),
+    play: ({ key, bytes }, head, conn) => {
+      countFor(key);
+      conn.input = inputOf();
+      return [{ step: 'seq', conn, head, key, bytes }, END];
     },
   },
   'answer': {
@@ -1174,7 +1410,8 @@ function framingOf(pairs) {
 // data event's body bytes, as PIECES and AT, when they came. Answers done at
 // the framing's end, gone when the client ends first, or bad for chunked
 // framing it cannot read: a size line that is not 1 to 8 hex digits and an
-// extension, no CRLF after a chunk's bytes, or a line past HEAD_LIMIT.
+// extension, no CRLF after a chunk's bytes, or a line past HEAD_LIMIT; or
+// stopped, short of the end, once TAKE answers true.
 async function readBody(input, framing, take) {
   if (framing.kind === 'none') return 'done';
   if (framing.kind === 'length') {
@@ -1184,7 +1421,7 @@ async function readBody(input, framing, take) {
       if (item === null) return 'gone';
       const piece = item[0].subarray(0, Math.min(left, item[0].length));
       left -= piece.length;
-      take([piece], item[1]);
+      if (take([piece], item[1]) === true && left > 0) return 'stopped';
     }
     return 'done';
   }
@@ -1235,8 +1472,20 @@ async function readBody(input, framing, take) {
         }
       }
     }
-    take(pieces, at);
+    if (take(pieces, at) === true) return 'stopped';
   }
+}
+
+// earlyAnswer: "HTTP/1.1 STATUS Early", a Location header holding TO's
+// bytes as they are when TO is not null, Content-Length, Connection: close
+// when CLOSE, and the body "early STATUS\n".
+function earlyAnswer(status, to, close) {
+  const body = `early ${status}\n`;
+  return Buffer.concat([
+    ascii(`HTTP/1.1 ${status} Early\r\n`),
+    ...(to === null ? [] : [ascii('Location: '), to, ascii('\r\n')]),
+    ascii(`Content-Length: ${body.length}\r\n${close ? 'Connection: close\r\n' : ''}\r\n${body}`),
+  ]);
 }
 
 // stalls: the pattern script's latest record for each key, by key, for as
@@ -1244,6 +1493,47 @@ async function readBody(input, framing, take) {
 // stalled, the offset of the first write it had not taken 100 ms after the
 // write began, or null.
 const stalls = new Map();
+
+// sunk: each raw sink's body record, by its key, the latest for a key, for
+// as long as the origin runs: its bytes grow as they are read, so a client
+// that goes first leaves the bytes that had come (the slice's fourth
+// review: what reached the server of a body refused past its length).
+const sunk = new Map();
+
+// releases: for each key /raw/release has named, or an answer-at's hold
+// waits on, whether it is released and the holds waiting for it, for as
+// long as the origin runs. A release holds for good: a hold that comes
+// after it writes at once.
+const releases = new Map();
+
+// releaseEntry: KEY's entry in releases, made empty when it has none.
+function releaseEntry(key) {
+  let entry = releases.get(key);
+  if (entry === undefined) {
+    entry = { released: false, waiters: new Set() };
+    releases.set(key, entry);
+  }
+  return entry;
+}
+
+// releasedFor: resolves 'released' once /raw/release names KEY, at once for
+// a key released already; or 'gone' once SOCKET closes first.
+function releasedFor(key, socket) {
+  const entry = releaseEntry(key);
+  if (entry.released) return Promise.resolve('released');
+  return new Promise((resolve) => {
+    const done = (how) => {
+      entry.waiters.delete(onRelease);
+      socket.off('close', onClose);
+      resolve(how);
+    };
+    const onRelease = () => done('released');
+    const onClose = () => done('gone');
+    entry.waiters.add(onRelease);
+    socket.once('close', onClose);
+    if (socket.destroyed) done('gone');
+  });
+}
 
 // patternQuery: the pattern script's parameters from QUERY, or null: key,
 // as retry takes it, bytes, 1 to 268435456, and chunk, 1 to 1048576, each
@@ -1314,11 +1604,12 @@ function decimal(text, low, high) {
 
 // retryQuery: the retry script's parameters from QUERY, or null: key, fail
 // and how exactly once; code exactly once with how=status, and never
-// otherwise; after at most once, with how=status alone, its bytes; then at
-// most once, ok or stall, ok when absent.
+// otherwise; after at most once, with how=status alone, its bytes; slow at
+// most once, 0 to 60000, with how=status alone; then at most once, ok or
+// stall, ok when absent.
 function retryQuery(query) {
   if (query === undefined) return null;
-  const found = { key: null, fail: null, how: null, code: null, after: null, then: null };
+  const found = { key: null, fail: null, how: null, code: null, after: null, then: null, slow: null };
   for (const pair of query.split('&')) {
     const at = pair.indexOf('=');
     if (at < 0) return null;
@@ -1332,13 +1623,15 @@ function retryQuery(query) {
       case 'how': read = ['close', 'reset', 'status'].includes(value) ? value : null; break;
       case 'code': read = decimal(value, 200, 599); break;
       case 'then': read = ['ok', 'stall'].includes(value) ? value : null; break;
+      case 'slow': read = decimal(value, 0, 60000); break;
       default: read = percentDecoded(value); break;
     }
     if (read === null) return null;
     found[name] = read;
   }
   if (found.key === null || found.fail === null || found.how === null) return null;
-  if (found.how === 'status' ? found.code === null : found.code !== null || found.after !== null) {
+  if (found.how === 'status' ? found.code === null
+    : found.code !== null || found.after !== null || found.slow !== null) {
     return null;
   }
   if (found.then === null) found.then = 'ok';
@@ -1513,6 +1806,7 @@ async function play(socket, reset, state, steps) {
           break;
         case 'sink': {
           const record = bodyRecord();
+          sunk.set(s.key, record);
           const pairs = headPairs(s.head);
           const framing = framingOf(pairs);
           const result = framing === null ? 'bad' : await readBody(s.conn.input, framing, (pieces, at) => {
@@ -1526,6 +1820,107 @@ async function play(socket, reset, state, steps) {
         case 'read-out': {
           const framing = framingOf(headPairs(s.head));
           if (framing !== null && (await readBody(s.conn.input, framing, () => {})) === 'gone') return;
+          break;
+        }
+        case 'cut': {
+          // The bytes after the head, counted as they come, to AFTER; then
+          // the connection ended, with nothing written.
+          let n = 0;
+          while (n < s.after) {
+            const item = await nextItem(s.conn.input);
+            if (item === null) break;
+            n += item[0].length;
+          }
+          socket.destroy();
+          return;
+        }
+        case 'answer-at': {
+          // The answer once AFTER body bytes have come, or at the body's
+          // end when it is shorter; with close, the reading then stops, and
+          // what the client sends after is dropped.
+          const framing = framingOf(headPairs(s.head));
+          if (framing === null) {
+            await new Promise((resolve) => socket.write(badRequest[0].bytes, () => resolve()));
+            break;
+          }
+          let answered = null;
+          // With hold, every byte of the answer but its last, then the last
+          // once /raw/release names the hold's key; the client gone first,
+          // nothing more.
+          const answer = () => {
+            const cut = s.hold === null ? s.answer.length : s.answer.length - 1;
+            answered = (async () => {
+              await new Promise((resolve) => socket.write(s.answer.subarray(0, cut), () => resolve()));
+              if (cut === s.answer.length) return;
+              if ((await releasedFor(s.hold, socket)) !== 'released' || socket.destroyed || !socket.writable) return;
+              await new Promise((resolve) => socket.write(s.answer.subarray(cut), () => resolve()));
+            })();
+          };
+          if (s.after === 0) answer();
+          let bytes = 0;
+          const result = answered !== null && s.close ? 'stopped' : await readBody(s.conn.input, framing, (pieces) => {
+            for (const piece of pieces) bytes += piece.length;
+            if (answered === null && bytes >= s.after) answer();
+            return answered !== null && s.close;
+          });
+          if (result === 'stopped') s.conn.input = null;
+          if (answered === null && result === 'done' && !socket.destroyed && socket.writable) answer();
+          if (answered === null && result === 'bad' && !socket.destroyed && socket.writable) {
+            await new Promise((resolve) => socket.write(badRequest[0].bytes, () => resolve()));
+          }
+          if (answered !== null) await answered;
+          if (result === 'gone') return;
+          break;
+        }
+        case 'mirror': {
+          // Each data event's body pieces written back, each its own chunk
+          // when chunked; while a write waits for the kernel, the socket is
+          // paused, so a client that stops reading stops its own upload.
+          const chunked = s.framing.kind === 'chunked';
+          let waiting = 0;
+          const result = await readBody(s.conn.input, s.framing, (pieces) => {
+            const out = [];
+            for (const piece of pieces) {
+              if (piece.length === 0) continue;
+              if (chunked) out.push(ascii(`${piece.length.toString(16)}\r\n`), piece, ascii('\r\n'));
+              else out.push(piece);
+            }
+            if (out.length === 0) return;
+            if (waiting === 0) socket.pause();
+            waiting += 1;
+            socket.write(Buffer.concat(out), () => {
+              waiting -= 1;
+              if (waiting === 0) socket.resume();
+            });
+          });
+          if (result === 'gone') return;
+          if (result === 'done' && chunked && !socket.destroyed && socket.writable) {
+            await new Promise((resolve) => socket.write('0\r\n\r\n', () => resolve()));
+          }
+          break;
+        }
+        case 'seq': {
+          const record = bodyRecord();
+          const pairs = headPairs(s.head);
+          const framing = framingOf(pairs);
+          const result = framing === null ? 'bad' : await readBody(s.conn.input, framing, (pieces, at) => {
+            arrive(record, pieces, Math.round((at - s.conn.headAt) * 10));
+          });
+          if (result === 'gone' || socket.destroyed || !socket.writable) return;
+          if (result === 'bad') {
+            await new Promise((resolve) => socket.write(badRequest[0].bytes, () => resolve()));
+            break;
+          }
+          const method = s.head.toString('latin1').split(' ', 1)[0];
+          const line = ascii(summary(s.conn.face, method, pairs, record, s.key, false));
+          const head = Buffer.concat([ascii('HTTP/1.1 200 OK\r\nSink: '), line.subarray(0, line.length - 1),
+                                      ascii(`\r\nContent-Length: ${s.bytes}\r\nConnection: close\r\n\r\n`)]);
+          await new Promise((resolve) => socket.write(head, () => resolve()));
+          const body = patternBytes(s.bytes);
+          for (let at = 0; at < s.bytes; at += 16384) {
+            if (socket.destroyed || !socket.writable) return;
+            await new Promise((resolve) => socket.write(body.subarray(at, Math.min(at + 16384, s.bytes)), () => resolve()));
+          }
           break;
         }
         case 'end':
@@ -1549,7 +1944,9 @@ async function play(socket, reset, state, steps) {
 // serveRaw: reads a request head from SOCKET, on the raw face FACE, and
 // plays its script, with RESET as the script's reset. The bytes after the
 // head go to the script's input when it has one, and nowhere otherwise.
-function serveRaw(face, socket, reset) {
+// SCRIPT gives the steps for a head and its connection, scriptFor's unless
+// given; OVERLONG, the steps for a head past HEAD_LIMIT, the fixed 400's.
+function serveRaw(face, socket, reset, script = scriptFor, overlong = badRequest) {
   // With allowHalfOpen, the client's FIN leaves this side open: a script that
   // is playing goes on; otherwise this side ends too.
   const state = { playing: false, clientEnded: false };
@@ -1578,13 +1975,13 @@ function serveRaw(face, socket, reset) {
       const request = Buffer.from(head.subarray(0, end + 4));
       const rest = Buffer.from(head.subarray(end + 4));
       head = null;
-      const steps = scriptFor(request, conn);
+      const steps = script(request, conn);
       if (conn.input && rest.length > 0) feed(conn.input, rest, at);
       play(socket, reset, state, steps).catch((err) => fatal('a script failed', err));
     } else if (head.length >= HEAD_LIMIT) {
       started = true;
       head = null;
-      play(socket, reset, state, badRequest).catch((err) => fatal('a script failed', err));
+      play(socket, reset, state, overlong).catch((err) => fatal('a script failed', err));
     }
   });
 }
@@ -1600,26 +1997,45 @@ function rawSocket(socket) {
   return socket;
 }
 
-// earlyArm: the status /raw/arm set for the raw face's next connection,
-// or null.
+// earlyArm: what /raw/arm set for the raw face's next connection, its
+// status, mode and Location bytes, or null.
 let earlyArm = null;
 
-// answerAtOnce: SOCKET's whole answer, STATUS, written as it is accepted,
-// before any byte of its request is read; then this side ended, and the
-// client's bytes read and dropped until it ends.
-function answerAtOnce(socket, status) {
-  const body = `early ${status}\n`;
+// answerAtOnce: SOCKET's whole answer by ARM, written as it is accepted,
+// before any byte of its request is read. Mode close: Connection: close,
+// then this side ended, and the client's bytes read and dropped until it
+// ends. Mode keep: no Connection, then its request read, its head and its
+// body to its framing's end, and this side ended. Mode cut: no Connection,
+// then its request's head read, and the connection ended, nothing more
+// written, once ARM's after bytes of what follows that head have come.
+function answerAtOnce(socket, arm) {
+  if (arm.mode === 'cut') {
+    socket.write(earlyAnswer(arm.status, arm.to, false));
+    serveRaw('raw', socket, () => socket.resetAndDestroy(), (head, conn) => {
+      conn.input = inputOf();
+      return [{ step: 'cut', conn, after: arm.after }];
+    }, [END]);
+    return;
+  }
+  if (arm.mode === 'keep') {
+    socket.write(earlyAnswer(arm.status, arm.to, false));
+    serveRaw('raw', socket, () => socket.resetAndDestroy(), (head, conn) => {
+      conn.input = inputOf();
+      return [readOut(conn, head), END];
+    }, [END]);
+    return;
+  }
   socket.on('data', () => {});
   socket.on('end', () => { if (!socket.destroyed) socket.end(); });
-  socket.end(`HTTP/1.1 ${status} Early\r\nContent-Length: ${body.length}\r\nConnection: close\r\n\r\n${body}`);
+  socket.end(earlyAnswer(arm.status, arm.to, true));
 }
 
 const rawServer = net.createServer({ allowHalfOpen: true }, (socket) => {
   rawSocket(socket);
   if (earlyArm !== null) {
-    const status = earlyArm;
+    const arm = earlyArm;
     earlyArm = null;
-    answerAtOnce(socket, status);
+    answerAtOnce(socket, arm);
     return;
   }
   serveRaw('raw', socket, () => socket.resetAndDestroy());

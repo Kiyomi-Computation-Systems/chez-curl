@@ -1,0 +1,33 @@
+[guix-8.20.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[guix-8.20.0] libdirs src:tests:build/scheme-libs
+[guix-8.20.0] server {"node":"v24.18.0","pid":28,"http":"127.0.0.1:40033","raw":"127.0.0.1:42955","https":"127.0.0.1:35315","h2":"127.0.0.1:43693","closed":"127.0.0.1:36589"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 node v24.18.0
+[guix-8.20.0] drive libcurl 8.20.0 GnuTLS/3.8.13 cases=(b-control) slices=(1 10 50) sched=strict runs=2 faces=(raw) framings=(sized) bound=60000 control-bound=3000 sizes=4194304,16777216,4194304 c-statuses=(303 413) c-wheres=(raw-keep raw-close https-keep https-close h2) hop-cancel=#f
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=1 S=1 sched=strict head=200 bit=#t got-head=#t head-ms=5.72 seen-head-ms=5.884 end-ms=3007.355 head-to-end-ms=3001.635 total-ms=3007.358 up=327680 down=327680 MBps=0.22 cpu-ms=44.5 proc-stat-ms=40 calls=5 calls-after-head=1 put=327680 put-after-head=65536 after-eof=0 state=feeding resp-waits=2855/2878 req-waits=0/10 handed=327680 asked=#t port=raised:327680:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=60376 at=388.0
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=60376 head+327680 body bytes, then the connection closed, echo written=327680
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=1 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=1.965 seen-head-ms=3.533 end-ms=3007.324 head-to-end-ms=3005.359 total-ms=3007.328 up=0 down=0 MBps=0 cpu-ms=11.743 proc-stat-ms=0 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=299/300 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=60390 at=3399.9
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=60390 head+0 body bytes, then the connection closed, echo written=0
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=1 S=50 sched=strict head=200 bit=#t got-head=#t head-ms=2.692 seen-head-ms=3.634 end-ms=3008.318 head-to-end-ms=3005.626 total-ms=3008.32 up=0 down=0 MBps=0 cpu-ms=10.399 proc-stat-ms=10 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=60/61 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=1 server: req raw POST /echo #1 conn=60404 at=6412.1
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=1 server: aborted raw /echo conn=60404 head+0 body bytes, then the connection closed, echo written=0
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=1 server: count raw:/echo=1
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=2 S=1 sched=strict head=200 bit=#t got-head=#t head-ms=2.378 seen-head-ms=2.455 end-ms=3004.051 head-to-end-ms=3001.674 total-ms=3004.053 up=131072 down=131072 MBps=0.09 cpu-ms=55.103 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=2849/2858 req-waits=0/4 handed=131072 asked=#t port=raised:131072:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=60416 at=9423.2
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=60416 head+131072 body bytes, then the connection closed, echo written=131072
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=2 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=2.613 seen-head-ms=3.53 end-ms=3007.59 head-to-end-ms=3004.976 total-ms=3007.593 up=0 down=0 MBps=0 cpu-ms=12.013 proc-stat-ms=10 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=299/300 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=54662 at=12429.8
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=54662 head+0 body bytes, then the connection closed, echo written=0
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=2 S=50 sched=strict head=200 bit=#t got-head=#t head-ms=2.298 seen-head-ms=3.505 end-ms=3008.469 head-to-end-ms=3006.171 total-ms=3008.473 up=0 down=0 MBps=0 cpu-ms=12.633 proc-stat-ms=20 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=feeding resp-waits=60/61 req-waits=0/0 handed=0 asked=#t port=raised:0:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=2 server: req raw POST /echo #1 conn=54682 at=15441.2
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=2 server: aborted raw /echo conn=54682 head+0 body bytes, then the connection closed, echo written=0
+[guix-8.20.0] drive case=b-control face=raw framing=sized run=2 server: count raw:/echo=1
+[guix-8.20.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[guix-8.20.0] drive done
+[guix-8.20.0] drive exited 0 after about 18 s (124 is timeout's)
+[guix-8.20.0] server-stderr: counts raw:/echo=6

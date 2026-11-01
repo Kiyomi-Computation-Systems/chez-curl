@@ -73,6 +73,20 @@
 ;;; the call. A raise that leaves the call does so after the after thunk
 ;;; has cancelled.
 ;;;
+;;; --- the streamed call (the M6 plan, section 3.6) ---
+;;;
+;;; drive-stream drives a call whose responses stream, call-with-response-
+;;; port's and http-request's with a producer: the same core, the same
+;;; critical wind, and every wait a bounded poll, unguarded, read as data.
+;;; Its two sides alternate: the response side, a head, a piece or the end;
+;;; the request side, room, then the producer's next piece put. Each waits
+;;; 10 ms, or 0 while the other side has just moved bytes, the flag cleared
+;;; at a wait that finds nothing. The producer is fed wherever this thread
+;;; waits, inside the port's read too, and only while no head is published
+;;; or the head is the final one. At each head the draw and the clocks are
+;;; read once, with the head's body-asked bit, for the core's predicate and
+;;; for the hop's step alike.
+;;;
 ;;; --- the request group (the M5 plan, section 3.7) ---
 ;;;
 ;;; A group drives many calls on its one thread, through one mailbox that
@@ -205,13 +219,20 @@
 ;;; copies its call's body, and neither refuses for it.
 ;;;
 ;;; The seams, for the tests alone, which (http-client) does not export:
-;;; http-pending-mailbox, the group's mailbox; http-pending-token, a call's
-;;; live token; http-pending-phase, its phase; http-pending-census, the
-;;; group's counts; none runs a turn. And call-with-group, the group's own
+;;; drive-stream-waits, the streamed drive's count of its response side's
+;;; waits by their bound; drive-produce-gate-set! and drive-before-gate-set!,
+;;; each a thunk run once in the producer's critical after thunk, and in its
+;;; critical before thunk, inside the port's read; drive-last-token, once
+;;; drive-last-token-arm! arms it, the latest streamed call's token, until
+;;; that call ends; http-pending-mailbox, the group's mailbox;
+;;; http-pending-token, a call's live token; http-pending-phase, its phase;
+;;; http-pending-census, the group's counts; none runs a turn. And call-with-group, the group's own
 ;;; entry, takes an optional submit in place of curl-submit, so a test can
 ;;; plant a raise in one submit.
 (library (http-client private drive)
-  (export drive-exchange monotonic-ns utc-seconds take-refusal?
+  (export drive-exchange drive-stream drive-stream-waits drive-produce-gate-set! drive-last-token
+          drive-last-token-arm! drive-before-gate-set!
+          monotonic-ns utc-seconds take-refusal?
           require-interrupts call-with-group run-parallel
           http-pending? http-await http-pending-done? http-pending-cancel
           http-pending-mailbox http-pending-token http-pending-phase http-pending-census)
@@ -251,12 +272,13 @@
       (curl-mailbox-take (make-curl-mailbox) 0)
       #t))
 
-  ;; refuse-without-interrupts : State -> Nothing
+  ;; refuse-without-interrupts : State [Symbol] -> Nothing
   ;; The call's refusal inside a critical section: an assertion violation
-  ;; from http-request, compounded with STATE's &http-exchange.
-  (define (refuse-without-interrupts state)
+  ;; from WHO, http-request unless given, compounded with STATE's
+  ;; &http-exchange.
+  (define (refuse-without-interrupts state . who)
     (raise (condition (make-assertion-violation)
-                      (make-who-condition 'http-request)
+                      (make-who-condition (if (pair? who) (car who) 'http-request))
                       (make-message-condition
                        "a call needs interrupts on: inside a critical section its await would hold every collection, so nothing was submitted")
                       (make-irritants-condition '())
@@ -331,6 +353,660 @@
         (lambda ()
           (when (and token (not (curl-token-done? token)))
             (curl-token-cancel token))))))
+
+  ;; --- the streamed call (the M6 plan, section 3.6; ADR-0031, ADR-0032) ----------------
+
+  ;; side-ms : Natural
+  ;; The bound of a side's wait while the other side has not just moved
+  ;; bytes: 10 ms (the M6 plan, section 6.1, as measured).
+  (define side-ms 10)
+
+  ;; A streamed call's record beside its exchange: its producer, or #f;
+  ;; WHO, the call's name in what it refuses; whether the producer has been
+  ;; called; whether it runs now, which a read of the port it feeds meets;
+  ;; and the producer's failure inside the port's read, the call's for good,
+  ;; or #f.
+  (define-record-type (stream-call make-stream-call stream-call?)
+    (fields (immutable producer call-producer)
+            (immutable who call-who)
+            (mutable called call-called? call-called-set!)
+            (mutable producing call-producing? call-producing-set!)
+            (mutable stuck call-stuck call-stuck-set!))
+    (sealed #t)
+    (opaque #t))
+
+  ;; A leg: one transfer of a streamed call, and its two sides. Its token;
+  ;; its call; its body's length, or #f; its request side's phase: none for
+  ;; a transfer whose body does not stream, feeding, ending once the
+  ;; producer answered the eof object, until curl-token-end-body! has
+  ;; returned, ended then, or stopped; the producer's answer, (ANSWER), as
+  ;; produce! holds it, not yet taken; the piece taken from it, held until
+  ;; a put takes it; the bytes put; whether its head is known final, and so
+  ;; fed; and each side's flag, whether it has just moved bytes, which
+  ;; bounds the other side's wait by 0 ms. A keyboard interrupt whose
+  ;; handler escapes as a critical section ends, and which PROC catches,
+  ;; finds each of the producer's answer, the end and the held piece where
+  ;; the next feed! takes it up: none is lost, none given twice, and the
+  ;; producer never called after its eof (the M6 plan, section 3.6; the
+  ;; slice's review, build/m6s3r/).
+  (define-record-type (leg make-leg leg?)
+    (fields (immutable token leg-token)
+            (immutable call leg-call)
+            (immutable length leg-length)
+            (mutable phase leg-phase leg-phase-set!)
+            (mutable answer leg-answer leg-answer-set!)
+            (mutable held leg-held leg-held-set!)
+            (mutable put leg-put leg-put-set!)
+            (mutable final leg-final? leg-final-set!)
+            (mutable req-moved leg-req-moved? leg-req-moved-set!)
+            (mutable resp-moved leg-resp-moved? leg-resp-moved-set!))
+    (sealed #t)
+    (opaque #t))
+
+  ;; resp-bound, req-bound : Leg -> Natural
+  ;; A side's wait: 0 ms while the other side has just moved bytes, else
+  ;; side-ms. Strict alternation, a whole bound on each side every turn,
+  ;; cost one bound per piece: 9.64 to 12.7 MB/s at 10 ms, where this ran at
+  ;; 24.1 to 212.6 (the M6 plan, section 6.1, as measured).
+  (define (resp-bound leg)
+    (let ((ms (if (leg-req-moved? leg) 0 side-ms)))
+      (vector-set! wait-counts (if (= ms 0) 0 1) (+ 1 (vector-ref wait-counts (if (= ms 0) 0 1))))
+      ms))
+  (define (req-bound leg) (if (leg-resp-moved? leg) 0 side-ms))
+
+  ;; wait-counts : (Vector Natural Natural)
+  ;; The response side's waits, every streamed call's since the library was
+  ;; loaded: those bounded by 0 ms, then those by side-ms. A seam for the
+  ;; suites alone, read by drive-stream-waits; threads that stream at once
+  ;; may lose a count, which no rule reads.
+  (define wait-counts (vector 0 0))
+
+  ;; drive-stream-waits : -> (List Natural Natural)
+  ;; wait-counts now: the response side's waits bounded by 0 ms, and by
+  ;; side-ms. A test seam, which (http-client) does not export.
+  (define (drive-stream-waits)
+    (list (vector-ref wait-counts 0) (vector-ref wait-counts 1)))
+
+  ;; resp-waited! : Leg Boolean -> Void
+  ;; LEG's response side has waited, GOT whether it found a piece, a head
+  ;; or the end: its own flag set to that; and a wait that found nothing
+  ;; clears the request side's, so a request side that moves no more, its
+  ;; body ended, is never waited for at 0 ms again. The measurement's first
+  ;; drive kept it, polled at 0 ms for good, millions of times, and under
+  ;; Valgrind starved the engine's thread (the M6 plan, section 3.6).
+  (define (resp-waited! leg got)
+    (leg-resp-moved-set! leg got)
+    (unless got (leg-req-moved-set! leg #f)))
+
+  ;; req-waited! : Leg Boolean Boolean -> Void
+  ;; LEG's request side has stepped: MOVED, whether it moved bytes, a put
+  ;; taken or the body's end, is its own flag; and EMPTY, a wait that found
+  ;; nothing, clears the response side's.
+  (define (req-waited! leg moved empty)
+    (leg-req-moved-set! leg moved)
+    (when empty (leg-resp-moved-set! leg #f)))
+
+  ;; feed! : Leg Boolean State -> Void
+  ;; One step of LEG's request side, while it feeds, bounded by req-bound:
+  ;; the piece it holds put; or room waited for, then, with room, the head
+  ;; read, and the producer called only while no head is published or the
+  ;; head is known final. A head published before libcurl's first ask, then
+  ;; followed by one, a hop's or one still to be read, is never fed; the
+  ;; final head is fed whenever libcurl asks, its bit #f among them (the M6
+  ;; plan, section 3.6). A token done stops it. Once the puts have taken the
+  ;; body-length whole, the producer is asked for its end at once, by
+  ;; end-at-length!, never waiting for room. A body-length of 0, which
+  ;; libcurl never asks for, never calls the producer. STICKY? is the
+  ;; port's: a producer's failure there is the call's for good. STATE is
+  ;; the transfer's, for what a refusal compounds. Each wait is a bounded
+  ;; poll, unguarded, read as data.
+  (define (feed! leg sticky? state)
+    (case (leg-phase leg)
+      ((feeding)
+       (let ((token (leg-token leg)) (ms (req-bound leg)))
+         (cond
+           ((leg-answer leg) (take-answer! leg ms sticky? state))
+           ((leg-held leg) (put-held! leg ms sticky? state))
+           ((at-length? leg)
+            (if (unfed-head? leg) (req-waited! leg #f #f) (produce-and-put! leg ms sticky? state)))
+           (else
+            (let ((room (curl-token-room-wait token ms)))
+              (cond ((eq? room 'done) (leg-phase-set! leg 'stopped) (req-waited! leg #f #f))
+                    ((not room) (req-waited! leg #f #t))
+                    ((unfed-head? leg) (req-waited! leg #f #f))
+                    (else (produce-and-put! leg ms sticky? state))))))))
+      ((ending) (end-body-now! leg))
+      (else #f)))
+
+  ;; at-length? : Leg -> Boolean
+  ;; Whether LEG still feeds, holds no piece, and its puts have taken a
+  ;; body-length above 0 whole.
+  (define (at-length? leg)
+    (let ((length (leg-length leg)))
+      (and (eq? (leg-phase leg) 'feeding) (not (leg-answer leg)) (not (leg-held leg)) length
+           (> (leg-put leg) 0) (= (leg-put leg) length))))
+
+  ;; end-at-length! : Leg Natural Boolean State -> Void
+  ;; Once LEG's puts have taken its body-length whole, the producer asked
+  ;; for its end at once, room or none, unless a head not known final is
+  ;; published: libcurl asks for nothing more, and whether the producer ends
+  ;; there or gives more is the producer's to tell. Waiting for room, the
+  ;; drive was answered done whenever the server's answer ended the transfer
+  ;; first, and never asked: a producer that gave more than its length then
+  ;; passed as a 200, on a drive whose waits were 10 ms
+  ;; (build/m6s3b/mutants/strict-alternation/). Asked here, a piece past the
+  ;; length fails the call alike however quickly the server answers
+  ;; (ADR-0031, decision 2). It is made after the put that took the length,
+  ;; in that step, and again at the final head.
+  (define (end-at-length! leg ms sticky? state)
+    (when (and (at-length? leg) (not (unfed-head? leg)))
+      (produce-and-put! leg ms sticky? state)))
+
+  ;; unfed-head? : Leg -> Boolean
+  ;; Whether LEG's token has published a head not yet known final: a hop's,
+  ;; or one its drive has still to read, which is never fed.
+  (define (unfed-head? leg)
+    (and (curl-token-head (leg-token leg)) (not (leg-final? leg)) #t))
+
+  ;; produce-and-put! : Leg Natural Boolean State -> Void
+  ;; The producer's next answer, called once libcurl has room for it, held
+  ;; by produce!, then taken and checked by take-answer! before anything is
+  ;; put: the eof object ends the body, which the low level fails as
+  ;; body-length-mismatch when it is short of the body-length, alike on
+  ;; every libcurl (ADR-0031, decision 2); a bytevector of a byte or more is
+  ;; held, then put, bounded by MS, unless it would take the body past its
+  ;; body-length; anything else, and a piece past the body-length, is the
+  ;; call's refusal, by refuse!, before any of it reaches libcurl. A
+  ;; producer is never called after it answered the eof object: the request
+  ;; side is ending or has ended.
+  (define (produce-and-put! leg ms sticky? state)
+    (produce! leg sticky?)
+    (take-answer! leg ms sticky? state))
+
+  ;; take-answer! : Leg Natural Boolean State -> Void
+  ;; The producer's answer that produce! holds in LEG, taken and checked:
+  ;; the eof object ends the body, LEG ending first, in one critical section
+  ;; with the answer's removal, so an escape as curl-token-end-body!'s
+  ;; section ends leaves it ending, and the next feed! ends it again, never
+  ;; calling the producer; a bytevector of a byte or more becomes the held
+  ;; piece, in one section with the answer's removal, then is put, unless
+  ;; it would take the body past its body-length, which is refused,
+  ;; &http-request-error, body-length-mismatch (ADR-0031, amended); anything
+  ;; else is refused, an assertion violation.
+  (define (take-answer! leg ms sticky? state)
+    (let ((answer (car (leg-answer leg))))
+      (cond
+        ((eof-object? answer)
+         (critical-section
+          (leg-answer-set! leg #f)
+          (leg-phase-set! leg 'ending))
+         (end-body-now! leg))
+        ((and (bytevector? answer) (> (bytevector-length answer) 0))
+         (let ((length (leg-length leg)))
+           (if (and length (> (+ (leg-put leg) (bytevector-length answer)) length))
+               (refuse! leg sticky?
+                        (condition (make-http-request-error 'body (call-producer (leg-call leg))
+                                                            'body-length-mismatch)
+                                   (make-who-condition (call-who (leg-call leg)))
+                                   (make-message-condition
+                                    "a producer gave more than its body-length: the transfer is cancelled, and nothing past the length was put")
+                                   ;; As the low level's put orders them.
+                                   (make-irritants-condition (list length (bytevector-length answer)))
+                                   (exchange-live-condition state)))
+               (begin
+                 (critical-section
+                  (leg-answer-set! leg #f)
+                  (leg-held-set! leg answer))
+                 (put-held! leg ms sticky? state)))))
+        (else
+         (refuse! leg sticky?
+                  (condition (make-assertion-violation)
+                             (make-who-condition (call-who (leg-call leg)))
+                             (make-message-condition
+                              "a producer answers a bytevector of a byte or more, or the eof object at its body's end")
+                             (make-irritants-condition (list answer))
+                             (exchange-live-condition state)))))))
+
+  ;; end-body-now! : Leg -> Void
+  ;; LEG's body ended, which curl-token-end-body! does once, nothing a
+  ;; second time, then LEG ended.
+  (define (end-body-now! leg)
+    (curl-token-end-body! (leg-token leg))
+    (leg-phase-set! leg 'ended)
+    (req-waited! leg #t #f))
+
+  ;; put-held! : Leg Natural Boolean State -> Void
+  ;; LEG's held piece put, bounded by MS, unless curl-token-body-count says
+  ;; an earlier put of it committed it before an escape: taken, counted and
+  ;; let go, and, the
+  ;; body-length then taken whole, the producer asked for its end at once;
+  ;; done, the token done, the request side stopped; or the bound passed,
+  ;; the piece still held. It is within the body-length, checked before the
+  ;; hold, and the body has not ended, so the put raises nothing of its own,
+  ;; and no guard is around it (the M6 plan, section 3.6).
+  (define (put-held! leg ms sticky? state)
+    (let ((answer (if (= (curl-token-body-count (leg-token leg))
+                         (+ (leg-put leg) (bytevector-length (leg-held leg))))
+                      ;; Committed already, by a put an interrupt handler
+                      ;; escaped from as its hold ended, and caught in PROC:
+                      ;; taken, never put twice (the M6 plan, section 3.5).
+                      #t
+                      (curl-token-put-piece! (leg-token leg) (leg-held leg) ms))))
+      (cond ((eq? answer #t)
+             (leg-put-set! leg (+ (leg-put leg) (bytevector-length (leg-held leg))))
+             (leg-held-set! leg #f)
+             (req-waited! leg #t #f)
+             (end-at-length! leg ms sticky? state))
+            ((eq? answer 'done)
+             (leg-held-set! leg #f)
+             (leg-phase-set! leg 'stopped)
+             (req-waited! leg #f #f))
+            (else (req-waited! leg #f #t)))))
+
+  ;; refuse! : Leg Boolean Condition -> Nothing
+  ;; The call's refusal C of a producer's answer, in one critical section:
+  ;; inside the port's read, STICKY?, C recorded first as the call's failure
+  ;; for good; LEG stopped, its answer and its held piece dropped; then its
+  ;; transfer cancelled. C is raised once the section has ended, so a
+  ;; keyboard interrupt whose handler escapes there finds everything
+  ;; recorded, and the next read raises C (the slice's review).
+  (define (refuse! leg sticky? c)
+    (critical-section
+     (when (and sticky? (not (call-stuck (leg-call leg))))
+       (call-stuck-set! (leg-call leg) c))
+     (leg-phase-set! leg 'stopped)
+     (leg-answer-set! leg #f)
+     (leg-held-set! leg #f)
+     (curl-token-cancel (leg-token leg)))
+    (raise c))
+
+  ;; produce! : Leg Boolean -> Void
+  ;; The producer called on this thread, the call marked called, and
+  ;; producing while it runs, so a read of the port it feeds is refused;
+  ;; its answer, once it returns, held in LEG in the critical after thunk,
+  ;; so an escape as that thunk's section ends finds it there, for the next
+  ;; feed! to take (take-answer!). With STICKY?, inside the port's read, a
+  ;; raise that leaves the producer is the call's failure for good: seen as
+  ;; it passes, by a handler that hands it on, continuably, then, once it
+  ;; has left the producer, recorded and the transfer cancelled, in the
+  ;; after thunk of a critical wind; it leaves as raised, and one an outer
+  ;; handler returns from resumes the producer, and is then no failure. The
+  ;; record and the cancel are made only once the producer was entered, a
+  ;; flag set as the first form inside the handler's thunk: a keyboard
+  ;; interrupt that escapes as the before thunk's section ends leaves
+  ;; before it, and neither is made, so PROC, catching it, reads on, and
+  ;; the producer is called again (the slice's fourth review, case E).
+  ;; Without STICKY?, a raise leaves the call as raised, and the call's own
+  ;; wind cancels the transfer.
+  (define (produce! leg sticky?)
+    (let ((call (leg-call leg)) (seen #f) (got #f) (entered #f))
+      (call-called-set! call #t)
+      (dynamic-wind #t
+        (lambda () (call-producing-set! call #t) (when sticky? (run-before-gate!)))
+        (lambda ()
+          (set! got (list (if sticky?
+                              (with-exception-handler
+                                (lambda (e)
+                                  (set! seen (list e))
+                                  (let ((v (raise-continuable e)))
+                                    (set! seen #f)
+                                    v))
+                                (lambda ()
+                                  (set! entered #t)
+                                  ((call-producer call))))
+                              ((call-producer call))))))
+        (lambda ()
+          (call-producing-set! call #f)
+          (if got
+              (leg-answer-set! leg got)
+              (when (and sticky? entered)
+                (when (and seen (not (call-stuck call))) (call-stuck-set! call (car seen)))
+                (curl-token-cancel (leg-token leg))))
+          (when sticky? (run-produce-gate!))))))
+
+  ;; produce-gate : (Vector (U (-> Any) #f))
+  ;; A test seam's thunk, run once, inside the port's read, in produce!'s
+  ;; critical after thunk, then dropped: a test blocks there on a mutex
+  ;; another thread holds while that thread sends SIGINT, so a keyboard
+  ;; interrupt runs as the after thunk's section ends (traps.md).
+  (define produce-gate (vector #f))
+
+  ;; drive-produce-gate-set! : (U (-> Any) #f) -> Void
+  ;; Arms the gate, the test seam above, which (http-client) does not export.
+  (define (drive-produce-gate-set! thunk) (vector-set! produce-gate 0 thunk))
+
+  ;; run-produce-gate! : -> Void
+  (define (run-produce-gate!)
+    (let ((g (vector-ref produce-gate 0)))
+      (when g
+        (vector-set! produce-gate 0 #f)
+        (g))))
+
+  ;; before-gate : (Vector (U (-> Any) #f))
+  ;; The produce gate's twin, a test seam's thunk run once, inside the
+  ;; port's read, in produce!'s critical before thunk, then dropped, so a
+  ;; keyboard interrupt runs as the before thunk's section ends, before the
+  ;; producer is entered (the slice's fourth review, case E).
+  (define before-gate (vector #f))
+
+  ;; drive-before-gate-set! : (U (-> Any) #f) -> Void
+  ;; Arms the before gate, which (http-client) does not export.
+  (define (drive-before-gate-set! thunk) (vector-set! before-gate 0 thunk))
+
+  ;; run-before-gate! : -> Void
+  (define (run-before-gate!)
+    (let ((g (vector-ref before-gate 0)))
+      (when g
+        (vector-set! before-gate 0 #f)
+        (g))))
+
+  ;; last-token : (Vector Boolean (U Token #f))
+  ;; The test seam's record: whether a test has armed it; then the token
+  ;; the latest streamed call submitted while armed, held only until that
+  ;; call ends, when its own after thunk lets it go. Unarmed, it records
+  ;; nothing, so no call's token, nor the private copy of a whole body its
+  ;; plan holds, outlives the call through the seam: held for good, a 64
+  ;; MiB body's call kept 64.1 MB until the next (the slice's fourth
+  ;; review).
+  (define last-token (vector #f #f))
+
+  ;; drive-last-token-arm! : Boolean -> Void
+  ;; Arms the seam, or, with #f, disarms it and drops what it holds: a
+  ;; test seam, which (http-client) does not export.
+  (define (drive-last-token-arm! on?)
+    (vector-set! last-token 0 (and on? #t))
+    (unless on? (vector-set! last-token 1 #f)))
+
+  ;; drive-last-token : -> (U Token #f)
+  ;; While the seam is armed, the token the latest streamed call submitted,
+  ;; until that call ends; else #f: a test seam, read only, which
+  ;; (http-client) does not export, so a test can hold that token's request
+  ;; stream by the low level's own seam.
+  (define (drive-last-token) (vector-ref last-token 1))
+
+  ;; wait-head! : Leg State -> Void
+  ;; Waits until LEG's head is published or its token done, its response
+  ;; side and its request side in turn.
+  (define (wait-head! leg state)
+    (let loop ()
+      (let ((got (curl-token-head-wait (leg-token leg) (resp-bound leg))))
+        (resp-waited! leg got)
+        (unless got
+          (feed! leg #f state)
+          (loop)))))
+
+  ;; read-whole! : Leg State
+  ;;               -> (U (List 'response Curl-Response Bytevector) (List 'failed Condition))
+  ;; LEG's body read whole, piece by piece, its request side fed in turn:
+  ;; once the token is done and every piece taken, the transfer's response
+  ;; and the bytes, or its failure, read as data. The low level holds a
+  ;; stream to its body-limit, failing the transfer past it.
+  (define (read-whole! leg state)
+    (let loop ((pieces '()))
+      (let ((p (curl-token-next-piece (leg-token leg) (resp-bound leg))))
+        (resp-waited! leg (bytevector? p))
+        (cond ((bytevector? p) (loop (cons p pieces)))
+              ((eof-object? p)
+               (let ((o (curl-token-outcome (leg-token leg))))
+                 (if (curl-response? o)
+                     (list 'response o (joined (reverse pieces)))
+                     (list 'failed o))))
+              (else (feed! leg #f state) (loop pieces))))))
+
+  ;; joined : (Listof Bytevector) -> Bytevector
+  ;; PIECES' bytes, in order, in one fresh bytevector.
+  (define (joined pieces)
+    (let ((out (make-bytevector (fold-left (lambda (n p) (+ n (bytevector-length p))) 0 pieces))))
+      (let loop ((rest pieces) (at 0))
+        (if (null? rest)
+            out
+            (let ((n (bytevector-length (car rest))))
+              (bytevector-copy! (car rest) 0 out at n)
+              (loop (cdr rest) (+ at n)))))))
+
+  ;; end-hop! : Token -> Void
+  ;; A hop's transfer cancelled at its head, and waited for, a second at a
+  ;; time, unguarded, so the next submit comes once it has ended, and the
+  ;; call's wind has one live token to cancel (ADR-0031, amended
+  ;; 2026-10-31).
+  (define (end-hop! token)
+    (curl-token-cancel token)
+    (let wait () (unless (curl-token-wait token 1000) (wait))))
+
+  ;; head-response : Integer (U Symbol Integer #f) (Listof (Pairof String String)) -> Response
+  ;; A head's response, as the core reads it: its status, version and
+  ;; headers, a body and timings of #f; the core gives it the URL in flight
+  ;; and the history.
+  (define (head-response status version headers)
+    (make-http-response status version "" headers #f #f '()))
+
+  ;; call-port : Leg State -> Binary-Input-Port
+  ;; The call's port over LEG's body, the high level's own (the M6 plan,
+  ;; section 3.6): a read copies from the piece at hand, or takes the next
+  ;; by curl-token-next-piece, feeding the producer between its waits, as
+  ;; the drive does, so a full-duplex server is never left without a body.
+  ;; Its ends stick: 0 once the transfer ended with a response and every
+  ;; piece is read; for a failure, the low level's condition compounded
+  ;; with the call's &http-exchange, and with &http-timeout when it is the
+  ;; call's bound's 28, raised every time after; and once the producer
+  ;; failed inside a read, that failure, raised by every read after. A read
+  ;; from the producer, while it runs, and a read or a close from another
+  ;; thread are assertion violations from the call; so is a read that must
+  ;; wait inside a critical section, before it waits. Its close cancels a
+  ;; live transfer. Bytes Chez's port has already buffered are served to
+  ;; any thread with no read reaching it, as the low level's port's are.
+  (define (call-port leg state)
+    (let* ((call (leg-call leg))
+           (who (call-who call))
+           (token (leg-token leg))
+           (owner (get-thread-id))
+           (at-hand #f)
+           (offset 0)
+           (end #f))
+      (define (own)
+        (let ((here (get-thread-id)))
+          (unless (eqv? here owner)
+            (assertion-violation who "a call's port is read and closed on the call's thread alone"
+                                 owner here))))
+      (define (give! bv start count)
+        (let ((k (min count (- (bytevector-length at-hand) offset))))
+          (bytevector-copy! at-hand offset bv start k)
+          (set! offset (+ offset k))
+          k))
+      (define (read! bv start count)
+        (own)
+        (when (call-producing? call)
+          (assertion-violation who "a producer read the port it feeds"))
+        (let ((stuck (call-stuck call)))
+          (when stuck (raise stuck)))
+        (cond
+          ((and at-hand (< offset (bytevector-length at-hand))) (give! bv start count))
+          ((eq? end 'eof) 0)
+          (end (raise end))
+          (else
+           (unless (interrupts-on?)
+             (assertion-violation who "a call's port waits for its body, which needs interrupts on"))
+           (let loop ()
+             (let ((p (curl-token-next-piece token (resp-bound leg))))
+               ;; A piece taken is held at once, before any call, so an
+               ;; escape caught in PROC loses none of it.
+               (when (bytevector? p) (set! at-hand p) (set! offset 0))
+               (resp-waited! leg (bytevector? p))
+               (cond
+                 ((bytevector? p) (give! bv start count))
+                 ((eof-object? p)
+                  (let ((o (curl-token-outcome token)))
+                    (if (curl-response? o)
+                        (begin (set! end 'eof) 0)
+                        (let ((c (exchange-raised state o (monotonic-ns))))
+                          (set! end c)
+                          (raise c)))))
+                 (else (feed! leg #t state) (loop))))))))
+      (make-custom-binary-input-port "http-response-body" read! #f #f
+                                     (lambda () (own) (curl-token-cancel token)))))
+
+  ;; drive-stream : Engine State (-> Real) (U Procedure #f) (U 'port 'whole)
+  ;;                (U (Response Binary-Input-Port -> Any) #f) Symbol -> Any
+  ;; STATE's call, every transfer's response streamed, on ENGINE (the M6
+  ;; plan, section 3.6; ADR-0031, amended 2026-10-31; ADR-0032): its
+  ;; requests carry a stream-buffer, and, with PRODUCER, body stream. Each
+  ;; transfer's head is waited for, PRODUCER fed meanwhile; then the draw,
+  ;; the UTC clock and the monotonic clock are read, and the head's
+  ;; body-asked bit, once, the producer counted as called when libcurl had
+  ;; asked by the head, or the drive called it; then exchange-steps-past?
+  ;; answers whether the call steps past the head:
+  ;;   - a hop, a redirect followed or a retry taken: one whose request
+  ;;     sends a body, a producer's or a whole one, is cancelled at its
+  ;;     head and stepped by exchange-step with those same values, its
+  ;;     history entry's body and timings #f; one whose request sends none
+  ;;     has its body read whole, up to body-limit, then is stepped the
+  ;;     same way, or, failing during that read, stepped with the clocks
+  ;;     read at the failure, the head's draw kept. No hop is fed. A wait
+  ;;     the step answers is measured from the time it was decided;
+  ;;   - the final head: MODE port hands PROC the response, its body and
+  ;;     timings #f, and the call's port over the body, and the call
+  ;;     answers PROC's values; MODE whole, http-request's with a producer,
+  ;;     reads the body whole, up to body-limit, and answers the response
+  ;;     with it and the transfer's timings, a failure there stepped with
+  ;;     the clocks read at it. The final head is fed whenever libcurl
+  ;;     asks.
+  ;; A call that ends with a response read before, a retry run out of
+  ;; time, hands PROC that response and a port over its body in memory. A
+  ;; retry that runs out after its hop was cancelled at its head, whose
+  ;; body was never read, at its submission or at the bound's 28 with
+  ;; nothing sent, the core fails with &http-timeout instead, as with no
+  ;; time left for any request (decided by the maintainer, 2026-11-01). One
+  ;; critical wind spans the call, as drive-exchange's does: its after
+  ;; thunk closes the port, cancels the live token, and lets the test
+  ;; seam's record of it go. Once it has run, a producer's failure inside
+  ;; the port's read is raised in place of PROC's values. WHO names the
+  ;; call in its refusals; with interrupts off it refuses before anything
+  ;; is submitted.
+  (define (drive-stream engine state draw producer mode proc who)
+    (unless (interrupts-on?)
+      (refuse-without-interrupts state who))
+    (let ((token #f) (port #f) (call (make-stream-call producer who #f #f #f)))
+      (define (run state)
+        (let ((submission (exchange-submission state (monotonic-ns))))
+          (case (car submission)
+            ((fail) (raise (cadr submission)))
+            ((done) (ended-with (cadr submission)))
+            ((submit)
+             (when (and (eq? (curl-request-body (caddr submission)) 'stream) (call-called? call))
+               ;; The core never asks this: a producer counted as called is
+               ;; never sent again (ADR-0032, decision 3). Checked before the
+               ;; submit, so no second transfer of its body is ever made.
+               (assertion-violation 'drive-stream "a producer's body was asked for by a second transfer"
+                                    (caddr submission)))
+             (let* ((state (cadr submission))
+                    (request (caddr submission))
+                    (refusal (critical-section
+                              (guard (e ((curl-error? e) (list 'refused e)))
+                                (set! token (curl-submit engine request))
+                                (when (vector-ref last-token 0) (vector-set! last-token 1 token))
+                                #f))))
+               (if refusal
+                   (let* ((drawn (draw)) (utc (utc-seconds)) (now (monotonic-ns)))
+                     (stepped (exchange-step state refusal now utc drawn) now))
+                   (leg! state request))))
+            (else
+             (assertion-violation 'drive-stream "the core answered a submission this shell does not know"
+                                  submission)))))
+      (define (leg! state request)
+        (let* ((streams (eq? (curl-request-body request) 'stream))
+               (leg (make-leg token call (and streams (curl-request-body-length request))
+                              (if streams 'feeding 'none) #f #f 0 #f #f #f)))
+          (wait-head! leg state)
+          (let* ((head (curl-token-head token))
+                 (ended (and (not head) (outcome-of token)))
+                 (drawn (draw))
+                 (utc (utc-seconds))
+                 (now (monotonic-ns))
+                 (asked (and head (curl-head-body-asked? head)))
+                 (state (if (or asked (call-called? call)) (exchange-mark-called state) state)))
+            (if (and ended (eq? (car ended) 'failed))
+                (stepped (exchange-step state ended now utc drawn) now)
+                (let ((response
+                       (if head
+                           (head-response (curl-head-status head) (curl-head-http-version head)
+                                          (curl-head-headers head))
+                           (let ((r (cadr ended)))
+                             (head-response (curl-response-status r) (curl-response-http-version r)
+                                            (curl-response-headers r))))))
+                  (if (exchange-steps-past? state response now utc drawn)
+                      (hop! leg state request response now utc drawn)
+                      (final! leg state response now utc drawn)))))))
+      (define (hop! leg state request response now utc drawn)
+        (if (curl-request-body request)
+            (begin
+              (end-hop! token)
+              (stepped (exchange-step state (list 'response response) now utc drawn) now))
+            (let ((read (read-whole! leg state)))
+              (if (eq? (car read) 'response)
+                  (stepped (exchange-step state
+                                          (list 'response
+                                                (http-response-with response (caddr read)
+                                                                    (curl-response-timings (cadr read))))
+                                          now utc drawn)
+                           now)
+                  (let* ((utc (utc-seconds)) (now (monotonic-ns)))
+                    (stepped (exchange-step state read now utc drawn) now))))))
+      (define (final! leg state response now utc drawn)
+        (let ((step (exchange-step state (list 'response response) now utc drawn)))
+          (case (car step)
+            ((fail) (raise (cadr step)))
+            ((done)
+             (leg-final-set! leg #t)
+             (end-at-length! leg 0 #f state)
+             (let ((r (cadr step)))
+               (if (eq? mode 'port)
+                   (let ((p (call-port leg state)))
+                     (set! port p)
+                     (proc r p))
+                   (let ((read (read-whole! leg state)))
+                     (if (eq? (car read) 'response)
+                         (http-response-with r (caddr read) (curl-response-timings (cadr read)))
+                         ;; The final head is fed, so the producer may have
+                         ;; been called first during the read: marked again,
+                         ;; no retry takes it (ADR-0032, decision 3).
+                         (let* ((utc (utc-seconds)) (now (monotonic-ns))
+                                (state (if (call-called? call) (exchange-mark-called state) state)))
+                           (stepped (exchange-step state read now utc drawn) now)))))))
+            (else
+             (assertion-violation 'drive-stream "the head's predicate and exchange-step disagree" step)))))
+      (define (ended-with r)
+        (if (eq? mode 'port)
+            (let ((p (open-bytevector-input-port (http-response-body r))))
+              (set! port p)
+              (proc r p))
+            r))
+      (define (stepped step at)
+        (case (car step)
+          ((done) (ended-with (cadr step)))
+          ((fail) (raise (cadr step)))
+          ((next)
+           (let ((wait (cadddr step)))
+             (unless (and (integer? wait) (exact? wait) (>= wait 0))
+               (assertion-violation 'drive-stream "the core answered a next whose wait is no natural" step))
+             (let ((left (- (+ at (* wait 1000000)) (monotonic-ns))))
+               (when (> left 0) (pause (div (+ left 999999) 1000000))))
+             (run (cadr step))))
+          (else
+           (assertion-violation 'drive-stream "the core answered a step this shell does not know" step))))
+      (call-with-values
+        (lambda ()
+          (dynamic-wind #t
+            (lambda () #f)
+            (lambda () (run state))
+            (lambda ()
+              (when port (close-port port))
+              (when (and token (not (curl-token-done? token)))
+                (curl-token-cancel token))
+              (when (and token (eq? (vector-ref last-token 1) token))
+                (vector-set! last-token 1 #f)))))
+        (lambda answers
+          (let ((stuck (call-stuck call)))
+            (if stuck (raise stuck) (apply values answers)))))))
 
   ;; --- the request group (the M5 plan, section 3.7) ------------------------------------
 

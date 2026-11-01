@@ -207,6 +207,93 @@ up to =redirects= times: 20, unless the session or the call says otherwise.
 - *A 303 makes a =get= of anything but a =head=,* and so do a 301 and a 302
   of a =post=. The body goes, and with it your =Content-= headers, =Digest=,
   =Last-Modified= and =Expect=.
+- *A producer's body is never sent twice.* Once libcurl has asked for it, a
+  307 or 308, or a 301 or 302 of anything but a =post=, raises
+  =&http-redirect-error=, =body-not-replayable=.
+
+*** Reading a call's response as it arrives
+
+=call-with-response-port= makes the call and hands your procedure the
+response and a binary input port over its body, as the body arrives:
+
+#+begin_src scheme
+(import (http-client))
+
+(call-with-http-session
+ (lambda (s)
+   (call-with-response-port s 'get "https://example.com/big" 'timeout-ms 60000
+     (lambda (response port)
+       (http-response-status response)    ; the head: status, headers, history
+       (let loop ()
+         (let ((bytes (get-bytevector-some port)))
+           (unless (eof-object? bytes)
+             (loop))))))))
+#+end_src
+
+- *The response has no body.* Its body and timings are =#f=, and
+  =http-response-text= refuses it: read the port.
+- *Your procedure's values are the call's.* When it returns or escapes, the
+  port is closed and the transfer cancelled. A Chez engine's expiry during
+  the call is an escape too: the transfer is cancelled. Once resumed, reads
+  raise that cancel, then Chez's error for a closed port.
+- *=timeout-ms= bounds the whole call, your reading included,* as Go's
+  =http.Client.Timeout= does. A reader slower than the bound meets
+  =&http-timeout=. Read slowly by design? Pass a longer bound, or =#f=.
+- *Read it with =get-bytevector-some= or =get-u8=,* on the call's thread.
+  When the transfer fails, the read raises its failure, every time after;
+  a =get-bytevector-n=, =-n!= or =-all= call then loses the bytes it had read.
+- *=stream-buffer= sets how much is held,* 64 KiB unless you say. A full
+  buffer pauses the transfer.
+- *Redirects and retries are decided at each head,* in a streamed call:
+  this one, or one whose body is a producer. A hop's body is read into the
+  history. If the hop's request sends a body, it is cancelled at its head
+  instead, and its history entry's body and timings are =#f=. If a retry's
+  wait then leaves no time, the call meets =&http-timeout=.
+
+*** Sending a call's body from a producer
+
+A call's =body= may be a producer: a procedure of no arguments that answers
+the next bytes, or the eof object at the end. =body-length= sends its
+length; leave it out to send the body chunked:
+
+#+begin_src scheme
+(import (http-client))
+
+(call-with-http-session
+ (lambda (s)
+   (let ((file (open-file-input-port "big.bin")))
+     (http-put s "https://example.com/big.bin"
+               'body (lambda () (get-bytevector-some file))   ; the eof object ends it
+               'timeout-ms 60000))))
+#+end_src
+
+- *It runs on your thread,* only once libcurl asks for the body, and never
+  after it answered the eof object. It answers a bytevector of a byte or
+  more, or the eof object; anything else is an assertion violation.
+- *The length is checked.* A body short of =body-length=, and a piece past
+  it, each fail as =body-length-mismatch=: the short one from the transfer,
+  the long one as =&http-request-error=, before any of it is sent.
+- *It is sent at most once.* Once libcurl has asked for it, no retry takes
+  the call, whatever the policy says. A refused connect, before any ask, is
+  still retried.
+- *Through =call-with-response-port=, the port feeds the producer while you
+  read.* A server that answers as the body arrives gets the rest. It feeds
+  only when no bytes are waiting, so a server that sends faster than you
+  read holds the upload back; a procedure that never reads, and never
+  returns, starves it.
+- *Inside the port's read, the producer's raise sticks:* every later read
+  raises it, and the call raises it once your procedure returns. A producer
+  that reads its own port is refused.
+- *A request group takes no producer:* =go= and =http-parallel= refuse one,
+  =stream-in-group=.
+- *Over HTTP/2, pass a =timeout-ms=.* On libcurl 8.20.0 and 8.23.0, a 3xx
+  the call does not follow that arrives before the body is sent whole, a
+  producer's or a large bytevector, never ends: only the bound ends it. A
+  bytevector's redirect waits the same way through =http-request=; a
+  producer's redirect is cut at its head. On 7.85.0, an early 200 while a
+  whole body is still owed never ends either.
+- *An early answer cuts the upload.* A server may answer, a 413 say, before
+  the body is sent; the rest is never sent.
 
 *** Running calls at once
 

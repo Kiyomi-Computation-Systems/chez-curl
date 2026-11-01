@@ -1,0 +1,841 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[floor-7.85.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[floor-7.85.0] libdirs src:tests:build/scheme-libs
+[floor-7.85.0] server {"node":"v20.10.0","pid":3118,"http":"127.0.0.1:43355","raw":"127.0.0.1:45879","https":"127.0.0.1:46417","h2":"127.0.0.1:41319","closed":"127.0.0.1:41509"}
+[floor-7.85.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 node v20.10.0
+[floor-7.85.0] drive libcurl 7.85.0 OpenSSL/3.0.13 cases=(c) slices=(10) sched=strict runs=2 faces=(raw https h2) framings=(sized chunked) bound=8000 control-bound=5000 sizes=4194304,16777216,4194304 c-statuses=(301 302 303 307 308 413 503) c-wheres=(h2) hop-cancel=#f
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=1 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=15.594 seen-head-ms=16.882 end-ms=27.492 head-to-end-ms=11.898 total-ms=31.326 up=131072 down=10 MBps=4.77 cpu-ms=5.591 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=status=301 get=end:65536:ok get-outcome=status=200 call-end-ms=31.325 outcome=status=301
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=1 server: req h2 POST /answer-at #1 conn=52996 at=427.1
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=1 server: answer-at h2 conn=52996 answered 301 at=65536 t=6.2 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=1 server: aborted h2 /answer-at conn=52996 head+65536 body bytes, 0 after the answer, then the stream closed at 8.4ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: req h2 GET /body #1 conn=52996 at=447.0
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.5ms total=1.9ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=1 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=13.703 seen-head-ms=16.868 end-ms=27.139 head-to-end-ms=13.435 total-ms=29.519 up=131072 down=10 MBps=4.83 cpu-ms=4.672 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=status=301 get=end:65536:ok get-outcome=status=200 call-end-ms=29.518 outcome=status=301
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=53002 at=461.8
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=1 server: answer-at h2 conn=53002 answered 301 at=65536 t=5.6 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=1 server: answer-at h2 conn=53002 body read whole: 65536 bytes, 0 after the answer, at 7.4ms
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: req h2 GET /body #1 conn=53002 at=483.2
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.5ms total=1.3ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=1 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=13.359 seen-head-ms=13.6 end-ms=24.221 head-to-end-ms=10.862 total-ms=28.077 up=131072 down=10 MBps=5.41 cpu-ms=5.813 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=status=302 get=end:65536:ok get-outcome=status=200 call-end-ms=28.076 outcome=status=302
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=1 server: req h2 POST /answer-at #1 conn=51070 at=493.8
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=1 server: answer-at h2 conn=51070 answered 302 at=65536 t=5.3 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=1 server: aborted h2 /answer-at conn=51070 head+65536 body bytes, 0 after the answer, then the stream closed at 8.0ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: req h2 GET /body #1 conn=51070 at=513.0
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.8ms total=1.9ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=1 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=12.852 seen-head-ms=13.596 end-ms=23.919 head-to-end-ms=11.067 total-ms=25.669 up=131072 down=10 MBps=5.48 cpu-ms=4.401 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=status=302 get=end:65536:ok get-outcome=status=200 call-end-ms=25.667 outcome=status=302
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=51084 at=522.8
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=1 server: answer-at h2 conn=51084 answered 302 at=65536 t=7.6 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=1 server: answer-at h2 conn=51084 body read whole: 65536 bytes, 0 after the answer, at 9.6ms
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: req h2 GET /body #1 conn=51084 at=543.8
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.8ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=1 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=12.69 seen-head-ms=13.614 end-ms=24.667 head-to-end-ms=11.977 total-ms=26.041 up=131072 down=10 MBps=5.31 cpu-ms=2.837 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=status=303 get=end:65536:ok get-outcome=status=200 call-end-ms=26.04 outcome=status=303
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=1 server: req h2 POST /answer-at #1 conn=51094 at=551.6
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=1 server: answer-at h2 conn=51094 answered 303 at=65536 t=8.6 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=1 server: aborted h2 /answer-at conn=51094 head+65536 body bytes, 0 after the answer, then the stream closed at 10.6ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: req h2 GET /body #1 conn=51094 at=574.5
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.7ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=1 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=12.685 seen-head-ms=13.639 end-ms=23.848 head-to-end-ms=11.162 total-ms=25.208 up=131072 down=10 MBps=5.5 cpu-ms=3.029 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=status=303 get=end:65536:ok get-outcome=status=200 call-end-ms=25.207 outcome=status=303
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=51110 at=581.1
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=1 server: answer-at h2 conn=51110 answered 303 at=65536 t=8.6 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=1 server: answer-at h2 conn=51110 body read whole: 65536 bytes, 0 after the answer, at 10.6ms
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: req h2 GET /body #1 conn=51110 at=603.1
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=1 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.736 seen-head-ms=13.61 end-ms=24.66 head-to-end-ms=11.924 total-ms=25.992 up=131072 down=10 MBps=5.32 cpu-ms=2.863 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=status=307 get=end:65536:ok get-outcome=status=200 call-end-ms=25.991 outcome=status=307
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=1 server: req h2 POST /answer-at #1 conn=51116 at=610.8
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=1 server: answer-at h2 conn=51116 answered 307 at=65536 t=8.7 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=1 server: aborted h2 /answer-at conn=51116 head+65536 body bytes, 0 after the answer, then the stream closed at 10.7ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: req h2 GET /body #1 conn=51116 at=633.5
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=1 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.804 seen-head-ms=13.615 end-ms=23.804 head-to-end-ms=11.0 total-ms=25.146 up=131072 down=10 MBps=5.51 cpu-ms=4.266 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=status=307 get=end:65536:ok get-outcome=status=200 call-end-ms=25.145 outcome=status=307
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=51122 at=643.2
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=1 server: answer-at h2 conn=51122 answered 307 at=65536 t=7.0 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=1 server: answer-at h2 conn=51122 body read whole: 65536 bytes, 0 after the answer, at 8.9ms
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: req h2 GET /body #1 conn=51122 at=663.4
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=1 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=13.427 seen-head-ms=13.642 end-ms=24.721 head-to-end-ms=11.294 total-ms=25.954 up=131072 down=10 MBps=5.3 cpu-ms=3.777 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=status=308 get=end:65536:ok get-outcome=status=200 call-end-ms=25.953 outcome=status=308
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=1 server: req h2 POST /answer-at #1 conn=51132 at=670.7
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=1 server: answer-at h2 conn=51132 answered 308 at=65536 t=9.4 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=1 server: aborted h2 /answer-at conn=51132 head+65536 body bytes, 0 after the answer, then the stream closed at 11.4ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: req h2 GET /body #1 conn=51132 at=693.3
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.2ms total=0.3ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=1 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.568 seen-head-ms=13.592 end-ms=23.942 head-to-end-ms=11.374 total-ms=25.163 up=131072 down=10 MBps=5.47 cpu-ms=3.081 proc-stat-ms=20 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=status=308 get=end:65536:ok get-outcome=status=200 call-end-ms=25.162 outcome=status=308
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=51134 at=699.8
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=1 server: answer-at h2 conn=51134 answered 308 at=65536 t=8.4 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=1 server: answer-at h2 conn=51134 body read whole: 65536 bytes, 0 after the answer, at 10.4ms
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: req h2 GET /body #1 conn=51134 at=722.0
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.2ms total=0.5ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=413 framing=sized run=1 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=13.286 seen-head-ms=13.727 end-ms=24.834 head-to-end-ms=11.548 total-ms=24.835 up=131072 down=10 MBps=5.28 cpu-ms=3.489 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[floor-7.85.0] drive case=c where=h2 status=413 framing=sized run=1 server: req h2 POST /answer-at #1 conn=51144 at=728.6
+[floor-7.85.0] drive case=c where=h2 status=413 framing=sized run=1 server: answer-at h2 conn=51144 answered 413 at=65536 t=7.8 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=413 framing=sized run=1 server: aborted h2 /answer-at conn=51144 head+65536 body bytes, 0 after the answer, then the stream closed at 10.1ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=413 framing=sized run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=413 framing=chunked run=1 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=13.153 seen-head-ms=13.697 end-ms=24.08 head-to-end-ms=10.926 total-ms=24.081 up=131072 down=10 MBps=5.44 cpu-ms=3.486 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[floor-7.85.0] drive case=c where=h2 status=413 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=51158 at=755.9
+[floor-7.85.0] drive case=c where=h2 status=413 framing=chunked run=1 server: answer-at h2 conn=51158 answered 413 at=65536 t=7.2 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=413 framing=chunked run=1 server: answer-at h2 conn=51158 body read whole: 65536 bytes, 0 after the answer, at 9.2ms
+[floor-7.85.0] drive case=c where=h2 status=413 framing=chunked run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=503 framing=sized run=1 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=13.569 seen-head-ms=13.778 end-ms=24.881 head-to-end-ms=11.312 total-ms=24.882 up=131072 down=10 MBps=5.27 cpu-ms=3.177 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[floor-7.85.0] drive case=c where=h2 status=503 framing=sized run=1 server: req h2 POST /answer-at #1 conn=51160 at=781.4
+[floor-7.85.0] drive case=c where=h2 status=503 framing=sized run=1 server: answer-at h2 conn=51160 answered 503 at=65536 t=8.5 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=503 framing=sized run=1 server: aborted h2 /answer-at conn=51160 head+65536 body bytes, 0 after the answer, then the stream closed at 10.3ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=503 framing=sized run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=503 framing=chunked run=1 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=13.273 seen-head-ms=13.62 end-ms=23.817 head-to-end-ms=10.544 total-ms=23.818 up=131072 down=10 MBps=5.5 cpu-ms=3.165 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[floor-7.85.0] drive case=c where=h2 status=503 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=51174 at=809.2
+[floor-7.85.0] drive case=c where=h2 status=503 framing=chunked run=1 server: answer-at h2 conn=51174 answered 503 at=65536 t=7.7 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=503 framing=chunked run=1 server: answer-at h2 conn=51174 body read whole: 65536 bytes, 0 after the answer, at 9.8ms
+[floor-7.85.0] drive case=c where=h2 status=503 framing=chunked run=1 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=2 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=12.716 seen-head-ms=13.63 end-ms=24.693 head-to-end-ms=11.977 total-ms=26.046 up=131072 down=10 MBps=5.31 cpu-ms=3.26 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=status=301 get=end:65536:ok get-outcome=status=200 call-end-ms=26.045 outcome=status=301
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=2 server: req h2 POST /answer-at #1 conn=51182 at=834.4
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=2 server: answer-at h2 conn=51182 answered 301 at=65536 t=8.5 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=2 server: aborted h2 /answer-at conn=51182 head+65536 body bytes, 0 after the answer, then the stream closed at 10.6ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: req h2 GET /body #1 conn=51182 at=857.1
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.6ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=2 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=13.74 seen-head-ms=16.865 end-ms=27.464 head-to-end-ms=13.724 total-ms=28.77 up=131072 down=10 MBps=4.77 cpu-ms=3.949 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=status=301 get=end:65536:ok get-outcome=status=200 call-end-ms=28.769 outcome=status=301
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=51188 at=864.2
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=2 server: answer-at h2 conn=51188 answered 301 at=65536 t=9.8 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=2 server: answer-at h2 conn=51188 body read whole: 65536 bytes, 0 after the answer, at 11.6ms
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: req h2 GET /body #1 conn=51188 at=889.7
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.6ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=2 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=12.896 seen-head-ms=13.72 end-ms=25.684 head-to-end-ms=12.789 total-ms=27.079 up=131072 down=10 MBps=5.1 cpu-ms=3.864 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=status=302 get=end:65536:ok get-outcome=status=200 call-end-ms=27.078 outcome=status=302
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=2 server: req h2 POST /answer-at #1 conn=51192 at=897.0
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=2 server: answer-at h2 conn=51192 answered 302 at=65536 t=8.3 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=2 server: aborted h2 /answer-at conn=51192 head+65536 body bytes, 0 after the answer, then the stream closed at 10.3ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: req h2 GET /body #1 conn=51192 at=920.2
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.6ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=2 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=12.814 seen-head-ms=13.618 end-ms=23.986 head-to-end-ms=11.172 total-ms=25.932 up=131072 down=10 MBps=5.46 cpu-ms=4.553 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=status=302 get=end:65536:ok get-outcome=status=200 call-end-ms=25.931 outcome=status=302
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=51204 at=926.8
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=2 server: answer-at h2 conn=51204 answered 302 at=65536 t=8.0 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=2 server: answer-at h2 conn=51204 body read whole: 65536 bytes, 0 after the answer, at 10.1ms
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: req h2 GET /body #1 conn=51204 at=949.1
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=2 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=12.88 seen-head-ms=13.605 end-ms=23.959 head-to-end-ms=11.079 total-ms=25.294 up=131072 down=10 MBps=5.47 cpu-ms=4.103 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=status=303 get=end:65536:ok get-outcome=status=200 call-end-ms=25.293 outcome=status=303
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=2 server: req h2 POST /answer-at #1 conn=51212 at=955.5
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=2 server: answer-at h2 conn=51212 answered 303 at=65536 t=8.1 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=2 server: aborted h2 /answer-at conn=51212 head+65536 body bytes, 0 after the answer, then the stream closed at 10.1ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: req h2 GET /body #1 conn=51212 at=976.9
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.7ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=2 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=12.884 seen-head-ms=13.617 end-ms=23.822 head-to-end-ms=10.938 total-ms=25.167 up=131072 down=10 MBps=5.5 cpu-ms=3.905 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=status=303 get=end:65536:ok get-outcome=status=200 call-end-ms=25.166 outcome=status=303
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=51226 at=984.3
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=2 server: answer-at h2 conn=51226 answered 303 at=65536 t=8.1 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=2 server: answer-at h2 conn=51226 body read whole: 65536 bytes, 0 after the answer, at 10.1ms
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: req h2 GET /body #1 conn=51226 at=1005.6
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=2 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.784 seen-head-ms=13.599 end-ms=24.645 head-to-end-ms=11.86 total-ms=25.538 up=131072 down=10 MBps=5.32 cpu-ms=3.038 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=status=307 get=end:65536:ok get-outcome=status=200 call-end-ms=25.537 outcome=status=307
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=2 server: req h2 POST /answer-at #1 conn=51232 at=1011.4
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=2 server: answer-at h2 conn=51232 answered 307 at=65536 t=8.7 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=2 server: aborted h2 /answer-at conn=51232 head+65536 body bytes, 0 after the answer, then the stream closed at 10.7ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: req h2 GET /body #1 conn=51232 at=1034.1
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=2 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=13.701 seen-head-ms=16.92 end-ms=27.12 head-to-end-ms=13.418 total-ms=28.117 up=131072 down=10 MBps=4.83 cpu-ms=3.39 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=status=307 get=end:65536:ok get-outcome=status=200 call-end-ms=28.115 outcome=status=307
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=51246 at=1039.1
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=2 server: answer-at h2 conn=51246 answered 307 at=65536 t=10.1 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=2 server: answer-at h2 conn=51246 body read whole: 65536 bytes, 0 after the answer, at 11.7ms
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: req h2 GET /body #1 conn=51246 at=1064.5
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.2ms total=0.4ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=2 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.644 seen-head-ms=13.594 end-ms=24.655 head-to-end-ms=12.01 total-ms=26.005 up=131072 down=10 MBps=5.32 cpu-ms=3.809 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=status=308 get=end:65536:ok get-outcome=status=200 call-end-ms=26.004 outcome=status=308
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=2 server: req h2 POST /answer-at #1 conn=51262 at=1069.8
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=2 server: answer-at h2 conn=51262 answered 308 at=65536 t=8.0 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=2 server: aborted h2 /answer-at conn=51262 head+65536 body bytes, 0 after the answer, then the stream closed at 10.2ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: req h2 GET /body #1 conn=51262 at=1092.2
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.6ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=2 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.683 seen-head-ms=13.602 end-ms=23.823 head-to-end-ms=11.14 total-ms=26.045 up=131072 down=10 MBps=5.5 cpu-ms=3.373 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=status=308 get=end:65536:ok get-outcome=status=200 call-end-ms=26.044 outcome=status=308
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=51272 at=1097.7
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=2 server: answer-at h2 conn=51272 answered 308 at=65536 t=8.9 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=2 server: answer-at h2 conn=51272 body read whole: 65536 bytes, 0 after the answer, at 11.0ms
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: req h2 GET /body #1 conn=51272 at=1120.2
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.7ms total=1.2ms aborted=0
+[floor-7.85.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: count h2:/body=1
+[floor-7.85.0] drive case=c where=h2 status=413 framing=sized run=2 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=12.819 seen-head-ms=13.634 end-ms=25.543 head-to-end-ms=12.723 total-ms=25.545 up=131072 down=10 MBps=5.13 cpu-ms=2.544 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[floor-7.85.0] drive case=c where=h2 status=413 framing=sized run=2 server: req h2 POST /answer-at #1 conn=51288 at=1127.2
+[floor-7.85.0] drive case=c where=h2 status=413 framing=sized run=2 server: answer-at h2 conn=51288 answered 413 at=65536 t=8.5 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=413 framing=sized run=2 server: aborted h2 /answer-at conn=51288 head+65536 body bytes, 0 after the answer, then the stream closed at 10.5ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=413 framing=sized run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=413 framing=chunked run=2 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=13.316 seen-head-ms=13.647 end-ms=24.035 head-to-end-ms=10.719 total-ms=24.037 up=131072 down=10 MBps=5.45 cpu-ms=4.693 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[floor-7.85.0] drive case=c where=h2 status=413 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=51300 at=1156.7
+[floor-7.85.0] drive case=c where=h2 status=413 framing=chunked run=2 server: answer-at h2 conn=51300 answered 413 at=65536 t=6.5 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=413 framing=chunked run=2 server: answer-at h2 conn=51300 body read whole: 65536 bytes, 0 after the answer, at 8.9ms
+[floor-7.85.0] drive case=c where=h2 status=413 framing=chunked run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=503 framing=sized run=2 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=12.712 seen-head-ms=13.587 end-ms=24.659 head-to-end-ms=11.947 total-ms=24.66 up=131072 down=10 MBps=5.32 cpu-ms=5.898 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[floor-7.85.0] drive case=c where=h2 status=503 framing=sized run=2 server: req h2 POST /answer-at #1 conn=51312 at=1184.8
+[floor-7.85.0] drive case=c where=h2 status=503 framing=sized run=2 server: answer-at h2 conn=51312 answered 503 at=65536 t=4.5 after=65536 content-length 4194304
+[floor-7.85.0] drive case=c where=h2 status=503 framing=sized run=2 server: aborted h2 /answer-at conn=51312 head+65536 body bytes, 0 after the answer, then the stream closed at 6.5ms, rst=1
+[floor-7.85.0] drive case=c where=h2 status=503 framing=sized run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive case=c where=h2 status=503 framing=chunked run=2 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=12.692 seen-head-ms=13.604 end-ms=23.776 head-to-end-ms=11.084 total-ms=23.777 up=131072 down=10 MBps=5.51 cpu-ms=2.366 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[floor-7.85.0] drive case=c where=h2 status=503 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=51318 at=1207.0
+[floor-7.85.0] drive case=c where=h2 status=503 framing=chunked run=2 server: answer-at h2 conn=51318 answered 503 at=65536 t=8.5 after=65536 content-length -
+[floor-7.85.0] drive case=c where=h2 status=503 framing=chunked run=2 server: answer-at h2 conn=51318 body read whole: 65536 bytes, 0 after the answer, at 10.5ms
+[floor-7.85.0] drive case=c where=h2 status=503 framing=chunked run=2 server: count h2:/answer-at=1
+[floor-7.85.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[floor-7.85.0] drive done
+[floor-7.85.0] drive exited 0 after about 1 s (124 is timeout's)
+[floor-7.85.0] server-stderr: counts h2:/answer-at=28 h2:/body=20
+[ubuntu-openssl-8.5.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[ubuntu-openssl-8.5.0] libdirs src:tests:build/scheme-libs
+[ubuntu-openssl-8.5.0] server {"node":"v20.10.0","pid":3218,"http":"127.0.0.1:35419","raw":"127.0.0.1:44917","https":"127.0.0.1:33679","h2":"127.0.0.1:44329","closed":"127.0.0.1:34653"}
+[ubuntu-openssl-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 node v20.10.0
+[ubuntu-openssl-8.5.0] drive libcurl 8.5.0 OpenSSL/3.0.13 cases=(c) slices=(10) sched=strict runs=2 faces=(raw https h2) framings=(sized chunked) bound=8000 control-bound=5000 sizes=4194304,16777216,4194304 c-statuses=(301 302 303 307 308 413 503) c-wheres=(h2) hop-cancel=#f
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=17.601 seen-head-ms=20.185 end-ms=30.788 head-to-end-ms=13.187 total-ms=34.542 up=131072 down=10 MBps=4.26 cpu-ms=8.066 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=status=301 get=end:65536:ok get-outcome=status=200 call-end-ms=34.541 outcome=status=301
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server: req h2 POST /answer-at #1 conn=47434 at=419.8
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server: answer-at h2 conn=47434 answered 301 at=65536 t=4.7 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server: aborted h2 /answer-at conn=47434 head+65536 body bytes, 0 after the answer, then the stream closed at 20.4ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: req h2 GET /body #1 conn=47434 at=440.6
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=2.3ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=13.601 seen-head-ms=16.824 end-ms=27.897 head-to-end-ms=14.296 total-ms=29.365 up=131072 down=10 MBps=4.7 cpu-ms=4.92 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=status=301 get=end:65536:ok get-outcome=status=200 call-end-ms=29.364 outcome=status=301
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=47440 at=456.7
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server: answer-at h2 conn=47440 answered 301 at=65536 t=8.4 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server: answer-at h2 conn=47440 body read whole: 65536 bytes, 0 after the answer, at 23.7ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: req h2 GET /body #1 conn=47440 at=481.0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.8ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=13.018 seen-head-ms=13.656 end-ms=25.631 head-to-end-ms=12.612 total-ms=27.068 up=131072 down=10 MBps=5.11 cpu-ms=4.25 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=status=302 get=end:65536:ok get-outcome=status=200 call-end-ms=27.067 outcome=status=302
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server: req h2 POST /answer-at #1 conn=47454 at=488.2
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server: answer-at h2 conn=47454 answered 302 at=65536 t=9.2 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server: aborted h2 /answer-at conn=47454 head+65536 body bytes, 0 after the answer, then the stream closed at 22.4ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: req h2 GET /body #1 conn=47454 at=511.7
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.7ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=11.813 seen-head-ms=11.966 end-ms=23.05 head-to-end-ms=11.237 total-ms=24.302 up=131072 down=10 MBps=5.69 cpu-ms=4.033 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=status=302 get=end:65536:ok get-outcome=status=200 call-end-ms=24.302 outcome=status=302
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=47460 at=519.2
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server: answer-at h2 conn=47460 answered 302 at=65536 t=7.2 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server: answer-at h2 conn=47460 body read whole: 65536 bytes, 0 after the answer, at 19.1ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: req h2 GET /body #1 conn=47460 at=539.1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.7ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=11.939 seen-head-ms=12.007 end-ms=23.095 head-to-end-ms=11.156 total-ms=24.92 up=131072 down=10 MBps=5.68 cpu-ms=4.352 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=status=303 get=end:65536:ok get-outcome=status=200 call-end-ms=24.919 outcome=status=303
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server: req h2 POST /answer-at #1 conn=47468 at=544.9
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server: answer-at h2 conn=47468 answered 303 at=65536 t=8.4 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server: aborted h2 /answer-at conn=47468 head+65536 body bytes, 0 after the answer, then the stream closed at 20.3ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: req h2 GET /body #1 conn=47468 at=565.8
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.7ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=11.982 seen-head-ms=12.016 end-ms=23.121 head-to-end-ms=11.139 total-ms=26.042 up=131072 down=10 MBps=5.67 cpu-ms=5.929 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=status=303 get=end:65536:ok get-outcome=status=200 call-end-ms=26.04 outcome=status=303
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=47482 at=575.6
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server: answer-at h2 conn=47482 answered 303 at=65536 t=6.4 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server: answer-at h2 conn=47482 body read whole: 65536 bytes, 0 after the answer, at 18.2ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: req h2 GET /body #1 conn=47482 at=594.9
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.9ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=11.955 seen-head-ms=13.605 end-ms=25.549 head-to-end-ms=13.595 total-ms=27.656 up=131072 down=10 MBps=5.13 cpu-ms=4.313 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=status=307 get=end:65536:ok get-outcome=status=200 call-end-ms=27.655 outcome=status=307
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server: req h2 POST /answer-at #1 conn=47486 at=603.6
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server: answer-at h2 conn=47486 answered 307 at=65536 t=8.2 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server: aborted h2 /answer-at conn=47486 head+65536 body bytes, 0 after the answer, then the stream closed at 22.5ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: req h2 GET /body #1 conn=47486 at=626.8
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.2ms total=0.4ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.01 seen-head-ms=13.648 end-ms=25.61 head-to-end-ms=13.6 total-ms=27.493 up=131072 down=10 MBps=5.12 cpu-ms=4.005 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=status=307 get=end:65536:ok get-outcome=status=200 call-end-ms=27.491 outcome=status=307
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=47494 at=633.3
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server: answer-at h2 conn=47494 answered 307 at=65536 t=9.0 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server: answer-at h2 conn=47494 body read whole: 65536 bytes, 0 after the answer, at 22.9ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: req h2 GET /body #1 conn=47494 at=657.4
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.8ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.643 seen-head-ms=13.753 end-ms=24.878 head-to-end-ms=12.235 total-ms=27.471 up=131072 down=10 MBps=5.27 cpu-ms=7.083 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=status=308 get=end:65536:ok get-outcome=status=200 call-end-ms=27.469 outcome=status=308
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server: req h2 POST /answer-at #1 conn=47510 at=667.8
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server: answer-at h2 conn=47510 answered 308 at=65536 t=6.6 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server: aborted h2 /answer-at conn=47510 head+65536 body bytes, 0 after the answer, then the stream closed at 19.8ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: req h2 GET /body #1 conn=47510 at=688.6
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.7ms total=1.2ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=11.956 seen-head-ms=13.604 end-ms=24.221 head-to-end-ms=12.266 total-ms=26.569 up=131072 down=10 MBps=5.41 cpu-ms=3.378 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=status=308 get=end:65536:ok get-outcome=status=200 call-end-ms=26.568 outcome=status=308
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=47514 at=697.1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server: answer-at h2 conn=47514 answered 308 at=65536 t=8.0 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server: answer-at h2 conn=47514 body read whole: 65536 bytes, 0 after the answer, at 21.2ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: req h2 GET /body #1 conn=47514 at=718.8
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.6ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=sized run=1 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=13.369 seen-head-ms=13.598 end-ms=24.653 head-to-end-ms=11.284 total-ms=24.654 up=131072 down=10 MBps=5.32 cpu-ms=4.362 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=sized run=1 server: req h2 POST /answer-at #1 conn=47528 at=728.4
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=sized run=1 server: answer-at h2 conn=47528 answered 413 at=65536 t=9.0 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=sized run=1 server: aborted h2 /answer-at conn=47528 head+65536 body bytes, 0 after the answer, then the stream closed at 21.5ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=chunked run=1 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=12.093 seen-head-ms=13.603 end-ms=24.208 head-to-end-ms=12.115 total-ms=24.209 up=131072 down=10 MBps=5.41 cpu-ms=3.184 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=47538 at=755.5
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=chunked run=1 server: answer-at h2 conn=47538 answered 413 at=65536 t=8.1 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=chunked run=1 server: answer-at h2 conn=47538 body read whole: 65536 bytes, 0 after the answer, at 21.1ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=sized run=1 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=12.147 seen-head-ms=13.618 end-ms=24.251 head-to-end-ms=12.103 total-ms=24.251 up=131072 down=10 MBps=5.41 cpu-ms=3.388 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=sized run=1 server: req h2 POST /answer-at #1 conn=47554 at=782.3
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=sized run=1 server: answer-at h2 conn=47554 answered 503 at=65536 t=8.1 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=sized run=1 server: aborted h2 /answer-at conn=47554 head+65536 body bytes, 0 after the answer, then the stream closed at 21.2ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=chunked run=1 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=11.816 seen-head-ms=11.965 end-ms=23.022 head-to-end-ms=11.206 total-ms=23.024 up=131072 down=10 MBps=5.69 cpu-ms=2.705 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=47564 at=807.5
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=chunked run=1 server: answer-at h2 conn=47564 answered 503 at=65536 t=8.4 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=chunked run=1 server: answer-at h2 conn=47564 body read whole: 65536 bytes, 0 after the answer, at 20.3ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=11.85 seen-head-ms=11.927 end-ms=22.939 head-to-end-ms=11.09 total-ms=25.254 up=131072 down=10 MBps=5.71 cpu-ms=4.337 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=status=301 get=end:65536:ok get-outcome=status=200 call-end-ms=25.253 outcome=status=301
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server: req h2 POST /answer-at #1 conn=47578 at=832.7
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server: answer-at h2 conn=47578 answered 301 at=65536 t=7.8 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server: aborted h2 /answer-at conn=47578 head+65536 body bytes, 0 after the answer, then the stream closed at 19.9ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: req h2 GET /body #1 conn=47578 at=853.1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.2ms total=0.4ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=11.817 seen-head-ms=11.927 end-ms=22.99 head-to-end-ms=11.173 total-ms=25.302 up=131072 down=10 MBps=5.7 cpu-ms=3.474 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=status=301 get=end:65536:ok get-outcome=status=200 call-end-ms=25.301 outcome=status=301
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=47592 at=860.6
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server: answer-at h2 conn=47592 answered 301 at=65536 t=8.6 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server: answer-at h2 conn=47592 body read whole: 65536 bytes, 0 after the answer, at 20.6ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: req h2 GET /body #1 conn=47592 at=881.9
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.2ms total=0.4ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=12.067 seen-head-ms=13.599 end-ms=24.197 head-to-end-ms=12.13 total-ms=26.979 up=131072 down=10 MBps=5.42 cpu-ms=4.813 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=status=302 get=end:65536:ok get-outcome=status=200 call-end-ms=26.978 outcome=status=302
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server: req h2 POST /answer-at #1 conn=47602 at=889.2
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server: answer-at h2 conn=47602 answered 302 at=65536 t=8.1 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server: aborted h2 /answer-at conn=47602 head+65536 body bytes, 0 after the answer, then the stream closed at 21.4ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: req h2 GET /body #1 conn=47602 at=911.2
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=1.5ms total=1.9ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=12.194 seen-head-ms=12.236 end-ms=23.319 head-to-end-ms=11.126 total-ms=24.56 up=131072 down=10 MBps=5.62 cpu-ms=3.883 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=status=302 get=end:65536:ok get-outcome=status=200 call-end-ms=24.56 outcome=status=302
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=47604 at=918.2
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server: answer-at h2 conn=47604 answered 302 at=65536 t=9.0 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server: answer-at h2 conn=47604 body read whole: 65536 bytes, 0 after the answer, at 21.0ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: req h2 GET /body #1 conn=47604 at=939.9
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.7ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=12.066 seen-head-ms=13.599 end-ms=23.968 head-to-end-ms=11.902 total-ms=26.288 up=131072 down=10 MBps=5.47 cpu-ms=3.476 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=status=303 get=end:65536:ok get-outcome=status=200 call-end-ms=26.287 outcome=status=303
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server: req h2 POST /answer-at #1 conn=47606 at=946.6
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server: answer-at h2 conn=47606 answered 303 at=65536 t=8.6 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server: aborted h2 /answer-at conn=47606 head+65536 body bytes, 0 after the answer, then the stream closed at 21.5ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: req h2 GET /body #1 conn=47606 at=968.5
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=11.864 seen-head-ms=11.892 end-ms=22.946 head-to-end-ms=11.081 total-ms=25.239 up=131072 down=10 MBps=5.71 cpu-ms=3.12 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=status=303 get=end:65536:ok get-outcome=status=200 call-end-ms=25.238 outcome=status=303
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=47616 at=977.1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server: answer-at h2 conn=47616 answered 303 at=65536 t=8.6 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server: answer-at h2 conn=47616 body read whole: 65536 bytes, 0 after the answer, at 20.3ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: req h2 GET /body #1 conn=47616 at=998.3
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=11.929 seen-head-ms=11.956 end-ms=22.995 head-to-end-ms=11.067 total-ms=25.314 up=131072 down=10 MBps=5.7 cpu-ms=3.605 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=status=307 get=end:65536:ok get-outcome=status=200 call-end-ms=25.313 outcome=status=307
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server: req h2 POST /answer-at #1 conn=47626 at=1006.9
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server: answer-at h2 conn=47626 answered 307 at=65536 t=8.5 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server: aborted h2 /answer-at conn=47626 head+65536 body bytes, 0 after the answer, then the stream closed at 20.4ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: req h2 GET /body #1 conn=47626 at=1027.9
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=13.006 seen-head-ms=13.603 end-ms=24.2 head-to-end-ms=11.194 total-ms=27.38 up=131072 down=10 MBps=5.42 cpu-ms=4.517 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=status=307 get=end:65536:ok get-outcome=status=200 call-end-ms=27.379 outcome=status=307
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=47630 at=1035.8
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server: answer-at h2 conn=47630 answered 307 at=65536 t=9.8 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server: answer-at h2 conn=47630 body read whole: 65536 bytes, 0 after the answer, at 21.9ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: req h2 GET /body #1 conn=47630 at=1058.6
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.6ms total=1.1ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.039 seen-head-ms=13.617 end-ms=24.218 head-to-end-ms=12.178 total-ms=26.802 up=131072 down=10 MBps=5.41 cpu-ms=4.565 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=status=308 get=end:65536:ok get-outcome=status=200 call-end-ms=26.801 outcome=status=308
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server: req h2 POST /answer-at #1 conn=47638 at=1068.2
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server: answer-at h2 conn=47638 answered 308 at=65536 t=7.9 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server: aborted h2 /answer-at conn=47638 head+65536 body bytes, 0 after the answer, then the stream closed at 21.1ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: req h2 GET /body #1 conn=47638 at=1089.7
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=11.91 seen-head-ms=11.94 end-ms=22.953 head-to-end-ms=11.043 total-ms=25.155 up=131072 down=10 MBps=5.71 cpu-ms=4.258 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=status=308 get=end:65536:ok get-outcome=status=200 call-end-ms=25.154 outcome=status=308
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=47640 at=1099.0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server: answer-at h2 conn=47640 answered 308 at=65536 t=7.7 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server: answer-at h2 conn=47640 body read whole: 65536 bytes, 0 after the answer, at 19.5ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: req h2 GET /body #1 conn=47640 at=1119.2
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.7ms aborted=0
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: count h2:/body=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=sized run=2 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=11.886 seen-head-ms=11.974 end-ms=23.062 head-to-end-ms=11.176 total-ms=23.063 up=131072 down=10 MBps=5.68 cpu-ms=3.257 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=sized run=2 server: req h2 POST /answer-at #1 conn=47650 at=1127.1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=sized run=2 server: answer-at h2 conn=47650 answered 413 at=65536 t=8.2 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=sized run=2 server: aborted h2 /answer-at conn=47650 head+65536 body bytes, 0 after the answer, then the stream closed at 20.2ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=chunked run=2 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=11.822 seen-head-ms=11.997 end-ms=23.098 head-to-end-ms=11.276 total-ms=23.1 up=131072 down=10 MBps=5.68 cpu-ms=2.819 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=47654 at=1151.5
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=chunked run=2 server: answer-at h2 conn=47654 answered 413 at=65536 t=8.5 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=chunked run=2 server: answer-at h2 conn=47654 body read whole: 65536 bytes, 0 after the answer, at 20.3ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=413 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=sized run=2 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=13.422 seen-head-ms=13.783 end-ms=24.91 head-to-end-ms=11.487 total-ms=24.912 up=131072 down=10 MBps=5.26 cpu-ms=5.638 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=sized run=2 server: req h2 POST /answer-at #1 conn=47670 at=1183.3
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=sized run=2 server: answer-at h2 conn=47670 answered 503 at=65536 t=7.5 after=65536 content-length 4194304
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=sized run=2 server: aborted h2 /answer-at conn=47670 head+65536 body bytes, 0 after the answer, then the stream closed at 20.0ms, rst=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=chunked run=2 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=12.161 seen-head-ms=13.619 end-ms=23.962 head-to-end-ms=11.801 total-ms=23.962 up=131072 down=10 MBps=5.47 cpu-ms=4.306 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=47674 at=1209.6
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=chunked run=2 server: answer-at h2 conn=47674 answered 503 at=65536 t=6.8 after=65536 content-length -
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=chunked run=2 server: answer-at h2 conn=47674 body read whole: 65536 bytes, 0 after the answer, at 19.7ms
+[ubuntu-openssl-8.5.0] drive case=c where=h2 status=503 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[ubuntu-openssl-8.5.0] drive done
+[ubuntu-openssl-8.5.0] drive exited 0 after about 1 s (124 is timeout's)
+[ubuntu-openssl-8.5.0] server-stderr: counts h2:/answer-at=28 h2:/body=20
+[ubuntu-gnutls-8.5.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[ubuntu-gnutls-8.5.0] libdirs src:tests:build/scheme-libs
+[ubuntu-gnutls-8.5.0] server {"node":"v20.10.0","pid":3318,"http":"127.0.0.1:35363","raw":"127.0.0.1:40547","https":"127.0.0.1:45585","h2":"127.0.0.1:35773","closed":"127.0.0.1:39883"}
+[ubuntu-gnutls-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 node v20.10.0
+[ubuntu-gnutls-8.5.0] drive libcurl 8.5.0 GnuTLS/3.8.3 cases=(c) slices=(10) sched=strict runs=2 faces=(raw https h2) framings=(sized chunked) bound=8000 control-bound=5000 sizes=4194304,16777216,4194304 c-statuses=(301 302 303 307 308 413 503) c-wheres=(h2) hop-cancel=#f
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=18.959 seen-head-ms=20.294 end-ms=31.492 head-to-end-ms=12.534 total-ms=39.524 up=131072 down=10 MBps=4.16 cpu-ms=6.697 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=status=301 get=end:65536:ok get-outcome=status=200 call-end-ms=39.522 outcome=status=301
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server: req h2 POST /answer-at #1 conn=44814 at=406.8
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server: answer-at h2 conn=44814 answered 301 at=65536 t=12.3 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server: aborted h2 /answer-at conn=44814 head+65536 body bytes, 0 after the answer, then the stream closed at 28.8ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: req h2 GET /body #1 conn=44814 at=436.1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=2.5ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=13.423 seen-head-ms=13.689 end-ms=24.786 head-to-end-ms=11.363 total-ms=26.886 up=131072 down=10 MBps=5.29 cpu-ms=4.527 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=status=301 get=end:65536:ok get-outcome=status=200 call-end-ms=26.884 outcome=status=301
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=44822 at=454.3
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server: answer-at h2 conn=44822 answered 301 at=65536 t=9.1 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server: answer-at h2 conn=44822 body read whole: 65536 bytes, 0 after the answer, at 21.3ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: req h2 GET /body #1 conn=44822 at=476.4
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.9ms total=1.6ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=11.807 seen-head-ms=11.97 end-ms=23.081 head-to-end-ms=11.274 total-ms=25.464 up=131072 down=10 MBps=5.68 cpu-ms=3.56 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=status=302 get=end:65536:ok get-outcome=status=200 call-end-ms=25.464 outcome=status=302
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server: req h2 POST /answer-at #1 conn=44824 at=483.5
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server: answer-at h2 conn=44824 answered 302 at=65536 t=8.2 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server: aborted h2 /answer-at conn=44824 head+65536 body bytes, 0 after the answer, then the stream closed at 20.2ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: req h2 GET /body #1 conn=44824 at=504.6
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.7ms total=1.7ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=12.19 seen-head-ms=13.639 end-ms=24.283 head-to-end-ms=12.093 total-ms=26.548 up=131072 down=10 MBps=5.4 cpu-ms=4.809 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=status=302 get=end:65536:ok get-outcome=status=200 call-end-ms=26.547 outcome=status=302
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=44840 at=516.2
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server: answer-at h2 conn=44840 answered 302 at=65536 t=4.9 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server: answer-at h2 conn=44840 body read whole: 65536 bytes, 0 after the answer, at 17.9ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: req h2 GET /body #1 conn=44840 at=534.4
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.6ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=11.89 seen-head-ms=11.971 end-ms=23.038 head-to-end-ms=11.148 total-ms=25.25 up=131072 down=10 MBps=5.69 cpu-ms=3.147 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=status=303 get=end:65536:ok get-outcome=status=200 call-end-ms=25.249 outcome=status=303
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server: req h2 POST /answer-at #1 conn=44856 at=540.8
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server: answer-at h2 conn=44856 answered 303 at=65536 t=8.5 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server: aborted h2 /answer-at conn=44856 head+65536 body bytes, 0 after the answer, then the stream closed at 20.7ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: req h2 GET /body #1 conn=44856 at=561.9
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.2ms total=0.4ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=12.347 seen-head-ms=13.714 end-ms=24.347 head-to-end-ms=12.001 total-ms=27.61 up=131072 down=10 MBps=5.38 cpu-ms=6.059 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=status=303 get=end:65536:ok get-outcome=status=200 call-end-ms=27.609 outcome=status=303
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=44862 at=572.5
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server: answer-at h2 conn=44862 answered 303 at=65536 t=5.6 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server: answer-at h2 conn=44862 body read whole: 65536 bytes, 0 after the answer, at 18.6ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: req h2 GET /body #1 conn=44862 at=591.9
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.5ms total=0.9ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.043 seen-head-ms=13.64 end-ms=25.548 head-to-end-ms=13.504 total-ms=27.879 up=131072 down=10 MBps=5.13 cpu-ms=3.465 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=status=307 get=end:65536:ok get-outcome=status=200 call-end-ms=27.878 outcome=status=307
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server: req h2 POST /answer-at #1 conn=44864 at=599.8
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server: answer-at h2 conn=44864 answered 307 at=65536 t=8.4 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server: aborted h2 /answer-at conn=44864 head+65536 body bytes, 0 after the answer, then the stream closed at 22.5ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: req h2 GET /body #1 conn=44864 at=623.0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.169 seen-head-ms=13.607 end-ms=24.67 head-to-end-ms=12.501 total-ms=27.012 up=131072 down=10 MBps=5.31 cpu-ms=3.36 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=status=307 get=end:65536:ok get-outcome=status=200 call-end-ms=27.011 outcome=status=307
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=44868 at=629.7
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server: answer-at h2 conn=44868 answered 307 at=65536 t=8.4 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server: answer-at h2 conn=44868 body read whole: 65536 bytes, 0 after the answer, at 21.7ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: req h2 GET /body #1 conn=44868 at=652.3
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.6ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.595 seen-head-ms=13.74 end-ms=24.817 head-to-end-ms=12.222 total-ms=26.296 up=131072 down=10 MBps=5.28 cpu-ms=6.316 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=status=308 get=end:65536:ok get-outcome=status=200 call-end-ms=26.295 outcome=status=308
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server: req h2 POST /answer-at #1 conn=44874 at=665.5
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server: answer-at h2 conn=44874 answered 308 at=65536 t=5.3 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server: aborted h2 /answer-at conn=44874 head+65536 body bytes, 0 after the answer, then the stream closed at 18.8ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: req h2 GET /body #1 conn=44874 at=684.8
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.7ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.158 seen-head-ms=13.675 end-ms=24.03 head-to-end-ms=11.872 total-ms=26.45 up=131072 down=10 MBps=5.45 cpu-ms=4.05 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=status=308 get=end:65536:ok get-outcome=status=200 call-end-ms=26.45 outcome=status=308
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=44886 at=692.3
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server: answer-at h2 conn=44886 answered 308 at=65536 t=8.1 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server: answer-at h2 conn=44886 body read whole: 65536 bytes, 0 after the answer, at 21.2ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: req h2 GET /body #1 conn=44886 at=714.2
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.7ms total=1.5ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=sized run=1 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=12.084 seen-head-ms=13.601 end-ms=24.204 head-to-end-ms=12.12 total-ms=24.205 up=131072 down=10 MBps=5.42 cpu-ms=3.103 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=sized run=1 server: req h2 POST /answer-at #1 conn=44896 at=723.5
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=sized run=1 server: answer-at h2 conn=44896 answered 413 at=65536 t=7.6 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=sized run=1 server: aborted h2 /answer-at conn=44896 head+65536 body bytes, 0 after the answer, then the stream closed at 21.0ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=chunked run=1 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=12.88 seen-head-ms=13.607 end-ms=25.525 head-to-end-ms=12.645 total-ms=25.526 up=131072 down=10 MBps=5.14 cpu-ms=2.86 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=44906 at=750.0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=chunked run=1 server: answer-at h2 conn=44906 answered 413 at=65536 t=8.8 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=chunked run=1 server: answer-at h2 conn=44906 body read whole: 65536 bytes, 0 after the answer, at 21.9ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=sized run=1 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=12.863 seen-head-ms=13.648 end-ms=24.724 head-to-end-ms=11.861 total-ms=24.726 up=131072 down=10 MBps=5.3 cpu-ms=2.335 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=sized run=1 server: req h2 POST /answer-at #1 conn=44908 at=778.0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=sized run=1 server: answer-at h2 conn=44908 answered 503 at=65536 t=9.0 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=sized run=1 server: aborted h2 /answer-at conn=44908 head+65536 body bytes, 0 after the answer, then the stream closed at 22.1ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=sized run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=chunked run=1 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=12.44 seen-head-ms=13.607 end-ms=24.687 head-to-end-ms=12.248 total-ms=24.689 up=131072 down=10 MBps=5.31 cpu-ms=2.708 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=44920 at=805.3
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=chunked run=1 server: answer-at h2 conn=44920 answered 503 at=65536 t=8.7 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=chunked run=1 server: answer-at h2 conn=44920 body read whole: 65536 bytes, 0 after the answer, at 21.6ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=chunked run=1 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=11.881 seen-head-ms=11.963 end-ms=23.035 head-to-end-ms=11.154 total-ms=23.803 up=131072 down=10 MBps=5.69 cpu-ms=2.876 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=status=301 get=end:65536:ok get-outcome=status=200 call-end-ms=23.803 outcome=status=301
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server: req h2 POST /answer-at #1 conn=44926 at=831.2
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server: answer-at h2 conn=44926 answered 301 at=65536 t=8.6 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server: aborted h2 /answer-at conn=44926 head+65536 body bytes, 0 after the answer, then the stream closed at 20.5ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: req h2 GET /body #1 conn=44926 at=852.3
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.4ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=11.849 seen-head-ms=11.985 end-ms=23.074 head-to-end-ms=11.225 total-ms=25.345 up=131072 down=10 MBps=5.68 cpu-ms=2.86 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=status=301 get=end:65536:ok get-outcome=status=200 call-end-ms=25.345 outcome=status=301
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=44934 at=856.2
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server: answer-at h2 conn=44934 answered 301 at=65536 t=8.9 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server: answer-at h2 conn=44934 body read whole: 65536 bytes, 0 after the answer, at 20.7ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: req h2 GET /body #1 conn=44934 at=877.8
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=11.9 seen-head-ms=11.963 end-ms=23.036 head-to-end-ms=11.136 total-ms=24.81 up=131072 down=10 MBps=5.69 cpu-ms=3.072 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=status=302 get=end:65536:ok get-outcome=status=200 call-end-ms=24.809 outcome=status=302
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server: req h2 POST /answer-at #1 conn=44940 at=883.6
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server: answer-at h2 conn=44940 answered 302 at=65536 t=8.6 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server: aborted h2 /answer-at conn=44940 head+65536 body bytes, 0 after the answer, then the stream closed at 20.5ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: req h2 GET /body #1 conn=44940 at=904.7
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=1.0ms total=1.2ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=11.997 seen-head-ms=12.182 end-ms=22.805 head-to-end-ms=10.808 total-ms=23.608 up=131072 down=10 MBps=5.75 cpu-ms=2.945 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=status=302 get=end:65536:ok get-outcome=status=200 call-end-ms=23.607 outcome=status=302
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=44954 at=909.7
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server: answer-at h2 conn=44954 answered 302 at=65536 t=9.1 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server: answer-at h2 conn=44954 body read whole: 65536 bytes, 0 after the answer, at 20.9ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: req h2 GET /body #1 conn=44954 at=930.9
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.2ms total=0.4ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=11.842 seen-head-ms=11.941 end-ms=22.538 head-to-end-ms=10.697 total-ms=24.819 up=131072 down=10 MBps=5.82 cpu-ms=3.546 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=status=303 get=end:65536:ok get-outcome=status=200 call-end-ms=24.819 outcome=status=303
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server: req h2 POST /answer-at #1 conn=44970 at=937.2
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server: answer-at h2 conn=44970 answered 303 at=65536 t=8.2 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server: aborted h2 /answer-at conn=44970 head+65536 body bytes, 0 after the answer, then the stream closed at 20.0ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: req h2 GET /body #1 conn=44970 at=957.4
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.6ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=12.22 seen-head-ms=13.589 end-ms=24.649 head-to-end-ms=12.429 total-ms=26.943 up=131072 down=10 MBps=5.32 cpu-ms=5.189 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=status=303 get=end:65536:ok get-outcome=status=200 call-end-ms=26.942 outcome=status=303
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=44980 at=968.7
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server: answer-at h2 conn=44980 answered 303 at=65536 t=6.3 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server: answer-at h2 conn=44980 body read whole: 65536 bytes, 0 after the answer, at 19.4ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: req h2 GET /body #1 conn=44980 at=989.0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.4ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.207 seen-head-ms=13.66 end-ms=24.282 head-to-end-ms=12.075 total-ms=27.129 up=131072 down=10 MBps=5.4 cpu-ms=4.984 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=status=307 get=end:65536:ok get-outcome=status=200 call-end-ms=27.127 outcome=status=307
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server: req h2 POST /answer-at #1 conn=44988 at=997.1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server: answer-at h2 conn=44988 answered 307 at=65536 t=8.2 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server: aborted h2 /answer-at conn=44988 head+65536 body bytes, 0 after the answer, then the stream closed at 21.4ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: req h2 GET /body #1 conn=44988 at=1019.1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.6ms total=1.1ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.366 seen-head-ms=13.845 end-ms=24.206 head-to-end-ms=11.84 total-ms=26.522 up=131072 down=10 MBps=5.42 cpu-ms=5.733 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=status=307 get=end:65536:ok get-outcome=status=200 call-end-ms=26.521 outcome=status=307
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=44990 at=1030.2
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server: answer-at h2 conn=44990 answered 307 at=65536 t=5.5 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server: answer-at h2 conn=44990 body read whole: 65536 bytes, 0 after the answer, at 18.3ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: req h2 GET /body #1 conn=44990 at=1049.0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=11.806 seen-head-ms=11.931 end-ms=22.544 head-to-end-ms=10.738 total-ms=23.527 up=131072 down=10 MBps=5.81 cpu-ms=3.258 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=status=308 get=end:65536:ok get-outcome=status=200 call-end-ms=23.526 outcome=status=308
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server: req h2 POST /answer-at #1 conn=45006 at=1055.4
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server: answer-at h2 conn=45006 answered 308 at=65536 t=8.5 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server: aborted h2 /answer-at conn=45006 head+65536 body bytes, 0 after the answer, then the stream closed at 20.5ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: req h2 GET /body #1 conn=45006 at=1076.0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.5ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.103 seen-head-ms=13.648 end-ms=24.001 head-to-end-ms=11.899 total-ms=26.176 up=131072 down=10 MBps=5.46 cpu-ms=3.22 proc-stat-ms=10 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=status=308 get=end:65536:ok get-outcome=status=200 call-end-ms=26.175 outcome=status=308
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=45014 at=1081.3
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server: answer-at h2 conn=45014 answered 308 at=65536 t=8.7 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server: answer-at h2 conn=45014 body read whole: 65536 bytes, 0 after the answer, at 21.5ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: req h2 GET /body #1 conn=45014 at=1103.3
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.2ms total=0.4ms aborted=0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: count h2:/body=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=sized run=2 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=11.795 seen-head-ms=11.98 end-ms=22.606 head-to-end-ms=10.811 total-ms=22.608 up=131072 down=10 MBps=5.8 cpu-ms=2.661 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=sized run=2 server: req h2 POST /answer-at #1 conn=45020 at=1111.0
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=sized run=2 server: answer-at h2 conn=45020 answered 413 at=65536 t=8.4 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=sized run=2 server: aborted h2 /answer-at conn=45020 head+65536 body bytes, 0 after the answer, then the stream closed at 20.3ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=chunked run=2 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=12.252 seen-head-ms=13.672 end-ms=24.292 head-to-end-ms=12.041 total-ms=24.294 up=131072 down=10 MBps=5.4 cpu-ms=3.46 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=45022 at=1137.4
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=chunked run=2 server: answer-at h2 conn=45022 answered 413 at=65536 t=7.7 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=chunked run=2 server: answer-at h2 conn=45022 body read whole: 65536 bytes, 0 after the answer, at 20.6ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=413 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=sized run=2 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=12.248 seen-head-ms=13.612 end-ms=24.241 head-to-end-ms=11.993 total-ms=24.242 up=131072 down=10 MBps=5.41 cpu-ms=3.305 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=sized run=2 server: req h2 POST /answer-at #1 conn=45026 at=1166.9
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=sized run=2 server: answer-at h2 conn=45026 answered 503 at=65536 t=8.2 after=65536 content-length 4194304
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=sized run=2 server: aborted h2 /answer-at conn=45026 head+65536 body bytes, 0 after the answer, then the stream closed at 21.7ms, rst=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=sized run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=chunked run=2 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=11.934 seen-head-ms=11.95 end-ms=23.003 head-to-end-ms=11.069 total-ms=23.006 up=131072 down=10 MBps=5.7 cpu-ms=2.506 proc-stat-ms=0 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=3/5 req-waits=0/4 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=45038 at=1192.4
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=chunked run=2 server: answer-at h2 conn=45038 answered 503 at=65536 t=8.5 after=65536 content-length -
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=chunked run=2 server: answer-at h2 conn=45038 body read whole: 65536 bytes, 0 after the answer, at 20.4ms
+[ubuntu-gnutls-8.5.0] drive case=c where=h2 status=503 framing=chunked run=2 server: count h2:/answer-at=1
+[ubuntu-gnutls-8.5.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[ubuntu-gnutls-8.5.0] drive done
+[ubuntu-gnutls-8.5.0] drive exited 0 after about 1 s (124 is timeout's)
+[ubuntu-gnutls-8.5.0] server-stderr: counts h2:/answer-at=28 h2:/body=20
+[current-8.23.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[current-8.23.0] libdirs src:tests:build/scheme-libs
+[current-8.23.0] server {"node":"v20.10.0","pid":3418,"http":"127.0.0.1:37329","raw":"127.0.0.1:39953","https":"127.0.0.1:44993","h2":"127.0.0.1:33225","closed":"127.0.0.1:35005"}
+[current-8.23.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 node v20.10.0
+[current-8.23.0] drive libcurl 8.23.0 OpenSSL/3.0.13 cases=(c) slices=(10) sched=strict runs=2 faces=(raw https h2) framings=(sized chunked) bound=8000 control-bound=5000 sizes=4194304,16777216,4194304 c-statuses=(301 302 303 307 308 413 503) c-wheres=(h2) hop-cancel=#f
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=1 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=14.727 seen-head-ms=17.147 end-ms=8006.341 head-to-end-ms=7991.614 total-ms=8015.079 up=131072 down=10 MBps=0.02 cpu-ms=48.512 proc-stat-ms=60 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8015.077 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=1 server: req h2 POST /answer-at #1 conn=35680 at=413.3
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=1 server: answer-at h2 conn=35680 answered 301 at=65536 t=7.5 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=1 server: aborted h2 /answer-at conn=35680 head+65536 body bytes, 0 after the answer, then the stream closed at 8002.0ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: req h2 GET /body #1 conn=35680 at=8415.8
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=2.3ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=1 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=1 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=12.802 seen-head-ms=13.599 end-ms=8004.516 head-to-end-ms=7991.714 total-ms=8006.96 up=131072 down=10 MBps=0.02 cpu-ms=47.373 proc-stat-ms=40 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8006.958 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=41026 at=8428.0
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=1 server: answer-at h2 conn=41026 answered 301 at=65536 t=9.0 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=1 server: aborted h2 /answer-at conn=41026 head+65536 body bytes, 0 after the answer, then the stream closed at 8002.1ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: req h2 GET /body #1 conn=41026 at=16430.5
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.6ms total=1.4ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=1 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=1 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=12.332 seen-head-ms=13.594 end-ms=8008.775 head-to-end-ms=7996.442 total-ms=8013.901 up=131072 down=10 MBps=0.02 cpu-ms=32.359 proc-stat-ms=30 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8013.9 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=1 server: req h2 POST /answer-at #1 conn=41916 at=16442.2
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=1 server: answer-at h2 conn=41916 answered 302 at=65536 t=6.1 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=1 server: aborted h2 /answer-at conn=41916 head+65536 body bytes, 0 after the answer, then the stream closed at 8001.6ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: req h2 GET /body #1 conn=41916 at=24447.1
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.8ms total=2.2ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=1 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=1 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=11.921 seen-head-ms=11.966 end-ms=8007.697 head-to-end-ms=7995.776 total-ms=8011.114 up=131072 down=10 MBps=0.02 cpu-ms=47.386 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8011.113 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=41926 at=24457.5
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=1 server: answer-at h2 conn=41926 answered 302 at=65536 t=7.8 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=1 server: aborted h2 /answer-at conn=41926 head+65536 body bytes, 0 after the answer, then the stream closed at 8003.2ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: req h2 GET /body #1 conn=41926 at=32462.6
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.5ms total=1.0ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=1 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=1 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=12.135 seen-head-ms=13.747 end-ms=8005.886 head-to-end-ms=7993.751 total-ms=8008.39 up=131072 down=10 MBps=0.02 cpu-ms=66.899 proc-stat-ms=60 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8008.388 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=1 server: req h2 POST /answer-at #1 conn=58956 at=32471.1
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=1 server: answer-at h2 conn=58956 answered 303 at=65536 t=8.5 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=1 server: aborted h2 /answer-at conn=58956 head+65536 body bytes, 0 after the answer, then the stream closed at 8003.7ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: req h2 GET /body #1 conn=58956 at=40475.4
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.6ms total=1.1ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=1 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=1 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=12.086 seen-head-ms=13.733 end-ms=8006.457 head-to-end-ms=7994.371 total-ms=8010.271 up=131072 down=10 MBps=0.02 cpu-ms=58.896 proc-stat-ms=60 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8010.269 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=56370 at=40482.9
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=1 server: answer-at h2 conn=56370 answered 303 at=65536 t=8.2 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=1 server: aborted h2 /answer-at conn=56370 head+65536 body bytes, 0 after the answer, then the stream closed at 8003.4ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: req h2 GET /body #1 conn=56370 at=48487.7
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.9ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=1 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=1 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.572 seen-head-ms=13.731 end-ms=8007.631 head-to-end-ms=7995.059 total-ms=8011.775 up=131072 down=10 MBps=0.02 cpu-ms=41.845 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8011.774 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=1 server: req h2 POST /answer-at #1 conn=46034 at=48502.6
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=1 server: answer-at h2 conn=46034 answered 307 at=65536 t=6.3 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=1 server: aborted h2 /answer-at conn=46034 head+65536 body bytes, 0 after the answer, then the stream closed at 8001.3ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: req h2 GET /body #1 conn=46034 at=56506.2
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.8ms total=1.6ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=1 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=1 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=11.943 seen-head-ms=11.985 end-ms=8007.745 head-to-end-ms=7995.802 total-ms=8011.736 up=131072 down=10 MBps=0.02 cpu-ms=46.767 proc-stat-ms=40 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8011.735 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=51766 at=56521.4
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=1 server: answer-at h2 conn=51766 answered 307 at=65536 t=7.0 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=1 server: aborted h2 /answer-at conn=51766 head+65536 body bytes, 0 after the answer, then the stream closed at 8001.9ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: req h2 GET /body #1 conn=51766 at=64525.7
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.5ms total=0.9ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=1 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=1 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.267 seen-head-ms=13.669 end-ms=8007.103 head-to-end-ms=7994.836 total-ms=8010.469 up=131072 down=10 MBps=0.02 cpu-ms=56.223 proc-stat-ms=60 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8010.467 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=1 server: req h2 POST /answer-at #1 conn=51768 at=64538.6
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=1 server: answer-at h2 conn=51768 answered 308 at=65536 t=6.1 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=1 server: aborted h2 /answer-at conn=51768 head+65536 body bytes, 0 after the answer, then the stream closed at 8001.7ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: req h2 GET /body #1 conn=51768 at=72541.4
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.8ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=1 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=1 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.439 seen-head-ms=13.719 end-ms=8006.256 head-to-end-ms=7993.816 total-ms=8011.946 up=131072 down=10 MBps=0.02 cpu-ms=55.143 proc-stat-ms=60 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8011.943 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=53588 at=72556.3
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=1 server: answer-at h2 conn=53588 answered 308 at=65536 t=6.0 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=1 server: aborted h2 /answer-at conn=53588 head+65536 body bytes, 0 after the answer, then the stream closed at 8001.0ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: req h2 GET /body #1 conn=53588 at=80558.3
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.7ms total=1.5ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=1 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=413 framing=sized run=1 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=11.853 seen-head-ms=11.982 end-ms=11.993 head-to-end-ms=0.141 total-ms=11.994 up=65536 down=10 MBps=5.47 cpu-ms=3.26 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[current-8.23.0] drive case=c where=h2 status=413 framing=sized run=1 server: req h2 POST /answer-at #1 conn=38800 at=80571.2
+[current-8.23.0] drive case=c where=h2 status=413 framing=sized run=1 server: answer-at h2 conn=38800 answered 413 at=65536 t=7.9 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=413 framing=sized run=1 server: aborted h2 /answer-at conn=38800 head+65536 body bytes, 0 after the answer, then the stream closed at 9.0ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=413 framing=sized run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=413 framing=chunked run=1 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=11.946 seen-head-ms=12.053 end-ms=12.065 head-to-end-ms=0.119 total-ms=12.066 up=65536 down=10 MBps=5.43 cpu-ms=4.494 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[current-8.23.0] drive case=c where=h2 status=413 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=38816 at=80586.6
+[current-8.23.0] drive case=c where=h2 status=413 framing=chunked run=1 server: answer-at h2 conn=38816 answered 413 at=65536 t=6.6 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=413 framing=chunked run=1 server: aborted h2 /answer-at conn=38816 head+65536 body bytes, 0 after the answer, then the stream closed at 7.8ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=413 framing=chunked run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=503 framing=sized run=1 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=11.842 seen-head-ms=11.966 end-ms=11.974 head-to-end-ms=0.131 total-ms=11.974 up=65536 down=10 MBps=5.47 cpu-ms=2.24 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[current-8.23.0] drive case=c where=h2 status=503 framing=sized run=1 server: req h2 POST /answer-at #1 conn=38822 at=80598.1
+[current-8.23.0] drive case=c where=h2 status=503 framing=sized run=1 server: answer-at h2 conn=38822 answered 503 at=65536 t=8.7 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=503 framing=sized run=1 server: aborted h2 /answer-at conn=38822 head+65536 body bytes, 0 after the answer, then the stream closed at 9.9ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=503 framing=sized run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=503 framing=chunked run=1 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=11.808 seen-head-ms=11.942 end-ms=11.95 head-to-end-ms=0.143 total-ms=11.951 up=65536 down=10 MBps=5.48 cpu-ms=2.346 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[current-8.23.0] drive case=c where=h2 status=503 framing=chunked run=1 server: req h2 POST /answer-at #1 conn=38824 at=80611.6
+[current-8.23.0] drive case=c where=h2 status=503 framing=chunked run=1 server: answer-at h2 conn=38824 answered 503 at=65536 t=8.6 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=503 framing=chunked run=1 server: aborted h2 /answer-at conn=38824 head+65536 body bytes, 0 after the answer, then the stream closed at 9.8ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=503 framing=chunked run=1 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=2 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=12.09 seen-head-ms=13.629 end-ms=8008.444 head-to-end-ms=7996.354 total-ms=8011.028 up=131072 down=10 MBps=0.02 cpu-ms=43.343 proc-stat-ms=40 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8011.025 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=2 server: req h2 POST /answer-at #1 conn=38832 at=80625.8
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=2 server: answer-at h2 conn=38832 answered 301 at=65536 t=8.2 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=2 server: aborted h2 /answer-at conn=38832 head+65536 body bytes, 0 after the answer, then the stream closed at 8002.6ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: req h2 GET /body #1 conn=38832 at=88632.0
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.2ms total=0.4ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=301 framing=sized run=2 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=2 S=10 sched=strict head=301 bit=#t got-head=#t head-ms=12.137 seen-head-ms=13.742 end-ms=8002.886 head-to-end-ms=7990.749 total-ms=8007.079 up=131072 down=10 MBps=0.02 cpu-ms=41.437 proc-stat-ms=30 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 301\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8007.078 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=49448 at=88642.1
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=2 server: answer-at h2 conn=49448 answered 301 at=65536 t=7.5 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=2 server: aborted h2 /answer-at conn=49448 head+65536 body bytes, 0 after the answer, then the stream closed at 7999.2ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: req h2 GET /body #1 conn=49448 at=96642.4
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.7ms total=1.3ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=301 framing=chunked run=2 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=2 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=11.912 seen-head-ms=11.948 end-ms=8008.403 head-to-end-ms=7996.491 total-ms=8012.25 up=131072 down=10 MBps=0.02 cpu-ms=49.29 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8012.249 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=2 server: req h2 POST /answer-at #1 conn=41830 at=96655.7
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=2 server: answer-at h2 conn=41830 answered 302 at=65536 t=5.2 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=2 server: aborted h2 /answer-at conn=41830 head+65536 body bytes, 0 after the answer, then the stream closed at 8000.1ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: req h2 GET /body #1 conn=41830 at=104659.0
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.8ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=302 framing=sized run=2 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=2 S=10 sched=strict head=302 bit=#t got-head=#t head-ms=11.976 seen-head-ms=13.601 end-ms=8006.516 head-to-end-ms=7994.54 total-ms=8011.074 up=131072 down=10 MBps=0.02 cpu-ms=52.542 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 302\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8011.072 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=41832 at=104671.2
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=2 server: answer-at h2 conn=41832 answered 302 at=65536 t=5.6 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=2 server: aborted h2 /answer-at conn=41832 head+65536 body bytes, 0 after the answer, then the stream closed at 8001.1ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: req h2 GET /body #1 conn=41832 at=112673.6
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=1.0ms total=1.7ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=302 framing=chunked run=2 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=2 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=12.155 seen-head-ms=13.626 end-ms=8006.642 head-to-end-ms=7994.487 total-ms=8010.429 up=131072 down=10 MBps=0.02 cpu-ms=56.76 proc-stat-ms=60 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8010.427 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=2 server: req h2 POST /answer-at #1 conn=43112 at=112683.9
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=2 server: answer-at h2 conn=43112 answered 303 at=65536 t=7.9 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=2 server: aborted h2 /answer-at conn=43112 head+65536 body bytes, 0 after the answer, then the stream closed at 8003.3ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: req h2 GET /body #1 conn=43112 at=120688.1
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.8ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=303 framing=sized run=2 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=2 S=10 sched=strict head=303 bit=#t got-head=#t head-ms=12.495 seen-head-ms=13.746 end-ms=8006.06 head-to-end-ms=7993.565 total-ms=8009.86 up=131072 down=10 MBps=0.02 cpu-ms=53.449 proc-stat-ms=60 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 303\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8009.858 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=57154 at=120697.9
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=2 server: answer-at h2 conn=57154 answered 303 at=65536 t=7.9 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=2 server: aborted h2 /answer-at conn=57154 head+65536 body bytes, 0 after the answer, then the stream closed at 8002.7ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: req h2 GET /body #1 conn=57154 at=128701.2
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.7ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=303 framing=chunked run=2 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=2 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=11.858 seen-head-ms=11.962 end-ms=8006.765 head-to-end-ms=7994.907 total-ms=8010.322 up=131072 down=10 MBps=0.02 cpu-ms=45.671 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8010.321 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=2 server: req h2 POST /answer-at #1 conn=59348 at=128712.7
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=2 server: answer-at h2 conn=59348 answered 307 at=65536 t=7.5 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=2 server: aborted h2 /answer-at conn=59348 head+65536 body bytes, 0 after the answer, then the stream closed at 8003.0ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: req h2 GET /body #1 conn=59348 at=136717.0
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.6ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=307 framing=sized run=2 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=2 S=10 sched=strict head=307 bit=#t got-head=#t head-ms=12.023 seen-head-ms=12.058 end-ms=8005.949 head-to-end-ms=7993.926 total-ms=8009.22 up=131072 down=10 MBps=0.02 cpu-ms=55.885 proc-stat-ms=60 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 307\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8009.219 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=49346 at=136726.9
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=2 server: answer-at h2 conn=49346 answered 307 at=65536 t=8.1 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=2 server: aborted h2 /answer-at conn=49346 head+65536 body bytes, 0 after the answer, then the stream closed at 8002.8ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: req h2 GET /body #1 conn=49346 at=144730.6
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.4ms total=0.8ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=307 framing=chunked run=2 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=2 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.689 seen-head-ms=13.672 end-ms=8003.023 head-to-end-ms=7990.334 total-ms=8006.137 up=131072 down=10 MBps=0.02 cpu-ms=48.544 proc-stat-ms=50 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=feeding resp-waits=399/401 req-waits=396/400 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8006.136 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=2 server: req h2 POST /answer-at #1 conn=49350 at=144742.0
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=2 server: answer-at h2 conn=49350 answered 308 at=65536 t=7.2 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=2 server: aborted h2 /answer-at conn=49350 head+65536 body bytes, 0 after the answer, then the stream closed at 7998.5ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: req h2 GET /body #1 conn=49350 at=152741.3
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.5ms total=1.0ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=308 framing=sized run=2 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=2 S=10 sched=strict head=308 bit=#t got-head=#t head-ms=12.09 seen-head-ms=12.102 end-ms=8008.057 head-to-end-ms=7995.967 total-ms=8011.407 up=131072 down=10 MBps=0.02 cpu-ms=44.651 proc-stat-ms=40 calls=2 calls-after-head=1 put=131072 put-after-head=65536 after-eof=0 state=stopped resp-waits=400/402 req-waits=397/401 handed=65536 asked=#t hop-body="early 308\n" hop-ended=#t hop-outcome=failed:perform-failed:28 get=end:65536:ok get-outcome=status=200 call-end-ms=8011.406 outcome=failed:perform-failed:28
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=52288 at=152750.0
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=2 server: answer-at h2 conn=52288 answered 308 at=65536 t=8.4 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=2 server: aborted h2 /answer-at conn=52288 head+65536 body bytes, 0 after the answer, then the stream closed at 8002.8ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: req h2 GET /body #1 conn=52288 at=160756.0
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: body h2 n=65536 mode=h2-length chunk=16384 gap=0 delay=0 gzip=0 wire=65536 written=65536 first_false=16384 drains_long=0 [] drains_short=4 sum=0.3ms total=0.7ms aborted=0
+[current-8.23.0] drive case=c where=h2 status=308 framing=chunked run=2 server-get: count h2:/body=1
+[current-8.23.0] drive case=c where=h2 status=413 framing=sized run=2 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=11.859 seen-head-ms=12.085 end-ms=12.105 head-to-end-ms=0.246 total-ms=12.107 up=65536 down=10 MBps=5.41 cpu-ms=2.86 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[current-8.23.0] drive case=c where=h2 status=413 framing=sized run=2 server: req h2 POST /answer-at #1 conn=60534 at=160766.1
+[current-8.23.0] drive case=c where=h2 status=413 framing=sized run=2 server: answer-at h2 conn=60534 answered 413 at=65536 t=8.5 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=413 framing=sized run=2 server: aborted h2 /answer-at conn=60534 head+65536 body bytes, 0 after the answer, then the stream closed at 9.6ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=413 framing=sized run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=413 framing=chunked run=2 S=10 sched=strict head=413 bit=#t got-head=#t head-ms=11.87 seen-head-ms=12.066 end-ms=12.083 head-to-end-ms=0.213 total-ms=12.085 up=65536 down=10 MBps=5.42 cpu-ms=2.805 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 413\n" outcome=status=413
+[current-8.23.0] drive case=c where=h2 status=413 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=60546 at=160781.0
+[current-8.23.0] drive case=c where=h2 status=413 framing=chunked run=2 server: answer-at h2 conn=60546 answered 413 at=65536 t=8.6 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=413 framing=chunked run=2 server: aborted h2 /answer-at conn=60546 head+65536 body bytes, 0 after the answer, then the stream closed at 9.8ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=413 framing=chunked run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=503 framing=sized run=2 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=12.012 seen-head-ms=13.642 end-ms=13.662 head-to-end-ms=1.649 total-ms=13.663 up=65536 down=10 MBps=4.8 cpu-ms=2.387 proc-stat-ms=10 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[current-8.23.0] drive case=c where=h2 status=503 framing=sized run=2 server: req h2 POST /answer-at #1 conn=60556 at=160794.6
+[current-8.23.0] drive case=c where=h2 status=503 framing=sized run=2 server: answer-at h2 conn=60556 answered 503 at=65536 t=9.1 after=65536 content-length 4194304
+[current-8.23.0] drive case=c where=h2 status=503 framing=sized run=2 server: aborted h2 /answer-at conn=60556 head+65536 body bytes, 0 after the answer, then the stream closed at 10.3ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=503 framing=sized run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive case=c where=h2 status=503 framing=chunked run=2 S=10 sched=strict head=503 bit=#t got-head=#t head-ms=12.451 seen-head-ms=13.627 end-ms=13.649 head-to-end-ms=1.198 total-ms=13.651 up=65536 down=10 MBps=4.8 cpu-ms=4.325 proc-stat-ms=0 calls=1 calls-after-head=0 put=65536 put-after-head=0 after-eof=0 state=feeding resp-waits=2/4 req-waits=0/2 handed=65536 asked=#t port=end:10:ok:"early 503\n" outcome=status=503
+[current-8.23.0] drive case=c where=h2 status=503 framing=chunked run=2 server: req h2 POST /answer-at #1 conn=60560 at=160812.4
+[current-8.23.0] drive case=c where=h2 status=503 framing=chunked run=2 server: answer-at h2 conn=60560 answered 503 at=65536 t=6.9 after=65536 content-length -
+[current-8.23.0] drive case=c where=h2 status=503 framing=chunked run=2 server: aborted h2 /answer-at conn=60560 head+65536 body bytes, 0 after the answer, then the stream closed at 8.1ms, rst=5
+[current-8.23.0] drive case=c where=h2 status=503 framing=chunked run=2 server: count h2:/answer-at=1
+[current-8.23.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[current-8.23.0] drive done
+[current-8.23.0] drive exited 0 after about 161 s (124 is timeout's)
+[current-8.23.0] server-stderr: counts h2:/answer-at=28 h2:/body=20

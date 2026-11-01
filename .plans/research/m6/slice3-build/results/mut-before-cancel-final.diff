@@ -1,0 +1,11 @@
+--- a/src/http-client/private/drive.sls	2026-11-01 09:25:50.566670849 -0500
++++ b/src/http-client/private/drive.sls	2026-11-01 10:31:33.972711677 -0500
+@@ -659,7 +659,7 @@
+           (call-producing-set! call #f)
+           (if got
+               (leg-answer-set! leg got)
+-              (when (and sticky? entered)
++              (when (and sticky? #t)
+                 (when (and seen (not (call-stuck call))) (call-stuck-set! call (car seen)))
+                 (curl-token-cancel (leg-token leg))))
+           (when sticky? (run-produce-gate!))))))

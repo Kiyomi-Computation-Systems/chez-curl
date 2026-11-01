@@ -1,0 +1,19 @@
+--- /home/kishu/src/chez-curl/src/http-client/private/drive.sls	2026-10-31 18:45:29.720261874 -0400
++++ /home/kishu/src/chez-curl/build/m6s3r/mut-hop-redraws/src/http-client/private/drive.sls	2026-10-31 22:08:46.100411390 -0400
+@@ -806,14 +806,14 @@
+         (if (curl-request-body request)
+             (begin
+               (end-hop! token)
+-              (stepped (exchange-step state (list 'response response) now utc drawn) now))
++              (stepped (exchange-step state (list 'response response) now utc (draw)) now))
+             (let ((read (read-whole! leg state)))
+               (if (eq? (car read) 'response)
+                   (stepped (exchange-step state
+                                           (list 'response
+                                                 (http-response-with response (caddr read)
+                                                                     (curl-response-timings (cadr read))))
+-                                          now utc drawn)
++                                          now utc (draw))
+                            now)
+                   (let* ((utc (utc-seconds)) (now (monotonic-ns)))
+                     (stepped (exchange-step state read now utc drawn) now))))))

@@ -1,0 +1,65 @@
+#!r6rs
+;;; Review probe: a keyboard interrupt that escapes as a put's critical
+;;; section ends, at the high level, with no drive seam. Inside PROC's read,
+;;; the producer, at its call once 4 pieces are given, has another thread
+;;; hold the session's engine's mutex (the low level's call-with-engine-held);
+;;; the put of that piece blocks inside its critical section on it; the
+;;; thread sends SIGINT and lets go; the put commits, and the handler's raise
+;;; escapes as the section ends. PROC catches it and reads on. A chunked
+;;; 1 MiB body to /raw/mirror. The handler escapes, or returns (the control).
+(import (chezscheme) (curl-testing) (curl) (http-client)
+        (only (http-client private call) http-session-engine)
+        (only (curl private engine) call-with-engine-held))
+(define kill (foreign-procedure "kill" (int int) int))
+(define getpid (foreign-procedure "getpid" () int))
+(define (show d) (write d) (newline) (flush-output-port (current-output-port)))
+(define (ms n) (make-time 'time-duration (* n 1000000) 0))
+(define (pattern-piece at n)
+  (let ((bv (make-bytevector n))) (do ((i 0 (+ i 1))) ((= i n) bv) (bytevector-u8-set! bv i (mod (+ at i) 251)))))
+(define (first-bad bytes at)
+  (let ((n (bytevector-length bytes)))
+    (let loop ((i 0)) (cond ((= i n) #f) ((not (= (bytevector-u8-ref bytes i) (mod (+ at i) 251))) (+ at i)) (else (loop (+ i 1)))))))
+(define (drain port)
+  (let loop ((n 0) (bad #f) (raises '()))
+    (let ((got (guard (e (#t (list 'raised (if (condition? e) (list (and (who-condition? e) (condition-who e)) (and (message-condition? e) (condition-message e))) e))))
+                 (get-bytevector-some port))))
+      (cond ((eof-object? got) (list n bad (reverse raises)))
+            ((and (pair? got) (eq? (car got) 'raised))
+             (if (>= (length raises) 5) (list n bad (reverse (cons got raises))) (loop n bad (cons got raises))))
+            (else (loop (+ n (bytevector-length got)) (or bad (first-bad got n)) raises))))))
+(define (plant! hold)
+  (let ((mx (make-mutex)) (held #f) (going #f))
+    (fork-thread
+     (lambda ()
+       (hold (lambda ()
+               (with-mutex mx (set! held #t))
+               (let loop () (unless (with-mutex mx going) (sleep (ms 1)) (loop)))
+               (sleep (ms 100)) (kill (getpid) 2) (sleep (ms 100))))))
+    (let wait () (unless (with-mutex mx held) (sleep (ms 1)) (wait)))
+    (lambda () (with-mutex mx (set! going #t)))))
+(define total 1048576)
+(define piece 65536)
+(define (run-case handler o)
+  (let* ((f (origin-face o 'raw))
+         (url (string-append "http://" (car f) ":" (number->string (cdr f)) "/raw/mirror"))
+         (s (make-http-session 'proxy #f 'timeout-ms 20000))
+         (engine (http-session-engine s))
+         (in-proc #f) (armed #f) (given 0))
+    (define (producer)
+      (if (>= given total) (eof-object)
+          (let ((p (pattern-piece given piece)))
+            (set! given (+ given piece))
+            (when (and in-proc (not armed) (>= given (* 4 piece)))
+              (set! armed #t)
+              ((plant! (lambda (thunk) (call-with-engine-held engine thunk)))))
+            p)))
+    (keyboard-interrupt-handler (lambda () (when (eq? handler 'escapes) (raise 'interrupted))))
+    (let ((seen (guard (e (#t (list 'call-raised (if (condition? e) (list (and (who-condition? e) (condition-who e)) (and (message-condition? e) (condition-message e))) e))))
+                  (call-with-response-port s 'post url 'body producer
+                    (lambda (r port) (set! in-proc #t) (drain port))))))
+      (keyboard-interrupt-handler (lambda () #f))
+      (http-session-close s)
+      (show (list 'case handler 'armed armed 'drained seen 'given given)))))
+(define runs (let ((a (command-line-arguments))) (if (pair? a) (string->number (car a)) 3)))
+(call-with-origin
+ (lambda (o) (do ((i 0 (+ i 1))) ((= i runs)) (run-case 'escapes o) (run-case 'returns o))))

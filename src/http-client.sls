@@ -33,9 +33,12 @@
 ;;; transfer has a request size of 0, answers the last response it
 ;;; retried, or raises the last failure, with &http-exchange and no
 ;;; &http-timeout; one whose request may have gone out raises the bound's
-;;; &http-timeout. A raised failure's request size speaks for its own
-;;; transfer alone: with more than one transfer counted, an earlier one of
-;;; the step may have sent its request.
+;;; &http-timeout. A streamed call whose retry runs out so after its hop
+;;; was cancelled at its head, whose body it never read, fails with
+;;; &http-timeout, as with no time left for any request. A raised
+;;; failure's request size speaks for its own transfer alone: with more
+;;; than one transfer counted, an earlier one of the step may have sent
+;;; its request.
 ;;;
 ;;; A call follows a redirect by chez-curl's rules, alike on every libcurl
 ;;; (the M5 plan, section 3.4; ADR-0008, ADR-0023 and ADR-0027): a 301,
@@ -85,7 +88,16 @@
 ;;; every call, waits for each transfer to end, then lets the escape go
 ;;; on. http-parallel runs a list of calls so, checked first, and answers
 ;;; their responses in order, or raises the first failure once the rest
-;;; have ended.
+;;; have ended. A group takes no producer.
+;;;
+;;; A call streams (ADR-0031; the M6 plan, section 3.6): through
+;;; call-with-response-port, whose procedure is handed the final head and a
+;;; port over the body as it arrives; and with a producer as its body,
+;;; called as libcurl asks, its body sent at most once (ADR-0032). Each
+;;; streamed transfer's head decides whether the call ends with it or steps
+;;; past it, by the rules above, read once: a hop whose request sends a
+;;; body is cancelled at its head, and one whose request sends none is read
+;;; whole into the history.
 (library (http-client)
   (export
    ;; --- sessions (ADR-0025) ------------------------------------------------
@@ -135,13 +147,52 @@
    ;; keys are the session's, redirects, allow-downgrade and retry among
    ;; them, each replacing the session's value, a retry of #f none over the
    ;; session's policy, and:
-   ;;   body    a bytevector, sent as it is, or a string, sent as its UTF-8
-   ;;           bytes, with no Content-Type of its own
-   ;;   form    a list of (NAME . VALUE) strings, sent encoded as
-   ;;           application/x-www-form-urlencoded, with that Content-Type,
-   ;;           unless the headers name one, in any A to Z case
-   ;;   params  a list of (NAME . VALUE) strings, encoded the same way and
-   ;;           appended to the URL's query
+   ;;   body         a bytevector, sent as it is, or a string, sent as its
+   ;;                UTF-8 bytes, with no Content-Type of its own; or a
+   ;;                producer, ( -> (U Bytevector Eof)), the body streamed
+   ;;                as it gives it (ADR-0031, decision 2), below
+   ;;   form         a list of (NAME . VALUE) strings, sent encoded as
+   ;;                application/x-www-form-urlencoded, with that
+   ;;                Content-Type, unless the headers name one, in any A to Z
+   ;;                case
+   ;;   params       a list of (NAME . VALUE) strings, encoded the same way
+   ;;                and appended to the URL's query
+   ;;   body-length  a producer's length, an exact natural below 2^63 - 1,
+   ;;                sent as Content-Length; or #f, the body chunked over
+   ;;                HTTP/1.1 and as DATA frames over HTTP/2; #f. Beside a
+   ;;                body that is no producer, (curl)'s refusal,
+   ;;                body-length-without-stream
+   ;; A producer is called on the caller's thread, only once libcurl has
+   ;; asked for the body and has room, and never after it answered the eof
+   ;; object; it answers a bytevector of a byte or more, or the eof object
+   ;; at the end: (lambda () (get-bytevector-some port)) streams a port.
+   ;; Its body is sent at most once, on a connection of its own (ADR-0032):
+   ;; once the producer counts as called, libcurl having asked for the body
+   ;; by a head or the call having called it, no retry takes the call, and a
+   ;; redirect that keeps the body, a 307 or 308, and a 301 or 302 of every
+   ;; method but post, raises &http-redirect-error, body-not-replayable. A
+   ;; refused connect, before any ask, stays retryable. Its answer that is
+   ;; neither a bytevector of a byte or more nor the eof object is an
+   ;; assertion violation from the call; a piece that would take the body
+   ;; past its body-length is &http-request-error, field body, its value the
+   ;; producer, body-length-mismatch (ADR-0031, amended); each with its
+   ;; &http-exchange, once its transfer is cancelled, before any of it is
+   ;; put. Its own raise leaves the call as raised, once its transfer is
+   ;; cancelled; a body that ends short of its body-length fails the
+   ;; transfer, (curl)'s body-length-mismatch, alike on every libcurl. Such a
+   ;; call is a streamed call, as call-with-response-port's is: it streams
+   ;; its response too, and reads its body whole, to body-limit. A streamed
+   ;; call's hop, a redirect it follows or a retry it takes, whose request
+   ;; sends a body is cancelled at its head, its history entry's body and
+   ;; timings #f; one whose request sends none is read whole (ADR-0031,
+   ;; amended 2026-10-31). A whole body's call is no streamed call, and runs
+   ;; as M5's. Over HTTP/2 on libcurl 8.20.0 and 8.23.0, a final 3xx, one
+   ;; the call does not follow, that arrives before a body is sent whole,
+   ;; streamed or whole, never ends but at the call's bound: pass a
+   ;; timeout-ms. So does a whole body's call's hop: M5's drive cannot
+   ;; cancel it at its head. A streamed call whose retry runs out of time
+   ;; after a hop it cancelled at its head fails with &http-timeout, as with
+   ;; no time left (decided by the maintainer, 2026-11-01).
    ;; body and form together are refused, and either with get or head. A
    ;; call's header replaces every session header of its name, A to Z
    ;; folded, after the session's others; a call's User-Agent header sets
@@ -157,6 +208,50 @@
    ;;   Session String Any ... -> Response
    ;; http-request with the method each name says.
    http-request http-get http-head http-post http-put http-patch http-delete
+
+   ;; --- streaming the response (ADR-0031, decision 1) ----------------------
+   ;; call-with-response-port : Session Symbol String Any ...
+   ;;                           (Response Binary-Input-Port -> Any ...) -> Any ...
+   ;; (call-with-response-port SESSION METHOD URL KEY VALUE ... PROC): the
+   ;; call, as http-request takes it, every response streamed, with one key
+   ;; of its own:
+   ;;   stream-buffer  the bytes of the body the call buffers, a positive
+   ;;                  exact integer; 65536. A full buffer pauses the
+   ;;                  transfer: over HTTP/1.1 the server's writes then stall
+   ;; It is a streamed call: redirects and retries are decided as each head
+   ;; arrives, by the rules above; a hop whose request sends no body has its
+   ;; body read whole into the history, and one whose request sends a body
+   ;; is cancelled at its head. At the final head PROC is called, on this thread, with
+   ;; the response, its status, version, headers, URL and history whole and
+   ;; its body and timings #f, and a binary input port over its body, and
+   ;; the call answers PROC's values. When PROC returns or escapes, the port
+   ;; is closed and a live transfer cancelled. The port feeds a producer as
+   ;; it waits, so a server that answers while the body is sent is never
+   ;; left without it. Its end is the end of the body, every time after; a
+   ;; transfer's failure is raised by its read, the low level's condition
+   ;; compounded with &http-exchange, and with &http-timeout when it was the
+   ;; call's bound's 28, every time after. Inside the port's read, a
+   ;; producer's raise or refusal is the call's for good: every later read
+   ;; raises it, and the call raises it once PROC returns. The port is read
+   ;; and closed on this thread alone, never by the producer; bytes Chez's
+   ;; port has already buffered are served to any thread. Prefer
+   ;; get-bytevector-some: a failure raised inside get-bytevector-n, -n! or
+   ;; -all loses the bytes that call had read. The call's timeout-ms bounds
+   ;; it whole, PROC's reading among it: a reader slower than the bound
+   ;; meets &http-timeout. A PROC that never reads, and never returns,
+   ;; starves its upload. A call whose retry runs out of time hands PROC the
+   ;; retried response and a port over its body in memory; after a hop it
+   ;; cancelled at its head, whose body it never read, the call raises
+   ;; &http-timeout instead, PROC not called. A Chez engine's expiry during
+   ;; the call is an escape, as any is: the transfer is cancelled and the
+   ;; port closed. Once the engine resumes, the call meets that cancel: the
+   ;; port's reads raise it, then Chez's error for a closed port. A last
+   ;; argument that is no procedure is an
+   ;; assertion violation, before anything else; a stream-buffer of #f is
+   ;; one too, once the keys and the body are checked. The port feeds the
+   ;; producer only when no piece is ready: a server that sends faster than
+   ;; PROC reads leaves the upload waiting.
+   call-with-response-port
 
    ;; --- the retry policy (ADR-0026) ----------------------------------------
    ;; make-http-retry : Any ... -> Retry
@@ -200,9 +295,10 @@
    ;;   go : Symbol String Any ... -> Pending
    ;;   (go METHOD URL KEY VALUE ...): starts a call, as http-request takes
    ;;   one, its clock started then, and answers its pending at once. Its
-   ;;   method, keys and URL are checked first, as http-request checks them:
-   ;;   a refusal raises from go, compounded with &http-exchange, and starts
-   ;;   no call. Past the limit, the call waits its turn, first in, first
+   ;;   method, keys and URL are checked first, as http-request checks them,
+   ;;   and a producer as its body is refused, stream-in-group: a refusal
+   ;;   raises from go, compounded with &http-exchange, and starts no call.
+   ;;   Past the limit, the call waits its turn, first in, first
    ;;   out, on its clock: its bound passing first fails it with
    ;;   &http-timeout. A call holds its slot until it ends, through every
    ;;   redirect, retry and retry's wait. From its first submit on, what
@@ -274,7 +370,8 @@
    ;; limit, as call-with-request-group's; the responses, in SPECS' order.
    ;; Every spec is checked before any is submitted: SPECS and each spec
    ;; must be a list, else an assertion violation from http-parallel; each
-   ;; call's method, keys and URL as go checks them; then its first request
+   ;; call's method, keys and URL as go checks them, a producer refused,
+   ;; stream-in-group; then its first request
    ;; by (curl)'s curl-request-check, as a submit would check it, its URL's
    ;; scheme and its CA file against the environment (ADR-0024) among it;
    ;; each refusal compounded with &http-exchange (ADR-0023, amended
@@ -303,9 +400,11 @@
    ;;   call's, its params appended, or a redirect's; its user info and
    ;;   fragment kept, and a redirect's fragment, which is never sent
    ;; http-response-headers : Response -> (Listof (Pairof String String))
-   ;; http-response-body : Response -> Bytevector
-   ;; http-response-timings : Response -> (Listof (Pairof Symbol Natural))
-   ;;   as curl-response-timings
+   ;; http-response-body : Response -> (U Bytevector #f)
+   ;;   #f for call-with-response-port's response, whose body streams
+   ;;   through its port, and for a hop cancelled at its head
+   ;; http-response-timings : Response -> (U (Listof (Pairof Symbol Natural)) #f)
+   ;;   as curl-response-timings; #f where the body is #f
    ;; http-response-history : Response -> (Listof Response)
    ;;   the call's earlier responses, each a redirect it followed, oldest
    ;;   first, each with a history of (); a response a retry repeated is not
@@ -314,7 +413,8 @@
    ;;   the first header of that name, A to Z folded, or #f
    ;; http-response-text : Response -> String
    ;;   the body as UTF-8, by utf8->string: U+FFFD for a malformed sequence,
-   ;;   a leading byte-order mark dropped; no charset read
+   ;;   a leading byte-order mark dropped; no charset read. A body of #f is
+   ;;   an assertion violation
    http-response? http-response-status http-response-http-version http-response-url
    http-response-headers http-response-body http-response-timings http-response-history
    http-response-header http-response-text
@@ -338,7 +438,8 @@
    ;;   not-an-attempt-count, field attempts; not-a-backoff, field
    ;;   backoff-ms or max-backoff-ms; not-a-status-list, field statuses;
    ;;   not-a-method-list, field methods; not-a-limit, field limit; each
-   ;;   the value as given
+   ;;   the value as given; stream-in-group, field body, the producer: go
+   ;;   and http-parallel take no producer, before anything is submitted
    &http-request-error http-request-error? http-request-error-field
    http-request-error-value http-request-error-reason http-request-error-reasons
 
@@ -355,7 +456,8 @@
    ;;   bad-location, a Location a URL function of (curl) refused, whose
    ;;   &curl-url-error is compounded with it, or one whose scheme is not
    ;;   http or https, with none; insecure-redirect, from https to http,
-   ;;   with allow-downgrade #f
+   ;;   with allow-downgrade #f; body-not-replayable, a redirect that keeps
+   ;;   a producer's body once the producer counts as called (ADR-0032)
    &http-redirect-error http-redirect-error? http-redirect-error-reason
    http-redirect-error-response http-redirect-error-location http-redirect-error-reasons
 
@@ -398,26 +500,30 @@
   (define (check-session who x)
     (unless (http-session? x) (assertion-violation who "not a session" x)))
 
-  ;; call-state : Session Any Any List Boolean -> State
-  ;; A call's exchange, as http-request and go make one, its clock started
-  ;; first: its bound runs from here. The caller's URL is read once, into a
-  ;; copy, which both the context and the request are made from. With
-  ;; CHECK?, the first request also passes (curl)'s curl-request-check, a
-  ;; submit's own checks, for http-parallel's checks before any submit
-  ;; (ADR-0023, amended 2026-10-28). Every condition raised, a check's, the
-  ;; URL's or the low level's, is compounded with &http-exchange, with no
-  ;; transfer made.
-  (define (call-state session method url plist check?)
+  ;; call-state : Session Any Any List Boolean (U 'request 'group 'port) Symbol
+  ;;              -> (Pairof State (U Procedure #f))
+  ;; A call's exchange, as http-request, go and call-with-response-port
+  ;; make one, its clock started first: its bound runs from here; and its
+  ;; producer, or #f. The caller's URL is read once, into a copy, which
+  ;; both the context and the request are made from. MODE is whose call it
+  ;; is, as call-request-of takes it, a group's refusing a producer, and WHO
+  ;; names it in the refusals. With CHECK?, the first request also passes
+  ;; (curl)'s curl-request-check, a submit's own checks, for http-parallel's
+  ;; checks before any submit (ADR-0023, amended 2026-10-28). Every
+  ;; condition raised, a check's, the URL's or the low level's, is
+  ;; compounded with &http-exchange, with no transfer made.
+  (define (call-state session method url plist check? mode who)
     (let* ((start (monotonic-ns))
            (given (if (string? url) (string-copy url) url)))
       (guard (e ((condition? e)
                  (raise (condition e (make-http-exchange method given '() 0)))))
-        (check-session 'http-request session)
-        (let-values (((request redirects allow-downgrade retry)
-                      (call-request session method given plist)))
+        (check-session who session)
+        (let-values (((request redirects allow-downgrade retry producer)
+                      (call-request-of who mode session method given plist)))
           (when check? (curl-request-check request))
-          (make-exchange method given request (curl-request-timeout-ms request)
-                         start redirects allow-downgrade retry)))))
+          (cons (make-exchange method given request (curl-request-timeout-ms request)
+                               start redirects allow-downgrade retry)
+                producer)))))
 
   (define (make-http-session . plist)
     (let* ((settings (key-settings 'make-http-session session-keys plist))
@@ -448,11 +554,37 @@
   ;; http-request : Session Any Any Any ... -> Response
   ;; The call's exchange, by call-state, then the drive: in the drive,
   ;; (curl)'s conditions are compounded by the core, and the drive's own
-  ;; refusal by the drive.
+  ;; refusal by the drive. A call whose body is a producer is streamed,
+  ;; drive-stream's whole mode, its final body read whole; any other is M5's
+  ;; drive-exchange's.
   (define (http-request session method url . plist)
-    (let ((state (call-state session method url plist #f)))
-      (drive-exchange (http-session-engine session) state
-                      (lambda () (http-session-draw session)))))
+    (let* ((made (call-state session method url plist #f 'request 'http-request))
+           (state (car made))
+           (producer (cdr made)))
+      (if producer
+          (drive-stream (http-session-engine session) state (lambda () (http-session-draw session))
+                        producer 'whole #f 'http-request)
+          (drive-exchange (http-session-engine session) state
+                          (lambda () (http-session-draw session))))))
+
+  ;; call-with-response-port : Session Any Any Any ... -> Any
+  ;; Checks that the last argument is a procedure, PROC, then makes the
+  ;; call's exchange by call-state, with port-keys, then drives it by
+  ;; drive-stream's port mode, which answers PROC's values.
+  (define (call-with-response-port session method url . rest)
+    (when (null? rest)
+      (assertion-violation 'call-with-response-port
+                           "a procedure, of the response and its port, after the keys, is required" rest))
+    (let* ((reversed (reverse rest))
+           (proc (car reversed))
+           (plist (reverse (cdr reversed))))
+      (unless (procedure? proc)
+        (assertion-violation 'call-with-response-port
+                             "the last argument is a procedure, of the response and its port" proc))
+      (let ((made (call-state session method url plist #f 'port 'call-with-response-port)))
+        (drive-stream (http-session-engine session) (car made)
+                      (lambda () (http-session-draw session))
+                      (cdr made) 'port proc 'call-with-response-port))))
 
   ;; call-with-request-group : Session Any ... (Go -> Any) -> Any
   ;; Refuses a critical section first, then its arguments, then its keys;
@@ -475,7 +607,8 @@
       (let ((limit (group-limit 'call-with-request-group plist)))
         (call-with-group (http-session-engine session) limit
                          (lambda () (http-session-draw session))
-                         (lambda (method url plist) (call-state session method url plist #f))
+                         (lambda (method url plist)
+                           (car (call-state session method url plist #f 'group 'http-request)))
                          proc))))
 
   ;; spec-copies : Any -> (Listof (Pairof Any (Pairof Any List)))
@@ -522,7 +655,8 @@
                          (reverse made)
                          (let ((spec (car rest)))
                            (loop (cdr rest)
-                                 (cons (call-state session (car spec) (cadr spec) (cddr spec) #t)
+                                 (cons (car (call-state session (car spec) (cadr spec) (cddr spec) #t
+                                                        'group 'http-request))
                                        made)))))))
       (run-parallel (http-session-engine session) limit
                     (lambda () (http-session-draw session))

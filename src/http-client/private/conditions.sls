@@ -69,10 +69,18 @@
   ;;                         post, put, patch and delete
   ;;   not-a-limit           a request group's or http-parallel's limit that
   ;;                         is neither an exact positive integer nor #f
+  ;;   stream-in-group       a producer as the body of a group's call, go's or
+  ;;                         http-parallel's: a group's calls share one thread,
+  ;;                         which a producer's wait would hold (the M6 plan,
+  ;;                         sections 3.6 and 9)
+  ;;   body-length-mismatch  a producer's piece that would take its body past
+  ;;                         its body-length, refused before any of it is put,
+  ;;                         once the transfer is cancelled (ADR-0031, amended)
   (define http-request-error-reasons
     '(unknown-key repeated-key missing-value body-and-form body-not-allowed not-a-body
       not-name-value-pairs not-a-redirect-count not-a-boolean not-a-retry-policy
-      not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list not-a-limit))
+      not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list not-a-limit
+      stream-in-group body-length-mismatch))
 
   ;; The fields:
   ;;
@@ -84,7 +92,8 @@
   ;;           not-a-retry-policy; attempts, for not-an-attempt-count;
   ;;           backoff-ms or max-backoff-ms, for not-a-backoff; statuses,
   ;;           for not-a-status-list; methods, for not-a-method-list; limit,
-  ;;           for not-a-limit
+  ;;           for not-a-limit; body, the producer, for stream-in-group and
+  ;;           body-length-mismatch
   ;;   value   the key as given, for a key's refusal; the method, for
   ;;           body-not-allowed; the value as given, for every other reason
   ;;           but body-and-form; #f, for body-and-form
@@ -122,8 +131,13 @@
   ;;                       names a scheme that is not http or https, with none
   ;;   insecure-redirect   from an https URL to an http one, which the call
   ;;                       did not allow
+  ;;   body-not-replayable a redirect whose next request keeps a body a
+  ;;                       producer streams, once that producer counts as
+  ;;                       called: the drive called it, or libcurl had asked
+  ;;                       for the body by a head. A streamed body is sent at
+  ;;                       most once (ADR-0032, decision 3, amended)
   (define http-redirect-error-reasons
-    '(too-many-redirects bad-location insecure-redirect))
+    '(too-many-redirects bad-location insecure-redirect body-not-replayable))
 
   ;; The fields:
   ;;

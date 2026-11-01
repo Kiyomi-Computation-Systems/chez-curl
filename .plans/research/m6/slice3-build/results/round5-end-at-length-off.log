@@ -1,0 +1,21 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-stream-call.sps
+%%%% Starting test stream-call
+FAIL raw-tls: a producer's 1 MiB in 64 KiB pieces, sized and chunked, through http-request: the sink line whole; every call on this thread, its first only once libcurl asked, never one after its end; each a 200
+  expected: ((sized whole-body 17 0 this-thread) (chunked whole-body 17 0 this-thread))
+  actual:   ((sized whole-body 16 0 this-thread) (chunked whole-body 17 0 this-thread))
+FAIL raw: once a producer's puts take its body-length whole, it is asked for its end at once, room or none: a 32 MiB piece, the whole length, to a sink that reads nothing for 60 s, then a piece more: &http-request-error, body-length-mismatch, with the call's context, at the producer's second call, well within the call's bound of 10 s, though libcurl never has room again
+  expected: ((raised (http-error) (http-request-error body the-producer body-length-mismatch) (exchange post "http://127.0.0.1:39879/raw/sink?key=sc-at-length&hold=60000" () 1)) 2 within-5-s)
+  actual:   ((raised (http-error) (http-timeout 10000) (curl-transfer-error timeout perform-failed 28) (exchange post "http://127.0.0.1:39879/raw/sink?key=sc-at-length&hold=60000" () 1)) 1 (took 10007))
+(stream-call-throughput raw ms 471)
+(stream-call-throughput h2 ms 424)
+(stream-call-idle-cpu ms 498261/50000)
+# of expected passes      75
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 75, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-stream-call.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

@@ -1,0 +1,43 @@
+;;; Probe of README's new line: "A Chez engine's expiry inside your
+;;; procedure is an escape too: resumed, its next read meets Chez's error
+;;; for a closed port." call-with-response-port run inside a Chez engine
+;;; with FUEL ticks a slice, resumed until done; PROC reads a 4 MiB body by
+;;; get-bytevector-some, noting each read's outcome kind, up to 40 reads.
+;;; Each FUEL is a run; prints what PROC saw, grouped, and the call's end.
+(import (chezscheme) (curl) (http-client) (curl private counters))
+(define args (command-line-arguments))
+(define http (cadr args))
+(define (kind e)
+  (cond ((and (message-condition? e) (irritants-condition? e))
+         (let ((m (condition-message e)))
+           (cond ((string? m) (list 'error (if (who-condition? e) (condition-who e) #f) m)) (else 'other))))
+        ((curl-error? e) 'curl-error)
+        (else (list 'other e))))
+(define (run fuel)
+  (let* ((s (make-http-session 'proxy #f 'timeout-ms 20000))
+         (seen '()) (bytes 0) (expiries 0)
+         (thunk (lambda ()
+                  (call-with-response-port s 'get (string-append http "/pattern/4194304")
+                    (lambda (r p)
+                      (let loop ((i 0))
+                        (when (< i 40)
+                          (let ((got (guard (e (#t (list 'raised (kind e)))) (get-bytevector-some p))))
+                            (cond ((bytevector? got) (set! bytes (+ bytes (bytevector-length got))) (set! seen (cons 'bytes seen)))
+                                  ((eof-object? got) (set! seen (cons 'eof seen)))
+                                  (else (set! seen (cons got seen))))
+                            (unless (eof-object? got) (loop (+ i 1))))))
+                      'proc-returned))))
+         (result (guard (x (#t (list 'call-raised (kind x)))) (let loop ((e (make-engine thunk)))
+                   (e fuel
+                      (lambda (left . vals) (cons 'done vals))
+                      (lambda (next) (set! expiries (+ expiries 1)) (if (< expiries 100000) (loop next) '(gave-up))))))))
+    (http-session-close s)
+    (let compress ((xs (reverse seen)) (out '()))
+      (if (null? xs)
+          (begin (write (list 'fuel fuel 'expiries expiries 'bytes bytes 'result result 'reads (reverse out))) (newline))
+          (if (and (pair? out) (equal? (car (car out)) (car xs)))
+              (compress (cdr xs) (cons (list (car xs) (+ 1 (cadr (car out)))) (cdr out)))
+              (compress (cdr xs) (cons (list (car xs) 1) out)))))))
+(for-each run '(20000 12000 8000 6000 5000 4000 3000 2500 2000 1500 1200 1000 800 600 400 300))
+(collect-rendezvous)
+(write (list 'counts (native-counts))) (newline)

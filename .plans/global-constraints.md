@@ -693,9 +693,12 @@ provisional. They bind until that record is accepted or amended.
 - **A retry that runs out reports its last transfer truly:** when the bound passes during a
   retry's wait or its next transfer and the retry sent nothing, the call answers the last
   response it retried, or raises the last failure; a retry that sent its request and met the
-  bound raises its 28 with `&http-timeout`. A raised failure's request size speaks for its own
-  transfer alone: with more than one transfer counted, an earlier one may have sent the
-  request. A policy retries statuses from 400 to 599 alone (ADR-0026, amended 2026-10-28).
+  bound raises its 28 with `&http-timeout`. But a streamed call whose retried response was a hop
+  cancelled at its head has no body to answer, and raises `&http-timeout` instead, as with no
+  time left for any request (ADR-0031, amended 2026-11-01). A raised failure's request size
+  speaks for its own transfer alone: with more than one transfer counted, an earlier one may
+  have sent the request. A policy retries statuses from 400 to 599 alone (ADR-0026, amended
+  2026-10-28).
 - **Only a transfer's own failure is its outcome:** the drive waits with `curl-token-wait`, with
   no guard around the wait, and reads a done token's outcome as data, by `curl-token-outcome`
   (ADR-0021, amended 2026-10-28). A raise the caller's interrupt handler makes during the wait
@@ -801,7 +804,9 @@ provisional. They bind until that record is accepted or amended.
   reason came first: the outcome reads the refusal too, since libcurl calls the read callable no
   more once it has read the length whole, and closes the request stream in that hold, so a put
   after answers `done` (ADR-0030, amended 2026-10-31). A put after `curl-token-end-body!` on a
-  live token is an assertion violation.
+  live token is an assertion violation. At the high level, a producer's piece past the length is
+  refused before it is put, `&http-request-error` `body-length-mismatch`, and the producer is
+  asked for its end at once when its puts reach the length (ADR-0031, amended 2026-10-31).
 - **A put answers `done` only once its token is done,** so its outcome is there to read.
 - **The head tells whether libcurl had asked for the body by then,** `curl-head-body-asked?`,
   read in the hold that publishes the final head; the high level's at-most-once rule reads it
@@ -809,6 +814,14 @@ provisional. They bind until that record is accepted or amended.
   never a guess from the request: an answer that comes before the first ask reads `#f` on
   7.85.0 and 8.5.0, `#t` on 8.20.0 and 8.23.0, which ask with the head.
 - **A call's `timeout-ms` bounds the whole call, a consumer's reading included** (ADR-0031).
+- **A streamed call that sends a body cancels each hop at its head,** a redirect it follows or a
+  retry it takes, and reads none of its body; a streamed call is one through
+  `call-with-response-port` or with a producer, and `http-request`'s whole body keeps M5's drive: the hop's history entry has a body and timings of `#f`. A
+  call that sends no body reads each hop whole. No hop is fed; the final head is fed whenever
+  libcurl asks, its bit `#f` among them (ADR-0031, amended 2026-10-31).
+- **libcurl's HTTP/2 3xx that never ends while a body is owed,** on 8.20.0 and 8.23.0, is
+  documented and pinned by version, not worked around: a final one ends at the call's bound,
+  and never without one (ADR-0031, amended 2026-10-31).
 - **Below the token the bound is libcurl's, and documented:** a paused HTTP/2 stream beside an
   active one keeps receiving, up to its flow-control window on the Linux libcurls (ADR-0030,
   decision 5).

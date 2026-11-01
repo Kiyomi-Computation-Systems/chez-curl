@@ -1,0 +1,27 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-stream-call.sps
+%%%% Starting test stream-call
+FAIL raw: a producer's 1 MiB in 64 KiB pieces, sized and chunked, through http-request: the sink line whole; every call on this thread, its first only once libcurl asked, never one after its end; each a 200
+  expected: ((sized whole-body 17 0 this-thread) (chunked whole-body 17 0 this-thread))
+  actual:   ((sized whole-body 16 0 this-thread) (chunked whole-body 17 0 this-thread))
+FAIL raw-tls: a producer's 1 MiB in 64 KiB pieces, sized and chunked, through http-request: the sink line whole; every call on this thread, its first only once libcurl asked, never one after its end; each a 200
+  expected: ((sized whole-body 17 0 this-thread) (chunked whole-body 17 0 this-thread))
+  actual:   ((sized whole-body 16 0 this-thread) (chunked whole-body 17 0 this-thread))
+FAIL h2: a producer's 1 MiB in 64 KiB pieces, sized and chunked, through http-request: the sink line whole; every call on this thread, its first only once libcurl asked, never one after its end; each a 200
+  expected: ((sized whole-body 17 0 this-thread) (chunked whole-body 17 0 this-thread))
+  actual:   ((sized whole-body 16 0 this-thread) (chunked whole-body 17 0 this-thread))
+FAIL raw: a body short of its body-length fails the call by the low level's body-length-mismatch, alike on every libcurl; one past it is the call's assertion violation, before any byte past the length is put; each with the call's context; the producer never called after its end
+  expected: ((raised (curl-transfer-error none body-length-mismatch 42) (exchange post "http://127.0.0.1:45569/raw/sink?key=sc-short" () 1)) (raised (assertion http-request) (exchange post "http://127.0.0.1:45569/raw/sink?key=sc-long" () 1)) (0 0))
+  actual:   ((raised (curl-transfer-error none body-length-mismatch 42) (exchange post "http://127.0.0.1:45569/raw/sink?key=sc-short" () 1)) (returned #[#{http-response nv3dk81ak7yndkjcv1c7v743c-78} 200 http/1.1 "http://127.0.0.1:45569/raw/sink?key=sc-long" (("Content-Length" . "174") ("Connection" . "close")) #vu8(115 105 110 107 32 114 97 119 32 109 101 116 104 111 100 61 80 79 83 84 32 99 108 61 50 48 48 48 32 116 101 61 45 32 101 120 112 101 99 116 61 45 32 99 116 61 45 32 98 121 116 101 115 61 50 48 48 48 32 115 104 97 50 53 54 61 54 51 100 56 100 51 53 57 50 48 98 101 52 53 54 55 55 54 97 51 53 53 55 56 97 100 101 55 54 55 50 53 99 54 56 55 56 50 49 97 100 53 53 100 52 98 98 57 53 48 50 50 53 102 101 100 50 100 51 51 101 54 99 98 32 112 97 116 116 101 114 110 61 111 107 32 97 114 114 105 118 97 108 115 61 50 32 103 97 112 61 49 48 46 49 64 49 48 48 48 32 115 101 101 110 61 49 10) ((name-lookup . 29) (connect . 176) (tls-handshake . 0) (first-byte . 20460) (total . 20536)) ()]) (0 0))
+(stream-call-throughput raw ms 3238)
+(stream-call-throughput h2 ms 3195)
+(stream-call-idle-cpu ms 7402283/1000000)
+# of expected passes      61
+# of unexpected failures  4
+suite-exit-status: exit 1 (pass 61, fail 4, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-stream-call.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

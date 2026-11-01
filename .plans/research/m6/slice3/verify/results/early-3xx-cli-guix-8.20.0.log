@@ -1,0 +1,43 @@
+curl 8.20.0 (x86_64-unknown-linux-gnu) libcurl/8.20.0 GnuTLS/3.8.13 zlib/1.3.1 zstd/1.5.6 libidn2/2.3.8 libpsl/0.21.5 nghttp2/1.69.0 mit-krb5/1.21
+status=303 curl_exit=28 http_code=303 size_download=10 time_total=5.006821 stderr=curl: (28) Operation timed out after 5006 milliseconds with 10 out of 10 bytes received 
+  status=303 verbose: < HTTP/2 303 
+  status=303 verbose: * HTTP error before end of send, stop sending
+  status=303 verbose: * abort upload after having sent 196456 bytes
+  status=303 verbose: * Operation timed out after 5006 milliseconds with 10 out of 10 bytes received
+  status=303 verbose: curl: (28) Operation timed out after 5006 milliseconds with 10 out of 10 bytes received
+  status=303 server: answered 303 after 81919 bytes
+  status=303 server: stream error ERR_HTTP2_STREAM_ERROR at 196456 bytes
+  status=303 server: stream closed at 196456 bytes, rst code 5
+  status=303 server: answered 303 after 81919 bytes
+  status=303 server: stream error ERR_HTTP2_STREAM_ERROR at 196456 bytes
+  status=303 server: stream closed at 196456 bytes, rst code 5
+status=307 curl_exit=28 http_code=307 size_download=10 time_total=5.006596 stderr=curl: (28) Operation timed out after 5006 milliseconds with 10 out of 10 bytes received 
+  status=307 verbose: < HTTP/2 307 
+  status=307 verbose: * HTTP error before end of send, stop sending
+  status=307 verbose: * abort upload after having sent 196456 bytes
+  status=307 verbose: * Operation timed out after 5005 milliseconds with 10 out of 10 bytes received
+  status=307 verbose: curl: (28) Operation timed out after 5005 milliseconds with 10 out of 10 bytes received
+  status=307 server: answered 307 after 81919 bytes
+  status=307 server: stream error ERR_HTTP2_STREAM_ERROR at 196456 bytes
+  status=307 server: stream closed at 196456 bytes, rst code 5
+  status=307 server: answered 307 after 81919 bytes
+  status=307 server: stream error ERR_HTTP2_STREAM_ERROR at 196456 bytes
+  status=307 server: stream closed at 196456 bytes, rst code 5
+status=413 curl_exit=0 http_code=413 size_download=10 time_total=0.005573 stderr=
+  status=413 verbose: < HTTP/2 413 
+  status=413 verbose: * HTTP error before end of send, stop sending
+  status=413 verbose: * abort upload after having sent 196456 bytes
+  status=413 server: answered 413 after 81919 bytes
+  status=413 server: stream error ERR_HTTP2_STREAM_ERROR at 131070 bytes
+  status=413 server: stream closed at 131070 bytes, rst code 5
+  status=413 server: answered 413 after 81919 bytes
+  status=413 server: stream error ERR_HTTP2_STREAM_ERROR at 131070 bytes
+  status=413 server: stream closed at 131070 bytes, rst code 5
+status=200 curl_exit=55 http_code=200 size_download=10 time_total=0.010946 stderr=curl: (55) Failed sending data to the peer 
+  status=200 verbose: < HTTP/2 200 
+  status=200 server: answered 200 after 81919 bytes
+  status=200 server: request body ended at 4194304 bytes
+  status=200 server: stream closed at 4194304 bytes, rst code 0
+  status=200 server: answered 200 after 81919 bytes
+  status=200 server: request body ended at 4194304 bytes
+  status=200 server: stream closed at 4194304 bytes, rst code 0

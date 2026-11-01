@@ -1,0 +1,74 @@
+[guix-8.20.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+sha256sum: .plans/research/m6/slice3/whole.sps: No such file or directory
+[guix-8.20.0] program .plans/research/m6/slice3/whole.sps 
+[guix-8.20.0] libdirs src:tests:build/scheme-libs
+[guix-8.20.0] server {"node":"v24.18.0","pid":28,"http":"127.0.0.1:42687","raw":"127.0.0.1:43235","https":"127.0.0.1:38527","h2":"127.0.0.1:44831","closed":"127.0.0.1:33653"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 node v24.18.0
+[guix-8.20.0] whole libcurl 8.20.0 GnuTLS/3.8.13
+[guix-8.20.0] whole face=h2 status=303 location=yes run=1 done-ms=8024.018 outcome=failed:perform-failed:28
+[guix-8.20.0] whole face=h2 status=303 location=no run=1 done-ms=8014.108 outcome=failed:perform-failed:28
+[guix-8.20.0] whole face=h2 status=307 location=yes run=1 done-ms=8019.732 outcome=failed:perform-failed:28
+[guix-8.20.0] whole face=h2 status=307 location=no run=1 done-ms=8019.076 outcome=failed:perform-failed:28
+[guix-8.20.0] whole face=h2 status=413 location=yes run=1 done-ms=10.642 outcome=status=413 body="early 413\n"
+[guix-8.20.0] whole face=h2 status=413 location=no run=1 done-ms=29.145 outcome=status=413 body="early 413\n"
+[guix-8.20.0] whole face=h2 status=200 location=yes run=1 done-ms=35.306 outcome=failed:perform-failed:55
+[guix-8.20.0] whole face=h2 status=200 location=no run=1 done-ms=26.287 outcome=status=200 body="early 200\n"
+[guix-8.20.0] whole face=raw status=303 location=yes run=1 done-ms=5.481 outcome=status=303 body="early 303\n"
+[guix-8.20.0] whole face=raw status=303 location=no run=1 done-ms=7.388 outcome=status=303 body="early 303\n"
+[guix-8.20.0] whole face=raw status=307 location=yes run=1 done-ms=5.542 outcome=status=307 body="early 307\n"
+[guix-8.20.0] whole face=raw status=307 location=no run=1 done-ms=6.414 outcome=status=307 body="early 307\n"
+[guix-8.20.0] whole face=raw status=413 location=yes run=1 done-ms=5.188 outcome=status=413 body="early 413\n"
+[guix-8.20.0] whole face=raw status=413 location=no run=1 done-ms=7.444 outcome=status=413 body="early 413\n"
+[guix-8.20.0] whole face=raw status=200 location=yes run=1 done-ms=25.387 outcome=status=200 body="early 200\n"
+[guix-8.20.0] whole face=raw status=200 location=no run=1 done-ms=17.592 outcome=status=200 body="early 200\n"
+[guix-8.20.0] whole face=h2 status=303 location=yes run=2 done-ms=8014.506 outcome=failed:perform-failed:28
+[guix-8.20.0] whole face=h2 status=303 location=no run=2 done-ms=8014.865 outcome=failed:perform-failed:28
+[guix-8.20.0] whole face=h2 status=307 location=yes run=2 done-ms=8012.664 outcome=failed:perform-failed:28
+[guix-8.20.0] whole face=h2 status=307 location=no run=2 done-ms=8014.483 outcome=failed:perform-failed:28
+[guix-8.20.0] whole face=h2 status=413 location=yes run=2 done-ms=9.982 outcome=status=413 body="early 413\n"
+[guix-8.20.0] whole face=h2 status=413 location=no run=2 done-ms=11.419 outcome=status=413 body="early 413\n"
+[guix-8.20.0] whole face=h2 status=200 location=yes run=2 done-ms=25.791 outcome=failed:perform-failed:55
+[guix-8.20.0] whole face=h2 status=200 location=no run=2 done-ms=36.037 outcome=status=200 body="early 200\n"
+[guix-8.20.0] whole face=raw status=303 location=yes run=2 done-ms=6.096 outcome=status=303 body="early 303\n"
+[guix-8.20.0] whole face=raw status=303 location=no run=2 done-ms=9.763 outcome=status=303 body="early 303\n"
+[guix-8.20.0] whole face=raw status=307 location=yes run=2 done-ms=5.166 outcome=status=307 body="early 307\n"
+[guix-8.20.0] whole face=raw status=307 location=no run=2 done-ms=6.217 outcome=status=307 body="early 307\n"
+[guix-8.20.0] whole face=raw status=413 location=yes run=2 done-ms=6.362 outcome=status=413 body="early 413\n"
+[guix-8.20.0] whole face=raw status=413 location=no run=2 done-ms=8.275 outcome=status=413 body="early 413\n"
+[guix-8.20.0] whole face=raw status=200 location=yes run=2 done-ms=15.24 outcome=status=200 body="early 200\n"
+[guix-8.20.0] whole face=raw status=200 location=no run=2 done-ms=16.96 outcome=status=200 body="early 200\n"
+[guix-8.20.0] whole counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[guix-8.20.0] whole exited 0 after about 65 s (124 is timeout's)
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-303-loc-1 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-303-noloc-1 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-307-loc-1 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-307-noloc-1 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-413-loc-1 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-413-noloc-1 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-200-loc-1 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-200-noloc-1 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-303-loc-1 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-303-noloc-1 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-307-loc-1 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-307-noloc-1 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-413-loc-1 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-413-noloc-1 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-200-loc-1 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-200-noloc-1 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-303-loc-2 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-303-noloc-2 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-307-loc-2 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-307-noloc-2 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-413-loc-2 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-413-noloc-2 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-200-loc-2 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-h2-200-noloc-2 count h2:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-303-loc-2 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-303-noloc-2 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-307-loc-2 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-307-noloc-2 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-413-loc-2 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-413-noloc-2 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-200-loc-2 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: unfetched tag=whole-raw-200-noloc-2 count raw:/answer-at=1
+[guix-8.20.0] server-stderr: counts h2:/answer-at=16 raw:/answer-at=16

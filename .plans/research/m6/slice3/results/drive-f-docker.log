@@ -1,0 +1,300 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[floor-7.85.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[floor-7.85.0] program .plans/research/m6/slice3/drive.sps ab8e4e61056526ffcc507dcaf0356127574fc100c2df4159d7fc84d1c77bb5fe
+[floor-7.85.0] libdirs src:tests:build/scheme-libs
+[floor-7.85.0] server {"node":"v20.10.0","pid":3118,"http":"127.0.0.1:40091","raw":"127.0.0.1:36665","https":"127.0.0.1:34037","h2":"127.0.0.1:41609","closed":"127.0.0.1:41177"}
+[floor-7.85.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 node v20.10.0
+[floor-7.85.0] drive libcurl 7.85.0 OpenSSL/3.0.13 cases=(f) slices=(10) sched=strict runs=2 faces=(raw https) framings=(sized chunked) bound=60000 control-bound=5000 sizes=4194304,16777216,4194304 c-statuses=(303 413) c-wheres=(raw-keep raw-close https-keep https-close h2) hop-cancel=#f final-feeds=#f
+[floor-7.85.0] drive case=f face=raw framing=sized run=1 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=200.659 seen-head-ms=201.317 end-ms=5006.857 head-to-end-ms=4806.198 total-ms=5006.86 up=0 down=10 MBps=0.0 cpu-ms=26.739 proc-stat-ms=30 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=9/10 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: req raw GET /arm #1 conn=39572 at=408.0
+[floor-7.85.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: armed raw mode=keep status=200
+[floor-7.85.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: arm-fired raw conn=39582 mode=keep status=200 at=412.2
+[floor-7.85.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: req raw POST /sink #1 conn=39582 at=612.3
+[floor-7.85.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: pre-answered raw conn=39582 mode=keep status=200, the answer written 200.0ms before this head arrived, framing length cl=1048576
+[floor-7.85.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: aborted raw /sink conn=39582 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4805.0ms
+[floor-7.85.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[floor-7.85.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=200.794 seen-head-ms=201.214 end-ms=5006.212 head-to-end-ms=4805.418 total-ms=5006.215 up=0 down=10 MBps=0.0 cpu-ms=24.354 proc-stat-ms=30 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=9/10 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: req raw GET /arm #1 conn=39598 at=5424.0
+[floor-7.85.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: armed raw mode=keep status=200
+[floor-7.85.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: arm-fired raw conn=39612 mode=keep status=200 at=5425.7
+[floor-7.85.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: req raw POST /sink #1 conn=39612 at=5625.9
+[floor-7.85.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: pre-answered raw conn=39612 mode=keep status=200, the answer written 200.1ms before this head arrived, framing chunked cl=-
+[floor-7.85.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: aborted raw /sink conn=39612 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4804.7ms
+[floor-7.85.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[floor-7.85.0] drive case=f face=https framing=sized run=1 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=204.051 seen-head-ms=204.65 end-ms=5006.154 head-to-end-ms=4802.104 total-ms=5006.157 up=0 down=10 MBps=0.0 cpu-ms=22.341 proc-stat-ms=20 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=10/11 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: req raw GET /arm #1 conn=45440 at=10436.1
+[floor-7.85.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: armed https mode=keep status=200
+[floor-7.85.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: arm-fired https conn=47748 mode=keep status=200 at=10440.6
+[floor-7.85.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: req https POST /sink #1 conn=47748 at=10640.9
+[floor-7.85.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: pre-answered https conn=47748 mode=keep status=200, the answer written 200.3ms before this head arrived, framing length cl=1048576
+[floor-7.85.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: aborted https /sink conn=47748 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4802.0ms
+[floor-7.85.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[floor-7.85.0] drive case=f face=https framing=chunked run=1 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=202.862 seen-head-ms=203.112 end-ms=5005.337 head-to-end-ms=4802.475 total-ms=5005.34 up=0 down=10 MBps=0.0 cpu-ms=24.218 proc-stat-ms=20 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=10/11 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: req raw GET /arm #1 conn=45468 at=15446.8
+[floor-7.85.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: armed https mode=keep status=200
+[floor-7.85.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: arm-fired https conn=47764 mode=keep status=200 at=15450.7
+[floor-7.85.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: req https POST /sink #1 conn=47764 at=15651.0
+[floor-7.85.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: pre-answered https conn=47764 mode=keep status=200, the answer written 200.3ms before this head arrived, framing chunked cl=-
+[floor-7.85.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: aborted https /sink conn=47764 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4802.6ms
+[floor-7.85.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[floor-7.85.0] drive case=f face=raw framing=sized run=2 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=200.546 seen-head-ms=201.303 end-ms=5007.386 head-to-end-ms=4806.841 total-ms=5007.39 up=0 down=10 MBps=0.0 cpu-ms=28.129 proc-stat-ms=30 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=9/10 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: req raw GET /arm #1 conn=38060 at=20456.6
+[floor-7.85.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: armed raw mode=keep status=200
+[floor-7.85.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: arm-fired raw conn=38066 mode=keep status=200 at=20457.9
+[floor-7.85.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: req raw POST /sink #1 conn=38066 at=20657.8
+[floor-7.85.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: pre-answered raw conn=38066 mode=keep status=200, the answer written 199.8ms before this head arrived, framing length cl=1048576
+[floor-7.85.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: aborted raw /sink conn=38066 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4805.4ms
+[floor-7.85.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[floor-7.85.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=200.579 seen-head-ms=201.305 end-ms=5008.451 head-to-end-ms=4807.872 total-ms=5008.454 up=0 down=10 MBps=0.0 cpu-ms=30.399 proc-stat-ms=40 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=9/10 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: req raw GET /arm #1 conn=38080 at=25468.1
+[floor-7.85.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: armed raw mode=keep status=200
+[floor-7.85.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: arm-fired raw conn=38096 mode=keep status=200 at=25469.5
+[floor-7.85.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: req raw POST /sink #1 conn=38096 at=25669.5
+[floor-7.85.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: pre-answered raw conn=38096 mode=keep status=200, the answer written 199.9ms before this head arrived, framing chunked cl=-
+[floor-7.85.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: aborted raw /sink conn=38096 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4804.7ms
+[floor-7.85.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[floor-7.85.0] drive case=f face=https framing=sized run=2 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=203.629 seen-head-ms=205.022 end-ms=5006.468 head-to-end-ms=4802.839 total-ms=5006.471 up=0 down=10 MBps=0.0 cpu-ms=35.806 proc-stat-ms=30 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=10/11 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: req raw GET /arm #1 conn=53386 at=30480.9
+[floor-7.85.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: armed https mode=keep status=200
+[floor-7.85.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: arm-fired https conn=35364 mode=keep status=200 at=30484.7
+[floor-7.85.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: req https POST /sink #1 conn=35364 at=30685.1
+[floor-7.85.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: pre-answered https conn=35364 mode=keep status=200, the answer written 200.3ms before this head arrived, framing length cl=1048576
+[floor-7.85.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: aborted https /sink conn=35364 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4802.5ms
+[floor-7.85.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[floor-7.85.0] drive case=f face=https framing=chunked run=2 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=203.859 seen-head-ms=205.008 end-ms=5005.004 head-to-end-ms=4801.145 total-ms=5005.006 up=0 down=10 MBps=0.0 cpu-ms=32.93 proc-stat-ms=30 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=10/11 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[floor-7.85.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: req raw GET /arm #1 conn=53416 at=35493.4
+[floor-7.85.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: armed https mode=keep status=200
+[floor-7.85.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: arm-fired https conn=35366 mode=keep status=200 at=35498.2
+[floor-7.85.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: req https POST /sink #1 conn=35366 at=35698.5
+[floor-7.85.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: pre-answered https conn=35366 mode=keep status=200, the answer written 200.3ms before this head arrived, framing chunked cl=-
+[floor-7.85.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: aborted https /sink conn=35366 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4801.7ms
+[floor-7.85.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[floor-7.85.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[floor-7.85.0] drive done
+[floor-7.85.0] drive exited 0 after about 41 s (124 is timeout's)
+[floor-7.85.0] server-stderr: counts https:/sink=4 raw:/arm=8 raw:/sink=4
+[ubuntu-openssl-8.5.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[ubuntu-openssl-8.5.0] program .plans/research/m6/slice3/drive.sps ab8e4e61056526ffcc507dcaf0356127574fc100c2df4159d7fc84d1c77bb5fe
+[ubuntu-openssl-8.5.0] libdirs src:tests:build/scheme-libs
+[ubuntu-openssl-8.5.0] server {"node":"v20.10.0","pid":3202,"http":"127.0.0.1:38443","raw":"127.0.0.1:39661","https":"127.0.0.1:35711","h2":"127.0.0.1:36523","closed":"127.0.0.1:42699"}
+[ubuntu-openssl-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 node v20.10.0
+[ubuntu-openssl-8.5.0] drive libcurl 8.5.0 OpenSSL/3.0.13 cases=(f) slices=(10) sched=strict runs=2 faces=(raw https) framings=(sized chunked) bound=60000 control-bound=5000 sizes=4194304,16777216,4194304 c-statuses=(303 413) c-wheres=(raw-keep raw-close https-keep https-close h2) hop-cancel=#f final-feeds=#f
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=200.711 seen-head-ms=201.226 end-ms=5005.332 head-to-end-ms=4804.622 total-ms=5005.335 up=0 down=10 MBps=0.0 cpu-ms=34.463 proc-stat-ms=30 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=9/10 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: req raw GET /arm #1 conn=45646 at=414.7
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: armed raw mode=keep status=200
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: arm-fired raw conn=45660 mode=keep status=200 at=418.8
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: req raw POST /sink #1 conn=45660 at=618.9
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: pre-answered raw conn=45660 mode=keep status=200, the answer written 200.1ms before this head arrived, framing length cl=1048576
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: aborted raw /sink conn=45660 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4805.3ms
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=200.761 seen-head-ms=201.376 end-ms=5008.501 head-to-end-ms=4807.74 total-ms=5008.505 up=0 down=10 MBps=0.0 cpu-ms=32.84 proc-stat-ms=40 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=9/10 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: req raw GET /arm #1 conn=45676 at=5429.2
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: armed raw mode=keep status=200
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: arm-fired raw conn=45678 mode=keep status=200 at=5430.9
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: req raw POST /sink #1 conn=45678 at=5631.2
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: pre-answered raw conn=45678 mode=keep status=200, the answer written 200.2ms before this head arrived, framing chunked cl=-
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: aborted raw /sink conn=45678 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4805.1ms
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=204.184 seen-head-ms=204.712 end-ms=5001.105 head-to-end-ms=4796.92 total-ms=5001.109 up=0 down=10 MBps=0.0 cpu-ms=90.157 proc-stat-ms=90 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=487/489 req-waits=10/11 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: req raw GET /arm #1 conn=54758 at=10442.3
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: armed https mode=keep status=200
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: arm-fired https conn=33312 mode=keep status=200 at=10447.5
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: req https POST /sink #1 conn=33312 at=10647.7
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: pre-answered https conn=33312 mode=keep status=200, the answer written 200.2ms before this head arrived, framing length cl=1048576
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: aborted https /sink conn=33312 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4796.8ms
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=205.164 seen-head-ms=208.146 end-ms=5002.118 head-to-end-ms=4796.954 total-ms=5002.121 up=0 down=10 MBps=0.0 cpu-ms=104.808 proc-stat-ms=110 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=487/489 req-waits=10/11 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: req raw GET /arm #1 conn=54776 at=15448.3
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: armed https mode=keep status=200
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: arm-fired https conn=33326 mode=keep status=200 at=15454.5
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: req https POST /sink #1 conn=33326 at=15654.7
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: pre-answered https conn=33326 mode=keep status=200, the answer written 200.2ms before this head arrived, framing chunked cl=-
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: aborted https /sink conn=33326 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4795.9ms
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=200.826 seen-head-ms=201.208 end-ms=5008.231 head-to-end-ms=4807.405 total-ms=5008.233 up=0 down=10 MBps=0.0 cpu-ms=28.713 proc-stat-ms=30 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=9/10 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: req raw GET /arm #1 conn=35748 at=20454.0
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: armed raw mode=keep status=200
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: arm-fired raw conn=35750 mode=keep status=200 at=20455.3
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: req raw POST /sink #1 conn=35750 at=20655.6
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: pre-answered raw conn=35750 mode=keep status=200, the answer written 200.2ms before this head arrived, framing length cl=1048576
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: aborted raw /sink conn=35750 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4804.7ms
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=200.57 seen-head-ms=201.166 end-ms=5003.163 head-to-end-ms=4802.593 total-ms=5003.167 up=0 down=10 MBps=0.0 cpu-ms=28.408 proc-stat-ms=30 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=487/489 req-waits=9/10 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: req raw GET /arm #1 conn=35770 at=25466.2
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: armed raw mode=keep status=200
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: arm-fired raw conn=35774 mode=keep status=200 at=25467.1
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: req raw POST /sink #1 conn=35774 at=25667.5
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: pre-answered raw conn=35774 mode=keep status=200, the answer written 200.4ms before this head arrived, framing chunked cl=-
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: aborted raw /sink conn=35774 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4801.7ms
+[ubuntu-openssl-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=206.008 seen-head-ms=208.11 end-ms=5002.243 head-to-end-ms=4796.235 total-ms=5002.245 up=0 down=10 MBps=0.0 cpu-ms=78.247 proc-stat-ms=70 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=487/489 req-waits=10/11 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: req raw GET /arm #1 conn=60378 at=30475.6
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: armed https mode=keep status=200
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: arm-fired https conn=57956 mode=keep status=200 at=30482.3
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: req https POST /sink #1 conn=57956 at=30682.6
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: pre-answered https conn=57956 mode=keep status=200, the answer written 200.2ms before this head arrived, framing length cl=1048576
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: aborted https /sink conn=57956 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4794.9ms
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=204.828 seen-head-ms=207.939 end-ms=5000.33 head-to-end-ms=4795.501 total-ms=5000.332 up=0 down=10 MBps=0.0 cpu-ms=89.749 proc-stat-ms=90 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=487/489 req-waits=10/11 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: req raw GET /arm #1 conn=60400 at=35481.7
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: armed https mode=keep status=200
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: arm-fired https conn=57972 mode=keep status=200 at=35486.5
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: req https POST /sink #1 conn=57972 at=35686.9
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: pre-answered https conn=57972 mode=keep status=200, the answer written 200.2ms before this head arrived, framing chunked cl=-
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: aborted https /sink conn=57972 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4795.2ms
+[ubuntu-openssl-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[ubuntu-openssl-8.5.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[ubuntu-openssl-8.5.0] drive done
+[ubuntu-openssl-8.5.0] drive exited 0 after about 40 s (124 is timeout's)
+[ubuntu-openssl-8.5.0] server-stderr: counts https:/sink=4 raw:/arm=8 raw:/sink=4
+[ubuntu-gnutls-8.5.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[ubuntu-gnutls-8.5.0] program .plans/research/m6/slice3/drive.sps ab8e4e61056526ffcc507dcaf0356127574fc100c2df4159d7fc84d1c77bb5fe
+[ubuntu-gnutls-8.5.0] libdirs src:tests:build/scheme-libs
+[ubuntu-gnutls-8.5.0] server {"node":"v20.10.0","pid":3286,"http":"127.0.0.1:39339","raw":"127.0.0.1:33541","https":"127.0.0.1:35581","h2":"127.0.0.1:41111","closed":"127.0.0.1:42683"}
+[ubuntu-gnutls-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 node v20.10.0
+[ubuntu-gnutls-8.5.0] drive libcurl 8.5.0 GnuTLS/3.8.3 cases=(f) slices=(10) sched=strict runs=2 faces=(raw https) framings=(sized chunked) bound=60000 control-bound=5000 sizes=4194304,16777216,4194304 c-statuses=(303 413) c-wheres=(raw-keep raw-close https-keep https-close h2) hop-cancel=#f final-feeds=#f
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=201.267 seen-head-ms=201.884 end-ms=5008.277 head-to-end-ms=4807.01 total-ms=5008.281 up=0 down=10 MBps=0.0 cpu-ms=23.5 proc-stat-ms=20 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=9/10 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: req raw GET /arm #1 conn=42710 at=409.9
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: armed raw mode=keep status=200
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: arm-fired raw conn=42716 mode=keep status=200 at=412.9
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: req raw POST /sink #1 conn=42716 at=613.7
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: pre-answered raw conn=42716 mode=keep status=200, the answer written 200.8ms before this head arrived, framing length cl=1048576
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: aborted raw /sink conn=42716 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4804.7ms
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=200.724 seen-head-ms=201.43 end-ms=5008.894 head-to-end-ms=4808.17 total-ms=5008.897 up=0 down=10 MBps=0.0 cpu-ms=30.686 proc-stat-ms=30 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=487/489 req-waits=9/10 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: req raw GET /arm #1 conn=45228 at=5426.8
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: armed raw mode=keep status=200
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: arm-fired raw conn=45244 mode=keep status=200 at=5428.5
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: req raw POST /sink #1 conn=45244 at=5628.6
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: pre-answered raw conn=45244 mode=keep status=200, the answer written 200.0ms before this head arrived, framing chunked cl=-
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: aborted raw /sink conn=45244 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4806.0ms
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=204.801 seen-head-ms=207.939 end-ms=5000.686 head-to-end-ms=4795.885 total-ms=5000.694 up=0 down=10 MBps=0.0 cpu-ms=102.633 proc-stat-ms=100 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=487/489 req-waits=10/11 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: req raw GET /arm #1 conn=45266 at=10441.6
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: armed https mode=keep status=200
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: arm-fired https conn=39644 mode=keep status=200 at=10446.3
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: req https POST /sink #1 conn=39644 at=10647.0
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: pre-answered https conn=39644 mode=keep status=200, the answer written 200.7ms before this head arrived, framing length cl=1048576
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: aborted https /sink conn=39644 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4797.9ms
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=204.216 seen-head-ms=204.927 end-ms=5000.511 head-to-end-ms=4796.295 total-ms=5000.513 up=0 down=10 MBps=0.0 cpu-ms=84.68 proc-stat-ms=90 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=487/489 req-waits=10/11 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: req raw GET /arm #1 conn=59806 at=15448.0
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: armed https mode=keep status=200
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: arm-fired https conn=47096 mode=keep status=200 at=15452.1
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: req https POST /sink #1 conn=47096 at=15653.1
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: pre-answered https conn=47096 mode=keep status=200, the answer written 200.9ms before this head arrived, framing chunked cl=-
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: aborted https /sink conn=47096 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4796.4ms
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=200.601 seen-head-ms=201.298 end-ms=5008.611 head-to-end-ms=4808.011 total-ms=5008.615 up=0 down=10 MBps=0.0 cpu-ms=30.299 proc-stat-ms=30 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=9/10 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: req raw GET /arm #1 conn=59822 at=20451.1
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: armed raw mode=keep status=200
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: arm-fired raw conn=59834 mode=keep status=200 at=20452.2
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: req raw POST /sink #1 conn=59834 at=20652.6
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: pre-answered raw conn=59834 mode=keep status=200, the answer written 200.3ms before this head arrived, framing length cl=1048576
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: aborted raw /sink conn=59834 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4805.3ms
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=200.897 seen-head-ms=201.372 end-ms=5008.23 head-to-end-ms=4807.333 total-ms=5008.233 up=0 down=10 MBps=0.0 cpu-ms=29.311 proc-stat-ms=30 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=488/490 req-waits=9/10 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: req raw GET /arm #1 conn=40502 at=25465.9
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: armed raw mode=keep status=200
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: arm-fired raw conn=40516 mode=keep status=200 at=25468.0
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: req raw POST /sink #1 conn=40516 at=25668.1
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: pre-answered raw conn=40516 mode=keep status=200, the answer written 200.0ms before this head arrived, framing chunked cl=-
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: aborted raw /sink conn=40516 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4805.7ms
+[ubuntu-gnutls-8.5.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=204.074 seen-head-ms=204.821 end-ms=5000.999 head-to-end-ms=4796.925 total-ms=5001.003 up=0 down=10 MBps=0.0 cpu-ms=82.396 proc-stat-ms=90 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=487/489 req-waits=10/11 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: req raw GET /arm #1 conn=40534 at=30478.7
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: armed https mode=keep status=200
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: arm-fired https conn=48258 mode=keep status=200 at=30482.4
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: req https POST /sink #1 conn=48258 at=30683.4
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: pre-answered https conn=48258 mode=keep status=200, the answer written 200.9ms before this head arrived, framing length cl=1048576
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: aborted https /sink conn=48258 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4796.4ms
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 S=10 sched=strict head=200 bit=#f got-head=#t head-ms=204.687 seen-head-ms=204.869 end-ms=5001.945 head-to-end-ms=4797.258 total-ms=5001.948 up=0 down=10 MBps=0.0 cpu-ms=99.076 proc-stat-ms=100 calls=0 calls-after-head=0 put=0 put-after-head=0 after-eof=0 state=unasked resp-waits=487/489 req-waits=10/11 handed=0 asked=#t port=raised:10:ok:failed:perform-failed:28 outcome=failed:perform-failed:28
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: req raw GET /arm #1 conn=33202 at=35485.8
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: armed https mode=keep status=200
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: arm-fired https conn=35350 mode=keep status=200 at=35491.0
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: req https POST /sink #1 conn=35350 at=35691.9
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: pre-answered https conn=35350 mode=keep status=200, the answer written 200.8ms before this head arrived, framing chunked cl=-
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: aborted https /sink conn=35350 head+0 body bytes, then the connection closed, 0 of them after the answer, at 4796.3ms
+[ubuntu-gnutls-8.5.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[ubuntu-gnutls-8.5.0] Exception in collect: cannot collect when multiple threads are active
+[ubuntu-gnutls-8.5.0] drive exited 255 after about 40 s (124 is timeout's)
+[ubuntu-gnutls-8.5.0] server-stderr: counts https:/sink=4 raw:/arm=8 raw:/sink=4
+[current-8.23.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[current-8.23.0] program .plans/research/m6/slice3/drive.sps ab8e4e61056526ffcc507dcaf0356127574fc100c2df4159d7fc84d1c77bb5fe
+[current-8.23.0] libdirs src:tests:build/scheme-libs
+[current-8.23.0] server {"node":"v20.10.0","pid":3370,"http":"127.0.0.1:37535","raw":"127.0.0.1:34489","https":"127.0.0.1:35755","h2":"127.0.0.1:44241","closed":"127.0.0.1:39369"}
+[current-8.23.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 node v20.10.0
+[current-8.23.0] drive libcurl 8.23.0 OpenSSL/3.0.13 cases=(f) slices=(10) sched=strict runs=2 faces=(raw https) framings=(sized chunked) bound=60000 control-bound=5000 sizes=4194304,16777216,4194304 c-statuses=(303 413) c-wheres=(raw-keep raw-close https-keep https-close h2) hop-cancel=#f final-feeds=#f
+[current-8.23.0] drive case=f face=raw framing=sized run=1 final-feeds=0 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=200.567 seen-head-ms=201.301 end-ms=352.893 head-to-end-ms=152.326 total-ms=352.894 up=1048576 down=10 MBps=2.97 cpu-ms=4.202 proc-stat-ms=10 calls=16 calls-after-head=16 put=1048576 put-after-head=1048576 after-eof=0 state=feeding resp-waits=26/28 req-waits=9/41 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[current-8.23.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: req raw GET /arm #1 conn=48898 at=407.5
+[current-8.23.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: armed raw mode=keep status=200
+[current-8.23.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: arm-fired raw conn=48908 mode=keep status=200 at=412.5
+[current-8.23.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: req raw POST /sink #1 conn=48908 at=612.8
+[current-8.23.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: pre-answered raw conn=48908 mode=keep status=200, the answer written 200.2ms before this head arrived, framing length cl=1048576
+[current-8.23.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: answer raw body read whole after the early answer: 1048576 bytes, 1048576 after it, at 152.4ms
+[current-8.23.0] drive case=f face=raw framing=sized run=1 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[current-8.23.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=200.909 seen-head-ms=201.253 end-ms=364.394 head-to-end-ms=163.485 total-ms=364.397 up=1048576 down=10 MBps=2.88 cpu-ms=7.242 proc-stat-ms=10 calls=17 calls-after-head=17 put=1048576 put-after-head=1048576 after-eof=0 state=ended resp-waits=27/29 req-waits=9/42 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[current-8.23.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: req raw GET /arm #1 conn=48930 at=770.3
+[current-8.23.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: armed raw mode=keep status=200
+[current-8.23.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: arm-fired raw conn=48940 mode=keep status=200 at=772.2
+[current-8.23.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: req raw POST /sink #1 conn=48940 at=972.2
+[current-8.23.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: pre-answered raw conn=48940 mode=keep status=200, the answer written 199.9ms before this head arrived, framing chunked cl=-
+[current-8.23.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: answer raw body read whole after the early answer: 1048576 bytes, 1048576 after it, at 163.3ms
+[current-8.23.0] drive case=f face=raw framing=chunked run=1 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[current-8.23.0] drive case=f face=https framing=sized run=1 final-feeds=0 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=204.298 seen-head-ms=204.842 end-ms=366.818 head-to-end-ms=162.52 total-ms=366.82 up=1048576 down=10 MBps=2.86 cpu-ms=9.373 proc-stat-ms=10 calls=16 calls-after-head=16 put=1048576 put-after-head=1048576 after-eof=0 state=feeding resp-waits=27/29 req-waits=10/42 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[current-8.23.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: req raw GET /arm #1 conn=48958 at=1140.9
+[current-8.23.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: armed https mode=keep status=200
+[current-8.23.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: arm-fired https conn=60910 mode=keep status=200 at=1145.7
+[current-8.23.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: req https POST /sink #1 conn=60910 at=1345.9
+[current-8.23.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: pre-answered https conn=60910 mode=keep status=200, the answer written 200.2ms before this head arrived, framing length cl=1048576
+[current-8.23.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: answer https body read whole after the early answer: 1048576 bytes, 1048576 after it, at 162.8ms
+[current-8.23.0] drive case=f face=https framing=sized run=1 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[current-8.23.0] drive case=f face=https framing=chunked run=1 final-feeds=0 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=202.31 seen-head-ms=202.933 end-ms=374.681 head-to-end-ms=172.371 total-ms=374.682 up=1048576 down=10 MBps=2.8 cpu-ms=8.594 proc-stat-ms=10 calls=17 calls-after-head=17 put=1048576 put-after-head=1048576 after-eof=0 state=ended resp-waits=28/30 req-waits=10/43 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[current-8.23.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: req raw GET /arm #1 conn=48984 at=1513.7
+[current-8.23.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: armed https mode=keep status=200
+[current-8.23.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: arm-fired https conn=60914 mode=keep status=200 at=1516.5
+[current-8.23.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: req https POST /sink #1 conn=60914 at=1716.8
+[current-8.23.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: pre-answered https conn=60914 mode=keep status=200, the answer written 200.2ms before this head arrived, framing chunked cl=-
+[current-8.23.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: answer https body read whole after the early answer: 1048576 bytes, 1048576 after it, at 172.3ms
+[current-8.23.0] drive case=f face=https framing=chunked run=1 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[current-8.23.0] drive case=f face=raw framing=sized run=2 final-feeds=0 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=200.944 seen-head-ms=201.362 end-ms=353.915 head-to-end-ms=152.971 total-ms=353.917 up=1048576 down=10 MBps=2.96 cpu-ms=6.917 proc-stat-ms=0 calls=16 calls-after-head=16 put=1048576 put-after-head=1048576 after-eof=0 state=feeding resp-waits=26/28 req-waits=9/41 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[current-8.23.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: req raw GET /arm #1 conn=49008 at=1894.9
+[current-8.23.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: armed raw mode=keep status=200
+[current-8.23.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: arm-fired raw conn=49020 mode=keep status=200 at=1898.5
+[current-8.23.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: req raw POST /sink #1 conn=49020 at=2098.4
+[current-8.23.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: pre-answered raw conn=49020 mode=keep status=200, the answer written 199.9ms before this head arrived, framing length cl=1048576
+[current-8.23.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: answer raw body read whole after the early answer: 1048576 bytes, 1048576 after it, at 153.0ms
+[current-8.23.0] drive case=f face=raw framing=sized run=2 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[current-8.23.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=200.559 seen-head-ms=201.235 end-ms=363.183 head-to-end-ms=162.624 total-ms=363.184 up=1048576 down=10 MBps=2.89 cpu-ms=7.287 proc-stat-ms=10 calls=17 calls-after-head=17 put=1048576 put-after-head=1048576 after-eof=0 state=ended resp-waits=27/29 req-waits=9/42 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[current-8.23.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: req raw GET /arm #1 conn=49028 at=2254.6
+[current-8.23.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: armed raw mode=keep status=200
+[current-8.23.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: arm-fired raw conn=49038 mode=keep status=200 at=2256.3
+[current-8.23.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: req raw POST /sink #1 conn=49038 at=2456.5
+[current-8.23.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: pre-answered raw conn=49038 mode=keep status=200, the answer written 200.2ms before this head arrived, framing chunked cl=-
+[current-8.23.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: answer raw body read whole after the early answer: 1048576 bytes, 1048576 after it, at 162.3ms
+[current-8.23.0] drive case=f face=raw framing=chunked run=2 final-feeds=0 server: count raw:/arm=1 raw:/sink=1
+[current-8.23.0] drive case=f face=https framing=sized run=2 final-feeds=0 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=203.63 seen-head-ms=204.669 end-ms=366.391 head-to-end-ms=162.761 total-ms=366.393 up=1048576 down=10 MBps=2.86 cpu-ms=6.61 proc-stat-ms=10 calls=16 calls-after-head=16 put=1048576 put-after-head=1048576 after-eof=0 state=feeding resp-waits=27/29 req-waits=10/42 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[current-8.23.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: req raw GET /arm #1 conn=49054 at=2624.2
+[current-8.23.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: armed https mode=keep status=200
+[current-8.23.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: arm-fired https conn=60924 mode=keep status=200 at=2628.9
+[current-8.23.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: req https POST /sink #1 conn=60924 at=2829.1
+[current-8.23.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: pre-answered https conn=60924 mode=keep status=200, the answer written 200.2ms before this head arrived, framing length cl=1048576
+[current-8.23.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: answer https body read whole after the early answer: 1048576 bytes, 1048576 after it, at 162.9ms
+[current-8.23.0] drive case=f face=https framing=sized run=2 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[current-8.23.0] drive case=f face=https framing=chunked run=2 final-feeds=0 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=204.913 seen-head-ms=207.97 end-ms=384.434 head-to-end-ms=179.522 total-ms=384.436 up=1048576 down=10 MBps=2.73 cpu-ms=14.772 proc-stat-ms=20 calls=17 calls-after-head=17 put=1048576 put-after-head=1048576 after-eof=0 state=ended resp-waits=28/30 req-waits=10/43 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[current-8.23.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: req raw GET /arm #1 conn=49078 at=2997.1
+[current-8.23.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: armed https mode=keep status=200
+[current-8.23.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: arm-fired https conn=60926 mode=keep status=200 at=3003.0
+[current-8.23.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: req https POST /sink #1 conn=60926 at=3203.4
+[current-8.23.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: pre-answered https conn=60926 mode=keep status=200, the answer written 200.3ms before this head arrived, framing chunked cl=-
+[current-8.23.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: answer https body read whole after the early answer: 1048576 bytes, 1048576 after it, at 179.3ms
+[current-8.23.0] drive case=f face=https framing=chunked run=2 final-feeds=0 server: count raw:/arm=1 https:/sink=1
+[current-8.23.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[current-8.23.0] drive done
+[current-8.23.0] drive exited 0 after about 4 s (124 is timeout's)
+[current-8.23.0] server-stderr: counts https:/sink=4 raw:/arm=8 raw:/sink=4

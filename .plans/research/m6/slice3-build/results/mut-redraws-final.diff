@@ -1,0 +1,19 @@
+--- a/src/http-client/private/drive.sls	2026-11-01 06:38:31.706854003 -0500
++++ b/src/http-client/private/drive.sls	2026-11-01 08:09:07.067701407 -0500
+@@ -894,14 +894,14 @@
+         (if (curl-request-body request)
+             (begin
+               (end-hop! token)
+-              (stepped (exchange-step state (list 'response response) now utc drawn) now))
++              (stepped (exchange-step state (list 'response response) now utc (draw)) now))
+             (let ((read (read-whole! leg state)))
+               (if (eq? (car read) 'response)
+                   (stepped (exchange-step state
+                                           (list 'response
+                                                 (http-response-with response (caddr read)
+                                                                     (curl-response-timings (cadr read))))
+-                                          now utc drawn)
++                                          now utc (draw))
+                            now)
+                   (let* ((utc (utc-seconds)) (now (monotonic-ns)))
+                     (stepped (exchange-step state read now utc drawn) now))))))

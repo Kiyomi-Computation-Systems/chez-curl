@@ -1,0 +1,4 @@
+44c44
+< runner=.plans/research/m6/slice3/run.sh
+---
+> runner=build/m6s3v/run.sh

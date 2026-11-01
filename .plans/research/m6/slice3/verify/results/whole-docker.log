@@ -1,0 +1,131 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[current-8.23.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+sha256sum: .plans/research/m6/slice3/whole.sps: No such file or directory
+[current-8.23.0] program .plans/research/m6/slice3/whole.sps 
+[current-8.23.0] libdirs src:tests:build/scheme-libs
+[current-8.23.0] server {"node":"v20.10.0","pid":3118,"http":"127.0.0.1:46039","raw":"127.0.0.1:38433","https":"127.0.0.1:36119","h2":"127.0.0.1:33891","closed":"127.0.0.1:33771"}
+[current-8.23.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 node v20.10.0
+[current-8.23.0] whole libcurl 8.23.0 OpenSSL/3.0.13
+[current-8.23.0] whole face=h2 status=303 location=yes run=1 done-ms=8022.562 outcome=failed:perform-failed:28
+[current-8.23.0] whole face=h2 status=303 location=no run=1 done-ms=8015.918 outcome=failed:perform-failed:28
+[current-8.23.0] whole face=h2 status=307 location=yes run=1 done-ms=8020.892 outcome=failed:perform-failed:28
+[current-8.23.0] whole face=h2 status=307 location=no run=1 done-ms=8011.857 outcome=failed:perform-failed:28
+[current-8.23.0] whole face=h2 status=413 location=yes run=1 done-ms=7.23 outcome=status=413 body="early 413\n"
+[current-8.23.0] whole face=h2 status=413 location=no run=1 done-ms=17.809 outcome=status=413 body="early 413\n"
+[current-8.23.0] whole face=h2 status=200 location=yes run=1 done-ms=34.905 outcome=status=200 body="early 200\n"
+[current-8.23.0] whole face=h2 status=200 location=no run=1 done-ms=36.374 outcome=status=200 body="early 200\n"
+[current-8.23.0] whole face=raw status=303 location=yes run=1 done-ms=9.244 outcome=status=303 body="early 303\n"
+[current-8.23.0] whole face=raw status=303 location=no run=1 done-ms=6.342 outcome=status=303 body="early 303\n"
+[current-8.23.0] whole face=raw status=307 location=yes run=1 done-ms=5.085 outcome=status=307 body="early 307\n"
+[current-8.23.0] whole face=raw status=307 location=no run=1 done-ms=6.295 outcome=status=307 body="early 307\n"
+[current-8.23.0] whole face=raw status=413 location=yes run=1 done-ms=5.083 outcome=status=413 body="early 413\n"
+[current-8.23.0] whole face=raw status=413 location=no run=1 done-ms=7.203 outcome=status=413 body="early 413\n"
+[current-8.23.0] whole face=raw status=200 location=yes run=1 done-ms=24.882 outcome=status=200 body="early 200\n"
+[current-8.23.0] whole face=raw status=200 location=no run=1 done-ms=16.026 outcome=status=200 body="early 200\n"
+[current-8.23.0] whole counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[current-8.23.0] whole exited 0 after about 32 s (124 is timeout's)
+[current-8.23.0] server-stderr: unfetched tag=whole-h2-303-loc-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-h2-303-noloc-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-h2-307-loc-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-h2-307-noloc-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-h2-413-loc-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-h2-413-noloc-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-h2-200-loc-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-h2-200-noloc-1 count h2:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-raw-303-loc-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-raw-303-noloc-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-raw-307-loc-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-raw-307-noloc-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-raw-413-loc-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-raw-413-noloc-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-raw-200-loc-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: unfetched tag=whole-raw-200-noloc-1 count raw:/answer-at=1
+[current-8.23.0] server-stderr: counts h2:/answer-at=8 raw:/answer-at=8
+[floor-7.85.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+sha256sum: .plans/research/m6/slice3/whole.sps: No such file or directory
+[floor-7.85.0] program .plans/research/m6/slice3/whole.sps 
+[floor-7.85.0] libdirs src:tests:build/scheme-libs
+[floor-7.85.0] server {"node":"v20.10.0","pid":3194,"http":"127.0.0.1:38791","raw":"127.0.0.1:35119","https":"127.0.0.1:40535","h2":"127.0.0.1:38859","closed":"127.0.0.1:33319"}
+[floor-7.85.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 node v20.10.0
+[floor-7.85.0] whole libcurl 7.85.0 OpenSSL/3.0.13
+[floor-7.85.0] whole face=h2 status=303 location=yes run=1 done-ms=24.833 outcome=status=303 body="early 303\n"
+[floor-7.85.0] whole face=h2 status=303 location=no run=1 done-ms=9.326 outcome=status=303 body="early 303\n"
+[floor-7.85.0] whole face=h2 status=307 location=yes run=1 done-ms=5.027 outcome=status=307 body="early 307\n"
+[floor-7.85.0] whole face=h2 status=307 location=no run=1 done-ms=6.092 outcome=status=307 body="early 307\n"
+[floor-7.85.0] whole face=h2 status=413 location=yes run=1 done-ms=5.031 outcome=status=413 body="early 413\n"
+[floor-7.85.0] whole face=h2 status=413 location=no run=1 done-ms=13.709 outcome=status=413 body="early 413\n"
+[floor-7.85.0] whole face=h2 status=200 location=yes run=1 done-ms=8005.264 outcome=failed:perform-failed:28
+[floor-7.85.0] whole face=h2 status=200 location=no run=1 done-ms=8015.225 outcome=failed:perform-failed:28
+[floor-7.85.0] whole face=raw status=303 location=yes run=1 done-ms=10.891 outcome=status=303 body="early 303\n"
+[floor-7.85.0] whole face=raw status=303 location=no run=1 done-ms=10.531 outcome=status=303 body="early 303\n"
+[floor-7.85.0] whole face=raw status=307 location=yes run=1 done-ms=5.471 outcome=status=307 body="early 307\n"
+[floor-7.85.0] whole face=raw status=307 location=no run=1 done-ms=7.142 outcome=status=307 body="early 307\n"
+[floor-7.85.0] whole face=raw status=413 location=yes run=1 done-ms=5.512 outcome=status=413 body="early 413\n"
+[floor-7.85.0] whole face=raw status=413 location=no run=1 done-ms=7.153 outcome=status=413 body="early 413\n"
+[floor-7.85.0] whole face=raw status=200 location=yes run=1 done-ms=15.183 outcome=status=200 body="early 200\n"
+[floor-7.85.0] whole face=raw status=200 location=no run=1 done-ms=17.488 outcome=status=200 body="early 200\n"
+[floor-7.85.0] whole counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[floor-7.85.0] whole exited 0 after about 16 s (124 is timeout's)
+[floor-7.85.0] server-stderr: unfetched tag=whole-h2-303-loc-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-h2-303-noloc-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-h2-307-loc-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-h2-307-noloc-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-h2-413-loc-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-h2-413-noloc-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-h2-200-loc-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-h2-200-noloc-1 count h2:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-raw-303-loc-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-raw-303-noloc-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-raw-307-loc-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-raw-307-noloc-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-raw-413-loc-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-raw-413-noloc-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-raw-200-loc-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: unfetched tag=whole-raw-200-noloc-1 count raw:/answer-at=1
+[floor-7.85.0] server-stderr: counts h2:/answer-at=8 raw:/answer-at=8
+[ubuntu-openssl-8.5.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+sha256sum: .plans/research/m6/slice3/whole.sps: No such file or directory
+[ubuntu-openssl-8.5.0] program .plans/research/m6/slice3/whole.sps 
+[ubuntu-openssl-8.5.0] libdirs src:tests:build/scheme-libs
+[ubuntu-openssl-8.5.0] server {"node":"v20.10.0","pid":3271,"http":"127.0.0.1:40947","raw":"127.0.0.1:35437","https":"127.0.0.1:34013","h2":"127.0.0.1:40275","closed":"127.0.0.1:44067"}
+[ubuntu-openssl-8.5.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/bin/scheme libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 node v20.10.0
+[ubuntu-openssl-8.5.0] whole libcurl 8.5.0 OpenSSL/3.0.13
+[ubuntu-openssl-8.5.0] whole face=h2 status=303 location=yes run=1 done-ms=16.144 outcome=status=303 body="early 303\n"
+[ubuntu-openssl-8.5.0] whole face=h2 status=303 location=no run=1 done-ms=15.816 outcome=status=303 body="early 303\n"
+[ubuntu-openssl-8.5.0] whole face=h2 status=307 location=yes run=1 done-ms=6.12 outcome=status=307 body="early 307\n"
+[ubuntu-openssl-8.5.0] whole face=h2 status=307 location=no run=1 done-ms=5.251 outcome=status=307 body="early 307\n"
+[ubuntu-openssl-8.5.0] whole face=h2 status=413 location=yes run=1 done-ms=14.153 outcome=status=413 body="early 413\n"
+[ubuntu-openssl-8.5.0] whole face=h2 status=413 location=no run=1 done-ms=5.089 outcome=status=413 body="early 413\n"
+[ubuntu-openssl-8.5.0] whole face=h2 status=200 location=yes run=1 done-ms=9.551 outcome=status=200 body="early 200\n"
+[ubuntu-openssl-8.5.0] whole face=h2 status=200 location=no run=1 done-ms=8.363 outcome=status=200 body="early 200\n"
+[ubuntu-openssl-8.5.0] whole face=raw status=303 location=yes run=1 done-ms=16.019 outcome=status=303 body="early 303\n"
+[ubuntu-openssl-8.5.0] whole face=raw status=303 location=no run=1 done-ms=5.139 outcome=status=303 body="early 303\n"
+[ubuntu-openssl-8.5.0] whole face=raw status=307 location=yes run=1 done-ms=12.384 outcome=status=307 body="early 307\n"
+[ubuntu-openssl-8.5.0] whole face=raw status=307 location=no run=1 done-ms=5.62 outcome=status=307 body="early 307\n"
+[ubuntu-openssl-8.5.0] whole face=raw status=413 location=yes run=1 done-ms=8.479 outcome=status=413 body="early 413\n"
+[ubuntu-openssl-8.5.0] whole face=raw status=413 location=no run=1 done-ms=8.92 outcome=status=413 body="early 413\n"
+[ubuntu-openssl-8.5.0] whole face=raw status=200 location=yes run=1 done-ms=16.69 outcome=status=200 body="early 200\n"
+[ubuntu-openssl-8.5.0] whole face=raw status=200 location=no run=1 done-ms=15.206 outcome=status=200 body="early 200\n"
+[ubuntu-openssl-8.5.0] whole counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[ubuntu-openssl-8.5.0] whole exited 0 after about 1 s (124 is timeout's)
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-h2-303-loc-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-h2-303-noloc-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-h2-307-loc-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-h2-307-noloc-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-h2-413-loc-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-h2-413-noloc-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-h2-200-loc-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-h2-200-noloc-1 count h2:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-raw-303-loc-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-raw-303-noloc-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-raw-307-loc-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-raw-307-noloc-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-raw-413-loc-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-raw-413-noloc-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-raw-200-loc-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: unfetched tag=whole-raw-200-noloc-1 count raw:/answer-at=1
+[ubuntu-openssl-8.5.0] server-stderr: counts h2:/answer-at=8 raw:/answer-at=8

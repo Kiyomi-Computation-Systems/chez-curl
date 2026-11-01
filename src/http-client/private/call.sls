@@ -29,15 +29,15 @@
 ;;; or char-foldcase, which fold U+212A KELVIN SIGN to k and U+017F LONG S
 ;;; to s (traps.md): libcurl and a server compare bytes.
 (library (http-client private call)
-  (export session-keys call-keys retry-keys key-settings string-pairs string-pairs-within
+  (export session-keys call-keys port-keys retry-keys key-settings string-pairs string-pairs-within
           ascii-ci=? form-encode form-type with-form-type merge-fields
           make-http-retry http-retry? http-retry-attempts http-retry-backoff-ms
           http-retry-max-backoff-ms http-retry-jitter http-retry-statuses http-retry-methods
           new-http-session http-session? http-session-engine http-session-defaults
           http-session-redirects http-session-allow-downgrade http-session-retry
           http-session-draw http-session-generator
-          default-redirects session-defaults session-policy call-request
-          group-keys group-limit)
+          default-redirects default-stream-buffer session-defaults session-policy call-request
+          call-request-of group-keys group-limit)
   (import (curl)
           (rnrs)
           (only (chezscheme) critical-section make-mutex with-mutex make-pseudo-random-generator
@@ -76,13 +76,24 @@
 
   ;; call-keys : (Listof Symbol)
   ;; The keys a call takes: the session's, each replacing the session's
-  ;; value, then body, form and params.
-  (define call-keys (append session-keys '(body form params)))
+  ;; value, then body, form, params and body-length, a producer's length
+  ;; (ADR-0031, decision 2).
+  (define call-keys (append session-keys '(body form params body-length)))
+
+  ;; port-keys : (Listof Symbol)
+  ;; The keys call-with-response-port takes: a call's, then stream-buffer,
+  ;; its own (ADR-0031, decision 1).
+  (define port-keys (append call-keys '(stream-buffer)))
 
   ;; default-redirects : Natural
   ;; The most redirects a call follows when neither the session nor the
   ;; call names a bound: 20, after the browsers' (the M5 plan, section 3.2).
   (define default-redirects 20)
+
+  ;; default-stream-buffer : Positive-Integer
+  ;; The bytes of a streamed response's body a call's token buffers when
+  ;; the call names no stream-buffer: 65,536 (the M6 plan, section 3.1).
+  (define default-stream-buffer 65536)
 
   ;; key-settings : Symbol (Listof Symbol) List -> (Listof (Pairof Symbol Any))
   ;; PLIST, KEY VALUE ..., as (KEY . VALUE) pairs, in its order, each key
@@ -501,63 +512,106 @@
 
   ;; --- a call ----------------------------------------------------------------------
 
-  ;; call-body : Any -> Bytevector
+  ;; call-body : Symbol Any -> (U Bytevector Procedure)
   ;; A copy of a call's body: a bytevector's bytes, or a string's UTF-8
-  ;; bytes; anything else is not-a-body.
-  (define (call-body value)
+  ;; bytes; a procedure, a producer, as it is (ADR-0031, decision 2);
+  ;; anything else is not-a-body, as WHO.
+  (define (call-body who value)
     (cond ((bytevector? value) (bytevector-copy value))
           ((string? value) (string->utf8 value))
-          (else (refuse 'http-request 'body value 'not-a-body
-                        "a body is a bytevector, or a string, sent as UTF-8"))))
+          ((procedure? value) value)
+          (else (refuse who 'body value 'not-a-body
+                        "a body is a bytevector, a string, sent as UTF-8, or a producer, a procedure of no arguments"))))
 
-  ;; call-pairs : Symbol Any -> (Listof (Pairof String String))
+  ;; call-pairs : Symbol Symbol Any -> (Listof (Pairof String String))
   ;; A copy of a call's form or params, FIELD; anything but a list of
-  ;; string pairs is not-name-value-pairs.
-  (define (call-pairs field value)
+  ;; string pairs is not-name-value-pairs, as WHO.
+  (define (call-pairs who field value)
     (or (string-pairs value)
-        (refuse 'http-request field value 'not-name-value-pairs
+        (refuse who field value 'not-name-value-pairs
                 "a list of pairs of a name and a value, both strings")))
 
   ;; call-request : Session Any Any List
   ;;                -> (Values Request (U Natural #f) Boolean (U Retry #f))
+  ;; call-request-of's first four answers for http-request's call, its keys
+  ;; call-keys, as http-request, a producer among the bodies it takes.
+  (define (call-request session method url plist)
+    (let-values (((request redirects allow-downgrade retry producer)
+                  (call-request-of 'http-request 'request session method url plist)))
+      (values request redirects allow-downgrade retry)))
+
+  ;; call-request-of : Symbol (U 'request 'group 'port) Session Any Any List
+  ;;                   -> (Values Request (U Natural #f) Boolean (U Retry #f)
+  ;;                              (U Procedure #f))
   ;; The first request of a call of METHOD on URL, with PLIST's keys merged
   ;; with SESSION's, then the call's redirects, allow-downgrade and retry:
   ;; each the call's, or else the session's; a call's retry #f is none, over
-  ;; a session's policy. In order, each raising as it is refused:
+  ;; a session's policy; and its producer, or #f. MODE says whose call it
+  ;; is: request, http-request's and a verb's; group, a request group's go
+  ;; or http-parallel's spec; port, call-with-response-port's, whose keys
+  ;; are port-keys. Each refusal is WHO's. In order, each raising as it is
+  ;; refused:
   ;;   1. the keys, by key-settings' rules;
   ;;   2. body, not-a-body; form, then params, not-name-value-pairs;
   ;;      redirects, not-a-redirect-count; allow-downgrade, not-a-boolean;
   ;;      retry, not-a-retry-policy;
   ;;   3. body and form together, body-and-form; either with get or head,
-  ;;      body-not-allowed, field the one given;
+  ;;      body-not-allowed, field the one given; a producer in a group's
+  ;;      call, stream-in-group, field body, before anything is submitted
+  ;;      (the M6 plan, section 3.6); a port's stream-buffer of #f, an
+  ;;      assertion violation, since every response of its streams;
   ;;   4. the method and the call's own request keys, by make-curl-request,
-  ;;      with the body: the low level's refusal;
+  ;;      with the body, its body-length and its stream-buffer: the low
+  ;;      level's refusal, body-length-without-stream beside a body that is
+  ;;      no producer among them;
   ;;   5. the URL: params, when non-empty, appended by curl-url-append-query,
   ;;      then the whole read back by curl-url-part, the URL requested.
   ;; The merge (merge-fields) gives the headers and the user agent; a form
-  ;; is sent as its encoding's bytes, with-form-type's header added. Every
-  ;; other request key is the call's, or else the session's.
-  (define (call-request session method url plist)
-    (let* ((settings (key-settings 'http-request call-keys plist))
+  ;; is sent as its encoding's bytes, with-form-type's header added. A
+  ;; producer's request has body stream, and body-length as the call gives
+  ;; it; it streams its response too, by the call's stream-buffer for a
+  ;; port, 65,536 by default, and by 65,536 for http-request, which reads
+  ;; the response's body whole. Every other request key is the call's, or
+  ;; else the session's.
+  (define (call-request-of who mode session method url plist)
+    (let* ((settings (key-settings who (if (eq? mode 'port) port-keys call-keys) plist))
            (body-given (assq 'body settings))
            (form-given (assq 'form settings))
            (params-given (assq 'params settings))
-           (body (and body-given (call-body (cdr body-given))))
-           (form (and form-given (call-pairs 'form (cdr form-given))))
-           (params (and params-given (call-pairs 'params (cdr params-given))))
-           (policy (policy-of 'http-request settings (http-session-redirects session)
+           (length-given (assq 'body-length settings))
+           (buffer-given (assq 'stream-buffer settings))
+           (body (and body-given (call-body who (cdr body-given))))
+           (form (and form-given (call-pairs who 'form (cdr form-given))))
+           (params (and params-given (call-pairs who 'params (cdr params-given))))
+           (policy (policy-of who settings (http-session-redirects session)
                               (http-session-allow-downgrade session)
-                              (http-session-retry session))))
+                              (http-session-retry session)))
+           (producer (and (procedure? body) body)))
       (when (and body-given form-given)
-        (refuse 'http-request 'form #f 'body-and-form "a body and a form together"))
+        (refuse who 'form #f 'body-and-form "a body and a form together"))
       (when (and (memq method '(get head)) (or body-given form-given))
-        (refuse 'http-request (if body-given 'body 'form) method 'body-not-allowed
+        (refuse who (if body-given 'body 'form) method 'body-not-allowed
                 "a body or a form with get or head, which send none"))
+      (when (and producer (eq? mode 'group))
+        (refuse who 'body producer 'stream-in-group
+                "a request group takes no producer: its calls share one thread, which a producer's wait would hold"))
+      (when (and buffer-given (not (cdr buffer-given)))
+        (assertion-violation who
+          "a stream-buffer is a positive exact integer: every response of call-with-response-port streams"
+          #f))
       (let* ((own (map copied-setting (request-settings settings)))
-             (bytes (or body (and form (string->utf8 (form-encode form)))))
+             (bytes (if producer #f (or body (and form (string->utf8 (form-encode form))))))
+             (sent (cond (producer 'stream) (else bytes)))
+             (body-length (and length-given (cdr length-given)))
+             (stream-buffer (cond ((eq? mode 'port)
+                                   (if buffer-given (cdr buffer-given) default-stream-buffer))
+                                  (producer default-stream-buffer)
+                                  (else #f)))
              (checked (apply make-curl-request check-url 'method method
                              (append (settings->plist own)
-                                     (if bytes (list 'body bytes) '()))))
+                                     (if sent (list 'body sent) '())
+                                     (if length-given (list 'body-length body-length) '())
+                                     (if stream-buffer (list 'stream-buffer stream-buffer) '()))))
              (defaults (http-session-defaults session))
              (hit (lambda (key) (assq key own)))
              (merged (merge-fields (curl-request-headers defaults)
@@ -574,7 +628,9 @@
         (values (make-curl-request target
                                    'method method
                                    'headers headers
-                                   'body bytes
+                                   'body sent
+                                   'body-length body-length
+                                   'stream-buffer stream-buffer
                                    'user-agent (cadr merged)
                                    'timeout-ms (pick 'timeout-ms curl-request-timeout-ms)
                                    'connect-timeout-ms (pick 'connect-timeout-ms
@@ -585,4 +641,5 @@
                                    'proxy (pick 'proxy curl-request-proxy))
                 (car policy)
                 (cadr policy)
-                (caddr policy))))))
+                (caddr policy)
+                producer)))))

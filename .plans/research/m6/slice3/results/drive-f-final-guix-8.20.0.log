@@ -1,0 +1,74 @@
+[guix-8.20.0] src 801c46734ba31e8706e6b5f7eddd29bf1603d8a40e24f9890d78bae0630e73fd (sha256 of src/'s libraries, concatenated in sorted path order)
+[guix-8.20.0] program .plans/research/m6/slice3/drive.sps ab8e4e61056526ffcc507dcaf0356127574fc100c2df4159d7fc84d1c77bb5fe
+[guix-8.20.0] libdirs src:tests:build/scheme-libs
+[guix-8.20.0] server {"node":"v24.18.0","pid":28,"http":"127.0.0.1:43023","raw":"127.0.0.1:36205","https":"127.0.0.1:39139","h2":"127.0.0.1:37039","closed":"127.0.0.1:42077"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 node v24.18.0
+[guix-8.20.0] drive libcurl 8.20.0 GnuTLS/3.8.13 cases=(f) slices=(10) sched=strict runs=2 faces=(raw https) framings=(sized chunked) bound=60000 control-bound=5000 sizes=4194304,16777216,4194304 c-statuses=(303 413) c-wheres=(raw-keep raw-close https-keep https-close h2) hop-cancel=#f final-feeds=#t
+[guix-8.20.0] drive case=f face=raw framing=sized run=1 final-feeds=1 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=200.896 seen-head-ms=201.154 end-ms=352.475 head-to-end-ms=151.579 total-ms=352.476 up=1048576 down=10 MBps=2.97 cpu-ms=3.757 proc-stat-ms=0 calls=16 calls-after-head=16 put=1048576 put-after-head=1048576 after-eof=0 state=feeding resp-waits=26/28 req-waits=9/41 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[guix-8.20.0] drive case=f face=raw framing=sized run=1 final-feeds=1 server: req raw GET /arm #1 conn=44858 at=395.4
+[guix-8.20.0] drive case=f face=raw framing=sized run=1 final-feeds=1 server: armed raw mode=keep status=200
+[guix-8.20.0] drive case=f face=raw framing=sized run=1 final-feeds=1 server: arm-fired raw conn=44862 mode=keep status=200 at=399.6
+[guix-8.20.0] drive case=f face=raw framing=sized run=1 final-feeds=1 server: req raw POST /sink #1 conn=44862 at=599.9
+[guix-8.20.0] drive case=f face=raw framing=sized run=1 final-feeds=1 server: pre-answered raw conn=44862 mode=keep status=200, the answer written 200.2ms before this head arrived, framing length cl=1048576
+[guix-8.20.0] drive case=f face=raw framing=sized run=1 final-feeds=1 server: answer raw body read whole after the early answer: 1048576 bytes, 1048576 after it, at 151.7ms
+[guix-8.20.0] drive case=f face=raw framing=sized run=1 final-feeds=1 server: count raw:/arm=1 raw:/sink=1
+[guix-8.20.0] drive case=f face=raw framing=chunked run=1 final-feeds=1 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=200.862 seen-head-ms=201.127 end-ms=363.552 head-to-end-ms=162.691 total-ms=363.553 up=1048576 down=10 MBps=2.88 cpu-ms=6.103 proc-stat-ms=0 calls=17 calls-after-head=17 put=1048576 put-after-head=1048576 after-eof=0 state=ended resp-waits=27/29 req-waits=9/42 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[guix-8.20.0] drive case=f face=raw framing=chunked run=1 final-feeds=1 server: req raw GET /arm #1 conn=44884 at=756.5
+[guix-8.20.0] drive case=f face=raw framing=chunked run=1 final-feeds=1 server: armed raw mode=keep status=200
+[guix-8.20.0] drive case=f face=raw framing=chunked run=1 final-feeds=1 server: arm-fired raw conn=44886 mode=keep status=200 at=758.2
+[guix-8.20.0] drive case=f face=raw framing=chunked run=1 final-feeds=1 server: req raw POST /sink #1 conn=44886 at=958.4
+[guix-8.20.0] drive case=f face=raw framing=chunked run=1 final-feeds=1 server: pre-answered raw conn=44886 mode=keep status=200, the answer written 200.1ms before this head arrived, framing chunked cl=-
+[guix-8.20.0] drive case=f face=raw framing=chunked run=1 final-feeds=1 server: answer raw body read whole after the early answer: 1048576 bytes, 1048576 after it, at 162.3ms
+[guix-8.20.0] drive case=f face=raw framing=chunked run=1 final-feeds=1 server: count raw:/arm=1 raw:/sink=1
+[guix-8.20.0] drive case=f face=https framing=sized run=1 final-feeds=1 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=206.734 seen-head-ms=207.917 end-ms=369.465 head-to-end-ms=162.731 total-ms=369.466 up=1048576 down=10 MBps=2.84 cpu-ms=7.59 proc-stat-ms=20 calls=16 calls-after-head=16 put=1048576 put-after-head=1048576 after-eof=0 state=feeding resp-waits=27/29 req-waits=10/42 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[guix-8.20.0] drive case=f face=https framing=sized run=1 final-feeds=1 server: req raw GET /arm #1 conn=44902 at=1123.7
+[guix-8.20.0] drive case=f face=https framing=sized run=1 final-feeds=1 server: armed https mode=keep status=200
+[guix-8.20.0] drive case=f face=https framing=sized run=1 final-feeds=1 server: arm-fired https conn=39330 mode=keep status=200 at=1130.9
+[guix-8.20.0] drive case=f face=https framing=sized run=1 final-feeds=1 server: req https POST /sink #1 conn=39330 at=1331.6
+[guix-8.20.0] drive case=f face=https framing=sized run=1 final-feeds=1 server: pre-answered https conn=39330 mode=keep status=200, the answer written 200.6ms before this head arrived, framing length cl=1048576
+[guix-8.20.0] drive case=f face=https framing=sized run=1 final-feeds=1 server: answer https body read whole after the early answer: 1048576 bytes, 1048576 after it, at 163.0ms
+[guix-8.20.0] drive case=f face=https framing=sized run=1 final-feeds=1 server: count raw:/arm=1 https:/sink=1
+[guix-8.20.0] drive case=f face=https framing=chunked run=1 final-feeds=1 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=205.113 seen-head-ms=207.944 end-ms=379.504 head-to-end-ms=174.391 total-ms=379.505 up=1048576 down=10 MBps=2.76 cpu-ms=8.426 proc-stat-ms=10 calls=17 calls-after-head=17 put=1048576 put-after-head=1048576 after-eof=0 state=ended resp-waits=28/30 req-waits=10/43 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[guix-8.20.0] drive case=f face=https framing=chunked run=1 final-feeds=1 server: req raw GET /arm #1 conn=44924 at=1500.2
+[guix-8.20.0] drive case=f face=https framing=chunked run=1 final-feeds=1 server: armed https mode=keep status=200
+[guix-8.20.0] drive case=f face=https framing=chunked run=1 final-feeds=1 server: arm-fired https conn=39342 mode=keep status=200 at=1506.6
+[guix-8.20.0] drive case=f face=https framing=chunked run=1 final-feeds=1 server: req https POST /sink #1 conn=39342 at=1707.6
+[guix-8.20.0] drive case=f face=https framing=chunked run=1 final-feeds=1 server: pre-answered https conn=39342 mode=keep status=200, the answer written 200.9ms before this head arrived, framing chunked cl=-
+[guix-8.20.0] drive case=f face=https framing=chunked run=1 final-feeds=1 server: answer https body read whole after the early answer: 1048576 bytes, 1048576 after it, at 174.2ms
+[guix-8.20.0] drive case=f face=https framing=chunked run=1 final-feeds=1 server: count raw:/arm=1 https:/sink=1
+[guix-8.20.0] drive case=f face=raw framing=sized run=2 final-feeds=1 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=200.893 seen-head-ms=201.211 end-ms=353.275 head-to-end-ms=152.382 total-ms=353.277 up=1048576 down=10 MBps=2.97 cpu-ms=4.864 proc-stat-ms=10 calls=16 calls-after-head=16 put=1048576 put-after-head=1048576 after-eof=0 state=feeding resp-waits=26/28 req-waits=9/41 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[guix-8.20.0] drive case=f face=raw framing=sized run=2 final-feeds=1 server: req raw GET /arm #1 conn=44942 at=1885.5
+[guix-8.20.0] drive case=f face=raw framing=sized run=2 final-feeds=1 server: armed raw mode=keep status=200
+[guix-8.20.0] drive case=f face=raw framing=sized run=2 final-feeds=1 server: arm-fired raw conn=44948 mode=keep status=200 at=1887.5
+[guix-8.20.0] drive case=f face=raw framing=sized run=2 final-feeds=1 server: req raw POST /sink #1 conn=44948 at=2087.7
+[guix-8.20.0] drive case=f face=raw framing=sized run=2 final-feeds=1 server: pre-answered raw conn=44948 mode=keep status=200, the answer written 200.1ms before this head arrived, framing length cl=1048576
+[guix-8.20.0] drive case=f face=raw framing=sized run=2 final-feeds=1 server: answer raw body read whole after the early answer: 1048576 bytes, 1048576 after it, at 152.3ms
+[guix-8.20.0] drive case=f face=raw framing=sized run=2 final-feeds=1 server: count raw:/arm=1 raw:/sink=1
+[guix-8.20.0] drive case=f face=raw framing=chunked run=2 final-feeds=1 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=200.871 seen-head-ms=201.262 end-ms=363.007 head-to-end-ms=162.136 total-ms=363.008 up=1048576 down=10 MBps=2.89 cpu-ms=6.976 proc-stat-ms=0 calls=17 calls-after-head=17 put=1048576 put-after-head=1048576 after-eof=0 state=ended resp-waits=27/29 req-waits=9/42 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[guix-8.20.0] drive case=f face=raw framing=chunked run=2 final-feeds=1 server: req raw GET /arm #1 conn=44970 at=2243.5
+[guix-8.20.0] drive case=f face=raw framing=chunked run=2 final-feeds=1 server: armed raw mode=keep status=200
+[guix-8.20.0] drive case=f face=raw framing=chunked run=2 final-feeds=1 server: arm-fired raw conn=44980 mode=keep status=200 at=2245.4
+[guix-8.20.0] drive case=f face=raw framing=chunked run=2 final-feeds=1 server: req raw POST /sink #1 conn=44980 at=2445.6
+[guix-8.20.0] drive case=f face=raw framing=chunked run=2 final-feeds=1 server: pre-answered raw conn=44980 mode=keep status=200, the answer written 200.1ms before this head arrived, framing chunked cl=-
+[guix-8.20.0] drive case=f face=raw framing=chunked run=2 final-feeds=1 server: answer raw body read whole after the early answer: 1048576 bytes, 1048576 after it, at 161.9ms
+[guix-8.20.0] drive case=f face=raw framing=chunked run=2 final-feeds=1 server: count raw:/arm=1 raw:/sink=1
+[guix-8.20.0] drive case=f face=https framing=sized run=2 final-feeds=1 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=204.758 seen-head-ms=207.975 end-ms=369.836 head-to-end-ms=165.078 total-ms=369.838 up=1048576 down=10 MBps=2.84 cpu-ms=8.086 proc-stat-ms=10 calls=16 calls-after-head=16 put=1048576 put-after-head=1048576 after-eof=0 state=feeding resp-waits=27/29 req-waits=10/42 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[guix-8.20.0] drive case=f face=https framing=sized run=2 final-feeds=1 server: req raw GET /arm #1 conn=45000 at=2611.1
+[guix-8.20.0] drive case=f face=https framing=sized run=2 final-feeds=1 server: armed https mode=keep status=200
+[guix-8.20.0] drive case=f face=https framing=sized run=2 final-feeds=1 server: arm-fired https conn=39354 mode=keep status=200 at=2616.4
+[guix-8.20.0] drive case=f face=https framing=sized run=2 final-feeds=1 server: req https POST /sink #1 conn=39354 at=2817.1
+[guix-8.20.0] drive case=f face=https framing=sized run=2 final-feeds=1 server: pre-answered https conn=39354 mode=keep status=200, the answer written 200.7ms before this head arrived, framing length cl=1048576
+[guix-8.20.0] drive case=f face=https framing=sized run=2 final-feeds=1 server: answer https body read whole after the early answer: 1048576 bytes, 1048576 after it, at 165.3ms
+[guix-8.20.0] drive case=f face=https framing=sized run=2 final-feeds=1 server: count raw:/arm=1 https:/sink=1
+[guix-8.20.0] drive case=f face=https framing=chunked run=2 final-feeds=1 S=10 sched=strict head=200 bit=#t got-head=#t head-ms=204.593 seen-head-ms=204.656 end-ms=380.415 head-to-end-ms=175.823 total-ms=380.417 up=1048576 down=10 MBps=2.76 cpu-ms=11.469 proc-stat-ms=20 calls=17 calls-after-head=17 put=1048576 put-after-head=1048576 after-eof=0 state=ended resp-waits=28/30 req-waits=10/43 handed=1048576 asked=#t port=end:10:ok:"early 200\n" outcome=status=200
+[guix-8.20.0] drive case=f face=https framing=chunked run=2 final-feeds=1 server: req raw GET /arm #1 conn=45016 at=2985.0
+[guix-8.20.0] drive case=f face=https framing=chunked run=2 final-feeds=1 server: armed https mode=keep status=200
+[guix-8.20.0] drive case=f face=https framing=chunked run=2 final-feeds=1 server: arm-fired https conn=39368 mode=keep status=200 at=2989.9
+[guix-8.20.0] drive case=f face=https framing=chunked run=2 final-feeds=1 server: req https POST /sink #1 conn=39368 at=3190.8
+[guix-8.20.0] drive case=f face=https framing=chunked run=2 final-feeds=1 server: pre-answered https conn=39368 mode=keep status=200, the answer written 200.8ms before this head arrived, framing chunked cl=-
+[guix-8.20.0] drive case=f face=https framing=chunked run=2 final-feeds=1 server: answer https body read whole after the early answer: 1048576 bytes, 1048576 after it, at 175.4ms
+[guix-8.20.0] drive case=f face=https framing=chunked run=2 final-feeds=1 server: count raw:/arm=1 https:/sink=1
+[guix-8.20.0] drive counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) hop-cancels=0
+[guix-8.20.0] drive done
+[guix-8.20.0] drive exited 0 after about 3 s (124 is timeout's)
+[guix-8.20.0] server-stderr: counts https:/sink=4 raw:/arm=8 raw:/sink=4
