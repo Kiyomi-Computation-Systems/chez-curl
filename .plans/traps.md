@@ -181,14 +181,17 @@ it should not be a comment. (chez-cmark-gfm)
   transfer where it never asks: an `https` request to a plaintext face, whose handshake never
   ends. (chez-curl, M6 slice 2's build)
 
-  The test slice 2 kept on the kernel failed on CI's runner, 3 runs of 3, on 8.23.0 alone. Its
-  fill called the buffer full only after a put timed out and a further 500 ms passed with
-  nothing taken. There the kernel let one 64 KiB piece more in every second, at 1,049, 2,050,
-  3,051, 4,051 and 5,052 ms, so that quiet never came before the sink began to read at 5 s
-  ([research](research/ci-first-run/)). 8.5.0 stalled at once on the same runner, and here a
-  kernel lets more in once at most, then holds. The fill now asks only that nothing be taken through the put's own
-  500 ms bound. A check of a full kernel asks no more of it than one bound shorter than a
-  second. (chez-curl, CI's first run)
+  The test slice 2 kept on the kernel failed on CI's current lane, 3 runs of 3. Its fill called
+  the buffer full only after a put timed out and a further 500 ms passed with nothing taken.
+  There libcurl had taken one 64 KiB piece more by the end of each of the fill's one-second
+  rounds, read at 1,049, 2,050, 3,051, 4,051 and 5,052 ms, so that quiet never came before the
+  sink began to read at 5 s ([research](research/ci-first-run/)). When within each round it
+  took them, the trace cannot say. 8.5.0 stalled at once on the same run's GnuTLS lane, and here
+  a kernel let more in once at most, then held. The runner's `net.core.rmem_max` is 1 MiB, the
+  Docker lanes' here 4 MiB; whether that matters is not shown. The fill now asks only that
+  nothing be taken through the put's own 500 ms bound, and on the runner's next run it stalled
+  at 550 ms. A check of a full kernel asks for no quiet past one put's bound. (chez-curl, CI's
+  first run)
 
 * **A row read from one run cannot show a cell that splits.** 8.7.1's rows in test-upload were
   read from the Mac's first run, whose HTTP/2 200 ended 200 in both framings; the rerun's sized
@@ -842,8 +845,9 @@ it should not be a comment. (chez-cmark-gfm)
 
   A server reads it so too. CI's first run, on Node 22.23.4, failed test-curl-testing's check
   that the peer sees the probe's reset: its stand-in server, which judged by Node's events,
-  recorded a FIN. Every Node 20 and 22 release bundles a libuv older than 1.52, 22.23.4 bundles
-  1.51.0 (nodejs.org's release index), and the probe's comment had said 22 only to 22.22.0. A
+  recorded a FIN. Every Node 20 and 22 release to 20.20.2 and 22.23.4 bundles a libuv older
+  than 1.52, 22.23.4 1.51.0 (nodejs.org's release index, kept), and the probe's comment had
+  said 22 only to 22.22.0. A
   server whose loop was blocked 200 ms as each connection arrived read an end in 20 runs of 20
   on 22.23.4 and 20.10.0, while one read(2) of its fd threw `ECONNRESET`; 24.18.0 read the
   reset 20 of 20 ([research](research/ci-first-run/)). The stand-in now blocks so and reads
@@ -1257,7 +1261,7 @@ it should not be a comment. (chez-cmark-gfm)
   of the one it returns: the loop is in `lib/headers.c` on 7.85.0, 8.20.0 and 8.23.0. 7.85.0
   caps no response's headers; 8.7.1 and 8.20.0 cap them at 300 KiB, 8.20.0 at 5,000 too. So on
   7.85.0 a GET of 100,000 headers took 30.4 to 31.5 s, all of it CPU, after the transfer had
-  ended, and 50,000 took 7.3 to 7.6 s; 8.5.0 took 20,000, under its cap, in 1.9 s
+  ended, and 50,000 took 7.3 to 7.7 s; 8.5.0 took 20,000, under its cap, in 1.9 s
   ([research](research/ci-first-run/)). test-transfer's 100,000 outlasted its 60 s bound on CI's
-  floor lane once in two runs, and is now 50,000, still past every cap. A check of many headers
+  floor lane once in three runs, and is now 50,000, still past every cap. A check of many headers
   stays near the newer caps. (chez-curl, CI's first run)

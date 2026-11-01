@@ -337,9 +337,10 @@
 ;; the buffer is full and libcurl takes nothing through a put: the put
 ;; answers #f at its bound, and the bytes handed, read before it, are as
 ;; they were, so the buffer held what refused the put for its whole
-;; bound. It asks no more of the kernel: a kernel full on loopback lets
-;; more in about a second on, on CI's runner every second (traps.md), so
-;; a quiet past the put's bound would never come. A put that answers #f
+;; bound. It asks no more of the kernel: a kernel full on loopback can
+;; let more in later, and on CI's runner had by the end of each of a fill's
+;; one-second rounds (traps.md), so a quiet past the put's bound never
+;; came. A put that answers #f
 ;; while libcurl took bytes is tried again. Answers (#f AT), AT the offset
 ;; of the piece not taken; (never-full N) once N bytes were taken.
 ;; It prints (fill ANSWER AT ms MS retried ((AT MS) ...) mib (MS ...)):

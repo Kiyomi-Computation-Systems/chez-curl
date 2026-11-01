@@ -128,10 +128,10 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   sides answer "no row". A missing row's expected value is one no measurement
   gives, and its actual value is the measurement, so the failure prints the row.
 * A full TCP buffer is not a stable full: a stalled upload took more after a
-  put on it timed out, and on CI's runner 64 KiB more every second. A test
-  that needs libcurl to stop asking for the body holds it where it never asks:
-  an `https` request to a plaintext face. A check of a full kernel asks for no
-  quiet longer than one put's bound, under a second.
+  put on it timed out, and on CI's runner by the end of each of a fill's
+  one-second rounds. A test that needs libcurl to stop asking for the body
+  holds it where it never asks: an `https` request to a plaintext face. A
+  check of a full kernel asks for no quiet past one put's bound.
 * A row read from one run cannot show a cell that splits: 8.7.1's HTTP/2 200
   ended 200, then 55. Take a new row from two runs at least, and hold a cell
   they disagree on to what both showed.
@@ -194,11 +194,12 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   sends the RST, but throws on a TLS socket: reset the `net` socket it wraps. A
   client's reset that way still arrives as a FIN. A test of a reset checks what
   the peer saw.
-* libuv before 1.52, which every Node 20 and 22 bundles, CI's 22.23.4 too,
-  reports a reset that arrives with the last data as an end. The probe reads
-  the socket's fd once on each end, and so does a stand-in server. A test of
-  that path stops the probe across the last write and the reset, or blocks the
-  server's loop as the connection arrives, so that the two arrive together.
+* libuv before 1.52, which every Node 20 and 22 to 20.20.2 and 22.23.4
+  bundles, CI's too, reports a reset that arrives with the last data as an
+  end. The probe reads the socket's fd once on each end, and so does a
+  stand-in server. A test of that path stops the probe across the last write
+  and the reset, or blocks the server's loop as the connection arrives, so
+  that the two arrive together.
 * LibreSSL, the Mac's `openssl`, exits 0 from `s_client -verify_return_error` on
   a failed verify, and its `req` prefers a `prompt = no` config's subject to
   `-subj`. Read verify codes, never that exit status, and give the config no

@@ -1,0 +1,45 @@
+# PR #39's first run, at 1dcf451, the memory job (124965511029): test-memory's lines and the failing suite's FAIL lines, from the job's log
+2026-11-01T20:18:32.2849730Z test-memory: pass tests/test-check-floors.sps
+2026-11-01T20:18:44.8586082Z test-memory: pass tests/test-check-nothreads.sps
+2026-11-01T20:19:02.2227367Z test-memory: pass tests/test-check-seam.sps
+2026-11-01T20:19:21.2616075Z test-memory: pass tests/test-collect-safe.sps
+2026-11-01T20:19:33.3315406Z test-memory: pass tests/test-conditions.sps
+2026-11-01T20:19:59.6016676Z test-memory: pass tests/test-constants.sps
+2026-11-01T20:20:55.9730569Z test-memory: pass tests/test-curl-testing.sps
+2026-11-01T20:21:08.2517727Z test-memory: pass tests/test-discovery.sps
+2026-11-01T20:21:27.7136450Z test-memory: pass tests/test-drift.sps
+2026-11-01T20:22:21.8141812Z test-memory: pass tests/test-engine.sps
+2026-11-01T20:23:52.5080799Z test-memory: pass tests/test-group.sps
+2026-11-01T20:24:36.3961403Z test-memory: pass tests/test-http-client.sps
+2026-11-01T20:25:28.7242465Z test-memory: pass tests/test-library-loading.sps
+2026-11-01T20:25:39.3452357Z test-memory: pass tests/test-load-state.sps
+2026-11-01T20:26:07.3742536Z test-memory: pass tests/test-mailbox.sps
+2026-11-01T20:26:18.0221121Z test-memory: pass tests/test-manifest.sps
+2026-11-01T20:26:40.4594480Z test-memory: pass tests/test-memory-safety.sps
+2026-11-01T20:26:59.6909658Z test-memory: pass tests/test-native.sps
+2026-11-01T20:28:13.7027252Z test-memory: pass tests/test-origin-tls.sps
+2026-11-01T20:29:53.4830146Z test-memory: pass tests/test-origin.sps
+2026-11-01T20:30:23.0795407Z test-memory: pass tests/test-redirect.sps
+2026-11-01T20:30:48.8316326Z test-memory: pass tests/test-request.sps
+2026-11-01T20:31:01.5581967Z test-memory: pass tests/test-require-threaded.sps
+2026-11-01T20:31:45.3467602Z test-memory: FAIL tests/test-retry.sps (exit 1)
+2026-11-01T20:31:45.3493414Z   ==48390==    definitely lost: 0 bytes in 0 blocks
+2026-11-01T20:31:45.3495096Z   ==48390== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+2026-11-01T20:31:45.3531853Z   | FAIL a retry that runs out of time having sent nothing, live, on 8.5.0: two TLS handshakes stall at the raw face, the second until the call's bound of 1500 ms, and the call raises the first 28 it retried, nothing sent, with two transfers and no &http-timeout; on 8.7.0 and 8.7.1, &http-timeout
+2026-11-01T20:31:45.3547019Z   |   expected: ((raised (curl-transfer-error timeout perform-failed 28 zero) (exchange get "https://127.0.0.1:43217/stall" () 2)) at-the-bound)
+2026-11-01T20:31:45.3552196Z   |   actual:   ((raised (curl-transfer-error timeout perform-failed 28 zero) (exchange get "https://127.0.0.1:43217/stall" () 1)) (took 1426))
+2026-11-01T20:31:45.3556691Z   | FAIL a retry that runs out of time having sent nothing, live, on 8.5.0: two TLS handshakes stall at the raw face, the second until the call's bound of 1500 ms, and the call raises the first 28 it retried, nothing sent, with two transfers and no &http-timeout; on 8.7.0 and 8.7.1, &http-timeout
+2026-11-01T20:31:45.3559549Z   |   expected: ((raised (curl-transfer-error timeout perform-failed 28 zero) (exchange get "https://127.0.0.1:43217/stall" () 2)) at-the-bound)
+2026-11-01T20:31:45.3561454Z   |   actual:   ((raised (curl-transfer-error timeout perform-failed 28 zero) (exchange get "https://127.0.0.1:43217/stall" () 1)) (took 1426))
+2026-11-01T20:33:01.4983190Z test-memory: pass tests/test-stream-call.sps
+2026-11-01T20:34:33.1359719Z test-memory: pass tests/test-stream.sps
+2026-11-01T20:35:10.0202943Z test-memory: pass tests/test-transfer-tls.sps
+2026-11-01T20:35:48.1163876Z test-memory: pass tests/test-transfer.sps
+2026-11-01T20:36:11.4382686Z test-memory: pass tests/test-unsupported.sps
+2026-11-01T20:38:26.7697091Z test-memory: pass tests/test-upload.sps
+2026-11-01T20:38:53.0924125Z test-memory: pass tests/test-url-location.sps
+2026-11-01T20:39:14.4611360Z test-memory: pass tests/test-url-parts.sps
+2026-11-01T20:39:34.9657295Z test-memory: pass tests/test-url.sps
+2026-11-01T20:39:52.9665240Z test-memory: pass tests/test-variadic.sps
+2026-11-01T20:40:04.9295323Z test-memory: pass tests/test-verify.sps
+2026-11-01T20:40:04.9296834Z test-memory: ran 35, passed 34, failed 1, hung 0

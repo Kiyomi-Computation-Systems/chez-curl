@@ -9,7 +9,7 @@ close-out under **Close-outs**, newest first.
 - **Next milestone:** M7, HTTP/2, cookies, auth and proxies (brief §8), from its plan, not yet
   written. The M6 plan's §9 carries its items.
 - **CI's first run, fixed** on `fix/ci-first-run`, PR #39
-  ([research](research/ci-first-run/)). CI ran for the first time on PR #38, and five suites
+  ([research](research/ci-first-run/)). CI ran for the first time on PR #38, and four suites
   failed across its runs and `main`'s push, each at a test already on `main`:
   - main's `wire-probe-reset` peer check read a FIN where the probe had reset: its stand-in
     server judged by Node's events, and CI's Node 22.23.4 bundles libuv 1.51.0, which reads a
@@ -17,21 +17,29 @@ close-out under **Close-outs**, newest first.
     connection arrives, and reads its fd once on each end, as the probe does;
   - the floor's GET of 100,000 headers outlasted test-transfer's 60 s bound once: libcurl's
     `curl_easy_nextheader` walks every header on each call, and 7.85.0 caps none, so it took
-    30 s of CPU here. The case is now 50,000, past every newer libcurl's cap, 7.5 s on 7.85.0;
-    8.7.1's cell is 100,000's until the Mac's next run;
+    30 s of CPU here. The case is now 50,000, past every newer libcurl's cap, 7.3 to 7.7 s on
+    7.85.0; 8.7.1's cell is 100,000's until the Mac's next run;
   - the current lane's full-buffer upload never filled, 3 runs of 3. Its fill waited for a
-    second with nothing taken after a put timed out, and on the runner the kernel let one
-    64 KiB piece more in every second, which PR #39's first run traced; 8.5.0 stalled at once
-    there. The fill now asks only that nothing be taken through the put's own 500 ms bound,
-    and still fails when the sink's hold is ignored. CI prints the runner's kernel and TCP
-    buffers;
+    further 500 ms with nothing taken after a put timed out, and on the runner libcurl had
+    taken one 64 KiB piece more by the end of each of the fill's one-second rounds, which PR
+    #39's first run traced; 8.5.0 stalled at once there. The fill now asks only that nothing
+    be taken through the put's own 500 ms bound, and still fails when the sink's hold is
+    ignored. PR #39's second run passed it, stalling at 550 ms. CI prints the runner's kernel
+    and TCP buffers;
   - test-retry's live check of a retry that runs out of time failed under Valgrind on the
-    runner, 2 runs of 3: the first attempt's connect timeout of 900 ms came about 540 ms late,
-    past the 500 ms it had to spare, which half a CPU reproduced here. It is now 2,000 ms of a
-    3,500 ms bound, 1,400 ms to spare;
-  - the memory lane failed two of test-upload's tests, which its output did not name:
-    `make test-memory` now prints a failing suite's FAIL lines, with their expected and actual
-    values, each line once, and `check-memory-gate` holds that.
+    runner, 2 memory runs of 3: the first attempt's connect timeout of 900 ms came about
+    540 ms late, past the 500 ms it had to spare, which half a CPU reproduced here. It is now
+    2,000 ms of a 3,500 ms bound, 1,400 ms to spare, and PR #39's second run passed every job;
+  - the memory lane failed two of test-upload's tests in each of two runs, which its output did
+    not name. They are still unexplained: PR #39's first memory run passed test-upload, and
+    nothing here reproduces them. `make test-memory` now prints a failing suite's FAIL lines,
+    with their expected and actual values, each line once, and `check-memory-gate` holds that,
+    so a repeat names them.
+
+  **Reviewed** (Opus, read-only, 234k tokens, 17 min): no blocker, two majors and five minors,
+  each answered. The majors: my records read the fill's own one-second rounds as the kernel's
+  times, and some numbers had no kept log, PR #39's memory run among them. Among the minors,
+  the gate check passed a test-memory that printed the whole log; it now fails one.
 - **M6, streaming bodies and backpressure:** **done on 2026-11-01.** Its three slices are merged
   (PRs #36 to #38), per the [M6 plan](2026-10-29-m6-plan.md), merged as PR #35 (`46c1f3c`), and
   the Mac has run `make test` on slice 3 (the plan, §7). Their close-outs are below.

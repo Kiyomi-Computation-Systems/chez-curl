@@ -29,7 +29,7 @@
 ;; not compared. Two rows may not share a version.
 
 (libcurl
- (where "The floor, curl 7.85.0 built by scripts/ci/build-curl.sh on Ubuntu 24.04 with OpenSSL 3.0.13: the library the floor lanes load. Measured through C in Docker ubuntu:24.04, Node 20.10.0, on 2026-10-23 (M2 plan, section 5.1.1). many-headers at 50,000, 100,000's answer: measured in Docker on 2026-11-01, 7,280 to 7,637 ms of CPU (build/cifix).")
+ (where "The floor, curl 7.85.0 built by scripts/ci/build-curl.sh on Ubuntu 24.04 with OpenSSL 3.0.13: the library the floor lanes load. Measured through C in Docker ubuntu:24.04, Node 20.10.0, on 2026-10-23 (M2 plan, section 5.1.1). many-headers at 50,000, 100,000's answer: measured in Docker on 2026-11-01, 7,296 to 7,702 ms of CPU in five runs (build/cifix).")
  (version "7.85.0")
  (answers
   ((get raw "/raw/big-header?bytes=102400") (refused perform-failed 27))
