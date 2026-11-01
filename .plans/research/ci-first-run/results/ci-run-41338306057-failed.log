@@ -1,0 +1,587 @@
+main (checks and suites, Chez built from source)	﻿2026-11-01T18:49:57.8451705Z ##[group]Run make check-help check-suites check-pins check-seam check-floors build test check-test-fails check-variadic check-dev check-clean
+main (checks and suites, Chez built from source)	2026-11-01T18:49:57.8452236Z [36;1mmake check-help check-suites check-pins check-seam check-floors build test check-test-fails check-variadic check-dev check-clean[0m
+main (checks and suites, Chez built from source)	2026-11-01T18:49:57.8467961Z shell: /usr/bin/bash -e {0}
+main (checks and suites, Chez built from source)	2026-11-01T18:49:57.8468099Z env:
+main (checks and suites, Chez built from source)	2026-11-01T18:49:57.8468237Z   CHEZ: /home/runner/work/_temp/chez-threads/bin/scheme
+main (checks and suites, Chez built from source)	2026-11-01T18:49:57.8468408Z ##[endgroup]
+main (checks and suites, Chez built from source)	2026-11-01T18:49:58.4108860Z deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+main (checks and suites, Chez built from source)	2026-11-01T18:49:58.6286337Z check-suites: every suite ends with (exit (suite-exit-status runner)) (35 checked)
+main (checks and suites, Chez built from source)	2026-11-01T18:49:58.6414946Z check-pins: chez-srfi 7879b52: Akku.lock, the recorded commit and the checkout agree
+main (checks and suites, Chez built from source)	2026-11-01T18:49:58.7106050Z check-seam: the seam holds (21 libraries in 21 files checked)
+main (checks and suites, Chez built from source)	2026-11-01T18:49:58.7850230Z check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+main (checks and suites, Chez built from source)	2026-11-01T18:49:59.0804024Z chez-curl: libcurl loaded and accepted
+main (checks and suites, Chez built from source)	2026-11-01T18:49:59.0804767Z   path:     /usr/lib/x86_64-linux-gnu/libcurl.so.4 (system)
+main (checks and suites, Chez built from source)	2026-11-01T18:49:59.0805431Z   version:  8.5.0
+main (checks and suites, Chez built from source)	2026-11-01T18:49:59.0805761Z   TLS:      OpenSSL/3.0.13
+main (checks and suites, Chez built from source)	2026-11-01T18:49:59.0806596Z   features: ipv6 ssl libz ntlm asynchdns spnego largefile idn tlsauth-srp http2 gssapi kerberos5 unix-sockets psl https-proxy brotli altsvc zstd hsts threadsafe
+main (checks and suites, Chez built from source)	2026-11-01T18:49:59.0807320Z   host:     x86_64-pc-linux-gnu
+main (checks and suites, Chez built from source)	2026-11-01T18:49:59.0894719Z === tests/test-check-floors.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:49:59.4736002Z %%%% Starting test check-floors
+main (checks and suites, Chez built from source)	2026-11-01T18:50:03.7016193Z # of expected passes      375
+main (checks and suites, Chez built from source)	2026-11-01T18:50:03.7062858Z test: pass tests/test-check-floors.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:03.7063370Z === tests/test-check-nothreads.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:03.9088761Z %%%% Starting test check-nothreads
+main (checks and suites, Chez built from source)	2026-11-01T18:50:05.0136818Z # of expected passes      17
+main (checks and suites, Chez built from source)	2026-11-01T18:50:05.0188899Z test: pass tests/test-check-nothreads.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:05.0189441Z === tests/test-check-seam.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:05.2340639Z %%%% Starting test check-seam
+main (checks and suites, Chez built from source)	2026-11-01T18:50:08.5639307Z # of expected passes      62
+main (checks and suites, Chez built from source)	2026-11-01T18:50:08.5697837Z test: pass tests/test-check-seam.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:08.5698760Z === tests/test-collect-safe.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:08.9218044Z %%%% Starting test collect-safe
+main (checks and suites, Chez built from source)	2026-11-01T18:50:08.9949495Z # of expected passes      120
+main (checks and suites, Chez built from source)	2026-11-01T18:50:09.0008773Z test: pass tests/test-collect-safe.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:09.0009335Z === tests/test-conditions.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:09.2244136Z %%%% Starting test conditions
+main (checks and suites, Chez built from source)	2026-11-01T18:50:09.2244862Z # of expected passes      38
+main (checks and suites, Chez built from source)	2026-11-01T18:50:09.2291369Z test: pass tests/test-conditions.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:09.2291910Z === tests/test-constants.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:10.0641688Z %%%% Starting test constants
+main (checks and suites, Chez built from source)	2026-11-01T18:50:10.1616384Z # of expected passes      681
+main (checks and suites, Chez built from source)	2026-11-01T18:50:10.1659503Z test: pass tests/test-constants.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:10.1659958Z === tests/test-curl-testing.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:10.5703176Z %%%% Starting test curl-testing
+main (checks and suites, Chez built from source)	2026-11-01T18:50:20.8210063Z FAIL wire-probe-reset: the peer sees a reset, ECONNRESET, where wire-probe's end is a FIN
+main (checks and suites, Chez built from source)	2026-11-01T18:50:20.8210606Z   expected: ((reset-sent ("ECONNRESET\n" eof)) (timeout ("FIN\n" eof)))
+main (checks and suites, Chez built from source)	2026-11-01T18:50:20.8211030Z   actual:   ((reset-sent ("FIN\n" eof)) (timeout ("FIN\n" eof)))
+main (checks and suites, Chez built from source)	2026-11-01T18:50:34.0441192Z # of expected passes      283
+main (checks and suites, Chez built from source)	2026-11-01T18:50:34.0441933Z # of unexpected failures  1
+main (checks and suites, Chez built from source)	2026-11-01T18:50:34.0551560Z test: FAIL tests/test-curl-testing.sps (exit 1)
+main (checks and suites, Chez built from source)	2026-11-01T18:50:34.0552220Z === tests/test-discovery.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:34.2939324Z %%%% Starting test discovery
+main (checks and suites, Chez built from source)	2026-11-01T18:50:34.2962646Z this Chez's binary: /home/runner/work/_temp/chez-threads/lib/csv10.4.0/ta6le/scheme
+main (checks and suites, Chez built from source)	2026-11-01T18:50:34.2963240Z # of expected passes      47
+main (checks and suites, Chez built from source)	2026-11-01T18:50:34.3012920Z test: pass tests/test-discovery.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:34.3013758Z === tests/test-drift.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:34.7504864Z %%%% Starting test drift
+main (checks and suites, Chez built from source)	2026-11-01T18:50:34.7597042Z # of expected passes      55
+main (checks and suites, Chez built from source)	2026-11-01T18:50:34.7655404Z test: pass tests/test-drift.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:34.7655871Z === tests/test-engine.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:50:35.2360069Z %%%% Starting test engine
+main (checks and suites, Chez built from source)	2026-11-01T18:51:05.0391257Z # of expected passes      54
+main (checks and suites, Chez built from source)	2026-11-01T18:51:05.0453312Z test: pass tests/test-engine.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:51:05.0453737Z === tests/test-group.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:51:05.7453642Z %%%% Starting test group
+main (checks and suites, Chez built from source)	2026-11-01T18:51:59.8890574Z # of expected passes      65
+main (checks and suites, Chez built from source)	2026-11-01T18:51:59.8976051Z test: pass tests/test-group.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:51:59.8976582Z === tests/test-http-client.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:00.4849604Z %%%% Starting test http-client
+main (checks and suites, Chez built from source)	2026-11-01T18:52:17.4746350Z # of expected passes      73
+main (checks and suites, Chez built from source)	2026-11-01T18:52:17.4816614Z test: pass tests/test-http-client.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:17.4817094Z === tests/test-library-loading.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:17.7271250Z %%%% Starting test library-loading
+main (checks and suites, Chez built from source)	2026-11-01T18:52:38.1179985Z # of expected passes      75
+main (checks and suites, Chez built from source)	2026-11-01T18:52:38.1251470Z test: pass tests/test-library-loading.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:38.1252085Z === tests/test-load-state.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:38.3285654Z %%%% Starting test load-state
+main (checks and suites, Chez built from source)	2026-11-01T18:52:38.3292093Z # of expected passes      12
+main (checks and suites, Chez built from source)	2026-11-01T18:52:38.3348696Z test: pass tests/test-load-state.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:38.3349088Z === tests/test-mailbox.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:38.8070232Z %%%% Starting test mailbox
+main (checks and suites, Chez built from source)	2026-11-01T18:52:45.4823062Z # of expected passes      26
+main (checks and suites, Chez built from source)	2026-11-01T18:52:45.4886979Z test: pass tests/test-mailbox.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:45.4893476Z === tests/test-manifest.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:45.6756903Z %%%% Starting test manifest
+main (checks and suites, Chez built from source)	2026-11-01T18:52:45.6757548Z # of expected passes      4
+main (checks and suites, Chez built from source)	2026-11-01T18:52:45.6803641Z test: pass tests/test-manifest.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:45.6804201Z === tests/test-memory-safety.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:46.0459181Z %%%% Starting test memory-safety
+main (checks and suites, Chez built from source)	2026-11-01T18:52:46.1889902Z # of expected passes      89
+main (checks and suites, Chez built from source)	2026-11-01T18:52:46.1956114Z test: pass tests/test-memory-safety.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:46.1956674Z === tests/test-native.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:46.6769251Z %%%% Starting test native
+main (checks and suites, Chez built from source)	2026-11-01T18:52:46.7304899Z # of expected passes      16
+main (checks and suites, Chez built from source)	2026-11-01T18:52:46.7359597Z test: pass tests/test-native.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:46.7360448Z === tests/test-origin-tls.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:52:47.1784380Z %%%% Starting test origin-tls
+main (checks and suites, Chez built from source)	2026-11-01T18:53:22.8808405Z # of expected passes      156
+main (checks and suites, Chez built from source)	2026-11-01T18:53:22.8931969Z test: pass tests/test-origin-tls.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:53:22.8932618Z === tests/test-origin.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:53:23.4751971Z %%%% Starting test origin
+main (checks and suites, Chez built from source)	2026-11-01T18:54:09.4028739Z # of expected passes      328
+main (checks and suites, Chez built from source)	2026-11-01T18:54:09.4253039Z test: pass tests/test-origin.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:54:09.4266848Z === tests/test-redirect.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:54:09.9487772Z %%%% Starting test redirect
+main (checks and suites, Chez built from source)	2026-11-01T18:54:09.9551450Z (head-predicate-rows 114)
+main (checks and suites, Chez built from source)	2026-11-01T18:54:11.4323993Z # of expected passes      69
+main (checks and suites, Chez built from source)	2026-11-01T18:54:11.4416241Z test: pass tests/test-redirect.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:54:11.4416793Z === tests/test-request.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:54:11.8416985Z %%%% Starting test request
+main (checks and suites, Chez built from source)	2026-11-01T18:54:14.2329421Z # of expected passes      45
+main (checks and suites, Chez built from source)	2026-11-01T18:54:14.2408416Z test: pass tests/test-request.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:54:14.2408898Z === tests/test-require-threaded.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:54:14.4397719Z %%%% Starting test require-threaded
+main (checks and suites, Chez built from source)	2026-11-01T18:54:14.4690412Z # of expected passes      69
+main (checks and suites, Chez built from source)	2026-11-01T18:54:14.4735232Z test: pass tests/test-require-threaded.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:54:14.4735718Z === tests/test-retry.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:54:15.0277390Z %%%% Starting test retry
+main (checks and suites, Chez built from source)	2026-11-01T18:54:15.0437692Z (head-predicate-rows 98)
+main (checks and suites, Chez built from source)	2026-11-01T18:54:27.0521983Z # of expected passes      82
+main (checks and suites, Chez built from source)	2026-11-01T18:54:27.0602233Z test: pass tests/test-retry.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:54:27.0602603Z === tests/test-stream-call.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:54:27.6398504Z %%%% Starting test stream-call
+main (checks and suites, Chez built from source)	2026-11-01T18:54:35.7843501Z (stream-call-throughput raw ms 383)
+main (checks and suites, Chez built from source)	2026-11-01T18:54:37.0613538Z (stream-call-throughput h2 ms 1276)
+main (checks and suites, Chez built from source)	2026-11-01T18:54:39.1037539Z (stream-call-idle-cpu ms 9653533/1000000)
+main (checks and suites, Chez built from source)	2026-11-01T18:54:46.3804077Z # of expected passes      77
+main (checks and suites, Chez built from source)	2026-11-01T18:54:46.3919458Z test: pass tests/test-stream-call.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:54:46.3919899Z === tests/test-stream.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:54:46.8581051Z %%%% Starting test stream
+main (checks and suites, Chez built from source)	2026-11-01T18:55:06.7029883Z (sweep piece plain call-ticks 6 escaped-kept 12 escaped-lost 0 returned 41)
+main (checks and suites, Chez built from source)	2026-11-01T18:55:09.9358355Z (sweep port plain call-ticks 266 escaped-kept 532 escaped-lost 0 returned 41)
+main (checks and suites, Chez built from source)	2026-11-01T18:55:13.1564641Z (sweep piece planted call-ticks 9 escaped-kept 12 escaped-lost 6 returned 41)
+main (checks and suites, Chez built from source)	2026-11-01T18:55:21.9378370Z # of expected passes      74
+main (checks and suites, Chez built from source)	2026-11-01T18:55:21.9477249Z test: pass tests/test-stream.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:55:21.9477669Z === tests/test-transfer-tls.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:55:22.3615514Z %%%% Starting test transfer-tls
+main (checks and suites, Chez built from source)	2026-11-01T18:55:27.3514325Z # of expected passes      83
+main (checks and suites, Chez built from source)	2026-11-01T18:55:27.3660614Z test: pass tests/test-transfer-tls.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:55:27.3664353Z === tests/test-transfer.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:55:27.9320132Z %%%% Starting test transfer
+main (checks and suites, Chez built from source)	2026-11-01T18:55:33.8333061Z # of expected passes      225
+main (checks and suites, Chez built from source)	2026-11-01T18:55:33.8418945Z test: pass tests/test-transfer.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:55:33.8419451Z === tests/test-unsupported.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:55:34.2458277Z %%%% Starting test unsupported
+main (checks and suites, Chez built from source)	2026-11-01T18:55:34.4333399Z # of expected passes      34
+main (checks and suites, Chez built from source)	2026-11-01T18:55:34.4410587Z test: pass tests/test-unsupported.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:55:34.4411110Z === tests/test-upload.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:55:34.9061312Z %%%% Starting test upload
+main (checks and suites, Chez built from source)	2026-11-01T18:55:46.9753943Z (put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+main (checks and suites, Chez built from source)	2026-11-01T18:55:46.9787948Z (put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+main (checks and suites, Chez built from source)	2026-11-01T18:56:02.8816124Z (throughput http sized ms 1458)
+main (checks and suites, Chez built from source)	2026-11-01T18:56:04.3740339Z (throughput http chunked ms 1493)
+main (checks and suites, Chez built from source)	2026-11-01T18:56:05.8406295Z (throughput https sized ms 1465)
+main (checks and suites, Chez built from source)	2026-11-01T18:56:07.3089942Z (throughput https chunked ms 1470)
+main (checks and suites, Chez built from source)	2026-11-01T18:56:07.7342988Z (throughput h2 sized ms 425)
+main (checks and suites, Chez built from source)	2026-11-01T18:56:08.1416976Z (throughput h2 chunked ms 408)
+main (checks and suites, Chez built from source)	2026-11-01T18:56:10.2435731Z (read-lock collections-while-live 999)
+main (checks and suites, Chez built from source)	2026-11-01T18:56:10.3111779Z # of expected passes      58
+main (checks and suites, Chez built from source)	2026-11-01T18:56:10.3211122Z test: pass tests/test-upload.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:56:10.3211608Z === tests/test-url-location.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:56:10.7437623Z %%%% Starting test url-location
+main (checks and suites, Chez built from source)	2026-11-01T18:56:11.0890878Z # of expected passes      224
+main (checks and suites, Chez built from source)	2026-11-01T18:56:11.0956774Z test: pass tests/test-url-location.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:56:11.0957277Z === tests/test-url-parts.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:56:11.6516918Z %%%% Starting test url-parts
+main (checks and suites, Chez built from source)	2026-11-01T18:56:11.7737434Z # of expected passes      160
+main (checks and suites, Chez built from source)	2026-11-01T18:56:11.7799297Z test: pass tests/test-url-parts.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:56:11.7799732Z === tests/test-url.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:56:12.2250785Z %%%% Starting test url
+main (checks and suites, Chez built from source)	2026-11-01T18:56:12.3369374Z # of expected passes      153
+main (checks and suites, Chez built from source)	2026-11-01T18:56:12.3425946Z test: pass tests/test-url.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:56:12.3426539Z === tests/test-variadic.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:56:12.6584997Z %%%% Starting test variadic
+main (checks and suites, Chez built from source)	2026-11-01T18:56:14.7302107Z test-variadic: two drips at MAX_TOTAL_CONNECTIONS 1: done, the first done at 1008 ms, both at 2014 ms
+main (checks and suites, Chez built from source)	2026-11-01T18:56:15.7370938Z test-variadic: two drips at MAX_TOTAL_CONNECTIONS 2: done, the first done at 1007 ms, both at 1007 ms
+main (checks and suites, Chez built from source)	2026-11-01T18:56:15.7510086Z # of expected passes      30
+main (checks and suites, Chez built from source)	2026-11-01T18:56:15.7571181Z test: pass tests/test-variadic.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:56:15.7571659Z === tests/test-verify.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:56:15.9803460Z %%%% Starting test verify
+main (checks and suites, Chez built from source)	2026-11-01T18:56:15.9804127Z # of expected passes      21
+main (checks and suites, Chez built from source)	2026-11-01T18:56:15.9847798Z test: pass tests/test-verify.sps
+main (checks and suites, Chez built from source)	2026-11-01T18:56:15.9848363Z test: ran 35, passed 34, failed 1, hung 0
+main (checks and suites, Chez built from source)	2026-11-01T18:56:15.9848952Z make: *** [Makefile:259: test] Error 1
+main (checks and suites, Chez built from source)	2026-11-01T18:56:15.9867293Z ##[error]Process completed with exit code 2.
+floor (the suites against libcurl at its floor)	﻿2026-11-01T18:51:48.2269753Z ##[group]Run set -o pipefail
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2270103Z [36;1mset -o pipefail[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2270389Z [36;1mfloor=$(scripts/ci/floor.sh libcurl)[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2288529Z [36;1mmake build | tee "$RUNNER_TEMP/build.log"[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2289108Z [36;1mif ! grep -qxF "  version:  $floor" "$RUNNER_TEMP/build.log"; then[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2289720Z [36;1m  echo "::error::make build did not load libcurl at its floor ($floor): this lane tests nothing"[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2290210Z [36;1m  exit 1[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2290433Z [36;1mfi[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2290752Z [36;1m# The same for Node: setup-node installs a release of the floor's[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2291220Z [36;1m# major version, and the suites must run under that, not under the[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2291598Z [36;1m# runner's own Node.[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2291948Z [36;1m# make test runs $NODE, so that is the Node checked. A floor may be[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2292379Z [36;1m# a whole version, so it matches exactly or as a prefix.[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2292805Z [36;1mnode_floor=$(scripts/ci/floor.sh node)[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2294275Z [36;1mnode_version=$("${NODE:-node}" --version)[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2294606Z [36;1mecho "node: $node_version"[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2295081Z [36;1mcase $node_version in[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2295372Z [36;1m  "v$node_floor" | "v$node_floor".*) ;;[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2295666Z [36;1m  *)[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2296035Z [36;1m    echo "::error::node is $node_version, not Node $node_floor: this lane tests nothing"[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2296468Z [36;1m    exit 1[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2296689Z [36;1m    ;;[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2296895Z [36;1mesac[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2297110Z [36;1mmake test[0m
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2312071Z shell: /usr/bin/bash -e {0}
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2312356Z env:
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2312574Z   CURL_EXTRA_FLAGS: 
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2313069Z   CHEZ: /home/runner/work/_temp/chez-threads/bin/scheme
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2313575Z   CHEZ_CURL_LIBCURL: /home/runner/work/_temp/curl-floor/lib/libcurl.so.4
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2314017Z   C_INCLUDE_PATH: /home/runner/work/_temp/curl-floor/include
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.2314371Z ##[endgroup]
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.6997988Z chez-curl: libcurl loaded and accepted
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.6999458Z   path:     /home/runner/work/_temp/curl-floor/lib/libcurl.so.4 (override)
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.7000301Z   version:  7.85.0
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.7000862Z   TLS:      OpenSSL/3.0.13
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.7001990Z   features: ipv6 ssl libz ntlm asynchdns largefile tlsauth-srp ntlm-wb http2 unix-sockets https-proxy altsvc hsts threadsafe
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.7003169Z   host:     x86_64-pc-linux-gnu
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:48.7166385Z node: v20.20.2
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:49.1578911Z deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:49.4900219Z check-suites: every suite ends with (exit (suite-exit-status runner)) (35 checked)
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:49.5778135Z check-seam: the seam holds (21 libraries in 21 files checked)
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:49.6701476Z check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:49.6751703Z === tests/test-check-floors.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:50.1552722Z %%%% Starting test check-floors
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:54.6214210Z # of expected passes      375
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:54.6240566Z test: pass tests/test-check-floors.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:54.6241543Z === tests/test-check-nothreads.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:54.8846400Z %%%% Starting test check-nothreads
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:56.2180294Z # of expected passes      17
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:56.2214786Z test: pass tests/test-check-nothreads.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:56.2215531Z === tests/test-check-seam.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:51:56.5112062Z %%%% Starting test check-seam
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:00.3655319Z # of expected passes      62
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:00.3696268Z test: pass tests/test-check-seam.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:00.3697026Z === tests/test-collect-safe.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:00.8712359Z %%%% Starting test collect-safe
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:01.0552538Z # of expected passes      120
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:01.0597116Z test: pass tests/test-collect-safe.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:01.0598120Z === tests/test-conditions.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:01.3790166Z %%%% Starting test conditions
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:01.3791184Z # of expected passes      38
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:01.3825464Z test: pass tests/test-conditions.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:01.3826117Z === tests/test-constants.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:02.4601183Z %%%% Starting test constants
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:02.5770655Z # of expected passes      681
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:02.5819187Z test: pass tests/test-constants.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:02.5819928Z === tests/test-curl-testing.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:03.1363439Z %%%% Starting test curl-testing
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:27.0899285Z # of expected passes      284
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:27.0975543Z test: pass tests/test-curl-testing.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:27.0976514Z === tests/test-discovery.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:27.4024235Z %%%% Starting test discovery
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:27.4046349Z this Chez's binary: /home/runner/work/_temp/chez-threads/lib/csv10.4.0/ta6le/scheme
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:27.4047423Z # of expected passes      47
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:27.4078011Z test: pass tests/test-discovery.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:27.4078864Z === tests/test-drift.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:28.0395704Z %%%% Starting test drift
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:28.0480722Z # of expected passes      55
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:28.0522611Z test: pass tests/test-drift.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:28.0523522Z === tests/test-engine.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:28.6866395Z %%%% Starting test engine
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:55.8716471Z # of expected passes      52
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:55.8766958Z test: pass tests/test-engine.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:55.8767834Z === tests/test-group.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:52:56.8083393Z %%%% Starting test group
+floor (the suites against libcurl at its floor)	2026-11-01T18:53:52.9175511Z # of expected passes      65
+floor (the suites against libcurl at its floor)	2026-11-01T18:53:52.9236783Z test: pass tests/test-group.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:53:52.9237640Z === tests/test-http-client.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:53:53.7364225Z %%%% Starting test http-client
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:11.0766399Z # of expected passes      73
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:11.0815394Z test: pass tests/test-http-client.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:11.0816275Z === tests/test-library-loading.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:11.4556707Z %%%% Starting test library-loading
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:36.9901772Z # of expected passes      75
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:36.9949245Z test: pass tests/test-library-loading.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:36.9950104Z === tests/test-load-state.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:37.2548170Z %%%% Starting test load-state
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:37.2557961Z # of expected passes      12
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:37.2596133Z test: pass tests/test-load-state.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:37.2596765Z === tests/test-mailbox.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:37.8700313Z %%%% Starting test mailbox
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:44.8739770Z # of expected passes      26
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:44.8785892Z test: pass tests/test-mailbox.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:44.8786744Z === tests/test-manifest.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:45.1283918Z %%%% Starting test manifest
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:45.1284816Z # of expected passes      4
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:45.1315290Z test: pass tests/test-manifest.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:45.1316023Z === tests/test-memory-safety.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:45.5711135Z %%%% Starting test memory-safety
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:45.7269580Z # of expected passes      89
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:45.7315539Z test: pass tests/test-memory-safety.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:45.7316217Z === tests/test-native.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:46.3442771Z %%%% Starting test native
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:46.3935361Z # of expected passes      16
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:46.3968820Z test: pass tests/test-native.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:46.3969599Z === tests/test-origin-tls.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:54:47.0063206Z %%%% Starting test origin-tls
+floor (the suites against libcurl at its floor)	2026-11-01T18:55:32.7519132Z # of expected passes      156
+floor (the suites against libcurl at its floor)	2026-11-01T18:55:32.7615515Z test: pass tests/test-origin-tls.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:55:32.7633776Z === tests/test-origin.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:55:33.4626800Z %%%% Starting test origin
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:23.9227014Z # of expected passes      328
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:23.9389159Z test: pass tests/test-origin.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:23.9394749Z === tests/test-redirect.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:24.9460281Z %%%% Starting test redirect
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:24.9575990Z (head-predicate-rows 114)
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:26.5074564Z # of expected passes      69
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:26.5142059Z test: pass tests/test-redirect.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:26.5143252Z === tests/test-request.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:27.1783291Z %%%% Starting test request
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:29.6147436Z # of expected passes      45
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:29.6220325Z test: pass tests/test-request.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:29.6221094Z === tests/test-require-threaded.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:29.9467414Z %%%% Starting test require-threaded
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:29.9924261Z # of expected passes      69
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:29.9958250Z test: pass tests/test-require-threaded.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:29.9958984Z === tests/test-retry.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:30.9548644Z %%%% Starting test retry
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:30.9827527Z (head-predicate-rows 98)
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:43.2105740Z # of expected passes      82
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:43.2167607Z test: pass tests/test-retry.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:43.2168604Z === tests/test-stream-call.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:44.3184063Z %%%% Starting test stream-call
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:52.6929124Z (stream-call-throughput raw ms 491)
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:53.1401440Z (stream-call-throughput h2 ms 447)
+floor (the suites against libcurl at its floor)	2026-11-01T18:56:55.1891974Z (stream-call-idle-cpu ms 20270917/1000000)
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:02.9119726Z # of expected passes      77
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:02.9184168Z test: pass tests/test-stream-call.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:02.9190898Z === tests/test-stream.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:03.6657294Z %%%% Starting test stream
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:22.6944550Z (sweep piece plain call-ticks 6 escaped-kept 12 escaped-lost 0 returned 41)
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:26.0222090Z (sweep port plain call-ticks 266 escaped-kept 532 escaped-lost 0 returned 41)
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:29.3542643Z (sweep piece planted call-ticks 9 escaped-kept 12 escaped-lost 6 returned 41)
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:38.2979086Z # of expected passes      74
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:38.3046813Z test: pass tests/test-stream.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:38.3047720Z === tests/test-transfer-tls.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:38.9240800Z %%%% Starting test transfer-tls
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:46.0746636Z # of expected passes      83
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:46.0866402Z test: pass tests/test-transfer-tls.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:46.0867431Z === tests/test-transfer.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:57:46.8782595Z %%%% Starting test transfer
+floor (the suites against libcurl at its floor)	2026-11-01T18:58:49.3922605Z FAIL varying: GET raw /raw/many-headers?count=100000, as this libcurl's row says, and the counts back to the engine's alone
+floor (the suites against libcurl at its floor)	2026-11-01T18:58:49.4808497Z   expected: ((response 200 http/1.1 (("X-H-1" "v") ("X-H-2" "v") ("X-H-3" "v") ("X-H-4" "v") ("X-H-5" "v") ("X-H-6" "v") ("X-H-7" "v") ("X-H-8" "v") ("X-H-9" "v") ("X-H-10" "v") ("X-H-11" "v") ("X-H-12" "v") ("X-H-13" "v") ("X-H-14" "v") ("X-H-15" "v") ("X-H-16" "v") ("X-H-17" "v") ("X-H-18" "v") ("X-H-19" "v") ("X-H-20" "v") ("X-H-21" "v") ("X-H-22" "v") ("X-H-23" "v") ("X-H-24" "v") ("X-H-25" "v") ("X-H-26" "v") ("X-H-27" "v") ("X-H-28" "v") ("X-H-29" "v") ("X-H-30" "v") ("X-H-31" "v") ("X-H-32" "v") ("X-H-33" "v") ("X-H-34" "v") ("X-H-35" "v") ("X-H-36" "v") ("X-H-37" "v") ("X-H-38" "v") ("X-H-39" "v") ("X-H-40" "v") ("X-H-41" "v") ("X-H-42" "v") ("X-H-43" "v") ("X-H-44" "v") ("X-H-45" "v") ("X-H-46" "v") ("X-H-47" "v") ("X-H-48" "v") ("X-H-49" "v") ("X-H-50" "v") ("X-H-51" "v") ("X-H-52" "v") ("X-H-53" "v") ("X-H-54" "v") ("X-H-55" "v") ("X-H-56" "v") ("X-H-57" "v") ("X-H-58" "v") ("X-H-59" "v") ("X-H-60" "v") ("X-H-61" "v") ("X-H-62" "v") ("X-H-63" "v") ("X-H-64" "v") ("X-H-65" "v") ("X-H-66" "v") ("X-H-67" "v") ("X-H-68" "v") ("X-H-69" "v") ("X-H-70" "v") ("X-H-71" "v") ("X-H-72" "v") ("X-H-73" "v") ("X-H-74" "v") ("X-H-75" "v") ("X-H-76" "v") ("X-H-77" "v") ("X-H-78" "v") ("X-H-79" "v") ("X-H-80" "v") ("X-H-81" "v") ("X-H-82" "v") ("X-H-83" "v") ("X-H-84" "v") ("X-H-85" "v") ("X-H-86" "v") ("X-H-87" "v") ("X-H-88" "v") ("X-H-89" "v") ("X-H-90" "v") ("X-H-91" "v") ("X-H-92" "v") ("X-H-93" "v") ("X-H-94" "v") ("X-H-95" "v") ("X-H-96" "v") ("X-H-97" "v") ("X-H-98" "v") ("X-H-99" "v") ("X-H-100" "v") ("X-H-101" "v") ("X-H-102" "v") ("X-H-103" "v") ("X-H-104" "v") ("X-H-105" "v") ("X-H-106" "v") ("X-H-107" "v") ("X-H-108" "v") ("X-H-109" "v") ("X-H-110" "v") ("X-H-111" "v") ("X-H-112" "v") ("X-H-113" "v") ("X-H-114" "v") ("X-H-115" "v") ("X-H-116" "v") ("X-H-117" "v") ("X-H-118" "v") ("X-H-119" "v") ("X-H-120" "v") ("X-H-121" "v") ("X-H-122" "v") ("X-H-123" "v") ("X-H-124" "v") ("X-H-125" "v") ("X-H-126" "v") ("X-H-127" "v") ("X-H-128" "v") ("X-H-129" "v") ("X-H-130" "v") ("X-H-131" "v") ("X-H-132" "v") ("X-H-133" "v") ("X-H-134" "v") ("X-H-135" "v") ("X-H-136" "v") ("X-H-137" "v") ("X-H-138" "v") ("X-H-139" "v") ("X-H-140" "v") ("X-H-141" "v") ("X-H-142" "v") ("X-H-143" "v") ("X-H-144" "v") ("X-H-145" "v") ("X-H-146" "v") ("X-H-147" "v") ("X-H-148" "v") ("X-H-149" "v") ("X-H-150" "v") ("X-H-151" "v") ("X-H-152" "v") ("X-H-153" "v") ("X-H-154" "v") ("X-H-155" "v") ("X-H-156" "v") ("X-H-157" "v") ("X-H-158" "v") ("X-H-159" "v") ("X-H-160" "v") ("X-H-161" "v") ("X-H-162" "v") ("X-H-163" "v") ("X-H-164" "v") ("X-H-165" "v") ("X-H-166" "v") ("X-H-167" "v") ("X-H-168" "v") ("X-H-169" "v") ("X-H-170" "v") ("X-H-171" "v") ("X-H-172" "v") ("X-H-173" "v") ("X-H-174" "v") ("X-H-175" "v") ("X-H-176" "v") ("X-H-177" "v") ("X-H-178" "v") ("X-H-179" "v") ("X-H-180" "v") ("X-H-181" "v") ("X-H-182" "v") ("X-H-183" "v") ("X-H-184" "v") ("X-H-185" "v") ("X-H-186" "v") ("X-H-187" "v") ("X-H-188" "v") ("X-H-189" "v") ("X-H-190" "v") ("X-H-191" "v") ("X-H-192" "v") ("X-H-193" ...
+floor (the suites against libcurl at its floor)	2026-11-01T18:58:49.4826012Z   actual:   ((raised "(never-completed 60000)") ((block . 2) (easy . 1) (url . 1) (slist . 0) (curl-string . 0) (transfer . 1) (multi . 1)))
+floor (the suites against libcurl at its floor)	2026-11-01T18:58:56.6498290Z suite-exit-status: exit 1 (pass 223, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+floor (the suites against libcurl at its floor)	2026-11-01T18:58:56.6498887Z # of expected passes      223
+floor (the suites against libcurl at its floor)	2026-11-01T18:58:56.6503497Z # of unexpected failures  1
+floor (the suites against libcurl at its floor)	2026-11-01T18:58:56.6578389Z test: FAIL tests/test-transfer.sps (exit 1)
+floor (the suites against libcurl at its floor)	2026-11-01T18:58:56.6579186Z === tests/test-unsupported.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:58:57.2968031Z %%%% Starting test unsupported
+floor (the suites against libcurl at its floor)	2026-11-01T18:58:57.7706760Z # of expected passes      34
+floor (the suites against libcurl at its floor)	2026-11-01T18:58:57.7769927Z test: pass tests/test-unsupported.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:58:57.7773783Z === tests/test-upload.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:58:58.5247388Z %%%% Starting test upload
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:10.8113460Z (put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:10.8135828Z (put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:39.4640029Z (throughput http sized ms 1754)
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:41.1661827Z (throughput http chunked ms 1702)
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:42.9920339Z (throughput https sized ms 1826)
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:44.7740484Z (throughput https chunked ms 1782)
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:45.5934777Z (throughput h2 sized ms 819)
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:46.4076313Z (throughput h2 chunked ms 814)
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:48.5250334Z (read-lock collections-while-live 996)
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:48.5983433Z # of expected passes      58
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:48.6076170Z test: pass tests/test-upload.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:48.6077104Z === tests/test-url-location.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:49.2341610Z %%%% Starting test url-location
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:49.6090770Z # of expected passes      224
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:49.6129882Z test: pass tests/test-url-location.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:49.6130578Z === tests/test-url-parts.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:50.2355487Z %%%% Starting test url-parts
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:50.3694068Z # of expected passes      160
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:50.3735081Z test: pass tests/test-url-parts.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:50.3738332Z === tests/test-url.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:51.0277248Z %%%% Starting test url
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:51.1454443Z # of expected passes      143
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:51.1490393Z test: pass tests/test-url.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:51.1491034Z === tests/test-variadic.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:51.5939904Z %%%% Starting test variadic
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:53.6670634Z test-variadic: two drips at MAX_TOTAL_CONNECTIONS 1: done, the first done at 1010 ms, both at 2016 ms
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:54.6753160Z test-variadic: two drips at MAX_TOTAL_CONNECTIONS 2: done, the first done at 1007 ms, both at 1007 ms
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:54.6878955Z # of expected passes      30
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:54.6916211Z test: pass tests/test-variadic.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:54.6923751Z === tests/test-verify.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:55.0397120Z %%%% Starting test verify
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:55.0397872Z # of expected passes      21
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:55.0433125Z test: pass tests/test-verify.sps
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:55.0433992Z make: *** [Makefile:259: test] Error 1
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:55.0434607Z test: ran 35, passed 34, failed 1, hung 0
+floor (the suites against libcurl at its floor)	2026-11-01T18:59:55.0451405Z ##[error]Process completed with exit code 2.
+current (the suites against the current libcurl, built from source)	﻿2026-11-01T18:50:36.0414587Z ##[group]Run set -o pipefail
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0414842Z [36;1mset -o pipefail[0m
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0415093Z [36;1mbuilt=$("$RUNNER_TEMP/curl-current/bin/curl-config" --version)[0m
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0415372Z [36;1mmake build | tee "$RUNNER_TEMP/build.log"[0m
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0415663Z [36;1mif ! grep -qxF "  version:  ${built#libcurl }" "$RUNNER_TEMP/build.log"; then[0m
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0416076Z [36;1m  echo "::error::make build did not load the libcurl this lane built ($built): this lane tests nothing"[0m
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0416389Z [36;1m  exit 1[0m
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0416539Z [36;1mfi[0m
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0416679Z [36;1mmake test[0m
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0427460Z shell: /usr/bin/bash -e {0}
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0427649Z env:
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0427841Z   CHEZ: /home/runner/work/_temp/chez-threads/bin/scheme
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0428146Z   CHEZ_CURL_LIBCURL: /home/runner/work/_temp/curl-current/lib/libcurl.so.4
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0428465Z   C_INCLUDE_PATH: /home/runner/work/_temp/curl-current/include
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.0428734Z ##[endgroup]
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.3706754Z chez-curl: libcurl loaded and accepted
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.3707452Z   path:     /home/runner/work/_temp/curl-current/lib/libcurl.so.4 (override)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.3707972Z   version:  8.23.0
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.3708323Z   TLS:      OpenSSL/3.0.13
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.3708780Z   features: ipv6 ssl libz asynchdns largefile http2 unix-sockets https-proxy altsvc hsts threadsafe
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.3709277Z   host:     x86_64-pc-linux-gnu
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.7080302Z deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:36.9583384Z check-suites: every suite ends with (exit (suite-exit-status runner)) (35 checked)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:37.0261352Z check-seam: the seam holds (21 libraries in 21 files checked)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:37.0983336Z check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:37.1019310Z === tests/test-check-floors.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:37.4495311Z %%%% Starting test check-floors
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:40.7116299Z # of expected passes      375
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:40.7169710Z test: pass tests/test-check-floors.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:40.7170239Z === tests/test-check-nothreads.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:40.9122463Z %%%% Starting test check-nothreads
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:41.8576345Z # of expected passes      17
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:41.8607142Z test: pass tests/test-check-nothreads.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:41.8607570Z === tests/test-check-seam.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:42.0820534Z %%%% Starting test check-seam
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:44.8015305Z # of expected passes      62
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:44.8051478Z test: pass tests/test-check-seam.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:44.8051982Z === tests/test-collect-safe.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:45.1605782Z %%%% Starting test collect-safe
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:45.2594004Z # of expected passes      120
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:45.2639606Z test: pass tests/test-collect-safe.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:45.2640184Z === tests/test-conditions.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:45.4905028Z %%%% Starting test conditions
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:45.4914798Z # of expected passes      38
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:45.4941261Z test: pass tests/test-conditions.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:45.4941809Z === tests/test-constants.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:46.2708234Z %%%% Starting test constants
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:46.3570283Z # of expected passes      681
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:46.3600656Z test: pass tests/test-constants.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:46.3601251Z === tests/test-curl-testing.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:50:46.7511656Z %%%% Starting test curl-testing
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:09.4664692Z # of expected passes      284
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:09.4728289Z test: pass tests/test-curl-testing.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:09.4728672Z === tests/test-discovery.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:09.7066899Z %%%% Starting test discovery
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:09.7086328Z this Chez's binary: /home/runner/work/_temp/chez-threads/lib/csv10.4.0/ta6le/scheme
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:09.7087198Z # of expected passes      47
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:09.7109742Z test: pass tests/test-discovery.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:09.7110486Z === tests/test-drift.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:10.1418117Z %%%% Starting test drift
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:10.1494304Z # of expected passes      55
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:10.1541369Z test: pass tests/test-drift.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:10.1541961Z === tests/test-engine.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:10.6446105Z %%%% Starting test engine
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:39.8707026Z # of expected passes      54
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:39.8754214Z test: pass tests/test-engine.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:39.8754764Z === tests/test-group.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:51:40.5636894Z %%%% Starting test group
+current (the suites against the current libcurl, built from source)	2026-11-01T18:52:34.7569623Z # of expected passes      65
+current (the suites against the current libcurl, built from source)	2026-11-01T18:52:34.7619803Z test: pass tests/test-group.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:52:34.7620289Z === tests/test-http-client.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:52:35.3487290Z %%%% Starting test http-client
+current (the suites against the current libcurl, built from source)	2026-11-01T18:52:52.3636997Z # of expected passes      73
+current (the suites against the current libcurl, built from source)	2026-11-01T18:52:52.3684935Z test: pass tests/test-http-client.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:52:52.3685595Z === tests/test-library-loading.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:52:52.6326336Z %%%% Starting test library-loading
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:11.3553319Z # of expected passes      75
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:11.3598925Z test: pass tests/test-library-loading.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:11.3599465Z === tests/test-load-state.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:11.5535378Z %%%% Starting test load-state
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:11.5552039Z # of expected passes      12
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:11.5554767Z test: pass tests/test-load-state.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:11.5555232Z === tests/test-mailbox.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:11.9975459Z %%%% Starting test mailbox
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:18.5890275Z # of expected passes      26
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:18.5931665Z test: pass tests/test-mailbox.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:18.5932233Z === tests/test-manifest.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:18.7837240Z %%%% Starting test manifest
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:18.7837879Z # of expected passes      4
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:18.7861323Z test: pass tests/test-manifest.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:18.7861819Z === tests/test-memory-safety.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:19.1085194Z %%%% Starting test memory-safety
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:19.2370161Z # of expected passes      89
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:19.2411619Z test: pass tests/test-memory-safety.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:19.2412130Z === tests/test-native.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:19.6960129Z %%%% Starting test native
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:19.7385578Z # of expected passes      16
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:19.7417173Z test: pass tests/test-native.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:19.7417703Z === tests/test-origin-tls.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:20.1569294Z %%%% Starting test origin-tls
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:53.9628925Z # of expected passes      156
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:53.9755021Z test: pass tests/test-origin-tls.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:53.9755828Z === tests/test-origin.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:53:54.4782415Z %%%% Starting test origin
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:38.1339361Z # of expected passes      328
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:38.1459260Z test: pass tests/test-origin.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:38.1465680Z === tests/test-redirect.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:38.7447343Z %%%% Starting test redirect
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:38.7510333Z (head-predicate-rows 114)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:40.2456112Z # of expected passes      69
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:40.2508997Z test: pass tests/test-redirect.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:40.2509638Z === tests/test-request.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:40.7235176Z %%%% Starting test request
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:44.1236548Z # of expected passes      45
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:44.1297816Z test: pass tests/test-request.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:44.1303462Z === tests/test-require-threaded.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:44.3564702Z %%%% Starting test require-threaded
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:44.3909018Z # of expected passes      69
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:44.3931266Z test: pass tests/test-require-threaded.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:44.3931683Z === tests/test-retry.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:45.0176252Z %%%% Starting test retry
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:45.0358379Z (head-predicate-rows 98)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:57.1395063Z # of expected passes      82
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:57.1456762Z test: pass tests/test-retry.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:57.1462836Z === tests/test-stream-call.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:54:57.8357170Z %%%% Starting test stream-call
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:05.7560671Z (stream-call-throughput raw ms 416)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:06.1418037Z (stream-call-throughput h2 ms 385)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:08.1868060Z (stream-call-idle-cpu ms 8202247/1000000)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:20.7033086Z # of expected passes      77
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:20.7098583Z test: pass tests/test-stream-call.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:20.7102657Z === tests/test-stream.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:21.2667873Z %%%% Starting test stream
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:38.4177096Z (sweep piece plain call-ticks 6 escaped-kept 12 escaped-lost 0 returned 41)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:41.6736747Z (sweep port plain call-ticks 266 escaped-kept 532 escaped-lost 0 returned 41)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:44.9269855Z (sweep piece planted call-ticks 9 escaped-kept 12 escaped-lost 6 returned 41)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:53.7135966Z # of expected passes      74
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:53.7206310Z test: pass tests/test-stream.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:53.7206815Z === tests/test-transfer-tls.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:54.1954295Z %%%% Starting test transfer-tls
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:59.8249506Z # of expected passes      83
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:59.8355539Z test: pass tests/test-transfer-tls.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:55:59.8356331Z === tests/test-transfer.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:00.4283874Z %%%% Starting test transfer
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:06.7480248Z # of expected passes      225
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:06.7525388Z test: pass tests/test-transfer.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:06.7525828Z === tests/test-unsupported.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:07.2027039Z %%%% Starting test unsupported
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:07.4014659Z # of expected passes      34
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:07.4081489Z test: pass tests/test-unsupported.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:07.4082000Z === tests/test-upload.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:07.9360618Z %%%% Starting test upload
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:18.3442812Z FAIL a put waits while the buffer is full: to a raw sink that reads nothing for 5,000 ms, 64 KiB puts fill the kernel's buffers and the request's, and a put answers #f at its bound of 500 ms, libcurl taking nothing more, the buffer holding 65,536 bytes or more; then 32 MiB whole, and once done a put, room-wait and end answer done and nothing
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:18.3444869Z   expected: (full-at-bound held-bounded put whole-body ((returned done) (returned done) (returned unspecified)) 33554432)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:18.3445993Z   actual:   ((#t (never-full 33554432)) held-bounded (never-full 33554432) whole-body ((returned done) (returned done) (returned unspecified)) 33554432)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:20.1828351Z (put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:20.1863944Z (put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:35.7488012Z (throughput http sized ms 1635)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:37.3706017Z (throughput http chunked ms 1622)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:38.9758885Z (throughput https sized ms 1604)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:40.5159614Z (throughput https chunked ms 1538)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:41.6518870Z (throughput h2 sized ms 1139)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:42.4568541Z (throughput h2 chunked ms 805)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:44.5665459Z (read-lock collections-while-live 999)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:44.6406525Z suite-exit-status: exit 1 (pass 57, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:44.6407022Z # of expected passes      57
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:44.6407271Z # of unexpected failures  1
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:44.6508378Z test: FAIL tests/test-upload.sps (exit 1)
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:44.6509048Z === tests/test-url-location.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:45.0955243Z %%%% Starting test url-location
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:45.4429844Z # of expected passes      224
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:45.4480155Z test: pass tests/test-url-location.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:45.4480670Z === tests/test-url-parts.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:45.8878573Z %%%% Starting test url-parts
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:46.0091876Z # of expected passes      160
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:46.0129148Z test: pass tests/test-url-parts.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:46.0129669Z === tests/test-url.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:46.4536240Z %%%% Starting test url
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:46.5648329Z # of expected passes      144
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:46.5681158Z test: pass tests/test-url.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:46.5682195Z === tests/test-variadic.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:46.8596401Z %%%% Starting test variadic
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:48.9370351Z test-variadic: two drips at MAX_TOTAL_CONNECTIONS 1: done, the first done at 1007 ms, both at 2012 ms
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:49.9453162Z test-variadic: two drips at MAX_TOTAL_CONNECTIONS 2: done, the first done at 1007 ms, both at 1007 ms
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:49.9604843Z # of expected passes      30
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:49.9618222Z test: pass tests/test-variadic.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:49.9618744Z === tests/test-verify.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:50.1948180Z %%%% Starting test verify
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:50.1948657Z # of expected passes      21
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:50.1978443Z test: pass tests/test-verify.sps
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:50.1978948Z test: ran 35, passed 34, failed 1, hung 0
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:50.1980584Z make: *** [Makefile:259: test] Error 1
+current (the suites against the current libcurl, built from source)	2026-11-01T18:56:50.1997010Z ##[error]Process completed with exit code 2.

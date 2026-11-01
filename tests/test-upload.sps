@@ -340,17 +340,29 @@
 ;; refused the put, and a slow turn of the engine's is not taken for a
 ;; full kernel. Answers (#f AT), AT the offset of the piece not taken;
 ;; (never-full N) once N bytes were taken.
+;; It prints (fill ANSWER AT ms MS retried ((AT MS) ...) mib (MS ...)):
+;; how it ended, where and how long after its start, each put that answered
+;; #f while libcurl went on taking, and when each MiB was taken.
 (define (fill-until-stalled token n)
-  (let loop ((at 0))
-    (if (>= at n)
-        (list 'never-full at)
-        (let* ((handed (ustat token 'handed))
-               (a (curl-token-put-piece! token (pattern-piece at 65536) 500)))
-          (cond ((eq? a #t) (loop (+ at 65536)))
-                ((not (eq? a #f)) (list a at))
-                (else
-                 (pause-ms 500)
-                 (if (= handed (ustat token 'handed)) (list #f at) (loop at))))))))
+  (let ((t0 (now-ms)))
+    (define (ended answer at retried marks)
+      (display (list 'fill (car answer) at 'ms (- (now-ms) t0) 'retried (reverse retried) 'mib (reverse marks)))
+      (newline)
+      answer)
+    (let loop ((at 0) (retried '()) (marks '()))
+      (if (>= at n)
+          (ended (list 'never-full at) at retried marks)
+          (let* ((handed (ustat token 'handed))
+                 (a (curl-token-put-piece! token (pattern-piece at 65536) 500)))
+            (cond ((eq? a #t)
+                   (let ((next (+ at 65536)))
+                     (loop next retried (if (= 0 (mod next 1048576)) (cons (- (now-ms) t0) marks) marks))))
+                  ((not (eq? a #f)) (ended (list a at) at retried marks))
+                  (else
+                   (pause-ms 500)
+                   (if (= handed (ustat token 'handed))
+                       (ended (list #f at) at retried marks)
+                       (loop at (cons (list at (- (now-ms) t0)) retried) marks)))))))))
 
 ;; ustat : Token Symbol -> Any
 (define (ustat token key)

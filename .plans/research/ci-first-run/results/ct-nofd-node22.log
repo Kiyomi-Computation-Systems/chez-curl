@@ -1,0 +1,28 @@
+net.ipv4.tcp_rmem = 4096	131072	33554432
+net.ipv4.tcp_wmem = 4096	16384	4194304
+net.core.rmem_max = 4194304
+net.core.wmem_max = 4194304
+net.core.rmem_default = 212992
+net.core.wmem_default = 212992
+net.ipv4.tcp_moderate_rcvbuf = 1
+lane main node v22.23.4 envs 
+mutant: tests/test-curl-testing.sps: s/last = heldReset(s) ? .ECONNRESET. : .FIN.;/last = `FIN`;/
+1254c1254
+<    "  s.on('end', () => { if (!reporting) last = heldReset(s) ? 'ECONNRESET' : 'FIN'; });\n"
+---
+>    "  s.on('end', () => { if (!reporting) last = `FIN`; });\n"
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-curl-testing.sps
+%%%% Starting test curl-testing
+FAIL wire-probe-reset: the peer sees a reset, ECONNRESET, where wire-probe's end is a FIN
+  expected: ((reset-sent ("ECONNRESET\n" eof)) (timeout ("FIN\n" eof)))
+  actual:   ((reset-sent ("FIN\n" eof)) (timeout ("FIN\n" eof)))
+# of expected passes      283
+# of unexpected failures  1
+test: FAIL tests/test-curl-testing.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1
+exit 2

@@ -1,0 +1,9 @@
+libcurl 8.20.0
+count 20000 run 0 ms 7 cpu-ms 2 outcome (failed 100)
+count 20000 run 1 ms 7 cpu-ms 1 outcome (failed 100)
+count 30000 run 0 ms 7 cpu-ms 1 outcome (failed 100)
+count 30000 run 1 ms 6 cpu-ms 1 outcome (failed 100)
+count 40000 run 0 ms 7 cpu-ms 1 outcome (failed 100)
+count 40000 run 1 ms 7 cpu-ms 1 outcome (failed 100)
+count 50000 run 0 ms 13 cpu-ms 1 outcome (failed 100)
+count 50000 run 1 ms 13 cpu-ms 1 outcome (failed 100)

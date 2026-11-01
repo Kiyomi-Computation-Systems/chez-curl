@@ -11,7 +11,9 @@
 #                   output, and goes on to the suite after it
 #   b  leak         the same for the leak plant, with its loss record
 #   b  fails        a program that Valgrind finds clean but that exits 1
-#                   is named FAIL with its exit, and its last lines shown
+#                   is named FAIL with its exit, its FAIL line with its
+#                   expected and actual values, 15 lines before its end,
+#                   and its last lines shown
 #   c  suppression  tests/guix-glibc-locpath.supp holds exactly its one
 #                   entry: one name, one kind, these four frames, nothing
 #                   else
@@ -217,6 +219,11 @@ cat >"$fails" <<'EOF'
 #!r6rs
 ;;; Written by tests/check-memory-gate.sh: a program that fails on its own.
 (import (rnrs))
+(display "FAIL a planted check\n  expected: (planted 1)\n  actual:   (planted 2)\n")
+(let loop ((i 1))
+  (when (<= i 12)
+    (display "fails: line ") (display i) (newline)
+    (loop (+ i 1))))
 (display "fails: exits 1, with no memory defect")
 (newline)
 (exit 1)
@@ -611,8 +618,11 @@ want_lines "test-memory: FAIL $fails (exit 1)
 test-memory: pass $after
 $(count_line 2 1 1 0)"
 want_in "$out" "  | fails: exits 1, with no memory defect" "test-memory's own output, the program's last lines"
+want_in "$out" "  | FAIL a planted check" "test-memory's own output, the suite's FAIL line, 15 lines before its end"
+want_in "$out" "  |   expected: (planted 1)" "test-memory's own output, the FAIL's expected value"
+want_in "$out" "  |   actual:   (planted 2)" "test-memory's own output, the FAIL's actual value"
 want_in "$out" "ERROR SUMMARY: 0 errors from 0 contexts" "test-memory's own output, Valgrind's verdict"
-verdict "b fails: test-memory names a program that exits 1 FAIL, with its exit and last lines, and runs the suite after it"
+verdict "b fails: test-memory names a program that exits 1 FAIL, with its exit, its FAIL lines and its last lines, and runs the suite after it"
 
 # ---- c: the suppression file holds exactly its one entry ----
 # Valgrind skips blank lines and lines starting with #; every other line,

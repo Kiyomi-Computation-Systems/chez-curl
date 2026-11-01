@@ -1233,15 +1233,25 @@
 
 ;; An origin that records how the last connection on its one face ended,
 ;; ECONNRESET or FIN, and tells it to a client that sends "report", whose own
-;; ending it does not record.
+;; ending it does not record. Its loop is blocked for 200 ms as each
+;; connection arrives, so the client's bytes and its ending are read in one
+;; wakeup: libuv before 1.52 then reports a reset as an end, and one read(2)
+;; of the fd tells the two apart, as wire-probe.mjs's does.
 (define ending-recorder
   (string-append
    "import net from 'node:net';\n"
+   "import { readSync } from 'node:fs';\n"
    "let last = 'none';\n"
+   "function heldReset(s) {\n"
+   "  try { readSync(s._handle.fd, Buffer.alloc(1)); return false; }\n"
+   "  catch (err) { return err.code === 'ECONNRESET'; }\n"
+   "}\n"
    "const server = net.createServer((s) => {\n"
+   "  const until = Date.now() + 200;\n"
+   "  while (Date.now() < until) { }\n"
    "  let reporting = false;\n"
    "  s.on('error', (e) => { if (!reporting) last = e.code; });\n"
-   "  s.on('end', () => { if (!reporting) last = 'FIN'; });\n"
+   "  s.on('end', () => { if (!reporting) last = heldReset(s) ? 'ECONNRESET' : 'FIN'; });\n"
    "  s.on('data', (d) => {\n"
    "    if (d.toString() === 'report') { reporting = true; s.end(`${last}\\n`); }\n"
    "  });\n"
@@ -1260,8 +1270,9 @@
         (call-with-origin
          (lambda (o)
            (let ((report (lambda ()
-                           ;; Time for the stand-in to take the last ending in.
-                           (sleep (make-time 'time-duration 100000000 0))
+                           ;; Time for the stand-in to take the last ending
+                           ;; in, past its 200 ms block.
+                           (sleep (make-time 'time-duration 400000000 0))
                            (let ((p (wire-probe o 'raw (string->utf8 "report") 2000)))
                              (list (utf8->string (probe-bytes p)) (probe-end p))))))
              (let* ((reset (probe-end (wire-probe-reset o 'raw (string->utf8 "hello"))))
