@@ -94,6 +94,12 @@
 ;;; file of #f is libcurl's system store, as built, and sets neither. The
 ;;; four names stand in this file only in request-field-options.
 ;;;
+;;; The HTTP version (ADR-0034). A request's http-version makes the settings
+;;; version-settings computes, as data, HTTP_VERSION alone or nothing, set
+;;; with the request's other settings, before tls-settings'. A submit
+;;; refuses http/2-prior-knowledge beside an https:// URL, once the URL is
+;;; parsed, as prior-knowledge-over-https. No transfer sets PIPEWAIT.
+;;;
 ;;; The environment (ADR-0024). Guix's 8.20.0 writes SSL_CERT_FILE over
 ;;; CAINFO and SSL_CERT_DIR over the cleared CAPATH when a transfer starts,
 ;;; after every setopt, as they were at curl_global_init. So a submit
@@ -169,6 +175,7 @@
           curl-request-url curl-request-method curl-request-headers curl-request-body
           curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
           curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
+          curl-request-http-version version-settings
           curl-request-fault curl-request-follow curl-request-with-fault curl-request-following
           request-keys request-methods sent-header-lines timing-infos
           prepare-transfer curl-request-check start-transfer! finish-transfer free-transfer!
@@ -295,6 +302,7 @@
                          ((missing-value) "a key given last, with no value after it")
                          ((stream-with-rounds) "a streamed response takes one request in its transfer: follow, HTTPAUTH, PROXYAUTH and an Expect of 100-continue would make a second, whose head the stream would not publish")
                          ((body-length-without-stream) "a body-length is a streamed body's length: give it with body stream, or leave it #f; libcurl frames a whole body by its own length")
+                         ((prior-knowledge-over-https) "HTTP/2 by prior knowledge is for http:// URLs alone: over https://, http/2 gets HTTP/2 by ALPN")
                          (else "a body with get or head, which send none")))
                       (make-irritants-condition (list value)))))
 
@@ -527,7 +535,13 @@
   ;; order. tests/test-request.sps writes it out.
   (define request-keys
     '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
-      stream-buffer body-length))
+      stream-buffer body-length http-version))
+
+  ;; http-versions : (Listof Symbol)
+  ;; The values http-version takes but #f: HTTP/1.1, HTTP/2, and HTTP/2 by
+  ;; prior knowledge, each spelt as a response's http-version reads it
+  ;; (ADR-0034; the M7 plan, section 3.1).
+  (define http-versions '(http/1.1 http/2 http/2-prior-knowledge))
 
   ;; timeout? : Any -> Boolean
   ;; X is a timeout: #f, none, or a positive exact integer a long holds.
@@ -566,6 +580,7 @@
   ;; curl-request-proxy : Request -> (U 'environment #f)
   ;; curl-request-stream-buffer : Request -> (U Positive-Integer #f)
   ;; curl-request-body-length : Request -> (U Natural #f)
+  ;; curl-request-http-version : Request -> (U 'http/1.1 'http/2 'http/2-prior-knowledge #f)
   ;; curl-request-fault : Request -> (U Positive-Integer (List 'head Positive-Integer) #f)   private
   ;; curl-request-follow : Request -> Boolean                  private
   ;; curl-request-options : Request -> (Listof Hatch-Setting)  private
@@ -628,13 +643,35 @@
   ;;                       as DATA frames over HTTP/2. Beside a body that does
   ;;                       not stream it is refused as body-length-without-
   ;;                       stream (the M6 plan, section 3.1)
+  ;;   http-version        the HTTP version libcurl asks for, HTTP_VERSION
+  ;;                       (ADR-0034): http/1.1, HTTP/1.1 alone, 1_1;
+  ;;                       http/2, HTTP/2 by ALPN over https://, and HTTP/1.1
+  ;;                       with no Upgrade over http://, 2TLS; or
+  ;;                       http/2-prior-knowledge, HTTP/2 with no HTTP/1.1
+  ;;                       first, for http:// URLs alone, 2_PRIOR_KNOWLEDGE:
+  ;;                       with an https:// URL a submit refuses it as
+  ;;                       prior-knowledge-over-https. Through an HTTP
+  ;;                       proxy that does not tunnel, an http:// or
+  ;;                       https:// one, the environment's among them,
+  ;;                       libcurl ignores prior knowledge, and sends
+  ;;                       HTTP/1.1 (the slice's measurement). Or #f, the
+  ;;                       default, which sets no HTTP_VERSION: libcurl's
+  ;;                       own, which acts as 2TLS on every libcurl
+  ;;                       measured. No transfer sets PIPEWAIT, so requests
+  ;;                       started together open their own connections, but
+  ;;                       for two by prior knowledge on 7.85.0, which share
+  ;;                       one, and a later one reuses an open one: over
+  ;;                       http://, a #f or http/2 request to an origin the
+  ;;                       engine holds an HTTP/2 connection to, made by
+  ;;                       prior knowledge, reuses it and reads HTTP/2
   ;;
   ;; The defaults set no policy: libcurl's own stand (ADR-0023, decision 3).
   ;; The keys are refused first, by request-settings' rules, then a URL
   ;; that is not a string, then a wrong type for method, body, timeout-ms,
-  ;; connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer
-  ;; or body-length, each an assertion violation, the empty string as a CA
-  ;; file among them; then a body with get or head, body-not-allowed; then a
+  ;; connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer,
+  ;; body-length or http-version, each an assertion violation, the empty
+  ;; string as a CA file among them; then a body with get or head,
+  ;; body-not-allowed; then a
   ;; body-length beside a body that does not stream,
   ;; body-length-without-stream; then a
   ;; stream-buffer beside follow, HTTPAUTH or PROXYAUTH, stream-with-rounds,
@@ -675,17 +712,18 @@
             (immutable proxy curl-request-proxy)
             (immutable stream-buffer curl-request-stream-buffer)
             (immutable body-length curl-request-body-length)
+            (immutable http-version curl-request-http-version)
             (immutable fault curl-request-fault)
             (immutable follow curl-request-follow)
             (immutable options curl-request-options)))
 
-  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any (Listof Hatch-Setting) -> Request
+  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any (Listof Hatch-Setting) -> Request
   ;; A request of these fields, checked as WHO by make-curl-request's rules,
   ;; after the keys. OPTIONS, the hatch's, were checked as they were
   ;; attached, and are private copies, so they are kept as they are.
   (define (checked-request who url method headers body user-agent timeout-ms
                            connect-timeout-ms body-limit ca-file verify proxy stream-buffer
-                           body-length fault follow options)
+                           body-length http-version fault follow options)
     (define (wrong message irritant) (assertion-violation who message irritant))
     (unless (string? url) (wrong "a URL is a string" url))
     (unless (memq method request-methods)
@@ -715,6 +753,9 @@
                      (< body-length body-limit-bound)))
       (wrong "a body-length is an exact natural below 2^63 - 1, a streamed body's length, or #f"
              body-length))
+    (unless (or (not http-version) (memq http-version http-versions))
+      (wrong "an http-version is http/1.1, http/2, http/2-prior-knowledge, or #f, libcurl's own"
+             http-version))
     (unless (or (not fault) (chunk-fault? fault) (head-fault? fault) (upload-fault? fault))
       (wrong "a fault is a positive exact integer, the chunk it raises at, (head N), the head's line it raises at, (read N), (seek N) or (prereq N), that callable's call it raises at, or #f: a request holds no procedure"
              fault))
@@ -728,7 +769,8 @@
     (check-expect-round who stream-buffer (car (snapshot who headers user-agent)))
     (ca-file-copy who ca-file)
     (new-curl-request url method headers body user-agent timeout-ms connect-timeout-ms
-                      body-limit ca-file verify proxy stream-buffer body-length fault follow options))
+                      body-limit ca-file verify proxy stream-buffer body-length http-version fault
+                      follow options))
 
   ;; chunk-fault? : Any -> Boolean
   ;; X is a fault the write callable raises at: the chunk's number, a
@@ -828,13 +870,14 @@
                      (given 'proxy curl-request-proxy)
                      (given 'stream-buffer curl-request-stream-buffer)
                      (given 'body-length curl-request-body-length)
+                     (given 'http-version curl-request-http-version)
                      fault follow options))
 
   ;; default-request : Request
   ;; Every key at its default, for a URL nothing reads: what
   ;; make-curl-request replaces keys in.
   (define default-request
-    (new-curl-request "" 'get '() #f #f #f #f #f #f #t 'environment #f #f #f #f '()))
+    (new-curl-request "" 'get '() #f #f #f #f #f #f #t 'environment #f #f #f #f #f '()))
 
   (define (make-curl-request url . plist)
     (request-like 'make-curl-request default-request
@@ -932,7 +975,9 @@
   ;; success every libcurl measured reports them in that order (M4 plan,
   ;; section 4.1), and a phase the transfer skipped as 0: on a connection
   ;; reused, name-lookup, connect and tls-handshake are all 0 (8.20.0, the
-  ;; slice's review). tests/test-request.sps writes it out.
+  ;; slice's review), but for 7.85.0's connect, 10 to 37 microseconds on a
+  ;; connection reused once the transfer before had ended (M7 slice 1).
+  ;; tests/test-request.sps writes it out.
   (define timing-infos
     `((name-lookup . ,curlinfo-namelookup-time-t)
       (connect . ,curlinfo-connect-time-t)
@@ -1091,7 +1136,8 @@
   ;; when it is #f (ADR-0024, decision 1). follow is the private field's (M4
   ;; plan, section 3.2). stream-buffer sets the header callable and its
   ;; data, the transfer's key, for a streamed response alone (the M6 plan,
-  ;; sections 3.2 and 3.3).
+  ;; sections 3.2 and 3.3). http-version sets HTTP_VERSION, by
+  ;; version-settings, when it is not #f (ADR-0034).
   (define request-field-options
     '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD") (headers "HTTPHEADER")
       (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION"
@@ -1101,7 +1147,7 @@
       (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
       (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY")
       (stream-buffer "HEADERFUNCTION" "HEADERDATA") (body-length "INFILESIZE_LARGE")
-      (follow "FOLLOWLOCATION")))
+      (http-version "HTTP_VERSION") (follow "FOLLOWLOCATION")))
 
   ;; field-options : Symbol -> (Listof String)
   ;; FIELD's options, in request-field-options' order.
@@ -1176,6 +1222,26 @@
   ;;     on the engine through the DNS cache its multi handle shares; and
   ;;     SSLENGINE_DEFAULT, which sets OpenSSL's default for the whole
   ;;     process, by curl's source;
+  ;;   - the HTTP version's, measured through the engine on five libcurls
+  ;;     (M7 slice 1; ADR-0009, amended 2026-11-02): SSL_ENABLE_ALPN, whose
+  ;;     0 turns http/2's HTTP/2 into HTTP/1.1 at a server offering both;
+  ;;     ALTSVC, whose cache file, an earlier transfer's or written by hand,
+  ;;     moves a later transfer to another port, host and version, at
+  ;;     http/1.1 too, and which libcurl writes as the engine cleans the
+  ;;     handle up, on its thread; and ALTSVC_CTRL, which alone makes the
+  ;;     handle a cache in memory that an Alt-Svc header fills: the 417's
+  ;;     resend of a caller's Expect: 100-continue, a second request on the
+  ;;     same handle, went to the first response's alternative, another
+  ;;     port, and over HTTP/2 to an h2 one (8.20.0, the slice's review); a
+  ;;     hatch HTTPAUTH round and the private follow make second requests
+  ;;     too. HSTS_CTRL stays the hatch's: libcurl reads
+  ;;     Strict-Transport-Security from an https:// response alone, and
+  ;;     rewrites an http:// URL alone (7.85.0's url.c and http.c, 8.23.0's
+  ;;     hsts_upgrade and Curl_xfer_is_secure, read), and no second
+  ;;     request within one transfer changes its URL, but the private
+  ;;     follow's, which nothing public sets. PIPEWAIT, HTTP09_ALLOWED,
+  ;;     HTTP200ALIASES, CONNECT_TO and HTTPPROXYTUNNEL stay the hatch's
+  ;;     too;
   ;; then proxy-tls-option-names. They are compared by id, so an alias name
   ;; is refused too.
   (define owned-option-names
@@ -1189,7 +1255,8 @@
               "TRANSFERTEXT" "USERPWD" "USERNAME" "PASSWORD" "NETRC" "HSTS"
               "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
               "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
-              "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT")
+              "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT"
+              "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL")
             proxy-tls-option-names))
 
   ;; pinned-options : (Listof (Pairof String (U String Integer)))
@@ -1358,6 +1425,24 @@
                     (set-string-option! easy (car setting) (cdr setting) buffer)
                     (set-option! easy (car setting) (cdr setting) buffer)))
               (tls-settings ca-file verify)))
+
+  ;; version-settings : (U Symbol #f) -> (Listof (Pairof String Integer))
+  ;; The settings an http-version VERSION makes (ADR-0034), as data: #f,
+  ;; none, so libcurl keeps its own; http/1.1, HTTP_VERSION at
+  ;; CURL_HTTP_VERSION_1_1; http/2, at CURL_HTTP_VERSION_2TLS, not 2_0,
+  ;; whose Upgrade: h2c over http:// no server here takes (the M7 plan,
+  ;; section 3.1); http/2-prior-knowledge, at
+  ;; CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE. Any other VERSION is an assertion
+  ;; violation. The name is request-field-options'. Pure.
+  ;; tests/test-version.sps writes out every answer.
+  (define (version-settings version)
+    (let ((name (field-option 'http-version)))
+      (case version
+        ((#f) '())
+        ((http/1.1) (list (cons name curl-http-version-1-1)))
+        ((http/2) (list (cons name curl-http-version-2tls)))
+        ((http/2-prior-knowledge) (list (cons name curl-http-version-2-prior-knowledge)))
+        (else (assertion-violation 'version-settings "not an http-version" version)))))
 
   ;; --- the hatch (ADR-0009; the M4 plan, section 3.7) ---------------------------------
 
@@ -2516,13 +2601,14 @@
   ;; response stream, made with it, so a stream operation on a token still
   ;; queued has a stream to look at (ADR-0030, decision 1); then its
   ;; body-length; and, for a request whose body streams, the submit's own
-  ;; request stream, beside the response stream when it streams both ways.
+  ;; request stream, beside the response stream when it streams both ways;
+  ;; and its http-version.
   (define-record-type plan
     (fields (immutable url) (immutable method) (immutable headers) (immutable agent)
             (immutable body) (immutable timeout-ms) (immutable connect-timeout-ms)
             (immutable body-limit) (immutable ca-file) (immutable verify) (immutable proxy)
             (immutable settings) (immutable fault) (immutable follow) (immutable stream)
-            (immutable body-length) (immutable upload)))
+            (immutable body-length) (immutable upload) (immutable http-version)))
 
   ;; plan-stream : Plan -> (U Stream #f)
   ;; The plan's response stream, #f for a whole body.
@@ -2538,7 +2624,8 @@
   ;; of the headers and the user agent, the CA file's copy, the CA file
   ;; against the environment the libcurl loaded with, then the URL's copy,
   ;; parsed and its scheme checked, its CURLU freed before this returns
-  ;; (ADR-0008, amended 2026-10-24). Each refusal raises here. Then the
+  ;; (ADR-0008, amended 2026-10-24), then prior knowledge against that
+  ;; scheme. Each refusal raises here. Then the
   ;; body is copied, after every check, so
   ;; the caller's bytevector may change once this returns (ADR-0023,
   ;; decision 4); a request's method and the presence of its body cannot
@@ -2561,7 +2648,8 @@
                    (curl-request-proxy request)
                    (curl-request-options request) (curl-request-fault request)
                    (curl-request-follow request)
-                   stream length (and (eq? body 'stream) (make-upload stream length))))))
+                   stream length (and (eq? body 'stream) (make-upload stream length))
+                   (curl-request-http-version request)))))
 
   ;; request-checks : Symbol Request -> (Values String (Pairof Headers (U String #f)) (U String #f))
   ;; The checks a submit makes of REQUEST on the caller's thread, as WHO,
@@ -2574,10 +2662,11 @@
   ;; may have changed since the request was made; then the CA file
   ;; against the environment the libcurl loaded with, by
   ;; check-ca-environment; then the URL, parsed by call-with-parsed-url and
-  ;; checked by require-http-scheme, its CURLU freed before this returns.
-  ;; Each refusal raises here, as WHO where its check names one. Answers the
-  ;; checked copies: the URL, the fields, and the CA file. The body is no
-  ;; check's: a submit copies it after.
+  ;; checked by require-http-scheme, its CURLU freed before this returns;
+  ;; then the http-version against the scheme it answered, by
+  ;; check-prior-knowledge. Each refusal raises here, as WHO where its check
+  ;; names one. Answers the checked copies: the URL, the fields, and the CA
+  ;; file. The body is no check's: a submit copies it after.
   (define (request-checks who request)
     (unless (curl-request? request)
       (assertion-violation who "not a request" request))
@@ -2586,8 +2675,22 @@
            (ca-file (ca-file-copy who (curl-request-ca-file request))))
       (check-expect-round who (curl-request-stream-buffer request) (car fields))
       (check-ca-environment who ca-file (curl-request-verify request))
-      (call-with-parsed-url url (lambda (handle) (require-http-scheme handle url)))
+      (let ((scheme (call-with-parsed-url url (lambda (handle) (require-http-scheme handle url)))))
+        (check-prior-knowledge who (curl-request-http-version request) scheme))
       (values url fields ca-file)))
+
+  ;; check-prior-knowledge : Symbol (U Symbol #f) String -> Void
+  ;; Refuses, as WHO, an http-version VERSION of http/2-prior-knowledge
+  ;; beside SCHEME https, the parsed URL's, which libcurl writes in lower
+  ;; case: prior-knowledge-over-https, field http-version (ADR-0034,
+  ;; decision 2). Over https:// 8.20.0 and 8.23.0 offer ALPN h2 alone, so an
+  ;; HTTP/1.1 origin refuses the handshake, 35, where 7.85.0 and 8.5.0 offer
+  ;; h2 and http/1.1; http/2 gets h2 by ALPN on every libcurl. Checked at
+  ;; submit alone, where the URL is parsed: a redirect's request is refused
+  ;; as it is submitted.
+  (define (check-prior-knowledge who version scheme)
+    (when (and (eq? version 'http/2-prior-knowledge) (equal? scheme "https"))
+      (refuse-field who 'http-version version 'prior-knowledge-over-https)))
 
   ;; curl-request-check : Request -> Void
   ;; Returns once REQUEST passes every check curl-submit makes of it on the
@@ -2740,8 +2843,10 @@
   ;; body through a counted copy, call-with-foreign-bytes'; and as the
   ;; request asks, HTTPHEADER at HEADER-LIST, USERAGENT, TIMEOUT_MS,
   ;; CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE at the body limit plus one, and
-  ;; PROXY at "" for a proxy of #f; then, always, tls-settings' for the
-  ;; plan's CA file and verification, through set-tls-options!; then
+  ;; PROXY at "" for a proxy of #f; then version-settings' for the plan's
+  ;; http-version, HTTP_VERSION when it is not #f; then, always,
+  ;; tls-settings' for the plan's CA file and verification, through
+  ;; set-tls-options!; then
   ;; FOLLOWLOCATION at 1 for the private follow field; then, last, the hatch's
   ;; settings, in the order they were attached, through set-hatch-option!,
   ;; a string list's from LISTS, the lists start-transfer! built (ADR-0009,
@@ -2789,6 +2894,8 @@
         (set-option! easy (field-option 'body-limit) (+ limit 1) buffer)))
     (unless (plan-proxy plan)
       (set-string-option! easy (field-option 'proxy) "" buffer))
+    (for-each (lambda (setting) (set-option! easy (car setting) (cdr setting) buffer))
+              (version-settings (plan-http-version plan)))
     (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
     (when (plan-follow plan)
       (set-option! easy (field-option 'follow) 1 buffer))

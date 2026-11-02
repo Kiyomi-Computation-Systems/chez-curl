@@ -198,6 +198,14 @@ it should not be a comment. (chez-cmark-gfm)
   cell ended 55 ([research](research/m6/slice2-build/results/)). 8.20.0's cell had split the
   same way across the measurement's runs. A new row comes from two runs at least, and a cell
   they disagree on asserts only what both showed. (chez-curl, M6 slice 2, the Mac's runs)
+* **A failure's code can be a race that Valgrind settles the other way.** HTTP/2 by prior
+  knowledge to the origin's HTTP/1.1 face failed with one code natively on every lane, 30 of 30
+  on each Docker lane and 10 of 10 on Guix's: 52 on 7.85.0, 56 on 8.5.0, 16 on 8.20.0 and 8.23.0. Under the memory gate's Valgrind it was
+  mostly 55, the send failing: all 30 on OpenSSL's 8.5.0, 9 of 30 on 8.20.0, and on 7.85.0 52,
+  55 and 16 each ([research](research/m7/slice1/valgrind-race/)). The builder's reading, not
+  measured: the face's 400 and the end of its connection race libcurl's next send. A by-version test holding one code
+  per row passed natively and failed the gate every time. A row of a failure's code is read
+  natively and under the gate, and holds every code either gave. (chez-curl, M7 slice 1)
 
 ## Chez and the FFI
 

@@ -320,7 +320,7 @@
 (define (table-request url method body headers)
   (make-curl-request url 'method method 'headers headers 'body body 'user-agent "ua/1"
                      'timeout-ms 5000 'connect-timeout-ms 700 'body-limit 9999
-                     'ca-file "/no/ca.pem" 'verify #f 'proxy #f))
+                     'ca-file "/no/ca.pem" 'verify #f 'proxy #f 'http-version 'http/2-prior-knowledge))
 
 ;; table-state : Request (U Natural #f) Boolean -> State
 (define (table-state request redirects allow-downgrade)
@@ -638,8 +638,8 @@
 
 ;; --- the next request, and its time
 
-(test-equal "exchange-step's next request: its URL, every other key the step's request's, the call's timeout-ms among them, not the time left in flight; the state holds it as its request and in flight; the wait is 0"
-  '("http://h.example/n" get "ua/1" 5000 700 9999 "/no/ca.pem" #f #f same same 0 1)
+(test-equal "exchange-step's next request: its URL, every other key the step's request's, the call's timeout-ms among them, not the time left in flight, and its http-version; the state holds it as its request and in flight; the wait is 0"
+  '("http://h.example/n" get "ua/1" 5000 700 9999 "/no/ca.pem" #f #f http/2-prior-knowledge same same 0 1)
   (let* ((submitted (exchange-submission (state-at base) (+ table-start 3000000000)))
          (a (exchange-step (cadr submitted) (list 'response (reply 302 (redirect-to "/n")))
                            (+ table-start 3100000000) 1800000000 0.0)))
@@ -648,7 +648,7 @@
           (list (curl-request-url r) (curl-request-method r) (curl-request-user-agent r)
                 (curl-request-timeout-ms r) (curl-request-connect-timeout-ms r)
                 (curl-request-body-limit r) (curl-request-ca-file r) (curl-request-verify r)
-                (curl-request-proxy r)
+                (curl-request-proxy r) (curl-request-http-version r)
                 (if (eq? (exchange-request state) r) 'same 'other)
                 (if (eq? (exchange-flight state) r) 'same 'other)
                 (cadddr a) (exchange-followed state)))

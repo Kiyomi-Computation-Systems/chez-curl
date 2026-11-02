@@ -1,0 +1,6 @@
+(version "8.20.0")
+(h2c http/2-prior-knowledge -> #f first (200 http/2) second (200 http/2) second-alone (failed 1))
+(h2c http/2-prior-knowledge -> http/2 first (200 http/2) second (200 http/2) second-alone (failed 1))
+(h2c http/2-prior-knowledge -> http/1.1 first (200 http/2) second (failed 1) second-alone (failed 1))
+(http #f -> http/2-prior-knowledge first (200 http/1.1) second (failed 16) second-alone (failed 16))
+(http http/1.1 -> http/2-prior-knowledge first (200 http/1.1) second (failed 16) second-alone (failed 16))

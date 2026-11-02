@@ -837,6 +837,8 @@ provisional. They bind until that record is accepted or amended.
   cookie file or `PIPEWAIT`.
 - **HTTP/2 by prior knowledge is for `http://` URLs alone;** a request asking for it with an
   `https://` URL is refused at submit. No transfer sets `PIPEWAIT` (ADR-0034).
+  `HTTP_VERSION`, and its twins `SSL_ENABLE_ALPN`, `ALTSVC` and `ALTSVC_CTRL`, are owned
+  (ADR-0009, amended 2026-11-02).
 - **A cookie jar is one `curl_share` of cookies, on the engine's thread,** counted, with no lock
   callbacks. A transfer that uses it sets `SHARE` first, then `COOKIEFILE ""`; `COOKIEFILE` and
   `COOKIEJAR` are never a file or `"-"`. It is freed only once no transfer holds it. Cookies go in

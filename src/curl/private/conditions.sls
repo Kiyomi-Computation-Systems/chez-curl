@@ -308,6 +308,12 @@
   ;;                 while libcurl still reads the body, else as its outcome
   ;;                 is read (the M6 plan, section 3.3; ADR-0030, amended
   ;;                 2026-10-31)
+  ;;   prior-knowledge-over-https
+  ;;                 an http-version of http/2-prior-knowledge beside an
+  ;;                 https:// URL, refused at submit, where the URL is
+  ;;                 parsed: HTTP/2 by prior knowledge is for http:// alone,
+  ;;                 and over https:// http/2 gets HTTP/2 by ALPN (ADR-0034,
+  ;;                 decision 2)
   ;;
   ;; A value is scanned left to right, and its first offending char decides;
   ;; only when none offends are its ends checked.
@@ -315,7 +321,8 @@
     '(embedded-nul line-break not-latin-1 not-a-token surrounding-whitespace duplicates-field
       framing-header owned-option unsupported-type unknown-option repeated-option
       unknown-key repeated-key missing-value body-not-allowed pkcs11-url environment-override
-      keychain-fallback stream-with-rounds body-length-without-stream body-length-mismatch))
+      keychain-fallback stream-with-rounds body-length-without-stream body-length-mismatch
+      prior-knowledge-over-https))
 
   ;; The fields:
   ;;
@@ -324,11 +331,13 @@
   ;;           unknown-key, repeated-key and missing-value; body for
   ;;           body-not-allowed; stream-buffer for stream-with-rounds;
   ;;           body-length for body-length-without-stream and
-  ;;           body-length-mismatch
+  ;;           body-length-mismatch; http-version for
+  ;;           prior-knowledge-over-https
   ;;   value   the string refused, whole, or the option's name; the key, as
   ;;           given, for a key's refusal; the method, for body-not-allowed;
   ;;           the stream-buffer, for stream-with-rounds; the body-length,
-  ;;           for body-length-without-stream and body-length-mismatch
+  ;;           for body-length-without-stream and body-length-mismatch; the
+  ;;           http-version, for prior-knowledge-over-https
   ;;   reason  one of curl-request-error-reasons
   (define-condition-type &curl-request-error &curl-error
     unchecked-make-curl-request-error curl-request-error?

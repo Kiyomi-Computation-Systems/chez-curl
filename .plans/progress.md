@@ -6,9 +6,12 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **M7, HTTP/2, cookies, auth and proxies:** planned on `docs/m7-plan`
-  ([the M7 plan](2026-11-02-m7-plan.md)), not yet merged. Four slices: the HTTP version, auth,
-  proxies and the cookie jar.
+- **M7, HTTP/2, cookies, auth and proxies:** in progress. The
+  [M7 plan](2026-11-02-m7-plan.md) merged as PR #41 (`c238fe7`), CI passing all eight jobs on
+  it. Four slices: the HTTP version, auth, proxies and the cookie jar. Slice 1, the HTTP version
+  (the plan, §4), is built and reviewed on `feat/m7-slice-1`, not yet merged: measured first
+  through the engine ([research](research/m7/slice1/)); `prior-knowledge-through-proxy` moved to
+  slice 3, where a named proxy first exists.
   - **Decided by the maintainer, 2026-11-02,** each the recommended option, from two read-only
     surveys and four probes on the five Linux libcurls
     ([`research/m7/`](research/m7/)):

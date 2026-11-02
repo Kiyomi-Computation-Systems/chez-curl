@@ -1,0 +1,31 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-pkprobe.sps
+%%%% Starting test pkprobe
+(probe 8.20.0 http http/2-prior-knowledge (((failed perform-failed 16 protocol) . 10)))
+(probe 8.20.0 h2c #f (((failed perform-failed 1 protocol) . 10)))
+(probe 8.20.0 h2c http/1.1 (((failed perform-failed 1 protocol) . 10)))
+(probe 8.20.0 h2c http/2 (((failed perform-failed 1 protocol) . 10)))
+(probe 8.20.0 h2 http/1.1 (((failed perform-failed 35 tls) . 10)))
+(probe 8.20.0 together-h2c (((2 (http/2 http/2)) . 10)))
+# of expected passes      12
+test: pass tests/test-pkprobe.sps
+test: ran 1, passed 1, failed 0, hung 0
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-pkprobe.sps
+test-memory: pass tests/test-pkprobe.sps
+test-memory: ran 1, passed 1, failed 0, hung 0
+%%%% Starting test pkprobe
+(probe 8.20.0 http http/2-prior-knowledge (((failed perform-failed 16 protocol) . 10)))
+(probe 8.20.0 h2c #f (((failed perform-failed 1 protocol) . 10)))
+(probe 8.20.0 h2c http/1.1 (((failed perform-failed 1 protocol) . 10)))
+(probe 8.20.0 h2c http/2 (((failed perform-failed 1 protocol) . 10)))
+(probe 8.20.0 h2 http/1.1 (((failed perform-failed 35 tls) . 10)))
+(probe 8.20.0 together-h2c (((2 (http/2 http/2)) . 10)))
+# of expected passes      12
+
+real	0m25.994s
+user	0m19.890s
+sys	0m1.498s

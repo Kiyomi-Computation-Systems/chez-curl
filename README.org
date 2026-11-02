@@ -28,7 +28,9 @@ program's environment. chez-curl never changes them.
 - *Proxies.* =http_proxy=, =https_proxy=, =HTTPS_PROXY=, =all_proxy= and
   =ALL_PROXY= send a transfer through the proxy they name. =no_proxy= and
   =NO_PROXY= list hosts that go direct. =HTTP_PROXY= is ignored. A request
-  made with ='proxy #f= goes direct, whatever they say.
+  made with ='proxy #f= goes direct, whatever they say. Through an
+  =http://= or =https://= proxy that does not tunnel, libcurl ignores
+  ='http/2-prior-knowledge=: the request goes as HTTP/1.1.
 - *A proxy's TLS.* An =https://= proxy is checked against libcurl's system
   store: on Guix, the one =SSL_CERT_FILE= names. A request's =ca-file= and
   =verify= are for the server, never the proxy.
@@ -59,6 +61,46 @@ program's environment. chez-curl never changes them.
 - *The request size.* libcurl 8.7.0 and 8.7.1, the Mac's among them, count
   no bytes sent, ever. On them a failure from a transfer that ran has a
   request size of =#f=, unknown, not =0=.
+
+*** Choosing the HTTP version
+
+A request's =http-version= asks for one:
+
+#+begin_src scheme
+(make-curl-request "https://example.com/" 'http-version 'http/2)
+#+end_src
+
+- *=#f=, the default,* lets libcurl choose: HTTP/2 over =https://= when the
+  server offers it, else HTTP/1.1.
+- *='http/1.1=* asks for HTTP/1.1 alone. A server that speaks only HTTP/2
+  refuses it.
+- *='http/2=* gets HTTP/2 over =https://= when the server offers it, agreed
+  in the TLS handshake, else HTTP/1.1. Over =http://= it sends HTTP/1.1, with
+  no =Upgrade=.
+- *='http/2-prior-knowledge=* speaks HTTP/2 from the first byte, to an
+  =http://= server you know speaks it. With an =https://= URL it is refused
+  when you submit, =prior-knowledge-over-https=: use ='http/2= there. A
+  redirect to =https://= fails the call the same way. An HTTP/1.1 server
+  fails it: its code depends on the libcurl, and on timing.
+- *Through an =http://= or =https://= proxy that does not tunnel,* the
+  environment's (=http_proxy= and the rest) among them, libcurl ignores prior
+  knowledge, and sends HTTP/1.1 to the proxy.
+- *Requests started together open a connection each.* chez-curl never sets
+  =PIPEWAIT=, so they do not wait to share one HTTP/2 connection; a request
+  started later reuses an open one. libcurl 7.85.0 is the exception: it
+  shares one by prior knowledge even then. On libcurl 8.7.0 and 8.7.1, the
+  Mac's, where the engine does not multiplex, a request started while
+  another runs opens its own connection. The hatch's =PIPEWAIT= still works,
+  unsupported.
+- *A reused connection keeps its version.* Over =http://=, a request with
+  =#f= or ='http/2= to a server the engine already holds an HTTP/2
+  connection to, made by prior knowledge, reuses it, and reads HTTP/2.
+- *The hatch refuses =HTTP_VERSION=,* and =SSL_ENABLE_ALPN=, =ALTSVC= and
+  =ALTSVC_CTRL=, which can change the version or the server a request
+  reaches.
+
+=(http-client)='s sessions and calls take =http-version= too. A call's
+replaces its session's, and a redirect keeps it.
 
 *** Options chez-curl does not wrap
 

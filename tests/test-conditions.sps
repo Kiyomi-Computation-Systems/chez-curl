@@ -15,7 +15,7 @@
 ;;;                               code the floor's headers lack
 ;;;   &curl-request-error         a request's key or field refused before
 ;;;                               anything native is made, with one of
-;;;                               twenty-one reasons
+;;;                               twenty-two reasons
 ;;;   &curl-transfer-error        a transfer failed, with one of eleven
 ;;;                               reasons, its code, option, libcurl's texts,
 ;;;                               what the write callable recorded and its
@@ -220,7 +220,7 @@
   '(embedded-nul line-break not-latin-1 not-a-token surrounding-whitespace duplicates-field
     framing-header owned-option unsupported-type unknown-option repeated-option unknown-key
     repeated-key missing-value body-not-allowed pkcs11-url environment-override keychain-fallback
-    stream-with-rounds body-length-without-stream body-length-mismatch))
+    stream-with-rounds body-length-without-stream body-length-mismatch prior-knowledge-over-https))
 
 (test-equal "request-error: an error and a curl-error, and none of the other kinds, carrying its field, value and reason"
   '(#t #t #f #f #f #f #t #f header-value "a\rb" line-break)
@@ -231,11 +231,11 @@
                   (curl-request-error-field c) (curl-request-error-value c)
                   (curl-request-error-reason c)))))
 
-(test-equal "the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option, unsupported-type, unknown-option, repeated-option, unknown-key, repeated-key, missing-value, body-not-allowed, pkcs11-url, environment-override, keychain-fallback, stream-with-rounds, body-length-without-stream and body-length-mismatch, in order"
+(test-equal "the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option, unsupported-type, unknown-option, repeated-option, unknown-key, repeated-key, missing-value, body-not-allowed, pkcs11-url, environment-override, keychain-fallback, stream-with-rounds, body-length-without-stream, body-length-mismatch and prior-knowledge-over-https, in order"
   request-reasons
   curl-request-error-reasons)
 
-(test-equal "the request-error constructor takes each of the twenty-one reasons"
+(test-equal "the request-error constructor takes each of the twenty-two reasons"
   request-reasons
   (map (lambda (reason)
          (curl-request-error-reason (make-curl-request-error 'user-agent "x" reason)))

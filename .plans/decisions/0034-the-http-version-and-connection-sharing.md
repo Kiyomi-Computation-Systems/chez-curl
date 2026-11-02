@@ -1,6 +1,6 @@
 # ADR-0034: The HTTP version, and connection sharing
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-11-02, measured through the engine (M7 slice 1)
 - **Date:** 2026-11-02
 - **Scope:** chez-curl v1, a request's HTTP version and how transfers share connections, in
   `(curl)` and `(http-client)`, from M7
@@ -72,3 +72,35 @@ M6's case had filled the 64 MiB cap; the engine does not multiplex on 8.7.x eith
   connection, and requests started together open their own. On 8.7.x every request opens its own.
 - The version field's mapping to `HTTP_VERSION` values, and the codes each lane answers, are the
   M7 plan's.
+
+## Amendment, 2026-11-02: measured through the engine (M7 slice 1)
+
+M7 slice 1 ran these questions again through chez-curl's engine, `HTTP_VERSION` set by the hatch,
+on the five Linux libcurls, two runs each, with no cell split between the kept runs
+([research](../research/m7/slice1/)). Every cell of the C probe came again. What it adds:
+
+- **`1_1` to a server offering `h2` alone fails 35, with nothing sent,** on all five.
+- **Prior knowledge's code against an HTTP/1.1 server is a race:** 52, 56 and 16 by version
+  natively, every time, but mostly 55 under the memory gate's Valgrind
+  ([research](../research/m7/slice1/valgrind-race/)); by the builder's reading, not measured, the
+  server's answer and the end of its connection beat libcurl's next send there. A suite cannot
+  tell which it runs under, so the test's rows hold every code seen.
+- **Through a proxy that does not tunnel, prior knowledge is ignored** on all five, the
+  environment's proxy and a named one alike: the request goes as HTTP/1.1 in absolute form and
+  reads 200 over 1.1, even to an HTTP/1.1 server that prior knowledge fails directly. Through a
+  `CONNECT` tunnel, `HTTPPROXYTUNNEL` at 1, it speaks HTTP/2 inside. A named proxy is slice 3's,
+  so `prior-knowledge-through-proxy` is decided and built there; beside `proxy environment` this
+  is documented.
+- **Sharing:** to an `h2` server, unset and `2TLS`, two requests submitted in one batch open two
+  connections, and a request submitted after another's head or its end reuses its connection,
+  on all five. By prior knowledge over `http://`, 7.85.0 shares one connection between two
+  submitted in one batch, every time; the others open two. So the consequence above, "requests
+  started together open their own", holds over TLS on every lane, and is pinned by version for
+  prior knowledge. Apple's 8.7.1, whose engine multiplexes nothing, opened two in the Mac's
+  `make test` ([log](../research/m7/slice1/results/mac-8.7.1-make-test.log)).
+- **The version's twins:** `SSL_ENABLE_ALPN`, `ALTSVC` and `ALTSVC_CTRL` change what the field
+  sets, and are owned (ADR-0009, amended 2026-11-02).
+- **A pooled connection made by prior knowledge serves later requests:** over `http://`, a request
+  with the version unset or `2TLS`, to an origin the engine already holds an HTTP/2 connection to
+  by prior knowledge, reuses it and reads HTTP/2, where alone it fails 1: on 8.20.0, by the
+  slice's review ([probe](../research/m7/slice1/review/)).

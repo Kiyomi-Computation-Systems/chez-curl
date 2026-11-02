@@ -172,6 +172,12 @@
 ;; with-counts : Any -> (List Any Counts)
 (define (with-counts x) (list x (native-counts)))
 
+;; then-counts : (Listof Any) -> (Listof Any)
+;; ANSWERS with the native counts read after them, last: ANSWERS is an
+;; argument, so every action in it has run before the counts are read,
+;; whatever order a list's arguments are evaluated in (AGENTS.md).
+(define (then-counts answers) (append answers (list (native-counts))))
+
 ;; url-of : Origin Symbol String -> String
 (define (url-of o face path)
   (let ((f (origin-face o face)))
@@ -229,9 +235,9 @@
 
 ;; --- the keys --------------------------------------------------------------------------
 
-(test-equal "the keys are exactly method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer and body-length, in order"
+(test-equal "the keys are exactly method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer, body-length and http-version, in order"
   '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
-    stream-buffer body-length)
+    stream-buffer body-length http-version)
   request-keys)
 
 (test-equal "the methods are exactly get, head, post, put, patch and delete, in order"
@@ -245,10 +251,11 @@
         (curl-request-body r) (curl-request-user-agent r) (curl-request-timeout-ms r)
         (curl-request-connect-timeout-ms r) (curl-request-body-limit r) (curl-request-ca-file r)
         (curl-request-verify r) (curl-request-proxy r) (curl-request-stream-buffer r)
-        (curl-request-body-length r) (curl-request-fault r) (curl-request-follow r)))
+        (curl-request-body-length r) (curl-request-http-version r) (curl-request-fault r)
+        (curl-request-follow r)))
 
-(test-equal "a request with no key takes every default: get, no headers, no body, no user agent, no timeouts, no body limit, the system store, verification on, the environment's proxy, the whole body kept, no body-length; and no fault, no following"
-  (list '("http://a/b" get () #f #f #f #f #f #f #t environment #f #f #f #f) running-counts)
+(test-equal "a request with no key takes every default: get, no headers, no body, no user agent, no timeouts, no body limit, the system store, verification on, the environment's proxy, the whole body kept, no body-length, no HTTP version; and no fault, no following"
+  (list '("http://a/b" get () #f #f #f #f #f #f #t environment #f #f #f #f #f) running-counts)
   (with-counts (request-fields (make-curl-request "http://a/b"))))
 
 ;; Each value differs from its default. verify's and proxy's are both #f,
@@ -256,11 +263,11 @@
 (define all-keys
   (list 'method 'put 'headers '(("X-A" . "1")) 'body #vu8(1 2 3) 'user-agent "agent"
         'timeout-ms 4000 'connect-timeout-ms 3000 'body-limit 9 'ca-file "ca.pem" 'verify #f
-        'proxy #f 'stream-buffer 65536))
+        'proxy #f 'stream-buffer 65536 'http-version 'http/2-prior-knowledge))
 
 (test-equal "each key sets its own field, in any order"
-  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f #f #f)
-        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f #f #f))
+  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f http/2-prior-knowledge #f #f)
+        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f http/2-prior-knowledge #f #f))
   (list (request-fields (apply make-curl-request "http://a/b" all-keys))
         (request-fields (apply make-curl-request "http://a/b"
                        (let loop ((rest all-keys) (pairs '()))
@@ -284,10 +291,10 @@
              (list 'nope 'url 'fault 'follow "method" #f))
         '(request-refused key nope unknown-key)
         running-counts)
-  (list (map (lambda (k) (failed (lambda () (make-curl-request "http://a/" k 1))))
-             (list 'nope 'url 'fault 'follow "method" #f))
-        (failed (lambda () (make-curl-request 42 'nope 1)))
-        (native-counts)))
+  (then-counts
+   (list (map (lambda (k) (failed (lambda () (make-curl-request "http://a/" k 1))))
+              (list 'nope 'url 'fault 'follow "method" #f))
+         (failed (lambda () (make-curl-request 42 'nope 1))))))
 
 (test-equal "a key with no value after it is refused as missing-value, naming the key, before its other keys' values are checked; an unknown key with no value is unknown-key"
   '((request-refused key method missing-value)
@@ -313,14 +320,14 @@
 
 (test-equal "wrong types are assertion violations from make-curl-request, with nothing native made: a method that is GET, \"get\", options or #f; a body that is a string, a list, 0 or #t; a connect timeout that is 0, -1, 1.5, \"10\" or past a long"
   (list (vector->list (make-vector 13 '(assertion-violation make-curl-request))) running-counts)
-  (list (append
-         (map (lambda (m) (failed (lambda () (make-curl-request "http://a/" 'method m))))
-              (list 'GET "get" 'options #f))
-         (map (lambda (b) (failed (lambda () (make-curl-request "http://a/" 'method 'post 'body b))))
-              (list "abc" '(1 2) 0 #t))
-         (map (lambda (t) (failed (lambda () (make-curl-request "http://a/" 'connect-timeout-ms t))))
-              (list 0 -1 1.5 "10" (expt 2 63))))
-        (native-counts)))
+  (then-counts
+   (list (append
+          (map (lambda (m) (failed (lambda () (make-curl-request "http://a/" 'method m))))
+               (list 'GET "get" 'options #f))
+          (map (lambda (b) (failed (lambda () (make-curl-request "http://a/" 'method 'post 'body b))))
+               (list "abc" '(1 2) 0 #t))
+          (map (lambda (t) (failed (lambda () (make-curl-request "http://a/" 'connect-timeout-ms t))))
+               (list 0 -1 1.5 "10" (expt 2 63)))))))
 
 (test-equal "a body with get or head is refused as body-not-allowed, naming body and the method, an empty body too; with the method left out, get"
   '((request-refused body get body-not-allowed)
@@ -347,18 +354,18 @@
         (vector->list (make-vector 7 '(assertion-violation make-curl-request)))
         '(assertion-violation curl-request-with)
         running-counts)
-  (list (list (curl-request-stream-buffer (make-curl-request "http://a/" 'stream-buffer 1))
-              (curl-request-stream-buffer (make-curl-request "http://a/" 'stream-buffer 65536))
-              (curl-request-stream-buffer (make-curl-request "http://a/" 'stream-buffer #f))
-              (curl-request-stream-buffer (curl-request-with (make-curl-request "http://a/") 'stream-buffer 7))
-              (curl-request-stream-buffer (curl-request-with (make-curl-request "http://a/" 'stream-buffer 7)
-                                                             'stream-buffer #f))
-              (curl-request-stream-buffer (curl-request-with (make-curl-request "http://a/" 'stream-buffer 3)
-                                                             'method 'post)))
-        (map (lambda (v) (failed (lambda () (make-curl-request "http://a/" 'stream-buffer v))))
-             (list 0 -1 1.5 65536.0 "10" #t 'stream))
-        (failed (lambda () (curl-request-with (make-curl-request "http://a/") 'stream-buffer 0)))
-        (native-counts)))
+  (then-counts
+   (list (list (curl-request-stream-buffer (make-curl-request "http://a/" 'stream-buffer 1))
+               (curl-request-stream-buffer (make-curl-request "http://a/" 'stream-buffer 65536))
+               (curl-request-stream-buffer (make-curl-request "http://a/" 'stream-buffer #f))
+               (curl-request-stream-buffer (curl-request-with (make-curl-request "http://a/") 'stream-buffer 7))
+               (curl-request-stream-buffer (curl-request-with (make-curl-request "http://a/" 'stream-buffer 7)
+                                                              'stream-buffer #f))
+               (curl-request-stream-buffer (curl-request-with (make-curl-request "http://a/" 'stream-buffer 3)
+                                                              'method 'post)))
+         (map (lambda (v) (failed (lambda () (make-curl-request "http://a/" 'stream-buffer v))))
+              (list 0 -1 1.5 65536.0 "10" #t 'stream))
+         (failed (lambda () (curl-request-with (make-curl-request "http://a/") 'stream-buffer 0))))))
 
 ;; --- the proxy field (ADR-0024, decision 1) ---------------------------------------------
 
@@ -367,48 +374,74 @@
         (vector->list (make-vector 6 '(assertion-violation make-curl-request)))
         '(assertion-violation curl-request-with)
         running-counts)
-  (list (list (curl-request-proxy (make-curl-request "http://a/" 'proxy 'environment))
-              (curl-request-proxy (make-curl-request "http://a/" 'proxy #f))
-              (curl-request-proxy (curl-request-with (make-curl-request "http://a/" 'proxy #f)
-                                                     'proxy 'environment))
-              (curl-request-proxy (curl-request-with (make-curl-request "http://a/") 'proxy #f))
-              (curl-request-proxy (curl-request-with (make-curl-request "http://a/" 'proxy #f)
-                                                     'method 'post)))
-        (map (lambda (v) (failed (lambda () (make-curl-request "http://a/" 'proxy v))))
-             (list #t 'none "environment" 'Environment '() 0))
-        (failed (lambda () (curl-request-with (make-curl-request "http://a/") 'proxy 'direct)))
-        (native-counts)))
+  (then-counts
+   (list (list (curl-request-proxy (make-curl-request "http://a/" 'proxy 'environment))
+               (curl-request-proxy (make-curl-request "http://a/" 'proxy #f))
+               (curl-request-proxy (curl-request-with (make-curl-request "http://a/" 'proxy #f)
+                                                      'proxy 'environment))
+               (curl-request-proxy (curl-request-with (make-curl-request "http://a/") 'proxy #f))
+               (curl-request-proxy (curl-request-with (make-curl-request "http://a/" 'proxy #f)
+                                                      'method 'post)))
+         (map (lambda (v) (failed (lambda () (make-curl-request "http://a/" 'proxy v))))
+              (list #t 'none "environment" 'Environment '() 0))
+         (failed (lambda () (curl-request-with (make-curl-request "http://a/") 'proxy 'direct))))))
+
+;; --- the http-version key (ADR-0034; the M7 plan, section 3.1) ---------------------------
+
+(test-equal "http-version takes http/1.1, http/2 and http/2-prior-knowledge, each kept, or #f, the default, none; curl-request-with replaces it either way and keeps it when not given; any other value is an assertion violation, from make-curl-request or curl-request-with, with nothing native made: http/1.0, http/3, HTTP/2, \"http/2\", h2, 2, #t and ()"
+  (list '(http/1.1 http/2 http/2-prior-knowledge #f http/2 #f http/1.1)
+        (vector->list (make-vector 8 '(assertion-violation make-curl-request)))
+        '(assertion-violation curl-request-with)
+        running-counts)
+  (then-counts
+   (list (list (curl-request-http-version (make-curl-request "http://a/" 'http-version 'http/1.1))
+               (curl-request-http-version (make-curl-request "http://a/" 'http-version 'http/2))
+               (curl-request-http-version (make-curl-request "http://a/" 'http-version 'http/2-prior-knowledge))
+               (curl-request-http-version (make-curl-request "http://a/" 'http-version #f))
+               (curl-request-http-version (curl-request-with (make-curl-request "http://a/") 'http-version 'http/2))
+               (curl-request-http-version (curl-request-with (make-curl-request "http://a/" 'http-version 'http/2)
+                                                             'http-version #f))
+               (curl-request-http-version (curl-request-with (make-curl-request "http://a/" 'http-version 'http/1.1)
+                                                             'method 'post)))
+         (map (lambda (v) (failed (lambda () (make-curl-request "http://a/" 'http-version v))))
+              (list 'http/1.0 'http/3 'HTTP/2 "http/2" 'h2 2 #t '()))
+         (failed (lambda () (curl-request-with (make-curl-request "http://a/") 'http-version 'http/2.0))))))
+
+(test-equal "http-version http/2-prior-knowledge is not refused as a request is made, an https URL's too: the URL is parsed at submit alone"
+  '(http/2-prior-knowledge http/2-prior-knowledge)
+  (list (curl-request-http-version (make-curl-request "https://a/" 'http-version 'http/2-prior-knowledge))
+        (curl-request-http-version (curl-request-with (make-curl-request "https://a/") 'http-version 'http/2-prior-knowledge))))
 
 ;; --- body stream and body-length (ADR-0030; the M6 plan, section 3.1) --------------------
 
 (test-equal "body takes stream with post, put, patch and delete, and body-length sets its own field beside it: a natural, 0 and 2^63 - 2 among them, or #f, the default, kept by curl-request-with when not given and replaced when given; the other fields keep their defaults; nothing native made"
   (list '((post stream 7) (put stream 0) (patch stream 9223372036854775806) (delete stream #f))
-        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 7 #f #f)
-        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 5 #f #f)
-        '("http://a/b" post () stream #f #f #f #f #f #t environment #f #f #f #f)
+        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 7 #f #f #f)
+        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 5 #f #f #f)
+        '("http://a/b" post () stream #f #f #f #f #f #t environment #f #f #f #f #f)
         running-counts)
-  (list (map (lambda (args)
-               (let ((r (make-curl-request "http://a/" 'method (car args) 'body 'stream 'body-length (cadr args))))
-                 (list (curl-request-method r) (curl-request-body r) (curl-request-body-length r))))
-             (list '(post 7) '(put 0) (list 'patch (- (expt 2 63) 2)) '(delete #f)))
-        (request-fields (curl-request-with (make-curl-request "http://a/b" 'method 'post 'body 'stream 'body-length 7)))
-        (request-fields (curl-request-with (make-curl-request "http://a/b" 'method 'post 'body 'stream 'body-length 7)
-                                           'body-length 5))
-        (request-fields (curl-request-with (make-curl-request "http://a/b" 'method 'post 'body 'stream 'body-length 7)
-                                           'body-length #f))
-        (native-counts)))
+  (then-counts
+   (list (map (lambda (args)
+                (let ((r (make-curl-request "http://a/" 'method (car args) 'body 'stream 'body-length (cadr args))))
+                  (list (curl-request-method r) (curl-request-body r) (curl-request-body-length r))))
+              (list '(post 7) '(put 0) (list 'patch (- (expt 2 63) 2)) '(delete #f)))
+         (request-fields (curl-request-with (make-curl-request "http://a/b" 'method 'post 'body 'stream 'body-length 7)))
+         (request-fields (curl-request-with (make-curl-request "http://a/b" 'method 'post 'body 'stream 'body-length 7)
+                                            'body-length 5))
+         (request-fields (curl-request-with (make-curl-request "http://a/b" 'method 'post 'body 'stream 'body-length 7)
+                                            'body-length #f)))))
 
 (test-equal "body-length's wrong types are assertion violations, from make-curl-request and curl-request-with, before anything native: -1, 2^63 - 1, 1.5, 7.0, \"7\", #t and stream; a body that is a symbol but stream, an assertion violation too"
   (list (vector->list (make-vector 7 '(assertion-violation make-curl-request)))
         '(assertion-violation curl-request-with)
         '((assertion-violation make-curl-request) (assertion-violation make-curl-request))
         running-counts)
-  (list (map (lambda (v) (failed (lambda () (make-curl-request "http://a/" 'method 'post 'body 'stream 'body-length v))))
-             (list -1 (- (expt 2 63) 1) 1.5 7.0 "7" #t 'stream))
-        (failed (lambda () (curl-request-with (make-curl-request "http://a/" 'method 'post 'body 'stream) 'body-length -1)))
-        (list (failed (lambda () (make-curl-request "http://a/" 'method 'post 'body 'streams)))
-              (failed (lambda () (make-curl-request "http://a/" 'method 'post 'body 'Stream))))
-        (native-counts)))
+  (then-counts
+   (list (map (lambda (v) (failed (lambda () (make-curl-request "http://a/" 'method 'post 'body 'stream 'body-length v))))
+              (list -1 (- (expt 2 63) 1) 1.5 7.0 "7" #t 'stream))
+         (failed (lambda () (curl-request-with (make-curl-request "http://a/" 'method 'post 'body 'stream) 'body-length -1)))
+         (list (failed (lambda () (make-curl-request "http://a/" 'method 'post 'body 'streams)))
+               (failed (lambda () (make-curl-request "http://a/" 'method 'post 'body 'Stream)))))))
 
 (test-equal "a streamed body with get or head is refused as body-not-allowed, naming body and the method; with the method left out, get"
   '((request-refused body get body-not-allowed)
@@ -461,8 +494,8 @@
 (define base (apply make-curl-request "http://a/b" all-keys))
 
 (test-equal "curl-request-with replaces the keys given and keeps the rest; with none, every field"
-  (list '("http://a/b" patch (("X-A" . "1")) #vu8(4) "agent" 4000 10 9 "ca.pem" #f #f 65536 #f #f #f)
-        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f #f #f))
+  (list '("http://a/b" patch (("X-A" . "1")) #vu8(4) "agent" 4000 10 9 "ca.pem" #f #f 65536 #f http/2-prior-knowledge #f #f)
+        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f http/2-prior-knowledge #f #f))
   (list (request-fields (curl-request-with base 'connect-timeout-ms 10 'method 'patch 'body #vu8(4)))
         (request-fields (curl-request-with base))))
 
@@ -486,9 +519,9 @@
 (define whole (curl-request-with base 'stream-buffer #f))
 
 (test-equal "the private constructors set the fault and following, keep every other field, and curl-request-with keeps both"
-  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f 2 #f)
-        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f #f #f #f #t)
-        '("http://a/b" delete (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f #f #f 2 #t))
+  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f http/2-prior-knowledge 2 #f)
+        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f #f #f http/2-prior-knowledge #f #t)
+        '("http://a/b" delete (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f #f #f http/2-prior-knowledge 2 #t))
   (list (request-fields (curl-request-with-fault base 2))
         (request-fields (curl-request-following whole))
         (request-fields (curl-request-with (curl-request-following (curl-request-with-fault whole 2))

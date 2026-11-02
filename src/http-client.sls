@@ -51,8 +51,12 @@
 ;;; for one: Content-*, Digest and Last-Modified. Another origin, by scheme,
 ;;; host A to Z folded and port, drops Authorization, Cookie and
 ;;; Proxy-Authorization from then on, and another host drops Host too;
-;;; every other header follows. Each followed response joins the history.
-;;; libcurl's own following stays off.
+;;; every other header follows, as every other key does, the http-version
+;;; among them: a redirect from http:// to https:// by prior knowledge
+;;; fails the call with the low level's refusal of its next request,
+;;; prior-knowledge-over-https, compounded with its &http-exchange (ADR-0034).
+;;; Each followed response joins the history. libcurl's own following stays
+;;; off.
 ;;;
 ;;; What a call raises carries its context: a call compounds its own
 ;;; failures, (curl)'s included, with &http-exchange. A condition the
@@ -105,8 +109,8 @@
    ;; (make-http-session KEY VALUE ...): a session, with these keys, each
    ;; once at most, each left out taking the low level's default, as
    ;; make-curl-request takes them: headers, user-agent, timeout-ms,
-   ;; connect-timeout-ms, body-limit, ca-file, verify and proxy; and two of
-   ;; the high level's own:
+   ;; connect-timeout-ms, body-limit, ca-file, verify, proxy and
+   ;; http-version; and three of the high level's own:
    ;;   redirects        the most redirects a call follows, an exact
    ;;                    natural; or #f, which follows none and answers the
    ;;                    redirect; 20
