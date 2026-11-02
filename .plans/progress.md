@@ -8,45 +8,11 @@ close-out under **Close-outs**, newest first.
 
 - **Next milestone:** M7, HTTP/2, cookies, auth and proxies (brief §8), from its plan, not yet
   written. The M6 plan's §9 carries its items.
-- **CI's first run, fixed** on `fix/ci-first-run`, PR #39
-  ([research](research/ci-first-run/)). CI ran for the first time on PR #38, and four suites
-  failed across its runs and `main`'s push, each at a test already on `main`:
-  - main's `wire-probe-reset` peer check read a FIN where the probe had reset: its stand-in
-    server judged by Node's events, and CI's Node 22.23.4 bundles libuv 1.51.0, which reads a
-    reset that comes with the last data as an end. The stand-in now blocks its loop as each
-    connection arrives, and reads its fd once on each end, as the probe does;
-  - the floor's GET of 100,000 headers outlasted test-transfer's 60 s bound once: libcurl's
-    `curl_easy_nextheader` walks every header on each call, and 7.85.0 caps none, so it took
-    30 s of CPU here. The case is now 50,000, past every newer libcurl's cap, 7.3 to 7.7 s on
-    7.85.0, and 8.7.1 refuses it with 56, as it did 100,000;
-  - the current lane's full-buffer upload never filled, 3 runs of 3. Its fill waited for a
-    further 500 ms with nothing taken after a put timed out, and on the runner libcurl had
-    taken one 64 KiB piece more by the end of each of the fill's one-second rounds, which PR
-    #39's first run traced; 8.5.0 stalled at once there. The fill now asks only that nothing
-    be taken through the put's own 500 ms bound, and still fails when the sink's hold is
-    ignored. PR #39's second run passed it, stalling at 550 ms. CI prints the runner's kernel
-    and TCP buffers;
-  - test-retry's live check of a retry that runs out of time failed under Valgrind on the
-    runner, 2 memory runs of 3: the first attempt's connect timeout of 900 ms came about
-    540 ms late, past the 500 ms it had to spare, which half a CPU reproduced here. It is now
-    2,000 ms of a 3,500 ms bound, 1,400 ms to spare, and PR #39's second run passed every job;
-  - the memory lane failed two of test-upload's tests in each of two runs, which its output did
-    not name. `make test-memory` now prints a failing suite's FAIL lines, with their expected and
-    actual values, each line once, and `check-memory-gate` holds that. PR #39's third run named
-    one: the head's body-asked bit read `#f` for `/raw/answer`, whose answer, written as the head
-    arrives, came before libcurl's first ask, the race slice 2 met at accept. That case now
-    asserts its bit is whether the read callable was ever asked. Whether it was one of the two,
-    and what the other was, is not shown.
-
-  **The Mac ran it, 2026-11-01,** at `c080ca3`: `make test` 35 of 35
-  ([log](research/ci-first-run/results/mac-8.7.1-make-test.log)). test-transfer held 8.7.1's
-  50,000 cell, test-curl-testing's stand-in passed there, and the new fill stalled at 917,504
-  bytes at 519 ms, under half the Linux lanes' 2 MiB.
-
-  **Reviewed** (Opus, read-only, 234k tokens, 17 min): no blocker, two majors and five minors,
-  each answered. The majors: my records read the fill's own one-second rounds as the kernel's
-  times, and some numbers had no kept log, PR #39's memory run among them. Among the minors,
-  the gate check passed a test-memory that printed the whole log; it now fails one.
+- **CI is green.** PR #39 (`80bb2a9`) fixed the four suites CI's first runs failed, and its
+  runs at `1a8fcb5` and `c080ca3` passed all eight jobs. Its close-out is below. A pull request or a push to `main`
+  whose changes are all in `.plans/`'s own files or `.plans/research/` now runs no CI (PR #40);
+  a change to `.plans/decisions/` still runs every job, since test-collect-safe reads the
+  records.
 - **M6, streaming bodies and backpressure:** **done on 2026-11-01.** Its three slices are merged
   (PRs #36 to #38), per the [M6 plan](2026-10-29-m6-plan.md), merged as PR #35 (`46c1f3c`), and
   the Mac has run `make test` on slice 3 (the plan, §7). Their close-outs are below.
@@ -200,8 +166,8 @@ close-out under **Close-outs**, newest first.
   because recent account payments have failed or your spending limit needs to be increased".
   Its last run there passed six jobs of eight: Chez built from its tarball, a real
   `--nothreads` Chez, the floor at 7.85.0, GnuTLS and both disabled-API lanes; the memory lane
-  ran every suite under Ubuntu's Valgrind 3.22 with 0 errors. Its failures are above, under
-  CI's first run.
+  ran every suite under Ubuntu's Valgrind 3.22 with 0 errors. Its failures, and their fixes,
+  are in PR #39's close-out below.
 - **Decided for M2,** by the maintainer:
   - curl's URL verdicts vary by version, so the URL suite holds shared answers and a row
     per libcurl version (ADR-0008, amended 2026-10-19);
@@ -216,6 +182,81 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-11-01 — CI's first runs, four failing suites (PR #39, `80bb2a9`)
+
+- **What failed** ([research](research/ci-first-run/)). CI ran for the first time on PR #38,
+  and four suites failed across its runs and `main`'s push, each at a test already on `main`:
+  - main's `wire-probe-reset` peer check read a FIN where the probe had reset: its stand-in
+    server judged by Node's events, and CI's Node 22.23.4 bundles libuv 1.51.0, which reads a
+    reset that comes with the last data as an end. The stand-in now blocks its loop as each
+    connection arrives, and reads its fd once on each end, as the probe does;
+  - the floor's GET of 100,000 headers outlasted test-transfer's 60 s bound once: libcurl's
+    `curl_easy_nextheader` walks every header on each call, and 7.85.0 caps none, so it took
+    30 s of CPU here. The case is now 50,000, past every newer libcurl's cap, 7.3 to 7.7 s on
+    7.85.0, and 8.7.1 refuses it with 56, as it did 100,000;
+  - the current lane's full-buffer upload never filled, 3 runs of 3. Its fill waited for a
+    further 500 ms with nothing taken after a put timed out, and on the runner libcurl had
+    taken one 64 KiB piece more by the end of each of the fill's one-second rounds, which PR
+    #39's first run traced; 8.5.0 stalled at once there. The fill now asks only that nothing
+    be taken through the put's own 500 ms bound, and still fails when the sink's hold is
+    ignored. PR #39's second run passed it, stalling at 550 ms. CI prints the runner's kernel
+    and TCP buffers;
+  - test-retry's live check of a retry that runs out of time failed under Valgrind on the
+    runner, 2 memory runs of 3: the first attempt's connect timeout of 900 ms came about
+    540 ms late, past the 500 ms it had to spare, which half a CPU reproduced here. It is now
+    2,000 ms of a 3,500 ms bound, 1,400 ms to spare, and PR #39's second run passed every job;
+  - the memory lane failed two of test-upload's tests in each of two runs, which its output did
+    not name. `make test-memory` now prints a failing suite's FAIL lines, with their expected and
+    actual values, each line once, and `check-memory-gate` holds that. PR #39's third run named
+    one: the head's body-asked bit read `#f` for `/raw/answer`, whose answer, written as the head
+    arrives, came before libcurl's first ask, the race slice 2 met at accept. That case now
+    asserts its bit is whether the read callable was ever asked. Whether it was one of the two,
+    and what the other was, is not shown.
+- **Watched failing,** each fix against its mutant, by the logs in the research's `results/`:
+  - test-curl-testing's stand-in without its fd read fails on Node 22.23.4 and 20.10.0, as CI
+    did, and a probe that destroys where it should reset fails it;
+  - 7.85.0's header cell set to 49,999 fails the by-version test by name;
+  - the new fill fails with the sink's hold ignored, slice 2's `hold-ignored`, `never-full`,
+    on 8.23.0 and 8.5.0;
+  - the body-asked bit always `#f` fails, `raw-answer` `(bit #f ask #t)`;
+  - test-memory printing a FAIL line twice, and printing the whole log, each fail
+    `check-memory-gate`, 38 ok and 1 FAILED.
+- **Not reproduced here:** the runner's slow take from a full buffer, which origin mutants that
+  drained the sink a little each second or each 700 ms did not show; nor `/raw/answer`'s race,
+  which a hold before the request does not order, and which Valgrind at half a CPU did not
+  flip. CI's runs are their only evidence. test-retry's late timeout did reproduce, under
+  Valgrind at half a CPU.
+- **Checks,** on the final tree: in the container, `make test` 35 of 35 with its checks; the
+  changed suites passed on the five Linux lanes, the container's and in Docker the floor, main,
+  gnutls and current, and under Valgrind. CI passed all eight jobs at `1a8fcb5` and `c080ca3`.
+  The last commit, `0122f6d`, added records alone, so I cancelled its run before the merge.
+- **The Mac ran it, 2026-11-01,** at `c080ca3`: `make test` 35 of 35
+  ([log](research/ci-first-run/results/mac-8.7.1-make-test.log)). test-transfer held 8.7.1's
+  50,000 cell, test-curl-testing's stand-in passed there, and the new fill stalled at 917,504
+  bytes at 519 ms, under half the Linux lanes' 2 MiB.
+- **Reviewed** (Opus, read-only): no blocker, two majors and five minors, each answered. The
+  majors: my records read the fill's own one-second rounds as the kernel's times, and some
+  numbers had no kept log, PR #39's memory run among them. Among the minors, the gate check
+  passed a test-memory that printed the whole log; it now fails one. The review was wrong
+  once: it read a cancelled memory lane as passed.
+- **Subagents,** one, Opus:
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | adversarial review | 234k | 17 min |
+- **Learned:**
+  - every lane here passed, as it ran, what the runner failed: the runner's pace, natively and
+    under Valgrind, and its kernel's buffers differ from this host's and Docker's, so CI is a
+    lane of its own;
+  - a gate that does not name a failure costs a run to name it: two memory runs failed
+    test-upload's tests unnamed;
+  - a seam that does not reproduce the failure cannot stand as its test: neither drain mutant
+    nor the hold did, and slice 2's `hold-ignored` gave the kill;
+  - a denied command runs none of its parts: the PR body it would have written was never saved,
+    and I told the maintainer it was;
+  - a records-only push ran all eight jobs, which the maintainer called expensive: records now
+    ride with code, and `.plans/` alone runs no CI (PR #40).
 
 ### 2026-11-01 — M6 slice 3: the high level's streams (PR #38, `969e981`)
 
