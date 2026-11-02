@@ -1,0 +1,20 @@
+--- src/curl/private/transfer.sls	2026-10-31 12:50:47.137499191 -0400
++++ build/m7s1/src/curl/private/transfer.sls	2026-11-02 09:39:38.740410667 -0500
+@@ -1179,7 +1179,7 @@
+   ;; then proxy-tls-option-names. They are compared by id, so an alias name
+   ;; is refused too.
+   (define owned-option-names
+-    (append '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS"
++    (remp (lambda (name) (member name '("PROXY" "NOPROXY"))) (append '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS"
+               "NOSIGNAL" "QUICK_EXIT" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER")
+             (apply append (map cdr request-field-options))
+             '("TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "PUT"
+@@ -1190,7 +1190,7 @@
+               "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
+               "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
+               "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT")
+-            proxy-tls-option-names))
++            proxy-tls-option-names)))
+ 
+   ;; pinned-options : (Listof (Pairof String (U String Integer)))
+   ;; The settings every transfer makes, before its own: ADR-0003's protocol

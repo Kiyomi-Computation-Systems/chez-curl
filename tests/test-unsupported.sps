@@ -296,9 +296,10 @@
 ;; pins' bitmasks; each request field's, stream-buffer's header callable and
 ;; its data among them (the M6 plan, section 3.3), and a streamed body's
 ;; read, seek and prerequest callables, their data and FRESH_CONNECT (M6
-;; slice 2); the twins; the options slice 4's
-;; review found, twins and the hazards kept from the hatch (amended
-;; 2026-10-27); every proxy TLS option.
+;; slice 2), and http-version's HTTP_VERSION (M7 slice 1); the twins; the
+;; options slice 4's review found, twins and the hazards kept from the
+;; hatch (amended 2026-10-27); the version's twins, SSL_ENABLE_ALPN, ALTSVC
+;; and ALTSVC_CTRL (amended 2026-11-02); every proxy TLS option.
 (define owned-names
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
     "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
@@ -306,6 +307,7 @@
     "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "CAINFO" "CAPATH"
     "SSL_VERIFYPEER" "SSL_VERIFYHOST" "PROXY" "HEADERFUNCTION" "HEADERDATA" "FOLLOWLOCATION"
     "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA" "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT"
+    "HTTP_VERSION"
     "TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "PUT" "UPLOAD"
     "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE" "INFILESIZE_LARGE"
     "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
@@ -313,7 +315,7 @@
     "TRANSFERTEXT" "USERPWD" "USERNAME" "PASSWORD" "NETRC" "HSTS"
     "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
     "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
-    "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT"
+    "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT" "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL"
     "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
     "PROXY_CAINFO" "PROXY_CAINFO_BLOB" "PROXY_CAPATH" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
     "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
@@ -335,6 +337,35 @@
          (refused-as name (if (curl-easy-option name) 'owned-option 'unknown-option)))
        owned-names)
   (map (lambda (name) (attach (list (cons name (value-for name))))) owned-names))
+
+;; M7 slice 1 (ADR-0009, amended 2026-11-02): the http-version field's
+;; HTTP_VERSION, and its three twins, each seen to undo what the field
+;; sets: SSL_ENABLE_ALPN at 0 read HTTP/1.1 where 2TLS read HTTP/2; an
+;; ALTSVC file moved later transfers to another host and version; and
+;; ALTSVC_CTRL alone, an in-memory cache, moved a transfer's own 417 resend
+;; to the first response's alternative (the slice's review). Their
+;; neighbours stay the hatch's: HSTS_CTRL, whose cache an http:// URL never
+;; fills and an https:// one never needs, within one transfer; PIPEWAIT,
+;; HTTP09_ALLOWED, HTTP200ALIASES, CONNECT_TO and HTTPPROXYTUNNEL. Each is
+;; attached, and kept.
+(test-equal "HTTP_VERSION, the http-version field's, and its twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL are refused as owned-option, with values their types take, before anything native; their neighbours HSTS_CTRL, PIPEWAIT, HTTP09_ALLOWED, HTTP200ALIASES, CONNECT_TO and HTTPPROXYTUNNEL are taken, each kept as attached"
+  (list (refused-as "HTTP_VERSION" 'owned-option) (refused-as "SSL_ENABLE_ALPN" 'owned-option)
+        (refused-as "ALTSVC" 'owned-option) (refused-as "ALTSVC_CTRL" 'owned-option)
+        taken taken taken taken taken taken
+        '(("HSTS_CTRL" long 1) ("PIPEWAIT" long 1) ("HTTP09_ALLOWED" long 1)
+          ("HTTP200ALIASES" slist ("ICY 200 OK")) ("CONNECT_TO" slist ("::127.0.0.1:1"))
+          ("HTTPPROXYTUNNEL" long 1)))
+  (append (map attach '((("HTTP_VERSION" . 2)) (("SSL_ENABLE_ALPN" . 0)) (("ALTSVC" . "altsvc.txt"))
+                        (("ALTSVC_CTRL" . 24))))
+          (map attach '((("HSTS_CTRL" . 1)) (("PIPEWAIT" . 1)) (("HTTP09_ALLOWED" . 1))
+                        (("HTTP200ALIASES" "ICY 200 OK")) (("CONNECT_TO" "::127.0.0.1:1"))
+                        (("HTTPPROXYTUNNEL" . 1))))
+          (list (guard (e (#t (list 'raised (describe e))))
+                  (hatch-settings-of
+                   (curl-request-with-options base '(("HSTS_CTRL" . 1) ("PIPEWAIT" . 1) ("HTTP09_ALLOWED" . 1)
+                                                     ("HTTP200ALIASES" "ICY 200 OK")
+                                                     ("CONNECT_TO" "::127.0.0.1:1")
+                                                     ("HTTPPROXYTUNNEL" . 1))))))))
 
 (test-equal "an alias of an owned option is refused as owned-option, by id: FILE is WRITEDATA's id and RTSPHEADER HTTPHEADER's; and a name in another case, url, Url and cainfo, as curl_easy_option_by_name reads it"
   (list '(same same)

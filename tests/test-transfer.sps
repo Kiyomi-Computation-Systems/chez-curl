@@ -1336,7 +1336,7 @@
 
 ;; --- the hatch's deny-list (ADR-0009, amended 2026-10-23 and 2026-10-27) ------------------
 
-(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its read, seek and prerequest callables and their data, and FRESH_CONNECT, stream-buffer's header callable and its data, HEADERFUNCTION and HEADERDATA, body-length's INFILESIZE_LARGE, and FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's NOPROXY, PRE_PROXY, PROXYPORT and PROXYTYPE; then slice 4's: TRANSFERTEXT, CRLF's twin; the URL's USERPWD, USERNAME, PASSWORD, NETRC and HSTS; the proxy field's UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET; the headers' PROXYHEADER and HEADEROPT; and RESUME_FROM, RESUME_FROM_LARGE, COOKIEFILE, COOKIEJAR, CONNECT_ONLY, DOH_URL, RESOLVE and SSLENGINE_DEFAULT, kept from the hatch; then every proxy TLS option"
+(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its read, seek and prerequest callables and their data, and FRESH_CONNECT, stream-buffer's header callable and its data, HEADERFUNCTION and HEADERDATA, body-length's INFILESIZE_LARGE, http-version's HTTP_VERSION, and FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's NOPROXY, PRE_PROXY, PROXYPORT and PROXYTYPE; then slice 4's: TRANSFERTEXT, CRLF's twin; the URL's USERPWD, USERNAME, PASSWORD, NETRC and HSTS; the proxy field's UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET; the headers' PROXYHEADER and HEADEROPT; and RESUME_FROM, RESUME_FROM_LARGE, COOKIEFILE, COOKIEJAR, CONNECT_ONLY, DOH_URL, RESOLVE and SSLENGINE_DEFAULT, kept from the hatch; then M7 slice 1's, the HTTP version's twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL; then every proxy TLS option"
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
     "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
     "CURLU" "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD" "HTTPHEADER"
@@ -1344,7 +1344,7 @@
     "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT" "USERAGENT"
     "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "CAINFO" "CAPATH"
     "SSL_VERIFYPEER" "SSL_VERIFYHOST" "PROXY" "HEADERFUNCTION" "HEADERDATA" "INFILESIZE_LARGE"
-    "FOLLOWLOCATION"
+    "HTTP_VERSION" "FOLLOWLOCATION"
     "TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "PUT"
     "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE"
     "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
@@ -1353,6 +1353,7 @@
     "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
     "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
     "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT"
+    "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL"
     "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
     "PROXY_CAINFO" "PROXY_CAINFO_BLOB" "PROXY_CAPATH" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
     "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
@@ -1361,7 +1362,7 @@
     "PROXY_TLSAUTH_PASSWORD")
   owned-option-names)
 
-(test-equal "request-field-options, written out: url's CURLU; method's NOBODY and CUSTOMREQUEST, and a streamed body's POST and UPLOAD; headers' HTTPHEADER; body's POSTFIELDSIZE_LARGE and COPYPOSTFIELDS, then a streamed one's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT; user-agent's USERAGENT; timeout-ms's TIMEOUT_MS; connect-timeout-ms's CONNECTTIMEOUT_MS; body-limit's MAXFILESIZE_LARGE; ca-file's CAINFO and CAPATH; verify's SSL_VERIFYPEER and SSL_VERIFYHOST; proxy's PROXY; stream-buffer's HEADERFUNCTION and HEADERDATA; body-length's INFILESIZE_LARGE; and follow's FOLLOWLOCATION"
+(test-equal "request-field-options, written out: url's CURLU; method's NOBODY and CUSTOMREQUEST, and a streamed body's POST and UPLOAD; headers' HTTPHEADER; body's POSTFIELDSIZE_LARGE and COPYPOSTFIELDS, then a streamed one's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT; user-agent's USERAGENT; timeout-ms's TIMEOUT_MS; connect-timeout-ms's CONNECTTIMEOUT_MS; body-limit's MAXFILESIZE_LARGE; ca-file's CAINFO and CAPATH; verify's SSL_VERIFYPEER and SSL_VERIFYHOST; proxy's PROXY; stream-buffer's HEADERFUNCTION and HEADERDATA; body-length's INFILESIZE_LARGE; http-version's HTTP_VERSION; and follow's FOLLOWLOCATION"
   '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD") (headers "HTTPHEADER")
     (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA"
           "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT")
@@ -1370,7 +1371,7 @@
     (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
     (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY")
     (stream-buffer "HEADERFUNCTION" "HEADERDATA") (body-length "INFILESIZE_LARGE")
-    (follow "FOLLOWLOCATION"))
+    (http-version "HTTP_VERSION") (follow "FOLLOWLOCATION"))
   request-field-options)
 
 (test-equal "every option of every request field is an owned option, so the hatch refuses it"
@@ -1378,8 +1379,8 @@
   (filter (lambda (name) (not (member name owned-option-names)))
           (apply append (map cdr request-field-options))))
 
-(test-equal "a request's fields, written out, in the record's order: url, method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer, body-length, then the private fault and follow, then the hatch's options"
-  '(url method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy stream-buffer body-length fault follow options)
+(test-equal "a request's fields, written out, in the record's order: url, method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer, body-length, http-version, then the private fault and follow, then the hatch's options"
+  '(url method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy stream-buffer body-length http-version fault follow options)
   (guard (e (#t (list 'raised (describe e))))
     (vector->list (record-type-field-names (record-rtd (make-curl-request "http://a/"))))))
 
@@ -1558,11 +1559,19 @@
   (and (list? form) (= (length form) 3) (eq? (car form) 'for-each)
        (equal? (caddr form) '(method-settings (plan-method plan) (plan-body plan) (plan-body-length plan)))))
 
+;; version-loop? : Any -> Boolean
+;; FORM is a for-each over version-settings' answer for the plan's
+;; http-version, whose settings it sets by (car setting).
+(define (version-loop? form)
+  (and (list? form) (= (length form) 3) (eq? (car form) 'for-each)
+       (equal? (caddr form) '(version-settings (plan-http-version plan)))))
+
 ;; setting-order : Any -> Any
 ;; What each form of the definition D's body sets, in order: pins for
 ;; (set-pinned-options! easy buffer quick-exit); tls for (set-tls-options! easy
 ;; (plan-ca-file plan) (plan-verify plan) buffer); method for the loop over
-;; method-settings' answer, by method-loop?; hatch for the loop over the
+;; method-settings' answer, by method-loop?; version for the loop over
+;; version-settings' answer, by version-loop?; hatch for the loop over the
 ;; hatch's settings, by hatch-loop?; else each set-option! and
 ;; set-string-option! call in it, by set-name; (other FORM) for a form that
 ;; sets nothing. D itself when it is no definition: what went wrong.
@@ -1574,6 +1583,7 @@
                           ((equal? form '(set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer))
                            '(tls))
                           ((method-loop? form) '(method))
+                          ((version-loop? form) '(version))
                           ((hatch-loop? form) '(hatch))
                           (else (let ((sets (option-sets form '())))
                                   (if (null? sets)
@@ -1582,11 +1592,11 @@
                   (cddr d)))
       d))
 
-(test-equal "set-transfer-options!, read from transfer.sls, form by form: the pins first, then ERRORBUFFER, CURLU, WRITEFUNCTION and WRITEDATA, then a streamed response's HEADERFUNCTION and HEADERDATA, then a streamed body's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT, then the loop over method-settings' answer, then the request's HTTPHEADER, USERAGENT, TIMEOUT_MS, CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE and PROXY, then set-tls-options!, then the private follow field's FOLLOWLOCATION, then, last, the loop over the hatch's settings; set-pinned-options!, set-transfer-options! and set-hatch-option! each stand twice in transfer.sls, a definition and one call"
+(test-equal "set-transfer-options!, read from transfer.sls, form by form: the pins first, then ERRORBUFFER, CURLU, WRITEFUNCTION and WRITEDATA, then a streamed response's HEADERFUNCTION and HEADERDATA, then a streamed body's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT, then the loop over method-settings' answer, then the request's HTTPHEADER, USERAGENT, TIMEOUT_MS, CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE and PROXY, then the loop over version-settings' answer, then set-tls-options!, then the private follow field's FOLLOWLOCATION, then, last, the loop over the hatch's settings; set-pinned-options!, set-transfer-options! and set-hatch-option! each stand twice in transfer.sls, a definition and one call"
   '((pins "ERRORBUFFER" "CURLU" "WRITEFUNCTION" "WRITEDATA" "HEADERFUNCTION" "HEADERDATA"
           "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA" "PREREQFUNCTION" "PREREQDATA"
           "FRESH_CONNECT" method
-          "HTTPHEADER" "USERAGENT" "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "PROXY" tls
+          "HTTPHEADER" "USERAGENT" "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "PROXY" version tls
           "FOLLOWLOCATION" hatch)
     2 2 2)
   (list (setting-order (transfer-definition 'set-transfer-options!))
@@ -1594,8 +1604,8 @@
         (symbol-count 'set-transfer-options! transfer-library)
         (symbol-count 'set-hatch-option! transfer-library)))
 
-(test-equal "setting-order, the reader: pins, tls, the loop over method-settings' answer, each set's name at any depth, a field's through field-option, the hatch's loop, a form that sets nothing, a loop by (car setting), and a name it cannot read"
-  '(pins "A" "USERAGENT" "B" tls method hatch (other (f x)) (unread (car setting)) (unread n))
+(test-equal "setting-order, the reader: pins, tls, the loop over method-settings' answer, the loop over version-settings', each set's name at any depth, a field's through field-option, the hatch's loop, a form that sets nothing, a loop by (car setting), and a name it cannot read"
+  '(pins "A" "USERAGENT" "B" tls method version hatch (other (f x)) (unread (car setting)) (unread n))
   (setting-order '(define (g)
                     (set-pinned-options! easy buffer quick-exit)
                     (set-option! e "A" 1 b)
@@ -1603,6 +1613,8 @@
                     (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
                     (for-each (lambda (setting) (set-option! e (car setting) (cdr setting) b))
                               (method-settings (plan-method plan) (plan-body plan) (plan-body-length plan)))
+                    (for-each (lambda (setting) (set-option! e (car setting) (cdr setting) b))
+                              (version-settings (plan-http-version plan)))
                     (for-each (lambda (setting)
                                 (set-hatch-option! easy setting
                                                    (let ((held (assq setting lists))) (and held (cdr held)))
@@ -1662,15 +1674,15 @@
               'the-making-reversed
               (list 'made made 'freed freed)))))
 
-(test-equal "prepare-transfer and curl-request-check, read from transfer.sls, share the checks' one owner, request-checks, which checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the CA file against the environment the libcurl loaded with, then the URL, parsed and its scheme checked; prepare-transfer calls it as curl-submit, then copies the body and makes the plan, the request's hatch settings in it as they are; curl-request-check calls it as curl-request-check, and does nothing else"
+(test-equal "prepare-transfer and curl-request-check, read from transfer.sls, share the checks' one owner, request-checks, which checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the CA file against the environment the libcurl loaded with, then the URL, parsed and its scheme checked, then prior knowledge against that scheme; prepare-transfer calls it as curl-submit, then copies the body and makes the plan, the request's hatch settings in it as they are; curl-request-check calls it as curl-request-check, and does nothing else"
   ;; Each definition's header names it first, a symbol like the rest.
   '((request-checks curl-request? snapshot ca-file-copy check-ca-environment call-with-parsed-url
-                    require-http-scheme)
+                    require-http-scheme check-prior-knowledge)
     (request-checks curl-submit bytevector-copy make-plan curl-request-options)
     (curl-request-check request-checks curl-request-check))
   (let ((names '(request-checks curl-submit curl-request-check curl-request? snapshot ca-file-copy
                  checked-settings check-ca-environment call-with-parsed-url require-http-scheme
-                 bytevector-copy make-plan curl-request-options curl-submit-queue)))
+                 check-prior-knowledge bytevector-copy make-plan curl-request-options curl-submit-queue)))
     (list (symbols-in names (transfer-definition 'request-checks))
           (symbols-in names (transfer-definition 'prepare-transfer))
           (symbols-in names (transfer-definition 'curl-request-check)))))
@@ -1756,8 +1768,9 @@
 ;; method-settings' names are its fields' rows in request-field-options,
 ;; through field-options: tests/test-request.sps writes out every method's
 ;; answer, names and all.
-(test-equal "every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for those set by (car setting): three in the loop over method-settings' answer for the plan's method, body and body-length; the hatch's settings are set by set-hatch-option!, through its loop alone"
-  '(() (((method-settings (plan-method plan) (plan-body plan) (plan-body-length plan)) 3)))
+(test-equal "every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for those set by (car setting): three in the loop over method-settings' answer for the plan's method, body and body-length, and one in the loop over version-settings' answer for the plan's http-version; the hatch's settings are set by set-hatch-option!, through its loop alone"
+  '(() (((method-settings (plan-method plan) (plan-body plan) (plan-body-length plan)) 3)
+        ((version-settings (plan-http-version plan)) 1)))
   (if (list? transfer-sets)
       (list (map car (filter (lambda (s) (not (or (owned-set? (car s)) (equal? (car s) '(car setting)))))
                              transfer-sets))

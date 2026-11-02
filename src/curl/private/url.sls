@@ -213,17 +213,20 @@
         (set-url! handle reference)
         (get-part handle curlupart-url 0 #f reference))))
 
-  ;; require-http-scheme : Positive-Integer String -> Void
-  ;; Returns when the parsed HANDLE's scheme, as curl_url_get gives it, is
-  ;; http or https. Otherwise raises &curl-url-error, reason
-  ;; scheme-not-http, with the URL HANDLE holds as its input (ADR-0008,
-  ;; decision 2). libcurl writes a scheme in lower case. INPUT, the string
-  ;; HANDLE was parsed from, names the refusal of a URL libcurl gives back
-  ;; as bytes that are not UTF-8, which has no string of its own.
+  ;; require-http-scheme : Positive-Integer String -> String
+  ;; The parsed HANDLE's scheme, as curl_url_get gives it, when it is http
+  ;; or https: the one a submit's checks read prior knowledge against
+  ;; (ADR-0034). Otherwise raises &curl-url-error, reason scheme-not-http,
+  ;; with the URL HANDLE holds as its input (ADR-0008, decision 2). libcurl
+  ;; writes a scheme in lower case. INPUT, the string HANDLE was parsed
+  ;; from, names the refusal of a URL libcurl gives back as bytes that are
+  ;; not UTF-8, which has no string of its own.
   (define (require-http-scheme handle input)
-    (let ((url (get-part handle curlupart-url 0 #f input)))
-      (unless (member (get-part handle curlupart-scheme 0 #f url) '("http" "https"))
-        (refuse url 'scheme-not-http #f "chez-curl fetches only http and https URLs"))))
+    (let* ((url (get-part handle curlupart-url 0 #f input))
+           (scheme (get-part handle curlupart-scheme 0 #f url)))
+      (unless (member scheme '("http" "https"))
+        (refuse url 'scheme-not-http #f "chez-curl fetches only http and https URLs"))
+      scheme))
 
   ;; code-of : Symbol -> Natural
   ;; The CURLUcode NAME names in curlue-codes.

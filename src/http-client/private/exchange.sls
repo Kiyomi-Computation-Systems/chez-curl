@@ -692,7 +692,9 @@
   ;; body-dropped?, a streamed body's body-length with it; its credential
   ;; headers dropped when ACROSS, to another origin; its Host when
   ;; ANOTHER-HOST; every other key LAST's, its stream-buffer among them (the
-  ;; M6 plan, section 3.6).
+  ;; M6 plan, section 3.6), and its http-version (the M7 plan, section
+  ;; 3.1): a hop to https:// by prior knowledge is refused as it is
+  ;; submitted, prior-knowledge-over-https.
   (define (next-request last url status across another-host)
     (let* ((method (curl-request-method last))
            (dropped (body-dropped? status method))
@@ -714,7 +716,8 @@
                          'body-limit (curl-request-body-limit last)
                          'ca-file (curl-request-ca-file last)
                          'verify (curl-request-verify last)
-                         'proxy (curl-request-proxy last))))
+                         'proxy (curl-request-proxy last)
+                         'http-version (curl-request-http-version last))))
 
   ;; follow : State Response Integer String
   ;;          -> (U (List 'fail Condition) (List 'next State Request 0))

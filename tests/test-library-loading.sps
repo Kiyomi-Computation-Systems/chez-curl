@@ -855,7 +855,7 @@
                curl-request-url curl-request-method curl-request-headers curl-request-body
                curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
                curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
-               curl-request-stream-buffer curl-request-body-length
+               curl-request-stream-buffer curl-request-body-length curl-request-http-version
                curl-url-part curl-url-append-query curl-url-resolve curl-url-with-fragment
                curl-response? curl-response-status curl-response-http-version
                curl-response-effective-url curl-response-headers curl-response-body

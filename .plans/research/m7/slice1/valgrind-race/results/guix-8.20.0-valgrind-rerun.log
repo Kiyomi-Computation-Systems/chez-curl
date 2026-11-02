@@ -1,0 +1,8 @@
+%%%% Starting test pkprobe
+(probe 8.20.0 http http/2-prior-knowledge (((failed perform-failed 16 protocol) . 7) ((failed perform-failed 55 send-receive) . 3)))
+(probe 8.20.0 h2c #f (((failed perform-failed 1 protocol) . 10)))
+(probe 8.20.0 h2c http/1.1 (((failed perform-failed 1 protocol) . 10)))
+(probe 8.20.0 h2c http/2 (((failed perform-failed 1 protocol) . 10)))
+(probe 8.20.0 h2 http/1.1 (((failed perform-failed 35 tls) . 10)))
+(probe 8.20.0 together-h2c (((2 (http/2 http/2)) . 10)))
+# of expected passes      12

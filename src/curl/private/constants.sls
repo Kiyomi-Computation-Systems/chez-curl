@@ -17,7 +17,7 @@
           curlinfo-response-code curlinfo-http-version curlinfo-effective-url
           curl-error-size curl-blob-copy
           curl-http-version-1-0 curl-http-version-1-1 curl-http-version-2-0
-          curl-http-version-3
+          curl-http-version-3 curl-http-version-2tls curl-http-version-2-prior-knowledge
           curle-write-error curle-out-of-memory curle-operation-timedout
           curle-couldnt-resolve-proxy curle-couldnt-resolve-host curle-couldnt-connect
           curle-interface-failed curle-quic-connect-error curle-proxy
@@ -264,6 +264,17 @@
   (define curl-http-version-1-1 2)
   (define curl-http-version-2-0 3)
   (define curl-http-version-3 30)
+
+  ;; curl-http-version-2tls : Positive-Integer
+  ;; curl-http-version-2-prior-knowledge : Positive-Integer
+  ;; curl/curl.h: CURL_HTTP_VERSION_2TLS 4 (7.47.0) and
+  ;; CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE 5 (7.49.0), both in the floor's
+  ;; headers: what HTTP_VERSION takes for http/2, HTTP/2 by ALPN over TLS
+  ;; and HTTP/1.1 over http://, and for http/2-prior-knowledge, HTTP/2
+  ;; with no HTTP/1.1 first (ADR-0034). HTTP_VERSION's 1_1 is
+  ;; curl-http-version-1-1.
+  (define curl-http-version-2tls 4)
+  (define curl-http-version-2-prior-knowledge 5)
 
   ;; The CURLcodes chez-curl names, each a curl/curl.h CURLcode: every code a
   ;; class names (ADR-0022, amended 2026-10-26), and the transfer's others.

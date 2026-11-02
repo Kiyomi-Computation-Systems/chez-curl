@@ -171,6 +171,8 @@
     (curl-http-version-1-1 . "CURL_HTTP_VERSION_1_1")
     (curl-http-version-2-0 . "CURL_HTTP_VERSION_2_0")
     (curl-http-version-3 . "CURL_HTTP_VERSION_3")
+    (curl-http-version-2tls . "CURL_HTTP_VERSION_2TLS")
+    (curl-http-version-2-prior-knowledge . "CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE")
     (curle-write-error . "CURLE_WRITE_ERROR")
     (curle-out-of-memory . "CURLE_OUT_OF_MEMORY")
     (curle-operation-timedout . "CURLE_OPERATION_TIMEDOUT")

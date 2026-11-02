@@ -135,6 +135,10 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * A row read from one run cannot show a cell that splits: 8.7.1's HTTP/2 200
   ended 200, then 55. Take a new row from two runs at least, and hold a cell
   they disagree on to what both showed.
+* A failure's code can be a race Valgrind settles the other way: prior
+  knowledge to an HTTP/1.1 server failed 52, 56 or 16 natively, by version,
+  and mostly 55 under the memory gate. Read a row of codes natively and under
+  the gate, and hold every code either gave.
 
 **Chez and the FFI**
 

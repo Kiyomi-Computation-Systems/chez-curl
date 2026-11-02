@@ -58,9 +58,11 @@
 
   ;; request-session-keys : (Listof Symbol)
   ;; The session's keys that are make-curl-request's, each with the low
-  ;; level's default (the M5 plan, section 3.2).
+  ;; level's default (the M5 plan, section 3.2), http-version among them
+  ;; (the M7 plan, section 3.1).
   (define request-session-keys
-    '(headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy))
+    '(headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
+      http-version))
 
   ;; policy-keys : (Listof Symbol)
   ;; The session's keys that are the high level's own: redirects, the most
@@ -638,7 +640,8 @@
                                    'body-limit (pick 'body-limit curl-request-body-limit)
                                    'ca-file (pick 'ca-file curl-request-ca-file)
                                    'verify (pick 'verify curl-request-verify)
-                                   'proxy (pick 'proxy curl-request-proxy))
+                                   'proxy (pick 'proxy curl-request-proxy)
+                                   'http-version (pick 'http-version curl-request-http-version))
                 (car policy)
                 (cadr policy)
                 (caddr policy)

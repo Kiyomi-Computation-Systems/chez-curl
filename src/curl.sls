@@ -114,6 +114,18 @@
    ;;                       2^63 - 1, sent as Content-Length; or #f, chunked
    ;;                       over HTTP/1.1; #f. Refused beside a body that does
    ;;                       not stream, as body-length-without-stream
+   ;;   http-version        http/1.1; http/2, by ALPN over https://, HTTP/1.1
+   ;;                       over http://; http/2-prior-knowledge, HTTP/2 with
+   ;;                       no HTTP/1.1 first, for http:// alone: a submit
+   ;;                       refuses it with an https:// URL, as
+   ;;                       prior-knowledge-over-https; or #f, libcurl's own,
+   ;;                       which acts as http/2; #f. Requests started
+   ;;                       together open their own connections, but for two
+   ;;                       by prior knowledge on 7.85.0, which share one; a
+   ;;                       later one reuses an open one: over http://, a #f
+   ;;                       or http/2 request to an origin the engine holds
+   ;;                       an HTTP/2 connection to, made by prior knowledge,
+   ;;                       reuses it and reads HTTP/2
    ;; A key it does not take, one given twice, and one with no value are
    ;; refused by name, as &curl-request-error, before anything else.
    ;; curl-request-with : Request Symbol Any ... -> Request
@@ -132,11 +144,12 @@
    ;; curl-request-proxy : Request -> (U 'environment #f)
    ;; curl-request-stream-buffer : Request -> (U Positive-Integer #f)
    ;; curl-request-body-length : Request -> (U Natural #f)
+   ;; curl-request-http-version : Request -> (U 'http/1.1 'http/2 'http/2-prior-knowledge #f)
    make-curl-request curl-request-with curl-request?
    curl-request-url curl-request-method curl-request-headers curl-request-body
    curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
    curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
-   curl-request-stream-buffer curl-request-body-length
+   curl-request-stream-buffer curl-request-body-length curl-request-http-version
 
    ;; --- URLs (ADR-0008) ----------------------------------------------------
    ;; curl-url-part : String Symbol -> (U String Natural #f)
@@ -181,8 +194,12 @@
    ;; The timings are name-lookup, connect, tls-handshake, first-byte and
    ;; total, in that order, each the microseconds from the transfer's start
    ;; to that phase's end, and 0 for a phase the transfer skipped: the
-   ;; handshake without TLS, and the first three on a connection reused. A
-   ;; streamed response's body is #f: its token held the pieces.
+   ;; handshake without TLS. On a connection reused, 8.20.0 reported the
+   ;; first three as 0; through the engine, 7.85.0 reported a connect of
+   ;; 10 to 37 microseconds on a connection reused once the transfer before
+   ;; had ended, and 0 after its head alone, where 8.5.0, 8.20.0 and 8.23.0
+   ;; reported 0 (M7 slice 1). A streamed response's body is #f: its token
+   ;; held the pieces.
    curl-response? curl-response-status curl-response-http-version
    curl-response-effective-url curl-response-headers curl-response-body
    curl-response-timings

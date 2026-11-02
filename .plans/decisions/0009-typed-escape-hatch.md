@@ -1,6 +1,6 @@
 # ADR-0009: A typed escape hatch for unwrapped options, in the low level only
 
-- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built; amended 2026-10-27, the hatch, measured, decided and built (M4 slice 4); amended 2026-10-27, the Mac's runs; amended 2026-10-30, the header callable's options are owned (M6 slice 1); amended 2026-10-31, a streamed body's options are owned (M6 slice 2)
+- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built; amended 2026-10-27, the hatch, measured, decided and built (M4 slice 4); amended 2026-10-27, the Mac's runs; amended 2026-10-30, the header callable's options are owned (M6 slice 1); amended 2026-10-31, a streamed body's options are owned (M6 slice 2); amended 2026-11-02, the HTTP version's option and three twins are owned (M7 slice 1)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, `(curl ...)` only
 - **Settles:** D3 (brief §10)
@@ -441,3 +441,27 @@ The method field's options gain `POST` and `UPLOAD`, which a streamed `post`, `p
 `delete` and a streamed `put` set, and `body-length` sets `INFILESIZE_LARGE` for a streamed
 `put`; the three leave the twins' list. `test-unsupported` and `test-transfer` write each out.
 
+
+## Amendment, 2026-11-02: the HTTP version's option and three twins are owned (M7 slice 1)
+
+The `http-version` field sets `HTTP_VERSION` (ADR-0034), so the hatch refuses it as
+`owned-option`, on every request. M7 slice 1 measured, through the engine on the five Linux
+libcurls, the options that could undo what the field sets
+([research](../research/m7/slice1/)), and three are owned as its twins:
+
+- **`SSL_ENABLE_ALPN`:** at 0, unset and `2TLS` read HTTP/1.1 from a server offering both
+  versions, and failed 56 against one offering `h2` alone.
+- **`ALTSVC`:** its cache file, written by an earlier transfer or by hand, moved later transfers
+  to another port, host and version, at `1_1` too, with no fallback when the alternative was
+  dead (7); libcurl writes the file at `curl_easy_cleanup`, on the engine's thread.
+- **`ALTSVC_CTRL`:** alone it makes an in-memory cache on the handle, which an `Alt-Svc` header
+  on a transfer's first response fills, so the transfer's next request inside it, a 417's resend
+  or an auth round, went to another port, at `1_1` too, and over HTTP/2 (the slice's review). The
+  measurement had read it alone across transfers, each a fresh handle, where it moved nothing.
+
+The hatch keeps `HSTS_CTRL`: libcurl reads `Strict-Transport-Security` only over TLS and
+upgrades only an `http://` URL (7.85.0 `http.c:3654`, `url.c:2038`; 8.23.0 `http.c:3615-3626`,
+`url.c:1217-1244`, read in source), and no request inside one public transfer changes its URL,
+so its in-memory cache moves nothing. It keeps `HTTP09_ALLOWED` and `HTTP200ALIASES`, which change what a response reads, not what is set;
+`CONNECT_TO`, which moves the host but not the version; `HTTPPROXYTUNNEL`, slice 3's question;
+and `PIPEWAIT` (ADR-0034). `test-unsupported` and `test-transfer` write each out.

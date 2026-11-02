@@ -1,0 +1,453 @@
+[guix-8.20.0] src 56b78abf5ee51aceacd00f66a445ac45407da34f75d8d3fac877397b52788ec8 (sha256 of src/'s libraries, concatenated in sorted path order)
+[guix-8.20.0] prototype build/m7s1/src 4c02e7f803daeb9acf592117069c18c51e0eb450908ef02e7a66b93a5536d433 (the same, for the prototype)
+[guix-8.20.0] program .plans/research/m7/slice1/version.sps f39cbd8ac2558a5ed2708046b54d30ef96cd7c89640b7956bb8d1e99946dc563 standin c0d83393a40832024bfca2b7c9d41381156d37bc02c1d7d086b29366a58884fe origin 6ca8b28360d9b5ab39e9dfea294dcde3363fdb6ca1d8e3cd60d02389498dbe7f
+[guix-8.20.0] origin {"node":"v24.18.0","pid":28,"http":"127.0.0.1:33937","raw":"127.0.0.1:37085","h2c":"127.0.0.1:46443","https":"127.0.0.1:40257","https-expired":"127.0.0.1:46045","https-wrong-host":"127.0.0.1:39149","https-untrusted":"127.0.0.1:39129","raw-tls":"127.0.0.1:42857","h2":"127.0.0.1:38341"}
+[guix-8.20.0] standin {"alt1":"127.0.0.1:37681","alt1h":"127.0.0.1:35047","alt2":"127.0.0.1:38783","both":"127.0.0.1:35895","icy":"127.0.0.1:33039","ctl":"127.0.0.1:40707","closed":"127.0.0.1:39257"}
+[guix-8.20.0] uname Linux x86_64 chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 node v24.18.0
+[guix-8.20.0] part versions libdirs src env none
+[guix-8.20.0] libcurl version=8.20.0 ssl="GnuTLS/3.8.13" path=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 part=versions
+[guix-8.20.0] verbose-begin v1 version=unset face=https
+[guix-8.20.0] *   Trying 127.0.0.1:40257...
+[guix-8.20.0] * GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2
+[guix-8.20.0] * ALPN: curl offers h2,http/1.1
+[guix-8.20.0] * SSL Trust Anchors:
+[guix-8.20.0] *   CAfile: 1 certificates in /tmp/m7s1.1nkYav/pki/ca.pem
+[guix-8.20.0] * SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384
+[guix-8.20.0] *   SSL certificate verified by GnuTLS
+[guix-8.20.0] *   SSL certificate expiration date OK
+[guix-8.20.0] *   SSL certificate activation date OK
+[guix-8.20.0] *   SSL certificate status verification SKIPPED
+[guix-8.20.0] *   common name: chez-curl test leaf (matched)
+[guix-8.20.0] *   certificate public key: EC/ECDSA
+[guix-8.20.0] *   certificate version: #3
+[guix-8.20.0] *   subject: CN=chez-curl test leaf
+[guix-8.20.0] *   start date: Mon, 02 Nov 2026 14:24:30 GMT
+[guix-8.20.0] *   expire date: Wed, 04 Nov 2026 14:24:30 GMT
+[guix-8.20.0] *   issuer: CN=chez-curl test CA
+[guix-8.20.0] * ALPN: server accepted http/1.1
+[guix-8.20.0] * Established connection to 127.0.0.1 (127.0.0.1 port 40257) from 127.0.0.1 port 42668 
+[guix-8.20.0] * using HTTP/1.x
+[guix-8.20.0] > GET /echo HTTP/1.1
+[guix-8.20.0] Host: 127.0.0.1:40257
+[guix-8.20.0] Accept: */*
+[guix-8.20.0] 
+[guix-8.20.0] * Request completely sent off
+[guix-8.20.0] < HTTP/1.1 200 OK
+[guix-8.20.0] < Content-Length: 54
+[guix-8.20.0] < Connection: keep-alive
+[guix-8.20.0] < 
+[guix-8.20.0] * Connection #0 to host 127.0.0.1:40257 left intact
+[guix-8.20.0] verbose-end v1 version=unset face=https
+[guix-8.20.0] v1v version=unset face=https ok status=200 version=http/1.1 connect-us=265 alt-svc="-" effective=https://127.0.0.1:40257/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:40257\nAccept: */*\n\n"
+[guix-8.20.0] verbose-begin v1 version=2_PRIOR_KNOWLEDGE face=https
+[guix-8.20.0] *   Trying 127.0.0.1:40257...
+[guix-8.20.0] * GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2
+[guix-8.20.0] * ALPN: curl offers h2
+[guix-8.20.0] * SSL Trust Anchors:
+[guix-8.20.0] *   CAfile: 1 certificates in /tmp/m7s1.1nkYav/pki/ca.pem
+[guix-8.20.0] * GnuTLS, handshake failed: No supported application protocol could be negotiated
+[guix-8.20.0] * closing connection #0
+[guix-8.20.0] verbose-end v1 version=2_PRIOR_KNOWLEDGE face=https
+[guix-8.20.0] v1v version=2_PRIOR_KNOWLEDGE face=https fail reason=perform-failed code=35 class=tls sent=0 option=#f strerror="SSL connect error" errbuf="GnuTLS, handshake failed: No supported application protocol could be negotiated"
+[guix-8.20.0] v1 version=unset face=http ok status=200 version=http/1.1 connect-us=177 alt-svc="-" effective=http://127.0.0.1:33937/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:33937\nAccept: */*\n\n"
+[guix-8.20.0] v1 version=unset face=https ok status=200 version=http/1.1 connect-us=170 alt-svc="-" effective=https://127.0.0.1:40257/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:40257\nAccept: */*\n\n"
+[guix-8.20.0] v1 version=unset face=h2c fail reason=perform-failed code=1 class=protocol sent=58 option=#f strerror="Unsupported protocol" errbuf="Received HTTP/0.9 when not allowed"
+[guix-8.20.0] v1 version=unset face=h2 ok status=200 version=http/2 connect-us=157 alt-svc="-" effective=https://127.0.0.1:38341/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:38341\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] v1 version=NONE face=http ok status=200 version=http/1.1 connect-us=178 alt-svc="-" effective=http://127.0.0.1:33937/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:33937\nAccept: */*\n\n"
+[guix-8.20.0] v1 version=NONE face=https ok status=200 version=http/1.1 connect-us=165 alt-svc="-" effective=https://127.0.0.1:40257/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:40257\nAccept: */*\n\n"
+[guix-8.20.0] v1 version=NONE face=h2c fail reason=perform-failed code=1 class=protocol sent=58 option=#f strerror="Unsupported protocol" errbuf="Received HTTP/0.9 when not allowed"
+[guix-8.20.0] v1 version=NONE face=h2 ok status=200 version=http/2 connect-us=49 alt-svc="-" effective=https://127.0.0.1:38341/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:38341\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] v1 version=1_1 face=http ok status=200 version=http/1.1 connect-us=83 alt-svc="-" effective=http://127.0.0.1:33937/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:33937\nAccept: */*\n\n"
+[guix-8.20.0] v1 version=1_1 face=https ok status=200 version=http/1.1 connect-us=60 alt-svc="-" effective=https://127.0.0.1:40257/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:40257\nAccept: */*\n\n"
+[guix-8.20.0] v1 version=1_1 face=h2c fail reason=perform-failed code=1 class=protocol sent=58 option=#f strerror="Unsupported protocol" errbuf="Received HTTP/0.9 when not allowed"
+[guix-8.20.0] v1 version=1_1 face=h2 fail reason=perform-failed code=35 class=tls sent=0 option=#f strerror="SSL connect error" errbuf="GnuTLS, handshake failed: No supported application protocol could be negotiated"
+[guix-8.20.0] v1 version=2_0 face=http ok status=200 version=http/1.1 connect-us=165 alt-svc="-" effective=http://127.0.0.1:33937/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:33937\nAccept: */*\nUpgrade: h2c\nHTTP2-Settings: AAMAAABkAAQAAQAAAAIAAAAA\nConnection: Upgrade, HTTP2-Settings\n\n"
+[guix-8.20.0] v1 version=2_0 face=https ok status=200 version=http/1.1 connect-us=59 alt-svc="-" effective=https://127.0.0.1:40257/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:40257\nAccept: */*\n\n"
+[guix-8.20.0] v1 version=2_0 face=h2c fail reason=perform-failed code=1 class=protocol sent=151 option=#f strerror="Unsupported protocol" errbuf="Received HTTP/0.9 when not allowed"
+[guix-8.20.0] v1 version=2_0 face=h2 ok status=200 version=http/2 connect-us=122 alt-svc="-" effective=https://127.0.0.1:38341/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:38341\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] v1 version=2TLS face=http ok status=200 version=http/1.1 connect-us=60 alt-svc="-" effective=http://127.0.0.1:33937/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:33937\nAccept: */*\n\n"
+[guix-8.20.0] v1 version=2TLS face=https ok status=200 version=http/1.1 connect-us=63 alt-svc="-" effective=https://127.0.0.1:40257/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:40257\nAccept: */*\n\n"
+[guix-8.20.0] v1 version=2TLS face=h2c fail reason=perform-failed code=1 class=protocol sent=58 option=#f strerror="Unsupported protocol" errbuf="Received HTTP/0.9 when not allowed"
+[guix-8.20.0] v1 version=2TLS face=h2 ok status=200 version=http/2 connect-us=160 alt-svc="-" effective=https://127.0.0.1:38341/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:38341\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] v1 version=2_PRIOR_KNOWLEDGE face=http fail reason=perform-failed code=16 class=protocol sent=56 option=#f strerror="Error in the HTTP2 framing layer" errbuf="Remote peer returned unexpected data while we expected SETTINGS frame.  Perhaps, peer does not support HTTP/2 properly."
+[guix-8.20.0] v1 version=2_PRIOR_KNOWLEDGE face=https fail reason=perform-failed code=35 class=tls sent=0 option=#f strerror="SSL connect error" errbuf="GnuTLS, handshake failed: No supported application protocol could be negotiated"
+[guix-8.20.0] v1 version=2_PRIOR_KNOWLEDGE face=h2c ok status=200 version=http/2 connect-us=59 alt-svc="-" effective=http://127.0.0.1:46443/echo body=":method: GET\n:scheme: http\n:authority: 127.0.0.1:46443\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] v1 version=2_PRIOR_KNOWLEDGE face=h2 ok status=200 version=http/2 connect-us=63 alt-svc="-" effective=https://127.0.0.1:38341/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:38341\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] native ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[guix-8.20.0] part versions done
+[guix-8.20.0] part versions exited 0 after about 0 s (124 is timeout's)
+[guix-8.20.0] part envproxy libdirs src env http_proxy=http://127.0.0.1:33937 https_proxy=http://127.0.0.1:33937
+[guix-8.20.0] libcurl version=8.20.0 ssl="GnuTLS/3.8.13" path=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 part=envproxy
+[guix-8.20.0] p2a env http_proxy="http://127.0.0.1:33937" https_proxy="http://127.0.0.1:33937" no_proxy=#f
+[guix-8.20.0] p2a hatch-proxy-on-this-src refused field=options reason=owned-option value="PROXY"
+[guix-8.20.0] p2a case=direct-pk-proxy-#f face=h2c version=2_PRIOR_KNOWLEDGE connects=0->0 ok status=200 version=http/2 connect-us=181 alt-svc="-" effective=http://127.0.0.1:46443/echo body=":method: GET\n:scheme: http\n:authority: 127.0.0.1:46443\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] p2a case=plain-unset face=h2c version=unset connects=0->0 ok status=200 version=http/1.1 connect-us=174 alt-svc="-" effective=http://127.0.0.1:46443/echo body="GET http://127.0.0.1:46443/echo HTTP/1.1\nHost: 127.0.0.1:46443\nAccept: */*\nProxy-Connection: Keep-Alive\n\n"
+[guix-8.20.0] p2a case=plain-pk face=h2c version=2_PRIOR_KNOWLEDGE connects=0->0 ok status=200 version=http/1.1 connect-us=182 alt-svc="-" effective=http://127.0.0.1:46443/echo body="GET http://127.0.0.1:46443/echo HTTP/1.1\nHost: 127.0.0.1:46443\nAccept: */*\nProxy-Connection: Keep-Alive\n\n"
+[guix-8.20.0] * Uses proxy env variable http_proxy == 'http://127.0.0.1:33937'
+[guix-8.20.0] *   Trying 127.0.0.1:33937...
+[guix-8.20.0] * Established connection to 127.0.0.1 (127.0.0.1 port 33937) from 127.0.0.1 port 45128 
+[guix-8.20.0] * Ignoring HTTP/2 prior knowledge due to proxy
+[guix-8.20.0] * using HTTP/1.x
+[guix-8.20.0] > GET http://127.0.0.1:46443/echo HTTP/1.1
+[guix-8.20.0] Host: 127.0.0.1:46443
+[guix-8.20.0] Accept: */*
+[guix-8.20.0] Proxy-Connection: Keep-Alive
+[guix-8.20.0] 
+[guix-8.20.0] * Request completely sent off
+[guix-8.20.0] < HTTP/1.1 200 OK
+[guix-8.20.0] < Content-Length: 105
+[guix-8.20.0] < Connection: keep-alive
+[guix-8.20.0] < 
+[guix-8.20.0] * Connection #0 to host 127.0.0.1:33937 left intact
+[guix-8.20.0] p2a case=plain-pk-verbose face=h2c version=2_PRIOR_KNOWLEDGE connects=0->0 ok status=200 version=http/1.1 connect-us=196 alt-svc="-" effective=http://127.0.0.1:46443/echo body="GET http://127.0.0.1:46443/echo HTTP/1.1\nHost: 127.0.0.1:46443\nAccept: */*\nProxy-Connection: Keep-Alive\n\n"
+[guix-8.20.0] p2a case=plain-pk-to-http face=http version=2_PRIOR_KNOWLEDGE connects=0->0 ok status=200 version=http/1.1 connect-us=61 alt-svc="-" effective=http://127.0.0.1:33937/echo body="GET http://127.0.0.1:33937/echo HTTP/1.1\nHost: 127.0.0.1:33937\nAccept: */*\nProxy-Connection: Keep-Alive\n\n"
+[guix-8.20.0] p2a case=tunnel-unset face=h2c version=unset connects=0->1 fail reason=perform-failed code=1 class=protocol sent=58 option=#f strerror="Unsupported protocol" errbuf="Received HTTP/0.9 when not allowed"
+[guix-8.20.0] p2a case=tunnel-pk face=h2c version=2_PRIOR_KNOWLEDGE connects=1->2 ok status=200 version=http/2 connect-us=141 alt-svc="-" effective=http://127.0.0.1:46443/echo body=":method: GET\n:scheme: http\n:authority: 127.0.0.1:46443\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] p2a case=https-unset face=h2 version=unset connects=2->3 ok status=200 version=http/2 connect-us=66 alt-svc="-" effective=https://127.0.0.1:38341/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:38341\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] p2a case=https-2tls face=h2 version=2TLS connects=3->4 ok status=200 version=http/2 connect-us=195 alt-svc="-" effective=https://127.0.0.1:38341/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:38341\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] p2a case=https-pk face=h2 version=2_PRIOR_KNOWLEDGE connects=4->5 ok status=200 version=http/2 connect-us=180 alt-svc="-" effective=https://127.0.0.1:38341/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:38341\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] native ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[guix-8.20.0] part envproxy done
+[guix-8.20.0] part envproxy exited 0 after about 1 s (124 is timeout's)
+[guix-8.20.0] part named libdirs build/m7s1/src env none
+[guix-8.20.0] libcurl version=8.20.0 ssl="GnuTLS/3.8.13" path=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 part=named
+[guix-8.20.0] p2b env http_proxy=#f https_proxy=#f no_proxy=#f
+[guix-8.20.0] p2b case=plain-unset face=h2c version=unset connects=5->5 ok status=200 version=http/1.1 connect-us=184 alt-svc="-" effective=http://127.0.0.1:46443/echo body="GET http://127.0.0.1:46443/echo HTTP/1.1\nHost: 127.0.0.1:46443\nAccept: */*\nProxy-Connection: Keep-Alive\n\n"
+[guix-8.20.0] p2b case=plain-pk face=h2c version=2_PRIOR_KNOWLEDGE connects=5->5 ok status=200 version=http/1.1 connect-us=165 alt-svc="-" effective=http://127.0.0.1:46443/echo body="GET http://127.0.0.1:46443/echo HTTP/1.1\nHost: 127.0.0.1:46443\nAccept: */*\nProxy-Connection: Keep-Alive\n\n"
+[guix-8.20.0] *   Trying 127.0.0.1:33937...
+[guix-8.20.0] * Established connection to 127.0.0.1 (127.0.0.1 port 33937) from 127.0.0.1 port 45394 
+[guix-8.20.0] * Ignoring HTTP/2 prior knowledge due to proxy
+[guix-8.20.0] * using HTTP/1.x
+[guix-8.20.0] > GET http://127.0.0.1:46443/echo HTTP/1.1
+[guix-8.20.0] Host: 127.0.0.1:46443
+[guix-8.20.0] Accept: */*
+[guix-8.20.0] Proxy-Connection: Keep-Alive
+[guix-8.20.0] 
+[guix-8.20.0] * Request completely sent off
+[guix-8.20.0] < HTTP/1.1 200 OK
+[guix-8.20.0] < Content-Length: 105
+[guix-8.20.0] < Connection: keep-alive
+[guix-8.20.0] < 
+[guix-8.20.0] * Connection #0 to host 127.0.0.1:33937 left intact
+[guix-8.20.0] p2b case=plain-pk-verbose face=h2c version=2_PRIOR_KNOWLEDGE connects=5->5 ok status=200 version=http/1.1 connect-us=179 alt-svc="-" effective=http://127.0.0.1:46443/echo body="GET http://127.0.0.1:46443/echo HTTP/1.1\nHost: 127.0.0.1:46443\nAccept: */*\nProxy-Connection: Keep-Alive\n\n"
+[guix-8.20.0] p2b case=plain-pk-to-http face=http version=2_PRIOR_KNOWLEDGE connects=5->5 ok status=200 version=http/1.1 connect-us=167 alt-svc="-" effective=http://127.0.0.1:33937/echo body="GET http://127.0.0.1:33937/echo HTTP/1.1\nHost: 127.0.0.1:33937\nAccept: */*\nProxy-Connection: Keep-Alive\n\n"
+[guix-8.20.0] p2b case=tunnel-unset face=h2c version=unset connects=5->6 fail reason=perform-failed code=1 class=protocol sent=58 option=#f strerror="Unsupported protocol" errbuf="Received HTTP/0.9 when not allowed"
+[guix-8.20.0] p2b case=tunnel-pk face=h2c version=2_PRIOR_KNOWLEDGE connects=6->7 ok status=200 version=http/2 connect-us=122 alt-svc="-" effective=http://127.0.0.1:46443/echo body=":method: GET\n:scheme: http\n:authority: 127.0.0.1:46443\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] p2b case=https-unset face=h2 version=unset connects=7->8 ok status=200 version=http/2 connect-us=168 alt-svc="-" effective=https://127.0.0.1:38341/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:38341\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] p2b case=https-2tls face=h2 version=2TLS connects=8->9 ok status=200 version=http/2 connect-us=127 alt-svc="-" effective=https://127.0.0.1:38341/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:38341\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] p2b case=https-pk face=h2 version=2_PRIOR_KNOWLEDGE connects=9->10 ok status=200 version=http/2 connect-us=191 alt-svc="-" effective=https://127.0.0.1:38341/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:38341\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] native ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[guix-8.20.0] part named done
+[guix-8.20.0] part named exited 0 after about 0 s (124 is timeout's)
+[guix-8.20.0] part twins libdirs src env none
+[guix-8.20.0] libcurl version=8.20.0 ssl="GnuTLS/3.8.13" path=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 part=twins
+[guix-8.20.0] alpn face=https version=unset alpn=default ok status=200 version=http/1.1 connect-us=254 alt-svc="-" effective=https://127.0.0.1:40257/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:40257\nAccept: */*\n\n"
+[guix-8.20.0] alpn face=https version=unset alpn=off ok status=200 version=http/1.1 connect-us=78 alt-svc="-" effective=https://127.0.0.1:40257/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:40257\nAccept: */*\n\n"
+[guix-8.20.0] alpn face=https version=2TLS alpn=default ok status=200 version=http/1.1 connect-us=192 alt-svc="-" effective=https://127.0.0.1:40257/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:40257\nAccept: */*\n\n"
+[guix-8.20.0] alpn face=https version=2TLS alpn=off ok status=200 version=http/1.1 connect-us=69 alt-svc="-" effective=https://127.0.0.1:40257/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:40257\nAccept: */*\n\n"
+[guix-8.20.0] alpn face=https version=1_1 alpn=default ok status=200 version=http/1.1 connect-us=68 alt-svc="-" effective=https://127.0.0.1:40257/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:40257\nAccept: */*\n\n"
+[guix-8.20.0] alpn face=https version=1_1 alpn=off ok status=200 version=http/1.1 connect-us=66 alt-svc="-" effective=https://127.0.0.1:40257/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:40257\nAccept: */*\n\n"
+[guix-8.20.0] alpn face=h2 version=unset alpn=default ok status=200 version=http/2 connect-us=218 alt-svc="-" effective=https://127.0.0.1:38341/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:38341\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] alpn face=h2 version=unset alpn=off fail reason=perform-failed code=56 class=send-receive sent=58 option=#f strerror="Failure when receiving data from the peer" errbuf="GnuTLS recv error (-110): The TLS connection was non-properly terminated."
+[guix-8.20.0] alpn face=h2 version=2TLS alpn=default ok status=200 version=http/2 connect-us=67 alt-svc="-" effective=https://127.0.0.1:38341/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:38341\n:path: /echo\naccept: */*\n\n"
+[guix-8.20.0] alpn face=h2 version=2TLS alpn=off fail reason=perform-failed code=56 class=send-receive sent=58 option=#f strerror="Failure when receiving data from the peer" errbuf="GnuTLS recv error (-110): The TLS connection was non-properly terminated."
+[guix-8.20.0] alpn face=h2 version=1_1 alpn=default fail reason=perform-failed code=35 class=tls sent=0 option=#f strerror="SSL connect error" errbuf="GnuTLS, handshake failed: No supported application protocol could be negotiated"
+[guix-8.20.0] alpn face=h2 version=1_1 alpn=off fail reason=perform-failed code=56 class=send-receive sent=58 option=#f strerror="Failure when receiving data from the peer" errbuf="GnuTLS recv error (-110): The TLS connection was non-properly terminated."
+[guix-8.20.0] alpn face=both version=unset alpn=default ok status=200 version=http/2 connect-us=158 alt-svc="-" effective=https://127.0.0.1:35895/alpn body="face=both conn=1 version=2.0 alpn=h2 path=/alpn host=127.0.0.1:35895\n"
+[guix-8.20.0] alpn face=both version=unset alpn=off ok status=200 version=http/1.1 connect-us=54 alt-svc="-" effective=https://127.0.0.1:35895/alpn body="face=both conn=2 version=1.1 alpn=none path=/alpn host=127.0.0.1:35895\n"
+[guix-8.20.0] alpn face=both version=2TLS alpn=default ok status=200 version=http/2 connect-us=53 alt-svc="-" effective=https://127.0.0.1:35895/alpn body="face=both conn=3 version=2.0 alpn=h2 path=/alpn host=127.0.0.1:35895\n"
+[guix-8.20.0] alpn face=both version=2TLS alpn=off ok status=200 version=http/1.1 connect-us=173 alt-svc="-" effective=https://127.0.0.1:35895/alpn body="face=both conn=4 version=1.1 alpn=none path=/alpn host=127.0.0.1:35895\n"
+[guix-8.20.0] alpn face=both version=1_1 alpn=default ok status=200 version=http/1.1 connect-us=171 alt-svc="-" effective=https://127.0.0.1:35895/alpn body="face=both conn=5 version=1.1 alpn=http/1.1 path=/alpn host=127.0.0.1:35895\n"
+[guix-8.20.0] alpn face=both version=1_1 alpn=off ok status=200 version=http/1.1 connect-us=175 alt-svc="-" effective=https://127.0.0.1:35895/alpn body="face=both conn=6 version=1.1 alpn=none path=/alpn host=127.0.0.1:35895\n"
+[guix-8.20.0] altsvc-i case=h1h2-unset face=alt1 version=unset ctrl=24 altsvc-option=set file-before=absent events=alt1 0/0/0 alt1h 0/0/0 alt2 0/0/0 both 6/6/6 icy 0/0/0
+[guix-8.20.0] altsvc-i case=h1h2-unset step=A file-at-head=absent file-at-end=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:33" 0 0 events=alt1 1/1/1 alt1h 0/0/0 alt2 0/0/0 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 body="face=alt1 conn=1 version=1.1 alpn=http/1.1 path=/slow-a host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=h1h2-unset step=B-same-engine file=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:33" 0 0 events=alt1 1/1/1 alt1h 0/0/0 alt2 1/1/1 both 6/6/6 icy 0/0/0 ok status=200 version=http/2 connect-us=98 alt-svc="-" effective=https://127.0.0.1:37681/b body="face=alt2 conn=1 version=2.0 alpn=h2 path=/b authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=h1h2-unset step=C-fresh-engine file=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:33" 0 0 events=alt1 1/1/1 alt1h 0/0/0 alt2 2/2/2 both 6/6/6 icy 0/0/0 ok status=200 version=http/2 connect-us=171 alt-svc="-" effective=https://127.0.0.1:37681/c body="face=alt2 conn=2 version=2.0 alpn=h2 path=/c authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=h1h2-2tls face=alt1 version=2TLS ctrl=24 altsvc-option=set file-before=absent events=alt1 1/1/1 alt1h 0/0/0 alt2 2/2/2 both 6/6/6 icy 0/0/0
+[guix-8.20.0] altsvc-i case=h1h2-2tls step=A file-at-head=absent file-at-end=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:33" 0 0 events=alt1 2/2/2 alt1h 0/0/0 alt2 2/2/2 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 body="face=alt1 conn=2 version=1.1 alpn=http/1.1 path=/slow-a host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=h1h2-2tls step=B-same-engine file=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:33" 0 0 events=alt1 2/2/2 alt1h 0/0/0 alt2 3/3/3 both 6/6/6 icy 0/0/0 ok status=200 version=http/2 connect-us=113 alt-svc="-" effective=https://127.0.0.1:37681/b body="face=alt2 conn=3 version=2.0 alpn=h2 path=/b authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=h1h2-2tls step=C-fresh-engine file=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:33" 0 0 events=alt1 2/2/2 alt1h 0/0/0 alt2 4/4/4 both 6/6/6 icy 0/0/0 ok status=200 version=http/2 connect-us=77 alt-svc="-" effective=https://127.0.0.1:37681/c body="face=alt2 conn=4 version=2.0 alpn=h2 path=/c authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=h1h2-1_1 face=alt1 version=1_1 ctrl=24 altsvc-option=set file-before=absent events=alt1 2/2/2 alt1h 0/0/0 alt2 4/4/4 both 6/6/6 icy 0/0/0
+[guix-8.20.0] altsvc-i case=h1h2-1_1 step=A file-at-head=absent file-at-end=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:34" 0 0 events=alt1 3/3/3 alt1h 0/0/0 alt2 4/4/4 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 body="face=alt1 conn=3 version=1.1 alpn=http/1.1 path=/slow-a host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=h1h2-1_1 step=B-same-engine file=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:34" 0 0 events=alt1 3/3/4 alt1h 0/0/0 alt2 4/4/4 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 connect-us=0 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/b body="face=alt1 conn=3 version=1.1 alpn=http/1.1 path=/b host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=h1h2-1_1 step=C-fresh-engine file=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:34" 0 0 events=alt1 4/4/5 alt1h 0/0/0 alt2 4/4/4 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 connect-us=179 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/c body="face=alt1 conn=4 version=1.1 alpn=http/1.1 path=/c host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=h1only-unset face=alt1 version=unset ctrl=8 altsvc-option=set file-before=absent events=alt1 4/4/5 alt1h 0/0/0 alt2 4/4/4 both 6/6/6 icy 0/0/0
+[guix-8.20.0] altsvc-i case=h1only-unset step=A file-at-head=absent file-at-end=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:34" 0 0 events=alt1 5/5/6 alt1h 0/0/0 alt2 4/4/4 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 body="face=alt1 conn=5 version=1.1 alpn=http/1.1 path=/slow-a host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=h1only-unset step=B-same-engine file=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:35" 0 0 events=alt1 5/5/7 alt1h 0/0/0 alt2 4/4/4 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 connect-us=0 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/b body="face=alt1 conn=5 version=1.1 alpn=http/1.1 path=/b host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=h1only-unset step=C-fresh-engine file=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:35" 0 0 events=alt1 6/6/8 alt1h 0/0/0 alt2 4/4/4 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 connect-us=176 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/c body="face=alt1 conn=6 version=1.1 alpn=http/1.1 path=/c host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=file-ctrl-default face=alt1 version=unset ctrl=#f altsvc-option=set file-before=absent events=alt1 6/6/8 alt1h 0/0/0 alt2 4/4/4 both 6/6/6 icy 0/0/0
+[guix-8.20.0] altsvc-i case=file-ctrl-default step=A file-at-head=absent file-at-end=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:35" 0 0 events=alt1 7/7/9 alt1h 0/0/0 alt2 4/4/4 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 body="face=alt1 conn=7 version=1.1 alpn=http/1.1 path=/slow-a host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=file-ctrl-default step=B-same-engine file=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:35" 0 0 events=alt1 7/7/9 alt1h 0/0/0 alt2 5/5/5 both 6/6/6 icy 0/0/0 ok status=200 version=http/2 connect-us=103 alt-svc="-" effective=https://127.0.0.1:37681/b body="face=alt2 conn=5 version=2.0 alpn=h2 path=/b authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=file-ctrl-default step=C-fresh-engine file=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:35" 0 0 events=alt1 7/7/9 alt1h 0/0/0 alt2 6/6/6 both 6/6/6 icy 0/0/0 ok status=200 version=http/2 connect-us=179 alt-svc="-" effective=https://127.0.0.1:37681/c body="face=alt2 conn=6 version=2.0 alpn=h2 path=/c authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=plain-http-unset face=alt1h version=unset ctrl=24 altsvc-option=set file-before=absent events=alt1 7/7/9 alt1h 0/0/0 alt2 6/6/6 both 6/6/6 icy 0/0/0
+[guix-8.20.0] altsvc-i case=plain-http-unset step=A file-at-head=absent file-at-end=no-entries events=alt1 7/7/9 alt1h 1/0/1 alt2 6/6/6 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 body="face=alt1h conn=1 version=1.1 alpn=none path=/slow-a host=127.0.0.1:35047\n"
+[guix-8.20.0] altsvc-i case=plain-http-unset step=B-same-engine file=no-entries events=alt1 7/7/9 alt1h 1/0/2 alt2 6/6/6 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 connect-us=0 alt-svc="h2=\":38783\"; ma=3600" effective=http://127.0.0.1:35047/b body="face=alt1h conn=1 version=1.1 alpn=none path=/b host=127.0.0.1:35047\n"
+[guix-8.20.0] altsvc-i case=plain-http-unset step=C-fresh-engine file=no-entries events=alt1 7/7/9 alt1h 2/0/3 alt2 6/6/6 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 connect-us=178 alt-svc="h2=\":38783\"; ma=3600" effective=http://127.0.0.1:35047/c body="face=alt1h conn=2 version=1.1 alpn=none path=/c host=127.0.0.1:35047\n"
+[guix-8.20.0] altsvc-i case=ctrl-alone-unset face=alt1 version=unset ctrl=24 altsvc-option=none file-before=absent events=alt1 7/7/9 alt1h 2/0/3 alt2 6/6/6 both 6/6/6 icy 0/0/0
+[guix-8.20.0] altsvc-i case=ctrl-alone-unset step=A file-at-head=absent file-at-end=absent events=alt1 8/8/10 alt1h 2/0/3 alt2 6/6/6 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 body="face=alt1 conn=8 version=1.1 alpn=http/1.1 path=/slow-a host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=ctrl-alone-unset step=B-same-engine file=absent events=alt1 8/8/11 alt1h 2/0/3 alt2 6/6/6 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 connect-us=0 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/b body="face=alt1 conn=8 version=1.1 alpn=http/1.1 path=/b host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=ctrl-alone-unset step=C-fresh-engine file=absent events=alt1 9/9/12 alt1h 2/0/3 alt2 6/6/6 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 connect-us=176 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/c body="face=alt1 conn=9 version=1.1 alpn=http/1.1 path=/c host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=ctrl-alone-2tls face=alt1 version=2TLS ctrl=24 altsvc-option=none file-before=absent events=alt1 9/9/12 alt1h 2/0/3 alt2 6/6/6 both 6/6/6 icy 0/0/0
+[guix-8.20.0] altsvc-i case=ctrl-alone-2tls step=A file-at-head=absent file-at-end=absent events=alt1 10/10/13 alt1h 2/0/3 alt2 6/6/6 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 body="face=alt1 conn=10 version=1.1 alpn=http/1.1 path=/slow-a host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=ctrl-alone-2tls step=B-same-engine file=absent events=alt1 10/10/14 alt1h 2/0/3 alt2 6/6/6 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 connect-us=0 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/b body="face=alt1 conn=10 version=1.1 alpn=http/1.1 path=/b host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-i case=ctrl-alone-2tls step=C-fresh-engine file=absent events=alt1 11/11/15 alt1h 2/0/3 alt2 6/6/6 both 6/6/6 icy 0/0/0 ok status=200 version=http/1.1 connect-us=187 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/c body="face=alt1 conn=11 version=1.1 alpn=http/1.1 path=/c host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=port version=unset ctrl=#f entry="h1 127.0.0.1 37681 h2 127.0.0.1 38783 \"20301231 00:00:00\" 0 0" events=alt1 11/11/15 alt1h 2/0/3 alt2 6/6/6 both 6/6/6 icy 0/0/0->alt1 11/11/15 alt1h 2/0/3 alt2 7/7/7 both 6/6/6 icy 0/0/0 file-after=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20301231 00:00:00" 0 0 ok status=200 version=http/2 connect-us=171 alt-svc="-" effective=https://127.0.0.1:37681/ii body="face=alt2 conn=7 version=2.0 alpn=h2 path=/ii authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=port version=2TLS ctrl=#f entry="h1 127.0.0.1 37681 h2 127.0.0.1 38783 \"20301231 00:00:00\" 0 0" events=alt1 11/11/15 alt1h 2/0/3 alt2 7/7/7 both 6/6/6 icy 0/0/0->alt1 11/11/15 alt1h 2/0/3 alt2 8/8/8 both 6/6/6 icy 0/0/0 file-after=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20301231 00:00:00" 0 0 ok status=200 version=http/2 connect-us=61 alt-svc="-" effective=https://127.0.0.1:37681/ii body="face=alt2 conn=8 version=2.0 alpn=h2 path=/ii authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=port version=1_1 ctrl=#f entry="h1 127.0.0.1 37681 h2 127.0.0.1 38783 \"20301231 00:00:00\" 0 0" events=alt1 11/11/15 alt1h 2/0/3 alt2 8/8/8 both 6/6/6 icy 0/0/0->alt1 12/12/16 alt1h 2/0/3 alt2 8/8/8 both 6/6/6 icy 0/0/0 file-after=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:37" 0 0 ok status=200 version=http/1.1 connect-us=77 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/ii body="face=alt1 conn=12 version=1.1 alpn=http/1.1 path=/ii host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=port-ctrl-ro version=unset ctrl=28 entry="h1 127.0.0.1 37681 h2 127.0.0.1 38783 \"20301231 00:00:00\" 0 0" events=alt1 12/12/16 alt1h 2/0/3 alt2 8/8/8 both 6/6/6 icy 0/0/0->alt1 12/12/16 alt1h 2/0/3 alt2 9/9/9 both 6/6/6 icy 0/0/0 file-after=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20301231 00:00:00" 0 0 ok status=200 version=http/2 connect-us=57 alt-svc="-" effective=https://127.0.0.1:37681/ii body="face=alt2 conn=9 version=2.0 alpn=h2 path=/ii authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=port-ctrl-ro version=2TLS ctrl=28 entry="h1 127.0.0.1 37681 h2 127.0.0.1 38783 \"20301231 00:00:00\" 0 0" events=alt1 12/12/16 alt1h 2/0/3 alt2 9/9/9 both 6/6/6 icy 0/0/0->alt1 12/12/16 alt1h 2/0/3 alt2 10/10/10 both 6/6/6 icy 0/0/0 file-after=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20301231 00:00:00" 0 0 ok status=200 version=http/2 connect-us=67 alt-svc="-" effective=https://127.0.0.1:37681/ii body="face=alt2 conn=10 version=2.0 alpn=h2 path=/ii authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=port-ctrl-ro version=1_1 ctrl=28 entry="h1 127.0.0.1 37681 h2 127.0.0.1 38783 \"20301231 00:00:00\" 0 0" events=alt1 12/12/16 alt1h 2/0/3 alt2 10/10/10 both 6/6/6 icy 0/0/0->alt1 13/13/17 alt1h 2/0/3 alt2 10/10/10 both 6/6/6 icy 0/0/0 file-after=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20301231 00:00:00" 0 0 ok status=200 version=http/1.1 connect-us=54 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/ii body="face=alt1 conn=13 version=1.1 alpn=http/1.1 path=/ii host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=host version=unset ctrl=#f entry="h1 127.0.0.1 37681 h2 localhost 38783 \"20301231 00:00:00\" 0 0" events=alt1 13/13/17 alt1h 2/0/3 alt2 10/10/10 both 6/6/6 icy 0/0/0->alt1 13/13/17 alt1h 2/0/3 alt2 11/11/11 both 6/6/6 icy 0/0/0 file-after=h1 127.0.0.1 37681 h2 localhost 38783 "20301231 00:00:00" 0 0 ok status=200 version=http/2 connect-us=115 alt-svc="-" effective=https://127.0.0.1:37681/ii body="face=alt2 conn=11 version=2.0 alpn=h2 path=/ii authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=host version=2TLS ctrl=#f entry="h1 127.0.0.1 37681 h2 localhost 38783 \"20301231 00:00:00\" 0 0" events=alt1 13/13/17 alt1h 2/0/3 alt2 11/11/11 both 6/6/6 icy 0/0/0->alt1 13/13/17 alt1h 2/0/3 alt2 12/12/12 both 6/6/6 icy 0/0/0 file-after=h1 127.0.0.1 37681 h2 localhost 38783 "20301231 00:00:00" 0 0 ok status=200 version=http/2 connect-us=157 alt-svc="-" effective=https://127.0.0.1:37681/ii body="face=alt2 conn=12 version=2.0 alpn=h2 path=/ii authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=host version=1_1 ctrl=#f entry="h1 127.0.0.1 37681 h2 localhost 38783 \"20301231 00:00:00\" 0 0" events=alt1 13/13/17 alt1h 2/0/3 alt2 12/12/12 both 6/6/6 icy 0/0/0->alt1 14/14/18 alt1h 2/0/3 alt2 12/12/12 both 6/6/6 icy 0/0/0 file-after=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:37" 0 0 ok status=200 version=http/1.1 connect-us=76 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/ii body="face=alt1 conn=14 version=1.1 alpn=http/1.1 path=/ii host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=h1-to-both version=unset ctrl=#f entry="h1 127.0.0.1 37681 h1 127.0.0.1 35895 \"20301231 00:00:00\" 0 0" events=alt1 14/14/18 alt1h 2/0/3 alt2 12/12/12 both 6/6/6 icy 0/0/0->alt1 14/14/18 alt1h 2/0/3 alt2 12/12/12 both 7/7/7 icy 0/0/0 file-after=h1 127.0.0.1 37681 h1 127.0.0.1 35895 "20301231 00:00:00" 0 0 ok status=200 version=http/2 connect-us=66 alt-svc="-" effective=https://127.0.0.1:37681/ii body="face=both conn=7 version=2.0 alpn=h2 path=/ii host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=h1-to-both version=2TLS ctrl=#f entry="h1 127.0.0.1 37681 h1 127.0.0.1 35895 \"20301231 00:00:00\" 0 0" events=alt1 14/14/18 alt1h 2/0/3 alt2 12/12/12 both 7/7/7 icy 0/0/0->alt1 14/14/18 alt1h 2/0/3 alt2 12/12/12 both 8/8/8 icy 0/0/0 file-after=h1 127.0.0.1 37681 h1 127.0.0.1 35895 "20301231 00:00:00" 0 0 ok status=200 version=http/2 connect-us=69 alt-svc="-" effective=https://127.0.0.1:37681/ii body="face=both conn=8 version=2.0 alpn=h2 path=/ii host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=h1-to-both version=1_1 ctrl=#f entry="h1 127.0.0.1 37681 h1 127.0.0.1 35895 \"20301231 00:00:00\" 0 0" events=alt1 14/14/18 alt1h 2/0/3 alt2 12/12/12 both 8/8/8 icy 0/0/0->alt1 14/14/18 alt1h 2/0/3 alt2 12/12/12 both 9/9/9 icy 0/0/0 file-after=h1 127.0.0.1 37681 h1 127.0.0.1 35895 "20301231 00:00:00" 0 0 ok status=200 version=http/1.1 connect-us=59 alt-svc="-" effective=https://127.0.0.1:37681/ii body="face=both conn=9 version=1.1 alpn=http/1.1 path=/ii host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=h2src version=unset ctrl=#f entry="h2 127.0.0.1 37681 h2 127.0.0.1 38783 \"20301231 00:00:00\" 0 0" events=alt1 14/14/18 alt1h 2/0/3 alt2 12/12/12 both 9/9/9 icy 0/0/0->alt1 14/14/18 alt1h 2/0/3 alt2 13/13/13 both 9/9/9 icy 0/0/0 file-after=h2 127.0.0.1 37681 h2 127.0.0.1 38783 "20301231 00:00:00" 0 0 ok status=200 version=http/2 connect-us=61 alt-svc="-" effective=https://127.0.0.1:37681/ii body="face=alt2 conn=13 version=2.0 alpn=h2 path=/ii authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=h2src version=2TLS ctrl=#f entry="h2 127.0.0.1 37681 h2 127.0.0.1 38783 \"20301231 00:00:00\" 0 0" events=alt1 14/14/18 alt1h 2/0/3 alt2 13/13/13 both 9/9/9 icy 0/0/0->alt1 14/14/18 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0 file-after=h2 127.0.0.1 37681 h2 127.0.0.1 38783 "20301231 00:00:00" 0 0 ok status=200 version=http/2 connect-us=127 alt-svc="-" effective=https://127.0.0.1:37681/ii body="face=alt2 conn=14 version=2.0 alpn=h2 path=/ii authority=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=h2src version=1_1 ctrl=#f entry="h2 127.0.0.1 37681 h2 127.0.0.1 38783 \"20301231 00:00:00\" 0 0" events=alt1 14/14/18 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0->alt1 15/15/19 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0 file-after=h2 127.0.0.1 37681 h2 127.0.0.1 38783 "20301231 00:00:00" 0 0 | h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:37" 0 0 ok status=200 version=http/1.1 connect-us=63 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/ii body="face=alt1 conn=15 version=1.1 alpn=http/1.1 path=/ii host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=dead version=unset ctrl=#f entry="h1 127.0.0.1 37681 h2 127.0.0.1 39257 \"20301231 00:00:00\" 0 0" events=alt1 15/15/19 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0->alt1 15/15/19 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0 file-after=h1 127.0.0.1 37681 h2 127.0.0.1 39257 "20301231 00:00:00" 0 0 fail reason=perform-failed code=7 class=connect sent=0 option=#f strerror="Could not connect to server" errbuf="Failed to connect to 127.0.0.1 port 39257 after 0 ms: Could not connect to server"
+[guix-8.20.0] altsvc-ii case=dead version=2TLS ctrl=#f entry="h1 127.0.0.1 37681 h2 127.0.0.1 39257 \"20301231 00:00:00\" 0 0" events=alt1 15/15/19 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0->alt1 15/15/19 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0 file-after=h1 127.0.0.1 37681 h2 127.0.0.1 39257 "20301231 00:00:00" 0 0 fail reason=perform-failed code=7 class=connect sent=0 option=#f strerror="Could not connect to server" errbuf="Failed to connect to 127.0.0.1 port 39257 after 0 ms: Could not connect to server"
+[guix-8.20.0] altsvc-ii case=dead version=1_1 ctrl=#f entry="h1 127.0.0.1 37681 h2 127.0.0.1 39257 \"20301231 00:00:00\" 0 0" events=alt1 15/15/19 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0->alt1 16/16/20 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0 file-after=h1 127.0.0.1 37681 h2 127.0.0.1 38783 "20261102 15:24:37" 0 0 ok status=200 version=http/1.1 connect-us=60 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/ii body="face=alt1 conn=16 version=1.1 alpn=http/1.1 path=/ii host=127.0.0.1:37681\n"
+[guix-8.20.0] altsvc-ii case=origin-h2 version=unset ctrl=#f entry="h1 127.0.0.1 40257 h2 127.0.0.1 38341 \"20301231 00:00:00\" 0 0" events=alt1 16/16/20 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0->alt1 16/16/20 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0 file-after=h1 127.0.0.1 40257 h2 127.0.0.1 38341 "20301231 00:00:00" 0 0 ok status=200 version=http/2 connect-us=65 alt-svc="-" effective=https://127.0.0.1:40257/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:40257\n:path: /echo\naccept: */*\nalt-used: 127.0.0.1:38341\n\n"
+[guix-8.20.0] altsvc-ii case=origin-h2 version=2TLS ctrl=#f entry="h1 127.0.0.1 40257 h2 127.0.0.1 38341 \"20301231 00:00:00\" 0 0" events=alt1 16/16/20 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0->alt1 16/16/20 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0 file-after=h1 127.0.0.1 40257 h2 127.0.0.1 38341 "20301231 00:00:00" 0 0 ok status=200 version=http/2 connect-us=64 alt-svc="-" effective=https://127.0.0.1:40257/echo body=":method: GET\n:scheme: https\n:authority: 127.0.0.1:40257\n:path: /echo\naccept: */*\nalt-used: 127.0.0.1:38341\n\n"
+[guix-8.20.0] altsvc-ii case=origin-h2 version=1_1 ctrl=#f entry="h1 127.0.0.1 40257 h2 127.0.0.1 38341 \"20301231 00:00:00\" 0 0" events=alt1 16/16/20 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0->alt1 16/16/20 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0 file-after=h1 127.0.0.1 40257 h2 127.0.0.1 38341 "20301231 00:00:00" 0 0 ok status=200 version=http/1.1 connect-us=64 alt-svc="-" effective=https://127.0.0.1:40257/echo body="GET /echo HTTP/1.1\nHost: 127.0.0.1:40257\nAccept: */*\n\n"
+[guix-8.20.0] altsvc-ii case=plain-http version=unset ctrl=#f entry="h1 127.0.0.1 35047 h2 127.0.0.1 38783 \"20301231 00:00:00\" 0 0" events=alt1 16/16/20 alt1h 2/0/3 alt2 14/14/14 both 9/9/9 icy 0/0/0->alt1 16/16/20 alt1h 3/0/4 alt2 14/14/14 both 9/9/9 icy 0/0/0 file-after=h1 127.0.0.1 35047 h2 127.0.0.1 38783 "20301231 00:00:00" 0 0 ok status=200 version=http/1.1 connect-us=65 alt-svc="h2=\":38783\"; ma=3600" effective=http://127.0.0.1:35047/ii body="face=alt1h conn=3 version=1.1 alpn=none path=/ii host=127.0.0.1:35047\n"
+[guix-8.20.0] altsvc-ii case=plain-http version=2TLS ctrl=#f entry="h1 127.0.0.1 35047 h2 127.0.0.1 38783 \"20301231 00:00:00\" 0 0" events=alt1 16/16/20 alt1h 3/0/4 alt2 14/14/14 both 9/9/9 icy 0/0/0->alt1 16/16/20 alt1h 4/0/5 alt2 14/14/14 both 9/9/9 icy 0/0/0 file-after=h1 127.0.0.1 35047 h2 127.0.0.1 38783 "20301231 00:00:00" 0 0 ok status=200 version=http/1.1 connect-us=56 alt-svc="h2=\":38783\"; ma=3600" effective=http://127.0.0.1:35047/ii body="face=alt1h conn=4 version=1.1 alpn=none path=/ii host=127.0.0.1:35047\n"
+[guix-8.20.0] altsvc-ii case=plain-http version=1_1 ctrl=#f entry="h1 127.0.0.1 35047 h2 127.0.0.1 38783 \"20301231 00:00:00\" 0 0" events=alt1 16/16/20 alt1h 4/0/5 alt2 14/14/14 both 9/9/9 icy 0/0/0->alt1 16/16/20 alt1h 5/0/6 alt2 14/14/14 both 9/9/9 icy 0/0/0 file-after=h1 127.0.0.1 35047 h2 127.0.0.1 38783 "20301231 00:00:00" 0 0 ok status=200 version=http/1.1 connect-us=55 alt-svc="h2=\":38783\"; ma=3600" effective=http://127.0.0.1:35047/ii body="face=alt1h conn=5 version=1.1 alpn=none path=/ii host=127.0.0.1:35047\n"
+[guix-8.20.0] verbose-begin altsvc-v case=port version=unset
+[guix-8.20.0] * Alt-svc connecting from [h1]127.0.0.1:37681 to [h2]127.0.0.1:38783
+[guix-8.20.0] *   Trying 127.0.0.1:38783...
+[guix-8.20.0] * GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2
+[guix-8.20.0] * ALPN: curl offers h2
+[guix-8.20.0] * SSL Trust Anchors:
+[guix-8.20.0] *   CAfile: 1 certificates in /tmp/m7s1.1nkYav/pki/ca.pem
+[guix-8.20.0] * SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384
+[guix-8.20.0] *   SSL certificate verified by GnuTLS
+[guix-8.20.0] *   SSL certificate expiration date OK
+[guix-8.20.0] *   SSL certificate activation date OK
+[guix-8.20.0] *   SSL certificate status verification SKIPPED
+[guix-8.20.0] *   common name: chez-curl test leaf (matched)
+[guix-8.20.0] *   certificate public key: EC/ECDSA
+[guix-8.20.0] *   certificate version: #3
+[guix-8.20.0] *   subject: CN=chez-curl test leaf
+[guix-8.20.0] *   start date: Mon, 02 Nov 2026 14:24:30 GMT
+[guix-8.20.0] *   expire date: Wed, 04 Nov 2026 14:24:30 GMT
+[guix-8.20.0] *   issuer: CN=chez-curl test CA
+[guix-8.20.0] * ALPN: server accepted h2
+[guix-8.20.0] * Established connection to 127.0.0.1 (127.0.0.1 port 38783) from 127.0.0.1 port 43488 
+[guix-8.20.0] * using HTTP/2
+[guix-8.20.0] * [HTTP/2] [1] OPENED stream for https://127.0.0.1:37681/v
+[guix-8.20.0] * [HTTP/2] [1] [:method: GET]
+[guix-8.20.0] * [HTTP/2] [1] [:scheme: https]
+[guix-8.20.0] * [HTTP/2] [1] [:authority: 127.0.0.1:37681]
+[guix-8.20.0] * [HTTP/2] [1] [:path: /v]
+[guix-8.20.0] * [HTTP/2] [1] [accept: */*]
+[guix-8.20.0] * [HTTP/2] [1] [alt-used: 127.0.0.1:38783]
+[guix-8.20.0] > GET /v HTTP/2
+[guix-8.20.0] Host: 127.0.0.1:37681
+[guix-8.20.0] Accept: */*
+[guix-8.20.0] Alt-Used: 127.0.0.1:38783
+[guix-8.20.0] 
+[guix-8.20.0] * Request completely sent off
+[guix-8.20.0] < HTTP/2 200 
+[guix-8.20.0] < content-length: 72
+[guix-8.20.0] < 
+[guix-8.20.0] * Connection #0 to host 127.0.0.1:38783 left intact
+[guix-8.20.0] verbose-end altsvc-v case=port version=unset
+[guix-8.20.0] altsvc-v case=port version=unset ok status=200 version=http/2 connect-us=71 alt-svc="-" effective=https://127.0.0.1:37681/v body="face=alt2 conn=15 version=2.0 alpn=h2 path=/v authority=127.0.0.1:37681\n"
+[guix-8.20.0] verbose-begin altsvc-v case=port version=1_1
+[guix-8.20.0] *   Trying 127.0.0.1:37681...
+[guix-8.20.0] * GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2
+[guix-8.20.0] * ALPN: curl offers http/1.1
+[guix-8.20.0] * SSL Trust Anchors:
+[guix-8.20.0] *   CAfile: 1 certificates in /tmp/m7s1.1nkYav/pki/ca.pem
+[guix-8.20.0] * SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384
+[guix-8.20.0] *   SSL certificate verified by GnuTLS
+[guix-8.20.0] *   SSL certificate expiration date OK
+[guix-8.20.0] *   SSL certificate activation date OK
+[guix-8.20.0] *   SSL certificate status verification SKIPPED
+[guix-8.20.0] *   common name: chez-curl test leaf (matched)
+[guix-8.20.0] *   certificate public key: EC/ECDSA
+[guix-8.20.0] *   certificate version: #3
+[guix-8.20.0] *   subject: CN=chez-curl test leaf
+[guix-8.20.0] *   start date: Mon, 02 Nov 2026 14:24:30 GMT
+[guix-8.20.0] *   expire date: Wed, 04 Nov 2026 14:24:30 GMT
+[guix-8.20.0] *   issuer: CN=chez-curl test CA
+[guix-8.20.0] * ALPN: server accepted http/1.1
+[guix-8.20.0] * Established connection to 127.0.0.1 (127.0.0.1 port 37681) from 127.0.0.1 port 53524 
+[guix-8.20.0] * using HTTP/1.x
+[guix-8.20.0] > GET /v HTTP/1.1
+[guix-8.20.0] Host: 127.0.0.1:37681
+[guix-8.20.0] Accept: */*
+[guix-8.20.0] 
+[guix-8.20.0] * Request completely sent off
+[guix-8.20.0] < HTTP/1.1 200 OK
+[guix-8.20.0] < Content-Length: 73
+[guix-8.20.0] * Added alt-svc: 127.0.0.1:38783 over h2
+[guix-8.20.0] < Alt-Svc: h2=":38783"; ma=3600
+[guix-8.20.0] < Connection: keep-alive
+[guix-8.20.0] < Keep-Alive: timeout=5
+[guix-8.20.0] < 
+[guix-8.20.0] * Connection #0 to host 127.0.0.1:37681 left intact
+[guix-8.20.0] verbose-end altsvc-v case=port version=1_1
+[guix-8.20.0] altsvc-v case=port version=1_1 ok status=200 version=http/1.1 connect-us=64 alt-svc="h2=\":38783\"; ma=3600" effective=https://127.0.0.1:37681/v body="face=alt1 conn=17 version=1.1 alpn=http/1.1 path=/v host=127.0.0.1:37681\n"
+[guix-8.20.0] h09 case=control face=h2c version=unset fail reason=perform-failed code=1 class=protocol sent=58 option=#f strerror="Unsupported protocol" errbuf="Received HTTP/0.9 when not allowed"
+[guix-8.20.0] h09 case=allowed face=h2c version=unset ok status=0 version=#f connect-us=64 alt-svc="-" effective=http://127.0.0.1:46443/echo body="\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x08\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02"
+[guix-8.20.0] h09 case=allowed-1_1 face=h2c version=1_1 ok status=0 version=#f connect-us=56 alt-svc="-" effective=http://127.0.0.1:46443/echo body="\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x08\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02"
+[guix-8.20.0] alias case=control face=icy fail reason=perform-failed code=1 class=protocol sent=54 option=#f strerror="Unsupported protocol" errbuf="Received HTTP/0.9 when not allowed"
+[guix-8.20.0] alias case=alias face=icy ok status=200 version=http/1.0 connect-us=55 alt-svc="-" effective=http://127.0.0.1:33039/ body="icy\n"
+[guix-8.20.0] alias case=http09 face=icy ok status=0 version=#f connect-us=52 alt-svc="-" effective=http://127.0.0.1:33039/ body="ICY 200 OK\r\nContent-Length: 4\r\nConnection: close\r\n\r\nicy\n"
+[guix-8.20.0] connect-to version=unset to=alt2 events=alt1 17/17/21 alt1h 5/0/6 alt2 15/15/15 both 9/9/9 icy 3/0/3->alt1 17/17/21 alt1h 5/0/6 alt2 16/16/16 both 9/9/9 icy 3/0/3 ok status=200 version=http/2 connect-us=64 alt-svc="-" effective=https://127.0.0.1:37681/ct body="face=alt2 conn=16 version=2.0 alpn=h2 path=/ct authority=127.0.0.1:37681\n"
+[guix-8.20.0] connect-to version=1_1 to=alt2 events=alt1 17/17/21 alt1h 5/0/6 alt2 16/16/16 both 9/9/9 icy 3/0/3->alt1 17/17/21 alt1h 5/0/6 alt2 17/16/16 both 9/9/9 icy 3/0/3 fail reason=perform-failed code=35 class=tls sent=0 option=#f strerror="SSL connect error" errbuf="GnuTLS, handshake failed: No supported application protocol could be negotiated"
+[guix-8.20.0] native ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[guix-8.20.0] part twins done
+[guix-8.20.0] part twins exited 0 after about 5 s (124 is timeout's)
+[guix-8.20.0] part sharing libdirs src env none
+[guix-8.20.0] libcurl version=8.20.0 ssl="GnuTLS/3.8.13" path=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 part=sharing
+[guix-8.20.0] share setup=h2/unset case=a-together rep=1 same=#f first: k=16 version=http/2 connect-us=156 second: k=17 version=http/2 connect-us=420
+[guix-8.20.0] share setup=h2/unset case=b-after-head rep=1 delay=700 head=#t head-ms=3.6 first-done-at-submit=#f second-ended-ms=4.6 first-done-at-second-end=#f same=#t first: k=18 version=http/2 connect-us=173 second: k=18 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2/unset case=c-after-end rep=1 same=#t first: k=19 version=http/2 connect-us=213 second: k=19 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2/unset case=a-together rep=2 same=#f first: k=20 version=http/2 connect-us=273 second: k=21 version=http/2 connect-us=884
+[guix-8.20.0] share setup=h2/unset case=b-after-head rep=2 delay=900 head=#t head-ms=3.7 first-done-at-submit=#f second-ended-ms=4.7 first-done-at-second-end=#f same=#t first: k=22 version=http/2 connect-us=187 second: k=22 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2/unset case=c-after-end rep=2 same=#t first: k=23 version=http/2 connect-us=194 second: k=23 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2/unset case=a-together rep=3 same=#f first: k=24 version=http/2 connect-us=94 second: k=25 version=http/2 connect-us=285
+[guix-8.20.0] share setup=h2/unset case=b-after-head rep=3 delay=1100 head=#t head-ms=7.1 first-done-at-submit=#f second-ended-ms=8.1 first-done-at-second-end=#f same=#t first: k=26 version=http/2 connect-us=207 second: k=26 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2/unset case=c-after-end rep=3 same=#t first: k=27 version=http/2 connect-us=191 second: k=27 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2/2TLS case=a-together rep=1 same=#f first: k=28 version=http/2 connect-us=266 second: k=29 version=http/2 connect-us=873
+[guix-8.20.0] share setup=h2/2TLS case=b-after-head rep=1 delay=700 head=#t head-ms=6.8 first-done-at-submit=#f second-ended-ms=7.9 first-done-at-second-end=#f same=#t first: k=30 version=http/2 connect-us=191 second: k=30 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2/2TLS case=c-after-end rep=1 same=#t first: k=31 version=http/2 connect-us=226 second: k=31 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2/2TLS case=a-together rep=2 same=#f first: k=32 version=http/2 connect-us=134 second: k=33 version=http/2 connect-us=561
+[guix-8.20.0] share setup=h2/2TLS case=b-after-head rep=2 delay=900 head=#t head-ms=7.1 first-done-at-submit=#f second-ended-ms=8.2 first-done-at-second-end=#f same=#t first: k=34 version=http/2 connect-us=216 second: k=34 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2/2TLS case=c-after-end rep=2 same=#t first: k=35 version=http/2 connect-us=207 second: k=35 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2/2TLS case=a-together rep=3 same=#f first: k=36 version=http/2 connect-us=270 second: k=37 version=http/2 connect-us=953
+[guix-8.20.0] share setup=h2/2TLS case=b-after-head rep=3 delay=1100 head=#t head-ms=3.7 first-done-at-submit=#f second-ended-ms=4.4 first-done-at-second-end=#f same=#t first: k=38 version=http/2 connect-us=198 second: k=38 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2/2TLS case=c-after-end rep=3 same=#t first: k=39 version=http/2 connect-us=103 second: k=39 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2c/2_PRIOR_KNOWLEDGE case=a-together rep=1 same=#f first: k=15 version=http/2 connect-us=256 second: k=16 version=http/2 connect-us=249
+[guix-8.20.0] share setup=h2c/2_PRIOR_KNOWLEDGE case=b-after-head rep=1 delay=700 head=#t head-ms=3.7 first-done-at-submit=#f second-ended-ms=5.7 first-done-at-second-end=#f same=#t first: k=17 version=http/2 connect-us=191 second: k=17 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2c/2_PRIOR_KNOWLEDGE case=c-after-end rep=1 same=#t first: k=18 version=http/2 connect-us=212 second: k=18 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2c/2_PRIOR_KNOWLEDGE case=a-together rep=2 same=#f first: k=19 version=http/2 connect-us=305 second: k=20 version=http/2 connect-us=277
+[guix-8.20.0] share setup=h2c/2_PRIOR_KNOWLEDGE case=b-after-head rep=2 delay=900 head=#t head-ms=1.9 first-done-at-submit=#f second-ended-ms=3.8 first-done-at-second-end=#f same=#t first: k=21 version=http/2 connect-us=218 second: k=21 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2c/2_PRIOR_KNOWLEDGE case=c-after-end rep=2 same=#t first: k=22 version=http/2 connect-us=210 second: k=22 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2c/2_PRIOR_KNOWLEDGE case=a-together rep=3 same=#f first: k=23 version=http/2 connect-us=285 second: k=24 version=http/2 connect-us=255
+[guix-8.20.0] share setup=h2c/2_PRIOR_KNOWLEDGE case=b-after-head rep=3 delay=1100 head=#t head-ms=1.9 first-done-at-submit=#f second-ended-ms=3.7 first-done-at-second-end=#f same=#t first: k=25 version=http/2 connect-us=199 second: k=25 version=http/2 connect-us=0
+[guix-8.20.0] share setup=h2c/2_PRIOR_KNOWLEDGE case=c-after-end rep=3 same=#t first: k=26 version=http/2 connect-us=193 second: k=26 version=http/2 connect-us=0
+[guix-8.20.0] verbose-begin share setup=h2/unset case=a-together rep=verbose
+[guix-8.20.0] *   Trying 127.0.0.1:38341...
+[guix-8.20.0] * Connection #0 is not open enough, cannot reuse
+[guix-8.20.0] * Hostname 127.0.0.1 was found in DNS cache
+[guix-8.20.0] *   Trying 127.0.0.1:38341...
+[guix-8.20.0] * GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2
+[guix-8.20.0] * ALPN: curl offers h2,http/1.1
+[guix-8.20.0] * SSL Trust Anchors:
+[guix-8.20.0] *   CAfile: 1 certificates in /tmp/m7s1.1nkYav/pki/ca.pem
+[guix-8.20.0] * GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2
+[guix-8.20.0] * ALPN: curl offers h2,http/1.1
+[guix-8.20.0] * SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384
+[guix-8.20.0] *   SSL certificate verified by GnuTLS
+[guix-8.20.0] *   SSL certificate expiration date OK
+[guix-8.20.0] *   SSL certificate activation date OK
+[guix-8.20.0] *   SSL certificate status verification SKIPPED
+[guix-8.20.0] *   common name: chez-curl test leaf (matched)
+[guix-8.20.0] *   certificate public key: EC/ECDSA
+[guix-8.20.0] *   certificate version: #3
+[guix-8.20.0] *   subject: CN=chez-curl test leaf
+[guix-8.20.0] *   start date: Mon, 02 Nov 2026 14:24:30 GMT
+[guix-8.20.0] *   expire date: Wed, 04 Nov 2026 14:24:30 GMT
+[guix-8.20.0] *   issuer: CN=chez-curl test CA
+[guix-8.20.0] * ALPN: server accepted h2
+[guix-8.20.0] * Established connection to 127.0.0.1 (127.0.0.1 port 38341) from 127.0.0.1 port 45022 
+[guix-8.20.0] * using HTTP/2
+[guix-8.20.0] * [HTTP/2] [1] OPENED stream for https://127.0.0.1:38341/connection?delay=300
+[guix-8.20.0] * [HTTP/2] [1] [:method: GET]
+[guix-8.20.0] * [HTTP/2] [1] [:scheme: https]
+[guix-8.20.0] * [HTTP/2] [1] [:authority: 127.0.0.1:38341]
+[guix-8.20.0] * [HTTP/2] [1] [:path: /connection?delay=300]
+[guix-8.20.0] * [HTTP/2] [1] [accept: */*]
+[guix-8.20.0] > GET /connection?delay=300 HTTP/2
+[guix-8.20.0] Host: 127.0.0.1:38341
+[guix-8.20.0] Accept: */*
+[guix-8.20.0] 
+[guix-8.20.0] * Request completely sent off
+[guix-8.20.0] * SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384
+[guix-8.20.0] *   SSL certificate verified by GnuTLS
+[guix-8.20.0] *   SSL certificate expiration date OK
+[guix-8.20.0] *   SSL certificate activation date OK
+[guix-8.20.0] *   SSL certificate status verification SKIPPED
+[guix-8.20.0] *   common name: chez-curl test leaf (matched)
+[guix-8.20.0] *   certificate public key: EC/ECDSA
+[guix-8.20.0] *   certificate version: #3
+[guix-8.20.0] *   subject: CN=chez-curl test leaf
+[guix-8.20.0] *   start date: Mon, 02 Nov 2026 14:24:30 GMT
+[guix-8.20.0] *   expire date: Wed, 04 Nov 2026 14:24:30 GMT
+[guix-8.20.0] *   issuer: CN=chez-curl test CA
+[guix-8.20.0] * ALPN: server accepted h2
+[guix-8.20.0] * Established connection to 127.0.0.1 (127.0.0.1 port 38341) from 127.0.0.1 port 45024 
+[guix-8.20.0] * using HTTP/2
+[guix-8.20.0] * [HTTP/2] [1] OPENED stream for https://127.0.0.1:38341/connection?delay=300
+[guix-8.20.0] * [HTTP/2] [1] [:method: GET]
+[guix-8.20.0] * [HTTP/2] [1] [:scheme: https]
+[guix-8.20.0] * [HTTP/2] [1] [:authority: 127.0.0.1:38341]
+[guix-8.20.0] * [HTTP/2] [1] [:path: /connection?delay=300]
+[guix-8.20.0] * [HTTP/2] [1] [accept: */*]
+[guix-8.20.0] > GET /connection?delay=300 HTTP/2
+[guix-8.20.0] Host: 127.0.0.1:38341
+[guix-8.20.0] Accept: */*
+[guix-8.20.0] 
+[guix-8.20.0] * Request completely sent off
+[guix-8.20.0] < HTTP/2 200 
+[guix-8.20.0] < content-length: 14
+[guix-8.20.0] < 
+[guix-8.20.0] < HTTP/2 200 
+[guix-8.20.0] < content-length: 14
+[guix-8.20.0] < 
+[guix-8.20.0] * Connection #0 to host 127.0.0.1:38341 left intact
+[guix-8.20.0] * Connection #1 to host 127.0.0.1:38341 left intact
+[guix-8.20.0] share setup=h2/unset case=a-together rep=verbose same=#f first: k=40 version=http/2 connect-us=340 second: k=41 version=http/2 connect-us=1048
+[guix-8.20.0] verbose-end share setup=h2/unset case=a-together rep=verbose
+[guix-8.20.0] share-verbose done
+[guix-8.20.0] verbose-begin share setup=h2c/2_PRIOR_KNOWLEDGE case=a-together rep=verbose
+[guix-8.20.0] *   Trying 127.0.0.1:46443...
+[guix-8.20.0] * Connection #0 is not open enough, cannot reuse
+[guix-8.20.0] * Hostname 127.0.0.1 was found in DNS cache
+[guix-8.20.0] *   Trying 127.0.0.1:46443...
+[guix-8.20.0] * Established connection to 127.0.0.1 (127.0.0.1 port 46443) from 127.0.0.1 port 38388 
+[guix-8.20.0] * using HTTP/2
+[guix-8.20.0] * [HTTP/2] [1] OPENED stream for http://127.0.0.1:46443/connection?delay=300
+[guix-8.20.0] * [HTTP/2] [1] [:method: GET]
+[guix-8.20.0] * [HTTP/2] [1] [:scheme: http]
+[guix-8.20.0] * [HTTP/2] [1] [:authority: 127.0.0.1:46443]
+[guix-8.20.0] * [HTTP/2] [1] [:path: /connection?delay=300]
+[guix-8.20.0] * [HTTP/2] [1] [accept: */*]
+[guix-8.20.0] > GET /connection?delay=300 HTTP/2
+[guix-8.20.0] Host: 127.0.0.1:46443
+[guix-8.20.0] Accept: */*
+[guix-8.20.0] 
+[guix-8.20.0] * Request completely sent off
+[guix-8.20.0] * Established connection to 127.0.0.1 (127.0.0.1 port 46443) from 127.0.0.1 port 38394 
+[guix-8.20.0] * using HTTP/2
+[guix-8.20.0] * [HTTP/2] [1] OPENED stream for http://127.0.0.1:46443/connection?delay=300
+[guix-8.20.0] * [HTTP/2] [1] [:method: GET]
+[guix-8.20.0] * [HTTP/2] [1] [:scheme: http]
+[guix-8.20.0] * [HTTP/2] [1] [:authority: 127.0.0.1:46443]
+[guix-8.20.0] * [HTTP/2] [1] [:path: /connection?delay=300]
+[guix-8.20.0] * [HTTP/2] [1] [accept: */*]
+[guix-8.20.0] > GET /connection?delay=300 HTTP/2
+[guix-8.20.0] Host: 127.0.0.1:46443
+[guix-8.20.0] Accept: */*
+[guix-8.20.0] 
+[guix-8.20.0] * Request completely sent off
+[guix-8.20.0] < HTTP/2 200 
+[guix-8.20.0] < content-length: 14
+[guix-8.20.0] < 
+[guix-8.20.0] < HTTP/2 200 
+[guix-8.20.0] < content-length: 14
+[guix-8.20.0] < 
+[guix-8.20.0] * Connection #0 to host 127.0.0.1:46443 left intact
+[guix-8.20.0] * Connection #1 to host 127.0.0.1:46443 left intact
+[guix-8.20.0] share setup=h2c/2_PRIOR_KNOWLEDGE case=a-together rep=verbose same=#f first: k=27 version=http/2 connect-us=274 second: k=28 version=http/2 connect-us=157
+[guix-8.20.0] verbose-end share setup=h2c/2_PRIOR_KNOWLEDGE case=a-together rep=verbose
+[guix-8.20.0] share-verbose done
+[guix-8.20.0] native ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[guix-8.20.0] part sharing done
+[guix-8.20.0] part sharing exited 0 after about 12 s (124 is timeout's)

@@ -1,0 +1,20 @@
+run 1: test-version: prior-knowledge-to-h1 on "8.20.0" measured (failed perform-failed 55 send-receive) test-version: together-by-prior-knowledge on "8.20.0" measured (2 (http/2 http/2)) 
+FAIL http-version http/2-prior-knowledge to the http face, HTTP/1.1, fails as 8.20.0's row says: 52 on 7.85.0, 56 on 8.5.0, 16 on 8.7.1, 8.20.0 and 8.23.0; a libcurl with no row fails, naming its version and printing what it measured
+run 2: test-version: prior-knowledge-to-h1 on "8.20.0" measured (failed perform-failed 55 send-receive) test-version: together-by-prior-knowledge on "8.20.0" measured (2 (http/2 http/2)) 
+FAIL http-version http/2-prior-knowledge to the http face, HTTP/1.1, fails as 8.20.0's row says: 52 on 7.85.0, 56 on 8.5.0, 16 on 8.7.1, 8.20.0 and 8.23.0; a libcurl with no row fails, naming its version and printing what it measured
+run 3: test-version: prior-knowledge-to-h1 on "8.20.0" measured (failed perform-failed 55 send-receive) test-version: together-by-prior-knowledge on "8.20.0" measured (2 (http/2 http/2)) 
+FAIL http-version http/2-prior-knowledge to the http face, HTTP/1.1, fails as 8.20.0's row says: 52 on 7.85.0, 56 on 8.5.0, 16 on 8.7.1, 8.20.0 and 8.23.0; a libcurl with no row fails, naming its version and printing what it measured
+run 4: test-version: prior-knowledge-to-h1 on "8.20.0" measured (failed perform-failed 55 send-receive) test-version: together-by-prior-knowledge on "8.20.0" measured (2 (http/2 http/2)) 
+FAIL http-version http/2-prior-knowledge to the http face, HTTP/1.1, fails as 8.20.0's row says: 52 on 7.85.0, 56 on 8.5.0, 16 on 8.7.1, 8.20.0 and 8.23.0; a libcurl with no row fails, naming its version and printing what it measured
+run 5: test-version: prior-knowledge-to-h1 on "8.20.0" measured (failed perform-failed 55 send-receive) test-version: together-by-prior-knowledge on "8.20.0" measured (2 (http/2 http/2)) 
+FAIL http-version http/2-prior-knowledge to the http face, HTTP/1.1, fails as 8.20.0's row says: 52 on 7.85.0, 56 on 8.5.0, 16 on 8.7.1, 8.20.0 and 8.23.0; a libcurl with no row fails, naming its version and printing what it measured
+(probe 8.20.0 http http/2-prior-knowledge (((failed perform-failed 16 protocol) . 21) ((failed perform-failed 55 send-receive) . 9)))
+(probe 8.20.0 h2c #f (((failed perform-failed 1 protocol) . 30)))
+(probe 8.20.0 h2c http/1.1 (((failed perform-failed 1 protocol) . 30)))
+(probe 8.20.0 h2c http/2 (((failed perform-failed 1 protocol) . 30)))
+(probe 8.20.0 h2 http/1.1 (((failed perform-failed 35 tls) . 30)))
+(probe 8.20.0 together-h2c (((2 (http/2 http/2)) . 30)))
+
+real	2m23.595s
+user	1m45.278s
+sys	0m4.451s
