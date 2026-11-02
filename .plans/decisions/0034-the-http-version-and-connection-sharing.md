@@ -39,7 +39,12 @@ runs:
   change them once two streams share a connection. On separate connections a paused stream held
   169 to 509 KB.
 
-Apple's 8.7.1 has not run this probe. The engine does not multiplex there (ADR-0030, amended).
+The maintainer's Mac ran it on 2026-11-02, twice, against Apple's 8.7.1, as libcurl comes and
+with multiplexing off as the engine sets it there (ADR-0030, amended): unset and `NONE` act as
+`2TLS`; prior knowledge over `https://` falls back to HTTP/1.1, as on 8.5.0, and fails 16 over
+`http://` against an HTTP/1.1 server, as on 8.20.0; `PIPEWAIT` against an HTTP/1.1 origin does not
+wait. A paused stream beside an active one on a shared connection held 78,274 bytes there, where
+M6's case had filled the 64 MiB cap; the engine does not multiplex on 8.7.x either way.
 
 ## Decision
 

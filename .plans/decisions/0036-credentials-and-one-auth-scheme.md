@@ -46,7 +46,9 @@ Digest with its own arithmetic. No outcome differed between runs.
   or at the producer's next piece while the read is paused, unlike the 3xx that never ends on
   8.20.0 and 8.23.0.
 
-Apple's 8.7.1 has not run this probe.
+The maintainer's Mac ran it on 2026-11-02, twice, against Apple's 8.7.1, with no split: every
+credentials cell as on 8.5.0 and 8.20.0; SHA-512-256 and a UTF-8 Digest user name work; a
+streamed body under `ANY` fails 26 there, where the Linux libcurls fail 65.
 
 ## Decision
 

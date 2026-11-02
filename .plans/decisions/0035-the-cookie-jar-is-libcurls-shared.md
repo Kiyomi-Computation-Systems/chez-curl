@@ -38,7 +38,10 @@ handle as the engine does ran on 7.85.0, Ubuntu's 8.5.0 with OpenSSL and with Gn
   8.20.0's and 8.23.0's 400-day expiry cap; `Max-Age=-1`, sent as a session cookie on 7.85.0
   alone; a deleted cookie still listed on 7.85.0 and 8.5.0.
 
-Apple's 8.7.1 has not run this probe.
+The maintainer's Mac ran it on 2026-11-02, twice, against Apple's 8.7.1, with no split: the
+share, live transfers, the 13-line round trip and a caller's cookies as on Linux. Without PSL it
+keeps `Domain=localhost`, which there reaches `localhost` itself; its paths are 7.85.0's and
+8.5.0's; it caps no expiry; it lists a deleted cookie.
 
 ## Decision
 

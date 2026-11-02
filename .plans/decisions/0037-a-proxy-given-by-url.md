@@ -46,7 +46,12 @@ parses its own requests, plaintext and over TLS. No case differed between runs.
 - **Failures:** a refused `CONNECT`, 403, 407 or 502, ends 56 on 7.85.0 and 8.5.0 and 7 on 8.20.0
   and 8.23.0, the status in `HTTP_CONNECTCODE`. `REQUEST_SIZE` counts a `CONNECT` on 7.85.0 alone.
 
-Apple's 8.7.1 has not run this probe.
+The maintainer's Mac ran it on 2026-11-02, with LibreSSL and with SecureTransport, against
+Apple's 8.7.1: with LibreSSL as Ubuntu's OpenSSL 8.5.0, but for two origin-verify cases where that
+build's 35 is 60 here; a refused `CONNECT` 56. Under SecureTransport an `https://` proxy works and
+a tunnel inside it does not stall; it ignores a `PROXY_CAPATH` directory, and with peer
+verification off checks no host, which a cleared `PROXY_CAPATH` and one `proxy-verify` for both
+switches make moot. Neither run could show a keychain fallback for a proxy.
 
 ## Decision
 

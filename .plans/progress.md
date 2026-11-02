@@ -26,8 +26,12 @@ close-out under **Close-outs**, newest first.
     headers of their own through CR LF; credentials beside a caller's `Authorization`; `AWS_SIGV4`
     as `HTTPAUTH`'s twin; and the jar's close crossing a submit. Its probe, which I reran, is kept
     in [`research/m7/review/`](research/m7/review/).
-  - **Owed:** the Mac's run of the four probes (the plan, §7), and the maintainer's answers to the
-    plan's §9.
+  - **The maintainer's answers to four of the plan's questions,** each the recommended option: a
+    request with a jar refuses a caller's `Cookie` or `Host` header; a proxy URL with no port gets
+    its scheme's; an `https://` origin through an `https://` proxy is refused on Ubuntu's 8.5.0
+    with GnuTLS; `credentials` is one tagged key (the plan, §9).
+  - **The Mac ran the four probes, 2026-11-02,** against Apple's 8.7.1, every run exiting 0: they
+    revise no decision, and fill the plan's 8.7.1 rows (§7).
 - **CI is green.** PR #39 (`80bb2a9`) fixed the four suites CI's first runs failed, and its
   runs at `1a8fcb5` and `c080ca3` passed all eight jobs. Its close-out is below. A pull request or a push to `main`
   whose changes are all in `.plans/`'s own files or `.plans/research/` now runs no CI (PR #40);

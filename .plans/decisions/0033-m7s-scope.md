@@ -72,4 +72,5 @@ is the M7 plan's, after its probes.
 
 - Each area's tests run on every lane. A rule that varies by version, a Digest variant or a
   cookie rule, is held in a per-version table (ADR-0017).
-- An `https://` proxy under Apple's SecureTransport is unmeasured. The Mac runs M7's probes.
+- The Mac ran M7's four probes on 2026-11-02, against Apple's 8.7.1: an `https://` proxy works
+  there under SecureTransport and LibreSSL alike, and no answer revised this scope.
