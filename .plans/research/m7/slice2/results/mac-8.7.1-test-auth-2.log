@@ -1,0 +1,34 @@
+% git pull --ff-only && make test SUITES=tests/test-auth.sps NODE="$(asdf which node)"
+(the maintainer's Mac, macOS 26.7.1, Apple's libcurl 8.7.1, 2026-11-02, at 30c053a, the second run; pasted into the session)
+Already up to date.
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-auth.sps
+%%%% Starting test auth
+test-auth: digest-algorithms on "8.7.1" measured ((200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)))
+test-auth: utf8-digest-user on "8.7.1" measured (200 (("none" 401) ("ok" 200)) "\\xc3\\xbcser")
+test-auth: no row of utf8-digest-user for this libcurl; measured, it would be:
+("8.7.1" 200 (("none" 401) ("ok" 200)) "\\xc3\\xbcser")
+FAIL a UTF-8 Digest user name on "8.7.1", as its row says: sent raw and verified, but on 8.23.0, which percent-encodes it and hashes the raw bytes; a libcurl with no row fails, naming its version and printing what it measured
+  expected: (a-row-for "8.7.1")
+  actual:   (no-row-for "8.7.1" measured (200 (("none" 401) ("ok" 200)) "\\xc3\\xbcser"))
+test-auth: empty-userinfo on "8.7.1" measured (("@" "" #f (refused credentials-beside-userinfo)) (":@" "" "" (refused credentials-beside-userinfo)) (":p@" "" "p" (refused credentials-beside-userinfo)) ("u@" "u" #f (refused credentials-beside-userinfo)) ("u:@" "u" "" (refused credentials-beside-userinfo)))
+test-auth: no row of empty-userinfo for this libcurl; measured, it would be:
+("8.7.1" ("@" "" #f (refused credentials-beside-userinfo)) (":@" "" "" (refused credentials-beside-userinfo)) (":p@" "" "p" (refused credentials-beside-userinfo)) ("u@" "u" #f (refused credentials-beside-userinfo)) ("u:@" "u" "" (refused credentials-beside-userinfo)))
+FAIL the URLs with an empty userinfo, or part of one, beside credentials on "8.7.1", as its row says: a URL whose user or password part is reported is refused at submit, credentials-beside-userinfo; one with neither sends the field's credentials; a libcurl with no row fails, naming its version and printing what it measured
+  expected: (a-row-for "8.7.1")
+  actual:   (no-row-for "8.7.1" measured (("@" "" #f (refused credentials-beside-userinfo)) (":@" "" "" (refused credentials-beside-userinfo)) (":p@" "" "p" (refused credentials-beside-userinfo)) ("u@" "u" #f (refused credentials-beside-userinfo)) ("u:@" "u" "" (refused credentials-beside-userinfo))))
+test-auth: mib-credentials on "8.7.1" measured (((failed perform-failed 100 too-large) 0) ((failed perform-failed 100 too-large) 0))
+test-auth: no row of mib-credentials for this libcurl; measured, it would be:
+("8.7.1" ((failed perform-failed 100 too-large) 0) ((failed perform-failed 100 too-large) 0))
+FAIL a 1 MiB Basic password and Bearer token on "8.7.1", as its row says: refused by libcurl before anything is sent, 27 on 7.85.0 and 8.5.0, 100 on 8.20.0 and 8.23.0; a libcurl with no row fails, naming its version and printing what it measured
+  expected: (a-row-for "8.7.1")
+  actual:   (no-row-for "8.7.1" measured (((failed perform-failed 100 too-large) 0) ((failed perform-failed 100 too-large) 0)))
+# of expected passes      63
+# of unexpected failures  3
+suite-exit-status: exit 1 (pass 63, fail 3, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-auth.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [test] Error 1

@@ -1007,13 +1007,14 @@
 ;; the username parameter as the origin received it, escaped. 8.23.0
 ;; percent-encodes it and hashes the raw bytes, so the origin refuses it;
 ;; the rest send the bytes raw (the slice's measurement, bytes87, two
-;; runs on each lane). No row for 8.7.1: the Mac's auth probe gave the
-;; name in the URL's userinfo (D:utf8:MD5), not by USERNAME, the field's
-;; path, and ADR-0036's Context has the two paths differ; the Mac's make
-;; test measures the field's, and prints its row.
+;; runs on each lane). 8.7.1's row is the Mac's make test's, by the
+;; field's path (research/m7/slice2/results/mac-8.7.1-make-test.log, and
+;; mac-8.7.1-test-auth-2.log, two runs), not its auth probe's, which gave
+;; the name in the URL's userinfo (D:utf8:MD5), a path ADR-0036's Context
+;; has differ.
 (define utf8-digest-user
   (let ((raw '(200 (("none" 401) ("ok" 200)) "\\xc3\\xbcser")))
-    (list (cons "7.85.0" raw) (cons "8.5.0" raw) (cons "8.20.0" raw)
+    (list (cons "7.85.0" raw) (cons "8.5.0" raw) (cons "8.7.1" raw) (cons "8.20.0" raw)
           (cons "8.23.0" '(401 (("none" 401) ("bad(username)" 401)) "%C3%BCser")))))
 
 ;; username-of : String -> (U String #f)
@@ -1043,9 +1044,9 @@
 ;; report "" for an empty part beside an @, so all five are refused there.
 ;; Measured by this suite on M7 slice 2's build, two runs on each lane:
 ;; Docker ubuntu:24.04 for 7.85.0, both 8.5.0s and 8.23.0, the Guix
-;; container for 8.20.0. No row for 8.7.1: the Mac's auth probe sent each
-;; URL beside both options, but read no URL part of http://@h/ or
-;; http://:@h/ (its make test prints the row).
+;; container for 8.20.0. 8.7.1's row is the Mac's make test's
+;; (research/m7/slice2/results/mac-8.7.1-make-test.log, and
+;; mac-8.7.1-test-auth-2.log, two runs): as 8.5.0's.
 (define empty-userinfo
   (let ((sent-alone '((response 200)
                       ("request 1 face=http conn=A method=GET body=0 verdict=ok status=200 authorization=Basic dXNlcjpwYXNz")))
@@ -1053,6 +1054,8 @@
     (list (cons "7.85.0" (list (list "@" #f #f sent-alone) (list ":@" #f #f sent-alone)
                                (list ":p@" #f "p" refused) (list "u@" "u" #f refused) (list "u:@" "u" #f refused)))
           (cons "8.5.0" (list (list "@" "" #f refused) (list ":@" "" "" refused) (list ":p@" "" "p" refused)
+                              (list "u@" "u" #f refused) (list "u:@" "u" "" refused)))
+          (cons "8.7.1" (list (list "@" "" #f refused) (list ":@" "" "" refused) (list ":p@" "" "p" refused)
                               (list "u@" "u" #f refused) (list "u:@" "u" "" refused)))
           (cons "8.20.0" (list (list "@" "" #f refused) (list ":@" "" "" refused) (list ":p@" "" "p" refused)
                                (list "u@" "u" #f refused) (list "u:@" "u" "" refused)))
@@ -1063,11 +1066,14 @@
 ;; A 1 MiB Basic password and Bearer token: the failure, before anything
 ;; is sent, by version: 27 on 7.85.0 and 8.5.0, of no class; 100,
 ;; too-large, on 8.20.0 and 8.23.0 (the slice's measurement, bytes96, two
-;; runs on each lane). No row for 8.7.1, which no probe measured.
+;; runs on each lane). 8.7.1's row is the Mac's make test's
+;; (research/m7/slice2/results/mac-8.7.1-make-test.log, and
+;; mac-8.7.1-test-auth-2.log, two runs): 100, as 8.20.0's.
 (define mib-credentials
   (let ((oom '(((failed perform-failed 27 none) 0) ((failed perform-failed 27 none) 0)))
         (large '(((failed perform-failed 100 too-large) 0) ((failed perform-failed 100 too-large) 0))))
-    (list (cons "7.85.0" oom) (cons "8.5.0" oom) (cons "8.20.0" large) (cons "8.23.0" large))))
+    (list (cons "7.85.0" oom) (cons "8.5.0" oom) (cons "8.7.1" large) (cons "8.20.0" large)
+          (cons "8.23.0" large))))
 
 ;; --- the scenarios, against the origin -------------------------------------------------
 

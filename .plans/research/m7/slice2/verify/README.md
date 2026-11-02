@@ -40,3 +40,14 @@ My checks of the measuring agent's hand-back, and of a trap the builder reported
   Three mutants of mine each failed test-auth by the tests named for them
   (`results/mutant-*-after-fix.log`): the token's record not opaque, the credentials scan from
   index 1, and the `Authorization` rule reading the first header alone.
+- **CI's floor job failed once, on `30c053a`,** in slice 1's test-version, not in a suite this
+  slice changed ([`results/ci-floor-30c053a.log`](results/ci-floor-30c053a.log)): two requests
+  to `h2`, the version unset, submitted in one batch, shared one connection, where the test holds
+  two. The same test had passed CI's floor three times (`fd9394e`, `45e7ea4`, and `main`'s
+  `5fe3150`), and it passed here on the floor lane five times of five, and six of six at half a
+  CPU (`--cpus 0.5`) ([`results/version-floor-reruns.log`](results/version-floor-reruns.log),
+  [`results/version-floor-halfcpu-reruns.log`](results/version-floor-halfcpu-reruns.log)). Both
+  submits reach one turn, the hold and the queue's take sharing the engine's lock, and 7.85.0
+  reuses no connection whose ALPN is unknown (`lib/url.c`, `BUNDLE_UNKNOWN`), so a shared
+  connection needs the second request to start after the first's handshake: a retry would, such
+  as libcurl's own after a refused HTTP/2 stream. Not shown; open.

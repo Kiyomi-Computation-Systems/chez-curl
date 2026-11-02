@@ -167,3 +167,8 @@ under the memory gate's Valgrind on 8.5.0, whose 474 transfers ended as they did
   one ([`verify/`](../research/m7/slice2/verify/)). A test of the loop needs a server that keeps
   the connection while the body never comes, which `node:http` cannot: the origin's raw face
   serves it.
+- **The Mac's `make test` on 8.7.1,** at the slice's PR: a UTF-8 Digest user name given by the
+  field went out raw and verified; every empty-userinfo URL was refused, as from 8.5.0; a 1 MiB
+  password or token failed 100 with nothing sent, as on 8.20.0
+  ([log](../research/m7/slice2/results/mac-8.7.1-make-test.log), and a second run of test-auth,
+  [alike](../research/m7/slice2/results/mac-8.7.1-test-auth-2.log)).
