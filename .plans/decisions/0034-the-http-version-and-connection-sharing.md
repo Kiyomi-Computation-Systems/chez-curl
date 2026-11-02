@@ -96,7 +96,8 @@ on the five Linux libcurls, two runs each, with no cell split between the kept r
   on all five. By prior knowledge over `http://`, 7.85.0 shares one connection between two
   submitted in one batch, every time; the others open two. So the consequence above, "requests
   started together open their own", holds over TLS on every lane, and is pinned by version for
-  prior knowledge. 8.7.x has no engine measurement yet: the Mac's `make test` gives its row.
+  prior knowledge. Apple's 8.7.1, whose engine multiplexes nothing, opened two in the Mac's
+  `make test` ([log](../research/m7/slice1/results/mac-8.7.1-make-test.log)).
 - **The version's twins:** `SSL_ENABLE_ALPN`, `ALTSVC` and `ALTSVC_CTRL` change what the field
   sets, and are owned (ADR-0009, amended 2026-11-02).
 - **A pooled connection made by prior knowledge serves later requests:** over `http://`, a request

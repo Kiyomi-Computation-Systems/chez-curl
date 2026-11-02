@@ -28,9 +28,8 @@
 ;;;     batch, one submitted once the first's head is in, one once the
 ;;;     first has ended, each case on an engine of its own. No transfer sets
 ;;;     PIPEWAIT (ADR-0034, decision 3). The batch by prior knowledge over
-;;;     h2c shares one connection on 7.85.0 alone: a row per libcurl, none
-;;;     for 8.7.1, whose engine runs were never measured; the Mac's run
-;;;     prints its row. One after the head reuses the first's connection
+;;;     h2c shares one connection on 7.85.0 alone: a row per libcurl,
+;;;     8.7.1's from the Mac's make test. One after the head reuses the first's connection
 ;;;     but where the engine multiplexes nothing, 8.7.0 and 8.7.1, as
 ;;;     tests/test-stream.sps holds for h2;
 ;;;   - a reused connection keeps its version: on an engine holding a
@@ -464,10 +463,11 @@
 ;; the first's connection multiplexable inside the turn that set both up;
 ;; two on 8.5.0 ("Server doesn't support multiplex (yet)"), 8.20.0 and
 ;; 8.23.0 ("Connection #0 is not open enough"), in every rep of the
-;; slice's two runs. 8.7.1 has none: its engine does not multiplex (ADR-0030,
-;; amended), and no run of it was measured; the Mac's run prints its row.
+;; slice's two runs; two on 8.7.1, whose engine multiplexes nothing
+;; (ADR-0030, amended), from the Mac's make test (research/m7/slice1/
+;; results/mac-8.7.1-make-test.log).
 (define together-by-prior-knowledge
-  '(("7.85.0" . 1) ("8.5.0" . 2) ("8.20.0" . 2) ("8.23.0" . 2)))
+  '(("7.85.0" . 1) ("8.5.0" . 2) ("8.7.1" . 2) ("8.20.0" . 2) ("8.23.0" . 2)))
 
 ;; by-version : (Listof (Pairof String Any)) String (-> Any) -> (List Any Any)
 ;; A per-version test's expected and actual values, from ROWS for the
@@ -688,7 +688,7 @@
                             (lambda () (share-together o 'h2c 'http/2-prior-knowledge)))))
       (test-equal (string-append "two requests to h2c by prior knowledge, submitted in one batch, use as many connections as "
                                  (if (string? version) version (written version))
-                                 "'s row says, each read over HTTP/2: one on 7.85.0, two on 8.5.0, 8.20.0 and 8.23.0; a libcurl with no row fails, naming its version and printing what it measured")
+                                 "'s row says, each read over HTTP/2: one on 7.85.0, two on 8.5.0, 8.7.1, 8.20.0 and 8.23.0; a libcurl with no row fails, naming its version and printing what it measured")
         (if (integer? (car pair)) (list (car pair) '(http/2 http/2)) (car pair))
         (cadr pair)))
 
