@@ -18,7 +18,11 @@ name: CI
 #
 # The jobs, all independent, and every one of them on every event below: each
 # pull request, each push to main or a v* tag, and each run asked for from the
-# Actions tab.
+# Actions tab. A pull request or a push to main whose changes are all under
+# .plans/'s own files or .plans/research/ runs none: nothing built or tested
+# reads them. .plans/decisions/ is not skipped: test-collect-safe checks each
+# binding's citation against its record's text. A new directory under .plans/
+# runs every job until it is listed. GitHub never filters a tag's push by path.
 #   main        every action pinned to a commit, every check, then the
 #               suites, against the runner's libcurl.
 #   gnutls      the suites against Ubuntu's libcurl-gnutls.so.4, the same
@@ -59,7 +63,13 @@ on:
   push:
     branches: [main]
     tags: ["v*"]
+    paths-ignore:
+      - ".plans/*"
+      - ".plans/research/**"
   pull_request:
+    paths-ignore:
+      - ".plans/*"
+      - ".plans/research/**"
   workflow_dispatch:
 
 permissions:
