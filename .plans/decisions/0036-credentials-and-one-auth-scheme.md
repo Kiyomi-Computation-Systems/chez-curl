@@ -1,6 +1,7 @@
 # ADR-0036: Credentials, and one auth scheme per request
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-11-02, after the M7 plan's review: decision 3's reach, and
+  the bytes and headers credentials meet
 - **Date:** 2026-11-02
 - **Scope:** chez-curl v1, a server's auth, in `(curl)` and `(http-client)`, from M7
 - **Settles:** how a caller gives server credentials, and which schemes a request may pick, a
@@ -55,8 +56,15 @@ Apple's 8.7.1 has not run this probe.
 2. **A request names one scheme: Basic, Digest or Bearer.** It never names a set, nor libcurl's
    `ANY` or `ANYSAFE`. A Bearer request carries its token, sent by `XOAUTH2_BEARER`.
 3. **A streamed request takes Basic or Bearer alone,** each one request. Digest is a round, and
-   is refused beside a stream, as every auth round is today (ADR-0030's one transfer, one
-   request).
+   is refused beside a streamed body or a streamed response, by a rule of its own: today's
+   refusal of the hatch's auth rounds fires beside a streamed response alone, so a streamed body
+   beside the hatch's `HTTPAUTH` passes today.
+4. **Credentials never write a header of their own, nor meet a caller's.** Every credentials
+   string refuses NUL, CR, LF and each byte the header rule refuses: libcurl writes a Bearer token
+   raw, and escapes only `"` and `\` in a Digest user name, so CR LF in either injected a header
+   on the five lanes, 8.23.0 percent-encoding the Digest name. Credentials beside a caller's
+   `Authorization` header are refused: libcurl dropped its own Basic and Bearer for the caller's,
+   and sent both beside Digest ([review](../research/m7/review/)).
 
 ## Rejected
 
@@ -69,8 +77,8 @@ Apple's 8.7.1 has not run this probe.
 
 ## Consequences
 
-- `USERNAME`, `PASSWORD`, `HTTPAUTH` and `XOAUTH2_BEARER` become owned, with their twins;
-  `stream-with-rounds` keeps refusing Digest beside a stream.
+- `USERNAME`, `PASSWORD`, `HTTPAUTH`, `XOAUTH2_BEARER` and `AWS_SIGV4` become owned, with their
+  other twins: `AWS_SIGV4` set after `HTTPAUTH` Basic replaced it with a signature (review).
 - What varies by version, the Digest algorithms and 8.23.0's UTF-8 user name, is pinned in a
   per-version table and documented.
 - Across a redirect to another origin the high level drops the credentials field as it drops an

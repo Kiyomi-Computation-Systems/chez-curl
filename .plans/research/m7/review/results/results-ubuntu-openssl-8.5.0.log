@@ -1,0 +1,115 @@
+== ubuntu-openssl-8.5.0
+version libcurl/8.5.0 OpenSSL/3.0.13 zlib/1.3 brotli/1.1.0 zstd/1.5.5 libidn2/2.3.7 libpsl/0.21.2 (+libidn2/2.3.7) libssh/0.10.6/openssl/zlib nghttp2/1.59.0 librtmp/2.3 OpenLDAP/2.6.10
+case cookie-cr load rc=0
+case cookie-cr listed "127.0.0.1\tFALSE\t/\tFALSE\t0\tc\tv"
+case cookie-cr
+case cookie-cr done code=0 status=200
+case cookie-ctl01 load rc=0
+case cookie-ctl01 listed "127.0.0.1\tFALSE\t/\tFALSE\t0\tc\tv\x01w"
+case cookie-ctl01
+case cookie-ctl01 done code=0 status=200
+case cookie-empty-name load rc=0
+case cookie-empty-name listed "127.0.0.1\tFALSE\t/\tFALSE\t0\tv\t"
+case cookie-empty-name
+case cookie-empty-name done code=0 status=200
+case bearer-crlf
+case bearer-crlf done code=0 status=200
+case digest-user-crlf
+case digest-user-crlf done code=0 status=200
+case authz-beside-basic
+case authz-beside-basic done code=0 status=200
+case authz-beside-bearer
+case authz-beside-bearer done code=0 status=200
+case authz-beside-digest
+case authz-beside-digest done code=0 status=200
+case awssigv4-after-basic
+case awssigv4-after-basic done code=0 status=200
+url http://@h/ user rc=0 "" password rc=12 (none)
+url http://:@h/ user rc=0 "" password rc=0 ""
+url http://u@h/ user rc=0 "u" password rc=12 (none)
+url http://:p@h/ user rc=0 "" password rc=0 "p"
+url http://h/ user rc=11 (none) password rc=12 (none)
+probe exit=0
+-- server
+port 33509
+server: head
+      GET /c HTTP/1.1\r\n
+      Host: 127.0.0.1:33509\r\n
+      Accept: */*\r\n
+      Cookie: c=v\r\n
+      \r\n
+      
+server: head
+      GET /c HTTP/1.1\r\n
+      Host: 127.0.0.1:33509\r\n
+      Accept: */*\r\n
+      Cookie: c=v\x01w\r\n
+      \r\n
+      
+server: head
+      GET /c HTTP/1.1\r\n
+      Host: 127.0.0.1:33509\r\n
+      Accept: */*\r\n
+      Cookie: v=\r\n
+      \r\n
+      
+server: head
+      GET /b HTTP/1.1\r\n
+      Host: 127.0.0.1:33509\r\n
+      Authorization: Bearer tok\r\n
+      X-Injected: 1\r\n
+      Accept: */*\r\n
+      \r\n
+      
+server: head
+      GET /digest HTTP/1.1\r\n
+      Host: 127.0.0.1:33509\r\n
+      Accept: */*\r\n
+      \r\n
+      
+server: head
+      GET /digest HTTP/1.1\r\n
+      Host: 127.0.0.1:33509\r\n
+      Authorization: Digest username="u\r\n
+      X-Injected: 1", realm="r", nonce="abc", uri="/digest", cnonce="YzQ2N2RkNTJmMmQ0OTdkZDQ5Y2UxMjUwYzNhODQyMDk=", nc=00000001, qop=auth, response="1967d1eb67faf0aa8acea3485b0a9784"\r\n
+      Accept: */*\r\n
+      \r\n
+      
+server: head
+      GET /a HTTP/1.1\r\n
+      Host: 127.0.0.1:33509\r\n
+      Accept: */*\r\n
+      Authorization: Caller x\r\n
+      \r\n
+      
+server: head
+      GET /a HTTP/1.1\r\n
+      Host: 127.0.0.1:33509\r\n
+      Accept: */*\r\n
+      Authorization: Caller x\r\n
+      \r\n
+      
+server: head
+      GET /digest HTTP/1.1\r\n
+      Host: 127.0.0.1:33509\r\n
+      Accept: */*\r\n
+      Authorization: Caller x\r\n
+      \r\n
+      
+server: head
+      GET /digest HTTP/1.1\r\n
+      Host: 127.0.0.1:33509\r\n
+      Authorization: Digest username="u", realm="r", nonce="abc", uri="/digest", cnonce="NDgyMTljMDM5ZjU5NjE5YmE4NjJiYzIxMGQ0ODIwZWQ=", nc=00000001, qop=auth, response="303fc2f9c2e17c0fb7691a929e949031"\r\n
+      Accept: */*\r\n
+      Authorization: Caller x\r\n
+      \r\n
+      
+server: head
+      GET /s HTTP/1.1\r\n
+      Host: 127.0.0.1:33509\r\n
+      Authorization: AWS4-HMAC-SHA256 Credential=u/20261102/us-east-1/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=9e95c21f40c248a3211a3472fd8b6231210c4767b71ebabe42239424aa7e33cb\r\n
+      X-Amz-Date: 20261102T115714Z\r\n
+      x-amz-content-sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\r\n
+      Accept: */*\r\n
+      \r\n
+      

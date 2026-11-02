@@ -1,6 +1,7 @@
 # ADR-0035: The cookie jar is libcurl's, shared
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-11-02, after the M7 plan's review: decision 4's round trip
+  on 7.85.0, and the lines a load takes; and decision 6, the maintainer's, the recommended option
 - **Date:** 2026-11-02
 - **Scope:** chez-curl v1, cookies, in `(curl)` and `(http-client)`, from M7
 - **Settles:** how a session's cookie jar is built. The maintainer chose on 2026-11-02, the
@@ -49,9 +50,18 @@ Apple's 8.7.1 has not run this probe.
 3. **A jar is freed only once no transfer holds it,** since libcurl refuses the cleanup before
    then.
 4. **Cookies go in as Netscape lines through `COOKIELIST`, and come out through
-   `CURLINFO_COOKIELIST`,** so what is read out loads back the same.
+   `CURLINFO_COOKIELIST`,** so what is read out loads back the same, but on 7.85.0 for a cookie
+   whose name or value holds a tab: 7.85.0 stores it, and lists it as eight fields, which a load
+   refuses. A load takes only lines libcurl keeps alike on every version: seven fields, none
+   holding a control byte, none empty but the value. Before 8.23.0 libcurl stores a control byte
+   from a loaded line raw, 8.23.0 drops the line and answers 0, and 7.85.0 merges an empty field
+   ([review](../research/m7/review/)).
 5. **The cookie rules are libcurl's.** Where they vary by version or build, M7's tests pin each
    version's answer, and the documentation says so.
+6. **A request that carries a jar refuses a caller's `Cookie` or `Host` header,** so one source
+   holds its cookies: libcurl sends a caller's `Cookie` as a second header beside the jar's, and
+   drops `COOKIE` beside it; and a caller's `Host` sets the host the jar matches cookies against,
+   sending and storing (read in curl's source).
 
 ## Rejected
 
@@ -62,6 +72,5 @@ Apple's 8.7.1 has not run this probe.
 
 - `curl_share_init`, `curl_share_setopt` (variadic, so `make check-variadic` runs on the Mac) and
   `curl_share_cleanup` are bound, with `curl_slist` read for `CURLINFO_COOKIELIST`.
-- The cookie options a jar sets become owned, with their twins; which options those are, and how
-  a caller's own `Cookie` header meets the jar's (libcurl sends both, as two headers), are the M7
-  plan's.
+- The cookie options a jar sets become owned, with their twins; which options those are is the
+  M7 plan's.

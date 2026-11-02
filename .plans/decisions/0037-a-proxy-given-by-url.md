@@ -1,6 +1,7 @@
 # ADR-0037: A proxy given by URL
 
-- **Status:** Accepted
+- **Status:** Accepted; amended 2026-11-02, after the M7 plan's review: a pooled tunnel; and
+  decisions 6 and 7, the maintainer's, each the recommended option
 - **Date:** 2026-11-02
 - **Scope:** chez-curl v1, a proxy a caller names, in `(curl)` and `(http-client)`, from M7
 - **Settles:** whether the environment's `no_proxy` applies to a named proxy, how a caller gives
@@ -61,6 +62,12 @@ Apple's 8.7.1 has not run this probe.
 5. **A named proxy's own CA and verification are request fields,** as ADR-0024 promised, on the
    origin's model (ADR-0018): `PROXY_CAINFO` with `PROXY_CAPATH` cleared, and the verify
    switches. They are the M7 plan's to shape.
+6. **A proxy URL that names no port gets its scheme's,** 80 or 443, in the URL chez-curl hands
+   `PROXY`, so every lane connects alike.
+7. **An `https://` origin through an `https://` proxy is refused at submit on Ubuntu's 8.5.0 with
+   GnuTLS,** where it never finished, every run, while its control passed; without a bound the
+   transfer would wait for ever. The rule is keyed by version and backend, as 8.7.x's
+   multiplexing rule is (ADR-0030, amended), and grows by measurement.
 
 ## Rejected
 
@@ -75,7 +82,10 @@ Apple's 8.7.1 has not run this probe.
 
 - `PROXY`, `NOPROXY` and the proxy TLS options a field sets become owned, with their twins.
 - What varies by version or backend is pinned in per-version tables and documented: the refused
-  `CONNECT`'s code, the default port, which the plan may remove by requiring one, and GnuTLS
-  8.5.0's stall inside a tunnel.
+  `CONNECT`'s code, and which builds stall inside a tunnel.
 - ADR-0022's rule that `REQUEST_SIZE` 0 means nothing was sent counts a `CONNECT` on 7.85.0
   alone. The M7 plan rereads it for proxied transfers.
+- **A pooled tunnel may carry another request's proxy credentials:** 7.85.0 matches a pooled
+  proxy connection by type, host and port alone, where 8.20.0 and 8.23.0 compare the user and
+  password too (read in source). The M7 plan measures it on every lane, and the transfer sets
+  `FRESH_CONNECT` beside proxy userinfo where a tunnel is reused.
