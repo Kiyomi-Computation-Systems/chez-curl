@@ -1,0 +1,39 @@
+net.ipv4.tcp_rmem = 4096	131072	33554432
+net.ipv4.tcp_wmem = 4096	16384	4194304
+net.core.rmem_max = 4194304
+net.core.wmem_max = 4194304
+net.core.rmem_default = 212992
+net.core.wmem_default = 212992
+net.ipv4.tcp_moderate_rcvbuf = 1
+lane main node v22.23.4 envs 
+mutant: tests/test-upload.sps: 725s|(on-own-engine make-curl-engine|(on-own-engine (lambda () (make-curl-engine-holding-prereq 200))|
+725c725
+<            (on-own-engine make-curl-engine
+---
+>            (on-own-engine (lambda () (make-curl-engine-holding-prereq 200))
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-upload.sps
+%%%% Starting test upload
+FAIL the head's body-asked bit: #t for a streamed body whose server answers before reading it over HTTP/2, nothing put by the head, and over HTTP/1.1 with a close, a race, whether the read callable was ever asked; #t for one whose server reads it before answering, on the raw face and over HTTP/2; #f for a whole body, for none, and for a streamed length of 0, which libcurl never asks for
+  expected: ((raw-answer bit-is-ask) (h2-answer #t) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+  actual:   ((raw-answer bit-is-ask) (h2-answer (no-head not-done)) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+(fill #f 1966080 ms 592 retried () mib (19))
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 1117)
+(throughput http chunked ms 989)
+(throughput https sized ms 817)
+(throughput https chunked ms 947)
+(throughput h2 sized ms 250)
+(throughput h2 chunked ms 279)
+(read-lock collections-while-live 995)
+# of expected passes      57
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 57, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-upload.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1
+exit 2

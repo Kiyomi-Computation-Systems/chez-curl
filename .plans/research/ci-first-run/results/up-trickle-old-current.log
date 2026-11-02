@@ -1,0 +1,33 @@
+net.ipv4.tcp_rmem = 4096	131072	33554432
+net.ipv4.tcp_wmem = 4096	16384	4194304
+net.core.rmem_max = 4194304
+net.core.wmem_max = 4194304
+net.core.rmem_default = 212992
+net.core.wmem_default = 212992
+net.ipv4.tcp_moderate_rcvbuf = 1
+lane current node v22.23.4 envs CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include
+mutant: tests/origin.mjs: 1804s|await pause(socket, s.ms);|{ const trickle = setInterval(() => socket.read(), 1000); await pause(socket, s.ms); clearInterval(trickle); }|
+1804c1804
+<           await pause(socket, s.ms);
+---
+>           { const trickle = setInterval(() => socket.read(), 1000); await pause(socket, s.ms); clearInterval(trickle); }
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-upload.sps
+%%%% Starting test upload
+(fill #f 1966080 ms 1254 retried () mib (18))
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 1032)
+(throughput http chunked ms 941)
+(throughput https sized ms 989)
+(throughput https chunked ms 1023)
+(throughput h2 sized ms 359)
+(throughput h2 chunked ms 335)
+(read-lock collections-while-live 994)
+# of expected passes      58
+test: pass tests/test-upload.sps
+test: ran 1, passed 1, failed 0, hung 0
+exit 0

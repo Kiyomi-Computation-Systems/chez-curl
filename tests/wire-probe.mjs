@@ -31,9 +31,10 @@
 //                              with ECONNRESET: libuv before 1.52 reports an
 //                              end, never reading the reset, when the last
 //                              data and a reset are read in one wakeup
-//                              (measured on Node 20.10.0, TCP and TLS). Node
-//                              24 bundles 1.52.1 from 24.16.0; Node 20 up to
-//                              20.19.0 and 22 up to 22.22.0 bundle older ones
+//                              (measured on Node 20.10.0, TCP and TLS, and
+//                              22.23.4, TCP). Node 24 bundles 1.52.1 from
+//                              24.16.0; every Node 20 and 22 to 20.20.2 and
+//                              22.23.4, CI's, bundles an older one
 //   (end error MS "CODE")      any other error, with its code
 //   (reset-sent MS)            with --reset: once its bytes are handed to the
 //                              kernel, it resets the connection

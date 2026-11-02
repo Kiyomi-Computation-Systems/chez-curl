@@ -1,0 +1,4 @@
+# PR #39's second run, at 1a8fcb5, the current job (124973941171): its fill and verdict, from the job's log
+2026-11-01T20:48:18.0376369Z   version:  8.23.0
+2026-11-01T20:54:36.4034200Z (fill #f 2031616 ms 550 retried () mib (20))
+2026-11-01T20:55:11.6020069Z test: ran 35, passed 35, failed 0, hung 0

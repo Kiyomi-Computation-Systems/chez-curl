@@ -1,0 +1,18 @@
+net.ipv4.tcp_rmem = 4096	131072	33554432
+net.ipv4.tcp_wmem = 4096	16384	4194304
+net.core.rmem_max = 4194304
+net.core.wmem_max = 4194304
+net.core.rmem_default = 212992
+net.core.wmem_default = 212992
+net.ipv4.tcp_moderate_rcvbuf = 1
+lane floor node v22.23.4 envs CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/e1/ci/curl-floor/include
+libcurl 7.85.0
+count 20000 run 0 ms 1334 cpu-ms 1326 outcome (response 200 20000)
+count 20000 run 1 ms 1300 cpu-ms 1296 outcome (response 200 20000)
+count 30000 run 0 ms 2845 cpu-ms 2837 outcome (response 200 30000)
+count 30000 run 1 ms 2811 cpu-ms 2808 outcome (response 200 30000)
+count 40000 run 0 ms 5000 cpu-ms 5004 outcome (response 200 40000)
+count 40000 run 1 ms 4973 cpu-ms 4967 outcome (response 200 40000)
+count 50000 run 0 ms 7637 cpu-ms 7642 outcome (response 200 50000)
+count 50000 run 1 ms 7280 cpu-ms 7296 outcome (response 200 50000)
+exit 0

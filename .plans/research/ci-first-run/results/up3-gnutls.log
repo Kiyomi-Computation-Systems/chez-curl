@@ -1,0 +1,28 @@
+net.ipv4.tcp_rmem = 4096	131072	33554432
+net.ipv4.tcp_wmem = 4096	16384	4194304
+net.core.rmem_max = 4194304
+net.core.wmem_max = 4194304
+net.core.rmem_default = 212992
+net.core.wmem_default = 212992
+net.ipv4.tcp_moderate_rcvbuf = 1
+lane gnutls node v22.23.4 envs CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-upload.sps
+%%%% Starting test upload
+(fill #f 1966080 ms 591 retried () mib (19))
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 1146)
+(throughput http chunked ms 1137)
+(throughput https sized ms 1086)
+(throughput https chunked ms 939)
+(throughput h2 sized ms 290)
+(throughput h2 chunked ms 309)
+(read-lock collections-while-live 989)
+# of expected passes      58
+test: pass tests/test-upload.sps
+test: ran 1, passed 1, failed 0, hung 0
+exit 0

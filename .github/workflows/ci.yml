@@ -147,6 +147,9 @@ jobs:
           valgrind --version
           node --version
           echo "image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+          echo "kernel: $(uname -r)"
+          # test-upload fills the kernel's socket buffers on loopback.
+          sysctl net.ipv4.tcp_rmem net.ipv4.tcp_wmem net.core.rmem_max net.core.wmem_max net.ipv4.tcp_moderate_rcvbuf
 
       # CHEZ is the real binary, not a symlink or a wrapper. No
       # CHEZ_CURL_LIBCURL: the runner's libcurl is found by discovery.
@@ -421,6 +424,8 @@ jobs:
           C_INCLUDE_PATH: ${{ runner.temp }}/curl-current/include
         run: |
           set -o pipefail
+          echo "kernel: $(uname -r)"
+          sysctl net.ipv4.tcp_rmem net.ipv4.tcp_wmem net.core.rmem_max net.core.wmem_max net.ipv4.tcp_moderate_rcvbuf
           built=$("$RUNNER_TEMP/curl-current/bin/curl-config" --version)
           make build | tee "$RUNNER_TEMP/build.log"
           if ! grep -qxF "  version:  ${built#libcurl }" "$RUNNER_TEMP/build.log"; then

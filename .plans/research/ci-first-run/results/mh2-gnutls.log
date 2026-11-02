@@ -1,0 +1,18 @@
+net.ipv4.tcp_rmem = 4096	131072	33554432
+net.ipv4.tcp_wmem = 4096	16384	4194304
+net.core.rmem_max = 4194304
+net.core.wmem_max = 4194304
+net.core.rmem_default = 212992
+net.core.wmem_default = 212992
+net.ipv4.tcp_moderate_rcvbuf = 1
+lane gnutls node v22.23.4 envs CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4
+libcurl 8.5.0
+count 20000 run 0 ms 1996 cpu-ms 1986 outcome (response 200 20000)
+count 20000 run 1 ms 1949 cpu-ms 1944 outcome (response 200 20000)
+count 30000 run 0 ms 14 cpu-ms 3 outcome (failed 56)
+count 30000 run 1 ms 14 cpu-ms 3 outcome (failed 56)
+count 40000 run 0 ms 13 cpu-ms 5 outcome (failed 56)
+count 40000 run 1 ms 14 cpu-ms 3 outcome (failed 56)
+count 50000 run 0 ms 13 cpu-ms 4 outcome (failed 56)
+count 50000 run 1 ms 13 cpu-ms 4 outcome (failed 56)
+exit 0

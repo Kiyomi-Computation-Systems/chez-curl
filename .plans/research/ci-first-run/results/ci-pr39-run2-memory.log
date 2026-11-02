@@ -1,0 +1,45 @@
+# PR #39's second run, at 1a8fcb5, the memory job (124973941253): test-memory's lines, from the job's log; every job of the run passed
+2026-11-01T20:50:44.1314422Z test-memory: pass tests/test-check-floors.sps
+2026-11-01T20:50:56.1889229Z test-memory: pass tests/test-check-nothreads.sps
+2026-11-01T20:51:13.2165682Z test-memory: pass tests/test-check-seam.sps
+2026-11-01T20:51:31.1620718Z test-memory: pass tests/test-collect-safe.sps
+2026-11-01T20:51:42.5727065Z test-memory: pass tests/test-conditions.sps
+2026-11-01T20:52:07.7924824Z test-memory: pass tests/test-constants.sps
+2026-11-01T20:53:02.2410080Z test-memory: pass tests/test-curl-testing.sps
+2026-11-01T20:53:13.8565063Z test-memory: pass tests/test-discovery.sps
+2026-11-01T20:53:32.4718232Z test-memory: pass tests/test-drift.sps
+2026-11-01T20:54:25.7168794Z test-memory: pass tests/test-engine.sps
+2026-11-01T20:55:54.4523443Z test-memory: pass tests/test-group.sps
+2026-11-01T20:56:36.7504447Z test-memory: pass tests/test-http-client.sps
+2026-11-01T20:57:26.1399329Z test-memory: pass tests/test-library-loading.sps
+2026-11-01T20:57:36.1576621Z test-memory: pass tests/test-load-state.sps
+2026-11-01T20:58:03.2998474Z test-memory: pass tests/test-mailbox.sps
+2026-11-01T20:58:13.1701977Z test-memory: pass tests/test-manifest.sps
+2026-11-01T20:58:34.8764504Z test-memory: pass tests/test-memory-safety.sps
+2026-11-01T20:58:53.1277572Z test-memory: pass tests/test-native.sps
+2026-11-01T21:00:03.6531863Z test-memory: pass tests/test-origin-tls.sps
+2026-11-01T21:01:39.8352716Z test-memory: pass tests/test-origin.sps
+2026-11-01T21:02:08.0922643Z test-memory: pass tests/test-redirect.sps
+2026-11-01T21:02:32.5509809Z test-memory: pass tests/test-request.sps
+2026-11-01T21:02:44.4993156Z test-memory: pass tests/test-require-threaded.sps
+2026-11-01T21:03:28.7360963Z test-memory: pass tests/test-retry.sps
+2026-11-01T21:04:42.8943741Z test-memory: pass tests/test-stream-call.sps
+2026-11-01T21:06:13.8145108Z test-memory: pass tests/test-stream.sps
+2026-11-01T21:06:48.6468455Z test-memory: pass tests/test-transfer-tls.sps
+2026-11-01T21:07:25.7801443Z test-memory: pass tests/test-transfer.sps
+2026-11-01T21:07:47.7180699Z test-memory: pass tests/test-unsupported.sps
+2026-11-01T21:10:02.8580115Z test-memory: pass tests/test-upload.sps
+2026-11-01T21:10:28.1783538Z test-memory: pass tests/test-url-location.sps
+2026-11-01T21:10:48.4782918Z test-memory: pass tests/test-url-parts.sps
+2026-11-01T21:11:08.2796944Z test-memory: pass tests/test-url.sps
+2026-11-01T21:11:25.4929857Z test-memory: pass tests/test-variadic.sps
+2026-11-01T21:11:36.9221392Z test-memory: pass tests/test-verify.sps
+2026-11-01T21:11:36.9222452Z test-memory: ran 35, passed 35, failed 0, hung 0
+check: main (checks and suites, Chez built from source): pass
+check: gnutls (the suites against the runner's GnuTLS libcurl): pass
+check: floor (the suites against libcurl at its floor): pass
+check: current (the suites against the current libcurl, built from source): pass
+check: floor-disabled-api (options API disabled, make build must refuse it): pass
+check: floor-disabled-api (header API disabled, make build must refuse it): pass
+check: nothreads (every public library is refused on a Chez without threads): pass
+check: memory (the Valgrind gate): pass

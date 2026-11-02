@@ -181,6 +181,18 @@ it should not be a comment. (chez-cmark-gfm)
   transfer where it never asks: an `https` request to a plaintext face, whose handshake never
   ends. (chez-curl, M6 slice 2's build)
 
+  The test slice 2 kept on the kernel failed on CI's current lane, 3 runs of 3. Its fill called
+  the buffer full only after a put timed out and a further 500 ms passed with nothing taken.
+  There libcurl had taken one 64 KiB piece more by the end of each of the fill's one-second
+  rounds, read at 1,049, 2,050, 3,051, 4,051 and 5,052 ms, so that quiet never came before the
+  sink began to read at 5 s ([research](research/ci-first-run/)). When within each round it
+  took them, the trace cannot say. 8.5.0 stalled at once on the same run's GnuTLS lane, and here
+  a kernel let more in once at most, then held. The runner's `net.core.rmem_max` is 1 MiB, the
+  Docker lanes' here 4 MiB; whether that matters is not shown. The fill now asks only that
+  nothing be taken through the put's own 500 ms bound, and on the runner's next run it stalled
+  at 550 ms. A check of a full kernel asks for no quiet past one put's bound. (chez-curl, CI's
+  first run)
+
 * **A row read from one run cannot show a cell that splits.** 8.7.1's rows in test-upload were
   read from the Mac's first run, whose HTTP/2 200 ended 200 in both framings; the rerun's sized
   cell ended 55 ([research](research/m6/slice2-build/results/)). 8.20.0's cell had split the
@@ -830,6 +842,17 @@ it should not be a comment. (chez-cmark-gfm)
   fd once on each end. Each origin suite stops the probe across a script's last write and
   its reset: on Node 20.10.0 that failed without the fix, and on 24.18.0 it passes either
   way (ADR-0005, amended). (chez-curl)
+
+  A server reads it so too. CI's first run, on Node 22.23.4, failed test-curl-testing's check
+  that the peer sees the probe's reset: its stand-in server, which judged by Node's events,
+  recorded a FIN. Every Node 20 and 22 release to 20.20.2 and 22.23.4 bundles a libuv older
+  than 1.52, 22.23.4 1.51.0 (nodejs.org's release index, kept), and the probe's comment had
+  said 22 only to 22.22.0. A
+  server whose loop was blocked 200 ms as each connection arrived read an end in 20 runs of 20
+  on 22.23.4 and 20.10.0, while one read(2) of its fd threw `ECONNRESET`; 24.18.0 read the
+  reset 20 of 20 ([research](research/ci-first-run/)). The stand-in now blocks so and reads
+  its fd once on each end; without the read the check fails on both. (chez-curl, CI's first
+  run)
 * **A version manager's shim can write to stderr on every call.** On the maintainer's Mac,
   `node` was asdf 0.15's Bash shim, which prints a notice about upgrading to asdf 0.16 to
   stderr each time it runs. Node itself ran: it reported v20.10.0. But every check that
@@ -1216,6 +1239,14 @@ it should not be a comment. (chez-cmark-gfm)
   client after connect, by a seam; one that cannot hold it asserts what holds both ways.
   (chez-curl, M6 slice 2's build)
 
+  An answer written as the head arrives races libcurl's first ask for the body the same way.
+  test-upload's body-asked check held `#t` for `/raw/answer`, 5 runs of 5 on each lane, and on
+  CI's memory lane 8.5.0 read the answer first once: `#f` ([research](research/ci-first-run/)),
+  which Valgrind here, at half a CPU too, did not repeat.
+  A prerequest hold does not order it: the answer waits for the head, which the hold delays too,
+  and held runs read `#t` on 7.85.0 and 8.5.0. The case now asserts what holds both ways, that
+  its bit is whether the read callable was ever asked. (chez-curl, CI's first run)
+
 * **On 8.20.0 and 8.23.0, an HTTP/2 3xx that arrives before a request's body is sent whole never
   ends the transfer.** libcurl logs "HTTP error before end of send, stop sending", aborts the
   upload, holds the whole response, then waits for its timeout: "Operation timed out after 5006
@@ -1233,3 +1264,12 @@ it should not be a comment. (chez-cmark-gfm)
   once the probe had given up, and the check failed though `/raw/release` answered `released`.
   A check that needs two commands running at once starts the long one through
   `open-process-ports`, which does not call `system`. (chez-curl, M6 slice 3, the Mac's run)
+* **libcurl's `curl_easy_nextheader` walks every header it holds on each call, so reading n
+  headers costs n².** Each call counts, from the first header, every one that shares the name
+  of the one it returns: the loop is in `lib/headers.c` on 7.85.0, 8.20.0 and 8.23.0. 7.85.0
+  caps no response's headers; 8.7.1 and 8.20.0 cap them at 300 KiB, 8.20.0 at 5,000 too. So on
+  7.85.0 a GET of 100,000 headers took 30.4 to 31.5 s, all of it CPU, after the transfer had
+  ended, and 50,000 took 7.3 to 7.7 s; 8.5.0 took 20,000, under its cap, in 1.9 s
+  ([research](research/ci-first-run/)). test-transfer's 100,000 outlasted its 60 s bound on CI's
+  floor lane once in three runs, and is now 50,000, still past every cap. A check of many headers
+  stays near the newer caps. (chez-curl, CI's first run)

@@ -1,0 +1,7 @@
+# build/cifix/reset-race.mjs, 2026-11-01, on the host (Node 22 and 20) and in the Guix container (Node 24): RUNS 20, BLOCK 0 and 200
+node v22.23.4 uv 1.51.0 block 0 runs 20: {"end fd=ECONNRESET data=hello":1,"error:ECONNRESET data=hello":19}
+node v22.23.4 uv 1.51.0 block 200 runs 20: {"end fd=ECONNRESET data=hello":20}
+node v20.10.0 uv 1.46.0 block 0 runs 20: {"end fd=ECONNRESET data=hello":1,"error:ECONNRESET data=hello":19}
+node v20.10.0 uv 1.46.0 block 200 runs 20: {"end fd=ECONNRESET data=hello":20}
+node v24.18.0 uv 1.52.1 block 0 runs 20: {"error:ECONNRESET data=hello":20}
+node v24.18.0 uv 1.52.1 block 200 runs 20: {"error:ECONNRESET data=hello":20}

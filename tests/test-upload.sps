@@ -334,23 +334,35 @@
 
 ;; fill-until-stalled : Token Natural -> (U (List #f Natural) List)
 ;; The pattern put in 64 KiB pieces, each with a bound of 500 ms, until
-;; the buffer is full and libcurl takes nothing more: a put answers #f at
-;; its bound, and the bytes handed, read before that put, stay as they
-;; were through it and a further 500 ms, so the buffer still holds what
-;; refused the put, and a slow turn of the engine's is not taken for a
-;; full kernel. Answers (#f AT), AT the offset of the piece not taken;
-;; (never-full N) once N bytes were taken.
+;; the buffer is full and libcurl takes nothing through a put: the put
+;; answers #f at its bound, and the bytes handed, read before it, are as
+;; they were, so the buffer held what refused the put for its whole
+;; bound. It asks no more of the kernel: a kernel full on loopback can
+;; let more in later, and on CI's runner had by the end of each of a fill's
+;; one-second rounds (traps.md), so a quiet past the put's bound never
+;; came. A put that answers #f
+;; while libcurl took bytes is tried again. Answers (#f AT), AT the offset
+;; of the piece not taken; (never-full N) once N bytes were taken.
+;; It prints (fill ANSWER AT ms MS retried ((AT MS) ...) mib (MS ...)):
+;; how it ended, where and how long after its start, each put that answered
+;; #f while libcurl took bytes, and when each MiB was taken.
 (define (fill-until-stalled token n)
-  (let loop ((at 0))
-    (if (>= at n)
-        (list 'never-full at)
-        (let* ((handed (ustat token 'handed))
-               (a (curl-token-put-piece! token (pattern-piece at 65536) 500)))
-          (cond ((eq? a #t) (loop (+ at 65536)))
-                ((not (eq? a #f)) (list a at))
-                (else
-                 (pause-ms 500)
-                 (if (= handed (ustat token 'handed)) (list #f at) (loop at))))))))
+  (let ((t0 (now-ms)))
+    (define (ended answer at retried marks)
+      (display (list 'fill (car answer) at 'ms (- (now-ms) t0) 'retried (reverse retried) 'mib (reverse marks)))
+      (newline)
+      answer)
+    (let loop ((at 0) (retried '()) (marks '()))
+      (if (>= at n)
+          (ended (list 'never-full at) at retried marks)
+          (let* ((handed (ustat token 'handed))
+                 (a (curl-token-put-piece! token (pattern-piece at 65536) 500)))
+            (cond ((eq? a #t)
+                   (let ((next (+ at 65536)))
+                     (loop next retried (if (= 0 (mod next 1048576)) (cons (- (now-ms) t0) marks) marks))))
+                  ((not (eq? a #f)) (ended (list a at) at retried marks))
+                  ((= handed (ustat token 'handed)) (ended (list #f at) at retried marks))
+                  (else (loop at (cons (list at (- (now-ms) t0)) retried) marks))))))))
 
 ;; ustat : Token Symbol -> Any
 (define (ustat token key)
@@ -700,9 +712,15 @@
   ;; streamed body libcurl asks for, a server's answer before it reads the
   ;; body included, since the first ask comes with the head or as it is
   ;; sent; #f for a whole body, none, and a length of 0, which libcurl
-  ;; never asks for. No case's answer moves by version.
-  (test-equal "the head's body-asked bit: #t for a streamed body whose server answers before reading it, over HTTP/1.1 with a close and over HTTP/2, nothing put by the head; #t for one whose server reads it before answering, on the raw face and over HTTP/2; #f for a whole body, for none, and for a streamed length of 0, which libcurl never asks for"
-    '((raw-answer #t) (h2-answer #t) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+  ;; never asks for. No case's answer moves by version. The raw face's
+  ;; answer, written as the head arrives, races libcurl's first ask: under
+  ;; Valgrind on CI's runner it came first once, the bit #f
+  ;; (research/ci-first-run), so raw-answer's bit is whether the read
+  ;; callable was ever asked, as with the answer written at accept below:
+  ;; 7.85.0 and 8.5.0 stop sending once they read a final answer with a
+  ;; close.
+  (test-equal "the head's body-asked bit: #t for a streamed body whose server answers before reading it over HTTP/2, nothing put by the head, and over HTTP/1.1 with a close, a race, whether the read callable was ever asked; #t for one whose server reads it before answering, on the raw face and over HTTP/2; #f for a whole body, for none, and for a streamed length of 0, which libcurl never asks for"
+    '((raw-answer bit-is-ask) (h2-answer #t) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
     (map (lambda (row)
            (on-own-engine make-curl-engine
              (lambda (own)
@@ -727,7 +745,10 @@
                    (curl-token-end-body! t))
                  (let drain () (when (bytevector? (curl-token-next-piece t 5000)) (drain)))
                  (curl-token-wait t 20000)
-                 (list name asked)))))
+                 (if (eq? name 'raw-answer)
+                     (let ((ask (and (ustat t 'asked) #t)))
+                       (list name (if (and (boolean? asked) (eq? asked ask)) 'bit-is-ask (list 'bit asked 'ask ask))))
+                     (list name asked))))))
          '((raw-answer raw "/raw/answer?status=200&close=1" stream #f)
            (h2-answer h2 "/answer?status=200" stream #f)
            (raw-sink raw "/raw/sink?key=asked-raw" stream 1000)
@@ -837,7 +858,7 @@
           (list early done (outcome-of t))))))
 
   ;; --- a put that waits while the buffer is full
-  (test-equal "a put waits while the buffer is full: to a raw sink that reads nothing for 5,000 ms, 64 KiB puts fill the kernel's buffers and the request's, and a put answers #f at its bound of 500 ms, libcurl taking nothing more, the buffer holding 65,536 bytes or more; then 32 MiB whole, and once done a put, room-wait and end answer done and nothing"
+  (test-equal "a put waits while the buffer is full: to a raw sink that reads nothing for 5,000 ms, 64 KiB puts fill the kernel's buffers and the request's, and a put answers #f at its bound of 500 ms, libcurl taking nothing through it, the buffer holding 65,536 bytes or more; then 32 MiB whole, and once done a put, room-wait and end answer done and nothing"
     '(full-at-bound held-bounded put whole-body
       ((returned done) (returned done) (returned unspecified)) 33554432)
     (on-own-engine make-curl-engine

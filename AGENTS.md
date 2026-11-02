@@ -128,8 +128,10 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   sides answer "no row". A missing row's expected value is one no measurement
   gives, and its actual value is the measurement, so the failure prints the row.
 * A full TCP buffer is not a stable full: a stalled upload took more after a
-  put on it timed out. A test that needs libcurl to stop asking for the body
-  holds it where it never asks: an `https` request to a plaintext face.
+  put on it timed out, and on CI's runner by the end of each of a fill's
+  one-second rounds. A test that needs libcurl to stop asking for the body
+  holds it where it never asks: an `https` request to a plaintext face. A
+  check of a full kernel asks for no quiet past one put's bound.
 * A row read from one run cannot show a cell that splits: 8.7.1's HTTP/2 200
   ended 200, then 55. Take a new row from two runs at least, and hold a cell
   they disagree on to what both showed.
@@ -192,10 +194,12 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   sends the RST, but throws on a TLS socket: reset the `net` socket it wraps. A
   client's reset that way still arrives as a FIN. A test of a reset checks what
   the peer saw.
-* libuv before 1.52, which Node 20.10.0 bundles, reports a reset that arrives
-  with the last data as an end. The probe reads the socket's fd once on each
-  end. A test of that path stops the probe across the last write and the reset,
-  so that the two arrive together.
+* libuv before 1.52, which every Node 20 and 22 to 20.20.2 and 22.23.4
+  bundles, CI's too, reports a reset that arrives with the last data as an
+  end. The probe reads the socket's fd once on each end, and so does a
+  stand-in server. A test of that path stops the probe across the last write
+  and the reset, or blocks the server's loop as the connection arrives, so
+  that the two arrive together.
 * LibreSSL, the Mac's `openssl`, exits 0 from `s_client -verify_return_error` on
   a failed verify, and its `req` prefers a `prompt = no` config's subject to
   `-subj`. Read verify codes, never that exit status, and give the config no
@@ -490,7 +494,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * A server's answer written as it accepts a connection races the client's
   request: natively libcurl's went first 100 of 100, under Valgrind the answer
   did, 20 of 20. A test that needs the answer first holds the client after
-  connect; one that cannot asserts what holds both ways.
+  connect; one that cannot asserts what holds both ways. An answer written as
+  the head arrives races libcurl's first ask for the body too, and a hold
+  before the request does not order it.
 * On 8.20.0 and 8.23.0, an HTTP/2 3xx that arrives before a request's body is
   sent whole never ends the transfer: libcurl aborts the upload, holds the whole
   response, and waits for its timeout, or for ever; a 413 ends at once. A test
@@ -500,6 +506,10 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   capture-command made while another runs waits for it, so a release made
   during a probe arrived after it. A check that needs two commands at once
   starts the long one through `open-process-ports`.
+* libcurl's `curl_easy_nextheader` walks every header it holds on each call,
+  so a response's n headers cost n²: on 7.85.0, which caps none, 100,000 took
+  30 s of CPU once the transfer had ended. A check of many headers stays near
+  the newer caps: 300 KiB, and 5,000 from 8.20.0.
 
 ## Closing ritual
 

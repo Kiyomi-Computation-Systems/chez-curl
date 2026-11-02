@@ -549,7 +549,7 @@
 (define varying-cases
   '((get raw "/raw/big-header?bytes=102400")
     (get raw "/raw/big-header?bytes=1048576")
-    (get raw "/raw/many-headers?count=100000")
+    (get raw "/raw/many-headers?count=50000")
     (get raw "/raw/bad-status-code")
     (get raw "/raw/conflicting-content-length")
     (error-text raw "/raw/nul-in-header")))

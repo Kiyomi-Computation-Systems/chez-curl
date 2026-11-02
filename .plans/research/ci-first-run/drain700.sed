@@ -1,0 +1,1 @@
+1804s|await pause(socket, s.ms);|{ const trickle = setInterval(() => { let n = 0; const step = () => { const c = socket.read(); if (c) n += c.length; if (n < 131072) setImmediate(step); }; step(); }, 700); await pause(socket, s.ms); clearInterval(trickle); }|
