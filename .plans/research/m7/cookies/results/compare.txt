@@ -1,0 +1,976 @@
+== split check guix-8.20.0: run 1 (1838 lines) against run 2 (1838 lines)
+0 lines
+== split check floor-7.85.0: run 1 (1854 lines) against run 2 (1854 lines)
+0 lines
+== split check ubuntu-openssl-8.5.0: run 1 (2036 lines) against run 2 (2036 lines)
+0 lines
+== split check ubuntu-gnutls-8.5.0: run 1 (2036 lines) against run 2 (2036 lines)
+0 lines
+== split check current-8.23.0: run 1 (1848 lines) against run 2 (1848 lines)
+0 lines
+== lane check, the cookie view: guix-8.20.0 run 1 (<) against floor-7.85.0 run 1 (>)
+332 lines
+1,6c1,6
+< libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+< node v24.18.0 uname Linux 7.1.1-76070101-generic x86_64
+< version 8.20.0 num=0x081400 age=11 features=0x553f478d psl_bit=1 ssl=GnuTLS/3.8.13 libz=1.3.1 host=x86_64-unknown-linux-gnu
+< curl_version libcurl/8.20.0 GnuTLS/3.8.13 zlib/1.3.1 zstd/1.5.6 libidn2/2.3.8 libpsl/0.21.5 nghttp2/1.69.0 mit-krb5/1.21
+< headers LIBCURL_VERSION 8.20.0
+< feature_names alt-svc AsynchDNS GSS-API HSTS HTTP2 HTTPS-proxy IDN IPv6 Kerberos Largefile libz PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd
+---
+> libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4
+> node v20.10.0 uname Linux 7.1.1-76070101-generic x86_64
+> os Ubuntu 24.04.5 LTS
+> version 7.85.0 num=0x075500 age=9 features=0x5129c29d psl_bit=0 ssl=OpenSSL/3.0.13 libz=1.3 host=x86_64-pc-linux-gnu
+> curl_version libcurl/7.85.0 OpenSSL/3.0.13 zlib/1.3 nghttp2/1.59.0
+> headers LIBCURL_VERSION 7.85.0
+17c17
+< case X-resolve system-resolver localhost ok: v4
+---
+> case X-resolve system-resolver localhost ok: v6 v4
+286c286
+< case M-domain-a jar@set:a.localhost/ rc=0 n=5
+---
+> case M-domain-a jar@set:a.localhost/ rc=0 n=7
+289a290,291
+> case M-domain-a jar@set:a.localhost/ line ".localhost\tTRUE\t/\tFALSE\t0\td_dotlh\t1" exp=session
+> case M-domain-a jar@set:a.localhost/ line ".localhost\tTRUE\t/\tFALSE\t0\td_lh\t1" exp=session
+305c307,308
+< case M-domain-a xfer=to:localhost/ got cookie-headers 0
+---
+> case M-domain-a xfer=to:localhost/ got cookie-headers 1
+> case M-domain-a xfer=to:localhost/ got cookie "Cookie: d_dotlh=1; d_lh=1"
+323c326
+< case M-domain-ba jar@set:b.a.localhost/ rc=0 n=3
+---
+> case M-domain-ba jar@set:b.a.localhost/ rc=0 n=4
+325a329
+> case M-domain-ba jar@set:b.a.localhost/ line ".localhost\tTRUE\t/\tFALSE\t0\tp_lh\t1" exp=session
+345c349,350
+< case M-domain-ba xfer=to:localhost/ got cookie-headers 0
+---
+> case M-domain-ba xfer=to:localhost/ got cookie-headers 1
+> case M-domain-ba xfer=to:localhost/ got cookie "Cookie: p_lh=1"
+408d412
+< case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/\tFALSE\t0\tp_rel\t1" exp=session
+409a414,415
+> case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a/\tFALSE\t0\tp_aslash\t1" exp=session
+> case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a/b/\tFALSE\t0\tp_def\t1" exp=session
+411,412d416
+< case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a/b\tFALSE\t0\tp_def\t1" exp=session
+< case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a/b\tFALSE\t0\tp_empty\t1" exp=session
+414d417
+< case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a\tFALSE\t0\tp_aslash\t1" exp=session
+415a419,420
+> case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t\tFALSE\t0\tp_empty\t1" exp=session
+> case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\trel\tFALSE\t0\tp_rel\t1" exp=session
+420c425
+< case M-path xfer=to:localhost/ got cookie "Cookie: p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/ got cookie "Cookie: p_rel=1; p_root=1; p_empty=1"
+425c430
+< case M-path xfer=to:localhost/a got cookie "Cookie: p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a got cookie "Cookie: p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+430c435
+< case M-path xfer=to:localhost/a/ got cookie "Cookie: p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/ got cookie "Cookie: p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+435c440
+< case M-path xfer=to:localhost/a/b got cookie "Cookie: p_empty=1; p_def=1; p_ab=1; p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/b got cookie "Cookie: p_def=1; p_ab=1; p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+440c445
+< case M-path xfer=to:localhost/a/b/ got cookie "Cookie: p_empty=1; p_def=1; p_ab=1; p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/b/ got cookie "Cookie: p_def=1; p_ab=1; p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+445c450
+< case M-path xfer=to:localhost/a/b/c got cookie "Cookie: p_empty=1; p_def=1; p_ab=1; p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/b/c got cookie "Cookie: p_def=1; p_ab=1; p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+450c455
+< case M-path xfer=to:localhost/ab got cookie "Cookie: p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/ab got cookie "Cookie: p_rel=1; p_root=1; p_empty=1"
+455c460
+< case M-path xfer=to:localhost/A got cookie "Cookie: p_upper=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/A got cookie "Cookie: p_rel=1; p_upper=1; p_root=1; p_empty=1"
+460c465
+< case M-path xfer=to:localhost/x/y got cookie "Cookie: p_x=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/x/y got cookie "Cookie: p_rel=1; p_x=1; p_root=1; p_empty=1"
+465c470
+< case M-path xfer=to:localhost/a/bc got cookie "Cookie: p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/bc got cookie "Cookie: p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+530c535
+< case M-expiry jar@set:localhost/ rc=0 n=10
+---
+> case M-expiry jar@set:localhost/ rc=0 n=11
+532a538,539
+> case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\t0\tm_neg\t1" exp=session
+> case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\t9223372036854775807\tm_huge\t1" exp_delta=HUGE
+534,535c541,542
+< case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\te_401\t1" exp_delta=CAP(400d+30s, down to the minute)
+< case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\te_far\t1" exp_delta=CAP(400d+30s, down to the minute)
+---
+> case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\te_401\t1" exp_delta~34646400
+> case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\te_far\t1" exp_delta~86400000
+538,539c545
+< case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\tm_far\t1" exp_delta=CAP(400d+30s, down to the minute)
+< case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\tm_huge\t1" exp_delta=CAP(400d+30s, down to the minute)
+---
+> case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\tm_far\t1" exp_delta~86400000
+545c551
+< case M-expiry xfer=to:localhost/ got cookie "Cookie: mx_ma60_expast=1; e_session=1; m_huge=1; e_bad=1; m_far=1; m_day=1; e_399=1; e_401=1; e_far=1; e_fut=1"
+---
+> case M-expiry xfer=to:localhost/ got cookie "Cookie: mx_ma60_expast=1; e_session=1; m_huge=1; e_bad=1; m_far=1; m_day=1; m_neg=1; e_399=1; e_401=1; e_far=1; e_fut=1"
+645c651,652
+< case M-delete jar@set2:localhost/ rc=0 n=2
+---
+> case M-delete jar@set2:localhost/ rc=0 n=3
+> case M-delete jar@set2:localhost/ line "localhost\tFALSE\t/\tFALSE\t0\tdel_sess\tgone" exp=session
+652c659
+< case M-delete xfer=to:localhost/ got cookie "Cookie: keep=1"
+---
+> case M-delete xfer=to:localhost/ got cookie "Cookie: del_sess=gone; keep=1"
+657c664
+< case M-delete xfer=to:localhost/p got cookie "Cookie: del_path=1; keep=1"
+---
+> case M-delete xfer=to:localhost/p got cookie "Cookie: del_path=1; del_sess=gone; keep=1"
+667c674
+< case M-invalid jar@set:localhost/ rc=0 n=7
+---
+> case M-invalid jar@set:localhost/ rc=0 n=9
+670a678
+> case M-invalid jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\t0\tn\tt\t1" exp=session
+673a682
+> case M-invalid jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\t0\ttabv\ta\tb" exp=session
+679c688
+< case M-invalid xfer=to:localhost/ got cookie "Cookie: v_4090=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; empty=; quote=\x22q v\x22; semi=a; lead=padded; n v=1; sp=a b"
+---
+> case M-invalid xfer=to:localhost/ got cookie "Cookie: v_4090=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; empty=; quote=\x22q v\x22; semi=a; lead=padded; tabv=a\x09b; n\x09t=1; n v=1; sp=a b"
+736,737c745,746
+< case M-many jar@set50#0:a.localhost/ first "a.localhost\tFALSE\t/\tFALSE\t0\tmb0_0\tv"
+< case M-many jar@set50#0:a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#0:a.localhost/ first "localhost\tFALSE\t/\tFALSE\t0\tma_0\tv"
+> case M-many jar@set50#0:a.localhost/ last "a.localhost\tFALSE\t/\tFALSE\t0\tmb0_49\tv"
+740,741c749,750
+< case M-many jar@set50#1:a.localhost/ first "a.localhost\tFALSE\t/\tFALSE\t0\tmb0_0\tv"
+< case M-many jar@set50#1:a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#1:a.localhost/ first "localhost\tFALSE\t/\tFALSE\t0\tma_0\tv"
+> case M-many jar@set50#1:a.localhost/ last "a.localhost\tFALSE\t/\tFALSE\t0\tmb1_49\tv"
+744,745c753,754
+< case M-many jar@set50#2:a.localhost/ first "a.localhost\tFALSE\t/\tFALSE\t0\tmb0_0\tv"
+< case M-many jar@set50#2:a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#2:a.localhost/ first "localhost\tFALSE\t/\tFALSE\t0\tma_0\tv"
+> case M-many jar@set50#2:a.localhost/ last "a.localhost\tFALSE\t/\tFALSE\t0\tmb2_49\tv"
+748,749c757,758
+< case M-many jar@set50#3:a.localhost/ first "a.localhost\tFALSE\t/\tFALSE\t0\tmb0_0\tv"
+< case M-many jar@set50#3:a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#3:a.localhost/ first "localhost\tFALSE\t/\tFALSE\t0\tma_0\tv"
+> case M-many jar@set50#3:a.localhost/ last "a.localhost\tFALSE\t/\tFALSE\t0\tmb3_49\tv"
+758c767
+< case M-many jar@set10x1000#0:b.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set10x1000#0:b.localhost/ last "a.localhost\tFALSE\t/\tFALSE\t0\tmb3_49\tv"
+762c771
+< case M-many jar@set10x1000#1:b.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set10x1000#1:b.localhost/ last "a.localhost\tFALSE\t/\tFALSE\t0\tmb3_49\tv"
+766c775
+< case M-many jar@set10x1000#2:b.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set10x1000#2:b.localhost/ last "a.localhost\tFALSE\t/\tFALSE\t0\tmb3_49\tv"
+775c784
+< case M-many jar@set50#0:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#0:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd0_49\tv"
+779c788
+< case M-many jar@set50#1:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#1:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd1_49\tv"
+783c792
+< case M-many jar@set50#2:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#2:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd2_49\tv"
+787c796
+< case M-many jar@set50#3:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#3:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd3_49\tv"
+791c800
+< case M-many jar@set50#4:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#4:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd4_49\tv"
+795c804
+< case M-many jar@set50#5:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#5:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd5_49\tv"
+799c808
+< case M-many jar@set50#6:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#6:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd6_49\tv"
+803c812
+< case M-many jar@set50#7:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#7:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd7_49\tv"
+807c816
+< case M-many jar@set50#8:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#8:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd8_49\tv"
+811c820
+< case M-many jar@set50#9:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#9:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd9_49\tv"
+815c824
+< case M-many jar@set50#10:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#10:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd10_49\tv"
+819c828
+< case M-many jar@set50#11:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#11:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd11_49\tv"
+823c832
+< case M-many jar@set50#12:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#12:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd12_49\tv"
+827c836
+< case M-many jar@set50#13:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#13:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd13_49\tv"
+831c840
+< case M-many jar@set50#14:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#14:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd14_49\tv"
+835c844
+< case M-many jar@set50#15:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#15:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd15_49\tv"
+839c848
+< case M-many jar@set50#16:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#16:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd16_49\tv"
+843c852
+< case M-many jar@set50#17:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#17:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd17_49\tv"
+847c856
+< case M-many jar@set50#18:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#18:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd18_49\tv"
+851c860
+< case M-many jar@set50#19:b.a.localhost/ last "localhost\tFALSE\t/\tFALSE\t0\tma_49\tv"
+---
+> case M-many jar@set50#19:b.a.localhost/ last "b.a.localhost\tFALSE\t/\tFALSE\t0\tmd19_49\tv"
+1105a1115
+> case I-roundtrip xfer=load2 COOKIELIST "localhost\tFALSE\t/\tTRUE\t0\trt_ns_sec\t8" rc=0
+1118d1127
+< case I-roundtrip xfer=load2 COOKIELIST "localhost\tFALSE\t/\tTRUE\t0\trt_ns_sec\t8" rc=0
+1228a1238
+> case F-flush-control fs fopen step=FLUSH-before-transfer path="/TMP/flush/jar.txt"
+1231c1241,1244
+< case F-flush-control file after-FLUSH-before-transfer /TMP/flush/jar.txt absent errno=2
+---
+> case F-flush-control file after-FLUSH-before-transfer line "# Netscape HTTP Cookie File"
+> case F-flush-control file after-FLUSH-before-transfer line "# https://curl.se/docs/http-cookies.html"
+> case F-flush-control file after-FLUSH-before-transfer line "# This file was generated by libcurl! Edit at your own risk."
+> case F-flush-control file after-FLUSH-before-transfer line ""
+1236,1238c1249,1250
+< case F-flush-control fs fopen step=FLUSH-after-transfer path="/TMP/flush/jar.txt"
+< case F-flush-control fs open step=FLUSH-after-transfer path="/TMP/flush/RANDOM.tmp"
+< case F-flush-control fs rename-from step=FLUSH-after-transfer path="/TMP/flush/RANDOM.tmp"
+---
+> case F-flush-control fs open step=FLUSH-after-transfer path="/TMP/flush/jar.txt.RANDOM.tmp"
+> case F-flush-control fs rename-from step=FLUSH-after-transfer path="/TMP/flush/jar.txt.RANDOM.tmp"
+1247,1249c1259,1260
+< case F-flush-control fs fopen step=easy-cleanup path="/TMP/flush/jar.txt"
+< case F-flush-control fs open step=easy-cleanup path="/TMP/flush/RANDOM.tmp"
+< case F-flush-control fs rename-from step=easy-cleanup path="/TMP/flush/RANDOM.tmp"
+---
+> case F-flush-control fs open step=easy-cleanup path="/TMP/flush/jar.txt.RANDOM.tmp"
+> case F-flush-control fs rename-from step=easy-cleanup path="/TMP/flush/jar.txt.RANDOM.tmp"
+1493c1504
+< case R-cross jar@T1 rc=0 n=3
+---
+> case R-cross jar@T1 rc=0 n=4
+1494a1506
+> case R-cross jar@T1 line ".localhost\tTRUE\t/\tFALSE\t0\ton3xx_lh\t1" exp=session
+1502c1514
+< case R-cross jar@T2-follow rc=0 n=3
+---
+> case R-cross jar@T2-follow rc=0 n=4
+1503a1516
+> case R-cross jar@T2-follow line ".localhost\tTRUE\t/\tFALSE\t0\ton3xx_lh\t1" exp=session
+1512c1525
+< case R-cross jar@T3:a.localhost/land rc=0 n=3
+---
+> case R-cross jar@T3:a.localhost/land rc=0 n=4
+1513a1527
+> case R-cross jar@T3:a.localhost/land line ".localhost\tTRUE\t/\tFALSE\t0\ton3xx_lh\t1" exp=session
+1537c1551
+< case R-rel jar@T1 line "a.localhost\tFALSE\t/dir\tFALSE\t0\trq\t1" exp=session
+---
+> case R-rel jar@T1 line "a.localhost\tFALSE\t/dir/\tFALSE\t0\trq\t1" exp=session
+1548c1562
+< case R-rel jar@T2-follow line "a.localhost\tFALSE\t/dir\tFALSE\t0\trq\t1" exp=session
+---
+> case R-rel jar@T2-follow line "a.localhost\tFALSE\t/dir/\tFALSE\t0\trq\t1" exp=session
+1559c1573
+< case R-rel jar@T3:a.localhost/land line "a.localhost\tFALSE\t/dir\tFALSE\t0\trq\t1" exp=session
+---
+> case R-rel jar@T3:a.localhost/land line "a.localhost\tFALSE\t/dir/\tFALSE\t0\trq\t1" exp=session
+1621c1635
+< case R-del jar@T1 rc=0 n=1
+---
+> case R-del jar@T1 rc=0 n=2
+1622a1637
+> case R-del jar@T1 line "a.localhost\tFALSE\t/\tFALSE\t1\tpre\t" exp_delta=NEGATIVE
+1695c1710
+< case R-libcurl-follow jar@T1-libcurl-follows rc=0 n=3
+---
+> case R-libcurl-follow jar@T1-libcurl-follows rc=0 n=4
+1696a1712
+> case R-libcurl-follow jar@T1-libcurl-follows line ".localhost\tTRUE\t/\tFALSE\t0\ton3xx_lh\t1" exp=session
+1704,1705c1720,1721
+< addresses reached: ::1 161
+< addresses reached: 127.0.0.1 11
+---
+> addresses reached: ::1 2
+> addresses reached: 127.0.0.1 170
+== lane check, the cookie view: guix-8.20.0 run 1 (<) against ubuntu-openssl-8.5.0 run 1 (>)
+274 lines
+1c1
+< libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+---
+> libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4
+3,6c3,7
+< version 8.20.0 num=0x081400 age=11 features=0x553f478d psl_bit=1 ssl=GnuTLS/3.8.13 libz=1.3.1 host=x86_64-unknown-linux-gnu
+< curl_version libcurl/8.20.0 GnuTLS/3.8.13 zlib/1.3.1 zstd/1.5.6 libidn2/2.3.8 libpsl/0.21.5 nghttp2/1.69.0 mit-krb5/1.21
+< headers LIBCURL_VERSION 8.20.0
+< feature_names alt-svc AsynchDNS GSS-API HSTS HTTP2 HTTPS-proxy IDN IPv6 Kerberos Largefile libz PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd
+---
+> os Ubuntu 24.04.5 LTS
+> version 8.5.0 num=0x080500 age=10 features=0x55bf479d psl_bit=1 ssl=OpenSSL/3.0.13 libz=1.3 host=x86_64-pc-linux-gnu
+> curl_version libcurl/8.5.0 OpenSSL/3.0.13 zlib/1.3 brotli/1.1.0 zstd/1.5.5 libidn2/2.3.7 libpsl/0.21.2 (+libidn2/2.3.7) libssh/0.10.6/openssl/zlib nghttp2/1.59.0 librtmp/2.3 OpenLDAP/2.6.10
+> headers LIBCURL_VERSION 8.5.0
+> feature_names alt-svc AsynchDNS brotli GSS-API HSTS HTTP2 HTTPS-proxy IDN IPv6 Kerberos Largefile libz NTLM PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd
+17c18
+< case X-resolve system-resolver localhost ok: v4
+---
+> case X-resolve system-resolver localhost ok: v6 v4
+82c83
+< case S-share fopen("") during transfers: 0
+---
+> case S-share fopen("") during transfers: 4
+111c112
+< case S-noshare fopen("") during transfers: 0
+---
+> case S-noshare fopen("") during transfers: 4
+177c178
+< case S-file-first fopen("") during transfers: 0
+---
+> case S-file-first fopen("") during transfers: 1
+206c207
+< case S-file-later fopen("") during transfers: 0
+---
+> case S-file-later fopen("") during transfers: 3
+248c249
+< case S-live fopen("") during transfers: 0
+---
+> case S-live fopen("") during transfers: 4
+279c280
+< case S-cleanup fopen("") during transfers: 0
+---
+> case S-cleanup fopen("") during transfers: 3
+316c317
+< case M-domain-a fopen("") during transfers: 0
+---
+> case M-domain-a fopen("") during transfers: 6
+348c349
+< case M-domain-ba fopen("") during transfers: 0
+---
+> case M-domain-ba fopen("") during transfers: 5
+356,357c357,358
+< case M-domain-lh jar@set:localhost/ line ".localhost\tTRUE\t/\tFALSE\t0\tl_dotlh\t1" exp=session
+< case M-domain-lh jar@set:localhost/ line ".localhost\tTRUE\t/\tFALSE\t0\tl_lh\t1" exp=session
+---
+> case M-domain-lh jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\t0\tl_dotlh\t1" exp=session
+> case M-domain-lh jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\t0\tl_lh\t1" exp=session
+378c379
+< case M-domain-lh fopen("") during transfers: 0
+---
+> case M-domain-lh fopen("") during transfers: 5
+399c400
+< case M-domain-ip fopen("") during transfers: 0
+---
+> case M-domain-ip fopen("") during transfers: 3
+408d408
+< case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/\tFALSE\t0\tp_rel\t1" exp=session
+409a410,411
+> case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a/\tFALSE\t0\tp_aslash\t1" exp=session
+> case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a/b/\tFALSE\t0\tp_def\t1" exp=session
+411,412d412
+< case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a/b\tFALSE\t0\tp_def\t1" exp=session
+< case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a/b\tFALSE\t0\tp_empty\t1" exp=session
+414d413
+< case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a\tFALSE\t0\tp_aslash\t1" exp=session
+415a415,416
+> case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t\tFALSE\t0\tp_empty\t1" exp=session
+> case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\trel\tFALSE\t0\tp_rel\t1" exp=session
+420c421
+< case M-path xfer=to:localhost/ got cookie "Cookie: p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/ got cookie "Cookie: p_rel=1; p_root=1; p_empty=1"
+425c426
+< case M-path xfer=to:localhost/a got cookie "Cookie: p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a got cookie "Cookie: p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+430c431
+< case M-path xfer=to:localhost/a/ got cookie "Cookie: p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/ got cookie "Cookie: p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+435c436
+< case M-path xfer=to:localhost/a/b got cookie "Cookie: p_empty=1; p_def=1; p_ab=1; p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/b got cookie "Cookie: p_def=1; p_ab=1; p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+440c441
+< case M-path xfer=to:localhost/a/b/ got cookie "Cookie: p_empty=1; p_def=1; p_ab=1; p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/b/ got cookie "Cookie: p_def=1; p_ab=1; p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+445c446
+< case M-path xfer=to:localhost/a/b/c got cookie "Cookie: p_empty=1; p_def=1; p_ab=1; p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/b/c got cookie "Cookie: p_def=1; p_ab=1; p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+450c451
+< case M-path xfer=to:localhost/ab got cookie "Cookie: p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/ab got cookie "Cookie: p_rel=1; p_root=1; p_empty=1"
+455c456
+< case M-path xfer=to:localhost/A got cookie "Cookie: p_upper=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/A got cookie "Cookie: p_rel=1; p_upper=1; p_root=1; p_empty=1"
+460c461
+< case M-path xfer=to:localhost/x/y got cookie "Cookie: p_x=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/x/y got cookie "Cookie: p_rel=1; p_x=1; p_root=1; p_empty=1"
+465c466
+< case M-path xfer=to:localhost/a/bc got cookie "Cookie: p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/bc got cookie "Cookie: p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+468c469
+< case M-path fopen("") during transfers: 0
+---
+> case M-path fopen("") during transfers: 11
+523c524
+< case M-secure fopen("") during transfers: 0
+---
+> case M-secure fopen("") during transfers: 6
+532a534
+> case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\t9223372036854775807\tm_huge\t1" exp_delta=HUGE
+534,535c536,537
+< case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\te_401\t1" exp_delta=CAP(400d+30s, down to the minute)
+< case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\te_far\t1" exp_delta=CAP(400d+30s, down to the minute)
+---
+> case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\te_401\t1" exp_delta~34646400
+> case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\te_far\t1" exp_delta~86400000
+538,539c540
+< case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\tm_far\t1" exp_delta=CAP(400d+30s, down to the minute)
+< case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\tm_huge\t1" exp_delta=CAP(400d+30s, down to the minute)
+---
+> case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\tm_far\t1" exp_delta~86400000
+548c549
+< case M-expiry fopen("") during transfers: 0
+---
+> case M-expiry fopen("") during transfers: 2
+555c556
+< case M-attrs jar@set:localhost/ rc=0 n=11
+---
+> case M-attrs jar@set:localhost/ rc=0 n=12
+562a564
+> case M-attrs jar@set:localhost/ line "localhost\tFALSE\t/\tTRUE\t0\t__Host-dom\t1" exp=session
+571c573
+< case M-attrs xfer=to:localhost/ got cookie "Cookie: __Host-nopath=1; __Secure-pre=1; ss_none_sec=1; __Host-ok=1; ss_strict=1; ss_bogus=1; ss_none=1; h_lower=1; ss_lax=1; h_only=1; unk=1"
+---
+> case M-attrs xfer=to:localhost/ got cookie "Cookie: __Host-nopath=1; __Secure-pre=1; ss_none_sec=1; __Host-dom=1; __Host-ok=1; ss_strict=1; ss_bogus=1; ss_none=1; h_lower=1; ss_lax=1; h_only=1; unk=1"
+574c576
+< case M-attrs fopen("") during transfers: 0
+---
+> case M-attrs fopen("") during transfers: 2
+617c619
+< case M-overwrite fopen("") during transfers: 0
+---
+> case M-overwrite fopen("") during transfers: 5
+645c647
+< case M-delete jar@set2:localhost/ rc=0 n=2
+---
+> case M-delete jar@set2:localhost/ rc=0 n=3
+646a649
+> case M-delete jar@set2:localhost/ line "localhost\tFALSE\t/\tFALSE\t1\tdel_sess\tgone" exp_delta=NEGATIVE
+660c663
+< case M-delete fopen("") during transfers: 0
+---
+> case M-delete fopen("") during transfers: 6
+682c685
+< case M-invalid fopen("") during transfers: 0
+---
+> case M-invalid fopen("") during transfers: 2
+702c705
+< case M-header-forms fopen("") during transfers: 0
+---
+> case M-header-forms fopen("") during transfers: 2
+722c725
+< case M-highbyte fopen("") during transfers: 0
+---
+> case M-highbyte fopen("") during transfers: 2
+859c862
+< case M-many fopen("") during transfers: 0
+---
+> case M-many fopen("") during transfers: 32
+935c938
+< case I-netscape fopen("") during transfers: 0
+---
+> case I-netscape fopen("") during transfers: 8
+999c1002
+< case I-setcookie fopen("") during transfers: 0
+---
+> case I-setcookie fopen("") during transfers: 8
+1023a1027
+> case I-commands fs fopen step=RELOAD path=""
+1046a1051
+> case I-commands fs fopen step=RELOAD-after-transfer path=""
+1068c1073
+< case I-commands fopen("") during transfers: 0
+---
+> case I-commands fopen("") during transfers: 4
+1178c1183
+< case I-roundtrip fopen("") during transfers: 0
+---
+> case I-roundtrip fopen("") during transfers: 9
+1198c1203
+< case I-order fopen("") during transfers: 0
+---
+> case I-order fopen("") during transfers: 1
+1226c1231
+< case I-noengine fopen("") during transfers: 0
+---
+> case I-noengine fopen("") during transfers: 1
+1228a1234,1237
+> case F-flush-control fs fopen step=FLUSH-before-transfer path="/TMP/flush/jar.txt"
+> case F-flush-control fs open step=FLUSH-before-transfer path="/TMP/flush/RANDOM.tmp"
+> case F-flush-control fs rename-from step=FLUSH-before-transfer path="/TMP/flush/RANDOM.tmp"
+> case F-flush-control fs rename-to step=FLUSH-before-transfer path="/TMP/flush/jar.txt"
+1231c1240,1244
+< case F-flush-control file after-FLUSH-before-transfer /TMP/flush/jar.txt absent errno=2
+---
+> case F-flush-control file after-FLUSH-before-transfer line "# Netscape HTTP Cookie File"
+> case F-flush-control file after-FLUSH-before-transfer line "# https://curl.se/docs/http-cookies.html"
+> case F-flush-control file after-FLUSH-before-transfer line "# This file was generated by libcurl! Edit at your own risk."
+> case F-flush-control file after-FLUSH-before-transfer line ""
+> case F-flush-control fs fopen step=transfer path=""
+1477c1490
+< case C-caller fopen("") during transfers: 0
+---
+> case C-caller fopen("") during transfers: 23
+1518c1531
+< case R-cross fopen("") during transfers: 0
+---
+> case R-cross fopen("") during transfers: 4
+1537c1550
+< case R-rel jar@T1 line "a.localhost\tFALSE\t/dir\tFALSE\t0\trq\t1" exp=session
+---
+> case R-rel jar@T1 line "a.localhost\tFALSE\t/dir/\tFALSE\t0\trq\t1" exp=session
+1548c1561
+< case R-rel jar@T2-follow line "a.localhost\tFALSE\t/dir\tFALSE\t0\trq\t1" exp=session
+---
+> case R-rel jar@T2-follow line "a.localhost\tFALSE\t/dir/\tFALSE\t0\trq\t1" exp=session
+1559c1572
+< case R-rel jar@T3:a.localhost/land line "a.localhost\tFALSE\t/dir\tFALSE\t0\trq\t1" exp=session
+---
+> case R-rel jar@T3:a.localhost/land line "a.localhost\tFALSE\t/dir/\tFALSE\t0\trq\t1" exp=session
+1563c1576
+< case R-rel fopen("") during transfers: 0
+---
+> case R-rel fopen("") during transfers: 4
+1605c1618
+< case R-sub fopen("") during transfers: 0
+---
+> case R-sub fopen("") during transfers: 4
+1621c1634
+< case R-del jar@T1 rc=0 n=1
+---
+> case R-del jar@T1 rc=0 n=2
+1622a1636
+> case R-del jar@T1 line "a.localhost\tFALSE\t/\tFALSE\t1\tpre\t" exp_delta=NEGATIVE
+1641c1655
+< case R-del fopen("") during transfers: 0
+---
+> case R-del fopen("") during transfers: 4
+1681c1695
+< case R-ip fopen("") during transfers: 0
+---
+> case R-ip fopen("") during transfers: 4
+1701c1715
+< case R-libcurl-follow fopen("") during transfers: 0
+---
+> case R-libcurl-follow fopen("") during transfers: 2
+== lane check, the cookie view: guix-8.20.0 run 1 (<) against ubuntu-gnutls-8.5.0 run 1 (>)
+274 lines
+1c1
+< libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+---
+> libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4
+3,6c3,7
+< version 8.20.0 num=0x081400 age=11 features=0x553f478d psl_bit=1 ssl=GnuTLS/3.8.13 libz=1.3.1 host=x86_64-unknown-linux-gnu
+< curl_version libcurl/8.20.0 GnuTLS/3.8.13 zlib/1.3.1 zstd/1.5.6 libidn2/2.3.8 libpsl/0.21.5 nghttp2/1.69.0 mit-krb5/1.21
+< headers LIBCURL_VERSION 8.20.0
+< feature_names alt-svc AsynchDNS GSS-API HSTS HTTP2 HTTPS-proxy IDN IPv6 Kerberos Largefile libz PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd
+---
+> os Ubuntu 24.04.5 LTS
+> version 8.5.0 num=0x080500 age=10 features=0x55bf479d psl_bit=1 ssl=GnuTLS/3.8.3 libz=1.3 host=x86_64-pc-linux-gnu
+> curl_version libcurl/8.5.0 GnuTLS/3.8.3 zlib/1.3 brotli/1.1.0 zstd/1.5.5 libidn2/2.3.7 libpsl/0.21.2 (+libidn2/2.3.7) libssh/0.10.6/openssl/zlib nghttp2/1.59.0 librtmp/2.3 OpenLDAP/2.6.10
+> headers LIBCURL_VERSION 8.5.0
+> feature_names alt-svc AsynchDNS brotli GSS-API HSTS HTTP2 HTTPS-proxy IDN IPv6 Kerberos Largefile libz NTLM PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd
+17c18
+< case X-resolve system-resolver localhost ok: v4
+---
+> case X-resolve system-resolver localhost ok: v6 v4
+82c83
+< case S-share fopen("") during transfers: 0
+---
+> case S-share fopen("") during transfers: 4
+111c112
+< case S-noshare fopen("") during transfers: 0
+---
+> case S-noshare fopen("") during transfers: 4
+177c178
+< case S-file-first fopen("") during transfers: 0
+---
+> case S-file-first fopen("") during transfers: 1
+206c207
+< case S-file-later fopen("") during transfers: 0
+---
+> case S-file-later fopen("") during transfers: 3
+248c249
+< case S-live fopen("") during transfers: 0
+---
+> case S-live fopen("") during transfers: 4
+279c280
+< case S-cleanup fopen("") during transfers: 0
+---
+> case S-cleanup fopen("") during transfers: 3
+316c317
+< case M-domain-a fopen("") during transfers: 0
+---
+> case M-domain-a fopen("") during transfers: 6
+348c349
+< case M-domain-ba fopen("") during transfers: 0
+---
+> case M-domain-ba fopen("") during transfers: 5
+356,357c357,358
+< case M-domain-lh jar@set:localhost/ line ".localhost\tTRUE\t/\tFALSE\t0\tl_dotlh\t1" exp=session
+< case M-domain-lh jar@set:localhost/ line ".localhost\tTRUE\t/\tFALSE\t0\tl_lh\t1" exp=session
+---
+> case M-domain-lh jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\t0\tl_dotlh\t1" exp=session
+> case M-domain-lh jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\t0\tl_lh\t1" exp=session
+378c379
+< case M-domain-lh fopen("") during transfers: 0
+---
+> case M-domain-lh fopen("") during transfers: 5
+399c400
+< case M-domain-ip fopen("") during transfers: 0
+---
+> case M-domain-ip fopen("") during transfers: 3
+408d408
+< case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/\tFALSE\t0\tp_rel\t1" exp=session
+409a410,411
+> case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a/\tFALSE\t0\tp_aslash\t1" exp=session
+> case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a/b/\tFALSE\t0\tp_def\t1" exp=session
+411,412d412
+< case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a/b\tFALSE\t0\tp_def\t1" exp=session
+< case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a/b\tFALSE\t0\tp_empty\t1" exp=session
+414d413
+< case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t/a\tFALSE\t0\tp_aslash\t1" exp=session
+415a415,416
+> case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\t\tFALSE\t0\tp_empty\t1" exp=session
+> case M-path jar@set:localhost/a/b/page line "localhost\tFALSE\trel\tFALSE\t0\tp_rel\t1" exp=session
+420c421
+< case M-path xfer=to:localhost/ got cookie "Cookie: p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/ got cookie "Cookie: p_rel=1; p_root=1; p_empty=1"
+425c426
+< case M-path xfer=to:localhost/a got cookie "Cookie: p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a got cookie "Cookie: p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+430c431
+< case M-path xfer=to:localhost/a/ got cookie "Cookie: p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/ got cookie "Cookie: p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+435c436
+< case M-path xfer=to:localhost/a/b got cookie "Cookie: p_empty=1; p_def=1; p_ab=1; p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/b got cookie "Cookie: p_def=1; p_ab=1; p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+440c441
+< case M-path xfer=to:localhost/a/b/ got cookie "Cookie: p_empty=1; p_def=1; p_ab=1; p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/b/ got cookie "Cookie: p_def=1; p_ab=1; p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+445c446
+< case M-path xfer=to:localhost/a/b/c got cookie "Cookie: p_empty=1; p_def=1; p_ab=1; p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/b/c got cookie "Cookie: p_def=1; p_ab=1; p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+450c451
+< case M-path xfer=to:localhost/ab got cookie "Cookie: p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/ab got cookie "Cookie: p_rel=1; p_root=1; p_empty=1"
+455c456
+< case M-path xfer=to:localhost/A got cookie "Cookie: p_upper=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/A got cookie "Cookie: p_rel=1; p_upper=1; p_root=1; p_empty=1"
+460c461
+< case M-path xfer=to:localhost/x/y got cookie "Cookie: p_x=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/x/y got cookie "Cookie: p_rel=1; p_x=1; p_root=1; p_empty=1"
+465c466
+< case M-path xfer=to:localhost/a/bc got cookie "Cookie: p_aslash=1; p_a=1; p_root=1; p_rel=1"
+---
+> case M-path xfer=to:localhost/a/bc got cookie "Cookie: p_aslash=1; p_rel=1; p_a=1; p_root=1; p_empty=1"
+468c469
+< case M-path fopen("") during transfers: 0
+---
+> case M-path fopen("") during transfers: 11
+523c524
+< case M-secure fopen("") during transfers: 0
+---
+> case M-secure fopen("") during transfers: 6
+532a534
+> case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\t9223372036854775807\tm_huge\t1" exp_delta=HUGE
+534,535c536,537
+< case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\te_401\t1" exp_delta=CAP(400d+30s, down to the minute)
+< case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\te_far\t1" exp_delta=CAP(400d+30s, down to the minute)
+---
+> case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\te_401\t1" exp_delta~34646400
+> case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\te_far\t1" exp_delta~86400000
+538,539c540
+< case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\tm_far\t1" exp_delta=CAP(400d+30s, down to the minute)
+< case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\tm_huge\t1" exp_delta=CAP(400d+30s, down to the minute)
+---
+> case M-expiry jar@set:localhost/ line "localhost\tFALSE\t/\tFALSE\tT\tm_far\t1" exp_delta~86400000
+548c549
+< case M-expiry fopen("") during transfers: 0
+---
+> case M-expiry fopen("") during transfers: 2
+555c556
+< case M-attrs jar@set:localhost/ rc=0 n=11
+---
+> case M-attrs jar@set:localhost/ rc=0 n=12
+562a564
+> case M-attrs jar@set:localhost/ line "localhost\tFALSE\t/\tTRUE\t0\t__Host-dom\t1" exp=session
+571c573
+< case M-attrs xfer=to:localhost/ got cookie "Cookie: __Host-nopath=1; __Secure-pre=1; ss_none_sec=1; __Host-ok=1; ss_strict=1; ss_bogus=1; ss_none=1; h_lower=1; ss_lax=1; h_only=1; unk=1"
+---
+> case M-attrs xfer=to:localhost/ got cookie "Cookie: __Host-nopath=1; __Secure-pre=1; ss_none_sec=1; __Host-dom=1; __Host-ok=1; ss_strict=1; ss_bogus=1; ss_none=1; h_lower=1; ss_lax=1; h_only=1; unk=1"
+574c576
+< case M-attrs fopen("") during transfers: 0
+---
+> case M-attrs fopen("") during transfers: 2
+617c619
+< case M-overwrite fopen("") during transfers: 0
+---
+> case M-overwrite fopen("") during transfers: 5
+645c647
+< case M-delete jar@set2:localhost/ rc=0 n=2
+---
+> case M-delete jar@set2:localhost/ rc=0 n=3
+646a649
+> case M-delete jar@set2:localhost/ line "localhost\tFALSE\t/\tFALSE\t1\tdel_sess\tgone" exp_delta=NEGATIVE
+660c663
+< case M-delete fopen("") during transfers: 0
+---
+> case M-delete fopen("") during transfers: 6
+682c685
+< case M-invalid fopen("") during transfers: 0
+---
+> case M-invalid fopen("") during transfers: 2
+702c705
+< case M-header-forms fopen("") during transfers: 0
+---
+> case M-header-forms fopen("") during transfers: 2
+722c725
+< case M-highbyte fopen("") during transfers: 0
+---
+> case M-highbyte fopen("") during transfers: 2
+859c862
+< case M-many fopen("") during transfers: 0
+---
+> case M-many fopen("") during transfers: 32
+935c938
+< case I-netscape fopen("") during transfers: 0
+---
+> case I-netscape fopen("") during transfers: 8
+999c1002
+< case I-setcookie fopen("") during transfers: 0
+---
+> case I-setcookie fopen("") during transfers: 8
+1023a1027
+> case I-commands fs fopen step=RELOAD path=""
+1046a1051
+> case I-commands fs fopen step=RELOAD-after-transfer path=""
+1068c1073
+< case I-commands fopen("") during transfers: 0
+---
+> case I-commands fopen("") during transfers: 4
+1178c1183
+< case I-roundtrip fopen("") during transfers: 0
+---
+> case I-roundtrip fopen("") during transfers: 9
+1198c1203
+< case I-order fopen("") during transfers: 0
+---
+> case I-order fopen("") during transfers: 1
+1226c1231
+< case I-noengine fopen("") during transfers: 0
+---
+> case I-noengine fopen("") during transfers: 1
+1228a1234,1237
+> case F-flush-control fs fopen step=FLUSH-before-transfer path="/TMP/flush/jar.txt"
+> case F-flush-control fs open step=FLUSH-before-transfer path="/TMP/flush/RANDOM.tmp"
+> case F-flush-control fs rename-from step=FLUSH-before-transfer path="/TMP/flush/RANDOM.tmp"
+> case F-flush-control fs rename-to step=FLUSH-before-transfer path="/TMP/flush/jar.txt"
+1231c1240,1244
+< case F-flush-control file after-FLUSH-before-transfer /TMP/flush/jar.txt absent errno=2
+---
+> case F-flush-control file after-FLUSH-before-transfer line "# Netscape HTTP Cookie File"
+> case F-flush-control file after-FLUSH-before-transfer line "# https://curl.se/docs/http-cookies.html"
+> case F-flush-control file after-FLUSH-before-transfer line "# This file was generated by libcurl! Edit at your own risk."
+> case F-flush-control file after-FLUSH-before-transfer line ""
+> case F-flush-control fs fopen step=transfer path=""
+1477c1490
+< case C-caller fopen("") during transfers: 0
+---
+> case C-caller fopen("") during transfers: 23
+1518c1531
+< case R-cross fopen("") during transfers: 0
+---
+> case R-cross fopen("") during transfers: 4
+1537c1550
+< case R-rel jar@T1 line "a.localhost\tFALSE\t/dir\tFALSE\t0\trq\t1" exp=session
+---
+> case R-rel jar@T1 line "a.localhost\tFALSE\t/dir/\tFALSE\t0\trq\t1" exp=session
+1548c1561
+< case R-rel jar@T2-follow line "a.localhost\tFALSE\t/dir\tFALSE\t0\trq\t1" exp=session
+---
+> case R-rel jar@T2-follow line "a.localhost\tFALSE\t/dir/\tFALSE\t0\trq\t1" exp=session
+1559c1572
+< case R-rel jar@T3:a.localhost/land line "a.localhost\tFALSE\t/dir\tFALSE\t0\trq\t1" exp=session
+---
+> case R-rel jar@T3:a.localhost/land line "a.localhost\tFALSE\t/dir/\tFALSE\t0\trq\t1" exp=session
+1563c1576
+< case R-rel fopen("") during transfers: 0
+---
+> case R-rel fopen("") during transfers: 4
+1605c1618
+< case R-sub fopen("") during transfers: 0
+---
+> case R-sub fopen("") during transfers: 4
+1621c1634
+< case R-del jar@T1 rc=0 n=1
+---
+> case R-del jar@T1 rc=0 n=2
+1622a1636
+> case R-del jar@T1 line "a.localhost\tFALSE\t/\tFALSE\t1\tpre\t" exp_delta=NEGATIVE
+1641c1655
+< case R-del fopen("") during transfers: 0
+---
+> case R-del fopen("") during transfers: 4
+1681c1695
+< case R-ip fopen("") during transfers: 0
+---
+> case R-ip fopen("") during transfers: 4
+1701c1715
+< case R-libcurl-follow fopen("") during transfers: 0
+---
+> case R-libcurl-follow fopen("") during transfers: 2
+== lane check, the cookie view: guix-8.20.0 run 1 (<) against current-8.23.0 run 1 (>)
+66 lines
+1c1
+< libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+---
+> libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4
+3,6c3,7
+< version 8.20.0 num=0x081400 age=11 features=0x553f478d psl_bit=1 ssl=GnuTLS/3.8.13 libz=1.3.1 host=x86_64-unknown-linux-gnu
+< curl_version libcurl/8.20.0 GnuTLS/3.8.13 zlib/1.3.1 zstd/1.5.6 libidn2/2.3.8 libpsl/0.21.5 nghttp2/1.69.0 mit-krb5/1.21
+< headers LIBCURL_VERSION 8.20.0
+< feature_names alt-svc AsynchDNS GSS-API HSTS HTTP2 HTTPS-proxy IDN IPv6 Kerberos Largefile libz PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd
+---
+> os Ubuntu 24.04.5 LTS
+> version 8.23.0 num=0x081700 age=11 features=0x5129028d psl_bit=0 ssl=OpenSSL/3.0.13 libz=1.3 host=x86_64-pc-linux-gnu
+> curl_version libcurl/8.23.0 OpenSSL/3.0.13 zlib/1.3 nghttp2/1.59.0
+> headers LIBCURL_VERSION 8.23.0
+> feature_names alt-svc AsynchDNS HSTS HTTP2 HTTPS-proxy IPv6 Largefile libz SSL threadsafe UnixSockets
+17c18
+< case X-resolve system-resolver localhost ok: v4
+---
+> case X-resolve system-resolver localhost ok: v6 v4
+286c287
+< case M-domain-a jar@set:a.localhost/ rc=0 n=5
+---
+> case M-domain-a jar@set:a.localhost/ rc=0 n=7
+289a291,292
+> case M-domain-a jar@set:a.localhost/ line ".localhost\tTRUE\t/\tFALSE\t0\td_dotlh\t1" exp=session
+> case M-domain-a jar@set:a.localhost/ line ".localhost\tTRUE\t/\tFALSE\t0\td_lh\t1" exp=session
+305c308,309
+< case M-domain-a xfer=to:localhost/ got cookie-headers 0
+---
+> case M-domain-a xfer=to:localhost/ got cookie-headers 1
+> case M-domain-a xfer=to:localhost/ got cookie "Cookie: d_dotlh=1; d_lh=1"
+323c327
+< case M-domain-ba jar@set:b.a.localhost/ rc=0 n=3
+---
+> case M-domain-ba jar@set:b.a.localhost/ rc=0 n=4
+325a330
+> case M-domain-ba jar@set:b.a.localhost/ line ".localhost\tTRUE\t/\tFALSE\t0\tp_lh\t1" exp=session
+345c350,351
+< case M-domain-ba xfer=to:localhost/ got cookie-headers 0
+---
+> case M-domain-ba xfer=to:localhost/ got cookie-headers 1
+> case M-domain-ba xfer=to:localhost/ got cookie "Cookie: p_lh=1"
+1493c1499
+< case R-cross jar@T1 rc=0 n=3
+---
+> case R-cross jar@T1 rc=0 n=4
+1494a1501
+> case R-cross jar@T1 line ".localhost\tTRUE\t/\tFALSE\t0\ton3xx_lh\t1" exp=session
+1502c1509
+< case R-cross jar@T2-follow rc=0 n=3
+---
+> case R-cross jar@T2-follow rc=0 n=4
+1503a1511
+> case R-cross jar@T2-follow line ".localhost\tTRUE\t/\tFALSE\t0\ton3xx_lh\t1" exp=session
+1512c1520
+< case R-cross jar@T3:a.localhost/land rc=0 n=3
+---
+> case R-cross jar@T3:a.localhost/land rc=0 n=4
+1513a1522
+> case R-cross jar@T3:a.localhost/land line ".localhost\tTRUE\t/\tFALSE\t0\ton3xx_lh\t1" exp=session
+1695c1704
+< case R-libcurl-follow jar@T1-libcurl-follows rc=0 n=3
+---
+> case R-libcurl-follow jar@T1-libcurl-follows rc=0 n=4
+1696a1706
+> case R-libcurl-follow jar@T1-libcurl-follows line ".localhost\tTRUE\t/\tFALSE\t0\ton3xx_lh\t1" exp=session
+== lane check, the cookie view: ubuntu-openssl-8.5.0 run 1 (<) against ubuntu-gnutls-8.5.0 run 1 (>)
+10 lines
+1c1
+< libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4
+---
+> libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4
+4,5c4,5
+< version 8.5.0 num=0x080500 age=10 features=0x55bf479d psl_bit=1 ssl=OpenSSL/3.0.13 libz=1.3 host=x86_64-pc-linux-gnu
+< curl_version libcurl/8.5.0 OpenSSL/3.0.13 zlib/1.3 brotli/1.1.0 zstd/1.5.5 libidn2/2.3.7 libpsl/0.21.2 (+libidn2/2.3.7) libssh/0.10.6/openssl/zlib nghttp2/1.59.0 librtmp/2.3 OpenLDAP/2.6.10
+---
+> version 8.5.0 num=0x080500 age=10 features=0x55bf479d psl_bit=1 ssl=GnuTLS/3.8.3 libz=1.3 host=x86_64-pc-linux-gnu
+> curl_version libcurl/8.5.0 GnuTLS/3.8.3 zlib/1.3 brotli/1.1.0 zstd/1.5.5 libidn2/2.3.7 libpsl/0.21.2 (+libidn2/2.3.7) libssh/0.10.6/openssl/zlib nghttp2/1.59.0 librtmp/2.3 OpenLDAP/2.6.10

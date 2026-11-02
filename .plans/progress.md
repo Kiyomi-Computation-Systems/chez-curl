@@ -6,8 +6,32 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **Next milestone:** M7, HTTP/2, cookies, auth and proxies (brief §8), from its plan, not yet
-  written. The M6 plan's §9 carries its items.
+- **M7, HTTP/2, cookies, auth and proxies:** planned on `docs/m7-plan`
+  ([the M7 plan](2026-11-02-m7-plan.md)), not yet merged. Four slices: the HTTP version, auth,
+  proxies and the cookie jar.
+  - **Decided by the maintainer, 2026-11-02,** each the recommended option, from two read-only
+    surveys and four probes on the five Linux libcurls
+    ([`research/m7/`](research/m7/)):
+    - the scope ([ADR-0033](decisions/0033-m7s-scope.md));
+    - prior knowledge for `http://` alone, and no `PIPEWAIT`
+      ([ADR-0034](decisions/0034-the-http-version-and-connection-sharing.md));
+    - the jar is a `curl_share` of cookies on the engine's thread
+      ([ADR-0035](decisions/0035-the-cookie-jar-is-libcurls-shared.md));
+    - a credentials field, refused beside URL userinfo; one scheme; a stream takes Basic or Bearer
+      alone ([ADR-0036](decisions/0036-credentials-and-one-auth-scheme.md));
+    - a named proxy takes every transfer, its credentials in its URL, a caller's
+      `Proxy-Authorization` refused ([ADR-0037](decisions/0037-a-proxy-given-by-url.md)).
+  - **An adversarial review of the plan** (Opus, read-only): no blocker, eleven majors and sixteen
+    minors, each answered in the plan (§11) and three ADRs amended. Among them: credentials wrote
+    headers of their own through CR LF; credentials beside a caller's `Authorization`; `AWS_SIGV4`
+    as `HTTPAUTH`'s twin; and the jar's close crossing a submit. Its probe, which I reran, is kept
+    in [`research/m7/review/`](research/m7/review/).
+  - **The maintainer's answers to four of the plan's questions,** each the recommended option: a
+    request with a jar refuses a caller's `Cookie` or `Host` header; a proxy URL with no port gets
+    its scheme's; an `https://` origin through an `https://` proxy is refused on Ubuntu's 8.5.0
+    with GnuTLS; `credentials` is one tagged key (the plan, §9).
+  - **The Mac ran the four probes, 2026-11-02,** against Apple's 8.7.1, every run exiting 0: they
+    revise no decision, and fill the plan's 8.7.1 rows (§7).
 - **CI is green.** PR #39 (`80bb2a9`) fixed the four suites CI's first runs failed, and its
   runs at `1a8fcb5` and `c080ca3` passed all eight jobs. Its close-out is below. A pull request or a push to `main`
   whose changes are all in `.plans/`'s own files or `.plans/research/` now runs no CI (PR #40);

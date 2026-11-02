@@ -1,0 +1,893 @@
+[guix-8.20.0] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 -> /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0, headers /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/../include
+[guix-8.20.0] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset PROBE_NO_MULTIPLEX=unset
+[guix-8.20.0] version headers=8.20.0 runtime=8.20.0 ssl=GnuTLS/3.8.13 nghttp2=1.69.0 http2=1 http3=0 quic=- features=0x553f478d
+[guix-8.20.0] server ctl=36161 h1=45825 tlsh2=33057 tlsh1=37329 h2c=42697
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=0.1 text "  Trying 127.0.0.1:33057..."
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=0.2 text "Connection #0 is not open enough, cannot reuse"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=0.2 text "Found pending candidate for reuse and CURLOPT_PIPEWAIT is set"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=0.2 text "Waiting on connection to negotiate possible multiplexing."
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=0.3 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=0.3 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=0.6 text "SSL Trust Anchors:"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=0.8 text "  CAfile: 1 certificates in /tmp/m7h2.8CkNcV/pki/ca.pem"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=4.4 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=4.9 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.0 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.0 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.0 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.0 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.0 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.0 text "  certificate version: #3"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.0 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.0 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.0 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.0 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.1 text "ALPN: server accepted h2"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.1 text "Established connection to 127.0.0.1 (127.0.0.1 port 33057) from 127.0.0.1 port 50792 "
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.1 text "using HTTP/2"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.1 text "[HTTP/2] [1] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait1.A"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.1 text "[HTTP/2] [1] [:method: GET]"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.1 text "[HTTP/2] [1] [:scheme: https]"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.1 text "[HTTP/2] [1] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.1 text "[HTTP/2] [1] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait1.A]"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.1 text "[HTTP/2] [1] [accept: */*]"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.2 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait1.A HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=5.2 text "Request completely sent off"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=5.2 text "Multiplexed connection found"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=5.2 text "Reusing existing https: connection with host 127.0.0.1"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=5.2 text "[HTTP/2] [3] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait1.B"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=5.2 text "[HTTP/2] [3] [:method: GET]"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=5.3 text "[HTTP/2] [3] [:scheme: https]"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=5.3 text "[HTTP/2] [3] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=5.3 text "[HTTP/2] [3] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait1.B]"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=5.3 text "[HTTP/2] [3] [accept: */*]"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=5.3 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait1.B HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=5.3 text "Request completely sent off"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=7.4 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=7.5 header_in "content-length: 11264"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=7.5 header_in "date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 debug t=7.5 header_in ""
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=7.7 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=7.7 header_in "content-length: 11264"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=7.7 header_in "date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=7.7 header_in ""
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 debug t=511.7 text "Connection #0 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-together:n2:pipewait1:A tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=7.5 t_first=7.5 t_end=511.7 status=200 ver=3(2) num_connects=1 lport=50792 total=11264 pattern=ok
+[guix-8.20.0] case S-together:n2:pipewait1:B tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=7.7 t_first=7.7 t_end=511.7 status=200 ver=3(2) num_connects=0 lport=50792 total=11264 pattern=ok
+[guix-8.20.0] case S-together:n2:pipewait1 client lports=50792,50792 distinct=1 num_connects_sum=1
+[guix-8.20.0] case S-together:n2:pipewait1 server-summary face=tlsh2 accepts=1 ports=50792 req_conns=1 [50792] reqs=2
+[guix-8.20.0] case S-together:n2:pipewait1 server: ev 1 t=87.9 accept face=tlsh2 conn=50792
+[guix-8.20.0] case S-together:n2:pipewait1 server: ev 2 t=88.3 alpn face=tlsh2 conn=50792 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case S-together:n2:pipewait1 server: ev 3 t=90.1 tls face=tlsh2 conn=50792 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-together:n2:pipewait1 server: ev 4 t=90.8 session face=tlsh2 conn=50792 alpn=h2
+[guix-8.20.0] case S-together:n2:pipewait1 server: ev 5 t=91.6 req face=tlsh2 conn=50792 proto=h2 stream=1 tag=S-together.n2.pipewait1.A GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait1.A | accept: */*"
+[guix-8.20.0] case S-together:n2:pipewait1 server: ev 6 t=92.9 req face=tlsh2 conn=50792 proto=h2 stream=3 tag=S-together.n2.pipewait1.B GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait1.B | accept: */*"
+[guix-8.20.0] case S-together:n2:pipewait1 server: ev 7 t=598.0 body face=tlsh2 conn=50792 proto=h2 stream=1 tag=S-together.n2.pipewait1.A n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=505.5ms aborted=0
+[guix-8.20.0] case S-together:n2:pipewait1 server: ev 8 t=598.0 body face=tlsh2 conn=50792 proto=h2 stream=3 tag=S-together.n2.pipewait1.B n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=504.6ms aborted=0
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=0.1 text "  Trying 127.0.0.1:33057..."
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=0.1 text "Connection #0 is not open enough, cannot reuse"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=0.1 text "Hostname 127.0.0.1 was found in DNS cache"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=0.1 text "  Trying 127.0.0.1:33057..."
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=0.2 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=0.3 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=0.5 text "SSL Trust Anchors:"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=0.6 text "  CAfile: 1 certificates in /tmp/m7h2.8CkNcV/pki/ca.pem"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=0.6 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=0.7 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=1.6 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.1 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.1 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.1 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.1 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.1 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.1 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.1 text "  certificate version: #3"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.1 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.1 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.2 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.2 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.2 text "ALPN: server accepted h2"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.2 text "Established connection to 127.0.0.1 (127.0.0.1 port 33057) from 127.0.0.1 port 48964 "
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.2 text "using HTTP/2"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.2 text "[HTTP/2] [1] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait0.A"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.2 text "[HTTP/2] [1] [:method: GET]"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.2 text "[HTTP/2] [1] [:scheme: https]"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.2 text "[HTTP/2] [1] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.2 text "[HTTP/2] [1] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait0.A]"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.2 text "[HTTP/2] [1] [accept: */*]"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.2 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait0.A HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=2.2 text "Request completely sent off"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=2.8 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.0 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "  certificate version: #3"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "ALPN: server accepted h2"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "Established connection to 127.0.0.1 (127.0.0.1 port 33057) from 127.0.0.1 port 48976 "
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "using HTTP/2"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "[HTTP/2] [1] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait0.B"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "[HTTP/2] [1] [:method: GET]"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "[HTTP/2] [1] [:scheme: https]"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "[HTTP/2] [1] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "[HTTP/2] [1] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait0.B]"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "[HTTP/2] [1] [accept: */*]"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait0.B HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=3.1 text "Request completely sent off"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=3.4 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=3.4 header_in "content-length: 11264"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=3.4 header_in "date: Mon, 02 Nov 2026 10:26:49 GMT"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=3.4 header_in ""
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=5.2 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=5.2 header_in "content-length: 11264"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=5.3 header_in "date: Mon, 02 Nov 2026 10:26:49 GMT"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=5.3 header_in ""
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 debug t=505.5 text "Connection #0 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-together:n2:pipewait0:A tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=3.5 t_first=3.5 t_end=505.5 status=200 ver=3(2) num_connects=1 lport=48964 total=11264 pattern=ok
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 debug t=511.0 text "Connection #1 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-together:n2:pipewait0:B tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=5.3 t_first=5.3 t_end=511.0 status=200 ver=3(2) num_connects=1 lport=48976 total=11264 pattern=ok
+[guix-8.20.0] case S-together:n2:pipewait0 client lports=48964,48976 distinct=2 num_connects_sum=2
+[guix-8.20.0] case S-together:n2:pipewait0 server-summary face=tlsh2 accepts=2 ports=48964,48976 req_conns=2 [48964,48976] reqs=2
+[guix-8.20.0] case S-together:n2:pipewait0 server: ev 11 t=600.7 accept face=tlsh2 conn=48964
+[guix-8.20.0] case S-together:n2:pipewait0 server: ev 12 t=600.8 accept face=tlsh2 conn=48976
+[guix-8.20.0] case S-together:n2:pipewait0 server: ev 13 t=601.0 alpn face=tlsh2 conn=48964 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case S-together:n2:pipewait0 server: ev 14 t=601.3 alpn face=tlsh2 conn=48976 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case S-together:n2:pipewait0 server: ev 15 t=602.0 tls face=tlsh2 conn=48964 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-together:n2:pipewait0 server: ev 16 t=602.1 session face=tlsh2 conn=48964 alpn=h2
+[guix-8.20.0] case S-together:n2:pipewait0 server: ev 17 t=603.2 req face=tlsh2 conn=48964 proto=h2 stream=1 tag=S-together.n2.pipewait0.A GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait0.A | accept: */*"
+[guix-8.20.0] case S-together:n2:pipewait0 server: ev 18 t=604.2 tls face=tlsh2 conn=48976 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-together:n2:pipewait0 server: ev 19 t=604.4 session face=tlsh2 conn=48976 alpn=h2
+[guix-8.20.0] case S-together:n2:pipewait0 server: ev 20 t=605.0 req face=tlsh2 conn=48976 proto=h2 stream=1 tag=S-together.n2.pipewait0.B GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n2.pipewait0.B | accept: */*"
+[guix-8.20.0] case S-together:n2:pipewait0 server: ev 21 t=1106.0 body face=tlsh2 conn=48964 proto=h2 stream=1 tag=S-together.n2.pipewait0.A n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=502.6ms aborted=0
+[guix-8.20.0] case S-together:n2:pipewait0 server: ev 22 t=1111.6 body face=tlsh2 conn=48976 proto=h2 stream=1 tag=S-together.n2.pipewait0.B n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=506.4ms aborted=0
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=0.1 text "  Trying 127.0.0.1:33057..."
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=0.1 text "Connection #0 is not open enough, cannot reuse"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=0.1 text "Found pending candidate for reuse and CURLOPT_PIPEWAIT is set"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=0.1 text "Waiting on connection to negotiate possible multiplexing."
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=0.1 text "Connection #0 is not open enough, cannot reuse"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=0.1 text "Found pending candidate for reuse and CURLOPT_PIPEWAIT is set"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=0.2 text "Waiting on connection to negotiate possible multiplexing."
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=0.2 text "Connection #0 is not open enough, cannot reuse"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=0.2 text "Found pending candidate for reuse and CURLOPT_PIPEWAIT is set"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=0.2 text "Waiting on connection to negotiate possible multiplexing."
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=0.2 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=0.3 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=0.5 text "SSL Trust Anchors:"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=0.6 text "  CAfile: 1 certificates in /tmp/m7h2.8CkNcV/pki/ca.pem"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=1.5 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=1.9 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=1.9 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=1.9 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=1.9 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=1.9 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=1.9 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=1.9 text "  certificate version: #3"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=1.9 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=1.9 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=1.9 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=1.9 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.0 text "ALPN: server accepted h2"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.0 text "Established connection to 127.0.0.1 (127.0.0.1 port 33057) from 127.0.0.1 port 48990 "
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.0 text "using HTTP/2"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.0 text "[HTTP/2] [1] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.A"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.0 text "[HTTP/2] [1] [:method: GET]"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.0 text "[HTTP/2] [1] [:scheme: https]"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.0 text "[HTTP/2] [1] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.0 text "[HTTP/2] [1] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.A]"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.0 text "[HTTP/2] [1] [accept: */*]"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.0 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.A HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.0 text "Request completely sent off"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.0 text "Multiplexed connection found"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.0 text "Reusing existing https: connection with host 127.0.0.1"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.0 text "[HTTP/2] [3] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.B"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.0 text "[HTTP/2] [3] [:method: GET]"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.0 text "[HTTP/2] [3] [:scheme: https]"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.0 text "[HTTP/2] [3] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.0 text "[HTTP/2] [3] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.B]"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.0 text "[HTTP/2] [3] [accept: */*]"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.1 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.B HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.1 text "Request completely sent off"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.1 text "Multiplexed connection found"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.1 text "Reusing existing https: connection with host 127.0.0.1"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.1 text "[HTTP/2] [5] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.C"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.1 text "[HTTP/2] [5] [:method: GET]"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.1 text "[HTTP/2] [5] [:scheme: https]"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.1 text "[HTTP/2] [5] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.1 text "[HTTP/2] [5] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.C]"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.1 text "[HTTP/2] [5] [accept: */*]"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.1 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.C HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.1 text "Request completely sent off"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.1 text "Multiplexed connection found"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.1 text "Reusing existing https: connection with host 127.0.0.1"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.1 text "[HTTP/2] [7] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.D"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.1 text "[HTTP/2] [7] [:method: GET]"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.1 text "[HTTP/2] [7] [:scheme: https]"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.1 text "[HTTP/2] [7] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.1 text "[HTTP/2] [7] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.D]"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.1 text "[HTTP/2] [7] [accept: */*]"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.1 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.D HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.1 text "Request completely sent off"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.3 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.3 header_in "content-length: 11264"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.3 header_in "date: Mon, 02 Nov 2026 10:26:49 GMT"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 debug t=2.3 header_in ""
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.5 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.5 header_in "content-length: 11264"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.5 header_in "date: Mon, 02 Nov 2026 10:26:49 GMT"
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 debug t=2.5 header_in ""
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.8 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.8 header_in "content-length: 11264"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.8 header_in "date: Mon, 02 Nov 2026 10:26:49 GMT"
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 debug t=2.8 header_in ""
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.8 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.8 header_in "content-length: 11264"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.8 header_in "date: Mon, 02 Nov 2026 10:26:49 GMT"
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=2.8 header_in ""
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 debug t=507.4 text "Connection #0 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-together:n4:pipewait1:A tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=2.3 t_first=2.3 t_end=507.5 status=200 ver=3(2) num_connects=1 lport=48990 total=11264 pattern=ok
+[guix-8.20.0] case S-together:n4:pipewait1:B tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=2.5 t_first=2.5 t_end=507.5 status=200 ver=3(2) num_connects=0 lport=48990 total=11264 pattern=ok
+[guix-8.20.0] case S-together:n4:pipewait1:C tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=2.8 t_first=2.8 t_end=507.5 status=200 ver=3(2) num_connects=0 lport=48990 total=11264 pattern=ok
+[guix-8.20.0] case S-together:n4:pipewait1:D tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=2.8 t_first=2.8 t_end=507.5 status=200 ver=3(2) num_connects=0 lport=48990 total=11264 pattern=ok
+[guix-8.20.0] case S-together:n4:pipewait1 client lports=48990,48990,48990,48990 distinct=1 num_connects_sum=1
+[guix-8.20.0] case S-together:n4:pipewait1 server-summary face=tlsh2 accepts=1 ports=48990 req_conns=1 [48990] reqs=4
+[guix-8.20.0] case S-together:n4:pipewait1 server: ev 27 t=1114.2 accept face=tlsh2 conn=48990
+[guix-8.20.0] case S-together:n4:pipewait1 server: ev 28 t=1114.4 alpn face=tlsh2 conn=48990 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case S-together:n4:pipewait1 server: ev 29 t=1115.3 tls face=tlsh2 conn=48990 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-together:n4:pipewait1 server: ev 30 t=1115.4 session face=tlsh2 conn=48990 alpn=h2
+[guix-8.20.0] case S-together:n4:pipewait1 server: ev 31 t=1115.9 req face=tlsh2 conn=48990 proto=h2 stream=1 tag=S-together.n4.pipewait1.A GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.A | accept: */*"
+[guix-8.20.0] case S-together:n4:pipewait1 server: ev 32 t=1116.1 req face=tlsh2 conn=48990 proto=h2 stream=3 tag=S-together.n4.pipewait1.B GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.B | accept: */*"
+[guix-8.20.0] case S-together:n4:pipewait1 server: ev 33 t=1116.3 req face=tlsh2 conn=48990 proto=h2 stream=5 tag=S-together.n4.pipewait1.C GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.C | accept: */*"
+[guix-8.20.0] case S-together:n4:pipewait1 server: ev 34 t=1116.4 req face=tlsh2 conn=48990 proto=h2 stream=7 tag=S-together.n4.pipewait1.D GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait1.D | accept: */*"
+[guix-8.20.0] case S-together:n4:pipewait1 server: ev 35 t=1621.4 body face=tlsh2 conn=48990 proto=h2 stream=1 tag=S-together.n4.pipewait1.A n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=505.3ms aborted=0
+[guix-8.20.0] case S-together:n4:pipewait1 server: ev 36 t=1621.4 body face=tlsh2 conn=48990 proto=h2 stream=3 tag=S-together.n4.pipewait1.B n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=505.1ms aborted=0
+[guix-8.20.0] case S-together:n4:pipewait1 server: ev 37 t=1621.4 body face=tlsh2 conn=48990 proto=h2 stream=5 tag=S-together.n4.pipewait1.C n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=504.9ms aborted=0
+[guix-8.20.0] case S-together:n4:pipewait1 server: ev 38 t=1621.4 body face=tlsh2 conn=48990 proto=h2 stream=7 tag=S-together.n4.pipewait1.D n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=504.8ms aborted=0
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=0.1 text "  Trying 127.0.0.1:33057..."
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=0.1 text "Connection #0 is not open enough, cannot reuse"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=0.1 text "Hostname 127.0.0.1 was found in DNS cache"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=0.1 text "  Trying 127.0.0.1:33057..."
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=0.2 text "Connection #0 is not open enough, cannot reuse"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=0.2 text "Connection #1 is not open enough, cannot reuse"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=0.2 text "Hostname 127.0.0.1 was found in DNS cache"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=0.2 text "  Trying 127.0.0.1:33057..."
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=0.2 text "Connection #0 is not open enough, cannot reuse"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=0.2 text "Connection #1 is not open enough, cannot reuse"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=0.2 text "Connection #2 is not open enough, cannot reuse"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=0.2 text "Hostname 127.0.0.1 was found in DNS cache"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=0.3 text "  Trying 127.0.0.1:33057..."
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=0.3 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=0.4 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=0.6 text "SSL Trust Anchors:"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=0.7 text "  CAfile: 1 certificates in /tmp/m7h2.8CkNcV/pki/ca.pem"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=0.7 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=0.7 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=0.9 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=1.0 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=1.1 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=1.1 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.0 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.4 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.4 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.4 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.4 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.4 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.4 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.4 text "  certificate version: #3"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.4 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.4 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.4 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.5 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.5 text "ALPN: server accepted h2"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.5 text "Established connection to 127.0.0.1 (127.0.0.1 port 33057) from 127.0.0.1 port 49004 "
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.5 text "using HTTP/2"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.5 text "[HTTP/2] [1] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.A"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.5 text "[HTTP/2] [1] [:method: GET]"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.5 text "[HTTP/2] [1] [:scheme: https]"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.5 text "[HTTP/2] [1] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.5 text "[HTTP/2] [1] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.A]"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.5 text "[HTTP/2] [1] [accept: */*]"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.5 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.A HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=2.5 text "Request completely sent off"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.0 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.4 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.4 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.4 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.4 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "  certificate version: #3"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "ALPN: server accepted h2"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "Established connection to 127.0.0.1 (127.0.0.1 port 33057) from 127.0.0.1 port 49020 "
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "using HTTP/2"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "[HTTP/2] [1] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.B"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "[HTTP/2] [1] [:method: GET]"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "[HTTP/2] [1] [:scheme: https]"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "[HTTP/2] [1] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "[HTTP/2] [1] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.B]"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "[HTTP/2] [1] [accept: */*]"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.B HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=3.5 text "Request completely sent off"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.0 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.3 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.3 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.3 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.3 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.3 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.3 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.3 text "  certificate version: #3"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "ALPN: server accepted h2"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "Established connection to 127.0.0.1 (127.0.0.1 port 33057) from 127.0.0.1 port 49034 "
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "using HTTP/2"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "[HTTP/2] [1] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.C"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "[HTTP/2] [1] [:method: GET]"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "[HTTP/2] [1] [:scheme: https]"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "[HTTP/2] [1] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "[HTTP/2] [1] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.C]"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "[HTTP/2] [1] [accept: */*]"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.C HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=4.4 text "Request completely sent off"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=4.9 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.2 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.2 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.2 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.2 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.2 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.2 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.2 text "  certificate version: #3"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.2 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.2 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.2 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.2 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.2 text "ALPN: server accepted h2"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.3 text "Established connection to 127.0.0.1 (127.0.0.1 port 33057) from 127.0.0.1 port 49040 "
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.3 text "using HTTP/2"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.3 text "[HTTP/2] [1] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.D"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.3 text "[HTTP/2] [1] [:method: GET]"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.3 text "[HTTP/2] [1] [:scheme: https]"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.3 text "[HTTP/2] [1] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.3 text "[HTTP/2] [1] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.D]"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.3 text "[HTTP/2] [1] [accept: */*]"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.3 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.D HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.3 text "Request completely sent off"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=5.4 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=5.4 header_in "content-length: 11264"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=5.4 header_in "date: Mon, 02 Nov 2026 10:26:50 GMT"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=5.4 header_in ""
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=5.4 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=5.4 header_in "content-length: 11264"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=5.4 header_in "date: Mon, 02 Nov 2026 10:26:50 GMT"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=5.4 header_in ""
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=5.4 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=5.4 header_in "content-length: 11264"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=5.4 header_in "date: Mon, 02 Nov 2026 10:26:50 GMT"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=5.4 header_in ""
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.5 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.5 header_in "content-length: 11264"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.5 header_in "date: Mon, 02 Nov 2026 10:26:50 GMT"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=5.5 header_in ""
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 debug t=505.8 text "Connection #0 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-together:n4:pipewait0:A tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=5.4 t_first=5.4 t_end=505.8 status=200 ver=3(2) num_connects=1 lport=49004 total=11264 pattern=ok
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 debug t=505.9 text "Connection #1 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-together:n4:pipewait0:B tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=5.4 t_first=5.4 t_end=505.9 status=200 ver=3(2) num_connects=1 lport=49020 total=11264 pattern=ok
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 debug t=507.6 text "Connection #2 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-together:n4:pipewait0:C tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=5.4 t_first=5.4 t_end=507.6 status=200 ver=3(2) num_connects=1 lport=49034 total=11264 pattern=ok
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 debug t=510.2 text "Connection #3 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-together:n4:pipewait0:D tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=5.5 t_first=5.5 t_end=510.2 status=200 ver=3(2) num_connects=1 lport=49040 total=11264 pattern=ok
+[guix-8.20.0] case S-together:n4:pipewait0 client lports=49004,49020,49034,49040 distinct=4 num_connects_sum=4
+[guix-8.20.0] case S-together:n4:pipewait0 server-summary face=tlsh2 accepts=4 ports=49004,49020,49034,49040 req_conns=4 [49004,49020,49034,49040] reqs=4
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 41 t=1623.4 accept face=tlsh2 conn=49004
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 42 t=1623.6 accept face=tlsh2 conn=49020
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 43 t=1623.8 accept face=tlsh2 conn=49034
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 44 t=1623.9 alpn face=tlsh2 conn=49004 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 45 t=1624.5 accept face=tlsh2 conn=49040
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 46 t=1624.6 alpn face=tlsh2 conn=49020 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 47 t=1624.9 alpn face=tlsh2 conn=49034 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 48 t=1625.1 tls face=tlsh2 conn=49004 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 49 t=1625.2 session face=tlsh2 conn=49004 alpn=h2
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 50 t=1625.3 alpn face=tlsh2 conn=49040 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 51 t=1625.8 req face=tlsh2 conn=49004 proto=h2 stream=1 tag=S-together.n4.pipewait0.A GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.A | accept: */*"
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 52 t=1626.2 tls face=tlsh2 conn=49020 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 53 t=1626.3 session face=tlsh2 conn=49020 alpn=h2
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 54 t=1626.7 req face=tlsh2 conn=49020 proto=h2 stream=1 tag=S-together.n4.pipewait0.B GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.B | accept: */*"
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 55 t=1627.1 tls face=tlsh2 conn=49034 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 56 t=1627.2 session face=tlsh2 conn=49034 alpn=h2
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 57 t=1627.6 req face=tlsh2 conn=49034 proto=h2 stream=1 tag=S-together.n4.pipewait0.C GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.C | accept: */*"
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 58 t=1628.0 tls face=tlsh2 conn=49040 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 59 t=1628.0 session face=tlsh2 conn=49040 alpn=h2
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 60 t=1628.5 req face=tlsh2 conn=49040 proto=h2 stream=1 tag=S-together.n4.pipewait0.D GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-together.n4.pipewait0.D | accept: */*"
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 61 t=2129.1 body face=tlsh2 conn=49004 proto=h2 stream=1 tag=S-together.n4.pipewait0.A n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=503.2ms aborted=0
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 62 t=2129.2 body face=tlsh2 conn=49020 proto=h2 stream=1 tag=S-together.n4.pipewait0.B n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=502.3ms aborted=0
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 63 t=2130.8 body face=tlsh2 conn=49034 proto=h2 stream=1 tag=S-together.n4.pipewait0.C n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=503.1ms aborted=0
+[guix-8.20.0] case S-together:n4:pipewait0 server: ev 64 t=2133.3 body face=tlsh2 conn=49040 proto=h2 stream=1 tag=S-together.n4.pipewait0.D n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=504.8ms aborted=0
+[guix-8.20.0] case S-together all done live_before_global_cleanup=0
+[guix-8.20.0] case S-together live_after_global_cleanup=0
+[guix-8.20.0] probe S-together exit=0
+[guix-8.20.0] probe S-together took about 2 s
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=0.1 text "  Trying 127.0.0.1:33057..."
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=0.2 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=0.3 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=0.6 text "SSL Trust Anchors:"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=0.7 text "  CAfile: 1 certificates in /tmp/m7h2.8CkNcV/pki/ca.pem"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=2.4 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=2.9 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=2.9 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=2.9 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=2.9 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=2.9 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=2.9 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=2.9 text "  certificate version: #3"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.0 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.0 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.0 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.0 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.0 text "ALPN: server accepted h2"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.0 text "Established connection to 127.0.0.1 (127.0.0.1 port 33057) from 127.0.0.1 port 49044 "
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.0 text "using HTTP/2"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.1 text "[HTTP/2] [1] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait1.A"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.1 text "[HTTP/2] [1] [:method: GET]"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.1 text "[HTTP/2] [1] [:scheme: https]"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.1 text "[HTTP/2] [1] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.1 text "[HTTP/2] [1] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait1.A]"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.1 text "[HTTP/2] [1] [accept: */*]"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.1 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait1.A HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.1 text "Request completely sent off"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.4 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.4 header_in "content-length: 11264"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.5 header_in "date: Mon, 02 Nov 2026 10:26:50 GMT"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 debug t=3.5 header_in ""
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=0.0 text "Multiplexed connection found"
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=0.0 text "Reusing existing https: connection with host 127.0.0.1"
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=0.0 text "[HTTP/2] [3] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait1.B"
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=0.0 text "[HTTP/2] [3] [:method: GET]"
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=0.0 text "[HTTP/2] [3] [:scheme: https]"
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=0.0 text "[HTTP/2] [3] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=0.0 text "[HTTP/2] [3] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait1.B]"
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=0.0 text "[HTTP/2] [3] [accept: */*]"
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=0.1 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait1.B HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=0.1 text "Request completely sent off"
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=1.1 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=1.1 header_in "content-length: 11264"
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=1.1 header_in "date: Mon, 02 Nov 2026 10:26:50 GMT"
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=1.1 header_in ""
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 debug t=505.7 text "Connection #0 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-after-head:pipewait1:A tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=3.5 t_first=3.5 t_end=509.2 status=200 ver=3(2) num_connects=1 lport=49044 total=11264 pattern=ok
+[guix-8.20.0] case S-after-head:pipewait1:B tlsh2 done code=0 err="No error" case_t_add=3.5 t_head=1.1 t_first=1.1 t_end=505.7 status=200 ver=3(2) num_connects=0 lport=49044 total=11264 pattern=ok
+[guix-8.20.0] case S-after-head:pipewait1 reuse A_head=3.5 A_end=509.2 B_added_at=3.5 B_first=4.6 (case_t) A_lport=49044 B_lport=49044 same_conn=1 B_num_connects=0 A_ver=3 B_ver=3 B_added_while_A_open=1
+[guix-8.20.0] case S-after-head:pipewait1 client lports=49044,49044 distinct=1 num_connects_sum=1
+[guix-8.20.0] case S-after-head:pipewait1 server-summary face=tlsh2 accepts=1 ports=49044 req_conns=1 [49044] reqs=2
+[guix-8.20.0] case S-after-head:pipewait1 server: ev 73 t=2149.1 accept face=tlsh2 conn=49044
+[guix-8.20.0] case S-after-head:pipewait1 server: ev 74 t=2149.5 alpn face=tlsh2 conn=49044 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case S-after-head:pipewait1 server: ev 75 t=2151.1 tls face=tlsh2 conn=49044 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-after-head:pipewait1 server: ev 76 t=2151.2 session face=tlsh2 conn=49044 alpn=h2
+[guix-8.20.0] case S-after-head:pipewait1 server: ev 77 t=2152.0 req face=tlsh2 conn=49044 proto=h2 stream=1 tag=S-after-head.pipewait1.A GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait1.A | accept: */*"
+[guix-8.20.0] case S-after-head:pipewait1 server: ev 78 t=2153.1 req face=tlsh2 conn=49044 proto=h2 stream=3 tag=S-after-head.pipewait1.B GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait1.B | accept: */*"
+[guix-8.20.0] case S-after-head:pipewait1 server: ev 79 t=2657.9 body face=tlsh2 conn=49044 proto=h2 stream=1 tag=S-after-head.pipewait1.A n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=505.8ms aborted=0
+[guix-8.20.0] case S-after-head:pipewait1 server: ev 80 t=2657.9 body face=tlsh2 conn=49044 proto=h2 stream=3 tag=S-after-head.pipewait1.B n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=504.7ms aborted=0
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=0.1 text "  Trying 127.0.0.1:33057..."
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=0.1 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=0.2 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=0.4 text "SSL Trust Anchors:"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=0.5 text "  CAfile: 1 certificates in /tmp/m7h2.8CkNcV/pki/ca.pem"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=1.8 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.2 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.3 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.3 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.3 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.3 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.3 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.3 text "  certificate version: #3"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.3 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.3 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.3 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.3 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.3 text "ALPN: server accepted h2"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.3 text "Established connection to 127.0.0.1 (127.0.0.1 port 33057) from 127.0.0.1 port 49050 "
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.3 text "using HTTP/2"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.4 text "[HTTP/2] [1] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait0.A"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.4 text "[HTTP/2] [1] [:method: GET]"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.4 text "[HTTP/2] [1] [:scheme: https]"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.4 text "[HTTP/2] [1] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.4 text "[HTTP/2] [1] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait0.A]"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.4 text "[HTTP/2] [1] [accept: */*]"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.4 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait0.A HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.4 text "Request completely sent off"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.6 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.6 header_in "content-length: 11264"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.6 header_in "date: Mon, 02 Nov 2026 10:26:51 GMT"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 debug t=2.6 header_in ""
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.0 text "Multiplexed connection found"
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.0 text "Reusing existing https: connection with host 127.0.0.1"
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.0 text "[HTTP/2] [3] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait0.B"
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.0 text "[HTTP/2] [3] [:method: GET]"
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.0 text "[HTTP/2] [3] [:scheme: https]"
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.0 text "[HTTP/2] [3] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.0 text "[HTTP/2] [3] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait0.B]"
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.0 text "[HTTP/2] [3] [accept: */*]"
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.0 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait0.B HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.0 text "Request completely sent off"
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.3 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.3 header_in "content-length: 11264"
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.3 header_in "date: Mon, 02 Nov 2026 10:26:51 GMT"
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=0.3 header_in ""
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 debug t=503.9 text "Connection #0 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-after-head:pipewait0:A tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=2.6 t_first=2.6 t_end=506.5 status=200 ver=3(2) num_connects=1 lport=49050 total=11264 pattern=ok
+[guix-8.20.0] case S-after-head:pipewait0:B tlsh2 done code=0 err="No error" case_t_add=2.6 t_head=0.3 t_first=0.3 t_end=503.9 status=200 ver=3(2) num_connects=0 lport=49050 total=11264 pattern=ok
+[guix-8.20.0] case S-after-head:pipewait0 reuse A_head=2.6 A_end=506.5 B_added_at=2.6 B_first=3.0 (case_t) A_lport=49050 B_lport=49050 same_conn=1 B_num_connects=0 A_ver=3 B_ver=3 B_added_while_A_open=1
+[guix-8.20.0] case S-after-head:pipewait0 client lports=49050,49050 distinct=1 num_connects_sum=1
+[guix-8.20.0] case S-after-head:pipewait0 server-summary face=tlsh2 accepts=1 ports=49050 req_conns=1 [49050] reqs=2
+[guix-8.20.0] case S-after-head:pipewait0 server: ev 83 t=2660.1 accept face=tlsh2 conn=49050
+[guix-8.20.0] case S-after-head:pipewait0 server: ev 84 t=2660.3 alpn face=tlsh2 conn=49050 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case S-after-head:pipewait0 server: ev 85 t=2661.7 tls face=tlsh2 conn=49050 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-after-head:pipewait0 server: ev 86 t=2661.9 session face=tlsh2 conn=49050 alpn=h2
+[guix-8.20.0] case S-after-head:pipewait0 server: ev 87 t=2662.2 req face=tlsh2 conn=49050 proto=h2 stream=1 tag=S-after-head.pipewait0.A GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait0.A | accept: */*"
+[guix-8.20.0] case S-after-head:pipewait0 server: ev 88 t=2662.5 req face=tlsh2 conn=49050 proto=h2 stream=3 tag=S-after-head.pipewait0.B GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-after-head.pipewait0.B | accept: */*"
+[guix-8.20.0] case S-after-head:pipewait0 server: ev 89 t=3166.3 body face=tlsh2 conn=49050 proto=h2 stream=1 tag=S-after-head.pipewait0.A n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=504.0ms aborted=0
+[guix-8.20.0] case S-after-head:pipewait0 server: ev 90 t=3166.3 body face=tlsh2 conn=49050 proto=h2 stream=3 tag=S-after-head.pipewait0.B n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=503.8ms aborted=0
+[guix-8.20.0] case S-after-head all done live_before_global_cleanup=0
+[guix-8.20.0] case S-after-head live_after_global_cleanup=0
+[guix-8.20.0] probe S-after-head exit=0
+[guix-8.20.0] probe S-after-head took about 1 s
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=0.1 text "  Trying 127.0.0.1:33057..."
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=0.4 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=0.5 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=1.1 text "SSL Trust Anchors:"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=1.3 text "  CAfile: 1 certificates in /tmp/m7h2.8CkNcV/pki/ca.pem"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.0 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.5 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.6 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.6 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.6 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.6 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.6 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.6 text "  certificate version: #3"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.6 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.6 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.6 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.6 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.6 text "ALPN: server accepted h2"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.7 text "Established connection to 127.0.0.1 (127.0.0.1 port 33057) from 127.0.0.1 port 49058 "
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.7 text "using HTTP/2"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.7 text "[HTTP/2] [1] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait1.A"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.7 text "[HTTP/2] [1] [:method: GET]"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.7 text "[HTTP/2] [1] [:scheme: https]"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.7 text "[HTTP/2] [1] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.7 text "[HTTP/2] [1] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait1.A]"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.7 text "[HTTP/2] [1] [accept: */*]"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.8 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait1.A HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=3.8 text "Request completely sent off"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=4.0 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=4.1 header_in "content-length: 11264"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=4.1 header_in "date: Mon, 02 Nov 2026 10:26:51 GMT"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=4.1 header_in ""
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 debug t=508.2 text "Connection #0 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-after-end:pipewait1:A tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=4.1 t_first=4.1 t_end=508.2 status=200 ver=3(2) num_connects=1 lport=49058 total=11264 pattern=ok
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=0.0 text "Reusing existing https: connection with host 127.0.0.1"
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=0.1 text "[HTTP/2] [3] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait1.B"
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=0.1 text "[HTTP/2] [3] [:method: GET]"
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=0.1 text "[HTTP/2] [3] [:scheme: https]"
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=0.1 text "[HTTP/2] [3] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=0.1 text "[HTTP/2] [3] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait1.B]"
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=0.1 text "[HTTP/2] [3] [accept: */*]"
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=0.1 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait1.B HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=0.1 text "Request completely sent off"
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=0.8 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=0.8 header_in "content-length: 11264"
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=0.8 header_in "date: Mon, 02 Nov 2026 10:26:52 GMT"
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=0.8 header_in ""
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 debug t=503.6 text "Connection #0 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-after-end:pipewait1:B tlsh2 done code=0 err="No error" case_t_add=508.2 t_head=0.8 t_first=0.8 t_end=503.6 status=200 ver=3(2) num_connects=0 lport=49058 total=11264 pattern=ok
+[guix-8.20.0] case S-after-end:pipewait1 reuse A_head=4.1 A_end=508.2 B_added_at=508.2 B_first=509.0 (case_t) A_lport=49058 B_lport=49058 same_conn=1 B_num_connects=0 A_ver=3 B_ver=3 B_added_while_A_open=0
+[guix-8.20.0] case S-after-end:pipewait1 client lports=49058,49058 distinct=1 num_connects_sum=1
+[guix-8.20.0] case S-after-end:pipewait1 server-summary face=tlsh2 accepts=1 ports=49058 req_conns=1 [49058] reqs=2
+[guix-8.20.0] case S-after-end:pipewait1 server: ev 93 t=3180.2 accept face=tlsh2 conn=49058
+[guix-8.20.0] case S-after-end:pipewait1 server: ev 94 t=3180.9 alpn face=tlsh2 conn=49058 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case S-after-end:pipewait1 server: ev 95 t=3182.8 tls face=tlsh2 conn=49058 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-after-end:pipewait1 server: ev 96 t=3182.9 session face=tlsh2 conn=49058 alpn=h2
+[guix-8.20.0] case S-after-end:pipewait1 server: ev 97 t=3183.6 req face=tlsh2 conn=49058 proto=h2 stream=1 tag=S-after-end.pipewait1.A GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait1.A | accept: */*"
+[guix-8.20.0] case S-after-end:pipewait1 server: ev 98 t=3688.0 body face=tlsh2 conn=49058 proto=h2 stream=1 tag=S-after-end.pipewait1.A n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=504.3ms aborted=0
+[guix-8.20.0] case S-after-end:pipewait1 server: ev 99 t=3688.4 req face=tlsh2 conn=49058 proto=h2 stream=3 tag=S-after-end.pipewait1.B GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait1.B | accept: */*"
+[guix-8.20.0] case S-after-end:pipewait1 server: ev 100 t=4191.5 body face=tlsh2 conn=49058 proto=h2 stream=3 tag=S-after-end.pipewait1.B n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=503.0ms aborted=0
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=0.0 text "  Trying 127.0.0.1:33057..."
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=0.1 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=0.2 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=0.4 text "SSL Trust Anchors:"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=0.5 text "  CAfile: 1 certificates in /tmp/m7h2.8CkNcV/pki/ca.pem"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=1.9 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.4 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.4 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.4 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.4 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.4 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.4 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.4 text "  certificate version: #3"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.4 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.4 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.4 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.4 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.5 text "ALPN: server accepted h2"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.5 text "Established connection to 127.0.0.1 (127.0.0.1 port 33057) from 127.0.0.1 port 49072 "
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.5 text "using HTTP/2"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.5 text "[HTTP/2] [1] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait0.A"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.5 text "[HTTP/2] [1] [:method: GET]"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.5 text "[HTTP/2] [1] [:scheme: https]"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.5 text "[HTTP/2] [1] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.5 text "[HTTP/2] [1] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait0.A]"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.5 text "[HTTP/2] [1] [accept: */*]"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.5 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait0.A HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.5 text "Request completely sent off"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.8 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.8 header_in "content-length: 11264"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.8 header_in "date: Mon, 02 Nov 2026 10:26:52 GMT"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=2.8 header_in ""
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 debug t=505.2 text "Connection #0 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-after-end:pipewait0:A tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=2.8 t_first=2.8 t_end=505.3 status=200 ver=3(2) num_connects=1 lport=49072 total=11264 pattern=ok
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=0.0 text "Reusing existing https: connection with host 127.0.0.1"
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=0.1 text "[HTTP/2] [3] OPENED stream for https://127.0.0.1:33057/body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait0.B"
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=0.1 text "[HTTP/2] [3] [:method: GET]"
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=0.1 text "[HTTP/2] [3] [:scheme: https]"
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=0.1 text "[HTTP/2] [3] [:authority: 127.0.0.1:33057]"
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=0.1 text "[HTTP/2] [3] [:path: /body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait0.B]"
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=0.1 text "[HTTP/2] [3] [accept: */*]"
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=0.1 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait0.B HTTP/2\r\nHost: 127.0.0.1:33057\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=0.1 text "Request completely sent off"
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=0.6 header_in "HTTP/2 200 "
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=0.6 header_in "content-length: 11264"
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=0.6 header_in "date: Mon, 02 Nov 2026 10:26:53 GMT"
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=0.6 header_in ""
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 debug t=505.9 text "Connection #0 to host 127.0.0.1:33057 left intact"
+[guix-8.20.0] case S-after-end:pipewait0:B tlsh2 done code=0 err="No error" case_t_add=505.3 t_head=0.6 t_first=0.6 t_end=505.9 status=200 ver=3(2) num_connects=0 lport=49072 total=11264 pattern=ok
+[guix-8.20.0] case S-after-end:pipewait0 reuse A_head=2.8 A_end=505.3 B_added_at=505.3 B_first=505.9 (case_t) A_lport=49072 B_lport=49072 same_conn=1 B_num_connects=0 A_ver=3 B_ver=3 B_added_while_A_open=0
+[guix-8.20.0] case S-after-end:pipewait0 client lports=49072,49072 distinct=1 num_connects_sum=1
+[guix-8.20.0] case S-after-end:pipewait0 server-summary face=tlsh2 accepts=1 ports=49072 req_conns=1 [49072] reqs=2
+[guix-8.20.0] case S-after-end:pipewait0 server: ev 103 t=4193.1 accept face=tlsh2 conn=49072
+[guix-8.20.0] case S-after-end:pipewait0 server: ev 104 t=4193.4 alpn face=tlsh2 conn=49072 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case S-after-end:pipewait0 server: ev 105 t=4194.8 tls face=tlsh2 conn=49072 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-after-end:pipewait0 server: ev 106 t=4194.9 session face=tlsh2 conn=49072 alpn=h2
+[guix-8.20.0] case S-after-end:pipewait0 server: ev 107 t=4195.5 req face=tlsh2 conn=49072 proto=h2 stream=1 tag=S-after-end.pipewait0.A GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait0.A | accept: */*"
+[guix-8.20.0] case S-after-end:pipewait0 server: ev 108 t=4698.1 body face=tlsh2 conn=49072 proto=h2 stream=1 tag=S-after-end.pipewait0.A n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=502.5ms aborted=0
+[guix-8.20.0] case S-after-end:pipewait0 server: ev 109 t=4698.5 req face=tlsh2 conn=49072 proto=h2 stream=3 tag=S-after-end.pipewait0.B GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=11264&chunk=1024&gap=50&tag=S-after-end.pipewait0.B | accept: */*"
+[guix-8.20.0] case S-after-end:pipewait0 server: ev 110 t=5204.0 body face=tlsh2 conn=49072 proto=h2 stream=3 tag=S-after-end.pipewait0.B n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=505.5ms aborted=0
+[guix-8.20.0] case S-after-end all done live_before_global_cleanup=0
+[guix-8.20.0] case S-after-end live_after_global_cleanup=0
+[guix-8.20.0] probe S-after-end exit=0
+[guix-8.20.0] probe S-after-end took about 2 s
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=0.1 text "  Trying 127.0.0.1:37329..."
+[guix-8.20.0] case S-h1-wait:pipewait1:B tlsh1 debug t=0.1 text "Connection #0 is not open enough, cannot reuse"
+[guix-8.20.0] case S-h1-wait:pipewait1:B tlsh1 debug t=0.1 text "Found pending candidate for reuse and CURLOPT_PIPEWAIT is set"
+[guix-8.20.0] case S-h1-wait:pipewait1:B tlsh1 debug t=0.1 text "Waiting on connection to negotiate possible multiplexing."
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=0.2 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=0.3 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=0.5 text "SSL Trust Anchors:"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=0.7 text "  CAfile: 1 certificates in /tmp/m7h2.8CkNcV/pki/ca.pem"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=2.9 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.5 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.6 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.6 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.6 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.6 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.6 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.6 text "  certificate version: #3"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.6 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.6 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.6 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.6 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.6 text "ALPN: server accepted http/1.1"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.6 text "Established connection to 127.0.0.1 (127.0.0.1 port 37329) from 127.0.0.1 port 45624 "
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.6 text "using HTTP/1.x"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.7 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-h1-wait.pipewait1.A HTTP/1.1\r\nHost: 127.0.0.1:37329\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=3.7 text "Request completely sent off"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=4.7 header_in "HTTP/1.1 200 OK"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=4.7 header_in "Content-Length: 11264"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=4.8 header_in ""
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 debug t=509.3 text "Connection #0 to host 127.0.0.1:37329 left intact"
+[guix-8.20.0] case S-h1-wait:pipewait1:B tlsh1 debug t=509.4 text "Reusing existing https: connection with host 127.0.0.1"
+[guix-8.20.0] case S-h1-wait:pipewait1:B tlsh1 debug t=509.4 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-h1-wait.pipewait1.B HTTP/1.1\r\nHost: 127.0.0.1:37329\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-h1-wait:pipewait1:B tlsh1 debug t=509.4 text "Request completely sent off"
+[guix-8.20.0] case S-h1-wait:pipewait1:A tlsh1 done code=0 err="No error" case_t_add=0.0 t_head=4.8 t_first=45.4 t_end=509.4 status=200 ver=2(1.1) num_connects=1 lport=45624 total=11264 pattern=ok
+[guix-8.20.0] case S-h1-wait:pipewait1:B tlsh1 debug t=509.8 header_in "HTTP/1.1 200 OK"
+[guix-8.20.0] case S-h1-wait:pipewait1:B tlsh1 debug t=509.8 header_in "Content-Length: 11264"
+[guix-8.20.0] case S-h1-wait:pipewait1:B tlsh1 debug t=509.8 header_in ""
+[guix-8.20.0] case S-h1-wait:pipewait1:B tlsh1 debug t=1014.0 text "Connection #0 to host 127.0.0.1:37329 left intact"
+[guix-8.20.0] case S-h1-wait:pipewait1:B tlsh1 done code=0 err="No error" case_t_add=0.0 t_head=509.8 t_first=550.5 t_end=1014.0 status=200 ver=2(1.1) num_connects=0 lport=45624 total=11264 pattern=ok
+[guix-8.20.0] case S-h1-wait:pipewait1 h1wait A_head=4.8 A_first=45.4 A_end=509.4 B_head=509.8 B_first=550.5 B_end=1014.0 (ms from each add; both added at case_t 0.0 and 0.0) B_first_after_A_end=1 A_lport=45624 B_lport=45624 same_conn=1 A_num_connects=1 B_num_connects=0 A_ver=2 B_ver=2
+[guix-8.20.0] case S-h1-wait:pipewait1 server-summary face=tlsh1 accepts=1 ports=45624 req_conns=1 [45624] reqs=2
+[guix-8.20.0] case S-h1-wait:pipewait1 server: ev 113 t=5217.4 accept face=tlsh1 conn=45624
+[guix-8.20.0] case S-h1-wait:pipewait1 server: ev 114 t=5218.0 alpn face=tlsh1 conn=45624 offered=h2,http/1.1 n=2 chose=http/1.1
+[guix-8.20.0] case S-h1-wait:pipewait1 server: ev 115 t=5220.1 tls face=tlsh1 conn=45624 alpn=http/1.1 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-h1-wait:pipewait1 server: ev 116 t=5221.6 req face=tlsh1 conn=45624 proto=h1 tag=S-h1-wait.pipewait1.A GET /body HTTP/1.1 upgrade=none headers="Host: 127.0.0.1:37329 | Accept: */*"
+[guix-8.20.0] case S-h1-wait:pipewait1 server: ev 117 t=5726.5 body face=tlsh1 conn=45624 proto=h1 tag=S-h1-wait.pipewait1.A n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=504.8ms aborted=0
+[guix-8.20.0] case S-h1-wait:pipewait1 server: ev 118 t=5726.7 req face=tlsh1 conn=45624 proto=h1 tag=S-h1-wait.pipewait1.B GET /body HTTP/1.1 upgrade=none headers="Host: 127.0.0.1:37329 | Accept: */*"
+[guix-8.20.0] case S-h1-wait:pipewait1 server: ev 119 t=6231.1 body face=tlsh1 conn=45624 proto=h1 tag=S-h1-wait.pipewait1.B n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=504.3ms aborted=0
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=0.1 text "  Trying 127.0.0.1:37329..."
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=0.1 text "Connection #0 is not open enough, cannot reuse"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=0.1 text "Hostname 127.0.0.1 was found in DNS cache"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=0.1 text "  Trying 127.0.0.1:37329..."
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=0.2 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=0.2 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=0.5 text "SSL Trust Anchors:"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=0.6 text "  CAfile: 1 certificates in /tmp/m7h2.8CkNcV/pki/ca.pem"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=0.6 text "GnuTLS priority: NORMAL:%PROFILE_MEDIUM:-ARCFOUR-128:-CTYPE-ALL:+CTYPE-X509:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.3:+VERS-TLS1.2"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=0.6 text "ALPN: curl offers h2,http/1.1"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=1.9 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.5 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.5 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.5 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.5 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.5 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.5 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.5 text "  certificate version: #3"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.5 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.6 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.6 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.6 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.6 text "ALPN: server accepted http/1.1"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.6 text "Established connection to 127.0.0.1 (127.0.0.1 port 37329) from 127.0.0.1 port 45628 "
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.6 text "using HTTP/1.x"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.6 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-h1-wait.pipewait0.A HTTP/1.1\r\nHost: 127.0.0.1:37329\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=2.6 text "Request completely sent off"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.2 text "SSL connection using TLS1.3 / ECDHE_RSA_AES_256_GCM_SHA384"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.5 text "  SSL certificate verified by GnuTLS"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.5 text "  SSL certificate expiration date OK"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.5 text "  SSL certificate activation date OK"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.5 text "  SSL certificate status verification SKIPPED"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.6 text "  common name: chez-curl test leaf (matched)"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.6 text "  certificate public key: EC/ECDSA"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.6 text "  certificate version: #3"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.6 text "  subject: CN=chez-curl test leaf"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.6 text "  start date: Mon, 02 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.6 text "  expire date: Wed, 04 Nov 2026 10:26:48 GMT"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.6 text "  issuer: CN=chez-curl test CA"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.6 text "ALPN: server accepted http/1.1"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.6 text "Established connection to 127.0.0.1 (127.0.0.1 port 37329) from 127.0.0.1 port 45634 "
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.6 text "using HTTP/1.x"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.6 header_out "GET /body?n=11264&chunk=1024&gap=50&tag=S-h1-wait.pipewait0.B HTTP/1.1\r\nHost: 127.0.0.1:37329\r\nAccept: */*\r\n\r\n"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.6 text "Request completely sent off"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=3.6 header_in "HTTP/1.1 200 OK"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=3.6 header_in "Content-Length: 11264"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=3.6 header_in ""
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.8 header_in "HTTP/1.1 200 OK"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.8 header_in "Content-Length: 11264"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=3.8 header_in ""
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 debug t=506.4 text "Connection #0 to host 127.0.0.1:37329 left intact"
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 debug t=506.4 text "Connection #1 to host 127.0.0.1:37329 left intact"
+[guix-8.20.0] case S-h1-wait:pipewait0:A tlsh1 done code=0 err="No error" case_t_add=0.0 t_head=3.6 t_first=43.8 t_end=506.4 status=200 ver=2(1.1) num_connects=1 lport=45628 total=11264 pattern=ok
+[guix-8.20.0] case S-h1-wait:pipewait0:B tlsh1 done code=0 err="No error" case_t_add=0.0 t_head=3.8 t_first=44.8 t_end=506.4 status=200 ver=2(1.1) num_connects=1 lport=45634 total=11264 pattern=ok
+[guix-8.20.0] case S-h1-wait:pipewait0 h1wait A_head=3.6 A_first=43.8 A_end=506.4 B_head=3.8 B_first=44.8 B_end=506.4 (ms from each add; both added at case_t 0.0 and 0.0) B_first_after_A_end=0 A_lport=45628 B_lport=45634 same_conn=0 A_num_connects=1 B_num_connects=1 A_ver=2 B_ver=2
+[guix-8.20.0] case S-h1-wait:pipewait0 server-summary face=tlsh1 accepts=2 ports=45628,45634 req_conns=2 [45628,45634] reqs=2
+[guix-8.20.0] case S-h1-wait:pipewait0 server: ev 122 t=6233.2 accept face=tlsh1 conn=45628
+[guix-8.20.0] case S-h1-wait:pipewait0 server: ev 123 t=6233.3 accept face=tlsh1 conn=45634
+[guix-8.20.0] case S-h1-wait:pipewait0 server: ev 124 t=6233.5 alpn face=tlsh1 conn=45628 offered=h2,http/1.1 n=2 chose=http/1.1
+[guix-8.20.0] case S-h1-wait:pipewait0 server: ev 125 t=6234.0 alpn face=tlsh1 conn=45634 offered=h2,http/1.1 n=2 chose=http/1.1
+[guix-8.20.0] case S-h1-wait:pipewait0 server: ev 126 t=6234.9 tls face=tlsh1 conn=45628 alpn=http/1.1 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-h1-wait:pipewait0 server: ev 127 t=6235.6 req face=tlsh1 conn=45628 proto=h1 tag=S-h1-wait.pipewait0.A GET /body HTTP/1.1 upgrade=none headers="Host: 127.0.0.1:37329 | Accept: */*"
+[guix-8.20.0] case S-h1-wait:pipewait0 server: ev 128 t=6236.1 tls face=tlsh1 conn=45634 alpn=http/1.1 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case S-h1-wait:pipewait0 server: ev 129 t=6236.6 req face=tlsh1 conn=45634 proto=h1 tag=S-h1-wait.pipewait0.B GET /body HTTP/1.1 upgrade=none headers="Host: 127.0.0.1:37329 | Accept: */*"
+[guix-8.20.0] case S-h1-wait:pipewait0 server: ev 130 t=6739.3 body face=tlsh1 conn=45628 proto=h1 tag=S-h1-wait.pipewait0.A n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=503.6ms aborted=0
+[guix-8.20.0] case S-h1-wait:pipewait0 server: ev 131 t=6739.3 body face=tlsh1 conn=45634 proto=h1 tag=S-h1-wait.pipewait0.B n=11264 chunk=1024 gap=50 delay=0 written=11264 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=502.7ms aborted=0
+[guix-8.20.0] case S-h1-wait all done live_before_global_cleanup=0
+[guix-8.20.0] case S-h1-wait live_after_global_cleanup=0
+[guix-8.20.0] probe S-h1-wait exit=0
+[guix-8.20.0] probe S-h1-wait took about 2 s
+[guix-8.20.0] case W-sibling:pipewait1:together tick t=500.5 live=21079701 A_paused=1 A_total=0 B_added=1 B_total=65536 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:together tick t=1000.7 live=21079701 A_paused=1 A_total=0 B_added=1 B_total=147456 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:together tick t=1500.6 live=21079701 A_paused=1 A_total=0 B_added=1 B_total=229376 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:together tick t=2000.6 live=21079701 A_paused=1 A_total=0 B_added=1 B_total=311296 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:together tick t=2501.2 live=21079701 A_paused=1 A_total=0 B_added=1 B_total=393216 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:together tick t=3001.2 live=21079701 A_paused=1 A_total=0 B_added=1 B_total=475136 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:together tick t=3500.8 live=21079701 A_paused=1 A_total=0 B_added=1 B_total=557056 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:together tick t=4000.5 live=21079701 A_paused=1 A_total=0 B_added=1 B_total=638976 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:together tick t=4501.1 live=21079701 A_paused=1 A_total=0 B_added=1 B_total=720896 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:together tick t=5001.0 live=21079701 A_paused=1 A_total=0 B_added=1 B_total=802816 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:together:B tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=115.2 t_first=115.4 t_end=5045.7 status=200 ver=3(2) num_connects=0 lport=49078 total=819200 pattern=ok
+[guix-8.20.0] case W-sibling:pipewait1:together:A tlsh2 resume n=1 t=5115.1 held=5000.9 rc=0 calls_inside=1277 took=31.90
+[guix-8.20.0] case W-sibling:pipewait1:together:A tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=114.2 t_first=114.2 t_end=5259.0 status=200 ver=3(2) num_connects=1 lport=49078 total=83886080 pattern=ok
+[guix-8.20.0] case W-sibling:pipewait1:together sibling case_t A_paused_at=114.2 A_resumed_at=5114.2 A_end=5259.0 B_added_at=0.0 B_end=5045.7 A_code=0 B_code=0 A_lport=49078 B_lport=49078 same_conn=1 A_ver=3 B_ver=3 A_total=83886080 A_pattern=ok B_total=819200 B_pattern=ok A_inside_calls=1277 A_inside_bytes=20905986
+[guix-8.20.0] case W-sibling:pipewait1:together live in_callback_at_pause=105989 after_pausing_perform=138865 before_resume=21079053 peak_during_pause=21079701
+[guix-8.20.0] case W-sibling:pipewait1:together server-summary face=tlsh2 accepts=1 ports=49078 req_conns=1 [49078] reqs=2
+[guix-8.20.0] case W-sibling:pipewait1:together server: ev 136 t=6753.2 accept face=tlsh2 conn=49078
+[guix-8.20.0] case W-sibling:pipewait1:together server: ev 137 t=6753.5 alpn face=tlsh2 conn=49078 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case W-sibling:pipewait1:together server: ev 138 t=6755.3 tls face=tlsh2 conn=49078 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case W-sibling:pipewait1:together server: ev 139 t=6755.4 session face=tlsh2 conn=49078 alpn=h2
+[guix-8.20.0] case W-sibling:pipewait1:together server: ev 140 t=6756.1 req face=tlsh2 conn=49078 proto=h2 stream=1 tag=W-sibling.pipewait1.together.A GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=83886080&chunk=65536&tag=W-sibling.pipewait1.together.A | accept: */*"
+[guix-8.20.0] case W-sibling:pipewait1:together server: ev 141 t=6867.0 req face=tlsh2 conn=49078 proto=h2 stream=3 tag=W-sibling.pipewait1.together.B GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=819200&chunk=16384&gap=100&tag=W-sibling.pipewait1.together.B | accept: */*"
+[guix-8.20.0] case W-sibling:pipewait1:together server: ev 142 t=11798.7 body face=tlsh2 conn=49078 proto=h2 stream=3 tag=W-sibling.pipewait1.together.B n=819200 chunk=16384 gap=100 delay=0 written=819200 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=4930.5ms aborted=0
+[guix-8.20.0] case W-sibling:pipewait1:together server: ev 143 t=12008.2 body face=tlsh2 conn=49078 proto=h2 stream=1 tag=W-sibling.pipewait1.together.A n=83886080 chunk=65536 gap=0 delay=0 written=83886080 first_false=65536 drains_long=1 [20971520:5015.1] drains_short=1279 sum=121.4ms total=5144.0ms aborted=0
+[guix-8.20.0] case W-sibling:pipewait1:together live after_cleanup=0
+[guix-8.20.0] case W-sibling:pipewait0:together tick t=501.1 live=180916 A_paused=1 A_total=0 B_added=1 B_total=81920 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:together tick t=1000.9 live=180916 A_paused=1 A_total=0 B_added=1 B_total=163840 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:together tick t=1501.3 live=180916 A_paused=1 A_total=0 B_added=1 B_total=245760 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:together tick t=2001.3 live=180916 A_paused=1 A_total=0 B_added=1 B_total=327680 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:together tick t=2501.0 live=180916 A_paused=1 A_total=0 B_added=1 B_total=409600 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:together tick t=3001.4 live=180916 A_paused=1 A_total=0 B_added=1 B_total=491520 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:together tick t=3500.8 live=180916 A_paused=1 A_total=0 B_added=1 B_total=573440 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:together tick t=4000.7 live=180916 A_paused=1 A_total=0 B_added=1 B_total=655360 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:together tick t=4500.5 live=180916 A_paused=1 A_total=0 B_added=1 B_total=737280 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:together:B tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=2.1 t_first=2.1 t_end=4925.7 status=200 ver=3(2) num_connects=1 lport=51178 total=819200 pattern=ok
+[guix-8.20.0] case W-sibling:pipewait0:together tick t=5001.1 live=180268 A_paused=1 A_total=0 B_added=1 B_total=819200 B_done=1
+[guix-8.20.0] case W-sibling:pipewait0:together:A tlsh2 resume n=1 t=5002.2 held=5000.4 rc=0 calls_inside=1 took=0.10
+[guix-8.20.0] case W-sibling:pipewait0:together:A tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=1.9 t_first=1.9 t_end=5133.7 status=200 ver=3(2) num_connects=1 lport=51164 total=83886080 pattern=ok
+[guix-8.20.0] case W-sibling:pipewait0:together sibling case_t A_paused_at=1.9 A_resumed_at=5001.9 A_end=5133.7 B_added_at=0.0 B_end=4925.7 A_code=0 B_code=0 A_lport=51164 B_lport=51178 same_conn=0 A_ver=3 B_ver=3 A_total=83886080 A_pattern=ok B_total=819200 B_pattern=ok A_inside_calls=1 A_inside_bytes=16323
+[guix-8.20.0] case W-sibling:pipewait0:together live in_callback_at_pause=164296 after_pausing_perform=180508 before_resume=180268 peak_during_pause=180919
+[guix-8.20.0] case W-sibling:pipewait0:together server-summary face=tlsh2 accepts=2 ports=51164,51178 req_conns=2 [51164,51178] reqs=2
+[guix-8.20.0] case W-sibling:pipewait0:together server: ev 146 t=12013.0 accept face=tlsh2 conn=51164
+[guix-8.20.0] case W-sibling:pipewait0:together server: ev 147 t=12013.1 accept face=tlsh2 conn=51178
+[guix-8.20.0] case W-sibling:pipewait0:together server: ev 148 t=12013.2 alpn face=tlsh2 conn=51164 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case W-sibling:pipewait0:together server: ev 149 t=12013.5 alpn face=tlsh2 conn=51178 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case W-sibling:pipewait0:together server: ev 150 t=12013.8 tls face=tlsh2 conn=51164 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case W-sibling:pipewait0:together server: ev 151 t=12013.9 session face=tlsh2 conn=51164 alpn=h2
+[guix-8.20.0] case W-sibling:pipewait0:together server: ev 152 t=12014.2 req face=tlsh2 conn=51164 proto=h2 stream=1 tag=W-sibling.pipewait0.together.A GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=83886080&chunk=65536&tag=W-sibling.pipewait0.together.A | accept: */*"
+[guix-8.20.0] case W-sibling:pipewait0:together server: ev 153 t=12014.4 tls face=tlsh2 conn=51178 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case W-sibling:pipewait0:together server: ev 154 t=12014.5 session face=tlsh2 conn=51178 alpn=h2
+[guix-8.20.0] case W-sibling:pipewait0:together server: ev 155 t=12014.9 req face=tlsh2 conn=51178 proto=h2 stream=1 tag=W-sibling.pipewait0.together.B GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=819200&chunk=16384&gap=100&tag=W-sibling.pipewait0.together.B | accept: */*"
+[guix-8.20.0] case W-sibling:pipewait0:together server: ev 156 t=16938.5 body face=tlsh2 conn=51178 proto=h2 stream=1 tag=W-sibling.pipewait0.together.B n=819200 chunk=16384 gap=100 delay=0 written=819200 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=4923.5ms aborted=0
+[guix-8.20.0] case W-sibling:pipewait0:together server: ev 157 t=17141.0 body face=tlsh2 conn=51164 proto=h2 stream=1 tag=W-sibling.pipewait0.together.A n=83886080 chunk=65536 gap=0 delay=0 written=83886080 first_false=65536 drains_long=1 [2686976:5000.1] drains_short=1279 sum=122.8ms total=5126.8ms aborted=0
+[guix-8.20.0] case W-sibling:pipewait0:together live after_cleanup=0
+[guix-8.20.0] case W-sibling:pipewait1:late tick t=501.4 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=81920 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:late tick t=1001.3 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=163840 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:late tick t=1500.5 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=245760 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:late tick t=2001.0 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=327680 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:late tick t=2501.2 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=409600 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:late tick t=3001.1 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=491520 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:late tick t=3501.0 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=573440 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:late tick t=4000.9 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=655360 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:late tick t=4500.8 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=737280 B_done=0
+[guix-8.20.0] case W-sibling:pipewait1:late:B tlsh2 done code=0 err="No error" case_t_add=1.4 t_head=0.2 t_first=0.3 t_end=4930.1 status=200 ver=3(2) num_connects=0 lport=51192 total=819200 pattern=ok
+[guix-8.20.0] case W-sibling:pipewait1:late tick t=5001.0 live=21079029 A_paused=1 A_total=0 B_added=1 B_total=819200 B_done=1
+[guix-8.20.0] case W-sibling:pipewait1:late:A tlsh2 resume n=1 t=5002.1 held=5000.7 rc=0 calls_inside=1277 took=28.91
+[guix-8.20.0] case W-sibling:pipewait1:late:A tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=1.4 t_first=1.4 t_end=5138.8 status=200 ver=3(2) num_connects=1 lport=51192 total=83886080 pattern=ok
+[guix-8.20.0] case W-sibling:pipewait1:late sibling case_t A_paused_at=1.4 A_resumed_at=5001.4 A_end=5138.8 B_added_at=1.4 B_end=4931.5 A_code=0 B_code=0 A_lport=51192 B_lport=51192 same_conn=1 A_ver=3 B_ver=3 A_total=83886080 A_pattern=ok B_total=819200 B_pattern=ok A_inside_calls=1277 A_inside_bytes=20905986
+[guix-8.20.0] case W-sibling:pipewait1:late live in_callback_at_pause=104809 after_pausing_perform=121181 before_resume=21079029 peak_during_pause=21079677
+[guix-8.20.0] case W-sibling:pipewait1:late server-summary face=tlsh2 accepts=1 ports=51192 req_conns=1 [51192] reqs=2
+[guix-8.20.0] case W-sibling:pipewait1:late server: ev 162 t=17147.7 accept face=tlsh2 conn=51192
+[guix-8.20.0] case W-sibling:pipewait1:late server: ev 163 t=17147.8 alpn face=tlsh2 conn=51192 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case W-sibling:pipewait1:late server: ev 164 t=17148.4 tls face=tlsh2 conn=51192 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case W-sibling:pipewait1:late server: ev 165 t=17148.5 session face=tlsh2 conn=51192 alpn=h2
+[guix-8.20.0] case W-sibling:pipewait1:late server: ev 166 t=17148.8 req face=tlsh2 conn=51192 proto=h2 stream=1 tag=W-sibling.pipewait1.late.A GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=83886080&chunk=65536&tag=W-sibling.pipewait1.late.A | accept: */*"
+[guix-8.20.0] case W-sibling:pipewait1:late server: ev 167 t=17149.1 req face=tlsh2 conn=51192 proto=h2 stream=3 tag=W-sibling.pipewait1.late.B GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=819200&chunk=16384&gap=100&tag=W-sibling.pipewait1.late.B | accept: */*"
+[guix-8.20.0] case W-sibling:pipewait1:late server: ev 168 t=22078.8 body face=tlsh2 conn=51192 proto=h2 stream=3 tag=W-sibling.pipewait1.late.B n=819200 chunk=16384 gap=100 delay=0 written=819200 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=4929.6ms aborted=0
+[guix-8.20.0] case W-sibling:pipewait1:late server: ev 169 t=22278.4 body face=tlsh2 conn=51192 proto=h2 stream=1 tag=W-sibling.pipewait1.late.A n=83886080 chunk=65536 gap=0 delay=0 written=83886080 first_false=65536 drains_long=1 [20971520:5014.6] drains_short=1279 sum=111.2ms total=5129.5ms aborted=0
+[guix-8.20.0] case W-sibling:pipewait1:late live after_cleanup=0
+[guix-8.20.0] case W-sibling:pipewait0:late tick t=501.5 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=81920 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:late tick t=1001.2 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=163840 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:late tick t=1501.0 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=245760 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:late tick t=2000.9 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=327680 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:late tick t=2500.8 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=409600 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:late tick t=3001.0 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=491520 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:late tick t=3500.6 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=573440 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:late tick t=4001.3 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=655360 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:late tick t=4501.0 live=21079677 A_paused=1 A_total=0 B_added=1 B_total=737280 B_done=0
+[guix-8.20.0] case W-sibling:pipewait0:late:B tlsh2 done code=0 err="No error" case_t_add=1.4 t_head=0.2 t_first=0.3 t_end=4931.0 status=200 ver=3(2) num_connects=0 lport=39042 total=819200 pattern=ok
+[guix-8.20.0] case W-sibling:pipewait0:late tick t=5000.8 live=21079029 A_paused=1 A_total=0 B_added=1 B_total=819200 B_done=1
+[guix-8.20.0] case W-sibling:pipewait0:late:A tlsh2 resume n=1 t=5001.8 held=5000.4 rc=0 calls_inside=1277 took=26.36
+[guix-8.20.0] case W-sibling:pipewait0:late:A tlsh2 done code=0 err="No error" case_t_add=0.0 t_head=1.4 t_first=1.4 t_end=5124.1 status=200 ver=3(2) num_connects=1 lport=39042 total=83886080 pattern=ok
+[guix-8.20.0] case W-sibling:pipewait0:late sibling case_t A_paused_at=1.4 A_resumed_at=5001.4 A_end=5124.1 B_added_at=1.4 B_end=4932.4 A_code=0 B_code=0 A_lport=39042 B_lport=39042 same_conn=1 A_ver=3 B_ver=3 A_total=83886080 A_pattern=ok B_total=819200 B_pattern=ok A_inside_calls=1277 A_inside_bytes=20905986
+[guix-8.20.0] case W-sibling:pipewait0:late live in_callback_at_pause=104809 after_pausing_perform=121181 before_resume=21079029 peak_during_pause=21079677
+[guix-8.20.0] case W-sibling:pipewait0:late server-summary face=tlsh2 accepts=1 ports=39042 req_conns=1 [39042] reqs=2
+[guix-8.20.0] case W-sibling:pipewait0:late server: ev 172 t=22287.6 accept face=tlsh2 conn=39042
+[guix-8.20.0] case W-sibling:pipewait0:late server: ev 173 t=22287.7 alpn face=tlsh2 conn=39042 offered=h2,http/1.1 n=2 chose=h2
+[guix-8.20.0] case W-sibling:pipewait0:late server: ev 174 t=22288.3 tls face=tlsh2 conn=39042 alpn=h2 callback_ran=1 protocol=TLSv1.3
+[guix-8.20.0] case W-sibling:pipewait0:late server: ev 175 t=22288.4 session face=tlsh2 conn=39042 alpn=h2
+[guix-8.20.0] case W-sibling:pipewait0:late server: ev 176 t=22288.7 req face=tlsh2 conn=39042 proto=h2 stream=1 tag=W-sibling.pipewait0.late.A GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=83886080&chunk=65536&tag=W-sibling.pipewait0.late.A | accept: */*"
+[guix-8.20.0] case W-sibling:pipewait0:late server: ev 177 t=22289.0 req face=tlsh2 conn=39042 proto=h2 stream=3 tag=W-sibling.pipewait0.late.B GET /body headers=":method: GET | :scheme: https | :authority: 127.0.0.1:33057 | :path: /body?n=819200&chunk=16384&gap=100&tag=W-sibling.pipewait0.late.B | accept: */*"
+[guix-8.20.0] case W-sibling:pipewait0:late server: ev 178 t=27219.7 body face=tlsh2 conn=39042 proto=h2 stream=3 tag=W-sibling.pipewait0.late.B n=819200 chunk=16384 gap=100 delay=0 written=819200 first_false=none drains_long=0 [] drains_short=0 sum=0.0ms total=4930.7ms aborted=0
+[guix-8.20.0] case W-sibling:pipewait0:late server: ev 179 t=27405.2 body face=tlsh2 conn=39042 proto=h2 stream=1 tag=W-sibling.pipewait0.late.A n=83886080 chunk=65536 gap=0 delay=0 written=83886080 first_false=65536 drains_long=1 [20971520:5011.9] drains_short=1279 sum=101.6ms total=5116.5ms aborted=0
+[guix-8.20.0] case W-sibling:pipewait0:late live after_cleanup=0
+[guix-8.20.0] case W-sibling all done live_before_global_cleanup=0
+[guix-8.20.0] case W-sibling live_after_global_cleanup=0
+[guix-8.20.0] probe W-sibling exit=0
+[guix-8.20.0] probe W-sibling took about 20 s
+[guix-8.20.0] -- 5 cases run

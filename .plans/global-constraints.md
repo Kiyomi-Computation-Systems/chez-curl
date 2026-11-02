@@ -829,3 +829,28 @@ provisional. They bind until that record is accepted or amended.
   its multi handle, since on Apple's 8.7.1 a paused HTTP/2 stream beside an active one filled
   libcurl's 64 MiB cap and failed the connection, and a write callback's error on one stream
   failed its sibling (ADR-0030, amended 2026-10-29).
+
+## M7: the version, auth, proxies and cookies
+
+- **M7's scope** is Basic, Bearer and Digest; `http://` and `https://` proxies by URL; one
+  in-memory jar per session; an HTTP version field (ADR-0033). No NTLM, Negotiate, SOCKS,
+  cookie file or `PIPEWAIT`.
+- **HTTP/2 by prior knowledge is for `http://` URLs alone;** a request asking for it with an
+  `https://` URL is refused at submit. No transfer sets `PIPEWAIT` (ADR-0034).
+- **A cookie jar is one `curl_share` of cookies, on the engine's thread,** counted, with no lock
+  callbacks. A transfer that uses it sets `SHARE` first, then `COOKIEFILE ""`; `COOKIEFILE` and
+  `COOKIEJAR` are never a file or `"-"`. It is freed only once no transfer holds it. Cookies go in
+  as Netscape lines through `COOKIELIST` and come out through `CURLINFO_COOKIELIST`. The rules are
+  libcurl's, pinned by version where they vary. A load takes seven fields, none holding a control
+  byte, none empty but the value (ADR-0035, amended).
+- **Server credentials:** a field that sets `USERNAME` and `PASSWORD` both, refused beside
+  userinfo in the URL or a caller's `Authorization` header; one scheme per request, Basic, Digest
+  or Bearer, never a set nor `ANY`; a streamed body or response takes Basic or Bearer alone. No
+  credentials string holds NUL, CR, LF or a byte the header rule refuses: libcurl writes them into
+  a header unescaped (ADR-0036, amended).
+- **A named proxy:** an `http://` or `https://` URL; the transfer sets `NOPROXY ""`, so no
+  variable sends it direct; its credentials are its URL's userinfo, by Basic; a caller's
+  `Proxy-Authorization` header is refused; its CA and verification are request fields on the
+  origin's model. A proxy URL with no port gets its scheme's; an `https://` origin through an
+  `https://` proxy is refused on Ubuntu's 8.5.0 with GnuTLS, where it stalls (ADR-0037, amended).
+- **A request with a jar refuses a caller's `Cookie` or `Host` header** (ADR-0035, amended).

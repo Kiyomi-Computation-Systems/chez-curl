@@ -1,0 +1,105 @@
+guile: warning: failed to install locale
+probe exit=0
+case A:unset:basic raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:unset:digest raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:unset:both raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:unset:both-rev raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:unset:bearer raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:unset:none raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:unset:open raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:BASIC:basic raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:BASIC:digest raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:BASIC:both raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:BASIC:both-rev raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:BASIC:bearer raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:BASIC:none raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:BASIC:open raw wire #1 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:DIGEST:basic raw wire #1 same (none)
+case A:DIGEST:digest raw wire #1 same (none)
+case A:DIGEST:digest raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"95de6c974600dd9c0b02096643a6f2fa\", uri=\"/auth?ch=digest&alg=MD5&qop=auth&tag=A.DIGEST.digest.raw\", cnonce=\"tzOCG7PCV2XrzW8Q\", nc=00000001, qop=auth, response=\"559fa1ac2a3a2ed53e48dcbe1afe089d\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"95de6c974600dd9c0b02096643a6f2fa\", uri=\"/auth?ch=digest&alg=MD5&qop=auth&tag=A.DIGEST.digest.raw\", cnonce=\"tzOCG7PCV2XrzW8Q\", nc=00000001, qop=auth, response=\"559fa1ac2a3a2ed53e48dcbe1afe089d\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:DIGEST:both raw wire #1 same (none)
+case A:DIGEST:both raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"94b6d03b473c9ce7784913ce4ff90653\", uri=\"/auth?ch=both&alg=MD5&qop=auth&tag=A.DIGEST.both.raw\", cnonce=\"FVdnXT3AuOVi56l+\", nc=00000001, qop=auth, response=\"2cd74bde2ddf5eb94fa340582547304b\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"94b6d03b473c9ce7784913ce4ff90653\", uri=\"/auth?ch=both&alg=MD5&qop=auth&tag=A.DIGEST.both.raw\", cnonce=\"FVdnXT3AuOVi56l+\", nc=00000001, qop=auth, response=\"2cd74bde2ddf5eb94fa340582547304b\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:DIGEST:both-rev raw wire #1 same (none)
+case A:DIGEST:both-rev raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"d889cd1bf2e4f1d948a7fbf50a69e1fa\", uri=\"/auth?ch=both-rev&alg=MD5&qop=auth&tag=A.DIGEST.both-rev.raw\", cnonce=\"R0wayrEShGfrdXTt\", nc=00000001, qop=auth, response=\"b95c31508831af069817c46cd1173fab\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"d889cd1bf2e4f1d948a7fbf50a69e1fa\", uri=\"/auth?ch=both-rev&alg=MD5&qop=auth&tag=A.DIGEST.both-rev.raw\", cnonce=\"R0wayrEShGfrdXTt\", nc=00000001, qop=auth, response=\"b95c31508831af069817c46cd1173fab\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:DIGEST:bearer raw wire #1 same (none)
+case A:DIGEST:none raw wire #1 same (none)
+case A:DIGEST:open raw wire #1 same (none)
+case A:BEARER:basic raw wire #1 DIFFERS client="Bearer tok123" server="earer tok123"
+case A:BEARER:digest raw wire #1 DIFFERS client="Bearer tok123" server="earer tok123"
+case A:BEARER:both raw wire #1 DIFFERS client="Bearer tok123" server="earer tok123"
+case A:BEARER:both-rev raw wire #1 DIFFERS client="Bearer tok123" server="earer tok123"
+case A:BEARER:bearer raw wire #1 DIFFERS client="Bearer tok123" server="earer tok123"
+case A:BEARER:none raw wire #1 DIFFERS client="Bearer tok123" server="earer tok123"
+case A:BEARER:open raw wire #1 DIFFERS client="Bearer tok123" server="earer tok123"
+case A:ANY:basic raw wire #1 same (none)
+case A:ANY:basic raw wire #2 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:ANY:digest raw wire #1 same (none)
+case A:ANY:digest raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"3850762b90d06f35ff37e64035ae267f\", uri=\"/auth?ch=digest&alg=MD5&qop=auth&tag=A.ANY.digest.raw\", cnonce=\"qtNZe7aL8umjHMTm\", nc=00000001, qop=auth, response=\"55716e92524dbefdc7b3d95dff805b4f\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"3850762b90d06f35ff37e64035ae267f\", uri=\"/auth?ch=digest&alg=MD5&qop=auth&tag=A.ANY.digest.raw\", cnonce=\"qtNZe7aL8umjHMTm\", nc=00000001, qop=auth, response=\"55716e92524dbefdc7b3d95dff805b4f\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:ANY:both raw wire #1 same (none)
+case A:ANY:both raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"4bf31837217910f0f10673ea83a74a34\", uri=\"/auth?ch=both&alg=MD5&qop=auth&tag=A.ANY.both.raw\", cnonce=\"AgadzUPbssenXBu5\", nc=00000001, qop=auth, response=\"42b5256f6d227d85bdeb94d5258b715a\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"4bf31837217910f0f10673ea83a74a34\", uri=\"/auth?ch=both&alg=MD5&qop=auth&tag=A.ANY.both.raw\", cnonce=\"AgadzUPbssenXBu5\", nc=00000001, qop=auth, response=\"42b5256f6d227d85bdeb94d5258b715a\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:ANY:both-rev raw wire #1 same (none)
+case A:ANY:both-rev raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"fb4d498bb2f50fcd51ddfd1ab7368384\", uri=\"/auth?ch=both-rev&alg=MD5&qop=auth&tag=A.ANY.both-rev.raw\", cnonce=\"g+yMFO+Id/+m5jXG\", nc=00000001, qop=auth, response=\"49092e206b8dfd29da9b118d9b1f7814\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"fb4d498bb2f50fcd51ddfd1ab7368384\", uri=\"/auth?ch=both-rev&alg=MD5&qop=auth&tag=A.ANY.both-rev.raw\", cnonce=\"g+yMFO+Id/+m5jXG\", nc=00000001, qop=auth, response=\"49092e206b8dfd29da9b118d9b1f7814\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:ANY:bearer raw wire #1 same (none)
+case A:ANY:none raw wire #1 same (none)
+case A:ANY:open raw wire #1 same (none)
+case A:ANYSAFE:basic raw wire #1 same (none)
+case A:ANYSAFE:digest raw wire #1 same (none)
+case A:ANYSAFE:digest raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"b4c898fd6883a7d0058b9f996f1d8c80\", uri=\"/auth?ch=digest&alg=MD5&qop=auth&tag=A.ANYSAFE.digest.raw\", cnonce=\"/VGrkEUM0RuH1gUW\", nc=00000001, qop=auth, response=\"cdc61b2f462ab99d0facd068a5b57efb\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"b4c898fd6883a7d0058b9f996f1d8c80\", uri=\"/auth?ch=digest&alg=MD5&qop=auth&tag=A.ANYSAFE.digest.raw\", cnonce=\"/VGrkEUM0RuH1gUW\", nc=00000001, qop=auth, response=\"cdc61b2f462ab99d0facd068a5b57efb\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:ANYSAFE:both raw wire #1 same (none)
+case A:ANYSAFE:both raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"e77a311c832b18a397e3a75ef7ba187f\", uri=\"/auth?ch=both&alg=MD5&qop=auth&tag=A.ANYSAFE.both.raw\", cnonce=\"jXplgDTw9WMw2q5I\", nc=00000001, qop=auth, response=\"060b0c7d0d06ed434b44834ec8d0accd\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"e77a311c832b18a397e3a75ef7ba187f\", uri=\"/auth?ch=both&alg=MD5&qop=auth&tag=A.ANYSAFE.both.raw\", cnonce=\"jXplgDTw9WMw2q5I\", nc=00000001, qop=auth, response=\"060b0c7d0d06ed434b44834ec8d0accd\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:ANYSAFE:both-rev raw wire #1 same (none)
+case A:ANYSAFE:both-rev raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"51142212c5c2664a171de9d821cc6ab9\", uri=\"/auth?ch=both-rev&alg=MD5&qop=auth&tag=A.ANYSAFE.both-rev.raw\", cnonce=\"GWQLRyK4MyQaVOar\", nc=00000001, qop=auth, response=\"3f1fe5a9d2586a2927d6df83531adeb7\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"51142212c5c2664a171de9d821cc6ab9\", uri=\"/auth?ch=both-rev&alg=MD5&qop=auth&tag=A.ANYSAFE.both-rev.raw\", cnonce=\"GWQLRyK4MyQaVOar\", nc=00000001, qop=auth, response=\"3f1fe5a9d2586a2927d6df83531adeb7\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:ANYSAFE:bearer raw wire #1 same (none)
+case A:ANYSAFE:none raw wire #1 same (none)
+case A:ANYSAFE:open raw wire #1 same (none)
+case A:DIGEST|BASIC:basic raw wire #1 same (none)
+case A:DIGEST|BASIC:basic raw wire #2 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:DIGEST|BASIC:digest raw wire #1 same (none)
+case A:DIGEST|BASIC:digest raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"bcfac925fe4759e28e99d6d7adc9838b\", uri=\"/auth?ch=digest&alg=MD5&qop=auth&tag=A.DIGEST.BASIC.digest.raw\", cnonce=\"q9qPiD5cFtvkbRXc\", nc=00000001, qop=auth, response=\"c49ed7b4dac0e213b179faeba6b65101\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"bcfac925fe4759e28e99d6d7adc9838b\", uri=\"/auth?ch=digest&alg=MD5&qop=auth&tag=A.DIGEST.BASIC.digest.raw\", cnonce=\"q9qPiD5cFtvkbRXc\", nc=00000001, qop=auth, response=\"c49ed7b4dac0e213b179faeba6b65101\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:DIGEST|BASIC:both raw wire #1 same (none)
+case A:DIGEST|BASIC:both raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"b8c59e21f55e4645143a3d7b428584e8\", uri=\"/auth?ch=both&alg=MD5&qop=auth&tag=A.DIGEST.BASIC.both.raw\", cnonce=\"OnjgHO6PBWWMieyd\", nc=00000001, qop=auth, response=\"49882ddadfd26688d660c65c962a1609\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"b8c59e21f55e4645143a3d7b428584e8\", uri=\"/auth?ch=both&alg=MD5&qop=auth&tag=A.DIGEST.BASIC.both.raw\", cnonce=\"OnjgHO6PBWWMieyd\", nc=00000001, qop=auth, response=\"49882ddadfd26688d660c65c962a1609\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:DIGEST|BASIC:both-rev raw wire #1 same (none)
+case A:DIGEST|BASIC:both-rev raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"196840c19a061b1ac49167014598a877\", uri=\"/auth?ch=both-rev&alg=MD5&qop=auth&tag=A.DIGEST.BASIC.both-rev.raw\", cnonce=\"Pzu4YNePZd3EGM0/\", nc=00000001, qop=auth, response=\"f6b04e04bae98397265cb9072e32a962\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"196840c19a061b1ac49167014598a877\", uri=\"/auth?ch=both-rev&alg=MD5&qop=auth&tag=A.DIGEST.BASIC.both-rev.raw\", cnonce=\"Pzu4YNePZd3EGM0/\", nc=00000001, qop=auth, response=\"f6b04e04bae98397265cb9072e32a962\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:DIGEST|BASIC:bearer raw wire #1 same (none)
+case A:DIGEST|BASIC:none raw wire #1 same (none)
+case A:DIGEST|BASIC:open raw wire #1 same (none)
+case A:BASIC|ONLY:basic raw wire #1 same (none)
+case A:BASIC|ONLY:basic raw wire #2 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:BASIC|ONLY:digest raw wire #1 same (none)
+case A:BASIC|ONLY:both raw wire #1 same (none)
+case A:BASIC|ONLY:both raw wire #2 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:BASIC|ONLY:both-rev raw wire #1 same (none)
+case A:BASIC|ONLY:both-rev raw wire #2 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:BASIC|ONLY:bearer raw wire #1 same (none)
+case A:BASIC|ONLY:none raw wire #1 same (none)
+case A:BASIC|ONLY:open raw wire #1 same (none)
+case A:DIGEST|ONLY:basic raw wire #1 same (none)
+case A:DIGEST|ONLY:digest raw wire #1 same (none)
+case A:DIGEST|ONLY:digest raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"25357abeece13a2a84a99c8bbe22d3d8\", uri=\"/auth?ch=digest&alg=MD5&qop=auth&tag=A.DIGEST.ONLY.digest.raw\", cnonce=\"Y5uDFcQbQ/+ojLSy\", nc=00000001, qop=auth, response=\"ce7baa96e73cc0577cfffd275ea00864\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"25357abeece13a2a84a99c8bbe22d3d8\", uri=\"/auth?ch=digest&alg=MD5&qop=auth&tag=A.DIGEST.ONLY.digest.raw\", cnonce=\"Y5uDFcQbQ/+ojLSy\", nc=00000001, qop=auth, response=\"ce7baa96e73cc0577cfffd275ea00864\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:DIGEST|ONLY:both raw wire #1 same (none)
+case A:DIGEST|ONLY:both raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"10b0082cf723069f748eee6472831a28\", uri=\"/auth?ch=both&alg=MD5&qop=auth&tag=A.DIGEST.ONLY.both.raw\", cnonce=\"VDrkZBsTR1NOXpeY\", nc=00000001, qop=auth, response=\"a8bf14ff90e83dc8c4236e1f8699ee8b\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"10b0082cf723069f748eee6472831a28\", uri=\"/auth?ch=both&alg=MD5&qop=auth&tag=A.DIGEST.ONLY.both.raw\", cnonce=\"VDrkZBsTR1NOXpeY\", nc=00000001, qop=auth, response=\"a8bf14ff90e83dc8c4236e1f8699ee8b\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:DIGEST|ONLY:both-rev raw wire #1 same (none)
+case A:DIGEST|ONLY:both-rev raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"5a4c03b7d775daee553927a5836c883b\", uri=\"/auth?ch=both-rev&alg=MD5&qop=auth&tag=A.DIGEST.ONLY.both-rev.raw\", cnonce=\"KVuP1CKMRjEqJdUw\", nc=00000001, qop=auth, response=\"1c7958c5972dae8e2bcd77ca89476911\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"5a4c03b7d775daee553927a5836c883b\", uri=\"/auth?ch=both-rev&alg=MD5&qop=auth&tag=A.DIGEST.ONLY.both-rev.raw\", cnonce=\"KVuP1CKMRjEqJdUw\", nc=00000001, qop=auth, response=\"1c7958c5972dae8e2bcd77ca89476911\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:DIGEST|ONLY:bearer raw wire #1 same (none)
+case A:DIGEST|ONLY:none raw wire #1 same (none)
+case A:DIGEST|ONLY:open raw wire #1 same (none)
+case A:BEARER|ONLY:basic raw wire #1 same (none)
+case A:BEARER|ONLY:digest raw wire #1 same (none)
+case A:BEARER|ONLY:both raw wire #1 same (none)
+case A:BEARER|ONLY:both-rev raw wire #1 same (none)
+case A:BEARER|ONLY:bearer raw wire #1 same (none)
+case A:BEARER|ONLY:bearer raw wire #2 DIFFERS client="Bearer tok123" server="earer tok123"
+case A:BEARER|ONLY:none raw wire #1 same (none)
+case A:BEARER|ONLY:open raw wire #1 same (none)
+case A:DIGEST|BASIC|ONLY:basic raw wire #1 same (none)
+case A:DIGEST|BASIC|ONLY:basic raw wire #2 DIFFERS client="Basic dXNlcjpwYXNz" server="asic dXNlcjpwYXNz"
+case A:DIGEST|BASIC|ONLY:digest raw wire #1 same (none)
+case A:DIGEST|BASIC|ONLY:digest raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"2f179139573c76228c5e301ec6940a03\", uri=\"/auth?ch=digest&alg=MD5&qop=auth&tag=A.DIGEST.BASIC.ONLY.digest.raw\", cnonce=\"c04tMdn4dy2sx7WV\", nc=00000001, qop=auth, response=\"d062f6490d2b14d6acb996752a42bd92\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"2f179139573c76228c5e301ec6940a03\", uri=\"/auth?ch=digest&alg=MD5&qop=auth&tag=A.DIGEST.BASIC.ONLY.digest.raw\", cnonce=\"c04tMdn4dy2sx7WV\", nc=00000001, qop=auth, response=\"d062f6490d2b14d6acb996752a42bd92\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:DIGEST|BASIC|ONLY:both raw wire #1 same (none)
+case A:DIGEST|BASIC|ONLY:both raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"052770313b3d4ecc73235946e29849b7\", uri=\"/auth?ch=both&alg=MD5&qop=auth&tag=A.DIGEST.BASIC.ONLY.both.raw\", cnonce=\"jAM/qUf5R/7N69NS\", nc=00000001, qop=auth, response=\"a8d3dcfca1ee8af7088dc7d9a3af955e\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"052770313b3d4ecc73235946e29849b7\", uri=\"/auth?ch=both&alg=MD5&qop=auth&tag=A.DIGEST.BASIC.ONLY.both.raw\", cnonce=\"jAM/qUf5R/7N69NS\", nc=00000001, qop=auth, response=\"a8d3dcfca1ee8af7088dc7d9a3af955e\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:DIGEST|BASIC|ONLY:both-rev raw wire #1 same (none)
+case A:DIGEST|BASIC|ONLY:both-rev raw wire #2 DIFFERS client="Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"50da4b7a8657eb4f60bfdce92fa38225\", uri=\"/auth?ch=both-rev&alg=MD5&qop=auth&tag=A.DIGEST.BASIC.ONLY.both-rev.raw\", cnonce=\"jZ2Tu18xAoSz4NUp\", nc=00000001, qop=auth, response=\"dd8788bc62d788f82bc4900b05a734c7\", opaque=\"opq5ccb\", algorithm=MD5" server="igest username=\"user\", realm=\"chez-curl-test\", nonce=\"50da4b7a8657eb4f60bfdce92fa38225\", uri=\"/auth?ch=both-rev&alg=MD5&qop=auth&tag=A.DIGEST.BASIC.ONLY.both-rev.raw\", cnonce=\"jZ2Tu18xAoSz4NUp\", nc=00000001, qop=auth, response=\"dd8788bc62d788f82bc4900b05a734c7\", opaque=\"opq5ccb\", algorithm=MD5"
+case A:DIGEST|BASIC|ONLY:bearer raw wire #1 same (none)
+case A:DIGEST|BASIC|ONLY:none raw wire #1 same (none)
+case A:DIGEST|BASIC|ONLY:open raw wire #1 same (none)
+wire lines 102: DIFFERS 46, same (none) 56, same with a value 0
