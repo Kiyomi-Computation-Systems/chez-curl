@@ -1,0 +1,221 @@
+guix-8.20.0.log [guix-8.20.0] I2-a-digest-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-a-digest-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-a-both-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-a-both-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-a-dsrc-url-pct GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-a-dsrc-url-utf8pct GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-a-dsrc-opt-utf8 GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-a-dsrc-userpwd-raw GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-a-wrong-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+guix-8.20.0.log [guix-8.20.0] I2-a-wrong-any-both GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+guix-8.20.0.log [guix-8.20.0] I2-a-wrong-any-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+guix-8.20.0.log [guix-8.20.0] I2-c-digest-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-c-digest-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-c-both-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-c-both-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-c-dsrc-url-pct CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-c-dsrc-url-utf8pct CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-c-dsrc-opt-utf8 CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-c-dsrc-userpwd-raw CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0.log [guix-8.20.0] I2-c-wrong-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+guix-8.20.0.log [guix-8.20.0] I2-c-wrong-any-both CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+guix-8.20.0.log [guix-8.20.0] I2-c-wrong-any-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+guix-8.20.0-2.log [guix-8.20.0] I2-a-digest-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-a-digest-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-a-both-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-a-both-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-a-dsrc-url-pct GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-a-dsrc-url-utf8pct GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-a-dsrc-opt-utf8 GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-a-dsrc-userpwd-raw GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-a-wrong-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+guix-8.20.0-2.log [guix-8.20.0] I2-a-wrong-any-both GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+guix-8.20.0-2.log [guix-8.20.0] I2-a-wrong-any-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+guix-8.20.0-2.log [guix-8.20.0] I2-c-digest-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-c-digest-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-c-both-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-c-both-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-c-dsrc-url-pct CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-c-dsrc-url-utf8pct CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-c-dsrc-opt-utf8 CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-c-dsrc-userpwd-raw CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+guix-8.20.0-2.log [guix-8.20.0] I2-c-wrong-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+guix-8.20.0-2.log [guix-8.20.0] I2-c-wrong-any-both CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+guix-8.20.0-2.log [guix-8.20.0] I2-c-wrong-any-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [floor-7.85.0] I2-a-digest-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-a-digest-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-a-both-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-a-both-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-a-dsrc-url-pct GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-a-dsrc-url-utf8pct GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-a-dsrc-opt-utf8 GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-a-dsrc-userpwd-raw GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-a-wrong-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [floor-7.85.0] I2-a-wrong-any-both GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [floor-7.85.0] I2-a-wrong-any-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [floor-7.85.0] I2-c-digest-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-c-digest-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-c-both-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-c-both-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-c-dsrc-url-pct CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-c-dsrc-url-utf8pct CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-c-dsrc-opt-utf8 CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-c-dsrc-userpwd-raw CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [floor-7.85.0] I2-c-wrong-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [floor-7.85.0] I2-c-wrong-any-both CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [floor-7.85.0] I2-c-wrong-any-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [ubuntu-openssl-8.5.0] I2-a-digest-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-a-digest-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-a-both-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-a-both-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-a-dsrc-url-pct GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-a-dsrc-url-utf8pct GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-a-dsrc-opt-utf8 GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-a-dsrc-userpwd-raw GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-a-wrong-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [ubuntu-openssl-8.5.0] I2-a-wrong-any-both GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [ubuntu-openssl-8.5.0] I2-a-wrong-any-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [ubuntu-openssl-8.5.0] I2-c-digest-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-c-digest-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-c-both-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-c-both-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-c-dsrc-url-pct CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-c-dsrc-url-utf8pct CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-c-dsrc-opt-utf8 CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-c-dsrc-userpwd-raw CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-openssl-8.5.0] I2-c-wrong-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [ubuntu-openssl-8.5.0] I2-c-wrong-any-both CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [ubuntu-openssl-8.5.0] I2-c-wrong-any-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [ubuntu-gnutls-8.5.0] I2-a-digest-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-a-digest-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-a-both-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-a-both-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-a-dsrc-url-pct GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-a-dsrc-url-utf8pct GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-a-dsrc-opt-utf8 GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-a-dsrc-userpwd-raw GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-a-wrong-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [ubuntu-gnutls-8.5.0] I2-a-wrong-any-both GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [ubuntu-gnutls-8.5.0] I2-a-wrong-any-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [ubuntu-gnutls-8.5.0] I2-c-digest-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-c-digest-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-c-both-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-c-both-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-c-dsrc-url-pct CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-c-dsrc-url-utf8pct CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-c-dsrc-opt-utf8 CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-c-dsrc-userpwd-raw CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [ubuntu-gnutls-8.5.0] I2-c-wrong-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [ubuntu-gnutls-8.5.0] I2-c-wrong-any-both CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [ubuntu-gnutls-8.5.0] I2-c-wrong-any-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [current-8.23.0] I2-a-digest-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [current-8.23.0] I2-a-digest-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [current-8.23.0] I2-a-both-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [current-8.23.0] I2-a-both-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [current-8.23.0] I2-a-dsrc-url-pct GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [current-8.23.0] I2-a-dsrc-url-utf8pct GET username="%C3%A9l%C3%A8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the percent-decoded bytes
+docker.log [current-8.23.0] I2-a-dsrc-opt-utf8 GET username="%C3%A9l%C3%A8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the percent-decoded bytes
+docker.log [current-8.23.0] I2-a-dsrc-userpwd-raw GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [current-8.23.0] I2-a-wrong-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [current-8.23.0] I2-a-wrong-any-both GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [current-8.23.0] I2-a-wrong-any-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [current-8.23.0] I2-c-digest-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [current-8.23.0] I2-c-digest-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [current-8.23.0] I2-c-both-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [current-8.23.0] I2-c-both-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [current-8.23.0] I2-c-dsrc-url-pct CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [current-8.23.0] I2-c-dsrc-url-utf8pct CONNECT username="%C3%A9l%C3%A8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the percent-decoded bytes
+docker.log [current-8.23.0] I2-c-dsrc-opt-utf8 CONNECT username="%C3%A9l%C3%A8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the percent-decoded bytes
+docker.log [current-8.23.0] I2-c-dsrc-userpwd-raw CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker.log [current-8.23.0] I2-c-wrong-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [current-8.23.0] I2-c-wrong-any-both CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker.log [current-8.23.0] I2-c-wrong-any-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [floor-7.85.0] I2-a-digest-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-a-digest-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-a-both-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-a-both-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-a-dsrc-url-pct GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-a-dsrc-url-utf8pct GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-a-dsrc-opt-utf8 GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-a-dsrc-userpwd-raw GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-a-wrong-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [floor-7.85.0] I2-a-wrong-any-both GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [floor-7.85.0] I2-a-wrong-any-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [floor-7.85.0] I2-c-digest-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-c-digest-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-c-both-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-c-both-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-c-dsrc-url-pct CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-c-dsrc-url-utf8pct CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-c-dsrc-opt-utf8 CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-c-dsrc-userpwd-raw CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [floor-7.85.0] I2-c-wrong-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [floor-7.85.0] I2-c-wrong-any-both CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [floor-7.85.0] I2-c-wrong-any-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [ubuntu-openssl-8.5.0] I2-a-digest-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-a-digest-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-a-both-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-a-both-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-a-dsrc-url-pct GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-a-dsrc-url-utf8pct GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-a-dsrc-opt-utf8 GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-a-dsrc-userpwd-raw GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-a-wrong-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [ubuntu-openssl-8.5.0] I2-a-wrong-any-both GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [ubuntu-openssl-8.5.0] I2-a-wrong-any-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [ubuntu-openssl-8.5.0] I2-c-digest-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-c-digest-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-c-both-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-c-both-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-c-dsrc-url-pct CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-c-dsrc-url-utf8pct CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-c-dsrc-opt-utf8 CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-c-dsrc-userpwd-raw CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-openssl-8.5.0] I2-c-wrong-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [ubuntu-openssl-8.5.0] I2-c-wrong-any-both CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [ubuntu-openssl-8.5.0] I2-c-wrong-any-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [ubuntu-gnutls-8.5.0] I2-a-digest-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-a-digest-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-a-both-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-a-both-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-a-dsrc-url-pct GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-a-dsrc-url-utf8pct GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-a-dsrc-opt-utf8 GET username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-a-dsrc-userpwd-raw GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-a-wrong-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [ubuntu-gnutls-8.5.0] I2-a-wrong-any-both GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [ubuntu-gnutls-8.5.0] I2-a-wrong-any-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [ubuntu-gnutls-8.5.0] I2-c-digest-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-c-digest-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-c-both-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-c-both-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-c-dsrc-url-pct CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-c-dsrc-url-utf8pct CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-c-dsrc-opt-utf8 CONNECT username="\xc3\xa9l\xc3\xa8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-c-dsrc-userpwd-raw CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [ubuntu-gnutls-8.5.0] I2-c-wrong-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [ubuntu-gnutls-8.5.0] I2-c-wrong-any-both CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [ubuntu-gnutls-8.5.0] I2-c-wrong-any-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [current-8.23.0] I2-a-digest-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [current-8.23.0] I2-a-digest-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [current-8.23.0] I2-a-both-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [current-8.23.0] I2-a-both-any GET username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [current-8.23.0] I2-a-dsrc-url-pct GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [current-8.23.0] I2-a-dsrc-url-utf8pct GET username="%C3%A9l%C3%A8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the percent-decoded bytes
+docker-2.log [current-8.23.0] I2-a-dsrc-opt-utf8 GET username="%C3%A9l%C3%A8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the percent-decoded bytes
+docker-2.log [current-8.23.0] I2-a-dsrc-userpwd-raw GET username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [current-8.23.0] I2-a-wrong-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [current-8.23.0] I2-a-wrong-any-both GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [current-8.23.0] I2-a-wrong-any-digest GET username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [current-8.23.0] I2-c-digest-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [current-8.23.0] I2-c-digest-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [current-8.23.0] I2-c-both-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [current-8.23.0] I2-c-both-any CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [current-8.23.0] I2-c-dsrc-url-pct CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [current-8.23.0] I2-c-dsrc-url-utf8pct CONNECT username="%C3%A9l%C3%A8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the percent-decoded bytes
+docker-2.log [current-8.23.0] I2-c-dsrc-opt-utf8 CONNECT username="%C3%A9l%C3%A8ve" decoded="\xc3\xa9l\xc3\xa8ve" password-known=true response-reproduced-by: the percent-decoded bytes
+docker-2.log [current-8.23.0] I2-c-dsrc-userpwd-raw CONNECT username="al@ice" decoded="al@ice" password-known=true response-reproduced-by: the bytes as sent
+docker-2.log [current-8.23.0] I2-c-wrong-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [current-8.23.0] I2-c-wrong-any-both CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+docker-2.log [current-8.23.0] I2-c-wrong-any-digest CONNECT username="alice" decoded="alice" password-known=true response-reproduced-by: neither
+-- 220 Digest header(s) checked

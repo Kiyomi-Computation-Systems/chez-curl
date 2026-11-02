@@ -1,0 +1,45 @@
+# node summarize.mjs splits RUN1 RUN2, for each pass
+## guix-8.20.0.log against guix-8.20.0-2.log
+== guix-8.20.0 I2-c-src-url-right-userpwd-wrong: the same lines, in another order
+-- 0 case(s) differ
+## docker.log against docker-2.log
+== floor-7.85.0 I1-s-form-https: the same lines, in another order
+== floor-7.85.0 I4-c-good-v01: the same lines, in another order
+== floor-7.85.0 I4-c-good-v10: the same lines, in another order
+== floor-7.85.0 I4-c-expired-v01: the same lines, in another order
+== floor-7.85.0 I4-c-expired-v00: the same lines, in another order
+== floor-7.85.0 I4-c-untrusted-v00: the same lines, in another order
+== floor-7.85.0 I4-c-ca-ca-capath-null: the same lines, in another order
+== floor-7.85.0 I4-c-ca-ca-capath-cadir: the same lines, in another order
+== floor-7.85.0 I4-c-ca-other-capath-cadir: the same lines, in another order
+== floor-7.85.0 I4-c-ca-null-capath-cadir: the same lines, in another order
+== floor-7.85.0 I4-c-ca-default-capath-cadir: the same lines, in another order
+== floor-7.85.0 I4-c-sep-both-set: the same lines, in another order
+== ubuntu-openssl-8.5.0 I1-s-form-https: the same lines, in another order
+== ubuntu-openssl-8.5.0 I4-c-good-v11: the same lines, in another order
+== ubuntu-openssl-8.5.0 I4-c-good-v10: the same lines, in another order
+== ubuntu-openssl-8.5.0 I4-c-expired-v01: the same lines, in another order
+== ubuntu-openssl-8.5.0 I4-c-expired-v00: the same lines, in another order
+== ubuntu-openssl-8.5.0 I4-c-wrong-v00: the same lines, in another order
+== ubuntu-openssl-8.5.0 I4-c-ca-ca-capath-default: the same lines, in another order
+== ubuntu-openssl-8.5.0 I4-c-ca-other-capath-cadir: the same lines, in another order
+== ubuntu-openssl-8.5.0 I4-c-ca-null-capath-cadir: the same lines, in another order
+== ubuntu-openssl-8.5.0 I4-c-sep-proxy-noverify: the same lines, in another order
+== ubuntu-gnutls-8.5.0 I4-c-wrong-v10: the same lines, in another order
+== ubuntu-gnutls-8.5.0 I4-c-wrong-v00: the same lines, in another order
+== ubuntu-gnutls-8.5.0 I4-c-untrusted-v01: the same lines, in another order
+== ubuntu-gnutls-8.5.0 I4-c-untrusted-v00: the same lines, in another order
+== ubuntu-gnutls-8.5.0 I4-c-ca-ca-capath-null: the same lines, in another order
+== ubuntu-gnutls-8.5.0 I4-c-ca-ca-capath-default: the same lines, in another order
+== ubuntu-gnutls-8.5.0 I4-c-ca-other-capath-cadir: the same lines, in another order
+== ubuntu-gnutls-8.5.0 I4-c-ca-default-capath-cadir: the same lines, in another order
+-- 0 case(s) differ
+## docker-sysstore.log against docker-sysstore-2.log
+== ubuntu-openssl-8.5.0 I4-c-ca-ca-capath-default: the same lines, in another order
+== ubuntu-openssl-8.5.0 I4-c-ca-default-capath-null: the same lines, in another order
+== ubuntu-gnutls-8.5.0 I4-c-ca-ca-capath-null: the same lines, in another order
+== ubuntu-gnutls-8.5.0 I4-c-ca-ca-capath-default: the same lines, in another order
+== ubuntu-gnutls-8.5.0 I4-c-ca-null-capath-default: the same lines, in another order
+== ubuntu-gnutls-8.5.0 I4-c-ca-null-capath-cadir: the same lines, in another order
+== ubuntu-gnutls-8.5.0 I4-c-ca-default-capath-default: the same lines, in another order
+-- 0 case(s) differ
