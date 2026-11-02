@@ -53,7 +53,7 @@
   ((error-text raw "/raw/nul-in-header") (error-text "Nul byte in header"))))
 
 (libcurl
- (where "Apple's libcurl 8.7.1, /usr/lib/libcurl.4.dylib with SecureTransport (LibreSSL/3.3.6), on the maintainer's M1: macOS 26.7.1, Homebrew's Chez as tarm64osx, Node 20.10.0 through asdf. Printed by test-transfer there on 2026-10-24, whose shared answers all passed. many-headers at 50,000 is not yet measured there: its cell is 100,000's until the Mac's next test-transfer. 8.7.1's lib/http.h caps a response's headers at 300 KiB, and 50,000 are about 690 KB.")
+ (where "Apple's libcurl 8.7.1, /usr/lib/libcurl.4.dylib with SecureTransport (LibreSSL/3.3.6), on the maintainer's M1: macOS 26.7.1, Homebrew's Chez as tarm64osx, Node 20.10.0 through asdf. Printed by test-transfer there on 2026-10-24, whose shared answers all passed. many-headers at 50,000, 100,000's answer: printed by test-transfer there on 2026-11-01, PR #39 at c080ca3, whose cells all passed. 8.7.1's lib/http.h caps a response's headers at 300 KiB, and 50,000 are about 690 KB.")
  (version "8.7.1")
  (answers
   ((get raw "/raw/big-header?bytes=102400") (refused perform-failed 100))

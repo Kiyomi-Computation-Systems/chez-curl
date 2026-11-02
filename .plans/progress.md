@@ -18,7 +18,7 @@ close-out under **Close-outs**, newest first.
   - the floor's GET of 100,000 headers outlasted test-transfer's 60 s bound once: libcurl's
     `curl_easy_nextheader` walks every header on each call, and 7.85.0 caps none, so it took
     30 s of CPU here. The case is now 50,000, past every newer libcurl's cap, 7.3 to 7.7 s on
-    7.85.0; 8.7.1's cell is 100,000's until the Mac's next run;
+    7.85.0, and 8.7.1 refuses it with 56, as it did 100,000;
   - the current lane's full-buffer upload never filled, 3 runs of 3. Its fill waited for a
     further 500 ms with nothing taken after a put timed out, and on the runner libcurl had
     taken one 64 KiB piece more by the end of each of the fill's one-second rounds, which PR
@@ -37,6 +37,11 @@ close-out under **Close-outs**, newest first.
     arrives, came before libcurl's first ask, the race slice 2 met at accept. That case now
     asserts its bit is whether the read callable was ever asked. Whether it was one of the two,
     and what the other was, is not shown.
+
+  **The Mac ran it, 2026-11-01,** at `c080ca3`: `make test` 35 of 35
+  ([log](research/ci-first-run/results/mac-8.7.1-make-test.log)). test-transfer held 8.7.1's
+  50,000 cell, test-curl-testing's stand-in passed there, and the new fill stalled at 917,504
+  bytes at 519 ms, under half the Linux lanes' 2 MiB.
 
   **Reviewed** (Opus, read-only, 234k tokens, 17 min): no blocker, two majors and five minors,
   each answered. The majors: my records read the fill's own one-second rounds as the kernel's
