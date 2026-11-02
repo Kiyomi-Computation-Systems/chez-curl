@@ -32,6 +32,7 @@
 (import (rnrs)
         (srfi :64)
         (curl-testing)
+        (auth-testing)
         (only (chezscheme) current-directory current-time directory-list getenv input-port-ready?
               machine-type make-time open-process-ports parameterize sleep time-nanosecond
               time-second))
@@ -1815,6 +1816,99 @@
   '(returned done)
   scenarios-outcome)
 
+;; --- the auth route over TLS (M7 slice 2; the M7 plan, section 5.2) ---------------
+;; Each test runs on an origin of its own, so the https face's handshakes and
+;; h2's sessions are numbered from 1 there. Each log is read by the http
+;; face, whose answer tests/test-origin.sps holds. The Authorization headers
+;; are written here, by (auth-testing).
+
+;; tls-origin : (Origin -> Any) -> (U (List 'returned Any) (List 'raised String))
+(define (tls-origin proc)
+  (outcome (lambda () (parameterize ((origin-pki pki)) (call-with-origin proc)))))
+
+;; auth-closed : String (Listof String) String -> String
+;; An HTTP/1.1 face's whole response with Connection: close.
+(define (auth-closed status-line headers body)
+  (string-append status-line "\r\n"
+                 (apply string-append (map (lambda (h) (string-append h "\r\n")) headers))
+                 "Content-Length: " (number->string (string-length body)) "\r\nConnection: close\r\n\r\n" body))
+
+;; auth-log-text : String (Listof String) -> (List String Symbol)
+;; The http face's /auth-log answer for KEY's LINES.
+(define (auth-log-text key lines)
+  (list (auth-closed "HTTP/1.1 200 OK" '()
+                     (apply string-append "log " key " " (number->string (length lines)) "\n"
+                            (map (lambda (l) (string-append l "\n")) lines)))
+        'eof))
+
+;; auth-logged : Origin String -> (List String Symbol)
+(define (auth-logged o key)
+  (exchange o 'http (get (string-append "/auth-log?key=" key) close) 2000 #f))
+
+(test-equal "the auth route over https: no credentials, a 401 with Basic's challenge; Basic, 200; a Digest challenge, its nonce the query's, and the response computed here, 200; each request on its own handshake, logged face=https"
+  (let ((uri "/auth?key=hb&ch=digest&nonce=n1&qop=none"))
+    (list 'returned
+          (list (list (auth-closed "HTTP/1.1 401 Unauthorized" '("WWW-Authenticate: Basic realm=\"chez-curl-test\"") "unauthorized\n") 'eof)
+                (list (auth-closed "HTTP/1.1 200 OK" '() "auth ok\n") 'eof)
+                (list (auth-closed "HTTP/1.1 401 Unauthorized"
+                                   '("WWW-Authenticate: Digest realm=\"chez-curl-test\", nonce=\"n1\", opaque=\"opq5ccb\", algorithm=MD5")
+                                   "unauthorized\n")
+                      'eof)
+                (list (auth-closed "HTTP/1.1 200 OK" '() "auth ok\n") 'eof)
+                (auth-log-text "hb"
+                               (list "request 1 face=https conn=1 method=GET body=0 verdict=none status=401 authorization=-"
+                                     "request 2 face=https conn=2 method=GET body=0 verdict=ok status=200 authorization=Basic dXNlcjpwYXNz"
+                                     "request 3 face=https conn=3 method=GET body=0 verdict=none status=401 authorization=-"
+                                     (string-append "request 4 face=https conn=4 method=GET body=0 verdict=ok status=200 authorization="
+                                                    "Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"n1\", uri=\"" uri
+                                                    "\", response=\""
+                                                    (digest-response 'md5 (octets "user") "chez-curl-test" (octets "pass") "n1"
+                                                                     #f #f #f "GET" uri)
+                                                    "\", opaque=\"opq5ccb\", algorithm=MD5"))))))
+  (tls-origin
+   (lambda (o)
+     (let* ((uri "/auth?key=hb&ch=digest&nonce=n1&qop=none")
+            (digest (string-append "Authorization: Digest username=\"user\", realm=\"chez-curl-test\", nonce=\"n1\", uri=\""
+                                   uri "\", response=\""
+                                   (digest-response 'md5 (octets "user") "chez-curl-test" (octets "pass") "n1" #f #f #f "GET" uri)
+                                   "\", opaque=\"opq5ccb\", algorithm=MD5\r\n"))
+            (a (exchange o 'https (get "/auth?key=hb&ch=basic" close) 2000 http1-tls))
+            (b (exchange o 'https (get "/auth?key=hb&ch=basic" "Authorization: Basic dXNlcjpwYXNz\r\n" close) 2000 http1-tls))
+            (c (exchange o 'https (get uri close) 2000 http1-tls))
+            (d (exchange o 'https (get uri digest close) 2000 http1-tls))
+            (log (auth-logged o "hb")))
+       (list a b c d log)))))
+
+;; The answers' HEADERS, measured on Node 20.10.0 and 24.18.0: :status 200
+;; 0x88; content-length 8 a literal without indexing of static name 28,
+;; 0x0f 0x0d, its one digit as it is; the 401's :status a literal with
+;; incremental indexing of static name 8, 0x48, then "401" in two bytes of
+;; Huffman code, 0x82 0x68 0x01; www-authenticate a literal with
+;; incremental indexing of static name 61, 0x7d, its value 22 bytes of
+;; Huffman code, 0x96, Bearer realm="chez-curl-test", as Node's own HTTP/2
+;; client decoded them (build/m7s2b/hpack/decode.mjs, on 24.18.0); then
+;; content-length 13, its two digits as they are.
+(test-equal "the auth route over h2: no credentials, a 401 with Bearer's challenge in www-authenticate; Bearer, 200; each its own session, logged face=h2"
+  (list 'returned
+        (list (list (hex (answer (u8-list->bytevector
+                                  '(#x48 #x82 #x68 #x01
+                                    #x7d #x96 #xba #x51 #xd8 #x5b #x14 #xb0 #xa3 #xa2 #x98 #x3f #x92 #x4e
+                                    #x5f #x6b #x12 #xdb #x28 #x59 #x25 #x42 #x7f #x9f
+                                    #x0f #x0d #x02 #x31 #x33))
+                                 "unauthorized\n"))
+                    'eof)
+              (list (hex (answer #vu8(#x88 #x0f #x0d 1 #x38) "auth ok\n")) 'eof)
+              (auth-log-text "h2b"
+                             (list "request 1 face=h2 conn=1 method=GET body=0 verdict=none status=401 authorization=-"
+                                   "request 2 face=h2 conn=2 method=GET body=0 verdict=ok status=200 authorization=Bearer tok123"))))
+  (tls-origin
+   (lambda (o)
+     (let* ((a (h2-exchange o 'h2 (request "https" "GET" "/auth?key=h2b&ch=bearer" '() #f) h2-tls))
+            (b (h2-exchange o 'h2 (request "https" "GET" "/auth?key=h2b&ch=bearer" '(("authorization" . "Bearer tok123")) #f)
+                            h2-tls))
+            (log (auth-logged o "h2b")))
+       (list a b log)))))
+
 ;; --- the probe: TLS's SNI and ALPN, and its refusals ----------------------------
 
 ;; An origin whose raw face is TLS, with the good leaf, and that tells each
@@ -1899,7 +1993,7 @@
 
 ;; --- the origin's own refusals, and its announcement -----------------------------
 
-(define origin-usage "usage: node tests/origin.mjs [--pki DIR]\n")
+(define origin-usage "usage: node tests/origin.mjs [--pki DIR | --selftest [PLANT]]\n")
 
 (test-equal "an unreadable PKI file exits 2, naming the file, with nothing on stdout"
   (list (list 2 "" (string-append "origin: cannot read the PKI file DIR/good.key: ENOENT\n" origin-usage))

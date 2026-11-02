@@ -1,7 +1,8 @@
 # ADR-0036: Credentials, and one auth scheme per request
 
 - **Status:** Accepted; amended 2026-11-02, after the M7 plan's review: decision 3's reach, and
-  the bytes and headers credentials meet
+  the bytes and headers credentials meet; amended 2026-11-02, measured through the engine, with
+  three answers on the bytes and one on resends (M7 slice 2)
 - **Date:** 2026-11-02
 - **Scope:** chez-curl v1, a server's auth, in `(curl)` and `(http-client)`, from M7
 - **Settles:** how a caller gives server credentials, and which schemes a request may pick, a
@@ -85,3 +86,84 @@ streamed body under `ANY` fails 26 there, where the Linux libcurls fail 65.
   per-version table and documented.
 - Across a redirect to another origin the high level drops the credentials field as it drops an
   `Authorization` header (the M5 plan). The fields' shapes are the M7 plan's.
+
+## Amendment, 2026-11-02: measured through the engine, the bytes and the resends (M7 slice 2)
+
+M7 slice 2 ran these questions again through chez-curl's engine, credentials set by the hatch on a
+prototype, on the five Linux libcurls, two runs each, and three of its eight items once more
+under the memory gate's Valgrind on 8.5.0, whose 474 transfers ended as they did natively
+([research](../research/m7/slice2/)). What it adds, and corrects:
+
+- **Both parts empty is not alike:** 8.23.0 sends nothing for `USERNAME ""` with `PASSWORD ""`,
+  nor for `XOAUTH2_BEARER ""`, and ends 401 after one bare request; the other four send `Basic
+  Og==`, a Digest `username=""`, and `Bearer `, and over HTTP/2 no lane's empty token reached the
+  server. The Context's "empty values among them" holds for one empty part beside the other.
+- **Digest to a server that never challenges sends a `post` twice:** the bare probe, with no body,
+  is answered 200, then the request goes again with its body, on all five. Documented.
+- **What decision 3 prevents:** a streamed response under Digest published the probe's 401 head
+  while the transfer ended 200, on all five; a streamed body under Digest over HTTP/2 failed 28 at
+  its timeout on 7.85.0.
+- **A wrong password ends with the server's 401 and code 0,** unless the hatch sets
+  `FAILONERROR`, which makes it 22.
+- **8.23.0 percent-encodes every byte of a Digest user name outside 0x20 to 0x7E,** a UTF-8 name
+  among them, and hashes the raw bytes, so a server that checks the hash refuses it; the other
+  four send the bytes raw. No lane sends `username*=`. Pinned by version.
+- **Lengths:** 8 KiB passes everywhere; 64 KiB over HTTP/1.1 alone, failing 55 over HTTP/2 (56 on
+  7.85.0) with nothing sent; 1 MiB fails 27 or 100 by version with nothing sent, but for a Digest
+  password, of which only the hash goes; 8,000,001 bytes is refused as the option is set, 43. No
+  rule of chez-curl's caps a length; this is documented.
+- **The twins measured:** `AWS_SIGV4` set after `HTTPAUTH` replaces every scheme with a signature,
+  so it is owned, as the Consequences say. `MAXREDIRS` counts each auth round as a follow: at 0,
+  Digest stops after its probe, 47. `FAILONERROR`, `AUTOREFERER`, which adds a `Referer` to
+  Digest's second request, `KEEP_SENDING_ON_ERROR`, `UNRESTRICTED_AUTH`, which reaches libcurl's
+  own follow alone, and `DISALLOW_USERNAME_IN_URL` stay the hatch's, documented; `LOGIN_OPTIONS`,
+  `SASL_AUTHZID`, `SASL_IR`, `SERVICE_NAME`, and `NETRC_FILE` without `NETRC`, changed nothing.
+- **A redirect within one origin whose `Location` holds userinfo,** beside credentials: libcurl
+  sent the field's credentials on all five. The high level keeps credentials within an origin, so
+  the hop is refused as it is submitted, `credentials-beside-userinfo`, and the call fails.
+
+**Decided by the maintainer, 2026-11-02,** each the recommended option:
+
+5. **Credentials strings are UTF-8:** the user, the password and the token, as the hatch's strings
+   are, and as RFC 7617 and RFC 7616 name. The plan had read them as Latin-1, by the header rule.
+6. **No credentials string holds a control byte,** 0x00 to 0x1F or 0x7F, `credentials-bytes`,
+   and a Basic user name holds no `:`. This replaces decision 4's "NUL, CR, LF and each byte the
+   header rule refuses": CR LF wrote a header of its own, and the other control bytes went out raw
+   over HTTP/1.1, an HTTP/2 server dropping the field, a bare LF failing 43 over HTTP/2 from
+   8.5.0. For a Basic password, which base64 carries, the rule is stricter than it needs to be.
+7. **Empty credentials are refused,** `credentials-empty`: a Bearer token `""`, and Basic or Digest
+   with the user and the password both `""`. One empty part beside the other goes out alike on all
+   five, and stays allowed.
+8. **Every transfer sets `MAXREDIRS` 30, and the hatch cannot:** libcurl counts each follow inside
+   a transfer against it, an auth round, a `stale=true` round and a 417's resend of a caller's
+   `Expect: 100-continue` alike, but never its retry of a dead or refused connection (7.85.0
+   `transfer.c:1583-1593`, 8.20.0 `http.c:1154-1165`, read in source by the slice's review). Against a server that answers 417, or `stale=true`, for ever,
+   7.85.0 at its default, -1, made about 90,000 and 43,000 requests in 5 s, until its timeout,
+   and with no `timeout-ms` would never stop; at 30 it stops at 31 requests with 47, as 8.5.0 and
+   later do at their default, 30, and a Digest round still ends 200 in two
+   ([research](../research/m7/slice2/), its `MAXREDIRS` section). A hatch `MAXREDIRS` of 0 had
+   ended Digest after its probe. Nothing public follows a redirect, so the count reaches the follows
+   inside a transfer alone.
+
+**As built** (the slice's build and review):
+
+- **What the field refuses beside userinfo,** by what `curl_url` reports, on each of the five
+  lanes, the builder's runs and mine alike ([`verify/`](../research/m7/slice2/verify/)): 7.85.0 reports
+  neither a user nor a password for `http://@h/` and `http://:@h/`, which pass beside the field
+  and send its credentials; 8.5.0 and later report `""` there, and refuse them. `http://:p@h/`,
+  `http://u@h/` and `http://u:@h/` are refused on all five.
+- **A refusal's value** is `(SCHEME PART)` for the byte and empty rules, `(SCHEME user)` when
+  both parts are empty, and `SCHEME` for the rules beside; a wrong shape's irritant is the symbol
+  `credentials`, so a secret given in a wrong shape is never handed on. **Nothing prints the
+  credentials:** the request, its plan, the live transfer, the engine, the token, the mailbox and
+  the high level's exchange are opaque, so a token handed to an assertion as its irritant prints
+  its type alone, and `record-rtd` raises on each. The review found the token
+  printing its request's password, and another live request's token through the engine's table;
+  a URL's userinfo and an `Authorization` header had printed so before the field.
+- **A 417's resend needs a connection libcurl keeps:** 7.85.0 and 8.20.0 resend inside the
+  transfer only when the connection is not to close (`lib/http.c`, `!conn->bits.close`), so a
+  server that answers 417 with `Connection: close` ends the transfer at its 417. Measured with
+  curl's tool on 8.20.0: 51 requests, then 47, on a kept connection; one, ending 417, on a closed
+  one ([`verify/`](../research/m7/slice2/verify/)). A test of the loop needs a server that keeps
+  the connection while the body never comes, which `node:http` cannot: the origin's raw face
+  serves it.

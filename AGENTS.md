@@ -139,6 +139,14 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   knowledge to an HTTP/1.1 server failed 52, 56 or 16 natively, by version,
   and mostly 55 under the memory gate. Read a row of codes natively and under
   the gate, and hold every code either gave.
+* libcurl resends after a 417 only on a connection it keeps: a server's
+  `Connection: close` ends the transfer at its 417. A test of the 417 loop
+  needs a server that keeps the connection while the body never comes, which
+  `node:http` cannot: use the origin's raw face.
+* Chez prints every field of a record that is not opaque, and `record-rtd`
+  opens it: a token handed to an assertion printed its request's password.
+  Make every record that holds a request, a plan, a token or credentials
+  opaque, and check a secret's absence in printed text, not by walking pairs.
 
 **Chez and the FFI**
 

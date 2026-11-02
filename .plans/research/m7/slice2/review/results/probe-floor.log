@@ -1,0 +1,29 @@
+libcurl 7.85.0
+eff-basic: (response 200 effective "http://127.0.0.1:45467/auth?key=eff-basic&ch=basic")
+log eff-basic 1
+request 1 face=http conn=1 method=GET body=0 verdict=ok status=200 authorization=Basic dXNlcjpwYXNz
+
+pk-digest-get: (response 200 effective "http://127.0.0.1:42743/auth?key=pk-digest-get&ch=digest&qop=none&nonce=pkg")
+log pk-digest-get 2
+request 1 face=h2c conn=1 method=GET body=0 verdict=none status=401 authorization=-
+request 2 face=h2c conn=1 method=GET body=0 verdict=ok status=200 authorization=Digest username="user", realm="chez-curl-test", nonce="pkg", uri="/auth?key=pk-digest-get&ch=digest&qop=none&nonce=pkg", response="d37dac57793f43d6b3dc72b2e5e30e52", opaque="opq5ccb", algorithm=MD5
+
+pk-digest-post: (response 200 effective "http://127.0.0.1:42743/auth?key=pk-digest-post&ch=digest&qop=none&nonce=pkp")
+log pk-digest-post 2
+request 1 face=h2c conn=1 method=POST body=0 verdict=none status=401 authorization=-
+request 2 face=h2c conn=1 method=POST body=1024 verdict=ok status=200 authorization=Digest username="user", realm="chez-curl-test", nonce="pkp", uri="/auth?key=pk-digest-post&ch=digest&qop=none&nonce=pkp", response="777c84edb7053293a552aeb6a27cb759", opaque="opq5ccb", algorithm=MD5
+
+pk-basic-post: (response 200 effective "http://127.0.0.1:42743/auth?key=pk-basic-post&ch=basic")
+log pk-basic-post 1
+request 1 face=h2c conn=1 method=POST body=1024 verdict=ok status=200 authorization=Basic dXNlcjpwYXNz
+
+digest-put: (response 200 effective "http://127.0.0.1:45467/auth?key=digest-put&ch=open")
+log digest-put 2
+request 1 face=http conn=1 method=PUT body=0 verdict=none status=200 authorization=-
+request 2 face=http conn=1 method=PUT body=1024 verdict=none status=200 authorization=-
+
+digest-307-like-post-64k: (response 200 effective "http://127.0.0.1:45467/auth?key=digest-307-like-post-64k&ch=digest&qop=none&nonce=big")
+log digest-307-like-post-64k 2
+request 1 face=http conn=1 method=POST body=0 verdict=none status=401 authorization=-
+request 2 face=http conn=1 method=POST body=65536 verdict=ok status=200 authorization=Digest username="user", realm="chez-curl-test", nonce="big", uri="/auth?key=digest-307-like-post-64k&ch=digest&qop=none&nonce=big", response="29ca484c194c1ea1ae39e0e06bd08f8c", opaque="opq5ccb", algorithm=MD5
+

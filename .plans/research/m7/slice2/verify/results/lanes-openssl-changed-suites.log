@@ -1,0 +1,65 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (13 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-auth.sps
+%%%% Starting test auth
+test-auth: digest-algorithms on "8.5.0" measured ((200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (401 ("none" 401) ("bad(response)" 401)) (401 ("none" 401) ("bad(response)" 401)))
+test-auth: utf8-digest-user on "8.5.0" measured (200 (("none" 401) ("ok" 200)) "\\xc3\\xbcser")
+test-auth: empty-userinfo on "8.5.0" measured (("@" "" #f (refused credentials-beside-userinfo)) (":@" "" "" (refused credentials-beside-userinfo)) (":p@" "" "p" (refused credentials-beside-userinfo)) ("u@" "u" #f (refused credentials-beside-userinfo)) ("u:@" "u" "" (refused credentials-beside-userinfo)))
+test-auth: mib-credentials on "8.5.0" measured (((failed perform-failed 27 none) 0) ((failed perform-failed 27 none) 0))
+# of expected passes      61
+test: pass tests/test-auth.sps
+=== tests/test-conditions.sps
+%%%% Starting test conditions
+# of expected passes      38
+test: pass tests/test-conditions.sps
+=== tests/test-constants.sps
+%%%% Starting test constants
+# of expected passes      701
+test: pass tests/test-constants.sps
+=== tests/test-library-loading.sps
+%%%% Starting test library-loading
+# of expected passes      75
+test: pass tests/test-library-loading.sps
+=== tests/test-mailbox.sps
+%%%% Starting test mailbox
+# of expected passes      26
+test: pass tests/test-mailbox.sps
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      158
+test: pass tests/test-origin-tls.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      337
+test: pass tests/test-origin.sps
+=== tests/test-redirect.sps
+%%%% Starting test redirect
+(head-predicate-rows 124)
+# of expected passes      70
+test: pass tests/test-redirect.sps
+=== tests/test-request.sps
+%%%% Starting test request
+# of expected passes      47
+test: pass tests/test-request.sps
+=== tests/test-stream.sps
+%%%% Starting test stream
+(sweep piece plain call-ticks 6 escaped-kept 12 escaped-lost 0 returned 41)
+(sweep port plain call-ticks 266 escaped-kept 532 escaped-lost 0 returned 41)
+(sweep piece planted call-ticks 9 escaped-kept 12 escaped-lost 6 returned 41)
+# of expected passes      74
+test: pass tests/test-stream.sps
+=== tests/test-transfer-tls.sps
+%%%% Starting test transfer-tls
+# of expected passes      83
+test: pass tests/test-transfer-tls.sps
+=== tests/test-transfer.sps
+%%%% Starting test transfer
+# of expected passes      225
+test: pass tests/test-transfer.sps
+=== tests/test-unsupported.sps
+%%%% Starting test unsupported
+# of expected passes      36
+test: pass tests/test-unsupported.sps
+test: ran 13, passed 13, failed 0, hung 0

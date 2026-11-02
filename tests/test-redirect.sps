@@ -617,6 +617,30 @@
         (headers-after "http://[fe80::1%25eth0]/p" "http://[fe80::1%25eth1]/q")
         (headers-after "http://[fe80::1%25eth0]/p" "http://[fe80::1]/q")))
 
+;; credentials-after : String String -> Any
+;; The credentials the next request carries, from URL with Digest
+;; credentials and no header, after a 302 to LOCATION.
+(define (credentials-after url location)
+  (let ((a (step (table-state (curl-request-with (table-request url 'get #f '()) 'credentials '(digest "u" "p"))
+                              20 #f)
+                 (reply 302 (redirect-to location)))))
+    (if (eq? (car a) 'next) (curl-request-credentials (caddr a)) (seen a))))
+
+(test-equal "exchange-step's origin rule for the credentials key (ADR-0036; the M7 plan, section 3.1): the same origin keeps it, by the host's case and by an explicit default port too; another port, scheme, the scheme alone on one port among them, host, and zone ID drop it, as they drop an Authorization header"
+  '((digest "u" "p") (digest "u" "p") (digest "u" "p") (digest "u" "p")
+    dropped dropped dropped dropped dropped dropped)
+  (map (lambda (c) (or c 'dropped))
+       (list (credentials-after "http://h.example/p" "/same")
+             (credentials-after "http://h.example/p" "http://H.EXAMPLE/case")
+             (credentials-after "http://h.example/p" "http://h.example:80/port")
+             (credentials-after "https://h.example/p" "https://h.example:443/port")
+             (credentials-after "http://h.example/p" "http://h.example:8080/")
+             (credentials-after "http://h.example/p" "https://h.example/")
+             (credentials-after "http://h.example:8443/p" "https://h.example:8443/x")
+             (credentials-after "http://h.example/p" "http://other.example/")
+             (credentials-after "http://[fe80::1%25eth0]/p" "http://[fe80::1%25eth1]/q")
+             (credentials-after "http://[fe80::1%25eth0]/p" "http://[fe80::1]/q"))))
+
 (test-equal "exchange-step: a header dropped stays dropped, through a hop back to the first origin"
   (list without-host without-host)
   (map (lambda (a) (if (eq? (car a) 'next) (curl-request-headers (caddr a)) (seen a)))

@@ -589,12 +589,12 @@
            (list answers (map (lambda (p) (and p #t)) (positions all got))
                  (length (append got (drain m))))))))
 
-   (test-equal "a set-up failure's token reaches the mailbox: MAXREDIRS at -2, which libcurl refuses, through the hatch"
+   (test-equal "a set-up failure's token reaches the mailbox: LOW_SPEED_LIMIT at -2, which libcurl refuses, through the hatch"
      (list '(transfer-error setopt-failed 43) #t)
      (on-own-engine
       (lambda (own)
         (let* ((m (make-curl-mailbox))
-               (t (curl-submit own (curl-request-with-options (request status) '(("MAXREDIRS" . -2)))
+               (t (curl-submit own (curl-request-with-options (request status) '(("LOW_SPEED_LIMIT" . -2)))
                                m)))
           (list (awaited t) (eq? (curl-mailbox-take m 10000) t))))))
 

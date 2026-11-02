@@ -1,0 +1,4 @@
+FAIL credentials-beside-authorization finds the header first, in the middle and last among three headers, for each scheme, as the request is made
+FAIL the high level's merge is checked whole: a session's three headers, Authorization first, in the middle and last, beside a call's credentials, and a session's credentials beside a call's three headers so, each refused as the call's request is built, as make-curl-request raised it, compounded with its &http-exchange, no transfer made
+test: FAIL tests/test-auth.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0

@@ -1,0 +1,8 @@
+write request: secret printed: no
+write token: secret printed: no
+curl-token-next-piece on a whole-body token: secret in display-condition: no
+  Exception in curl-token-next-piece: the token's request does not stream its response: give it a stream-buffer with irritant #<curl-token>
+curl-token-body-port on a whole-body token: secret in display-condition: no
+  Exception in curl-token-body-port: the token's request does not stream its response: give it a stream-buffer with irritant #<curl-token>
+curl-token-put-piece! on a token that streams no body: secret in display-condition: no
+  Exception in curl-token-put-piece!: the token's request does not stream its body: give it body stream with irritant #<curl-token>

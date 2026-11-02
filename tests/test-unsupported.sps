@@ -296,18 +296,21 @@
 ;; pins' bitmasks; each request field's, stream-buffer's header callable and
 ;; its data among them (the M6 plan, section 3.3), and a streamed body's
 ;; read, seek and prerequest callables, their data and FRESH_CONNECT (M6
-;; slice 2), and http-version's HTTP_VERSION (M7 slice 1); the twins; the
+;; slice 2), and http-version's HTTP_VERSION (M7 slice 1), and credentials'
+;; HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER (M7 slice 2), with
+;; MAXREDIRS, which every transfer sets; the twins; the
 ;; options slice 4's review found, twins and the hazards kept from the
 ;; hatch (amended 2026-10-27); the version's twins, SSL_ENABLE_ALPN, ALTSVC
-;; and ALTSVC_CTRL (amended 2026-11-02); every proxy TLS option.
+;; and ALTSVC_CTRL (amended 2026-11-02); the credentials' twin AWS_SIGV4
+;; (ADR-0036, amended 2026-11-02); every proxy TLS option.
 (define owned-names
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
-    "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
+    "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
     "CURLU" "NOBODY" "CUSTOMREQUEST" "HTTPHEADER" "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "USERAGENT"
     "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "CAINFO" "CAPATH"
     "SSL_VERIFYPEER" "SSL_VERIFYHOST" "PROXY" "HEADERFUNCTION" "HEADERDATA" "FOLLOWLOCATION"
     "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA" "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT"
-    "HTTP_VERSION"
+    "HTTP_VERSION" "HTTPAUTH" "XOAUTH2_BEARER"
     "TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "POST" "PUT" "UPLOAD"
     "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE" "INFILESIZE_LARGE"
     "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
@@ -315,7 +318,7 @@
     "TRANSFERTEXT" "USERPWD" "USERNAME" "PASSWORD" "NETRC" "HSTS"
     "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
     "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
-    "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT" "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL"
+    "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT" "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL" "AWS_SIGV4"
     "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
     "PROXY_CAINFO" "PROXY_CAINFO_BLOB" "PROXY_CAPATH" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
     "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
@@ -366,6 +369,45 @@
                                                      ("HTTP200ALIASES" "ICY 200 OK")
                                                      ("CONNECT_TO" "::127.0.0.1:1")
                                                      ("HTTPPROXYTUNNEL" . 1))))))))
+
+;; M7 slice 2 (ADR-0036, amended 2026-11-02): the credentials field's
+;; HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER; its twin AWS_SIGV4, which
+;; set after HTTPAUTH replaced every scheme's header with a signature
+;; (twins5); and MAXREDIRS, which every transfer sets at 30, so no hatch can
+;; unbound the follows libcurl makes inside a transfer, 7.85.0's default.
+;; Their neighbours
+;; stay the hatch's, each measured through the engine on five libcurls:
+;; FAILONERROR, which makes a wrong password's 401 code 22; AUTOREFERER,
+;; which adds a Referer to Digest's second request; KEEP_SENDING_ON_ERROR;
+;; UNRESTRICTED_AUTH, which reaches libcurl's own follow alone, which
+;; nothing public sets; DISALLOW_USERNAME_IN_URL; and LOGIN_OPTIONS,
+;; SASL_AUTHZID, SASL_IR, SERVICE_NAME and NETRC_FILE, which changed
+;; nothing sent; and PROXYAUTH, until M7 slice 3 owns it. Each is
+;; attached, and kept.
+(test-equal "HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, the credentials field's, its twin AWS_SIGV4, and MAXREDIRS, every transfer's, are refused as owned-option, with values their types take, before anything native; their neighbours FAILONERROR, AUTOREFERER, KEEP_SENDING_ON_ERROR, UNRESTRICTED_AUTH, DISALLOW_USERNAME_IN_URL, LOGIN_OPTIONS, SASL_AUTHZID, SASL_IR, SERVICE_NAME, NETRC_FILE and PROXYAUTH are taken, each kept as attached"
+  (list (refused-as "HTTPAUTH" 'owned-option) (refused-as "USERNAME" 'owned-option)
+        (refused-as "PASSWORD" 'owned-option) (refused-as "XOAUTH2_BEARER" 'owned-option)
+        (refused-as "AWS_SIGV4" 'owned-option) (refused-as "MAXREDIRS" 'owned-option)
+        taken taken taken taken taken taken taken taken taken taken taken
+        '(("FAILONERROR" long 1) ("AUTOREFERER" long 1) ("KEEP_SENDING_ON_ERROR" long 1)
+          ("UNRESTRICTED_AUTH" long 1) ("DISALLOW_USERNAME_IN_URL" long 1)
+          ("LOGIN_OPTIONS" string "AUTH=*") ("SASL_AUTHZID" string "z") ("SASL_IR" long 1)
+          ("SERVICE_NAME" string "s") ("NETRC_FILE" string "netrc") ("PROXYAUTH" values 1)))
+  (append (map attach '((("HTTPAUTH" . 1)) (("USERNAME" . "u")) (("PASSWORD" . "p"))
+                        (("XOAUTH2_BEARER" . "t")) (("AWS_SIGV4" . "aws:amz:us-east-1:s3"))
+                        (("MAXREDIRS" . 5))))
+          (map attach '((("FAILONERROR" . 1)) (("AUTOREFERER" . 1)) (("KEEP_SENDING_ON_ERROR" . 1))
+                        (("UNRESTRICTED_AUTH" . 1)) (("DISALLOW_USERNAME_IN_URL" . 1))
+                        (("LOGIN_OPTIONS" . "AUTH=*")) (("SASL_AUTHZID" . "z")) (("SASL_IR" . 1))
+                        (("SERVICE_NAME" . "s")) (("NETRC_FILE" . "netrc")) (("PROXYAUTH" . 1))))
+          (list (guard (e (#t (list 'raised (describe e))))
+                  (hatch-settings-of
+                   (curl-request-with-options base '(("FAILONERROR" . 1) ("AUTOREFERER" . 1)
+                                                     ("KEEP_SENDING_ON_ERROR" . 1) ("UNRESTRICTED_AUTH" . 1)
+                                                     ("DISALLOW_USERNAME_IN_URL" . 1)
+                                                     ("LOGIN_OPTIONS" . "AUTH=*") ("SASL_AUTHZID" . "z")
+                                                     ("SASL_IR" . 1) ("SERVICE_NAME" . "s")
+                                                     ("NETRC_FILE" . "netrc") ("PROXYAUTH" . 1))))))))
 
 (test-equal "an alias of an owned option is refused as owned-option, by id: FILE is WRITEDATA's id and RTSPHEADER HTTPHEADER's; and a name in another case, url, Url and cainfo, as curl_easy_option_by_name reads it"
   (list '(same same)

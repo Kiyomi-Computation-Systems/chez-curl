@@ -736,7 +736,7 @@
 (test-equal "the checks hand the plan their snapshot: request-checks' let* binds ca-file to (ca-file-copy who (curl-request-ca-file request)), checks that copy as (check-ca-environment who ca-file (curl-request-verify request)) and answers it, ca-file standing three times there; prepare-transfer takes it from (request-checks 'curl-submit request), make-plan takes ca-file and (curl-request-verify request) as its ninth and tenth arguments, ca-file standing twice there, and the plan's ninth and tenth fields are ca-file and verify"
   '((ca-file (ca-file-copy who (curl-request-ca-file request)))
     (check-ca-environment who ca-file (curl-request-verify request))
-    (values url fields ca-file)
+    (values url fields ca-file credentials)
     3
     (request-checks 'curl-submit request)
     (ca-file (curl-request-verify request))

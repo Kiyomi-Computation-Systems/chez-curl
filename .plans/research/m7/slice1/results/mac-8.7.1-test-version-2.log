@@ -1,0 +1,21 @@
+% git pull --ff-only
+make test SUITES=tests/test-version.sps NODE="$(asdf which node)"
+(the maintainer's Mac, macOS 26.7.1, Apple's libcurl 8.7.1, 2026-11-02, at 45e7ea4; pasted into the session; git's fetch lines left out)
+Updating fd9394e..45e7ea4
+Fast-forward
+ .plans/decisions/0034-the-http-version-and-connection-sharing.md |   3 +-
+ .plans/research/m7/slice1/results/mac-8.7.1-make-test.log        | 188 +++
+ tests/test-version.sps                                           |  14 ++++----
+ 3 files changed, 197 insertions(+), 8 deletions(-)
+ create mode 100644 .plans/research/m7/slice1/results/mac-8.7.1-make-test.log
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-version.sps
+%%%% Starting test version
+test-version: prior-knowledge-to-h1 on "8.7.1" measured (failed perform-failed 16 protocol)
+test-version: together-by-prior-knowledge on "8.7.1" measured (2 (http/2 http/2))
+# of expected passes      27
+test: pass tests/test-version.sps
+test: ran 1, passed 1, failed 0, hung 0

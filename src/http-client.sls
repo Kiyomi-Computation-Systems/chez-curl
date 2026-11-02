@@ -50,11 +50,14 @@
 ;;; 303 every method but head, each without its body or the call's headers
 ;;; for one: Content-*, Digest and Last-Modified. Another origin, by scheme,
 ;;; host A to Z folded and port, drops Authorization, Cookie and
-;;; Proxy-Authorization from then on, and another host drops Host too;
+;;; Proxy-Authorization from then on, and the credentials key with them
+;;; (ADR-0036), and another host drops Host too;
 ;;; every other header follows, as every other key does, the http-version
 ;;; among them: a redirect from http:// to https:// by prior knowledge
 ;;; fails the call with the low level's refusal of its next request,
-;;; prior-knowledge-over-https, compounded with its &http-exchange (ADR-0034).
+;;; prior-knowledge-over-https, compounded with its &http-exchange (ADR-0034);
+;;; and a redirect within one origin to a URL holding a user or a password,
+;;; beside credentials, fails it so with credentials-beside-userinfo.
 ;;; Each followed response joins the history. libcurl's own following stays
 ;;; off.
 ;;;
@@ -109,8 +112,11 @@
    ;; (make-http-session KEY VALUE ...): a session, with these keys, each
    ;; once at most, each left out taking the low level's default, as
    ;; make-curl-request takes them: headers, user-agent, timeout-ms,
-   ;; connect-timeout-ms, body-limit, ca-file, verify, proxy and
-   ;; http-version; and three of the high level's own:
+   ;; connect-timeout-ms, body-limit, ca-file, verify, proxy, http-version
+   ;; and credentials, which a redirect to another origin drops, and which a
+   ;; streamed call, call-with-response-port's or a producer's, takes as
+   ;; Basic or Bearer alone, digest-with-stream; and three of the high
+   ;; level's own:
    ;;   redirects        the most redirects a call follows, an exact
    ;;                    natural; or #f, which follows none and answers the
    ;;                    redirect; 20

@@ -58,11 +58,11 @@
 
   ;; request-session-keys : (Listof Symbol)
   ;; The session's keys that are make-curl-request's, each with the low
-  ;; level's default (the M5 plan, section 3.2), http-version among them
-  ;; (the M7 plan, section 3.1).
+  ;; level's default (the M5 plan, section 3.2), http-version and
+  ;; credentials among them (the M7 plan, section 3.1).
   (define request-session-keys
     '(headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
-      http-version))
+      http-version credentials))
 
   ;; policy-keys : (Listof Symbol)
   ;; The session's keys that are the high level's own: redirects, the most
@@ -574,7 +574,11 @@
   ;; it; it streams its response too, by the call's stream-buffer for a
   ;; port, 65,536 by default, and by 65,536 for http-request, which reads
   ;; the response's body whole. Every other request key is the call's, or
-  ;; else the session's.
+  ;; else the session's, credentials among them: a call's #f sends none
+  ;; over a session's. make-curl-request checks the merge, so a session's
+  ;; credentials beside a call's Authorization header, or a session's
+  ;; Digest beside a call's stream, is refused as the request is built,
+  ;; as the low level raises it.
   (define (call-request-of who mode session method url plist)
     (let* ((settings (key-settings who (if (eq? mode 'port) port-keys call-keys) plist))
            (body-given (assq 'body settings))
@@ -641,7 +645,8 @@
                                    'ca-file (pick 'ca-file curl-request-ca-file)
                                    'verify (pick 'verify curl-request-verify)
                                    'proxy (pick 'proxy curl-request-proxy)
-                                   'http-version (pick 'http-version curl-request-http-version))
+                                   'http-version (pick 'http-version curl-request-http-version)
+                                   'credentials (pick 'credentials curl-request-credentials))
                 (car policy)
                 (cadr policy)
                 (caddr policy)

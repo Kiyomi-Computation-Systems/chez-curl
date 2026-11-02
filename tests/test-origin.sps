@@ -33,6 +33,7 @@
 (import (rnrs)
         (srfi :64)
         (curl-testing)
+        (auth-testing)
         (only (chezscheme) current-time getenv input-port-ready? machine-type make-time
               open-process-ports sleep time-nanosecond time-second))
 
@@ -2103,6 +2104,230 @@
   '(returned done)
   scenarios-outcome)
 
+;; --- the auth route (M7 slice 2; the M7 plan, section 5.2) ------------------------
+;; Each test runs on an origin of its own, so its connections are numbered
+;; from 1 there, in the order this suite opens them, one a probe. The
+;; Authorization headers are written here: Basic's base64 and Digest's
+;; responses by (auth-testing), which tests/test-auth.sps holds to RFC
+;; 1321's, FIPS 180-4's and RFC 4648's vectors, never by the origin.
+
+;; make-list-of : Natural Any -> (Listof Any)
+(define (make-list-of n x) (if (= n 0) '() (cons x (make-list-of (- n 1) x))))
+
+;; with-origin : (Origin -> Any) -> (U (List 'returned Any) (List 'raised String))
+(define (with-origin proc)
+  (outcome (lambda () (call-with-origin proc))))
+
+;; closed : String -> String
+;; The http face's whole response with Connection: close: STATUS-LINE,
+;; HEADERS, each "Name: value", then Content-Length and BODY.
+(define (closed status-line headers body)
+  (string-append status-line "\r\n"
+                 (apply string-append (map (lambda (h) (string-append h "\r\n")) headers))
+                 "Content-Length: " (number->string (string-length body)) "\r\nConnection: close\r\n\r\n" body))
+
+(define auth-ok (list (closed "HTTP/1.1 200 OK" '() "auth ok\n") 'eof))
+
+;; refused-with : String -> (List String Symbol)
+;; The 401 the auth route answers with the challenge CHALLENGE, or none for #f.
+(define (refused-with challenge)
+  (list (closed "HTTP/1.1 401 Unauthorized" (if challenge (list (string-append "WWW-Authenticate: " challenge)) '())
+                "unauthorized\n")
+        'eof))
+
+(define basic-challenge "Basic realm=\"chez-curl-test\"")
+(define bearer-challenge "Bearer realm=\"chez-curl-test\"")
+
+;; basic-of : String -> String
+;; "Basic " and the base64 of TEXT's Latin-1 bytes.
+(define (basic-of text) (string-append "Basic " (base64-encode (octets text))))
+
+;; digest-of : Symbol String String String String String (U String #f) (U String #f) String -> String
+;; A Digest Authorization value, as libcurl writes one: HASH md5 or
+;; sha-256, ALG its token, the account's USER and PASS, NONCE, URI, and
+;; with QOP auth, CNONCE and nc 00000001; RESPONSE, when a string, in
+;; place of the right one.
+(define (digest-of hash alg user pass nonce uri qop cnonce response)
+  (let ((right (digest-response hash (octets user) "chez-curl-test" (octets pass) nonce cnonce
+                                (and qop "00000001") qop "GET" uri)))
+    (string-append "Digest username=\"" user "\", realm=\"chez-curl-test\", nonce=\"" nonce "\", uri=\"" uri "\", "
+                   (if qop (string-append "cnonce=\"" cnonce "\", nc=00000001, qop=" qop ", ") "")
+                   "response=\"" (if (string? response) response right) "\", opaque=\"opq5ccb\", algorithm=" alg)))
+
+;; logged : Origin String -> (List String Symbol)
+;; The auth log of KEY, by the http face, Connection: close.
+(define (logged o key)
+  (exchange o 'http (get (string-append "/auth-log?key=" key) close) 2000))
+
+;; log-text : String (Listof String) -> (List String Symbol)
+;; /auth-log's whole answer for KEY's LINES.
+(define (log-text key lines)
+  (list (closed "HTTP/1.1 200 OK" '()
+                (apply string-append "log " key " " (number->string (length lines)) "\n"
+                       (map (lambda (l) (string-append l "\n")) lines)))
+        'eof))
+
+(define (auth-scenarios)
+  (test-equal "the auth route's Basic: no credentials, a 401 with Basic's challenge; the account's, 200; a wrong password, 401; a post's body read and logged, the pattern's and one with a stray byte; the log, each request on its connection, whole"
+    (list 'returned
+          (list (refused-with basic-challenge) auth-ok (refused-with basic-challenge) auth-ok auth-ok
+                (log-text "b" (list "request 1 face=http conn=1 method=GET body=0 verdict=none status=401 authorization=-"
+                                    "request 2 face=http conn=2 method=GET body=0 verdict=ok status=200 authorization=Basic dXNlcjpwYXNz"
+                                    "request 3 face=http conn=3 method=GET body=0 verdict=bad status=401 authorization=Basic dXNlcjp3cm9uZw=="
+                                    "request 4 face=http conn=4 method=POST body=10 verdict=ok status=200 authorization=Basic dXNlcjpwYXNz"
+                                    "request 5 face=http conn=5 method=POST body=10:bad@7 verdict=ok status=200 authorization=Basic dXNlcjpwYXNz"))))
+    (with-origin
+     (lambda (o)
+       (let* ((p10 (pattern-text 10))
+              (bad7 (string-append (substring p10 0 7) "x" (substring p10 8 10)))
+              (a (exchange o 'http (get "/auth?key=b&ch=basic" close) 2000))
+              (b (exchange o 'http (get "/auth?key=b&ch=basic" "Authorization: Basic dXNlcjpwYXNz\r\n" close) 2000))
+              (c (exchange o 'http (get "/auth?key=b&ch=basic" (string-append "Authorization: " (basic-of "user:wrong") "\r\n") close) 2000))
+              (d (exchange o 'http (string-append (post "/auth?key=b&ch=basic" "Authorization: Basic dXNlcjpwYXNz\r\n"
+                                                        "Content-Length: 10\r\n" close) p10) 2000))
+              (e (exchange o 'http (string-append (post "/auth?key=b&ch=basic" "Authorization: Basic dXNlcjpwYXNz\r\n"
+                                                        "Content-Length: 10\r\n" close) bad7) 2000))
+              (log (logged o "b")))
+         (list a b c d e log)))))
+
+  (test-equal "the auth route's Bearer: no credentials, a 401 with Bearer's challenge; the token, 200; Basic credentials that pass, judged ok but not the route's scheme, 401; a scheme it does not know, other; a second Authorization header, logged as one more beside the first, which is judged"
+    (list 'returned
+          (list (refused-with bearer-challenge) auth-ok (refused-with bearer-challenge) (refused-with bearer-challenge)
+                auth-ok
+                (log-text "t" (list "request 1 face=http conn=1 method=GET body=0 verdict=none status=401 authorization=-"
+                                    "request 2 face=http conn=2 method=GET body=0 verdict=ok status=200 authorization=Bearer tok123"
+                                    "request 3 face=http conn=3 method=GET body=0 verdict=ok status=401 authorization=Basic dXNlcjpwYXNz"
+                                    "request 4 face=http conn=4 method=GET body=0 verdict=other status=401 authorization=Negotiate abc"
+                                    "request 5 face=http conn=5 method=GET body=0 verdict=ok status=200 authorization=Bearer tok123 (+1 more)"))))
+    (with-origin
+     (lambda (o)
+       (let* ((a (exchange o 'http (get "/auth?key=t&ch=bearer" close) 2000))
+              (b (exchange o 'http (get "/auth?key=t&ch=bearer" "Authorization: Bearer tok123\r\n" close) 2000))
+              (c (exchange o 'http (get "/auth?key=t&ch=bearer" "Authorization: Basic dXNlcjpwYXNz\r\n" close) 2000))
+              (d (exchange o 'http (get "/auth?key=t&ch=bearer" "Authorization: Negotiate abc\r\n" close) 2000))
+              (e (exchange o 'http (get "/auth?key=t&ch=bearer" "Authorization: Bearer tok123\r\n"
+                                        "Authorization: Bearer other\r\n" close) 2000))
+              (log (logged o "t")))
+         (list a b c d e log)))))
+
+  (let* ((uri "/auth?key=d&ch=digest&nonce=abc&qop=none")
+         (challenge "Digest realm=\"chez-curl-test\", nonce=\"abc\", opaque=\"opq5ccb\", algorithm=MD5"))
+    (test-equal "the auth route's Digest with no qop: no credentials, a 401 with the challenge, its nonce the query's; the response computed here, 200; a wrong one, bad(response); another uri, its response computed for it, bad(uri); a nonce never issued, bad(nonce); the log whole"
+      (list 'returned
+            (list (refused-with challenge) auth-ok (refused-with challenge) (refused-with challenge) (refused-with challenge)
+                  (log-text "d"
+                            (list "request 1 face=http conn=1 method=GET body=0 verdict=none status=401 authorization=-"
+                                  (string-append "request 2 face=http conn=2 method=GET body=0 verdict=ok status=200 authorization="
+                                                 (digest-of 'md5 "MD5" "user" "pass" "abc" uri #f #f #f))
+                                  (string-append "request 3 face=http conn=3 method=GET body=0 verdict=bad(response) status=401 authorization="
+                                                 (digest-of 'md5 "MD5" "user" "pass" "abc" uri #f #f "00000000000000000000000000000000"))
+                                  (string-append "request 4 face=http conn=4 method=GET body=0 verdict=bad(uri) status=401 authorization="
+                                                 (digest-of 'md5 "MD5" "user" "pass" "abc" "/other" #f #f #f))
+                                  (string-append "request 5 face=http conn=5 method=GET body=0 verdict=bad(nonce) status=401 authorization="
+                                                 (digest-of 'md5 "MD5" "user" "pass" "never" uri #f #f #f))))))
+      (with-origin
+       (lambda (o)
+         (let* ((with (lambda (value) (exchange o 'http (get uri (string-append "Authorization: " value "\r\n") close) 2000)))
+                (a (exchange o 'http (get uri close) 2000))
+                (b (with (digest-of 'md5 "MD5" "user" "pass" "abc" uri #f #f #f)))
+                (c (with (digest-of 'md5 "MD5" "user" "pass" "abc" uri #f #f "00000000000000000000000000000000")))
+                (d (with (digest-of 'md5 "MD5" "user" "pass" "abc" "/other" #f #f #f)))
+                (e (with (digest-of 'md5 "MD5" "user" "pass" "never" uri #f #f #f)))
+                (log (logged o "d")))
+           (list a b c d e log))))))
+
+  (let* ((uri "/auth?key=s&ch=digest&alg=SHA-256&nonce=xyz")
+         (challenge "Digest realm=\"chez-curl-test\", qop=\"auth\", nonce=\"xyz\", opaque=\"opq5ccb\", algorithm=SHA-256"))
+    (test-equal "the auth route's Digest by SHA-256 with qop auth: the challenge offers qop=\"auth\"; the response computed here, with its cnonce and nc, 200; one with no qop where it was offered, its response RFC 2069's, bad(qop,nc,cnonce)"
+      (list 'returned
+            (list (refused-with challenge) auth-ok (refused-with challenge)
+                  (log-text "s"
+                            (list "request 1 face=http conn=1 method=GET body=0 verdict=none status=401 authorization=-"
+                                  (string-append "request 2 face=http conn=2 method=GET body=0 verdict=ok status=200 authorization="
+                                                 (digest-of 'sha-256 "SHA-256" "user" "pass" "xyz" uri "auth" "c0ffee" #f))
+                                  (string-append "request 3 face=http conn=3 method=GET body=0 verdict=bad(qop,nc,cnonce) status=401 authorization="
+                                                 (digest-of 'sha-256 "SHA-256" "user" "pass" "xyz" uri #f #f #f))))))
+      (with-origin
+       (lambda (o)
+         (let* ((with (lambda (value) (exchange o 'http (get uri (string-append "Authorization: " value "\r\n") close) 2000)))
+                (a (exchange o 'http (get uri close) 2000))
+                (b (with (digest-of 'sha-256 "SHA-256" "user" "pass" "xyz" uri "auth" "c0ffee" #f)))
+                (c (with (digest-of 'sha-256 "SHA-256" "user" "pass" "xyz" uri #f #f #f)))
+                (log (logged o "s")))
+           (list a b c log))))))
+
+  (let ((uri "/auth?key=st&ch=digest&stale=forever&nonce=st&qop=none"))
+    (test-equal "the auth route's stale=forever: each Digest answer that passes gets a 401 with a fresh nonce, the query's and a count, and stale=true"
+      (list 'returned
+            (list (refused-with "Digest realm=\"chez-curl-test\", nonce=\"st-1\", opaque=\"opq5ccb\", algorithm=MD5, stale=true")
+                  (refused-with "Digest realm=\"chez-curl-test\", nonce=\"st-2\", opaque=\"opq5ccb\", algorithm=MD5, stale=true")))
+      (with-origin
+       (lambda (o)
+         (let* ((first (exchange o 'http (get uri close) 2000))
+                (with (lambda (nonce)
+                        (exchange o 'http (get uri (string-append "Authorization: " (digest-of 'md5 "MD5" "user" "pass" nonce uri #f #f #f)
+                                                                  "\r\n")
+                                               close)
+                                  2000)))
+                (a (with "st"))
+                (b (with "st-1")))
+           (list a b))))))
+
+  (test-equal "the auth route's other answers: none, a 401 with no challenge, credentials that pass or not; open, a 200 to any; size=5, the pattern's first five bytes; an account in the query, its bytes percent-decoded, a UTF-8 user and an empty password, and a token"
+    (list 'returned
+          (list (refused-with #f) auth-ok
+                (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: 5\r\nConnection: close\r\n\r\n" (pattern-text 5)) 'eof)
+                auth-ok auth-ok))
+    (with-origin
+     (lambda (o)
+       (let* ((a (exchange o 'http (get "/auth?key=n&ch=none" "Authorization: Basic dXNlcjpwYXNz\r\n" close) 2000))
+              (b (exchange o 'http (get "/auth?key=n&ch=open" close) 2000))
+              (c (exchange o 'http (get "/auth?key=n&ch=open&size=5" close) 2000))
+              (d (exchange o 'http (get "/auth?key=n&ch=basic&u=%C3%bcser&p="
+                                        (string-append "Authorization: " (basic-of "\xC3;\xBC;ser:") "\r\n") close)
+                           2000))
+              (e (exchange o 'http (get "/auth?key=n&ch=bearer&tok=%41b" "Authorization: Bearer Ab\r\n" close) 2000)))
+         (list a b c d e)))))
+
+  (test-equal "the auth routes refuse a query by /sink's rules, 404: none, no key, no ch, an unknown ch, an unknown name, a name twice, an unknown alg, a size of 0, a malformed %, and /auth-log with no key or another name; /auth-log for a key never seen is its empty log"
+    (list 'returned
+          (append (make-list-of 11 not-found-close) (list (log-text "never" '()))))
+    (with-origin
+     (lambda (o)
+       (map (lambda (target) (exchange o 'http (get target close) 2000))
+            '("/auth" "/auth?ch=basic" "/auth?key=k" "/auth?key=k&ch=ntlm" "/auth?key=k&ch=basic&x=1"
+              "/auth?key=k&ch=basic&ch=basic" "/auth?key=k&ch=digest&alg=MD4" "/auth?key=k&ch=open&size=0"
+              "/auth?key=k&ch=basic&u=%G1" "/auth-log" "/auth-log?key=k&x=1" "/auth-log?key=never")))))
+
+  ;; One connection, four requests in one write: the first and third carry
+  ;; Expect: 100-continue, the third its body after its head anyway; each
+  ;; answered in turn, the connection kept, so the probe ends by its idle
+  ;; bound.
+  (test-equal "/raw/auth417 keeps its connection: a request whose Expect holds 100-continue gets a 417 as its head arrives; the next bytes decide, a letter the next request, a body the refused one's, dropped; one without gets its body read and a 200; each logged to the key's auth log"
+    (list 'returned
+          (list (list (string-append "HTTP/1.1 417 Expectation Failed\r\nContent-Length: 19\r\n\r\nexpectation failed\n"
+                                     "HTTP/1.1 200 OK\r\nContent-Length: 8\r\n\r\nauth ok\n"
+                                     "HTTP/1.1 417 Expectation Failed\r\nContent-Length: 19\r\n\r\nexpectation failed\n"
+                                     "HTTP/1.1 200 OK\r\nContent-Length: 8\r\n\r\nauth ok\n")
+                      'timeout)
+                (log-text "e" (list "request 1 face=raw conn=1 method=POST body=- verdict=ok status=417 authorization=Basic dXNlcjpwYXNz"
+                                    "request 2 face=raw conn=1 method=POST body=5 verdict=none status=200 authorization=-"
+                                    "request 3 face=raw conn=1 method=POST body=- verdict=none status=417 authorization=-"
+                                    "request 4 face=raw conn=1 method=GET body=0 verdict=none status=200 authorization=-"))))
+    (with-origin
+     (lambda (o)
+       (let* ((p5 (pattern-text 5))
+              (a (exchange o 'raw (string-append (post "/raw/auth417?key=e" "Authorization: Basic dXNlcjpwYXNz\r\n"
+                                                       "Expect: 100-continue\r\n" "Content-Length: 5\r\n")
+                                                 (post "/raw/auth417?key=e" "Content-Length: 5\r\n") p5
+                                                 (post "/raw/auth417?key=e" "Expect: 100-Continue\r\n" "Content-Length: 5\r\n") p5
+                                                 (get "/raw/auth417?key=e"))
+                           500))
+              (log (logged o "e")))
+         (list a log))))))
+
+(auth-scenarios)
+
 ;; --- lifecycle: OS ports, two origins at once ---------------------------------
 
 (test-equal "OS ports: two origins at once announce four ports, none 0 and all different, and both serve"
@@ -2524,20 +2749,57 @@
                   (if (and first (>= (- first (probe-connected p)) 300)) 'late-enough
                       (list 'connected (probe-connected p) 'first first))))))))))
 
-(define origin-usage "usage: node tests/origin.mjs [--pki DIR]\n")
+(define origin-usage "usage: node tests/origin.mjs [--pki DIR | --selftest [PLANT]]\n")
 
-(test-equal "it takes no argument, or --pki DIR: any other exits 2, naming them on stderr, and nothing on stdout"
-  (list (list 2 "" (string-append "origin: it takes no argument, or --pki DIR, and was given [\"--nope\"]\n"
+(test-equal "it takes no argument, --pki DIR, or --selftest [PLANT]: any other exits 2, naming them on stderr, and nothing on stdout; a plant it does not know too"
+  (list (list 2 "" (string-append "origin: it takes no argument, --pki DIR, or --selftest [PLANT], and was given [\"--nope\"]\n"
                                   origin-usage))
-        (list 2 "" (string-append "origin: it takes no argument, or --pki DIR, and was given [\"--pki\"]\n"
+        (list 2 "" (string-append "origin: it takes no argument, --pki DIR, or --selftest [PLANT], and was given [\"--pki\"]\n"
                                   origin-usage))
-        (list 2 "" (string-append "origin: it takes no argument, or --pki DIR, and was given [\"--pki\",\"a\",\"b\"]\n"
+        (list 2 "" (string-append "origin: it takes no argument, --pki DIR, or --selftest [PLANT], and was given [\"--pki\",\"a\",\"b\"]\n"
                                   origin-usage))
-        (list 2 "" (string-append "origin: it takes no argument, or --pki DIR, and was given [\"--PKI\",\"a\"]\n"
+        (list 2 "" (string-append "origin: it takes no argument, --pki DIR, or --selftest [PLANT], and was given [\"--PKI\",\"a\"]\n"
                                   origin-usage))
-        (list 2 "" (string-append "origin: --pki takes DIR, a directory, and was given an empty one\n" origin-usage)))
+        (list 2 "" (string-append "origin: --pki takes DIR, a directory, and was given an empty one\n" origin-usage))
+        (list 2 "" (string-append "origin: --selftest plants nc-before-nonce or sess-ignored, and was given \"bogus\"\n"
+                                  origin-usage))
+        (list 2 "" (string-append "origin: it takes no argument, --pki DIR, or --selftest [PLANT], and was given [\"--selftest\",\"a\",\"b\"]\n"
+                                  origin-usage)))
   (map (lambda (args) (bounded* (append (list node "tests/origin.mjs") args)))
-       '(("--nope") ("--pki") ("--pki" "a" "b") ("--PKI" "a") ("--pki" ""))))
+       '(("--nope") ("--pki") ("--pki" "a" "b") ("--PKI" "a") ("--pki" "") ("--selftest" "bogus")
+         ("--selftest" "a" "b"))))
+
+;; The auth route's Digest arithmetic is held to RFC 2617's and RFC 7616's
+;; published examples by the origin's own self-test, and that self-test is
+;; seen to fail: each plant breaks the arithmetic, and the checks it breaks
+;; are named. nc-before-nonce breaks the three qop vectors; sess-ignored the
+;; -sess control alone, which no vector covers.
+;; swapped : Symbol String String String String String String String String String -> String
+;; nc-before-nonce's response, computed here: H(HA1:nc:nonce:cnonce:qop:HA2).
+(define (swapped hash user realm pass nonce cnonce nc qop method uri)
+  (let ((h (if (eq? hash 'md5) md5-hex sha256-hex))
+        (b (lambda parts (octets (apply string-append parts)))))
+    (h (b (h (b user ":" realm ":" pass)) ":" nc ":" nonce ":" cnonce ":" qop ":" (h (b method ":" uri))))))
+
+(test-equal "the origin's --selftest passes its 13 checks, the Digest vectors and four controls among them, exit 0; with each plant it fails the checks that plant breaks, naming each and the answer the plant gives, computed here, exit 1"
+  (list (list 0 "selftest ok 13\n" "")
+        (list 1 (string-append
+                 "selftest FAIL rfc2617 md5 auth: got "
+                 (swapped 'md5 "Mufasa" "testrealm@host.com" "Circle Of Life" "dcd98b7102dd2f0e8b11d0f600bfb0c093"
+                          "0a4f113b" "00000001" "auth" "GET" "/dir/index.html")
+                 ", want 6629fae49393a05397450978507c4ef1\n"
+                 "selftest FAIL rfc7616 md5 auth: got "
+                 (swapped 'md5 "Mufasa" "http-auth@example.org" "Circle of Life" "7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v"
+                          "f2/wE4q74E6zIJEtWaHKaf5wv/H5QzzpXusqGemxURZJ" "00000001" "auth" "GET" "/dir/index.html")
+                 ", want 8ca523f5e9506fed4657c9700eebdbec\n"
+                 "selftest FAIL rfc7616 sha-256 auth: got "
+                 (swapped 'sha-256 "Mufasa" "http-auth@example.org" "Circle of Life" "7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v"
+                          "f2/wE4q74E6zIJEtWaHKaf5wv/H5QzzpXusqGemxURZJ" "00000001" "auth" "GET" "/dir/index.html")
+                 ", want 753927fa0e85d155564e2e272a28d1802ca10daf4496794697cf8db5856cb6c1\n")
+              "")
+        (list 1 "selftest FAIL -sess made no difference\n" ""))
+  (map (lambda (args) (bounded* (append (list node "tests/origin.mjs") args)))
+       '(("--selftest") ("--selftest" "nc-before-nonce") ("--selftest" "sess-ignored"))))
 
 ;; --- lifecycle: how long the origin outlives a suite killed with SIGKILL -----
 ;; Its stdin ends once every process holding the pipe's write end has gone:

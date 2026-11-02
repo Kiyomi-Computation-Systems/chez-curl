@@ -290,7 +290,12 @@
             (mutable paced engine-paced engine-paced-set!)
             (mutable passed engine-passed engine-passed-set!)
             (mutable late engine-late engine-late-set!)
-            (mutable probe engine-probe engine-probe-set!)))
+            (mutable probe engine-probe engine-probe-set!))
+    ;; Opaque: Chez prints a record's every field, and an engine's queue and
+    ;; table hold its tokens, so a printed engine, or a token's assertion
+    ;; that printed its engine, showed another request's credentials (the
+    ;; review of M7 slice 2). An engine prints as #<curl-engine>.
+    (opaque #t))
 
   ;; A token: its engine and its plan; under the engine's mutex, its state,
   ;; queued, live or done, its outcome, a response or a condition, and its
@@ -311,7 +316,11 @@
             (immutable mailbox token-mailbox)
             (immutable callback token-callback)
             (mutable port token-port token-port-set!)
-            (mutable plant token-plant token-plant-set!)))
+            (mutable plant token-plant token-plant-set!))
+    ;; Opaque: a token holds its plan, which holds its credentials, and its
+    ;; engine; the token's own assertions hand it over whole as their
+    ;; irritant. A token prints as #<curl-token>.
+    (opaque #t))
 
   ;; A mailbox (ADR-0021): its mutex, and under it, its finished tokens,
   ;; oldest first, as two lists: front, oldest first, and back, newest
@@ -319,7 +328,9 @@
   (define-record-type (curl-mailbox make-mailbox-record curl-mailbox?)
     (fields (immutable lock mailbox-lock)
             (mutable front mailbox-front mailbox-front-set!)
-            (mutable back mailbox-back mailbox-back-set!)))
+            (mutable back mailbox-back mailbox-back-set!))
+    ;; Opaque, as the tokens it holds are.
+    (opaque #t))
 
   ;; curl-engine-state : Engine -> (U 'running 'stopping 'stopped 'failing 'failed)
   ;; stopping and failing last until the engine's thread has freed all it

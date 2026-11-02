@@ -1,0 +1,9 @@
+write request: secret printed: YES
+Warning in write: cycle detected; proceeding with (print-graph #t)
+write token: secret printed: YES
+curl-token-next-piece on a whole-body token: secret in display-condition: YES
+  Exception in curl-token-next-piece: the token's request does not stream its response: give it a stream-buffer with irritant #[#{curl-token a6m5z72g2d5ki7p3h2lfcc9fv-42} #[#{curl-engine a6m5z72g2d5ki7p3h2lfcc9fv-43} #<mutex> () running 128407710993472 1 #f #<eqv hashtable> #f () 128407711008384 0 () set #f () #(0) default 0 0 #f #f] #[#{plan a6m5z72g2d5ki7p3h2lfcc9fv-44} "http://127.0.0.1:1/" get (...
+curl-token-body-port on a whole-body token: secret in display-condition: YES
+  Exception in curl-token-body-port: the token's request does not stream its response: give it a stream-buffer with irritant #[#{curl-token a6m5z72g2d5ki7p3h2lfcc9fv-42} #[#{curl-engine a6m5z72g2d5ki7p3h2lfcc9fv-43} #<mutex> () running 128407710993472 1 #f #<eqv hashtable> #f () 128407711008384 0 () set #f () #(0) default 0 0 #f #f] #[#{plan a6m5z72g2d5ki7p3h2lfcc9fv-44} "http://127.0.0.1:1/" get ()...
+curl-token-put-piece! on a token that streams no body: secret in display-condition: YES
+  Exception in curl-token-put-piece!: the token's request does not stream its body: give it body stream with irritant #[#{curl-token a6m5z72g2d5ki7p3h2lfcc9fv-42} #[#{curl-engine a6m5z72g2d5ki7p3h2lfcc9fv-43} #<mutex> () running 128407710993472 1 #f #<eqv hashtable> #f () 128407711008384 0 () set #f () #(0) default 0 0 #f #f] #[#{plan a6m5z72g2d5ki7p3h2lfcc9fv-44} "http://127.0.0.1:1/" get () #f #f ...

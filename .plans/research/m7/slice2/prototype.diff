@@ -1,0 +1,48 @@
+--- src/curl/private/transfer.sls	2026-11-02 12:52:50.598202215 -0500
++++ build/m7s2/src/curl/private/transfer.sls	2026-11-02 13:44:49.473955297 -0500
+@@ -840,7 +840,7 @@
+   ;; The hatch's options that make libcurl send a second request inside one
+   ;; transfer, an auth round: HTTPAUTH, the server's, and PROXYAUTH, the
+   ;; proxy's (the M6 plan, section 3.2). M7 revisits auth.
+-  (define rounds-option-names '("HTTPAUTH" "PROXYAUTH"))
++  (define rounds-option-names '("PROXYAUTH"))
+ 
+   ;; rounds-setting? : Hatch-Setting -> Boolean
+   ;; Whether SETTING, a hatch setting, is one of rounds-option-names, by
+@@ -1252,7 +1252,7 @@
+               "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE"
+               "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
+               "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
+-              "TRANSFERTEXT" "USERPWD" "USERNAME" "PASSWORD" "NETRC" "HSTS"
++              "TRANSFERTEXT" "USERPWD" "NETRC" "HSTS"
+               "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
+               "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
+               "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT"
+@@ -1529,8 +1529,12 @@
+        (unless (off-t? value) (wrong "the option takes an exact integer a curl_off_t holds"))
+        value)
+       ((string)
+-       (unless (string? value) (wrong "the option takes a string"))
+-       (checked (string-copy value)))
++       (if (bytevector? value)
++           (let ((copy (bytevector-copy value)))
++             (when (memv 0 (bytevector->u8-list copy)) (refuse-option who name 'embedded-nul))
++             copy)
++           (begin (unless (string? value) (wrong "the option takes a string"))
++                  (checked (string-copy value)))))
+       ((blob)
+        (unless (bytevector? value) (wrong "the option takes a bytevector"))
+        (bytevector-copy value))
+@@ -1619,7 +1623,11 @@
+     (let ((name (hatch-setting-name setting))
+           (value (hatch-setting-value setting)))
+       (case (hatch-setting-type setting)
+-        ((string) (set-string-option! easy name value buffer))
++        ((string) (if (bytevector? value)
++                      (let ((bytes (make-bytevector (+ (bytevector-length value) 1) 0)))
++                        (bytevector-copy! value 0 bytes 0 (bytevector-length value))
++                        (call-with-foreign-bytes bytes (lambda (address) (set-option! easy name address buffer))))
++                      (set-string-option! easy name value buffer)))
+         ((blob) (call-with-curl-blob value
+                   (lambda (address) (set-option! easy name address buffer))))
+         ((slist) (set-option! easy name list buffer))

@@ -108,8 +108,8 @@
    ;;                       buffers, a positive exact integer, read as it
    ;;                       arrives through the token; or #f, the whole body
    ;;                       in the response; #f. Refused beside a hatch's
-   ;;                       HTTPAUTH or PROXYAUTH, or an Expect header whose
-   ;;                       value holds 100-continue, as stream-with-rounds
+   ;;                       PROXYAUTH, or an Expect header whose value holds
+   ;;                       100-continue, as stream-with-rounds
    ;;   body-length         a streamed body's length, an exact natural below
    ;;                       2^63 - 1, sent as Content-Length; or #f, chunked
    ;;                       over HTTP/1.1; #f. Refused beside a body that does
@@ -126,6 +126,27 @@
    ;;                       or http/2 request to an origin the engine holds
    ;;                       an HTTP/2 connection to, made by prior knowledge,
    ;;                       reuses it and reads HTTP/2
+   ;;   credentials         a server's credentials, one scheme's, each part a
+   ;;                       string sent as UTF-8: (basic USER PASSWORD) and
+   ;;                       (bearer TOKEN), sent on the first request; (digest
+   ;;                       USER PASSWORD), sent once the server challenges a
+   ;;                       bare first request, so a request with a body to a
+   ;;                       server that never does goes twice, the first with
+   ;;                       no body; or #f, none; #f. A wrong password ends
+   ;;                       with the server's 401, code 0. Refused: a control
+   ;;                       char, U+0000 to U+001F or U+007F, in any part, or
+   ;;                       a colon in a Basic user, as credentials-bytes; a
+   ;;                       token, or a user and a password both, "", as
+   ;;                       credentials-empty; beside an Authorization header,
+   ;;                       as credentials-beside-authorization; Digest beside
+   ;;                       a streamed body or response, as
+   ;;                       digest-with-stream; and at submit, beside a URL
+   ;;                       holding a user or a password, as
+   ;;                       credentials-beside-userinfo. No refusal names a
+   ;;                       credentials string. 8.23.0 percent-encodes a
+   ;;                       Digest user name's bytes outside 0x20 to 0x7E, a
+   ;;                       UTF-8 one's among them, and hashes the raw bytes,
+   ;;                       so a server refuses it
    ;; A key it does not take, one given twice, and one with no value are
    ;; refused by name, as &curl-request-error, before anything else.
    ;; curl-request-with : Request Symbol Any ... -> Request
@@ -145,11 +166,14 @@
    ;; curl-request-stream-buffer : Request -> (U Positive-Integer #f)
    ;; curl-request-body-length : Request -> (U Natural #f)
    ;; curl-request-http-version : Request -> (U 'http/1.1 'http/2 'http/2-prior-knowledge #f)
+   ;; curl-request-credentials : Request -> (U (List 'basic String String) (List 'digest String String) (List 'bearer String) #f)
+   ;;   a fresh copy, so a change to it reaches no request
    make-curl-request curl-request-with curl-request?
    curl-request-url curl-request-method curl-request-headers curl-request-body
    curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
    curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
    curl-request-stream-buffer curl-request-body-length curl-request-http-version
+   curl-request-credentials
 
    ;; --- URLs (ADR-0008) ----------------------------------------------------
    ;; curl-url-part : String Symbol -> (U String Natural #f)
@@ -223,8 +247,9 @@
    ;; curl-request-check : Request -> Void
    ;; Runs the checks curl-submit makes of the request on this thread, and
    ;; raises what they raise, as a submit would: the headers' and the user
-   ;; agent's, the CA file's and the environment's it loaded with, and the
-   ;; URL's parse and scheme; its who is curl-request-check where a
+   ;; agent's, the credentials', the CA file's and the environment's it
+   ;; loaded with, and the URL's parse and scheme, and its userinfo beside
+   ;; credentials; its who is curl-request-check where a
    ;; submit's is curl-submit. It copies no body and queues nothing, so a
    ;; batch can be checked before any of it is submitted; an engine's own
    ;; state can still refuse the submit (ADR-0023, amended 2026-10-28). A
