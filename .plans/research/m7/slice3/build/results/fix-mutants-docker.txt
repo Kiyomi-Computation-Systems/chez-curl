@@ -1,0 +1,17 @@
+never-switch /home/kishu/src/chez-curl/build/m7s3b/mut/never-switch suites: tests/test-proxy.sps
+lane floor: FAIL (19 s)
+  [floor] test: FAIL tests/test-proxy.sps (exit 1)
+  [floor] FAIL a transfer through a proxy URL with userinfo stops the engine's multiplexing, by version: below 8.19.0 the engine switches at it, the two streams live on one HTTP/2 connection end 200 on it, unbroken, and a third request to their origin, made while they are live, opens a connection of
+  [floor] FAIL in a child, https_proxy naming the proxy with no userinfo: a transfer through proxy environment, made while a named proxy's transfer with alice's userinfo has its HTTP/2 stream live, sends a CONNECT of its own and is refused 407, by version: below 8.19.0 the engine switched at alice's
+switch-resumes /home/kishu/src/chez-curl/build/m7s3b/mut/switch-resumes suites: tests/test-proxy.sps
+lane floor: FAIL (19 s)
+  [floor] test: FAIL tests/test-proxy.sps (exit 1)
+  [floor] FAIL a transfer through a proxy URL with userinfo stops the engine's multiplexing, by version: below 8.19.0 the engine switches at it, the two streams live on one HTTP/2 connection end 200 on it, unbroken, and a third request to their origin, made while they are live, opens a connection of
+  [floor] FAIL in a child, https_proxy naming the proxy with no userinfo: a transfer through proxy environment, made while a named proxy's transfer with alice's userinfo has its HTTP/2 stream live, sends a CONNECT of its own and is refused 407, by version: below 8.19.0 the engine switched at alice's
+switch-every /home/kishu/src/chez-curl/build/m7s3b/mut/switch-every suites: tests/test-proxy.sps
+lane floor: FAIL (19 s)
+  [floor] test: FAIL tests/test-proxy.sps (exit 1)
+  [floor] FAIL stops-multiplexing?, written out for every version, proxy URL and userinfo crossed: below 8.19.0, a proxy URL with userinfo stops the engine's multiplexing, 8.7.1's and 8.18.0's among them; a proxy URL without, userinfo with none, and every one from 8.19.0 never
+  [floor] FAIL a submit's plan holds the tunnel settings and whether it stops the engine's multiplexing, by version: below 8.19.0 FRESH_CONNECT for an https:// URL through a proxy URL, FORBID_REUSE beside userinfo, and a proxy URL with userinfo stopping the multiplexing whatever the URL's scheme; no
+  [floor] FAIL a transfer through a proxy URL with userinfo stops the engine's multiplexing, by version: below 8.19.0 the engine switches at it, the two streams live on one HTTP/2 connection end 200 on it, unbroken, and a third request to their origin, made while they are live, opens a connection of
+docker mutants done

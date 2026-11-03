@@ -31,9 +31,64 @@
           &http-group-error make-http-group-error http-group-error? http-group-error-reason
           http-group-error-reasons
           &http-exchange make-http-exchange http-exchange? http-exchange-method
-          http-exchange-url http-exchange-history http-exchange-transfers)
+          http-exchange-url http-exchange-history http-exchange-transfers
+          kind-of shown-value shown-key checked-accessor)
   (import (curl)
           (rnrs))
+
+  ;; --- a caller's value, as a refusal names it -------------------------------------
+
+  ;; kind-of : Any -> Symbol
+  ;; X's kind: string, list, number, boolean, char, symbol, bytevector,
+  ;; vector, procedure or other. Pure.
+  (define (kind-of x)
+    (cond ((string? x) 'string)
+          ((or (pair? x) (null? x)) 'list)
+          ((number? x) 'number)
+          ((boolean? x) 'boolean)
+          ((char? x) 'char)
+          ((symbol? x) 'symbol)
+          ((bytevector? x) 'bytevector)
+          ((vector? x) 'vector)
+          ((procedure? x) 'procedure)
+          (else 'other)))
+
+  ;; shown-atom? : Any -> Boolean
+  ;; Whether X is a symbol, a number, a boolean, a char or (): none holds a
+  ;; URL, a header, credentials or a body.
+  (define (shown-atom? x)
+    (or (symbol? x) (number? x) (boolean? x) (char? x) (null? x)))
+
+  ;; shown-value : Any -> Any
+  ;; X as a refusal or an assertion names a caller's value where another
+  ;; belongs: itself when it is shown-atom?, or a proper list of them, a
+  ;; policy's statuses or methods; else (kind K), K its kind-of, never the
+  ;; value: a string, or a list holding one, can be a URL, a header,
+  ;; credentials or a body. A proxy URL or a credentials list handed where
+  ;; a key or another value belongs was printed whole (M7 slice 3's
+  ;; review). Pure.
+  (define (shown-value x)
+    (if (or (shown-atom? x) (and (list? x) (for-all shown-atom? x)))
+        x
+        (list 'kind (kind-of x))))
+
+  ;; shown-key : Any -> Any
+  ;; X as a key's refusal names it: itself when it is a symbol, as a key is;
+  ;; else (kind K), K its kind-of, a number's among them. Pure.
+  (define (shown-key x)
+    (if (symbol? x) x (list 'kind (kind-of x))))
+
+  ;; checked-accessor : Symbol (Any -> Boolean) String (Any -> Any) -> (Any -> Any)
+  ;; ACCESSOR, a record's or a condition type's, for WHO: called on what
+  ;; PREDICATE holds; anything else an assertion violation from WHO, "not
+  ;; WHAT", naming it by shown-value, never the value. Chez's own check
+  ;; named what it refused, so (curl-request-url "http://u:PW@h/") printed
+  ;; the password (ADR-0036, amended 2026-11-03).
+  (define (checked-accessor who predicate what accessor)
+    (lambda (x)
+      (unless (predicate x)
+        (assertion-violation who (string-append "not " what) (shown-value x)))
+      (accessor x)))
 
   ;; make-http-error : -> &http-error
   ;; http-error? : Any -> Boolean
@@ -94,15 +149,31 @@
   ;;           for not-a-status-list; methods, for not-a-method-list; limit,
   ;;           for not-a-limit; body, the producer, for stream-in-group and
   ;;           body-length-mismatch
-  ;;   value   the key as given, for a key's refusal; the method, for
-  ;;           body-not-allowed; the value as given, for every other reason
-  ;;           but body-and-form; #f, for body-and-form
+  ;;   value   the key as given, for a key's refusal, but a key that is no
+  ;;           symbol, named by its kind, (kind K), shown-key's; the method,
+  ;;           for body-not-allowed; for every other reason but
+  ;;           body-and-form, the value as given where it is a symbol, a
+  ;;           number, a boolean, a char or (), else its kind, (kind K),
+  ;;           shown-value's: a value where another belongs can be a URL,
+  ;;           credentials or a body (M7 slice 3's review); #f, for
+  ;;           body-and-form
   ;;   reason  one of http-request-error-reasons
   (define-condition-type &http-request-error &http-error
     unchecked-make-http-request-error http-request-error?
-    (field http-request-error-field)
-    (value http-request-error-value)
-    (reason http-request-error-reason))
+    (field unchecked-http-request-error-field)
+    (value unchecked-http-request-error-value)
+    (reason unchecked-http-request-error-reason))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define http-request-error-field
+    (checked-accessor 'http-request-error-field http-request-error? "a &http-request-error" unchecked-http-request-error-field))
+  (define http-request-error-value
+    (checked-accessor 'http-request-error-value http-request-error? "a &http-request-error" unchecked-http-request-error-value))
+  (define http-request-error-reason
+    (checked-accessor 'http-request-error-reason http-request-error? "a &http-request-error" unchecked-http-request-error-reason))
 
   ;; make-http-request-error : Symbol Any Symbol -> &http-request-error
   ;; Refuses a REASON that is not one of http-request-error-reasons with an
@@ -148,9 +219,20 @@
   ;;             it, or #f
   (define-condition-type &http-redirect-error &http-error
     unchecked-make-http-redirect-error http-redirect-error?
-    (reason http-redirect-error-reason)
-    (response http-redirect-error-response)
-    (location http-redirect-error-location))
+    (reason unchecked-http-redirect-error-reason)
+    (response unchecked-http-redirect-error-response)
+    (location unchecked-http-redirect-error-location))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define http-redirect-error-reason
+    (checked-accessor 'http-redirect-error-reason http-redirect-error? "a &http-redirect-error" unchecked-http-redirect-error-reason))
+  (define http-redirect-error-response
+    (checked-accessor 'http-redirect-error-response http-redirect-error? "a &http-redirect-error" unchecked-http-redirect-error-response))
+  (define http-redirect-error-location
+    (checked-accessor 'http-redirect-error-location http-redirect-error? "a &http-redirect-error" unchecked-http-redirect-error-location))
 
   ;; make-http-redirect-error : Symbol Response (U String #f) -> &http-redirect-error
   ;; Refuses a REASON that is not one of http-redirect-error-reasons with an
@@ -174,7 +256,14 @@
   ;; section 3.3).
   (define-condition-type &http-timeout &http-error
     make-http-timeout http-timeout?
-    (timeout-ms http-timeout-timeout-ms))
+    (timeout-ms unchecked-http-timeout-timeout-ms))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define http-timeout-timeout-ms
+    (checked-accessor 'http-timeout-timeout-ms http-timeout? "a &http-timeout" unchecked-http-timeout-timeout-ms))
 
   ;; http-group-error-reasons : (Listof Symbol)
   ;; Why a request group refuses an operation, or ended a call (the M5 plan,
@@ -196,7 +285,14 @@
   ;;   reason  one of http-group-error-reasons
   (define-condition-type &http-group-error &http-error
     unchecked-make-http-group-error http-group-error?
-    (reason http-group-error-reason))
+    (reason unchecked-http-group-error-reason))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define http-group-error-reason
+    (checked-accessor 'http-group-error-reason http-group-error? "a &http-group-error" unchecked-http-group-error-reason))
 
   ;; make-http-group-error : Symbol -> &http-group-error
   ;; Refuses a REASON that is not one of http-group-error-reasons with an
@@ -224,7 +320,20 @@
   ;; among it (the M5 plan, section 3.3).
   (define-condition-type &http-exchange &condition
     make-http-exchange http-exchange?
-    (method http-exchange-method)
-    (url http-exchange-url)
-    (history http-exchange-history)
-    (transfers http-exchange-transfers)))
+    (method unchecked-http-exchange-method)
+    (url unchecked-http-exchange-url)
+    (history unchecked-http-exchange-history)
+    (transfers unchecked-http-exchange-transfers))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define http-exchange-method
+    (checked-accessor 'http-exchange-method http-exchange? "a &http-exchange" unchecked-http-exchange-method))
+  (define http-exchange-url
+    (checked-accessor 'http-exchange-url http-exchange? "a &http-exchange" unchecked-http-exchange-url))
+  (define http-exchange-history
+    (checked-accessor 'http-exchange-history http-exchange? "a &http-exchange" unchecked-http-exchange-history))
+  (define http-exchange-transfers
+    (checked-accessor 'http-exchange-transfers http-exchange? "a &http-exchange" unchecked-http-exchange-transfers)))

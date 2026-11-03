@@ -1,0 +1,8 @@
+curl-request-url on a string: secret printed: YES
+  "Exception in curl-request-url: \"http://u:Pr0xyS3cr3t@h/\" is not of type #<record type curl-request>"
+curl-response-status on a string: secret printed: YES
+  "Exception in curl-response-status: \"http://u:Pr0xyS3cr3t@h/\" is not of type #<record type curl-response>"
+submit of ftp://u:Pr0xyS3cr3t@h/: secret printed: YES
+  "Exception in chez-curl: chez-curl fetches only http and https URLs with irritant \"ftp://u:Pr0xyS3cr3t@h/\""
+submit of a URL with a space, http://u:Pr0xyS3cr3t@h /: secret printed: YES
+  "Exception in chez-curl: Malformed input to a URL function with irritant \"http://u:Pr0xyS3cr3t@h /\""

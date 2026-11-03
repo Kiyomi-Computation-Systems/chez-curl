@@ -1,0 +1,194 @@
+refusal proxy-url (no scheme): secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-check: a proxy URL libcurl cannot parse, or that names no scheme, or whose user or password holds a % not followed by two hex digits with irritant proxy
+refusal proxy-url (a %): secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-check: a proxy URL libcurl cannot parse, or that names no scheme, or whose user or password holds a % not followed by two hex digits with irritant proxy
+refusal proxy-url (raw control): secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-check: a proxy URL libcurl cannot parse, or that names no scheme, or whose user or password holds a % not followed by two hex digits with irritant proxy
+refusal proxy-url (not UTF-8 host): secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-check: a proxy URL libcurl cannot parse, or that names no scheme, or whose user or password holds a % not followed by two hex digits with irritant proxy
+refusal proxy-url (U+0000): secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-check: a proxy URL libcurl cannot parse, or that names no scheme, or whose user or password holds a % not followed by two hex digits with irritant proxy
+refusal proxy-scheme: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-check: a proxy URL's scheme is http or https with irritant proxy
+refusal proxy-url-parts: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-check: a proxy URL names a host and a port alone: no path but /, no query and no fragment with irritant proxy
+refusal credentials-bytes (user): secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-check: a credentials string holds a control char, U+0000 to U+001F or U+007F, which libcurl would write into its header unescaped, or a Basic user name holds a colon, where RFC 7617 ends the user with irritant (proxy user)
+refusal credentials-bytes (password): secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-check: a credentials string holds a control char, U+0000 to U+001F or U+007F, which libcurl would write into its header unescaped, or a Basic user name holds a colon, where RFC 7617 ends the user with irritant (proxy password)
+refusal credentials-empty: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-check: credentials with nothing to send: a Bearer token, or a user and a password, that are all empty with irritant (proxy user)
+refusal proxy-tls-without-https-proxy: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-check: a proxy CA file, or a proxy's verification off, beside a proxy that is no https:// URL, which has no TLS of its own to set with irritant #f
+refusal prior-knowledge-through-proxy: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-check: HTTP/2 by prior knowledge beside a proxy URL: libcurl ignores prior knowledge through a proxy that does not tunnel, and sends HTTP/1.1 with irritant http/2-prior-knowledge
+refusal proxy-tls-in-tls (or none here): secret printed: no
+  no-raise no-raise 
+refusal proxy-authorization-header: secret printed: no
+  #<compound condition> #<compound condition> Exception in make-curl-request: a Proxy-Authorization header: inside a tunnel libcurl sends it to the origin; give a proxy's credentials in its URL with irritant "Proxy-Authorization"
+refusal a wrong-shaped proxy: secret printed: no
+  #<compound condition> #<compound condition> Exception in make-curl-request: a proxy is environment, the environment's, #f, none, or a URL string with irritant proxy
+refusal the hatch's PROXYUSERPWD: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-with-options: chez-curl owns this option: it sets it, sets it another way, or keeps it from the hatch with irritant "PROXYUSERPWD"
+refusal the hatch's PROXY: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-with-options: chez-curl owns this option: it sets it, sets it another way, or keeps it from the hatch with irritant "PROXY"
+refusal proxy-settings' wrong proxy: secret printed: no
+  #<compound condition> #<compound condition> Exception in proxy-settings: not a proxy with irritant proxy
+refusal a submit's proxy-url: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-submit: a proxy URL libcurl cannot parse, or that names no scheme, or whose user or password holds a % not followed by two hex digits with irritant proxy
+refusal a session's proxy-url at a call: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-submit: a proxy URL libcurl cannot parse, or that names no scheme, or whose user or password holds a % not followed by two hex digits with irritant proxy
+refusal call-with-http-session, its procedure missing, a proxy URL last: secret printed: no
+  #<compound condition> #<compound condition> Exception in call-with-http-session: the last argument is a procedure, of the session with irritant proc
+the request: secret printed: no
+  #<curl-request> #<curl-request> 
+its plan: secret printed: no
+  no-raise no-raise 
+failure a CONNECT refused 407 for the password: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-transfer: Could not connect to server
+  its error buffer: a CONNECT refused 407 for the password: secret printed: no
+  CONNECT tunnel failed, response 407
+  its token: a CONNECT refused 407 for the password: secret printed: no
+  #<curl-token> #<curl-token> 
+  a stream operation on it: a CONNECT refused 407 for the password: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-token-next-piece: the token's request does not stream its response: give it a stream-buffer with irritant #<curl-token>
+failure a CONNECT refused 503: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-transfer: Could not connect to server
+  its error buffer: a CONNECT refused 503: secret printed: no
+  CONNECT tunnel failed, response 503
+  its token: a CONNECT refused 503: secret printed: no
+  #<curl-token> #<curl-token> 
+  a stream operation on it: a CONNECT refused 503: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-token-next-piece: the token's request does not stream its response: give it a stream-buffer with irritant #<curl-token>
+failure a CONNECT the proxy closes: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-transfer: Failure when receiving data from the peer
+  its error buffer: a CONNECT the proxy closes: secret printed: no
+  Proxy CONNECT aborted
+  its token: a CONNECT the proxy closes: secret printed: no
+  #<curl-token> #<curl-token> 
+  a stream operation on it: a CONNECT the proxy closes: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-token-next-piece: the token's request does not stream its response: give it a stream-buffer with irritant #<curl-token>
+failure a proxy whose port refuses: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-transfer: Could not connect to server
+  its error buffer: a proxy whose port refuses: secret printed: no
+  Failed to connect to 127.0.0.1 port 2 via 127.0.0.1 after 0 ms: Could not connect to server
+  its token: a proxy whose port refuses: secret printed: no
+  #<curl-token> #<curl-token> 
+  a stream operation on it: a proxy whose port refuses: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-token-next-piece: the token's request does not stream its response: give it a stream-buffer with irritant #<curl-token>
+failure a proxy whose leaf fails: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-transfer: SSL peer certificate or SSH remote key was not OK
+  its error buffer: a proxy whose leaf fails: secret printed: no
+  SSL certificate verification failed: certificate has expired. (CAfile: /tmp/curl-testing.v5q12d/ca.pem CRLfile: none)
+  its token: a proxy whose leaf fails: secret printed: no
+  #<curl-token> #<curl-token> 
+  a stream operation on it: a proxy whose leaf fails: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-token-next-piece: the token's request does not stream its response: give it a stream-buffer with irritant #<curl-token>
+failure a proxy's leaf against another CA: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-transfer: SSL peer certificate or SSH remote key was not OK
+  its error buffer: a proxy's leaf against another CA: secret printed: no
+  SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/curl-testing.v5q12d/other-ca.pem CRLfile: none)
+  its token: a proxy's leaf against another CA: secret printed: no
+  #<curl-token> #<curl-token> 
+  a stream operation on it: a proxy's leaf against another CA: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-token-next-piece: the token's request does not stream its response: give it a stream-buffer with irritant #<curl-token>
+failure the origin's TLS inside the tunnel: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-transfer: SSL peer certificate or SSH remote key was not OK
+  its error buffer: the origin's TLS inside the tunnel: secret printed: no
+  SSL certificate verification failed: certificate signer not trusted. (CAfile: /tmp/curl-testing.v5q12d/other-ca.pem CRLfile: none)
+  its token: the origin's TLS inside the tunnel: secret printed: no
+  #<curl-token> #<curl-token> 
+  a stream operation on it: the origin's TLS inside the tunnel: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-token-next-piece: the token's request does not stream its response: give it a stream-buffer with irritant #<curl-token>
+failure a timeout: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-transfer: Could not connect to server
+  its error buffer: a timeout: secret printed: no
+  Failed to connect to refuse-503.invalid port 443 via 10.255.255.1 after 0 ms: Could not connect to server
+  its token: a timeout: secret printed: no
+  #<curl-token> #<curl-token> 
+  a stream operation on it: a timeout: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-token-next-piece: the token's request does not stream its response: give it a stream-buffer with irritant #<curl-token>
+misplaced: the proxy URL where a key belongs, make-curl-request: secret printed: no
+  #<compound condition> #<compound condition> Exception in make-curl-request: not a key a request takes with irritant (kind string)
+misplaced: after a key's value, make-curl-request: secret printed: no
+  #<compound condition> #<compound condition> Exception in make-curl-request: not a key a request takes with irritant (kind string)
+misplaced: curl-request-with: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-with: not a key a request takes with irritant (kind string)
+misplaced: make-http-session: secret printed: no
+  #<compound condition> #<compound condition> Exception in make-http-session: not a key this takes with irritant (kind string)
+misplaced: make-http-session, a value after it: secret printed: no
+  #<compound condition> #<compound condition> Exception in make-http-session: not a key this takes with irritant (kind string)
+misplaced: call-with-http-session: secret printed: no
+  #<compound condition> #<compound condition> Exception in make-http-session: not a key this takes with irritant (kind string)
+misplaced: http-get: secret printed: no
+  #<compound condition> #<compound condition> Exception in http-request: not a key this takes with irritant (kind string)
+misplaced: credentials where a key belongs, make-curl-request: secret printed: no
+  #<compound condition> #<compound condition> Exception in make-curl-request: not a key a request takes with irritant (kind list)
+misplaced: credentials where a key belongs, make-http-session: secret printed: no
+  #<compound condition> #<compound condition> Exception in make-http-session: not a key this takes with irritant (kind list)
+misplaced: headers of a wrong type holding an Authorization: secret printed: no
+  #<compound condition> #<compound condition> Exception in make-curl-request: headers are a list of (NAME . VALUE) strings with irritant (kind list)
+misplaced: an Authorization value refused: secret printed: no
+  #<compound condition> #<compound condition> Exception in make-curl-request: a header string holds CR or LF, which would end its line with irritant "Authorization"
+misplaced: a body of a wrong type: secret printed: no
+  #<compound condition> #<compound condition> Exception in http-request: a body is a bytevector, a string, sent as UTF-8, or a producer, a procedure of no arguments with irritant (kind list)
+misplaced: a URL where a request belongs: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-submit: not a request with irritant (kind string)
+misplaced: a URL where a session belongs: secret printed: no
+  #<compound condition> #<compound condition> Exception in http-request: not a session with irritant (kind string)
+misplaced: a URL where a token belongs: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-token-wait: not a token with irritant (kind string)
+misplaced: a hatch value of a wrong type: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-with-options: the option takes an exact integer a C long holds with irritant ("LOW_SPEED_TIME" kind string)
+misplaced: http-parallel's specs a string: secret printed: no
+  #<compound condition> #<compound condition> Exception in http-parallel: the specs are a list with irritant (kind string)
+misplaced: form-encode given a string: secret printed: no
+  #<compound condition> #<compound condition> Exception in form-encode: a list of pairs of a name and a value, both strings with irritant (kind string)
+accessor: curl-request-url: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-request-url: not a request with irritant (kind string)
+accessor: curl-response-status: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-response-status: not a response with irritant (kind string)
+accessor: curl-head-headers: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-head-headers: not a head with irritant (kind string)
+accessor: http-response-status: secret printed: no
+  #<compound condition> #<compound condition> Exception in http-response-status: not a response with irritant (kind string)
+accessor: http-exchange-url: secret printed: no
+  #<compound condition> #<compound condition> Exception in http-exchange-url: not a &http-exchange with irritant (kind string)
+accessor: curl-url-error-input: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-url-error-input: not a &curl-url-error with irritant (kind string)
+accessor: curl-transfer-error-error-buffer: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-transfer-error-error-buffer: not a &curl-transfer-error with irritant (kind string)
+accessor: http-request-error-value: secret printed: no
+  #<compound condition> #<compound condition> Exception in http-request-error-value: not a &http-request-error with irritant (kind string)
+accessor: libcurl-info-path: secret printed: no
+  #<compound condition> #<compound condition> Exception in libcurl-info-path: not a libcurl-info with irritant (kind string)
+URL: scheme-not-http at check: secret printed: no
+  #<compound condition> #<compound condition> Exception in chez-curl: chez-curl fetches only http and https URLs with irritant url
+URL: scheme-not-http at submit: secret printed: no
+  #<compound condition> #<compound condition> Exception in chez-curl: chez-curl fetches only http and https URLs with irritant url
+URL: a parse failure at check: secret printed: no
+  #<compound condition> #<compound condition> Exception in chez-curl: Malformed input to a URL function with irritant url
+URL: embedded-nul at check: secret printed: no
+  #<compound condition> #<compound condition> Exception in chez-curl: a URL holds U+0000, which libcurl would read as its end with irritant url
+URL: not-utf-8 at check: secret printed: no
+  #<compound condition> #<compound condition> Exception in chez-curl: libcurl gave back a URL, or a part of one, whose bytes are not UTF-8 with irritant url
+URL: curl-url-part: secret printed: no
+  #<compound condition> #<compound condition> Exception in chez-curl: Malformed input to a URL function with irritant url
+URL: curl-url-resolve's base: secret printed: no
+  #<compound condition> #<compound condition> Exception in chez-curl: Malformed input to a URL function with irritant url
+URL: curl-url-resolve's reference: secret printed: no
+  #<compound condition> #<compound condition> Exception in chez-curl: Malformed input to a URL function with irritant url
+URL: curl-url-append-query: secret printed: no
+  #<compound condition> #<compound condition> Exception in chez-curl: Malformed input to a URL function with irritant url
+URL: curl-url-with-fragment: secret printed: no
+  #<compound condition> #<compound condition> Exception in chez-curl: Malformed input to a URL function with irritant url
+URL: a call's, passed through: secret printed: no
+  #<compound condition> #<compound condition> Exception in chez-curl: chez-curl fetches only http and https URLs with irritant url
+a response, absolute form, its body the origin's echo of the request (the proxy's own headers, expected): secret printed: no
+  (200 (("Content-Length" . "157") ("Connection" . "keep-alive"))) (200 ((Content-Length . 157) (Connection . keep-alive))) 
+a session: secret printed: no
+  #<http-session> #<http-session> 
+a call's failure through it: secret printed: no
+  #<compound condition> #<compound condition> Exception in curl-transfer: Could not connect to server
+a call's response through it, without its body: secret printed: no
+  (#[#{http-response peg9ie6b7tzm16sig5uf39408-80} 200 http/1.1 "http://127.0.0.1:36583/status/200" (("Content-Length" . "11") ("Connection" . "keep-alive")) #vu8(115 116 97 116 117 115 32 50 48 48 10) ((name-lookup . 10) (connect . 53) (tls-handshake . 0) (first-byte . 599) (total . 611)) ()] 200 (("...

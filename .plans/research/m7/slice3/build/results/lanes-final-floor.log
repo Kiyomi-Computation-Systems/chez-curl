@@ -1,0 +1,91 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (16 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-proxy.sps
+%%%% Starting test proxy
+test-proxy: empty-userinfo on "7.85.0" measured (("http://127.0.0.1:3128/" "http" #f) ("http://127.0.0.1:3128/" "http" #f) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u@127.0.0.1:3128/" "http" #t))
+test-proxy: tls-in-tls-checks on "7.85.0/OpenSSL" measured ((refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise (refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise no-raise)
+test-proxy: empty-userinfo-wire on "7.85.0" measured (((response 200) ("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1")) ((response 200) ("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1")))
+test-proxy: refused-connect on "7.85.0" measured ((56 send-receive 403 the-connect) (56 send-receive 407 the-connect) (56 send-receive 502 the-connect) (56 send-receive 503 the-connect) (56 send-receive 407 the-connect) (56 send-receive 407 the-connect) (56 send-receive #f the-connect))
+test-proxy: unshared-tunnels on "7.85.0" measured (((response 200) (response 200) #t ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")))
+test-proxy: tunnel-plans on "7.85.0" measured ((("FRESH_CONNECT" . 1) ("FORBID_REUSE" . 1)) (("FRESH_CONNECT" . 1)) () () ())
+test-proxy: closing-retries on "7.85.0" measured (((failed 56 #f 1) 1) ((failed 56 #f 3) 3))
+# of expected passes      88
+test: pass tests/test-proxy.sps
+=== tests/test-conditions.sps
+%%%% Starting test conditions
+# of expected passes      38
+test: pass tests/test-conditions.sps
+=== tests/test-constants.sps
+%%%% Starting test constants
+# of expected passes      709
+test: pass tests/test-constants.sps
+=== tests/test-request.sps
+%%%% Starting test request
+# of expected passes      47
+test: pass tests/test-request.sps
+=== tests/test-unsupported.sps
+%%%% Starting test unsupported
+# of expected passes      37
+test: pass tests/test-unsupported.sps
+=== tests/test-transfer.sps
+%%%% Starting test transfer
+# of expected passes      224
+test: pass tests/test-transfer.sps
+=== tests/test-transfer-tls.sps
+%%%% Starting test transfer-tls
+# of expected passes      84
+test: pass tests/test-transfer-tls.sps
+=== tests/test-stream.sps
+%%%% Starting test stream
+(sweep piece plain call-ticks 6 escaped-kept 12 escaped-lost 0 returned 41)
+(sweep port plain call-ticks 266 escaped-kept 532 escaped-lost 0 returned 41)
+(sweep piece planted call-ticks 9 escaped-kept 12 escaped-lost 6 returned 41)
+# of expected passes      74
+test: pass tests/test-stream.sps
+=== tests/test-redirect.sps
+%%%% Starting test redirect
+(head-predicate-rows 124)
+# of expected passes      72
+test: pass tests/test-redirect.sps
+=== tests/test-retry.sps
+%%%% Starting test retry
+(head-predicate-rows 98)
+# of expected passes      86
+test: pass tests/test-retry.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      342
+test: pass tests/test-origin.sps
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      159
+test: pass tests/test-origin-tls.sps
+=== tests/test-library-loading.sps
+%%%% Starting test library-loading
+# of expected passes      75
+test: pass tests/test-library-loading.sps
+=== tests/test-http-client.sps
+%%%% Starting test http-client
+# of expected passes      74
+test: pass tests/test-http-client.sps
+=== tests/test-stream-call.sps
+%%%% Starting test stream-call
+(stream-call-throughput raw ms 514)
+(stream-call-throughput h2 ms 294)
+(stream-call-idle-cpu ms 11352253/1000000)
+# of expected passes      77
+test: pass tests/test-stream-call.sps
+=== tests/test-proxy.sps
+%%%% Starting test proxy
+test-proxy: empty-userinfo on "7.85.0" measured (("http://127.0.0.1:3128/" "http" #f) ("http://127.0.0.1:3128/" "http" #f) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u@127.0.0.1:3128/" "http" #t))
+test-proxy: tls-in-tls-checks on "7.85.0/OpenSSL" measured ((refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise (refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise no-raise)
+test-proxy: empty-userinfo-wire on "7.85.0" measured (((response 200) ("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1")) ((response 200) ("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1")))
+test-proxy: refused-connect on "7.85.0" measured ((56 send-receive 403 the-connect) (56 send-receive 407 the-connect) (56 send-receive 502 the-connect) (56 send-receive 503 the-connect) (56 send-receive 407 the-connect) (56 send-receive 407 the-connect) (56 send-receive #f the-connect))
+test-proxy: unshared-tunnels on "7.85.0" measured (((response 200) (response 200) #t ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")))
+test-proxy: tunnel-plans on "7.85.0" measured ((("FRESH_CONNECT" . 1) ("FORBID_REUSE" . 1)) (("FRESH_CONNECT" . 1)) () () ())
+test-proxy: closing-retries on "7.85.0" measured (((failed 56 #f 1) 1) ((failed 56 #f 3) 3))
+# of expected passes      88
+test: pass tests/test-proxy.sps
+test: ran 16, passed 16, failed 0, hung 0

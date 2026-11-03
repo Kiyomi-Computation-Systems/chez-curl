@@ -1,6 +1,6 @@
 # ADR-0026: Retries are off unless a session or a call asks for them
 
-- **Status:** Accepted; amended 2026-10-28: libcurl resends a stream HTTP/2 refused (M5 slice 3); amended 2026-10-28: a retry that runs out of time answers what it retried; amended 2026-10-28: only when the retry sent nothing, and statuses from 400 to 599
+- **Status:** Accepted; amended 2026-10-28: libcurl resends a stream HTTP/2 refused (M5 slice 3); amended 2026-10-28: a retry that runs out of time answers what it retried; amended 2026-10-28: only when the retry sent nothing, and statuses from 400 to 599; amended 2026-11-03: a refused `CONNECT` is judged by its status (M7 slice 3)
 - **Date:** 2026-10-27
 - **Scope:** chez-curl v1, `(http-client)`'s retry policy, from M5
 - **Settles:** whether the high level retries a failed request by default. The maintainer chose
@@ -124,3 +124,21 @@ the refused connect, size 0, with two transfers counted, where no policy would h
 A method outside the policy's `methods` is never
 retried after a send, so a default policy's `post` is not exposed; a caller reads
 `&http-exchange`'s transfer count above 1 as "an earlier transfer may have sent the request".
+
+## Amendment, 2026-11-03: a refused `CONNECT` is judged by its status (M7 slice 3)
+
+A proxy that refuses a `CONNECT` with a status, 403, 407 or 502, fails the transfer: 56 on
+7.85.0 and Ubuntu's 8.5.0, 7 on 8.20.0 and 8.23.0. Its request size is the `CONNECT`'s on
+7.85.0 and 0 elsewhere. So by the rule above, a `post` through it was retried for any method on
+8.5.0 and later, and for the policy's methods alone on 7.85.0: the same failure, retried by
+version. A 407 for a wrong password was tried three times. Measured through the engine on the
+five Linux libcurls, two runs each ([research](../research/m7/slice3/), item 4).
+
+**Decided by the maintainer, 2026-11-03, the recommended option** (ADR-0037, decision 9): the
+transfer reads the `CONNECT`'s status, `HTTP_CONNECTCODE`, and the retry treats a refused
+`CONNECT` as a response with that status. It is retried when the policy's statuses hold it and
+the step's method is among its methods, alike on every version. Its wait is the backoff's, since
+the proxy's headers are not the response's. So the default policy, `(429 503)`, never retries a
+403 or a 407. A `CONNECT` that ends with no status, a proxy that closes or answers part of a
+status line, keeps the rule above: 7.85.0's size, the `CONNECT`'s, errs toward not repeating a
+`post`.

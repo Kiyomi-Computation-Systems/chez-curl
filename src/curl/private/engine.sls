@@ -67,7 +67,9 @@
 ;;; stream-buffer or less. The lock order is the engine's mutex, then a
 ;;; stream's, as the engine's, then a mailbox's. On libcurl 8.7.0 and
 ;;; 8.7.1 the multi handle multiplexes nothing (ADR-0030, amended
-;;; 2026-10-29).
+;;; 2026-10-29); before 8.19.0 it stops multiplexing, for good, at its
+;;; first transfer through a proxy URL that holds userinfo (ADR-0037,
+;;; decision 11; ADR-0030, amended 2026-11-03).
 ;;;
 ;;; curl_multi_info_read reads none for a removed handle, and only
 ;;; curl_multi_perform makes its messages (M3 slice 2, measured on four
@@ -230,7 +232,7 @@
   ;; number, else an assertion violation from WHO.
   (define (deadline-after who ms)
     (unless (and (integer? ms) (exact? ms) (>= ms 0))
-      (assertion-violation who "a bound is a natural number of milliseconds" ms))
+      (assertion-violation who "a bound is a natural number of milliseconds" (shown-value ms)))
     (+ (monotonic-ns) (* ms 1000000)))
 
   ;; --- the records -----------------------------------------------------------------------
@@ -377,11 +379,13 @@
   (define (multiplexing-off? version)
     (and (member version unmultiplexed-versions) #t))
 
-  ;; curl-engine-multiplexing : Engine -> (U 'default 'off)
-  ;; What ENGINE's thread did with CURLMOPT_PIPELINING as it made its multi
-  ;; handle: default, left as libcurl has it; or off, set to 0, as
+  ;; curl-engine-multiplexing : Engine -> (U 'default 'off 'switched)
+  ;; What ENGINE's thread did with CURLMOPT_PIPELINING: default, left as
+  ;; libcurl has it; off, set to 0 as it made its multi handle, as
   ;; multiplexing-off? says, or the test seam make-curl-engine-unmultiplexed
-  ;; forces. A private accessor. An engine returned running has decided.
+  ;; forces; or switched, set to 0 later, at the first transfer whose plan
+  ;; stops multiplexing (stop-multiplexing!), never back. A private
+  ;; accessor. An engine returned running has decided whether it starts.
   (define (curl-engine-multiplexing engine)
     (check-engine 'curl-engine-multiplexing engine)
     (locked (curl-engine-lock engine) (lambda () (engine-multiplexing engine))))
@@ -533,10 +537,10 @@
     (locked (curl-engine-lock (curl-token-engine token)) (lambda () (token-chunks token))))
 
   (define (check-engine who x)
-    (unless (curl-engine? x) (assertion-violation who "not an engine" x)))
+    (unless (curl-engine? x) (assertion-violation who "not an engine" (shown-value x))))
 
   (define (check-token who x)
-    (unless (curl-token? x) (assertion-violation who "not a token" x)))
+    (unless (curl-token? x) (assertion-violation who "not a token" (shown-value x))))
 
   ;; --- the engine's conditions ---------------------------------------------------------
 
@@ -744,11 +748,11 @@
     (define who 'curl-submit)
     (check-engine who engine)
     (unless (or (not mailbox) (curl-mailbox? mailbox))
-      (assertion-violation who "not a mailbox" mailbox))
+      (assertion-violation who "not a mailbox" (shown-value mailbox)))
     (unless (or (not callback) (procedure? callback))
-      (assertion-violation who "a callback is a procedure of one argument, the token" callback))
+      (assertion-violation who "a callback is a procedure of one argument, the token" (shown-value callback)))
     (when (and callback (not mailbox))
-      (assertion-violation who "a callback needs a mailbox, which a delivery calls it from" callback))
+      (assertion-violation who "a callback needs a mailbox, which a delivery calls it from" (shown-value callback)))
     (let* ((plan (prepare-transfer request))
            (token (make-token engine plan 'queued #f '() #f mailbox callback #f #f))
            (refusal
@@ -1110,7 +1114,7 @@
            (up (token-upload who token))
            (deadline (and ms (deadline-after who ms))))
       (unless (and (bytevector? piece) (> (bytevector-length piece) 0))
-        (assertion-violation who "a piece is a bytevector of a byte or more" piece))
+        (assertion-violation who "a piece is a bytevector of a byte or more" (shown-value piece)))
       (let ((copy (bytevector-copy piece)) (engine (curl-token-engine token)))
         (let loop ((pause 50000))
           (let* ((answer (critical-section
@@ -1200,7 +1204,7 @@
   (define (make-curl-mailbox) (make-mailbox-record (make-mutex) '() '()))
 
   (define (check-mailbox who x)
-    (unless (curl-mailbox? x) (assertion-violation who "not a mailbox" x)))
+    (unless (curl-mailbox? x) (assertion-violation who "not a mailbox" (shown-value x))))
 
   ;; call-with-mailbox-held : Mailbox (-> Any) -> Any
   ;; THUNK's answer, run holding MAILBOX's mutex, through locked, so a take
@@ -1565,14 +1569,30 @@
   (define (live-empty? engine)
     (locked (curl-engine-lock engine) (lambda () (= (hashtable-size (engine-live engine)) 0))))
 
+  ;; stop-multiplexing! : Engine Positive-Integer -> Void
+  ;; MULTI's CURLMOPT_PIPELINING set to 0 on ENGINE's thread, for good, and
+  ;; recorded as switched, where the engine multiplexes: a plan whose
+  ;; stops-multiplexing? held, ADR-0037's decision 11. An engine already off
+  ;; or switched is left. A libcurl answer but CURLM_OK fails the engine, as
+  ;; the setting at its start does. The handles MULTI holds keep their
+  ;; connections: libcurl reads the option as a later transfer looks for one.
+  (define (stop-multiplexing! engine multi)
+    (when (eq? (locked (curl-engine-lock engine) (lambda () (engine-multiplexing engine))) 'default)
+      (let ((code (curl-multi-setopt-long multi curlmopt-pipelining curlpipe-nothing)))
+        (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_setopt code)))
+      (locked (curl-engine-lock engine) (lambda () (engine-multiplexing-set! engine 'switched)))))
+
   ;; set-up! : Engine Positive-Integer Token -> Void
   ;; Step 2: TOKEN's transfer started, recorded in the table, and added to
-  ;; MULTI. A token already done, cancelled while queued, is passed over. A
-  ;; raise from start-transfer!, which has freed what it made, completes the
+  ;; MULTI; first, where its plan stops multiplexing, the engine's
+  ;; multiplexing stopped, so it is the first transfer no other joins. A
+  ;; token already done, cancelled while queued, is passed over. A raise
+  ;; from start-transfer!, which has freed what it made, completes the
   ;; token with it: the transfer's own failure, not the engine's.
   (define (set-up! engine multi token)
     (unless (curl-token-done? token)
       (fault-at! engine 'setup)
+      (when (plan-unmultiplex (curl-token-plan token)) (stop-multiplexing! engine multi))
       (let ((live (guard (e (#t (complete! engine token e '()) #f))
                     (start-transfer! (curl-token-plan token)
                                      (not (memq 'transfer (engine-without engine)))

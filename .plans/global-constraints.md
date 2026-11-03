@@ -266,9 +266,13 @@ provisional. They bind until that record is accepted or amended.
   2026-10-26).
 - **What a transfer reads from its environment** (ADR-0024, from M4 slice 3):
   - it honours the proxy variables, by libcurl's own rules, and a request's `proxy` field at
-    `#f` turns them off, by `CURLOPT_PROXY` `""`. A proxy given by URL is M7's;
-  - a proxy's TLS stays libcurl's verified default, against its system store, until M7: every
-    `PROXY_SSL_*` and `PROXY_CA*` option is owned (ADR-0024, amended 2026-10-26);
+    `#f` turns them off, by `CURLOPT_PROXY` `""`; a proxy URL takes every transfer, `NOPROXY`
+    `""` beside it (M7 slice 3). A variable's proxy whose userinfo decodes to a control byte
+    sends 7.85.0 and 8.5.0 direct: libcurl's, documented, never parsed by chez-curl;
+  - a named proxy's TLS is its fields', `proxy-ca-file` and `proxy-verify`, which set
+    `PROXY_CAINFO`, `PROXY_CAPATH`, `PROXY_SSL_VERIFYPEER` and `PROXY_SSL_VERIFYHOST`; every other
+    `PROXY_SSL_*` and `PROXY_CA*` option stays owned, 19 of them (ADR-0024, amended 2026-10-26;
+    ADR-0037, as built);
   - native reads `SSL_CERT_FILE` and `SSL_CERT_DIR` immediately before `curl_global_init`, where
     Guix's patch reads them, and records them, an empty value as unset. It records the file the
     libcurl is mapped from too: the `/proc/self/maps` line holding `curl_version_info`'s entry
@@ -865,9 +869,29 @@ provisional. They bind until that record is accepted or amended.
   twice). No record that holds a request, a plan, a token or credentials prints its fields: the
   request, the plan, the live transfer, the engine, the token, the mailbox and the exchange are
   opaque, and `record-rtd` raises on each (M7 slice 2's review).
-- **A named proxy:** an `http://` or `https://` URL; the transfer sets `NOPROXY ""`, so no
-  variable sends it direct; its credentials are its URL's userinfo, by Basic; a caller's
+- **A named proxy:** an `http://` or `https://` URL, the scheme judged by chez-curl alike on
+  every version; the transfer sets `NOPROXY ""`, so no variable sends it direct; its credentials
+  are its URL's userinfo, by Basic, checked percent-decoded by the server credentials' rules,
+  since a decoded control byte sent 7.85.0 and 8.5.0 around the proxy; a caller's
   `Proxy-Authorization` header is refused; its CA and verification are request fields on the
-  origin's model. A proxy URL with no port gets its scheme's; an `https://` origin through an
-  `https://` proxy is refused on Ubuntu's 8.5.0 with GnuTLS, where it stalls (ADR-0037, amended).
+  origin's model. A proxy URL with no port gets its scheme's. An `https://` origin through an
+  `https://` proxy is refused where it stalls: on Ubuntu's 8.5.0 with GnuTLS, and on 7.85.0
+  unless the request asks for `http/1.1`. Before libcurl 8.19.0, a tunnelled transfer through a
+  named proxy sets `FRESH_CONNECT`, and one with proxy userinfo `FORBID_REUSE` too, since a
+  pooled tunnel carried another user's request (CVE-2026-3784); and an engine stops
+  multiplexing at its first transfer through a proxy URL with userinfo, since a live HTTP/2
+  tunnel carried an environment proxy's request. A refused `CONNECT` is retried
+  as a response with its status would be. `HTTPPROXYTUNNEL`, `HAPROXYPROTOCOL` and
+  `HAPROXY_CLIENT_IP` are owned, and `FORBID_REUSE`. A refusal names the field, `proxy`, never
+  the URL; a `%` not followed by two hex digits is `proxy-url`; an `https://` proxy on a libcurl
+  without `CURL_VERSION_HTTPS_PROXY` is `https-proxy-unsupported`; a caller's
+  `Proxy-Authorization` header is refused when the request is made.
+  `curl-transfer-error-connect-code` holds a refused `CONNECT`'s status, `#f` for none or a 2xx
+  (ADR-0037, amended twice; ADR-0026, amended).
+- **No printed text carries a caller's secret:** a value where another belongs is named by its
+  kind (`shown-value`, `shown-key`), a header value's refusal by its header's name, a refused URL
+  by its field, while `curl-url-error-input` still holds the URL; every public record and
+  condition accessor checks its argument, so Chez's own check never prints it. Every export of
+  `(curl)`, `(curl unsupported)` and `(http-client)` has a row in `tests/test-printed.sps`, so a
+  new export fails until it has one (ADR-0036 and ADR-0008, amended 2026-11-03).
 - **A request with a jar refuses a caller's `Cookie` or `Host` header** (ADR-0035, amended).

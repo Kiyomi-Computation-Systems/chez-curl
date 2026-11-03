@@ -116,10 +116,12 @@
 ;;;     to Z folded: a 100-continue asks for a body there is none of (RFC
 ;;;     9110, section 10.1.1);
 ;;;   - another origin, by scheme, host A to Z folded, zone ID and port,
-;;;     each by curl-url-part, drops Authorization, Cookie and
-;;;     Proxy-Authorization, and another host, A to Z folded, or another
-;;;     zone ID, drops Host too: libcurl gives an IPv6 host without its zone,
-;;;     so two zones of one address are told apart by the zone alone;
+;;;     each by curl-url-part, drops Authorization and Cookie, and another
+;;;     host, A to Z folded, or another zone ID, drops Host too: libcurl
+;;;     gives an IPv6 host without its zone, so two zones of one address are
+;;;     told apart by the zone alone. No request holds a Proxy-Authorization
+;;;     header: the low level refuses one (ADR-0037, decision 4), and a
+;;;     proxy's credentials, its URL's, go to every hop with it;
 ;;;   - the next request is made by make-curl-request from the new URL,
 ;;;     every other key read from the step's request, whose timeout-ms is
 ;;;     the call's bound: exchange-submission gives it the time left;
@@ -137,7 +139,15 @@
 ;;; deadline, strictly, these are retried, by (next STATE REQUEST WAIT-MS),
 ;;; REQUEST the step's again:
 ;;;
-;;;   - a failure from the await, perform-failed, of the connect,
+;;;   - a failure from the await, perform-failed, that carries a CONNECT's
+;;;     status, curl-transfer-error-connect-code, a proxy's refusal of the
+;;;     tunnel: as a response with that status is, when the policy's
+;;;     statuses hold it, for a method in its methods, whatever its code and
+;;;     request size, which move with the version: 56 on 7.85.0 and 8.5.0,
+;;;     7 later, and the CONNECT's bytes on 7.85.0 alone (ADR-0026 and
+;;;     ADR-0037, amended 2026-11-03). Its wait is the backoff's: a proxy's
+;;;     headers are not the response's;
+;;;   - any other failure from the await, perform-failed, of the connect,
 ;;;     send-receive or timeout class, that is not the bound's 28, with a
 ;;;     request size of 0, nothing sent, for any method; above 0, or #f,
 ;;;     unknown (8.7.0 and 8.7.1), for a method in the policy's methods
@@ -221,23 +231,42 @@
   ;;   #f where the body is #f: the transfer had not ended
   ;; http-response-history : Response -> (Listof Response)
   (define-record-type (http-response make-http-response http-response?)
-    (fields (immutable status http-response-status)
-            (immutable http-version http-response-http-version)
-            (immutable url http-response-url)
-            (immutable headers http-response-headers)
-            (immutable body http-response-body)
-            (immutable timings http-response-timings)
-            (immutable history http-response-history))
+    (fields (immutable status unchecked-http-response-status)
+            (immutable http-version unchecked-http-response-http-version)
+            (immutable url unchecked-http-response-url)
+            (immutable headers unchecked-http-response-headers)
+            (immutable body unchecked-http-response-body)
+            (immutable timings unchecked-http-response-timings)
+            (immutable history unchecked-http-response-history))
     (sealed #t))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define http-response-status
+    (checked-accessor 'http-response-status http-response? "a response" unchecked-http-response-status))
+  (define http-response-http-version
+    (checked-accessor 'http-response-http-version http-response? "a response" unchecked-http-response-http-version))
+  (define http-response-url
+    (checked-accessor 'http-response-url http-response? "a response" unchecked-http-response-url))
+  (define http-response-headers
+    (checked-accessor 'http-response-headers http-response? "a response" unchecked-http-response-headers))
+  (define http-response-body
+    (checked-accessor 'http-response-body http-response? "a response" unchecked-http-response-body))
+  (define http-response-timings
+    (checked-accessor 'http-response-timings http-response? "a response" unchecked-http-response-timings))
+  (define http-response-history
+    (checked-accessor 'http-response-history http-response? "a response" unchecked-http-response-history))
 
   ;; http-response-header : Response String -> (U String #f)
   ;; The value of RESPONSE's first header named NAME, A to Z folded alone,
   ;; or #f. A copy of NAME is what is compared.
   (define (http-response-header response name)
     (unless (http-response? response)
-      (assertion-violation 'http-response-header "not a response" response))
+      (assertion-violation 'http-response-header "not a response" (shown-value response)))
     (unless (string? name)
-      (assertion-violation 'http-response-header "a header's name is a string" name))
+      (assertion-violation 'http-response-header "a header's name is a string" (shown-value name)))
     (let* ((copy (string-copy name))
            (hit (find (lambda (header) (ascii-ci=? (car header) copy))
                       (http-response-headers response))))
@@ -251,12 +280,12 @@
   ;; 3.1).
   (define (http-response-text response)
     (unless (http-response? response)
-      (assertion-violation 'http-response-text "not a response" response))
+      (assertion-violation 'http-response-text "not a response" (shown-value response)))
     (let ((body (http-response-body response)))
       (unless (bytevector? body)
         (assertion-violation 'http-response-text
           "the response's body was not read: it streams through call-with-response-port's port, or its hop was cancelled at its head"
-          response))
+          'response))
       (utf8->string body)))
 
   ;; http-response-with : Response (U Bytevector #f) (U (Listof (Pairof Symbol Natural)) #f)
@@ -661,10 +690,12 @@
 
   ;; credential-header? : String -> Boolean
   ;; Whether a header named NAME is one another origin never gets:
-  ;; Authorization, Cookie and Proxy-Authorization, A to Z folded.
+  ;; Authorization and Cookie, A to Z folded. A Proxy-Authorization header
+  ;; was one too, until the low level refused every one (ADR-0037, decision
+  ;; 4): no request this reads holds one.
   (define (credential-header? name)
     (exists (lambda (credential) (ascii-ci=? name credential))
-            '("Authorization" "Cookie" "Proxy-Authorization")))
+            '("Authorization" "Cookie")))
 
   ;; same-host? : (U String #f) (U String #f) -> Boolean
   ;; Whether two hosts are one, A to Z folded.
@@ -702,7 +733,11 @@
   ;; origin, dropped when ACROSS, as the credential headers are (ADR-0036;
   ;; the M7 plan, section 3.1): a hop within the origin whose URL holds a
   ;; user or a password is refused as it is submitted,
-  ;; credentials-beside-userinfo.
+  ;; credentials-beside-userinfo; and its proxy, its proxy CA file and its
+  ;; proxy verification, to every hop, another origin's too: a proxy's
+  ;; credentials are the proxy's, not the origin's (ADR-0037, amended
+  ;; 2026-11-03). A hop to https:// through an https:// proxy where TLS
+  ;; inside TLS stalls is refused as it is submitted, proxy-tls-in-tls.
   (define (next-request last url status across another-host)
     (let* ((method (curl-request-method last))
            (dropped (body-dropped? status method))
@@ -726,7 +761,9 @@
                          'verify (curl-request-verify last)
                          'proxy (curl-request-proxy last)
                          'http-version (curl-request-http-version last)
-                         'credentials (if across #f (curl-request-credentials last)))))
+                         'credentials (if across #f (curl-request-credentials last))
+                         'proxy-ca-file (curl-request-proxy-ca-file last)
+                         'proxy-verify (curl-request-proxy-verify last))))
 
   ;; follow : State Response Integer String
   ;;          -> (U (List 'fail Condition) (List 'next State Request 0))
@@ -1040,20 +1077,28 @@
 
   ;; retried-failure? : Condition Symbol Retry -> Boolean
   ;; Whether C, a transfer's failure that is not the bound's, is one a
-  ;; retry may repeat for METHOD: perform-failed, of the connect,
-  ;; send-receive or timeout class, with a request size of 0, nothing sent,
-  ;; for any method; above 0, or #f, unknown, for a method in POLICY's
-  ;; methods alone.
+  ;; retry may repeat for METHOD: perform-failed, and then, first, one that
+  ;; carries a CONNECT's status, a proxy's refusal of the tunnel, as a
+  ;; response with that status, when POLICY's statuses hold it and its
+  ;; methods METHOD, alike on every version (ADR-0026, amended 2026-11-03);
+  ;; else of the connect, send-receive or timeout class, with a request
+  ;; size of 0, nothing sent, for any method; above 0, or #f, unknown, for
+  ;; a method in POLICY's methods alone.
   (define (retried-failure? c method policy)
     (and (curl-transfer-error? c)
          (eq? (curl-transfer-error-reason c) 'perform-failed)
-         (or (curl-connect-error? c) (curl-send-receive-error? c) (curl-timeout? c))
-         (or (eqv? (curl-transfer-error-request-size c) 0)
-             (and (memq method (http-retry-methods policy)) #t))))
+         (let ((status (curl-transfer-error-connect-code c)))
+           (if status
+               (and (memv status (http-retry-statuses policy))
+                    (memq method (http-retry-methods policy))
+                    #t)
+               (and (or (curl-connect-error? c) (curl-send-receive-error? c) (curl-timeout? c))
+                    (or (eqv? (curl-transfer-error-request-size c) 0)
+                        (and (memq method (http-retry-methods policy)) #t)))))))
 
   ;; failure-retry : State Condition Integer Real -> (U (List 'next State Request Natural) #f)
   ;; C's retry, or #f: attempts left, a failure retried-failure? takes, and
-  ;; the backoff ending before the bound.
+  ;; the backoff ending before the bound, a refused CONNECT's among them.
   (define (failure-retry state c now-ns draw)
     (and (attempts-left? state)
          (retried-failure? c (step-method state) (exchange-policy state))

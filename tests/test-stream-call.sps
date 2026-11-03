@@ -717,7 +717,7 @@
   '((done 503) (fail (transfer 7)) (next "http://given.example/a" post stream 100 4096 100)
     (next "http://given.example/a" post stream 100 4096 100)
     (next "http://given.example/a" post "body" #f 4096 100) (next "http://given.example/a" post "body" #f 4096 100))
-  (let ((refused (make-classed-transfer-error 'perform-failed 7 #f "Could not connect" #f #f 0)))
+  (let ((refused (make-classed-transfer-error 'perform-failed 7 #f "Could not connect" #f #f 0 #f)))
     (list (tag (exchange-step (table-state 'post 'stream #t a-policy) (list 'response (head 503 '())) table-now table-utc 0.5))
           (tag (exchange-step (table-state 'post 'stream #t a-policy) (list 'failed refused) table-now table-utc 0.5))
           (tag (exchange-step (table-state 'post 'stream #f a-policy) (list 'response (head 503 '())) table-now table-utc 0.5))
@@ -746,8 +746,8 @@
               (list 'exchange 'get "http://given.example/a" '() 1))
         (list '(curl-transfer-error timeout perform-failed 28) (list 'exchange 'get "http://given.example/a" '() 1))
         (list '(curl-transfer-error send-receive perform-failed 56) (list 'exchange 'get "http://given.example/a" '() 1)))
-  (let* ((c28 (make-classed-transfer-error 'perform-failed 28 #f "Timeout was reached" #f #f 10))
-         (c56 (make-classed-transfer-error 'perform-failed 56 #f "Failure when receiving data" #f #f 10))
+  (let* ((c28 (make-classed-transfer-error 'perform-failed 28 #f "Timeout was reached" #f #f 10 #f))
+         (c56 (make-classed-transfer-error 'perform-failed 56 #f "Failure when receiving data" #f #f 10 #f))
          (state (cadr (exchange-submission (table-state 'get #f #f #f) table-now))))
     (list (described (exchange-raised state c28 (+ table-start 5000000000)))
           (described (exchange-raised (exchange-mark-called (table-state 'get #f #f #f)) c28 table-now))
@@ -793,7 +793,7 @@
 (test-equal "the core: a retry that runs out of time, its retried response's body #f, a hop cancelled at its head, fails with &http-timeout at its submission and at its transfer's bound's 28 having sent nothing, where one whose body was read answers that response"
   (list '(fail http-timeout) '(fail http-timeout) '(done 503) '(done 503))
   (let* ((start table-start)
-         (c28 (make-classed-transfer-error 'perform-failed 28 #f "Timeout was reached" #f #f 0))
+         (c28 (make-classed-transfer-error 'perform-failed 28 #f "Timeout was reached" #f #f 0 #f))
          (retried (lambda (body)
                     (cadr (exchange-step (cadr (exchange-submission (make-exchange 'get nowhere (table-request 'get #f #f) 5000 start
                                                                                    20 #f a-policy)

@@ -1,0 +1,31 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-proxy.sps
+%%%% Starting test proxy
+FAIL tls-in-tls-stall?, written out: 7.85.0 on any backend stalls for #f and http/2, never http/1.1; 8.5.0 with GnuTLS, or a backend that could not be read, for each; 8.5.0 with OpenSSL, 8.20.0 with GnuTLS, 8.23.0, 8.7.1 and 8.5.1 never; a backend named only like GnuTLS at its end does not match
+  expected: ((#t #f #t) (#t #f #t) (#t #t #t) (#t #t #t) (#f #f #f) (#f #f #f) (#f #f #f) (#f #f #f) (#f #f #f) (#f #f #f))
+  actual:   ((#t #f #t) (#t #f #t) (#t #t #t) (#t #t #t) (#t #t #t) (#f #f #f) (#f #f #f) (#f #f #f) (#f #f #f) (#t #t #t))
+test-proxy: empty-userinfo on "8.5.0" measured ((refused proxy (proxy user) credentials-empty test) (refused proxy (proxy user) credentials-empty test) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u:@127.0.0.1:3128/" "http" #t))
+test-proxy: tls-in-tls-checks on "8.5.0/OpenSSL" measured ((refused proxy proxy proxy-tls-in-tls curl-request-check) (refused proxy proxy proxy-tls-in-tls curl-request-check) (refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise no-raise)
+FAIL proxy-tls-in-tls, by version and backend: an https:// URL through an https:// proxy URL is refused where TLS inside TLS stalls, 7.85.0 unless http/1.1 is asked, Ubuntu's 8.5.0 with GnuTLS whatever is asked; an http:// URL through it, and an https:// URL through an http:// proxy, pass everywhere
+  expected: (no-raise no-raise no-raise no-raise no-raise)
+  actual:   ((refused proxy proxy proxy-tls-in-tls curl-request-check) (refused proxy proxy proxy-tls-in-tls curl-request-check) (refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise no-raise)
+test-proxy: empty-userinfo-wire on "8.5.0" measured (((refused proxy (proxy user) credentials-empty curl-submit) ()) ((refused proxy (proxy user) credentials-empty curl-submit) ()))
+test-proxy: refused-connect on "8.5.0" measured ((56 send-receive 403 zero) (56 send-receive 407 zero) (56 send-receive 502 zero) (56 send-receive 503 zero) (56 send-receive 407 zero) (56 send-receive 407 zero) (56 send-receive #f zero))
+test-proxy: unshared-tunnels on "8.5.0" measured (((response 200) (response 200) #t ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")))
+test-proxy: tunnel-plans on "8.5.0" measured ((("FRESH_CONNECT" . 1) ("FORBID_REUSE" . 1)) (("FRESH_CONNECT" . 1)) () () ())
+FAIL an https:// URL through an https:// proxy, through the engine, each http-version: refused at submit where this lane's tls-in-tls-checks row says so, the proxy getting nothing; else 200, the CONNECT on the https face and the request inside it; every transfer bounded at 10 s, as the slice's measurement was, so a stall the refusal misses fails as 28
+  expected: (((response 200) ("connect https conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "close https conn=1")) ((response 200) ("connect https conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "close https conn=1")) ((response 200) ("connect https conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "close https conn=1")))
+  actual:   (((refused proxy proxy proxy-tls-in-tls curl-submit) ()) ((refused proxy proxy proxy-tls-in-tls curl-submit) ()) ((refused proxy proxy proxy-tls-in-tls curl-submit) ()))
+FAIL a redirect's hop to https:// through an https:// proxy where TLS inside TLS stalls fails the call with the refusal, as its next request is submitted, one transfer counted; elsewhere it is followed
+  expected: (answered 200)
+  actual:   (raised proxy proxy proxy-tls-in-tls 1)
+test-proxy: closing-retries on "8.5.0" measured (((failed 56 #f 3) 3) ((failed 56 #f 3) 3))
+# of expected passes      84
+# of unexpected failures  4
+suite-exit-status: exit 1 (pass 84, fail 4, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-proxy.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

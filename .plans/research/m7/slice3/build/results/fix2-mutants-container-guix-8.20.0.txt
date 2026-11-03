@@ -1,0 +1,32 @@
+mutant control tests/test-printed.sps: exit 0
+unwrapped-status /home/kishu/src/chez-curl/build/m7s3b/mut/unwrapped-status suites: tests/test-printed.sps
+mutant unwrapped-status tests/test-printed.sps: exit 1
+    FAIL each export of (curl), called with a URL holding a password as every argument, answers its row: an accessor, an assertion from it naming the string (kind string); a key where a key belongs, (kind string); a predicate, no raise
+    FAIL no export of the three, at any arity from 1 to 3, every argument a URL holding a password, prints the password in what it raises, as write, display and display-condition print it
+unwrapped-exchange-url /home/kishu/src/chez-curl/build/m7s3b/mut/unwrapped-exchange-url suites: tests/test-printed.sps
+mutant unwrapped-exchange-url tests/test-printed.sps: exit 1
+    FAIL each export of (http-client), called with a URL holding a password as every argument, answers its row: an accessor, an assertion from it naming the string (kind string); a key where a key belongs, (kind string); a predicate, no raise
+    FAIL no export of the three, at any arity from 1 to 3, every argument a URL holding a password, prints the password in what it raises, as write, display and display-condition print it
+unwrapped-info-host /home/kishu/src/chez-curl/build/m7s3b/mut/unwrapped-info-host suites: tests/test-printed.sps
+mutant unwrapped-info-host tests/test-printed.sps: exit 1
+    FAIL each export of (curl), called with a URL holding a password as every argument, answers its row: an accessor, an assertion from it naming the string (kind string); a key where a key belongs, (kind string); a predicate, no raise
+    FAIL no export of the three, at any arity from 1 to 3, every argument a URL holding a password, prints the password in what it raises, as write, display and display-condition print it
+accessor-prints /home/kishu/src/chez-curl/build/m7s3b/mut/accessor-prints suites: tests/test-printed.sps
+mutant accessor-prints tests/test-printed.sps: exit 1
+    FAIL each export of (curl), called with a URL holding a password as every argument, answers its row: an accessor, an assertion from it naming the string (kind string); a key where a key belongs, (kind string); a predicate, no raise
+    FAIL no export of the three, at any arity from 1 to 3, every argument a URL holding a password, prints the password in what it raises, as write, display and display-condition print it
+info-shown-strings /home/kishu/src/chez-curl/build/m7s3b/mut/info-shown-strings suites: tests/test-printed.sps
+mutant info-shown-strings tests/test-printed.sps: exit 1
+    FAIL each export of (curl), called with a URL holding a password as every argument, answers its row: an accessor, an assertion from it naming the string (kind string); a key where a key belongs, (kind string); a predicate, no raise
+    FAIL no export of the three, at any arity from 1 to 3, every argument a URL holding a password, prints the password in what it raises, as write, display and display-condition print it
+    FAIL libcurl-info's accessors name a wrong argument as shown-value does, which libcurl-info cannot import: each kind alike, the string and the list holding the password by their kind
+url-names-input /home/kishu/src/chez-curl/build/m7s3b/mut/url-names-input suites: tests/test-printed.sps
+mutant url-names-input tests/test-printed.sps: exit 1
+    FAIL every path that refuses a URL holding a password, the request's at check and at submit, each URL function's URL, reference, query part and fragment, and the high level's, raises &curl-url-error whose irritants name its field, url, reference, query or fragment, whose input is still the string, a
+url-field-reference /home/kishu/src/chez-curl/build/m7s3b/mut/url-field-reference suites: tests/test-printed.sps
+mutant url-field-reference tests/test-printed.sps: exit 1
+    FAIL every path that refuses a URL holding a password, the request's at check and at submit, each URL function's URL, reference, query part and fragment, and the high level's, raises &curl-url-error whose irritants name its field, url, reference, query or fragment, whose input is still the string, a
+row-dropped /home/kishu/src/chez-curl/build/m7s3b/mut/row-dropped suites: tests/test-printed.sps
+mutant row-dropped tests/test-printed.sps: exit 1
+    FAIL the rows name every export of (curl), (curl unsupported) and (http-client), exactly: an export with no row fails here
+mutants done

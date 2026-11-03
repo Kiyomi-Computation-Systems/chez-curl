@@ -129,8 +129,43 @@
 ;;; the store is Guix's too. A CA file's path beginning pkcs11:, in any ASCII case, is refused
 ;;; whenever it is checked, as pkcs11-url: GnuTLS reads it as a PKCS#11
 ;;; URL. The proxy variables are libcurl's to read; a proxy of #f sets
-;;; PROXY to "", which reads none of them, and a proxy's TLS stays
-;;; libcurl's verified default, its options owned.
+;;; PROXY to "", which reads none of them.
+;;;
+;;; A proxy given by URL (ADR-0037, amended twice; the M7 plan, section
+;;; 3.4). A request's proxy may be a URL string, copied as the request is
+;;; made, the copy what every later check and use reads. A submit parses it
+;;; with CURLU_NON_SUPPORT_SCHEME, so chez-curl judges its scheme alike on
+;;; every libcurl, and refuses, as WHO, field proxy, value the symbol proxy,
+;;; never the URL, which can hold a password: a URL libcurl cannot parse,
+;;; or whose user or password holds a % not followed by two hex digits,
+;;; proxy-url; a scheme but http or https, A to Z folded, proxy-scheme; a
+;;; path but /, a query or a fragment, proxy-url-parts; then the userinfo,
+;;; percent-decoded here from the parts libcurl gives back still encoded,
+;;; by the server credentials' rules (ADR-0036, decisions 5 to 7), value
+;;; (proxy PART): a decoded control byte, bytes that are not UTF-8, or a
+;;; colon in the user, credentials-bytes; a user and a password both
+;;; empty, credentials-empty. A decoded control byte sent 7.85.0 and 8.5.0
+;;; around the proxy, direct. PROXY gets the URL libcurl gives back, its
+;;; scheme's port set when it names none, and NOPROXY "", so no variable
+;;; sends the transfer direct. proxy-ca-file and proxy-verify are an
+;;; https:// proxy URL's alone, PROXY_CAINFO with PROXY_CAPATH cleared, and
+;;; the two verify switches, refused beside any other proxy as
+;;; proxy-tls-without-https-proxy, and a proxy CA file refused against the
+;;; environment as a CA file is. proxy-settings computes them all, as data.
+;;; A caller's Proxy-Authorization header is refused, as is prior knowledge
+;;; beside a proxy URL, an https:// URL through an https:// proxy where TLS
+;;; inside TLS stalls, tls-in-tls-stall?'s list, and an https:// proxy URL
+;;; on a libcurl built without HTTPS-proxy support, which would write the
+;;; URL whole into its error buffer. Before libcurl 8.19.0
+;;; an https:// URL's tunnel through a proxy URL sets FRESH_CONNECT, and
+;;; with userinfo FORBID_REUSE too, unshared-tunnel-settings': 7.85.0 let a
+;;; later request ride a pooled tunnel another user had opened
+;;; (CVE-2026-3784). And before 8.19.0 a transfer through a proxy URL that
+;;; holds userinfo stops its engine's multiplexing, stops-multiplexing?'s,
+;;; for good: 7.85.0 let a transfer through the environment's proxy ride a
+;;; live authenticated tunnel as a second HTTP/2 stream (ADR-0037, decision
+;;; 11). A failed transfer carries the status a proxy refused
+;;; its CONNECT with, CURLINFO_HTTP_CONNECTCODE, when it is no 2xx.
 ;;;
 ;;; The callables (M2 plan, section 3.5; ADR-0030): write-body for every
 ;;; transfer, and read-head, the header callable, for a streamed response
@@ -196,6 +231,10 @@
           curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
           curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
           curl-request-http-version version-settings curl-request-credentials credentials-settings
+          curl-request-proxy-ca-file curl-request-proxy-verify proxy-settings
+          unshared-tunnel-settings unshared-tunnel-floor tls-in-tls-stalls tls-in-tls-stall?
+          percent-decoded connect-status check-proxy-url plan-proxy plan-tunnel
+          stops-multiplexing? plan-unmultiplex https-proxy-supported? check-https-proxy
           request-field-names
           curl-request-fault curl-request-follow curl-request-with-fault curl-request-following
           request-keys request-methods sent-header-lines timing-infos
@@ -234,7 +273,8 @@
           (curl private counters)
           (curl private memory)
           (curl private native)
-          (only (curl private libcurl-info) libcurl-info-path libcurl-info-version)
+          (only (curl private libcurl-info) libcurl-info-path libcurl-info-version
+                libcurl-info-version-number libcurl-info-features)
           (curl private url))
 
   ;; --- ranges -------------------------------------------------------------------
@@ -321,7 +361,7 @@
                          ((unknown-key) "not a key a request takes")
                          ((repeated-key) "a key given twice")
                          ((missing-value) "a key given last, with no value after it")
-                         ((stream-with-rounds) "a streamed response takes one request in its transfer: follow, PROXYAUTH and an Expect of 100-continue would make a second, whose head the stream would not publish")
+                         ((stream-with-rounds) "a streamed response takes one request in its transfer: follow and an Expect of 100-continue would make a second, whose head the stream would not publish")
                          ((body-length-without-stream) "a body-length is a streamed body's length: give it with body stream, or leave it #f; libcurl frames a whole body by its own length")
                          ((prior-knowledge-over-https) "HTTP/2 by prior knowledge is for http:// URLs alone: over https://, http/2 gets HTTP/2 by ALPN")
                          ((credentials-bytes) "a credentials string holds a control char, U+0000 to U+001F or U+007F, which libcurl would write into its header unescaped, or a Basic user name holds a colon, where RFC 7617 ends the user")
@@ -329,6 +369,14 @@
                          ((credentials-beside-userinfo) "credentials beside a URL that holds a user or a password: give them once, by the credentials key or in the URL")
                          ((credentials-beside-authorization) "credentials beside an Authorization header: libcurl would send one of the two, or both")
                          ((digest-with-stream) "Digest credentials beside a streamed body or response: Digest makes a second request inside the transfer, which a stream cannot follow; Basic and Bearer send one")
+                         ((prior-knowledge-through-proxy) "HTTP/2 by prior knowledge beside a proxy URL: libcurl ignores prior knowledge through a proxy that does not tunnel, and sends HTTP/1.1")
+                         ((proxy-url) "a proxy URL libcurl cannot parse, or that names no scheme, or whose user or password holds a % not followed by two hex digits")
+                         ((proxy-scheme) "a proxy URL's scheme is http or https")
+                         ((proxy-url-parts) "a proxy URL names a host and a port alone: no path but /, no query and no fragment")
+                         ((proxy-authorization-header) "a Proxy-Authorization header: inside a tunnel libcurl sends it to the origin; give a proxy's credentials in its URL")
+                         ((proxy-tls-without-https-proxy) "a proxy CA file, or a proxy's verification off, beside a proxy that is no https:// URL, which has no TLS of its own to set")
+                         ((proxy-tls-in-tls) "an https:// URL through an https:// proxy, on a libcurl where TLS inside TLS stalls until the transfer's timeout")
+                         ((https-proxy-unsupported) "an https:// proxy URL on a libcurl built without HTTPS-proxy support, which would refuse it and write the whole URL, its password with it, into its error buffer")
                          (else "a body with get or head, which send none")))
                       (make-irritants-condition (list value)))))
 
@@ -343,13 +391,21 @@
   ;; and a second name Host, in any case, duplicates-field too: libcurl
   ;; sends only the first; and a name Content-Length or Transfer-Encoding,
   ;; in any case, framing-header: libcurl frames the message, from the body
-  ;; it is handed.
+  ;; it is handed. A name Proxy-Authorization, A to Z folded, is refused as
+  ;; proxy-authorization-header right after the name's token check, before
+  ;; its value is read, so the refusal names the header, never its value,
+  ;; a proxy's secret: inside a tunnel libcurl sends a caller's
+  ;; Proxy-Authorization to the origin, and a proxy's credentials are its
+  ;; URL's userinfo (ADR-0037, decision 4).
   ;; Then the user agent, value-problem's rules. Each refusal is a
-  ;; &curl-request-error naming the field. The copies are made before any
-  ;; check, so what is checked is what is sent, whatever the caller's
-  ;; objects become after.
+  ;; &curl-request-error naming the field; a header value's names its
+  ;; header's name, never the value, which can be a secret: an
+  ;; Authorization's or a Cookie's. A wrong type's assertion names what it
+  ;; found by shown-value, never the headers whole, which can hold one. The
+  ;; copies are made before any check, so what is checked is what is sent,
+  ;; whatever the caller's objects become after.
   (define (snapshot who headers user-agent)
-    (define (wrong message irritant) (assertion-violation who message irritant))
+    (define (wrong message irritant) (assertion-violation who message (shown-value irritant)))
     (unless (list? headers)
       (wrong "headers are a list of (NAME . VALUE) strings" headers))
     (let* ((copies
@@ -374,8 +430,10 @@
         (for-each (lambda (header)
                     (unless (token? (car header))
                       (refuse-field who 'header-name (car header) 'not-a-token))
+                    (when (string=? (ascii-folded (car header)) "proxy-authorization")
+                      (refuse-field who 'header-name (car header) 'proxy-authorization-header))
                     (let ((problem (value-problem (cdr header))))
-                      (when problem (refuse-field who 'header-value (cdr header) problem)))
+                      (when problem (refuse-field who 'header-value (car header) problem)))
                     (when (and agent (string-ci=? (car header) "User-Agent"))
                       (refuse-field who 'header-name (car header) 'duplicates-field))
                     (when (string-ci=? (car header) "Host")
@@ -397,11 +455,11 @@
   (define (ca-file? x)
     (or (not x) (and (string? x) (> (string-length x) 0))))
 
-  ;; refuse-ca-file : Symbol String Symbol String (Listof Any) -> Nothing
-  ;; The refusal of the CA file PATH for REASON, as WHO, with MESSAGE, and
-  ;; IRRITANTS after PATH.
-  (define (refuse-ca-file who path reason message irritants)
-    (raise (condition (make-curl-request-error 'ca-file path reason)
+  ;; refuse-ca-file : Symbol Symbol String Symbol String (Listof Any) -> Nothing
+  ;; The refusal of the CA file PATH, FIELD's, ca-file or proxy-ca-file, for
+  ;; REASON, as WHO, with MESSAGE, and IRRITANTS after PATH.
+  (define (refuse-ca-file who field path reason message irritants)
+    (raise (condition (make-curl-request-error field path reason)
                       (make-who-condition who)
                       (make-message-condition message)
                       (make-irritants-condition (cons path irritants)))))
@@ -428,27 +486,34 @@
 
   ;; ca-file-copy : Symbol (U String #f) -> (U String #f)
   ;; CA-FILE, a ca-file?, as a fresh string, checked: what WHO may send as
-  ;; CAINFO; #f for #f. A path holding U+0000 is refused as embedded-nul;
+  ;; CAINFO; #f for #f; path-copy's, for the field ca-file.
+  (define (ca-file-copy who ca-file)
+    (path-copy who 'ca-file ca-file))
+
+  ;; path-copy : Symbol Symbol (U String #f) -> (U String #f)
+  ;; CA-FILE, a ca-file?, FIELD's, ca-file or proxy-ca-file, as a fresh
+  ;; string, checked: what WHO may send as CAINFO, or PROXY_CAINFO; #f for
+  ;; #f. A path holding U+0000 is refused as embedded-nul;
   ;; then one that begins pkcs11:, in any ASCII case, as pkcs11-url, on
   ;; every backend, so the field always names a file, and a file really
   ;; named so is reached as ./pkcs11:... (ADR-0024, decision 4). Each is a
-  ;; &curl-request-error naming ca-file. No other char is refused: a path
+  ;; &curl-request-error naming FIELD. No other char is refused: a path
   ;; may hold CR or LF. The copy is made before the checks, so what is
   ;; checked is what is sent. It is scanned by index, allocating nothing:
   ;; a path may be megabytes long, and libcurl refuses one past 8000000
   ;; bytes itself.
-  (define (ca-file-copy who ca-file)
+  (define (path-copy who field ca-file)
     (and ca-file
          (let ((copy (string-copy ca-file)))
            (let scan ((i 0))
              (when (< i (string-length copy))
                (when (char=? (string-ref copy i) #\nul)
-                 (refuse-ca-file who copy 'embedded-nul
+                 (refuse-ca-file who field copy 'embedded-nul
                                  "a CA file's path holds U+0000, where C would end it, and libcurl would open another file"
                                  '()))
                (scan (+ i 1))))
            (when (pkcs11-prefix? copy)
-             (refuse-ca-file who copy 'pkcs11-url
+             (refuse-ca-file who field copy 'pkcs11-url
                              "a CA file's path that begins pkcs11:, in any ASCII case, is a PKCS#11 URL to GnuTLS, not a file; reach a file of that name as ./pkcs11:..."
                              '()))
            copy)))
@@ -519,22 +584,27 @@
          (or (not (string? backend)) (string-prefix? "LibreSSL" backend))
          #t))
 
-  ;; check-ca-environment : Symbol (U String #f) Boolean -> Void
-  ;; Refuses CA-FILE, a checked copy, with VERIFY, as WHO, when
+  ;; check-ca-environment : Symbol Symbol (U String #f) Boolean -> Void
+  ;; Refuses CA-FILE, a checked copy, FIELD's, ca-file with verify or
+  ;; proxy-ca-file with proxy-verify, with VERIFY, as WHO, when
   ;; overriding-variables names any for the loaded libcurl and what the
   ;; native layer recorded at its load: environment-override, a
-  ;; &curl-request-error naming ca-file, whose irritants are the path, then
+  ;; &curl-request-error naming FIELD, whose irritants are the path, then
   ;; each variable's name, in that order; and when keychain-fallback? says
   ;; so for the loaded libcurl and the backend its init put in use:
   ;; keychain-fallback, whose irritants are the path, then that backend.
-  (define (check-ca-environment who ca-file verify)
+  ;; Guix's 8.20.0 writes SSL_CERT_FILE and SSL_CERT_DIR over PROXY_CAINFO
+  ;; as over CAINFO, cleared PROXY_CAPATH or not (M7 slice 3's
+  ;; measurement); no probe has a proxy CA the keychain trusts, and the
+  ;; proxy's is refused there by analogy (the M7 plan, section 3.4).
+  (define (check-ca-environment who field ca-file verify)
     (let* ((info (loaded-libcurl))
            (names (overriding-variables ca-file verify (loaded-libcurl-file) (libcurl-info-path info)
                                         (loaded-libcurl-patched?) (libcurl-info-version info)
                                         (loaded-ca-variables)))
            (backend (loaded-tls-backend)))
       (unless (null? names)
-        (refuse-ca-file who ca-file 'environment-override
+        (refuse-ca-file who field ca-file 'environment-override
                         (string-append
                          "Guix's libcurl writes SSL_CERT_FILE over a CA file, and adds SSL_CERT_DIR beside it, as they were when it loaded; unset "
                          (fold-right (lambda (name rest) (if (string=? rest "") name (string-append name " and " rest)))
@@ -542,7 +612,7 @@
                          " before the program starts, or trust the store it names with no CA file")
                         names))
       (when (keychain-fallback? ca-file verify (loaded-on-macos?) (libcurl-info-path info) backend)
-        (refuse-ca-file who ca-file 'keychain-fallback
+        (refuse-ca-file who field ca-file 'keychain-fallback
                         "Apple's libcurl uses its LibreSSL, which checks the keychain when a CA file fails, so the CA file would not be the only anchor; start the program with CURL_SSL_BACKEND=secure-transport, where this libcurl has it, or pass no CA file"
                         (list backend)))))
 
@@ -561,7 +631,7 @@
   ;; order. tests/test-request.sps writes it out.
   (define request-keys
     '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
-      stream-buffer body-length http-version credentials))
+      stream-buffer body-length http-version credentials proxy-ca-file proxy-verify))
 
   ;; http-versions : (Listof Symbol)
   ;; The values http-version takes but #f: HTTP/1.1, HTTP/2, and HTTP/2 by
@@ -679,13 +749,15 @@
   ;; refused by name, as WHO, before anything else is checked: one
   ;; request-keys lacks, unknown-key; one with no value after it,
   ;; missing-value; one given twice, repeated-key. Each is a
-  ;; &curl-request-error, field key, whose value is the key as given.
+  ;; &curl-request-error, field key, whose value is the key as given, or,
+  ;; for a key that is no symbol, its kind, shown-key's: a value found
+  ;; where a key belongs can be a proxy URL or credentials.
   (define (request-settings who plist)
     (let loop ((rest plist) (found '()))
       (if (null? rest)
           (reverse found)
           (let ((key (car rest)))
-            (unless (memq key request-keys) (refuse-field who 'key key 'unknown-key))
+            (unless (memq key request-keys) (refuse-field who 'key (shown-key key) 'unknown-key))
             (when (null? (cdr rest)) (refuse-field who 'key key 'missing-value))
             (when (assq key found) (refuse-field who 'key key 'repeated-key))
             (loop (cddr rest) (cons (cons key (cadr rest)) found))))))
@@ -703,11 +775,13 @@
   ;; curl-request-body-limit : Request -> (U Natural #f)
   ;; curl-request-ca-file : Request -> (U String #f)
   ;; curl-request-verify : Request -> Boolean
-  ;; curl-request-proxy : Request -> (U 'environment #f)
+  ;; curl-request-proxy : Request -> (U 'environment #f String)
   ;; curl-request-stream-buffer : Request -> (U Positive-Integer #f)
   ;; curl-request-body-length : Request -> (U Natural #f)
   ;; curl-request-http-version : Request -> (U 'http/1.1 'http/2 'http/2-prior-knowledge #f)
   ;; curl-request-credentials : Request -> (U (List 'basic String String) (List 'digest String String) (List 'bearer String) #f)
+  ;; curl-request-proxy-ca-file : Request -> (U String #f)
+  ;; curl-request-proxy-verify : Request -> Boolean
   ;; curl-request-fault : Request -> (U Positive-Integer (List 'head Positive-Integer) #f)   private
   ;; curl-request-follow : Request -> Boolean                  private
   ;; curl-request-options : Request -> (Listof Hatch-Setting)  private
@@ -750,9 +824,26 @@
   ;;                       http_proxy, https_proxy, HTTPS_PROXY, all_proxy and
   ;;                       ALL_PROXY, with no_proxy and NO_PROXY, but never
   ;;                       HTTP_PROXY; or #f, to go direct, whatever they say
-  ;;                       (ADR-0024, decision 1). A proxy's TLS is libcurl's
-  ;;                       verified default, against its system store: neither
-  ;;                       ca-file nor verify reaches it
+  ;;                       (ADR-0024, decision 1); or a URL string, an
+  ;;                       http:// or https:// proxy every transfer goes
+  ;;                       through, whatever a variable says, no_proxy and
+  ;;                       NO_PROXY among them (ADR-0037): the record keeps a
+  ;;                       copy, and curl-request-proxy answers a fresh one.
+  ;;                       Its userinfo is the proxy's credentials, sent by
+  ;;                       Basic on the first request, percent-decoded; a URL
+  ;;                       with no port gets its scheme's, 80 or 443. A submit
+  ;;                       refuses, field proxy, naming the field, never the
+  ;;                       URL: one libcurl cannot parse, or whose user or
+  ;;                       password holds a % not followed by two hex digits,
+  ;;                       as proxy-url; a scheme but http or https, A to Z
+  ;;                       folded, as proxy-scheme; a path but /, a query or a
+  ;;                       fragment, as proxy-url-parts; a decoded control
+  ;;                       byte, bytes that are not UTF-8 or a colon in the
+  ;;                       user, as credentials-bytes, value (proxy PART), and
+  ;;                       a user and password both empty as credentials-empty.
+  ;;                       Neither ca-file nor verify reaches a proxy: the
+  ;;                       environment's is verified against libcurl's
+  ;;                       default store, a URL's by the two keys below
   ;;   stream-buffer       a positive exact integer, the bytes of the
   ;;                       response's body the token buffers, read as it
   ;;                       arrives, a piece at a time or through a port; or
@@ -817,17 +908,35 @@
   ;;                       wrong password ends with the server's 401 and
   ;;                       code 0. Or #f, the default, which sets none of
   ;;                       their options, as before them
+  ;;   proxy-ca-file       an https:// proxy URL's only CA file, PROXY_CAINFO,
+  ;;                       with PROXY_CAPATH cleared, a non-empty string kept
+  ;;                       as a copy and checked as ca-file is, pkcs11: and
+  ;;                       U+0000 refused, and at submit against the
+  ;;                       environment; or #f, the default, libcurl's default
+  ;;                       store. Beside any proxy but an https:// URL a
+  ;;                       submit refuses it as proxy-tls-without-https-proxy
+  ;;   proxy-verify        #t, the default, to verify an https:// proxy's
+  ;;                       chain and name, PROXY_SSL_VERIFYPEER and
+  ;;                       PROXY_SSL_VERIFYHOST at 1 and 2; #f, both 0, which
+  ;;                       beside any proxy but an https:// URL a submit
+  ;;                       refuses as proxy-tls-without-https-proxy
+  ;;
+  ;; A caller's Proxy-Authorization header, in any ASCII case, is refused
+  ;; whatever proxy names, as proxy-authorization-header. At submit,
+  ;; http/2-prior-knowledge beside a proxy URL is refused as
+  ;; prior-knowledge-through-proxy, and an https:// URL through an https://
+  ;; proxy URL, on a libcurl tls-in-tls-stall? names, as proxy-tls-in-tls.
   ;;
   ;; The defaults set no policy: libcurl's own stand (ADR-0023, decision 3).
   ;; The keys are refused first, by request-settings' rules, then a URL
   ;; that is not a string, then a wrong type for method, body, timeout-ms,
   ;; connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer,
-  ;; body-length, http-version or credentials, each an assertion violation,
-  ;; the empty string as a CA file among them; then a body with get or head,
-  ;; body-not-allowed; then a
+  ;; body-length, http-version, credentials, proxy-ca-file or proxy-verify,
+  ;; each an assertion violation, the empty string as a CA file among them;
+  ;; then a body with get or head, body-not-allowed; then a
   ;; body-length beside a body that does not stream,
   ;; body-length-without-stream; then a
-  ;; stream-buffer beside follow or PROXYAUTH, stream-with-rounds,
+  ;; stream-buffer beside follow, stream-with-rounds,
   ;; checked here, where every constructor's request is checked, the
   ;; private ones' and the hatch's among them; then snapshot's rules for the
   ;; headers and the user agent, their types first, as assertion
@@ -835,10 +944,10 @@
   ;; stream-buffer, stream-with-rounds, by expect-continue?, which a submit
   ;; checks again on its own copies; then the credentials, by
   ;; check-credentials, which a submit checks again too; then ca-file-copy's
-  ;; for the CA file. Each refusal of a value is a
-  ;; &curl-request-error naming the field. The record keeps the caller's
-  ;; objects, but for its credentials, a private copy; a submit checks them
-  ;; again, as a plan.
+  ;; for the CA file, and path-copy's for the proxy CA file. Each refusal of
+  ;; a value is a &curl-request-error naming the field. The record keeps the
+  ;; caller's objects, but for its credentials, its proxy URL and its proxy
+  ;; CA file, private copies; a submit checks them again, as a plan.
   ;;
   ;; (curl-request-with REQUEST KEY VALUE ...): a new request, with the
   ;; keys given replaced and the rest kept, its private fields among them,
@@ -855,21 +964,23 @@
   ;; and the private constructors keep (ADR-0009). Each is data, never a
   ;; procedure: a request holds no caller code (ADR-0012, decision 4).
   (define-record-type (curl-request new-curl-request curl-request?)
-    (fields (immutable url curl-request-url)
-            (immutable method curl-request-method)
-            (immutable headers curl-request-headers)
-            (immutable body curl-request-body)
-            (immutable user-agent curl-request-user-agent)
-            (immutable timeout-ms curl-request-timeout-ms)
-            (immutable connect-timeout-ms curl-request-connect-timeout-ms)
-            (immutable body-limit curl-request-body-limit)
-            (immutable ca-file curl-request-ca-file)
-            (immutable verify curl-request-verify)
-            (immutable proxy curl-request-proxy)
-            (immutable stream-buffer curl-request-stream-buffer)
-            (immutable body-length curl-request-body-length)
-            (immutable http-version curl-request-http-version)
+    (fields (immutable url unchecked-curl-request-url)
+            (immutable method unchecked-curl-request-method)
+            (immutable headers unchecked-curl-request-headers)
+            (immutable body unchecked-curl-request-body)
+            (immutable user-agent unchecked-curl-request-user-agent)
+            (immutable timeout-ms unchecked-curl-request-timeout-ms)
+            (immutable connect-timeout-ms unchecked-curl-request-connect-timeout-ms)
+            (immutable body-limit unchecked-curl-request-body-limit)
+            (immutable ca-file unchecked-curl-request-ca-file)
+            (immutable verify unchecked-curl-request-verify)
+            (immutable proxy request-proxy)
+            (immutable stream-buffer unchecked-curl-request-stream-buffer)
+            (immutable body-length unchecked-curl-request-body-length)
+            (immutable http-version unchecked-curl-request-http-version)
             (immutable credentials request-credentials)
+            (immutable proxy-ca-file request-proxy-ca-file)
+            (immutable proxy-verify unchecked-curl-request-proxy-verify)
             (immutable fault curl-request-fault)
             (immutable follow curl-request-follow)
             (immutable options curl-request-options))
@@ -878,6 +989,39 @@
     ;; read and changed its private copy (the review of M7 slice 2). A
     ;; request prints as #<curl-request>.
     (opaque #t))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define curl-request-url
+    (checked-accessor 'curl-request-url curl-request? "a request" unchecked-curl-request-url))
+  (define curl-request-method
+    (checked-accessor 'curl-request-method curl-request? "a request" unchecked-curl-request-method))
+  (define curl-request-headers
+    (checked-accessor 'curl-request-headers curl-request? "a request" unchecked-curl-request-headers))
+  (define curl-request-body
+    (checked-accessor 'curl-request-body curl-request? "a request" unchecked-curl-request-body))
+  (define curl-request-user-agent
+    (checked-accessor 'curl-request-user-agent curl-request? "a request" unchecked-curl-request-user-agent))
+  (define curl-request-timeout-ms
+    (checked-accessor 'curl-request-timeout-ms curl-request? "a request" unchecked-curl-request-timeout-ms))
+  (define curl-request-connect-timeout-ms
+    (checked-accessor 'curl-request-connect-timeout-ms curl-request? "a request" unchecked-curl-request-connect-timeout-ms))
+  (define curl-request-body-limit
+    (checked-accessor 'curl-request-body-limit curl-request? "a request" unchecked-curl-request-body-limit))
+  (define curl-request-ca-file
+    (checked-accessor 'curl-request-ca-file curl-request? "a request" unchecked-curl-request-ca-file))
+  (define curl-request-verify
+    (checked-accessor 'curl-request-verify curl-request? "a request" unchecked-curl-request-verify))
+  (define curl-request-stream-buffer
+    (checked-accessor 'curl-request-stream-buffer curl-request? "a request" unchecked-curl-request-stream-buffer))
+  (define curl-request-body-length
+    (checked-accessor 'curl-request-body-length curl-request? "a request" unchecked-curl-request-body-length))
+  (define curl-request-http-version
+    (checked-accessor 'curl-request-http-version curl-request? "a request" unchecked-curl-request-http-version))
+  (define curl-request-proxy-verify
+    (checked-accessor 'curl-request-proxy-verify curl-request? "a request" unchecked-curl-request-proxy-verify))
 
   ;; request-field-names : -> (Listof Symbol)
   ;; The request record's fields, in its order: a private accessor, for
@@ -891,18 +1035,37 @@
 
   (define (curl-request-credentials request)
     (unless (curl-request? request)
-      (assertion-violation 'curl-request-credentials "not a request" request))
+      (assertion-violation 'curl-request-credentials "not a request" (shown-value request)))
     (credentials-copy 'curl-request-credentials (request-credentials request)))
 
-  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any (Listof Hatch-Setting) -> Request
+  ;; request-proxy : Request -> (U 'environment #f String)
+  ;; request-proxy-ca-file : Request -> (U String #f)
+  ;; The record's own copies, which no caller holds: the constructors and a
+  ;; submit read them, a submit copying them again.
+
+  (define (curl-request-proxy request)
+    (unless (curl-request? request)
+      (assertion-violation 'curl-request-proxy "not a request" (shown-value request)))
+    (let ((proxy (request-proxy request)))
+      (if (string? proxy) (string-copy proxy) proxy)))
+
+  (define (curl-request-proxy-ca-file request)
+    (unless (curl-request? request)
+      (assertion-violation 'curl-request-proxy-ca-file "not a request" (shown-value request)))
+    (let ((path (request-proxy-ca-file request)))
+      (and path (string-copy path))))
+
+  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any (Listof Hatch-Setting) -> Request
   ;; A request of these fields, checked as WHO by make-curl-request's rules,
   ;; after the keys. OPTIONS, the hatch's, were checked as they were
   ;; attached, and are private copies, so they are kept as they are.
-  ;; CREDENTIALS is copied first, and the copy is checked and kept.
+  ;; CREDENTIALS, a PROXY string and PROXY-CA-FILE are copied first, and
+  ;; each copy is checked and kept.
   (define (checked-request who url method headers body user-agent timeout-ms
                            connect-timeout-ms body-limit ca-file verify proxy stream-buffer
-                           body-length http-version credentials fault follow options)
-    (define (wrong message irritant) (assertion-violation who message irritant))
+                           body-length http-version credentials proxy-ca-file proxy-verify
+                           fault follow options)
+    (define (wrong message irritant) (assertion-violation who message (shown-value irritant)))
     (unless (string? url) (wrong "a URL is a string" url))
     (unless (memq method request-methods)
       (wrong "a method is get, head, post, put, patch or delete" method))
@@ -920,8 +1083,8 @@
     (unless (ca-file? ca-file)
       (wrong "a CA file is a non-empty string, its path, or #f" ca-file))
     (unless (boolean? verify) (wrong "verify is #t or #f" verify))
-    (unless (or (eq? proxy 'environment) (not proxy))
-      (wrong "a proxy is environment, the environment's, or #f, none" proxy))
+    (unless (or (eq? proxy 'environment) (not proxy) (string? proxy))
+      (wrong "a proxy is environment, the environment's, #f, none, or a URL string" 'proxy))
     (unless (or (not stream-buffer)
                 (and (integer? stream-buffer) (exact? stream-buffer) (positive? stream-buffer)))
       (wrong "a stream-buffer is a positive exact integer, the bytes a token buffers, or #f, the whole body"
@@ -934,7 +1097,11 @@
     (unless (or (not http-version) (memq http-version http-versions))
       (wrong "an http-version is http/1.1, http/2, http/2-prior-knowledge, or #f, libcurl's own"
              http-version))
-    (let ((credentials (credentials-copy who credentials)))
+    (let ((credentials (credentials-copy who credentials))
+          (proxy (if (string? proxy) (string-copy proxy) proxy)))
+      (unless (ca-file? proxy-ca-file)
+        (wrong "a proxy CA file is a non-empty string, its path, or #f" proxy-ca-file))
+      (unless (boolean? proxy-verify) (wrong "proxy-verify is #t or #f" proxy-verify))
       (unless (or (not fault) (chunk-fault? fault) (head-fault? fault) (upload-fault? fault))
         (wrong "a fault is a positive exact integer, the chunk it raises at, (head N), the head's line it raises at, (read N), (seek N) or (prereq N), that callable's call it raises at, or #f: a request holds no procedure"
                fault))
@@ -943,7 +1110,7 @@
         (refuse-field who 'body method 'body-not-allowed))
       (when (and body-length (not (eq? body 'stream)))
         (refuse-field who 'body-length body-length 'body-length-without-stream))
-      (when (and stream-buffer (or follow (exists rounds-setting? options)))
+      (when (and stream-buffer follow)
         (refuse-field who 'stream-buffer stream-buffer 'stream-with-rounds))
       (let ((header-copies (car (snapshot who headers user-agent))))
         (check-expect-round who stream-buffer header-copies)
@@ -951,7 +1118,8 @@
       (ca-file-copy who ca-file)
       (new-curl-request url method headers body user-agent timeout-ms connect-timeout-ms
                         body-limit ca-file verify proxy stream-buffer body-length http-version
-                        credentials fault follow options)))
+                        credentials (path-copy who 'proxy-ca-file proxy-ca-file) proxy-verify
+                        fault follow options)))
 
   ;; chunk-fault? : Any -> Boolean
   ;; X is a fault the write callable raises at: the chunk's number, a
@@ -1017,25 +1185,8 @@
     (when (and stream-buffer (expect-continue? headers))
       (refuse-field who 'stream-buffer stream-buffer 'stream-with-rounds)))
 
-  ;; rounds-option-names : (Listof String)
-  ;; The hatch's options that make libcurl send a second request inside one
-  ;; transfer, an auth round: PROXYAUTH, the proxy's (the M6 plan, section
-  ;; 3.2). HTTPAUTH, the server's, is the credentials field's, owned, and
-  ;; its round, Digest's, is refused beside a stream as digest-with-stream,
-  ;; beside a streamed body too (ADR-0036, decision 3; the M7 plan, section
-  ;; 3.3). PROXYAUTH stays until M7 slice 3 owns it.
-  (define rounds-option-names '("PROXYAUTH"))
-
-  ;; rounds-setting? : Hatch-Setting -> Boolean
-  ;; Whether SETTING, a hatch setting, is one of rounds-option-names, by
-  ;; id in the loaded libcurl, so an alias is one too.
-  (define (rounds-setting? setting)
-    (exists (lambda (name)
-              (let ((option (option-found name)))
-                (and option (eqv? (car option) (hatch-setting-id setting)))))
-            rounds-option-names))
-
-  ;; request-like : Symbol Request (Listof (Pairof Symbol Any)) String Any Any (Listof Hatch-Setting) -> Request
+  ;; request-like : Symbol Request (Listof (Pairof Symbol Any)) String Any Any
+  ;;                (Listof Hatch-Setting) -> Request
   ;; REQUEST with SETTINGS' keys replaced, URL, FAULT, FOLLOW and OPTIONS
   ;; given, the rest kept, checked as WHO.
   (define (request-like who request settings url fault follow options)
@@ -1051,18 +1202,20 @@
                      (given 'body-limit curl-request-body-limit)
                      (given 'ca-file curl-request-ca-file)
                      (given 'verify curl-request-verify)
-                     (given 'proxy curl-request-proxy)
+                     (given 'proxy request-proxy)
                      (given 'stream-buffer curl-request-stream-buffer)
                      (given 'body-length curl-request-body-length)
                      (given 'http-version curl-request-http-version)
                      (given 'credentials request-credentials)
+                     (given 'proxy-ca-file request-proxy-ca-file)
+                     (given 'proxy-verify curl-request-proxy-verify)
                      fault follow options))
 
   ;; default-request : Request
   ;; Every key at its default, for a URL nothing reads: what
   ;; make-curl-request replaces keys in.
   (define default-request
-    (new-curl-request "" 'get '() #f #f #f #f #f #f #t 'environment #f #f #f #f #f #f '()))
+    (new-curl-request "" 'get '() #f #f #f #f #f #f #t 'environment #f #f #f #f #f #t #f #f '()))
 
   (define (make-curl-request url . plist)
     (request-like 'make-curl-request default-request
@@ -1070,7 +1223,7 @@
 
   (define (curl-request-with request . plist)
     (unless (curl-request? request)
-      (assertion-violation 'curl-request-with "not a request" request))
+      (assertion-violation 'curl-request-with "not a request" (shown-value request)))
     (request-like 'curl-request-with request (request-settings 'curl-request-with plist)
                   (curl-request-url request) (curl-request-fault request)
                   (curl-request-follow request) (curl-request-options request)))
@@ -1080,7 +1233,7 @@
   ;; 3.6). (curl) does not export it.
   (define (curl-request-with-fault request fault)
     (unless (curl-request? request)
-      (assertion-violation 'curl-request-with-fault "not a request" request))
+      (assertion-violation 'curl-request-with-fault "not a request" (shown-value request)))
     (unless (or (not fault) (chunk-fault? fault))
       (assertion-violation 'curl-request-with-fault
                            "a fault is a positive exact integer, the chunk it raises at, or #f: a request holds no procedure"
@@ -1095,7 +1248,7 @@
   ;; seam; (curl) does not export it.
   (define (curl-request-with-head-fault request n)
     (unless (curl-request? request)
-      (assertion-violation 'curl-request-with-head-fault "not a request" request))
+      (assertion-violation 'curl-request-with-head-fault "not a request" (shown-value request)))
     (unless (chunk-fault? n)
       (assertion-violation 'curl-request-with-head-fault "a head's line is a positive exact integer" n))
     (request-like 'curl-request-with-head-fault request '() (curl-request-url request) (list 'head n)
@@ -1109,7 +1262,7 @@
   ;; export it.
   (define (curl-request-with-upload-fault request kind n)
     (unless (curl-request? request)
-      (assertion-violation 'curl-request-with-upload-fault "not a request" request))
+      (assertion-violation 'curl-request-with-upload-fault "not a request" (shown-value request)))
     (unless (and (memq kind '(read seek prereq)) (chunk-fault? n))
       (assertion-violation 'curl-request-with-upload-fault
                            "a fault names read, seek or prereq, and a call, a positive exact integer"
@@ -1125,7 +1278,7 @@
   ;; not export it.
   (define (curl-request-following request)
     (unless (curl-request? request)
-      (assertion-violation 'curl-request-following "not a request" request))
+      (assertion-violation 'curl-request-following "not a request" (shown-value request)))
     (request-like 'curl-request-following request '() (curl-request-url request)
                   (curl-request-fault request) #t (curl-request-options request)))
 
@@ -1145,12 +1298,29 @@
   ;; in its order, each the microseconds from the transfer's start to that
   ;; phase's end, as libcurl reports them (M4 plan, section 3.3).
   (define-record-type (curl-response make-curl-response curl-response?)
-    (fields (immutable status curl-response-status)
-            (immutable http-version curl-response-http-version)
-            (immutable effective-url curl-response-effective-url)
-            (immutable headers curl-response-headers)
-            (immutable body curl-response-body)
-            (immutable timings curl-response-timings)))
+    (fields (immutable status unchecked-curl-response-status)
+            (immutable http-version unchecked-curl-response-http-version)
+            (immutable effective-url unchecked-curl-response-effective-url)
+            (immutable headers unchecked-curl-response-headers)
+            (immutable body unchecked-curl-response-body)
+            (immutable timings unchecked-curl-response-timings)))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define curl-response-status
+    (checked-accessor 'curl-response-status curl-response? "a response" unchecked-curl-response-status))
+  (define curl-response-http-version
+    (checked-accessor 'curl-response-http-version curl-response? "a response" unchecked-curl-response-http-version))
+  (define curl-response-effective-url
+    (checked-accessor 'curl-response-effective-url curl-response? "a response" unchecked-curl-response-effective-url))
+  (define curl-response-headers
+    (checked-accessor 'curl-response-headers curl-response? "a response" unchecked-curl-response-headers))
+  (define curl-response-body
+    (checked-accessor 'curl-response-body curl-response? "a response" unchecked-curl-response-body))
+  (define curl-response-timings
+    (checked-accessor 'curl-response-timings curl-response? "a response" unchecked-curl-response-timings))
 
   ;; timing-infos : (Listof (Pairof Symbol Positive-Integer))
   ;; Each timing a response carries, in its order, with the CURLINFO_ it is
@@ -1212,15 +1382,17 @@
                    (else (loop (+ i 1))))))))
 
   ;; failure : Symbol (U Integer #f) (U String #f) (U Positive-Integer #f) Any (U Natural #f)
-  ;;           -> Condition
+  ;;           (U Positive-Integer #f) -> Condition
   ;; What a transfer that failed for REASON raises: the class of CODE, by
   ;; make-classed-transfer-error's rule (ADR-0022, amended 2026-10-26), with
   ;; CODE's strerror, the error buffer's text, read now, while the buffer
-  ;; lives, and REQUEST-SIZE, the bytes of request sent.
-  (define (failure reason code option buffer recorded request-size)
+  ;; lives, REQUEST-SIZE, the bytes of request sent, and CONNECT-CODE, the
+  ;; status a proxy refused the transfer's CONNECT with, or #f.
+  (define (failure reason code option buffer recorded request-size connect-code)
     (let ((strerror (and code (curl-easy-strerror code))))
       (condition (make-classed-transfer-error reason code option strerror
-                                              (error-buffer-text buffer) recorded request-size)
+                                              (error-buffer-text buffer) recorded request-size
+                                              connect-code)
                  (make-who-condition 'curl-transfer)
                  (make-message-condition
                   (or strerror
@@ -1247,6 +1419,19 @@
   (define (reported-request-size version size)
     (if (member version request-size-unreliable) #f size))
 
+  ;; connect-status : Integer -> (U Positive-Integer #f)
+  ;; CODE, CURLINFO_HTTP_CONNECTCODE's answer, as a failure carries it: the
+  ;; status a proxy answered a CONNECT with, when it is no 2xx; #f for 0, no
+  ;; CONNECT status, and for a 2xx, the tunnel opened (ADR-0037, decision 9).
+  ;; Pure.
+  (define (connect-status code)
+    (and (integer? code) (positive? code) (not (<= 200 code 299)) code))
+
+  ;; ran-connect-status : Positive-Integer -> (U Positive-Integer #f)
+  ;; connect-status of EASY's CURLINFO_HTTP_CONNECTCODE.
+  (define (ran-connect-status easy)
+    (connect-status (info-long easy curlinfo-http-connectcode)))
+
   ;; ran-request-size : Positive-Integer -> (U Natural #f)
   ;; reported-request-size for EASY's transfer, which ran, on the loaded
   ;; libcurl.
@@ -1257,9 +1442,9 @@
   ;; fail : Symbol (U Integer #f) (U String #f) (U Positive-Integer #f) Any -> Nothing
   ;; Raises failure's condition for a transfer refused while it was set up,
   ;; before anything was sent: its request size is 0, which chez-curl knows
-  ;; itself, on every libcurl.
+  ;; itself, on every libcurl, and it sent no CONNECT.
   (define (fail reason code option buffer recorded)
-    (raise (failure reason code option buffer recorded 0)))
+    (raise (failure reason code option buffer recorded 0 #f)))
 
   ;; transfer-ended : (U 'cancelled 'stopped) -> Condition
   ;; The outcome of a transfer cancelled, or whose engine stopped, before
@@ -1268,7 +1453,7 @@
   (define (transfer-ended reason)
     (unless (memq reason '(cancelled stopped))
       (assertion-violation 'transfer-ended "a transfer ends early cancelled or stopped" reason))
-    (failure reason #f #f #f #f #f))
+    (failure reason #f #f #f #f #f #f))
 
   ;; --- options ----------------------------------------------------------------------
 
@@ -1318,8 +1503,14 @@
   ;; The TLS fields set two each, in the order tls-settings makes
   ;; them: ca-file CAINFO, its path, then CAPATH, cleared; verify
   ;; SSL_VERIFYPEER, then SSL_VERIFYHOST (ADR-0018). proxy sets PROXY, to ""
-  ;; when it is #f (ADR-0024, decision 1). follow is the private field's (M4
-  ;; plan, section 3.2). stream-buffer sets the header callable and its
+  ;; when it is #f (ADR-0024, decision 1), and for a URL PROXY at it, then
+  ;; NOPROXY at "", so no variable sends the transfer direct, and
+  ;; FORBID_REUSE, with FRESH_CONNECT, the body's, where
+  ;; unshared-tunnel-settings asks (ADR-0037, amended twice): NOPROXY was
+  ;; the field's twin before; proxy-ca-file PROXY_CAINFO, its path, then
+  ;; PROXY_CAPATH, cleared; proxy-verify PROXY_SSL_VERIFYPEER, then
+  ;; PROXY_SSL_VERIFYHOST, by proxy-settings. follow is the private field's
+  ;; (M4 plan, section 3.2). stream-buffer sets the header callable and its
   ;; data, the transfer's key, for a streamed response alone (the M6 plan,
   ;; sections 3.2 and 3.3). http-version sets HTTP_VERSION, by
   ;; version-settings, when it is not #f (ADR-0034). credentials sets
@@ -1335,9 +1526,11 @@
       (user-agent "USERAGENT")
       (timeout-ms "TIMEOUT_MS") (connect-timeout-ms "CONNECTTIMEOUT_MS")
       (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
-      (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY")
+      (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY" "NOPROXY" "FORBID_REUSE")
       (stream-buffer "HEADERFUNCTION" "HEADERDATA") (body-length "INFILESIZE_LARGE")
       (http-version "HTTP_VERSION") (credentials "HTTPAUTH" "USERNAME" "PASSWORD" "XOAUTH2_BEARER")
+      (proxy-ca-file "PROXY_CAINFO" "PROXY_CAPATH")
+      (proxy-verify "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST")
       (follow "FOLLOWLOCATION")))
 
   ;; field-options : Symbol -> (Listof String)
@@ -1354,15 +1547,18 @@
       (car names)))
 
   ;; proxy-tls-option-names : (Listof String)
-  ;; Every option that sets a proxy's TLS, in the options tables of the five
-  ;; libcurls the M4 plan measured, 7.85.0 to 8.23.0: each PROXY_SSL_* and
-  ;; PROXY_CA* option, and the rest of the PROXY_ TLS settings, which could
-  ;; loosen it too, its version, ciphers and TLS-SRP among them. A proxy's
-  ;; TLS stays libcurl's verified default until M7 (ADR-0024, amended
-  ;; 2026-10-26, decided by the maintainer).
+  ;; Every option that sets a proxy's TLS but the four the proxy-ca-file and
+  ;; proxy-verify fields set, PROXY_CAINFO, PROXY_CAPATH,
+  ;; PROXY_SSL_VERIFYPEER and PROXY_SSL_VERIFYHOST, in the options tables of
+  ;; the five libcurls the M4 plan measured, 7.85.0 to 8.23.0: each other
+  ;; PROXY_SSL_* and PROXY_CA* option, and the rest of the PROXY_ TLS
+  ;; settings, which could loosen it too, its version, ciphers and TLS-SRP
+  ;; among them. Each is a twin of those fields', owned since M4 (ADR-0024,
+  ;; amended 2026-10-26, decided by the maintainer); a proxy's own CA and
+  ;; verification are the fields' from M7 slice 3 (ADR-0037, decision 5).
   (define proxy-tls-option-names
-    '("PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
-      "PROXY_CAINFO" "PROXY_CAINFO_BLOB" "PROXY_CAPATH" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
+    '("PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
+      "PROXY_CAINFO_BLOB" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
       "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
       "PROXY_SSLCERT" "PROXY_SSLCERT_BLOB" "PROXY_SSLCERTTYPE" "PROXY_SSLKEY" "PROXY_SSLKEY_BLOB"
       "PROXY_SSLKEYTYPE" "PROXY_KEYPASSWD" "PROXY_TLSAUTH_TYPE" "PROXY_TLSAUTH_USERNAME"
@@ -1392,10 +1588,11 @@
   ;;     its body, against the body limit;
   ;;   - the CA file's: CAINFO_BLOB, which adds a CA, and SSL_OPTIONS, whose
   ;;     NATIVE_CA adds the system store;
-  ;;   - the proxy field's (ADR-0024, decision 1): NOPROXY, whose "*" turns
-  ;;     the environment's proxy off as PROXY "" does; PRE_PROXY, a SOCKS
-  ;;     proxy before it; PROXYPORT and PROXYTYPE, its port and its kind,
-  ;;     parts of the proxy PROXY names, as PORT is of the URL;
+  ;;   - the proxy field's (ADR-0024, decision 1): PRE_PROXY, a SOCKS proxy
+  ;;     before it; PROXYPORT and PROXYTYPE, its port and its kind, parts
+  ;;     of the proxy PROXY names, as PORT is of the URL. NOPROXY, whose "*"
+  ;;     turns the environment's proxy off as PROXY "" does, was its twin
+  ;;     until M7 slice 3 made it the field's own;
   ;;   - found by M4 slice 4's review of every option the hatch's types
   ;;     reach, each measured on five libcurls but where named (ADR-0009,
   ;;     amended 2026-10-27, decided by the maintainer): TRANSFERTEXT, which
@@ -1435,8 +1632,8 @@
   ;;     hsts_upgrade and Curl_xfer_is_secure, read), and no second
   ;;     request within one transfer changes its URL, but the private
   ;;     follow's, which nothing public sets. PIPEWAIT, HTTP09_ALLOWED,
-  ;;     HTTP200ALIASES, CONNECT_TO and HTTPPROXYTUNNEL stay the hatch's
-  ;;     too;
+  ;;     HTTP200ALIASES and CONNECT_TO stay the hatch's too, and
+  ;;     HTTPPROXYTUNNEL did until M7 slice 3;
   ;;   - the credentials field's, measured through the engine on five
   ;;     libcurls (M7 slice 2; ADR-0036, amended 2026-11-02): AWS_SIGV4,
   ;;     which set after HTTPAUTH replaced every scheme's header with an
@@ -1446,6 +1643,22 @@
   ;;     which reaches libcurl's own follow alone, DISALLOW_USERNAME_IN_URL,
   ;;     LOGIN_OPTIONS, SASL_AUTHZID, SASL_IR, SERVICE_NAME and NETRC_FILE
   ;;     stay the hatch's, each changing nothing the field sends;
+  ;;   - the proxy field's, measured through the engine on five libcurls
+  ;;     (M7 slice 3; ADR-0037, amended 2026-11-03): PROXYAUTH,
+  ;;     PROXYUSERPWD, PROXYUSERNAME and PROXYPASSWORD, which set a proxy's
+  ;;     credentials another way than its URL's userinfo, and decode them
+  ;;     differently by version; HTTPPROXYTUNNEL, which moves an http://
+  ;;     URL's request from the proxy into a tunnel to the origin, with
+  ;;     every caller header, and lets prior knowledge speak HTTP/2 through
+  ;;     a named proxy; HAPROXYPROTOCOL, which writes a PROXY line to the
+  ;;     proxy by absolute form and to the origin inside a tunnel, breaking
+  ;;     a TLS origin's handshake, 35, and HAPROXY_CLIENT_IP, which rewrites
+  ;;     that line's addresses: 7.85.0 knows no HAPROXY_CLIENT_IP, and an
+  ;;     owned name a libcurl does not know is no id of its own, its
+  ;;     attachment refused as unknown-option first.
+  ;;     SUPPRESS_CONNECT_HEADERS, PROXY_SERVICE_NAME and SOCKS5_AUTH stay
+  ;;     the hatch's, each changing no byte either side got, and nothing
+  ;;     chez-curl reads;
   ;; then proxy-tls-option-names. They are compared by id, so an alias name
   ;; is refused too.
   (define owned-option-names
@@ -1455,13 +1668,15 @@
             '("TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "PUT"
               "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE"
               "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
-              "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
+              "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
               "TRANSFERTEXT" "USERPWD" "NETRC" "HSTS"
               "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
               "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
               "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT"
               "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL"
-              "AWS_SIGV4")
+              "AWS_SIGV4"
+              "PROXYAUTH" "PROXYUSERPWD" "PROXYUSERNAME" "PROXYPASSWORD"
+              "HTTPPROXYTUNNEL" "HAPROXYPROTOCOL" "HAPROXY_CLIENT_IP")
             proxy-tls-option-names))
 
   ;; pinned-options : (Listof (Pairof String (U String Integer)))
@@ -1589,7 +1804,7 @@
                 ((long) (long? value))
                 ((off-t) (off-t? value))
                 (else (or (not value) (pointer? value))))
-        (assertion-violation 'set-option! "the value does not fit the option's type" name value))
+        (assertion-violation 'set-option! "the value does not fit the option's type" name (shown-value value)))
       (let ((code ((option-setter binding) easy (car option) (or value 0))))
         (unless (setopt-accepted? value code)
           (fail 'setopt-failed code name buffer #f)))))
@@ -1693,6 +1908,125 @@
                    (cons (cadr names) (cadr credentials))
                    (cons (caddr names) (caddr credentials)))))))
 
+  ;; proxy-settings : (U 'environment #f String) (U String #f) Boolean
+  ;;                  -> (Listof (Pairof String (U String Integer #f)))
+  ;; The settings a request's PROXY, its PROXY-CA-FILE and its VERIFY make
+  ;; (ADR-0024, decision 1; ADR-0037), as data, in order: environment, none,
+  ;; so libcurl reads the proxy variables by its own rules, and keeps its
+  ;; verified default for the proxy they name; #f, PROXY at "", which reads
+  ;; none of them; a URL, the one a submit hands libcurl, its scheme's port
+  ;; set when it named none: PROXY at it and NOPROXY at "", so no_proxy and
+  ;; NO_PROXY send nothing around it, then the proxy's verification,
+  ;; PROXY_SSL_VERIFYPEER at 1 and PROXY_SSL_VERIFYHOST at 2, or both at 0
+  ;; when VERIFY is #f, then, with a PROXY-CA-FILE alone, PROXY_CAINFO at its
+  ;; path and PROXY_CAPATH at #f, a clear, so the file is the proxy's only
+  ;; anchor, as tls-settings makes the origin's (ADR-0018). An http:// proxy
+  ;; URL's verification is set alike, and reads nothing: a submit refuses a
+  ;; proxy CA file, and VERIFY #f, beside any proxy but an https:// URL. Any
+  ;; other PROXY is an assertion violation, naming proxy alone. The names
+  ;; are request-field-options'. Pure. tests/test-proxy.sps writes out every
+  ;; answer.
+  (define (proxy-settings proxy proxy-ca-file verify)
+    (let ((names (field-options 'proxy))
+          (ca-names (field-options 'proxy-ca-file))
+          (verify-names (field-options 'proxy-verify)))
+      (cond ((eq? proxy 'environment) '())
+            ((not proxy) (list (cons (car names) "")))
+            ((string? proxy)
+             (append (list (cons (car names) proxy) (cons (cadr names) "")
+                           (cons (car verify-names) (if verify 1 0))
+                           (cons (cadr verify-names) (if verify 2 0)))
+                     (if proxy-ca-file
+                         (list (cons (car ca-names) proxy-ca-file) (cons (cadr ca-names) #f))
+                         '())))
+            (else (assertion-violation 'proxy-settings "not a proxy" 'proxy)))))
+
+  ;; unshared-tunnel-floor : Positive-Integer
+  ;; 8.19.0's version_num, #x081300: the first libcurl whose match of a
+  ;; pooled proxy connection compares the proxy's user and password, so no
+  ;; request rides a tunnel another user's credentials opened
+  ;; (CVE-2026-3784, "wrong proxy connection reuse with credentials", in
+  ;; curl 7.7 to 8.18.0). tests/test-proxy.sps writes it out.
+  (define unshared-tunnel-floor #x081300)
+
+  ;; unshared-tunnel-settings : Natural (U String #f) Boolean Boolean
+  ;;                            -> (Listof (Pairof String Integer))
+  ;; The settings that keep a tunnel through a named proxy unshared, by
+  ;; ADR-0037's decision 8 (amended 2026-11-03), as data: on a libcurl whose
+  ;; VERSION-NUMBER is below unshared-tunnel-floor, a transfer to an https://
+  ;; URL, SCHEME being the scheme libcurl gives back, in lower case, through
+  ;; a PROXY-URL, FRESH_CONNECT at 1, so it joins no connection, live or
+  ;; pooled; and with USERINFO, a user or a password in the proxy URL,
+  ;; FORBID_REUSE at 1 too, so it leaves none behind. () otherwise: an
+  ;; http:// URL's request goes to the proxy by absolute form, each with its
+  ;; own credentials, and from 8.19.0 libcurl's own match keeps another
+  ;; user's request off a tunnel. 7.85.0 let a second transfer, a turn
+  ;; after the first, with another user's userinfo, a wrong password or none,
+  ;; ride the first's authenticated tunnel and get 200; Ubuntu's 8.5.0
+  ;; carries the fix, but a version cannot show a backport, so it pays for
+  ;; the new connection too (M7 slice 3's measurement). FRESH_CONNECT is
+  ;; the streamed body's too: the transfer sets it once when either asks.
+  ;; The names are request-field-options'. Pure. tests/test-proxy.sps
+  ;; writes out every answer.
+  (define (unshared-tunnel-settings version-number scheme proxy-url userinfo)
+    (let ((fresh (list-ref (field-options 'body) 8))
+          (forbid (list-ref (field-options 'proxy) 2)))
+      (if (and proxy-url (equal? scheme "https") (< version-number unshared-tunnel-floor))
+          (if userinfo
+              (list (cons fresh 1) (cons forbid 1))
+              (list (cons fresh 1)))
+          '())))
+
+  ;; stops-multiplexing? : Natural Boolean Boolean -> Boolean
+  ;; Whether a transfer stops its engine's multiplexing, by ADR-0037's
+  ;; decision 11: on a libcurl whose VERSION-NUMBER is below
+  ;; unshared-tunnel-floor, a transfer through a PROXY-URL whose USERINFO
+  ;; holds a user or a password, whatever its URL's scheme. Before 8.19.0
+  ;; libcurl matches a live proxy connection by host and port alone, so on
+  ;; 7.85.0 a transfer through proxy environment, its variable naming the
+  ;; same proxy with no userinfo, rode a named proxy's live authenticated
+  ;; tunnel as a second HTTP/2 stream and got 200 (M7 slice 3's review);
+  ;; FRESH_CONNECT keeps only the transfer that sets it off a live
+  ;; connection. An engine that does not multiplex sent that transfer's own
+  ;; CONNECT. The engine's thread acts on it, before the transfer's handle
+  ;; is added, and never resumes. Pure. tests/test-proxy.sps writes out
+  ;; every answer.
+  (define (stops-multiplexing? version-number proxy-url userinfo)
+    (and proxy-url userinfo (< version-number unshared-tunnel-floor) #t))
+
+  ;; tls-in-tls-stalls : (Listof (List String (U String #f) (Listof (U Symbol #f))))
+  ;; The libcurls where an https:// URL through an https:// proxy stalls,
+  ;; its request sent and the origin's answer tunnelled back, until the
+  ;; transfer's timeout, 28, each (VERSION BACKEND VERSIONS-ASKED): its
+  ;; version, the TLS backend in use, by its name's start, #f for any, and
+  ;; the http-version values that stall there (ADR-0037, decisions 7 and
+  ;; 10). Ubuntu's 8.5.0 with GnuTLS stalled an https:// URL and an HTTP/2
+  ;; one, ten times of ten in each run, whatever was asked; 7.85.0 stalled an
+  ;; HTTP/2 one at times, 7 of 50 across five runs, and passed HTTP/1.1 50
+  ;; of 50, so it stalls for any request but one asking http/1.1, which
+  ;; keeps the server from choosing HTTP/2 (M7 slice 3's measurement).
+  ;; Keyed as the engine's multiplexing rule is, by the loaded libcurl's
+  ;; version, and by the backend as ADR-0024's table keys by more than a
+  ;; version. tests/test-proxy.sps holds it to its own copy.
+  (define tls-in-tls-stalls
+    '(("7.85.0" #f (#f http/2))
+      ("8.5.0" "GnuTLS" (#f http/1.1 http/2))))
+
+  ;; tls-in-tls-stall? : String (U String #f) (U Symbol #f) -> Boolean
+  ;; Whether tls-in-tls-stalls holds a row for VERSION whose backend is
+  ;; any, or begins BACKEND's name, the backend in use, or BACKEND could not
+  ;; be read, which errs toward refusing, and whose values asked hold
+  ;; HTTP-VERSION. Pure.
+  (define (tls-in-tls-stall? version backend http-version)
+    (and (exists (lambda (row)
+                   (and (string=? (car row) version)
+                        (or (not (cadr row)) (not (string? backend))
+                            (string-prefix? (cadr row) backend))
+                        (memq http-version (caddr row))
+                        #t))
+                 tls-in-tls-stalls)
+         #t))
+
   ;; --- the hatch (ADR-0009; the M4 plan, section 3.7) ---------------------------------
 
   ;; hatch-types : (Listof Symbol)
@@ -1730,7 +2064,7 @@
   ;; when checked, so another thread that changes it meanwhile is refused,
   ;; never followed round a cycle.
   (define (option-pairs who options)
-    (define (wrong) (assertion-violation who "options are a list of (NAME . VALUE), each NAME a string" options))
+    (define (wrong) (assertion-violation who "options are a list of (NAME . VALUE), each NAME a string" (shown-value options)))
     (unless (list? options) (wrong))
     (let loop ((rest options) (left (length options)) (found '()))
       (cond ((and (null? rest) (= left 0)) (reverse found))
@@ -1765,7 +2099,7 @@
   ;; from WHO; then a copied string that holds U+0000, CR or LF, the list's
   ;; each in turn, is refused by text-fault's reason.
   (define (hatch-value who name type value)
-    (define (wrong message) (assertion-violation who message (cons name value)))
+    (define (wrong message) (assertion-violation who message (cons name (shown-value value))))
     (define (checked text)
       (let ((fault (text-fault text)))
         (when fault (refuse-option who name fault))
@@ -1819,7 +2153,7 @@
   ;; checked, as curl-request-with checks them.
   (define (curl-request-with-options request options)
     (define who 'curl-request-with-options)
-    (unless (curl-request? request) (assertion-violation who "not a request" request))
+    (unless (curl-request? request) (assertion-violation who "not a request" (shown-value request)))
     (let loop ((rest (option-pairs who options))
                (found (reverse (curl-request-options request))))
       (if (null? rest)
@@ -1846,7 +2180,7 @@
   ;; it.
   (define (hatch-settings-of request)
     (unless (curl-request? request)
-      (assertion-violation 'hatch-settings-of "not a request" request))
+      (assertion-violation 'hatch-settings-of "not a request" (shown-value request)))
     (map (lambda (setting)
            (let ((value (hatch-setting-value setting)))
              (list (string-copy (hatch-setting-name setting)) (hatch-setting-type setting)
@@ -1995,10 +2329,23 @@
   ;; request that does not stream its body among them (the M6 plan, section
   ;; 3.2; ADR-0032, decision 3).
   (define-record-type (curl-head make-curl-head curl-head?)
-    (fields (immutable status curl-head-status)
-            (immutable http-version curl-head-http-version)
-            (immutable headers curl-head-headers)
-            (immutable body-asked curl-head-body-asked?)))
+    (fields (immutable status unchecked-curl-head-status)
+            (immutable http-version unchecked-curl-head-http-version)
+            (immutable headers unchecked-curl-head-headers)
+            (immutable body-asked unchecked-curl-head-body-asked?)))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define curl-head-status
+    (checked-accessor 'curl-head-status curl-head? "a head" unchecked-curl-head-status))
+  (define curl-head-http-version
+    (checked-accessor 'curl-head-http-version curl-head? "a head" unchecked-curl-head-http-version))
+  (define curl-head-headers
+    (checked-accessor 'curl-head-headers curl-head? "a head" unchecked-curl-head-headers))
+  (define curl-head-body-asked?
+    (checked-accessor 'curl-head-body-asked? curl-head? "a head" unchecked-curl-head-body-asked?))
 
   ;; A response stream, made at submit, one per submit, with its plan
   ;; (ADR-0030, decision 1): its mutex and its stream-buffer, LIMIT. Its
@@ -2851,16 +3198,21 @@
   ;; queued has a stream to look at (ADR-0030, decision 1); then its
   ;; body-length; and, for a request whose body streams, the submit's own
   ;; request stream, beside the response stream when it streams both ways;
-  ;; its http-version; and the submit's checked copy of its credentials.
+  ;; its http-version; the submit's checked copy of its credentials; and its
+  ;; proxy's: the proxy, environment, #f or the URL the submit checked and
+  ;; hands PROXY, its port set; the proxy CA file's copy and its
+  ;; verification; the tunnel's settings, unshared-tunnel-settings'; and
+  ;; whether it stops its engine's multiplexing, stops-multiplexing?'s.
   (define-record-type plan
     (fields (immutable url) (immutable method) (immutable headers) (immutable agent)
             (immutable body) (immutable timeout-ms) (immutable connect-timeout-ms)
             (immutable body-limit) (immutable ca-file) (immutable verify) (immutable proxy)
             (immutable settings) (immutable fault) (immutable follow) (immutable stream)
             (immutable body-length) (immutable upload) (immutable http-version)
-            (immutable credentials))
+            (immutable credentials) (immutable proxy-ca-file) (immutable proxy-verify)
+            (immutable tunnel) (immutable unmultiplex))
     ;; Opaque, as a request is: a plan holds the submit's copy of its
-    ;; credentials, and a token holds its plan.
+    ;; credentials, and its proxy URL, and a token holds its plan.
     (opaque #t))
 
   ;; plan-stream : Plan -> (U Stream #f)
@@ -2878,8 +3230,8 @@
   ;; against the environment the libcurl loaded with, then the URL's copy,
   ;; parsed and its scheme checked, its CURLU freed before this returns
   ;; (ADR-0008, amended 2026-10-24), then prior knowledge against that
-  ;; scheme, and the credentials' copy against its userinfo. Each refusal
-  ;; raises here. Then the
+  ;; scheme, and the credentials' copy against its userinfo, and the proxy's
+  ;; checks, request-checks'. Each refusal raises here. Then the
   ;; body is copied, after every check, so
   ;; the caller's bytevector may change once this returns (ADR-0023,
   ;; decision 4); a request's method and the presence of its body cannot
@@ -2890,7 +3242,8 @@
   ;; stream-with-rounds and body-length-without-stream, checked as it was
   ;; made, hold here too.
   (define (prepare-transfer request)
-    (let-values (((url fields ca-file credentials) (request-checks 'curl-submit request)))
+    (let-values (((url fields ca-file credentials proxy proxy-ca-file tunnel unmultiplex)
+                  (request-checks 'curl-submit request)))
       (let* ((given (curl-request-body request))
              (body (if (bytevector? given) (bytevector-copy given) given))
              (limit (curl-request-stream-buffer request))
@@ -2899,52 +3252,282 @@
         (make-plan url (curl-request-method request) (car fields) (cdr fields) body
                    (curl-request-timeout-ms request) (curl-request-connect-timeout-ms request)
                    (curl-request-body-limit request) ca-file (curl-request-verify request)
-                   (curl-request-proxy request)
+                   proxy
                    (curl-request-options request) (curl-request-fault request)
                    (curl-request-follow request)
                    stream length (and (eq? body 'stream) (make-upload stream length))
-                   (curl-request-http-version request) credentials))))
+                   (curl-request-http-version request) credentials proxy-ca-file
+                   (curl-request-proxy-verify request) tunnel unmultiplex))))
 
-  ;; request-checks : Symbol Request -> (Values String (Pairof Headers (U String #f)) (U String #f) (U Credentials #f))
+  ;; request-checks : Symbol Request
+  ;;                  -> (Values String (Pairof Headers (U String #f)) (U String #f)
+  ;;                             (U Credentials #f) (U 'environment #f String) (U String #f)
+  ;;                             (Listof (Pairof String Integer)) Boolean)
   ;; The checks a submit makes of REQUEST on the caller's thread, as WHO,
   ;; their one owner: prepare-transfer's, as WHO curl-submit, and
   ;; curl-request-check's (ADR-0023, amended 2026-10-28). In order: what is
   ;; no request, an assertion violation; the URL's copy; the snapshot of the
-  ;; headers and the user agent; the CA file's copy; the credentials' copy;
-  ;; an Expect header
+  ;; headers and the user agent, Proxy-Authorization among its refusals; the
+  ;; CA file's copy; the credentials' copy; the proxy's copy and the proxy CA
+  ;; file's, path-copy's; an Expect header
   ;; holding 100-continue in the snapshot's copies beside a stream-buffer,
   ;; stream-with-rounds, by check-expect-round, since the caller's strings
   ;; may have changed since the request was made; the credentials beside
   ;; those copies, by check-credentials, for the same reason; then the CA
   ;; file against the environment the libcurl loaded with, by
-  ;; check-ca-environment; then the URL, parsed by call-with-parsed-url and
-  ;; checked by require-http-scheme, and, with credentials, its user and
-  ;; password parts read by userinfo-parts, by check-userinfo, its CURLU
-  ;; freed before this returns;
+  ;; check-ca-environment; then a proxy URL, by check-proxy-url; then an
+  ;; https:// proxy URL against the libcurl's features, by
+  ;; check-https-proxy; then the proxy's TLS fields beside it, by
+  ;; check-proxy-tls, and the proxy CA file
+  ;; against the environment, by check-ca-environment; then the URL, parsed
+  ;; by call-with-parsed-url and checked by require-http-scheme, and, with
+  ;; credentials, its user and password parts read by userinfo-parts, by
+  ;; check-userinfo, its CURLU freed before this returns;
   ;; then the http-version against the scheme it answered, by
-  ;; check-prior-knowledge. Each refusal raises here, as WHO where its check
-  ;; names one. Answers the checked copies: the URL, the fields, the CA
-  ;; file and the credentials. The body is no check's: a submit copies it
-  ;; after.
+  ;; check-prior-knowledge, and against a proxy URL, by
+  ;; check-prior-knowledge-proxy; then the URL's scheme through an https://
+  ;; proxy URL, by check-tls-in-tls. Each refusal raises here, as WHO where
+  ;; its check names one. Answers the checked copies: the URL, the fields,
+  ;; the CA file and the credentials; the proxy, environment, #f, or the URL
+  ;; the proxy URL's check answered, which PROXY gets; the proxy CA file;
+  ;; unshared-tunnel-settings' for the loaded libcurl, the URL's scheme
+  ;; and the proxy; and stops-multiplexing?'s for the loaded libcurl and the
+  ;; proxy. The body is no check's: a submit copies it after.
   (define (request-checks who request)
     (unless (curl-request? request)
-      (assertion-violation who "not a request" request))
+      (assertion-violation who "not a request" (shown-value request)))
     (let* ((url (string-copy (curl-request-url request)))
            (fields (snapshot who (curl-request-headers request) (curl-request-user-agent request)))
            (ca-file (ca-file-copy who (curl-request-ca-file request)))
-           (credentials (credentials-copy who (request-credentials request))))
+           (credentials (credentials-copy who (request-credentials request)))
+           (proxy (let ((given (request-proxy request)))
+                    (if (string? given) (string-copy given) given)))
+           (proxy-ca-file (path-copy who 'proxy-ca-file (request-proxy-ca-file request)))
+           (proxy-verify (curl-request-proxy-verify request))
+           (version (curl-request-http-version request)))
       (check-expect-round who (curl-request-stream-buffer request) (car fields))
       (check-credentials who credentials (car fields) (curl-request-body request)
                          (curl-request-stream-buffer request))
-      (check-ca-environment who ca-file (curl-request-verify request))
-      (let ((scheme (call-with-parsed-url url
-                      (lambda (handle)
-                        (let ((scheme (require-http-scheme handle url)))
-                          (when credentials
-                            (check-userinfo who credentials (userinfo-parts handle url)))
-                          scheme)))))
-        (check-prior-knowledge who (curl-request-http-version request) scheme))
-      (values url fields ca-file credentials)))
+      (check-ca-environment who 'ca-file ca-file (curl-request-verify request))
+      (let ((reading (and (string? proxy) (check-proxy-url who proxy))))
+        (check-https-proxy who (and reading (string=? (cadr reading) "https"))
+                           (libcurl-info-features (loaded-libcurl)))
+        (check-proxy-tls who (and reading (string=? (cadr reading) "https")) proxy-ca-file
+                         proxy-verify)
+        (check-ca-environment who 'proxy-ca-file proxy-ca-file proxy-verify)
+        (let ((scheme (call-with-parsed-url url
+                        (lambda (handle)
+                          (let ((scheme (require-http-scheme handle url)))
+                            (when credentials
+                              (check-userinfo who credentials (userinfo-parts handle url)))
+                            scheme)))))
+          (check-prior-knowledge who version scheme)
+          (check-prior-knowledge-proxy who version reading)
+          (check-tls-in-tls who scheme reading version)
+          (let ((version-number (libcurl-info-version-number (loaded-libcurl))))
+            (values url fields ca-file credentials (if reading (car reading) proxy) proxy-ca-file
+                    (unshared-tunnel-settings version-number scheme
+                                              (and reading #t) (and reading (caddr reading)))
+                    (stops-multiplexing? version-number (and reading #t) (and reading (caddr reading)))))))))
+
+  ;; refuse-proxy : Symbol Any Symbol -> Nothing
+  ;; The refusal, as WHO, of a request's proxy URL for REASON, field proxy,
+  ;; naming VALUE, the symbol proxy or (proxy PART), never the URL: its
+  ;; userinfo can hold the proxy's password.
+  (define (refuse-proxy who value reason)
+    (refuse-field who 'proxy value reason))
+
+  ;; hex-digit-value : Char -> (U Natural #f)
+  ;; C's value as a hex digit, either case, ASCII alone; #f for any other.
+  (define (hex-digit-value c)
+    (cond ((char<=? #\0 c #\9) (- (char->integer c) 48))
+          ((char<=? #\a c #\f) (- (char->integer c) 87))
+          ((char<=? #\A c #\F) (- (char->integer c) 55))
+          (else #f)))
+
+  ;; percent-decoded : String -> (U Bytevector #f)
+  ;; TEXT, a URL's part as libcurl gives it back, still percent-encoded, as
+  ;; bytes: each % and the two hex digits after it, in either case, the byte
+  ;; they name; each other char its UTF-8 bytes, a char above U+007F given
+  ;; raw among them; or #f for a % not followed by two hex digits, which no
+  ;; libcurl refuses in a userinfo and each sends on as it is (M7 slice 3's
+  ;; build). Pure.
+  (define (percent-decoded text)
+    (let ((n (string-length text)))
+      (let loop ((i 0) (chunks '()))
+        (cond ((= i n) (apply bytevector-append-all (reverse chunks)))
+              ((char=? (string-ref text i) #\%)
+               (let ((high (and (< (+ i 2) n) (hex-digit-value (string-ref text (+ i 1)))))
+                     (low (and (< (+ i 2) n) (hex-digit-value (string-ref text (+ i 2))))))
+                 (and high low
+                      (loop (+ i 3) (cons (u8-list->bytevector (list (+ (* high 16) low))) chunks)))))
+              (else (loop (+ i 1) (cons (string->utf8 (string (string-ref text i))) chunks)))))))
+
+  ;; bytevector-append-all : Bytevector ... -> Bytevector
+  (define (bytevector-append-all . parts)
+    (let* ((total (fold-left (lambda (sum part) (+ sum (bytevector-length part))) 0 parts))
+           (out (make-bytevector total)))
+      (let loop ((rest parts) (at 0))
+        (unless (null? rest)
+          (bytevector-copy! (car rest) 0 out at (bytevector-length (car rest)))
+          (loop (cdr rest) (+ at (bytevector-length (car rest))))))
+      out))
+
+  ;; utf-8-bytes? : Bytevector -> Boolean
+  ;; Whether BYTES are UTF-8, read by a strict transcoder.
+  (define (utf-8-bytes? bytes)
+    (guard (e ((i/o-decoding-error? e) #f))
+      (bytevector->string bytes (make-transcoder (utf-8-codec) (eol-style none)
+                                                 (error-handling-mode raise)))
+      #t))
+
+  ;; check-proxy-url : Symbol String -> (List String String Boolean)
+  ;; PROXY, a request's proxy URL, a checked copy, parsed by
+  ;; proxy-url-reading and checked, as WHO, each refusal raising, field
+  ;; proxy, never naming the URL (ADR-0037, amended 2026-11-03), in order:
+  ;;   - proxy-url, value proxy: libcurl's URL API cannot parse it, a URL
+  ;;     that names no scheme, holds U+0000, or whose answer is not UTF-8
+  ;;     among them, alike on every libcurl; or its user or its password,
+  ;;     as libcurl gives it back, still encoded, holds a % not followed by
+  ;;     two hex digits, which every libcurl measured took, and would send
+  ;;     on as it is;
+  ;;   - proxy-scheme, value proxy: a scheme but http or https, A to Z
+  ;;     folded: chez-curl's to judge, since CURLU_NON_SUPPORT_SCHEME lets
+  ;;     curl_url parse any scheme, socks5:// and foo:// among them, where
+  ;;     with no flags it refuses foo:// everywhere and socks5:// but on
+  ;;     8.23.0;
+  ;;   - proxy-url-parts, value proxy: a path but /, a query, or a
+  ;;     fragment. An empty query or fragment, which 7.85.0 and 8.5.0 report
+  ;;     as "" and later libcurls as none, counts as none, and goes out as
+  ;;     none, alike;
+  ;;   - the userinfo, by check-proxy-userinfo.
+  ;; Answers (URL SCHEME USERINFO): the URL libcurl gives back, its scheme's
+  ;; port set when it named none, which PROXY gets; the scheme, A to Z
+  ;; folded; and whether the URL holds a user or a password part libcurl
+  ;; reports. libcurl's own refusal, which holds the URL, is never handed
+  ;; on.
+  (define (check-proxy-url who proxy)
+    (let ((reading (guard (e ((curl-url-error? e) #f)) (proxy-url-reading proxy))))
+      (unless reading (refuse-proxy who 'proxy 'proxy-url))
+      (let* ((scheme (ascii-folded (list-ref reading 0)))
+             (user (list-ref reading 1))
+             (password (list-ref reading 2))
+             (path (list-ref reading 3))
+             (query (list-ref reading 4))
+             (fragment (list-ref reading 5))
+             (user-bytes (and user (percent-decoded user)))
+             (password-bytes (and password (percent-decoded password))))
+        (when (or (and user (not user-bytes)) (and password (not password-bytes)))
+          (refuse-proxy who 'proxy 'proxy-url))
+        (unless (member scheme '("http" "https"))
+          (refuse-proxy who 'proxy 'proxy-scheme))
+        (unless (and (or (not path) (string=? path "/"))
+                     (or (not query) (string=? query ""))
+                     (or (not fragment) (string=? fragment "")))
+          (refuse-proxy who 'proxy 'proxy-url-parts))
+        (check-proxy-userinfo who user-bytes password-bytes)
+        (list (list-ref reading 6) scheme (and (or user password) #t)))))
+
+  ;; check-proxy-userinfo : Symbol (U Bytevector #f) (U Bytevector #f) -> Void
+  ;; Refuses, as WHO, a proxy URL's USER and PASSWORD, each percent-decoded,
+  ;; #f for a part libcurl does not report, by the server credentials' rules
+  ;; (ADR-0036, decisions 5 to 7; ADR-0037, amended 2026-11-03), in order,
+  ;; each a &curl-request-error, field proxy:
+  ;;   - each part present, user then password: a byte from 0x00 to 0x1F,
+  ;;     or 0x7F, or bytes that are not UTF-8, %FF or a lone continuation
+  ;;     byte among them, or, in the user, a colon, which ends the user at
+  ;;     the proxy: credentials-bytes, value (proxy PART). Decoded, a
+  ;;     control byte made 7.85.0 and both 8.5.0 builds drop the proxy and
+  ;;     go direct, the origin answering, and 8.20.0 and 8.23.0 fail 3;
+  ;;     encoded, every form is ASCII, so the rule reads the bytes decoded.
+  ;;     A space, 0x7E, a colon in the password, and UTF-8, raw or encoded,
+  ;;     pass;
+  ;;   - a user and a password both empty, a part not reported read as
+  ;;     empty, when either is reported: credentials-empty, value (proxy
+  ;;     user). @ and :@ sent : on 8.5.0 and 8.20.0, and nothing on 8.23.0;
+  ;;     7.85.0 reports neither part for them, so neither is refused there,
+  ;;     and it sends nothing (tests/test-proxy.sps pins each by version).
+  ;;     One empty part beside the other passes, alike on every libcurl.
+  (define (check-proxy-userinfo who user password)
+    (when (or user password)
+      (for-each (lambda (part)
+                  (let ((bytes (cdr part)))
+                    (when bytes
+                      (let scan ((i 0))
+                        (when (< i (bytevector-length bytes))
+                          (let ((b (bytevector-u8-ref bytes i)))
+                            (when (or (< b #x20) (= b #x7F)
+                                      (and (= b #x3A) (eq? (car part) 'user)))
+                              (refuse-proxy who (list 'proxy (car part)) 'credentials-bytes)))
+                          (scan (+ i 1))))
+                      (unless (utf-8-bytes? bytes)
+                        (refuse-proxy who (list 'proxy (car part)) 'credentials-bytes)))))
+                (list (cons 'user user) (cons 'password password)))
+      (when (and (or (not user) (= (bytevector-length user) 0))
+                 (or (not password) (= (bytevector-length password) 0)))
+        (refuse-proxy who '(proxy user) 'credentials-empty))))
+
+  ;; https-proxy-supported? : Natural -> Boolean
+  ;; Whether FEATURES, a curl_version_info features word, holds
+  ;; CURL_VERSION_HTTPS_PROXY. Pure.
+  (define (https-proxy-supported? features)
+    (not (zero? (bitwise-and features curl-version-https-proxy))))
+
+  ;; check-https-proxy : Symbol Boolean Natural -> Void
+  ;; Refuses, as WHO, an HTTPS-PROXY, an https:// proxy URL, where FEATURES
+  ;; lack CURL_VERSION_HTTPS_PROXY: https-proxy-unsupported, field proxy,
+  ;; value proxy, never the URL. libcurl refuses such a URL itself, and
+  ;; writes it whole, its userinfo with it, into the error buffer the
+  ;; failure carries (7.85.0 lib/url.c:2496, 8.20.0 lib/url.c:1994, 8.23.0
+  ;; lib/peer.c:654, read in source). No lane lacks the feature.
+  (define (check-https-proxy who https-proxy features)
+    (when (and https-proxy (not (https-proxy-supported? features)))
+      (refuse-proxy who 'proxy 'https-proxy-unsupported)))
+
+  ;; check-proxy-tls : Symbol Boolean (U String #f) Boolean -> Void
+  ;; Refuses, as WHO, PROXY-CA-FILE, then VERIFY at #f, beside a proxy that
+  ;; is not HTTPS-PROXY, an https:// proxy URL: proxy-tls-without-https-proxy,
+  ;; field proxy-ca-file, value the path, or field proxy-verify, value #f.
+  ;; The proxy's TLS settings are an https:// proxy's alone: beside
+  ;; environment they would reach a proxy a variable names, or none, and
+  ;; beside #f or an http:// proxy nothing (the M7 plan, section 3.1).
+  ;; VERIFY at #t, the default, is never refused.
+  (define (check-proxy-tls who https-proxy proxy-ca-file verify)
+    (unless https-proxy
+      (when proxy-ca-file
+        (refuse-field who 'proxy-ca-file proxy-ca-file 'proxy-tls-without-https-proxy))
+      (unless verify
+        (refuse-field who 'proxy-verify verify 'proxy-tls-without-https-proxy))))
+
+  ;; check-prior-knowledge-proxy : Symbol (U Symbol #f) (U (List String String Boolean) #f) -> Void
+  ;; Refuses, as WHO, an http-version VERSION of http/2-prior-knowledge
+  ;; beside READING, a proxy URL's check: prior-knowledge-through-proxy,
+  ;; field http-version. Through a proxy that does not tunnel libcurl
+  ;; ignores prior knowledge, and sends HTTP/1.1 in absolute form, on every
+  ;; libcurl measured (ADR-0034, amended). Beside the environment's proxy
+  ;; it is documented, not refused: no submit knows whether a variable
+  ;; names one.
+  (define (check-prior-knowledge-proxy who version reading)
+    (when (and reading (eq? version 'http/2-prior-knowledge))
+      (refuse-field who 'http-version version 'prior-knowledge-through-proxy)))
+
+  ;; check-tls-in-tls : Symbol String (U (List String String Boolean) #f) (U Symbol #f) -> Void
+  ;; Refuses, as WHO, a URL of SCHEME https through READING, an https://
+  ;; proxy URL's check, on the loaded libcurl, with VERSION asked, when
+  ;; tls-in-tls-stall? names it: proxy-tls-in-tls, field proxy, value proxy,
+  ;; whose irritants are proxy, then the libcurl's version and the backend
+  ;; in use. Without a bound such a transfer would wait for ever (ADR-0037,
+  ;; decisions 7 and 10). A redirect's hop is refused as it is submitted.
+  (define (check-tls-in-tls who scheme reading version)
+    (when (and reading (equal? scheme "https") (string=? (cadr reading) "https"))
+      (let ((libcurl (libcurl-info-version (loaded-libcurl)))
+            (backend (loaded-tls-backend)))
+        (when (tls-in-tls-stall? libcurl backend version)
+          (raise (condition (make-curl-request-error 'proxy 'proxy 'proxy-tls-in-tls)
+                            (make-who-condition who)
+                            (make-message-condition
+                             "an https:// URL through an https:// proxy, on a libcurl where TLS inside TLS stalls until the transfer's timeout: Ubuntu's 8.5.0 with GnuTLS, whatever is asked, and 7.85.0 unless the request asks http/1.1")
+                            (make-irritants-condition (list 'proxy libcurl backend))))))))
 
   ;; check-userinfo : Symbol Credentials (List (U String #f) (U String #f)) -> Void
   ;; Refuses, as WHO, CREDENTIALS beside PARTS, the parsed URL's user and
@@ -3125,12 +3708,16 @@
   ;; response, HEADERFUNCTION and HEADERDATA at KEY; for a streamed body,
   ;; READFUNCTION and READDATA, SEEKFUNCTION and SEEKDATA, PREREQFUNCTION and
   ;; PREREQDATA at KEY, then FRESH_CONNECT at 1 unless FRESH is #f, an
-  ;; engine's reusing seam (ADR-0032); then method-settings'
+  ;; engine's reusing seam (ADR-0032), or when the plan's tunnel settings,
+  ;; unshared-tunnel-settings', ask it, once either way, then FORBID_REUSE
+  ;; when they ask it (ADR-0037, amended 2026-11-03); then method-settings'
   ;; for the plan's method, body and body-length, a string through a C string and the
   ;; body through a counted copy, call-with-foreign-bytes'; and as the
   ;; request asks, HTTPHEADER at HEADER-LIST, USERAGENT, TIMEOUT_MS,
-  ;; CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE at the body limit plus one, and
-  ;; PROXY at "" for a proxy of #f; then version-settings' for the plan's
+  ;; CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE at the body limit plus one; then
+  ;; proxy-settings' for the plan's proxy, proxy CA file and verification,
+  ;; PROXY at "" for a proxy of #f, and for a URL PROXY, NOPROXY and the
+  ;; proxy's TLS; then version-settings' for the plan's
   ;; http-version, HTTP_VERSION when it is not #f; then
   ;; credentials-settings' for the plan's credentials, HTTPAUTH, then
   ;; USERNAME and PASSWORD or XOAUTH2_BEARER, each string a counted UTF-8
@@ -3156,8 +3743,11 @@
       (set-option! easy "SEEKFUNCTION" seek-body-entry buffer)
       (set-option! easy "SEEKDATA" key buffer)
       (set-option! easy "PREREQFUNCTION" prereq-body-entry buffer)
-      (set-option! easy "PREREQDATA" key buffer)
-      (when fresh (set-option! easy "FRESH_CONNECT" 1 buffer)))
+      (set-option! easy "PREREQDATA" key buffer))
+    (when (or (and (plan-upload plan) fresh) (assoc "FRESH_CONNECT" (plan-tunnel plan)))
+      (set-option! easy "FRESH_CONNECT" 1 buffer))
+    (when (assoc "FORBID_REUSE" (plan-tunnel plan))
+      (set-option! easy "FORBID_REUSE" 1 buffer))
     (for-each (lambda (setting)
                 (let ((value (cdr setting)))
                   (cond ((string? value) (set-string-option! easy (car setting) value buffer))
@@ -3182,8 +3772,11 @@
     (let ((limit (plan-body-limit plan)))
       (when limit
         (set-option! easy (field-option 'body-limit) (+ limit 1) buffer)))
-    (unless (plan-proxy plan)
-      (set-string-option! easy (field-option 'proxy) "" buffer))
+    (for-each (lambda (setting)
+                (if (string? (cdr setting))
+                    (set-string-option! easy (car setting) (cdr setting) buffer)
+                    (set-option! easy (car setting) (cdr setting) buffer)))
+              (proxy-settings (plan-proxy plan) (plan-proxy-ca-file plan) (plan-proxy-verify plan)))
     (for-each (lambda (setting) (set-option! easy (car setting) (cdr setting) buffer))
               (version-settings (plan-http-version plan)))
     (for-each (lambda (setting)
@@ -3250,8 +3843,9 @@
                (critical-section
                 (let ((appended (curl-slist-append (live-transfer-header-list live) address)))
                   (when (eqv? appended 0)
-                    (error 'start-transfer! "curl_slist_append returned NULL: no memory for a header"
-                           line))
+                    ;; No irritant: the line holds the header's value,
+                    ;; which can be a secret.
+                    (error 'start-transfer! "curl_slist_append returned NULL: no memory for a header"))
                   (live-transfer-header-list-set! live appended))))))
          (sent-header-lines (plan-headers plan) (plan-method plan) (plan-body plan)))
         (for-each
@@ -3415,7 +4009,8 @@
   ;; &curl-transfer-error with that reason, the raised object for
   ;; callback-raised; else, for a CODE but CURLE_OK, perform-failed; each
   ;; failure of its class, with its request size, REQUEST_SIZE, or #f on a
-  ;; libcurl whose answer to it is unreliable, ran-request-size's; else the
+  ;; libcurl whose answer to it is unreliable, ran-request-size's, and the
+  ;; status a proxy refused its CONNECT with, ran-connect-status'; else the
   ;; response, with its timings, timing-infos', each read as a curl_off_t,
   ;; and its body, or #f for a streamed response, whose pieces the token
   ;; held. The answer is data: the engine completes the token with it, and
@@ -3429,9 +4024,10 @@
         (recorded
          (failure (car recorded) code #f buffer
                   (and (eq? (car recorded) 'callback-raised) (cdr recorded))
-                  (ran-request-size easy)))
+                  (ran-request-size easy) (ran-connect-status easy)))
         ((not (eqv? code curle-ok))
-         (failure 'perform-failed code #f buffer #f (ran-request-size easy)))
+         (failure 'perform-failed code #f buffer #f (ran-request-size easy)
+                  (ran-connect-status easy)))
         (else
          ;; let*: what each part reads, it reads in this order.
          (let* ((status (info-long easy curlinfo-response-code))
@@ -3459,5 +4055,6 @@
       (if recorded
           (failure (car recorded) code #f (live-transfer-buffer live)
                    (and (eq? (car recorded) 'callback-raised) (cdr recorded))
-                   (ran-request-size easy))
-          (failure 'pause-failed code #f (live-transfer-buffer live) #f (ran-request-size easy))))))
+                   (ran-request-size easy) (ran-connect-status easy))
+          (failure 'pause-failed code #f (live-transfer-buffer live) #f (ran-request-size easy)
+                   (ran-connect-status easy))))))

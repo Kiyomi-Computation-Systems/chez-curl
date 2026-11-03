@@ -856,7 +856,7 @@
                curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
                curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
                curl-request-stream-buffer curl-request-body-length curl-request-http-version
-               curl-request-credentials
+               curl-request-credentials curl-request-proxy-ca-file curl-request-proxy-verify
                curl-url-part curl-url-append-query curl-url-resolve curl-url-with-fragment
                curl-response? curl-response-status curl-response-http-version
                curl-response-effective-url curl-response-headers curl-response-body
@@ -877,7 +877,8 @@
                &curl-transfer-error curl-transfer-error? curl-transfer-error-reason
                curl-transfer-error-code curl-transfer-error-option curl-transfer-error-strerror
                curl-transfer-error-error-buffer curl-transfer-error-recorded
-               curl-transfer-error-request-size curl-transfer-error-reasons
+               curl-transfer-error-request-size curl-transfer-error-connect-code
+               curl-transfer-error-reasons
                &curl-timeout curl-timeout? &curl-connect-error curl-connect-error?
                &curl-send-receive-error curl-send-receive-error? &curl-tls-error curl-tls-error?
                &curl-protocol-error curl-protocol-error? &curl-too-large curl-too-large?
@@ -897,6 +898,7 @@
     curl-embedded-nul? curl-embedded-nul-string curl-url-error? curl-url-error-reason
     curl-request-error? curl-request-error-reason curl-request-error-reasons
     curl-transfer-error? curl-transfer-error-reason curl-transfer-error-request-size
+    curl-transfer-error-connect-code
     curl-timeout? curl-connect-error? curl-send-receive-error? curl-tls-error?
     curl-protocol-error? curl-too-large?
     curl-engine-error? curl-engine-error-reason curl-engine-error-condition

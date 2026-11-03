@@ -1,0 +1,42 @@
+stall-gnutls /home/kishu/src/chez-curl/build/m7s3b/mut/stall-gnutls suites: tests/test-proxy.sps
+lane gnutls: FAIL (29 s)
+  [gnutls] test: FAIL tests/test-proxy.sps (exit 1)
+  [gnutls] FAIL tls-in-tls-stalls, the library's table, is this suite's copy: 7.85.0 with any backend for #f and http/2; Ubuntu's 8.5.0 with GnuTLS for #f, http/1.1 and http/2
+  [gnutls] FAIL tls-in-tls-stall?, written out: 7.85.0 on any backend stalls for #f and http/2, never http/1.1; 8.5.0 with GnuTLS, or a backend that could not be read, for each; 8.5.0 with OpenSSL, 8.20.0 with GnuTLS, 8.23.0, 8.7.1 and 8.5.1 never; a backend named only like GnuTLS at its end does no
+  [gnutls] FAIL proxy-tls-in-tls, by version and backend: an https:// URL through an https:// proxy URL is refused where TLS inside TLS stalls, 7.85.0 unless http/1.1 is asked, Ubuntu's 8.5.0 with GnuTLS whatever is asked; an http:// URL through it, and an https:// URL through an http:// proxy, pass
+  [gnutls] FAIL an https:// URL through an https:// proxy, through the engine, each http-version: refused at submit where this lane's tls-in-tls-checks row says so, the proxy getting nothing; else 200, the CONNECT on the https face and the request inside it; every transfer bounded at 10 s, as the sl
+  [gnutls] FAIL a redirect's hop to https:// through an https:// proxy where TLS inside TLS stalls fails the call with the refusal, as its next request is submitted, one transfer counted; elsewhere it is followed
+stall-floor /home/kishu/src/chez-curl/build/m7s3b/mut/stall-floor suites: tests/test-proxy.sps
+lane floor: FAIL (9 s)
+  [floor] test: FAIL tests/test-proxy.sps (exit 1)
+  [floor] FAIL tls-in-tls-stalls, the library's table, is this suite's copy: 7.85.0 with any backend for #f and http/2; Ubuntu's 8.5.0 with GnuTLS for #f, http/1.1 and http/2
+  [floor] FAIL tls-in-tls-stall?, written out: 7.85.0 on any backend stalls for #f and http/2, never http/1.1; 8.5.0 with GnuTLS, or a backend that could not be read, for each; 8.5.0 with OpenSSL, 8.20.0 with GnuTLS, 8.23.0, 8.7.1 and 8.5.1 never; a backend named only like GnuTLS at its end does not
+  [floor] FAIL proxy-tls-in-tls, by version and backend: an https:// URL through an https:// proxy URL is refused where TLS inside TLS stalls, 7.85.0 unless http/1.1 is asked, Ubuntu's 8.5.0 with GnuTLS whatever is asked; an http:// URL through it, and an https:// URL through an http:// proxy, pass 
+  [floor] FAIL an https:// URL through an https:// proxy, through the engine, each http-version: refused at submit where this lane's tls-in-tls-checks row says so, the proxy getting nothing; else 200, the CONNECT on the https face and the request inside it; every transfer bounded at 10 s, as the sli
+  [floor] FAIL a redirect's hop to https:// through an https:// proxy where TLS inside TLS stalls fails the call with the refusal, as its next request is submitted, one transfer counted; elsewhere it is followed
+stall-backend /home/kishu/src/chez-curl/build/m7s3b/mut/stall-backend suites: tests/test-proxy.sps
+lane openssl: FAIL (9 s)
+  [openssl] test: FAIL tests/test-proxy.sps (exit 1)
+  [openssl] FAIL tls-in-tls-stall?, written out: 7.85.0 on any backend stalls for #f and http/2, never http/1.1; 8.5.0 with GnuTLS, or a backend that could not be read, for each; 8.5.0 with OpenSSL, 8.20.0 with GnuTLS, 8.23.0, 8.7.1 and 8.5.1 never; a backend named only like GnuTLS at its end does n
+  [openssl] FAIL proxy-tls-in-tls, by version and backend: an https:// URL through an https:// proxy URL is refused where TLS inside TLS stalls, 7.85.0 unless http/1.1 is asked, Ubuntu's 8.5.0 with GnuTLS whatever is asked; an http:// URL through it, and an https:// URL through an http:// proxy, pas
+  [openssl] FAIL an https:// URL through an https:// proxy, through the engine, each http-version: refused at submit where this lane's tls-in-tls-checks row says so, the proxy getting nothing; else 200, the CONNECT on the https face and the request inside it; every transfer bounded at 10 s, as the s
+  [openssl] FAIL a redirect's hop to https:// through an https:// proxy where TLS inside TLS stalls fails the call with the refusal, as its next request is submitted, one transfer counted; elsewhere it is followed
+fresh /home/kishu/src/chez-curl/build/m7s3b/mut/fresh suites: tests/test-proxy.sps
+lane floor: FAIL (9 s)
+  [floor] test: FAIL tests/test-proxy.sps (exit 1)
+  [floor] FAIL two tunnels in turn through one proxy, by version: below 8.19.0 the second opens a CONNECT of its own, and the first, with userinfo, closes as it ends, where with none it stays pooled; from 8.19.0 the second rides the first's tunnel
+forbid /home/kishu/src/chez-curl/build/m7s3b/mut/forbid suites: tests/test-proxy.sps
+lane floor: FAIL (10 s)
+  [floor] test: FAIL tests/test-proxy.sps (exit 1)
+  [floor] FAIL two tunnels in turn through one proxy, by version: below 8.19.0 the second opens a CONNECT of its own, and the first, with userinfo, closes as it ends, where with none it stays pooled; from 8.19.0 the second rides the first's tunnel
+forbid-all /home/kishu/src/chez-curl/build/m7s3b/mut/forbid-all suites: tests/test-proxy.sps
+lane floor: FAIL (7 s)
+  [floor] test: FAIL tests/test-proxy.sps (exit 1)
+  [floor] FAIL two tunnels in turn through one proxy, by version: below 8.19.0 the second opens a CONNECT of its own, and the first, with userinfo, closes as it ends, where with none it stays pooled; from 8.19.0 the second rides the first's tunnel
+  [floor] FAIL a submit's plan holds the tunnel settings, by version: below 8.19.0 FRESH_CONNECT for an https:// URL through a proxy URL, FORBID_REUSE beside userinfo; nothing for an http:// URL, nor beside environment or #f, nor from 8.19.0
+tls-in-tls-submit /home/kishu/src/chez-curl/build/m7s3b/mut/tls-in-tls-submit suites: tests/test-proxy.sps
+lane gnutls: FAIL (29 s)
+  [gnutls] test: FAIL tests/test-proxy.sps (exit 1)
+  [gnutls] FAIL an https:// URL through an https:// proxy, through the engine, each http-version: refused at submit where this lane's tls-in-tls-checks row says so, the proxy getting nothing; else 200, the CONNECT on the https face and the request inside it; every transfer bounded at 10 s, as the sl
+  [gnutls] FAIL a redirect's hop to https:// through an https:// proxy where TLS inside TLS stalls fails the call with the refusal, as its next request is submitted, one transfer counted; elsewhere it is followed
+docker mutants done

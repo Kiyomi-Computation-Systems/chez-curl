@@ -7,7 +7,7 @@
   `Location`, measured (the M5 plan), and on the Mac; amended 2026-10-27: a URL's parts,
   measured, and every answer UTF-8 or refused (M5 slice 1); amended 2026-10-28: the `Location`
   through chez-curl's own reading, and `localhost`, measured (M5 slice 2), and on the Mac
-  (2026-10-29)
+  (2026-10-29); amended 2026-11-03: a refused URL is never printed (M7 slice 3)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D2 (brief §10)
@@ -378,3 +378,18 @@ string. The first `Location` header, A to Z folded, was resolved from that strin
     kept;
   - `test-url-location` printed 8.5.0's answers for its 24 varying cases, now the rows file's
     8.7.1 row, and every other suite of `make test` passed there.
+
+## Amendment, 2026-11-03: a refused URL is never printed (M7 slice 3)
+
+A URL refused when a request is submitted carried the whole URL as its condition's irritant, so
+one holding userinfo printed its password: `ftp://u:PW@h/`, refused `scheme-not-http`, and a URL
+`curl_url` cannot parse ([verify](../research/m7/slice3/verify/)). **Decided by the maintainer,
+2026-11-03, the recommended option** (ADR-0036, amended): a refused URL's message and irritants
+name its field, never the URL; `curl-url-error-input` still gives the string back to code that
+asks for it.
+
+**As built:** a URL refusal's irritants are its field, `url`, `reference`, `query` or
+`fragment`, at construction, at submit and in each URL function, and the input field keeps the
+string; a redirect's `Location`, which the server sent, stays in `http-redirect-error-location`.
+`tests/test-printed.sps` holds twenty refusal paths
+([verify](../research/m7/slice3/verify/results/accessor-leak-after-guix-8.20.0.log)).

@@ -103,13 +103,25 @@
    ;;   verify              whether to verify the peer; #t
    ;;   proxy               environment, through the proxy http_proxy,
    ;;                       https_proxy or all_proxy names, by libcurl's
-   ;;                       rules; or #f, direct; environment
+   ;;                       rules; #f, direct; or a URL string, an http:// or
+   ;;                       https:// proxy every transfer goes through,
+   ;;                       whatever a variable says, no_proxy among them,
+   ;;                       its userinfo the proxy's credentials, sent by
+   ;;                       Basic, a URL with no port given its scheme's;
+   ;;                       environment. A submit refuses a URL that does not
+   ;;                       parse (proxy-url), a scheme but http or https
+   ;;                       (proxy-scheme), a path, a query or a fragment
+   ;;                       (proxy-url-parts), and userinfo that decodes to a
+   ;;                       control byte, to bytes that are not UTF-8, or to
+   ;;                       a colon in the user (credentials-bytes), or to
+   ;;                       nothing (credentials-empty), naming the field,
+   ;;                       never the URL
    ;;   stream-buffer       the bytes of the response's body the token
    ;;                       buffers, a positive exact integer, read as it
    ;;                       arrives through the token; or #f, the whole body
-   ;;                       in the response; #f. Refused beside a hatch's
-   ;;                       PROXYAUTH, or an Expect header whose value holds
-   ;;                       100-continue, as stream-with-rounds
+   ;;                       in the response; #f. Refused beside an Expect
+   ;;                       header whose value holds 100-continue, as
+   ;;                       stream-with-rounds
    ;;   body-length         a streamed body's length, an exact natural below
    ;;                       2^63 - 1, sent as Content-Length; or #f, chunked
    ;;                       over HTTP/1.1; #f. Refused beside a body that does
@@ -147,8 +159,20 @@
    ;;                       Digest user name's bytes outside 0x20 to 0x7E, a
    ;;                       UTF-8 one's among them, and hashes the raw bytes,
    ;;                       so a server refuses it
+   ;;   proxy-ca-file       an https:// proxy URL's only CA file, or #f, its
+   ;;                       default store; #f
+   ;;   proxy-verify        whether to verify an https:// proxy URL; #t.
+   ;;                       Beside any proxy but an https:// URL, a submit
+   ;;                       refuses a proxy-ca-file, and proxy-verify #f, as
+   ;;                       proxy-tls-without-https-proxy; a proxy CA file is
+   ;;                       refused against the environment as a CA file is
    ;; A key it does not take, one given twice, and one with no value are
-   ;; refused by name, as &curl-request-error, before anything else.
+   ;; refused by name, as &curl-request-error, before anything else. A
+   ;; Proxy-Authorization header is refused, as proxy-authorization-header.
+   ;; At submit, http/2-prior-knowledge beside a proxy URL is refused, as
+   ;; prior-knowledge-through-proxy, and an https:// URL through an https://
+   ;; proxy URL where TLS inside TLS stalls, Ubuntu's 8.5.0 with GnuTLS and
+   ;; 7.85.0 unless http/1.1 is asked, as proxy-tls-in-tls.
    ;; curl-request-with : Request Symbol Any ... -> Request
    ;; A new request, with the keys given replaced and the rest kept.
    ;; curl-request? : Any -> Boolean
@@ -162,18 +186,22 @@
    ;; curl-request-body-limit : Request -> (U Natural #f)
    ;; curl-request-ca-file : Request -> (U String #f)
    ;; curl-request-verify : Request -> Boolean
-   ;; curl-request-proxy : Request -> (U 'environment #f)
+   ;; curl-request-proxy : Request -> (U 'environment #f String)
+   ;;   a fresh copy of a URL, so a change to it reaches no request
    ;; curl-request-stream-buffer : Request -> (U Positive-Integer #f)
    ;; curl-request-body-length : Request -> (U Natural #f)
    ;; curl-request-http-version : Request -> (U 'http/1.1 'http/2 'http/2-prior-knowledge #f)
    ;; curl-request-credentials : Request -> (U (List 'basic String String) (List 'digest String String) (List 'bearer String) #f)
    ;;   a fresh copy, so a change to it reaches no request
+   ;; curl-request-proxy-ca-file : Request -> (U String #f)
+   ;;   a fresh copy
+   ;; curl-request-proxy-verify : Request -> Boolean
    make-curl-request curl-request-with curl-request?
    curl-request-url curl-request-method curl-request-headers curl-request-body
    curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
    curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
    curl-request-stream-buffer curl-request-body-length curl-request-http-version
-   curl-request-credentials
+   curl-request-credentials curl-request-proxy-ca-file curl-request-proxy-verify
 
    ;; --- URLs (ADR-0008) ----------------------------------------------------
    ;; curl-url-part : String Symbol -> (U String Natural #f)
@@ -413,12 +441,17 @@
    ;;   the bytes of request sent: 0 when none was; #f when it is unknown,
    ;;   a transfer cancelled or stopped, or one that ran on libcurl 8.7.0 or
    ;;   8.7.1, whose count is broken, the Mac's among them
+   ;; curl-transfer-error-connect-code : &curl-transfer-error -> (U Positive-Integer #f)
+   ;;   the status a proxy refused the transfer's CONNECT with, 403, 407,
+   ;;   502, 503 or any other but a 2xx, alike on every libcurl, where the
+   ;;   code is 56 on 7.85.0 and 8.5.0 and 7 later; #f for none
    ;; curl-transfer-error-reasons : (Listof Symbol)
    ;; See (curl private conditions) for each field and reason.
    &curl-transfer-error curl-transfer-error? curl-transfer-error-reason
    curl-transfer-error-code curl-transfer-error-option curl-transfer-error-strerror
    curl-transfer-error-error-buffer curl-transfer-error-recorded
-   curl-transfer-error-request-size curl-transfer-error-reasons
+   curl-transfer-error-request-size curl-transfer-error-connect-code
+   curl-transfer-error-reasons
 
    ;; Its classes, each a &curl-transfer-error, by libcurl's code, for
    ;; perform-failed: a code no class names raises the base type.

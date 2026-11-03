@@ -58,11 +58,11 @@
 
   ;; request-session-keys : (Listof Symbol)
   ;; The session's keys that are make-curl-request's, each with the low
-  ;; level's default (the M5 plan, section 3.2), http-version and
-  ;; credentials among them (the M7 plan, section 3.1).
+  ;; level's default (the M5 plan, section 3.2), http-version, credentials,
+  ;; proxy-ca-file and proxy-verify among them (the M7 plan, section 3.1).
   (define request-session-keys
     '(headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
-      http-version credentials))
+      http-version credentials proxy-ca-file proxy-verify))
 
   ;; policy-keys : (Listof Symbol)
   ;; The session's keys that are the high level's own: redirects, the most
@@ -102,14 +102,16 @@
   ;; refused by name, as WHO, before anything else: one KEYS lacks,
   ;; unknown-key; one with no value after it, missing-value; one given
   ;; twice, repeated-key. Each is &http-request-error, field key, whose
-  ;; value is the key as given. PLIST is a rest argument's, fresh.
+  ;; value is the key as given, or, for a key that is no symbol, its kind,
+  ;; shown-key's: a value found where a key belongs can be a proxy URL or
+  ;; credentials. PLIST is a rest argument's, fresh.
   (define (key-settings who keys plist)
     (let loop ((rest plist) (found '()))
       (if (null? rest)
           (reverse found)
           (let ((key (car rest)))
             (unless (memq key keys)
-              (refuse who 'key key 'unknown-key "not a key this takes"))
+              (refuse who 'key (shown-key key) 'unknown-key "not a key this takes"))
             (when (null? (cdr rest))
               (refuse who 'key key 'missing-value "a key with no value after it"))
             (when (assq key found)
@@ -156,14 +158,15 @@
 
   ;; copied-setting : (Pairof Symbol Any) -> (Pairof Symbol Any)
   ;; A request key's value, copied where it can change: headers, when a
-  ;; list of string pairs, and the user agent and the CA file, when strings.
-  ;; Anything else is kept as given, for the low level to refuse.
+  ;; list of string pairs, and the user agent, the CA file, a proxy URL and
+  ;; the proxy CA file, when strings. Anything else is kept as given, for
+  ;; the low level to refuse.
   (define (copied-setting setting)
     (let ((key (car setting)) (value (cdr setting)))
       (cons key
             (case key
               ((headers) (or (string-pairs value) value))
-              ((user-agent ca-file) (if (string? value) (string-copy value) value))
+              ((user-agent ca-file proxy proxy-ca-file) (if (string? value) (string-copy value) value))
               (else value)))))
 
   ;; --- A to Z folding --------------------------------------------------------------
@@ -263,7 +266,7 @@
     (let ((copy (string-pairs pairs)))
       (unless copy
         (assertion-violation 'form-encode "a list of pairs of a name and a value, both strings"
-                             pairs))
+                             (shown-value pairs)))
       (call-with-string-output-port
        (lambda (out)
          (let loop ((rest copy) (first? #t))
@@ -281,7 +284,7 @@
   ;; refused as WHO, not-a-redirect-count.
   (define (checked-redirects who value)
     (unless (or (not value) (and (integer? value) (exact? value) (>= value 0)))
-      (refuse who 'redirects value 'not-a-redirect-count
+      (refuse who 'redirects (shown-value value) 'not-a-redirect-count
               "redirects is an exact natural, the most redirects a call follows, or #f, none"))
     value)
 
@@ -290,7 +293,7 @@
   ;; WHO, not-a-boolean.
   (define (checked-allow-downgrade who value)
     (unless (boolean? value)
-      (refuse who 'allow-downgrade value 'not-a-boolean "allow-downgrade is #t or #f"))
+      (refuse who 'allow-downgrade (shown-value value) 'not-a-boolean "allow-downgrade is #t or #f"))
     value)
 
   ;; checked-retry : Symbol Any -> (U Retry #f)
@@ -298,7 +301,7 @@
   ;; not-a-retry-policy.
   (define (checked-retry who value)
     (unless (or (not value) (http-retry? value))
-      (refuse who 'retry value 'not-a-retry-policy
+      (refuse who 'retry (shown-value value) 'not-a-retry-policy
               "retry is a policy, made by make-http-retry, or #f, none"))
     value)
 
@@ -341,7 +344,7 @@
       (if hit
           (let ((v (cdr hit)))
             (unless (or (not v) (and (integer? v) (exact? v) (positive? v)))
-              (refuse who 'limit v 'not-a-limit
+              (refuse who 'limit (shown-value v) 'not-a-limit
                       "limit is an exact positive integer, the most calls in flight, or #f, none"))
             v)
           #f)))
@@ -426,30 +429,30 @@
                     (let ((hit (assq key settings))) (if hit (cdr hit) default))))
            (attempts (let ((v (value 'attempts 3)))
                        (unless (and (integer? v) (exact? v) (>= v 1))
-                         (refuse 'make-http-retry 'attempts v 'not-an-attempt-count
+                         (refuse 'make-http-retry 'attempts (shown-value v) 'not-an-attempt-count
                                  "attempts is an exact integer of 1 or more, the transfers per step"))
                        v))
            (backoff (let ((v (value 'backoff-ms 200)))
                       (unless (exact-natural? v)
-                        (refuse 'make-http-retry 'backoff-ms v 'not-a-backoff
+                        (refuse 'make-http-retry 'backoff-ms (shown-value v) 'not-a-backoff
                                 "backoff-ms is an exact natural number of ms"))
                       v))
            (cap (let ((v (value 'max-backoff-ms 10000)))
                   (unless (exact-natural? v)
-                    (refuse 'make-http-retry 'max-backoff-ms v 'not-a-backoff
+                    (refuse 'make-http-retry 'max-backoff-ms (shown-value v) 'not-a-backoff
                             "max-backoff-ms is an exact natural number of ms"))
                   v))
            (jitter (let ((v (value 'jitter #t)))
                      (unless (boolean? v)
-                       (refuse 'make-http-retry 'jitter v 'not-a-boolean "jitter is #t or #f"))
+                       (refuse 'make-http-retry 'jitter (shown-value v) 'not-a-boolean "jitter is #t or #f"))
                      v))
            (statuses (let ((v (value 'statuses '(429 503))))
                        (or (list-within v status?)
-                           (refuse 'make-http-retry 'statuses v 'not-a-status-list
+                           (refuse 'make-http-retry 'statuses (shown-value v) 'not-a-status-list
                                    "statuses is a list of exact integers from 400 to 599"))))
            (methods (let ((v (value 'methods '(get head put delete))))
                       (or (list-within v (lambda (m) (and (memq m call-methods) #t)))
-                          (refuse 'make-http-retry 'methods v 'not-a-method-list
+                          (refuse 'make-http-retry 'methods (shown-value v) 'not-a-method-list
                                   "methods is a list of get, head, post, put, patch and delete")))))
       (new-http-retry attempts backoff cap jitter statuses methods)))
 
@@ -522,7 +525,7 @@
     (cond ((bytevector? value) (bytevector-copy value))
           ((string? value) (string->utf8 value))
           ((procedure? value) value)
-          (else (refuse who 'body value 'not-a-body
+          (else (refuse who 'body (shown-value value) 'not-a-body
                         "a body is a bytevector, a string, sent as UTF-8, or a producer, a procedure of no arguments"))))
 
   ;; call-pairs : Symbol Symbol Any -> (Listof (Pairof String String))
@@ -530,7 +533,7 @@
   ;; string pairs is not-name-value-pairs, as WHO.
   (define (call-pairs who field value)
     (or (string-pairs value)
-        (refuse who field value 'not-name-value-pairs
+        (refuse who field (shown-value value) 'not-name-value-pairs
                 "a list of pairs of a name and a value, both strings")))
 
   ;; call-request : Session Any Any List
@@ -575,10 +578,15 @@
   ;; port, 65,536 by default, and by 65,536 for http-request, which reads
   ;; the response's body whole. Every other request key is the call's, or
   ;; else the session's, credentials among them: a call's #f sends none
-  ;; over a session's. make-curl-request checks the merge, so a session's
+  ;; over a session's; but a call that names its own proxy drops the
+  ;; session's proxy-ca-file and proxy-verify, each then the call's or its
+  ;; default, #f and #t, so a session's https:// proxy's TLS settings never
+  ;; meet a call's other proxy (the M7 plan, section 3.1). make-curl-request
+  ;; checks the merge, so a session's
   ;; credentials beside a call's Authorization header, or a session's
   ;; Digest beside a call's stream, is refused as the request is built,
-  ;; as the low level raises it.
+  ;; as the low level raises it; a Proxy-Authorization header, a session's
+  ;; or a call's, is refused so too.
   (define (call-request-of who mode session method url plist)
     (let* ((settings (key-settings who (if (eq? mode 'port) port-keys call-keys) plist))
            (body-given (assq 'body settings))
@@ -646,7 +654,15 @@
                                    'verify (pick 'verify curl-request-verify)
                                    'proxy (pick 'proxy curl-request-proxy)
                                    'http-version (pick 'http-version curl-request-http-version)
-                                   'credentials (pick 'credentials curl-request-credentials))
+                                   'credentials (pick 'credentials curl-request-credentials)
+                                   'proxy-ca-file (cond ((hit 'proxy-ca-file)
+                                                         (curl-request-proxy-ca-file checked))
+                                                        ((hit 'proxy) #f)
+                                                        (else (curl-request-proxy-ca-file defaults)))
+                                   'proxy-verify (cond ((hit 'proxy-verify)
+                                                        (curl-request-proxy-verify checked))
+                                                       ((hit 'proxy) #t)
+                                                       (else (curl-request-proxy-verify defaults))))
                 (car policy)
                 (cadr policy)
                 (caddr policy)

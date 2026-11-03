@@ -34,6 +34,7 @@
 ;;; sentinel. Each fixture field holds a value no other field holds, so an
 ;;; accessor that read the wrong field cannot pass.
 (import (rnrs)
+        (rnrs mutable-pairs)
         (srfi :64)
         (curl-testing)
         (curl private libcurl-info)
@@ -222,7 +223,9 @@
     repeated-key missing-value body-not-allowed pkcs11-url environment-override keychain-fallback
     stream-with-rounds body-length-without-stream body-length-mismatch prior-knowledge-over-https
     credentials-bytes credentials-empty credentials-beside-userinfo credentials-beside-authorization
-    digest-with-stream))
+    digest-with-stream prior-knowledge-through-proxy proxy-url proxy-scheme proxy-url-parts
+    proxy-authorization-header proxy-tls-without-https-proxy proxy-tls-in-tls
+    https-proxy-unsupported))
 
 (test-equal "request-error: an error and a curl-error, and none of the other kinds, carrying its field, value and reason"
   '(#t #t #f #f #f #f #t #f header-value "a\rb" line-break)
@@ -233,11 +236,11 @@
                   (curl-request-error-field c) (curl-request-error-value c)
                   (curl-request-error-reason c)))))
 
-(test-equal "the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option, unsupported-type, unknown-option, repeated-option, unknown-key, repeated-key, missing-value, body-not-allowed, pkcs11-url, environment-override, keychain-fallback, stream-with-rounds, body-length-without-stream, body-length-mismatch, prior-knowledge-over-https, credentials-bytes, credentials-empty, credentials-beside-userinfo, credentials-beside-authorization and digest-with-stream, in order"
+(test-equal "the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option, unsupported-type, unknown-option, repeated-option, unknown-key, repeated-key, missing-value, body-not-allowed, pkcs11-url, environment-override, keychain-fallback, stream-with-rounds, body-length-without-stream, body-length-mismatch, prior-knowledge-over-https, credentials-bytes, credentials-empty, credentials-beside-userinfo, credentials-beside-authorization, digest-with-stream, prior-knowledge-through-proxy, proxy-url, proxy-scheme, proxy-url-parts, proxy-authorization-header, proxy-tls-without-https-proxy, proxy-tls-in-tls and https-proxy-unsupported, in order"
   request-reasons
   curl-request-error-reasons)
 
-(test-equal "the request-error constructor takes each of the twenty-seven reasons"
+(test-equal "the request-error constructor takes each of the thirty-five reasons"
   request-reasons
   (map (lambda (reason)
          (curl-request-error-reason (make-curl-request-error 'user-agent "x" reason)))
@@ -260,11 +263,11 @@
 ;; A recorded object no field could hand back by another route.
 (define the-raised (list 'raised-in-the-callable))
 
-(test-equal "transfer-error: an error and a curl-error, and none of the other kinds, carrying its reason, code, option, strerror, error buffer, recorded object and request size"
-  '(#t #t #f #f #f #f #f #t callback-raised 23 "MAXFILESIZE_LARGE" "Failed writing received data to disk/application" "Failure writing output to destination" the-raised 75)
+(test-equal "transfer-error: an error and a curl-error, and none of the other kinds, carrying its reason, code, option, strerror, error buffer, recorded object, request size and CONNECT status"
+  '(#t #t #f #f #f #f #f #t callback-raised 23 "MAXFILESIZE_LARGE" "Failed writing received data to disk/application" "Failure writing output to destination" the-raised 75 407)
   (let ((c (make-curl-transfer-error 'callback-raised 23 "MAXFILESIZE_LARGE"
                                      "Failed writing received data to disk/application"
-                                     "Failure writing output to destination" the-raised 75)))
+                                     "Failure writing output to destination" the-raised 75 407)))
     (append (kinds c)
             (list (curl-embedded-nul? c) (curl-url-error? c) (curl-request-error? c)
                   (curl-transfer-error? c)
@@ -272,21 +275,21 @@
                   (curl-transfer-error-option c) (curl-transfer-error-strerror c)
                   (curl-transfer-error-error-buffer c)
                   (let ((r (curl-transfer-error-recorded c))) (if (eq? r the-raised) 'the-raised r))
-                  (curl-transfer-error-request-size c)))))
+                  (curl-transfer-error-request-size c) (curl-transfer-error-connect-code c)))))
 
 (test-equal "the transfer-error reasons are exactly perform-failed, body-limit, callback-raised, setopt-failed, unknown-option, no-handle, cancelled, stopped, pause-failed, body-length-mismatch and body-not-replayable, in order"
   transfer-reasons
   curl-transfer-error-reasons)
 
 (test-equal "the transfer-error constructor takes each of the eleven reasons, with #f in every other field"
-  (map (lambda (reason) (list reason #f #f #f #f 'no-recorded #f)) transfer-reasons)
+  (map (lambda (reason) (list reason #f #f #f #f 'no-recorded #f #f)) transfer-reasons)
   (map (lambda (reason)
-         (let ((c (make-curl-transfer-error reason #f #f #f #f #f #f)))
+         (let ((c (make-curl-transfer-error reason #f #f #f #f #f #f #f)))
            (list (curl-transfer-error-reason c) (curl-transfer-error-code c)
                  (curl-transfer-error-option c) (curl-transfer-error-strerror c)
                  (curl-transfer-error-error-buffer c)
                  (if (eq? (curl-transfer-error-recorded c) #f) 'no-recorded 'recorded)
-                 (curl-transfer-error-request-size c))))
+                 (curl-transfer-error-request-size c) (curl-transfer-error-connect-code c))))
        transfer-reasons))
 
 (test-equal "the transfer-error constructor refuses a symbol that is no reason, a reason spelled as a string, and #f"
@@ -294,7 +297,7 @@
     (assertion-violation make-curl-transfer-error ("body-limit"))
     (assertion-violation make-curl-transfer-error (#f)))
   (map (lambda (reason)
-         (raised (lambda () (make-curl-transfer-error reason 28 #f #f #f #f 0))))
+         (raised (lambda () (make-curl-transfer-error reason 28 #f #f #f #f 0 #f))))
        (list 'timed-out "body-limit" #f)))
 
 ;; --- the classes (ADR-0022, amended 2026-10-26) -----------------------------------------
@@ -358,7 +361,7 @@
 (test-equal "a perform-failed of each code from 0 to 101, and of 102 and 999, raises its class, the base type for none; every one is a transfer-error carrying its code"
   (append code-rows '((102 none) (999 none)))
   (map (lambda (code)
-         (let ((c (make-classed-transfer-error 'perform-failed code #f #f #f #f 0)))
+         (let ((c (make-classed-transfer-error 'perform-failed code #f #f #f #f 0 #f)))
            (list (if (and (curl-transfer-error? c) (eqv? (curl-transfer-error-code c) code))
                      code
                      (list 'not-a-transfer-error-of code))
@@ -380,22 +383,22 @@
   (map (lambda (reason)
          (list reason
                (map (lambda (code)
-                      (class-of (make-classed-transfer-error reason code #f #f #f #f 0)))
+                      (class-of (make-classed-transfer-error reason code #f #f #f #f 0 #f)))
                     (list 28 7 56 60 1 63 23 #f))))
        transfer-reasons))
 
-(test-equal "each class is a transfer-error and a curl-error, carrying every base field, the request size among them"
+(test-equal "each class is a transfer-error and a curl-error, carrying every base field, the request size and the CONNECT status among them"
   (map (lambda (row)
-         (list (car row) #t #t #t 'perform-failed (cadr row) "OPT" "strerror" "buffer" 'the-raised 79))
+         (list (car row) #t #t #t 'perform-failed (cadr row) "OPT" "strerror" "buffer" 'the-raised 79 503))
        '((timeout 28) (connect 7) (send-receive 56) (tls 60) (protocol 8) (too-large 100)))
   (map (lambda (row)
-         (let ((c ((cadr row) 'perform-failed (caddr row) "OPT" "strerror" "buffer" the-raised 79)))
+         (let ((c ((cadr row) 'perform-failed (caddr row) "OPT" "strerror" "buffer" the-raised 79 503)))
            (list (class-of c) (error? c) (curl-error? c) (curl-transfer-error? c)
                  (curl-transfer-error-reason c) (curl-transfer-error-code c)
                  (curl-transfer-error-option c) (curl-transfer-error-strerror c)
                  (curl-transfer-error-error-buffer c)
                  (if (eq? (curl-transfer-error-recorded c) the-raised) 'the-raised 'other)
-                 (curl-transfer-error-request-size c))))
+                 (curl-transfer-error-request-size c) (curl-transfer-error-connect-code c))))
        (list (list 'timeout make-curl-timeout 28) (list 'connect make-curl-connect-error 7)
              (list 'send-receive make-curl-send-receive-error 56) (list 'tls make-curl-tls-error 60)
              (list 'protocol make-curl-protocol-error 8) (list 'too-large make-curl-too-large 100))))
@@ -417,7 +420,7 @@
     too-large too-large)
   (append
    (map (lambda (args)
-          (raised (lambda () ((car args) (cadr args) (caddr args) #f #f #f #f 0))))
+          (raised (lambda () ((car args) (cadr args) (caddr args) #f #f #f #f 0 #f))))
         (list (list make-curl-timeout 'body-limit 28) (list make-curl-timeout 'perform-failed 7)
               (list make-curl-timeout 'setopt-failed 28)
               (list make-curl-connect-error 'perform-failed 28)
@@ -429,7 +432,7 @@
               (list make-curl-protocol-error 'no-handle 1)
               (list make-curl-too-large 'perform-failed 23)
               (list make-curl-too-large 'callback-raised 23)))
-   (map (lambda (code) (class-of (make-curl-too-large 'body-limit code #f #f #f #f 0)))
+   (map (lambda (code) (class-of (make-curl-too-large 'body-limit code #f #f #f #f 0 #f)))
         (list 23 #f))))
 
 (test-equal "make-classed-transfer-error refuses a symbol that is no reason, a reason spelled as a string, and #f"
@@ -437,7 +440,7 @@
     (assertion-violation make-classed-transfer-error ("perform-failed"))
     (assertion-violation make-classed-transfer-error (#f)))
   (map (lambda (reason)
-         (raised (lambda () (make-classed-transfer-error reason 28 #f #f #f #f 0))))
+         (raised (lambda () (make-classed-transfer-error reason 28 #f #f #f #f 0 #f))))
        (list 'timed-out "perform-failed" #f)))
 
 (test-equal "no other kind is of a class: a request-error, an engine-error, a url-error, a curl-error and the base transfer-error are none"
@@ -447,7 +450,7 @@
              (make-curl-engine-error 'stopped #f)
              (make-curl-url-error "x" #f #f #f)
              (make-curl-error)
-             (make-curl-transfer-error 'perform-failed 28 #f #f #f #f 0))))
+             (make-curl-transfer-error 'perform-failed 28 #f #f #f #f 0 #f))))
 
 ;; --- &curl-engine-error ---------------------------------------------------------------
 
@@ -468,7 +471,7 @@
 
 (test-equal "no other kind is an engine-error"
   '(#f #f #f)
-  (list (curl-engine-error? (make-curl-transfer-error 'stopped #f #f #f #f #f #f))
+  (list (curl-engine-error? (make-curl-transfer-error 'stopped #f #f #f #f #f #f #f))
         (curl-engine-error? (make-curl-request-error 'header-value "a\rb" 'line-break))
         (curl-engine-error? (make-curl-error))))
 
@@ -493,6 +496,28 @@
   (map (lambda (reason)
          (raised (lambda () (make-curl-engine-error reason #f))))
        (list 'cancelled "failed" #f)))
+
+;; --- a caller's value, as a refusal names it (M7 slice 3's review) ---
+
+;; circular : List
+;; A list whose last pair points back at its first.
+(define circular (let ((l (list 1 2))) (set-cdr! (cdr l) l) l))
+
+(test-equal "kind-of, written out: a string, a list, () among them, a number, exact and inexact, a boolean, a char, a symbol, a bytevector, a vector, a procedure, and anything else, a hashtable"
+  '(string list list number number boolean char symbol bytevector vector procedure other)
+  (map kind-of (list "s" '(a) '() 5 1.5 #t #\a 'x (make-bytevector 1 0) (vector 1) car (make-eq-hashtable))))
+
+(test-equal "shown-value, written out against the whole complement of what it shows: a symbol, a number, a boolean, a char, (), and a proper list of them, a policy's statuses or methods, as given; a string, a proxy URL among them, a list holding a string, credentials among them, an improper list, a circular one, a bytevector, a vector, a procedure and a hashtable by their kind"
+  (list 'x 5 #f #\a '() '(429 503) '(get post)
+        '(kind string) '(kind list) '(kind list) '(kind list) '(kind bytevector) '(kind vector)
+        '(kind procedure) '(kind other))
+  (map shown-value (list 'x 5 #f #\a '() '(429 503) '(get post)
+                         "http://u:Pr0xyS3cr3t@h/" '(basic "alice" "Pr0xyS3cr3t") '(1 . 2) circular
+                         (make-bytevector 1 0) (vector "p") car (make-eq-hashtable))))
+
+(test-equal "shown-key, written out: a symbol as given; every other kind by its kind, a number's and a boolean's among them"
+  '(proxy (kind string) (kind list) (kind number) (kind boolean) (kind char) (kind list))
+  (map shown-key (list 'proxy "http://u:Pr0xyS3cr3t@h/" '(basic "alice" "Pr0xyS3cr3t") 5 #f #\a '())))
 
 (test-end "conditions")
 

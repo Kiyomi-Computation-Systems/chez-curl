@@ -302,7 +302,11 @@
 ;; options slice 4's review found, twins and the hazards kept from the
 ;; hatch (amended 2026-10-27); the version's twins, SSL_ENABLE_ALPN, ALTSVC
 ;; and ALTSVC_CTRL (amended 2026-11-02); the credentials' twin AWS_SIGV4
-;; (ADR-0036, amended 2026-11-02); every proxy TLS option.
+;; (ADR-0036, amended 2026-11-02); the proxy field's NOPROXY and
+;; FORBID_REUSE, and its twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME,
+;; PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP,
+;; which 7.85.0 does not know (ADR-0037, amended 2026-11-03); every proxy
+;; TLS option.
 (define owned-names
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
     "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
@@ -319,6 +323,8 @@
     "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
     "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
     "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT" "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL" "AWS_SIGV4"
+    "FORBID_REUSE" "PROXYAUTH" "PROXYUSERPWD" "PROXYUSERNAME" "PROXYPASSWORD" "HTTPPROXYTUNNEL"
+    "HAPROXYPROTOCOL" "HAPROXY_CLIENT_IP"
     "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
     "PROXY_CAINFO" "PROXY_CAINFO_BLOB" "PROXY_CAPATH" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
     "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
@@ -349,26 +355,23 @@
 ;; to the first response's alternative (the slice's review). Their
 ;; neighbours stay the hatch's: HSTS_CTRL, whose cache an http:// URL never
 ;; fills and an https:// one never needs, within one transfer; PIPEWAIT,
-;; HTTP09_ALLOWED, HTTP200ALIASES, CONNECT_TO and HTTPPROXYTUNNEL. Each is
-;; attached, and kept.
-(test-equal "HTTP_VERSION, the http-version field's, and its twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL are refused as owned-option, with values their types take, before anything native; their neighbours HSTS_CTRL, PIPEWAIT, HTTP09_ALLOWED, HTTP200ALIASES, CONNECT_TO and HTTPPROXYTUNNEL are taken, each kept as attached"
+;; HTTP09_ALLOWED, HTTP200ALIASES and CONNECT_TO. HTTPPROXYTUNNEL was one
+;; until M7 slice 3 owned it, below. Each is attached, and kept.
+(test-equal "HTTP_VERSION, the http-version field's, and its twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL are refused as owned-option, with values their types take, before anything native; their neighbours HSTS_CTRL, PIPEWAIT, HTTP09_ALLOWED, HTTP200ALIASES and CONNECT_TO are taken, each kept as attached"
   (list (refused-as "HTTP_VERSION" 'owned-option) (refused-as "SSL_ENABLE_ALPN" 'owned-option)
         (refused-as "ALTSVC" 'owned-option) (refused-as "ALTSVC_CTRL" 'owned-option)
-        taken taken taken taken taken taken
+        taken taken taken taken taken
         '(("HSTS_CTRL" long 1) ("PIPEWAIT" long 1) ("HTTP09_ALLOWED" long 1)
-          ("HTTP200ALIASES" slist ("ICY 200 OK")) ("CONNECT_TO" slist ("::127.0.0.1:1"))
-          ("HTTPPROXYTUNNEL" long 1)))
+          ("HTTP200ALIASES" slist ("ICY 200 OK")) ("CONNECT_TO" slist ("::127.0.0.1:1"))))
   (append (map attach '((("HTTP_VERSION" . 2)) (("SSL_ENABLE_ALPN" . 0)) (("ALTSVC" . "altsvc.txt"))
                         (("ALTSVC_CTRL" . 24))))
           (map attach '((("HSTS_CTRL" . 1)) (("PIPEWAIT" . 1)) (("HTTP09_ALLOWED" . 1))
-                        (("HTTP200ALIASES" "ICY 200 OK")) (("CONNECT_TO" "::127.0.0.1:1"))
-                        (("HTTPPROXYTUNNEL" . 1))))
+                        (("HTTP200ALIASES" "ICY 200 OK")) (("CONNECT_TO" "::127.0.0.1:1"))))
           (list (guard (e (#t (list 'raised (describe e))))
                   (hatch-settings-of
                    (curl-request-with-options base '(("HSTS_CTRL" . 1) ("PIPEWAIT" . 1) ("HTTP09_ALLOWED" . 1)
                                                      ("HTTP200ALIASES" "ICY 200 OK")
-                                                     ("CONNECT_TO" "::127.0.0.1:1")
-                                                     ("HTTPPROXYTUNNEL" . 1))))))))
+                                                     ("CONNECT_TO" "::127.0.0.1:1"))))))))
 
 ;; M7 slice 2 (ADR-0036, amended 2026-11-02): the credentials field's
 ;; HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER; its twin AWS_SIGV4, which
@@ -382,24 +385,24 @@
 ;; UNRESTRICTED_AUTH, which reaches libcurl's own follow alone, which
 ;; nothing public sets; DISALLOW_USERNAME_IN_URL; and LOGIN_OPTIONS,
 ;; SASL_AUTHZID, SASL_IR, SERVICE_NAME and NETRC_FILE, which changed
-;; nothing sent; and PROXYAUTH, until M7 slice 3 owns it. Each is
-;; attached, and kept.
-(test-equal "HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, the credentials field's, its twin AWS_SIGV4, and MAXREDIRS, every transfer's, are refused as owned-option, with values their types take, before anything native; their neighbours FAILONERROR, AUTOREFERER, KEEP_SENDING_ON_ERROR, UNRESTRICTED_AUTH, DISALLOW_USERNAME_IN_URL, LOGIN_OPTIONS, SASL_AUTHZID, SASL_IR, SERVICE_NAME, NETRC_FILE and PROXYAUTH are taken, each kept as attached"
+;; nothing sent. PROXYAUTH was one until M7 slice 3 owned it, below. Each
+;; is attached, and kept.
+(test-equal "HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, the credentials field's, its twin AWS_SIGV4, and MAXREDIRS, every transfer's, are refused as owned-option, with values their types take, before anything native; their neighbours FAILONERROR, AUTOREFERER, KEEP_SENDING_ON_ERROR, UNRESTRICTED_AUTH, DISALLOW_USERNAME_IN_URL, LOGIN_OPTIONS, SASL_AUTHZID, SASL_IR, SERVICE_NAME and NETRC_FILE are taken, each kept as attached"
   (list (refused-as "HTTPAUTH" 'owned-option) (refused-as "USERNAME" 'owned-option)
         (refused-as "PASSWORD" 'owned-option) (refused-as "XOAUTH2_BEARER" 'owned-option)
         (refused-as "AWS_SIGV4" 'owned-option) (refused-as "MAXREDIRS" 'owned-option)
-        taken taken taken taken taken taken taken taken taken taken taken
+        taken taken taken taken taken taken taken taken taken taken
         '(("FAILONERROR" long 1) ("AUTOREFERER" long 1) ("KEEP_SENDING_ON_ERROR" long 1)
           ("UNRESTRICTED_AUTH" long 1) ("DISALLOW_USERNAME_IN_URL" long 1)
           ("LOGIN_OPTIONS" string "AUTH=*") ("SASL_AUTHZID" string "z") ("SASL_IR" long 1)
-          ("SERVICE_NAME" string "s") ("NETRC_FILE" string "netrc") ("PROXYAUTH" values 1)))
+          ("SERVICE_NAME" string "s") ("NETRC_FILE" string "netrc")))
   (append (map attach '((("HTTPAUTH" . 1)) (("USERNAME" . "u")) (("PASSWORD" . "p"))
                         (("XOAUTH2_BEARER" . "t")) (("AWS_SIGV4" . "aws:amz:us-east-1:s3"))
                         (("MAXREDIRS" . 5))))
           (map attach '((("FAILONERROR" . 1)) (("AUTOREFERER" . 1)) (("KEEP_SENDING_ON_ERROR" . 1))
                         (("UNRESTRICTED_AUTH" . 1)) (("DISALLOW_USERNAME_IN_URL" . 1))
                         (("LOGIN_OPTIONS" . "AUTH=*")) (("SASL_AUTHZID" . "z")) (("SASL_IR" . 1))
-                        (("SERVICE_NAME" . "s")) (("NETRC_FILE" . "netrc")) (("PROXYAUTH" . 1))))
+                        (("SERVICE_NAME" . "s")) (("NETRC_FILE" . "netrc"))))
           (list (guard (e (#t (list 'raised (describe e))))
                   (hatch-settings-of
                    (curl-request-with-options base '(("FAILONERROR" . 1) ("AUTOREFERER" . 1)
@@ -407,7 +410,43 @@
                                                      ("DISALLOW_USERNAME_IN_URL" . 1)
                                                      ("LOGIN_OPTIONS" . "AUTH=*") ("SASL_AUTHZID" . "z")
                                                      ("SASL_IR" . 1) ("SERVICE_NAME" . "s")
-                                                     ("NETRC_FILE" . "netrc") ("PROXYAUTH" . 1))))))))
+                                                     ("NETRC_FILE" . "netrc"))))))))
+
+;; M7 slice 3 (ADR-0037, amended 2026-11-03): the proxy field's PROXY,
+;; NOPROXY, no longer a twin, and FORBID_REUSE, which it sets before
+;; 8.19.0 beside proxy userinfo; the proxy CA file's PROXY_CAINFO and
+;; PROXY_CAPATH and the proxy verification's PROXY_SSL_VERIFYPEER and
+;; PROXY_SSL_VERIFYHOST; and their twins, each measured through the engine
+;; on five libcurls: PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME and
+;; PROXYPASSWORD, a proxy's credentials another way than its URL's;
+;; HTTPPROXYTUNNEL, which moved an http:// URL's request into a tunnel, with
+;; every caller header; HAPROXYPROTOCOL, which wrote a PROXY line to the
+;; proxy, or inside a tunnel to the origin; and HAPROXY_CLIENT_IP, which
+;; rewrote that line, and which 7.85.0 does not know, so there the hatch
+;; refuses it as unknown-option, by name, first. Their neighbours stay the
+;; hatch's: SUPPRESS_CONNECT_HEADERS, PROXY_SERVICE_NAME and SOCKS5_AUTH
+;; changed no byte either side got. Each is attached, and kept.
+(test-equal "PROXY, NOPROXY, FORBID_REUSE, PROXY_CAINFO, PROXY_CAPATH, PROXY_SSL_VERIFYPEER and PROXY_SSL_VERIFYHOST, the proxy fields', and their twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME, PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP are refused as owned-option where the libcurl knows each, with values their types take; their neighbours SUPPRESS_CONNECT_HEADERS, PROXY_SERVICE_NAME and SOCKS5_AUTH are taken, each kept as attached"
+  (append (map (lambda (name) (refused-as name (if (curl-easy-option name) 'owned-option 'unknown-option)))
+               '("PROXY" "NOPROXY" "FORBID_REUSE" "PROXY_CAINFO" "PROXY_CAPATH" "PROXY_SSL_VERIFYPEER"
+                 "PROXY_SSL_VERIFYHOST" "PROXYAUTH" "PROXYUSERPWD" "PROXYUSERNAME" "PROXYPASSWORD"
+                 "HTTPPROXYTUNNEL" "HAPROXYPROTOCOL" "HAPROXY_CLIENT_IP"))
+          (list taken taken taken
+                '(("SUPPRESS_CONNECT_HEADERS" long 1) ("PROXY_SERVICE_NAME" string "proxy")
+                  ("SOCKS5_AUTH" long 1))))
+  (append (map attach '((("PROXY" . "http://127.0.0.1:1")) (("NOPROXY" . "")) (("FORBID_REUSE" . 1))
+                        (("PROXY_CAINFO" . "ca.pem")) (("PROXY_CAPATH" . "certs"))
+                        (("PROXY_SSL_VERIFYPEER" . 0)) (("PROXY_SSL_VERIFYHOST" . 0))
+                        (("PROXYAUTH" . 1)) (("PROXYUSERPWD" . "u:p")) (("PROXYUSERNAME" . "u"))
+                        (("PROXYPASSWORD" . "p")) (("HTTPPROXYTUNNEL" . 1)) (("HAPROXYPROTOCOL" . 1))
+                        (("HAPROXY_CLIENT_IP" . "10.1.2.3"))))
+          (map attach '((("SUPPRESS_CONNECT_HEADERS" . 1)) (("PROXY_SERVICE_NAME" . "proxy"))
+                        (("SOCKS5_AUTH" . 1))))
+          (list (guard (e (#t (list 'raised (describe e))))
+                  (hatch-settings-of
+                   (curl-request-with-options base '(("SUPPRESS_CONNECT_HEADERS" . 1)
+                                                     ("PROXY_SERVICE_NAME" . "proxy")
+                                                     ("SOCKS5_AUTH" . 1))))))))
 
 (test-equal "an alias of an owned option is refused as owned-option, by id: FILE is WRITEDATA's id and RTSPHEADER HTTPHEADER's; and a name in another case, url, Url and cainfo, as curl_easy_option_by_name reads it"
   (list '(same same)

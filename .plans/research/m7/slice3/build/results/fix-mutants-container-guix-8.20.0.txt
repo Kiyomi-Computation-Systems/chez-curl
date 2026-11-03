@@ -1,0 +1,109 @@
+mutant control tests/test-proxy.sps: exit 0
+mutant control tests/test-transfer.sps: exit 0
+mutant control tests/test-conditions.sps: exit 0
+mutant control tests/test-http-client.sps: exit 0
+mutant control tests/test-constants.sps: exit 0
+switch-every /home/kishu/src/chez-curl/build/m7s3b/mut/switch-every suites: tests/test-proxy.sps
+mutant switch-every tests/test-proxy.sps: exit 1
+    FAIL stops-multiplexing?, written out for every version, proxy URL and userinfo crossed: below 8.19.0, a proxy URL with userinfo stops the engine's multiplexing, 8.7.1's and 8.18.0's among them; a proxy URL without, userinfo with none, and every one from 8.19.0 never
+switch-no-userinfo /home/kishu/src/chez-curl/build/m7s3b/mut/switch-no-userinfo suites: tests/test-proxy.sps
+mutant switch-no-userinfo tests/test-proxy.sps: exit 1
+    FAIL stops-multiplexing?, written out for every version, proxy URL and userinfo crossed: below 8.19.0, a proxy URL with userinfo stops the engine's multiplexing, 8.7.1's and 8.18.0's among them; a proxy URL without, userinfo with none, and every one from 8.19.0 never
+switch-all-versions /home/kishu/src/chez-curl/build/m7s3b/mut/switch-all-versions suites: tests/test-proxy.sps
+mutant switch-all-versions tests/test-proxy.sps: exit 1
+    FAIL stops-multiplexing?, written out for every version, proxy URL and userinfo crossed: below 8.19.0, a proxy URL with userinfo stops the engine's multiplexing, 8.7.1's and 8.18.0's among them; a proxy URL without, userinfo with none, and every one from 8.19.0 never
+    FAIL a submit's plan holds the tunnel settings and whether it stops the engine's multiplexing, by version: below 8.19.0 FRESH_CONNECT for an https:// URL through a proxy URL, FORBID_REUSE beside userinfo, and a proxy URL with userinfo stopping the multiplexing whatever the URL's scheme; nothing for 
+    FAIL a transfer through a proxy URL with userinfo stops the engine's multiplexing, by version: below 8.19.0 the engine switches at it, the two streams live on one HTTP/2 connection end 200 on it, unbroken, and a third request to their origin, made while they are live, opens a connection of its own; 
+    FAIL in a child, https_proxy naming the proxy with no userinfo: a transfer through proxy environment, made while a named proxy's transfer with alice's userinfo has its HTTP/2 stream live, sends a CONNECT of its own and is refused 407, by version: below 8.19.0 the engine switched at alice's, where 7.
+key-low /home/kishu/src/chez-curl/build/m7s3b/mut/key-low suites: tests/test-proxy.sps
+mutant key-low tests/test-proxy.sps: exit 1
+    FAIL no value found where another belongs prints the secret: the review's nine, a proxy URL and a credentials list where a key belongs, at both levels, each named by its kind, and the audit's, each named by its kind or its field; a symbol where a key belongs, and a key given twice, named as given; e
+key-high /home/kishu/src/chez-curl/build/m7s3b/mut/key-high suites: tests/test-proxy.sps tests/test-http-client.sps
+mutant key-high tests/test-proxy.sps: exit 1
+    FAIL no value found where another belongs prints the secret: the review's nine, a proxy URL and a credentials list where a key belongs, at both levels, each named by its kind, and the audit's, each named by its kind or its field; a symbol where a key belongs, and a key given twice, named as given; e
+mutant key-high tests/test-http-client.sps: exit 1
+    FAIL make-http-session refuses an unknown key by name, retries, body, method, redirect, and a string by its kind, (kind string), never the string, each as &http-request-error, field key, with no engine made
+shown-strings /home/kishu/src/chez-curl/build/m7s3b/mut/shown-strings suites: tests/test-conditions.sps tests/test-proxy.sps
+mutant shown-strings tests/test-conditions.sps: exit 1
+    FAIL shown-value, written out against the whole complement of what it shows: a symbol, a number, a boolean, a char, (), and a proper list of them, a policy's statuses or methods, as given; a string, a proxy URL among them, a list holding a string, credentials among them, an improper list, a circular
+mutant shown-strings tests/test-proxy.sps: exit 1
+    FAIL proxy-ca-file's wrong types and proxy-verify's are assertion violations from make-curl-request, with the value, a string by its kind: "", 5 and #t; 0, on and ()
+    FAIL no value found where another belongs prints the secret: the review's nine, a proxy URL and a credentials list where a key belongs, at both levels, each named by its kind, and the audit's, each named by its kind or its field; a symbol where a key belongs, and a key given twice, named as given; e
+shown-lists /home/kishu/src/chez-curl/build/m7s3b/mut/shown-lists suites: tests/test-conditions.sps tests/test-proxy.sps
+mutant shown-lists tests/test-conditions.sps: exit 1
+    FAIL shown-value, written out against the whole complement of what it shows: a symbol, a number, a boolean, a char, (), and a proper list of them, a policy's statuses or methods, as given; a string, a proxy URL among them, a list holding a string, credentials among them, an improper list, a circular
+mutant shown-lists tests/test-proxy.sps: exit 1
+    FAIL no value found where another belongs prints the secret: the review's nine, a proxy URL and a credentials list where a key belongs, at both levels, each named by its kind, and the audit's, each named by its kind or its field; a symbol where a key belongs, and a key given twice, named as given; e
+shown-key-numbers /home/kishu/src/chez-curl/build/m7s3b/mut/shown-key-numbers suites: tests/test-conditions.sps tests/test-proxy.sps
+mutant shown-key-numbers tests/test-conditions.sps: exit 1
+    FAIL shown-key, written out: a symbol as given; every other kind by its kind, a number's and a boolean's among them
+mutant shown-key-numbers tests/test-proxy.sps: exit 1
+    FAIL no value found where another belongs prints the secret: the review's nine, a proxy URL and a credentials list where a key belongs, at both levels, each named by its kind, and the audit's, each named by its kind or its field; a symbol where a key belongs, and a key given twice, named as given; e
+shown-strings-high /home/kishu/src/chez-curl/build/m7s3b/mut/shown-strings-high suites: tests/test-http-client.sps
+mutant shown-strings-high tests/test-http-client.sps: exit 1
+    FAIL a call's own refusals, each &http-request-error compounded with &http-exchange, no transfer made: body and form, either with get or head, a body neither bytevector nor string, a form or params not a list of string pairs, a string or a list among them named by its kind
+    FAIL shown-value, written out against the whole complement of what it shows: a symbol, a number, a boolean, a char, (), and a proper list of them, a policy's statuses or methods, as given; a string, a proxy URL among them, a list holding a string, credentials among them, an improper list, a circular
+header-value /home/kishu/src/chez-curl/build/m7s3b/mut/header-value suites: tests/test-proxy.sps tests/test-transfer.sps
+mutant header-value tests/test-proxy.sps: exit 1
+    FAIL no value found where another belongs prints the secret: the review's nine, a proxy URL and a credentials list where a key belongs, at both levels, each named by its kind, and the audit's, each named by its kind or its field; a symbol where a key belongs, and a key given twice, named as given; e
+mutant header-value tests/test-transfer.sps: exit 1
+    FAIL a header value with U+0 at each of its places, and alone, is refused as embedded-nul, naming header-value and the header's name, never the value, which can be a secret, with nothing native at the raise
+    FAIL a header value with U+D at each of its places, and alone, is refused as line-break, naming header-value and the header's name, never the value, which can be a secret, with nothing native at the raise
+    FAIL a header value with U+A at each of its places, and alone, is refused as line-break, naming header-value and the header's name, never the value, which can be a secret, with nothing native at the raise
+    FAIL a header value with U+100 at each of its places, and alone, is refused as not-latin-1, naming header-value and the header's name, never the value, which can be a secret, with nothing native at the raise
+    FAIL a header value with U+20AC at each of its places, and alone, is refused as not-latin-1, naming header-value and the header's name, never the value, which can be a secret, with nothing native at the raise
+    FAIL a header value with U+1F600 at each of its places, and alone, is refused as not-latin-1, naming header-value and the header's name, never the value, which can be a secret, with nothing native at the raise
+    FAIL a value's first offending char decides its reason, each way round, for a header value, named by its header's name, and a user agent
+    FAIL a header value and a user agent with SP first, last, at both ends, alone, or twice alone, are refused as surrounding-whitespace, with nothing native at the raise
+    FAIL a header value and a user agent with HTAB first, last, at both ends, alone, or twice alone, are refused as surrounding-whitespace, with nothing native at the raise
+    FAIL a header value and a user agent with VT first, last, at both ends, alone, or twice alone, are refused as surrounding-whitespace, with nothing native at the raise
+    FAIL a header value and a user agent with FF first, last, at both ends, alone, or twice alone, are refused as surrounding-whitespace, with nothing native at the raise
+    FAIL the char scan comes first: an offending char anywhere decides before whitespace at an end
+    FAIL a request changed after it was made is refused at submit, at each field, before anything native: the URL, a header's name, its value, CR LF that would inject a header, the user agent, the list, a pair's car and cdr, the second header's value, and the list's or a name's type
+    FAIL every header is checked, the last of three among them, and the user agent after them
+    FAIL a header's name is checked before its value, and headers in order: the first header's fault is the one named
+headers-wrong /home/kishu/src/chez-curl/build/m7s3b/mut/headers-wrong suites: tests/test-proxy.sps
+mutant headers-wrong tests/test-proxy.sps: exit 1
+    FAIL no value found where another belongs prints the secret: the review's nine, a proxy URL and a credentials list where a key belongs, at both levels, each named by its kind, and the audit's, each named by its kind or its field; a symbol where a key belongs, and a key given twice, named as given; e
+submit-request /home/kishu/src/chez-curl/build/m7s3b/mut/submit-request suites: tests/test-proxy.sps
+mutant submit-request tests/test-proxy.sps: exit 1
+    FAIL no value found where another belongs prints the secret: the review's nine, a proxy URL and a credentials list where a key belongs, at both levels, each named by its kind, and the audit's, each named by its kind or its field; a symbol where a key belongs, and a key given twice, named as given; e
+not-a-session /home/kishu/src/chez-curl/build/m7s3b/mut/not-a-session suites: tests/test-proxy.sps
+mutant not-a-session tests/test-proxy.sps: exit 1
+    FAIL no value found where another belongs prints the secret: the review's nine, a proxy URL and a credentials list where a key belongs, at both levels, each named by its kind, and the audit's, each named by its kind or its field; a symbol where a key belongs, and a key given twice, named as given; e
+not-a-token /home/kishu/src/chez-curl/build/m7s3b/mut/not-a-token suites: tests/test-proxy.sps
+mutant not-a-token tests/test-proxy.sps: exit 1
+    FAIL no value found where another belongs prints the secret: the review's nine, a proxy URL and a credentials list where a key belongs, at both levels, each named by its kind, and the audit's, each named by its kind or its field; a symbol where a key belongs, and a key given twice, named as given; e
+hatch-wrong /home/kishu/src/chez-curl/build/m7s3b/mut/hatch-wrong suites: tests/test-proxy.sps
+mutant hatch-wrong tests/test-proxy.sps: exit 1
+    FAIL no value found where another belongs prints the secret: the review's nine, a proxy URL and a credentials list where a key belongs, at both levels, each named by its kind, and the audit's, each named by its kind or its field; a symbol where a key belongs, and a key given twice, named as given; e
+body-kind /home/kishu/src/chez-curl/build/m7s3b/mut/body-kind suites: tests/test-proxy.sps
+mutant body-kind tests/test-proxy.sps: exit 1
+    FAIL no value found where another belongs prints the secret: the review's nine, a proxy URL and a credentials list where a key belongs, at both levels, each named by its kind, and the audit's, each named by its kind or its field; a symbol where a key belongs, and a key given twice, named as given; e
+next-verify /home/kishu/src/chez-curl/build/m7s3b/mut/next-verify suites: tests/test-proxy.sps
+mutant next-verify tests/test-proxy.sps: exit 1
+    FAIL a redirect's hop keeps the call's proxy-verify #f: through the https:// proxy on the expired leaf, which a verifying client refuses, its CA the run's, the first request and the hop's, to another origin, go by absolute form on its log, and the call answers 200; the hop verifying would fail 60 at
+no-lane /home/kishu/src/chez-curl/build/m7s3b/mut/no-lane suites: tests/test-proxy.sps
+mutant no-lane tests/test-proxy.sps: exit 1
+    FAIL proxy-tls-in-tls, by version and backend: an https:// URL through an https:// proxy URL is refused where TLS inside TLS stalls, 7.85.0 unless http/1.1 is asked, Ubuntu's 8.5.0 with GnuTLS whatever is asked; an http:// URL through it, and an https:// URL through an http:// proxy, pass everywhere
+    FAIL proxy-tls-in-tls names the field and the libcurl, never the URL: its irritants are proxy, the version and the backend in use, where this lane's tls-in-tls-checks row refuses; elsewhere no raise; a lane with no row fails
+    FAIL no refusal holds the proxy's password: each condition, as write, display and display-condition print it, never shows it; and each did refuse, but TLS inside TLS where this lane's tls-in-tls-checks row passes it, a lane with no row failing
+    FAIL an https:// URL through an https:// proxy, through the engine, each http-version: refused at submit where this lane's tls-in-tls-checks row says so, the proxy getting nothing; else 200, the CONNECT on the https face and the request inside it; every transfer bounded at 10 s, as the slice's measu
+    FAIL a redirect's hop to https:// through an https:// proxy where TLS inside TLS stalls, by this lane's tls-in-tls-checks row, fails the call with the refusal, as its next request is submitted, one transfer counted; elsewhere it is followed; a lane with no row fails
+no-version-code /home/kishu/src/chez-curl/build/m7s3b/mut/no-version-code suites: tests/test-proxy.sps
+mutant no-version-code tests/test-proxy.sps: exit 1
+    FAIL a CONNECT refused 503 is retried as a 503 response would be: a post and a get, with statuses (503) and methods (get post), are tried three times, each CONNECT on the proxy's log; refused 407, once, on every libcurl, whatever the code and size, which move with the version
+https-check-drop /home/kishu/src/chez-curl/build/m7s3b/mut/https-check-drop suites: tests/test-transfer.sps
+mutant https-check-drop tests/test-transfer.sps: exit 1
+    FAIL prepare-transfer and curl-request-check, read from transfer.sls, share the checks' one owner, request-checks, which checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the credentials' copy, the proxy CA file's copy,
+https-always /home/kishu/src/chez-curl/build/m7s3b/mut/https-always suites: tests/test-proxy.sps
+mutant https-always tests/test-proxy.sps: exit 1
+    FAIL https-proxy-supported?, written out on features words: CURL_VERSION_HTTPS_PROXY, (1<<21), alone, beside SSL, and with every other bit, holds; none, SSL alone, and every bit but it, the bits on either side of it among them, do not
+    FAIL check-https-proxy refuses an https:// proxy URL beside features without CURL_VERSION_HTTPS_PROXY, as https-proxy-unsupported, field proxy, value proxy, never the URL: libcurl would write the URL whole into its error buffer; an https:// proxy beside the feature, and no https:// proxy beside none
+https-constant /home/kishu/src/chez-curl/build/m7s3b/mut/https-constant suites: tests/test-constants.sps tests/test-proxy.sps
+mutant https-constant tests/test-constants.sps: exit 1
+    FAIL curl-version-https-proxy is CURL_VERSION_HTTPS_PROXY
+mutant https-constant tests/test-proxy.sps: exit 1
+    FAIL https-proxy-supported?, written out on features words: CURL_VERSION_HTTPS_PROXY, (1<<21), alone, beside SSL, and with every other bit, holds; none, SSL alone, and every bit but it, the bits on either side of it among them, do not
+    FAIL check-https-proxy refuses an https:// proxy URL beside features without CURL_VERSION_HTTPS_PROXY, as https-proxy-unsupported, field proxy, value proxy, never the URL: libcurl would write the URL whole into its error buffer; an https:// proxy beside the feature, and no https:// proxy beside none
+mutants done

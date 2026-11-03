@@ -2328,6 +2328,244 @@
 
 (auth-scenarios)
 
+;; --- the proxy (M7 slice 3; the M7 plan, section 6.2) ---------------------------------
+;; Each test runs on an origin of its own, so the proxy's connections are
+;; numbered from 1 there, in the order this suite's probes open them; a
+;; probe that reads /proxy-log comes direct, and is no proxy's. The
+;; credentials are written here, by (auth-testing)'s base64, which
+;; tests/test-auth.sps holds to RFC 4648's vectors.
+
+;; proxy-log-of : Origin -> (U String (List 'raised String))
+;; The whole of /proxy-log?from=0, its body, once the proxy holds no
+;; connection open, waited for up to 5 s; what came last otherwise.
+(define (proxy-log-of o)
+  (let ((deadline (+ (now-ms) 5000)))
+    (let loop ()
+      (let* ((a (exchange o 'http (get "/proxy-log?from=0" close) 2000))
+             (text (and (pair? a) (string? (car a)) (body-of (car a)))))
+        (cond ((not text) a)
+              ((or (contains-text? text " open 0\n") (>= (now-ms) deadline)) text)
+              (else (pause-ms 20) (loop)))))))
+
+;; body-of : String -> String
+;; RESPONSE's text after its head's CRLF CRLF, or all of it with none.
+(define (body-of response)
+  (let loop ((i 0))
+    (cond ((> (+ i 4) (string-length response)) response)
+          ((string=? (substring response i (+ i 4)) "\r\n\r\n") (substring response (+ i 4) (string-length response)))
+          (else (loop (+ i 1))))))
+
+;; contains-text? : String String -> Boolean
+(define (contains-text? text part)
+  (let ((n (string-length text)) (k (string-length part)))
+    (let loop ((i 0))
+      (and (<= (+ i k) n) (or (string=? (substring text i (+ i k)) part) (loop (+ i 1)))))))
+
+;; proxy-log-text : (Listof String) -> String
+;; The log /proxy-log?from=0 answers with LINES and no connection open.
+(define (proxy-log-text lines)
+  (apply string-append "proxy-log " (number->string (length lines)) " open 0\n"
+         (map (lambda (line) (string-append line "\n")) lines)))
+
+;; settled : Origin (-> Any) -> Any
+;; THUNK's answer, once the proxy holds no connection open after it, so
+;; the next probe's lines come after its close.
+(define (settled o thunk)
+  (let ((answer (thunk)))
+    (proxy-log-of o)
+    answer))
+
+;; connect-text : String . String -> String
+;; A CONNECT of TARGET, its Host, then HEADERS, each a whole line, as a
+;; client writes one.
+(define (connect-text target . headers)
+  (apply string-append "CONNECT " target " HTTP/1.1\r\nHost: " target "\r\n" (append headers (list "\r\n"))))
+
+;; basic-line : String -> String
+;; A Proxy-Authorization line of Basic for BYTES, a string of chars below
+;; 256, each its byte.
+(define (basic-line bytes)
+  (string-append "Proxy-Authorization: Basic " (base64-encode (octets bytes)) "\r\n"))
+
+;; refusal-bytes : Natural String (U String #f) -> String
+;; The proxy's refusal STATUS REASON, with CHALLENGE when given.
+(define (refusal-bytes status reason challenge)
+  (let ((body (string-append "proxy " (number->string status) "\n")))
+    (string-append "HTTP/1.1 " (number->string status) " " reason "\r\n"
+                   (if challenge (string-append "Proxy-Authenticate: " challenge "\r\n") "")
+                   "Content-Length: " (number->string (string-length body)) "\r\n\r\n" body)))
+
+(define proxy-challenge "Basic realm=\"chez-curl-proxy\"")
+(define tunnel-200 "HTTP/1.1 200 Connection Established\r\n\r\n")
+(define forbidden-end "HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+
+(define (proxy-scenarios)
+  (test-equal "the proxy's refusals: a CONNECT to refuse-S.invalid gets S, 403, 407 with Basic's challenge, 502 or 503, Content-Length and proxy S, the connection kept, so the probe ends by its idle bound; a client's end then ends it, eof; close.invalid ends at once, nothing written; any other host, refuse-404 among them, and 127.0.0.1 at a port no face has, 403 and the end; the log, each CONNECT with its answer and its head's bytes, then its close"
+    (let ((head (lambda (target) (string-length (connect-text target)))))
+      (list 'returned
+            (list (list (refusal-bytes 403 "Forbidden" #f) 'timeout)
+                  (list (refusal-bytes 407 "Proxy Authentication Required" proxy-challenge) 'timeout)
+                  (list (refusal-bytes 502 "Bad Gateway" #f) 'timeout)
+                  (list (refusal-bytes 503 "Service Unavailable" #f) 'timeout)
+                  (list (refusal-bytes 503 "Service Unavailable" #f) 'eof)
+                  '("" eof)
+                  (list forbidden-end 'eof)
+                  (list forbidden-end 'eof)
+                  (proxy-log-text
+                   (list (string-append "connect http conn=1 target=refuse-403.invalid:443 answer=403 head="
+                                        (number->string (head "refuse-403.invalid:443")) " auth=-")
+                         "close http conn=1"
+                         (string-append "connect http conn=2 target=refuse-407.invalid:443 answer=407 head="
+                                        (number->string (head "refuse-407.invalid:443")) " auth=-")
+                         "close http conn=2"
+                         (string-append "connect http conn=3 target=refuse-502.invalid:8080 answer=502 head="
+                                        (number->string (head "refuse-502.invalid:8080")) " auth=-")
+                         "close http conn=3"
+                         (string-append "connect http conn=4 target=refuse-503.invalid:1 answer=503 head="
+                                        (number->string (head "refuse-503.invalid:1")) " auth=-")
+                         "close http conn=4"
+                         (string-append "connect http conn=5 target=refuse-503.invalid:1 answer=503 head="
+                                        (number->string (head "refuse-503.invalid:1")) " auth=-")
+                         "close http conn=5"
+                         (string-append "connect http conn=6 target=close.invalid:443 answer=close head="
+                                        (number->string (head "close.invalid:443")) " auth=-")
+                         "close http conn=6"
+                         (string-append "connect http conn=7 target=refuse-404.invalid:443 answer=403 head="
+                                        (number->string (head "refuse-404.invalid:443")) " auth=-")
+                         "close http conn=7"
+                         (string-append "connect http conn=8 target=127.0.0.1:1 answer=403 head="
+                                        (number->string (head "127.0.0.1:1")) " auth=-")
+                         "close http conn=8")))))
+    (with-origin
+     (lambda (o)
+       (let* ((one (lambda (text) (settled o (lambda () (exchange o 'http text 300)))))
+              (a (one (connect-text "refuse-403.invalid:443")))
+              (b (one (connect-text "refuse-407.invalid:443")))
+              (c (one (connect-text "refuse-502.invalid:8080")))
+              (d (one (connect-text "refuse-503.invalid:1")))
+              (e (settled o (lambda ()
+                              (guard (x (#t (list 'raised (describe x))))
+                                (let ((p (wire-probe-half-close o 'http (octets (connect-text "refuse-503.invalid:1")) 2000)))
+                                  (list (latin-1 (probe-bytes p)) (probe-end p)))))))
+              (f (one (connect-text "close.invalid:443")))
+              (g (one (connect-text "refuse-404.invalid:443")))
+              (h (one (connect-text "127.0.0.1:1"))))
+         (list a b c d e f g h (proxy-log-of o))))))
+
+  ;; The tests whose bytes name the origin's ports build them from it, and
+  ;; answer same, or what was wanted and what came.
+  (test-equal "the proxy's tunnels: CONNECT 127.0.0.1 at the raw face, a request behind it, gets the tunnel's 200, then raw's bytes, then eof; at the http face, a GET behind it, the tunnel's 200, then the face's answer, logged as an inner request through the proxy's connection; a direct request after is no inner one; the log whole"
+    '(returned same)
+    (with-origin
+     (lambda (o)
+       (let* ((raw (string-append "127.0.0.1:" (number->string (cdr (origin-face o 'raw)))))
+              (http (string-append "127.0.0.1:" (number->string (cdr (origin-face o 'http)))))
+              (want (list (list (string-append tunnel-200 "HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\nhello\n") 'eof)
+                          (list (string-append tunnel-200 "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\nstatus 200\n") 'eof)
+                          (list "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\nstatus 200\n" 'eof)
+                          (proxy-log-text
+                           (list (string-append "connect http conn=1 target=" raw " answer=200 head="
+                                                (number->string (string-length (connect-text raw))) " auth=-")
+                                 "close http conn=1"
+                                 (string-append "connect http conn=2 target=" http " answer=200 head="
+                                                (number->string (string-length (connect-text http))) " auth=-")
+                                 "inner http via=2 method=GET target=/status/200"
+                                 "close http conn=2"))))
+              (a (settled o (lambda () (exchange o 'http (string-append (connect-text raw) (get "/raw/content-length")) 2000))))
+              (b (settled o (lambda () (exchange o 'http (string-append (connect-text http) (get "/status/200" close)) 2000))))
+              (c (settled o (lambda () (exchange o 'http (get "/status/200" close) 2000))))
+              (got (list a b c (proxy-log-of o))))
+         (if (equal? want got) 'same (list 'want want 'got got))))))
+
+  (test-equal "the proxy's Basic, a CONNECT to localhost at a face: no Proxy-Authorization, 407 with the challenge; alice and s3cret, the tunnel; bob and hunter2 too, the scheme in lower case; alice with another password, a byte more, Bearer, or a second header behind a wrong first, 407; each decoded on the log, a byte outside the printable as \\xNN"
+    '(returned same)
+    (with-origin
+     (lambda (o)
+       (let* ((port (number->string (cdr (origin-face o 'http))))
+              (target (string-append "localhost:" port))
+              (behind (get "/status/204" close))
+              (denied (list (refusal-bytes 407 "Proxy Authentication Required" proxy-challenge) 'timeout))
+              (passed (list (string-append tunnel-200 "HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n") 'eof))
+              (cases (list (list "" "")
+                           (list (basic-line "alice:s3cret") behind)
+                           (list (string-append "Proxy-Authorization: basic " (base64-encode (octets "bob:hunter2")) "\r\n") behind)
+                           (list (basic-line "alice:wrong") "")
+                           (list (basic-line "alice:s3cret ") "")
+                           (list "Proxy-Authorization: Bearer s3cret\r\n" "")
+                           (list (string-append (basic-line "eve:\r\n\xff;") (basic-line "alice:s3cret")) "")))
+              (head (lambda (c) (string-length (connect-text target (car c)))))
+              (want (list denied passed passed denied denied denied denied
+                          (proxy-log-text
+                           (list (string-append "connect http conn=1 target=" target " answer=407 head="
+                                                (number->string (head (list-ref cases 0))) " auth=-")
+                                 "close http conn=1"
+                                 (string-append "connect http conn=2 target=" target " answer=200 head="
+                                                (number->string (head (list-ref cases 1))) " auth=basic:alice:s3cret")
+                                 "inner http via=2 method=GET target=/status/204"
+                                 "close http conn=2"
+                                 (string-append "connect http conn=3 target=" target " answer=200 head="
+                                                (number->string (head (list-ref cases 2))) " auth=basic:bob:hunter2")
+                                 "inner http via=3 method=GET target=/status/204"
+                                 "close http conn=3"
+                                 (string-append "connect http conn=4 target=" target " answer=407 head="
+                                                (number->string (head (list-ref cases 3))) " auth=basic:alice:wrong")
+                                 "close http conn=4"
+                                 (string-append "connect http conn=5 target=" target " answer=407 head="
+                                                (number->string (head (list-ref cases 4))) " auth=basic:alice:s3cret ")
+                                 "close http conn=5"
+                                 (string-append "connect http conn=6 target=" target " answer=407 head="
+                                                (number->string (head (list-ref cases 5))) " auth=other:Bearer s3cret")
+                                 "close http conn=6"
+                                 (string-append "connect http conn=7 target=" target " answer=407 head="
+                                                (number->string (head (list-ref cases 6))) " auth=basic:eve:\\x0d\\x0a\\xff (+1 more)")
+                                 "close http conn=7"))))
+              ;; Each case in turn, then the log: map's order is no order,
+              ;; and append's arguments run right to left (traps.md).
+              (got (let loop ((rest cases) (found '()))
+                     (if (null? rest)
+                         (reverse (cons (proxy-log-of o) found))
+                         (let ((a (settled o (lambda ()
+                                               (exchange o 'http (string-append (connect-text target (caar rest))
+                                                                                (cadar rest))
+                                                         (if (string=? (cadar rest) "") 300 2000))))))
+                           (loop (cdr rest) (cons a found)))))))
+         (if (equal? want got) 'same (list 'want want 'got got))))))
+
+  (test-equal "the proxy's log of a request in absolute form: its method, its target as it came, and its first Proxy-Authorization decoded, the face answering by its path; one by its path alone is no proxy's"
+    (list 'returned
+          (list (list "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\nstatus 200\n" 'eof)
+                (list "HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n" 'eof)
+                (list "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\nstatus 200\n" 'eof)
+                (proxy-log-text
+                 '("request http conn=1 method=GET target=http://127.0.0.1:1/status/200 auth=basic:u\\x0d\\x0ax:\\xffp"
+                   "close http conn=1"
+                   "request http conn=2 method=POST target=http://a.example/status/204 auth=other:Digest x=\"y\""
+                   "close http conn=2"))))
+    (with-origin
+     (lambda (o)
+       (let* ((a (settled o (lambda () (exchange o 'http (string-append "GET http://127.0.0.1:1/status/200 HTTP/1.1\r\nHost: 127.0.0.1:1\r\n"
+                                                                        (basic-line "u\r\nx:\xff;p") close "\r\n")
+                                                 2000))))
+              (b (settled o (lambda () (exchange o 'http (string-append "POST http://a.example/status/204 HTTP/1.1\r\nHost: a.example\r\n"
+                                                                        "Proxy-Authorization: Digest x=\"y\"\r\nContent-Length: 0\r\n"
+                                                                        close "\r\n")
+                                                 2000))))
+              (c (settled o (lambda () (exchange o 'http (get "/status/200" close) 2000)))))
+         (list a b c (proxy-log-of o))))))
+
+  (test-equal "/proxy-log refuses a query by /sink's rules, 404: none, an empty from, a word, a sign, a leading zero, another name, from twice; from past the end answers the head alone; on an origin no proxy has served, the empty log"
+    (list 'returned
+          (append (make-list-of 7 '("HTTP/1.1 404 Not Found\r\nContent-Length: 10\r\nConnection: close\r\n\r\nnot found\n" eof))
+                  (list (list (closed "HTTP/1.1 200 OK" '() "proxy-log 0 open 0\n") 'eof)
+                        (list (closed "HTTP/1.1 200 OK" '() "proxy-log 0 open 0\n") 'eof))))
+    (with-origin
+     (lambda (o)
+       (map (lambda (target) (exchange o 'http (get target close) 2000))
+            '("/proxy-log" "/proxy-log?from=" "/proxy-log?from=x" "/proxy-log?from=-1" "/proxy-log?from=01"
+              "/proxy-log?to=0" "/proxy-log?from=0&from=0" "/proxy-log?from=5" "/proxy-log?from=0"))))))
+
+(proxy-scenarios)
+
 ;; --- lifecycle: OS ports, two origins at once ---------------------------------
 
 (test-equal "OS ports: two origins at once announce four ports, none 0 and all different, and both serve"

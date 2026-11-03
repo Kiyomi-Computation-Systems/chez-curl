@@ -1,0 +1,83 @@
+== against lane F, the control: its CONNECT codes and request sizes differ from lane O
+valgrind against floor-7.85.0: 301 rows, 234 the same as both native runs, 67 differ
+- i3 mode=connect-https flags=plain second=wrong order=sequential step=2: valgrind 56 sent=0; native 200 / 200
+- i3 mode=connect-https flags=plain second=none order=sequential step=2: valgrind 56 sent=0; native 200 / 200
+- i3 mode=connect-https flags=fresh-second second=wrong order=sequential step=2: valgrind 56 sent=0; native 56 sent=134 / 56 sent=134
+- i3 mode=connect-https flags=fresh-second second=none order=sequential step=2: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i3 mode=connect-https flags=forbid-first second=wrong order=sequential step=2: valgrind 56 sent=0; native 56 sent=134 / 56 sent=134
+- i3 mode=connect-https flags=forbid-first second=none order=sequential step=2: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i3 mode=tunnel-http flags=plain second=wrong order=sequential step=2: valgrind 56 sent=0; native 200 / 200
+- i3 mode=tunnel-http flags=plain second=none order=sequential step=2: valgrind 56 sent=0; native 200 / 200
+- i3 mode=tunnel-http flags=fresh-second second=wrong order=sequential step=2: valgrind 56 sent=0; native 56 sent=134 / 56 sent=134
+- i3 mode=tunnel-http flags=fresh-second second=none order=sequential step=2: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i3 mode=tunnel-http flags=forbid-first second=wrong order=sequential step=2: valgrind 56 sent=0; native 56 sent=134 / 56 sent=134
+- i3 mode=tunnel-http flags=forbid-first second=none order=sequential step=2: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i3 mode=https-proxy-connect-https flags=plain second=wrong order=sequential step=2: valgrind 56 sent=0; native 200 / 200
+- i3 mode=https-proxy-connect-https flags=plain second=none order=sequential step=2: valgrind 56 sent=0; native 200 / 200
+- i3 mode=https-proxy-connect-https flags=fresh-second second=wrong order=sequential step=2: valgrind 56 sent=0; native 56 sent=134 / 56 sent=134
+- i3 mode=https-proxy-connect-https flags=fresh-second second=none order=sequential step=2: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i3 mode=https-proxy-connect-https flags=forbid-first second=wrong order=sequential step=2: valgrind 56 sent=0; native 56 sent=134 / 56 sent=134
+- i3 mode=https-proxy-connect-https flags=forbid-first second=none order=sequential step=2: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i3 mode=connect-h2 flags=plain second=wrong order=sequential step=2: valgrind 56 sent=0; native 200 h2 / 200 h2
+- i3 mode=connect-h2 flags=plain second=none order=sequential step=2: valgrind 56 sent=0; native 200 h2 / 200 h2
+- i3 mode=connect-h2 flags=fresh-second second=wrong order=sequential step=2: valgrind 56 sent=0; native 56 sent=134 / 56 sent=134
+- i3 mode=connect-h2 flags=fresh-second second=none order=sequential step=2: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i3 mode=connect-h2 flags=forbid-first second=wrong order=sequential step=2: valgrind 56 sent=0; native 56 sent=134 / 56 sent=134
+- i3 mode=connect-h2 flags=forbid-first second=none order=sequential step=2: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i3 mode=connect-h2 flags=plain second=wrong order=batch step=2: valgrind 56 sent=0; native 56 sent=134 / 56 sent=134
+- i3 mode=connect-h2 flags=plain second=none order=batch step=2: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i3 mode=connect-h2 flags=fresh-second second=wrong order=batch step=2: valgrind 56 sent=0; native 56 sent=134 / 56 sent=134
+- i3 mode=connect-h2 flags=fresh-second second=none order=batch step=2: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i3 mode=connect-h2 flags=forbid-first second=wrong order=batch step=2: valgrind 56 sent=0; native 56 sent=134 / 56 sent=134
+- i3 mode=connect-h2 flags=forbid-first second=none order=batch step=2: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i4 proxy=403 transport=connect level=low step=1: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i4 proxy=407-none transport=connect level=low step=1: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i4 proxy=407-wrong transport=connect level=low step=1: valgrind 56 sent=0; native 56 sent=134 / 56 sent=134
+- i4 proxy=502 transport=connect level=low step=1: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i4 proxy=close transport=connect level=low step=1: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i4 proxy=partial transport=connect level=low step=1: valgrind 56 sent=0; native 56 sent=89 / 56 sent=89
+- i4 proxy=403 transport=connect level=high method=get retry=policy step=1: valgrind 56 sent=0 transfers=3; native 56 sent=89 transfers=3 / 56 sent=89 transfers=3
+- i4 proxy=403 transport=connect level=high method=get retry=none step=1: valgrind 56 sent=0 transfers=1; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=403 transport=connect level=high method=post retry=policy step=1: valgrind 56 sent=0 transfers=3; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=403 transport=connect level=high method=post retry=none step=1: valgrind 56 sent=0 transfers=1; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=407-none transport=connect level=high method=get retry=policy step=1: valgrind 56 sent=0 transfers=3; native 56 sent=89 transfers=3 / 56 sent=89 transfers=3
+- i4 proxy=407-none transport=connect level=high method=get retry=none step=1: valgrind 56 sent=0 transfers=1; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=407-none transport=connect level=high method=post retry=policy step=1: valgrind 56 sent=0 transfers=3; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=407-none transport=connect level=high method=post retry=none step=1: valgrind 56 sent=0 transfers=1; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=407-wrong transport=connect level=high method=get retry=policy step=1: valgrind 56 sent=0 transfers=3; native 56 sent=134 transfers=3 / 56 sent=134 transfers=3
+- i4 proxy=407-wrong transport=connect level=high method=get retry=none step=1: valgrind 56 sent=0 transfers=1; native 56 sent=134 transfers=1 / 56 sent=134 transfers=1
+- i4 proxy=407-wrong transport=connect level=high method=post retry=policy step=1: valgrind 56 sent=0 transfers=3; native 56 sent=134 transfers=1 / 56 sent=134 transfers=1
+- i4 proxy=407-wrong transport=connect level=high method=post retry=none step=1: valgrind 56 sent=0 transfers=1; native 56 sent=134 transfers=1 / 56 sent=134 transfers=1
+- i4 proxy=502 transport=connect level=high method=get retry=policy step=1: valgrind 56 sent=0 transfers=3; native 56 sent=89 transfers=3 / 56 sent=89 transfers=3
+- i4 proxy=502 transport=connect level=high method=get retry=none step=1: valgrind 56 sent=0 transfers=1; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=502 transport=connect level=high method=post retry=policy step=1: valgrind 56 sent=0 transfers=3; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=502 transport=connect level=high method=post retry=none step=1: valgrind 56 sent=0 transfers=1; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=close transport=connect level=high method=get retry=policy step=1: valgrind 56 sent=0 transfers=3; native 56 sent=89 transfers=3 / 56 sent=89 transfers=3
+- i4 proxy=close transport=connect level=high method=get retry=none step=1: valgrind 56 sent=0 transfers=1; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=close transport=connect level=high method=post retry=policy step=1: valgrind 56 sent=0 transfers=3; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=close transport=connect level=high method=post retry=none step=1: valgrind 56 sent=0 transfers=1; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=partial transport=connect level=high method=get retry=policy step=1: valgrind 56 sent=0 transfers=3; native 56 sent=89 transfers=3 / 56 sent=89 transfers=3
+- i4 proxy=partial transport=connect level=high method=get retry=none step=1: valgrind 56 sent=0 transfers=1; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=partial transport=connect level=high method=post retry=policy step=1: valgrind 56 sent=0 transfers=3; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i4 proxy=partial transport=connect level=high method=post retry=none step=1: valgrind 56 sent=0 transfers=1; native 56 sent=89 transfers=1 / 56 sent=89 transfers=1
+- i5 sep=origin-bad transport=connect step=1: valgrind 35 sent=0; native 60 sent=89 / 60 sent=89
+- i5 sep=proxy-noverify-origin-bad transport=connect step=1: valgrind 35 sent=0; native 60 sent=89 / 60 sent=89
+- i5stall case=h2-via-https rep=3 step=1: valgrind 200 h2; native 28 sent=154 / 200 h2
+- i5stall case=h2-via-https rep=5 step=1: valgrind 200 h2; native 28 sent=154 / 200 h2
+- i5stall case=h2-via-https rep=7 step=1: valgrind 200 h2; native 200 h2 / 28 sent=154
+- i5stall case=h2-via-https rep=8 step=1: valgrind 200 h2; native 200 h2 / 28 sent=154
+- i5stall case=h2-via-https rep=10 step=1: valgrind 200 h2; native 28 sent=154 / 200 h2
+
+Valgrind's own lines:
+
+- `valgrind pooled none: ==2435==    definitely lost: 0 bytes in 0 blocks`
+- `valgrind pooled none: ==2435== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)`
+- `valgrind refused none: ==2530==    definitely lost: 0 bytes in 0 blocks`
+- `valgrind refused none: ==2530== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)`
+- `valgrind tls none: ==2611==    definitely lost: 0 bytes in 0 blocks`
+- `valgrind tls none: ==2611== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)`
+- `valgrind stall none: ==2645==    definitely lost: 0 bytes in 0 blocks`
+- `valgrind stall none: ==2645== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)`
+
+parts: pooled 0, refused 0, tls 0, stall 0; hung 0
+exit=0

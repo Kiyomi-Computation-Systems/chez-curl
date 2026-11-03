@@ -41,7 +41,51 @@
   ;; a report holding any path, version and features, which libcurl-info?
   ;; and the accessors then take for a genuine one.
   (define-record-type libcurl-info
-    (fields path source version version-number features feature-names
-            ssl-version host)
+    (fields (immutable path unchecked-libcurl-info-path)
+            (immutable source unchecked-libcurl-info-source)
+            (immutable version unchecked-libcurl-info-version)
+            (immutable version-number unchecked-libcurl-info-version-number)
+            (immutable features unchecked-libcurl-info-features)
+            (immutable feature-names unchecked-libcurl-info-feature-names)
+            (immutable ssl-version unchecked-libcurl-info-ssl-version)
+            (immutable host unchecked-libcurl-info-host))
     (sealed #t)
-    (opaque #t)))
+    (opaque #t))
+
+  ;; shown : Any -> Any
+  ;; X as an accessor's refusal names it: (curl private conditions)'
+  ;; shown-value's rule, which this library cannot import, since that one
+  ;; imports this: a symbol, a number, a boolean, a char, (), or a proper
+  ;; list of them, as itself; anything else (kind K), never the value.
+  ;; tests/test-printed.sps holds the two alike. Pure.
+  (define (shown x)
+    (define (atom? y) (or (symbol? y) (number? y) (boolean? y) (char? y) (null? y)))
+    (cond ((or (atom? x) (and (list? x) (for-all atom? x))) x)
+          ((string? x) '(kind string))
+          ((pair? x) '(kind list))
+          ((bytevector? x) '(kind bytevector))
+          ((vector? x) '(kind vector))
+          ((procedure? x) '(kind procedure))
+          (else '(kind other))))
+
+  ;; checked : Symbol (Any -> Any) -> (Any -> Any)
+  ;; ACCESSOR for WHO, called on a report alone; anything else an assertion
+  ;; violation from WHO naming it by shown, never the value: Chez's own check
+  ;; printed what it refused (ADR-0036, amended 2026-11-03). A procedure is
+  ;; all this makes, so the body still cannot raise.
+  (define (checked who accessor)
+    (lambda (x)
+      (unless (libcurl-info? x)
+        (assertion-violation who "not a libcurl-info" (shown x)))
+      (accessor x)))
+
+  (define libcurl-info-path (checked 'libcurl-info-path unchecked-libcurl-info-path))
+  (define libcurl-info-source (checked 'libcurl-info-source unchecked-libcurl-info-source))
+  (define libcurl-info-version (checked 'libcurl-info-version unchecked-libcurl-info-version))
+  (define libcurl-info-version-number
+    (checked 'libcurl-info-version-number unchecked-libcurl-info-version-number))
+  (define libcurl-info-features (checked 'libcurl-info-features unchecked-libcurl-info-features))
+  (define libcurl-info-feature-names
+    (checked 'libcurl-info-feature-names unchecked-libcurl-info-feature-names))
+  (define libcurl-info-ssl-version (checked 'libcurl-info-ssl-version unchecked-libcurl-info-ssl-version))
+  (define libcurl-info-host (checked 'libcurl-info-host unchecked-libcurl-info-host)))

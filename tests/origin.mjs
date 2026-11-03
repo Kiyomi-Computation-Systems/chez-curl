@@ -35,10 +35,8 @@
 //
 // The faces:
 //   http  node:http. Deterministic: no Date, headers in a fixed order, and
-//         Connection: close back when Node will close. It is also a CONNECT
-//         proxy to this origin's own faces alone: CONNECT 127.0.0.1:PORT, PORT
-//         one of them, gets "HTTP/1.1 200 Connection Established", then both
-//         ways piped; any other target gets a 403, and the end.
+//         Connection: close back when Node will close. It is also a proxy,
+//         as every https face is (the proxy, below).
 //           GET /status/CODE             200-599: status CODE, body "status CODE\n"
 //           GET /redirect/CODE?to=TARGET 300-308: Location: TARGET, decoded,
 //                                        body "redirect CODE\n"
@@ -71,6 +69,7 @@
 //                                        as any does; the mark is used once
 //           ANY /auth?key=K&ch=CH[&...]  the auth route, below
 //           GET /auth-log?key=K          the auth route's log for K, below
+//           GET /proxy-log?from=N        the proxy's log from line N, below
 //           anything else                404, body "not found\n"
 //         The queries of these three, and of HTTP/2's /answer, /refuse,
 //         /answer-at and /seq, are NAME=VALUE pairs, each name once at most
@@ -265,7 +264,9 @@
 //   With --pki DIR:
 //   https, https-expired, https-wrong-host, https-untrusted
 //         node:https, serving DIR's good, expired, wrong-host and untrusted
-//         leaf, with ALPN http/1.1 alone: http's routes and bytes.
+//         leaf, with ALPN http/1.1 alone: http's routes and bytes, and the
+//         proxy, so each serves as an https:// proxy, the last three as
+//         failing ones.
 //   raw-tls
 //         node:net, each socket wrapped in a server tls.TLSSocket with the
 //         good leaf and ALPN http/1.1: raw's scripts. A reset resets the TCP
@@ -389,6 +390,47 @@
 // the origin: each /sink, /refuse, /seq, /raw/sink and /raw/seq request
 // whose query names key=K counts once for K as its head arrives, and C is
 // K's count as the line is written. A query a route refuses counts nothing.
+//
+// The proxy (M7 slice 3; the M7 plan, section 6.2), on http and the https
+// faces alike. A CONNECT is answered by its target, HOST:PORT:
+//   127.0.0.1:PORT, PORT one of this origin's faces: "HTTP/1.1 200
+//            Connection Established", then both ways piped to that face,
+//            whatever Proxy-Authorization it carries;
+//   localhost:PORT, PORT one of them: the same, when its first
+//            Proxy-Authorization is Basic for alice and s3cret or for bob
+//            and hunter2, byte for byte; else 407, below. The face reached
+//            is 127.0.0.1's: a TLS face's leaf names localhost;
+//   refuse-S.invalid:PORT, S 403, 407, 502 or 503, any port: "HTTP/1.1 S
+//            REASON", for 407 Proxy-Authenticate: Basic
+//            realm="chez-curl-proxy", then Content-Length and the body
+//            "proxy S\n", the connection kept, so a refusal is no close;
+//            a byte the client sends after it, or its end, ends the
+//            connection;
+//   close.invalid:PORT: the connection ended, nothing written;
+//   anything else: 403, Content-Length: 0, Connection: close, and the end.
+// A request whose target is in absolute form, http://, is the face's own,
+// routed by its path (http, above). Each client connection a CONNECT or such
+// a request comes on is the proxy's from then on, numbered from 1 among the
+// proxy's, across faces, as the first arrives. The proxy's log, one line
+// each, in the order they happen:
+//   connect FACE conn=C target=T answer=A head=N auth=V
+//   request FACE conn=C method=M target=T auth=V
+//   inner FACE via=C method=M target=T
+//   close FACE conn=C
+// connect: a CONNECT, A its answer's status, or close; N the head's bytes as
+// libcurl sends one, the request line and each header "NAME: VALUE", CRLF
+// each, then CRLF, rebuilt from what Node parsed. request: a request in
+// absolute form. inner: a request on FACE, http's, an https face's or h2's,
+// that came through the tunnel of the proxy's connection C, found by the
+// tunnel's live socket to the face, dropped as it closes, so a later
+// connection on its ephemeral port is never taken for it. close: one of the
+// proxy's connections closed. T is the target as received and V the first
+// Proxy-Authorization, - for none, basic: and its base64 decoded, else
+// other: and its value, each as the auth log escapes bytes, then
+// " (+K more)" for K more. GET /proxy-log?from=N, N 0 or more, answers 200
+// "proxy-log L open K\n", L the lines so far and K the proxy's connections
+// open now, then lines N + 1 to L, each ending "\n". The log lives as long
+// as the origin.
 //
 // The suites (tests/test-origin.sps, tests/test-origin-tls.sps) hold their
 // own copy of each scenario's bytes, written separately from these. They
@@ -550,6 +592,9 @@ function route(target) {
     }, ['key', 'ch']));
   }
   if (path === '/auth-log') return queried('auth-log', queryOf(query, { key: keyValue }, ['key']));
+  if (path === '/proxy-log') {
+    return queried('proxy-log', queryOf(query, { from: (v) => decimal(v, 0, 1000000000) }, ['from']));
+  }
   return { kind: 'not-found' };
 }
 
@@ -1095,6 +1140,8 @@ function respond(req, res, body) {
       return text(res, 200, `seen ${counts.get(r.key) || 0}\n`);
     case 'auth-log':
       return text(res, 200, authLogText(r.key));
+    case 'proxy-log':
+      return text(res, 200, proxyLogText(r.from));
     case 'echo': {
       let lines = `${req.method} ${req.url} HTTP/${req.httpVersion}\n`;
       for (let i = 0; i < req.rawHeaders.length; i += 2) {
@@ -1172,6 +1219,7 @@ function wellFormed(face) {
   return (req, res) => {
     const headAt = performance.now();
     const socket = req.socket;
+    proxyLogRequest(face, socket, req);
     const mark = marks.get(socket);
     marks.delete(socket);
     const r = route(req.url);
@@ -1209,30 +1257,181 @@ function wellFormed(face) {
 const httpServer = numbered(http.createServer(wellFormed('http')), 'connection');
 httpServer.on('connection', track);
 
-// The CONNECT proxy, to this origin's own faces alone: a target of
-// 127.0.0.1:PORT, PORT one of theirs, is tunnelled, both ways piped, and
-// counted once its far end connects; any other gets a 403, and the end.
-httpServer.on('connect', (req, client, early) => {
-  track(client);
-  client.on('error', () => client.destroy());
-  const m = /^127\.0\.0\.1:([1-9][0-9]*)$/.exec(req.url);
-  const ports = new Set(faces.map(([, server]) => server.address() && server.address().port));
-  if (!m || !ports.has(Number(m[1]))) {
-    client.end('HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n');
-    return;
+// --- the proxy (the M7 plan, section 6.2) ---------------------------------
+
+// The proxy's log, its lines in order; its connections, numbered as each
+// becomes the proxy's, and those open now; and each tunnel's live socket
+// to a face, by its local port, which the face sees as its peer's.
+const proxyLog = [];
+const proxyNumbers = new WeakMap();
+let proxyConnections = 0;
+const proxyOpen = new Set();
+const tunnelPorts = new Map();
+
+// The accounts a CONNECT to localhost must carry, as Basic's decoded bytes.
+const PROXY_ACCOUNTS = ['alice:s3cret', 'bob:hunter2'];
+
+const REASONS = { 403: 'Forbidden', 407: 'Proxy Authentication Required', 502: 'Bad Gateway', 503: 'Service Unavailable' };
+
+// proxyConn: SOCKET's number among the proxy's connections, on FACE, given
+// it as its first CONNECT or absolute-form request arrives; its close
+// logged once.
+function proxyConn(face, socket) {
+  let n = proxyNumbers.get(socket);
+  if (n === undefined) {
+    proxyConnections += 1;
+    n = proxyConnections;
+    proxyNumbers.set(socket, n);
+    proxyOpen.add(socket);
+    socket.on('close', () => {
+      proxyOpen.delete(socket);
+      proxyLog.push(`close ${face} conn=${n}`);
+    });
   }
-  const far = net.connect(Number(m[1]), HOST, () => {
-    connects += 1;
-    client.write('HTTP/1.1 200 Connection Established\r\n\r\n');
-    if (early && early.length > 0) far.write(early);
-    far.pipe(client);
-    client.pipe(far);
-  });
-  track(far);
-  far.on('error', () => { far.destroy(); client.destroy(); });
-  client.on('close', () => far.destroy());
-  far.on('close', () => client.destroy());
-});
+  return n;
+}
+
+// proxyAuthorizations: every Proxy-Authorization value among PAIRS, a
+// flat list of names and values as received, in order.
+function proxyAuthorizations(pairs) {
+  const values = [];
+  for (let i = 0; i + 1 < pairs.length; i += 2) {
+    if (pairs[i].toLowerCase() === 'proxy-authorization') values.push(pairs[i + 1]);
+  }
+  return values;
+}
+
+// basicBytes: VALUE's credentials, base64-decoded, when it is Basic, the
+// scheme in any case, then one space; else null.
+function basicBytes(value) {
+  const m = /^basic (.*)$/i.exec(value);
+  return m ? Buffer.from(m[1], 'base64') : null;
+}
+
+// proxyAuthText: the first Proxy-Authorization among PAIRS as the log
+// shows it.
+function proxyAuthText(pairs) {
+  const values = proxyAuthorizations(pairs);
+  if (values.length === 0) return '-';
+  const basic = basicBytes(values[0]);
+  const shown = basic === null ? `other:${escaped(latin1(values[0]))}` : `basic:${escaped(basic)}`;
+  return `${shown}${values.length > 1 ? ` (+${values.length - 1} more)` : ''}`;
+}
+
+// accountPasses: whether PAIRS' first Proxy-Authorization is Basic for one
+// of the accounts, byte for byte.
+function accountPasses(pairs) {
+  const values = proxyAuthorizations(pairs);
+  const basic = values.length === 0 ? null : basicBytes(values[0]);
+  return basic !== null && PROXY_ACCOUNTS.some((account) => basic.equals(latin1(account)));
+}
+
+// headBytes: the bytes of REQ's head as libcurl writes one: the request
+// line, each header "NAME: VALUE", CRLF each, then CRLF.
+function headBytes(req) {
+  let head = `${req.method} ${req.url} HTTP/${req.httpVersion}\r\n`;
+  for (let i = 0; i + 1 < req.rawHeaders.length; i += 2) head += `${req.rawHeaders[i]}: ${req.rawHeaders[i + 1]}\r\n`;
+  return latin1(`${head}\r\n`).length;
+}
+
+// proxyLogRequest: REQ, on FACE's SOCKET, logged when its target is in
+// absolute form, as the proxy's, or when it came through a tunnel, as an
+// inner one.
+function proxyLogRequest(face, socket, req) {
+  if (req.url.startsWith('http://')) {
+    const conn = proxyConn(face, socket);
+    proxyLog.push(`request ${face} conn=${conn} method=${req.method} target=${escaped(latin1(req.url))} auth=${proxyAuthText(req.rawHeaders)}`);
+  } else {
+    proxyLogInner(face, socket, req.method, req.url);
+  }
+}
+
+// proxyLogInner: a request of METHOD to TARGET on FACE's SOCKET, logged
+// when SOCKET's peer is a tunnel's live socket.
+function proxyLogInner(face, socket, method, target) {
+  const tunnel = socket ? tunnelPorts.get(socket.remotePort) : undefined;
+  if (tunnel && !tunnel.far.destroyed) {
+    proxyLog.push(`inner ${face} via=${tunnel.conn} method=${method} target=${escaped(latin1(String(target)))}`);
+  }
+}
+
+// proxyLogText: the answer of /proxy-log?from=FROM.
+function proxyLogText(from) {
+  return `proxy-log ${proxyLog.length} open ${proxyOpen.size}\n${proxyLog.slice(from).map((line) => `${line}\n`).join('')}`;
+}
+
+// proxyRefuse: STATUS written to CLIENT, the connection kept; a byte the
+// client sends after it, or its end, ends the connection: a node:http
+// face's socket is half-open, and would stay so after the client's FIN.
+function proxyRefuse(client, status) {
+  const body = `proxy ${status}\n`;
+  const challenge = status === 407 ? 'Proxy-Authenticate: Basic realm="chez-curl-proxy"\r\n' : '';
+  client.on('data', () => client.destroy());
+  client.on('end', () => client.destroy());
+  client.write(`HTTP/1.1 ${status} ${REASONS[status]}\r\n${challenge}Content-Length: ${body.length}\r\n\r\n${body}`);
+}
+
+// proxyConnect: FACE's CONNECT listener, by its target, as the header has
+// it. A tunnel is counted, logged and entered by its far socket's local
+// port once that socket connects, the 200 written then, so no request can
+// come through it before; its entry goes as that socket closes.
+function proxyConnect(face) {
+  return (req, client, early) => {
+    track(client);
+    client.on('error', () => client.destroy());
+    const conn = proxyConn(face, client);
+    const head = headBytes(req);
+    const auth = proxyAuthText(req.rawHeaders);
+    const logged = (answer) => {
+      proxyLog.push(`connect ${face} conn=${conn} target=${escaped(latin1(req.url))} answer=${answer} head=${head} auth=${auth}`);
+    };
+    const target = /^([^:]+):([1-9][0-9]*)$/.exec(req.url);
+    const host = target ? target[1] : null;
+    const port = target ? Number(target[2]) : null;
+    const refusal = host === null ? null : /^refuse-(403|407|502|503)\.invalid$/.exec(host);
+    if (refusal) {
+      logged(refusal[1]);
+      proxyRefuse(client, Number(refusal[1]));
+      return;
+    }
+    if (host === 'close.invalid') {
+      logged('close');
+      client.destroy();
+      return;
+    }
+    const ports = new Set(faces.map(([, server]) => server.address() && server.address().port));
+    if ((host === '127.0.0.1' || host === 'localhost') && ports.has(port)) {
+      if (host === 'localhost' && !accountPasses(req.rawHeaders)) {
+        logged('407');
+        proxyRefuse(client, 407);
+        return;
+      }
+      const far = net.connect(port, HOST, () => {
+        const localPort = far.localPort;
+        tunnelPorts.set(localPort, { conn, far });
+        far.on('close', () => {
+          const entry = tunnelPorts.get(localPort);
+          if (entry && entry.far === far) tunnelPorts.delete(localPort);
+        });
+        connects += 1;
+        logged('200');
+        client.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+        if (early && early.length > 0) far.write(early);
+        far.pipe(client);
+        client.pipe(far);
+      });
+      track(far);
+      far.on('error', () => { far.destroy(); client.destroy(); });
+      client.on('close', () => far.destroy());
+      far.on('close', () => client.destroy());
+      return;
+    }
+    logged('403');
+    client.end('HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n');
+  };
+}
+
+httpServer.on('connect', proxyConnect('http'));
 
 // httpsServer: the https face NAME serving LEAF, with ALPN http/1.1 alone.
 // A TLS error ends that connection only.
@@ -1242,6 +1441,7 @@ function httpsServer(name, leafOf) {
   server.on('connection', track);
   server.on('secureConnection', track);
   server.on('tlsClientError', (err, socket) => socket.destroy());
+  server.on('connect', proxyConnect(name));
   return server;
 }
 
@@ -1350,6 +1550,7 @@ function h2Stream(face) {
     const headAt = performance.now();
     // A stream error ends this stream only.
     stream.on('error', () => stream.destroy());
+    proxyLogInner(face, stream.session && stream.session.socket, headers[':method'], headers[':path']);
     const r = route(headers[':path']);
     if (r.kind === 'answer') {
       // Read while the answer goes, so that Node, which closes a stream it

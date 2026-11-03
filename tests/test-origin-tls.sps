@@ -1909,6 +1909,91 @@
             (log (auth-logged o "h2b")))
        (list a b log)))))
 
+;; --- the proxy over TLS (M7 slice 3; the M7 plan, section 6.2) --------------------
+;; Each https face serves the proxy too, so it stands in for an https://
+;; proxy; the probe speaks TLS to it and verifies nothing, so the expired,
+;; wrong-host and untrusted faces serve as well, failing a client that
+;; verifies them. Each test runs on an origin of its own, its proxy's
+;; connections numbered from 1 there. Its log is read by the http face,
+;; whose answer tests/test-origin.sps holds.
+
+;; tls-proxy-log : Origin -> Any
+;; /proxy-log?from=0's body on the http face, once the proxy holds no
+;; connection open, waited for up to 5 s.
+(define (tls-proxy-log o)
+  (let ((deadline (+ (now-ms) 5000)))
+    (let loop ()
+      (let* ((a (exchange o 'http (get "/proxy-log?from=0" close) 2000 #f))
+             (text (and (pair? a) (string? (car a))
+                        (let find ((i 0))
+                          (cond ((> (+ i 4) (string-length (car a))) #f)
+                                ((string=? (substring (car a) i (+ i 4)) "\r\n\r\n")
+                                 (substring (car a) (+ i 4) (string-length (car a))))
+                                (else (find (+ i 1))))))))
+        (cond ((not text) a)
+              ((or (>= (now-ms) deadline)
+                   (let ((k (string-length " open 0\n")))
+                     (let scan ((i 0))
+                       (and (<= (+ i k) (string-length text))
+                            (or (string=? (substring text i (+ i k)) " open 0\n") (scan (+ i 1)))))))
+               text)
+              (else (pause-ms 20) (loop)))))))
+
+;; tls-connect-text : String . String -> String
+;; A CONNECT of TARGET, its Host, then HEADERS, each a whole line.
+(define (tls-connect-text target . headers)
+  (apply string-append "CONNECT " target " HTTP/1.1\r\nHost: " target "\r\n" (append headers (list "\r\n"))))
+
+(test-equal "the proxy over TLS: on the https face, a CONNECT to the http face, a GET behind it, the tunnel's 200, then the face's answer; on the expired, wrong-host and untrusted faces alike, which a verifying client refuses; a refusal, 503, the connection kept; Basic for localhost, alice's passing; the log names each face, each inner request through its connection"
+  '(returned same)
+  (tls-origin
+   (lambda (o)
+     (let* ((http (string-append "127.0.0.1:" (number->string (cdr (origin-face o 'http)))))
+            (local (string-append "localhost:" (number->string (cdr (origin-face o 'http)))))
+            (alice (string-append "Proxy-Authorization: Basic " (base64-encode (octets "alice:s3cret")) "\r\n"))
+            (behind (get "/status/200" close))
+            (passed (list (string-append "HTTP/1.1 200 Connection Established\r\n\r\n"
+                                         "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\nstatus 200\n")
+                          'eof))
+            (head (lambda (text) (number->string (string-length text))))
+            (want (list passed passed passed passed
+                        (list "HTTP/1.1 503 Service Unavailable\r\nContent-Length: 10\r\n\r\nproxy 503\n" 'timeout)
+                        passed
+                        (string-append
+                         "proxy-log 17 open 0\n"
+                         "connect https conn=1 target=" http " answer=200 head=" (head (tls-connect-text http)) " auth=-\n"
+                         "inner http via=1 method=GET target=/status/200\n"
+                         "close https conn=1\n"
+                         "connect https-expired conn=2 target=" http " answer=200 head=" (head (tls-connect-text http)) " auth=-\n"
+                         "inner http via=2 method=GET target=/status/200\n"
+                         "close https-expired conn=2\n"
+                         "connect https-wrong-host conn=3 target=" http " answer=200 head=" (head (tls-connect-text http)) " auth=-\n"
+                         "inner http via=3 method=GET target=/status/200\n"
+                         "close https-wrong-host conn=3\n"
+                         "connect https-untrusted conn=4 target=" http " answer=200 head=" (head (tls-connect-text http)) " auth=-\n"
+                         "inner http via=4 method=GET target=/status/200\n"
+                         "close https-untrusted conn=4\n"
+                         "connect https conn=5 target=refuse-503.invalid:443 answer=503 head="
+                         (head (tls-connect-text "refuse-503.invalid:443")) " auth=-\n"
+                         "close https conn=5\n"
+                         "connect https conn=6 target=" local " answer=200 head=" (head (tls-connect-text local alice))
+                         " auth=basic:alice:s3cret\n"
+                         "inner http via=6 method=GET target=/status/200\n"
+                         "close https conn=6\n")))
+            (one (lambda (face text idle)
+                   (let ((a (exchange o face text idle http1-tls)))
+                     (tls-proxy-log o)
+                     a)))
+            ;; In turn, by let*: each probe's lines before the next's.
+            (a (one 'https (string-append (tls-connect-text http) behind) 2000))
+            (b (one 'https-expired (string-append (tls-connect-text http) behind) 2000))
+            (c (one 'https-wrong-host (string-append (tls-connect-text http) behind) 2000))
+            (d (one 'https-untrusted (string-append (tls-connect-text http) behind) 2000))
+            (e (one 'https (tls-connect-text "refuse-503.invalid:443") 300))
+            (f (one 'https (string-append (tls-connect-text local alice) behind) 2000))
+            (got (list a b c d e f (tls-proxy-log o))))
+       (if (equal? want got) 'same (list 'want want 'got got))))))
+
 ;; --- the probe: TLS's SNI and ALPN, and its refusals ----------------------------
 
 ;; An origin whose raw face is TLS, with the good leaf, and that tells each

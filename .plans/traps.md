@@ -230,6 +230,34 @@ it should not be a comment. (chez-cmark-gfm)
   plan, a token or credentials is opaque, and a test searches the printed text of each, and of
   each condition, and holds `record-rtd` raising on it ([review](research/m7/slice2/review/)).
   (chez-curl, M7 slice 2)
+* **A 200 through a named proxy does not show the proxy was used.** A proxy URL whose userinfo
+  decodes to a byte from 0x00 to 0x1F, `http://u%0D%0Ax:p@127.0.0.1:P/` among them, makes 7.85.0
+  and Ubuntu's 8.5.0 drop the proxy and send the request straight to the origin, which answered
+  200 while the proxy logged nothing; 8.20.0 and 8.23.0 fail 3. 7.85.0's `parse_proxy` jumps to
+  its error path with its result still `CURLE_OK` when the decode fails (`lib/url.c:2512-2517`).
+  Measured through the engine on the five lanes, twice, and again in my rerun
+  ([research](research/m7/slice3/), [verify](research/m7/slice3/verify/)). A test of a proxy
+  asserts the proxy's log, never the response alone. A variable's proxy goes the same way:
+  `https_proxy`, `http_proxy` or `all_proxy` whose user or password decodes to 0x00 to 0x1F sent
+  7.85.0 and Ubuntu's 8.5.0 direct, 200, the proxy logging nothing, where `%7F` went through it
+  (the builder's probe on five lanes, and mine on 7.85.0 and 8.5.0,
+  [verify](research/m7/slice3/verify/results/env-userinfo-floor-openssl.log)). chez-curl does
+  not parse the variables (ADR-0024); README.org says so. (chez-curl, M7 slice 3)
+* **Chez's record accessors print the object they refuse.** `(curl-request-url
+  "http://u:PW@h/")` raised `"http://u:PW@h/" is not of type #<record type curl-request>`, the
+  same for every raw accessor of the request and the responses
+  ([verify](research/m7/slice3/verify/results/accessor-leak-guix-8.20.0.log)). An opaque record
+  stops its own fields printing, not a caller's misplaced argument: wrap each public accessor,
+  and name a wrong argument by its kind. (chez-curl, M7 slice 3's fix round)
+* **A refusal can print the value a caller put in the wrong place.** `make-curl-request`,
+  `curl-request-with`, `make-http-session`, `call-with-http-session` and `http-get` refused a
+  non-symbol where a key belongs as `unknown-key`, naming it: a proxy URL, or slice 2's
+  credentials list, given without its key printed its password, nine cases of nine; the leak
+  test, which searched the proxy's own refusals, never looked there. The builder had already
+  found `call-with-http-session`'s missing procedure printing a proxy URL the same way. A
+  refusal names a caller's value by its field or its kind wherever it could hold a secret
+  ([review](research/m7/slice3/review/), my rerun in [verify](research/m7/slice3/verify/)).
+  (chez-curl, M7 slice 3's review)
 
 ## Chez and the FFI
 
@@ -1305,3 +1333,24 @@ it should not be a comment. (chez-cmark-gfm)
   ([research](research/ci-first-run/)). test-transfer's 100,000 outlasted its 60 s bound on CI's
   floor lane once in three runs, and is now 50,000, still past every cap. A check of many headers
   stays near the newer caps. (chez-curl, CI's first run)
+* **`FRESH_CONNECT` keeps the transfer that sets it off other connections, never others off
+  its own,** and 7.85.0 reads `FORBID_REUSE` only as a transfer ends (`lib/multi.c:703`). So on
+  7.85.0 a transfer through the environment's proxy, with no credentials, joined as a second
+  HTTP/2 stream a live tunnel a named proxy's transfer had opened with alice's, both options
+  set on it, and got 200; alone it was refused 407. Two runs of the review's probe and my rerun
+  ([review](research/m7/slice3/review/), [verify](research/m7/slice3/verify/)). Only an engine
+  that does not multiplex kept it off (ADR-0037, decision 11). A rule that keeps a connection
+  to one transfer covers every transfer that could join it, not the one that set it.
+  (chez-curl, M7 slice 3's review)
+* **A socket `http.Server` hands its `connect` event is half-open:** `allowHalfOpen` is true, so
+  a client's FIN ends nothing, and a stand-in proxy that keeps a refused `CONNECT`'s connection
+  open never sees its count fall to 0. Destroy the socket on `'end'`. Measured by the builder's
+  `halfopen.mjs` on Node 24.18.0, and by me on 24.18.0 and 20.10.0: 1 connection open after 1 s
+  without the handler, 0 with it ([build](research/m7/slice3/build/),
+  [verify](research/m7/slice3/verify/results/halfopen-node-20.log)). (chez-curl, M7 slice 3)
+* **`curl_url` reports an empty query as `""` on 7.85.0 and 8.5.0, and as none from 8.20.0:**
+  `http://h:3128/?` read `""` there and `CURLUE_NO_QUERY` on 8.20.0 and 8.23.0, with and
+  without `CURLU_NON_SUPPORT_SCHEME` (the builder's probe on the five lanes,
+  [`urlprobe-table.txt`](research/m7/slice3/build/results/urlprobe-table.txt)). A `(not query)`
+  check passed in the container and refused `/?` on the floor. Read an empty part as none.
+  (chez-curl, M7 slice 3's build)

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted; amended 2026-10-26: a proxy's TLS, and after the plan's review;
   amended 2026-10-26: measured before slice 3; amended 2026-10-26: as built in slice 3;
-  amended 2026-10-26: the key, after slice 3's review; amended 2026-10-27: the Mac's keychain
+  amended 2026-10-26: the key, after slice 3's review; amended 2026-10-27: the Mac's keychain; amended 2026-11-03: a variable's proxy userinfo, measured (M7 slice 3)
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, every transfer, from M4
 - **Settles:** the environment policy ADR-0018 handed to M4: the proxy variables, Guix's
@@ -331,3 +331,13 @@ The maintainer's Mac ran slice 3's probes on its PR (`research/m4/slice3/results
   - **Decided by the maintainer, 2026-10-27: the variable is carried past slice 3.** The refusal
     stays as built, and fires with it set: it errs toward refusing. Accepting it waits on when
     LibreSSL reads it, once or at each verification, measured first.
+
+## Amendment, 2026-11-03: a variable's proxy userinfo (M7 slice 3)
+
+A proxy that `https_proxy`, `http_proxy` or `all_proxy` names, whose user or password decodes to
+a byte from 0x00 to 0x1F, sends 7.85.0 and Ubuntu's 8.5.0 direct: the origin answered 200, the
+proxy logged nothing; 8.20.0 and 8.23.0 fail 3; `%7F` goes through the proxy, and a raw 0x01
+fails 5 (the slice's builder on five lanes, two runs each, and my rerun on 7.85.0 and 8.5.0,
+[verify](../research/m7/slice3/verify/results/env-userinfo-floor-openssl.log)). It is the path a
+named proxy's URL took, which chez-curl now checks (ADR-0037, amended); a variable is libcurl's to
+read, by decision 1, so README.org documents it, and chez-curl parses no variable.

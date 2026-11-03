@@ -1,0 +1,584 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+network interfaces: lo 
+PRETTY_NAME="Ubuntu 24.04.5 LTS"
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+[floor-7.85.0] standin selftest ok 12 (1 planted vector caught)
+[floor-7.85.0] standin selftest exit=0
+[floor-7.85.0] pki: ca.pem cadir expired.key expired.pem good.key good.pem other-ca.pem untrusted.key untrusted.pem wrong-host.key wrong-host.pem cadir: 1353d324.0 ca.pem 
+[floor-7.85.0] src 0080fbff14e23de0e2b49ffd08bf6afedc05c731d7c9e60103a4dabd182fa315 (sha256 of src/'s libraries, concatenated in sorted path order)
+[floor-7.85.0] prototype build/m7s3/src b2a1f0e9418d4aad03ee574ee596326007a19e16af819e3d6029fa37e073b93a (the same, for the prototype)
+[floor-7.85.0] program .plans/research/m7/slice3/proxy.sps eb28bfda80ee053f7e3f6b9984dcf31c9567f444178ddbaa36fadcf261eae816 standin .plans/research/m7/slice3/standin.mjs 7f99adb48701b7d0b881d65a991369af7239cf43d1deb2537547b5689cc1196d
+[floor-7.85.0] standin ports ctl=43357 o-raw=34209 o-raw2=33713 o-tls=36699 o-h2=43661 o-h2c=45553 p-open=40885 p-other=39675 p-basic=34641 p-403=40873 p-502=34983 p-close=34189 p-partial=45205 tp-good=40871 tp-expired=42249 tp-wrong=45645 tp-untrusted=36525 tp-basic=42547 p80=80 p1080=1080 tp443=443 refused=46645
+[floor-7.85.0] uname Linux x86_64 chez /src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 -> /src/build/e1/ci/curl-floor/lib/libcurl.so.4.8.0 node v20.10.0 EXTRA_ENV=unset LOW_PORTS=1
+[floor-7.85.0] part stall env none libdirs build/m7s3/src
+[floor-7.85.0] env 1 CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4
+[floor-7.85.0] libcurl version=7.85.0 ssl="OpenSSL/3.0.13" path=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 part=stall env=none
+[floor-7.85.0] t i5stall case=https-via-https rep=1 tag=stall1 step=1 ms=54.2 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#2 | Content-Length: 40" body="origin o-tls#2 GET /x?tag=stall1 body=0\n" timings=((name-lookup . 20) (connect . 83) (tls-handshake . 48740) (first-byte . 49634) (total . 49654))
+[floor-7.85.0] s stall1 conn tp-good#1 open peer=50132
+[floor-7.85.0] s stall1 tls tp-good#1 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall1 req tp-good#1 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall1 conn o-tls#2 open peer=38128
+[floor-7.85.0] s stall1 tunnel tp-good#1 open to=o-tls local=38128
+[floor-7.85.0] s stall1 answer tp-good#1 #1 200 Connection established
+[floor-7.85.0] s stall1 tunnel tp-good#1 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\x86\xc5\xfeNN\xfcQ\xf9 \xf8;\x8e\xa2\x85\x07\xb3\x9fP7\xff\xed\x99\x8fS\x9bJ:?!i\x8bT #\x9a.\x16U\xd9s Z\xc3\xd8:\x11cG\xe7d\xe0tX"
+[floor-7.85.0] s stall1 tls o-tls#2 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall1 req o-tls#2 #1 via=tp-good#1/tunnel "GET /x?tag=stall1 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall1 answer o-tls#2 #1 200 [X-Origin: o-tls#2] body=40
+[floor-7.85.0] s stall1 conn tp-good#1 close in=798 out=1541
+[floor-7.85.0] s stall1 conn o-tls#2 close in=66 out=98
+[floor-7.85.0] s stall1 tunnel tp-good#1 closed up=709 down=1481
+[floor-7.85.0] s stall1 requests tp-good=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-https rep=2 tag=stall2 step=1 ms=54.0 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#4 | Content-Length: 40" body="origin o-tls#4 GET /x?tag=stall2 body=0\n" timings=((name-lookup . 35) (connect . 158) (tls-handshake . 48479) (first-byte . 49471) (total . 49503))
+[floor-7.85.0] s stall2 conn tp-good#3 open peer=43158
+[floor-7.85.0] s stall2 tls tp-good#3 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall2 req tp-good#3 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall2 conn o-tls#4 open peer=50356
+[floor-7.85.0] s stall2 tunnel tp-good#3 open to=o-tls local=50356
+[floor-7.85.0] s stall2 answer tp-good#3 #1 200 Connection established
+[floor-7.85.0] s stall2 tunnel tp-good#3 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03W\x88f\x9b\xc5/\xe5\x84\x14\x10u\xdcP\xcd#\x14\x1d:\x97b\xfe\x02*'n\xd1a\x83\xde\x82WV /.\xfa\x84\x1d\x01,!\xa4\x07\xa2\x0c\xa3\x7f\xc1\x9b\n\xa9\xf3~"
+[floor-7.85.0] s stall2 tls o-tls#4 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall2 req o-tls#4 #1 via=tp-good#3/tunnel "GET /x?tag=stall2 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall2 answer o-tls#4 #1 200 [X-Origin: o-tls#4] body=40
+[floor-7.85.0] s stall2 conn tp-good#3 close in=798 out=1540
+[floor-7.85.0] s stall2 conn o-tls#4 close in=66 out=98
+[floor-7.85.0] s stall2 tunnel tp-good#3 closed up=709 down=1480
+[floor-7.85.0] s stall2 requests tp-good=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-https rep=3 tag=stall3 step=1 ms=54.3 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#6 | Content-Length: 40" body="origin o-tls#6 GET /x?tag=stall3 body=0\n" timings=((name-lookup . 48) (connect . 176) (tls-handshake . 49893) (first-byte . 50760) (total . 50787))
+[floor-7.85.0] s stall3 conn tp-good#5 open peer=43166
+[floor-7.85.0] s stall3 tls tp-good#5 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall3 req tp-good#5 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall3 conn o-tls#6 open peer=50368
+[floor-7.85.0] s stall3 tunnel tp-good#5 open to=o-tls local=50368
+[floor-7.85.0] s stall3 answer tp-good#5 #1 200 Connection established
+[floor-7.85.0] s stall3 tunnel tp-good#5 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\x83\xaf\x89\xaf\x9c\xf5\x16\x17\xe3\x19\xfe\xca\xaa\xb7\xd7\x1e\xddS\xae\xdaM\x03\x98\x9b,\xff;K\xd5\xa0`\x19 f7\xa2\n\xbc\x0c\xb4\xd4`W\xb8\xf1\x1e\xfc1P\x00\x03\x19#"
+[floor-7.85.0] s stall3 tls o-tls#6 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall3 req o-tls#6 #1 via=tp-good#5/tunnel "GET /x?tag=stall3 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall3 answer o-tls#6 #1 200 [X-Origin: o-tls#6] body=40
+[floor-7.85.0] s stall3 conn o-tls#6 close in=66 out=98
+[floor-7.85.0] s stall3 conn tp-good#5 close in=798 out=1541
+[floor-7.85.0] s stall3 tunnel tp-good#5 closed up=709 down=1481
+[floor-7.85.0] s stall3 requests tp-good=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-https rep=4 tag=stall4 step=1 ms=54.5 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#8 | Content-Length: 40" body="origin o-tls#8 GET /x?tag=stall4 body=0\n" timings=((name-lookup . 14) (connect . 70) (tls-handshake . 47374) (first-byte . 48308) (total . 48326))
+[floor-7.85.0] s stall4 conn tp-good#7 open peer=43168
+[floor-7.85.0] s stall4 tls tp-good#7 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall4 req tp-good#7 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall4 conn o-tls#8 open peer=50370
+[floor-7.85.0] s stall4 tunnel tp-good#7 open to=o-tls local=50370
+[floor-7.85.0] s stall4 answer tp-good#7 #1 200 Connection established
+[floor-7.85.0] s stall4 tunnel tp-good#7 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03i7\x03<t8-_f\xd8T\xfe\x8f\x88\xa0\xaaN_}g:\x87\xb9e\xf2\\\xdeP\xb1\x8c\x97E \xbdG\x163\x9a\xee\xbb\xc0A\xf8\x03\x97/\xd5s\x01\x0f61+"
+[floor-7.85.0] s stall4 tls o-tls#8 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall4 req o-tls#8 #1 via=tp-good#7/tunnel "GET /x?tag=stall4 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall4 answer o-tls#8 #1 200 [X-Origin: o-tls#8] body=40
+[floor-7.85.0] s stall4 conn o-tls#8 close in=66 out=98
+[floor-7.85.0] s stall4 conn tp-good#7 close in=798 out=1541
+[floor-7.85.0] s stall4 tunnel tp-good#7 closed up=709 down=1481
+[floor-7.85.0] s stall4 requests tp-good=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-https rep=5 tag=stall5 step=1 ms=54.7 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#10 | Content-Length: 41" body="origin o-tls#10 GET /x?tag=stall5 body=0\n" timings=((name-lookup . 32) (connect . 150) (tls-handshake . 46944) (first-byte . 47817) (total . 47838))
+[floor-7.85.0] s stall5 conn tp-good#9 open peer=43184
+[floor-7.85.0] s stall5 tls tp-good#9 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall5 req tp-good#9 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall5 conn o-tls#10 open peer=50372
+[floor-7.85.0] s stall5 tunnel tp-good#9 open to=o-tls local=50372
+[floor-7.85.0] s stall5 answer tp-good#9 #1 200 Connection established
+[floor-7.85.0] s stall5 tunnel tp-good#9 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03(\xab\xb1\xf9\xd0\x91\xe6\xd4\xc19_%\xa4\xf4}\xa0\xdf\x00\x1dr\xfd\xb0\x84F\xa4\"\xad\xcaW\x892% \xa8-7\x09%\xe1\xf5\xcc\xe7\x19g\xb3\x03\xcf\x00\"<\x93 \x15"
+[floor-7.85.0] s stall5 tls o-tls#10 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall5 req o-tls#10 #1 via=tp-good#9/tunnel "GET /x?tag=stall5 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall5 answer o-tls#10 #1 200 [X-Origin: o-tls#10] body=41
+[floor-7.85.0] s stall5 conn o-tls#10 close in=66 out=100
+[floor-7.85.0] s stall5 conn tp-good#9 close in=798 out=1544
+[floor-7.85.0] s stall5 tunnel tp-good#9 closed up=709 down=1484
+[floor-7.85.0] s stall5 requests tp-good=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-https rep=6 tag=stall6 step=1 ms=54.1 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#12 | Content-Length: 41" body="origin o-tls#12 GET /x?tag=stall6 body=0\n" timings=((name-lookup . 33) (connect . 187) (tls-handshake . 46350) (first-byte . 47080) (total . 47104))
+[floor-7.85.0] s stall6 conn tp-good#11 open peer=43196
+[floor-7.85.0] s stall6 tls tp-good#11 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall6 req tp-good#11 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall6 conn o-tls#12 open peer=50384
+[floor-7.85.0] s stall6 tunnel tp-good#11 open to=o-tls local=50384
+[floor-7.85.0] s stall6 answer tp-good#11 #1 200 Connection established
+[floor-7.85.0] s stall6 tunnel tp-good#11 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\x98\x81\xba#\xd8\x93\xda\xdb\xca\x91\xa5\xfb\x05\xe3T\x82\x85\xf8\x08\xadEO\xe5Q\xc7$\xd7'\x1d\x00\xd2h 6=x\x93\x18!\xb2\xbe\xbd\xecl_R\xa1\x10\x92\x91\x0c\xf9S"
+[floor-7.85.0] s stall6 tls o-tls#12 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall6 req o-tls#12 #1 via=tp-good#11/tunnel "GET /x?tag=stall6 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall6 answer o-tls#12 #1 200 [X-Origin: o-tls#12] body=41
+[floor-7.85.0] s stall6 conn tp-good#11 close in=798 out=1544
+[floor-7.85.0] s stall6 conn o-tls#12 close in=66 out=100
+[floor-7.85.0] s stall6 tunnel tp-good#11 closed up=709 down=1483
+[floor-7.85.0] s stall6 requests tp-good=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-https rep=7 tag=stall7 step=1 ms=54.6 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#14 | Content-Length: 41" body="origin o-tls#14 GET /x?tag=stall7 body=0\n" timings=((name-lookup . 34) (connect . 162) (tls-handshake . 47848) (first-byte . 48570) (total . 48587))
+[floor-7.85.0] s stall7 conn tp-good#13 open peer=43202
+[floor-7.85.0] s stall7 tls tp-good#13 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall7 req tp-good#13 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall7 conn o-tls#14 open peer=50388
+[floor-7.85.0] s stall7 tunnel tp-good#13 open to=o-tls local=50388
+[floor-7.85.0] s stall7 answer tp-good#13 #1 200 Connection established
+[floor-7.85.0] s stall7 tunnel tp-good#13 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03L\xb5A;\x09\x95e%\xc9\xd1\xb5\x914$\xd9I\xe5\x98gC\xe6\x96r\x8f\x883\xa96{:'p L\xa1\xe8}\xd8~66\xfe\x12~<\xc2\xc3w\xbcq\xbe\x1d3"
+[floor-7.85.0] s stall7 tls o-tls#14 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall7 req o-tls#14 #1 via=tp-good#13/tunnel "GET /x?tag=stall7 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall7 answer o-tls#14 #1 200 [X-Origin: o-tls#14] body=41
+[floor-7.85.0] s stall7 conn o-tls#14 close in=66 out=100
+[floor-7.85.0] s stall7 conn tp-good#13 close in=798 out=1544
+[floor-7.85.0] s stall7 tunnel tp-good#13 closed up=709 down=1483
+[floor-7.85.0] s stall7 requests tp-good=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-https rep=8 tag=stall8 step=1 ms=54.0 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#16 | Content-Length: 41" body="origin o-tls#16 GET /x?tag=stall8 body=0\n" timings=((name-lookup . 17) (connect . 81) (tls-handshake . 46565) (first-byte . 47284) (total . 47302))
+[floor-7.85.0] s stall8 conn tp-good#15 open peer=43206
+[floor-7.85.0] s stall8 tls tp-good#15 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall8 req tp-good#15 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall8 conn o-tls#16 open peer=50404
+[floor-7.85.0] s stall8 tunnel tp-good#15 open to=o-tls local=50404
+[floor-7.85.0] s stall8 answer tp-good#15 #1 200 Connection established
+[floor-7.85.0] s stall8 tunnel tp-good#15 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03H\x16\xe2\xa6 \xc46\xc7\x93\x9a\xe7 \xd2\xe5\x83\xa1J\xcf#f\x99\x13\xfb\xd2\xd1X\xc0\xf8\x84\xfaF\xf6 \xc6:Y*\xb3j\xef\xab<\x84\r\x90\x8f\x0f\xb8\x91\xc3\xfb\xd9\x0b"
+[floor-7.85.0] s stall8 tls o-tls#16 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall8 req o-tls#16 #1 via=tp-good#15/tunnel "GET /x?tag=stall8 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall8 answer o-tls#16 #1 200 [X-Origin: o-tls#16] body=41
+[floor-7.85.0] s stall8 conn tp-good#15 close in=798 out=1544
+[floor-7.85.0] s stall8 conn o-tls#16 close in=66 out=100
+[floor-7.85.0] s stall8 tunnel tp-good#15 closed up=709 down=1483
+[floor-7.85.0] s stall8 requests tp-good=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-https rep=9 tag=stall9 step=1 ms=54.0 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#18 | Content-Length: 41" body="origin o-tls#18 GET /x?tag=stall9 body=0\n" timings=((name-lookup . 23) (connect . 101) (tls-handshake . 45939) (first-byte . 46584) (total . 46598))
+[floor-7.85.0] s stall9 conn tp-good#17 open peer=43216
+[floor-7.85.0] s stall9 tls tp-good#17 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall9 req tp-good#17 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall9 conn o-tls#18 open peer=50410
+[floor-7.85.0] s stall9 tunnel tp-good#17 open to=o-tls local=50410
+[floor-7.85.0] s stall9 answer tp-good#17 #1 200 Connection established
+[floor-7.85.0] s stall9 tunnel tp-good#17 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\xc7\xe9\xf3\xedp\xb5\x0eL\xb8\xe7^\xa7Q\x9dQBT\xa3\xa78\x17\x93\x09\x9d\xa5\xed\xdf\x92:lD\x8f eM\xc1,v\xc5\x84q\x08V\xe4\xf4\x85\x1aTw] \xa31"
+[floor-7.85.0] s stall9 tls o-tls#18 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall9 req o-tls#18 #1 via=tp-good#17/tunnel "GET /x?tag=stall9 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall9 answer o-tls#18 #1 200 [X-Origin: o-tls#18] body=41
+[floor-7.85.0] s stall9 conn tp-good#17 close in=798 out=1545
+[floor-7.85.0] s stall9 conn o-tls#18 close in=66 out=100
+[floor-7.85.0] s stall9 tunnel tp-good#17 closed up=709 down=1484
+[floor-7.85.0] s stall9 requests tp-good=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-https rep=10 tag=stall10 step=1 ms=54.1 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#20 | Content-Length: 42" body="origin o-tls#20 GET /x?tag=stall10 body=0\n" timings=((name-lookup . 15) (connect . 64) (tls-handshake . 45663) (first-byte . 46388) (total . 46405))
+[floor-7.85.0] s stall10 conn tp-good#19 open peer=43228
+[floor-7.85.0] s stall10 tls tp-good#19 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall10 req tp-good#19 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall10 conn o-tls#20 open peer=50418
+[floor-7.85.0] s stall10 tunnel tp-good#19 open to=o-tls local=50418
+[floor-7.85.0] s stall10 answer tp-good#19 #1 200 Connection established
+[floor-7.85.0] s stall10 tunnel tp-good#19 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\x9a\xdd\xa6\x9e\x98@\x88\x16Y\x19F\xfe\x87\xcb-\x04\x88\xff\xf1)B\x91\xdfC\x7fh\x8c\x02\xc5\x14_\xfe \xf3W\xe5\xb3\x1f/\x84g\xa6\"\xf0\x0e])\xf9\x7f\xe0O\xa8\xda"
+[floor-7.85.0] s stall10 tls o-tls#20 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall10 req o-tls#20 #1 via=tp-good#19/tunnel "GET /x?tag=stall10 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall10 answer o-tls#20 #1 200 [X-Origin: o-tls#20] body=42
+[floor-7.85.0] s stall10 conn tp-good#19 close in=799 out=1544
+[floor-7.85.0] s stall10 conn o-tls#20 close in=67 out=101
+[floor-7.85.0] s stall10 tunnel tp-good#19 closed up=710 down=1483
+[floor-7.85.0] s stall10 requests tp-good=1 o-tls=1
+[floor-7.85.0] t i5stall case=http-via-https rep=1 tag=stall11 step=1 ms=43.8 => ok status=200 version=http/1.1 headers="X-Origin: o-raw#22 | Content-Length: 42" body="origin o-raw#22 GET /x?tag=stall11 body=0\n" timings=((name-lookup . 13) (connect . 58) (tls-handshake . 0) (first-byte . 43058) (total . 43075))
+[floor-7.85.0] s stall11 conn tp-good#21 open peer=43230
+[floor-7.85.0] s stall11 tls tp-good#21 handshake alpn=- sni=-
+[floor-7.85.0] s stall11 req tp-good#21 #1 via=direct "GET http://127.0.0.1:34209/x?tag=stall11 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall11 conn o-raw#22 open peer=58548
+[floor-7.85.0] s stall11 forward tp-good#21 #1 to=o-raw local=58548 dropped=Proxy-Connection
+[floor-7.85.0] s stall11 req o-raw#22 #1 via=tp-good#21/forward "GET /x?tag=stall11 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall11 answer o-raw#22 #1 200 [X-Origin: o-raw#22] body=42
+[floor-7.85.0] s stall11 forward tp-good#21 #1 relayed 200 bytes=101
+[floor-7.85.0] s stall11 conn tp-good#21 close in=119 out=101
+[floor-7.85.0] s stall11 conn o-raw#22 close in=67 out=101
+[floor-7.85.0] s stall11 requests tp-good=1 o-raw=1
+[floor-7.85.0] t i5stall case=http-via-https rep=2 tag=stall12 step=1 ms=54.1 => ok status=200 version=http/1.1 headers="X-Origin: o-raw#24 | Content-Length: 42" body="origin o-raw#24 GET /x?tag=stall12 body=0\n" timings=((name-lookup . 20) (connect . 84) (tls-handshake . 0) (first-byte . 43773) (total . 43793))
+[floor-7.85.0] s stall12 conn tp-good#23 open peer=43246
+[floor-7.85.0] s stall12 tls tp-good#23 handshake alpn=- sni=-
+[floor-7.85.0] s stall12 req tp-good#23 #1 via=direct "GET http://127.0.0.1:34209/x?tag=stall12 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall12 conn o-raw#24 open peer=58560
+[floor-7.85.0] s stall12 forward tp-good#23 #1 to=o-raw local=58560 dropped=Proxy-Connection
+[floor-7.85.0] s stall12 req o-raw#24 #1 via=tp-good#23/forward "GET /x?tag=stall12 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall12 answer o-raw#24 #1 200 [X-Origin: o-raw#24] body=42
+[floor-7.85.0] s stall12 forward tp-good#23 #1 relayed 200 bytes=101
+[floor-7.85.0] s stall12 conn tp-good#23 close in=119 out=101
+[floor-7.85.0] s stall12 conn o-raw#24 close in=67 out=101
+[floor-7.85.0] s stall12 requests tp-good=1 o-raw=1
+[floor-7.85.0] t i5stall case=http-via-https rep=3 tag=stall13 step=1 ms=54.7 => ok status=200 version=http/1.1 headers="X-Origin: o-raw#26 | Content-Length: 42" body="origin o-raw#26 GET /x?tag=stall13 body=0\n" timings=((name-lookup . 34) (connect . 149) (tls-handshake . 0) (first-byte . 45936) (total . 45956))
+[floor-7.85.0] s stall13 conn tp-good#25 open peer=43252
+[floor-7.85.0] s stall13 tls tp-good#25 handshake alpn=- sni=-
+[floor-7.85.0] s stall13 req tp-good#25 #1 via=direct "GET http://127.0.0.1:34209/x?tag=stall13 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall13 conn o-raw#26 open peer=58576
+[floor-7.85.0] s stall13 forward tp-good#25 #1 to=o-raw local=58576 dropped=Proxy-Connection
+[floor-7.85.0] s stall13 req o-raw#26 #1 via=tp-good#25/forward "GET /x?tag=stall13 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall13 answer o-raw#26 #1 200 [X-Origin: o-raw#26] body=42
+[floor-7.85.0] s stall13 forward tp-good#25 #1 relayed 200 bytes=101
+[floor-7.85.0] s stall13 conn tp-good#25 close in=119 out=101
+[floor-7.85.0] s stall13 conn o-raw#26 close in=67 out=101
+[floor-7.85.0] s stall13 requests tp-good=1 o-raw=1
+[floor-7.85.0] t i5stall case=http-via-https rep=4 tag=stall14 step=1 ms=54.5 => ok status=200 version=http/1.1 headers="X-Origin: o-raw#28 | Content-Length: 42" body="origin o-raw#28 GET /x?tag=stall14 body=0\n" timings=((name-lookup . 34) (connect . 154) (tls-handshake . 0) (first-byte . 45764) (total . 45783))
+[floor-7.85.0] s stall14 conn tp-good#27 open peer=43268
+[floor-7.85.0] s stall14 tls tp-good#27 handshake alpn=- sni=-
+[floor-7.85.0] s stall14 req tp-good#27 #1 via=direct "GET http://127.0.0.1:34209/x?tag=stall14 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall14 conn o-raw#28 open peer=58586
+[floor-7.85.0] s stall14 forward tp-good#27 #1 to=o-raw local=58586 dropped=Proxy-Connection
+[floor-7.85.0] s stall14 req o-raw#28 #1 via=tp-good#27/forward "GET /x?tag=stall14 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall14 answer o-raw#28 #1 200 [X-Origin: o-raw#28] body=42
+[floor-7.85.0] s stall14 forward tp-good#27 #1 relayed 200 bytes=101
+[floor-7.85.0] s stall14 conn tp-good#27 close in=119 out=101
+[floor-7.85.0] s stall14 conn o-raw#28 close in=67 out=101
+[floor-7.85.0] s stall14 requests tp-good=1 o-raw=1
+[floor-7.85.0] t i5stall case=http-via-https rep=5 tag=stall15 step=1 ms=54.6 => ok status=200 version=http/1.1 headers="X-Origin: o-raw#30 | Content-Length: 42" body="origin o-raw#30 GET /x?tag=stall15 body=0\n" timings=((name-lookup . 34) (connect . 154) (tls-handshake . 0) (first-byte . 44698) (total . 44718))
+[floor-7.85.0] s stall15 conn tp-good#29 open peer=43274
+[floor-7.85.0] s stall15 tls tp-good#29 handshake alpn=- sni=-
+[floor-7.85.0] s stall15 req tp-good#29 #1 via=direct "GET http://127.0.0.1:34209/x?tag=stall15 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall15 conn o-raw#30 open peer=58590
+[floor-7.85.0] s stall15 forward tp-good#29 #1 to=o-raw local=58590 dropped=Proxy-Connection
+[floor-7.85.0] s stall15 req o-raw#30 #1 via=tp-good#29/forward "GET /x?tag=stall15 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall15 answer o-raw#30 #1 200 [X-Origin: o-raw#30] body=42
+[floor-7.85.0] s stall15 forward tp-good#29 #1 relayed 200 bytes=101
+[floor-7.85.0] s stall15 conn tp-good#29 close in=119 out=101
+[floor-7.85.0] s stall15 conn o-raw#30 close in=67 out=101
+[floor-7.85.0] s stall15 requests tp-good=1 o-raw=1
+[floor-7.85.0] t i5stall case=http-via-https rep=6 tag=stall16 step=1 ms=54.4 => ok status=200 version=http/1.1 headers="X-Origin: o-raw#32 | Content-Length: 42" body="origin o-raw#32 GET /x?tag=stall16 body=0\n" timings=((name-lookup . 17) (connect . 75) (tls-handshake . 0) (first-byte . 43932) (total . 43955))
+[floor-7.85.0] s stall16 conn tp-good#31 open peer=43276
+[floor-7.85.0] s stall16 tls tp-good#31 handshake alpn=- sni=-
+[floor-7.85.0] s stall16 req tp-good#31 #1 via=direct "GET http://127.0.0.1:34209/x?tag=stall16 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall16 conn o-raw#32 open peer=58598
+[floor-7.85.0] s stall16 forward tp-good#31 #1 to=o-raw local=58598 dropped=Proxy-Connection
+[floor-7.85.0] s stall16 req o-raw#32 #1 via=tp-good#31/forward "GET /x?tag=stall16 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall16 answer o-raw#32 #1 200 [X-Origin: o-raw#32] body=42
+[floor-7.85.0] s stall16 forward tp-good#31 #1 relayed 200 bytes=101
+[floor-7.85.0] s stall16 conn tp-good#31 close in=119 out=101
+[floor-7.85.0] s stall16 conn o-raw#32 close in=67 out=101
+[floor-7.85.0] s stall16 requests tp-good=1 o-raw=1
+[floor-7.85.0] t i5stall case=http-via-https rep=7 tag=stall17 step=1 ms=54.6 => ok status=200 version=http/1.1 headers="X-Origin: o-raw#34 | Content-Length: 42" body="origin o-raw#34 GET /x?tag=stall17 body=0\n" timings=((name-lookup . 33) (connect . 156) (tls-handshake . 0) (first-byte . 44696) (total . 44730))
+[floor-7.85.0] s stall17 conn tp-good#33 open peer=43288
+[floor-7.85.0] s stall17 tls tp-good#33 handshake alpn=- sni=-
+[floor-7.85.0] s stall17 req tp-good#33 #1 via=direct "GET http://127.0.0.1:34209/x?tag=stall17 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall17 conn o-raw#34 open peer=58600
+[floor-7.85.0] s stall17 forward tp-good#33 #1 to=o-raw local=58600 dropped=Proxy-Connection
+[floor-7.85.0] s stall17 req o-raw#34 #1 via=tp-good#33/forward "GET /x?tag=stall17 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall17 answer o-raw#34 #1 200 [X-Origin: o-raw#34] body=42
+[floor-7.85.0] s stall17 forward tp-good#33 #1 relayed 200 bytes=101
+[floor-7.85.0] s stall17 conn tp-good#33 close in=119 out=101
+[floor-7.85.0] s stall17 conn o-raw#34 close in=67 out=101
+[floor-7.85.0] s stall17 requests tp-good=1 o-raw=1
+[floor-7.85.0] t i5stall case=http-via-https rep=8 tag=stall18 step=1 ms=54.5 => ok status=200 version=http/1.1 headers="X-Origin: o-raw#36 | Content-Length: 42" body="origin o-raw#36 GET /x?tag=stall18 body=0\n" timings=((name-lookup . 34) (connect . 156) (tls-handshake . 0) (first-byte . 47392) (total . 47413))
+[floor-7.85.0] s stall18 conn tp-good#35 open peer=43300
+[floor-7.85.0] s stall18 tls tp-good#35 handshake alpn=- sni=-
+[floor-7.85.0] s stall18 req tp-good#35 #1 via=direct "GET http://127.0.0.1:34209/x?tag=stall18 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall18 conn o-raw#36 open peer=58602
+[floor-7.85.0] s stall18 forward tp-good#35 #1 to=o-raw local=58602 dropped=Proxy-Connection
+[floor-7.85.0] s stall18 req o-raw#36 #1 via=tp-good#35/forward "GET /x?tag=stall18 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall18 answer o-raw#36 #1 200 [X-Origin: o-raw#36] body=42
+[floor-7.85.0] s stall18 forward tp-good#35 #1 relayed 200 bytes=101
+[floor-7.85.0] s stall18 conn tp-good#35 close in=119 out=101
+[floor-7.85.0] s stall18 conn o-raw#36 close in=67 out=101
+[floor-7.85.0] s stall18 requests tp-good=1 o-raw=1
+[floor-7.85.0] t i5stall case=http-via-https rep=9 tag=stall19 step=1 ms=54.5 => ok status=200 version=http/1.1 headers="X-Origin: o-raw#38 | Content-Length: 42" body="origin o-raw#38 GET /x?tag=stall19 body=0\n" timings=((name-lookup . 34) (connect . 156) (tls-handshake . 0) (first-byte . 44476) (total . 44495))
+[floor-7.85.0] s stall19 conn tp-good#37 open peer=43310
+[floor-7.85.0] s stall19 tls tp-good#37 handshake alpn=- sni=-
+[floor-7.85.0] s stall19 req tp-good#37 #1 via=direct "GET http://127.0.0.1:34209/x?tag=stall19 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall19 conn o-raw#38 open peer=58608
+[floor-7.85.0] s stall19 forward tp-good#37 #1 to=o-raw local=58608 dropped=Proxy-Connection
+[floor-7.85.0] s stall19 req o-raw#38 #1 via=tp-good#37/forward "GET /x?tag=stall19 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall19 answer o-raw#38 #1 200 [X-Origin: o-raw#38] body=42
+[floor-7.85.0] s stall19 forward tp-good#37 #1 relayed 200 bytes=101
+[floor-7.85.0] s stall19 conn tp-good#37 close in=119 out=101
+[floor-7.85.0] s stall19 conn o-raw#38 close in=67 out=101
+[floor-7.85.0] s stall19 requests tp-good=1 o-raw=1
+[floor-7.85.0] t i5stall case=http-via-https rep=10 tag=stall20 step=1 ms=54.9 => ok status=200 version=http/1.1 headers="X-Origin: o-raw#40 | Content-Length: 42" body="origin o-raw#40 GET /x?tag=stall20 body=0\n" timings=((name-lookup . 24) (connect . 99) (tls-handshake . 0) (first-byte . 45344) (total . 45371))
+[floor-7.85.0] s stall20 conn tp-good#39 open peer=43318
+[floor-7.85.0] s stall20 tls tp-good#39 handshake alpn=- sni=-
+[floor-7.85.0] s stall20 req tp-good#39 #1 via=direct "GET http://127.0.0.1:34209/x?tag=stall20 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall20 conn o-raw#40 open peer=58622
+[floor-7.85.0] s stall20 forward tp-good#39 #1 to=o-raw local=58622 dropped=Proxy-Connection
+[floor-7.85.0] s stall20 req o-raw#40 #1 via=tp-good#39/forward "GET /x?tag=stall20 HTTP/1.1\r\nHost: 127.0.0.1:34209\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall20 answer o-raw#40 #1 200 [X-Origin: o-raw#40] body=42
+[floor-7.85.0] s stall20 forward tp-good#39 #1 relayed 200 bytes=101
+[floor-7.85.0] s stall20 conn tp-good#39 close in=119 out=101
+[floor-7.85.0] s stall20 conn o-raw#40 close in=67 out=101
+[floor-7.85.0] s stall20 requests tp-good=1 o-raw=1
+[floor-7.85.0] t i5stall case=h2-via-https rep=1 tag=stall21 step=1 ms=54.2 => ok status=200 version=http/2 headers="x-origin: o-h2#42 | content-length: 50 | date: Tue, 03 Nov 2026 02:13:10 GMT" body="origin o-h2#42 stream 1 GET /x?tag=stall21 body=0\n" timings=((name-lookup . 34) (connect . 162) (tls-handshake . 48054) (first-byte . 52242) (total . 52265))
+[floor-7.85.0] s stall21 conn tp-good#41 open peer=43328
+[floor-7.85.0] s stall21 tls tp-good#41 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall21 req tp-good#41 #1 via=direct "CONNECT 127.0.0.1:43661 HTTP/1.1\r\nHost: 127.0.0.1:43661\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall21 conn o-h2#42 open peer=57336
+[floor-7.85.0] s stall21 tunnel tp-good#41 open to=o-h2 local=57336
+[floor-7.85.0] s stall21 answer tp-good#41 #1 200 Connection established
+[floor-7.85.0] s stall21 tunnel tp-good#41 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\xc5\xb2P`\x9c\xeab\\q\x99\xe1Yb'\x18\xf0\x9f)\xa8\x1a_oa\xe5\x88S\xbdO\xbfY\x11; \xf3@~\x08_\x98T\x9c}G\x18\xf5VTRiO\x82>\x8f"
+[floor-7.85.0] s stall21 tls o-h2#42 handshake alpn=h2 sni=-
+[floor-7.85.0] s stall21 req o-h2#42 stream=1 #1 via=tp-good#41/tunnel ":method: GET\r\n:path: /x?tag=stall21\r\n:scheme: https\r\n:authority: 127.0.0.1:43661\r\naccept: */*\r\n"
+[floor-7.85.0] s stall21 answer o-h2#42 #1 200 stream=1 body=50
+[floor-7.85.0] s stall21 conn tp-good#41 close in=935 out=1677
+[floor-7.85.0] s stall21 conn o-h2#42 close
+[floor-7.85.0] s stall21 tunnel tp-good#41 closed up=846 down=1616
+[floor-7.85.0] s stall21 requests tp-good=1 o-h2=1
+[floor-7.85.0] t i5stall case=h2-via-https rep=2 tag=stall22 step=1 ms=53.9 => ok status=200 version=http/2 headers="x-origin: o-h2#44 | content-length: 50 | date: Tue, 03 Nov 2026 02:13:10 GMT" body="origin o-h2#44 stream 1 GET /x?tag=stall22 body=0\n" timings=((name-lookup . 33) (connect . 152) (tls-handshake . 46106) (first-byte . 47284) (total . 47307))
+[floor-7.85.0] s stall22 conn tp-good#43 open peer=43332
+[floor-7.85.0] s stall22 tls tp-good#43 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall22 req tp-good#43 #1 via=direct "CONNECT 127.0.0.1:43661 HTTP/1.1\r\nHost: 127.0.0.1:43661\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall22 conn o-h2#44 open peer=57346
+[floor-7.85.0] s stall22 tunnel tp-good#43 open to=o-h2 local=57346
+[floor-7.85.0] s stall22 answer tp-good#43 #1 200 Connection established
+[floor-7.85.0] s stall22 tunnel tp-good#43 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x037|\xe1\x83\x8d\x09.\xd6'm\xd2\xe33\xa3,\xd9\xb0\xfb\xe38N\xc3\xbep\x17\xf7\x9f\xab\xd3\x1f\x9b2 \xf1xY\x10\xf1\xd5\xcej9\x95\x01\xff\xd0\xfaT@\x1f\xf8\xa2Y"
+[floor-7.85.0] s stall22 tls o-h2#44 handshake alpn=h2 sni=-
+[floor-7.85.0] s stall22 req o-h2#44 stream=1 #1 via=tp-good#43/tunnel ":method: GET\r\n:path: /x?tag=stall22\r\n:scheme: https\r\n:authority: 127.0.0.1:43661\r\naccept: */*\r\n"
+[floor-7.85.0] s stall22 answer o-h2#44 #1 200 stream=1 body=50
+[floor-7.85.0] s stall22 conn tp-good#43 close in=935 out=1677
+[floor-7.85.0] s stall22 conn o-h2#44 close
+[floor-7.85.0] s stall22 tunnel tp-good#43 closed up=846 down=1616
+[floor-7.85.0] s stall22 requests tp-good=1 o-h2=1
+[floor-7.85.0] t i5stall case=h2-via-https rep=3 tag=stall23 step=1 ms=54.3 => ok status=200 version=http/2 headers="x-origin: o-h2#46 | content-length: 50 | date: Tue, 03 Nov 2026 02:13:10 GMT" body="origin o-h2#46 stream 1 GET /x?tag=stall23 body=0\n" timings=((name-lookup . 13) (connect . 55) (tls-handshake . 45459) (first-byte . 46879) (total . 46900))
+[floor-7.85.0] s stall23 conn tp-good#45 open peer=43342
+[floor-7.85.0] s stall23 tls tp-good#45 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall23 req tp-good#45 #1 via=direct "CONNECT 127.0.0.1:43661 HTTP/1.1\r\nHost: 127.0.0.1:43661\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall23 conn o-h2#46 open peer=57360
+[floor-7.85.0] s stall23 tunnel tp-good#45 open to=o-h2 local=57360
+[floor-7.85.0] s stall23 answer tp-good#45 #1 200 Connection established
+[floor-7.85.0] s stall23 tunnel tp-good#45 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x030\x89\xa1\xee\x8d\x8a\xcab\x06\xd8WEO\x83x\xbb\xbds\x92zv\xe0W[dU\xde\x7fAs\x19\x99 \xbb}Q\xd1\xce\xeb\xeal9r\xc8\\\xb0*xGoh\xb1\xdb"
+[floor-7.85.0] s stall23 tls o-h2#46 handshake alpn=h2 sni=-
+[floor-7.85.0] s stall23 req o-h2#46 stream=1 #1 via=tp-good#45/tunnel ":method: GET\r\n:path: /x?tag=stall23\r\n:scheme: https\r\n:authority: 127.0.0.1:43661\r\naccept: */*\r\n"
+[floor-7.85.0] s stall23 answer o-h2#46 #1 200 stream=1 body=50
+[floor-7.85.0] s stall23 conn tp-good#45 close in=935 out=1677
+[floor-7.85.0] s stall23 conn o-h2#46 close
+[floor-7.85.0] s stall23 tunnel tp-good#45 closed up=846 down=1616
+[floor-7.85.0] s stall23 requests tp-good=1 o-h2=1
+[floor-7.85.0] t i5stall case=h2-via-https rep=4 tag=stall24 step=1 ms=54.7 => ok status=200 version=http/2 headers="x-origin: o-h2#48 | content-length: 50 | date: Tue, 03 Nov 2026 02:13:10 GMT" body="origin o-h2#48 stream 1 GET /x?tag=stall24 body=0\n" timings=((name-lookup . 33) (connect . 153) (tls-handshake . 48141) (first-byte . 49388) (total . 49411))
+[floor-7.85.0] s stall24 conn tp-good#47 open peer=43348
+[floor-7.85.0] s stall24 tls tp-good#47 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall24 req tp-good#47 #1 via=direct "CONNECT 127.0.0.1:43661 HTTP/1.1\r\nHost: 127.0.0.1:43661\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall24 conn o-h2#48 open peer=57362
+[floor-7.85.0] s stall24 tunnel tp-good#47 open to=o-h2 local=57362
+[floor-7.85.0] s stall24 answer tp-good#47 #1 200 Connection established
+[floor-7.85.0] s stall24 tunnel tp-good#47 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03[\x98\xd0\r\xd6\xaa\xef\x85\xc0\x99\x85\x1b\xc6L\xf0`\xca\xb7\x9b\xbdG8Ol'}$0\xd2\x0f\xf6> \xa5Ms\x91B\xef3)}\xb4\x84s\x15\xd8\xe2u\x1bt\x8dy"
+[floor-7.85.0] s stall24 tls o-h2#48 handshake alpn=h2 sni=-
+[floor-7.85.0] s stall24 req o-h2#48 stream=1 #1 via=tp-good#47/tunnel ":method: GET\r\n:path: /x?tag=stall24\r\n:scheme: https\r\n:authority: 127.0.0.1:43661\r\naccept: */*\r\n"
+[floor-7.85.0] s stall24 answer o-h2#48 #1 200 stream=1 body=50
+[floor-7.85.0] s stall24 conn tp-good#47 close in=935 out=1677
+[floor-7.85.0] s stall24 conn o-h2#48 close
+[floor-7.85.0] s stall24 tunnel tp-good#47 closed up=846 down=1616
+[floor-7.85.0] s stall24 requests tp-good=1 o-h2=1
+[floor-7.85.0] t i5stall case=h2-via-https rep=5 tag=stall25 step=1 ms=54.0 => ok status=200 version=http/2 headers="x-origin: o-h2#50 | content-length: 50 | date: Tue, 03 Nov 2026 02:13:10 GMT" body="origin o-h2#50 stream 1 GET /x?tag=stall25 body=0\n" timings=((name-lookup . 17) (connect . 73) (tls-handshake . 45480) (first-byte . 46991) (total . 47012))
+[floor-7.85.0] s stall25 conn tp-good#49 open peer=43350
+[floor-7.85.0] s stall25 tls tp-good#49 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall25 req tp-good#49 #1 via=direct "CONNECT 127.0.0.1:43661 HTTP/1.1\r\nHost: 127.0.0.1:43661\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall25 conn o-h2#50 open peer=57364
+[floor-7.85.0] s stall25 tunnel tp-good#49 open to=o-h2 local=57364
+[floor-7.85.0] s stall25 answer tp-good#49 #1 200 Connection established
+[floor-7.85.0] s stall25 tunnel tp-good#49 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03 \x00\x07m<&oj\x19\x9eP\xec_Cd\xc7^\x96\xb9\xbcfN\xc4\xd9\x08O=U_\xe0\xb3n \x94\xd2\xc7\xadg\xa4\x8d\x01 ^:\xa0\x09\x8d\xd1\x1e\xcc\xa2\x80\x80"
+[floor-7.85.0] s stall25 tls o-h2#50 handshake alpn=h2 sni=-
+[floor-7.85.0] s stall25 req o-h2#50 stream=1 #1 via=tp-good#49/tunnel ":method: GET\r\n:path: /x?tag=stall25\r\n:scheme: https\r\n:authority: 127.0.0.1:43661\r\naccept: */*\r\n"
+[floor-7.85.0] s stall25 answer o-h2#50 #1 200 stream=1 body=50
+[floor-7.85.0] s stall25 conn tp-good#49 close in=935 out=1677
+[floor-7.85.0] s stall25 conn o-h2#50 close
+[floor-7.85.0] s stall25 tunnel tp-good#49 closed up=846 down=1616
+[floor-7.85.0] s stall25 requests tp-good=1 o-h2=1
+[floor-7.85.0] t i5stall case=h2-via-https rep=6 tag=stall26 step=1 ms=54.1 => ok status=200 version=http/2 headers="x-origin: o-h2#52 | content-length: 50 | date: Tue, 03 Nov 2026 02:13:10 GMT" body="origin o-h2#52 stream 1 GET /x?tag=stall26 body=0\n" timings=((name-lookup . 16) (connect . 70) (tls-handshake . 45444) (first-byte . 46987) (total . 47008))
+[floor-7.85.0] s stall26 conn tp-good#51 open peer=43352
+[floor-7.85.0] s stall26 tls tp-good#51 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall26 req tp-good#51 #1 via=direct "CONNECT 127.0.0.1:43661 HTTP/1.1\r\nHost: 127.0.0.1:43661\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall26 conn o-h2#52 open peer=57376
+[floor-7.85.0] s stall26 tunnel tp-good#51 open to=o-h2 local=57376
+[floor-7.85.0] s stall26 answer tp-good#51 #1 200 Connection established
+[floor-7.85.0] s stall26 tunnel tp-good#51 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x035PE:A\x17\xda\x8aQ\xba\xa0N?\xa1Y\xf8(\xc1\xb8\xcb7\x91\xf4\xbe\xb6j\xbf\xa9\xae]j\xdc #\xeb\x1dO\x95\xc2\xccK\xa7Z\xab\xfb\xde\xc4|\xe4\x05\xa8:V"
+[floor-7.85.0] s stall26 tls o-h2#52 handshake alpn=h2 sni=-
+[floor-7.85.0] s stall26 req o-h2#52 stream=1 #1 via=tp-good#51/tunnel ":method: GET\r\n:path: /x?tag=stall26\r\n:scheme: https\r\n:authority: 127.0.0.1:43661\r\naccept: */*\r\n"
+[floor-7.85.0] s stall26 answer o-h2#52 #1 200 stream=1 body=50
+[floor-7.85.0] s stall26 conn tp-good#51 close in=935 out=1677
+[floor-7.85.0] s stall26 conn o-h2#52 close
+[floor-7.85.0] s stall26 tunnel tp-good#51 closed up=846 down=1616
+[floor-7.85.0] s stall26 requests tp-good=1 o-h2=1
+[floor-7.85.0] t i5stall case=h2-via-https rep=7 tag=stall27 step=1 ms=54.1 => ok status=200 version=http/2 headers="x-origin: o-h2#54 | content-length: 50 | date: Tue, 03 Nov 2026 02:13:10 GMT" body="origin o-h2#54 stream 1 GET /x?tag=stall27 body=0\n" timings=((name-lookup . 17) (connect . 73) (tls-handshake . 45306) (first-byte . 46535) (total . 46555))
+[floor-7.85.0] s stall27 conn tp-good#53 open peer=43364
+[floor-7.85.0] s stall27 tls tp-good#53 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall27 req tp-good#53 #1 via=direct "CONNECT 127.0.0.1:43661 HTTP/1.1\r\nHost: 127.0.0.1:43661\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall27 conn o-h2#54 open peer=57392
+[floor-7.85.0] s stall27 tunnel tp-good#53 open to=o-h2 local=57392
+[floor-7.85.0] s stall27 answer tp-good#53 #1 200 Connection established
+[floor-7.85.0] s stall27 tunnel tp-good#53 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\x10\xd1\xc3\x80\x10\x05!\xf2\xb8\xddJ\xad\xf4\x96\x0e2\xeb\x9c\xf8\xf4\xb7\x9b\x02ST\x0fq\xd4\xa0\"\xb8& \x99\xd4I\xb5\x06h}T\"\xd6\xc3\x81}\xc1\xa6@jcJ\xa6"
+[floor-7.85.0] s stall27 tls o-h2#54 handshake alpn=h2 sni=-
+[floor-7.85.0] s stall27 req o-h2#54 stream=1 #1 via=tp-good#53/tunnel ":method: GET\r\n:path: /x?tag=stall27\r\n:scheme: https\r\n:authority: 127.0.0.1:43661\r\naccept: */*\r\n"
+[floor-7.85.0] s stall27 answer o-h2#54 #1 200 stream=1 body=50
+[floor-7.85.0] s stall27 conn tp-good#53 close in=935 out=1677
+[floor-7.85.0] s stall27 conn o-h2#54 close
+[floor-7.85.0] s stall27 tunnel tp-good#53 closed up=846 down=1616
+[floor-7.85.0] s stall27 requests tp-good=1 o-h2=1
+[floor-7.85.0] t i5stall case=h2-via-https rep=8 tag=stall28 step=1 ms=54.1 => ok status=200 version=http/2 headers="x-origin: o-h2#56 | content-length: 50 | date: Tue, 03 Nov 2026 02:13:10 GMT" body="origin o-h2#56 stream 1 GET /x?tag=stall28 body=0\n" timings=((name-lookup . 17) (connect . 78) (tls-handshake . 45204) (first-byte . 46540) (total . 46560))
+[floor-7.85.0] s stall28 conn tp-good#55 open peer=43370
+[floor-7.85.0] s stall28 tls tp-good#55 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall28 req tp-good#55 #1 via=direct "CONNECT 127.0.0.1:43661 HTTP/1.1\r\nHost: 127.0.0.1:43661\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall28 conn o-h2#56 open peer=57408
+[floor-7.85.0] s stall28 tunnel tp-good#55 open to=o-h2 local=57408
+[floor-7.85.0] s stall28 answer tp-good#55 #1 200 Connection established
+[floor-7.85.0] s stall28 tunnel tp-good#55 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\x0e\xa6'\x7f\x87\xd2s\x18\xeb\x05\xc2\x1a6\xcd\xa9\x15~5\x1dr\xf9^\x86W\xe1H@\x7f\xf0\x1f\xea\xf8 l\x08\x12/p\x9c\x89N\xb0\x1a\xe8\xd7\x14*\xf6\xf8\xcf\xb4.\xa4"
+[floor-7.85.0] s stall28 tls o-h2#56 handshake alpn=h2 sni=-
+[floor-7.85.0] s stall28 req o-h2#56 stream=1 #1 via=tp-good#55/tunnel ":method: GET\r\n:path: /x?tag=stall28\r\n:scheme: https\r\n:authority: 127.0.0.1:43661\r\naccept: */*\r\n"
+[floor-7.85.0] s stall28 answer o-h2#56 #1 200 stream=1 body=50
+[floor-7.85.0] s stall28 conn tp-good#55 close in=935 out=1676
+[floor-7.85.0] s stall28 conn o-h2#56 close
+[floor-7.85.0] s stall28 tunnel tp-good#55 closed up=846 down=1615
+[floor-7.85.0] s stall28 requests tp-good=1 o-h2=1
+[floor-7.85.0] t i5stall case=h2-via-https rep=9 tag=stall29 step=1 ms=10005.9 => fail reason=perform-failed code=28 classes=(timeout) sent=154 option=#f strerror="Timeout was reached" errbuf="Operation timed out after 10004 milliseconds with 0 bytes received"
+[floor-7.85.0] s stall29 conn tp-good#57 open peer=43380
+[floor-7.85.0] s stall29 tls tp-good#57 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall29 req tp-good#57 #1 via=direct "CONNECT 127.0.0.1:43661 HTTP/1.1\r\nHost: 127.0.0.1:43661\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall29 conn o-h2#58 open peer=57416
+[floor-7.85.0] s stall29 tunnel tp-good#57 open to=o-h2 local=57416
+[floor-7.85.0] s stall29 answer tp-good#57 #1 200 Connection established
+[floor-7.85.0] s stall29 tunnel tp-good#57 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\x0b\xcc\xc3\xf3n\x86\xfd\x16\xd49'\x83\xdb\xa9f\x0e\xe6z\xcd\xafP\x1a\xba\nJ\xcb\x8a\xb0\xc5\x1bhI %\xa9f\x8c+\x03\xc9\xd3\x0c\x98\x19'\xb0\xaf&\x02(\x1c\xa4^"
+[floor-7.85.0] s stall29 tls o-h2#58 handshake alpn=h2 sni=-
+[floor-7.85.0] s stall29 req o-h2#58 stream=1 #1 via=tp-good#57/tunnel ":method: GET\r\n:path: /x?tag=stall29\r\n:scheme: https\r\n:authority: 127.0.0.1:43661\r\naccept: */*\r\n"
+[floor-7.85.0] s stall29 answer o-h2#58 #1 200 stream=1 body=50
+[floor-7.85.0] s stall29 conn tp-good#57 close in=970 out=1678
+[floor-7.85.0] s stall29 conn o-h2#58 close
+[floor-7.85.0] s stall29 tunnel tp-good#57 closed up=881 down=1617
+[floor-7.85.0] s stall29 requests tp-good=1 o-h2=1
+[floor-7.85.0] t i5stall case=h2-via-https rep=10 tag=stall30 step=1 ms=54.1 => ok status=200 version=http/2 headers="x-origin: o-h2#60 | content-length: 50 | date: Tue, 03 Nov 2026 02:13:20 GMT" body="origin o-h2#60 stream 1 GET /x?tag=stall30 body=0\n" timings=((name-lookup . 17) (connect . 81) (tls-handshake . 46567) (first-byte . 47787) (total . 47805))
+[floor-7.85.0] s stall30 conn tp-good#59 open peer=47316
+[floor-7.85.0] s stall30 tls tp-good#59 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall30 req tp-good#59 #1 via=direct "CONNECT 127.0.0.1:43661 HTTP/1.1\r\nHost: 127.0.0.1:43661\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall30 conn o-h2#60 open peer=42404
+[floor-7.85.0] s stall30 tunnel tp-good#59 open to=o-h2 local=42404
+[floor-7.85.0] s stall30 answer tp-good#59 #1 200 Connection established
+[floor-7.85.0] s stall30 tunnel tp-good#59 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03|\xe7\x10\x8e\x1a\xaa\xcf\x99Y(Q}\x8a\xd3H\x09(\x1f\xe3x\x87\xe6^\xbd\x14{\xb7\x85%\xa7km \xf5D\x97\xbbz<\xbf\xe7\x97\x1aZs\xb0\xec\xf4\xde\x07.G\x99"
+[floor-7.85.0] s stall30 tls o-h2#60 handshake alpn=h2 sni=-
+[floor-7.85.0] s stall30 req o-h2#60 stream=1 #1 via=tp-good#59/tunnel ":method: GET\r\n:path: /x?tag=stall30\r\n:scheme: https\r\n:authority: 127.0.0.1:43661\r\naccept: */*\r\n"
+[floor-7.85.0] s stall30 answer o-h2#60 #1 200 stream=1 body=50
+[floor-7.85.0] s stall30 conn tp-good#59 close in=935 out=1677
+[floor-7.85.0] s stall30 conn o-h2#60 close
+[floor-7.85.0] s stall30 tunnel tp-good#59 closed up=846 down=1616
+[floor-7.85.0] s stall30 requests tp-good=1 o-h2=1
+[floor-7.85.0] t i5stall case=https-via-http rep=1 tag=stall31 step=1 ms=7.1 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#62 | Content-Length: 42" body="origin o-tls#62 GET /x?tag=stall31 body=0\n" timings=((name-lookup . 9) (connect . 42) (tls-handshake . 3678) (first-byte . 4125) (total . 4133))
+[floor-7.85.0] s stall31 conn p-open#61 open peer=38520
+[floor-7.85.0] s stall31 req p-open#61 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall31 conn o-tls#62 open peer=52730
+[floor-7.85.0] s stall31 tunnel p-open#61 open to=o-tls local=52730
+[floor-7.85.0] s stall31 answer p-open#61 #1 200 Connection established
+[floor-7.85.0] s stall31 tunnel p-open#61 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\x0fh$-\xd60\xd1\x18\xc2\xaa/G\xa0\x8e\xdb\xf0\xa4\xdf\xb00%\x0f8\xb1A\xa4v\xdd\xbe\xbc\xdd\xe9 \xe5w\x87\x09l\xf9\xd9\x04\xbeU\x0b\x91\"FG\x13\x93\xb4.:"
+[floor-7.85.0] s stall31 tls o-tls#62 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall31 req o-tls#62 #1 via=p-open#61/tunnel "GET /x?tag=stall31 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall31 answer o-tls#62 #1 200 [X-Origin: o-tls#62] body=42
+[floor-7.85.0] s stall31 conn o-tls#62 close in=67 out=101
+[floor-7.85.0] s stall31 conn p-open#61 close in=799 out=1544
+[floor-7.85.0] s stall31 tunnel p-open#61 closed up=710 down=1484
+[floor-7.85.0] s stall31 requests p-open=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-http rep=2 tag=stall32 step=1 ms=3.9 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#64 | Content-Length: 42" body="origin o-tls#64 GET /x?tag=stall32 body=0\n" timings=((name-lookup . 8) (connect . 36) (tls-handshake . 2191) (first-byte . 2424) (total . 2431))
+[floor-7.85.0] s stall32 conn p-open#63 open peer=38536
+[floor-7.85.0] s stall32 req p-open#63 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall32 conn o-tls#64 open peer=52732
+[floor-7.85.0] s stall32 tunnel p-open#63 open to=o-tls local=52732
+[floor-7.85.0] s stall32 answer p-open#63 #1 200 Connection established
+[floor-7.85.0] s stall32 tunnel p-open#63 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\x9b \xef\xd58\x9f\x80\xd0\x93\x15Mh4\xc8\xc4e\xd8\xe1\xb3)\xb8uc\x8a\x94\x8e\xd91~\xc4\xf6= (\xd5\xfd\x9b\xd7\x8eR\xfd\x99\xc4\xe3\x17_^\xb5\x11\x98\x01\x02\xfc"
+[floor-7.85.0] s stall32 tls o-tls#64 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall32 req o-tls#64 #1 via=p-open#63/tunnel "GET /x?tag=stall32 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall32 answer o-tls#64 #1 200 [X-Origin: o-tls#64] body=42
+[floor-7.85.0] s stall32 conn o-tls#64 close in=67 out=101
+[floor-7.85.0] s stall32 conn p-open#63 close in=799 out=1545
+[floor-7.85.0] s stall32 tunnel p-open#63 closed up=710 down=1485
+[floor-7.85.0] s stall32 requests p-open=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-http rep=3 tag=stall33 step=1 ms=3.7 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#66 | Content-Length: 42" body="origin o-tls#66 GET /x?tag=stall33 body=0\n" timings=((name-lookup . 9) (connect . 35) (tls-handshake . 2076) (first-byte . 2314) (total . 2321))
+[floor-7.85.0] s stall33 conn p-open#65 open peer=38550
+[floor-7.85.0] s stall33 req p-open#65 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall33 conn o-tls#66 open peer=52734
+[floor-7.85.0] s stall33 tunnel p-open#65 open to=o-tls local=52734
+[floor-7.85.0] s stall33 answer p-open#65 #1 200 Connection established
+[floor-7.85.0] s stall33 tunnel p-open#65 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\xdf\xe8\xd0'\x02HsJ\x8e,\xec\xce\x96S\x85\x93\xf7\xd3ij,g\xdd`\x06\xa1\xedE\xf0\xd6t\xa2 \xb8\xe62\xcex\x80\x01\x92\xf46@]ck\xc7\xae\xe7\xe6wo"
+[floor-7.85.0] s stall33 tls o-tls#66 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall33 req o-tls#66 #1 via=p-open#65/tunnel "GET /x?tag=stall33 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall33 answer o-tls#66 #1 200 [X-Origin: o-tls#66] body=42
+[floor-7.85.0] s stall33 conn o-tls#66 close in=67 out=101
+[floor-7.85.0] s stall33 conn p-open#65 close in=799 out=1543
+[floor-7.85.0] s stall33 tunnel p-open#65 closed up=710 down=1483
+[floor-7.85.0] s stall33 requests p-open=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-http rep=4 tag=stall34 step=1 ms=43.8 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#68 | Content-Length: 42" body="origin o-tls#68 GET /x?tag=stall34 body=0\n" timings=((name-lookup . 8) (connect . 34) (tls-handshake . 2065) (first-byte . 42997) (total . 43024))
+[floor-7.85.0] s stall34 conn p-open#67 open peer=38560
+[floor-7.85.0] s stall34 req p-open#67 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall34 conn o-tls#68 open peer=52746
+[floor-7.85.0] s stall34 tunnel p-open#67 open to=o-tls local=52746
+[floor-7.85.0] s stall34 answer p-open#67 #1 200 Connection established
+[floor-7.85.0] s stall34 tunnel p-open#67 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\xc6\xa3\xf7\xce\x03(\xd3\x07M\x93\x98P{5e\xb8\x80\xe9\xe3l\x05E\x0e{\x1a\x9fKo\x94\x1a|\xd5 {\x90\xa3\x96\xe6\x9e\x99g=\x9b\xc1\xbd\xb1\x90\x88\xe0\xd8\xa4\x8c\xcb"
+[floor-7.85.0] s stall34 tls o-tls#68 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall34 req o-tls#68 #1 via=p-open#67/tunnel "GET /x?tag=stall34 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall34 answer o-tls#68 #1 200 [X-Origin: o-tls#68] body=42
+[floor-7.85.0] s stall34 conn o-tls#68 close in=67 out=101
+[floor-7.85.0] s stall34 conn p-open#67 close in=799 out=1544
+[floor-7.85.0] s stall34 tunnel p-open#67 closed up=710 down=1484
+[floor-7.85.0] s stall34 requests p-open=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-http rep=5 tag=stall35 step=1 ms=54.1 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#70 | Content-Length: 42" body="origin o-tls#70 GET /x?tag=stall35 body=0\n" timings=((name-lookup . 17) (connect . 83) (tls-handshake . 4038) (first-byte . 45145) (total . 45163))
+[floor-7.85.0] s stall35 conn p-open#69 open peer=38562
+[floor-7.85.0] s stall35 req p-open#69 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall35 conn o-tls#70 open peer=52748
+[floor-7.85.0] s stall35 tunnel p-open#69 open to=o-tls local=52748
+[floor-7.85.0] s stall35 answer p-open#69 #1 200 Connection established
+[floor-7.85.0] s stall35 tunnel p-open#69 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\xe9\x96\xb7T/\xa4\xe5d#\xd3\xd3\x95\x92\xeb\xa9\xa78\xe3\x95|\xa5\x89\x8cT\x7f\x8c\xea\x06d\x9cr\xbb \x91\xa9c\xec\xe3=\xab\x0f;\\\xeaH\xa7\xab{\xe1\xa61B>"
+[floor-7.85.0] s stall35 tls o-tls#70 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall35 req o-tls#70 #1 via=p-open#69/tunnel "GET /x?tag=stall35 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall35 answer o-tls#70 #1 200 [X-Origin: o-tls#70] body=42
+[floor-7.85.0] s stall35 conn o-tls#70 close in=67 out=101
+[floor-7.85.0] s stall35 conn p-open#69 close in=799 out=1543
+[floor-7.85.0] s stall35 tunnel p-open#69 closed up=710 down=1483
+[floor-7.85.0] s stall35 requests p-open=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-http rep=6 tag=stall36 step=1 ms=53.9 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#72 | Content-Length: 42" body="origin o-tls#72 GET /x?tag=stall36 body=0\n" timings=((name-lookup . 17) (connect . 75) (tls-handshake . 4180) (first-byte . 45140) (total . 45160))
+[floor-7.85.0] s stall36 conn p-open#71 open peer=38570
+[floor-7.85.0] s stall36 req p-open#71 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall36 conn o-tls#72 open peer=52750
+[floor-7.85.0] s stall36 tunnel p-open#71 open to=o-tls local=52750
+[floor-7.85.0] s stall36 answer p-open#71 #1 200 Connection established
+[floor-7.85.0] s stall36 tunnel p-open#71 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\x8c\xe8b\xb3\x9f\xde\xc8\xa0]\xe1\x06\x1ew\xec\xdajD[\xe5\n\xfex\xa53\x12a\xa5\xdfM/\xe0+ \xc6\xb5&,\x1c\x88\x04\xbd\x96\xb5z\xa3&\x8f\xd8\x92.\xec\xd8`"
+[floor-7.85.0] s stall36 tls o-tls#72 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall36 req o-tls#72 #1 via=p-open#71/tunnel "GET /x?tag=stall36 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall36 answer o-tls#72 #1 200 [X-Origin: o-tls#72] body=42
+[floor-7.85.0] s stall36 conn o-tls#72 close in=67 out=101
+[floor-7.85.0] s stall36 conn p-open#71 close in=799 out=1543
+[floor-7.85.0] s stall36 tunnel p-open#71 closed up=710 down=1483
+[floor-7.85.0] s stall36 requests p-open=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-http rep=7 tag=stall37 step=1 ms=54.6 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#74 | Content-Length: 42" body="origin o-tls#74 GET /x?tag=stall37 body=0\n" timings=((name-lookup . 34) (connect . 152) (tls-handshake . 6751) (first-byte . 47753) (total . 47771))
+[floor-7.85.0] s stall37 conn p-open#73 open peer=38580
+[floor-7.85.0] s stall37 req p-open#73 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall37 conn o-tls#74 open peer=52754
+[floor-7.85.0] s stall37 tunnel p-open#73 open to=o-tls local=52754
+[floor-7.85.0] s stall37 answer p-open#73 #1 200 Connection established
+[floor-7.85.0] s stall37 tunnel p-open#73 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\x8e\xf0jz\x8e\xf0\x01JN\xfa\x88Z\x15E\xd7\xc2e\xab\x8f\xdb\xe1\xa9\x01\x8f\xfd\xda&n\x83n\xf6\xbb \xde\xd6\\\xb2\xf8\x03Bf\xe9u\xef\xa0\xe6U\xec\x86F\xa1\x94\xf5"
+[floor-7.85.0] s stall37 tls o-tls#74 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall37 req o-tls#74 #1 via=p-open#73/tunnel "GET /x?tag=stall37 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall37 answer o-tls#74 #1 200 [X-Origin: o-tls#74] body=42
+[floor-7.85.0] s stall37 conn o-tls#74 close in=67 out=101
+[floor-7.85.0] s stall37 conn p-open#73 close in=799 out=1543
+[floor-7.85.0] s stall37 tunnel p-open#73 closed up=710 down=1483
+[floor-7.85.0] s stall37 requests p-open=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-http rep=8 tag=stall38 step=1 ms=56.2 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#76 | Content-Length: 42" body="origin o-tls#76 GET /x?tag=stall38 body=0\n" timings=((name-lookup . 59) (connect . 160) (tls-handshake . 5412) (first-byte . 46141) (total . 46161))
+[floor-7.85.0] s stall38 conn p-open#75 open peer=38596
+[floor-7.85.0] s stall38 req p-open#75 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall38 conn o-tls#76 open peer=52770
+[floor-7.85.0] s stall38 tunnel p-open#75 open to=o-tls local=52770
+[floor-7.85.0] s stall38 answer p-open#75 #1 200 Connection established
+[floor-7.85.0] s stall38 tunnel p-open#75 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\x8186\x9f\xfe\x8f?^\xc4\xbc\x0e&\x13A3\xad\xfc\x86\xf7\x83\x10H\xd4\xc4\x1f\xde\x1c\xa9\xb9\xdd\xe1\x11 \x08\xa4\xed\xaf<\xfe\x95k\xee\xad\xfe\xacS\xea\xbb\xf7a\xfe49"
+[floor-7.85.0] s stall38 tls o-tls#76 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall38 req o-tls#76 #1 via=p-open#75/tunnel "GET /x?tag=stall38 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall38 answer o-tls#76 #1 200 [X-Origin: o-tls#76] body=42
+[floor-7.85.0] s stall38 conn o-tls#76 close in=67 out=101
+[floor-7.85.0] s stall38 conn p-open#75 close in=799 out=1543
+[floor-7.85.0] s stall38 tunnel p-open#75 closed up=710 down=1483
+[floor-7.85.0] s stall38 requests p-open=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-http rep=9 tag=stall39 step=1 ms=54.1 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#78 | Content-Length: 42" body="origin o-tls#78 GET /x?tag=stall39 body=0\n" timings=((name-lookup . 17) (connect . 73) (tls-handshake . 4375) (first-byte . 45341) (total . 45372))
+[floor-7.85.0] s stall39 conn p-open#77 open peer=38612
+[floor-7.85.0] s stall39 req p-open#77 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall39 conn o-tls#78 open peer=52780
+[floor-7.85.0] s stall39 tunnel p-open#77 open to=o-tls local=52780
+[floor-7.85.0] s stall39 answer p-open#77 #1 200 Connection established
+[floor-7.85.0] s stall39 tunnel p-open#77 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\x0b\x8b\xeb<\x95\x8cJ4\x9a\x94\x8dUZ\x89\xfc\xd4\x815i\x8d\xee\xbe\x83\x7f\xc4}\x8eI\n?\xf1\xc0 \xca\xda\x13\n\xaa\x99G\x95\x7f\xb0o\x9d\xc8\x9a\xf2\xdaP\xd6\x95\xdc"
+[floor-7.85.0] s stall39 tls o-tls#78 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall39 req o-tls#78 #1 via=p-open#77/tunnel "GET /x?tag=stall39 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall39 answer o-tls#78 #1 200 [X-Origin: o-tls#78] body=42
+[floor-7.85.0] s stall39 conn o-tls#78 close in=67 out=101
+[floor-7.85.0] s stall39 conn p-open#77 close in=799 out=1544
+[floor-7.85.0] s stall39 tunnel p-open#77 closed up=710 down=1484
+[floor-7.85.0] s stall39 requests p-open=1 o-tls=1
+[floor-7.85.0] t i5stall case=https-via-http rep=10 tag=stall40 step=1 ms=54.1 => ok status=200 version=http/1.1 headers="X-Origin: o-tls#80 | Content-Length: 42" body="origin o-tls#80 GET /x?tag=stall40 body=0\n" timings=((name-lookup . 17) (connect . 74) (tls-handshake . 4414) (first-byte . 45123) (total . 45140))
+[floor-7.85.0] s stall40 conn p-open#79 open peer=38626
+[floor-7.85.0] s stall40 req p-open#79 #1 via=direct "CONNECT 127.0.0.1:36699 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nProxy-Connection: Keep-Alive\r\n\r\n"
+[floor-7.85.0] s stall40 conn o-tls#80 open peer=52792
+[floor-7.85.0] s stall40 tunnel p-open#79 open to=o-tls local=52792
+[floor-7.85.0] s stall40 answer p-open#79 #1 200 Connection established
+[floor-7.85.0] s stall40 tunnel p-open#79 first-up "\x16\x03\x01\x02\x00\x01\x00\x01\xfc\x03\x03\xa3\xc0\x97\x083\\\xf7\xb2\"\x94\xe6\xa1\xf1y\xee\xc0\xc1\xe6FH\xe5\xf9\x9cc\x8cg\xe2\xe9\x9a\xb9\x8a\xc9 \x1eV\xc9\x99A\xc6\xf9\xa4Z.\xa0\xbc\x01`\x092\x97]v\x12"
+[floor-7.85.0] s stall40 tls o-tls#80 handshake alpn=http/1.1 sni=-
+[floor-7.85.0] s stall40 req o-tls#80 #1 via=p-open#79/tunnel "GET /x?tag=stall40 HTTP/1.1\r\nHost: 127.0.0.1:36699\r\nAccept: */*\r\n\r\n"
+[floor-7.85.0] s stall40 answer o-tls#80 #1 200 [X-Origin: o-tls#80] body=42
+[floor-7.85.0] s stall40 conn o-tls#80 close in=67 out=101
+[floor-7.85.0] s stall40 conn p-open#79 close in=799 out=1544
+[floor-7.85.0] s stall40 tunnel p-open#79 closed up=710 down=1484
+[floor-7.85.0] s stall40 requests p-open=1 o-tls=1
+[floor-7.85.0] native ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+[floor-7.85.0] part stall done
+[floor-7.85.0] part stall env none exited 0 after about 13 s (124 is timeout's, 9 Valgrind's)

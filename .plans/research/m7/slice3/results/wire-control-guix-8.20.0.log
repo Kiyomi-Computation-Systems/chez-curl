@@ -1,0 +1,14 @@
+320c320
+<     c.log(`req ${c.id} #${c.n} via=${c.via} "${esc(headBuf)}"`);
+---
+>     c.log(`req ${c.id} #${c.n} via=${c.via} "${esc(headBuf.subarray(0, headBuf.length - 1))}"`);
+-- mutated:
+[guix-8.20.0] part wire env none exited 0 after about 0 s (124 is timeout's, 9 Valgrind's)
+wire.mjs exit=1 (1 expected)
+DIFFERS lines 18, same lines 0
+wire /tmp/wirecontrol.1mTXKX/mutated.log: 6 cases, 0 heads the same, 18 differ, 0 counts differ
+-- as it is:
+[guix-8.20.0] part wire env none exited 0 after about 0 s (124 is timeout's, 9 Valgrind's)
+wire.mjs exit=0 (0 expected)
+DIFFERS lines 0, same lines 9
+wire /tmp/wirecontrol.1mTXKX/plain.log: 6 cases, 9 heads the same, 0 differ, 0 counts differ

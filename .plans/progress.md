@@ -9,12 +9,15 @@ close-out under **Close-outs**, newest first.
 - **M7, HTTP/2, cookies, auth and proxies:** in progress. The
   [M7 plan](2026-11-02-m7-plan.md) merged as PR #41 (`c238fe7`), CI passing all eight jobs on
   it. Four slices: the HTTP version, auth, proxies and the cookie jar. Slice 1, the HTTP version,
-  merged as PR #42 (`5fe3150`); its close-out is below. Slice 2, auth (the plan, §5), is built
-  and reviewed on `feat/m7-slice-2`, not yet merged: measured first through the engine
-  ([research](research/m7/slice2/)), then four answers by the maintainer, each the recommended
-  option (ADR-0036, amended): credentials are UTF-8, refuse every control byte, and refuse
-  empty values, and every transfer pins `MAXREDIRS` at 30. The review made every record that
-  holds a request, a token or credentials opaque, since a printed token showed its password.
+  merged as PR #42 (`5fe3150`), and slice 2, server credentials, as PR #43 (`fccfea5`); their
+  close-outs are below. Slice 3, proxies (the plan, §6.1 and §6.2), is built and reviewed on
+  `feat/m7-slice-3`, not yet merged: measured first through the engine
+  ([research](research/m7/slice3/)), then four answers by the maintainer, each the recommended
+  option (ADR-0037, decisions 8 to 11): before 8.19.0 no tunnel is shared and an engine stops
+  multiplexing once an authenticated proxy is used (CVE-2026-3784); a refused `CONNECT` is
+  retried by its status; 7.85.0 refuses TLS inside TLS unless asked for HTTP/1.1. And a fifth:
+  no printed text carries a caller's secret, accessors and URL refusals among them (ADR-0036 and
+  ADR-0008, amended).
   - **Decided by the maintainer, 2026-11-02,** each the recommended option, from two read-only
     surveys and four probes on the five Linux libcurls
     ([`research/m7/`](research/m7/)):
@@ -212,6 +215,74 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-11-02 — M7 slice 2: server credentials (PR #43, `fccfea5`)
+
+- **Measured first** (the plan, §5.1; [`research/m7/slice2/`](research/m7/slice2/)), by an Opus
+  agent, through the engine on a prototype, on the five Linux lanes, two runs each, then under
+  the memory gate's Valgrind on Ubuntu's 8.5.0. Among its answers:
+  - CR LF in a Bearer token wrote a header of its own on all five;
+  - 8.23.0 sends nothing for empty credentials, and percent-encodes a Digest user name's bytes
+    outside 0x20 to 0x7E while hashing them raw;
+  - a Digest `post` to a server that never challenges is sent twice;
+  - libcurl counts every auth round against `MAXREDIRS`, and 7.85.0, whose default is -1, sent
+    90,712 requests in 5 s to a server answering 417 for ever.
+
+  I reran its Guix lane, which matched, and a change I planted in a copy was flagged.
+- **Decided by the maintainer, 2026-11-02,** each the recommended option (ADR-0036, amended):
+  credentials are UTF-8; every control byte is refused, and `:` in a Basic user; empty
+  credentials are refused; every transfer pins `MAXREDIRS` at 30, owned.
+- **Built** (the plan, §5.2) by an Opus builder:
+  - the `credentials` key at both levels, dropped across origins, carried by every hop;
+  - `credentials-settings` and the five reasons;
+  - `HTTPAUTH`, `XOAUTH2_BEARER` and `AWS_SIGV4` owned, `MAXREDIRS` pinned;
+  - the origin's `/auth` on every face, `/raw/auth417`, and its Digest arithmetic held twice, by
+    `--selftest` in Node and by `tests/auth-testing.sls` in Scheme;
+  - test-auth, and README.org's "Giving credentials".
+
+  It found that libcurl resends after a 417 only on a connection it keeps. I reproduced it with
+  curl's own tool on 8.20.0, then recorded it as a trap: kept, 51 requests and 47; closed, one
+  request and its 417 ([`c417-guix-8.20.0.log`](research/m7/slice2/verify/results/c417-guix-8.20.0.log)).
+- **Reviewed** (Opus, read-only): two majors, each reproduced before its fix
+  ([`review/`](research/m7/slice2/review/)):
+  - a token handed to an assertion printed its request's password, and another live request's
+    Bearer token through the engine's table. Every record that holds a request, a plan, a token,
+    an engine or credentials is now opaque; the probe printed `YES` before, `no` after;
+  - test-auth passed a scan that skipped a value's first byte, and an `Authorization` check that
+    read the first header alone: AGENTS.md's every-position trap, back from M2.
+- **Mutants I watched fail,** on the final tree: the scan from position 1; the `Authorization`
+  check on the first header alone; a token record left transparent.
+- **Checks,** on the final tree: in the container, `make test` 37 of 37, and test-auth under the
+  memory gate; the changed suites on the floor, openssl, gnutls and current Docker lanes, 13 of
+  13 each; the leak probe, `no` on every line.
+- **CI:** at `30c053a`, seven jobs passed, and the floor failed in slice 1's test-version: one
+  connection where two were expected for a batch to `h2`
+  ([log](research/m7/slice2/verify/results/ci-floor-30c053a.log)). It passed 5 of 5 on the floor
+  lane here, and 6 of 6 at half a CPU; its cause is not known, and it stays open. At `cf3a567`
+  the memory job failed in M6's test-upload, a raw kept 413 on 8.5.0 ending `own` where its row
+  said `waits` ([log](research/m7/slice2/verify/results/ci-memory-cf3a567.log)). **Decided by
+  the maintainer, the recommended option:** fixed on the PR, the cell held to `either 413` as its
+  HTTP/2 neighbour is. At `bba3ca1` all eight jobs passed.
+- **The Mac ran it, 2026-11-02:** `make test` 36 of 37 at `30c053a`, test-auth printing three
+  missing 8.7.1 rows ([log](research/m7/slice2/results/mac-8.7.1-make-test.log)); a second
+  run printed the same three ([log](research/m7/slice2/results/mac-8.7.1-test-auth-2.log)); at
+  `cf3a567`, with them, test-auth passed, 66 of 66
+  ([log](research/m7/slice2/results/mac-8.7.1-test-auth-3.log)).
+- **Subagents,** every one Opus:
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | measurements | 817k | 65 min |
+  | `MAXREDIRS` addition | 33k | 5 min |
+  | builder | 901k | 109 min |
+  | adversarial review | 386k | 30 min |
+  | builder, fix round, resumed | 160k, the resume's line | 88 min |
+- **Learned:**
+  - both majors came from my brief: it held "never carry a secret" to refusals alone, and named
+    no test trap. A brief now names the traps that apply, and a safety rule's every exit;
+  - the PR opens once the Mac's rows are committed, so CI runs once (the maintainer, after this
+    PR's second full run);
+  - CI's runner found two timing races in older suites that never failed here.
 
 ### 2026-11-02 — M7 slice 1: the HTTP version (PR #42, `5fe3150`)
 

@@ -1,0 +1,8 @@
+curl-request-url on a string: secret printed: no
+  "Exception in curl-request-url: not a request with irritant (kind string)"
+curl-response-status on a string: secret printed: no
+  "Exception in curl-response-status: not a response with irritant (kind string)"
+submit of ftp://u:Pr0xyS3cr3t@h/: secret printed: no
+  "Exception in chez-curl: chez-curl fetches only http and https URLs with irritant url"
+submit of a URL with a space, http://u:Pr0xyS3cr3t@h /: secret printed: no
+  "Exception in chez-curl: Malformed input to a URL function with irritant url"

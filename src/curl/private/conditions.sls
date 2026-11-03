@@ -16,8 +16,10 @@
 ;;;                               on a token live (the M6 plan, section 3.3)
 ;;;   &curl-transfer-error        a transfer that failed: libcurl's code and
 ;;;                               texts, what the write callable recorded,
-;;;                               and the bytes of request sent (M2 plan,
-;;;                               sections 3.7 and 5.3), or one cancelled or
+;;;                               the bytes of request sent (M2 plan,
+;;;                               sections 3.7 and 5.3), and the status a
+;;;                               proxy refused its CONNECT with (ADR-0037,
+;;;                               amended 2026-11-03), or one cancelled or
 ;;;                               stopped (M3 plan, section 3.4); and under
 ;;;                               it, its classes (ADR-0022):
 ;;;     &curl-timeout             28
@@ -64,6 +66,7 @@
           curl-transfer-error-reason curl-transfer-error-code curl-transfer-error-option
           curl-transfer-error-strerror curl-transfer-error-error-buffer
           curl-transfer-error-recorded curl-transfer-error-request-size
+          curl-transfer-error-connect-code
           curl-transfer-error-reasons make-classed-transfer-error
           curl-code-classes curl-code-class
           &curl-timeout make-curl-timeout curl-timeout?
@@ -74,7 +77,9 @@
           &curl-too-large make-curl-too-large curl-too-large?
 
           &curl-engine-error make-curl-engine-error curl-engine-error?
-          curl-engine-error-reason curl-engine-error-condition curl-engine-error-reasons)
+          curl-engine-error-reason curl-engine-error-condition curl-engine-error-reasons
+
+          kind-of shown-value shown-key checked-accessor)
   (import (curl private require-threaded)
           (rnrs)
           (curl private libcurl-info)
@@ -84,6 +89,60 @@
   ;; curl-error? : Any -> Boolean
   (define-condition-type &curl-error &error
     make-curl-error curl-error?)
+
+  ;; --- a caller's value, as a refusal names it -------------------------------------
+
+  ;; kind-of : Any -> Symbol
+  ;; X's kind: string, list, number, boolean, char, symbol, bytevector,
+  ;; vector, procedure or other. Pure.
+  (define (kind-of x)
+    (cond ((string? x) 'string)
+          ((or (pair? x) (null? x)) 'list)
+          ((number? x) 'number)
+          ((boolean? x) 'boolean)
+          ((char? x) 'char)
+          ((symbol? x) 'symbol)
+          ((bytevector? x) 'bytevector)
+          ((vector? x) 'vector)
+          ((procedure? x) 'procedure)
+          (else 'other)))
+
+  ;; shown-atom? : Any -> Boolean
+  ;; Whether X is a symbol, a number, a boolean, a char or (): none holds a
+  ;; URL, a header, credentials or a body.
+  (define (shown-atom? x)
+    (or (symbol? x) (number? x) (boolean? x) (char? x) (null? x)))
+
+  ;; shown-value : Any -> Any
+  ;; X as a refusal or an assertion names a caller's value where another
+  ;; belongs: itself when it is shown-atom?, or a proper list of them, a
+  ;; policy's statuses or methods; else (kind K), K its kind-of, never the
+  ;; value: a string, or a list holding one, can be a URL, a header,
+  ;; credentials or a body. A proxy URL or a credentials list handed where
+  ;; a key or another value belongs was printed whole (M7 slice 3's
+  ;; review). Pure.
+  (define (shown-value x)
+    (if (or (shown-atom? x) (and (list? x) (for-all shown-atom? x)))
+        x
+        (list 'kind (kind-of x))))
+
+  ;; shown-key : Any -> Any
+  ;; X as a key's refusal names it: itself when it is a symbol, as a key is;
+  ;; else (kind K), K its kind-of, a number's among them. Pure.
+  (define (shown-key x)
+    (if (symbol? x) x (list 'kind (kind-of x))))
+
+  ;; checked-accessor : Symbol (Any -> Boolean) String (Any -> Any) -> (Any -> Any)
+  ;; ACCESSOR, a record's or a condition type's, for WHO: called on what
+  ;; PREDICATE holds; anything else an assertion violation from WHO, "not
+  ;; WHAT", naming it by shown-value, never the value. Chez's own check
+  ;; named what it refused, so (curl-request-url "http://u:PW@h/") printed
+  ;; the password (ADR-0036, amended 2026-11-03).
+  (define (checked-accessor who predicate what accessor)
+    (lambda (x)
+      (unless (predicate x)
+        (assertion-violation who (string-append "not " what) (shown-value x)))
+      (accessor x)))
 
   ;; --- &curl-library-unavailable ---------------------------------------------
 
@@ -119,12 +178,29 @@
   ;;               (ADR-0002, decision 4)
   (define-condition-type &curl-library-unavailable &curl-error
     unchecked-make-curl-library-unavailable curl-library-unavailable?
-    (reason curl-library-unavailable-reason)
-    (path curl-library-unavailable-path)
-    (source curl-library-unavailable-source)
-    (detail curl-library-unavailable-detail)
-    (candidates curl-library-unavailable-candidates)
-    (library curl-library-unavailable-library))
+    (reason unchecked-curl-library-unavailable-reason)
+    (path unchecked-curl-library-unavailable-path)
+    (source unchecked-curl-library-unavailable-source)
+    (detail unchecked-curl-library-unavailable-detail)
+    (candidates unchecked-curl-library-unavailable-candidates)
+    (library unchecked-curl-library-unavailable-library))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define curl-library-unavailable-reason
+    (checked-accessor 'curl-library-unavailable-reason curl-library-unavailable? "a &curl-library-unavailable" unchecked-curl-library-unavailable-reason))
+  (define curl-library-unavailable-path
+    (checked-accessor 'curl-library-unavailable-path curl-library-unavailable? "a &curl-library-unavailable" unchecked-curl-library-unavailable-path))
+  (define curl-library-unavailable-source
+    (checked-accessor 'curl-library-unavailable-source curl-library-unavailable? "a &curl-library-unavailable" unchecked-curl-library-unavailable-source))
+  (define curl-library-unavailable-detail
+    (checked-accessor 'curl-library-unavailable-detail curl-library-unavailable? "a &curl-library-unavailable" unchecked-curl-library-unavailable-detail))
+  (define curl-library-unavailable-candidates
+    (checked-accessor 'curl-library-unavailable-candidates curl-library-unavailable? "a &curl-library-unavailable" unchecked-curl-library-unavailable-candidates))
+  (define curl-library-unavailable-library
+    (checked-accessor 'curl-library-unavailable-library curl-library-unavailable? "a &curl-library-unavailable" unchecked-curl-library-unavailable-library))
 
   ;; make-curl-library-unavailable : Symbol (U String #f) (U Symbol #f) Any
   ;;                                 (Listof String) (U Libcurl-Info #f)
@@ -166,9 +242,20 @@
   ;; (ADR-0012).
   (define-condition-type &curl-wrong-thread &curl-error
     make-curl-wrong-thread curl-wrong-thread?
-    (who curl-wrong-thread-who)
-    (expected curl-wrong-thread-expected)
-    (actual curl-wrong-thread-actual))
+    (who unchecked-curl-wrong-thread-who)
+    (expected unchecked-curl-wrong-thread-expected)
+    (actual unchecked-curl-wrong-thread-actual))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define curl-wrong-thread-who
+    (checked-accessor 'curl-wrong-thread-who curl-wrong-thread? "a &curl-wrong-thread" unchecked-curl-wrong-thread-who))
+  (define curl-wrong-thread-expected
+    (checked-accessor 'curl-wrong-thread-expected curl-wrong-thread? "a &curl-wrong-thread" unchecked-curl-wrong-thread-expected))
+  (define curl-wrong-thread-actual
+    (checked-accessor 'curl-wrong-thread-actual curl-wrong-thread? "a &curl-wrong-thread" unchecked-curl-wrong-thread-actual))
 
   ;; --- &curl-embedded-nul ----------------------------------------------------
 
@@ -180,7 +267,14 @@
   ;; 3.3).
   (define-condition-type &curl-embedded-nul &curl-error
     make-curl-embedded-nul curl-embedded-nul?
-    (string curl-embedded-nul-string))
+    (string unchecked-curl-embedded-nul-string))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define curl-embedded-nul-string
+    (checked-accessor 'curl-embedded-nul-string curl-embedded-nul? "a &curl-embedded-nul" unchecked-curl-embedded-nul-string))
 
   ;; --- &curl-url-error ---------------------------------------------------------
 
@@ -207,7 +301,10 @@
   ;;            own refusals
   ;;   message  (U String #f): curl_url_strerror's text, or chez-curl's own
   ;;
-  ;; Tests assert the reason and the code, never the message.
+  ;; Tests assert the reason and the code, never the message. The input is
+  ;; this field's alone: a refusal's message and irritants name its field,
+  ;; url, reference, query or fragment, never the string, which can hold
+  ;; userinfo (ADR-0008, amended 2026-11-03; (curl private url)'s refuse).
   ;;
   ;; make-curl-url-error : Any Any Any Any -> &curl-url-error
   ;; curl-url-error? : Any -> Boolean
@@ -219,10 +316,23 @@
   ;; code a later libcurl answers must still reach the caller.
   (define-condition-type &curl-url-error &curl-error
     make-curl-url-error curl-url-error?
-    (input curl-url-error-input)
-    (reason curl-url-error-reason)
-    (code curl-url-error-code)
-    (message curl-url-error-message))
+    (input unchecked-curl-url-error-input)
+    (reason unchecked-curl-url-error-reason)
+    (code unchecked-curl-url-error-code)
+    (message unchecked-curl-url-error-message))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define curl-url-error-input
+    (checked-accessor 'curl-url-error-input curl-url-error? "a &curl-url-error" unchecked-curl-url-error-input))
+  (define curl-url-error-reason
+    (checked-accessor 'curl-url-error-reason curl-url-error? "a &curl-url-error" unchecked-curl-url-error-reason))
+  (define curl-url-error-code
+    (checked-accessor 'curl-url-error-code curl-url-error? "a &curl-url-error" unchecked-curl-url-error-code))
+  (define curl-url-error-message
+    (checked-accessor 'curl-url-error-message curl-url-error? "a &curl-url-error" unchecked-curl-url-error-message))
 
   ;; --- &curl-request-error -------------------------------------------------------
 
@@ -291,7 +401,7 @@
   ;;   stream-with-rounds
   ;;                 a request that streams its response, stream-buffer,
   ;;                 beside a second request inside its transfer: the
-  ;;                 private follow field, the hatch's PROXYAUTH, or an
+  ;;                 private follow field, or an
   ;;                 Expect header whose value holds
   ;;                 100-continue, in any ASCII case, refused whatever the
   ;;                 method: a request that sends a body is sent again on a
@@ -338,6 +448,39 @@
   ;;                 response: Digest's second request inside the transfer
   ;;                 would publish the probe's 401 head, and its body rides a
   ;;                 pooled connection (ADR-0036, decision 3)
+  ;;   prior-knowledge-through-proxy
+  ;;                 an http-version of http/2-prior-knowledge beside a proxy
+  ;;                 URL, refused at submit: libcurl ignores prior knowledge
+  ;;                 through a proxy that does not tunnel, and sends HTTP/1.1
+  ;;                 (ADR-0034, amended; the M7 plan, section 3.2)
+  ;;   proxy-url     a proxy URL libcurl's URL API cannot parse, one that
+  ;;                 names no scheme among them, or whose user or password
+  ;;                 holds a % not followed by two hex digits, refused at
+  ;;                 submit (ADR-0037, amended 2026-11-03)
+  ;;   proxy-scheme  a proxy URL whose scheme is neither http nor https, A to
+  ;;                 Z folded, judged by chez-curl alike on every libcurl
+  ;;   proxy-url-parts
+  ;;                 a proxy URL with a path but /, a query or a fragment
+  ;;   proxy-authorization-header
+  ;;                 a header named Proxy-Authorization, A to Z folded,
+  ;;                 whatever proxy the request names: inside a tunnel libcurl
+  ;;                 sends it to the origin; a proxy's credentials are its
+  ;;                 URL's userinfo (ADR-0037, decision 4)
+  ;;   proxy-tls-without-https-proxy
+  ;;                 a proxy-ca-file, or proxy-verify #f, beside any proxy but
+  ;;                 an https:// URL, refused at submit: the proxy's TLS
+  ;;                 settings are an https:// proxy's alone
+  ;;   proxy-tls-in-tls
+  ;;                 an https:// URL through an https:// proxy URL on a
+  ;;                 libcurl where TLS inside TLS stalls until its timeout:
+  ;;                 Ubuntu's 8.5.0 with GnuTLS, whatever the http-version,
+  ;;                 and 7.85.0 unless the request asks http/1.1 (ADR-0037,
+  ;;                 decisions 7 and 10)
+  ;;   https-proxy-unsupported
+  ;;                 an https:// proxy URL on a libcurl whose features lack
+  ;;                 CURL_VERSION_HTTPS_PROXY: libcurl would refuse it, and
+  ;;                 write the whole URL, its password with it, into its
+  ;;                 error buffer (M7 slice 3's review, read in source)
   ;;
   ;; A value is scanned left to right, and its first offending char decides;
   ;; only when none offends are its ends checked.
@@ -347,35 +490,63 @@
       unknown-key repeated-key missing-value body-not-allowed pkcs11-url environment-override
       keychain-fallback stream-with-rounds body-length-without-stream body-length-mismatch
       prior-knowledge-over-https credentials-bytes credentials-empty credentials-beside-userinfo
-      credentials-beside-authorization digest-with-stream))
+      credentials-beside-authorization digest-with-stream prior-knowledge-through-proxy
+      proxy-url proxy-scheme proxy-url-parts proxy-authorization-header
+      proxy-tls-without-https-proxy proxy-tls-in-tls https-proxy-unsupported))
 
   ;; The fields:
   ;;
   ;;   field   Symbol: the field refused, header-name, header-value,
-  ;;           user-agent, ca-file, or options, the hatch's; key for
-  ;;           unknown-key, repeated-key and missing-value; body for
+  ;;           user-agent, ca-file, proxy-ca-file, or options, the hatch's;
+  ;;           key for unknown-key, repeated-key and missing-value; body for
   ;;           body-not-allowed; stream-buffer for stream-with-rounds;
   ;;           body-length for body-length-without-stream and
   ;;           body-length-mismatch; http-version for
-  ;;           prior-knowledge-over-https; credentials for the five
-  ;;           credentials reasons
-  ;;   value   the string refused, whole, or the option's name; the key, as
-  ;;           given, for a key's refusal; the method, for body-not-allowed;
+  ;;           prior-knowledge-over-https and prior-knowledge-through-proxy;
+  ;;           credentials for the five credentials reasons; proxy for
+  ;;           proxy-url, proxy-scheme, proxy-url-parts, proxy-tls-in-tls and
+  ;;           https-proxy-unsupported, and for credentials-bytes and credentials-empty of a proxy
+  ;;           URL's userinfo; header-name for proxy-authorization-header;
+  ;;           proxy-ca-file or proxy-verify for
+  ;;           proxy-tls-without-https-proxy
+  ;;   value   the string refused, whole, or the option's name, but a header's
+  ;;           value, named by its header's name, as given; the key, as
+  ;;           given, for a key's refusal, but a key that is no symbol,
+  ;;           named by its kind, (kind K), shown-key's: a proxy URL or a
+  ;;           credentials list handed where a key belongs was printed whole
+  ;;           (M7 slice 3's review); the method, for body-not-allowed;
   ;;           the stream-buffer, for stream-with-rounds; the body-length,
   ;;           for body-length-without-stream and body-length-mismatch; the
-  ;;           http-version, for prior-knowledge-over-https; for
-  ;;           credentials-bytes and credentials-empty, (SCHEME PART), the
-  ;;           scheme, basic, digest or bearer, and the part refused, user,
-  ;;           password or token, user for an empty user and password; for
-  ;;           the other three, the scheme alone. No credentials string is
-  ;;           ever a value or an irritant: a refusal names a secret by its
-  ;;           part (the M7 plan, section 3.1)
+  ;;           http-version, for prior-knowledge-over-https and
+  ;;           prior-knowledge-through-proxy; for credentials-bytes and
+  ;;           credentials-empty, (SCHEME PART), the scheme, basic, digest or
+  ;;           bearer, and the part refused, user, password or token, user
+  ;;           for an empty user and password, or (proxy PART), user or
+  ;;           password, for a proxy URL's userinfo; for the other three
+  ;;           credentials reasons, the scheme alone; the symbol proxy for
+  ;;           proxy-url, proxy-scheme, proxy-url-parts, proxy-tls-in-tls and
+  ;;           https-proxy-unsupported, never the URL, which can hold a password; the header's name,
+  ;;           as given, for proxy-authorization-header, never its value;
+  ;;           the path, or #f, for proxy-tls-without-https-proxy. No
+  ;;           credentials string is ever a value or an irritant: a refusal
+  ;;           names a secret by its part (the M7 plan, section 3.1)
   ;;   reason  one of curl-request-error-reasons
   (define-condition-type &curl-request-error &curl-error
     unchecked-make-curl-request-error curl-request-error?
-    (field curl-request-error-field)
-    (value curl-request-error-value)
-    (reason curl-request-error-reason))
+    (field unchecked-curl-request-error-field)
+    (value unchecked-curl-request-error-value)
+    (reason unchecked-curl-request-error-reason))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define curl-request-error-field
+    (checked-accessor 'curl-request-error-field curl-request-error? "a &curl-request-error" unchecked-curl-request-error-field))
+  (define curl-request-error-value
+    (checked-accessor 'curl-request-error-value curl-request-error? "a &curl-request-error" unchecked-curl-request-error-value))
+  (define curl-request-error-reason
+    (checked-accessor 'curl-request-error-reason curl-request-error? "a &curl-request-error" unchecked-curl-request-error-reason))
 
   ;; make-curl-request-error : Symbol Any Symbol -> &curl-request-error
   ;; Refuses a REASON that is not one of curl-request-error-reasons with an
@@ -461,18 +632,51 @@
   ;;                 to tell whether a request was sent: a failure's timings
   ;;                 move with the version, and this does not (ADR-0022,
   ;;                 amended 2026-10-26)
+  ;;   connect-code  (U Positive-Integer #f): the status a proxy answered the
+  ;;                 transfer's CONNECT with, CURLINFO_HTTP_CONNECTCODE, when
+  ;;                 it is no 2xx: a proxy refused the tunnel, 403, 407, 502,
+  ;;                 503 or any other; #f when the transfer sent no CONNECT, a
+  ;;                 proxy ended it with no status, or the tunnel opened, and
+  ;;                 for a transfer refused while it was set up, cancelled or
+  ;;                 stopped. Such a failure's code moves with the version, 56
+  ;;                 on 7.85.0 and 8.5.0 and 7 on 8.20.0 and 8.23.0, and its
+  ;;                 status does not, so the high level's retry reads it
+  ;;                 (ADR-0037 and ADR-0026, amended 2026-11-03)
   ;;
-  ;; Tests assert the reason, the code, the option, the recorded object and
-  ;; the request size, and a text only where a version row pins it.
+  ;; Tests assert the reason, the code, the option, the recorded object, the
+  ;; request size and the CONNECT's status, and a text only where a version
+  ;; row pins it.
   (define-condition-type &curl-transfer-error &curl-error
     unchecked-make-curl-transfer-error curl-transfer-error?
-    (reason curl-transfer-error-reason)
-    (code curl-transfer-error-code)
-    (option curl-transfer-error-option)
-    (strerror curl-transfer-error-strerror)
-    (error-buffer curl-transfer-error-error-buffer)
-    (recorded curl-transfer-error-recorded)
-    (request-size curl-transfer-error-request-size))
+    (reason unchecked-curl-transfer-error-reason)
+    (code unchecked-curl-transfer-error-code)
+    (option unchecked-curl-transfer-error-option)
+    (strerror unchecked-curl-transfer-error-strerror)
+    (error-buffer unchecked-curl-transfer-error-error-buffer)
+    (recorded unchecked-curl-transfer-error-recorded)
+    (request-size unchecked-curl-transfer-error-request-size)
+    (connect-code unchecked-curl-transfer-error-connect-code))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define curl-transfer-error-reason
+    (checked-accessor 'curl-transfer-error-reason curl-transfer-error? "a &curl-transfer-error" unchecked-curl-transfer-error-reason))
+  (define curl-transfer-error-code
+    (checked-accessor 'curl-transfer-error-code curl-transfer-error? "a &curl-transfer-error" unchecked-curl-transfer-error-code))
+  (define curl-transfer-error-option
+    (checked-accessor 'curl-transfer-error-option curl-transfer-error? "a &curl-transfer-error" unchecked-curl-transfer-error-option))
+  (define curl-transfer-error-strerror
+    (checked-accessor 'curl-transfer-error-strerror curl-transfer-error? "a &curl-transfer-error" unchecked-curl-transfer-error-strerror))
+  (define curl-transfer-error-error-buffer
+    (checked-accessor 'curl-transfer-error-error-buffer curl-transfer-error? "a &curl-transfer-error" unchecked-curl-transfer-error-error-buffer))
+  (define curl-transfer-error-recorded
+    (checked-accessor 'curl-transfer-error-recorded curl-transfer-error? "a &curl-transfer-error" unchecked-curl-transfer-error-recorded))
+  (define curl-transfer-error-request-size
+    (checked-accessor 'curl-transfer-error-request-size curl-transfer-error? "a &curl-transfer-error" unchecked-curl-transfer-error-request-size))
+  (define curl-transfer-error-connect-code
+    (checked-accessor 'curl-transfer-error-connect-code curl-transfer-error? "a &curl-transfer-error" unchecked-curl-transfer-error-connect-code))
 
   ;; check-transfer-error : Symbol Symbol (Listof Symbol) -> Void
   ;; Refuses a REASON that is not in REASONS, as WHO, with an assertion
@@ -482,15 +686,16 @@
       (assertion-violation who "not a reason a chez-curl transfer fails for here" reason)))
 
   ;; make-curl-transfer-error : Symbol (U Integer #f) (U String #f) (U String #f)
-  ;;                            (U String #f) Any (U Natural #f) -> &curl-transfer-error
+  ;;                            (U String #f) Any (U Natural #f) (U Positive-Integer #f)
+  ;;                            -> &curl-transfer-error
   ;; The base type, unclassed. Refuses a REASON that is not one of the
   ;; eleven with an assertion violation. It checks nothing else, so a code a
   ;; later libcurl answers still reaches the caller.
   (define (make-curl-transfer-error reason code option strerror error-buffer recorded
-                                    request-size)
+                                    request-size connect-code)
     (check-transfer-error 'make-curl-transfer-error reason curl-transfer-error-reasons)
     (unchecked-make-curl-transfer-error reason code option strerror error-buffer recorded
-                                        request-size))
+                                        request-size connect-code))
 
   ;; curl-transfer-error? : Any -> Boolean
   ;; curl-transfer-error-reason : &curl-transfer-error -> Symbol
@@ -500,6 +705,7 @@
   ;; curl-transfer-error-error-buffer : &curl-transfer-error -> (U String #f)
   ;; curl-transfer-error-recorded : &curl-transfer-error -> Any
   ;; curl-transfer-error-request-size : &curl-transfer-error -> (U Natural #f)
+  ;; curl-transfer-error-connect-code : &curl-transfer-error -> (U Positive-Integer #f)
 
   ;; --- the classes (ADR-0022) ------------------------------------------------------
 
@@ -558,7 +764,7 @@
   ;; make-curl-timeout, make-curl-connect-error, make-curl-send-receive-error,
   ;; make-curl-tls-error, make-curl-protocol-error, make-curl-too-large :
   ;;   Symbol (U Integer #f) (U String #f) (U String #f) (U String #f) Any
-  ;;   (U Natural #f) -> &curl-transfer-error
+  ;;   (U Natural #f) (U Positive-Integer #f) -> &curl-transfer-error
   ;; curl-timeout?, curl-connect-error?, curl-send-receive-error?,
   ;; curl-tls-error?, curl-protocol-error?, curl-too-large? : Any -> Boolean
   (define-condition-type &curl-timeout &curl-transfer-error
@@ -583,48 +789,52 @@
                 (and (eq? class 'too-large) (eq? reason 'body-limit)))
       (assertion-violation who "not a reason and code this class takes" reason code)))
 
-  (define (make-curl-timeout reason code option strerror error-buffer recorded request-size)
+  (define (make-curl-timeout reason code option strerror error-buffer recorded
+                             request-size connect-code)
     (check-class 'make-curl-timeout 'timeout reason code)
     (unchecked-make-curl-timeout reason code option strerror error-buffer recorded
-                                 request-size))
+                                 request-size connect-code))
 
   (define (make-curl-connect-error reason code option strerror error-buffer recorded
-                                   request-size)
+                                   request-size connect-code)
     (check-class 'make-curl-connect-error 'connect reason code)
     (unchecked-make-curl-connect-error reason code option strerror error-buffer recorded
-                                       request-size))
+                                       request-size connect-code))
 
   (define (make-curl-send-receive-error reason code option strerror error-buffer recorded
-                                        request-size)
+                                        request-size connect-code)
     (check-class 'make-curl-send-receive-error 'send-receive reason code)
     (unchecked-make-curl-send-receive-error reason code option strerror error-buffer recorded
-                                            request-size))
+                                            request-size connect-code))
 
-  (define (make-curl-tls-error reason code option strerror error-buffer recorded request-size)
+  (define (make-curl-tls-error reason code option strerror error-buffer recorded
+                               request-size connect-code)
     (check-class 'make-curl-tls-error 'tls reason code)
     (unchecked-make-curl-tls-error reason code option strerror error-buffer recorded
-                                   request-size))
+                                   request-size connect-code))
 
   (define (make-curl-protocol-error reason code option strerror error-buffer recorded
-                                    request-size)
+                                    request-size connect-code)
     (check-class 'make-curl-protocol-error 'protocol reason code)
     (unchecked-make-curl-protocol-error reason code option strerror error-buffer recorded
-                                        request-size))
+                                        request-size connect-code))
 
-  (define (make-curl-too-large reason code option strerror error-buffer recorded request-size)
+  (define (make-curl-too-large reason code option strerror error-buffer recorded
+                               request-size connect-code)
     (check-class 'make-curl-too-large 'too-large reason code)
     (unchecked-make-curl-too-large reason code option strerror error-buffer recorded
-                                   request-size))
+                                   request-size connect-code))
 
   ;; make-classed-transfer-error : Symbol (U Integer #f) (U String #f) (U String #f)
-  ;;                               (U String #f) Any (U Natural #f) -> &curl-transfer-error
+  ;;                               (U String #f) Any (U Natural #f) (U Positive-Integer #f)
+  ;;                               -> &curl-transfer-error
   ;; What a failed transfer raises (ADR-0022, amended 2026-10-26): for
   ;; perform-failed, the class its CODE has, or the base type for a code no
   ;; class names; for body-limit, too-large, whatever its code; for every
   ;; other reason, the base type, a setopt-failed whose code a class names
   ;; among them. A REASON not among the eleven is an assertion violation.
   (define (make-classed-transfer-error reason code option strerror error-buffer recorded
-                                       request-size)
+                                       request-size connect-code)
     (check-transfer-error 'make-classed-transfer-error reason curl-transfer-error-reasons)
     (let ((make (case (if (eq? reason 'body-limit)
                           'too-large
@@ -636,7 +846,7 @@
                   ((protocol) make-curl-protocol-error)
                   ((too-large) make-curl-too-large)
                   (else make-curl-transfer-error))))
-      (make reason code option strerror error-buffer recorded request-size)))
+      (make reason code option strerror error-buffer recorded request-size connect-code)))
 
   ;; --- &curl-engine-error -------------------------------------------------------
 
@@ -657,8 +867,17 @@
   ;; Tests assert the reason and the condition, never the message.
   (define-condition-type &curl-engine-error &curl-error
     unchecked-make-curl-engine-error curl-engine-error?
-    (reason curl-engine-error-reason)
-    (condition curl-engine-error-condition))
+    (reason unchecked-curl-engine-error-reason)
+    (condition unchecked-curl-engine-error-condition))
+
+  ;; Each accessor checks its argument first: anything else is an assertion
+  ;; violation from the accessor, naming it by its kind, shown-value's,
+  ;; never printed, as Chez's own check printed it (ADR-0036, amended
+  ;; 2026-11-03).
+  (define curl-engine-error-reason
+    (checked-accessor 'curl-engine-error-reason curl-engine-error? "a &curl-engine-error" unchecked-curl-engine-error-reason))
+  (define curl-engine-error-condition
+    (checked-accessor 'curl-engine-error-condition curl-engine-error? "a &curl-engine-error" unchecked-curl-engine-error-condition))
 
   ;; make-curl-engine-error : Symbol Any -> &curl-engine-error
   ;; Refuses a REASON that is not one of the two with an assertion violation.

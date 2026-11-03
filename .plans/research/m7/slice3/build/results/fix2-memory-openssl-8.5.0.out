@@ -1,0 +1,44 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test SUITES='tests/test-conditions.sps'
+lane openssl: pass (2 s)
+  [openssl] test: pass tests/test-conditions.sps
+  [openssl] test: ran 1, passed 1, failed 0, hung 0
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test-memory MEMORY_SUITES='tests/test-printed.sps tests/test-proxy.sps tests/test-conditions.sps tests/test-constants.sps tests/test-request.sps tests/test-unsupported.sps tests/test-transfer.sps tests/test-transfer-tls.sps tests/test-stream.sps tests/test-redirect.sps tests/test-retry.sps tests/test-origin.sps tests/test-origin-tls.sps tests/test-library-loading.sps tests/test-http-client.sps tests/test-stream-call.sps tests/test-group.sps tests/test-engine.sps tests/test-url.sps tests/test-url-parts.sps tests/test-url-location.sps tests/test-native.sps tests/test-auth.sps'
+lane openssl memory: pass
+  [openssl memory] test-memory: pass tests/test-printed.sps
+  [openssl memory] test-memory: pass tests/test-proxy.sps
+  [openssl memory] test-memory: pass tests/test-conditions.sps
+  [openssl memory] test-memory: pass tests/test-constants.sps
+  [openssl memory] test-memory: pass tests/test-request.sps
+  [openssl memory] test-memory: pass tests/test-unsupported.sps
+  [openssl memory] test-memory: pass tests/test-transfer.sps
+  [openssl memory] test-memory: pass tests/test-transfer-tls.sps
+  [openssl memory] test-memory: pass tests/test-stream.sps
+  [openssl memory] test-memory: pass tests/test-redirect.sps
+  [openssl memory] test-memory: pass tests/test-retry.sps
+  [openssl memory] test-memory: pass tests/test-origin.sps
+  [openssl memory] test-memory: pass tests/test-origin-tls.sps
+  [openssl memory] test-memory: pass tests/test-library-loading.sps
+  [openssl memory] test-memory: pass tests/test-http-client.sps
+  [openssl memory] test-memory: pass tests/test-stream-call.sps
+  [openssl memory] test-memory: pass tests/test-group.sps
+  [openssl memory] test-memory: pass tests/test-engine.sps
+  [openssl memory] test-memory: pass tests/test-url.sps
+  [openssl memory] test-memory: pass tests/test-url-parts.sps
+  [openssl memory] test-memory: pass tests/test-url-location.sps
+  [openssl memory] test-memory: pass tests/test-native.sps
+  [openssl memory] test-memory: pass tests/test-auth.sps
+  [openssl memory] test-memory: ran 23, passed 23, failed 0, hung 0
+  [openssl memory] test-proxy: empty-userinfo on "8.5.0" measured ((refused proxy (proxy user) credentials-empty test) (refused proxy (proxy user) credentials-empty test) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u:@127.0.0.1:3128/" "http" #t))
+  [openssl memory] test-proxy: tls-in-tls-checks on "8.5.0/OpenSSL" measured (no-raise no-raise no-raise no-raise no-raise)
+  [openssl memory] test-proxy: empty-userinfo-wire on "8.5.0" measured (((refused proxy (proxy user) credentials-empty curl-submit) ()) ((refused proxy (proxy user) credentials-empty curl-submit) ()))
+  [openssl memory] test-proxy: refused-connect on "8.5.0" measured ((56 send-receive 403 zero) (56 send-receive 407 zero) (56 send-receive 502 zero) (56 send-receive 503 zero) (56 send-receive 407 zero) (56 send-receive 407 zero) (56 send-receive #f zero))
+  [openssl memory] test-proxy: unshared-tunnels on "8.5.0" measured (((response 200) (response 200) #t ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")))
+  [openssl memory] test-proxy: tunnel-plans on "8.5.0" measured (((("FRESH_CONNECT" . 1) ("FORBID_REUSE" . 1)) #t) ((("FRESH_CONNECT" . 1)) #f) (() #t) (() #f) (() #f))
+  [openssl memory] test-proxy: switch-live on "8.5.0" measured ((head head default switched) (1 1 2) (#f #f) ((response 200) (response 200) (response 200) (response 200)))
+  [openssl memory] test-proxy: environment-join on "8.5.0" measured (((environment (no_proxy . #f) (NO_PROXY . #f) (http_proxy . #f) (https_proxy . "http://127.0.0.1:32861") (all_proxy . #f)) (multiplexing default switched) (join #t (refused perform-failed 56 send-receive 407) (response 200)) (transfer ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))) (done)) ("connect http conn=1 target=localhost:<h2> answer=200 head=_ auth=basic:alice:s3cret" "inner h2 via=1 method=GET target=/connection?delay=3000" "connect http conn=2 target=localhost:<h2> answer=407 head=_ auth=-" "close http conn=1" "close http conn=2"))
+  [openssl memory] test-proxy: closing-retries on "8.5.0" measured (((failed 56 #f 3) 3) ((failed 56 #f 3) 3))

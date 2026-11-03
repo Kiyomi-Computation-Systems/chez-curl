@@ -604,31 +604,34 @@
   '((ca-file? "a CA file is #f, or a non-empty string"
      (define (ca-file? x)
        (or (not x) (and (string? x) (> (string-length x) 0)))))
-    (ca-file-copy "the CA file sent is a fresh copy, scanned for U+0000 by index, refused there, then for the pkcs11: prefix, refused there"
+    (ca-file-copy "the CA file is path-copy's, for the field ca-file"
      (define (ca-file-copy who ca-file)
+       (path-copy who 'ca-file ca-file)))
+    (path-copy "the CA file sent, a ca-file's or a proxy-ca-file's, is a fresh copy, scanned for U+0000 by index, refused there, then for the pkcs11: prefix, refused there, each naming its field"
+     (define (path-copy who field ca-file)
        (and ca-file
             (let ((copy (string-copy ca-file)))
               (let scan ((i 0))
                 (when (< i (string-length copy))
                   (when (char=? (string-ref copy i) #\nul)
-                    (refuse-ca-file who copy 'embedded-nul
+                    (refuse-ca-file who field copy 'embedded-nul
                                     "a CA file's path holds U+0000, where C would end it, and libcurl would open another file"
                                     '()))
                   (scan (+ i 1))))
               (when (pkcs11-prefix? copy)
-                (refuse-ca-file who copy 'pkcs11-url
+                (refuse-ca-file who field copy 'pkcs11-url
                                 "a CA file's path that begins pkcs11:, in any ASCII case, is a PKCS#11 URL to GnuTLS, not a file; reach a file of that name as ./pkcs11:..."
                                 '()))
               copy))))
-    (check-ca-environment "the CA file is checked against what native recorded at the load, for the loaded libcurl, and refused naming each variable, or the backend whose keychain would undo it"
-     (define (check-ca-environment who ca-file verify)
+    (check-ca-environment "the CA file, a ca-file's or a proxy-ca-file's, is checked against what native recorded at the load, for the loaded libcurl, and refused naming each variable, or the backend whose keychain would undo it, each refusal naming its field"
+     (define (check-ca-environment who field ca-file verify)
        (let* ((info (loaded-libcurl))
               (names (overriding-variables ca-file verify (loaded-libcurl-file) (libcurl-info-path info)
                                            (loaded-libcurl-patched?) (libcurl-info-version info)
                                            (loaded-ca-variables)))
               (backend (loaded-tls-backend)))
          (unless (null? names)
-           (refuse-ca-file who ca-file 'environment-override
+           (refuse-ca-file who field ca-file 'environment-override
                            (string-append
                             "Guix's libcurl writes SSL_CERT_FILE over a CA file, and adds SSL_CERT_DIR beside it, as they were when it loaded; unset "
                             (fold-right (lambda (name rest) (if (string=? rest "") name (string-append name " and " rest)))
@@ -636,7 +639,7 @@
                             " before the program starts, or trust the store it names with no CA file")
                            names))
          (when (keychain-fallback? ca-file verify (loaded-on-macos?) (libcurl-info-path info) backend)
-           (refuse-ca-file who ca-file 'keychain-fallback
+           (refuse-ca-file who field ca-file 'keychain-fallback
                            "Apple's libcurl uses its LibreSSL, which checks the keychain when a CA file fails, so the CA file would not be the only anchor; start the program with CURL_SSL_BACKEND=secure-transport, where this libcurl has it, or pass no CA file"
                            (list backend))))))
     (field-options "a field's options are its row's names, in order"
@@ -668,7 +671,7 @@
                    ((long) (long? value))
                    ((off-t) (off-t? value))
                    (else (or (not value) (pointer? value))))
-           (assertion-violation 'set-option! "the value does not fit the option's type" name value))
+           (assertion-violation 'set-option! "the value does not fit the option's type" name (shown-value value)))
          (let ((code ((option-setter binding) easy (car option) (or value 0))))
            (unless (setopt-accepted? value code)
              (fail 'setopt-failed code name buffer #f))))))
@@ -733,11 +736,14 @@
 ;; in its tenth; set-transfer-options! hands set-tls-options! those two
 ;; fields. A plan handed the caller's own string would be sent whatever
 ;; another thread made it after the check.
-(test-equal "the checks hand the plan their snapshot: request-checks' let* binds ca-file to (ca-file-copy who (curl-request-ca-file request)), checks that copy as (check-ca-environment who ca-file (curl-request-verify request)) and answers it, ca-file standing three times there; prepare-transfer takes it from (request-checks 'curl-submit request), make-plan takes ca-file and (curl-request-verify request) as its ninth and tenth arguments, ca-file standing twice there, and the plan's ninth and tenth fields are ca-file and verify"
+(test-equal "the checks hand the plan their snapshot: request-checks' let* binds ca-file to (ca-file-copy who (curl-request-ca-file request)), checks that copy, first, as (check-ca-environment who 'ca-file ca-file (curl-request-verify request)) and answers it, ca-file standing four times there, the field's name among them; prepare-transfer takes it from (request-checks 'curl-submit request), make-plan takes ca-file and (curl-request-verify request) as its ninth and tenth arguments, ca-file standing twice there, and the plan's ninth and tenth fields are ca-file and verify"
   '((ca-file (ca-file-copy who (curl-request-ca-file request)))
-    (check-ca-environment who ca-file (curl-request-verify request))
-    (values url fields ca-file credentials)
-    3
+    (check-ca-environment who 'ca-file ca-file (curl-request-verify request))
+    (values url fields ca-file credentials (if reading (car reading) proxy) proxy-ca-file
+            (unshared-tunnel-settings version-number scheme
+                                      (and reading #t) (and reading (caddr reading)))
+            (stops-multiplexing? version-number (and reading #t) (and reading (caddr reading))))
+    4
     (request-checks 'curl-submit request)
     (ca-file (curl-request-verify request))
     2

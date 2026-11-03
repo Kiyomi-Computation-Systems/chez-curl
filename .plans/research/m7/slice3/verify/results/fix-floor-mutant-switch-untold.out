@@ -1,0 +1,20 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+== lane floor: CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/e1/ci/curl-floor/include make test SUITES='tests/test-proxy.sps'
+lane floor: FAIL (18 s)
+  [floor] test: FAIL tests/test-proxy.sps (exit 1)
+  [floor] test: ran 1, passed 0, failed 1, hung 0
+  [floor] test-proxy: empty-userinfo on "7.85.0" measured (("http://127.0.0.1:3128/" "http" #f) ("http://127.0.0.1:3128/" "http" #f) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u@127.0.0.1:3128/" "http" #t))
+  [floor] test-proxy: tls-in-tls-checks on "7.85.0/OpenSSL" measured ((refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise (refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise no-raise)
+  [floor] test-proxy: empty-userinfo-wire on "7.85.0" measured (((response 200) ("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1")) ((response 200) ("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1")))
+  [floor] test-proxy: refused-connect on "7.85.0" measured ((56 send-receive 403 the-connect) (56 send-receive 407 the-connect) (56 send-receive 502 the-connect) (56 send-receive 503 the-connect) (56 send-receive 407 the-connect) (56 send-receive 407 the-connect) (56 send-receive #f the-connect))
+  [floor] test-proxy: unshared-tunnels on "7.85.0" measured (((response 200) (response 200) #t ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=127.0.0.1
+  [floor] test-proxy: tunnel-plans on "7.85.0" measured (((("FRESH_CONNECT" . 1) ("FORBID_REUSE" . 1)) #t) ((("FRESH_CONNECT" . 1)) #f) (() #t) (() #f) (() #f))
+  [floor] test-proxy: switch-live on "7.85.0" measured ((head head default switched) (1 1 1) (#f #f) ((response 200) (response 200) (response 200) (response 200)))
+  [floor] FAIL a transfer through a proxy URL with userinfo stops the engine's multiplexing, by version: below 8.19.0 the engine switches at it, the two streams live on one HTTP/2 connection end 200 on it, unbroken, and a third request to their origin, made while they are live, opens a connection of its own; from 8.19.0 nothing switches, and the third rides theirs
+  [floor] test-proxy: environment-join on "7.85.0" measured (((environment (no_proxy . #f) (NO_PROXY . #f) (http_proxy . #f) (https_proxy . "http://127.0.0.1:34087") (all_proxy . #f)) (multiplexing default switched) (join #t (response 200) (response 200)) (transfer ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))) (done)) ("connect http conn=1 target=localhost:<h2> answer=200 head=_ auth=basic:alice:s3cret" "inner h2 via=1 method=GET target=/connection?delay=3000" "inner h2 via=1 method=GET target=/connection" "close http conn=1"))
+  [floor] FAIL in a child, https_proxy naming the proxy with no userinfo: a transfer through proxy environment, made while a named proxy's transfer with alice's userinfo has its HTTP/2 stream live, sends a CONNECT of its own and is refused 407, by version: below 8.19.0 the engine switched at alice's, where 7.85.0 had let it ride her tunnel; from 8.19.0 no switch
+  [floor] test-proxy: closing-retries on "7.85.0" measured (((failed 56 #f 1) 1) ((failed 56 #f 3) 3))

@@ -1,0 +1,149 @@
+mutant flag tests/test-proxy.sps: exit 1
+    FAIL proxy-scheme: a proxy URL's scheme is http or https, A to Z folded: each other scheme, socks5, socks4a, socks5h, ftp and foo among them, is refused at check and submit, field proxy, value proxy, on every libcurl; http, https, HTTP,
+    FAIL the proxy URL's refusals come in order: libcurl's parse, then a malformed %, before the scheme; the scheme before the parts; the parts before the userinfo; the user before the password
+mutant scan-first tests/test-proxy.sps: exit 1
+    FAIL credentials-bytes: a decoded control byte, each class, at the first, a middle and the last position of the user and of the password, encoded, is refused at check and submit, field proxy, value (proxy user) or (proxy password): deco
+    FAIL credentials-bytes: a decoded colon at each position of the user, %3A and %3a, ends the user at the proxy and is refused, (proxy user); in the password, encoded at each position or raw, it passes
+mutant scan-last tests/test-proxy.sps: exit 1
+    FAIL credentials-bytes: a decoded control byte, each class, at the first, a middle and the last position of the user and of the password, encoded, is refused at check and submit, field proxy, value (proxy user) or (proxy password): deco
+    FAIL credentials-bytes: a decoded colon at each position of the user, %3A and %3a, ends the user at the proxy and is refused, (proxy user); in the password, encoded at each position or raw, it passes
+    FAIL the proxy URL's refusals come in order: libcurl's parse, then a malformed %, before the scheme; the scheme before the parts; the parts before the userinfo; the user before the password
+    FAIL no refusal holds the proxy's password: each condition, as write, display and display-condition print it, never shows it; and each did refuse, but TLS inside TLS where this libcurl does not stall
+mutant colon tests/test-proxy.sps: exit 1
+    FAIL credentials-bytes: a decoded colon at each position of the user, %3A and %3a, ends the user at the proxy and is refused, (proxy user); in the password, encoded at each position or raw, it passes
+mutant utf8 tests/test-proxy.sps: exit 1
+    FAIL credentials-bytes: decoded bytes that are not UTF-8, in the user or the password, are refused, (proxy PART); UTF-8, encoded or raw, passes in each
+mutant empty tests/test-proxy.sps: exit 1
+    FAIL an empty userinfo, by version: @ and :@ hold none on 7.85.0, which reports no part, and are refused as credentials-empty from 8.5.0; :p@ and u:@ pass everywhere
+    FAIL an empty userinfo through the proxy, by version: @ and :@ send no Proxy-Authorization on 7.85.0, and are refused at submit from 8.5.0, the proxy getting nothing
+mutant malformed tests/test-proxy.sps: exit 1
+    FAIL percent-decoded, written out: each %XX, either case, its byte; every other char its UTF-8 bytes, raw UTF-8 among them; #f for a % not followed by two hex digits, at the end, before one digit, or before a non-hex char
+    FAIL proxy-url: a % not followed by two hex digits, in the user or the password, at the first, a middle and the last position, %zz, %, %4, %z and %g1, which every libcurl takes and would send on as written, is refused, field proxy, valu
+    FAIL the proxy URL's refusals come in order: libcurl's parse, then a malformed %, before the scheme; the scheme before the parts; the parts before the userinfo; the user before the password
+    FAIL no refusal holds the proxy's password: each condition, as write, display and display-condition print it, never shows it; and each did refuse, but TLS inside TLS where this libcurl does not stall
+mutant scheme tests/test-proxy.sps: exit 1
+    FAIL proxy-scheme: a proxy URL's scheme is http or https, A to Z folded: each other scheme, socks5, socks4a, socks5h, ftp and foo among them, is refused at check and submit, field proxy, value proxy, on every libcurl; http, https, HTTP,
+    FAIL the proxy URL's refusals come in order: libcurl's parse, then a malformed %, before the scheme; the scheme before the parts; the parts before the userinfo; the user before the password
+    FAIL no refusal holds the proxy's password: each condition, as write, display and display-condition print it, never shows it; and each did refuse, but TLS inside TLS where this libcurl does not stall
+mutant query tests/test-proxy.sps: exit 1
+    FAIL proxy-url-parts: a path but /, a query or a fragment is refused, field proxy, value proxy; /, none, and an empty query or fragment, which 7.85.0 and 8.5.0 report as "" and later libcurls as none, pass alike
+mutant path tests/test-proxy.sps: exit 1
+    FAIL proxy-url-parts: a path but /, a query or a fragment is refused, field proxy, value proxy; /, none, and an empty query or fragment, which 7.85.0 and 8.5.0 report as "" and later libcurls as none, pass alike
+    FAIL the proxy URL's refusals come in order: libcurl's parse, then a malformed %, before the scheme; the scheme before the parts; the parts before the userinfo; the user before the password
+    FAIL no refusal holds the proxy's password: each condition, as write, display and display-condition print it, never shows it; and each did refuse, but TLS inside TLS where this libcurl does not stall
+mutant pa-case tests/test-proxy.sps: exit 1
+    FAIL proxy-authorization-header: a Proxy-Authorization header is refused as the request is made, field header-name, its name as given, never its value, at every position of a list of four, in each letter's case, all upper and all lower,
+    FAIL proxy-authorization-header again at curl-request-with, and at curl-request-check and a submit, on their own copies: a header renamed after the request was made is refused there, each as its who
+mutant pa-case tests/test-redirect.sps: exit 1
+    FAIL a Proxy-Authorization header reaches no redirect's rule: the low level refuses one as a request is made, in any case, alone or among others, so no step's request holds one; its drop across origins is gone, unreachable (ADR-0037, de
+    FAIL a Proxy-Authorization header, live, never leaves: a call's is refused as its request is built, and a session's as the session is made, the low level's refusal, before anything is sent
+    FAIL the suite's session closes, and every count is zero after
+    FAIL every count is zero at the end
+mutant pa-drop tests/test-proxy.sps: exit 1
+    FAIL proxy-authorization-header: a Proxy-Authorization header is refused as the request is made, field header-name, its name as given, never its value, at every position of a list of four, in each letter's case, all upper and all lower,
+    FAIL proxy-authorization-header is refused by its name before its value is read: a value holding CR LF, or past U+00FF, refused for the header, not the value, so the refusal holds no secret
+    FAIL proxy-authorization-header again at curl-request-with, and at curl-request-check and a submit, on their own copies: a header renamed after the request was made is refused there, each as its who
+    FAIL no refusal holds the proxy's password: each condition, as write, display and display-condition print it, never shows it; and each did refuse, but TLS inside TLS where this libcurl does not stall
+mutant pa-drop tests/test-redirect.sps: exit 1
+    FAIL a Proxy-Authorization header reaches no redirect's rule: the low level refuses one as a request is made, in any case, alone or among others, so no step's request holds one; its drop across origins is gone, unreachable (ADR-0037, de
+    FAIL a Proxy-Authorization header, live, never leaves: a call's is refused as its request is built, and a session's as the session is made, the low level's refusal, before anything is sent
+    FAIL the suite's session closes, and every count is zero after
+    FAIL every count is zero at the end
+mutant tls-without tests/test-proxy.sps: exit 1
+    FAIL proxy-tls-without-https-proxy: a proxy-ca-file, or proxy-verify #f, beside environment, #f or an http:// proxy URL, in any case, is refused at check and submit, field proxy-ca-file and its path, or proxy-verify and #f, the CA file 
+    FAIL no refusal holds the proxy's password: each condition, as write, display and display-condition print it, never shows it; and each did refuse, but TLS inside TLS where this libcurl does not stall
+mutant pk-proxy tests/test-proxy.sps: exit 1
+    FAIL prior-knowledge-through-proxy: http/2-prior-knowledge beside an http:// or https:// proxy URL is refused at check and submit, field http-version; beside environment and #f, and http/2, http/1.1 and none beside a proxy URL, pass; an
+    FAIL no refusal holds the proxy's password: each condition, as write, display and display-condition print it, never shows it; and each did refuse, but TLS inside TLS where this libcurl does not stall
+    FAIL prior knowledge beside a proxy URL is refused at submit, the proxy getting nothing; beside proxy #f it speaks HTTP/2 to the h2c face, direct
+mutant noproxy tests/test-proxy.sps: exit 1
+    FAIL proxy-settings, written out whole: environment sets nothing, whatever the TLS keys; #f, PROXY ""; a URL, PROXY at it and NOPROXY "", then the proxy's verification, 1 and 2, or 0 and 0, then, with a proxy CA file, PROXY_CAINFO at it
+    FAIL in a child, no_proxy naming 127.0.0.1: a named proxy still takes the transfer, NOPROXY "" reading no variable, its request on the proxy's log; the child saw the variables
+    FAIL in a child, NO_PROXY naming 127.0.0.1: a named proxy still takes the transfer, NOPROXY "" reading no variable, its request on the proxy's log; the child saw the variables
+    FAIL in a child, no_proxy *: a named proxy still takes the transfer, NOPROXY "" reading no variable, its request on the proxy's log; the child saw the variables
+mutant port tests/test-proxy.sps: exit 1
+    FAIL check-proxy-url hands PROXY the URL libcurl gives back, a port its scheme's when it names none, 80 or 443, A to Z folded, its own kept; its scheme folded; and whether it holds userinfo; alike on every libcurl
+    FAIL a submit's plan holds the URL check-proxy-url hands PROXY, and environment and #f as given
+mutant connect-code tests/test-proxy.sps: exit 1
+    FAIL connect-status, written out: 0 and every 2xx are #f, no refusal; any other status is itself
+    FAIL a refused CONNECT, by version: 403, 407, 502 and 503, a wrong password and none: 56 send-receive on 7.85.0 and 8.5.0, 7 connect on 8.20.0 and 8.23.0, each carrying the status as curl-transfer-error-connect-code; a close, 56 and no 
+    FAIL a CONNECT refused 503 is retried as a 503 response would be: a post and a get, with statuses (503) and methods (get post), are tried three times, each CONNECT on the proxy's log; refused 407, once, on every libcurl, whatever the co
+mutant retry-rule tests/test-proxy.sps: exit 1
+    FAIL a CONNECT refused 503 is retried as a 503 response would be: a post and a get, with statuses (503) and methods (get post), are tried three times, each CONNECT on the proxy's log; refused 407, once, on every libcurl, whatever the co
+mutant retry-rule tests/test-retry.sps: exit 1
+    FAIL exchange-step: a failure that carries a CONNECT's status is retried as a response with that status: statuses (503) and methods (get post) retry a get's and a post's 503, whatever the code and size, after the backoff, and fail head,
+    FAIL exchange-step: the default statuses, 429 and 503, never retry a CONNECT refused 403, 407 or 502, for any method, whatever its code and size: each fails at once, where the class rule would retry it with nothing sent
+    FAIL exchange-step: the default policy retries a CONNECT refused 503 or 429 for its default methods, get, head, put and delete, and fails a post's and a patch's, even with nothing sent; a policy holding 407 retries a 407
+mutant call-drop tests/test-proxy.sps: exit 1
+    FAIL a call that names its own proxy drops the session's proxy-ca-file and proxy-verify: an http:// proxy URL over a session's https:// one with its CA and its verification off passes, where kept they would be refused; one that names no
+mutant next-request tests/test-proxy.sps: exit 1
+    FAIL a redirect's hop to https:// through an https:// proxy where TLS inside TLS stalls fails the call with the refusal, as its next request is submitted, one transfer counted; elsewhere it is followed
+mutant copy-proxy tests/test-proxy.sps: exit 1
+    FAIL the copies: a caller's proxy string and proxy CA file string changed after the request was made change nothing it holds, nor does a change to an accessor's answer
+    FAIL the copies through the engine: the caller's proxy string and proxy CA file string changed after the request was made, the proxy URL's password made wrong and the CA file's path one that names no file, the request goes as made, thro
+mutant copy-ca tests/test-proxy.sps: exit 1
+    FAIL the copies: a caller's proxy string and proxy CA file string changed after the request was made change nothing it holds, nor does a change to an accessor's answer
+    FAIL the copies through the engine: the caller's proxy string and proxy CA file string changed after the request was made, the proxy URL's password made wrong and the CA file's path one that names no file, the request goes as made, thro
+mutant value-url tests/test-proxy.sps: exit 1
+    FAIL proxy-url: a % not followed by two hex digits, in the user or the password, at the first, a middle and the last position, %zz, %, %4, %z and %g1, which every libcurl takes and would send on as written, is refused, field proxy, valu
+    FAIL the proxy URL's refusals come in order: libcurl's parse, then a malformed %, before the scheme; the scheme before the parts; the parts before the userinfo; the user before the password
+    FAIL no refusal holds the proxy's password: each condition, as write, display and display-condition print it, never shows it; and each did refuse, but TLS inside TLS where this libcurl does not stall
+mutant env-proxy-ca tests/test-proxy.sps: exit 1
+    FAIL in a child, SSL_CERT_FILE set as libcurl loads, beside a proxy CA file with the proxy's verification on: Guix's libcurl, which writes it over PROXY_CAINFO, is refused at check and submit, environment-override, field proxy-ca-file, 
+mutant constant tests/test-constants.sps: exit 1
+    FAIL curlinfo-http-connectcode is CURLINFO_HTTP_CONNECTCODE
+mutant verify-values tests/test-proxy.sps: exit 1
+    FAIL proxy-settings, written out whole: environment sets nothing, whatever the TLS keys; #f, PROXY ""; a URL, PROXY at it and NOPROXY "", then the proxy's verification, 1 and 2, or 0 and 0, then, with a proxy CA file, PROXY_CAINFO at it
+mutant floor tests/test-proxy.sps: exit 1
+    FAIL unshared-tunnel-floor is 8.19.0's version_num, #x081300
+    FAIL unshared-tunnel-settings, written out for every version, scheme, proxy URL and userinfo crossed: below 8.19.0, an https:// URL through a proxy URL sets FRESH_CONNECT, and FORBID_REUSE beside userinfo; an http:// URL, no proxy URL, 
+    FAIL two tunnels in turn through one proxy, by version: below 8.19.0 the second opens a CONNECT of its own, and the first, with userinfo, closes as it ends, where with none it stays pooled; from 8.19.0 the second rides the first's tunne
+    FAIL a submit's plan holds the tunnel settings, by version: below 8.19.0 FRESH_CONNECT for an https:// URL through a proxy URL, FORBID_REUSE beside userinfo; nothing for an http:// URL, nor beside environment or #f, nor from 8.19.0
+mutant order-user tests/test-proxy.sps: exit 1
+    FAIL the proxy URL's refusals come in order: libcurl's parse, then a malformed %, before the scheme; the scheme before the parts; the parts before the userinfo; the user before the password
+mutant origin-decode tests/test-origin.sps: exit 1
+    FAIL the proxy's Basic, a CONNECT to localhost at a face: no Proxy-Authorization, 407 with the challenge; alice and s3cret, the tunnel; bob and hunter2 too, the scheme in lower case; alice with another password, a byte more, Bearer, or 
+    FAIL the proxy's log of a request in absolute form: its method, its target as it came, and its first Proxy-Authorization decoded, the face answering by its path; one by its path alone is no proxy's
+    FAIL a suite killed with SIGKILL while idle: within 5 s every face of its origin refuses connections
+    FAIL a suite killed with SIGKILL during a probe: its origin lives until the probe's wire-probe-deadline, 2000 ms, ends the probe; within 2000 ms of it plus 2000 ms of slack every face refuses connections
+mutant origin-decode tests/test-proxy.sps: exit 1
+    FAIL absolute form through an http:// proxy URL, its userinfo u:p: the proxy logs the request, its target in absolute form, and its Proxy-Authorization decoded, u:p
+    FAIL absolute form through an http:// proxy URL, its userinfo u%20x:p%3Aq: the proxy logs the request, its target in absolute form, and its Proxy-Authorization decoded, a space in the user, a colon in the password
+    FAIL absolute form through an http:// proxy URL, its userinfo %41%42:%7E%7e: the proxy logs the request, its target in absolute form, and its Proxy-Authorization decoded, letters and tildes, encoded
+    FAIL absolute form through an http:// proxy URL, its userinfo %C3%A9l%C3%A8ve:p%C3%A4ss: the proxy logs the request, its target in absolute form, and its Proxy-Authorization decoded, UTF-8, encoded
+mutant origin-keep tests/test-origin.sps: exit 1
+    FAIL the proxy's refusals: a CONNECT to refuse-S.invalid gets S, 403, 407 with Basic's challenge, 502 or 503, Content-Length and proxy S, the connection kept, so the probe ends by its idle bound; a client's end then ends it, eof; close.
+    FAIL the proxy's Basic, a CONNECT to localhost at a face: no Proxy-Authorization, 407 with the challenge; alice and s3cret, the tunnel; bob and hunter2 too, the scheme in lower case; alice with another password, a byte more, Bearer, or 
+    FAIL a suite killed with SIGKILL while idle: within 5 s every face of its origin refuses connections
+    FAIL a suite killed with SIGKILL during a probe: its origin lives until the probe's wire-probe-deadline, 2000 ms, ends the probe; within 2000 ms of it plus 2000 ms of slack every face refuses connections
+mutant origin-inner tests/test-origin.sps: exit 1
+    FAIL the proxy's tunnels: CONNECT 127.0.0.1 at the raw face, a request behind it, gets the tunnel's 200, then raw's bytes, then eof; at the http face, a GET behind it, the tunnel's 200, then the face's answer, logged as an inner request
+    FAIL the proxy's Basic, a CONNECT to localhost at a face: no Proxy-Authorization, 407 with the challenge; alice and s3cret, the tunnel; bob and hunter2 too, the scheme in lower case; alice with another password, a byte more, Bearer, or 
+    FAIL a suite killed with SIGKILL while idle: within 5 s every face of its origin refuses connections
+    FAIL a suite killed with SIGKILL during a probe: its origin lives until the probe's wire-probe-deadline, 2000 ms, ends the probe; within 2000 ms of it plus 2000 ms of slack every face refuses connections
+mutant origin-inner tests/test-proxy.sps: exit 1
+    FAIL an https:// URL through an http:// proxy URL goes by CONNECT: the proxy logs the CONNECT to the origin's face, its answer, the origin's request inside the tunnel, and the close
+    FAIL the proxy's credentials go on the CONNECT: alice and s3cret to localhost, which the proxy requires, pass; the origin's request inside the tunnel carries none of the proxy's
+    FAIL an HTTP/2 origin through an http:// proxy URL: the CONNECT, then an HTTP/2 stream inside the tunnel
+    FAIL the origin's TLS is its own: through an http:// proxy, the origin's CA file another CA's fails tls after the CONNECT passed, no request inside the tunnel; the proxy's verification never reaches it; the origin's verification off pas
+mutant rounds-follow tests/test-stream.sps: exit 1
+    FAIL follow beside stream-buffer is refused as stream-with-rounds, naming stream-buffer and its value, however the two came together: the private following constructor of a streamed request, and curl-request-with of a following one; the hat
+mutant cookie-drop tests/test-redirect.sps: exit 1
+    FAIL exchange-step's origin rule: the same origin keeps every header, by the host's case and by an explicit default port too; another port or scheme, the scheme alone on one port among them, drops Authorization and Cookie, in any case, and 
+    FAIL exchange-step: a header dropped stays dropped, through a hop back to the first origin
+    FAIL the origin rule by port, live: the http face to the raw face's echo drops the session's Authorization and the call's Cookie, and keeps the rest
+    FAIL a header dropped stays dropped, live: the http face to the raw face, whose location script sends the call back to the http face's echo, which gets neither of the two
+mutant last-arg-irritant tests/test-proxy.sps: exit 1
+    FAIL no refusal holds the proxy's password: each condition, as write, display and display-condition print it, never shows it; and each did refuse, but TLS inside TLS where this libcurl does not stall
+mutant control tests/test-origin.sps: exit 1   (no change: the copy alone)
+    FAIL a suite killed with SIGKILL while idle: within 5 s every face of its origin refuses connections
+    FAIL a suite killed with SIGKILL during a probe: its origin lives until the probe's wire-probe-deadline, 2000 ms, ends the probe; within 2000 ms of it plus 2000 ms of slack every face refuses connections
+    FAIL a suite killed with SIGKILL while idle: within 5 s every face of its origin refuses connections
+      expected: (returned ((timeout timeout timeout) refused-within-the-bound))
+      actual:   (raised "Exception in sigkill: the child Chez printed no line")
+mutant origin-halfopen tests/test-origin.sps: exit 1   (proxyRefuse's client.on('end', ...) dropped)
+    FAIL the proxy's refusals: a CONNECT to refuse-S.invalid gets S, 403, 407 with Basic's challenge, 502 or 503, Content-Length and proxy S, the connection kept, so the probe ends by its idle bound; a client's end then ends it, eof; close.invalid ends at once, nothing written; any other host, refuse-40
+    FAIL the proxy's Basic, a CONNECT to localhost at a face: no Proxy-Authorization, 407 with the challenge; alice and s3cret, the tunnel; bob and hunter2 too, the scheme in lower case; alice with another password, a byte more, Bearer, or a second header behind a wrong first, 407; each decoded on the l
+    FAIL a suite killed with SIGKILL while idle: within 5 s every face of its origin refuses connections
+    FAIL a suite killed with SIGKILL during a probe: its origin lives until the probe's wire-probe-deadline, 2000 ms, ends the probe; within 2000 ms of it plus 2000 ms of slack every face refuses connections
+mutant origin-halfopen tests/test-proxy.sps: exit 0   (proxyRefuse's client.on('end', ...) dropped)
