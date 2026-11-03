@@ -217,8 +217,8 @@ provisional. They bind until that record is accepted or amended.
 - **Only `http` and `https`.** The scheme is checked on the parsed handle before
   submission. Every transfer is also pinned with `CURLOPT_PROTOCOLS_STR` and
   `CURLOPT_REDIR_PROTOCOLS_STR`. The deprecated bitmask options are never used (ADR-0003,
-  ADR-0008). The pins, with `NOSIGNAL`, are `pinned-options`, the first thing the transfer sets
-  on its handle; their names appear in `transfer.sls` only as data, and `test-transfer` holds
+  ADR-0008). The pins, with `NOSIGNAL` and, from M7 slice 2, `MAXREDIRS` at 30 (ADR-0036,
+  amended), are `pinned-options`, the first thing the transfer sets on its handle; their names appear in `transfer.sls` only as data, and `test-transfer` holds
   both. A redirect test cannot: libcurl checks a followed URL against both pins, so either
   hides the other's removal.
 - **Relative references** resolve with `curl_url_set` against the current URL's handle
@@ -383,7 +383,11 @@ provisional. They bind until that record is accepted or amended.
   `UNIX_SOCKET_PATH`, `ABSTRACT_UNIX_SOCKET`, `PROXYHEADER` and `HEADEROPT`; and, kept from the
   hatch though no twin, `RESUME_FROM`, `RESUME_FROM_LARGE`, `COOKIEFILE`, `COOKIEJAR`,
   `CONNECT_ONLY`, `DOH_URL`, `RESOLVE` and `SSLENGINE_DEFAULT`, all refused as `owned-option`
-  (ADR-0009, amended 2026-10-27).
+  (ADR-0009, amended 2026-10-27). M7 slice 1 added `HTTP_VERSION`, the `http-version` field's,
+  and its twins `SSL_ENABLE_ALPN`, `ALTSVC` and `ALTSVC_CTRL`; slice 2 made `HTTPAUTH`,
+  `USERNAME`, `PASSWORD` and `XOAUTH2_BEARER` the `credentials` field's, `USERNAME` and
+  `PASSWORD` no longer twins, and added the twin `AWS_SIGV4` and the pin `MAXREDIRS` (ADR-0009,
+  amended 2026-11-02).
 - **The test seam, `curl-engine-submit-with`, is retired into the hatch** (ADR-0009, amended
   2026-10-27). No submit takes options of its own.
 - **Lifetimes.** Blobs are passed with `CURL_BLOB_COPY`, through a counted `struct curl_blob`
@@ -452,6 +456,10 @@ provisional. They bind until that record is accepted or amended.
   - Its stdin closes once every process holding it has gone, so a suite killed mid-probe
     leaves it serving until that probe's own deadline.
   - Exact bytes come from its raw `node:net` face (ADR-0005, amended).
+  - From M7 slice 2, `/auth` on every face answers the challenge its query names and checks
+    Basic, Bearer and Digest by its own arithmetic, `/auth-log` reads back each request of a
+    transfer, and `/raw/auth417` answers 417 on a connection it keeps, where a resend can
+    happen; `--selftest [PLANT]` holds the Digest arithmetic to the published vectors.
 - **The instrument is checked by a byte probe,** `tests/wire-probe.mjs`, which has no HTTP
   code, and by `openssl`.
   - Each TLS face is checked by three portable facts: `s_client`'s verify errors and code
@@ -753,7 +761,8 @@ provisional. They bind until that record is accepted or amended.
   stream.
 - **One transfer, one request:** a request that streams its response refuses, as
   `&curl-request-error`, `stream-with-rounds`, every way libcurl makes a second request inside
-  one transfer: the private `follow` field, the hatch's `HTTPAUTH` and `PROXYAUTH`, and a caller
+  one transfer: the private `follow` field, the hatch's `PROXYAUTH` (its `HTTPAUTH` is owned from
+  M7 slice 2, and Digest beside a stream is `digest-with-stream`), and a caller
   `Expect` header whose value holds `100-continue` anywhere, folded A to Z alone, whose 417
   libcurl answers with a resend. Each is refused by every path that puts the two together, and
   the header again at submit (the M6 plan, §3.2).
@@ -847,9 +856,15 @@ provisional. They bind until that record is accepted or amended.
   byte, none empty but the value (ADR-0035, amended).
 - **Server credentials:** a field that sets `USERNAME` and `PASSWORD` both, refused beside
   userinfo in the URL or a caller's `Authorization` header; one scheme per request, Basic, Digest
-  or Bearer, never a set nor `ANY`; a streamed body or response takes Basic or Bearer alone. No
-  credentials string holds NUL, CR, LF or a byte the header rule refuses: libcurl writes them into
-  a header unescaped (ADR-0036, amended).
+  or Bearer, never a set nor `ANY`; a streamed body or response takes Basic or Bearer alone.
+  Credentials strings are UTF-8, and none holds a control byte, 0x00 to 0x1F or 0x7F: libcurl
+  writes them into a header unescaped. A Basic user name holds no `:`, and a Bearer token, or a
+  user and password both, is never empty. Every transfer sets `MAXREDIRS` 30, owned, which
+  bounds alike every follow libcurl counts inside a transfer: an auth round, a `stale=true`
+  round and a 417's resend, never its retry of a dead or refused connection (ADR-0036, amended
+  twice). No record that holds a request, a plan, a token or credentials prints its fields: the
+  request, the plan, the live transfer, the engine, the token, the mailbox and the exchange are
+  opaque, and `record-rtd` raises on each (M7 slice 2's review).
 - **A named proxy:** an `http://` or `https://` URL; the transfer sets `NOPROXY ""`, so no
   variable sends it direct; its credentials are its URL's userinfo, by Basic; a caller's
   `Proxy-Authorization` header is refused; its CA and verification are request fields on the

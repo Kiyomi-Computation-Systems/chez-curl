@@ -328,7 +328,11 @@
             (immutable attempts exchange-attempts)
             (immutable retried exchange-retried)
             (immutable called exchange-called?))
-    (sealed #t))
+    (sealed #t)
+    ;; Opaque: a call's state holds its requests, and the drive hands a
+    ;; core step that holds one to an assertion as its irritant (the review
+    ;; of M7 slice 2).
+    (opaque #t))
 
   ;; ns? : Any -> Boolean
   (define (ns? x) (and (integer? x) (exact? x)))
@@ -694,7 +698,11 @@
   ;; ANOTHER-HOST; every other key LAST's, its stream-buffer among them (the
   ;; M6 plan, section 3.6), and its http-version (the M7 plan, section
   ;; 3.1): a hop to https:// by prior knowledge is refused as it is
-  ;; submitted, prior-knowledge-over-https.
+  ;; submitted, prior-knowledge-over-https; and its credentials within one
+  ;; origin, dropped when ACROSS, as the credential headers are (ADR-0036;
+  ;; the M7 plan, section 3.1): a hop within the origin whose URL holds a
+  ;; user or a password is refused as it is submitted,
+  ;; credentials-beside-userinfo.
   (define (next-request last url status across another-host)
     (let* ((method (curl-request-method last))
            (dropped (body-dropped? status method))
@@ -717,7 +725,8 @@
                          'ca-file (curl-request-ca-file last)
                          'verify (curl-request-verify last)
                          'proxy (curl-request-proxy last)
-                         'http-version (curl-request-http-version last))))
+                         'http-version (curl-request-http-version last)
+                         'credentials (if across #f (curl-request-credentials last)))))
 
   ;; follow : State Response Integer String
   ;;          -> (U (List 'fail Condition) (List 'next State Request 0))

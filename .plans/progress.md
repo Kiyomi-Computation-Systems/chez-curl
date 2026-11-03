@@ -8,10 +8,13 @@ close-out under **Close-outs**, newest first.
 
 - **M7, HTTP/2, cookies, auth and proxies:** in progress. The
   [M7 plan](2026-11-02-m7-plan.md) merged as PR #41 (`c238fe7`), CI passing all eight jobs on
-  it. Four slices: the HTTP version, auth, proxies and the cookie jar. Slice 1, the HTTP version
-  (the plan, §4), is built and reviewed on `feat/m7-slice-1`, not yet merged: measured first
-  through the engine ([research](research/m7/slice1/)); `prior-knowledge-through-proxy` moved to
-  slice 3, where a named proxy first exists.
+  it. Four slices: the HTTP version, auth, proxies and the cookie jar. Slice 1, the HTTP version,
+  merged as PR #42 (`5fe3150`); its close-out is below. Slice 2, auth (the plan, §5), is built
+  and reviewed on `feat/m7-slice-2`, not yet merged: measured first through the engine
+  ([research](research/m7/slice2/)), then four answers by the maintainer, each the recommended
+  option (ADR-0036, amended): credentials are UTF-8, refuse every control byte, and refuse
+  empty values, and every transfer pins `MAXREDIRS` at 30. The review made every record that
+  holds a request, a token or credentials opaque, since a printed token showed its password.
   - **Decided by the maintainer, 2026-11-02,** each the recommended option, from two read-only
     surveys and four probes on the five Linux libcurls
     ([`research/m7/`](research/m7/)):
@@ -209,6 +212,82 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-11-02 — M7 slice 1: the HTTP version (PR #42, `5fe3150`)
+
+- **Measured first** (the plan, §4.1; [`research/m7/slice1/`](research/m7/slice1/)), by an Opus
+  agent, through the engine on main's `src/`, and on a prototype for a named proxy, on the five
+  Linux lanes, two runs each. It matched ADR-0034's C probe cell for cell, and added:
+  - `1_1` to the `h2`-only face fails 35 with nothing sent;
+  - prior knowledge through a proxy that does not tunnel is ignored on all five, the request
+    HTTP/1.1 in absolute form, and spoken as HTTP/2 inside a tunnel;
+  - `SSL_ENABLE_ALPN` 0 turns HTTP/2 into HTTP/1.1, and `ALTSVC` moves a later transfer to
+    another port, host and version;
+  - two requests submitted together by prior knowledge to h2c share one connection on 7.85.0
+    alone.
+
+  I reran its Guix lane, which matched, and a change I planted in a copy was flagged.
+- **Moved to slice 3:** `prior-knowledge-through-proxy`. No request names a proxy before slice
+  3, so no test of the refusal could fail (the plan, §3.2).
+- **Built** (the plan, §4.2) by an Opus builder:
+  - the `http-version` key at both levels, carried by every hop;
+  - `version-settings`, `prior-knowledge-over-https` and the two constants;
+  - `HTTP_VERSION` owned, with `SSL_ENABLE_ALPN`, `ALTSVC` and `ALTSVC_CTRL` (ADR-0009,
+    amended);
+  - test-version, 27 tests, and README.org's "Choosing the HTTP version".
+
+  It found that prior knowledge to an HTTP/1.1 server fails 55 under Valgrind, mostly, where
+  natively it fails 52, 56 or 16 by version. So each row is a set of codes (ADR-0034, amended;
+  a new trap), and its logs are in [`valgrind-race/`](research/m7/slice1/valgrind-race/).
+- **Reviewed** (Opus, read-only): no blocker and two majors, each reproduced before its fix
+  ([`review/`](research/m7/slice1/review/)):
+  - `ALTSVC_CTRL` alone moved a 417's resend inside one transfer to the alternative, which the
+    measurement, reading it across transfers, could not see. It is owned.
+  - The carried-redirect test passed with the key dropped: its hop reused the first leg's pooled
+    HTTP/2 connection. Its hop now goes to `localhost`, and I watched it fail under that mutant.
+- **Mutants I watched fail:** the refusal off; `http/2` as `2_0`; the hop dropping the key;
+  `ALTSVC_CTRL` unowned.
+- **Checks,** on the final tree: in the container, `make test` 36 of 36, twice; the eight
+  changed suites on the floor, main, gnutls and current Docker lanes, twice; test-version under
+  the memory gate. CI passed all eight jobs at `45e7ea4`.
+- **The Mac ran it, 2026-11-02:** `make test` 35 of 36 at `fd9394e`
+  ([log](research/m7/slice1/results/mac-8.7.1-make-test.log)). test-version printed 8.7.1's
+  missing row, two connections for a batch by prior knowledge, which `45e7ea4` added. Its rerun
+  passed test-version, 27 of 27
+  ([log](research/m7/slice1/results/mac-8.7.1-test-version-2.log)).
+- **Subagents,** every one Opus:
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | measurements | 437k | 37 min |
+  | builder | 576k | 63 min |
+  | builder, fix round, resumed | 68k, the resume's line | 20 min |
+  | adversarial review | 336k | 18 min |
+- **Learned:**
+  - an option measured across transfers can still act inside one: my brief tested `ALTSVC_CTRL`
+    on fresh handles alone;
+  - a test of what a hop carries must send the hop where the first leg's connection cannot
+    serve it;
+  - a failure's code can race one way natively and the other under Valgrind, so a row is read
+    both ways;
+  - two of my record lines outran the logs, a lane count and a cause stated as fact; and
+    evidence left in `build/` is no kept log.
+
+### 2026-11-02 — the M7 plan (PR #41, `c238fe7`)
+
+- **The plan and five records:** the [M7 plan](2026-11-02-m7-plan.md), and ADR-0033 to
+  ADR-0037, each decided by the maintainer, the recommended option, from two surveys and four
+  probes on the five Linux libcurls ([`research/m7/`](research/m7/)). Under Now, above.
+- **Reviewed** (Opus, read-only): no blocker, eleven majors and sixteen minors, answered in the
+  plan's §11. The maintainer then answered four of its questions (§9).
+- **The Mac ran the four probes** against 8.7.1 on the plan's branch: no decision moved (§7).
+- **Subagents:** in the plan's §11.
+
+### 2026-11-02 — CI skips `.plans/` alone (PR #40, `feef58a`)
+
+- A pull request or a push to `main` whose changes all lie in `.plans/`'s own files or
+  `.plans/research/` runs no CI. `.plans/decisions/` still runs every job, since
+  test-collect-safe reads the records. It also carried PR #39's close-out.
 
 ### 2026-11-01 — CI's first runs, four failing suites (PR #39, `80bb2a9`)
 

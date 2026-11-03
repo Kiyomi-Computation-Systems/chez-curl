@@ -102,6 +102,57 @@ A request's =http-version= asks for one:
 =(http-client)='s sessions and calls take =http-version= too. A call's
 replaces its session's, and a redirect keeps it.
 
+*** Giving credentials
+
+A request's =credentials= names one scheme, and what it sends:
+
+#+begin_src scheme
+(make-curl-request "https://example.com/" 'credentials '(basic "user" "pass"))
+(make-curl-request "https://example.com/" 'credentials '(digest "user" "pass"))
+(make-curl-request "https://example.com/" 'credentials '(bearer "token"))
+#+end_src
+
+- *Basic and Bearer* go out on the first request.
+- *Digest* sends a bare request first, and its credentials once the server
+  answers with a challenge: a second request inside the transfer. A request
+  with a body, a =post= or a =put=, to a server that never challenges is sent
+  twice, the first time with no body.
+- *Each string is sent as UTF-8.* libcurl 8.23.0 percent-encodes a Digest
+  user name's bytes outside ASCII, and still hashes the raw ones, so a
+  server refuses a non-ASCII Digest user name from it.
+- *A wrong password is no failure:* you get the server's 401.
+- *Refused when you make the request:* a control character, U+0000 to
+  U+001F or U+007F, in any string, which libcurl would write into the header
+  as it is (=credentials-bytes=); a =:= in a Basic user name, where Basic ends
+  the user (the same reason); an empty token, or a user and a password both
+  empty (=credentials-empty=); credentials beside your own =Authorization=
+  header, since libcurl would send one or both (=credentials-beside-authorization=);
+  Digest beside a streamed body or response, since its second request would
+  break the stream (=digest-with-stream=). Basic and Bearer stream fine.
+- *Refused when you submit:* credentials beside a URL that holds a user or a
+  password (=credentials-beside-userinfo=). Give them one way. An empty
+  =@= in the URL counts on libcurl 8.5.0 and later, not on 7.85.0.
+- *A refusal never holds your secret,* only its scheme and part, such as
+  =(basic password)=.
+- *No length is checked.* libcurl sends what fits: 8 KiB goes everywhere,
+  64 KiB over HTTP/1.1 alone, and 1 MiB fails before anything is sent, with
+  libcurl's own code, 27 or 100 by version, but a Digest password, of which
+  only the hash goes.
+- *A printed request, token or engine shows its type alone,* such as
+  =#<curl-request>=, never your credentials.
+- *The hatch refuses* =HTTPAUTH=, =USERNAME=, =PASSWORD=, =XOAUTH2_BEARER=
+  and =AWS_SIGV4=, and =MAXREDIRS=: every transfer stops after 30 of the
+  requests libcurl follows inside it, an auth round's, a stale Digest
+  challenge's and a 417's resend among them, so a server that answers 417 or
+  a stale challenge for ever ends it with 47. libcurl's retry of a request a
+  dead connection lost is no such follow.
+
+=(http-client)='s sessions and calls take =credentials= too. A call's
+replaces its session's. A redirect keeps them within one origin, and drops
+them for another, as it drops =Authorization=. A redirect within the origin
+to a URL holding a user or a password fails the call,
+=credentials-beside-userinfo=.
+
 *** Options chez-curl does not wrap
 
 =(curl unsupported)= attaches a libcurl option to a request by its name, for
@@ -239,8 +290,8 @@ up to =redirects= times: 20, unless the session or the call says otherwise.
 =#f= follows none, and answers the redirect.
 
 - *To another origin,* another scheme, host or port, the call drops
-  =Authorization=, =Cookie= and =Proxy-Authorization=, and =Host= when the
-  host changes. A header dropped stays dropped, even back on the first
+  =Authorization=, =Cookie= and =Proxy-Authorization=, and its
+  =credentials=, and =Host= when the host changes. A header dropped stays dropped, even back on the first
   origin. *Every other header follows,* so an =X-Api-Key= reaches the new
   origin too.
 - *A =user:pass@= in the URL* stays for a relative =Location=. An absolute

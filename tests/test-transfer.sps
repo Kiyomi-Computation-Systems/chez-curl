@@ -103,8 +103,7 @@
         (only (curl private native) curl-easy-setopt-long curl-easy-setopt-off-t
               curl-easy-setopt-pointer call-with-c-string curl-slist-append curl-slist-free-all
               curl-easy-strerror loaded-protocols curl-easy-option)
-        (only (chezscheme) make-engine)
-        (only (rnrs records inspection) record-rtd record-type-field-names))
+        (only (chezscheme) make-engine))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
 ;; counts into one.
@@ -1336,24 +1335,25 @@
 
 ;; --- the hatch's deny-list (ADR-0009, amended 2026-10-23 and 2026-10-27) ------------------
 
-(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its read, seek and prerequest callables and their data, and FRESH_CONNECT, stream-buffer's header callable and its data, HEADERFUNCTION and HEADERDATA, body-length's INFILESIZE_LARGE, http-version's HTTP_VERSION, and FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's NOPROXY, PRE_PROXY, PROXYPORT and PROXYTYPE; then slice 4's: TRANSFERTEXT, CRLF's twin; the URL's USERPWD, USERNAME, PASSWORD, NETRC and HSTS; the proxy field's UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET; the headers' PROXYHEADER and HEADEROPT; and RESUME_FROM, RESUME_FROM_LARGE, COOKIEFILE, COOKIEJAR, CONNECT_ONLY, DOH_URL, RESOLVE and SSLENGINE_DEFAULT, kept from the hatch; then M7 slice 1's, the HTTP version's twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL; then every proxy TLS option"
+(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT and MAXREDIRS among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its read, seek and prerequest callables and their data, and FRESH_CONNECT, stream-buffer's header callable and its data, HEADERFUNCTION and HEADERDATA, body-length's INFILESIZE_LARGE, http-version's HTTP_VERSION, credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, and FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's NOPROXY, PRE_PROXY, PROXYPORT and PROXYTYPE; then slice 4's: TRANSFERTEXT, CRLF's twin; the URL's USERPWD, NETRC and HSTS; the proxy field's UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET; the headers' PROXYHEADER and HEADEROPT; and RESUME_FROM, RESUME_FROM_LARGE, COOKIEFILE, COOKIEJAR, CONNECT_ONLY, DOH_URL, RESOLVE and SSLENGINE_DEFAULT, kept from the hatch; then M7 slice 1's, the HTTP version's twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL; then M7 slice 2's, the credentials' twin AWS_SIGV4; then every proxy TLS option"
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
-    "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
+    "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
     "CURLU" "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD" "HTTPHEADER"
     "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA"
     "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT" "USERAGENT"
     "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "CAINFO" "CAPATH"
     "SSL_VERIFYPEER" "SSL_VERIFYHOST" "PROXY" "HEADERFUNCTION" "HEADERDATA" "INFILESIZE_LARGE"
-    "HTTP_VERSION" "FOLLOWLOCATION"
+    "HTTP_VERSION" "HTTPAUTH" "USERNAME" "PASSWORD" "XOAUTH2_BEARER" "FOLLOWLOCATION"
     "TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "PUT"
     "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE"
     "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
     "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
-    "TRANSFERTEXT" "USERPWD" "USERNAME" "PASSWORD" "NETRC" "HSTS"
+    "TRANSFERTEXT" "USERPWD" "NETRC" "HSTS"
     "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
     "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
     "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT"
     "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL"
+    "AWS_SIGV4"
     "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
     "PROXY_CAINFO" "PROXY_CAINFO_BLOB" "PROXY_CAPATH" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
     "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
@@ -1362,7 +1362,7 @@
     "PROXY_TLSAUTH_PASSWORD")
   owned-option-names)
 
-(test-equal "request-field-options, written out: url's CURLU; method's NOBODY and CUSTOMREQUEST, and a streamed body's POST and UPLOAD; headers' HTTPHEADER; body's POSTFIELDSIZE_LARGE and COPYPOSTFIELDS, then a streamed one's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT; user-agent's USERAGENT; timeout-ms's TIMEOUT_MS; connect-timeout-ms's CONNECTTIMEOUT_MS; body-limit's MAXFILESIZE_LARGE; ca-file's CAINFO and CAPATH; verify's SSL_VERIFYPEER and SSL_VERIFYHOST; proxy's PROXY; stream-buffer's HEADERFUNCTION and HEADERDATA; body-length's INFILESIZE_LARGE; http-version's HTTP_VERSION; and follow's FOLLOWLOCATION"
+(test-equal "request-field-options, written out: url's CURLU; method's NOBODY and CUSTOMREQUEST, and a streamed body's POST and UPLOAD; headers' HTTPHEADER; body's POSTFIELDSIZE_LARGE and COPYPOSTFIELDS, then a streamed one's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT; user-agent's USERAGENT; timeout-ms's TIMEOUT_MS; connect-timeout-ms's CONNECTTIMEOUT_MS; body-limit's MAXFILESIZE_LARGE; ca-file's CAINFO and CAPATH; verify's SSL_VERIFYPEER and SSL_VERIFYHOST; proxy's PROXY; stream-buffer's HEADERFUNCTION and HEADERDATA; body-length's INFILESIZE_LARGE; http-version's HTTP_VERSION; credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER; and follow's FOLLOWLOCATION"
   '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD") (headers "HTTPHEADER")
     (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA"
           "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT")
@@ -1371,7 +1371,8 @@
     (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
     (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY")
     (stream-buffer "HEADERFUNCTION" "HEADERDATA") (body-length "INFILESIZE_LARGE")
-    (http-version "HTTP_VERSION") (follow "FOLLOWLOCATION"))
+    (http-version "HTTP_VERSION") (credentials "HTTPAUTH" "USERNAME" "PASSWORD" "XOAUTH2_BEARER")
+    (follow "FOLLOWLOCATION"))
   request-field-options)
 
 (test-equal "every option of every request field is an owned option, so the hatch refuses it"
@@ -1379,10 +1380,10 @@
   (filter (lambda (name) (not (member name owned-option-names)))
           (apply append (map cdr request-field-options))))
 
-(test-equal "a request's fields, written out, in the record's order: url, method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer, body-length, http-version, then the private fault and follow, then the hatch's options"
-  '(url method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy stream-buffer body-length http-version fault follow options)
+(test-equal "a request's fields, written out, in the record's order: url, method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer, body-length, http-version, credentials, then the private fault and follow, then the hatch's options"
+  '(url method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy stream-buffer body-length http-version credentials fault follow options)
   (guard (e (#t (list 'raised (describe e))))
-    (vector->list (record-type-field-names (record-rtd (make-curl-request "http://a/"))))))
+    (request-field-names)))
 
 ;; The record's own fields, read from its record type: a field added later
 ;; needs a row, or its place here among the fields that set no option.
@@ -1390,7 +1391,7 @@
   '()
   (guard (e (#t (list 'raised (describe e))))
     (filter (lambda (field) (not (or (assq field request-field-options) (memq field '(fault options)))))
-            (vector->list (record-type-field-names (record-rtd (make-curl-request "http://a/")))))))
+            (request-field-names))))
 
 ;; --- what a transfer sets, read from transfer.sls as data -----------------------------
 ;; On the engine's thread, start-transfer! makes a transfer's native objects
@@ -1456,8 +1457,9 @@
                                           (make-transcoder (utf-8-codec)))
       read)))
 
-(test-equal "pinned-options, written out: PROTOCOLS_STR and REDIR_PROTOCOLS_STR at \"http,https\", and NOSIGNAL at 1"
-  '(("PROTOCOLS_STR" . "http,https") ("REDIR_PROTOCOLS_STR" . "http,https") ("NOSIGNAL" . 1))
+(test-equal "pinned-options, written out: PROTOCOLS_STR and REDIR_PROTOCOLS_STR at \"http,https\", NOSIGNAL at 1, and MAXREDIRS at 30, which bounds the follows libcurl makes inside a transfer (ADR-0036, decision 8)"
+  '(("PROTOCOLS_STR" . "http,https") ("REDIR_PROTOCOLS_STR" . "http,https") ("NOSIGNAL" . 1)
+    ("MAXREDIRS" . 30))
   pinned-options)
 
 (test-equal "quick-exit-pin, written out: QUICK_EXIT at 1 (ADR-0019)"
@@ -1465,9 +1467,10 @@
   quick-exit-pin)
 
 (test-equal "pinned-settings, written out for each answer: the pins alone, or the pins and then QUICK_EXIT at 1"
-  '((("PROTOCOLS_STR" . "http,https") ("REDIR_PROTOCOLS_STR" . "http,https") ("NOSIGNAL" . 1))
+  '((("PROTOCOLS_STR" . "http,https") ("REDIR_PROTOCOLS_STR" . "http,https") ("NOSIGNAL" . 1)
+     ("MAXREDIRS" . 30))
     (("PROTOCOLS_STR" . "http,https") ("REDIR_PROTOCOLS_STR" . "http,https") ("NOSIGNAL" . 1)
-     ("QUICK_EXIT" . 1)))
+     ("MAXREDIRS" . 30) ("QUICK_EXIT" . 1)))
   (list (pinned-settings #f) (pinned-settings #t)))
 
 ;; CURLOPT_QUICK_EXIT(3), 8.20.0: "Added in curl 7.87.0", 0x075700.
@@ -1566,12 +1569,20 @@
   (and (list? form) (= (length form) 3) (eq? (car form) 'for-each)
        (equal? (caddr form) '(version-settings (plan-http-version plan)))))
 
+;; credentials-loop? : Any -> Boolean
+;; FORM is a for-each over credentials-settings' answer for the plan's
+;; credentials, whose settings it sets by (car setting).
+(define (credentials-loop? form)
+  (and (list? form) (= (length form) 3) (eq? (car form) 'for-each)
+       (equal? (caddr form) '(credentials-settings (plan-credentials plan)))))
+
 ;; setting-order : Any -> Any
 ;; What each form of the definition D's body sets, in order: pins for
 ;; (set-pinned-options! easy buffer quick-exit); tls for (set-tls-options! easy
 ;; (plan-ca-file plan) (plan-verify plan) buffer); method for the loop over
 ;; method-settings' answer, by method-loop?; version for the loop over
-;; version-settings' answer, by version-loop?; hatch for the loop over the
+;; version-settings' answer, by version-loop?; credentials for the loop over
+;; credentials-settings' answer, by credentials-loop?; hatch for the loop over the
 ;; hatch's settings, by hatch-loop?; else each set-option! and
 ;; set-string-option! call in it, by set-name; (other FORM) for a form that
 ;; sets nothing. D itself when it is no definition: what went wrong.
@@ -1584,6 +1595,7 @@
                            '(tls))
                           ((method-loop? form) '(method))
                           ((version-loop? form) '(version))
+                          ((credentials-loop? form) '(credentials))
                           ((hatch-loop? form) '(hatch))
                           (else (let ((sets (option-sets form '())))
                                   (if (null? sets)
@@ -1592,20 +1604,20 @@
                   (cddr d)))
       d))
 
-(test-equal "set-transfer-options!, read from transfer.sls, form by form: the pins first, then ERRORBUFFER, CURLU, WRITEFUNCTION and WRITEDATA, then a streamed response's HEADERFUNCTION and HEADERDATA, then a streamed body's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT, then the loop over method-settings' answer, then the request's HTTPHEADER, USERAGENT, TIMEOUT_MS, CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE and PROXY, then the loop over version-settings' answer, then set-tls-options!, then the private follow field's FOLLOWLOCATION, then, last, the loop over the hatch's settings; set-pinned-options!, set-transfer-options! and set-hatch-option! each stand twice in transfer.sls, a definition and one call"
+(test-equal "set-transfer-options!, read from transfer.sls, form by form: the pins first, then ERRORBUFFER, CURLU, WRITEFUNCTION and WRITEDATA, then a streamed response's HEADERFUNCTION and HEADERDATA, then a streamed body's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT, then the loop over method-settings' answer, then the request's HTTPHEADER, USERAGENT, TIMEOUT_MS, CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE and PROXY, then the loop over version-settings' answer, then the loop over credentials-settings' answer, then set-tls-options!, then the private follow field's FOLLOWLOCATION, then, last, the loop over the hatch's settings; set-pinned-options!, set-transfer-options! and set-hatch-option! each stand twice in transfer.sls, a definition and one call"
   '((pins "ERRORBUFFER" "CURLU" "WRITEFUNCTION" "WRITEDATA" "HEADERFUNCTION" "HEADERDATA"
           "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA" "PREREQFUNCTION" "PREREQDATA"
           "FRESH_CONNECT" method
-          "HTTPHEADER" "USERAGENT" "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "PROXY" version tls
-          "FOLLOWLOCATION" hatch)
+          "HTTPHEADER" "USERAGENT" "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "PROXY" version
+          credentials tls "FOLLOWLOCATION" hatch)
     2 2 2)
   (list (setting-order (transfer-definition 'set-transfer-options!))
         (symbol-count 'set-pinned-options! transfer-library)
         (symbol-count 'set-transfer-options! transfer-library)
         (symbol-count 'set-hatch-option! transfer-library)))
 
-(test-equal "setting-order, the reader: pins, tls, the loop over method-settings' answer, the loop over version-settings', each set's name at any depth, a field's through field-option, the hatch's loop, a form that sets nothing, a loop by (car setting), and a name it cannot read"
-  '(pins "A" "USERAGENT" "B" tls method version hatch (other (f x)) (unread (car setting)) (unread n))
+(test-equal "setting-order, the reader: pins, tls, the loop over method-settings' answer, the loop over version-settings', the loop over credentials-settings', each set's name at any depth, a field's through field-option, the hatch's loop, a form that sets nothing, a loop by (car setting), and a name it cannot read"
+  '(pins "A" "USERAGENT" "B" tls method version credentials hatch (other (f x)) (unread (car setting)) (unread n))
   (setting-order '(define (g)
                     (set-pinned-options! easy buffer quick-exit)
                     (set-option! e "A" 1 b)
@@ -1615,6 +1627,8 @@
                               (method-settings (plan-method plan) (plan-body plan) (plan-body-length plan)))
                     (for-each (lambda (setting) (set-option! e (car setting) (cdr setting) b))
                               (version-settings (plan-http-version plan)))
+                    (for-each (lambda (setting) (set-option! e (car setting) (cdr setting) b))
+                              (credentials-settings (plan-credentials plan)))
                     (for-each (lambda (setting)
                                 (set-hatch-option! easy setting
                                                    (let ((held (assq setting lists))) (and held (cdr held)))
@@ -1674,21 +1688,24 @@
               'the-making-reversed
               (list 'made made 'freed freed)))))
 
-(test-equal "prepare-transfer and curl-request-check, read from transfer.sls, share the checks' one owner, request-checks, which checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the CA file against the environment the libcurl loaded with, then the URL, parsed and its scheme checked, then prior knowledge against that scheme; prepare-transfer calls it as curl-submit, then copies the body and makes the plan, the request's hatch settings in it as they are; curl-request-check calls it as curl-request-check, and does nothing else"
+(test-equal "prepare-transfer and curl-request-check, read from transfer.sls, share the checks' one owner, request-checks, which checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the credentials' copy, the Expect round, the credentials beside the headers' copies and the streams, the CA file against the environment the libcurl loaded with, then the URL, parsed and its scheme checked, its user and password read beside credentials, then prior knowledge against that scheme; prepare-transfer calls it as curl-submit, then copies the body and makes the plan, the request's hatch settings in it as they are; curl-request-check calls it as curl-request-check, and does nothing else"
   ;; Each definition's header names it first, a symbol like the rest.
-  '((request-checks curl-request? snapshot ca-file-copy check-ca-environment call-with-parsed-url
-                    require-http-scheme check-prior-knowledge)
+  '((request-checks curl-request? snapshot ca-file-copy credentials-copy check-expect-round
+                    check-credentials check-ca-environment call-with-parsed-url
+                    require-http-scheme check-userinfo userinfo-parts check-prior-knowledge)
     (request-checks curl-submit bytevector-copy make-plan curl-request-options)
     (curl-request-check request-checks curl-request-check))
   (let ((names '(request-checks curl-submit curl-request-check curl-request? snapshot ca-file-copy
                  checked-settings check-ca-environment call-with-parsed-url require-http-scheme
+                 credentials-copy check-expect-round check-credentials check-userinfo userinfo-parts
                  check-prior-knowledge bytevector-copy make-plan curl-request-options curl-submit-queue)))
     (list (symbols-in names (transfer-definition 'request-checks))
           (symbols-in names (transfer-definition 'prepare-transfer))
           (symbols-in names (transfer-definition 'curl-request-check)))))
 
 ;; pin-names : (Listof String)
-(define pin-names '("PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"))
+(define pin-names '("PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
+                    "MAXREDIRS"))
 
 ;; pin-name-places : Any -> (Listof (List String Any Symbol))
 ;; Each of pin-names as a string in the library form's body: the name, the
@@ -1707,13 +1724,15 @@
                       #f))
               (cddddr library))))
 
-(test-equal "the names PROTOCOLS_STR, REDIR_PROTOCOLS_STR, PROTOCOLS, REDIR_PROTOCOLS, NOSIGNAL and QUICK_EXIT stand in transfer.sls only as quoted data: six in owned-option-names, three in pinned-options, and QUICK_EXIT in quick-exit-pin"
+(test-equal "the names PROTOCOLS_STR, REDIR_PROTOCOLS_STR, PROTOCOLS, REDIR_PROTOCOLS, NOSIGNAL, QUICK_EXIT and MAXREDIRS stand in transfer.sls only as quoted data: seven in owned-option-names, four in pinned-options, and QUICK_EXIT in quick-exit-pin"
   (list-sort (lambda (a b) (string<? (written a) (written b)))
              '(("PROTOCOLS_STR" owned-option-names quoted) ("REDIR_PROTOCOLS_STR" owned-option-names quoted)
                ("PROTOCOLS" owned-option-names quoted) ("REDIR_PROTOCOLS" owned-option-names quoted)
                ("NOSIGNAL" owned-option-names quoted) ("QUICK_EXIT" owned-option-names quoted)
+               ("MAXREDIRS" owned-option-names quoted)
                ("PROTOCOLS_STR" pinned-options quoted) ("REDIR_PROTOCOLS_STR" pinned-options quoted)
-               ("NOSIGNAL" pinned-options quoted) ("QUICK_EXIT" quick-exit-pin quoted)))
+               ("NOSIGNAL" pinned-options quoted) ("MAXREDIRS" pinned-options quoted)
+               ("QUICK_EXIT" quick-exit-pin quoted)))
   (guard (e (#t (list 'unreadable (describe e))))
     (list-sort (lambda (a b) (string<? (written a) (written b))) (pin-name-places transfer-library))))
 
@@ -1768,9 +1787,10 @@
 ;; method-settings' names are its fields' rows in request-field-options,
 ;; through field-options: tests/test-request.sps writes out every method's
 ;; answer, names and all.
-(test-equal "every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for those set by (car setting): three in the loop over method-settings' answer for the plan's method, body and body-length, and one in the loop over version-settings' answer for the plan's http-version; the hatch's settings are set by set-hatch-option!, through its loop alone"
+(test-equal "every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for those set by (car setting): three in the loop over method-settings' answer for the plan's method, body and body-length, one in the loop over version-settings' answer for the plan's http-version, and two, a string's and a number's, in the loop over credentials-settings' answer for the plan's credentials; the hatch's settings are set by set-hatch-option!, through its loop alone"
   '(() (((method-settings (plan-method plan) (plan-body plan) (plan-body-length plan)) 3)
-        ((version-settings (plan-http-version plan)) 1)))
+        ((version-settings (plan-http-version plan)) 1)
+        ((credentials-settings (plan-credentials plan)) 2)))
   (if (list? transfer-sets)
       (list (map car (filter (lambda (s) (not (or (owned-set? (car s)) (equal? (car s) '(car setting)))))
                              transfer-sets))
@@ -2248,11 +2268,11 @@
   ;; the object. A caller's thread runs no transfer now, only a submit and
   ;; an await. Each sweep runs out at every tick of a call that takes a
   ;; mutex: the live-transfer table's, the option cache's; through the
-  ;; hatch, an attach refused as unknown-option after MAXREDIRS, the
+  ;; hatch, an attach refused as unknown-option after LOW_SPEED_LIMIT, the
   ;; lookup's; and, through a submit to a stopped engine, the URL's CURLU,
   ;; made and freed on this thread, and that engine's own mutex, which
   ;; refuses it.
-  (test-equal "a Chez engine that runs out at every tick of live-transfer-count, of cached-option-names, of an attach through the hatch refused as unknown-option after MAXREDIRS, and of a submit to a stopped engine, refused as stopped once its URL was parsed, each abandoned, until one completes: each completes, no native object is left, and another thread then takes every lock, both engines' among them"
+  (test-equal "a Chez engine that runs out at every tick of live-transfer-count, of cached-option-names, of an attach through the hatch refused as unknown-option after LOW_SPEED_LIMIT, and of a submit to a stopped engine, refused as stopped once its URL was parsed, each abandoned, until one completes: each completes, no native object is left, and another thread then takes every lock, both engines' among them"
     `(stopped (completed expired-first) (completed expired-first) (completed expired-first)
       (completed expired-first) ,running-counts other-thread-ran)
     (let* ((refused (request "http://127.0.0.1:1/"))
@@ -2273,7 +2293,7 @@
                               (lambda ()
                                 (answer-of (lambda ()
                                              (curl-request-with-options
-                                              refused '(("MAXREDIRS" . 1) ("NO_SUCH_OPTION" . 1))))))
+                                              refused '(("LOW_SPEED_LIMIT" . 1) ("NO_SUCH_OPTION" . 1))))))
                               submit-to-stopped))))
       (append (list stopped-refuses) sweeps
               (list (native-counts)
@@ -2304,8 +2324,8 @@
               (#t (list 'raised (describe e))))
       (option-named "NO_SUCH_OPTION")
       'no-raise))
-  (test-equal "an option libcurl refuses raises setopt-failed, naming it, with its code and a request size of 0, of no class, through each integer binding: MAXREDIRS -2 through the long one and MAX_RECV_SPEED_LARGE -1 through the off_t one are 43, never taken zero-extended, as 4294967294 and 4294967295 would be; the counts back to the engine's alone"
-    (list (list 'setopt-failed curle-bad-function-argument "MAXREDIRS" 0
+  (test-equal "an option libcurl refuses raises setopt-failed, naming it, with its code and a request size of 0, of no class, through each integer binding: LOW_SPEED_LIMIT -2 through the long one and MAX_RECV_SPEED_LARGE -1 through the off_t one are 43, never taken zero-extended, as 4294967294 and 4294967295 would be; the counts back to the engine's alone"
+    (list (list 'setopt-failed curle-bad-function-argument "LOW_SPEED_LIMIT" 0
                 (table-class 'setopt-failed curle-bad-function-argument))
           (list 'setopt-failed curle-bad-function-argument "MAX_RECV_SPEED_LARGE" 0
                 (table-class 'setopt-failed curle-bad-function-argument))
@@ -2318,7 +2338,7 @@
                              (#t (list 'raised (describe e))))
                      (perform-with (request (url-of o 'http "/status/200")) (list option))
                      'no-raise))
-                 (list '("MAXREDIRS" . -2) '("MAX_RECV_SPEED_LARGE" . -1)))
+                 (list '("LOW_SPEED_LIMIT" . -2) '("MAX_RECV_SPEED_LARGE" . -1)))
             (list (native-counts))))
 
   ;; --- the redirect pin, observed: without REDIR_PROTOCOLS_STR, libcurl

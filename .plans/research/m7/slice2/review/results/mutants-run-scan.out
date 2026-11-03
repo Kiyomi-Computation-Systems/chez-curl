@@ -1,0 +1,1 @@
+mutant scan-skips-first exit 0: test: pass tests/test-auth.sps 

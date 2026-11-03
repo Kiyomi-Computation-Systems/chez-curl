@@ -1,6 +1,6 @@
 # ADR-0009: A typed escape hatch for unwrapped options, in the low level only
 
-- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built; amended 2026-10-27, the hatch, measured, decided and built (M4 slice 4); amended 2026-10-27, the Mac's runs; amended 2026-10-30, the header callable's options are owned (M6 slice 1); amended 2026-10-31, a streamed body's options are owned (M6 slice 2); amended 2026-11-02, the HTTP version's option and three twins are owned (M7 slice 1)
+- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built; amended 2026-10-27, the hatch, measured, decided and built (M4 slice 4); amended 2026-10-27, the Mac's runs; amended 2026-10-30, the header callable's options are owned (M6 slice 1); amended 2026-10-31, a streamed body's options are owned (M6 slice 2); amended 2026-11-02, the HTTP version's option and three twins are owned (M7 slice 1); amended 2026-11-02, the credentials field's options, a twin and a pin are owned (M7 slice 2)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, `(curl ...)` only
 - **Settles:** D3 (brief §10)
@@ -465,3 +465,26 @@ upgrades only an `http://` URL (7.85.0 `http.c:3654`, `url.c:2038`; 8.23.0 `http
 so its in-memory cache moves nothing. It keeps `HTTP09_ALLOWED` and `HTTP200ALIASES`, which change what a response reads, not what is set;
 `CONNECT_TO`, which moves the host but not the version; `HTTPPROXYTUNNEL`, slice 3's question;
 and `PIPEWAIT` (ADR-0034). `test-unsupported` and `test-transfer` write each out.
+
+## Amendment, 2026-11-02: the credentials field's options, a twin and a pin are owned (M7 slice 2)
+
+The `credentials` field sets `HTTPAUTH`, `USERNAME`, `PASSWORD` and `XOAUTH2_BEARER` (ADR-0036),
+so the hatch refuses each as `owned-option`. `USERNAME` and `PASSWORD`, owned as the URL's twins
+since M4 slice 4, are the field's own now. M7 slice 2 measured, through the engine on the five
+Linux libcurls, the options that could change what the field sends
+([research](../research/m7/slice2/)):
+
+- **`AWS_SIGV4`** is owned as a twin: set after `HTTPAUTH`, it replaced every scheme with a
+  signature; set before, `HTTPAUTH` won.
+- **`MAXREDIRS`** is owned, and every transfer sets it to 30 among its pins (ADR-0036,
+  decision 8): libcurl counts an auth round as a follow, so at 0 it ended Digest after its probe,
+  47.
+- **The hatch keeps** `FAILONERROR`, which makes a wrong password's 401 code 22; `AUTOREFERER`,
+  which adds a `Referer` to Digest's second request; `KEEP_SENDING_ON_ERROR`, which sends a
+  streamed body whole after a 401; `UNRESTRICTED_AUTH`, which reaches libcurl's own follow
+  alone, which nothing public sets; and `DISALLOW_USERNAME_IN_URL`, inert through `CURLU` on the
+  first request (7.85.0 `url.c:1999-2004`). `LOGIN_OPTIONS`, `SASL_AUTHZID`, `SASL_IR`,
+  `SERVICE_NAME`, and `NETRC_FILE` without `NETRC`, changed nothing. Each is documented.
+
+`rounds-option-names` keeps `PROXYAUTH` alone, slice 3's. `test-unsupported` and
+`test-transfer` write each out.

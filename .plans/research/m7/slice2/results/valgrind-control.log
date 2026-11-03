@@ -1,0 +1,20 @@
+
+### The Valgrind pass, lane O, against floor-7.85.0's two native runs
+
+474 transfers (items 1, 2 and 6); 470 give the same code, status and statuses of each request as both native runs. schemes exited 0, streams exited 0, pooled exited 0.
+
+- `valgrind schemes:     definitely lost: 0 bytes in 0 blocks`
+- `valgrind schemes:  ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)`
+- `valgrind streams:     definitely lost: 0 bytes in 0 blocks`
+- `valgrind streams:  ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)`
+- `valgrind pooled:     definitely lost: 0 bytes in 0 blocks`
+- `valgrind pooled:  ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)`
+
+| case | Valgrind | native run 1 | native run 2 |
+|---|---|---|---|
+| i2 scheme=digest case=right kind=sized when=normal face=h2 | 200, 2 req, 401/200 | fails 28, 1 req, - | fails 28, 1 req, - |
+| i2 scheme=digest case=wrong kind=sized when=normal face=h2 | 401, 2 req, 401/401 | fails 28, 1 req, - | fails 28, 1 req, - |
+| i2 scheme=digest case=right kind=chunked when=normal face=h2 | 200, 2 req, 401/200 | fails 28, 1 req, - | fails 28, 1 req, - |
+| i2 scheme=digest case=wrong kind=chunked when=normal face=h2 | 401, 2 req, 401/401 | fails 28, 1 req, - | fails 28, 1 req, - |
+
+exit=0

@@ -1,0 +1,3 @@
+the record's private copy, read by reflection: (basic "user" "pass")
+after string-set! on it, curl-request-credentials answers (basic "user" "\nass")
+curl-request-check: (refused credentials-bytes curl-request-check)

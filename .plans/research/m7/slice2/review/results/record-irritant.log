@@ -1,0 +1,1 @@
+Exception in make-curl-request: credentials beside an Authorization header with irritants (basic #[#{curl-request ihohptt0mqp87g0xrpg91jzb8-41} "http://x/" get () #f #f #f #f #f #f #t environment #f #f #f (basic "s3cretUser" "s3cretPass") #f #f ()])

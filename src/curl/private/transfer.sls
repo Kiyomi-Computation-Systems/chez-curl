@@ -100,6 +100,25 @@
 ;;; refuses http/2-prior-knowledge beside an https:// URL, once the URL is
 ;;; parsed, as prior-knowledge-over-https. No transfer sets PIPEWAIT.
 ;;;
+;;; Credentials (ADR-0036, amended twice). A request's credentials, one
+;;; scheme's, Basic, Digest or Bearer, make the settings
+;;; credentials-settings computes, as data, HTTPAUTH at the scheme's bit,
+;;; then USERNAME and PASSWORD, or XOAUTH2_BEARER, each a UTF-8 string, set
+;;; with the request's other settings, before tls-settings'. The record
+;;; keeps a fresh copy, checked, and answers a fresh copy, so no caller
+;;; holds what is sent. Its shape is checked as the request is made, and
+;;; again at submit on the submit's own copies: a control char in any
+;;; part, or a colon in a Basic user, credentials-bytes; nothing to send,
+;;; credentials-empty; an Authorization header beside it,
+;;; credentials-beside-authorization; Digest beside a streamed body or
+;;; response, digest-with-stream. A submit refuses it beside a URL whose
+;;; user or password part libcurl reports, once the URL is parsed, as
+;;; credentials-beside-userinfo. No refusal names a credentials string:
+;;; each names the scheme, and the part refused. Every transfer pins
+;;; MAXREDIRS at 30, which bounds the follows libcurl makes inside a
+;;; transfer, an auth round's, a stale round's and a 417's resend among
+;;; them; never its retry of a request a dead or refused connection lost.
+;;;
 ;;; The environment (ADR-0024). Guix's 8.20.0 writes SSL_CERT_FILE over
 ;;; CAINFO and SSL_CERT_DIR over the cleared CAPATH when a transfer starts,
 ;;; after every setopt, as they were at curl_global_init. So a submit
@@ -156,7 +175,8 @@
 ;;; enumerated-value and off_t options alone (ADR-0009, amended 2026-10-27).
 ;;;
 ;;; The pins, ADR-0003's PROTOCOLS_STR and REDIR_PROTOCOLS_STR at
-;;; "http,https" and NOSIGNAL at 1, are pinned-options, set by one call,
+;;; "http,https", NOSIGNAL at 1 and ADR-0036's MAXREDIRS at 30, which
+;;; bounds libcurl's follows inside a transfer, are pinned-options, set by one call,
 ;;; set-pinned-options!, the first form of set-transfer-options!. With
 ;;; them, ADR-0019's QUICK_EXIT at 1, quick-exit-pin, where the loaded
 ;;; libcurl knows it, from 7.87.0: a transfer taken apart while its name
@@ -175,7 +195,8 @@
           curl-request-url curl-request-method curl-request-headers curl-request-body
           curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
           curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
-          curl-request-http-version version-settings
+          curl-request-http-version version-settings curl-request-credentials credentials-settings
+          request-field-names
           curl-request-fault curl-request-follow curl-request-with-fault curl-request-following
           request-keys request-methods sent-header-lines timing-infos
           prepare-transfer curl-request-check start-transfer! finish-transfer free-transfer!
@@ -300,9 +321,14 @@
                          ((unknown-key) "not a key a request takes")
                          ((repeated-key) "a key given twice")
                          ((missing-value) "a key given last, with no value after it")
-                         ((stream-with-rounds) "a streamed response takes one request in its transfer: follow, HTTPAUTH, PROXYAUTH and an Expect of 100-continue would make a second, whose head the stream would not publish")
+                         ((stream-with-rounds) "a streamed response takes one request in its transfer: follow, PROXYAUTH and an Expect of 100-continue would make a second, whose head the stream would not publish")
                          ((body-length-without-stream) "a body-length is a streamed body's length: give it with body stream, or leave it #f; libcurl frames a whole body by its own length")
                          ((prior-knowledge-over-https) "HTTP/2 by prior knowledge is for http:// URLs alone: over https://, http/2 gets HTTP/2 by ALPN")
+                         ((credentials-bytes) "a credentials string holds a control char, U+0000 to U+001F or U+007F, which libcurl would write into its header unescaped, or a Basic user name holds a colon, where RFC 7617 ends the user")
+                         ((credentials-empty) "credentials with nothing to send: a Bearer token, or a user and a password, that are all empty")
+                         ((credentials-beside-userinfo) "credentials beside a URL that holds a user or a password: give them once, by the credentials key or in the URL")
+                         ((credentials-beside-authorization) "credentials beside an Authorization header: libcurl would send one of the two, or both")
+                         ((digest-with-stream) "Digest credentials beside a streamed body or response: Digest makes a second request inside the transfer, which a stream cannot follow; Basic and Bearer send one")
                          (else "a body with get or head, which send none")))
                       (make-irritants-condition (list value)))))
 
@@ -535,13 +561,113 @@
   ;; order. tests/test-request.sps writes it out.
   (define request-keys
     '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
-      stream-buffer body-length http-version))
+      stream-buffer body-length http-version credentials))
 
   ;; http-versions : (Listof Symbol)
   ;; The values http-version takes but #f: HTTP/1.1, HTTP/2, and HTTP/2 by
   ;; prior knowledge, each spelt as a response's http-version reads it
   ;; (ADR-0034; the M7 plan, section 3.1).
   (define http-versions '(http/1.1 http/2 http/2-prior-knowledge))
+
+  ;; credentials-arities : (Listof (Pairof Symbol Natural))
+  ;; Each scheme a credentials key names, with the strings it carries: basic
+  ;; and digest a user and a password, bearer a token (ADR-0036, decision
+  ;; 2; the M7 plan, section 3.1).
+  (define credentials-arities '((basic . 2) (digest . 2) (bearer . 1)))
+
+  ;; credentials-copy : Symbol Any -> (U Credentials #f)
+  ;; CREDENTIALS, a credentials value, as a fresh list of fresh strings, the
+  ;; copy made as it is read: #f for #f; (basic USER PASSWORD), (digest USER
+  ;; PASSWORD) or (bearer TOKEN), each a string. Any other shape, an unknown
+  ;; scheme, a wrong count or a part that is no string, is an assertion
+  ;; violation from WHO, whose irritant is the key's name alone, so a
+  ;; secret given in the wrong shape is never handed on. The list is read
+  ;; once, by the count its scheme has, its tag and each part once, so
+  ;; another thread that changes it meanwhile is refused or copied, never
+  ;; followed round a cycle; and the copy is what is checked and sent
+  ;; (AGENTS.md's mutable values).
+  (define (credentials-copy who credentials)
+    (define (wrong)
+      (assertion-violation who
+                           "credentials are (basic USER PASSWORD), (digest USER PASSWORD) or (bearer TOKEN), each part a string, or #f"
+                           'credentials))
+    (cond ((not credentials) #f)
+          ((not (pair? credentials)) (wrong))
+          (else
+           (let* ((tag (car credentials))
+                  (arity (assq tag credentials-arities)))
+             (unless arity (wrong))
+             (let loop ((rest (cdr credentials)) (left (cdr arity)) (found '()))
+               (cond ((= left 0) (if (null? rest) (cons tag (reverse found)) (wrong)))
+                     ((not (pair? rest)) (wrong))
+                     (else
+                      (let ((part (car rest)))
+                        (unless (string? part) (wrong))
+                        (loop (cdr rest) (- left 1) (cons (string-copy part) found))))))))))
+
+  ;; credentials-parts : Credentials -> (Listof (Pairof Symbol String))
+  ;; CREDENTIALS' strings, each with its part's name, in order: (user .
+  ;; USER) and (password . PASSWORD), or (token . TOKEN).
+  (define (credentials-parts credentials)
+    (if (eq? (car credentials) 'bearer)
+        (list (cons 'token (cadr credentials)))
+        (list (cons 'user (cadr credentials)) (cons 'password (caddr credentials)))))
+
+  ;; control-char? : Char -> Boolean
+  ;; U+0000 to U+001F, or U+007F: each a control byte in UTF-8, and no byte
+  ;; of a char above it is one.
+  (define (control-char? c)
+    (let ((code (char->integer c)))
+      (or (< code #x20) (= code #x7F))))
+
+  ;; refuse-credentials : Symbol Any Symbol -> Nothing
+  ;; The refusal, as WHO, of a request's credentials for REASON, naming
+  ;; VALUE, never a credentials string: (SCHEME PART), or SCHEME.
+  (define (refuse-credentials who value reason)
+    (refuse-field who 'credentials value reason))
+
+  ;; check-credentials : Symbol (U Credentials #f) (Listof (Pairof String String))
+  ;;                     (U Bytevector 'stream #f) (U Positive-Integer #f) -> Void
+  ;; Refuses, as WHO, CREDENTIALS, a checked copy, beside HEADERS, the
+  ;; snapshot's copies, BODY and STREAM-BUFFER, by the rules a request's
+  ;; shape holds (ADR-0036, amended 2026-11-02), in order, each a
+  ;; &curl-request-error, field credentials:
+  ;;   - each part in order, user then password, or the token, its first
+  ;;     offending char deciding: a control char, U+0000 to U+001F or
+  ;;     U+007F, which libcurl writes into its header unescaped, or, in a
+  ;;     Basic user, a colon, which ends the user in RFC 7617:
+  ;;     credentials-bytes, value (SCHEME PART). A char above U+007F is no
+  ;;     control byte in UTF-8, and passes; a colon in a Digest user, or in
+  ;;     any password, passes;
+  ;;   - a Bearer token "", or a user and a password both "":
+  ;;     credentials-empty, value (bearer token), or (SCHEME user). One
+  ;;     empty part beside the other passes, alike on every libcurl;
+  ;;   - a header named Authorization, A to Z folded:
+  ;;     credentials-beside-authorization, value SCHEME;
+  ;;   - Digest beside a body that streams, or a stream-buffer:
+  ;;     digest-with-stream, value digest. Basic and Bearer pass.
+  ;; Checked as the request is made, and again at submit on the submit's
+  ;; own copies, since a caller's header strings may change between.
+  (define (check-credentials who credentials headers body stream-buffer)
+    (when credentials
+      (let ((scheme (car credentials)))
+        (for-each (lambda (part)
+                    (let ((text (cdr part)))
+                      (let scan ((i 0))
+                        (when (< i (string-length text))
+                          (let ((c (string-ref text i)))
+                            (when (or (control-char? c)
+                                      (and (char=? c #\:) (eq? scheme 'basic) (eq? (car part) 'user)))
+                              (refuse-credentials who (list scheme (car part)) 'credentials-bytes)))
+                          (scan (+ i 1))))))
+                  (credentials-parts credentials))
+        (when (for-all (lambda (part) (string=? (cdr part) "")) (credentials-parts credentials))
+          (refuse-credentials who (list scheme (car (car (credentials-parts credentials))))
+                              'credentials-empty))
+        (when (exists (lambda (header) (string=? (ascii-folded (car header)) "authorization")) headers)
+          (refuse-credentials who scheme 'credentials-beside-authorization))
+        (when (and (eq? scheme 'digest) (or (eq? body 'stream) stream-buffer))
+          (refuse-credentials who scheme 'digest-with-stream)))))
 
   ;; timeout? : Any -> Boolean
   ;; X is a timeout: #f, none, or a positive exact integer a long holds.
@@ -581,6 +707,7 @@
   ;; curl-request-stream-buffer : Request -> (U Positive-Integer #f)
   ;; curl-request-body-length : Request -> (U Natural #f)
   ;; curl-request-http-version : Request -> (U 'http/1.1 'http/2 'http/2-prior-knowledge #f)
+  ;; curl-request-credentials : Request -> (U (List 'basic String String) (List 'digest String String) (List 'bearer String) #f)
   ;; curl-request-fault : Request -> (U Positive-Integer (List 'head Positive-Integer) #f)   private
   ;; curl-request-follow : Request -> Boolean                  private
   ;; curl-request-options : Request -> (Listof Hatch-Setting)  private
@@ -664,25 +791,54 @@
   ;;                       http://, a #f or http/2 request to an origin the
   ;;                       engine holds an HTTP/2 connection to, made by
   ;;                       prior knowledge, reuses it and reads HTTP/2
+  ;;   credentials         a server's credentials, one scheme's (ADR-0036):
+  ;;                       (basic USER PASSWORD), sent on the first request;
+  ;;                       (digest USER PASSWORD), sent after the bare
+  ;;                       request a server answers with its challenge, a
+  ;;                       second request inside the transfer, so a request
+  ;;                       with a body, a post or a put, to a server that
+  ;;                       never challenges goes twice, the first with no
+  ;;                       body; or (bearer TOKEN), sent on the
+  ;;                       first request. Each part is a string, sent as
+  ;;                       UTF-8: by HTTPAUTH at the scheme's bit, then
+  ;;                       USERNAME and PASSWORD, or XOAUTH2_BEARER. Refused
+  ;;                       when any part holds a control char, U+0000 to
+  ;;                       U+001F or U+007F, or a Basic user a colon, as
+  ;;                       credentials-bytes; when a Bearer token, or a user
+  ;;                       and a password both, are "", as credentials-empty;
+  ;;                       beside a header named Authorization, in any ASCII
+  ;;                       case, as credentials-beside-authorization; Digest
+  ;;                       beside body stream or a stream-buffer, as
+  ;;                       digest-with-stream; and, at submit, beside a URL
+  ;;                       whose user or password part libcurl reports, as
+  ;;                       credentials-beside-userinfo. No refusal names a
+  ;;                       credentials string. The record keeps a copy, and
+  ;;                       curl-request-credentials answers a fresh one. A
+  ;;                       wrong password ends with the server's 401 and
+  ;;                       code 0. Or #f, the default, which sets none of
+  ;;                       their options, as before them
   ;;
   ;; The defaults set no policy: libcurl's own stand (ADR-0023, decision 3).
   ;; The keys are refused first, by request-settings' rules, then a URL
   ;; that is not a string, then a wrong type for method, body, timeout-ms,
   ;; connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer,
-  ;; body-length or http-version, each an assertion violation, the empty
-  ;; string as a CA file among them; then a body with get or head,
+  ;; body-length, http-version or credentials, each an assertion violation,
+  ;; the empty string as a CA file among them; then a body with get or head,
   ;; body-not-allowed; then a
   ;; body-length beside a body that does not stream,
   ;; body-length-without-stream; then a
-  ;; stream-buffer beside follow, HTTPAUTH or PROXYAUTH, stream-with-rounds,
+  ;; stream-buffer beside follow or PROXYAUTH, stream-with-rounds,
   ;; checked here, where every constructor's request is checked, the
   ;; private ones' and the hatch's among them; then snapshot's rules for the
   ;; headers and the user agent, their types first, as assertion
   ;; violations; then an Expect header holding 100-continue beside
   ;; stream-buffer, stream-with-rounds, by expect-continue?, which a submit
-  ;; checks again on its own copies; then ca-file-copy's for the CA file. Each refusal of a value is a
+  ;; checks again on its own copies; then the credentials, by
+  ;; check-credentials, which a submit checks again too; then ca-file-copy's
+  ;; for the CA file. Each refusal of a value is a
   ;; &curl-request-error naming the field. The record keeps the caller's
-  ;; objects; a submit checks them again, as a plan.
+  ;; objects, but for its credentials, a private copy; a submit checks them
+  ;; again, as a plan.
   ;;
   ;; (curl-request-with REQUEST KEY VALUE ...): a new request, with the
   ;; keys given replaced and the rest kept, its private fields among them,
@@ -713,17 +869,39 @@
             (immutable stream-buffer curl-request-stream-buffer)
             (immutable body-length curl-request-body-length)
             (immutable http-version curl-request-http-version)
+            (immutable credentials request-credentials)
             (immutable fault curl-request-fault)
             (immutable follow curl-request-follow)
-            (immutable options curl-request-options)))
+            (immutable options curl-request-options))
+    ;; Opaque: Chez prints a record's every field, and record-rtd opens
+    ;; one, so a printed request showed its credentials, and reflection
+    ;; read and changed its private copy (the review of M7 slice 2). A
+    ;; request prints as #<curl-request>.
+    (opaque #t))
 
-  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any (Listof Hatch-Setting) -> Request
+  ;; request-field-names : -> (Listof Symbol)
+  ;; The request record's fields, in its order: a private accessor, for
+  ;; the suites that read them, since record-rtd opens no opaque record.
+  (define (request-field-names)
+    (vector->list (record-type-field-names (record-type-descriptor curl-request))))
+
+  ;; request-credentials : Request -> (U Credentials #f)
+  ;; The record's own copy of its credentials, which no caller holds: the
+  ;; constructors and a submit read it, each copying it again.
+
+  (define (curl-request-credentials request)
+    (unless (curl-request? request)
+      (assertion-violation 'curl-request-credentials "not a request" request))
+    (credentials-copy 'curl-request-credentials (request-credentials request)))
+
+  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any (Listof Hatch-Setting) -> Request
   ;; A request of these fields, checked as WHO by make-curl-request's rules,
   ;; after the keys. OPTIONS, the hatch's, were checked as they were
   ;; attached, and are private copies, so they are kept as they are.
+  ;; CREDENTIALS is copied first, and the copy is checked and kept.
   (define (checked-request who url method headers body user-agent timeout-ms
                            connect-timeout-ms body-limit ca-file verify proxy stream-buffer
-                           body-length http-version fault follow options)
+                           body-length http-version credentials fault follow options)
     (define (wrong message irritant) (assertion-violation who message irritant))
     (unless (string? url) (wrong "a URL is a string" url))
     (unless (memq method request-methods)
@@ -756,21 +934,24 @@
     (unless (or (not http-version) (memq http-version http-versions))
       (wrong "an http-version is http/1.1, http/2, http/2-prior-knowledge, or #f, libcurl's own"
              http-version))
-    (unless (or (not fault) (chunk-fault? fault) (head-fault? fault) (upload-fault? fault))
-      (wrong "a fault is a positive exact integer, the chunk it raises at, (head N), the head's line it raises at, (read N), (seek N) or (prereq N), that callable's call it raises at, or #f: a request holds no procedure"
-             fault))
-    (unless (boolean? follow) (wrong "follow is #t or #f" follow))
-    (when (and body (memq method '(get head)))
-      (refuse-field who 'body method 'body-not-allowed))
-    (when (and body-length (not (eq? body 'stream)))
-      (refuse-field who 'body-length body-length 'body-length-without-stream))
-    (when (and stream-buffer (or follow (exists rounds-setting? options)))
-      (refuse-field who 'stream-buffer stream-buffer 'stream-with-rounds))
-    (check-expect-round who stream-buffer (car (snapshot who headers user-agent)))
-    (ca-file-copy who ca-file)
-    (new-curl-request url method headers body user-agent timeout-ms connect-timeout-ms
-                      body-limit ca-file verify proxy stream-buffer body-length http-version fault
-                      follow options))
+    (let ((credentials (credentials-copy who credentials)))
+      (unless (or (not fault) (chunk-fault? fault) (head-fault? fault) (upload-fault? fault))
+        (wrong "a fault is a positive exact integer, the chunk it raises at, (head N), the head's line it raises at, (read N), (seek N) or (prereq N), that callable's call it raises at, or #f: a request holds no procedure"
+               fault))
+      (unless (boolean? follow) (wrong "follow is #t or #f" follow))
+      (when (and body (memq method '(get head)))
+        (refuse-field who 'body method 'body-not-allowed))
+      (when (and body-length (not (eq? body 'stream)))
+        (refuse-field who 'body-length body-length 'body-length-without-stream))
+      (when (and stream-buffer (or follow (exists rounds-setting? options)))
+        (refuse-field who 'stream-buffer stream-buffer 'stream-with-rounds))
+      (let ((header-copies (car (snapshot who headers user-agent))))
+        (check-expect-round who stream-buffer header-copies)
+        (check-credentials who credentials header-copies body stream-buffer))
+      (ca-file-copy who ca-file)
+      (new-curl-request url method headers body user-agent timeout-ms connect-timeout-ms
+                        body-limit ca-file verify proxy stream-buffer body-length http-version
+                        credentials fault follow options)))
 
   ;; chunk-fault? : Any -> Boolean
   ;; X is a fault the write callable raises at: the chunk's number, a
@@ -838,9 +1019,12 @@
 
   ;; rounds-option-names : (Listof String)
   ;; The hatch's options that make libcurl send a second request inside one
-  ;; transfer, an auth round: HTTPAUTH, the server's, and PROXYAUTH, the
-  ;; proxy's (the M6 plan, section 3.2). M7 revisits auth.
-  (define rounds-option-names '("HTTPAUTH" "PROXYAUTH"))
+  ;; transfer, an auth round: PROXYAUTH, the proxy's (the M6 plan, section
+  ;; 3.2). HTTPAUTH, the server's, is the credentials field's, owned, and
+  ;; its round, Digest's, is refused beside a stream as digest-with-stream,
+  ;; beside a streamed body too (ADR-0036, decision 3; the M7 plan, section
+  ;; 3.3). PROXYAUTH stays until M7 slice 3 owns it.
+  (define rounds-option-names '("PROXYAUTH"))
 
   ;; rounds-setting? : Hatch-Setting -> Boolean
   ;; Whether SETTING, a hatch setting, is one of rounds-option-names, by
@@ -871,13 +1055,14 @@
                      (given 'stream-buffer curl-request-stream-buffer)
                      (given 'body-length curl-request-body-length)
                      (given 'http-version curl-request-http-version)
+                     (given 'credentials request-credentials)
                      fault follow options))
 
   ;; default-request : Request
   ;; Every key at its default, for a URL nothing reads: what
   ;; make-curl-request replaces keys in.
   (define default-request
-    (new-curl-request "" 'get '() #f #f #f #f #f #f #t 'environment #f #f #f #f #f '()))
+    (new-curl-request "" 'get '() #f #f #f #f #f #f #t 'environment #f #f #f #f #f #f '()))
 
   (define (make-curl-request url . plist)
     (request-like 'make-curl-request default-request
@@ -1137,7 +1322,12 @@
   ;; plan, section 3.2). stream-buffer sets the header callable and its
   ;; data, the transfer's key, for a streamed response alone (the M6 plan,
   ;; sections 3.2 and 3.3). http-version sets HTTP_VERSION, by
-  ;; version-settings, when it is not #f (ADR-0034).
+  ;; version-settings, when it is not #f (ADR-0034). credentials sets
+  ;; HTTPAUTH at its scheme's bit, then USERNAME and PASSWORD, or
+  ;; XOAUTH2_BEARER, by credentials-settings, when it is not #f (ADR-0036).
+  ;; USERNAME and PASSWORD were owned before as the URL's twins, which each
+  ;; replace part of the URL's credentials on some version (M4 slice 4's
+  ;; review); now they are this field's.
   (define request-field-options
     '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD") (headers "HTTPHEADER")
       (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION"
@@ -1147,7 +1337,8 @@
       (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
       (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY")
       (stream-buffer "HEADERFUNCTION" "HEADERDATA") (body-length "INFILESIZE_LARGE")
-      (http-version "HTTP_VERSION") (follow "FOLLOWLOCATION")))
+      (http-version "HTTP_VERSION") (credentials "HTTPAUTH" "USERNAME" "PASSWORD" "XOAUTH2_BEARER")
+      (follow "FOLLOWLOCATION")))
 
   ;; field-options : Symbol -> (Listof String)
   ;; FIELD's options, in request-field-options' order.
@@ -1180,8 +1371,11 @@
   ;; owned-option-names : (Listof String)
   ;; The options the hatch refuses, by name (ADR-0009, amended
   ;; 2026-10-23 to 2026-10-27): those the transfer always sets, QUICK_EXIT
-  ;; among them where the libcurl knows it, and the protocol pins'
-  ;; deprecated bitmasks; then every option of each request field; then
+  ;; among them where the libcurl knows it, and MAXREDIRS, pinned at 30
+  ;; (ADR-0036, amended 2026-11-02, decision 8), and the protocol pins'
+  ;; deprecated bitmasks; then every option of each request field, the
+  ;; credentials field's HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER
+  ;; among them; then
   ;; each owned setting's twin, an option with an id of its own that sets
   ;; the same thing:
   ;;   - the timeouts' and the body limit's: TIMEOUT, CONNECTTIMEOUT and
@@ -1205,9 +1399,10 @@
   ;;   - found by M4 slice 4's review of every option the hatch's types
   ;;     reach, each measured on five libcurls but where named (ADR-0009,
   ;;     amended 2026-10-27, decided by the maintainer): TRANSFERTEXT, which
-  ;;     rewrites the body as CRLF does; USERPWD, USERNAME, PASSWORD and
-  ;;     NETRC, which each replace part of the URL's credentials on some
-  ;;     version, and HSTS, which turns its http:// into https://;
+  ;;     rewrites the body as CRLF does; USERPWD and NETRC, which each
+  ;;     replace part of the URL's credentials on some version, as USERNAME
+  ;;     and PASSWORD do, which are the credentials field's now, and HSTS,
+  ;;     which turns its http:// into https://;
   ;;     UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET, which skip the
   ;;     environment's proxy, as NOPROXY does; PROXYHEADER, whose headers
   ;;     reach a proxied request past the header checks, a second
@@ -1242,30 +1437,54 @@
   ;;     follow's, which nothing public sets. PIPEWAIT, HTTP09_ALLOWED,
   ;;     HTTP200ALIASES, CONNECT_TO and HTTPPROXYTUNNEL stay the hatch's
   ;;     too;
+  ;;   - the credentials field's, measured through the engine on five
+  ;;     libcurls (M7 slice 2; ADR-0036, amended 2026-11-02): AWS_SIGV4,
+  ;;     which set after HTTPAUTH replaced every scheme's header with an
+  ;;     AWS4-HMAC-SHA256 signature. FAILONERROR, which makes a wrong
+  ;;     password's 401 code 22, AUTOREFERER, which adds a Referer to
+  ;;     Digest's second request, KEEP_SENDING_ON_ERROR, UNRESTRICTED_AUTH,
+  ;;     which reaches libcurl's own follow alone, DISALLOW_USERNAME_IN_URL,
+  ;;     LOGIN_OPTIONS, SASL_AUTHZID, SASL_IR, SERVICE_NAME and NETRC_FILE
+  ;;     stay the hatch's, each changing nothing the field sends;
   ;; then proxy-tls-option-names. They are compared by id, so an alias name
   ;; is refused too.
   (define owned-option-names
     (append '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS"
-              "NOSIGNAL" "QUICK_EXIT" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER")
+              "NOSIGNAL" "QUICK_EXIT" "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER")
             (apply append (map cdr request-field-options))
             '("TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "PUT"
               "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE"
               "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
               "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
-              "TRANSFERTEXT" "USERPWD" "USERNAME" "PASSWORD" "NETRC" "HSTS"
+              "TRANSFERTEXT" "USERPWD" "NETRC" "HSTS"
               "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
               "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
               "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT"
-              "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL")
+              "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL"
+              "AWS_SIGV4")
             proxy-tls-option-names))
 
   ;; pinned-options : (Listof (Pairof String (U String Integer)))
   ;; The settings every transfer makes, before its own: ADR-0003's protocol
   ;; pins, PROTOCOLS_STR and REDIR_PROTOCOLS_STR at "http,https", and
   ;; NOSIGNAL at 1, so that no signal handler is installed in a process that
-  ;; runs threads. tests/test-transfer.sps writes it out.
+  ;; runs threads; and MAXREDIRS at 30 (ADR-0036, amended 2026-11-02,
+  ;; decision 8). libcurl counts each follow it makes against MAXREDIRS,
+  ;; FOLLOW_REDIR: a redirect, and every new request a transfer makes
+  ;; inside it as one, an auth round, a stale=true round, and a 417's
+  ;; resend of a caller's Expect: 100-continue alike; never FOLLOW_RETRY,
+  ;; its retry of a request a dead reused or refused connection lost
+  ;; (7.85.0 transfer.c:1583-1593; 8.20.0 http.c:1154-1165). 7.85.0's default is
+  ;; -1, unbounded: against a server that answers 417, or stale=true, for
+  ;; ever, it made about 90,000 and 43,000 requests in 5 s, and with no
+  ;; timeout would never stop. At 30 it stops at 31 requests, 47, as 8.5.0
+  ;; and later do at their default, 30, and a Digest round still ends in
+  ;; two. Nothing public follows a redirect, so the count reaches those
+  ;; follows inside a transfer alone. tests/test-transfer.sps writes it
+  ;; out.
   (define pinned-options
-    '(("PROTOCOLS_STR" . "http,https") ("REDIR_PROTOCOLS_STR" . "http,https") ("NOSIGNAL" . 1)))
+    '(("PROTOCOLS_STR" . "http,https") ("REDIR_PROTOCOLS_STR" . "http,https") ("NOSIGNAL" . 1)
+      ("MAXREDIRS" . 30)))
 
   ;; quick-exit-pin : (Pairof String Integer)
   ;; ADR-0019's setting, QUICK_EXIT at 1: taken apart during a stalled name
@@ -1443,6 +1662,36 @@
         ((http/2) (list (cons name curl-http-version-2tls)))
         ((http/2-prior-knowledge) (list (cons name curl-http-version-2-prior-knowledge)))
         (else (assertion-violation 'version-settings "not an http-version" version)))))
+
+  ;; credentials-settings : (U Credentials #f) -> (Listof (Pairof String (U Integer String)))
+  ;; The settings a request's CREDENTIALS make (ADR-0036), as data, in
+  ;; order: #f, none, so libcurl sends no credentials of the field's;
+  ;; (basic U P), HTTPAUTH at CURLAUTH_BASIC, USERNAME at U and PASSWORD at
+  ;; P; (digest U P), HTTPAUTH at CURLAUTH_DIGEST, then the same two;
+  ;; (bearer T), HTTPAUTH at CURLAUTH_BEARER and XOAUTH2_BEARER at T. One
+  ;; scheme's bit alone, never a set nor ANY: libcurl then sends Basic and
+  ;; Bearer on the first request, and Digest after a bare one. HTTPAUTH
+  ;; first: libcurl reads every one as the transfer starts, whatever the
+  ;; order. Each string is the answer's, set as UTF-8 by set-string-option!
+  ;; (ADR-0036, decision 5). Anything but credentials-copy's shape is an
+  ;; assertion violation, naming its scheme alone. The names are
+  ;; request-field-options'. Pure. tests/test-auth.sps writes out every
+  ;; scheme's answer.
+  (define (credentials-settings credentials)
+    (let ((names (field-options 'credentials)))
+      (cond ((not credentials) '())
+            ((not (and (pair? credentials) (assq (car credentials) credentials-arities)
+                       (list? credentials)
+                       (= (length credentials) (+ 1 (cdr (assq (car credentials) credentials-arities))))
+                       (for-all string? (cdr credentials))))
+             (assertion-violation 'credentials-settings "not credentials"
+                                  (if (pair? credentials) (car credentials) 'credentials)))
+            ((eq? (car credentials) 'bearer)
+             (list (cons (car names) curlauth-bearer) (cons (cadddr names) (cadr credentials))))
+            (else
+             (list (cons (car names) (if (eq? (car credentials) 'basic) curlauth-basic curlauth-digest))
+                   (cons (cadr names) (cadr credentials))
+                   (cons (caddr names) (caddr credentials)))))))
 
   ;; --- the hatch (ADR-0009; the M4 plan, section 3.7) ---------------------------------
 
@@ -2602,13 +2851,17 @@
   ;; queued has a stream to look at (ADR-0030, decision 1); then its
   ;; body-length; and, for a request whose body streams, the submit's own
   ;; request stream, beside the response stream when it streams both ways;
-  ;; and its http-version.
+  ;; its http-version; and the submit's checked copy of its credentials.
   (define-record-type plan
     (fields (immutable url) (immutable method) (immutable headers) (immutable agent)
             (immutable body) (immutable timeout-ms) (immutable connect-timeout-ms)
             (immutable body-limit) (immutable ca-file) (immutable verify) (immutable proxy)
             (immutable settings) (immutable fault) (immutable follow) (immutable stream)
-            (immutable body-length) (immutable upload) (immutable http-version)))
+            (immutable body-length) (immutable upload) (immutable http-version)
+            (immutable credentials))
+    ;; Opaque, as a request is: a plan holds the submit's copy of its
+    ;; credentials, and a token holds its plan.
+    (opaque #t))
 
   ;; plan-stream : Plan -> (U Stream #f)
   ;; The plan's response stream, #f for a whole body.
@@ -2625,7 +2878,8 @@
   ;; against the environment the libcurl loaded with, then the URL's copy,
   ;; parsed and its scheme checked, its CURLU freed before this returns
   ;; (ADR-0008, amended 2026-10-24), then prior knowledge against that
-  ;; scheme. Each refusal raises here. Then the
+  ;; scheme, and the credentials' copy against its userinfo. Each refusal
+  ;; raises here. Then the
   ;; body is copied, after every check, so
   ;; the caller's bytevector may change once this returns (ADR-0023,
   ;; decision 4); a request's method and the presence of its body cannot
@@ -2636,7 +2890,7 @@
   ;; stream-with-rounds and body-length-without-stream, checked as it was
   ;; made, hold here too.
   (define (prepare-transfer request)
-    (let-values (((url fields ca-file) (request-checks 'curl-submit request)))
+    (let-values (((url fields ca-file credentials) (request-checks 'curl-submit request)))
       (let* ((given (curl-request-body request))
              (body (if (bytevector? given) (bytevector-copy given) given))
              (limit (curl-request-stream-buffer request))
@@ -2649,35 +2903,66 @@
                    (curl-request-options request) (curl-request-fault request)
                    (curl-request-follow request)
                    stream length (and (eq? body 'stream) (make-upload stream length))
-                   (curl-request-http-version request)))))
+                   (curl-request-http-version request) credentials))))
 
-  ;; request-checks : Symbol Request -> (Values String (Pairof Headers (U String #f)) (U String #f))
+  ;; request-checks : Symbol Request -> (Values String (Pairof Headers (U String #f)) (U String #f) (U Credentials #f))
   ;; The checks a submit makes of REQUEST on the caller's thread, as WHO,
   ;; their one owner: prepare-transfer's, as WHO curl-submit, and
   ;; curl-request-check's (ADR-0023, amended 2026-10-28). In order: what is
   ;; no request, an assertion violation; the URL's copy; the snapshot of the
-  ;; headers and the user agent; the CA file's copy; an Expect header
+  ;; headers and the user agent; the CA file's copy; the credentials' copy;
+  ;; an Expect header
   ;; holding 100-continue in the snapshot's copies beside a stream-buffer,
   ;; stream-with-rounds, by check-expect-round, since the caller's strings
-  ;; may have changed since the request was made; then the CA file
-  ;; against the environment the libcurl loaded with, by
+  ;; may have changed since the request was made; the credentials beside
+  ;; those copies, by check-credentials, for the same reason; then the CA
+  ;; file against the environment the libcurl loaded with, by
   ;; check-ca-environment; then the URL, parsed by call-with-parsed-url and
-  ;; checked by require-http-scheme, its CURLU freed before this returns;
+  ;; checked by require-http-scheme, and, with credentials, its user and
+  ;; password parts read by userinfo-parts, by check-userinfo, its CURLU
+  ;; freed before this returns;
   ;; then the http-version against the scheme it answered, by
   ;; check-prior-knowledge. Each refusal raises here, as WHO where its check
-  ;; names one. Answers the checked copies: the URL, the fields, and the CA
-  ;; file. The body is no check's: a submit copies it after.
+  ;; names one. Answers the checked copies: the URL, the fields, the CA
+  ;; file and the credentials. The body is no check's: a submit copies it
+  ;; after.
   (define (request-checks who request)
     (unless (curl-request? request)
       (assertion-violation who "not a request" request))
     (let* ((url (string-copy (curl-request-url request)))
            (fields (snapshot who (curl-request-headers request) (curl-request-user-agent request)))
-           (ca-file (ca-file-copy who (curl-request-ca-file request))))
+           (ca-file (ca-file-copy who (curl-request-ca-file request)))
+           (credentials (credentials-copy who (request-credentials request))))
       (check-expect-round who (curl-request-stream-buffer request) (car fields))
+      (check-credentials who credentials (car fields) (curl-request-body request)
+                         (curl-request-stream-buffer request))
       (check-ca-environment who ca-file (curl-request-verify request))
-      (let ((scheme (call-with-parsed-url url (lambda (handle) (require-http-scheme handle url)))))
+      (let ((scheme (call-with-parsed-url url
+                      (lambda (handle)
+                        (let ((scheme (require-http-scheme handle url)))
+                          (when credentials
+                            (check-userinfo who credentials (userinfo-parts handle url)))
+                          scheme)))))
         (check-prior-knowledge who (curl-request-http-version request) scheme))
-      (values url fields ca-file)))
+      (values url fields ca-file credentials)))
+
+  ;; check-userinfo : Symbol Credentials (List (U String #f) (U String #f)) -> Void
+  ;; Refuses, as WHO, CREDENTIALS beside PARTS, the parsed URL's user and
+  ;; password as userinfo-parts reads them: credentials-beside-userinfo,
+  ;; field credentials, value the scheme, when either is present, "" among
+  ;; them (ADR-0036, decision 1). One credentials source per request: with
+  ;; both, libcurl sent the field's and dropped the URL's on every libcurl
+  ;; measured. What a version reports for an empty user or password moves:
+  ;; 7.85.0 reports neither part for http://@h/ and http://:@h/, which pass
+  ;; there, and send the field's credentials, and no user for http://:p@h/
+  ;; nor password for http://u:@h/, each refused by its other part; 8.5.0
+  ;; and later report "", and refuse all four (tests/test-auth.sps pins
+  ;; each URL by version). Checked at submit
+  ;; alone, where the URL is parsed: a redirect's request is refused as it
+  ;; is submitted.
+  (define (check-userinfo who credentials parts)
+    (when (or (car parts) (cadr parts))
+      (refuse-credentials who (car credentials) 'credentials-beside-userinfo)))
 
   ;; check-prior-knowledge : Symbol (U Symbol #f) String -> Void
   ;; Refuses, as WHO, an http-version VERSION of http/2-prior-knowledge
@@ -2758,7 +3043,9 @@
             (mutable buffer live-transfer-buffer live-transfer-buffer-set!)
             (mutable header-list live-transfer-header-list live-transfer-header-list-set!)
             (mutable lists live-transfer-lists live-transfer-lists-set!)
-            (mutable easy live-transfer-easy live-transfer-easy-set!)))
+            (mutable easy live-transfer-easy live-transfer-easy-set!))
+    ;; Opaque, as its plan is.
+    (opaque #t))
 
   ;; live-transfer-easy : Live -> (U Positive-Integer #f)
   ;; The easy handle the engine adds to its multi handle, and finds again by
@@ -2844,7 +3131,10 @@
   ;; request asks, HTTPHEADER at HEADER-LIST, USERAGENT, TIMEOUT_MS,
   ;; CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE at the body limit plus one, and
   ;; PROXY at "" for a proxy of #f; then version-settings' for the plan's
-  ;; http-version, HTTP_VERSION when it is not #f; then, always,
+  ;; http-version, HTTP_VERSION when it is not #f; then
+  ;; credentials-settings' for the plan's credentials, HTTPAUTH, then
+  ;; USERNAME and PASSWORD or XOAUTH2_BEARER, each string a counted UTF-8
+  ;; copy, set-string-option!'s, when they are not #f; then, always,
   ;; tls-settings' for the plan's CA file and verification, through
   ;; set-tls-options!; then
   ;; FOLLOWLOCATION at 1 for the private follow field; then, last, the hatch's
@@ -2896,6 +3186,11 @@
       (set-string-option! easy (field-option 'proxy) "" buffer))
     (for-each (lambda (setting) (set-option! easy (car setting) (cdr setting) buffer))
               (version-settings (plan-http-version plan)))
+    (for-each (lambda (setting)
+                (if (string? (cdr setting))
+                    (set-string-option! easy (car setting) (cdr setting) buffer)
+                    (set-option! easy (car setting) (cdr setting) buffer)))
+              (credentials-settings (plan-credentials plan)))
     (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
     (when (plan-follow plan)
       (set-option! easy (field-option 'follow) 1 buffer))

@@ -1,0 +1,12 @@
+== lane current: CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include make test SUITES='tests/test-mailbox.sps'
+lane current: pass (8 s)
+  [current] test: pass tests/test-mailbox.sps
+  [current] test: ran 1, passed 1, failed 0, hung 0
+== lane current: CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include make test SUITES='tests/test-mailbox.sps'
+lane current: pass (8 s)
+  [current] test: pass tests/test-mailbox.sps
+  [current] test: ran 1, passed 1, failed 0, hung 0
+== lane current: CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include make test SUITES='tests/test-mailbox.sps'
+lane current: pass (8 s)
+  [current] test: pass tests/test-mailbox.sps
+  [current] test: ran 1, passed 1, failed 0, hung 0

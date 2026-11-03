@@ -1,0 +1,5 @@
+FAIL a request with credentials, its plan, a live transfer made from it, its token queued on a held engine, that engine, a mailbox holding the done token, and a call's exchange holding the request each print as their type alone, holding no credentials string, and record-rtd opens none of them
+FAIL the token's assertion violations, each with the token as its irritant, print it as its type alone and hold no credentials string: curl-token-next-piece of a whole body's token, curl-token-put-piece! of one that streams no body, a second curl-token-body-port of a streamed response's, and an assertion with the token as its irritant, as the high level's group raises one
+FAIL a put after curl-token-end-body! on a live streamed body's token, its credentials Basic, raises an assertion violation that prints the token as its type alone, holding no credentials string; the token cancelled after
+test: FAIL tests/test-auth.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0

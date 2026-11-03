@@ -1,0 +1,6 @@
+libcurl 7.85.0
+"http://@127.0.0.1:1/" -> url "http://127.0.0.1:1/" user #f password #f
+"http://:@127.0.0.1:1/" -> url "http://127.0.0.1:1/" user #f password #f
+"http://:p@127.0.0.1:1/" -> url "http://:p@127.0.0.1:1/" user #f password "p"
+"http://u@127.0.0.1:1/" -> url "http://u@127.0.0.1:1/" user "u" password #f
+"http://u:@127.0.0.1:1/" -> url "http://u@127.0.0.1:1/" user "u" password #f

@@ -39,7 +39,7 @@
 ;;; tests/test-url-parts.sps and tests/test-url-location.sps hold the M5
 ;;; functions' the same way, each with a rows file of its own.
 (library (curl private url)
-  (export url-normalize url-resolve call-with-parsed-url require-http-scheme
+  (export url-normalize url-resolve call-with-parsed-url require-http-scheme userinfo-parts
           parse-url free-parsed-url! curl-url-part curl-url-append-query appended-url
           curl-url-resolve curl-url-with-fragment fragment-url encoded-bytes)
   (import (curl private require-threaded)
@@ -227,6 +227,21 @@
       (unless (member scheme '("http" "https"))
         (refuse url 'scheme-not-http #f "chez-curl fetches only http and https URLs"))
       scheme))
+
+  ;; userinfo-parts : Positive-Integer String -> (List (U String #f) (U String #f))
+  ;; The parsed HANDLE's user and password parts, as curl_url_get gives
+  ;; them, each #f when it answers that the URL lacks the part: what a
+  ;; submit reads credentials against (ADR-0036, decision 1). Whether an
+  ;; empty user or password is "" or #f varies by version: 7.85.0 reports
+  ;; none for http://:p@h/, and no password for http://u:@h/, where 8.5.0
+  ;; and later report "" (tests/known-url-part-verdicts.sexp). INPUT, the
+  ;; string HANDLE was parsed from, names the refusal of a part whose bytes
+  ;; are not UTF-8.
+  (define (userinfo-parts handle input)
+    ;; let*: the user is read first.
+    (let* ((user (get-part handle curlupart-user 0 (code-of 'no-user) input))
+           (password (get-part handle curlupart-password 0 (code-of 'no-password) input)))
+      (list user password)))
 
   ;; code-of : Symbol -> Natural
   ;; The CURLUcode NAME names in curlue-codes.

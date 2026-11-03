@@ -1,0 +1,10 @@
+sent; the raw face echoed:
+GET /raw/echo HTTP/1.1
+Host: 127.0.0.1:39149
+Authorization: Bearer 
+X-Inj: 1
+Accept: */*
+
+
+--- on the working tree:
+(refused credentials-bytes)

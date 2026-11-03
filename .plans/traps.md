@@ -125,6 +125,14 @@ it should not be a comment. (chez-cmark-gfm)
   Each is now tested on inputs a narrower rule gets wrong: every position, bytes where the
   encodings differ, the whole complement, and tables written out. (chez-curl)
 
+  It happened again in M7 slice 2: the credentials' control-char rule was tested with the char
+  at index 1 alone, and the `Authorization` rule with one header, so a scan from index 1, under
+  which `(bearer "\nX-Inj: 1")` wrote a header of its own, and a check of the first header alone,
+  passed every suite; and only five passing chars were sampled, so refusing `"` passed. The
+  slice's review found all three. Each char U+0000 to U+00FF and four above now stands at the
+  first, a middle and the last index of every part, and `Authorization` first, in the middle and
+  last of three headers. (chez-curl, M7 slice 2)
+
 * **An exit status is taken modulo 256.** Chez's `(exit 256)` exits 0, and
   `(exit #t)` exits 1 (both measured at the pin). An exit form that reported its
   failure count would pass a suite with exactly 256 failures. `suite-exit-status`
@@ -206,6 +214,22 @@ it should not be a comment. (chez-cmark-gfm)
   measured: the face's 400 and the end of its connection race libcurl's next send. A by-version test holding one code
   per row passed natively and failed the gate every time. A row of a failure's code is read
   natively and under the gate, and holds every code either gave. (chez-curl, M7 slice 1)
+* **libcurl resends after a 417 only on a connection it keeps.** A caller's `Expect:
+  100-continue` answered 417 makes libcurl send the request again inside the transfer, and a
+  server that answers 417 to every such request makes it loop until `MAXREDIRS`; but 7.85.0
+  and 8.20.0 resend only when the connection is not to close (`lib/http.c`,
+  `!conn->bits.close`). With `Connection: close` the transfer ended at its 417, one request,
+  where a kept connection made 51 (curl's tool on 8.20.0,
+  [research](research/m7/slice2/verify/)). `node:http` cannot keep a connection whose request
+  body never comes, so a test of the loop runs on the origin's raw face. (chez-curl, M7 slice 2)
+* **Chez prints every field of a record that is not opaque, and `record-rtd` opens it.** A
+  token handed to an assertion as its irritant printed its plan, and so its request's
+  credentials, and through the engine's table another live request's Bearer token; `(write
+  request)` printed the password too. A check that a refusal holds no secret walked pairs and
+  vectors, so it could not see one inside a record either. Every record that holds a request, a
+  plan, a token or credentials is opaque, and a test searches the printed text of each, and of
+  each condition, and holds `record-rtd` raising on it ([review](research/m7/slice2/review/)).
+  (chez-curl, M7 slice 2)
 
 ## Chez and the FFI
 

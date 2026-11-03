@@ -18,6 +18,7 @@
           curl-error-size curl-blob-copy
           curl-http-version-1-0 curl-http-version-1-1 curl-http-version-2-0
           curl-http-version-3 curl-http-version-2tls curl-http-version-2-prior-knowledge
+          curlauth-basic curlauth-digest curlauth-bearer
           curle-write-error curle-out-of-memory curle-operation-timedout
           curle-couldnt-resolve-proxy curle-couldnt-resolve-host curle-couldnt-connect
           curle-interface-failed curle-quic-connect-error curle-proxy
@@ -275,6 +276,17 @@
   ;; curl-http-version-1-1.
   (define curl-http-version-2tls 4)
   (define curl-http-version-2-prior-knowledge 5)
+
+  ;; curlauth-basic : Positive-Integer
+  ;; curlauth-digest : Positive-Integer
+  ;; curlauth-bearer : Positive-Integer
+  ;; curl/curl.h: CURLAUTH_BASIC 1<<0 and CURLAUTH_DIGEST 1<<1 (7.10.6), and
+  ;; CURLAUTH_BEARER 1<<6 (7.61.0), all in the floor's headers: what
+  ;; HTTPAUTH takes for a credentials key's basic, digest and bearer, each
+  ;; one scheme alone, never a set (ADR-0036, decision 2).
+  (define curlauth-basic 1)
+  (define curlauth-digest 2)
+  (define curlauth-bearer 64)
 
   ;; The CURLcodes chez-curl names, each a curl/curl.h CURLcode: every code a
   ;; class names (ADR-0022, amended 2026-10-26), and the transfer's others.

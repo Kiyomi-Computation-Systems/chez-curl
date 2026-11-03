@@ -291,8 +291,8 @@
   ;;   stream-with-rounds
   ;;                 a request that streams its response, stream-buffer,
   ;;                 beside a second request inside its transfer: the
-  ;;                 private follow field, the hatch's HTTPAUTH or
-  ;;                 PROXYAUTH, or an Expect header whose value holds
+  ;;                 private follow field, the hatch's PROXYAUTH, or an
+  ;;                 Expect header whose value holds
   ;;                 100-continue, in any ASCII case, refused whatever the
   ;;                 method: a request that sends a body is sent again on a
   ;;                 417. Each would publish the head of the round before
@@ -314,6 +314,30 @@
   ;;                 parsed: HTTP/2 by prior knowledge is for http:// alone,
   ;;                 and over https:// http/2 gets HTTP/2 by ALPN (ADR-0034,
   ;;                 decision 2)
+  ;;   credentials-bytes
+  ;;                 a credentials string, a user, a password or a token,
+  ;;                 holding a control char, U+0000 to U+001F or U+007F,
+  ;;                 which libcurl writes into its header unescaped; or a
+  ;;                 Basic user holding a colon, where RFC 7617 ends the
+  ;;                 user (ADR-0036, amended 2026-11-02, decision 6)
+  ;;   credentials-empty
+  ;;                 credentials with nothing to send: a Bearer token "", or
+  ;;                 a Basic or Digest user and password both "", which
+  ;;                 8.23.0 sends no header for (ADR-0036, decision 7)
+  ;;   credentials-beside-userinfo
+  ;;                 credentials beside a URL whose user or password part
+  ;;                 libcurl's URL API reports, "" among them, refused at
+  ;;                 submit, where the URL is parsed (ADR-0036, decision 1)
+  ;;   credentials-beside-authorization
+  ;;                 credentials beside a header named Authorization, A to Z
+  ;;                 folded: libcurl drops its own Basic and Bearer for the
+  ;;                 caller's, and sends both beside Digest (ADR-0036,
+  ;;                 decision 4)
+  ;;   digest-with-stream
+  ;;                 Digest credentials beside a streamed body or a streamed
+  ;;                 response: Digest's second request inside the transfer
+  ;;                 would publish the probe's 401 head, and its body rides a
+  ;;                 pooled connection (ADR-0036, decision 3)
   ;;
   ;; A value is scanned left to right, and its first offending char decides;
   ;; only when none offends are its ends checked.
@@ -322,7 +346,8 @@
       framing-header owned-option unsupported-type unknown-option repeated-option
       unknown-key repeated-key missing-value body-not-allowed pkcs11-url environment-override
       keychain-fallback stream-with-rounds body-length-without-stream body-length-mismatch
-      prior-knowledge-over-https))
+      prior-knowledge-over-https credentials-bytes credentials-empty credentials-beside-userinfo
+      credentials-beside-authorization digest-with-stream))
 
   ;; The fields:
   ;;
@@ -332,12 +357,19 @@
   ;;           body-not-allowed; stream-buffer for stream-with-rounds;
   ;;           body-length for body-length-without-stream and
   ;;           body-length-mismatch; http-version for
-  ;;           prior-knowledge-over-https
+  ;;           prior-knowledge-over-https; credentials for the five
+  ;;           credentials reasons
   ;;   value   the string refused, whole, or the option's name; the key, as
   ;;           given, for a key's refusal; the method, for body-not-allowed;
   ;;           the stream-buffer, for stream-with-rounds; the body-length,
   ;;           for body-length-without-stream and body-length-mismatch; the
-  ;;           http-version, for prior-knowledge-over-https
+  ;;           http-version, for prior-knowledge-over-https; for
+  ;;           credentials-bytes and credentials-empty, (SCHEME PART), the
+  ;;           scheme, basic, digest or bearer, and the part refused, user,
+  ;;           password or token, user for an empty user and password; for
+  ;;           the other three, the scheme alone. No credentials string is
+  ;;           ever a value or an irritant: a refusal names a secret by its
+  ;;           part (the M7 plan, section 3.1)
   ;;   reason  one of curl-request-error-reasons
   (define-condition-type &curl-request-error &curl-error
     unchecked-make-curl-request-error curl-request-error?

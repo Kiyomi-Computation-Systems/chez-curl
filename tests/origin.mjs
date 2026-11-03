@@ -3,9 +3,17 @@
 // 20 and later (measured on 20.10.0 and 24.18.0).
 //
 // The contract:
-//   - `node tests/origin.mjs [--pki DIR]`. With no argument it serves the
-//     plaintext faces. --pki DIR adds the TLS faces, which read their leaves
-//     from DIR, as tests/make-test-pki.sh makes it. Any other argument, or a
+//   - `node tests/origin.mjs [--pki DIR | --selftest [PLANT]]`. With no
+//     argument it serves the plaintext faces. --pki DIR adds the TLS faces,
+//     which read their leaves from DIR, as tests/make-test-pki.sh makes it.
+//     --selftest serves nothing: it checks the auth route's Digest
+//     arithmetic (below) against RFC 2617's and RFC 7616's published
+//     vectors, and four controls that must each change the answer, and
+//     prints "selftest ok 13" and exits 0, or prints "selftest FAIL WHAT"
+//     for each check that failed and exits 1. With PLANT it plants that
+//     fault in the arithmetic first, so the self-test is seen to fail:
+//     nc-before-nonce swaps the nonce and nc in a qop response, and
+//     sess-ignored makes -sess change nothing. Any other argument, or a
 //     PKI file it cannot read or use, exits 2, naming it on stderr.
 //   - Each face listens on 127.0.0.1, port 0, so the OS picks the port.
 //   - Once every face listens, it writes one line on stdout, a flat JSON
@@ -61,6 +69,8 @@
 //                                        destroys it, resethead resets it, as
 //                                        its head arrives. That request counts
 //                                        as any does; the mark is used once
+//           ANY /auth?key=K&ch=CH[&...]  the auth route, below
+//           GET /auth-log?key=K          the auth route's log for K, below
 //           anything else                404, body "not found\n"
 //         The queries of these three, and of HTTP/2's /answer, /refuse,
 //         /answer-at and /seq, are NAME=VALUE pairs, each name once at most
@@ -240,6 +250,17 @@
 //         connection, then the face plays scripts again; a second arm before
 //         that replaces the first. The arm itself writes "HTTP/1.1 200 OK",
 //         Content-Length: 6, Connection: close and "armed\n", and ends.
+//         /raw/auth417?key=KEY, KEY as retry takes it, serves the
+//         connection's requests one after another, kept alive: one whose
+//         Expect holds 100-continue, in any ASCII case, gets "HTTP/1.1 417
+//         Expectation Failed", Content-Length: 19 and "expectation failed\n"
+//         as its head arrives, and the next bytes decide: a first byte A to
+//         Z begins the next request, any other begins the refused request's
+//         body, read by its Content-Length and dropped; any other request
+//         has its body read by its Content-Length, none without one, and
+//         gets "HTTP/1.1 200 OK", Content-Length: 8 and "auth ok\n". Each
+//         request is logged to KEY's auth log, as the auth route's are
+//         (below), judged by the default account. The client's end ends it.
 //   h2c   node:http2, plaintext, by prior knowledge: the HTTP/2 routes.
 //   With --pki DIR:
 //   https, https-expired, https-wrong-host, https-untrusted
@@ -296,6 +317,60 @@
 // Anything else, /chunked, /connects and /close-after included, is 404,
 // "not found\n". No date, and no header beyond these.
 //
+// The auth route (M7 slice 2; the M7 plan, section 5.2), on http, the https
+// faces, h2c and h2 alike: ANY /auth, its query NAME=VALUE pairs as /sink's are,
+// each name once at most:
+//   key=K    required, as /sink's: the log the request joins
+//   ch=CH    required: the scheme a request must pass, basic, digest or
+//            bearer; or none, a 401 with no challenge, always; or open, a
+//            200, always
+//   u=, p=, tok=  the account's user, password and token, each its bytes
+//            percent-decoded, %XX in either case, every other char its own
+//            byte, empty allowed; user, pass and tok123 when left out
+//   alg=A    Digest's algorithm, MD5, MD5-sess, SHA-256, SHA-256-sess,
+//            SHA-512-256 or SHA-512-256-sess; MD5 when left out
+//   qop=Q    auth, offered as qop="auth", or none, no qop; auth when left out
+//   nonce=N  the challenge's nonce, as a key is spelt, and a stale one's
+//            N-J, J the stale challenges the key's log has had, from 1; a
+//            fresh one, n then a count of every challenge, for each when
+//            left out
+//   stale=forever  every Digest answer that passes gets a 401 with a fresh
+//            nonce and stale=true in place of its 200
+//   size=N   a 200's body is N bytes of the pattern, 1 to 268435456,
+//            written as /pattern/N's; "auth ok\n" when left out
+// A request's credentials are its first Authorization header's, judged by
+// its own scheme: Basic, its base64 decoding the account's user, a colon
+// and its password; Bearer, the bytes after "Bearer " the token; Digest,
+// by RFC 7616's arithmetic (RFC 2069's with no qop), against a nonce this
+// origin issued, the realm chez-curl-test, the request's own target as uri,
+// the opaque opq5ccb, the algorithm the query names, the qop offered, and
+// the account. A request whose credentials pass in the scheme CH names
+// gets 200; any other, 401, with the challenge, one WWW-Authenticate
+// header (www-authenticate over HTTP/2):
+//   Basic realm="chez-curl-test"
+//   Bearer realm="chez-curl-test"
+//   Digest realm="chez-curl-test", [qop="auth", ]nonce="N", opaque="opq5ccb", algorithm=A[, stale=true]
+// and the body "unauthorized\n". Each request is numbered for its key from
+// 1, as its head arrives, and logged, once answered, as one line:
+//   request N face=FACE conn=C method=M body=B verdict=V status=S authorization=VALUE
+// FACE the face's name; C its connection's number among that face's, from
+// 1, a TLS face's counted at each handshake, h2's by session, a raw face's
+// among its /raw/auth417 connections; B the body's bytes read, then :bad@I
+// when byte I is not the pattern's, or - for a 417 that read none; V none,
+// for no Authorization, ok, bad, other, for a scheme but these three, or
+// bad(ISSUES) for Digest, each of nonce, realm, uri, opaque, algorithm,
+// username, qop, nc, cnonce and response that failed, in that order; S the
+// status answered; VALUE the first
+// Authorization's bytes, printable ASCII as it is but \ as \\, every
+// other byte as \xNN in lower case, then " (+K more)" for K more such
+// headers, or - for none. GET /auth-log?key=K answers 200 with "log K N\n",
+// N the requests counted for K, then the first 64 lines, each ending
+// "\n", in their order, then "more M\n" when M more were counted. Logs and
+// nonces live as long as the origin. The raw faces' /raw/auth417?key=K,
+// above, logs to the same logs: a node:http face cannot keep a connection
+// whose request's body never comes, which a 417's resend needs, and libcurl
+// resends after a 417 only on a connection it keeps.
+//
 // The sinks. A body's summary is one line, then "\n":
 //   sink FACE method=M cl=CL te=TE expect=E ct=CT bytes=N sha256=HEX pattern=P arrivals=A gap=G@B seen=C
 // with " list=T:N,..." after it, each arrival in order, for list=1. FACE is
@@ -341,17 +416,29 @@ process.on('unhandledRejection', (err) => fatal('unhandled rejection', err));
 
 // refuse: a wrong argument or PKI file: stderr, exit 2.
 function refuse(problem) {
-  process.stderr.write(`origin: ${problem}\nusage: node tests/origin.mjs [--pki DIR]\n`);
+  process.stderr.write(`origin: ${problem}\nusage: node tests/origin.mjs [--pki DIR | --selftest [PLANT]]\n`);
   process.exit(2);
 }
 
+// The faults --selftest PLANT can plant in the Digest arithmetic.
+const PLANTS = ['nc-before-nonce', 'sess-ignored'];
+
 const args = process.argv.slice(2);
 let pki = null;
+// selftestPlant: undefined to serve; null for --selftest; a plant's name.
+let selftestPlant;
 if (args.length === 2 && args[0] === '--pki') {
   if (args[1] === '') refuse('--pki takes DIR, a directory, and was given an empty one');
   pki = args[1];
+} else if (args.length === 1 && args[0] === '--selftest') {
+  selftestPlant = null;
+} else if (args.length === 2 && args[0] === '--selftest') {
+  if (!PLANTS.includes(args[1])) {
+    refuse(`--selftest plants ${PLANTS.join(' or ')}, and was given ${JSON.stringify(args[1])}`);
+  }
+  selftestPlant = args[1];
 } else if (args.length !== 0) {
-  refuse(`it takes no argument, or --pki DIR, and was given ${JSON.stringify(args)}`);
+  refuse(`it takes no argument, --pki DIR, or --selftest [PLANT], and was given ${JSON.stringify(args)}`);
 }
 
 // leaf: NAME's certificate and key from the PKI directory, as a server's
@@ -447,7 +534,40 @@ function route(target) {
     const then = (v) => (['fin', 'kill', 'cuthead', 'resethead'].includes(v) ? v : null);
     return queried('close-after', queryOf(query, { then }, ['then']));
   }
+  if (path === '/auth') {
+    const one = (allowed) => (v) => (allowed.includes(v) ? v : null);
+    return queried('auth', queryOf(query, {
+      key: keyValue,
+      ch: one(['basic', 'digest', 'bearer', 'none', 'open']),
+      u: accountBytes,
+      p: accountBytes,
+      tok: accountBytes,
+      alg: one(DIGEST_ALGORITHMS),
+      qop: one(['auth', 'none']),
+      nonce: keyValue,
+      stale: one(['forever']),
+      size: (v) => decimal(v, 1, 268435456),
+    }, ['key', 'ch']));
+  }
+  if (path === '/auth-log') return queried('auth-log', queryOf(query, { key: keyValue }, ['key']));
   return { kind: 'not-found' };
+}
+
+// accountBytes: a query value's bytes, each %XX, in either case, the byte
+// it names, every other char its own byte; or null for a malformed %. An
+// empty value is no bytes.
+function accountBytes(text) {
+  const bytes = [];
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === '%') {
+      if (!/^[0-9A-Fa-f]{2}$/.test(text.slice(i + 1, i + 3))) return null;
+      bytes.push(parseInt(text.slice(i + 1, i + 3), 16));
+      i += 2;
+    } else {
+      bytes.push(text.charCodeAt(i) & 0xff);
+    }
+  }
+  return Buffer.from(bytes);
 }
 
 // queryOf: QUERY's pairs, each NAME=VALUE, the value after the first =, as
@@ -609,6 +729,320 @@ function summary(face, method, pairs, record, key, list) {
   return `${line.join(' ')}\n`;
 }
 
+// --- the auth route: Digest's arithmetic, the verdicts, the log ----------
+// The arithmetic, its self-test and its parser are M7 slice 2's stand-in's
+// (.plans/research/m7/slice2/standin.mjs), unchanged but for the plants.
+
+const REALM = 'chez-curl-test';
+const OPAQUE = 'opq5ccb';
+
+// DIGEST_ALGORITHMS: the algorithms alg= names, each a challenge's token.
+const DIGEST_ALGORITHMS = ['MD5', 'MD5-sess', 'SHA-256', 'SHA-256-sess', 'SHA-512-256', 'SHA-512-256-sess'];
+
+// The hash each algorithm's base names, in node:crypto's names.
+const HASHES = { md5: 'md5', 'sha-256': 'sha256', 'sha-512-256': 'sha512-256' };
+
+const latin1 = (s) => Buffer.from(s, 'latin1');
+const joined = (...parts) => Buffer.concat(parts.map((p) => (Buffer.isBuffer(p) ? p : latin1(String(p)))));
+const hasher = (name) => (bytes) => createHash(name).update(bytes).digest('hex');
+
+// escaped: BYTES as a log shows them: printable ASCII as it is, but \ as
+// \; every other byte as \xNN, lower case.
+function escaped(bytes) {
+  let text = '';
+  for (const b of bytes) {
+    if (b === 0x5c) text += '\\\\';
+    else if (b < 0x20 || b > 0x7e) text += `\\x${b.toString(16).padStart(2, '0')}`;
+    else text += String.fromCharCode(b);
+  }
+  return text;
+}
+
+// algorithmOf: NAME's hash and whether it is -sess, or null.
+function algorithmOf(name) {
+  const lower = name.toLowerCase();
+  const sess = lower.endsWith('-sess');
+  const base = sess ? lower.slice(0, -5) : lower;
+  return HASHES[base] ? { base: HASHES[base], sess } : null;
+}
+
+// The plant --selftest PLANT set, or null: the route's arithmetic is never
+// planted.
+let plant = null;
+
+// digestResponse: RFC 7616, section 3.4.1, with RFC 2069's form when there
+// is no qop: the response, in lower-case hex, for USER and PASS, bytes, and
+// the rest as the credentials carry them; BODY for auth-int.
+function digestResponse(hashName, sess, user, realm, pass, nonce, cnonce, nc, qop, method, uri, body) {
+  const h = hasher(hashName);
+  let ha1 = h(joined(user, ':', realm, ':', pass));
+  if (sess && plant !== 'sess-ignored') ha1 = h(joined(ha1, ':', nonce, ':', cnonce));
+  const ha2 = qop === 'auth-int' ? h(joined(method, ':', uri, ':', h(body))) : h(joined(method, ':', uri));
+  if (!qop) return h(joined(ha1, ':', nonce, ':', ha2));
+  return plant === 'nc-before-nonce'
+    ? h(joined(ha1, ':', nc, ':', nonce, ':', cnonce, ':', qop, ':', ha2))
+    : h(joined(ha1, ':', nonce, ':', nc, ':', cnonce, ':', qop, ':', ha2));
+}
+
+// parseParams: a challenge's or credentials' auth-params, after the scheme,
+// each value a latin1 string, so it keeps its bytes, a quoted one with its
+// quoted-pairs undone.
+function parseParams(text) {
+  const found = {};
+  const re = /\s*([A-Za-z0-9_*-]+)\s*=\s*(?:"((?:[^"\\]|\\.)*)"|([^,]*?))\s*(?:,|$)/gy;
+  let m;
+  while (re.lastIndex < text.length && (m = re.exec(text))) {
+    const name = m[1].toLowerCase();
+    found[name] = m[2] !== undefined ? m[2].replace(/\\(.)/g, '$1') : m[3];
+  }
+  return found;
+}
+
+// selftest: the arithmetic against RFC 2617's and RFC 7616's worked
+// examples, and four controls that must change the answer; the parser and
+// the escaping. Prints "selftest ok N" and exits 0, or "selftest FAIL WHAT"
+// for each failure and exits 1. PLANTED, a plant's name or null, is set
+// first.
+function selftest(planted) {
+  plant = planted;
+  const fails = [];
+  let n = 0;
+  const check = (label, got, want) => {
+    n += 1;
+    if (got !== want) fails.push(`${label}: got ${got}, want ${want}`);
+  };
+  // RFC 2617, section 3.5.
+  check('rfc2617 md5 auth',
+        digestResponse('md5', false, latin1('Mufasa'), 'testrealm@host.com', latin1('Circle Of Life'),
+                       'dcd98b7102dd2f0e8b11d0f600bfb0c093', '0a4f113b', '00000001', 'auth', 'GET',
+                       '/dir/index.html', Buffer.alloc(0)),
+        '6629fae49393a05397450978507c4ef1');
+  // RFC 7616, section 3.9.1, MD5 and SHA-256.
+  const r7616 = (h) => [h, false, latin1('Mufasa'), 'http-auth@example.org', latin1('Circle of Life'),
+    '7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v', 'f2/wE4q74E6zIJEtWaHKaf5wv/H5QzzpXusqGemxURZJ',
+    '00000001', 'auth', 'GET', '/dir/index.html', Buffer.alloc(0)];
+  check('rfc7616 md5 auth', digestResponse(...r7616('md5')), '8ca523f5e9506fed4657c9700eebdbec');
+  check('rfc7616 sha-256 auth', digestResponse(...r7616('sha256')),
+        '753927fa0e85d155564e2e272a28d1802ca10daf4496794697cf8db5856cb6c1');
+  // RFC 7616, section 3.9.2's SHA-512-256 example carries an erratum: FIPS
+  // 180-4's SHA-512/256 of nothing stands for it.
+  check('sha512-256 of nothing', hasher('sha512-256')(Buffer.alloc(0)),
+        'c672b8d1ef56ed28ab87c3622c5114069bdd3ad7b8f9737498d0c01ecef0967a');
+  // The controls: each must differ from the good answer.
+  const good = digestResponse(...r7616('sha256'));
+  const control = (label, changed) => {
+    n += 1;
+    if (changed === good) fails.push(label);
+  };
+  const w1 = r7616('sha256'); w1[4] = latin1('Circle of life');
+  control('a wrong password passed', digestResponse(...w1));
+  const w2 = r7616('sha256'); w2[8] = 'auth-int'; w2[11] = latin1('x');
+  const w3 = r7616('sha256'); w3[8] = 'auth-int';
+  n += 1;
+  if (digestResponse(...w2) === digestResponse(...w3)) fails.push('auth-int ignored the body');
+  control('the hash function made no difference', digestResponse(...r7616('sha512-256')));
+  const w4 = r7616('sha256'); w4[1] = true;
+  control('-sess made no difference', digestResponse(...w4));
+  // The parser: a quoted-pair, a bare token, a comma inside quotes.
+  const parsed = parseParams('username="a\\"b", qop=auth, nc=00000001, uri="/x?a=1,b=2", algorithm=SHA-256');
+  check('parse username', parsed.username, 'a"b');
+  check('parse qop', parsed.qop, 'auth');
+  check('parse uri', parsed.uri, '/x?a=1,b=2');
+  check('parse algorithm', parsed.algorithm, 'SHA-256');
+  check('escaped', escaped(Buffer.from([0x41, 0x5c, 0x22, 0x00, 0xc3, 0xbc, 0x7f])), 'A\\\\"\\x00\\xc3\\xbc\\x7f');
+  if (fails.length > 0) {
+    for (const f of fails) process.stdout.write(`selftest FAIL ${f}\n`);
+    process.exit(1);
+  }
+  process.stdout.write(`selftest ok ${n}\n`);
+  process.exit(0);
+}
+
+if (selftestPlant !== undefined) selftest(selftestPlant);
+
+// The nonces this origin has issued, and the count that names a fresh one.
+const nonces = new Set();
+let noncesMade = 0;
+
+// The auth logs, by key: the requests counted, and each one's line by its
+// number, once answered.
+const authLogs = new Map();
+
+// authNumber: the next number for KEY's log, counting this request.
+function authNumber(key) {
+  let log = authLogs.get(key);
+  if (!log) {
+    log = { count: 0, lines: new Map() };
+    authLogs.set(key, log);
+  }
+  log.count += 1;
+  return log.count;
+}
+
+// authLogText: KEY's log, as /auth-log answers it.
+function authLogText(key) {
+  const log = authLogs.get(key) || { count: 0, lines: new Map() };
+  let text = `log ${key} ${log.count}\n`;
+  for (let i = 1; i <= Math.min(log.count, 64); i++) text += `${log.lines.get(i) || `request ${i} unanswered`}\n`;
+  if (log.count > 64) text += `more ${log.count - 64}\n`;
+  return text;
+}
+
+// account: the route R's user, password and token, as bytes.
+function account(r) {
+  return {
+    user: r.u || latin1('user'),
+    pass: r.p || latin1('pass'),
+    tok: r.tok || latin1('tok123'),
+  };
+}
+
+// digestChallenge: a fresh Digest challenge for R, its nonce the query's;
+// a stale one's, the query's, - and the count of stale challenges R's key
+// has had, from 1; with none named, n and a count of every challenge so
+// far. Each is issued.
+function digestChallenge(r, stale) {
+  noncesMade += 1;
+  let nonce = `n${noncesMade}`;
+  if (r.nonce !== undefined) {
+    const log = authLogs.get(r.key);
+    if (stale) log.stales = (log.stales || 0) + 1;
+    nonce = stale ? `${r.nonce}-${log.stales}` : r.nonce;
+  }
+  nonces.add(nonce);
+  const parts = [`realm="${REALM}"`];
+  if (r.qop !== 'none') parts.push('qop="auth"');
+  parts.push(`nonce="${nonce}"`, `opaque="${OPAQUE}"`, `algorithm=${r.alg || 'MD5'}`);
+  if (stale) parts.push('stale=true');
+  return `Digest ${parts.join(', ')}`;
+}
+
+// challengeOf: the WWW-Authenticate value R's 401 carries, or null for
+// none.
+function challengeOf(r, stale) {
+  switch (r.ch) {
+    case 'basic': return `Basic realm="${REALM}"`;
+    case 'bearer': return `Bearer realm="${REALM}"`;
+    case 'digest': return digestChallenge(r, stale);
+    default: return null;
+  }
+}
+
+// digestIssues: what fails in the Digest credentials TEXT, after the
+// scheme, for R's account, on a request of METHOD to TARGET with BODY.
+function digestIssues(r, method, target, text, body) {
+  const { user, pass } = account(r);
+  const f = parseParams(text);
+  const name = r.alg || 'MD5';
+  const algorithm = algorithmOf(name);
+  const issues = [];
+  if (!nonces.has(f.nonce)) issues.push('nonce');
+  if (f.realm !== REALM) issues.push('realm');
+  if (f.uri !== target) issues.push('uri');
+  if (f.opaque !== OPAQUE) issues.push('opaque');
+  if ((f.algorithm || '').toLowerCase() !== name.toLowerCase()) issues.push('algorithm');
+  if (!latin1(f.username ?? '').equals(user)) issues.push('username');
+  if (r.qop !== 'none') {
+    if (f.qop !== 'auth') issues.push('qop');
+    if (!/^[0-9A-Fa-f]{8}$/.test(f.nc || '')) issues.push('nc');
+    if (!f.cnonce) issues.push('cnonce');
+  } else if (f.qop !== undefined) {
+    issues.push('qop');
+  }
+  const expected = digestResponse(algorithm.base, algorithm.sess, user, REALM, pass, f.nonce || '',
+                                  f.cnonce || '', f.nc || '', f.qop, method, f.uri || '', body);
+  if ((f.response || '').toLowerCase() !== expected) issues.push('response');
+  return issues;
+}
+
+// judged: the credentials VALUE, an Authorization header's, as a latin1
+// string, judged by its own scheme for R: { scheme, verdict }.
+function judged(r, method, target, value, body) {
+  const at = value.indexOf(' ');
+  const scheme = (at < 0 ? value : value.slice(0, at)).toLowerCase();
+  const rest = at < 0 ? '' : value.slice(at + 1);
+  const { user, pass, tok } = account(r);
+  if (scheme === 'basic') {
+    return { scheme, verdict: Buffer.from(rest.trim(), 'base64').equals(joined(user, ':', pass)) ? 'ok' : 'bad' };
+  }
+  if (scheme === 'bearer') return { scheme, verdict: latin1(rest).equals(tok) ? 'ok' : 'bad' };
+  if (scheme === 'digest') {
+    const issues = digestIssues(r, method, target, rest, body);
+    return { scheme, verdict: issues.length === 0 ? 'ok' : `bad(${issues.join(',')})` };
+  }
+  return { scheme, verdict: 'other' };
+}
+
+// authorizations: every Authorization value among PAIRS, a flat list of
+// names and values as received, in order.
+function authorizations(pairs) {
+  const values = [];
+  for (let i = 0; i + 1 < pairs.length; i += 2) {
+    if (pairs[i].toLowerCase() === 'authorization') values.push(pairs[i + 1]);
+  }
+  return values;
+}
+
+// expectsContinue: whether PAIRS hold an Expect whose value holds
+// 100-continue, A to Z folded.
+function expectsContinue(pairs) {
+  for (let i = 0; i + 1 < pairs.length; i += 2) {
+    if (pairs[i].toLowerCase() === 'expect' && pairs[i + 1].replace(/[A-Z]/g, (c) => c.toLowerCase()).includes('100-continue')) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// authLine: request N's line, as the log keeps it.
+function authLine(n, face, conn, method, body, verdict, status, values) {
+  let bodyText = '-';
+  if (body !== null) {
+    let bad = -1;
+    for (let i = 0; i < body.length; i++) {
+      if (body[i] !== i % 251) {
+        bad = i;
+        break;
+      }
+    }
+    bodyText = bad < 0 ? `${body.length}` : `${body.length}:bad@${bad}`;
+  }
+  const authorization = values.length === 0 ? '-'
+    : `${escaped(latin1(values[0]))}${values.length > 1 ? ` (+${values.length - 1} more)` : ''}`;
+  return `request ${n} face=${face} conn=${conn} method=${method} body=${bodyText} verdict=${verdict} status=${status} authorization=${authorization}`;
+}
+
+// authLogged: the line for request N of R's key, kept.
+function authLogged(r, n, line) {
+  authLogs.get(r.key).lines.set(n, line);
+}
+
+// authAnswer: what R answers request N on FACE, connection CONN, of METHOD
+// to TARGET with the header PAIRS and BODY, read whole: { status,
+// challenge, size }, size a 200's pattern bytes or null; the request
+// logged.
+function authAnswer(r, n, face, conn, method, target, pairs, body) {
+  const values = authorizations(pairs);
+  const verdict = values.length === 0 ? { scheme: null, verdict: 'none' } : judged(r, method, target, values[0], body);
+  let answer;
+  if (r.ch === 'open') {
+    answer = { status: 200, challenge: null };
+  } else if (r.ch === 'none') {
+    answer = { status: 401, challenge: null };
+  } else if (verdict.scheme === r.ch && verdict.verdict === 'ok') {
+    answer = r.ch === 'digest' && r.stale === 'forever'
+      ? { status: 401, challenge: challengeOf(r, true) }
+      : { status: 200, challenge: null };
+  } else {
+    answer = { status: 401, challenge: challengeOf(r, false) };
+  }
+  authLogged(r, n, authLine(n, face, conn, method, body, verdict.verdict, answer.status, values));
+  return { ...answer, size: answer.status === 200 && r.size !== undefined ? r.size : null };
+}
+
+// The raw faces' /raw/auth417 connections, counted on each face.
+const auth417Connections = { raw: 0, 'raw-tls': 0 };
+
 // --- the well-formed HTTP/1.1 faces: http and the https faces -------------
 
 // send: writes one whole response, its headers in the order given, then
@@ -659,6 +1093,8 @@ function respond(req, res, body) {
       return text(res, 200, `connects ${connects}\n`);
     case 'seen':
       return text(res, 200, `seen ${counts.get(r.key) || 0}\n`);
+    case 'auth-log':
+      return text(res, 200, authLogText(r.key));
     case 'echo': {
       let lines = `${req.method} ${req.url} HTTP/${req.httpVersion}\n`;
       for (let i = 0; i < req.rawHeaders.length; i += 2) {
@@ -702,6 +1138,29 @@ function pattern(res, bytes, delay) {
   })().catch((err) => fatal('a pattern failed', err));
 }
 
+// connectionNumbers: each HTTP/1.1 face's connections, by socket, numbered
+// from 1 among that face's as each is accepted, a TLS face's at its
+// handshake: the auth route's conn.
+const connectionNumbers = new WeakMap();
+
+// numbered: SERVER's sockets numbered as EVENT hands each over.
+function numbered(server, event) {
+  let seen = 0;
+  server.on(event, (socket) => {
+    seen += 1;
+    connectionNumbers.set(socket, seen);
+  });
+  return server;
+}
+
+// authRespond: the auth route's answer on an HTTP/1.1 face, as authAnswer
+// decides it.
+function authRespond(res, answer) {
+  if (answer.size !== null) return pattern(res, answer.size, 0);
+  if (answer.status === 200) return text(res, 200, 'auth ok\n');
+  return text(res, 401, 'unauthorized\n', answer.challenge === null ? [] : ['WWW-Authenticate', answer.challenge]);
+}
+
 // marks: the http face's connections a /close-after has marked, by socket,
 // and how the next request on each is cut: kill, cuthead or resethead.
 const marks = new WeakMap();
@@ -717,6 +1176,7 @@ function wellFormed(face) {
     marks.delete(socket);
     const r = route(req.url);
     if (r.kind === 'sink') countFor(r.key);
+    const authN = r.kind === 'auth' ? authNumber(r.key) : null;
     req.on('error', () => res.destroy());
     if (mark === 'cuthead') return socket.destroy();
     if (mark === 'resethead') return socket.resetAndDestroy();
@@ -736,13 +1196,17 @@ function wellFormed(face) {
     req.on('end', () => {
       if (mark === 'kill') return socket.destroy();
       if (r.kind === 'sink') return text(res, 200, summary(face, req.method, req.rawHeaders, record, r.key, r.list));
+      if (r.kind === 'auth') {
+        return authRespond(res, authAnswer(r, authN, face, connectionNumbers.get(socket), req.method, req.url,
+                                           req.rawHeaders, Buffer.concat(chunks)));
+      }
       if (closeAfter) return text(res, 200, 'ok\n');
       return respond(req, res, Buffer.concat(chunks));
     });
   };
 }
 
-const httpServer = http.createServer(wellFormed('http'));
+const httpServer = numbered(http.createServer(wellFormed('http')), 'connection');
 httpServer.on('connection', track);
 
 // The CONNECT proxy, to this origin's own faces alone: a target of
@@ -773,7 +1237,8 @@ httpServer.on('connect', (req, client, early) => {
 // httpsServer: the https face NAME serving LEAF, with ALPN http/1.1 alone.
 // A TLS error ends that connection only.
 function httpsServer(name, leafOf) {
-  const server = https.createServer({ ...leafOf.options, ALPNProtocols: ['http/1.1'] }, wellFormed(name));
+  const server = numbered(https.createServer({ ...leafOf.options, ALPNProtocols: ['http/1.1'] }, wellFormed(name)),
+                          'secureConnection');
   server.on('connection', track);
   server.on('secureConnection', track);
   server.on('tlsClientError', (err, socket) => socket.destroy());
@@ -860,6 +1325,8 @@ function h2Respond(stream, headers, rawHeaders, body) {
       return h2Text(stream, r.code, `redirect ${r.code}\n`, ['location', r.target]);
     case 'seen':
       return h2Text(stream, 200, `seen ${counts.get(r.key) || 0}\n`);
+    case 'auth-log':
+      return h2Text(stream, 200, authLogText(r.key));
     case 'echo': {
       let lines = '';
       for (let i = 0; i < rawHeaders.length; i += 2) lines += `${rawHeaders[i]}: ${rawHeaders[i + 1]}\n`;
@@ -927,6 +1394,21 @@ function h2Stream(face) {
       });
       stream.on('end', () => {
         if (!stream.destroyed) stream.end();
+      });
+      return undefined;
+    }
+    if (r.kind === 'auth') {
+      const n = authNumber(r.key);
+      const conn = stream.session.connectionNumber;
+      const chunks = [];
+      stream.on('data', (chunk) => chunks.push(chunk));
+      stream.on('end', () => {
+        const answer = authAnswer(r, n, face, conn, headers[':method'], headers[':path'], rawHeaders,
+                                  Buffer.concat(chunks));
+        if (answer.size !== null) return h2Pattern(stream, answer.size, 0);
+        if (answer.status === 200) return h2Text(stream, 200, 'auth ok\n');
+        return h2Text(stream, 401, 'unauthorized\n',
+                      answer.challenge === null ? [] : ['www-authenticate', answer.challenge]);
       });
       return undefined;
     }
@@ -1240,6 +1722,16 @@ const scripts = {
 
   // sinks: a key's request body, read and summed up; and an answer that
   // comes before the body
+  // The auth route's 417 loop, kept alive (the auth route, above): its
+  // connection's requests one after another, each logged to KEY's log.
+  'auth417': {
+    query: (query) => queryOf(query, { key: keyValue }, ['key']),
+    play: ({ key }, head, conn) => {
+      conn.input = inputOf();
+      auth417Connections[conn.face] += 1;
+      return [{ step: 'auth417', conn, head, key, number: auth417Connections[conn.face] }, END];
+    },
+  },
   'sink': {
     query: (query) => queryOf(query, { key: keyValue, hold: (v) => decimal(v, 0, 60000), list: oneValue }, ['key']),
     play: ({ key, hold: ms, list }, head, conn) => {
@@ -1922,6 +2414,59 @@ async function play(socket, reset, state, steps) {
             await new Promise((resolve) => socket.write(body.subarray(at, Math.min(at + 16384, s.bytes)), () => resolve()));
           }
           break;
+        }
+        case 'auth417': {
+          // Each request on the connection, from the first: one whose
+          // Expect holds 100-continue gets a 417 as its head arrives, kept
+          // alive, and the next bytes decide, a letter A to Z beginning the
+          // next request, any other byte the refused request's body, read
+          // by its Content-Length and dropped; any other request has its
+          // body read by its Content-Length, none without one, and gets a
+          // 200, kept alive. Each is logged to KEY's log, judged as the auth
+          // route judges, by the default account. The client's end, or a
+          // head past HEAD_LIMIT, ends it.
+          const judging = { key: s.key, ch: 'basic' };
+          let buffer = Buffer.alloc(0);
+          const more = async () => {
+            const item = await nextItem(s.conn.input);
+            if (item === null) return false;
+            buffer = Buffer.concat([buffer, item[0]]);
+            return true;
+          };
+          const send = (bytes) => new Promise((resolve) => socket.write(bytes, () => resolve()));
+          let head = s.head;
+          for (;;) {
+            const text = head.toString('latin1');
+            const [method, target] = text.slice(0, text.indexOf('\r\n')).split(' ');
+            const pairs = headPairs(head);
+            const n = authNumber(s.key);
+            const values = authorizations(pairs).map((v) => v.replace(/^[ \t]+|[ \t]+$/g, ''));
+            const verdict = values.length === 0 ? 'none' : judged(judging, method, target, values[0], Buffer.alloc(0)).verdict;
+            const framing = framingOf(pairs);
+            const length = framing !== null && framing.kind === 'length' ? framing.length : 0;
+            if (expectsContinue(pairs)) {
+              authLogged(judging, n, authLine(n, s.conn.face, s.number, method, null, verdict, 417, values));
+              await send(ascii('HTTP/1.1 417 Expectation Failed\r\nContent-Length: 19\r\n\r\nexpectation failed\n'));
+              while (buffer.length === 0) if (!(await more())) return;
+              if (!(buffer[0] >= 0x41 && buffer[0] <= 0x5a)) {
+                while (buffer.length < length) if (!(await more())) return;
+                buffer = buffer.subarray(length);
+              }
+            } else {
+              while (buffer.length < length) if (!(await more())) return;
+              const body = Buffer.from(buffer.subarray(0, length));
+              buffer = buffer.subarray(length);
+              authLogged(judging, n, authLine(n, s.conn.face, s.number, method, body, verdict, 200, values));
+              await send(ascii('HTTP/1.1 200 OK\r\nContent-Length: 8\r\n\r\nauth ok\n'));
+            }
+            let end;
+            while ((end = buffer.indexOf('\r\n\r\n')) < 0) {
+              if (buffer.length >= HEAD_LIMIT || !(await more())) return;
+            }
+            head = Buffer.from(buffer.subarray(0, end + 4));
+            buffer = buffer.subarray(end + 4);
+            if (socket.destroyed || !socket.writable) return;
+          }
         }
         case 'end':
           socket.end();
