@@ -1235,7 +1235,11 @@
   ;; so does 8.7.1's, so each cell asserts the wait alone. 8.5.0's HTTP/2 413 waited in every
   ;; native run, but under the memory gate's Valgrind ended on its own in 1
   ;; of 10 cells (build/m6s2b/logs/memlock-1.log), so its kind is either,
-  ;; and its status alone held. Apple's 8.7.1's row is the Mac's two runs
+  ;; and its status alone held; so is its raw kept 413's, which ended on
+  ;; its own, chunked, under CI's memory job at M7 slice 2's cf3a567, the
+  ;; 413 beating libcurl's first ask for the body (AGENTS.md), where every
+  ;; earlier run waited
+  ;; (.plans/research/m7/slice2/verify/results/ci-memory-cf3a567.log). Apple's 8.7.1's row is the Mac's two runs
   ;; on slice 2's PR, its framings alike in every cell but HTTP/2's 200,
   ;; 200 in the first, 55 sized in the second
   ;; (.plans/research/m6/slice2-build/results/mac-8.7.1-*.log). A
@@ -1251,7 +1255,7 @@
         (answer-rows
          '(("7.85.0" (raw-413-close waits 413) (raw-413-keep waits 413) (raw-200-close waits 200)
                      (raw-200-keep waits 200) (h2-413 waits 413) (h2-200 waits 28))
-           ("8.5.0" (raw-413-close own 413) (raw-413-keep waits 413) (raw-200-close own 200)
+           ("8.5.0" (raw-413-close own 413) (raw-413-keep either 413) (raw-200-close own 200)
                     (raw-200-keep waits 200) (h2-413 either 413) (h2-200 own 200))
            ("8.7.1" (raw-413-close own 413) (raw-413-keep waits 413) (raw-200-close own 200)
                     (raw-200-keep waits 200) (h2-413 waits 413) (h2-200 waits))

@@ -51,3 +51,13 @@ My checks of the measuring agent's hand-back, and of a trap the builder reported
   reuses no connection whose ALPN is unknown (`lib/url.c`, `BUNDLE_UNKNOWN`), so a shared
   connection needs the second request to start after the first's handshake: a retry would, such
   as libcurl's own after a refused HTTP/2 stream. Not shown; open.
+- **CI's memory job failed once, on `cf3a567`,** in M6 slice 2's test-upload, a suite this
+  slice does not change ([`results/ci-memory-cf3a567.log`](results/ci-memory-cf3a567.log)): on
+  Ubuntu's 8.5.0 under Valgrind, the answer table's chunked upload to the raw face's kept 413
+  ended on its own, where every earlier run had waited for the producer; Valgrind found no
+  error. The same suites passed that job on `30c053a`. It is AGENTS.md's race of an answer
+  written as the head arrives against libcurl's first ask for the body, which the table already
+  held for 8.5.0's HTTP/2 413. **Decided by the maintainer, 2026-11-02, the recommended
+  option:** fix it on this PR, the raw kept 413 held to `either 413` as its HTTP/2 neighbour is.
+  With the fix, test-upload passed on Ubuntu's 8.5.0 with OpenSSL in Docker, natively and under
+  the memory gate (`results/lane-openssl-upload-either*.log`).
