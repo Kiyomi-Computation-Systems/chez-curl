@@ -235,9 +235,9 @@
 
 ;; --- the keys --------------------------------------------------------------------------
 
-(test-equal "the keys are exactly method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer, body-length, http-version and credentials, in order"
+(test-equal "the keys are exactly method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer, body-length, http-version, credentials, proxy-ca-file and proxy-verify, in order"
   '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
-    stream-buffer body-length http-version credentials)
+    stream-buffer body-length http-version credentials proxy-ca-file proxy-verify)
   request-keys)
 
 (test-equal "the methods are exactly get, head, post, put, patch and delete, in order"
@@ -252,23 +252,25 @@
         (curl-request-connect-timeout-ms r) (curl-request-body-limit r) (curl-request-ca-file r)
         (curl-request-verify r) (curl-request-proxy r) (curl-request-stream-buffer r)
         (curl-request-body-length r) (curl-request-http-version r) (curl-request-credentials r)
+        (curl-request-proxy-ca-file r) (curl-request-proxy-verify r)
         (curl-request-fault r) (curl-request-follow r)))
 
-(test-equal "a request with no key takes every default: get, no headers, no body, no user agent, no timeouts, no body limit, the system store, verification on, the environment's proxy, the whole body kept, no body-length, no HTTP version, no credentials; and no fault, no following"
-  (list '("http://a/b" get () #f #f #f #f #f #f #t environment #f #f #f #f #f #f) running-counts)
+(test-equal "a request with no key takes every default: get, no headers, no body, no user agent, no timeouts, no body limit, the system store, verification on, the environment's proxy, the whole body kept, no body-length, no HTTP version, no credentials, no proxy CA file, the proxy's verification on; and no fault, no following"
+  (list '("http://a/b" get () #f #f #f #f #f #f #t environment #f #f #f #f #f #t #f #f) running-counts)
   (with-counts (request-fields (make-curl-request "http://a/b"))))
 
-;; Each value differs from its default. verify's and proxy's are both #f,
-;; the one value each takes but its default; every other key's differs.
+;; Each value differs from its default. verify's and proxy-verify's are
+;; #f, the one value each takes but its default; proxy's a URL string;
+;; every other key's differs.
 (define all-keys
   (list 'method 'put 'headers '(("X-A" . "1")) 'body #vu8(1 2 3) 'user-agent "agent"
         'timeout-ms 4000 'connect-timeout-ms 3000 'body-limit 9 'ca-file "ca.pem" 'verify #f
-        'proxy #f 'stream-buffer 65536 'http-version 'http/2-prior-knowledge
-        'credentials '(basic "u" "p")))
+        'proxy "https://p:1" 'stream-buffer 65536 'http-version 'http/2-prior-knowledge
+        'credentials '(basic "u" "p") 'proxy-ca-file "proxy-ca.pem" 'proxy-verify #f))
 
 (test-equal "each key sets its own field, in any order"
-  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f http/2-prior-knowledge (basic "u" "p") #f #f)
-        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f http/2-prior-knowledge (basic "u" "p") #f #f))
+  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f #f)
+        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f #f))
   (list (request-fields (apply make-curl-request "http://a/b" all-keys))
         (request-fields (apply make-curl-request "http://a/b"
                        (let loop ((rest all-keys) (pairs '()))
@@ -287,9 +289,9 @@
 
 ;; --- the keys' refusals ----------------------------------------------------------------
 
-(test-equal "an unknown key is refused by name, before anything else is checked: a symbol no key is, url, fault and follow, a key spelt as a string, and #f; a URL that is no string beside it does not raise first; nothing native is made"
+(test-equal "an unknown key is refused by name, before anything else is checked: a symbol no key is, url, fault and follow, as given; a key spelt as a string, and #f, by their kind, never the value, which can be a proxy URL; a URL that is no string beside it does not raise first; nothing native is made"
   (list (map (lambda (k) (list 'request-refused 'key k 'unknown-key))
-             (list 'nope 'url 'fault 'follow "method" #f))
+             (list 'nope 'url 'fault 'follow '(kind string) '(kind boolean)))
         '(request-refused key nope unknown-key)
         running-counts)
   (then-counts
@@ -370,9 +372,9 @@
 
 ;; --- the proxy field (ADR-0024, decision 1) ---------------------------------------------
 
-(test-equal "proxy takes environment and #f, each kept, and curl-request-with replaces it either way and keeps it when not given; any other value is an assertion violation, from make-curl-request or curl-request-with, with nothing native made: #t, none, \"environment\", Environment, () and 0"
-  (list '(environment #f environment #f #f)
-        (vector->list (make-vector 6 '(assertion-violation make-curl-request)))
+(test-equal "proxy takes environment and #f, each kept, and a URL string, kept as a copy, \"environment\" among them, which a submit parses; curl-request-with replaces it either way and keeps it when not given; any other value is an assertion violation, from make-curl-request or curl-request-with, with nothing native made: #t, none, Environment, () and 0"
+  (list '(environment #f environment #f #f "environment")
+        (vector->list (make-vector 5 '(assertion-violation make-curl-request)))
         '(assertion-violation curl-request-with)
         running-counts)
   (then-counts
@@ -382,9 +384,10 @@
                                                       'proxy 'environment))
                (curl-request-proxy (curl-request-with (make-curl-request "http://a/") 'proxy #f))
                (curl-request-proxy (curl-request-with (make-curl-request "http://a/" 'proxy #f)
-                                                      'method 'post)))
+                                                      'method 'post))
+               (curl-request-proxy (make-curl-request "http://a/" 'proxy "environment")))
          (map (lambda (v) (failed (lambda () (make-curl-request "http://a/" 'proxy v))))
-              (list #t 'none "environment" 'Environment '() 0))
+              (list #t 'none 'Environment '() 0))
          (failed (lambda () (curl-request-with (make-curl-request "http://a/") 'proxy 'direct))))))
 
 ;; --- the http-version key (ADR-0034; the M7 plan, section 3.1) ---------------------------
@@ -417,9 +420,9 @@
 
 (test-equal "body takes stream with post, put, patch and delete, and body-length sets its own field beside it: a natural, 0 and 2^63 - 2 among them, or #f, the default, kept by curl-request-with when not given and replaced when given; the other fields keep their defaults; nothing native made"
   (list '((post stream 7) (put stream 0) (patch stream 9223372036854775806) (delete stream #f))
-        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 7 #f #f #f #f)
-        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 5 #f #f #f #f)
-        '("http://a/b" post () stream #f #f #f #f #f #t environment #f #f #f #f #f #f)
+        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 7 #f #f #f #t #f #f)
+        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 5 #f #f #f #t #f #f)
+        '("http://a/b" post () stream #f #f #f #f #f #t environment #f #f #f #f #f #t #f #f)
         running-counts)
   (then-counts
    (list (map (lambda (args)
@@ -495,8 +498,8 @@
 (define base (apply make-curl-request "http://a/b" all-keys))
 
 (test-equal "curl-request-with replaces the keys given and keeps the rest; with none, every field"
-  (list '("http://a/b" patch (("X-A" . "1")) #vu8(4) "agent" 4000 10 9 "ca.pem" #f #f 65536 #f http/2-prior-knowledge (basic "u" "p") #f #f)
-        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f http/2-prior-knowledge (basic "u" "p") #f #f))
+  (list '("http://a/b" patch (("X-A" . "1")) #vu8(4) "agent" 4000 10 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f #f)
+        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f #f))
   (list (request-fields (curl-request-with base 'connect-timeout-ms 10 'method 'patch 'body #vu8(4)))
         (request-fields (curl-request-with base))))
 
@@ -520,9 +523,9 @@
 (define whole (curl-request-with base 'stream-buffer #f))
 
 (test-equal "the private constructors set the fault and following, keep every other field, and curl-request-with keeps both"
-  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f 65536 #f http/2-prior-knowledge (basic "u" "p") 2 #f)
-        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f #f #f http/2-prior-knowledge (basic "u" "p") #f #t)
-        '("http://a/b" delete (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f #f #f #f http/2-prior-knowledge (basic "u" "p") 2 #t))
+  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f 2 #f)
+        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" #f #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f #t)
+        '("http://a/b" delete (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" #f #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f 2 #t))
   (list (request-fields (curl-request-with-fault base 2))
         (request-fields (curl-request-following whole))
         (request-fields (curl-request-with (curl-request-following (curl-request-with-fault whole 2))

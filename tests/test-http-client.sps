@@ -57,7 +57,7 @@
         (curl)
         (http-client)
         (only (http-client private conditions) make-http-request-error make-http-timeout
-              make-http-exchange)
+              make-http-exchange kind-of shown-value shown-key)
         (only (http-client private call) form-encode merge-fields with-form-type string-pairs
               string-pairs-within)
         (only (http-client private exchange) make-exchange exchange-submission exchange-step
@@ -281,9 +281,9 @@
 ;; Before any session is made here: no engine runs, so the multi count is
 ;; the suite's own evidence that a refusal made none.
 
-(test-equal "make-http-session refuses an unknown key by name, retries, body, method, redirect, a string among them, each as &http-request-error, field key, with no engine made"
+(test-equal "make-http-session refuses an unknown key by name, retries, body, method, redirect, and a string by its kind, (kind string), never the string, each as &http-request-error, field key, with no engine made"
   (map (lambda (key) (list (list 'raised '(http-error) (list 'http-request-error 'key key 'unknown-key)) 0))
-       (list 'retries 'body 'method 'redirect "timeout-ms" "redirects"))
+       (list 'retries 'body 'method 'redirect '(kind string) '(kind string)))
   (in-order (lambda (key)
               (let* ((refused (outcome (lambda () (make-http-session key 1))))
                      (multi (count-of 'multi)))
@@ -304,7 +304,7 @@
     (list repeated missing unknown again multi)))
 
 (test-equal "make-http-session refuses a bad value as the low level does, its condition unchanged, no &http-exchange, with no engine made"
-  (list '(raised (curl-request-error header-value "a\nb" line-break))
+  (list '(raised (curl-request-error header-value "X-A" line-break))
         '(raised (assertion make-curl-request))
         '(raised (assertion make-curl-request))
         '(raised (assertion make-curl-request))
@@ -662,8 +662,8 @@
 
 ;; c28, c7 : Condition
 ;; A 28, perform-failed, of the class timeout; and a 7, connect.
-(define c28 (make-classed-transfer-error 'perform-failed 28 #f "Timeout was reached" #f #f 0))
-(define c7 (make-classed-transfer-error 'perform-failed 7 #f "Couldn't connect to server" #f #f 0))
+(define c28 (make-classed-transfer-error 'perform-failed 28 #f "Timeout was reached" #f #f 0 #f))
+(define c7 (make-classed-transfer-error 'perform-failed 7 #f "Couldn't connect to server" #f #f 0 #f))
 (define stopped (make-curl-engine-error 'stopped #f))
 
 ;; stepped : (U Positive-Integer #f) (U Positive-Integer #f) Integer Symbol Condition -> (Listof Any)
@@ -1141,6 +1141,24 @@
          (lambda () (answer (lambda () (http-get m echo))))
          (lambda () (http-session-close m)))))
 
+   (test-equal "a session keeps a copy of its proxy URL (the M7 plan, section 3.1): the caller's string changed after the session is made to name a port nothing listens on, the call goes through the http face as its proxy all the same, its request line in absolute form"
+     (list 200 (string-append "GET http://" host "/echo HTTP/1.1"))
+     (let* ((proxy (string-append "http://" host))
+            (m (make-http-session 'timeout-ms 20000 'proxy proxy)))
+       (string-set! proxy (- (string-length proxy) 1) #\x)
+       (string-set! proxy 7 #\9)
+       (dynamic-wind
+         (lambda () #f)
+         (lambda ()
+           (let ((a (answer (lambda () (http-get m echo)))))
+             (if (and (list? a) (= (length a) 2) (string? (cadr a)))
+                 (list (car a) (let loop ((i 0))
+                                 (cond ((= i (string-length (cadr a))) (cadr a))
+                                       ((char=? (string-ref (cadr a) i) #\newline) (substring (cadr a) 0 i))
+                                       (else (loop (+ i 1))))))
+                 a)))
+         (lambda () (http-session-close m)))))
+
    ;; --- the bodies -------------------------------------------------------------------
 
    (test-equal "a string body is sent as its UTF-8 bytes, with no Content-Type; a bytevector as it is"
@@ -1175,7 +1193,7 @@
                  (answer (lambda () (http-delete s echo 'form '())))))
          (lambda () (http-session-close typed)))))
 
-   (test-equal "a call's own refusals, each &http-request-error compounded with &http-exchange, no transfer made: body and form, either with get or head, a body neither bytevector nor string, a form or params not a list of string pairs"
+   (test-equal "a call's own refusals, each &http-request-error compounded with &http-exchange, no transfer made: body and form, either with get or head, a body neither bytevector nor string, a form or params not a list of string pairs, a string or a list among them named by its kind"
      (list (list 'raised '(http-error) '(http-request-error form #f body-and-form)
                  (list 'exchange 'post echo '() 0))
            (list 'raised '(http-error) '(http-request-error body get body-not-allowed)
@@ -1188,11 +1206,11 @@
                  (list 'exchange 'post echo '() 0))
            (list 'raised '(http-error) '(http-request-error body #f not-a-body)
                  (list 'exchange 'put echo '() 0))
-           (list 'raised '(http-error) '(http-request-error form "a=1" not-name-value-pairs)
+           (list 'raised '(http-error) '(http-request-error form (kind string) not-name-value-pairs)
                  (list 'exchange 'post echo '() 0))
-           (list 'raised '(http-error) '(http-request-error form (("a" . 1)) not-name-value-pairs)
+           (list 'raised '(http-error) '(http-request-error form (kind list) not-name-value-pairs)
                  (list 'exchange 'post echo '() 0))
-           (list 'raised '(http-error) '(http-request-error params (("a" . "1") . tail) not-name-value-pairs)
+           (list 'raised '(http-error) '(http-request-error params (kind list) not-name-value-pairs)
                  (list 'exchange 'get echo '() 0))
            (list 'raised '(http-error) '(http-request-error params (a) not-name-value-pairs)
                  (list 'exchange 'get echo '() 0))
@@ -1228,7 +1246,7 @@
            (outcome (lambda () (http-get s echo 'method 'post)))))
 
    (test-equal "a call's value the low level refuses passes through, compounded with &http-exchange, no &http-error"
-     (list (list 'raised '(curl-request-error header-value "a\nb" line-break)
+     (list (list 'raised '(curl-request-error header-value "X-A" line-break)
                  (list 'exchange 'get echo '() 0))
            (list 'raised '(assertion make-curl-request) (list 'exchange 'get echo '() 0))
            (list 'raised '(curl-request-error header-name "User-Agent" duplicates-field)
@@ -1519,6 +1537,28 @@
 (test-equal "every count is zero at the end"
   zero-counts
   (native-counts))
+
+;; --- a caller's value, as a refusal names it (M7 slice 3's review), the high level's own copy ---
+
+;; circular : List
+;; A list whose last pair points back at its first.
+(define circular (let ((l (list 1 2))) (set-cdr! (cdr l) l) l))
+
+(test-equal "kind-of, written out: a string, a list, () among them, a number, exact and inexact, a boolean, a char, a symbol, a bytevector, a vector, a procedure, and anything else, a hashtable"
+  '(string list list number number boolean char symbol bytevector vector procedure other)
+  (map kind-of (list "s" '(a) '() 5 1.5 #t #\a 'x (make-bytevector 1 0) (vector 1) car (make-eq-hashtable))))
+
+(test-equal "shown-value, written out against the whole complement of what it shows: a symbol, a number, a boolean, a char, (), and a proper list of them, a policy's statuses or methods, as given; a string, a proxy URL among them, a list holding a string, credentials among them, an improper list, a circular one, a bytevector, a vector, a procedure and a hashtable by their kind"
+  (list 'x 5 #f #\a '() '(429 503) '(get post)
+        '(kind string) '(kind list) '(kind list) '(kind list) '(kind bytevector) '(kind vector)
+        '(kind procedure) '(kind other))
+  (map shown-value (list 'x 5 #f #\a '() '(429 503) '(get post)
+                         "http://u:Pr0xyS3cr3t@h/" '(basic "alice" "Pr0xyS3cr3t") '(1 . 2) circular
+                         (make-bytevector 1 0) (vector "p") car (make-eq-hashtable))))
+
+(test-equal "shown-key, written out: a symbol as given; every other kind by its kind, a number's and a boolean's among them"
+  '(proxy (kind string) (kind list) (kind number) (kind boolean) (kind char) (kind list))
+  (map shown-key (list 'proxy "http://u:Pr0xyS3cr3t@h/" '(basic "alice" "Pr0xyS3cr3t") 5 #f #\a '())))
 
 (test-end "http-client")
 

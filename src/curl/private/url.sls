@@ -41,7 +41,7 @@
 (library (curl private url)
   (export url-normalize url-resolve call-with-parsed-url require-http-scheme userinfo-parts
           parse-url free-parsed-url! curl-url-part curl-url-append-query appended-url
-          curl-url-resolve curl-url-with-fragment fragment-url encoded-bytes)
+          curl-url-resolve curl-url-with-fragment fragment-url encoded-bytes proxy-url-reading)
   (import (curl private require-threaded)
           (except (rnrs) dynamic-wind)
           (only (chezscheme) dynamic-wind)
@@ -49,13 +49,27 @@
           (curl private constants)
           (curl private native))
 
-  ;; refuse : String (U Symbol #f) (U Integer #f) (U String #f) -> Nothing
-  (define (refuse input reason code message)
+  ;; refuse : String (U Symbol #f) (U Integer #f) (U String #f) [Symbol] -> Nothing
+  ;; Raises &curl-url-error for INPUT: its input field holds INPUT, which
+  ;; curl-url-error-input gives back, but its message and irritants name
+  ;; FIELD, url by default, reference, query or fragment, never the string:
+  ;; a URL can hold userinfo, so ftp://u:PW@h/, refused scheme-not-http,
+  ;; printed its password (ADR-0008, amended 2026-11-03).
+  (define (refuse input reason code message . field)
     (raise (condition (make-curl-url-error input reason code message)
                       (make-who-condition 'chez-curl)
                       (make-message-condition
                        (or message "libcurl's URL API refused a URL"))
-                      (make-irritants-condition (list input)))))
+                      (make-irritants-condition (list (if (pair? field) (car field) 'url))))))
+
+  ;; field-of : String -> Symbol
+  ;; The field a checked string is, by WHAT names it: url, reference, query
+  ;; or fragment.
+  (define (field-of what)
+    (cond ((string=? what "a reference") 'reference)
+          ((string=? what "a query part") 'query)
+          ((string=? what "a fragment") 'fragment)
+          (else 'url)))
 
   ;; refuse-code : String Integer -> Nothing
   ;; libcurl's refusal of INPUT with CODE.
@@ -76,11 +90,12 @@
   ;; it between a check of it and a use of it.
   (define (checked-string who input what)
     (unless (string? input)
-      (assertion-violation who (string-append what " is a string") input))
+      (assertion-violation who (string-append what " is a string") (shown-value input)))
     (let ((copy (string-copy input)))
       (when (holds-nul? copy)
         (refuse copy 'embedded-nul #f
-                (string-append what " holds U+0000, which libcurl would read as its end")))
+                (string-append what " holds U+0000, which libcurl would read as its end")
+                (field-of what)))
       copy))
 
   ;; checked-input : Symbol Any -> String
@@ -115,8 +130,13 @@
   ;; curl_url_set of the whole URL on HANDLE: INPUT parsed, or resolved
   ;; against what HANDLE holds; raises its refusal.
   (define (set-url! handle input)
+    (set-url-flagged! handle input 0))
+
+  ;; set-url-flagged! : Positive-Integer String Natural -> Void
+  ;; set-url!, with curl_url_set's FLAGS.
+  (define (set-url-flagged! handle input flags)
     (let ((code (call-with-c-string input
-                  (lambda (address) (curl-url-set handle curlupart-url address 0)))))
+                  (lambda (address) (curl-url-set handle curlupart-url address flags)))))
       (unless (eqv? code curlue-ok)
         (refuse-code input code))))
 
@@ -132,7 +152,7 @@
       (dynamic-wind #t
         (lambda ()
           (when freed
-            (assertion-violation 'get-part "re-entered after its string was freed" input))
+            (assertion-violation 'get-part "re-entered after its string was freed" 'url))
           (let-values (((c a) (curl-url-get handle part flags)))
             (set! code c)
             (set! address a)))
@@ -152,21 +172,26 @@
   ;; runs. Re-entering PROC through a continuation, once the handle is
   ;; freed, raises an assertion violation.
   (define (call-with-parsed-url input proc)
-    (define string (checked-input 'call-with-parsed-url input))
+    (call-with-flagged-url 'call-with-parsed-url input 0 proc))
+
+  ;; call-with-flagged-url : Symbol String Natural (Positive-Integer -> Any) -> Any
+  ;; call-with-parsed-url's answer, INPUT parsed by curl_url_set with FLAGS,
+  ;; as WHO.
+  (define (call-with-flagged-url who input flags proc)
+    (define string (checked-input who input))
     (unless (procedure? proc)
-      (assertion-violation 'call-with-parsed-url "not a procedure" proc))
+      (assertion-violation who "not a procedure" proc))
     (let ((handle #f) (freed #f))
       (dynamic-wind #t
         (lambda ()
           (when freed
-            (assertion-violation 'call-with-parsed-url
-                                 "re-entered after its handle was freed" string))
+            (assertion-violation who "re-entered after its handle was freed" 'url))
           (let ((made (curl-url)))
             (when (eqv? made 0)
-              (error 'call-with-parsed-url "curl_url returned NULL: no memory for a handle"))
+              (error who "curl_url returned NULL: no memory for a handle"))
             (set! handle made)))
         (lambda ()
-          (set-url! handle string)
+          (set-url-flagged! handle string flags)
           (proc handle))
         (lambda ()
           (set! freed #t)
@@ -247,6 +272,49 @@
   ;; The CURLUcode NAME names in curlue-codes.
   (define (code-of name) (cdr (assq name curlue-codes)))
 
+  ;; ascii-folded-text : String -> String
+  ;; S with A to Z as a to z, and nothing else changed: never string-downcase,
+  ;; which folds U+212A KELVIN SIGN to k (traps.md).
+  (define (ascii-folded-text s)
+    (list->string (map (lambda (c) (if (char<=? #\A c #\Z) (integer->char (+ (char->integer c) 32)) c))
+                       (string->list s))))
+
+  ;; proxy-url-reading : String -> (List String (U String #f) (U String #f) String (U String #f) (U String #f) String)
+  ;; INPUT, a proxy URL, parsed by curl_url_set with CURLU_NON_SUPPORT_SCHEME,
+  ;; so that a scheme libcurl does not know parses as any other, alike on
+  ;; every libcurl: with no flags, 7.85.0 to 8.20.0 refuse socks5:// as an
+  ;; unsupported scheme and 8.23.0 parses it (M7 slice 3's build). Answers
+  ;; (SCHEME USER PASSWORD PATH QUERY FRAGMENT URL): each part as
+  ;; curl_url_get gives it with no flags, the user and the password still
+  ;; percent-encoded, #f for one the URL lacks; and URL, the whole URL as
+  ;; curl_url_get gives it back once a port the URL lacks is set to its
+  ;; scheme's default, 80 for http and 443 for https, A to Z folded, as
+  ;; chez-curl hands it to PROXY (ADR-0037, amended 2026-11-02): with no port,
+  ;; 7.85.0 to 8.20.0 try 1080 and 8.23.0 tries 80. Any other scheme's URL
+  ;; is given back as it is. Every refusal raises &curl-url-error, whose
+  ;; input is INPUT, and a not-utf-8 answer among them: the caller makes its
+  ;; own refusal of it, and hands INPUT, which can hold a password, nowhere.
+  (define (proxy-url-reading input)
+    (call-with-flagged-url 'proxy-url-reading input curlu-non-support-scheme
+      (lambda (handle)
+        ;; let*: the parts are read in this order, the URL last.
+        (let* ((scheme (get-part handle curlupart-scheme 0 #f input))
+               (user (get-part handle curlupart-user 0 (code-of 'no-user) input))
+               (password (get-part handle curlupart-password 0 (code-of 'no-password) input))
+               (path (get-part handle curlupart-path 0 #f input))
+               (query (get-part handle curlupart-query 0 (code-of 'no-query) input))
+               (fragment (get-part handle curlupart-fragment 0 (code-of 'no-fragment) input))
+               (port (get-part handle curlupart-port 0 (code-of 'no-port) input))
+               (default (cdr (or (assoc (ascii-folded-text scheme) '(("http" . "80") ("https" . "443")))
+                                 '(#f . #f)))))
+          (when (and (not port) default)
+            (let ((code (call-with-c-string default
+                          (lambda (address) (curl-url-set handle curlupart-port address 0)))))
+              (unless (eqv? code curlue-ok)
+                (refuse-code input code))))
+          (list scheme user password path query fragment
+                (get-part handle curlupart-url 0 #f input))))))
+
   ;; url-parts : (Listof (List Symbol Natural Natural (U Natural #f)))
   ;; Each part curl-url-part reads: its name, its CURLUPart, the flags
   ;; curl_url_get takes for it, and the code that says a URL lacks it. A
@@ -277,7 +345,7 @@
     (define string (checked-input 'curl-url-part url))
     (let ((row (assq part url-parts)))
       (unless row
-        (assertion-violation 'curl-url-part "not a part of a URL" part))
+        (assertion-violation 'curl-url-part "not a part of a URL" (shown-value part)))
       (call-with-parsed-url string
         (lambda (handle)
           (let ((text (get-part handle (cadr row) (caddr row) (cadddr row) string)))
@@ -311,9 +379,10 @@
                        ((string-suffix? whole (string-append "#" fragment))
                         (string-append "#" fragment))
                        ((string=? fragment "") "")
+                       ;; Its irritants name the fields, never the URL.
                        (else (error 'curl-url-append-query
                                     "libcurl's URL does not end with its fragment"
-                                    whole fragment))))
+                                    'url 'fragment))))
            (stem (let ((s (substring whole 0 (- (string-length whole) (string-length tail)))))
                    (if (and (string=? old "") (string-suffix? s "?"))
                        (substring s 0 (- (string-length s) 1))
@@ -355,7 +424,7 @@
                    (kept (or (get-part handle curlupart-query 0 (code-of 'no-query) written) "")))
               (unless (string=? kept expected)
                 (refuse addition 'query-not-kept #f
-                        "the query part would not come back as written"))
+                        "the query part would not come back as written" 'query))
               answer))))))
 
   ;; latin-1 : Bytevector -> String
@@ -371,23 +440,24 @@
   ;; checked and what libcurl gets.
   (define (checked-bytes who input what)
     (unless (bytevector? input)
-      (assertion-violation who (string-append what " is a bytevector") input))
+      (assertion-violation who (string-append what " is a bytevector") (shown-value input)))
     (let ((copy (bytevector-copy input)))
       (let scan ((i 0))
         (when (< i (bytevector-length copy))
           (when (= (bytevector-u8-ref copy i) 0)
             (refuse (latin-1 copy) 'embedded-nul #f
-                    (string-append what " holds 0x00, which libcurl would read as its end")))
+                    (string-append what " holds 0x00, which libcurl would read as its end")
+                    (field-of what)))
           (scan (+ i 1))))
       copy))
 
   ;; set-url-named! : Positive-Integer String String -> Void
-  ;; set-url! of TEXT, its refusal naming NAME.
+  ;; set-url! of TEXT, its refusal's input NAME, its field reference.
   (define (set-url-named! handle text name)
     (let ((code (call-with-c-string text
                   (lambda (address) (curl-url-set handle curlupart-url address 0)))))
       (unless (eqv? code curlue-ok)
-        (refuse-code name code))))
+        (refuse name (curl-url-code-reason code) code (curl-url-strerror code) 'reference))))
 
   ;; curl-url-resolve : String (U String Bytevector) -> String
   ;; REFERENCE resolved against BASE, by curl_url_set on BASE's handle
@@ -447,9 +517,10 @@
                        (substring whole 0 (- (string-length whole)
                                              (+ 1 (string-length fragment)))))
                       ((string=? fragment "") whole)
+                      ;; Its irritants name the fields, never the URL.
                       (else (error 'curl-url-with-fragment
                                    "libcurl's URL does not end with its fragment"
-                                   whole fragment)))))
+                                   'url 'fragment)))))
       (if (string=? new "") stem (string-append stem "#" new))))
 
   ;; curl-url-with-fragment : String (U String Bytevector #f) -> String
@@ -471,7 +542,7 @@
              (encoded-bytes (checked-bytes 'curl-url-with-fragment fragment "a fragment")))
             ((string? fragment) (checked-string 'curl-url-with-fragment fragment "a fragment"))
             (else (assertion-violation 'curl-url-with-fragment
-                                       "a fragment is a string, a bytevector or #f" fragment))))
+                                       "a fragment is a string, a bytevector or #f" (shown-value fragment)))))
     (let-values (((whole old)
                   (call-with-parsed-url string
                     (lambda (handle)

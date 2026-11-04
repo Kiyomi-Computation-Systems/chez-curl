@@ -1,0 +1,22 @@
+--- tree/src/http-client/private/exchange.sls	2026-11-03 05:40:41.265852288 -0500
++++ mut-next-verify/src/http-client/private/exchange.sls	2026-11-03 07:58:19.466332462 -0500
+@@ -744,7 +744,7 @@
+                          'http-version (curl-request-http-version last)
+                          'credentials (if across #f (curl-request-credentials last))
+                          'proxy-ca-file (curl-request-proxy-ca-file last)
+-                         'proxy-verify (curl-request-proxy-verify last))))
++                         )))
+ 
+   ;; follow : State Response Integer String
+   ;;          -> (U (List 'fail Condition) (List 'next State Request 0))
+--- tree/tests/test-proxy.sps	2026-11-03 06:22:13.712367057 -0500
++++ mut-no-lane/tests/test-proxy.sps	2026-11-03 07:58:19.466681746 -0500
+@@ -122,7 +122,7 @@
+ 
+ ;; lane : Any
+ ;; The key of a table that varies by version and by backend: VERSION/NAME.
+-(define lane (if (and (string? version) (string? backend)) (string-append version "/" backend) version))
++(define lane "0.0.0/none")
+ 
+ ;; now-ms : -> Integer
+ (define (now-ms)

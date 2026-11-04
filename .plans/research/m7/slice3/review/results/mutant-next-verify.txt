@@ -1,0 +1,9 @@
+== test-proxy
+# of expected passes      88
+exit 0
+== test-redirect
+# of expected passes      72
+exit 0
+== test-http-client
+# of expected passes      74
+exit 0

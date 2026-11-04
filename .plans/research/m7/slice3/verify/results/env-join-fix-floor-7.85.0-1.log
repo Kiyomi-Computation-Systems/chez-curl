@@ -1,0 +1,28 @@
+== floor
+libcurl 7.85.0
+control: A live with alice's userinfo, then B through the named proxy with no userinfo
+  outcomes: (a-live-before-b #t b (failed 56 407) a (response 200 "connection 1\n"))
+  log: connect http conn=1 target=localhost:35633 answer=200 head=134 auth=basic:alice:s3cret
+  log: inner h2 via=1 method=GET target=/connection?delay=3000
+  log: connect http conn=2 target=localhost:35633 answer=407 head=89 auth=-
+  log: close http conn=2
+  log: close http conn=1
+https_proxy=http://127.0.0.1:44989
+control: B alone through proxy environment
+  outcomes: (b (failed 56 407))
+  log: connect http conn=3 target=localhost:35633 answer=407 head=89 auth=-
+  log: close http conn=3
+case: A live with alice's userinfo, then B through proxy environment, no userinfo
+  outcomes: (a-live-before-b #t b (response 200 "connection 2\n") a (response 200 "connection 2\n"))
+  log: connect http conn=4 target=localhost:35633 answer=200 head=134 auth=basic:alice:s3cret
+  log: inner h2 via=4 method=GET target=/connection?delay=3000
+  log: inner h2 via=4 method=GET target=/connection
+  log: close http conn=4
+fix 1, unmultiplexed engine: A live with alice's userinfo, then B through proxy environment, no userinfo
+  outcomes: (a-live-before-b #t b (failed 56 407) a (response 200 "connection 3\n"))
+  log: connect http conn=5 target=localhost:35633 answer=200 head=134 auth=basic:alice:s3cret
+  log: inner h2 via=5 method=GET target=/connection?delay=3000
+  log: connect http conn=6 target=localhost:35633 answer=407 head=89 auth=-
+  log: close http conn=6
+  log: close http conn=5
+done

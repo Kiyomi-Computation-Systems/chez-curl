@@ -1,0 +1,21 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (2 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-proxy.sps
+%%%% Starting test proxy
+test-proxy: empty-userinfo on "8.20.0" measured ((refused proxy (proxy user) credentials-empty test) (refused proxy (proxy user) credentials-empty test) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u:@127.0.0.1:3128/" "http" #t))
+test-proxy: tls-in-tls-checks on "8.20.0/GnuTLS" measured (no-raise no-raise no-raise no-raise no-raise)
+test-proxy: empty-userinfo-wire on "8.20.0" measured (((refused proxy (proxy user) credentials-empty curl-submit) ()) ((refused proxy (proxy user) credentials-empty curl-submit) ()))
+test-proxy: refused-connect on "8.20.0" measured ((7 connect 403 zero) (7 connect 407 zero) (7 connect 502 zero) (7 connect 503 zero) (7 connect 407 zero) (7 connect 407 zero) (56 send-receive #f zero))
+test-proxy: unshared-tunnels on "8.20.0" measured (((response 200) (response 200) #f ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "inner https via=1 method=GET target=/status/200" "close http conn=1")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "inner https via=1 method=GET target=/status/200" "close http conn=1")))
+test-proxy: tunnel-plans on "8.20.0" measured (() () () () ())
+test-proxy: closing-retries on "8.20.0" measured (((failed 56 #f 3) 3) ((failed 56 #f 3) 3))
+# of expected passes      88
+test: pass tests/test-proxy.sps
+=== tests/test-retry.sps
+%%%% Starting test retry
+(head-predicate-rows 98)
+# of expected passes      86
+test: pass tests/test-retry.sps
+test: ran 2, passed 2, failed 0, hung 0

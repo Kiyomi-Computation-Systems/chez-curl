@@ -1,0 +1,46 @@
+libcurl 8.20.0
+control: https_proxy, no userinfo
+  "https_proxy"="http://127.0.0.1:42923"
+  (transfer (response 200 "status 200") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  log: connect http conn=1 target=127.0.0.1:39967 answer=200 head=89 auth=-
+  log: inner https via=1 method=GET target=/status/200
+  log: close http conn=1
+control: https_proxy, userinfo u:p
+  "https_proxy"="http://u:p@127.0.0.1:42923"
+  (transfer (response 200 "status 200") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  log: connect http conn=2 target=127.0.0.1:39967 answer=200 head=122 auth=basic:u:p
+  log: inner https via=2 method=GET target=/status/200
+  log: close http conn=2
+https_proxy, the user decoding to 0x01
+  "https_proxy"="http://u%01x:p@127.0.0.1:42923"
+  (transfer (refused perform-failed 3 none #f) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+https_proxy, the password decoding to 0x01
+  "https_proxy"="http://u:p%01x@127.0.0.1:42923"
+  (transfer (refused perform-failed 3 none #f) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+https_proxy, the user decoding to 0x1F
+  "https_proxy"="http://u%1Fx:p@127.0.0.1:42923"
+  (transfer (refused perform-failed 3 none #f) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+https_proxy, the user decoding to 0x00
+  "https_proxy"="http://u%00x:p@127.0.0.1:42923"
+  (transfer (refused perform-failed 3 none #f) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+https_proxy, the user decoding to 0x7F
+  "https_proxy"="http://u%7Fx:p@127.0.0.1:42923"
+  (transfer (response 200 "status 200") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  log: connect http conn=3 target=127.0.0.1:39967 answer=200 head=126 auth=basic:u\x7fx:p
+  log: inner https via=3 method=GET target=/status/200
+  log: close http conn=3
+https_proxy, a raw 0x01 in the user
+  "https_proxy"="http://u\x1;x:p@127.0.0.1:42923"
+  (transfer (refused perform-failed 5 connect #f) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+control: http_proxy, userinfo u:p
+  "http_proxy"="http://u:p@127.0.0.1:42923"
+  (transfer (response 200 "status 200") ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  log: request http conn=4 method=GET target=http://127.0.0.1:42923/status/200 auth=basic:u:p
+  log: close http conn=4
+http_proxy, the user decoding to 0x01
+  "http_proxy"="http://u%01x:p@127.0.0.1:42923"
+  (transfer (refused perform-failed 3 none #f) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+all_proxy, the password decoding to 0x01
+  "all_proxy"="http://u:p%01x@127.0.0.1:42923"
+  (transfer (refused perform-failed 3 none #f) ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+done

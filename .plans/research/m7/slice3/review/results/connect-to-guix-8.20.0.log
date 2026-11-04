@@ -1,0 +1,4 @@
+libcurl 8.20.0
+without CONNECT_TO: ((response 200 http/1.1) ("connect http conn=1 target=127.0.0.1:42761 answer=200 head=89 auth=-" "inner https via=1 method=GET target=/status/200"))
+with CONNECT_TO 127.0.0.1:<https>:127.0.0.1:<h2>: ((response 200 http/2) ("connect http conn=2 target=127.0.0.1:42551 answer=200 head=89 auth=-" "inner h2 via=2 method=GET target=/status/200"))
+done

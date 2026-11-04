@@ -564,7 +564,7 @@
                              (make-who-condition (call-who (leg-call leg)))
                              (make-message-condition
                               "a producer answers a bytevector of a byte or more, or the eof object at its body's end")
-                             (make-irritants-condition (list answer))
+                             (make-irritants-condition (list (shown-value answer)))
                              (exchange-live-condition state)))))))
 
   ;; end-body-now! : Leg -> Void
@@ -1088,7 +1088,7 @@
   ;; check-pending : Symbol Any -> Void
   (define (check-pending who x)
     (unless (http-pending? x)
-      (assertion-violation who "not a pending call, which go answers" x)))
+      (assertion-violation who "not a pending call, which go answers" (shown-value x))))
 
   ;; check-thread : Symbol Group -> Void
   ;; Returns on GROUP's own thread; on any other, raises &http-group-error,

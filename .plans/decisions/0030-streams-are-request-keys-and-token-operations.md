@@ -2,7 +2,8 @@
 
 - **Status:** Accepted; amended 2026-10-29: no multiplexing on 8.7.0 and 8.7.1, from the Mac's run;
   amended 2026-10-31: a put past `body-length` fails the transfer, read as its outcome is; and
-  the head tells whether libcurl had asked for the body, `curl-head-body-asked?`
+  the head tells whether libcurl had asked for the body, `curl-head-body-asked?`; amended
+  2026-11-03: before 8.19.0, no multiplexing once an authenticated proxy is used (M7 slice 3)
 - **Date:** 2026-10-29
 - **Scope:** chez-curl v1, `(curl)`, from M6
 - **Settles:** how the low level offers a body streamed in either direction (brief §2 item 7,
@@ -191,3 +192,16 @@ plan's §3.7). Measured on the five Linux libcurls
 
 **Rejected:** leaving it to slice 3, which uses it; slice 2 would merge with the gap open.
 
+## Amendment, 2026-11-03: before 8.19.0, no multiplexing once an authenticated proxy is used
+
+M7 slice 3's review found a transfer through the environment's proxy riding, as a second HTTP/2
+stream, a live tunnel that a named proxy's transfer had opened with its userinfo, on 7.85.0:
+CVE-2026-3784, fixed in curl 8.19.0. An engine that does not multiplex closed it. **Decided by
+the maintainer, 2026-11-03, the recommended option** (ADR-0037, decision 11): before 8.19.0, an
+engine stops multiplexing at its first transfer through a proxy URL that holds userinfo, and
+never resumes, as an engine on 8.7.0 or 8.7.1 never starts.
+
+**As built:** the engine's multiplexing reads `default`, `off` (8.7.x, from its start) or
+`switched`, a private seam; `set-up!` sets `CURLMOPT_PIPELINING` 0 before the tripping transfer
+starts. Two streams live on one HTTP/2 connection when it came ended whole on it, and nothing
+joined them, on 7.85.0 and both 8.5.0s (ADR-0037, as built).

@@ -1,0 +1,21 @@
+make-curl-request, the proxy URL with no key: (curl-request-error key unknown-key); secret printed: YES
+  printed: "#<compound condition>\n#<compound condition>\nException in make-curl-request: not a key a request takes with irritant \"http://alice:Pr0xyS3cr3t@127.0.0.1:3128/\""
+make-curl-request, a key, its value, then the proxy URL with no key: (curl-request-error key unknown-key); secret printed: YES
+  printed: "#<compound condition>\n#<compound condition>\nException in make-curl-request: not a key a request takes with irritant \"http://alice:Pr0xyS3cr3t@127.0.0.1:3128/\""
+curl-request-with, the proxy URL with no key: (curl-request-error key unknown-key); secret printed: YES
+  printed: "#<compound condition>\n#<compound condition>\nException in curl-request-with: not a key a request takes with irritant \"http://alice:Pr0xyS3cr3t@127.0.0.1:3128/\""
+make-http-session, the proxy URL with no key: (http-request-error key unknown-key); secret printed: YES
+  printed: "#<compound condition>\n#<compound condition>\nException in make-http-session: not a key this takes with irritant \"http://alice:Pr0xyS3cr3t@127.0.0.1:3128/\""
+make-http-session, the proxy URL as a key, a value after it: (http-request-error key unknown-key); secret printed: YES
+  printed: "#<compound condition>\n#<compound condition>\nException in make-http-session: not a key this takes with irritant \"http://alice:Pr0xyS3cr3t@127.0.0.1:3128/\""
+call-with-http-session, the proxy URL with no key, then a procedure: (http-request-error key unknown-key); secret printed: YES
+  printed: "#<compound condition>\n#<compound condition>\nException in make-http-session: not a key this takes with irritant \"http://alice:Pr0xyS3cr3t@127.0.0.1:3128/\""
+http-get, the proxy URL with no key: (http-request-error key unknown-key); secret printed: YES
+  printed: "#<compound condition>\n#<compound condition>\nException in http-request: not a key this takes with irritant \"http://alice:Pr0xyS3cr3t@127.0.0.1:3128/\""
+slice 2's credentials, a list with no key, at make-curl-request: (curl-request-error key unknown-key); secret printed: YES
+  printed: "#<compound condition>\n#<compound condition>\nException in make-curl-request: not a key a request takes with irritant (basic \"alice\" \"Pr0xyS3cr3t\")"
+slice 2's credentials, a list with no key, at make-http-session: (http-request-error key unknown-key); secret printed: YES
+  printed: "#<compound condition>\n#<compound condition>\nException in make-http-session: not a key this takes with irritant (basic \"alice\" \"Pr0xyS3cr3t\")"
+control: make-curl-request, a symbol with no key: (curl-request-error key unknown-key); secret printed: no
+control: make-curl-request, proxy given twice: (curl-request-error key repeated-key); secret printed: no
+control: call-with-http-session, its procedure missing, the URL last (the slice's fix): another condition; secret printed: no

@@ -1,0 +1,9 @@
+== without-end
+connect: allowHalfOpen true
+server saw end
+open connections after 1 s: 1
+== with-end
+connect: allowHalfOpen true
+server saw end
+server socket closed
+open connections after 1 s: 0

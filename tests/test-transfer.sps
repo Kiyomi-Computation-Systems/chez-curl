@@ -831,8 +831,8 @@
    (let ((reason (car offence)) (c (cadr offence)))
      (test-equal (string-append "a header value with U+" (number->string (char->integer c) 16)
                                 " at each of its places, and alone, is refused as "
-                                (symbol->string reason) ", naming header-value and the value, with nothing native at the raise")
-       (map (lambda (value) (list (list 'request-refused 'header-value value reason) running-counts running-counts))
+                                (symbol->string reason) ", naming header-value and the header's name, never the value, which can be a secret, with nothing native at the raise")
+       (map (lambda (value) (list (list 'request-refused 'header-value "X-Value" reason) running-counts running-counts))
             (at-each-place c))
        (map (lambda (value) (refusal (header-request "X-Value" value))) (at-each-place c)))
      (test-equal (string-append "a user agent with U+" (number->string (char->integer c) 16)
@@ -844,10 +844,10 @@
  value-offences)
 
 ;; Two offending chars: the first decides, each way round.
-(test-equal "a value's first offending char decides its reason, each way round, for a header value and a user agent"
+(test-equal "a value's first offending char decides its reason, each way round, for a header value, named by its header's name, and a user agent"
   (let ((pairs '(("a\x0;\rb" embedded-nul) ("a\r\x0;b" line-break) ("a\x100;\nb" not-latin-1)
                  ("a\n\x100;b" line-break) ("a\x0;\x100;" embedded-nul) ("\x100;\x0;" not-latin-1))))
-    (append (map (lambda (p) (list 'request-refused 'header-value (car p) (cadr p))) pairs)
+    (append (map (lambda (p) (list 'request-refused 'header-value "X-Value" (cadr p))) pairs)
             (map (lambda (p) (list 'request-refused 'user-agent (car p) (cadr p))) pairs)))
   (let ((values '("a\x0;\rb" "a\r\x0;b" "a\x100;\nb" "a\n\x100;b" "a\x0;\x100;" "\x100;\x0;")))
     (append (map (lambda (v) (car (refusal (header-request "X-Value" v)))) values)
@@ -865,7 +865,7 @@
    (let ((values (list (string c #\a) (string #\a c) (string c #\a #\b c) (string c) (string c c))))
      (test-equal (string-append "a header value and a user agent with " (whitespace-name c)
                                 " first, last, at both ends, alone, or twice alone, are refused as surrounding-whitespace, with nothing native at the raise")
-       (append (map (lambda (v) (list (list 'request-refused 'header-value v 'surrounding-whitespace)
+       (append (map (lambda (v) (list (list 'request-refused 'header-value "X-Value" 'surrounding-whitespace)
                                       running-counts running-counts))
                     values)
                (map (lambda (v) (list (list 'request-refused 'user-agent v 'surrounding-whitespace)
@@ -883,9 +883,9 @@
                (list (string (integer->char #xA0) #\a (integer->char #xA0))))))
 
 (test-equal "the char scan comes first: an offending char anywhere decides before whitespace at an end"
-  '((request-refused header-value " a\r" line-break)
-    (request-refused header-value "\x0; " embedded-nul)
-    (request-refused header-value " \x100;" not-latin-1)
+  '((request-refused header-value "X-Value" line-break)
+    (request-refused header-value "X-Value" embedded-nul)
+    (request-refused header-value "X-Value" not-latin-1)
     (request-refused user-agent "\ta\n" line-break))
   (list (car (refusal (header-request "X-Value" " a\r")))
         (car (refusal (header-request "X-Value" "\x0; ")))
@@ -1034,13 +1034,13 @@
   (map (lambda (r) (list r running-counts running-counts))
        '((url-refused embedded-nul)
          (request-refused header-name "X:Name" not-a-token)
-         (request-refused header-value "safe-value-xxxxx\rx" line-break)
-         (request-refused header-value "a\r\nX-Injected: yes" line-break)
+         (request-refused header-value "X-Name" line-break)
+         (request-refused header-value "X-Name" line-break)
          (request-refused user-agent "an\nagent" line-break)
          (request-refused header-name "X:" not-a-token)
          (request-refused header-name "X Y" not-a-token)
-         (request-refused header-value " v" surrounding-whitespace)
-         (request-refused header-value "o\x100;her" not-latin-1)
+         (request-refused header-value "X-Name" surrounding-whitespace)
+         (request-refused header-value "X-Other" not-latin-1)
          (assertion-violation curl-submit)
          (assertion-violation curl-submit)))
   (map made-then-changed
@@ -1209,7 +1209,7 @@
 
 (test-equal "every header is checked, the last of three among them, and the user agent after them"
   '((request-refused header-name "X:" not-a-token)
-    (request-refused header-value "a\nb" line-break)
+    (request-refused header-value "X-C" line-break)
     (request-refused user-agent "a\x0;b" embedded-nul))
   (map (lambda (args) (car (refusal (lambda () (apply make-curl-request args)))))
        (list (list "http://127.0.0.1:1/" 'headers '(("X-A" . "1") ("X-B" . "2") ("X:" . "3")))
@@ -1218,7 +1218,7 @@
 
 (test-equal "a header's name is checked before its value, and headers in order: the first header's fault is the one named"
   '((request-refused header-name "X:" not-a-token)
-    (request-refused header-value "a\rb" line-break)
+    (request-refused header-value "X-Ok" line-break)
     (request-refused header-name "X:" not-a-token))
   (list (car (refusal (lambda () (make-curl-request "http://127.0.0.1:1/" 'headers '(("X:" . "a\rb"))))))
         (car (refusal (lambda () (make-curl-request "http://127.0.0.1:1/"
@@ -1335,43 +1335,49 @@
 
 ;; --- the hatch's deny-list (ADR-0009, amended 2026-10-23 and 2026-10-27) ------------------
 
-(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT and MAXREDIRS among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its read, seek and prerequest callables and their data, and FRESH_CONNECT, stream-buffer's header callable and its data, HEADERFUNCTION and HEADERDATA, body-length's INFILESIZE_LARGE, http-version's HTTP_VERSION, credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, and FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's NOPROXY, PRE_PROXY, PROXYPORT and PROXYTYPE; then slice 4's: TRANSFERTEXT, CRLF's twin; the URL's USERPWD, NETRC and HSTS; the proxy field's UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET; the headers' PROXYHEADER and HEADEROPT; and RESUME_FROM, RESUME_FROM_LARGE, COOKIEFILE, COOKIEJAR, CONNECT_ONLY, DOH_URL, RESOLVE and SSLENGINE_DEFAULT, kept from the hatch; then M7 slice 1's, the HTTP version's twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL; then M7 slice 2's, the credentials' twin AWS_SIGV4; then every proxy TLS option"
+(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT and MAXREDIRS among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its read, seek and prerequest callables and their data, and FRESH_CONNECT, stream-buffer's header callable and its data, HEADERFUNCTION and HEADERDATA, body-length's INFILESIZE_LARGE, http-version's HTTP_VERSION, credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, and FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's PRE_PROXY, PROXYPORT and PROXYTYPE; then slice 4's: TRANSFERTEXT, CRLF's twin; the URL's USERPWD, NETRC and HSTS; the proxy field's UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET; the headers' PROXYHEADER and HEADEROPT; and RESUME_FROM, RESUME_FROM_LARGE, COOKIEFILE, COOKIEJAR, CONNECT_ONLY, DOH_URL, RESOLVE and SSLENGINE_DEFAULT, kept from the hatch; then M7 slice 1's, the HTTP version's twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL; then M7 slice 2's, the credentials' twin AWS_SIGV4; then M7 slice 3's, the proxy's twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME, PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP; then every proxy TLS option but the four proxy-ca-file and proxy-verify set, which are fields' now, as NOPROXY and FORBID_REUSE are proxy's"
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
     "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
     "CURLU" "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD" "HTTPHEADER"
     "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA"
     "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT" "USERAGENT"
     "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "CAINFO" "CAPATH"
-    "SSL_VERIFYPEER" "SSL_VERIFYHOST" "PROXY" "HEADERFUNCTION" "HEADERDATA" "INFILESIZE_LARGE"
-    "HTTP_VERSION" "HTTPAUTH" "USERNAME" "PASSWORD" "XOAUTH2_BEARER" "FOLLOWLOCATION"
+    "SSL_VERIFYPEER" "SSL_VERIFYHOST" "PROXY" "NOPROXY" "FORBID_REUSE"
+    "HEADERFUNCTION" "HEADERDATA" "INFILESIZE_LARGE"
+    "HTTP_VERSION" "HTTPAUTH" "USERNAME" "PASSWORD" "XOAUTH2_BEARER"
+    "PROXY_CAINFO" "PROXY_CAPATH" "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "FOLLOWLOCATION"
     "TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "PUT"
     "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE"
     "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
-    "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
+    "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
     "TRANSFERTEXT" "USERPWD" "NETRC" "HSTS"
     "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
     "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
     "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT"
     "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL"
     "AWS_SIGV4"
-    "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
-    "PROXY_CAINFO" "PROXY_CAINFO_BLOB" "PROXY_CAPATH" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
+    "PROXYAUTH" "PROXYUSERPWD" "PROXYUSERNAME" "PROXYPASSWORD"
+    "HTTPPROXYTUNNEL" "HAPROXYPROTOCOL" "HAPROXY_CLIENT_IP"
+    "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
+    "PROXY_CAINFO_BLOB" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
     "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
     "PROXY_SSLCERT" "PROXY_SSLCERT_BLOB" "PROXY_SSLCERTTYPE" "PROXY_SSLKEY" "PROXY_SSLKEY_BLOB"
     "PROXY_SSLKEYTYPE" "PROXY_KEYPASSWD" "PROXY_TLSAUTH_TYPE" "PROXY_TLSAUTH_USERNAME"
     "PROXY_TLSAUTH_PASSWORD")
   owned-option-names)
 
-(test-equal "request-field-options, written out: url's CURLU; method's NOBODY and CUSTOMREQUEST, and a streamed body's POST and UPLOAD; headers' HTTPHEADER; body's POSTFIELDSIZE_LARGE and COPYPOSTFIELDS, then a streamed one's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT; user-agent's USERAGENT; timeout-ms's TIMEOUT_MS; connect-timeout-ms's CONNECTTIMEOUT_MS; body-limit's MAXFILESIZE_LARGE; ca-file's CAINFO and CAPATH; verify's SSL_VERIFYPEER and SSL_VERIFYHOST; proxy's PROXY; stream-buffer's HEADERFUNCTION and HEADERDATA; body-length's INFILESIZE_LARGE; http-version's HTTP_VERSION; credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER; and follow's FOLLOWLOCATION"
+(test-equal "request-field-options, written out: url's CURLU; method's NOBODY and CUSTOMREQUEST, and a streamed body's POST and UPLOAD; headers' HTTPHEADER; body's POSTFIELDSIZE_LARGE and COPYPOSTFIELDS, then a streamed one's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT; user-agent's USERAGENT; timeout-ms's TIMEOUT_MS; connect-timeout-ms's CONNECTTIMEOUT_MS; body-limit's MAXFILESIZE_LARGE; ca-file's CAINFO and CAPATH; verify's SSL_VERIFYPEER and SSL_VERIFYHOST; proxy's PROXY, NOPROXY and FORBID_REUSE; stream-buffer's HEADERFUNCTION and HEADERDATA; body-length's INFILESIZE_LARGE; http-version's HTTP_VERSION; credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER; proxy-ca-file's PROXY_CAINFO and PROXY_CAPATH; proxy-verify's PROXY_SSL_VERIFYPEER and PROXY_SSL_VERIFYHOST; and follow's FOLLOWLOCATION"
   '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD") (headers "HTTPHEADER")
     (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA"
           "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT")
     (user-agent "USERAGENT")
     (timeout-ms "TIMEOUT_MS") (connect-timeout-ms "CONNECTTIMEOUT_MS")
     (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
-    (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY")
+    (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY" "NOPROXY" "FORBID_REUSE")
     (stream-buffer "HEADERFUNCTION" "HEADERDATA") (body-length "INFILESIZE_LARGE")
     (http-version "HTTP_VERSION") (credentials "HTTPAUTH" "USERNAME" "PASSWORD" "XOAUTH2_BEARER")
+    (proxy-ca-file "PROXY_CAINFO" "PROXY_CAPATH")
+    (proxy-verify "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST")
     (follow "FOLLOWLOCATION"))
   request-field-options)
 
@@ -1380,8 +1386,8 @@
   (filter (lambda (name) (not (member name owned-option-names)))
           (apply append (map cdr request-field-options))))
 
-(test-equal "a request's fields, written out, in the record's order: url, method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer, body-length, http-version, credentials, then the private fault and follow, then the hatch's options"
-  '(url method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy stream-buffer body-length http-version credentials fault follow options)
+(test-equal "a request's fields, written out, in the record's order: url, method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer, body-length, http-version, credentials, proxy-ca-file, proxy-verify, then the private fault and follow, then the hatch's options"
+  '(url method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy stream-buffer body-length http-version credentials proxy-ca-file proxy-verify fault follow options)
   (guard (e (#t (list 'raised (describe e))))
     (request-field-names)))
 
@@ -1569,6 +1575,15 @@
   (and (list? form) (= (length form) 3) (eq? (car form) 'for-each)
        (equal? (caddr form) '(version-settings (plan-http-version plan)))))
 
+;; proxy-loop? : Any -> Boolean
+;; FORM is a for-each over proxy-settings' answer for the plan's proxy,
+;; proxy CA file and proxy verification, whose settings it sets by (car
+;; setting).
+(define (proxy-loop? form)
+  (and (list? form) (= (length form) 3) (eq? (car form) 'for-each)
+       (equal? (caddr form)
+               '(proxy-settings (plan-proxy plan) (plan-proxy-ca-file plan) (plan-proxy-verify plan)))))
+
 ;; credentials-loop? : Any -> Boolean
 ;; FORM is a for-each over credentials-settings' answer for the plan's
 ;; credentials, whose settings it sets by (car setting).
@@ -1581,7 +1596,8 @@
 ;; (set-pinned-options! easy buffer quick-exit); tls for (set-tls-options! easy
 ;; (plan-ca-file plan) (plan-verify plan) buffer); method for the loop over
 ;; method-settings' answer, by method-loop?; version for the loop over
-;; version-settings' answer, by version-loop?; credentials for the loop over
+;; version-settings' answer, by version-loop?; proxy for the loop over
+;; proxy-settings' answer, by proxy-loop?; credentials for the loop over
 ;; credentials-settings' answer, by credentials-loop?; hatch for the loop over the
 ;; hatch's settings, by hatch-loop?; else each set-option! and
 ;; set-string-option! call in it, by set-name; (other FORM) for a form that
@@ -1595,6 +1611,7 @@
                            '(tls))
                           ((method-loop? form) '(method))
                           ((version-loop? form) '(version))
+                          ((proxy-loop? form) '(proxy))
                           ((credentials-loop? form) '(credentials))
                           ((hatch-loop? form) '(hatch))
                           (else (let ((sets (option-sets form '())))
@@ -1604,11 +1621,11 @@
                   (cddr d)))
       d))
 
-(test-equal "set-transfer-options!, read from transfer.sls, form by form: the pins first, then ERRORBUFFER, CURLU, WRITEFUNCTION and WRITEDATA, then a streamed response's HEADERFUNCTION and HEADERDATA, then a streamed body's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT, then the loop over method-settings' answer, then the request's HTTPHEADER, USERAGENT, TIMEOUT_MS, CONNECTTIMEOUT_MS, MAXFILESIZE_LARGE and PROXY, then the loop over version-settings' answer, then the loop over credentials-settings' answer, then set-tls-options!, then the private follow field's FOLLOWLOCATION, then, last, the loop over the hatch's settings; set-pinned-options!, set-transfer-options! and set-hatch-option! each stand twice in transfer.sls, a definition and one call"
+(test-equal "set-transfer-options!, read from transfer.sls, form by form: the pins first, then ERRORBUFFER, CURLU, WRITEFUNCTION and WRITEDATA, then a streamed response's HEADERFUNCTION and HEADERDATA, then a streamed body's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION and PREREQDATA, then FRESH_CONNECT, a streamed body's or a tunnel's, then a tunnel's FORBID_REUSE, then the loop over method-settings' answer, then the request's HTTPHEADER, USERAGENT, TIMEOUT_MS, CONNECTTIMEOUT_MS and MAXFILESIZE_LARGE, then the loop over proxy-settings' answer, then the loop over version-settings' answer, then the loop over credentials-settings' answer, then set-tls-options!, then the private follow field's FOLLOWLOCATION, then, last, the loop over the hatch's settings; set-pinned-options!, set-transfer-options! and set-hatch-option! each stand twice in transfer.sls, a definition and one call"
   '((pins "ERRORBUFFER" "CURLU" "WRITEFUNCTION" "WRITEDATA" "HEADERFUNCTION" "HEADERDATA"
           "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA" "PREREQFUNCTION" "PREREQDATA"
-          "FRESH_CONNECT" method
-          "HTTPHEADER" "USERAGENT" "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "PROXY" version
+          "FRESH_CONNECT" "FORBID_REUSE" method
+          "HTTPHEADER" "USERAGENT" "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" proxy version
           credentials tls "FOLLOWLOCATION" hatch)
     2 2 2)
   (list (setting-order (transfer-definition 'set-transfer-options!))
@@ -1688,17 +1705,22 @@
               'the-making-reversed
               (list 'made made 'freed freed)))))
 
-(test-equal "prepare-transfer and curl-request-check, read from transfer.sls, share the checks' one owner, request-checks, which checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the credentials' copy, the Expect round, the credentials beside the headers' copies and the streams, the CA file against the environment the libcurl loaded with, then the URL, parsed and its scheme checked, its user and password read beside credentials, then prior knowledge against that scheme; prepare-transfer calls it as curl-submit, then copies the body and makes the plan, the request's hatch settings in it as they are; curl-request-check calls it as curl-request-check, and does nothing else"
+(test-equal "prepare-transfer and curl-request-check, read from transfer.sls, share the checks' one owner, request-checks, which checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the credentials' copy, the proxy CA file's copy, the Expect round, the credentials beside the headers' copies and the streams, the CA file against the environment the libcurl loaded with, a proxy URL, an https:// proxy URL against the libcurl's features, the proxy's TLS fields beside it, the proxy CA file against the environment, then the URL, parsed and its scheme checked, its user and password read beside credentials, then prior knowledge against that scheme and against a proxy URL, then TLS inside TLS, the tunnel's settings, and whether it stops the engine's multiplexing; prepare-transfer calls it as curl-submit, then copies the body and makes the plan, the request's hatch settings in it as they are; curl-request-check calls it as curl-request-check, and does nothing else"
   ;; Each definition's header names it first, a symbol like the rest.
-  '((request-checks curl-request? snapshot ca-file-copy credentials-copy check-expect-round
-                    check-credentials check-ca-environment call-with-parsed-url
-                    require-http-scheme check-userinfo userinfo-parts check-prior-knowledge)
+  '((request-checks curl-request? snapshot ca-file-copy credentials-copy path-copy check-expect-round
+                    check-credentials check-ca-environment check-proxy-url check-https-proxy check-proxy-tls
+                    check-ca-environment call-with-parsed-url
+                    require-http-scheme check-userinfo userinfo-parts check-prior-knowledge
+                    check-prior-knowledge-proxy check-tls-in-tls unshared-tunnel-settings
+                    stops-multiplexing?)
     (request-checks curl-submit bytevector-copy make-plan curl-request-options)
     (curl-request-check request-checks curl-request-check))
   (let ((names '(request-checks curl-submit curl-request-check curl-request? snapshot ca-file-copy
                  checked-settings check-ca-environment call-with-parsed-url require-http-scheme
                  credentials-copy check-expect-round check-credentials check-userinfo userinfo-parts
-                 check-prior-knowledge bytevector-copy make-plan curl-request-options curl-submit-queue)))
+                 check-prior-knowledge bytevector-copy make-plan curl-request-options curl-submit-queue
+                 path-copy check-proxy-url check-https-proxy check-proxy-tls check-prior-knowledge-proxy check-tls-in-tls
+                 unshared-tunnel-settings stops-multiplexing?)))
     (list (symbols-in names (transfer-definition 'request-checks))
           (symbols-in names (transfer-definition 'prepare-transfer))
           (symbols-in names (transfer-definition 'curl-request-check)))))
@@ -1787,8 +1809,9 @@
 ;; method-settings' names are its fields' rows in request-field-options,
 ;; through field-options: tests/test-request.sps writes out every method's
 ;; answer, names and all.
-(test-equal "every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for those set by (car setting): three in the loop over method-settings' answer for the plan's method, body and body-length, one in the loop over version-settings' answer for the plan's http-version, and two, a string's and a number's, in the loop over credentials-settings' answer for the plan's credentials; the hatch's settings are set by set-hatch-option!, through its loop alone"
+(test-equal "every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for those set by (car setting): three in the loop over method-settings' answer for the plan's method, body and body-length, two, a string's and a number's, in the loop over proxy-settings' answer for the plan's proxy, proxy CA file and proxy verification, one in the loop over version-settings' answer for the plan's http-version, and two in the loop over credentials-settings' answer for the plan's credentials; the hatch's settings are set by set-hatch-option!, through its loop alone"
   '(() (((method-settings (plan-method plan) (plan-body plan) (plan-body-length plan)) 3)
+        ((proxy-settings (plan-proxy plan) (plan-proxy-ca-file plan) (plan-proxy-verify plan)) 2)
         ((version-settings (plan-http-version plan)) 1)
         ((credentials-settings (plan-credentials plan)) 2)))
   (if (list? transfer-sets)
@@ -2623,16 +2646,16 @@
 (test-equal "class-of, the reader: each class's condition by its own name, the base type and a non-condition as none, and a condition of two classes as several"
   '(timeout connect send-receive tls protocol too-large none none (several timeout tls))
   (guard (e (#t (list 'raised (describe e))))
-    (list (class-of (make-curl-timeout 'perform-failed 28 #f #f #f #f 0))
-          (class-of (make-curl-connect-error 'perform-failed 7 #f #f #f #f 0))
-          (class-of (make-curl-send-receive-error 'perform-failed 56 #f #f #f #f 0))
-          (class-of (make-curl-tls-error 'perform-failed 60 #f #f #f #f 0))
-          (class-of (make-curl-protocol-error 'perform-failed 1 #f #f #f #f 0))
-          (class-of (make-curl-too-large 'body-limit 23 #f #f #f #f 0))
-          (class-of (make-curl-transfer-error 'perform-failed 28 #f #f #f #f 0))
+    (list (class-of (make-curl-timeout 'perform-failed 28 #f #f #f #f 0 #f))
+          (class-of (make-curl-connect-error 'perform-failed 7 #f #f #f #f 0 #f))
+          (class-of (make-curl-send-receive-error 'perform-failed 56 #f #f #f #f 0 #f))
+          (class-of (make-curl-tls-error 'perform-failed 60 #f #f #f #f 0 #f))
+          (class-of (make-curl-protocol-error 'perform-failed 1 #f #f #f #f 0 #f))
+          (class-of (make-curl-too-large 'body-limit 23 #f #f #f #f 0 #f))
+          (class-of (make-curl-transfer-error 'perform-failed 28 #f #f #f #f 0 #f))
           (class-of 'not-a-condition)
-          (class-of (condition (make-curl-timeout 'perform-failed 28 #f #f #f #f 0)
-                               (make-curl-tls-error 'perform-failed 60 #f #f #f #f 0))))))
+          (class-of (condition (make-curl-timeout 'perform-failed 28 #f #f #f #f 0 #f)
+                               (make-curl-tls-error 'perform-failed 60 #f #f #f #f 0 #f))))))
 
 (define made-up-row
   `(libcurl (where "made up") (version "9.9.9")

@@ -49,17 +49,31 @@
 ;;; takes that URL's own fragment. A 301 or 302 makes a post a get, and a
 ;;; 303 every method but head, each without its body or the call's headers
 ;;; for one: Content-*, Digest and Last-Modified. Another origin, by scheme,
-;;; host A to Z folded and port, drops Authorization, Cookie and
-;;; Proxy-Authorization from then on, and the credentials key with them
-;;; (ADR-0036), and another host drops Host too;
+;;; host A to Z folded and port, drops Authorization and Cookie from then
+;;; on, and the credentials key with them (ADR-0036), and another host
+;;; drops Host too; no request holds a Proxy-Authorization header, which the
+;;; low level refuses (ADR-0037);
 ;;; every other header follows, as every other key does, the http-version
 ;;; among them: a redirect from http:// to https:// by prior knowledge
 ;;; fails the call with the low level's refusal of its next request,
 ;;; prior-knowledge-over-https, compounded with its &http-exchange (ADR-0034);
 ;;; and a redirect within one origin to a URL holding a user or a password,
-;;; beside credentials, fails it so with credentials-beside-userinfo.
+;;; beside credentials, fails it so with credentials-beside-userinfo. The
+;;; proxy, the proxy CA file and the proxy's verification go to every hop,
+;;; another origin's too, the proxy URL's credentials with it: a hop to
+;;; https:// through an https:// proxy where TLS inside TLS stalls fails
+;;; the call so, proxy-tls-in-tls.
 ;;; Each followed response joins the history. libcurl's own following stays
 ;;; off.
+;;;
+;;; A retry policy treats a CONNECT a proxy refused with a status, a
+;;; transfer failure that carries curl-transfer-error-connect-code, as a
+;;; response with that status: retried when the policy's statuses hold it
+;;; and its methods the call's, alike on every libcurl, its wait the
+;;; backoff's (ADR-0026, amended 2026-11-03). So the default policy retries
+;;; no 403 nor 407. A proxy that ends a CONNECT with no status keeps the
+;;; class rule above, where 7.85.0's request size, the CONNECT's, errs
+;;; toward not repeating a post.
 ;;;
 ;;; What a call raises carries its context: a call compounds its own
 ;;; failures, (curl)'s included, with &http-exchange. A condition the
@@ -112,11 +126,13 @@
    ;; (make-http-session KEY VALUE ...): a session, with these keys, each
    ;; once at most, each left out taking the low level's default, as
    ;; make-curl-request takes them: headers, user-agent, timeout-ms,
-   ;; connect-timeout-ms, body-limit, ca-file, verify, proxy, http-version
-   ;; and credentials, which a redirect to another origin drops, and which a
+   ;; connect-timeout-ms, body-limit, ca-file, verify, proxy, http-version,
+   ;; credentials, which a redirect to another origin drops, and which a
    ;; streamed call, call-with-response-port's or a producer's, takes as
-   ;; Basic or Bearer alone, digest-with-stream; and three of the high
-   ;; level's own:
+   ;; Basic or Bearer alone, digest-with-stream, proxy-ca-file and
+   ;; proxy-verify; a call's value replaces its session's, but a call that
+   ;; names its own proxy drops the session's proxy-ca-file and
+   ;; proxy-verify; and three of the high level's own:
    ;;   redirects        the most redirects a call follows, an exact
    ;;                    natural; or #f, which follows none and answers the
    ;;                    redirect; 20
@@ -508,7 +524,7 @@
 
   ;; check-session : Symbol Any -> Void
   (define (check-session who x)
-    (unless (http-session? x) (assertion-violation who "not a session" x)))
+    (unless (http-session? x) (assertion-violation who "not a session" (shown-value x))))
 
   ;; call-state : Session Any Any List Boolean (U 'request 'group 'port) Symbol
   ;;              -> (Pairof State (U Procedure #f))
@@ -548,13 +564,16 @@
   (define (call-with-http-session . arguments)
     (when (null? arguments)
       (assertion-violation 'call-with-http-session "a procedure, after the keys, is required"
-                           arguments))
+                           'proc))
     (let* ((reversed (reverse arguments))
            (proc (car reversed))
            (plist (reverse (cdr reversed))))
+      ;; The irritant names the argument, never its value: a key's value
+      ;; given last, a proxy URL holding a password among them, is never
+      ;; handed on (M7 slice 3).
       (unless (procedure? proc)
         (assertion-violation 'call-with-http-session
-                             "the last argument is a procedure, of the session" proc))
+                             "the last argument is a procedure, of the session" 'proc))
       (let ((session (apply make-http-session plist)))
         (dynamic-wind
           (lambda () #f)
@@ -584,13 +603,13 @@
   (define (call-with-response-port session method url . rest)
     (when (null? rest)
       (assertion-violation 'call-with-response-port
-                           "a procedure, of the response and its port, after the keys, is required" rest))
+                           "a procedure, of the response and its port, after the keys, is required" 'proc))
     (let* ((reversed (reverse rest))
            (proc (car reversed))
            (plist (reverse (cdr reversed))))
       (unless (procedure? proc)
         (assertion-violation 'call-with-response-port
-                             "the last argument is a procedure, of the response and its port" proc))
+                             "the last argument is a procedure, of the response and its port" 'proc))
       (let ((made (call-state session method url plist #f 'port 'call-with-response-port)))
         (drive-stream (http-session-engine session) (car made)
                       (lambda () (http-session-draw session))
@@ -605,7 +624,7 @@
     (when (or (null? arguments) (null? (cdr arguments)))
       (assertion-violation 'call-with-request-group
                            "a session, then the keys, then a procedure of go, are required"
-                           arguments))
+                           'proc))
     (let* ((session (car arguments))
            (reversed (reverse (cdr arguments)))
            (proc (car reversed))
@@ -613,7 +632,7 @@
       (check-session 'call-with-request-group session)
       (unless (procedure? proc)
         (assertion-violation 'call-with-request-group
-                             "the last argument is a procedure, of go" proc))
+                             "the last argument is a procedure, of go" 'proc))
       (let ((limit (group-limit 'call-with-request-group plist)))
         (call-with-group (http-session-engine session) limit
                          (lambda () (http-session-draw session))
@@ -638,7 +657,7 @@
                                (else (loop (cdr rest) (- left 1) (cons (car rest) copied)))))))))
       (let ((outer (copy specs)))
         (unless outer
-          (assertion-violation 'http-parallel "the specs are a list" specs))
+          (assertion-violation 'http-parallel "the specs are a list" (shown-value specs)))
         (let loop ((rest outer) (copied '()))
           (if (null? rest)
               (reverse copied)
@@ -646,7 +665,7 @@
                 (unless (and spec (>= (length spec) 2))
                   (assertion-violation 'http-parallel
                                        "a spec is a list of a method, a URL, then keys"
-                                       (car rest)))
+                                       (shown-value (car rest))))
                 (loop (cdr rest) (cons spec copied))))))))
 
   ;; http-parallel : Session (Listof (Pairof Symbol (Pairof String (Listof Any)))) Any ...

@@ -1,0 +1,5 @@
+test-proxy: tls-in-tls-checks on "0.0.0/none" measured (no-raise no-raise no-raise no-raise no-raise)
+test-proxy: no row of tls-in-tls-checks for this libcurl; measured, it would be:
+FAIL proxy-tls-in-tls, by version and backend: an https:// URL through an https:// proxy URL is refused where TLS inside TLS stalls, 7.85.0 unless http/1.1 is asked, Ubuntu's 8.5.0 with GnuTLS whatever is asked; an http:// URL through it, and an https:// URL through an http:// proxy, pass everywhere
+# of expected passes      87
+# of unexpected failures  1

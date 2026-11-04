@@ -1,0 +1,64 @@
+--- src/curl/private/transfer.sls	2026-11-02 19:55:15.977437342 -0500
++++ build/m7s3/src/curl/private/transfer.sls	2026-11-02 20:50:10.247896377 -0500
+@@ -920,7 +920,7 @@
+     (unless (ca-file? ca-file)
+       (wrong "a CA file is a non-empty string, its path, or #f" ca-file))
+     (unless (boolean? verify) (wrong "verify is #t or #f" verify))
+-    (unless (or (eq? proxy 'environment) (not proxy))
++    (unless (or (eq? proxy 'environment) (not proxy) (string? proxy))
+       (wrong "a proxy is environment, the environment's, or #f, none" proxy))
+     (unless (or (not stream-buffer)
+                 (and (integer? stream-buffer) (exact? stream-buffer) (positive? stream-buffer)))
+@@ -1451,18 +1451,17 @@
+   (define owned-option-names
+     (append '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS"
+               "NOSIGNAL" "QUICK_EXIT" "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER")
+-            (apply append (map cdr request-field-options))
++            (remove "FRESH_CONNECT" (apply append (map cdr request-field-options)))
+             '("TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "PUT"
+               "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE"
+               "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
+-              "NOPROXY" "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
++              "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
+               "TRANSFERTEXT" "USERPWD" "NETRC" "HSTS"
+               "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
+               "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
+               "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT"
+               "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL"
+-              "AWS_SIGV4")
+-            proxy-tls-option-names))
++              "AWS_SIGV4")))
+ 
+   ;; pinned-options : (Listof (Pairof String (U String Integer)))
+   ;; The settings every transfer makes, before its own: ADR-0003's protocol
+@@ -1778,8 +1777,10 @@
+        (unless (off-t? value) (wrong "the option takes an exact integer a curl_off_t holds"))
+        value)
+       ((string)
+-       (unless (string? value) (wrong "the option takes a string"))
+-       (checked (string-copy value)))
++       (if (not value)
++           #f
++           (begin (unless (string? value) (wrong "the option takes a string"))
++                  (checked (string-copy value)))))
+       ((blob)
+        (unless (bytevector? value) (wrong "the option takes a bytevector"))
+        (bytevector-copy value))
+@@ -1868,7 +1869,7 @@
+     (let ((name (hatch-setting-name setting))
+           (value (hatch-setting-value setting)))
+       (case (hatch-setting-type setting)
+-        ((string) (set-string-option! easy name value buffer))
++        ((string) (if value (set-string-option! easy name value buffer) (set-option! easy name #f buffer)))
+         ((blob) (call-with-curl-blob value
+                   (lambda (address) (set-option! easy name address buffer))))
+         ((slist) (set-option! easy name list buffer))
+@@ -3184,6 +3185,8 @@
+         (set-option! easy (field-option 'body-limit) (+ limit 1) buffer)))
+     (unless (plan-proxy plan)
+       (set-string-option! easy (field-option 'proxy) "" buffer))
++    (when (string? (plan-proxy plan))
++      (set-string-option! easy (field-option 'proxy) (plan-proxy plan) buffer))
+     (for-each (lambda (setting) (set-option! easy (car setting) (cdr setting) buffer))
+               (version-settings (plan-http-version plan)))
+     (for-each (lambda (setting)

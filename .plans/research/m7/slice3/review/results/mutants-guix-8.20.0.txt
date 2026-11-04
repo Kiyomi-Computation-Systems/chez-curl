@@ -1,0 +1,5 @@
+mut-next-verify tests/test-proxy.sps: exit 0
+mut-next-verify tests/test-redirect.sps: exit 0
+mut-next-verify tests/test-http-client.sps: exit 0
+mut-no-lane tests/test-proxy.sps: exit 1
+    FAIL proxy-tls-in-tls, by version and backend: an https:// URL through an https:// proxy URL is refused where TLS inside TLS stalls, 7.85.0 unless http/1.1 is asked, Ubuntu's 8.5.0 with GnuTLS whatever is asked; an http:// URL through it, and an https:// URL through an http:// proxy, pass everywhere

@@ -28,12 +28,19 @@ program's environment. chez-curl never changes them.
 - *Proxies.* =http_proxy=, =https_proxy=, =HTTPS_PROXY=, =all_proxy= and
   =ALL_PROXY= send a transfer through the proxy they name. =no_proxy= and
   =NO_PROXY= list hosts that go direct. =HTTP_PROXY= is ignored. A request
-  made with ='proxy #f= goes direct, whatever they say. Through an
-  =http://= or =https://= proxy that does not tunnel, libcurl ignores
-  ='http/2-prior-knowledge=: the request goes as HTTP/1.1.
-- *A proxy's TLS.* An =https://= proxy is checked against libcurl's system
-  store: on Guix, the one =SSL_CERT_FILE= names. A request's =ca-file= and
-  =verify= are for the server, never the proxy.
+  made with ='proxy #f= goes direct, and one with a proxy URL goes through
+  it, whatever they say (below). Through an =http://= or =https://= proxy
+  that does not tunnel, libcurl ignores ='http/2-prior-knowledge=: the
+  request goes as HTTP/1.1.
+- *A proxy variable's user and password are libcurl's to read;* chez-curl
+  checks none of it. One that decodes to a control byte, =%00= to =%1F=,
+  sends the transfer around the proxy, direct, on 7.85.0 and 8.5.0; 8.20.0
+  and later fail it, 3. Put a proxy's credentials in a request's proxy URL,
+  which is refused for them.
+- *A proxy's TLS.* An =https://= proxy a variable names is checked against
+  libcurl's system store: on Guix, the one =SSL_CERT_FILE= names. A
+  request's =ca-file= and =verify= are for the server, never the proxy; a
+  proxy URL's are =proxy-ca-file= and =proxy-verify=.
 - *Guix's =SSL_CERT_FILE= and =SSL_CERT_DIR=.* Guix's libcurl reads both when
   it loads. Its 8.20.0 puts =SSL_CERT_FILE= in place of a request's
   =ca-file=, and adds =SSL_CERT_DIR='s certificates beside it. So on any Guix
@@ -140,6 +147,10 @@ A request's =credentials= names one scheme, and what it sends:
   only the hash goes.
 - *A printed request, token or engine shows its type alone,* such as
   =#<curl-request>=, never your credentials.
+- *An error never prints a value you misplaced, nor a URL it refused:* a
+  string where a key, a request or a response belongs is named by its kind,
+  =(kind string)=, and a refused URL by its field, =url=; a header value by
+  its header's name. =curl-url-error-input= still holds the URL.
 - *The hatch refuses* =HTTPAUTH=, =USERNAME=, =PASSWORD=, =XOAUTH2_BEARER=
   and =AWS_SIGV4=, and =MAXREDIRS=: every transfer stops after 30 of the
   requests libcurl follows inside it, an auth round's, a stale Digest
@@ -152,6 +163,86 @@ replaces its session's. A redirect keeps them within one origin, and drops
 them for another, as it drops =Authorization=. A redirect within the origin
 to a URL holding a user or a password fails the call,
 =credentials-beside-userinfo=.
+
+*** Going through a proxy
+
+A request's =proxy= names one by its URL:
+
+#+begin_src scheme
+(make-curl-request "https://example.com/" 'proxy "http://proxy.example:3128")
+(make-curl-request "https://example.com/"
+                   'proxy "https://user:pass@proxy.example"
+                   'proxy-ca-file "/etc/ssl/proxy-ca.pem")
+#+end_src
+
+- *=environment=, the default,* goes through the proxy a variable names, and
+  =#f= goes direct.
+- *A proxy URL takes every transfer.* =no_proxy=, =NO_PROXY= and the proxy
+  variables send nothing around it.
+- *Its credentials are its user and password,* percent-decoded, sent by Basic
+  on the first request. An =http://= URL's request goes to the proxy whole;
+  an =https://= URL's goes through a =CONNECT= tunnel, the proxy seeing only
+  the =CONNECT=.
+- *A URL with no port gets its scheme's,* 80 or 443, on every libcurl: on its
+  own, libcurl tries 1080, and 8.23.0 80.
+- *An =https://= proxy's TLS is its own.* =proxy-ca-file= is its only CA
+  file, else libcurl's default store, and =proxy-verify=, =#t= by default,
+  checks its certificate and name. The request's =ca-file= and =verify=
+  never reach the proxy, nor these the server. A =proxy-ca-file= is refused
+  against the environment as a =ca-file= is: Guix's =SSL_CERT_FILE= and
+  =SSL_CERT_DIR=, and the Mac's LibreSSL.
+- *Refused when you submit, naming the field, never the URL,* which can hold
+  a password: a URL that does not parse, or whose user or password holds a
+  =%= not followed by two hex digits (=proxy-url=); a scheme but =http= or
+  =https=, =socks5://= among them (=proxy-scheme=); a path, a query or a
+  fragment (=proxy-url-parts=); a user or password that decodes to a control
+  byte, to bytes that are not UTF-8, or a user that decodes to a =:=
+  (=credentials-bytes=), or both empty (=credentials-empty=); a
+  =proxy-ca-file=, or =proxy-verify #f=, beside any proxy but an =https://=
+  URL (=proxy-tls-without-https-proxy=); ='http/2-prior-knowledge=, which
+  libcurl ignores through a proxy (=prior-knowledge-through-proxy=); an
+  =https://= proxy on a libcurl built without HTTPS-proxy support, which
+  would write the whole URL into its error buffer
+  (=https-proxy-unsupported=). Beside
+  =proxy environment= prior knowledge is ignored the same way, when a
+  variable names a proxy. libcurl 7.85.0 reads an empty =@= or =:@= as no
+  credentials at all, and sends none; later ones are refused.
+- *Refused when you make the request:* a =Proxy-Authorization= header, in any
+  case (=proxy-authorization-header=): inside a tunnel libcurl would send it
+  to the server.
+- *TLS inside TLS stalls on two builds:* an =https://= URL through an
+  =https://= proxy waits until its timeout on Ubuntu's 8.5.0 with GnuTLS, and
+  at times on 7.85.0 when the server picks HTTP/2. So it is refused when you
+  submit there (=proxy-tls-in-tls=): always on the first, and on 7.85.0
+  unless the request asks ='http/1.1=. A stalling proxy that a variable
+  names, through =proxy environment=, is not refused: no submit knows it.
+- *A refused =CONNECT=* fails with 56 on 7.85.0 and 8.5.0, and 7 from 8.20.0.
+  =curl-transfer-error-connect-code= holds the proxy's status, 403, 407, 502
+  and the like, on every version. A retry policy treats it as a response
+  with that status, so the default one never retries a 403 or a 407. A proxy
+  that closes keeps the plain rule: on 7.85.0 the request size counts the
+  =CONNECT=, so a =post= is not tried again there.
+- *Before libcurl 8.19.0 no tunnel is shared:* each =https://= request
+  through a proxy URL opens a connection of its own, and with credentials
+  closes it as it ends. 7.85.0 let a later request ride a tunnel another
+  user's credentials had opened (CVE-2026-3784); Ubuntu's 8.5.0 has the fix,
+  but pays for the new connection too.
+- *Before 8.19.0, credentials in a proxy URL stop HTTP/2 multiplexing* on
+  that engine, for good: from its first such request, each later request
+  opens a connection of its own, so none rides a tunnel the credentials
+  opened, a request through =proxy environment= among them.
+- *The hatch refuses* =PROXY=, =NOPROXY=, =PROXYAUTH=, =PROXYUSERPWD=,
+  =PROXYUSERNAME=, =PROXYPASSWORD=, =HTTPPROXYTUNNEL=, =HAPROXYPROTOCOL=,
+  =HAPROXY_CLIENT_IP=, =FORBID_REUSE= and every =PROXY_= TLS option.
+  =SUPPRESS_CONNECT_HEADERS=, =PROXY_SERVICE_NAME= and =SOCKS5_AUTH= stay
+  its, unsupported: none changed what was sent. =CONNECT_TO= stays its too,
+  and moves the host and port the proxy's =CONNECT= names.
+
+=(http-client)='s sessions and calls take =proxy=, =proxy-ca-file= and
+=proxy-verify=. A call's replaces its session's, and a call that names its
+own =proxy= drops the session's =proxy-ca-file= and =proxy-verify=. Every
+hop of a redirect goes through the same proxy, another server's too, with
+the proxy's credentials.
 
 *** Options chez-curl does not wrap
 
@@ -224,10 +315,12 @@ the body in pieces as it arrives, instead of keeping it whole:
   =-n!= or =-all= from another thread that takes them, then raises, loses
   them. Closing it cancels the transfer. A port you never
   close leaves its transfer paused until its timeout, or its engine's stop.
-- *One request per transfer.* A =stream-buffer= is refused beside the
-  hatch's =HTTPAUTH= or =PROXYAUTH=, or an =Expect= header holding
-  =100-continue=: each can make libcurl send the request twice, and the
-  stream's head would be the first answer's.
+- *One request per transfer.* A =stream-buffer= is refused beside an
+  =Expect= header holding =100-continue=, whose 417 makes libcurl send the
+  request twice, and the stream's head would be the first answer's. The
+  hatch's =HTTPAUTH= and =PROXYAUTH=, which could make a second request too,
+  are refused whatever the request; Digest credentials beside a stream are
+  refused too (=digest-with-stream=).
 - *libcurl 8.7.0 and 8.7.1, the Mac's,* give each HTTP/2 transfer a connection
   of its own: there one paused stream could fail its neighbours.
 

@@ -38,7 +38,8 @@
 ;;;
 ;;; With --backend, (backend . NAME-OR-#F) follows the counts: (curl private
 ;;; native)'s loaded-tls-backend, the TLS backend in use as libcurl named it
-;;; after curl_global_init.
+;;; after curl_global_init; then (features-after . WORD), its
+;;; loaded-features, the features word libcurl then reported.
 ;;;
 ;;; With --marker, (marker . present) or (marker . absent) follows: whether
 ;;; this process has the entry point NAME, as foreign-entry? answers.
@@ -152,7 +153,9 @@
 
 (when (option "--backend")
   (show 'backend (guard (e (#t (list 'raised (text e))))
-                   (eval '(loaded-tls-backend) (environment '(curl private native))))))
+                   (eval '(loaded-tls-backend) (environment '(curl private native)))))
+  (show 'features-after (guard (e (#t (list 'raised (text e))))
+                          (eval '(loaded-features) (environment '(curl private native))))))
 
 (let ((marker (option "--marker")))
   (when marker

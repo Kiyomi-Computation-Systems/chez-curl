@@ -17,10 +17,11 @@
 ;;;     a fast consumer; and the window the second review's model found: a
 ;;;     take held, by a test seam, between its look and its removal while
 ;;;     the write callable pauses, whose next look must queue the resume;
-;;;   - follow and PROXYAUTH beside stream-buffer, refused,
-;;;     stream-with-rounds, however the two came together, and the hatch's
-;;;     HTTPAUTH refused as owned-option, the credentials field's since M7
-;;;     slice 2, whose Digest is digest-with-stream (tests/test-auth.sps);
+;;;   - follow beside stream-buffer, refused, stream-with-rounds, however
+;;;     the two came together, and the hatch's HTTPAUTH refused as
+;;;     owned-option, the credentials field's since M7 slice 2, whose Digest
+;;;     is digest-with-stream (tests/test-auth.sps), and its PROXYAUTH, the
+;;;     proxy field's since M7 slice 3, whose credentials go by Basic alone;
 ;;;     and an Expect
 ;;;     whose value holds 100-continue, by every path, at submit too, its
 ;;;     rule written out, folding A to Z alone;
@@ -399,10 +400,10 @@
         (list who 'refused)
         answer)))
 
-(test-equal "follow beside stream-buffer is refused as stream-with-rounds, naming stream-buffer and its value, however the two came together: the private following constructor of a streamed request, and curl-request-with of a following one; PROXYAUTH, the hatch's, alike, by curl-request-with-options of a streamed request and curl-request-with of one that carries it; the hatch's HTTPAUTH is refused as owned-option, the credentials field's, before any stream is seen"
+(test-equal "follow beside stream-buffer is refused as stream-with-rounds, naming stream-buffer and its value, however the two came together: the private following constructor of a streamed request, and curl-request-with of a following one; the hatch's HTTPAUTH and PROXYAUTH are refused as owned-option, the credentials field's and the proxy field's, before any stream is seen"
   '((following refused) (with-follow refused)
     (request-refused options "HTTPAUTH" owned-option) (request-refused options "HTTPAUTH" owned-option)
-    (options-proxyauth refused) (with-proxyauth refused))
+    (request-refused options "PROXYAUTH" owned-option) (request-refused options "PROXYAUTH" owned-option))
   (list (rounds-refused 'following
           (lambda () (curl-request-following (make-curl-request "http://a/" 'stream-buffer 10))))
         (rounds-refused 'with-follow
@@ -423,8 +424,9 @@
                                                                    '(("PROXYAUTH" . 1)))
                                         'stream-buffer 10)))))
 
-(test-equal "beside each other but not beside stream-buffer, each is taken: follow and PROXYAUTH on a whole body, and stream-buffer beside another hatch option, LOW_SPEED_TIME; stream-buffer #f clears the refusal; HTTPAUTH on a whole body is refused as owned-option"
-  '((returned #t) (returned #t) (request-refused options "HTTPAUTH" owned-option) (returned #t) (returned #t)
+(test-equal "beside each other but not beside stream-buffer, each is taken: follow on a whole body, and stream-buffer beside another hatch option, LOW_SPEED_TIME; stream-buffer #f clears the refusal; PROXYAUTH and HTTPAUTH on a whole body are refused as owned-option"
+  '((returned #t) (request-refused options "PROXYAUTH" owned-option)
+    (request-refused options "HTTPAUTH" owned-option) (returned #t) (returned #t)
     (returned #t))
   (list (raised (lambda () (curl-request? (curl-request-following (make-curl-request "http://a/")))))
         (raised (lambda () (curl-request? (curl-request-with-options (make-curl-request "http://a/")

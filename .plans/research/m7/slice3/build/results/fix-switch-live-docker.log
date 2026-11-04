@@ -1,0 +1,140 @@
+== floor
+libcurl 7.85.0
+with S:
+  (heads #t #t)
+  (multiplexing default switched)
+  (s (response 200 "status 200\n"))
+  (b (response 200 "connection 2\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 1\n" (response 200 #f))
+  (a2 "connection 1\n" (response 200 #f))
+control, no S:
+  (heads #t #t)
+  (multiplexing default default)
+  (s #f)
+  (b (response 200 "connection 3\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 3\n" (response 200 #f))
+  (a2 "connection 3\n" (response 200 #f))
+with S:
+  (heads #t #t)
+  (multiplexing default switched)
+  (s (response 200 "status 200\n"))
+  (b (response 200 "connection 5\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 4\n" (response 200 #f))
+  (a2 "connection 4\n" (response 200 #f))
+control, no S:
+  (heads #t #t)
+  (multiplexing default default)
+  (s #f)
+  (b (response 200 "connection 6\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 6\n" (response 200 #f))
+  (a2 "connection 6\n" (response 200 #f))
+done
+== openssl
+libcurl 8.5.0
+with S:
+  (heads #t #t)
+  (multiplexing default switched)
+  (s (response 200 "status 200\n"))
+  (b (response 200 "connection 2\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 1\n" (response 200 #f))
+  (a2 "connection 1\n" (response 200 #f))
+control, no S:
+  (heads #t #t)
+  (multiplexing default default)
+  (s #f)
+  (b (response 200 "connection 3\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 3\n" (response 200 #f))
+  (a2 "connection 3\n" (response 200 #f))
+with S:
+  (heads #t #t)
+  (multiplexing default switched)
+  (s (response 200 "status 200\n"))
+  (b (response 200 "connection 5\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 4\n" (response 200 #f))
+  (a2 "connection 4\n" (response 200 #f))
+control, no S:
+  (heads #t #t)
+  (multiplexing default default)
+  (s #f)
+  (b (response 200 "connection 6\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 6\n" (response 200 #f))
+  (a2 "connection 6\n" (response 200 #f))
+done
+== gnutls
+libcurl 8.5.0
+with S:
+  (heads #t #t)
+  (multiplexing default switched)
+  (s (response 200 "status 200\n"))
+  (b (response 200 "connection 2\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 1\n" (response 200 #f))
+  (a2 "connection 1\n" (response 200 #f))
+control, no S:
+  (heads #t #t)
+  (multiplexing default default)
+  (s #f)
+  (b (response 200 "connection 3\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 3\n" (response 200 #f))
+  (a2 "connection 3\n" (response 200 #f))
+with S:
+  (heads #t #t)
+  (multiplexing default switched)
+  (s (response 200 "status 200\n"))
+  (b (response 200 "connection 5\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 4\n" (response 200 #f))
+  (a2 "connection 4\n" (response 200 #f))
+control, no S:
+  (heads #t #t)
+  (multiplexing default default)
+  (s #f)
+  (b (response 200 "connection 6\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 6\n" (response 200 #f))
+  (a2 "connection 6\n" (response 200 #f))
+done
+== current
+libcurl 8.23.0
+with S:
+  (heads #t #t)
+  (multiplexing default default)
+  (s (response 200 "status 200\n"))
+  (b (response 200 "connection 1\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 1\n" (response 200 #f))
+  (a2 "connection 1\n" (response 200 #f))
+control, no S:
+  (heads #t #t)
+  (multiplexing default default)
+  (s #f)
+  (b (response 200 "connection 2\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 2\n" (response 200 #f))
+  (a2 "connection 2\n" (response 200 #f))
+with S:
+  (heads #t #t)
+  (multiplexing default default)
+  (s (response 200 "status 200\n"))
+  (b (response 200 "connection 3\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 3\n" (response 200 #f))
+  (a2 "connection 3\n" (response 200 #f))
+control, no S:
+  (heads #t #t)
+  (multiplexing default default)
+  (s #f)
+  (b (response 200 "connection 4\n"))
+  (a-done-when-b-ended (#f #f))
+  (a1 "connection 4\n" (response 200 #f))
+  (a2 "connection 4\n" (response 200 #f))
+done

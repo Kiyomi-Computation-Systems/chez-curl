@@ -1107,7 +1107,7 @@
         '(raised (http-error) (http-request-error limit 2.0 not-a-limit call-with-request-group))
         '(raised (http-error) (http-request-error limit 1/2 not-a-limit call-with-request-group))
         '(raised (http-error) (http-request-error limit two not-a-limit call-with-request-group))
-        '(raised (http-error) (http-request-error limit "2" not-a-limit call-with-request-group))
+        '(raised (http-error) (http-request-error limit (kind string) not-a-limit call-with-request-group))
         '(returned called) '(returned called)
         0)
   (with-session '()

@@ -1,0 +1,20 @@
+make-curl-request, the proxy URL with no key: (curl-request-error key unknown-key); secret printed: no
+make-curl-request, a key, its value, then the proxy URL with no key: (curl-request-error key unknown-key); secret printed: no
+curl-request-with, the proxy URL with no key: (curl-request-error key unknown-key); secret printed: no
+make-http-session, the proxy URL with no key: (http-request-error key unknown-key); secret printed: no
+make-http-session, the proxy URL as a key, a value after it: (http-request-error key unknown-key); secret printed: no
+call-with-http-session, the proxy URL with no key, then a procedure: (http-request-error key unknown-key); secret printed: no
+http-get, the proxy URL with no key: (http-request-error key unknown-key); secret printed: no
+slice 2's credentials, a list with no key, at make-curl-request: (curl-request-error key unknown-key); secret printed: no
+slice 2's credentials, a list with no key, at make-http-session: (http-request-error key unknown-key); secret printed: no
+control: make-curl-request, a symbol with no key: (curl-request-error key unknown-key); secret printed: no
+control: make-curl-request, proxy given twice: (curl-request-error key repeated-key); secret printed: no
+control: call-with-http-session, its procedure missing, the URL last (the slice's fix): another condition; secret printed: no
+curl-request-url on a string: secret printed: no
+  "Exception in curl-request-url: not a request with irritant (kind string)"
+curl-response-status on a string: secret printed: no
+  "Exception in curl-response-status: not a response with irritant (kind string)"
+submit of ftp://u:Pr0xyS3cr3t@h/: secret printed: no
+  "Exception in chez-curl: chez-curl fetches only http and https URLs with irritant url"
+submit of a URL with a space, http://u:Pr0xyS3cr3t@h /: secret printed: no
+  "Exception in chez-curl: Malformed input to a URL function with irritant url"

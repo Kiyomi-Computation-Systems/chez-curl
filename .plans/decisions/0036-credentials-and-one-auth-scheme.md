@@ -2,7 +2,8 @@
 
 - **Status:** Accepted; amended 2026-11-02, after the M7 plan's review: decision 3's reach, and
   the bytes and headers credentials meet; amended 2026-11-02, measured through the engine, with
-  three answers on the bytes and one on resends (M7 slice 2)
+  three answers on the bytes and one on resends (M7 slice 2); amended 2026-11-03: no printed
+  text carries a caller's misplaced value or a refused URL (M7 slice 3)
 - **Date:** 2026-11-02
 - **Scope:** chez-curl v1, a server's auth, in `(curl)` and `(http-client)`, from M7
 - **Settles:** how a caller gives server credentials, and which schemes a request may pick, a
@@ -172,3 +173,35 @@ under the memory gate's Valgrind on 8.5.0, whose 474 transfers ended as they did
   password or token failed 100 with nothing sent, as on 8.20.0
   ([log](../research/m7/slice2/results/mac-8.7.1-make-test.log), and a second run of test-auth,
   [alike](../research/m7/slice2/results/mac-8.7.1-test-auth-2.log)).
+
+## Amendment, 2026-11-03: no printed text carries a misplaced value or a refused URL (M7 slice 3)
+
+M7 slice 3's review and its fix round found three more ways a secret reached a condition's
+printed text, past the records this ADR made opaque. Each reproduced on Guix's 8.20.0
+([review](../research/m7/slice3/review/), [verify](../research/m7/slice3/verify/)):
+
+- **A value where a key belongs:** `unknown-key` named it, so a proxy URL, or a credentials list,
+  given without its key printed its password, at both levels, nine cases of nine.
+- **A raw record accessor handed something else:** Chez's own check names what it refused, so
+  `(curl-request-url "http://u:PW@h/")` printed `"http://u:PW@h/" is not of type #<record type
+  curl-request>`; the same for every public accessor of the request, the response and the high
+  level's response.
+- **A URL refused at submit:** `scheme-not-http` and a parse failure carried the whole URL as
+  their irritant, `ftp://u:PW@h/` among them.
+
+The fix round names a misplaced value by its kind wherever it could hold a secret, and a
+header value's refusal by its header's name. **Decided by the maintainer, 2026-11-03, the
+recommended option,** for the other two, on this slice: every public accessor of the request,
+the response and the high level's response checks its argument and names a wrong one by its
+kind; and a refused URL's message and irritants name its field, never the URL, while
+`curl-url-error-input` still gives the string back to code that asks for it (ADR-0008, amended).
+
+**As built** (M7 slice 3's two fix rounds): `shown-value` names a misplaced value by its kind,
+keeping symbols, numbers, booleans, chars and lists of those, and `shown-key` keeps a symbol
+alone; `checked-accessor` wraps each public record and condition accessor, its message "not a
+request", "not a response" or the like, its irritant the wrong argument's kind: 78 exports had
+printed a password handed in their place, none after. `libcurl-info`, which the conditions
+library imports, holds its own copy of the rule, held alike by the suite.
+`tests/test-printed.sps` writes out a row for every export of `(curl)`, `(curl unsupported)` and
+`(http-client)`, 186 in all, so a new export fails until it has one, and calls each with a URL
+holding a password ([build](../research/m7/slice3/build/), [verify](../research/m7/slice3/verify/)).

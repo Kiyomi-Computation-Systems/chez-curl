@@ -28,8 +28,9 @@
 ;;;   5. init     SSL_CERT_FILE and SSL_CERT_DIR, read and recorded, which
 ;;;               loaded-ca-variables answers; then curl_global_init, exactly
 ;;;               once; then the TLS backend it put in use, which
-;;;               loaded-tls-backend answers, and whether this is macOS,
-;;;               loaded-on-macos?
+;;;               loaded-tls-backend answers, the features word it then
+;;;               reports, which loaded-features answers, and whether this is
+;;;               macOS, loaded-on-macos?
 ;;;   6. bind     every other entry point, eagerly
 ;;;   7. probe    the options API and the header API, then check-apis
 ;;;
@@ -128,7 +129,7 @@
 ;;;   missing-api  a required entry point is absent (detail: its C name)
 (library (curl private native)
   (export loaded-libcurl loaded-libcurl-file loaded-libcurl-patched? loaded-ca-variables
-          loaded-tls-backend loaded-on-macos?
+          loaded-tls-backend loaded-features loaded-on-macos?
           curl-easy-option
           curl-easy-init curl-easy-cleanup
           curl-easy-setopt-long curl-easy-setopt-pointer curl-easy-setopt-off-t
@@ -683,13 +684,25 @@
   ;; puts LibreSSL in use (ADR-0024, amended 2026-10-27). curl_version_info
   ;; writes the names into a buffer of its own, so it is called again; #f
   ;; when it answers NULL or no one backend is bare.
-  (define tls-backend
+  ;;
+  ;; The same call answers the features word, after-init's cdr: a MultiSSL
+  ;; libcurl computes the word at each call from the backend in use, and
+  ;; before the init that is its selector, which supports nothing, so the
+  ;; bits a backend sets read clear in info: CURL_VERSION_HTTPS_PROXY among
+  ;; them, on Apple's 8.7.1, whose init puts a backend that supports it in
+  ;; use (8.7.1 lib/version.c:424-428 and 671-680, lib/vtls/vtls.c:1306-1308;
+  ;; the Mac's run of M7 slice 3). info keeps the word it read; step 3's
+  ;; word stands where the call answers NULL.
+  (define after-init
     (load-step
      (let ((address (curl-version-info curlversion-tenth)))
-       (and (not (zero? address))
-            (backend-in-use
-             (c-text (ftype-ref curl-version-info-data (ssl-version)
-                                (make-ftype-pointer curl-version-info-data address))))))))
+       (if (zero? address)
+           (cons #f (libcurl-info-features info))
+           (let ((data (make-ftype-pointer curl-version-info-data address)))
+             (cons (backend-in-use (c-text (ftype-ref curl-version-info-data (ssl-version) data)))
+                   (ftype-ref curl-version-info-data (features) data)))))))
+  (define tls-backend (car after-init))
+  (define features-after-init (cdr after-init))
 
   ;; Whether this is macOS: Chez's machine types for it end in osx.
   (define on-macos
@@ -1220,6 +1233,12 @@
   ;; then named it, LibreSSL/3.3.6 say: a fresh string, or #f. Private:
   ;; (curl) does not export it.
   (define (loaded-tls-backend) (and tls-backend (string-copy tls-backend)))
+
+  ;; loaded-features : -> Natural
+  ;; The features word libcurl reports after its init, features-after-init:
+  ;; the one a check of a backend's support reads. Private: (curl) does not
+  ;; export it; libcurl-info-features answers the word read before the init.
+  (define (loaded-features) features-after-init)
 
   ;; loaded-on-macos? : -> Boolean
   ;; Whether this process runs on macOS, by Chez's machine type. Private.

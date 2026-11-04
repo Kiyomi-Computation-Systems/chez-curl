@@ -269,11 +269,11 @@
 
 ;; Before any session is made here: no engine runs, so the multi count is
 ;; the suite's own evidence that a refusal made none.
-(test-equal "make-http-session refuses a redirects that is no exact natural nor #f, and an allow-downgrade that is no boolean, as &http-request-error, with no engine made"
+(test-equal "make-http-session refuses a redirects that is no exact natural nor #f, and an allow-downgrade that is no boolean, as &http-request-error, a string named by its kind, with no engine made"
   (list '(raised (http-error) (http-request-error redirects -1 not-a-redirect-count))
         '(raised (http-error) (http-request-error redirects 1.0 not-a-redirect-count))
         '(raised (http-error) (http-request-error redirects 3/2 not-a-redirect-count))
-        '(raised (http-error) (http-request-error redirects "3" not-a-redirect-count))
+        '(raised (http-error) (http-request-error redirects (kind string) not-a-redirect-count))
         '(raised (http-error) (http-request-error redirects #t not-a-redirect-count))
         '(raised (http-error) (http-request-error allow-downgrade yes not-a-boolean))
         '(raised (http-error) (http-request-error allow-downgrade 0 not-a-boolean))
@@ -585,9 +585,11 @@
 ;; --- the origin
 
 ;; origin-headers : (Listof (Pairof String String))
-;; The credentials, in cases of their own, Host, and two that follow.
+;; The credentials, in cases of their own, Host, and two that follow. A
+;; Proxy-Authorization header was one, until the low level refused every
+;; one (ADR-0037, decision 4): the test after holds that.
 (define origin-headers
-  '(("Authorization" . "Bearer a") ("cookie" . "c=1") ("PROXY-AUTHORIZATION" . "Basic p")
+  '(("Authorization" . "Bearer a") ("cookie" . "c=1")
     ("HOST" . "h.example") ("X-Api-Key" . "k") ("Authorization-X" . "kept")))
 
 (define without-credentials '(("HOST" . "h.example") ("X-Api-Key" . "k") ("Authorization-X" . "kept")))
@@ -600,7 +602,7 @@
   (let ((a (step (state-at url 'get #f origin-headers) (reply 302 (redirect-to location)))))
     (if (eq? (car a) 'next) (curl-request-headers (caddr a)) (seen a))))
 
-(test-equal "exchange-step's origin rule: the same origin keeps every header, by the host's case and by an explicit default port too; another port or scheme, the scheme alone on one port among them, drops Authorization, Cookie and Proxy-Authorization, in any case, and keeps Host; another host drops Host too, in any case, and so does another zone ID of one IPv6 address, or none; every other header follows"
+(test-equal "exchange-step's origin rule: the same origin keeps every header, by the host's case and by an explicit default port too; another port or scheme, the scheme alone on one port among them, drops Authorization and Cookie, in any case, and keeps Host; another host drops Host too, in any case, and so does another zone ID of one IPv6 address, or none; every other header follows"
   (list origin-headers origin-headers origin-headers origin-headers
         without-credentials without-credentials without-credentials without-host without-host
         origin-headers without-host without-host)
@@ -640,6 +642,13 @@
              (credentials-after "http://h.example/p" "http://other.example/")
              (credentials-after "http://[fe80::1%25eth0]/p" "http://[fe80::1%25eth1]/q")
              (credentials-after "http://[fe80::1%25eth0]/p" "http://[fe80::1]/q"))))
+
+(test-equal "a Proxy-Authorization header reaches no redirect's rule: the low level refuses one as a request is made, in any case, alone or among others, so no step's request holds one; its drop across origins is gone, unreachable (ADR-0037, decision 4)"
+  '((raised (curl-request-error header-name "PROXY-AUTHORIZATION" proxy-authorization-header))
+    (raised (curl-request-error header-name "proxy-authorization" proxy-authorization-header)))
+  (list (outcome (lambda () (table-request "http://h.example/p" 'get #f
+                                           (append origin-headers '(("PROXY-AUTHORIZATION" . "Basic p"))))))
+        (outcome (lambda () (table-request "http://h.example/p" 'get #f '(("proxy-authorization" . "Basic p")))))))
 
 (test-equal "exchange-step: a header dropped stays dropped, through a hop back to the first origin"
   (list without-host without-host)
@@ -944,29 +953,39 @@
 
      ;; --- the origin rule, live
 
-     (test-equal "the origin rule by port, live: the http face to the raw face's echo drops the session's Authorization and the call's Cookie and Proxy-Authorization, and keeps the rest"
+     (test-equal "the origin rule by port, live: the http face to the raw face's echo drops the session's Authorization and the call's Cookie, and keeps the rest"
        (list 'answered 200 (at 'raw "/raw/echo") (raw-echo raw-authority "X-Api-Key: k")
              (list (list 302 (redirect 'http "302" (at 'raw "/raw/echo")) '())))
        (with-session (list 'timeout-ms 20000 'headers '(("Authorization" . "Bearer s")))
          (lambda (own)
            (answer (lambda ()
                      (http-get own (redirect 'http "302" (at 'raw "/raw/echo"))
-                               'headers '(("Cookie" . "c=1") ("Proxy-Authorization" . "Basic cA==")
-                                          ("X-Api-Key" . "k"))))))))
+                               'headers '(("Cookie" . "c=1") ("X-Api-Key" . "k"))))))))
 
      (test-equal "the origin rule's control, live: to the same origin, every header arrives"
        (list 'answered 200 echo
              (echo-text http-authority "GET" "/echo" "Authorization: Bearer s" "Cookie: c=1"
-                        "Proxy-Authorization: Basic cA==" "X-Api-Key: k")
+                        "X-Api-Key: k")
              (list (list 302 (redirect 'http "302" "/echo") '())))
        (with-session (list 'timeout-ms 20000 'headers '(("Authorization" . "Bearer s")))
          (lambda (own)
            (answer (lambda ()
                      (http-get own (redirect 'http "302" "/echo")
-                               'headers '(("Cookie" . "c=1") ("Proxy-Authorization" . "Basic cA==")
-                                          ("X-Api-Key" . "k"))))))))
+                               'headers '(("Cookie" . "c=1") ("X-Api-Key" . "k"))))))))
 
-     (test-equal "a header dropped stays dropped, live: the http face to the raw face, whose location script sends the call back to the http face's echo, which gets none of the three"
+     (test-equal "a Proxy-Authorization header, live, never leaves: a call's is refused as its request is built, and a session's as the session is made, the low level's refusal, before anything is sent"
+       (list (list 'raised '(curl-request-error header-name "Proxy-Authorization" proxy-authorization-header)
+                   (list 'exchange 'get (redirect 'http "302" (at 'raw "/raw/echo")) '() 0))
+             '(raised (curl-request-error header-name "proxy-authorization" proxy-authorization-header)))
+       (list (with-session (list 'timeout-ms 20000)
+               (lambda (own)
+                 (answer (lambda ()
+                           (http-get own (redirect 'http "302" (at 'raw "/raw/echo"))
+                                     'headers '(("Proxy-Authorization" . "Basic cA==")))))))
+             (answer (lambda ()
+                       (make-http-session 'headers '(("proxy-authorization" . "Basic cA==")))))))
+
+     (test-equal "a header dropped stays dropped, live: the http face to the raw face, whose location script sends the call back to the http face's echo, which gets neither of the two"
        (let ((back (location "302" 0 echo)))
          (list 'answered 200 echo (echo-text http-authority "GET" "/echo" "X-Api-Key: k")
                (list (list 302 (redirect 'http "302" back) '()) (list 302 back '()))))
@@ -975,7 +994,6 @@
            (answer (lambda ()
                      (http-get own (redirect 'http "302" (location "302" 0 echo))
                                'headers '(("Authorization" . "Bearer c") ("Cookie" . "c=1")
-                                          ("Proxy-Authorization" . "Basic cA==")
                                           ("X-Api-Key" . "k"))))))))
 
      (test-equal "a custom Host follows a change of port alone, live: the raw face's echo gets it"
@@ -1081,7 +1099,7 @@
      (test-equal "a call's own redirects and allow-downgrade refused, live, compounded with &http-exchange, no transfer made"
        (list (list 'raised '(http-error) '(http-request-error redirects -2 not-a-redirect-count)
                    (list 'exchange 'get echo '() 0))
-             (list 'raised '(http-error) '(http-request-error allow-downgrade "no" not-a-boolean)
+             (list 'raised '(http-error) '(http-request-error allow-downgrade (kind string) not-a-boolean)
                    (list 'exchange 'get echo '() 0))
              0)
        (let* ((started (transfers-started))

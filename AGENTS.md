@@ -147,6 +147,17 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   opens it: a token handed to an assertion printed its request's password.
   Make every record that holds a request, a plan, a token or credentials
   opaque, and check a secret's absence in printed text, not by walking pairs.
+* A 200 through a named proxy does not show the proxy was used: a userinfo
+  byte that decodes to 0x00 to 0x1F sent 7.85.0 and 8.5.0 straight to the
+  origin, with 200, the proxy getting nothing. Assert the proxy's log.
+* A refusal can print the value a caller put in the wrong place: a proxy URL
+  where a key belongs printed its password through `unknown-key`. Name a
+  caller's value by its field or kind wherever it could hold a secret.
+* Chez's record and condition accessors print the object they refuse:
+  `(curl-request-url "http://u:PW@h/")` printed the password. An opaque record
+  hides its fields, not a misplaced argument: wrap each public accessor. Every
+  export of `(curl)`, `(curl unsupported)` and `(http-client)` needs a row in
+  `tests/test-printed.sps`.
 
 **Chez and the FFI**
 
@@ -425,7 +436,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * A MultiSSL libcurl's `curl_version_info` names its first backend as the
   one in use until `curl_global_init` picks one: Apple's 8.7.1 then uses
   LibreSSL, not SecureTransport. Read the backend after the init, and name
-  it as curl does: `secure-transport`.
+  it as curl does: `secure-transport`. Its features word before the init
+  holds none of the bits a backend sets: `CURL_VERSION_HTTPS_PROXY` read
+  clear there, and every `https://` proxy was refused. Read those after it.
 * libcurl 8.7.0 and 8.7.1 answer `CURLINFO_REQUEST_SIZE` 0 for every
   transfer. A count measured on some versions says nothing of one between.
 * An option on one easy handle can reach past its transfer: `RESOLVE` fills
@@ -522,6 +535,15 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   so a response's n headers cost n²: on 7.85.0, which caps none, 100,000 took
   30 s of CPU once the transfer had ended. A check of many headers stays near
   the newer caps: 300 KiB, and 5,000 from 8.20.0.
+* `FRESH_CONNECT` keeps the transfer that sets it off other connections,
+  never others off its own, and 7.85.0 reads `FORBID_REUSE` only as a
+  transfer ends: an environment proxy's transfer joined a live HTTP/2 tunnel
+  opened with another user's credentials. A rule that keeps a connection to
+  one transfer covers every transfer that could join it.
+* A socket `http.Server` hands its `connect` event is half-open: a client's
+  FIN ends nothing. A stand-in proxy destroys the socket on `'end'`.
+* `curl_url` reports an empty query as `""` on 7.85.0 and 8.5.0, and as none
+  from 8.20.0. Read an empty part as none.
 
 ## Closing ritual
 

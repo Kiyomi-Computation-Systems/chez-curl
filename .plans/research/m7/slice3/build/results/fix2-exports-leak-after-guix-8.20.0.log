@@ -1,0 +1,204 @@
+&curl-connect-error: not a procedure
+&curl-embedded-nul: not a procedure
+&curl-engine-error: not a procedure
+&curl-error: not a procedure
+&curl-library-unavailable: not a procedure
+&curl-protocol-error: not a procedure
+&curl-request-error: not a procedure
+&curl-send-receive-error: not a procedure
+&curl-timeout: not a procedure
+&curl-tls-error: not a procedure
+&curl-too-large: not a procedure
+&curl-transfer-error: not a procedure
+&curl-url-error: not a procedure
+&curl-wrong-thread: not a procedure
+curl-connect-error?/1: no raise; secret printed: no
+curl-embedded-nul-string/1: raised; secret printed: no
+curl-embedded-nul?/1: no raise; secret printed: no
+curl-engine-error-condition/1: raised; secret printed: no
+curl-engine-error-reason/1: raised; secret printed: no
+curl-engine-error-reasons: not a procedure
+curl-engine-error?/1: no raise; secret printed: no
+curl-engine-stop/1: raised; secret printed: no
+curl-engine?/1: no raise; secret printed: no
+curl-error?/1: no raise; secret printed: no
+curl-head-body-asked?/1: raised; secret printed: no
+curl-head-headers/1: raised; secret printed: no
+curl-head-http-version/1: raised; secret printed: no
+curl-head-status/1: raised; secret printed: no
+curl-head?/1: no raise; secret printed: no
+curl-library-unavailable-candidates/1: raised; secret printed: no
+curl-library-unavailable-detail/1: raised; secret printed: no
+curl-library-unavailable-library/1: raised; secret printed: no
+curl-library-unavailable-path/1: raised; secret printed: no
+curl-library-unavailable-reason/1: raised; secret printed: no
+curl-library-unavailable-reasons: not a procedure
+curl-library-unavailable-source/1: raised; secret printed: no
+curl-library-unavailable?/1: no raise; secret printed: no
+curl-mailbox-deliver/2: raised; secret printed: no
+curl-mailbox-take/2: raised; secret printed: no
+curl-mailbox?/1: no raise; secret printed: no
+curl-protocol-error?/1: no raise; secret printed: no
+curl-request-body/1: raised; secret printed: no
+curl-request-body-length/1: raised; secret printed: no
+curl-request-body-limit/1: raised; secret printed: no
+curl-request-ca-file/1: raised; secret printed: no
+curl-request-check/1: raised; secret printed: no
+curl-request-connect-timeout-ms/1: raised; secret printed: no
+curl-request-credentials/1: raised; secret printed: no
+curl-request-error-field/1: raised; secret printed: no
+curl-request-error-reason/1: raised; secret printed: no
+curl-request-error-reasons: not a procedure
+curl-request-error-value/1: raised; secret printed: no
+curl-request-error?/1: no raise; secret printed: no
+curl-request-headers/1: raised; secret printed: no
+curl-request-http-version/1: raised; secret printed: no
+curl-request-method/1: raised; secret printed: no
+curl-request-proxy/1: raised; secret printed: no
+curl-request-proxy-ca-file/1: raised; secret printed: no
+curl-request-proxy-verify/1: raised; secret printed: no
+curl-request-stream-buffer/1: raised; secret printed: no
+curl-request-timeout-ms/1: raised; secret printed: no
+curl-request-url/1: raised; secret printed: no
+curl-request-user-agent/1: raised; secret printed: no
+curl-request-verify/1: raised; secret printed: no
+curl-request-with/1: raised; secret printed: no
+curl-request-with/2: raised; secret printed: no
+curl-request-with/3: raised; secret printed: no
+curl-request?/1: no raise; secret printed: no
+curl-response-body/1: raised; secret printed: no
+curl-response-effective-url/1: raised; secret printed: no
+curl-response-headers/1: raised; secret printed: no
+curl-response-http-version/1: raised; secret printed: no
+curl-response-status/1: raised; secret printed: no
+curl-response-timings/1: raised; secret printed: no
+curl-response?/1: no raise; secret printed: no
+curl-send-receive-error?/1: no raise; secret printed: no
+curl-submit/2: raised; secret printed: no
+curl-submit/3: raised; secret printed: no
+curl-timeout?/1: no raise; secret printed: no
+curl-tls-error?/1: no raise; secret printed: no
+curl-token-await/1: raised; secret printed: no
+curl-token-body-count/1: raised; secret printed: no
+curl-token-body-port/1: raised; secret printed: no
+curl-token-cancel/1: raised; secret printed: no
+curl-token-done?/1: raised; secret printed: no
+curl-token-end-body!/1: raised; secret printed: no
+curl-token-head/1: raised; secret printed: no
+curl-token-head-wait/2: raised; secret printed: no
+curl-token-next-piece/2: raised; secret printed: no
+curl-token-outcome/1: raised; secret printed: no
+curl-token-put-piece!/2: raised; secret printed: no
+curl-token-put-piece!/3: raised; secret printed: no
+curl-token-room-wait/2: raised; secret printed: no
+curl-token-wait/2: raised; secret printed: no
+curl-token?/1: no raise; secret printed: no
+curl-too-large?/1: no raise; secret printed: no
+curl-transfer-error-code/1: raised; secret printed: no
+curl-transfer-error-connect-code/1: raised; secret printed: no
+curl-transfer-error-error-buffer/1: raised; secret printed: no
+curl-transfer-error-option/1: raised; secret printed: no
+curl-transfer-error-reason/1: raised; secret printed: no
+curl-transfer-error-reasons: not a procedure
+curl-transfer-error-recorded/1: raised; secret printed: no
+curl-transfer-error-request-size/1: raised; secret printed: no
+curl-transfer-error-strerror/1: raised; secret printed: no
+curl-transfer-error?/1: no raise; secret printed: no
+curl-url-append-query/2: no raise; secret printed: no
+curl-url-error-code/1: raised; secret printed: no
+curl-url-error-input/1: raised; secret printed: no
+curl-url-error-message/1: raised; secret printed: no
+curl-url-error-reason/1: raised; secret printed: no
+curl-url-error?/1: no raise; secret printed: no
+curl-url-part/2: raised; secret printed: no
+curl-url-resolve/2: no raise; secret printed: no
+curl-url-with-fragment/2: no raise; secret printed: no
+curl-wrong-thread-actual/1: raised; secret printed: no
+curl-wrong-thread-expected/1: raised; secret printed: no
+curl-wrong-thread-who/1: raised; secret printed: no
+curl-wrong-thread?/1: no raise; secret printed: no
+libcurl-info-feature-names/1: raised; secret printed: no
+libcurl-info-features/1: raised; secret printed: no
+libcurl-info-host/1: raised; secret printed: no
+libcurl-info-path/1: raised; secret printed: no
+libcurl-info-source/1: raised; secret printed: no
+libcurl-info-ssl-version/1: raised; secret printed: no
+libcurl-info-version/1: raised; secret printed: no
+libcurl-info-version-number/1: raised; secret printed: no
+libcurl-info?/1: no raise; secret printed: no
+make-curl-request/1: no raise; secret printed: no
+make-curl-request/2: raised; secret printed: no
+make-curl-request/3: raised; secret printed: no
+curl-request-with-options/2: raised; secret printed: no
+&http-error: not a procedure
+&http-exchange: not a procedure
+&http-group-error: not a procedure
+&http-redirect-error: not a procedure
+&http-request-error: not a procedure
+&http-timeout: not a procedure
+call-with-http-session/1: raised; secret printed: no
+call-with-http-session/2: raised; secret printed: no
+call-with-http-session/3: raised; secret printed: no
+call-with-request-group/1: raised; secret printed: no
+call-with-request-group/2: raised; secret printed: no
+call-with-request-group/3: raised; secret printed: no
+call-with-response-port/3: raised; secret printed: no
+http-await/1: raised; secret printed: no
+http-delete/2: raised; secret printed: no
+http-delete/3: raised; secret printed: no
+http-error?/1: no raise; secret printed: no
+http-exchange-history/1: raised; secret printed: no
+http-exchange-method/1: raised; secret printed: no
+http-exchange-transfers/1: raised; secret printed: no
+http-exchange-url/1: raised; secret printed: no
+http-exchange?/1: no raise; secret printed: no
+http-get/2: raised; secret printed: no
+http-get/3: raised; secret printed: no
+http-group-error-reason/1: raised; secret printed: no
+http-group-error-reasons: not a procedure
+http-group-error?/1: no raise; secret printed: no
+http-head/2: raised; secret printed: no
+http-head/3: raised; secret printed: no
+http-parallel/2: raised; secret printed: no
+http-parallel/3: raised; secret printed: no
+http-patch/2: raised; secret printed: no
+http-patch/3: raised; secret printed: no
+http-pending-cancel/1: raised; secret printed: no
+http-pending-done?/1: raised; secret printed: no
+http-pending?/1: no raise; secret printed: no
+http-post/2: raised; secret printed: no
+http-post/3: raised; secret printed: no
+http-put/2: raised; secret printed: no
+http-put/3: raised; secret printed: no
+http-redirect-error-location/1: raised; secret printed: no
+http-redirect-error-reason/1: raised; secret printed: no
+http-redirect-error-reasons: not a procedure
+http-redirect-error-response/1: raised; secret printed: no
+http-redirect-error?/1: no raise; secret printed: no
+http-request/3: raised; secret printed: no
+http-request-error-field/1: raised; secret printed: no
+http-request-error-reason/1: raised; secret printed: no
+http-request-error-reasons: not a procedure
+http-request-error-value/1: raised; secret printed: no
+http-request-error?/1: no raise; secret printed: no
+http-response-body/1: raised; secret printed: no
+http-response-header/2: raised; secret printed: no
+http-response-headers/1: raised; secret printed: no
+http-response-history/1: raised; secret printed: no
+http-response-http-version/1: raised; secret printed: no
+http-response-status/1: raised; secret printed: no
+http-response-text/1: raised; secret printed: no
+http-response-timings/1: raised; secret printed: no
+http-response-url/1: raised; secret printed: no
+http-response?/1: no raise; secret printed: no
+http-retry?/1: no raise; secret printed: no
+http-session-close/1: raised; secret printed: no
+http-session?/1: no raise; secret printed: no
+http-timeout-timeout-ms/1: raised; secret printed: no
+http-timeout?/1: no raise; secret printed: no
+make-http-retry/1: raised; secret printed: no
+make-http-retry/2: raised; secret printed: no
+make-http-retry/3: raised; secret printed: no
+make-http-session/1: raised; secret printed: no
+make-http-session/2: raised; secret printed: no
+make-http-session/3: raised; secret printed: no

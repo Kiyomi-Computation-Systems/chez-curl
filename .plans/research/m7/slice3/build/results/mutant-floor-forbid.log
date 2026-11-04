@@ -1,0 +1,22 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-proxy.sps
+%%%% Starting test proxy
+test-proxy: empty-userinfo on "7.85.0" measured (("http://127.0.0.1:3128/" "http" #f) ("http://127.0.0.1:3128/" "http" #f) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u@127.0.0.1:3128/" "http" #t))
+test-proxy: tls-in-tls-checks on "7.85.0/OpenSSL" measured ((refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise (refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise no-raise)
+test-proxy: empty-userinfo-wire on "7.85.0" measured (((response 200) ("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1")) ((response 200) ("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1")))
+test-proxy: refused-connect on "7.85.0" measured ((56 send-receive 403 the-connect) (56 send-receive 407 the-connect) (56 send-receive 502 the-connect) (56 send-receive 503 the-connect) (56 send-receive 407 the-connect) (56 send-receive 407 the-connect) (56 send-receive #f the-connect))
+test-proxy: unshared-tunnels on "7.85.0" measured (((response 200) (response 200) #f ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")))
+FAIL two tunnels in turn through one proxy, by version: below 8.19.0 the second opens a CONNECT of its own, and the first, with userinfo, closes as it ends, where with none it stays pooled; from 8.19.0 the second rides the first's tunnel
+  expected: (((response 200) (response 200) #t ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")))
+  actual:   (((response 200) (response 200) #f ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")))
+test-proxy: tunnel-plans on "7.85.0" measured ((("FRESH_CONNECT" . 1) ("FORBID_REUSE" . 1)) (("FRESH_CONNECT" . 1)) () () ())
+test-proxy: closing-retries on "7.85.0" measured (((failed 56 #f 1) 1) ((failed 56 #f 3) 3))
+# of expected passes      87
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 87, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-proxy.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

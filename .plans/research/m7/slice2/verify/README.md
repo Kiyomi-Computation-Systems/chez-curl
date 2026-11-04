@@ -60,4 +60,5 @@ My checks of the measuring agent's hand-back, and of a trap the builder reported
   held for 8.5.0's HTTP/2 413. **Decided by the maintainer, 2026-11-02, the recommended
   option:** fix it on this PR, the raw kept 413 held to `either 413` as its HTTP/2 neighbour is.
   With the fix, test-upload passed on Ubuntu's 8.5.0 with OpenSSL in Docker, natively and under
-  the memory gate (`results/lane-openssl-upload-either*.log`).
+  the memory gate ([`results/lane-openssl-upload-either.log`](results/lane-openssl-upload-either.log),
+  [`results/lane-openssl-memory-upload-either.log`](results/lane-openssl-memory-upload-either.log)).

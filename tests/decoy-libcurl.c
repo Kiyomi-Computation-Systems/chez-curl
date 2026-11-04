@@ -25,7 +25,9 @@
  *   DECOY_SSL_VERSION_NULL     ssl_version is NULL
  *   DECOY_MULTISSL             ssl_version names two backends, as a MultiSSL
  *                              libcurl does: DecoyFirst in use until
- *                              curl_global_init, which puts DecoyTLS in use
+ *                              curl_global_init, which puts DecoyTLS in use;
+ *                              and features lack CURL_VERSION_HTTPS_PROXY
+ *                              until it, as Apple's 8.7.1's selector does
  *   DECOY_VERSION_NULL         version is NULL
  *   DECOY_HOST_NULL            host is NULL
  *   DECOY_HOST_UTF8            host is "décoy-λ€", in UTF-8: two- and
@@ -174,6 +176,7 @@ CURLcode curl_global_init(long flags)
 #else
 #if defined(DECOY_MULTISSL) && !defined(DECOY_LACKS_curl_version_info)
   info.ssl_version = "(DecoyFirst/1.0) DecoyTLS/1.0";
+  info.features |= CURL_VERSION_HTTPS_PROXY;
 #endif
   return CURLE_OK;
 #endif

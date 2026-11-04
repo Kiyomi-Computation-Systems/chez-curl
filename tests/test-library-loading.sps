@@ -332,14 +332,20 @@
 ;; with DECOY_MULTISSL names DecoyFirst before the init and DecoyTLS after.
 ;; The report keeps the text read before; loaded-tls-backend must be the
 ;; backend after, read by curl_version_info again (ADR-0024, amended
-;; 2026-10-27). The control decoy names one backend throughout.
+;; 2026-10-27). The control decoy names one backend throughout. The same
+;; second call answers loaded-features: the decoy's selector, as Apple's
+;; 8.7.1's, lacks CURL_VERSION_HTTPS_PROXY until the init, which the report,
+;; read before it, keeps, so a check of a backend's support reads the word
+;; after (the Mac's run of M7 slice 3): curl/curl.h's 1<<21, #x200000.
 (let ((so (in-scratch "multissl.so")))
   (test-equal "decoy multissl: the report keeps ssl_version as curl_version_info named it before the init, and loaded-tls-backend is the backend in use after it, DecoyTLS, read by a second call"
     (list 0 (list 0
                   (append (list (cons 'loaded so) (cons 'source 'override))
                           (decoy-report "DecoyFirst/1.0 (DecoyTLS/1.0)" "decoy-host")
                           (list (cons 'protocols '()) once no-native-objects
-                                (cons 'backend "DecoyTLS/1.0") (cons 'calls (join every-call))))
+                                (cons 'backend "DecoyTLS/1.0")
+                                (cons 'features-after (+ decoy-features #x200000))
+                                (cons 'calls (join every-call))))
                   ""))
     (let ((compiled (compile-decoy "multissl" '("-DDECOY_MULTISSL"))))
       (list compiled (probe-with (list (override so)) '("--backend" "yes"))))))
@@ -349,7 +355,8 @@
         (append (list (cons 'loaded (in-scratch "accepted.so")) (cons 'source 'override))
                 (decoy-report "DecoyTLS/1.0" "decoy-host")
                 (list (cons 'protocols '()) once no-native-objects
-                      (cons 'backend "DecoyTLS/1.0") (cons 'calls (join every-call))))
+                      (cons 'backend "DecoyTLS/1.0") (cons 'features-after decoy-features)
+                      (cons 'calls (join every-call))))
         "")
   (probe-with (list (override (in-scratch "accepted.so"))) '("--backend" "yes")))
 
@@ -856,7 +863,7 @@
                curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
                curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
                curl-request-stream-buffer curl-request-body-length curl-request-http-version
-               curl-request-credentials
+               curl-request-credentials curl-request-proxy-ca-file curl-request-proxy-verify
                curl-url-part curl-url-append-query curl-url-resolve curl-url-with-fragment
                curl-response? curl-response-status curl-response-http-version
                curl-response-effective-url curl-response-headers curl-response-body
@@ -877,7 +884,8 @@
                &curl-transfer-error curl-transfer-error? curl-transfer-error-reason
                curl-transfer-error-code curl-transfer-error-option curl-transfer-error-strerror
                curl-transfer-error-error-buffer curl-transfer-error-recorded
-               curl-transfer-error-request-size curl-transfer-error-reasons
+               curl-transfer-error-request-size curl-transfer-error-connect-code
+               curl-transfer-error-reasons
                &curl-timeout curl-timeout? &curl-connect-error curl-connect-error?
                &curl-send-receive-error curl-send-receive-error? &curl-tls-error curl-tls-error?
                &curl-protocol-error curl-protocol-error? &curl-too-large curl-too-large?
@@ -897,6 +905,7 @@
     curl-embedded-nul? curl-embedded-nul-string curl-url-error? curl-url-error-reason
     curl-request-error? curl-request-error-reason curl-request-error-reasons
     curl-transfer-error? curl-transfer-error-reason curl-transfer-error-request-size
+    curl-transfer-error-connect-code
     curl-timeout? curl-connect-error? curl-send-receive-error? curl-tls-error?
     curl-protocol-error? curl-too-large?
     curl-engine-error? curl-engine-error-reason curl-engine-error-condition

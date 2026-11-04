@@ -7,14 +7,16 @@
 ;;; CURLOPT_* ids are not here, and never will be: they come from the
 ;;; loaded library, by name (ADR-0001, decision 2).
 (library (curl private constants)
-  (export curl-version-features curl-version-ssl
+  (export curl-version-features curl-version-ssl curl-version-https-proxy
           curlhe-not-built-in curlh-header curl-global-default curle-ok
           curle-bad-function-argument curle-not-built-in curlversion-tenth
           curlinfo-private curlinfo-rtsp-client-cseq curlot-types
           curlue-ok curlue-codes curlupart-url curlupart-scheme
           curlupart-user curlupart-password curlupart-host curlupart-port curlupart-path
           curlupart-query curlupart-fragment curlupart-zoneid curlu-default-port
+          curlu-non-support-scheme
           curlinfo-response-code curlinfo-http-version curlinfo-effective-url
+          curlinfo-http-connectcode
           curl-error-size curl-blob-copy
           curl-http-version-1-0 curl-http-version-1-1 curl-http-version-2-0
           curl-http-version-3 curl-http-version-2tls curl-http-version-2-prior-knowledge
@@ -82,6 +84,14 @@
   ;; curl-version-ssl : Positive-Integer
   ;; curl/curl.h: CURL_VERSION_SSL, (1<<2). Required at load (ADR-0002).
   (define curl-version-ssl #x00000004)
+
+  ;; curl-version-https-proxy : Positive-Integer
+  ;; curl/curl.h: CURL_VERSION_HTTPS_PROXY, (1<<21): the build speaks TLS
+  ;; to an https:// proxy. One without it writes the whole proxy URL, its
+  ;; userinfo with it, into the error buffer (7.85.0 lib/url.c:2496, 8.20.0
+  ;; lib/url.c:1994, 8.23.0 lib/peer.c:654, read in source), so a submit
+  ;; refuses an https:// proxy URL there (ADR-0037, decision 2).
+  (define curl-version-https-proxy #x00200000)
 
   ;; curlhe-not-built-in : Natural
   ;; curl/header.h: CURLHE_NOT_BUILT_IN, the eighth CURLHcode, 7. What
@@ -227,6 +237,14 @@
   ;; scheme's default when the URL names none.
   (define curlu-default-port 1)
 
+  ;; curlu-non-support-scheme : Positive-Integer
+  ;; curl/urlapi.h: CURLU_NON_SUPPORT_SCHEME, (1<<3): curl_url_set parses a
+  ;; URL whose scheme libcurl does not know, as any other. A proxy URL is
+  ;; parsed with it, so its scheme is chez-curl's to judge alike on every
+  ;; libcurl: with no flags 7.85.0 to 8.20.0 refuse socks5:// as an
+  ;; unsupported scheme, 5, and 8.23.0 parses it (M7 slice 3's build).
+  (define curlu-non-support-scheme 8)
+
   ;; --- the transfer (M2 plan, section 5; on an engine since M3) ---------------
 
   ;; curlinfo-response-code : Positive-Integer
@@ -244,6 +262,13 @@
   ;; curl/curl.h: CURLINFO_EFFECTIVE_URL, CURLINFO_STRING + 1, 0x100000 + 1.
   ;; curl_easy_getinfo writes a char * libcurl keeps until cleanup.
   (define curlinfo-effective-url 1048577)
+
+  ;; curlinfo-http-connectcode : Positive-Integer
+  ;; curl/curl.h: CURLINFO_HTTP_CONNECTCODE, CURLINFO_LONG + 22, 0x200000 +
+  ;; 22. curl_easy_getinfo writes the status a proxy answered the
+  ;; transfer's CONNECT with, a long, 0 for none (ADR-0037, amended
+  ;; 2026-11-03, decision 9).
+  (define curlinfo-http-connectcode 2097174)
 
   ;; curl-error-size : Positive-Integer
   ;; curl/curl.h: CURL_ERROR_SIZE, 256: the bytes CURLOPT_ERRORBUFFER needs.

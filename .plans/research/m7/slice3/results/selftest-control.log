@@ -1,0 +1,17 @@
+106c106
+<   const i = raw.indexOf(0x3a);
+---
+>   const i = raw.lastIndexOf(0x3a);
+138c138
+<   const planted = [['Basic YWxpY2U6czNjcmV0', '616c6963653a7333637265', '616c696365', '733363726574', true]];
+---
+>   const planted = [['Basic YWxpY2U6czNjcmV0', '616c6963653a733363726574', '616c696365', '733363726574', true]];
+-- as it is:
+selftest ok 12 (1 planted vector caught)
+exit=0
+-- split at the last colon:
+selftest FAIL vector Basic YTpiOmM=
+exit=1
+-- the planted vector made true:
+selftest FAIL planted vector passed: Basic YWxpY2U6czNjcmV0 616c6963653a733363726574
+exit=1

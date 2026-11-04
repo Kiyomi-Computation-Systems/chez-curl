@@ -176,9 +176,11 @@
              (and (curl-url-error? e) (list 'curl-url-error (curl-url-error-reason e)))
              (and (curl-engine-error? e) (list 'curl-engine-error (curl-engine-error-reason e)))
              (and (curl-transfer-error? e)
-                  (list 'curl-transfer-error (class-of e) (curl-transfer-error-reason e)
-                        (curl-transfer-error-code e)
-                        (size-kind (curl-transfer-error-request-size e))))
+                  (append (list 'curl-transfer-error (class-of e) (curl-transfer-error-reason e)
+                                (curl-transfer-error-code e)
+                                (size-kind (curl-transfer-error-request-size e)))
+                          (let ((status (curl-transfer-error-connect-code e)))
+                            (if status (list (list 'connect status)) '()))))
              (and (assertion-violation? e)
                   (list 'assertion (and (who-condition? e) (condition-who e))))
              (and (http-exchange? e)
@@ -265,45 +267,48 @@
   (in-order (lambda (plist) (outcome (lambda () (apply make-http-retry plist))))
             '((attempt 3) (retry 3) (timeout-ms 1) (jitter #t jitter #f) (attempts 2 statuses))))
 
-;; value-rows : (Listof (List Symbol Any Symbol))
-;; Written out: a key, a value it refuses, and the reason.
+;; value-rows : (Listof (List Symbol Any Symbol Any))
+;; Written out: a key, a value it refuses, the reason, and the value as the
+;; refusal names it: as given, but a string, or a list that holds one or
+;; is improper, by its kind (shown-value).
 (define value-rows
-  (list '(attempts 0 not-an-attempt-count) '(attempts -1 not-an-attempt-count)
-          '(attempts 1.0 not-an-attempt-count) '(attempts 3/2 not-an-attempt-count)
-          '(attempts "3" not-an-attempt-count) '(attempts #f not-an-attempt-count)
-          '(backoff-ms -1 not-a-backoff) '(backoff-ms 1.5 not-a-backoff)
-          '(backoff-ms 200.0 not-a-backoff) '(backoff-ms "200" not-a-backoff)
-          '(backoff-ms #f not-a-backoff)
-          '(max-backoff-ms -1 not-a-backoff) '(max-backoff-ms 2/3 not-a-backoff)
-          '(max-backoff-ms #t not-a-backoff)
-          '(jitter 1 not-a-boolean) '(jitter yes not-a-boolean) '(jitter () not-a-boolean)
-          '(statuses 503 not-a-status-list) '(statuses (503 . 429) not-a-status-list)
-          '(statuses ("503") not-a-status-list) '(statuses (199) not-a-status-list)
-          '(statuses (399) not-a-status-list) '(statuses (302) not-a-status-list)
-          '(statuses (200) not-a-status-list) '(statuses (429 301) not-a-status-list)
-          '(statuses (600) not-a-status-list) '(statuses (503.0) not-a-status-list)
-          '(statuses (100) not-a-status-list) '(statuses #f not-a-status-list)
-          '(methods get not-a-method-list) '(methods (GET) not-a-method-list)
-          '(methods ("get") not-a-method-list) '(methods (options) not-a-method-list)
-          '(methods (get . head) not-a-method-list) '(methods #f not-a-method-list)))
+  (list '(attempts 0 not-an-attempt-count 0) '(attempts -1 not-an-attempt-count -1)
+          '(attempts 1.0 not-an-attempt-count 1.0) '(attempts 3/2 not-an-attempt-count 3/2)
+          '(attempts "3" not-an-attempt-count (kind string)) '(attempts #f not-an-attempt-count #f)
+          '(backoff-ms -1 not-a-backoff -1) '(backoff-ms 1.5 not-a-backoff 1.5)
+          '(backoff-ms 200.0 not-a-backoff 200.0) '(backoff-ms "200" not-a-backoff (kind string))
+          '(backoff-ms #f not-a-backoff #f)
+          '(max-backoff-ms -1 not-a-backoff -1) '(max-backoff-ms 2/3 not-a-backoff 2/3)
+          '(max-backoff-ms #t not-a-backoff #t)
+          '(jitter 1 not-a-boolean 1) '(jitter yes not-a-boolean yes) '(jitter () not-a-boolean ())
+          '(statuses 503 not-a-status-list 503) '(statuses (503 . 429) not-a-status-list (kind list))
+          '(statuses ("503") not-a-status-list (kind list)) '(statuses (199) not-a-status-list (199))
+          '(statuses (399) not-a-status-list (399)) '(statuses (302) not-a-status-list (302))
+          '(statuses (200) not-a-status-list (200)) '(statuses (429 301) not-a-status-list (429 301))
+          '(statuses (600) not-a-status-list (600)) '(statuses (503.0) not-a-status-list (503.0))
+          '(statuses (100) not-a-status-list (100)) '(statuses #f not-a-status-list #f)
+          '(methods get not-a-method-list get) '(methods (GET) not-a-method-list (GET))
+          '(methods ("get") not-a-method-list (kind list)) '(methods (options) not-a-method-list (options))
+          '(methods (get . head) not-a-method-list (kind list)) '(methods #f not-a-method-list #f)))
 
-(test-equal "make-http-retry refuses each value outside its range or shape, as &http-request-error with the key as its field and the value as given"
+(test-equal "make-http-retry refuses each value outside its range or shape, as &http-request-error with the key as its field and the value as given, but a string, or a list holding one or improper, by its kind"
   (map (lambda (row) (list 'raised '(http-error)
-                           (list 'http-request-error (car row) (cadr row) (caddr row) 'make-http-retry)))
+                           (list 'http-request-error (car row) (cadddr row) (caddr row) 'make-http-retry)))
        value-rows)
   (in-order (lambda (row) (outcome (lambda () (make-http-retry (car row) (cadr row))))) value-rows))
 
-;; A circular list is compared by eq? alone, and never written: a failure's
-;; print of it would not end.
-(test-equal "make-http-retry refuses a circular statuses and methods, as not-a-status-list and not-a-method-list, the value the very list given, and answers at once"
-  '((statuses not-a-status-list the-cycle) (methods not-a-method-list the-cycle))
+;; A circular list is named by its kind, and never written: a failure's
+;; print of it would not end, so the value is checked as (kind ...) alone.
+(test-equal "make-http-retry refuses a circular statuses and methods, as not-a-status-list and not-a-method-list, the value named by its kind, (kind list), never walked, and answers at once"
+  '((statuses not-a-status-list (kind list)) (methods not-a-method-list (kind list)))
   (let ((statuses (list 429 503)) (methods (list 'get 'put)))
     (set-cdr! (cdr statuses) statuses)
     (set-cdr! (cdr methods) methods)
     (in-order (lambda (row)
                 (guard (e ((http-request-error? e)
                            (list (http-request-error-field e) (http-request-error-reason e)
-                                 (if (eq? (http-request-error-value e) (cadr row)) 'the-cycle 'another)))
+                                 (let ((v (http-request-error-value e)))
+                                   (if (and (pair? v) (eq? (car v) 'kind)) v 'another))))
                           (#t (list 'raised-other (condition? e))))
                   (make-http-retry (car row) (cadr row))
                   '(returned)))
@@ -530,10 +535,16 @@
 
 ;; failure : (U Integer #f) (U Natural #f) [Symbol] -> Condition
 ;; A transfer's failure of CODE, its request size SIZE, perform-failed or
-;; REASON.
+;; REASON, with no CONNECT status.
 (define (failure code size . reason)
   (make-classed-transfer-error (if (pair? reason) (car reason) 'perform-failed) code #f "a failure" #f #f
-                               size))
+                               size #f))
+
+;; refused-connect : Integer Natural Positive-Integer -> Condition
+;; A transfer's perform-failed of CODE and request size SIZE whose CONNECT
+;; a proxy refused with STATUS (ADR-0037, decision 9).
+(define (refused-connect code size status)
+  (make-classed-transfer-error 'perform-failed code #f "a refused CONNECT" #f #f size status))
 
 ;; reply : Integer (Listof (Pairof String String)) -> Response
 (define (reply status headers)
@@ -701,6 +712,73 @@
           (seen (answers (rstate 'post p) (reply 418 '()) 1000))
           (seen (answers (rstate 'post p) (reply 503 '()) 1000))
           (seen (answers (rstate 'get p) (reply 500 '()) 1000)))))
+
+;; --- a refused CONNECT, by its status (ADR-0026 and ADR-0037, amended 2026-11-03) --------
+
+;; connect-failed-as : Symbol Symbol Integer Symbol Positive-Integer Natural -> (Listof Any)
+;; The fail a METHOD call makes with a refused CONNECT of CLASS, CODE,
+;; SIZE-KIND and STATUS, after TRANSFERS transfers.
+(define (connect-failed-as method class code size status transfers)
+  (list 'fail (list 'curl-transfer-error class 'perform-failed code size (list 'connect status))
+        (list 'exchange method given '() transfers)))
+
+;; connect-codes : (Listof (List Integer Symbol Natural Symbol))
+;; Written out: a refused CONNECT's code, its class, its request size and
+;; that size's kind, by version: 56 with the CONNECT's 89 bytes on 7.85.0,
+;; 56 with 0 on 8.5.0, and 7 with 0 on 8.20.0 and 8.23.0 (M7 slice 3's
+;; measurement).
+(define connect-codes '((56 send-receive 89 sent) (56 send-receive 0 zero) (7 connect 0 zero)))
+
+(test-equal "exchange-step: a failure that carries a CONNECT's status is retried as a response with that status: statuses (503) and methods (get post) retry a get's and a post's 503, whatever the code and size, after the backoff, and fail head, put, patch and delete, which the class rule would retry with nothing sent"
+  (map (lambda (row)
+         (map (lambda (m)
+                (list m (if (memq m '(get post))
+                            '(next 100 1 1)
+                            (connect-failed-as m (cadr row) (car row) (cadddr row) 503 1))))
+              all-methods))
+       connect-codes)
+  (let ((p (make-http-retry 'backoff-ms 100 'jitter #f 'statuses '(503) 'methods '(get post))))
+    (map (lambda (row)
+           (map (lambda (m) (list m (seen (fails (rstate m p) (refused-connect (car row) (caddr row) 503) 1000))))
+                all-methods))
+         connect-codes)))
+
+(test-equal "exchange-step: the default statuses, 429 and 503, never retry a CONNECT refused 403, 407 or 502, for any method, whatever its code and size: each fails at once, where the class rule would retry it with nothing sent"
+  (map (lambda (status)
+         (map (lambda (row)
+                (map (lambda (m) (connect-failed-as m (cadr row) (car row) (cadddr row) status 1))
+                     all-methods))
+              connect-codes))
+       '(403 407 502))
+  (map (lambda (status)
+         (map (lambda (row)
+                (map (lambda (m) (seen (fails (rstate m plain) (refused-connect (car row) (caddr row) status) 1000)))
+                     all-methods))
+              connect-codes))
+       '(403 407 502)))
+
+(test-equal "exchange-step: the default policy retries a CONNECT refused 503 or 429 for its default methods, get, head, put and delete, and fails a post's and a patch's, even with nothing sent; a policy holding 407 retries a 407"
+  (list (map (lambda (status)
+               (map (lambda (m)
+                      (list m (if (memq m '(get head put delete))
+                                  '(next 100 1 1)
+                                  (connect-failed-as m 'connect 7 'zero status 1))))
+                    all-methods))
+             '(503 429))
+        '(next 100 1 1))
+  (list (map (lambda (status)
+               (map (lambda (m) (list m (seen (fails (rstate m plain) (refused-connect 7 0 status) 1000))))
+                    all-methods))
+             '(503 429))
+        (let ((p (make-http-retry 'backoff-ms 100 'jitter #f 'statuses '(407))))
+          (seen (fails (rstate 'get p) (refused-connect 56 0 407) 1000)))))
+
+(test-equal "exchange-step: a refused CONNECT's retries wait the backoff's, doubling, and its attempts run out as a status's do: the third refusal fails, every transfer counted"
+  (list '(next 100 1 1) '(next 200 2 2) (connect-failed-as 'get 'connect 7 'zero 503 3))
+  (through (rstate 'get plain)
+           (list (lambda (st) (fails st (refused-connect 7 0 503) 1000))
+                 (lambda (st) (fails st (refused-connect 7 0 503) 1200))
+                 (lambda (st) (fails st (refused-connect 7 0 503) 1500)))))
 
 (test-equal "exchange-step: with no policy, nothing is retried: a failure nothing sent fails, and a 503 is answered"
   (list (failed-as 'get 'send-receive 'perform-failed 52 'zero 1) '(done 503 ()))
