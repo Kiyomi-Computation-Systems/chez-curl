@@ -36,8 +36,9 @@
    ;; curl_version_info's version, version_num, features (as the word and
    ;; as names), ssl_version and host, as it answered them before
    ;; curl_global_init. On a libcurl with more than one TLS backend, Apple's,
-   ;; ssl_version and the features then name its first backend, whatever the
-   ;; init puts in use. See (curl private libcurl-info).
+   ;; ssl_version then names its first backend, whatever the init puts in
+   ;; use, and the features hold none of the bits a backend sets,
+   ;; HTTPS-proxy among them. See (curl private libcurl-info).
    libcurl-info? libcurl-info-path libcurl-info-source libcurl-info-version
    libcurl-info-version-number libcurl-info-features libcurl-info-feature-names
    libcurl-info-ssl-version libcurl-info-host

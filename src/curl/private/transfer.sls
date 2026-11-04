@@ -274,7 +274,7 @@
           (curl private memory)
           (curl private native)
           (only (curl private libcurl-info) libcurl-info-path libcurl-info-version
-                libcurl-info-version-number libcurl-info-features)
+                libcurl-info-version-number)
           (curl private url))
 
   ;; --- ranges -------------------------------------------------------------------
@@ -3276,8 +3276,8 @@
   ;; those copies, by check-credentials, for the same reason; then the CA
   ;; file against the environment the libcurl loaded with, by
   ;; check-ca-environment; then a proxy URL, by check-proxy-url; then an
-  ;; https:// proxy URL against the libcurl's features, by
-  ;; check-https-proxy; then the proxy's TLS fields beside it, by
+  ;; https:// proxy URL against the features libcurl reports after its
+  ;; init, loaded-features', by check-https-proxy; then the proxy's TLS fields beside it, by
   ;; check-proxy-tls, and the proxy CA file
   ;; against the environment, by check-ca-environment; then the URL, parsed
   ;; by call-with-parsed-url and checked by require-http-scheme, and, with
@@ -3311,7 +3311,7 @@
       (check-ca-environment who 'ca-file ca-file (curl-request-verify request))
       (let ((reading (and (string? proxy) (check-proxy-url who proxy))))
         (check-https-proxy who (and reading (string=? (cadr reading) "https"))
-                           (libcurl-info-features (loaded-libcurl)))
+                           (loaded-features))
         (check-proxy-tls who (and reading (string=? (cadr reading) "https")) proxy-ca-file
                          proxy-verify)
         (check-ca-environment who 'proxy-ca-file proxy-ca-file proxy-verify)
@@ -3479,7 +3479,10 @@
   ;; value proxy, never the URL. libcurl refuses such a URL itself, and
   ;; writes it whole, its userinfo with it, into the error buffer the
   ;; failure carries (7.85.0 lib/url.c:2496, 8.20.0 lib/url.c:1994, 8.23.0
-  ;; lib/peer.c:654, read in source). No lane lacks the feature.
+  ;; lib/peer.c:654, read in source). No lane lacks the feature. FEATURES
+  ;; is the word read after the init: before it, Apple's MultiSSL 8.7.1
+  ;; reports the bit clear, and every https:// proxy was refused there (the
+  ;; Mac's run of M7 slice 3).
   (define (check-https-proxy who https-proxy features)
     (when (and https-proxy (not (https-proxy-supported? features)))
       (refuse-proxy who 'proxy 'https-proxy-unsupported)))

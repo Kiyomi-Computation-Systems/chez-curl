@@ -58,7 +58,7 @@
               prepare-transfer plan-proxy plan-tunnel request-field-options stops-multiplexing?
               plan-unmultiplex https-proxy-supported? check-https-proxy)
         (only (curl private engine) curl-engine-multiplexing)
-        (only (curl private native) loaded-tls-backend loaded-libcurl-file loaded-libcurl-patched?)
+        (only (curl private native) loaded-tls-backend loaded-features loaded-libcurl-file loaded-libcurl-patched?)
         (curl private counters))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
@@ -432,9 +432,12 @@
         (checked (lambda () (check-https-proxy 'curl-submit #f 0)))
         (checked (lambda () (check-https-proxy 'curl-submit #f #x00200000)))))
 
-(test-equal "the loaded libcurl speaks TLS to an https:// proxy, as every lane's does, so its submit passes an https:// proxy URL that check-https-proxy would refuse beside features without it"
+;; The features word read after curl_global_init: Apple's MultiSSL 8.7.1
+;; reports CURL_VERSION_HTTPS_PROXY clear before it, and every https://
+;; proxy was refused there until the check read this word (the Mac's run).
+(test-equal "the loaded libcurl speaks TLS to an https:// proxy, as every lane's and the Mac's does, by the features it reports after its init, so its submit passes an https:// proxy URL that check-https-proxy would refuse beside features without it"
   (list #t 'no-raise)
-  (list (guard (e (#t (list 'raised (describe e)))) (https-proxy-supported? (libcurl-info-features (loaded-libcurl))))
+  (list (guard (e (#t (list 'raised (describe e)))) (https-proxy-supported? (loaded-features)))
         (check-of nowhere 'proxy "https://u:p@127.0.0.1:1")))
 
 (test-equal "tls-in-tls-stalls, the library's table, is this suite's copy: 7.85.0 with any backend for #f and http/2; Ubuntu's 8.5.0 with GnuTLS for #f, http/1.1 and http/2"
@@ -516,7 +519,8 @@
                          ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u@127.0.0.1:3128/" "http" #t)))
         (cons "8.5.0" empty-userinfo-later)
         (cons "8.20.0" empty-userinfo-later)
-        (cons "8.23.0" empty-userinfo-later)))
+        (cons "8.23.0" empty-userinfo-later)
+        (cons "8.7.1" empty-userinfo-later)))
 
 (let ((pair (by-version empty-userinfo "empty-userinfo" version
                         (lambda () (map handed '("http://@127.0.0.1:3128" "http://:@127.0.0.1:3128"
@@ -1309,7 +1313,8 @@
     (list (cons "7.85.0"
                 (list (list ok '("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1"))
                       (list ok '("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1"))))
-          (cons "8.5.0" empty-later) (cons "8.20.0" empty-later) (cons "8.23.0" empty-later)))
+          (cons "8.5.0" empty-later) (cons "8.20.0" empty-later) (cons "8.23.0" empty-later)
+          (cons "8.7.1" empty-later)))
 
   ;; --- a refused CONNECT, by version (ADR-0037, decision 9) ---
 
@@ -1319,8 +1324,9 @@
   ;; wrong password and for none at localhost, and a proxy that closes: 56,
   ;; send-receive, with the CONNECT's own bytes as the size on 7.85.0, and
   ;; 0 on 8.5.0; 7, connect, and 0, on 8.20.0 and 8.23.0; the close 56
-  ;; everywhere, its status #f (the slice's measurement, item 4). 8.7.1's
-  ;; row is the Mac's.
+  ;; everywhere, its status #f (the slice's measurement, item 4); on 8.7.1
+  ;; 56, send-receive, and the size unknown, #f, as 8.7.x reports every
+  ;; transfer's (the Mac's run, two runs alike).
   (define refused-statuses '(403 407 502 503 407 407 #f))
   (define (refused-row code class size)
     (map (lambda (status) (list (if status code 56) (if status class 'send-receive) status size))
@@ -1329,7 +1335,8 @@
     (list (cons "7.85.0" (refused-row 56 'send-receive 'the-connect))
           (cons "8.5.0" (refused-row 56 'send-receive 'zero))
           (cons "8.20.0" (refused-row 7 'connect 'zero))
-          (cons "8.23.0" (refused-row 7 'connect 'zero))))
+          (cons "8.23.0" (refused-row 7 'connect 'zero))
+          (cons "8.7.1" (refused-row 56 'send-receive 'unknown))))
 
   ;; refused-cell : String String -> (List Any Any Any Any)
   ;; URL through PROXY: its code, class, status and request size, the size
@@ -1341,7 +1348,8 @@
       (if (and (pair? out) (eq? (car out) 'failed))
           (list (list-ref out 2) (list-ref out 3) (list-ref out 5)
                 (let ((size (list-ref out 4)))
-                  (cond ((eqv? size 0) 'zero) ((and head (eqv? size head)) 'the-connect) (else (list 'size size 'head head)))))
+                  (cond ((not size) 'unknown) ((eqv? size 0) 'zero) ((and head (eqv? size head)) 'the-connect)
+                        (else (list 'size size 'head head)))))
           (list out (cadr c)))))
 
   ;; --- no tunnel shared before 8.19.0 (ADR-0037, decision 8) ---
@@ -1401,7 +1409,8 @@
                        (unshared-below "127.0.0.1:<https>" "-")))
           (from (list (shared-from "localhost:<https>" "basic:alice:s3cret")
                       (shared-from "127.0.0.1:<https>" "-"))))
-      (list (cons "7.85.0" below) (cons "8.5.0" below) (cons "8.20.0" from) (cons "8.23.0" from))))
+      (list (cons "7.85.0" below) (cons "8.5.0" below) (cons "8.20.0" from) (cons "8.23.0" from)
+            (cons "8.7.1" below))))
 
   ;; tunnel-plans : (Listof (Pairof String (Listof Any)))
   ;; The tunnel settings a submit's plan holds, and whether it stops the
@@ -1412,7 +1421,8 @@
     (let ((below '(((("FRESH_CONNECT" . 1) ("FORBID_REUSE" . 1)) #t) ((("FRESH_CONNECT" . 1)) #f)
                    (() #t) (() #f) (() #f)))
           (from '((() #f) (() #f) (() #f) (() #f) (() #f))))
-      (list (cons "7.85.0" below) (cons "8.5.0" below) (cons "8.20.0" from) (cons "8.23.0" from))))
+      (list (cons "7.85.0" below) (cons "8.5.0" below) (cons "8.20.0" from) (cons "8.23.0" from)
+            (cons "8.7.1" below))))
 
   ;; --- no multiplexing once an authenticated proxy is used, before 8.19.0 (decision 11) ---
 
@@ -1489,7 +1499,10 @@
       (list (cons "7.85.0" (list '(head head default switched) '(1 1 2) '(#f #f) ends))
             (cons "8.5.0" (list '(head head default switched) '(1 1 2) '(#f #f) ends))
             (cons "8.20.0" (list '(head head default default) '(1 1 1) '(#f #f) ends))
-            (cons "8.23.0" (list '(head head default default) '(1 1 1) '(#f #f) ends)))))
+            (cons "8.23.0" (list '(head head default default) '(1 1 1) '(#f #f) ends))
+            ;; 8.7.x's engine never multiplexes: off from its start, each
+            ;; stream on a connection of its own (the Mac's run, two runs).
+            (cons "8.7.1" (list '(head head off off) '(1 2 3) '(#f #f) ends)))))
 
   ;; join-child : -> Any
   ;; tests/proxy-env-join.sps in a child Chez, https_proxy naming the http
@@ -1518,10 +1531,10 @@
   ;; 200 (the review's probe); from 8.19.0 nothing switches, and B's own
   ;; CONNECT is refused alike. Its code is the refused CONNECT's, by
   ;; version. 8.7.1's row is the Mac's.
-  (define (join-row switched code class)
+  (define (join-row before after code class)
     (list (list (list 'environment '(no_proxy . #f) '(NO_PROXY . #f) '(http_proxy . #f)
                       (cons 'https_proxy (proxy-at o 'http)) '(all_proxy . #f))
-                (list 'multiplexing 'default (if switched 'switched 'default))
+                (list 'multiplexing before after)
                 (list 'join #t (list 'refused 'perform-failed code class 407) '(response 200))
                 (list 'transfer zero-counts)
                 '(done))
@@ -1530,10 +1543,13 @@
             "connect http conn=2 target=localhost:<h2> answer=407 head=_ auth=-"
             "close http conn=1" "close http conn=2")))
   (define join-rows
-    (list (cons "7.85.0" (join-row #t 56 'send-receive))
-          (cons "8.5.0" (join-row #t 56 'send-receive))
-          (cons "8.20.0" (join-row #f 7 'connect))
-          (cons "8.23.0" (join-row #f 7 'connect))))
+    (list (cons "7.85.0" (join-row 'default 'switched 56 'send-receive))
+          (cons "8.5.0" (join-row 'default 'switched 56 'send-receive))
+          (cons "8.20.0" (join-row 'default 'default 7 'connect))
+          (cons "8.23.0" (join-row 'default 'default 7 'connect))
+          ;; 8.7.x's engine never multiplexes, so it reads off before and
+          ;; after (the Mac's run, two runs).
+          (cons "8.7.1" (join-row 'off 'off 56 'send-receive))))
 
   ;; --- the high level (the M7 plan, section 3.1) ---
 
@@ -1607,7 +1623,10 @@
   (define closing-retries
     (let ((later '(((failed 56 #f 3) 3) ((failed 56 #f 3) 3))))
       (list (cons "7.85.0" '(((failed 56 #f 1) 1) ((failed 56 #f 3) 3)))
-            (cons "8.5.0" later) (cons "8.20.0" later) (cons "8.23.0" later))))
+            (cons "8.5.0" later) (cons "8.20.0" later) (cons "8.23.0" later)
+            ;; 8.7.x reports no request size, so a post outside the methods
+            ;; is tried once, as on 7.85.0 (ADR-0022; the Mac's run, two runs).
+            (cons "8.7.1" '(((failed 56 #f 1) 1) ((failed 56 #f 3) 3))))))
 
   ;; --- in a child, given the environment through its command ---
 

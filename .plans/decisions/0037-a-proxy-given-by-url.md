@@ -250,4 +250,10 @@ second transfer's own `CONNECT`, refused 407, on 7.85.0, two runs of two
   refused first as `unknown-option`. `rounds-option-names` went with `PROXYAUTH` owned;
   `stream-with-rounds` stays, raised by `follow` beside `stream-buffer`. `CONNECT_TO` stays the
   hatch's, documented: it moves the host and port a `CONNECT` names.
-- **The Mac** owes test-proxy's 8.7.1 rows, each printed by name where missing.
+- **The Mac's first run, 2026-11-03,** refused every `https://` proxy, `https-proxy-unsupported`:
+  the check read the features word the load had read before `curl_global_init`, where Apple's
+  MultiSSL 8.7.1 reports `CURL_VERSION_HTTPS_PROXY` clear. The check now reads the word from the
+  call after the init that reads the backend, `loaded-features`, and the decoy libcurl's MultiSSL
+  build holds it on Linux ([Mac log](../research/m7/slice3/results/mac-8.7.1-make-test.log)). Eight
+  8.7.1 rows came from that run's two passes, through `http://` proxies, which the bug did not
+  touch; `tls-in-tls-checks` is owed by a second run.

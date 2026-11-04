@@ -100,3 +100,26 @@ On the builder's hand-back, before the review:
   `fix2-mutant-raw-history.log`, `fix2-mutant-raw-connect-code.log`).
 - **After the records were brought to what was built,** `make test` again, 39 of 39
   ([`results/records-make-test-guix-8.20.0.log`](results/records-make-test-guix-8.20.0.log)).
+
+## The Mac's first run, and its fix (2026-11-03)
+
+The Mac's `make test` at `5a98ffe` failed test-proxy, 29 of 96: every `https://` proxy refused,
+`https-proxy-unsupported` ([`../results/mac-8.7.1-make-test.log`](../results/mac-8.7.1-make-test.log)).
+The check read the features word the load had read before `curl_global_init`; Apple's MultiSSL
+8.7.1 computes the word from the backend in use, its selector until the init, which supports
+nothing (8.7.1 `lib/version.c:424-428`, `lib/vtls/vtls.c:1306-1308`, read in source). I made the
+fix myself: the call after the init that reads the backend reads the word too,
+`loaded-features`, and the decoy libcurl's MultiSSL build sets the bit at its init.
+
+- `make test` in the container, 39 of 39
+  ([`results/macfix-make-test-guix-8.20.0.log`](results/macfix-make-test-guix-8.20.0.log)).
+- A mutant, `loaded-features` answering the word read before the init: the decoy's MultiSSL test
+  fails on Linux, where test-proxy cannot see it
+  ([`results/macfix-mutant-pre-init-features.log`](results/macfix-mutant-pre-init-features.log)).
+- test-proxy, test-library-loading, test-load-state and test-native on the four Docker lanes,
+  and under the memory gate on Ubuntu's 8.5.0 with OpenSSL, each passing
+  ([`results/macfix-lanes.out`](results/macfix-lanes.out)).
+- Eight 8.7.1 rows from the run's two passes, each through an `http://` proxy, which the bug did
+  not touch: `empty-userinfo`, `empty-userinfo-wire`, `refused-connect` (its size `unknown`, #f, as
+  8.7.x reports every request size), `unshared-tunnels`, `tunnel-plans`, `switch-live`,
+  `environment-join` and `closing-retries`.

@@ -1,0 +1,28 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (2 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-library-loading.sps
+%%%% Starting test library-loading
+FAIL decoy multissl: the report keeps ssl_version as curl_version_info named it before the init, and loaded-tls-backend is the backend in use after it, DecoyTLS, read by a second call
+  expected: (0 (0 ((loaded . "/tmp/curl-testing.pNH4Jm/multissl.so") (source . override) (version . "7.85.0") (version-num . 480512) (features . 1073807373) (ssl-version . "DecoyFirst/1.0 (DecoyTLS/1.0)") (host . "decoy-host") (protocols) (again same same) (counts (block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) (backend . "DecoyTLS/1.0") (features-after . 1075904525) (calls . "curl_version_info(9) curl_global_init(3) curl_version_info(9) curl_easy_option_by_name(URL) curl_easy_init() curl_easy_header(handle,Content-Type,0,1,-1,hout) curl_easy_cleanup(handle)")) ""))
+  actual:   (0 (0 ((loaded . "/tmp/curl-testing.pNH4Jm/multissl.so") (source . override) (version . "7.85.0") (version-num . 480512) (features . 1073807373) (ssl-version . "DecoyFirst/1.0 (DecoyTLS/1.0)") (host . "decoy-host") (protocols) (again same same) (counts (block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)) (backend . "DecoyTLS/1.0") (features-after . 1073807373) (calls . "curl_version_info(9) curl_global_init(3) curl_version_info(9) curl_easy_option_by_name(URL) curl_easy_init() curl_easy_header(handle,Content-Type,0,1,-1,hout) curl_easy_cleanup(handle)")) ""))
+# of expected passes      77
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 77, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-library-loading.sps (exit 1)
+=== tests/test-proxy.sps
+%%%% Starting test proxy
+test-proxy: empty-userinfo on "8.20.0" measured ((refused proxy (proxy user) credentials-empty test) (refused proxy (proxy user) credentials-empty test) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u:@127.0.0.1:3128/" "http" #t))
+test-proxy: tls-in-tls-checks on "8.20.0/GnuTLS" measured (no-raise no-raise no-raise no-raise no-raise)
+test-proxy: empty-userinfo-wire on "8.20.0" measured (((refused proxy (proxy user) credentials-empty curl-submit) ()) ((refused proxy (proxy user) credentials-empty curl-submit) ()))
+test-proxy: refused-connect on "8.20.0" measured ((7 connect 403 zero) (7 connect 407 zero) (7 connect 502 zero) (7 connect 503 zero) (7 connect 407 zero) (7 connect 407 zero) (56 send-receive #f zero))
+test-proxy: unshared-tunnels on "8.20.0" measured (((response 200) (response 200) #f ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "inner https via=1 method=GET target=/status/200" "close http conn=1")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "inner https via=1 method=GET target=/status/200" "close http conn=1")))
+test-proxy: tunnel-plans on "8.20.0" measured ((() #f) (() #f) (() #f) (() #f) (() #f))
+test-proxy: switch-live on "8.20.0" measured ((head head default default) (1 1 1) (#f #f) ((response 200) (response 200) (response 200) (response 200)))
+test-proxy: environment-join on "8.20.0" measured (((environment (no_proxy . #f) (NO_PROXY . #f) (http_proxy . #f) (https_proxy . "http://127.0.0.1:44151") (all_proxy . #f)) (multiplexing default default) (join #t (refused perform-failed 7 connect 407) (response 200)) (transfer ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))) (done)) ("connect http conn=1 target=localhost:<h2> answer=200 head=_ auth=basic:alice:s3cret" "inner h2 via=1 method=GET target=/connection?delay=3000" "connect http conn=2 target=localhost:<h2> answer=407 head=_ auth=-" "close http conn=1" "close http conn=2"))
+test-proxy: closing-retries on "8.20.0" measured (((failed 56 #f 3) 3) ((failed 56 #f 3) 3))
+# of expected passes      96
+test: pass tests/test-proxy.sps
+test: ran 2, passed 1, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

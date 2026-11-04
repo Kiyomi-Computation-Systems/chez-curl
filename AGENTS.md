@@ -436,7 +436,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * A MultiSSL libcurl's `curl_version_info` names its first backend as the
   one in use until `curl_global_init` picks one: Apple's 8.7.1 then uses
   LibreSSL, not SecureTransport. Read the backend after the init, and name
-  it as curl does: `secure-transport`.
+  it as curl does: `secure-transport`. Its features word before the init
+  holds none of the bits a backend sets: `CURL_VERSION_HTTPS_PROXY` read
+  clear there, and every `https://` proxy was refused. Read those after it.
 * libcurl 8.7.0 and 8.7.1 answer `CURLINFO_REQUEST_SIZE` 0 for every
   transfer. A count measured on some versions says nothing of one between.
 * An option on one easy handle can reach past its transfer: `RESOLVE` fills

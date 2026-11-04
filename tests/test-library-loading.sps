@@ -332,14 +332,20 @@
 ;; with DECOY_MULTISSL names DecoyFirst before the init and DecoyTLS after.
 ;; The report keeps the text read before; loaded-tls-backend must be the
 ;; backend after, read by curl_version_info again (ADR-0024, amended
-;; 2026-10-27). The control decoy names one backend throughout.
+;; 2026-10-27). The control decoy names one backend throughout. The same
+;; second call answers loaded-features: the decoy's selector, as Apple's
+;; 8.7.1's, lacks CURL_VERSION_HTTPS_PROXY until the init, which the report,
+;; read before it, keeps, so a check of a backend's support reads the word
+;; after (the Mac's run of M7 slice 3): curl/curl.h's 1<<21, #x200000.
 (let ((so (in-scratch "multissl.so")))
   (test-equal "decoy multissl: the report keeps ssl_version as curl_version_info named it before the init, and loaded-tls-backend is the backend in use after it, DecoyTLS, read by a second call"
     (list 0 (list 0
                   (append (list (cons 'loaded so) (cons 'source 'override))
                           (decoy-report "DecoyFirst/1.0 (DecoyTLS/1.0)" "decoy-host")
                           (list (cons 'protocols '()) once no-native-objects
-                                (cons 'backend "DecoyTLS/1.0") (cons 'calls (join every-call))))
+                                (cons 'backend "DecoyTLS/1.0")
+                                (cons 'features-after (+ decoy-features #x200000))
+                                (cons 'calls (join every-call))))
                   ""))
     (let ((compiled (compile-decoy "multissl" '("-DDECOY_MULTISSL"))))
       (list compiled (probe-with (list (override so)) '("--backend" "yes"))))))
@@ -349,7 +355,8 @@
         (append (list (cons 'loaded (in-scratch "accepted.so")) (cons 'source 'override))
                 (decoy-report "DecoyTLS/1.0" "decoy-host")
                 (list (cons 'protocols '()) once no-native-objects
-                      (cons 'backend "DecoyTLS/1.0") (cons 'calls (join every-call))))
+                      (cons 'backend "DecoyTLS/1.0") (cons 'features-after decoy-features)
+                      (cons 'calls (join every-call))))
         "")
   (probe-with (list (override (in-scratch "accepted.so"))) '("--backend" "yes")))
 

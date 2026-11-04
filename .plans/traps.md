@@ -1354,3 +1354,13 @@ it should not be a comment. (chez-cmark-gfm)
   [`urlprobe-table.txt`](research/m7/slice3/build/results/urlprobe-table.txt)). A `(not query)`
   check passed in the container and refused `/?` on the floor. Read an empty part as none.
   (chez-curl, M7 slice 3's build)
+* **A MultiSSL libcurl's features word, read before `curl_global_init`, holds none of the bits
+  a backend sets.** `curl_version_info` computes the word at each call from the backend in use,
+  and before the init that is the selector, which "supports nothing" (8.7.1
+  `lib/version.c:424-428`, `lib/vtls/vtls.c:1306-1308`). chez-curl read its HTTPS-proxy check from
+  the load's record, built before the init, so on Apple's 8.7.1 every `https://` proxy was refused
+  `https-proxy-unsupported`, 29 failures in test-proxy
+  ([Mac log](research/m7/slice3/results/mac-8.7.1-make-test.log)); no Linux lane is MultiSSL. Now
+  the call after the init that reads the backend reads the word too, and the decoy libcurl's
+  MultiSSL build sets the bit at its init, so a check that reads the word before fails on Linux.
+  (chez-curl, M7 slice 3, the Mac's run)

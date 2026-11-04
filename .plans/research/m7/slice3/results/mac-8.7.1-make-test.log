@@ -1,0 +1,79 @@
+% git fetch origin && git switch feat/m7-slice-3 && git pull --ff-only
+make test NODE="$(asdf which node)"
+make test SUITES=tests/test-proxy.sps NODE="$(asdf which node)"
+(the maintainer's Mac, macOS 26.7.1, Apple's libcurl 8.7.1, 2026-11-03, at 5a98ffe; pasted into the session.
+ Abridged: every suite's lines, every "measured" and "no row" line and every FAIL title are kept;
+ the expected and actual lines are kept for the first two FAILs alone, which show the bug the run
+ found, every https:// proxy refused as https-proxy-unsupported: the features word was read before
+ curl_global_init, where a MultiSSL libcurl reports CURL_VERSION_HTTPS_PROXY clear.)
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (39 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-auth.sps
+test: pass tests/test-auth.sps (66 passes)
+=== tests/test-check-floors.sps ... tests/test-origin.sps: each "test: pass", as on slice 2's run
+=== tests/test-printed.sps
+%%%% Starting test printed
+# of expected passes      8
+test: pass tests/test-printed.sps
+=== tests/test-proxy.sps
+%%%% Starting test proxy
+FAIL the loaded libcurl speaks TLS to an https:// proxy, as every lane's does, so its submit passes an https:// proxy URL that check-https-proxy would refuse beside features without it
+  expected: (#t no-raise)
+  actual:   (#f (refused proxy proxy https-proxy-unsupported curl-request-check))
+FAIL a submit's plan holds the URL check-proxy-url hands PROXY, and environment and #f as given
+  expected: ("http://127.0.0.1:80/" "https://u:p@127.0.0.1:443/" environment #f)
+  actual:   ("http://127.0.0.1:80/" (raised "Exception in curl-submit: an https:// proxy URL on a libcurl built without HTTPS-proxy support, which would refuse it and write the whole URL, its password with it, into its error buffer with irritant proxy") environment #f)
+test-proxy: empty-userinfo on "8.7.1" measured ((refused proxy (proxy user) credentials-empty test) (refused proxy (proxy user) credentials-empty test) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u:@127.0.0.1:3128/" "http" #t))
+FAIL an empty userinfo, by version: ...
+FAIL proxy-scheme: a proxy URL's scheme is http or https, A to Z folded: ... (https, Https and HTTPS refused https-proxy-unsupported)
+FAIL the neighbours pass: each beside an https:// proxy URL, in any case; ...
+FAIL prior-knowledge-through-proxy: ...
+test-proxy: tls-in-tls-checks on "8.7.1/SecureTransport" measured ((refused proxy proxy https-proxy-unsupported curl-request-check) (refused proxy proxy https-proxy-unsupported curl-request-check) (refused proxy proxy https-proxy-unsupported curl-request-check) (refused proxy proxy https-proxy-unsupported curl-request-check) no-raise)
+FAIL proxy-tls-in-tls, by version and backend: ...
+FAIL proxy-tls-in-tls names the field and the libcurl, never the URL: ...
+FAIL no refusal holds the proxy's password: ...
+test-proxy: empty-userinfo-wire on "8.7.1" measured (((refused proxy (proxy user) credentials-empty curl-submit) ()) ((refused proxy (proxy user) credentials-empty curl-submit) ()))
+FAIL an empty userinfo through the proxy, by version: ...
+FAIL the copies through the engine: ...
+FAIL an https:// proxy URL, its own CA file the run's: ...
+FAIL the proxy's TLS is its own: ...
+test-proxy: refused-connect on "8.7.1" measured ((56 send-receive 403 (size #f head 103)) (56 send-receive 407 (size #f head 103)) (56 send-receive 502 (size #f head 103)) (56 send-receive 503 (size #f head 103)) (56 send-receive 407 (size #f head 142)) (56 send-receive 407 (size #f head 89)) (56 send-receive #f (size #f head 93)))
+FAIL a refused CONNECT, by version: ...
+test-proxy: unshared-tunnels on "8.7.1" measured (((response 200) (response 200) #t ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")))
+FAIL two tunnels in turn through one proxy, by version: ...
+test-proxy: tunnel-plans on "8.7.1" measured (((("FRESH_CONNECT" . 1) ("FORBID_REUSE" . 1)) #t) ((("FRESH_CONNECT" . 1)) #f) (() #t) (() #f) (() #f))
+FAIL a submit's plan holds the tunnel settings and whether it stops the engine's multiplexing, by version: ...
+test-proxy: switch-live on "8.7.1" measured ((head head off off) (1 2 3) (#f #f) ((response 200) (response 200) (response 200) (response 200)))
+FAIL a transfer through a proxy URL with userinfo stops the engine's multiplexing, by version: ...
+test-proxy: environment-join on "8.7.1" measured (((environment (no_proxy . #f) (NO_PROXY . #f) (http_proxy . #f) (https_proxy . "http://127.0.0.1:59576") (all_proxy . #f)) (multiplexing off off) (join #t (refused perform-failed 56 send-receive 407) (response 200)) (transfer ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))) (done)) ("connect http conn=1 target=localhost:<h2> answer=200 head=_ auth=basic:alice:s3cret" "inner h2 via=1 method=GET target=/connection?delay=3000" "connect http conn=2 target=localhost:<h2> answer=407 head=_ auth=-" "close http conn=1" "close http conn=2"))
+FAIL in a child, https_proxy naming the proxy with no userinfo: ...
+FAIL an https:// URL through an https:// proxy, through the engine, each http-version: ...
+FAIL an http:// URL through an https:// proxy, and an https:// URL through an http:// one, pass on every libcurl
+FAIL a session's proxy and its TLS keys reach its call: ...
+FAIL a call that names its own proxy drops the session's proxy-ca-file and proxy-verify: ...
+FAIL a call's proxy-ca-file replaces the session's: ...
+FAIL a redirect's hop keeps the call's proxy-verify #f: ...
+FAIL a redirect's hop to https:// through an https:// proxy where TLS inside TLS stalls, ...
+FAIL a CONNECT refused 503 is retried as a 503 response would be: ... (actual: (((failed 56 503 3) 3) ((failed 56 407 1) 1) ((failed 56 503 3) 3) ((failed 56 407 1) 1)))
+test-proxy: closing-retries on "8.7.1" measured (((failed 56 #f 1) 1) ((failed 56 #f 3) 3))
+FAIL a CONNECT a proxy closes keeps the class rule, by version: ...
+FAIL in a child, SSL_CERT_FILE set as libcurl loads, beside a proxy CA file with the proxy's verification on: ... (actual: request-refused proxy proxy https-proxy-unsupported)
+FAIL no transfer's exit prints the proxy's password: ... (actual: the third, the https-proxy-unsupported refusal's text, which names the field)
+# of expected passes      67
+# of unexpected failures  29
+test: FAIL tests/test-proxy.sps (exit 1)
+=== tests/test-redirect.sps ... tests/test-version.sps: each "test: pass"
+test-version: prior-knowledge-to-h1 on "8.7.1" measured (failed perform-failed 16 protocol)
+test-version: together-by-prior-knowledge on "8.7.1" measured (2 (http/2 http/2))
+test: ran 39, passed 38, failed 1, hung 0
+make: *** [test] Error 1
+
+(the second command, test-proxy alone: the same 29 FAIL titles, and every measured row alike but
+environment-join's https_proxy port, http://127.0.0.1:61381)
+test-proxy: environment-join on "8.7.1" measured (((environment (no_proxy . #f) (NO_PROXY . #f) (http_proxy . #f) (https_proxy . "http://127.0.0.1:61381") (all_proxy . #f)) (multiplexing off off) (join #t (refused perform-failed 56 send-receive 407) (response 200)) (transfer ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))) (done)) ("connect http conn=1 target=localhost:<h2> answer=200 head=_ auth=basic:alice:s3cret" "inner h2 via=1 method=GET target=/connection?delay=3000" "connect http conn=2 target=localhost:<h2> answer=407 head=_ auth=-" "close http conn=1" "close http conn=2"))
+# of expected passes      67
+# of unexpected failures  29
+test: FAIL tests/test-proxy.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
