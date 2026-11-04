@@ -123,3 +123,9 @@ fix myself: the call after the init that reads the backend reads the word too,
   not touch: `empty-userinfo`, `empty-userinfo-wire`, `refused-connect` (its size `unknown`, #f, as
   8.7.x reports every request size), `unshared-tunnels`, `tunnel-plans`, `switch-live`,
   `environment-join` and `closing-retries`.
+- **The Mac's second run,** at `043ef4e` ([`../results/mac-8.7.1-make-test-2.log`](../results/mac-8.7.1-make-test-2.log)):
+  test-proxy failed 7 of 96, five waiting on `tls-in-tls-checks`' 8.7.1 row and two that wrote a
+  TLS failure's request size as 0, which 8.7.x reports as #f. With the row and the size written by
+  version, test-proxy passed in the container and on the four Docker lanes
+  ([`results/mac2-test-proxy-guix-8.20.0.log`](results/mac2-test-proxy-guix-8.20.0.log),
+  [`results/mac2-lanes.out`](results/mac2-lanes.out)).

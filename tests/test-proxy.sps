@@ -109,6 +109,19 @@
   (guard (e (#t #f))
     (libcurl-info-version-number (loaded-libcurl))))
 
+;; nothing-sent : (U 0 #f)
+;; The request size a transfer that sent nothing carries on this libcurl:
+;; 0, but #f, unknown, on 8.7.0 and 8.7.1, which report 0 for every
+;; transfer, so a failure there never claims that nothing was sent
+;; (ADR-0022, amended 2026-10-27). Written out here, not read from the
+;; library's own list.
+(define nothing-sent (if (member version '("8.7.0" "8.7.1")) #f 0))
+
+;; tls-failure : (List Symbol Symbol Integer Symbol (U 0 #f) #f)
+;; outcome-of's answer for a TLS failure at the proxy, before any request:
+;; 60, the tls class, nothing sent, no CONNECT status.
+(define tls-failure (list 'failed 'perform-failed 60 'tls nothing-sent #f))
+
 ;; name-of : Any -> Any
 ;; A backend's NAME/VERSION cut at its /: GnuTLS for GnuTLS/3.8.3.
 (define (name-of x)
@@ -893,8 +906,8 @@
 ;; URL, asking #f, http/1.1 and http/2, then an http:// URL through it and
 ;; an https:// URL through an http:// proxy URL, by VERSION/BACKEND: 7.85.0
 ;; refuses unless http/1.1 is asked; Ubuntu's 8.5.0 with GnuTLS refuses
-;; every one; with OpenSSL, 8.20.0 and 8.23.0 none. 8.7.1's row is the
-;; Mac's.
+;; every one; with OpenSSL, 8.20.0 and 8.23.0 none; nor 8.7.1 with
+;; SecureTransport, the Mac's.
 (define tls-in-tls-refused
   '(refused proxy proxy proxy-tls-in-tls curl-request-check))
 (define tls-in-tls-checks
@@ -902,7 +915,12 @@
         (cons "8.5.0/OpenSSL" '(no-raise no-raise no-raise no-raise no-raise))
         (cons "8.5.0/GnuTLS" (list tls-in-tls-refused tls-in-tls-refused tls-in-tls-refused 'no-raise 'no-raise))
         (cons "8.20.0/GnuTLS" '(no-raise no-raise no-raise no-raise no-raise))
-        (cons "8.23.0/OpenSSL" '(no-raise no-raise no-raise no-raise no-raise))))
+        (cons "8.23.0/OpenSSL" '(no-raise no-raise no-raise no-raise no-raise))
+        ;; The Mac's run, two passes alike: SecureTransport, with
+        ;; CURL_SSL_BACKEND unset, refuses none, and through the engine an
+        ;; https:// URL through an https:// proxy answered 200 for each
+        ;; http-version asked.
+        (cons "8.7.1/SecureTransport" '(no-raise no-raise no-raise no-raise no-raise))))
 
 ;; tls-in-tls-row : (U (Pairof String (Listof Any)) #f)
 ;; This lane's tls-in-tls-checks row, #f for none.
@@ -1754,9 +1772,9 @@
 
   (test-equal "an https:// proxy URL, its own CA file the run's: the good leaf passes, the request in absolute form on its log; the expired, wrong-host and untrusted leaves fail 60, tls, nothing sent and nothing on any log; each passes with the proxy's verification off, its log naming the face"
     (list (list ok '("request https conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close https conn=1"))
-          (list '(failed perform-failed 60 tls 0 #f) '())
-          (list '(failed perform-failed 60 tls 0 #f) '())
-          (list '(failed perform-failed 60 tls 0 #f) '())
+          (list tls-failure '())
+          (list tls-failure '())
+          (list tls-failure '())
           (list ok '("request https-expired conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close https-expired conn=1"))
           (list ok '("request https-wrong-host conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close https-wrong-host conn=1"))
           (list ok '("request https-untrusted conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close https-untrusted conn=1")))
@@ -1771,10 +1789,10 @@
                       found)))))
 
   (test-equal "the proxy's TLS is its own: with no proxy CA file, the good leaf fails 60 against libcurl's default store, the origin's CA file beside it, or the origin's verification off, changing nothing; another CA as the proxy's fails 60; the origin's CA file another CA's changes nothing for an http:// URL through the proxy"
-    (list (list '(failed perform-failed 60 tls 0 #f) '())
-          (list '(failed perform-failed 60 tls 0 #f) '())
-          (list '(failed perform-failed 60 tls 0 #f) '())
-          (list '(failed perform-failed 60 tls 0 #f) '())
+    (list (list tls-failure '())
+          (list tls-failure '())
+          (list tls-failure '())
+          (list tls-failure '())
           (list ok '("request https conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close https conn=1")))
     (let loop ((rest (list (list) (list 'ca-file ca) (list 'verify #f) (list 'proxy-ca-file other-ca)
                            (list 'proxy-ca-file ca 'ca-file other-ca)))

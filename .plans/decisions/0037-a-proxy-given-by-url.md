@@ -256,4 +256,9 @@ second transfer's own `CONNECT`, refused 407, on 7.85.0, two runs of two
   call after the init that reads the backend, `loaded-features`, and the decoy libcurl's MultiSSL
   build holds it on Linux ([Mac log](../research/m7/slice3/results/mac-8.7.1-make-test.log)). Eight
   8.7.1 rows came from that run's two passes, through `http://` proxies, which the bug did not
-  touch; `tls-in-tls-checks` is owed by a second run.
+  touch. Its second run, at `043ef4e`, gave the last, `8.7.1/SecureTransport`, refusing none:
+  SecureTransport reached an `https://` proxy, its good leaf 200, the failing ones 60, each
+  passing with verification off, and an `https://` URL inside it answered 200 for each
+  `http-version`, no stall ([log](../research/m7/slice3/results/mac-8.7.1-make-test-2.log)). Its
+  backend in use read SecureTransport with `CURL_SSL_BACKEND` unset, where ADR-0024's 2026-10-27
+  amendment had the init put LibreSSL in use; carried, not traced.
