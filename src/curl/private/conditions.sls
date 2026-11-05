@@ -481,6 +481,28 @@
   ;;                 CURL_VERSION_HTTPS_PROXY: libcurl would refuse it, and
   ;;                 write the whole URL, its password with it, into its
   ;;                 error buffer (M7 slice 3's review, read in source)
+  ;;   cookie-line   a line a cookie jar's load refuses, every line checked
+  ;;                 before any is loaded: one not in the form a read-out
+  ;;                 writes, seven tab-separated fields with no control
+  ;;                 byte, TRUE or FALSE, the domain's dot beside TRUE, an
+  ;;                 absolute path, an expiry of decimal digits, a name, a
+  ;;                 name and value of 4,096 bytes at most; or holding a char
+  ;;                 above U+00FF, which has no byte (ADR-0035, amended
+  ;;                 2026-11-04, decisions 7 and 8)
+  ;;   cookie-jar-engine
+  ;;                 a request whose cookie-jar is another engine's than the
+  ;;                 one it is submitted to: a jar is its engine's alone
+  ;;                 (the M7 plan, section 3.5)
+  ;;   cookie-jar-closed
+  ;;                 a request whose cookie-jar is closed, or closing,
+  ;;                 refused at submit, or, a close crossing the submit, as
+  ;;                 its transfer is set up, its token's outcome; or a
+  ;;                 read-out or a load of a jar so
+  ;;   cookie-beside-jar
+  ;;                 a header named Cookie or Host, A to Z folded, any value,
+  ;;                 beside a cookie jar: libcurl sends a caller's Cookie
+  ;;                 beside the jar's, and matches the jar's cookies against
+  ;;                 a caller's Host (ADR-0035, decision 6)
   ;;
   ;; A value is scanned left to right, and its first offending char decides;
   ;; only when none offends are its ends checked.
@@ -492,7 +514,8 @@
       prior-knowledge-over-https credentials-bytes credentials-empty credentials-beside-userinfo
       credentials-beside-authorization digest-with-stream prior-knowledge-through-proxy
       proxy-url proxy-scheme proxy-url-parts proxy-authorization-header
-      proxy-tls-without-https-proxy proxy-tls-in-tls https-proxy-unsupported))
+      proxy-tls-without-https-proxy proxy-tls-in-tls https-proxy-unsupported
+      cookie-line cookie-jar-engine cookie-jar-closed cookie-beside-jar))
 
   ;; The fields:
   ;;
@@ -508,7 +531,9 @@
   ;;           https-proxy-unsupported, and for credentials-bytes and credentials-empty of a proxy
   ;;           URL's userinfo; header-name for proxy-authorization-header;
   ;;           proxy-ca-file or proxy-verify for
-  ;;           proxy-tls-without-https-proxy
+  ;;           proxy-tls-without-https-proxy; lines for cookie-line, a jar's
+  ;;           load's; cookie-jar for cookie-jar-engine and
+  ;;           cookie-jar-closed; header-name for cookie-beside-jar
   ;;   value   the string refused, whole, or the option's name, but a header's
   ;;           value, named by its header's name, as given; the key, as
   ;;           given, for a key's refusal, but a key that is no symbol,
@@ -527,7 +552,13 @@
   ;;           proxy-url, proxy-scheme, proxy-url-parts, proxy-tls-in-tls and
   ;;           https-proxy-unsupported, never the URL, which can hold a password; the header's name,
   ;;           as given, for proxy-authorization-header, never its value;
-  ;;           the path, or #f, for proxy-tls-without-https-proxy. No
+  ;;           the path, or #f, for proxy-tls-without-https-proxy; the
+  ;;           line's index in the load's list, from 0, never the line, for
+  ;;           cookie-line, whose irritants are the index and the rule it
+  ;;           broke; the symbol cookie-jar for cookie-jar-engine and
+  ;;           cookie-jar-closed; the header's name, as given, never its
+  ;;           value, for cookie-beside-jar. A cookie's value is a secret,
+  ;;           as a password is. No
   ;;           credentials string is ever a value or an irritant: a refusal
   ;;           names a secret by its part (the M7 plan, section 3.1)
   ;;   reason  one of curl-request-error-reasons

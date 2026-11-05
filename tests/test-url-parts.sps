@@ -281,7 +281,7 @@
 ;; --- answers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
 
 ;; one-answer : (-> Any) -> Any
 ;; THUNK's answer: a string, a natural, (absent) for #f, (refused CODE) for

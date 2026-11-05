@@ -1,0 +1,4 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-cookies.sps
+test-memory: pass tests/test-cookies.sps
+test-memory: ran 1, passed 1, failed 0, hung 0

@@ -1,0 +1,44 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-cookies.sps
+%%%% Starting test cookies
+test-cookies: crossings on the delaying engine ((ran . 8) (setup . 5) (submit . 23))
+test-cookies: crossings on a plain engine ((ran . 16) (submit . 17))
+test-cookies: refused-readout on "7.85.0" measured (("path-empty" (("a.localhost\tFALSE\t\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-true" (("a.localhost\tFALSE\tTRUE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-false" (("a.localhost\tFALSE\tFALSE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-rel" (("a.localhost\tFALSE\trel\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("name-tab" (("a.localhost\tFALSE\t/\tFALSE\t0\tn\tm\tv" fields)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"n\\x09m=v\"") ("value-tab" (("a.localhost\tFALSE\t/\tFALSE\t0\tnm\tv\tw" fields)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"nm=v\\x09w\""))
+test-cookies: no row of refused-readout for this libcurl; measured, it would be:
+("7.85.0" ("path-empty" (("a.localhost\tFALSE\t\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-true" (("a.localhost\tFALSE\tTRUE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-false" (("a.localhost\tFALSE\tFALSE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-rel" (("a.localhost\tFALSE\trel\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("name-tab" (("a.localhost\tFALSE\t/\tFALSE\t0\tn\tm\tv" fields)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"n\\x09m=v\"") ("value-tab" (("a.localhost\tFALSE\t/\tFALSE\t0\tnm\tv\tw" fields)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"nm=v\\x09w\""))
+FAIL the read-out lines a load refuses, by libcurl "7.85.0"'s row: a server's Path=, Path=TRUE, Path=FALSE and Path=rel, a tab in a name and in a value, each line with the rule's fault, and the next request's Cookie headers
+  expected: (a-row-for "7.85.0")
+  actual:   (no-row-for "7.85.0" measured (("path-empty" (("a.localhost\tFALSE\t\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-true" (("a.localhost\tFALSE\tTRUE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-false" (("a.localhost\tFALSE\tFALSE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-rel" (("a.localhost\tFALSE\trel\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("name-tab" (("a.localhost\tFALSE\t/\tFALSE\t0\tn\tm\tv" fields)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"n\\x09m=v\"") ("value-tab" (("a.localhost\tFALSE\t/\tFALSE\t0\tnm\tv\tw" fields)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"nm=v\\x09w\"")))
+test-cookies: expired-load on "7.85.0" measured (("a.localhost\tFALSE\t/\tFALSE\t1\texp\tv") ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1"))
+test-cookies: no row of expired-load for this libcurl; measured, it would be:
+("7.85.0" ("a.localhost\tFALSE\t/\tFALSE\t1\texp\tv") ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1"))
+FAIL a loaded line whose expiry has passed, then the next line added, by libcurl "7.85.0"'s row
+  expected: (a-row-for "7.85.0")
+  actual:   (no-row-for "7.85.0" measured (("a.localhost\tFALSE\t/\tFALSE\t1\texp\tv") ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1")))
+test-cookies: open-head on "7.85.0" measured (200 (transfer-failed perform-failed 28) ())
+test-cookies: no row of open-head for this libcurl; measured, it would be:
+("7.85.0" 200 (transfer-failed perform-failed 28) ())
+FAIL a server's 4,003-byte cookie beside a request line past 4,200 bytes, by libcurl "7.85.0"'s row: the transfer's answer at a bound of 3 s, and the origin's log, a head left open among it where libcurl ended none
+  expected: (a-row-for "7.85.0")
+  actual:   (no-row-for "7.85.0" measured (200 (transfer-failed perform-failed 28) ()))
+test-cookies: domain-localhost on "7.85.0/no-psl" measured ((((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"d=1\"") (() "request 2 face=http host=\"localhost:<port>\" cookies=0"))
+test-cookies: no row of domain-localhost for this libcurl; measured, it would be:
+("7.85.0/no-psl" (((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"d=1\"") (() "request 2 face=http host=\"localhost:<port>\" cookies=0"))
+FAIL Domain=localhost from a.localhost and from localhost, and a __Host- cookie with Domain=localhost, by "7.85.0/no-psl"'s row: each read-out, and the next request's Cookie headers
+  expected: (a-row-for "7.85.0/no-psl")
+  actual:   (no-row-for "7.85.0/no-psl" measured ((((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"d=1\"") (() "request 2 face=http host=\"localhost:<port>\" cookies=0")))
+test-cookies: set-cookie-matrix on "7.85.0" measured (((("a.localhost\tFALSE\t/cookies/a/b/\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("a.localhost\tFALSE\t\tFALSE\t0\tpe\t1" path) ("a.localhost\tFALSE\trel\tFALSE\t0\tpr\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"pr=1; pe=1\"") ((("a.localhost\tFALSE\t/\tFALSE\tbeyond-400-days\tca\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ca=1\"") ((("a.localhost\tFALSE\t/\tFALSE\t0\tma\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ma=1\"") (("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1") "request 3 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"keep=1\""))
+test-cookies: no row of set-cookie-matrix for this libcurl; measured, it would be:
+("7.85.0" ((("a.localhost\tFALSE\t/cookies/a/b/\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("a.localhost\tFALSE\t\tFALSE\t0\tpe\t1" path) ("a.localhost\tFALSE\trel\tFALSE\t0\tpr\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"pr=1; pe=1\"") ((("a.localhost\tFALSE\t/\tFALSE\tbeyond-400-days\tca\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ca=1\"") ((("a.localhost\tFALSE\t/\tFALSE\t0\tma\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ma=1\"") (("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1") "request 3 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"keep=1\""))
+FAIL the default path, Path=rel and Path=, the 400-day cap, Max-Age=-1 and a deleted cookie, by libcurl "7.85.0"'s row: each read-out, and the next request's Cookie headers
+  expected: (a-row-for "7.85.0")
+  actual:   (no-row-for "7.85.0" measured (((("a.localhost\tFALSE\t/cookies/a/b/\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("a.localhost\tFALSE\t\tFALSE\t0\tpe\t1" path) ("a.localhost\tFALSE\trel\tFALSE\t0\tpr\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"pr=1; pe=1\"") ((("a.localhost\tFALSE\t/\tFALSE\tbeyond-400-days\tca\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ca=1\"") ((("a.localhost\tFALSE\t/\tFALSE\t0\tma\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ma=1\"") (("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1") "request 3 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"keep=1\"")))
+# of expected passes      54
+# of unexpected failures  5
+suite-exit-status: exit 1 (pass 54, fail 5, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-cookies.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

@@ -9,15 +9,18 @@ close-out under **Close-outs**, newest first.
 - **M7, HTTP/2, cookies, auth and proxies:** in progress. The
   [M7 plan](2026-11-02-m7-plan.md) merged as PR #41 (`c238fe7`), CI passing all eight jobs on
   it. Four slices: the HTTP version, auth, proxies and the cookie jar. Slice 1, the HTTP version,
-  merged as PR #42 (`5fe3150`), and slice 2, server credentials, as PR #43 (`fccfea5`); their
-  close-outs are below. Slice 3, proxies (the plan, §6.1 and §6.2), is built and reviewed on
-  `feat/m7-slice-3`, not yet merged: measured first through the engine
-  ([research](research/m7/slice3/)), then four answers by the maintainer, each the recommended
-  option (ADR-0037, decisions 8 to 11): before 8.19.0 no tunnel is shared and an engine stops
-  multiplexing once an authenticated proxy is used (CVE-2026-3784); a refused `CONNECT` is
-  retried by its status; 7.85.0 refuses TLS inside TLS unless asked for HTTP/1.1. And a fifth:
-  no printed text carries a caller's secret, accessors and URL refusals among them (ADR-0036 and
-  ADR-0008, amended).
+  merged as PR #42 (`5fe3150`), slice 2, server credentials, as PR #43 (`fccfea5`), and slice 3,
+  a proxy given by URL, as PR #44 (`a075629`); their close-outs are below. Slice 4, the cookie
+  jar (the plan, §6.3 and §6.4), is built and reviewed on `feat/m7-slice-4`, not yet merged:
+  measured first through a prototype of the jar in the engine
+  ([research](research/m7/slice4/)), then seven answers by the maintainer, each the recommended
+  option (ADR-0035, decisions 7 to 13): a load takes a line only in the form a read-out writes
+  it, its name and value at most 4,096 bytes, since a larger loaded cookie left every request to
+  its host unterminated on every version, then no separators and no broken cookie prefix; lines
+  are Latin-1 strings; a load's n² cost is documented; the jar's procedures wait with no bound;
+  `CONNECT_TO` stays the hatch's. A curl bug report on the unterminated head is drafted for the
+  maintainer ([draft](research/m7/slice4/verify/curl-bug-report.md)). M7 is done when slice 4
+  merges and the Mac has run `make test` and `make check-variadic` on it (the plan, §8).
   - **Decided by the maintainer, 2026-11-02,** each the recommended option, from two read-only
     surveys and four probes on the five Linux libcurls
     ([`research/m7/`](research/m7/)):
@@ -215,6 +218,71 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-11-03 — M7 slice 3: a proxy given by URL (PR #44, `a075629`)
+
+- **Measured first** (the plan, §6.1; [`research/m7/slice3/`](research/m7/slice3/)), by an Opus
+  agent, through the engine on a prototype, on the five Linux lanes, two runs each, then under
+  the memory gate's Valgrind on Ubuntu's 8.5.0. Among its answers:
+  - a proxy userinfo byte that decodes to 0x00 to 0x1F sent 7.85.0 and 8.5.0 straight to the
+    origin, with 200, the proxy getting nothing;
+  - 7.85.0 handed one user's pooled tunnel to another user's request: CVE-2026-3784, fixed in
+    8.19.0, and in Ubuntu's 8.5.0 from `8.5.0-2ubuntu10.8`, so a version alone cannot say;
+  - a refused `CONNECT`'s retry split by version; 7.85.0 stalled on TLS inside TLS 7 of 50.
+
+  I reran its Guix lane whole, which matched, a change I planted in a copy was flagged, and
+  7.85.0 and 8.5.0 rerun in Docker matched ([`verify/`](research/m7/slice3/verify/)).
+- **Decided by the maintainer, 2026-11-03,** each the recommended option (ADR-0037, amended,
+  decisions 8 to 11; ADR-0026, amended): below 8.19.0 no tunnel is shared; a refused `CONNECT`
+  is judged by its status; 7.85.0 refuses TLS inside TLS unless asked for `http/1.1`; and, after
+  the review, an engine below 8.19.0 stops multiplexing at its first transfer through a proxy URL
+  with userinfo.
+- **Built** (the plan, §6.2) by an Opus builder: the proxy URL at both levels, its checks and
+  defaults, `proxy-settings`, `proxy-ca-file` and `proxy-verify`, the six reasons, the owned
+  options, `curl-transfer-error-connect-code`; the origin's proxy faces and `/proxy-log`;
+  test-proxy, and its children `proxy-env.sps` and `proxy-env-join.sps`.
+- **Reviewed** (Opus, read-only), each finding reproduced before its fix
+  ([`review/`](research/m7/slice3/review/)):
+  - **a blocker:** an environment proxy's transfer joined a live HTTP/2 tunnel opened with
+    another user's credentials on 7.85.0. My brief's options for decision 8 had left it out,
+    though I had half-seen it. An engine that does not multiplex closed it, measured before it
+    was put to the maintainer, who chose decision 11;
+  - **a major:** an `unknown-key` refusal printed a proxy URL put where a key belongs, its
+    password with it. The fix round's audit then found two older leaks, and the maintainer chose
+    to fix both in this slice: every public accessor now checks its argument, a URL refusal names
+    its field, and `tests/test-printed.sps` holds all 186 exports to a row (ADR-0036 and
+    ADR-0008, amended).
+- **Mutants I watched fail,** across the rounds: `NOPROXY` dropped; the password unscanned; the
+  `CONNECT` status ignored; a scheme refusal holding the URL; the switch recorded but not told to
+  libcurl; two accessors put back raw; the features word read before the init.
+- **Checks:** at `043ef4e`, `make test` 39 of 39 in the container, and test-proxy and the
+  loading suites on the four Docker lanes and under the memory gate on 8.5.0; at `68fa464`,
+  test-proxy in the container and on the four Docker lanes.
+- **The Mac ran it, 2026-11-03:** at `5a98ffe`, test-proxy failed 29 of 96, every `https://`
+  proxy refused: a MultiSSL libcurl's features word read before `curl_global_init` holds none of
+  a backend's bits ([log](research/m7/slice3/results/mac-8.7.1-make-test.log)). I fixed it: the
+  word is read from the call after the init that reads the backend, and the decoy's MultiSSL
+  build sets the bit at its init, so Linux sees it. At `043ef4e`, 7 of 96, a missing
+  SecureTransport row and a size of 0 where 8.7.x gives `#f`
+  ([log](research/m7/slice3/results/mac-8.7.1-make-test-2.log)), both fixed at `68fa464`.
+- **CI:** at `68fa464`, all eight jobs passed, the first run.
+- **Subagents,** every one Opus:
+
+  | Agent | Tokens | Time |
+  |---|---|---|
+  | measurements | 698k | 67 min |
+  | builder | 158k | 129 min |
+  | builder, fix round 1, resumed | 516k | 76 min |
+  | builder, fix round 2, resumed | 607k | 41 min |
+  | adversarial review | 404k | 27 min |
+- **Carried:** with `CURL_SSL_BACKEND` unset, the Mac selects SecureTransport at the init, where
+  ADR-0024 records LibreSSL; slice 1's floor flake did not recur.
+- **Learned:**
+  - a gap seen while drafting a decision's options goes into the options;
+  - a trap already recorded for one value (the backend, read after the init) applies to every
+    value the same call computes;
+  - a value 8.7.x reports as `#f`, the request size, is written by version in every test that
+    reads it.
 
 ### 2026-11-02 — M7 slice 2: server credentials (PR #43, `fccfea5`)
 

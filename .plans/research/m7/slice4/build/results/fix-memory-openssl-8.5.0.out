@@ -1,0 +1,20 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test SUITES='tests/test-version.sps'
+lane openssl: pass (7 s)
+  [openssl] test: pass tests/test-version.sps
+  [openssl] test: ran 1, passed 1, failed 0, hung 0
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test-memory MEMORY_SUITES='tests/test-cookies.sps'
+lane openssl memory: pass
+  [openssl memory] test-memory: pass tests/test-cookies.sps
+  [openssl memory] test-memory: ran 1, passed 1, failed 0, hung 0
+  [openssl memory] test-cookies: crossings on the delaying engine ((ran . 8) (setup . 5) (submit . 23))
+  [openssl memory] test-cookies: crossings on a plain engine ((ran . 16) (setup . 1) (submit . 16))
+  [openssl memory] test-cookies: refused-readout on "8.5.0" measured (("path-empty" (("a.localhost\tFALSE\t\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-true" (("a.localhost\tFALSE\tTRUE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-false" (("a.localhost\tFALSE\tFALSE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-rel" (("a.localhost\tFALSE\trel\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("name-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("value-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("prefix-secure-lower" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("prefix-SECURE-upper" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("prefix-host-path" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("prefix-HOST-domain" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("path-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0"))
+  [openssl memory] test-cookies: expired-load on "8.5.0" measured (("a.localhost\tFALSE\t/\tFALSE\t1\texp\tv") ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1"))
+  [openssl memory] test-cookies: open-head on "8.5.0" measured (200 200 (a-request a-request) 200 200 (a-request a-request))
+  [openssl memory] test-cookies: domain-localhost on "8.5.0/psl" measured ((() "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("localhost\tFALSE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"d=1\"") ((("localhost\tFALSE\t/\tTRUE\t0\t__Host-dom\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"__Host-dom=1\""))
+  [openssl memory] test-cookies: set-cookie-matrix on "8.5.0" measured (((("a.localhost\tFALSE\t/cookies/a/b/\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("a.localhost\tFALSE\t\tFALSE\t0\tpe\t1" path) ("a.localhost\tFALSE\trel\tFALSE\t0\tpr\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"pr=1; pe=1\"") ((("a.localhost\tFALSE\t/\tFALSE\tbeyond-400-days\tca\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ca=1\"") ((("a.localhost\tFALSE\t/\tFALSE\t1\tma\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1" "a.localhost\tFALSE\t/\tFALSE\t1\tdel\t") "request 3 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"keep=1\"" ("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1")))

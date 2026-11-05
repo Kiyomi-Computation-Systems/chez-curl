@@ -544,6 +544,27 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   FIN ends nothing. A stand-in proxy destroys the socket on `'end'`.
 * `curl_url` reports an empty query as `""` on 7.85.0 and 8.5.0, and as none
   from 8.20.0. Read an empty part as none.
+* A loaded cookie whose name and value pass the `Cookie` line's 8,190-byte cap
+  left every request to its host with an unterminated head, hanging to its
+  timeout: libcurl caps a server's cookie at 4,096 bytes, a `COOKIELIST` line
+  not at all. On 7.85.0 a long URL does it to a server's 4 KB cookie. A
+  stand-in that logs whole heads alone hides it: log a head left open.
+* `node:http` reports a head its client leaves open only as `clientError`
+  `HPE_INVALID_EOF_STATE`, with no bytes: a server's own `'data'` listener
+  sees them.
+* `display-condition` prints every field of a condition that has no
+  `&message`, a secret among them: give such a condition a message.
+* 7.85.0 and 8.5.0 list a deleted or expired cookie only until libcurl next
+  adds or sends one: read a jar out before anything else touches it.
+* 7.85.0, 8.20.0 and 8.7.1 match a loaded cookie's `__Secure-` or `__Host-` in
+  any case, a server's in its own case alone: a server's `__secure-a` read
+  out of a jar did not load back. A rule written from a matrix with no
+  prefixed name missed it.
+* A failed engine completes its tokens before it frees its jars: a jar read
+  as the failure's token is done can still be `live`. Read what a failure
+  leaves after `curl-engine-stop` returns.
+* `char-numeric?` takes U+00B2, U+00B3, U+00B9 and U+00BC to U+00BE, which
+  `string->number` reads as `#f`: check ASCII digits by `#\0` to `#\9`.
 
 ## Closing ritual
 

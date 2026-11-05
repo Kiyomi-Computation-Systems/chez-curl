@@ -170,7 +170,7 @@
 ;; the load decided (tests/refusal-probe.sps). The counters gate counts per
 ;; process, and this suite's own never loads libcurl.
 (define no-native-objects
-  '(counts . ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))))
+  '(counts . ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))))
 
 ;; A report is what a loaded library says about itself: (FIELD . VALUE) for
 ;; each of oracle-fields, in order, as the probe prints them after the path
@@ -483,7 +483,10 @@
        (cons "curl_multi_info_read" (list version-call init-call backend-call))
        (cons "curl_multi_strerror" (list version-call init-call backend-call))
        (cons "curl_easy_pause" (list version-call init-call backend-call))
-       (cons "curl_multi_setopt" (list version-call init-call backend-call))))
+       (cons "curl_share_init" (list version-call init-call backend-call))
+       (cons "curl_share_cleanup" (list version-call init-call backend-call))
+       (cons "curl_multi_setopt" (list version-call init-call backend-call))
+       (cons "curl_share_setopt" (list version-call init-call backend-call))))
 
 ;; --- the real libcurl ---------------------------------------------------------------
 
@@ -844,7 +847,7 @@
     (environment '(curl))
     (list-sort symbol<? (library-exports '(curl)))))
 
-(test-equal "(curl) exports loaded-libcurl, the info record's accessors, the request, four URL functions and the response, the engine, the submit's checks alone, the token, its streamed response's head, pieces and port, its streamed body's room, puts, end and count, and the mailbox, and the conditions, a failed transfer's classes and the engine's among them; none of their constructors, nor the request's private fields, nor the engine's seams, counts and faults"
+(test-equal "(curl) exports loaded-libcurl, the info record's accessors, the request, four URL functions and the response, the engine, the submit's checks alone, the cookie jar, the token, its streamed response's head, pieces and port, its streamed body's room, puts, end and count, and the mailbox, and the conditions, a failed transfer's classes and the engine's among them; none of their constructors, nor the request's private fields, nor the engine's seams, counts and faults"
   (list-sort symbol<?
              '(loaded-libcurl
                libcurl-info? libcurl-info-path libcurl-info-source libcurl-info-version
@@ -864,11 +867,14 @@
                curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
                curl-request-stream-buffer curl-request-body-length curl-request-http-version
                curl-request-credentials curl-request-proxy-ca-file curl-request-proxy-verify
+               curl-request-cookie-jar
                curl-url-part curl-url-append-query curl-url-resolve curl-url-with-fragment
                curl-response? curl-response-status curl-response-http-version
                curl-response-effective-url curl-response-headers curl-response-body
                curl-response-timings
                make-curl-engine curl-engine? curl-engine-stop curl-submit curl-request-check
+               make-curl-cookie-jar curl-cookie-jar? curl-cookie-jar-cookies curl-cookie-jar-load!
+               curl-cookie-jar-close!
                curl-token? curl-token-await curl-token-wait curl-token-cancel curl-token-done?
                curl-token-outcome
                curl-token-head-wait curl-token-head curl-head? curl-head-status

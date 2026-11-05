@@ -855,9 +855,17 @@ provisional. They bind until that record is accepted or amended.
 - **A cookie jar is one `curl_share` of cookies, on the engine's thread,** counted, with no lock
   callbacks. A transfer that uses it sets `SHARE` first, then `COOKIEFILE ""`; `COOKIEFILE` and
   `COOKIEJAR` are never a file or `"-"`. It is freed only once no transfer holds it. Cookies go in
-  as Netscape lines through `COOKIELIST` and come out through `CURLINFO_COOKIELIST`. The rules are
-  libcurl's, pinned by version where they vary. A load takes seven fields, none holding a control
-  byte, none empty but the value (ADR-0035, amended).
+  as Netscape lines through `COOKIELIST` and come out through `CURLINFO_COOKIELIST`, each line a
+  Latin-1 string both ways. The rules are libcurl's, pinned by version where they vary. A load
+  takes a line only in the form a read-out writes it: seven tab-separated fields, none holding a
+  control byte; `TRUE` or `FALSE` in the tail-match and secure fields, the domain's leading dot
+  exactly with `TRUE`; no `#` after an optional `#HttpOnly_`, and no `Set-Cookie:` line; an
+  absolute path; an expiry of decimal digits within 64 bits; a name, and the name and value at
+  most 4,096 bytes together, since a loaded cookie past the `Cookie` line's cap left every request
+  to its host unterminated; no `;` in the name or the value, nor `=` in the name; a `__Secure-` or
+  `__Host-` name, in any case, keeping its prefix's rule. A load's n² cost on the engine's thread
+  is documented. Each jar procedure waits with no bound, as a stop does. `CONNECT_TO` stays the
+  hatch's (ADR-0035, amended three times).
 - **Server credentials:** a field that sets `USERNAME` and `PASSWORD` both, refused beside
   userinfo in the URL or a caller's `Authorization` header; one scheme per request, Basic, Digest
   or Bearer, never a set nor `ANY`; a streamed body or response takes Basic or Bearer alone.
@@ -868,7 +876,9 @@ provisional. They bind until that record is accepted or amended.
   round and a 417's resend, never its retry of a dead or refused connection (ADR-0036, amended
   twice). No record that holds a request, a plan, a token or credentials prints its fields: the
   request, the plan, the live transfer, the engine, the token, the mailbox and the exchange are
-  opaque, and `record-rtd` raises on each (M7 slice 2's review).
+  opaque, and `record-rtd` raises on each (M7 slice 2's review); so are the cookie jar,
+  `curl-response`, `curl-head` and `http-response`, whose headers can hold a `Set-Cookie` (M7
+  slice 4).
 - **A named proxy:** an `http://` or `https://` URL, the scheme judged by chez-curl alike on
   every version; the transfer sets `NOPROXY ""`, so no variable sends it direct; its credentials
   are its URL's userinfo, by Basic, checked percent-decoded by the server credentials' rules,

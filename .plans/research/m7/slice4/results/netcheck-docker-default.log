@@ -1,0 +1,6 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+network default: interfaces eth0 lo 
+network default: lo disable_ipv6=0 all disable_ipv6=0
+network default: if_inet6=[00000000000000000000000000000001 01 80 10 80 lo;]
+network default: node v20.10.0 listen ::1: ok port 46295
+network none, for comparison: run the lanes

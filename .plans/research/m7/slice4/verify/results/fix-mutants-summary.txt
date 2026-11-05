@@ -1,0 +1,18 @@
+control: 0 FAIL lines; test: ran 1, passed 1, failed 0, hung 0
+host-path-prefix: 1 FAIL lines; test: ran 1, passed 0, failed 1, hung 0
+  FAIL a __Host- name, in every one of its 16 A to Z cases, __host- and __HOST- among them, needs the secure field TRUE, the path exactly / and the tail-match FALSE: each broken alone is prefix, all three kept taken
+secure-prefix-reads-tail: 1 FAIL lines; test: ran 1, passed 0, failed 1, hung 0
+  FAIL a __Secure- name, in every one of its 64 A to Z cases, __secure-, __SECURE- and __sEcure- among them, needs the secure field TRUE: beside FALSE it is prefix, beside TRUE taken, whatever the path and the tail-match
+fail-batch-unanswered: 1 FAIL lines; test: ran 1, passed 0, failed 1, hung 0
+  FAIL a load and a read-out queued in one hold behind a submit whose set-up fails the engine, so the failing turn takes all three in its batch, are each answered with what the engine failed with, within 10 s; the token fa
+control-enumerated: 4 FAIL lines; test: ran 1, passed 0, failed 1, hung 0
+  FAIL every control char a load refuses, U+0000 to U+001F but the tab, and U+007F, 32 of them, at the first, a middle and the last position of every field, is control-byte; a tab there makes another field, fields; a char 
+  FAIL the tail-match field against its whole complement: every Latin-1 char alone, and every A to Z case of TRUE, 16, and of FALSE, 32: TRUE and FALSE taken, a control char control-byte, a tab fields, every other tail-mat
+  FAIL the secure field against the same complement: TRUE and FALSE taken, a control char control-byte, a tab fields, every other secure
+  FAIL the expiry against every Latin-1 char but the ten digits, alone and between two digits: a control char control-byte, a tab fields, every other expiry, U+00B2, U+00B3, U+00B9 and the other numerics among them, never 
+expiry-char-numeric: 2 FAIL lines; test: ran 1, passed 0, failed 1, hung 0
+  FAIL every other Latin-1 char, U+0020 to U+007E and U+0080 to U+00FF, 222 of them, at the first, a middle and the last position of every field, is never control-byte, fields or not-latin-1, and raises nothing
+  FAIL the expiry against every Latin-1 char but the ten digits, alone and between two digits: a control char control-byte, a tab fields, every other expiry, U+00B2, U+00B3, U+00B9 and the other numerics among them, never 
+release-twice: 1 FAIL lines; test: ran 1, passed 0, failed 1, hung 0
+  FAIL a fault after take-out! has let a transfer's hold go, at its free step, fails the engine, which takes the transfer out again: the hold is let go once, the jar holding none, never -1, and freed, closed
+exit=0

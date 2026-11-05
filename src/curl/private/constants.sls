@@ -40,7 +40,9 @@
           curlmopt-max-total-connections curlmopt-quick-exit curlmopt-pipelining curlpipe-nothing
           curl-writefunc-pause curlpause-cont
           curl-readfunc-pause curl-readfunc-abort curl-seekfunc-ok curl-seekfunc-cantseek
-          curl-prereqfunc-ok curl-prereqfunc-abort seek-set)
+          curl-prereqfunc-ok curl-prereqfunc-abort seek-set
+          curlshopt-share curlshopt-unshare curl-lock-data-cookie
+          curlshe-ok curlshe-bad-option curlshe-in-use curlinfo-cookielist)
   (import (curl private require-threaded)
           (rnrs))
 
@@ -547,4 +549,37 @@
   (define curl-seekfunc-cantseek 2)
   (define curl-prereqfunc-ok 0)
   (define curl-prereqfunc-abort 1)
-  (define seek-set 0))
+  (define seek-set 0)
+
+  ;; The cookie jar's (ADR-0035; the M7 plan, section 3.5), curl/curl.h,
+  ;; each the same from 7.85.0 to 8.23.0: the share interface's CURLSHoption,
+  ;; curl_lock_data and CURLSHcode, and CURLINFO_COOKIELIST.
+  ;;
+  ;; curlshopt-share : Positive-Integer CURLSHOPT_SHARE, 1: what a share
+  ;;                                     holds, its value a curl_lock_data
+  ;; curlshopt-unshare : Positive-Integer
+  ;;                                     CURLSHOPT_UNSHARE, 2: what it stops
+  ;;                                     holding; tests/test-variadic.sps
+  ;;                                     alone sets it
+  ;; curl-lock-data-cookie : Positive-Integer
+  ;;                                     CURL_LOCK_DATA_COOKIE, 2: the cookies,
+  ;;                                     the one thing a jar's share holds
+  ;; curlshe-ok : Natural                CURLSHE_OK, 0
+  ;; curlshe-bad-option : Positive-Integer
+  ;;                                     CURLSHE_BAD_OPTION, 1: a share's answer
+  ;;                                     to a value or an option it does not
+  ;;                                     take
+  ;; curlshe-in-use : Positive-Integer   CURLSHE_IN_USE, 2: curl_share_cleanup's
+  ;;                                     answer while a handle holds the share,
+  ;;                                     and every setopt's then
+  ;; curlinfo-cookielist : Positive-Integer
+  ;;                                     CURLINFO_COOKIELIST, CURLINFO_SLIST +
+  ;;                                     28: the jar's lines, a struct
+  ;;                                     curl_slist the caller frees
+  (define curlshopt-share 1)
+  (define curlshopt-unshare 2)
+  (define curl-lock-data-cookie 2)
+  (define curlshe-ok 0)
+  (define curlshe-bad-option 1)
+  (define curlshe-in-use 2)
+  (define curlinfo-cookielist #x40001C))

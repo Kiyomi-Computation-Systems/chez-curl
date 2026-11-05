@@ -1,0 +1,18 @@
+probe: libcurl "7.85.0"
+probe: prefix-plain ("a.localhost\tFALSE\t/\tFALSE\t0\tplain\t1")
+probe: prefix-Secure-not-secure ()
+probe: prefix-secure-lower-not-secure ()
+probe: prefix-SECURE-upper-not-secure ()
+probe: prefix-Secure-secure ("a.localhost\tFALSE\t/\tTRUE\t0\t__Secure-d\t1")
+probe: prefix-Host-path-p ()
+probe: prefix-host-lower-path-p ()
+probe: prefix-Host-ok ("a.localhost\tFALSE\t/\tTRUE\t0\t__Host-g\t1")
+probe: prefix-HOST-upper-domain ()
+probe: pair-load loaded
+probe: pair-sent (200 "request 1 face=http host=\"a.localhost:34781\" cookies=1 cookie=\"a=b=c; n=x; admin=1\"\n")
+probe: path-tab-set (200 "request 1 face=http host=\"a.localhost:34781\" cookies=0\n")
+probe: path-tab-readout ((8 "a.localhost\tFALSE\t/a\tb\tFALSE\t0\tk\tv"))
+probe: head-control (200 ("cookie-log control 2" "request 1 face=http host=\"a.localhost:34781\" cookies=0" "request 2 face=http host=\"a.localhost:34781\" cookies=1 cooki"))
+probe: head-agent ((transfer-failed perform-failed 28) ("cookie-log agent 2" "request 1 face=http host=\"a.localhost:34781\" cookies=0" "open-head face=http bytes=4395 headers=\"Host: a.localhost:34"))
+probe: head-basic ((transfer-failed perform-failed 28) ("cookie-log basic 2" "request 1 face=http host=\"a.localhost:34781\" cookies=0" "open-head face=http bytes=4508 headers=\"Host: a.localhost:34"))
+probe: counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))

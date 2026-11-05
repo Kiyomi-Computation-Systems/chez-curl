@@ -32,7 +32,9 @@
               curl-url curl-url-set curl-url-get curl-url-cleanup
               curl-slist-append curl-slist-free-all
               curl-multi-init curl-multi-cleanup curl-multi-add-handle curl-multi-remove-handle
-              curl-multi-perform curl-multi-poll curl-multi-wakeup curl-multi-info-read)
+              curl-multi-perform curl-multi-poll curl-multi-wakeup curl-multi-info-read
+              curl-share-init curl-share-setopt-int curl-share-cleanup
+              curl-easy-getinfo-cookielist curl-slist-strings)
         (curl))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
@@ -92,7 +94,7 @@
   (if (libcurl-info? info) 'libcurl-info info))
 
 (test-equal "every native count is zero once the load has returned: the header probe freed its handle and its slot"
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))
   counts-after-load)
 
 (test-equal "loaded-libcurl answers the same record at every call"
@@ -191,13 +193,13 @@
     '(no-raise)))
 
 ;; Each kind of handle, made on a thread of its own, and that thread's id:
-;; (THREAD EASY URL SLIST MULTI).
+;; (THREAD EASY URL SLIST MULTI SHARE).
 (define made-elsewhere
   (on-thread
    (lambda ()
      (list (get-thread-id) (curl-easy-init) (curl-url)
            (call-with-c-string "X-A: b" (lambda (a) (curl-slist-append 0 a)))
-           (curl-multi-init)))))
+           (curl-multi-init) (curl-share-init)))))
 
 (define (option-id name) (car (curl-easy-option name)))
 
@@ -212,10 +214,12 @@
            curl-url-set curl-url-get curl-url-cleanup
            curl-slist-append curl-slist-free-all
            curl-multi-add-handle curl-multi-add-handle curl-multi-remove-handle curl-multi-perform
-           curl-multi-poll curl-multi-info-read curl-multi-cleanup)))
-  (if (and (list? made-elsewhere) (= (length made-elsewhere) 5) (integer? (car made-elsewhere)))
+           curl-multi-poll curl-multi-info-read curl-multi-cleanup
+           curl-share-setopt curl-share-cleanup curl-easy-getinfo curl-slist-strings)))
+  (if (and (list? made-elsewhere) (= (length made-elsewhere) 6) (integer? (car made-elsewhere)))
       (let ((easy (list-ref made-elsewhere 1)) (url (list-ref made-elsewhere 2))
             (slist (list-ref made-elsewhere 3)) (multi (list-ref made-elsewhere 4))
+            (share (list-ref made-elsewhere 5))
             (slot (foreign-block 8))
             (own-multi (curl-multi-init)))
         (let ((answers
@@ -242,7 +246,12 @@
                      (wrong-thread-of (lambda () (curl-multi-perform multi slot)))
                      (wrong-thread-of (lambda () (curl-multi-poll multi 0)))
                      (wrong-thread-of (lambda () (curl-multi-info-read multi slot)))
-                     (wrong-thread-of (lambda () (curl-multi-cleanup multi))))))
+                     (wrong-thread-of (lambda () (curl-multi-cleanup multi)))
+                     (wrong-thread-of (lambda () (curl-share-setopt-int share curlshopt-share
+                                                                        curl-lock-data-cookie)))
+                     (wrong-thread-of (lambda () (curl-share-cleanup share)))
+                     (wrong-thread-of (lambda () (curl-easy-getinfo-cookielist easy)))
+                     (wrong-thread-of (lambda () (curl-slist-strings slist))))))
           (free-foreign-block! slot)
           (curl-multi-cleanup own-multi)
           answers))
@@ -266,7 +275,7 @@
 ;; handle; on anything else it is refused before C.
 (test-equal "curl-multi-wakeup, from this thread, wakes a multi handle another thread made, CURLM_OK; and refuses an easy handle, and a multi handle freed, as assertion violations"
   (list curlm-ok '(assertion-violation curl-multi-wakeup) '(assertion-violation curl-multi-wakeup))
-  (if (and (list? made-elsewhere) (= (length made-elsewhere) 5))
+  (if (and (list? made-elsewhere) (= (length made-elsewhere) 6))
       (let ((easy (list-ref made-elsewhere 1)) (multi (list-ref made-elsewhere 4)))
         (let* ((live (guard (e (#t (list 'raised (describe e)))) (curl-multi-wakeup multi)))
                (not-multi (assertion-of (lambda () (curl-multi-wakeup easy))))
@@ -276,13 +285,14 @@
       made-elsewhere))
 
 (test-equal "the handles freed on the thread that made them, every count is zero"
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
-  (if (and (list? made-elsewhere) (= (length made-elsewhere) 5))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))
+  (if (and (list? made-elsewhere) (= (length made-elsewhere) 6))
       (begin
         (on-thread (lambda ()
                      (curl-easy-cleanup (list-ref made-elsewhere 1))
                      (curl-url-cleanup (list-ref made-elsewhere 2))
-                     (curl-slist-free-all (list-ref made-elsewhere 3))))
+                     (curl-slist-free-all (list-ref made-elsewhere 3))
+                     (curl-share-cleanup (list-ref made-elsewhere 5))))
         (on-thread (lambda () 'stop-the-worker))
         (native-counts))
       made-elsewhere))

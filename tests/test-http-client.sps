@@ -58,6 +58,7 @@
         (http-client)
         (only (http-client private conditions) make-http-request-error make-http-timeout
               make-http-exchange kind-of shown-value shown-key)
+        (only (http-client private call) session-keys call-keys port-keys)
         (only (http-client private call) form-encode merge-fields with-form-type string-pairs
               string-pairs-within)
         (only (http-client private exchange) make-exchange exchange-submission exchange-step
@@ -104,7 +105,7 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
 
 ;; now-ms : -> Integer
 (define (now-ms)
@@ -224,9 +225,12 @@
 ;; --- the exports ----------------------------------------------------------------------
 
 ;; Written out: the M5 plan's slices 1 to 4, section 3.1, the brief's
-;; names, and the M6 plan's slice 3, section 3.1: call-with-response-port.
+;; names, the M6 plan's slice 3, section 3.1: call-with-response-port, and
+;; the M7 plan's slice 4, section 3.1: a session's cookies, read out and
+;; loaded.
 (define http-client-exports
   '(make-http-session http-session? http-session-close call-with-http-session
+    http-session-cookies http-session-load-cookies!
     http-request http-get http-head http-post http-put http-patch http-delete
     call-with-response-port
     make-http-retry http-retry?
@@ -245,7 +249,7 @@
     &http-exchange http-exchange? http-exchange-method http-exchange-url http-exchange-history
     http-exchange-transfers))
 
-(test-equal "(http-client) exports exactly the M5 plan's names and call-with-response-port, none of them (curl)'s, nor the group's seams"
+(test-equal "(http-client) exports exactly the M5 plan's names, call-with-response-port and a session's cookie procedures, none of them (curl)'s, nor the group's seams"
   (list (symbols-sorted http-client-exports) '())
   (let ((exports (library-exports '(http-client))))
     (list (symbols-sorted exports)
@@ -277,6 +281,18 @@
   (outcome (lambda () (http-get 'not-a-session "http://127.0.0.1:1/"))))
 
 ;; --- sessions ---------------------------------------------------------------------------
+
+;; Written out here, not read from the library: a key dropped from a list
+;; must fail this test, not shrink it.
+(test-equal "the keys, written out: a session's, the request's, the policy's, then cookies, its own (the M7 plan, section 3.1); a call's, the session's but cookies, then body, form, params and body-length; a port's, a call's and stream-buffer"
+  '((headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy http-version
+     credentials proxy-ca-file proxy-verify redirects allow-downgrade retry cookies)
+    (headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy http-version
+     credentials proxy-ca-file proxy-verify redirects allow-downgrade retry body form params body-length)
+    (headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy http-version
+     credentials proxy-ca-file proxy-verify redirects allow-downgrade retry body form params body-length
+     stream-buffer))
+  (list session-keys call-keys port-keys))
 
 ;; Before any session is made here: no engine runs, so the multi count is
 ;; the suite's own evidence that a refusal made none.
@@ -1060,7 +1076,7 @@
    ;; The counts while the suite's session runs and no transfer is live: its
    ;; engine's multi handle and slot.
    (define session-counts
-     '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1)))
+     '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
 
    ;; long-drip : String
    ;; A drip that pauses 10 s mid-body, on the raw face.
@@ -1520,13 +1536,13 @@
 
    (test-equal "SIGINT while a call's submit blocks inside its critical section escapes as the section ends, after the submit took the mutex, and the drive still cancels the transfer: the engine holds nothing within 3.5 s of the release, where the drip runs 10 s; the child's counts zero"
      (list 0 '((escape escaped after-release cancelled) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0)
-                                                     (curl-string . 0) (transfer . 0) (multi . 0))))
+                                                     (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))))
            "")
      (run-escape-child long-drip))
 
    (test-equal "SIGINT while a call's submit blocks inside its critical section, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object and not compounded with &http-exchange, as the section ends, after the submit took the mutex; the drive still cancels the transfer; the child's counts zero"
      (list 0 '((raise #t #f after-release cancelled) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0)
-                                                             (curl-string . 0) (transfer . 0) (multi . 0))))
+                                                             (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))))
            "")
      (run-escape-child long-drip raise-child))
 

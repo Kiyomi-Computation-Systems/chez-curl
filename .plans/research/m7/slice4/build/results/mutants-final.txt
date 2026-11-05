@@ -1,0 +1,347 @@
+control: pass; test-cookies.sps: exit 0; test-unsupported.sps: exit 0; test-transfer.sps: exit 0; test-printed.sps: exit 0; test-memory-safety.sps: exit 0; test-curl-testing.sps: exit 0; test-native.sps: exit 0; test-variadic.sps: exit 0; test-collect-safe.sps: exit 0; test-constants.sps: exit 0; test-origin.sps: exit 0; test-conditions.sps: exit 0; test-http-client.sps: exit 0
+hold-not-raised: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a close while two transfers hold the jar answers at once, closing, the share kept and the jar's own handle with it, three easy handles counted; a submit after is refused cookie-jar-closed, and so are 
+    test-cookies.sps: FAIL a close crossing a submit, controlled: a submit queued before the close runs with the jar; one after the close is refused at submit; one queued after the close in one hold, before the engine takes eit
+    test-cookies.sps: FAIL a close crossing a submit, on an engine that waits 40 ms before each take: offsets from 30 ms before the close to 110 after reach each of the three outcomes, and no other; every jar closed after, hold
+    test-cookies.sps: FAIL a close crossing a submit on a plain engine, the submit from 8 ms before the close to 8 after, 33 times: each ends as one of the three outcomes, and no other; every jar closed after, holding none
+    test-cookies.sps: FAIL a stop frees every jar, a live one and one closing while a transfer holds it: the transfer ends stopped, both jars closed, nothing left counted; and a jar of a stopped engine is refused as a submit is
+    test-cookies.sps: FAIL a failed engine that abandons a live transfer's easy handle keeps its hold on the jar: the share stays in use, the jar closing, held once, and both stay counted, one easy handle and one share; the con
+hold-not-lowered: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a close while two transfers hold the jar answers at once, closing, the share kept and the jar's own handle with it, three easy handles counted; a submit after is refused cookie-jar-closed, and so are 
+    test-cookies.sps: FAIL a close crossing a submit, controlled: a submit queued before the close runs with the jar; one after the close is refused at submit; one queued after the close in one hold, before the engine takes eit
+    test-cookies.sps: FAIL a close crossing a submit, on an engine that waits 40 ms before each take: offsets from 30 ms before the close to 110 after reach each of the three outcomes, and no other; every jar closed after, hold
+    test-cookies.sps: FAIL a close crossing a submit on a plain engine, the submit from 8 ms before the close to 8 after, 33 times: each ends as one of the three outcomes, and no other; every jar closed after, holding none
+hold-before-start: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a transfer whose start raises holds the jar not at all: IPRESOLVE 99, refused by libcurl's setopt, fails the token setopt-failed, the jar holds none, and a close frees it at once
+fail-releases-abandoned: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a failed engine that abandons a live transfer's easy handle keeps its hold on the jar: the share stays in use, the jar closing, held once, and both stay counted, one easy handle and one share; the con
+fail-keeps-freed: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a failed engine, its fault planted at perform with a transfer holding the jar: the token fails with the engine, the transfer's hold let go, the jar freed and closed, and the jar's messages raise what 
+    test-cookies.sps: FAIL a failed engine that abandons a live transfer's easy handle keeps its hold on the jar: the share stays in use, the jar closing, held once, and both stay counted, one easy handle and one share; the con
+share-before-handle: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a close while two transfers hold the jar answers at once, closing, the share kept and the jar's own handle with it, three easy handles counted; a submit after is refused cookie-jar-closed, and so are 
+    test-cookies.sps: FAIL a transfer whose start raises holds the jar not at all: IPRESOLVE 99, refused by libcurl's setopt, fails the token setopt-failed, the jar holds none, and a close frees it at once
+    test-cookies.sps: FAIL a close crossing a submit, controlled: a submit queued before the close runs with the jar; one after the close is refused at submit; one queued after the close in one hold, before the engine takes eit
+    test-cookies.sps: FAIL a close crossing a submit, on an engine that waits 40 ms before each take: offsets from 30 ms before the close to 110 after reach each of the three outcomes, and no other; every jar closed after, hold
+    test-cookies.sps: FAIL a close crossing a submit on a plain engine, the submit from 8 ms before the close to 8 after, 33 times: each ends as one of the three outcomes, and no other; every jar closed after, holding none
+    test-cookies.sps: FAIL a stop frees every jar, a live one and one closing while a transfer holds it: the transfer ends stopped, both jars closed, nothing left counted; and a jar of a stopped engine is refused as a submit is
+    test-cookies.sps: FAIL a failed engine, its fault planted at perform with a transfer holding the jar: the token fails with the engine, the transfer's hold let go, the jar freed and closed, and the jar's messages raise what 
+    test-cookies.sps: FAIL a session's Cookie or Host header beside its cookies is refused as the jar's request is made, cookie-beside-jar, and the engine made for it is stopped; a jar that fails to be made raises, and stops th
+    test-cookies.sps: FAIL a session's jar is freed with it: http-session-cookies of a closed session raises its engine's stopped; of a session without cookies, an assertion violation
+    test-cookies.sps: FAIL a failed engine that abandons a live transfer's easy handle keeps its hold on the jar: the share stays in use, the jar closing, held once, and both stay counted, one easy handle and one share; the con
+    test-cookies.sps: FAIL every count is zero at the end, the suite's own engine stopped
+close-ignores-holders: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a close while two transfers hold the jar answers at once, closing, the share kept and the jar's own handle with it, three easy handles counted; a submit after is refused cookie-jar-closed, and so are 
+setup-no-check: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a close crossing a submit, controlled: a submit queued before the close runs with the jar; one after the close is refused at submit; one queued after the close in one hold, before the engine takes eit
+    test-cookies.sps: FAIL a close crossing a submit, on an engine that waits 40 ms before each take: offsets from 30 ms before the close to 110 after reach each of the three outcomes, and no other; every jar closed after, hold
+submit-no-closed-check: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a close while two transfers hold the jar answers at once, closing, the share kept and the jar's own handle with it, three easy handles counted; a submit after is refused cookie-jar-closed, and so are 
+    test-cookies.sps: FAIL a close crossing a submit, controlled: a submit queued before the close runs with the jar; one after the close is refused at submit; one queued after the close in one hold, before the engine takes eit
+    test-cookies.sps: FAIL a close crossing a submit, on an engine that waits 40 ms before each take: offsets from 30 ms before the close to 110 after reach each of the three outcomes, and no other; every jar closed after, hold
+submit-no-engine-check: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a submit refuses another engine's jar, cookie-jar-engine, before anything is queued, its value the symbol cookie-jar
+jar-after-submits: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a close crossing a submit, controlled: a submit queued before the close runs with the jar; one after the close is refused at submit; one queued after the close in one hold, before the engine takes eit
+    test-cookies.sps: FAIL a close crossing a submit, on an engine that waits 40 ms before each take: offsets from 30 ms before the close to 110 after reach each of the three outcomes, and no other; every jar closed after, hold
+jar-before-submits: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a close crossing a submit, controlled: a submit queued before the close runs with the jar; one after the close is refused at submit; one queued after the close in one hold, before the engine takes eit
+    test-cookies.sps: FAIL a close crossing a submit, on an engine that waits 40 ms before each take: offsets from 30 ms before the close to 110 after reach each of the three outcomes, and no other; every jar closed after, hold
+jar-after-perform: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a close crossing a submit, controlled: a submit queued before the close runs with the jar; one after the close is refused at submit; one queued after the close in one hold, before the engine takes eit
+    test-cookies.sps: FAIL a close crossing a submit, on an engine that waits 40 ms before each take: offsets from 30 ms before the close to 110 after reach each of the three outcomes, and no other; every jar closed after, hold
+stop-unanswered: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL every jar message is answered: one queued as the engine stops raises stopped; a make taken by a failing take raises what the engine failed with
+fail-unanswered: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL every jar message is answered: one queued as the engine stops raises stopped; a make taken by a failing take raises what the engine failed with
+stop-keeps-jars: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a stop frees every jar, a live one and one closing while a transfer holds it: the transfer ends stopped, both jars closed, nothing left counted; and a jar of a stopped engine is refused as a submit is
+    test-cookies.sps: FAIL every count is zero at the end, the suite's own engine stopped
+fail-keeps-jars: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a failed engine, its fault planted at perform with a transfer holding the jar: the token fails with the engine, the transfer's hold let go, the jar freed and closed, and the jar's messages raise what 
+    test-cookies.sps: FAIL a failed engine that abandons a live transfer's easy handle keeps its hold on the jar: the share stays in use, the jar closing, held once, and both stay counted, one easy handle and one share; the con
+    test-cookies.sps: FAIL every count is zero at the end, the suite's own engine stopped
+share-unset: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL bytes above 0x7F, Latin-1 both ways: a server's E9 and FF stored and read out as U+00E9 and U+00FF, and sent byte for byte; a loaded U+00FF sent as FF
+    test-cookies.sps: FAIL across requests and hosts, three labels deep: a.localhost's host-only and Domain=a.localhost cookies go back to a.localhost, the domain one alone to b.a.localhost, and neither to b.localhost, each by 
+    test-cookies.sps: FAIL a request without the jar sends none of its cookies, and stores none it is sent
+    test-cookies.sps: FAIL a load, a submit and a read-out queued in one hold, taken in one turn: the transfer sends the loaded cookie, and the read-out, carried out before the transfer's exchange, holds the loaded line alone; 
+    test-cookies.sps: FAIL libcurl's every answer is read, each taken in place of libcurl's by the engine's seam: a curl_share_setopt answer but 0 fails the make, freeing what it made; a COOKIELIST answer but 0 fails the load a
+    test-cookies.sps: FAIL a session with cookies: its calls carry the jar across requests and hosts, three labels deep; http-session-cookies reads it out, http-session-load-cookies! loads into it, and its refusal names the lin
+    test-cookies.sps: FAIL a redirect's hops carry the session's jar, another origin's too: a.localhost's 302 sets a domain cookie, and the hop to b.a.localhost sends it, by the log
+    test-cookies.sps: FAIL the read-out lines a load refuses, by libcurl "8.20.0"'s row: a server's Path=, Path=TRUE, Path=FALSE and Path=rel, a tab in a name and in a value, each line with the rule's fault, and the next reques
+    test-cookies.sps: FAIL Domain=localhost from a.localhost and from localhost, and a __Host- cookie with Domain=localhost, by "8.20.0/psl"'s row: each read-out, and the next request's Cookie headers
+    test-cookies.sps: FAIL the default path, Path=rel and Path=, the 400-day cap, Max-Age=-1 and a deleted cookie, by libcurl "8.20.0"'s row: each read-out, and the next request's Cookie headers
+    test-cookies.sps: FAIL a session's Cookie or Host header beside its cookies is refused as the jar's request is made, cookie-beside-jar, and the engine made for it is stopped; a jar that fails to be made raises, and stops th
+    test-cookies.sps: FAIL every count is zero at the end, the suite's own engine stopped
+share-hsts: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL share-settings, written out whole: one curl_share_setopt call, CURLSHOPT_SHARE, 1, at CURL_LOCK_DATA_COOKIE, 2, alone: no HSTS, no DNS, no lock callbacks
+settings-swapped: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL jar-settings, written out whole: SHARE at the jar's share, then COOKIEFILE at ""; and none for no jar
+no-cookiefile: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL jar-settings, written out whole: SHARE at the jar's share, then COOKIEFILE at ""; and none for no jar
+    test-cookies.sps: FAIL bytes above 0x7F, Latin-1 both ways: a server's E9 and FF stored and read out as U+00E9 and U+00FF, and sent byte for byte; a loaded U+00FF sent as FF
+    test-cookies.sps: FAIL across requests and hosts, three labels deep: a.localhost's host-only and Domain=a.localhost cookies go back to a.localhost, the domain one alone to b.a.localhost, and neither to b.localhost, each by 
+    test-cookies.sps: FAIL a request without the jar sends none of its cookies, and stores none it is sent
+    test-cookies.sps: FAIL a load, a submit and a read-out queued in one hold, taken in one turn: the transfer sends the loaded cookie, and the read-out, carried out before the transfer's exchange, holds the loaded line alone; 
+    test-cookies.sps: FAIL a session with cookies: its calls carry the jar across requests and hosts, three labels deep; http-session-cookies reads it out, http-session-load-cookies! loads into it, and its refusal names the lin
+    test-cookies.sps: FAIL a redirect's hops carry the session's jar, another origin's too: a.localhost's 302 sets a domain cookie, and the hop to b.a.localhost sends it, by the log
+    test-cookies.sps: FAIL the read-out lines a load refuses, by libcurl "8.20.0"'s row: a server's Path=, Path=TRUE, Path=FALSE and Path=rel, a tab in a name and in a value, each line with the rule's fault, and the next reques
+    test-cookies.sps: FAIL Domain=localhost from a.localhost and from localhost, and a __Host- cookie with Domain=localhost, by "8.20.0/psl"'s row: each read-out, and the next request's Cookie headers
+    test-cookies.sps: FAIL the default path, Path=rel and Path=, the 400-day cap, Max-Age=-1 and a deleted cookie, by libcurl "8.20.0"'s row: each read-out, and the next request's Cookie headers
+read-closed-allowed: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a close while two transfers hold the jar answers at once, closing, the share kept and the jar's own handle with it, three easy handles counted; a submit after is refused cookie-jar-closed, and so are 
+load-closed-allowed: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a close while two transfers hold the jar answers at once, closing, the share kept and the jar's own handle with it, three easy handles counted; a submit after is refused cookie-jar-closed, and so are 
+read-out-waits-inside-sections: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL inside a critical section, each jar procedure, which waits as a stop does, refuses before anything else, an assertion violation naming it: no jar made, nothing queued, the jar still live
+rule-latin-1: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL every control byte a load refuses, U+0000, U+0001, LF, CR, U+001F and U+007F, at the first, a middle and the last position of every field, is control-byte; a tab there makes another field, fields; a c
+    test-cookies.sps: FAIL a line starting Set-Cookie:, in every one of its 512 A to Z cases, is set-cookie, before its fields are read; Set-Cookie with no colon, a domain beside FALSE, is taken; KELVIN SIGN for its k and LONG 
+    test-cookies.sps: FAIL the rules in order: a char above U+00FF before a control byte, a control byte before Set-Cookie:, Set-Cookie: before the fields' count, the count before the domain, each field's rule in the fields' or
+rule-7f: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL every control byte a load refuses, U+0000, U+0001, LF, CR, U+001F and U+007F, at the first, a middle and the last position of every field, is control-byte; a tab there makes another field, fields; a c
+rule-cr: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL every control byte a load refuses, U+0000, U+0001, LF, CR, U+001F and U+007F, at the first, a middle and the last position of every field, is control-byte; a tab there makes another field, fields; a c
+    test-cookies.sps: FAIL cookie-line-bytes refuses the first line that breaks a rule, as WHO: &curl-request-error, field lines, its value the line's index from 0, its irritants the index and the rule, never the line, whose va
+set-cookie-exact: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a line starting Set-Cookie:, in every one of its 512 A to Z cases, is set-cookie, before its fields are read; Set-Cookie with no colon, a domain beside FALSE, is taken; KELVIN SIGN for its k and LONG 
+fields-eight: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL every control byte a load refuses, U+0000, U+0001, LF, CR, U+001F and U+007F, at the first, a middle and the last position of every field, is control-byte; a tab there makes another field, fields; a c
+    test-cookies.sps: FAIL seven fields alone: six, eight, one, and the empty line are fields; a value left empty is taken
+domain-hash: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL the domain: #HttpOnly_ in that case exactly, then a domain neither empty nor starting with #: an empty one, #HttpOnly_ alone, #httponly_, #HTTPONLY_, #HttpOnly with no _, #HttpOnly_ twice and a bare #
+httponly-any-case: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL the domain: #HttpOnly_ in that case exactly, then a domain neither empty nor starting with #: an empty one, #HttpOnly_ alone, #httponly_, #HTTPONLY_, #HttpOnly with no _, #HttpOnly_ twice and a bare #
+tail-any-case: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL the tail-match field is TRUE or FALSE exactly: every other case, yes, no, 1, 0, empty, and padded, tail-match; TRUE beside a dot and FALSE beside none taken
+leading-dot-off: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a dot before the domain exactly when the tail-match is TRUE: a dot beside FALSE and none beside TRUE, after #HttpOnly_ too, leading-dot; the two that agree taken
+path-off: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL the path starts with /: empty, rel, TRUE, FALSE, a space before /, and a backslash are path; /, /a and //x taken
+    test-cookies.sps: FAIL the rules in order: a char above U+00FF before a control byte, a control byte before Set-Cookie:, Set-Cookie: before the fields' count, the count before the domain, each field's rule in the fields' or
+secure-off: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL the secure field is TRUE or FALSE exactly, the same complement refused, secure
+    test-cookies.sps: FAIL the rules in order: a char above U+00FF before a control byte, a control byte before Set-Cookie:, Set-Cookie: before the fields' count, the count before the domain, each field's rule in the fields' or
+expiry-no-limit: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL the expiry is decimal digits, at most 9223372036854775807: a sign either way, a space before and after, 0x, an exponent, a dot, empty, 2^63 and one past it are expiry; 0, 00, 007, 1 and 2^63 - 1 taken
+expiry-number: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL the expiry is decimal digits, at most 9223372036854775807: a sign either way, a space before and after, 0x, an exponent, a dot, empty, 2^63 and one past it are expiry; 0, 00, 007, 1 and 2^63 - 1 taken
+name-off: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a name: an empty one is name; one char taken
+    test-cookies.sps: FAIL the rules in order: a char above U+00FF before a control byte, a control byte before Set-Cookie:, Set-Cookie: before the fields' count, the count before the domain, each field's rule in the fields' or
+    test-cookies.sps: FAIL a load checks every line before it loads any: a list whose last line is refused loads none, its refusal naming index 2
+size-one-more: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL the name and the value at most 4,096 chars together, split each way: 1 + 4,095, 4,095 + 1, 2,048 + 2,048 and 4,096 + 0 taken; 1 + 4,096, 4,096 + 1, 2,048 + 2,049 and 4,097 + 0 are size
+size-name-only: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL the name and the value at most 4,096 chars together, split each way: 1 + 4,095, 4,095 + 1, 2,048 + 2,048 and 4,096 + 0 taken; 1 + 4,096, 4,096 + 1, 2,048 + 2,049 and 4,097 + 0 are size
+    test-cookies.sps: FAIL cookie-line-bytes refuses the first line that breaks a rule, as WHO: &curl-request-error, field lines, its value the line's index from 0, its irritants the index and the rule, never the line, whose va
+rules-order: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL the rules in order: a char above U+00FF before a control byte, a control byte before Set-Cookie:, Set-Cookie: before the fields' count, the count before the domain, each field's rule in the fields' or
+refusal-names-line: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL cookie-line-bytes refuses the first line that breaks a rule, as WHO: &curl-request-error, field lines, its value the line's index from 0, its irritants the index and the rule, never the line, whose va
+    test-cookies.sps: FAIL no exit prints a cookie's value, loaded or a server's: every refusal, cookie-line's, cookie-beside-jar's, cookie-jar-closed's and cookie-jar-engine's; a transfer's failure, its bound's, holding the ja
+load-partial: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a load checks every line before it loads any: a list whose last line is refused loads none, its refusal naming index 2
+load-late-copy: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a load takes its copies as it is called: the list and its strings, changed from another thread while the load waits queued, load as given
+cookielist-unread: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL libcurl's every answer is read, each taken in place of libcurl's by the engine's seam: a curl_share_setopt answer but 0 fails the make, freeing what it made; a COOKIELIST answer but 0 fails the load a
+readout-unread: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL libcurl's every answer is read, each taken in place of libcurl's by the engine's seam: a curl_share_setopt answer but 0 fails the make, freeing what it made; a COOKIELIST answer but 0 fails the load a
+share-setopt-unread: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL libcurl's every answer is read, each taken in place of libcurl's by the engine's seam: a curl_share_setopt answer but 0 fails the make, freeing what it made; a COOKIELIST answer but 0 fails the load a
+    test-cookies.sps: FAIL a session's Cookie or Host header beside its cookies is refused as the jar's request is made, cookie-beside-jar, and the engine made for it is stopped; a jar that fails to be made raises, and stops th
+    test-cookies.sps: FAIL every count is zero at the end, the suite's own engine stopped
+readout-utf8: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a fresh jar reads out empty; loaded lines, an HttpOnly one, a session one, a far expiry, a tab-free value with U+00E9, read out whole; and its read-out loads into a fresh jar as the same lines
+    test-cookies.sps: FAIL bytes above 0x7F, Latin-1 both ways: a server's E9 and FF stored and read out as U+00E9 and U+00FF, and sent byte for byte; a loaded U+00FF sent as FF
+load-utf8: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL cookie-line-bytes: each line a Latin-1 copy, each char one byte, U+00E9 and U+00FF as E9 and FF
+    test-cookies.sps: FAIL a fresh jar reads out empty; loaded lines, an HttpOnly one, a session one, a far expiry, a tab-free value with U+00E9, read out whole; and its read-out loads into a fresh jar as the same lines
+    test-cookies.sps: FAIL bytes above 0x7F, Latin-1 both ways: a server's E9 and FF stored and read out as U+00E9 and U+00FF, and sent byte for byte; a loaded U+00FF sent as FF
+slist-not-freed: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL every count is zero at the end, the suite's own engine stopped
+key-untyped: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL cookie-jar: #f by default; a jar where given, kept by curl-request-with, and replaced by #f; and anything else, 5, a string, an engine, an assertion violation naming it by its kind
+beside-foldcase: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL the check folds A to Z alone: KELVIN SIGN for Cookie's k and LONG S for Host's s pass it, where string-ci=? would fold them; and with no jar nothing is refused
+beside-first-only: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL beside a jar, a header named Cookie or Host, in every case shown, any value, empty too, at the first, the middle and the last place of three, is refused as made, cookie-beside-jar, naming the header a
+    test-cookies.sps: FAIL a session's Cookie or Host header beside its cookies is refused as the jar's request is made, cookie-beside-jar, and the engine made for it is stopped; a jar that fails to be made raises, and stops th
+    test-cookies.sps: FAIL every count is zero at the end, the suite's own engine stopped
+beside-no-host: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL beside a jar, a header named Cookie or Host, in every case shown, any value, empty too, at the first, the middle and the last place of three, is refused as made, cookie-beside-jar, naming the header a
+    test-cookies.sps: FAIL a session's Cookie or Host header beside its cookies is refused as the jar's request is made, cookie-beside-jar, and the engine made for it is stopped; a jar that fails to be made raises, and stops th
+    test-cookies.sps: FAIL every count is zero at the end, the suite's own engine stopped
+beside-not-at-submit: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a header renamed Cookie after the request was made is refused at submit and at curl-request-check, on their own copies
+beside-not-at-make: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL beside a jar, a header named Cookie or Host, in every case shown, any value, empty too, at the first, the middle and the last place of three, is refused as made, cookie-beside-jar, naming the header a
+    test-cookies.sps: FAIL a session without cookies sends none and keeps none; a call's Cookie header beside a session's jar is refused, cookie-beside-jar, with the call's &http-exchange; without a jar it is sent
+    test-cookies.sps: FAIL a session's Cookie or Host header beside its cookies is refused as the jar's request is made, cookie-beside-jar, and the engine made for it is stopped; a jar that fails to be made raises, and stops th
+    test-cookies.sps: FAIL every count is zero at the end, the suite's own engine stopped
+owned-no-cookielist: killed; test-unsupported.sps: exit 1; test-transfer.sps: exit 1
+    test-unsupported.sps: FAIL each owned option and twin, written out here, is refused as owned-option where the loaded libcurl knows it, by id, and as unknown-option where it does not, before anything native, each with a value it
+    test-unsupported.sps: FAIL SHARE and COOKIEFILE, the cookie-jar field's, its twins COOKIE, COOKIELIST and COOKIESESSION, and COOKIEJAR, kept, are refused as owned-option, with values their types take, before anything native; th
+    test-transfer.sps: FAIL owned-option-names, written out: the options the transfer always sets, QUICK_EXIT and MAXREDIRS among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its re
+field-options-swapped: killed; test-cookies.sps: exit 1; test-transfer.sps: exit 1
+    test-cookies.sps: FAIL jar-settings, written out whole: SHARE at the jar's share, then COOKIEFILE at ""; and none for no jar
+    test-cookies.sps: FAIL the cookie-jar field sets SHARE then COOKIEFILE, its row of request-field-options
+    test-cookies.sps: FAIL bytes above 0x7F, Latin-1 both ways: a server's E9 and FF stored and read out as U+00E9 and U+00FF, and sent byte for byte; a loaded U+00FF sent as FF
+    test-cookies.sps: FAIL across requests and hosts, three labels deep: a.localhost's host-only and Domain=a.localhost cookies go back to a.localhost, the domain one alone to b.a.localhost, and neither to b.localhost, each by 
+    test-cookies.sps: FAIL a request without the jar sends none of its cookies, and stores none it is sent
+    test-cookies.sps: FAIL a load, a submit and a read-out queued in one hold, taken in one turn: the transfer sends the loaded cookie, and the read-out, carried out before the transfer's exchange, holds the loaded line alone; 
+    test-cookies.sps: FAIL a session with cookies: its calls carry the jar across requests and hosts, three labels deep; http-session-cookies reads it out, http-session-load-cookies! loads into it, and its refusal names the lin
+    test-cookies.sps: FAIL a redirect's hops carry the session's jar, another origin's too: a.localhost's 302 sets a domain cookie, and the hop to b.a.localhost sends it, by the log
+    test-cookies.sps: FAIL the read-out lines a load refuses, by libcurl "8.20.0"'s row: a server's Path=, Path=TRUE, Path=FALSE and Path=rel, a tab in a name and in a value, each line with the rule's fault, and the next reques
+    test-cookies.sps: FAIL Domain=localhost from a.localhost and from localhost, and a __Host- cookie with Domain=localhost, by "8.20.0/psl"'s row: each read-out, and the next request's Cookie headers
+    test-cookies.sps: FAIL the default path, Path=rel and Path=, the 400-day cap, Max-Age=-1 and a deleted cookie, by libcurl "8.20.0"'s row: each read-out, and the next request's Cookie headers
+    test-cookies.sps: FAIL a failed engine that abandons a live transfer's easy handle keeps its hold on the jar: the share stays in use, the jar closing, held once, and both stay counted, one easy handle and one share; the con
+    test-transfer.sps: FAIL owned-option-names, written out: the options the transfer always sets, QUICK_EXIT and MAXREDIRS among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its re
+    test-transfer.sps: FAIL request-field-options, written out: url's CURLU; method's NOBODY and CUSTOMREQUEST, and a streamed body's POST and UPLOAD; headers' HTTPHEADER; body's POSTFIELDSIZE_LARGE and COPYPOSTFIELDS, then a st
+jar-not-opaque: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a jar is opaque: it prints as #<curl-cookie-jar>, and record-rtd opens it not
+response-not-opaque: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL no exit prints a cookie's value, loaded or a server's: every refusal, cookie-line's, cookie-beside-jar's, cookie-jar-closed's and cookie-jar-engine's; a transfer's failure, its bound's, holding the ja
+head-not-opaque: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL no exit prints a cookie's value, loaded or a server's: every refusal, cookie-line's, cookie-beside-jar's, cookie-jar-closed's and cookie-jar-engine's; a transfer's failure, its bound's, holding the ja
+accessor-unchecked: killed; test-printed.sps: exit 1
+    test-printed.sps: FAIL each export of (curl), called with a URL holding a password as every argument, answers its row: an accessor, an assertion from it naming the string (kind string); a key where a key belongs, (kind stri
+    test-printed.sps: FAIL no export of the three, at any arity from 1 to 3, every argument a URL holding a password, prints the password in what it raises, as write, display and display-condition print it
+    test-printed.sps: FAIL no export of the three, at any arity from 1 to 3, handed the jar, a line holding the loaded secret, or the session as every argument, prints either cookie value in what it raises, as write, display an
+kinds-no-share: killed; test-memory-safety.sps: exit 1; test-curl-testing.sps: exit 1
+    test-memory-safety.sps: FAIL native-kinds: block, easy, url, slist, curl-string, transfer, multi and share, in that order
+    test-memory-safety.sps: FAIL native-counts: every kind, in native-kinds' order, each zero at the start
+    test-memory-safety.sps: FAIL count-up! raises its kind's count by one, and count-down! lowers it, each kind apart
+    test-memory-safety.sps: FAIL count-up! and count-down! refuse a symbol that is no kind, as an assertion violation, and count nothing
+    test-memory-safety.sps: FAIL a count-down below zero, a double free, raises an assertion violation and leaves the count at zero
+    test-memory-safety.sps: FAIL count-up! of block counts that kind alone, and count-down! takes it back
+    test-memory-safety.sps: FAIL count-down! of block at zero raises, a double free, and leaves every count at zero
+    test-memory-safety.sps: FAIL count-up! of easy counts that kind alone, and count-down! takes it back
+    test-memory-safety.sps: FAIL count-down! of easy at zero raises, a double free, and leaves every count at zero
+    test-memory-safety.sps: FAIL count-up! of url counts that kind alone, and count-down! takes it back
+    test-memory-safety.sps: FAIL count-down! of url at zero raises, a double free, and leaves every count at zero
+    test-memory-safety.sps: FAIL count-up! of slist counts that kind alone, and count-down! takes it back
+    test-memory-safety.sps: FAIL count-down! of slist at zero raises, a double free, and leaves every count at zero
+    test-memory-safety.sps: FAIL count-up! of curl-string counts that kind alone, and count-down! takes it back
+    test-memory-safety.sps: FAIL count-down! of curl-string at zero raises, a double free, and leaves every count at zero
+    test-memory-safety.sps: FAIL count-up! of transfer counts that kind alone, and count-down! takes it back
+    test-memory-safety.sps: FAIL count-down! of transfer at zero raises, a double free, and leaves every count at zero
+    test-memory-safety.sps: FAIL count-up! of multi counts that kind alone, and count-down! takes it back
+    test-memory-safety.sps: FAIL count-down! of multi at zero raises, a double free, and leaves every count at zero
+    test-memory-safety.sps: FAIL count-up! of share counts that kind alone, and count-down! takes it back
+    test-memory-safety.sps: FAIL count-down! of share at zero raises, a double free, and leaves every count at zero
+    test-memory-safety.sps: FAIL the mutex: 8 threads count transfer up 20000 times each, then down as often, with no raise, and the count is 160000 between and zero after
+    test-memory-safety.sps: FAIL foreign-block: an address, counted as a block while it lives; free-foreign-block! frees it, and the count is zero after
+    test-memory-safety.sps: FAIL foreign-block refuses a size that is no positive exact integer: 0, -1, 1.5, 8.0 and "8", counting nothing
+    test-memory-safety.sps: FAIL two blocks live at once are both counted, and each frees, the first made first; a block of 1 byte is one too
+    test-memory-safety.sps: FAIL free-foreign-block! refuses what is no address at all, and counts nothing
+    test-memory-safety.sps: FAIL free-foreign-block! refuses a dead address, freed already or never allocated, before free runs: in a child Chez, which goes on to print
+    test-memory-safety.sps: FAIL call-with-c-string hands C UTF-8 and a NUL: Ã© is 195 169, Î» is 206 187, â¬ is 226 130 172, U+1F600 is 240 159 152 128; c-string->bytevector reads them back without the NUL; one block is counted whi
+    test-memory-safety.sps: FAIL call-with-c-string refuses "\x0;abc" as &curl-embedded-nul, naming it, with nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-c-string refuses "a\x0;b" as &curl-embedded-nul, naming it, with nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-c-string refuses "abc\x0;" as &curl-embedded-nul, naming it, with nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-c-string refuses "\x0;" as &curl-embedded-nul, naming it, with nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-c-string refuses "Ã©\x0;Î»" as &curl-embedded-nul, naming it, with nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-c-string refuses "ð\x0;" as &curl-embedded-nul, naming it, with nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-c-string refuses "â¬\x0;" as &curl-embedded-nul, naming it, with nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-c-string: a raise from PROC frees the block, and reaches the caller
+    test-memory-safety.sps: FAIL call-with-c-string: re-entering PROC through a continuation, once the block is freed, raises, and PROC runs once
+    test-memory-safety.sps: FAIL call-with-c-string refuses what is no string, and a PROC that is no procedure
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string hands C one byte per char and a NUL: every char from U+0001 to U+00FF as its own code, Ã© as 233, never UTF-8's 195 169; c-string->bytevector reads them back without the NUL
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string refuses "\x0;abc" as &curl-embedded-nul, naming it, with nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string refuses "a\x0;b" as &curl-embedded-nul, naming it, with nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string refuses "abc\x0;" as &curl-embedded-nul, naming it, with nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string refuses "\x0;" as &curl-embedded-nul, naming it, with nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string refuses "Ã©\x0;Ã¿" as &curl-embedded-nul, naming it, with nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string refuses "Äabc", a char above U+00FF, with an assertion violation naming the string, nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string refuses "aÄb", a char above U+00FF, with an assertion violation naming the string, nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string refuses "abcÄ", a char above U+00FF, with an assertion violation naming the string, nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string refuses "Ä", a char above U+00FF, with an assertion violation naming the string, nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string refuses "Ã¿â¬", a char above U+00FF, with an assertion violation naming the string, nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string refuses "ð", a char above U+00FF, with an assertion violation naming the string, nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string refuses "Ä\x0;", a char above U+00FF, with an assertion violation naming the string, nothing allocated at the raise, and PROC not run
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string: a raise from PROC frees the block, and reaches the caller
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string: re-entering PROC through a continuation, once the block is freed, raises, and PROC runs once
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string refuses what is no string, and a PROC that is no procedure
+    test-memory-safety.sps: FAIL call-with-c-string, while another thread flips a char of its string to U+0000: 2000 calls each refused or whole, none cut, both seen, and nothing left
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string, while another thread flips a char of its string to U+0000: 2000 calls each refused or whole, none cut, both seen, and nothing left
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string, while another thread flips a char of its string to U+0100: 2000 calls each refused or whole, none cut, both seen, and nothing left
+    test-memory-safety.sps: FAIL call-with-c-string in an engine that runs out at every tick, each abandoned, until one completes: it completes, and no native object is left
+    test-memory-safety.sps: FAIL call-with-latin-1-c-string in an engine that runs out at every tick, each abandoned, until one completes: it completes, and no native object is left
+    test-curl-testing.sps: FAIL a pass, and one share left alone: exit 1, the line naming it
+    test-curl-testing.sps: FAIL the counts are back at zero once with-counts returns: a pass exits 0, and nothing is said
+share-uncounted: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a jar is made on its engine, live, holding no transfer, the engine's one jar, its share and its handle counted, one of each
+    test-cookies.sps: FAIL a close while two transfers hold the jar answers at once, closing, the share kept and the jar's own handle with it, three easy handles counted; a submit after is refused cookie-jar-closed, and so are 
+    test-cookies.sps: FAIL a failed engine that abandons a live transfer's easy handle keeps its hold on the jar: the share stays in use, the jar closing, held once, and both stay counted, one easy handle and one share; the con
+share-counted-down-in-use: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a failed engine that abandons a live transfer's easy handle keeps its hold on the jar: the share stays in use, the jar closing, held once, and both stay counted, one easy handle and one share; the con
+share-owner-unchecked: killed; test-native.sps: exit 1
+    test-native.sps: FAIL every exported native procedure that takes a handle, called on this thread with a handle another thread made, raises &curl-wrong-thread from its own name, carrying the maker's thread and this one
+cleanup-owner-unchecked: killed; test-native.sps: exit 1
+    test-native.sps: FAIL every exported native procedure that takes a handle, called on this thread with a handle another thread made, raises &curl-wrong-thread from its own name, carrying the maker's thread and this one
+cookielist-owner-unchecked: killed; test-native.sps: exit 1
+    test-native.sps: FAIL every exported native procedure that takes a handle, called on this thread with a handle another thread made, raises &curl-wrong-thread from its own name, carrying the maker's thread and this one
+slist-walk-owner-unchecked: killed; test-native.sps: exit 1
+    test-native.sps: FAIL every exported native procedure that takes a handle, called on this thread with a handle another thread made, raises &curl-wrong-thread from its own name, carrying the maker's thread and this one
+share-setopt-value-lost: killed; test-variadic.sps: exit 1
+    test-variadic.sps: FAIL the share's SHARE of share-0 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE of share-1 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE of share-3 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE of share-4 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE of share-5 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE of share-8 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE of share-9 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE of share-99 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE of share--1 through curl-share-setopt-int answers (1), and the second transfer holding it sends no cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE 2, then UNSHARE of unshare-0 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE 2, then UNSHARE of unshare-1 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE 2, then UNSHARE of unshare-3 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE 2, then UNSHARE of unshare-4 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE 2, then UNSHARE of unshare-5 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE 2, then UNSHARE of unshare-8 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE 2, then UNSHARE of unshare-9 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE 2, then UNSHARE of unshare-99 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+    test-variadic.sps: FAIL the share's SHARE 2, then UNSHARE of unshare--1 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+share-setopt-plain: killed; test-collect-safe.sps: exit 1
+    test-collect-safe.sps: FAIL the scan of src/ finds curl_easy_setopt bound three times, once per value type, curl_easy_getinfo once, curl_multi_setopt once, for a long, and curl_share_setopt once, for an int, each through bind-va
+    test-collect-safe.sps: FAIL src/ holds to the table: no violation
+cookielist-id-wrong: killed; test-constants.sps: exit 1
+    test-constants.sps: FAIL curlinfo-cookielist is CURLINFO_COOKIELIST
+slist-layout-swapped: killed; test-constants.sps: exit 1
+    test-constants.sps: FAIL struct curl_slist.next has the header's offset, size and kind
+    test-constants.sps: FAIL struct curl_slist.data has the header's offset, size and kind
+session-cookies-default: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a session without cookies sends none and keeps none; a call's Cookie header beside a session's jar is refused, cookie-beside-jar, with the call's &http-exchange; without a jar it is sent
+    test-cookies.sps: FAIL a session's jar is freed with it: http-session-cookies of a closed session raises its engine's stopped; of a session without cookies, an assertion violation
+call-drops-jar: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a session with cookies: its calls carry the jar across requests and hosts, three labels deep; http-session-cookies reads it out, http-session-load-cookies! loads into it, and its refusal names the lin
+    test-cookies.sps: FAIL a redirect's hops carry the session's jar, another origin's too: a.localhost's 302 sets a domain cookie, and the hop to b.a.localhost sends it, by the log
+    test-cookies.sps: FAIL a session without cookies sends none and keeps none; a call's Cookie header beside a session's jar is refused, cookie-beside-jar, with the call's &http-exchange; without a jar it is sent
+hop-drops-jar: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a redirect's hops carry the session's jar, another origin's too: a.localhost's 302 sets a domain cookie, and the hop to b.a.localhost sends it, by the log
+session-on-no-stop: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL a session's Cookie or Host header beside its cookies is refused as the jar's request is made, cookie-beside-jar, and the engine made for it is stopped; a jar that fails to be made raises, and stops th
+    test-cookies.sps: FAIL every count is zero at the end, the suite's own engine stopped
+origin-cookies-joined: killed; test-origin.sps: exit 1
+    test-origin.sps: FAIL the cookie route: each set= a Set-Cookie, its bytes as given, a tab, a quote and 0xE9 among them, in order; the status and Location the query names; the request's Host and every Cookie header, in any 
+origin-no-open-head: killed; test-origin.sps: exit 1
+    test-origin.sps: FAIL a head left open as its connection closes is logged to its /cookies request's key, its bytes and what followed its request line, quoted; a whole one, and an open head of another route, log none; Node 
+origin-set-cookie-utf8: killed; test-origin.sps: exit 1
+    test-origin.sps: FAIL the cookie route: each set= a Set-Cookie, its bytes as given, a tab, a quote and 0xE9 among them, in order; the status and Location the query names; the request's Host and every Cookie header, in any 
+reason-missing: killed; test-conditions.sps: exit 1
+    test-conditions.sps: FAIL the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option, unsupported-type, unknown-option, repe
+    test-conditions.sps: FAIL the request-error constructor takes each of the thirty-nine reasons
+cookies-a-call-key: killed; test-http-client.sps: exit 1
+    test-http-client.sps: FAIL the keys, written out: a session's, the request's, the policy's, then cookies, its own (the M7 plan, section 3.1); a call's, the session's but cookies, then body, form, params and body-length; a port'
+http-response-not-opaque: killed; test-cookies.sps: exit 1
+    test-cookies.sps: FAIL no exit prints a cookie's value, loaded or a server's: every refusal, cookie-line's, cookie-beside-jar's, cookie-jar-closed's and cookie-jar-engine's; a transfer's failure, its bound's, holding the ja
+share-cleanup-proto: killed; test-constants.sps: exit 1
+    test-constants.sps: FAIL prototype: "curl_share_cleanup" bound through bind-required as (uptr) -> uptr fits a declaration its row gives
+conventions-row-missing: killed; test-collect-safe.sps: exit 1
+    test-collect-safe.sps: FAIL src/ holds to the table: no violation
+origin-accepts-ctl: killed; test-origin.sps: exit 1
+    test-origin.sps: FAIL the cookie route refuses, 404, a query that breaks its rules: no key, a key twice, a status out of range, a set= holding 0x01, 0x0A or 0x7F, a malformed %, a to= with a space, a pad= of another letter
+mutants: 86 killed, 0 survived

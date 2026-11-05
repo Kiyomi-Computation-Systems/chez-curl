@@ -70,6 +70,8 @@
 //           ANY /auth?key=K&ch=CH[&...]  the auth route, below
 //           GET /auth-log?key=K          the auth route's log for K, below
 //           GET /proxy-log?from=N        the proxy's log from line N, below
+//           ANY /cookies[/P]?key=K[&...] the cookie route, below
+//           GET /cookie-log?key=K        the cookie route's log for K, below
 //           anything else                404, body "not found\n"
 //         The queries of these three, and of HTTP/2's /answer, /refuse,
 //         /answer-at and /seq, are NAME=VALUE pairs, each name once at most
@@ -432,6 +434,42 @@
 // open now, then lines N + 1 to L, each ending "\n". The log lives as long
 // as the origin.
 //
+// The cookie route (M7 slice 4; the M7 plan, section 6.4), on http and the
+// https faces alike: ANY /cookies, or any path below it, /cookies/a/b/page
+// say, the path a cookie's default path is made from, its query NAME=VALUE
+// pairs:
+//   key=K      required, once, as /sink's: the log the request joins
+//   status=S   at most once, 200 to 599; 200 when left out
+//   to=TARGET  at most once: a Location header, TARGET decoded as /redirect's
+//   set=BYTES  any number of times, in order: a Set-Cookie header each, its
+//              value BYTES percent-decoded as the auth route's u= is, %XX in
+//              either case, every other char its own byte, written byte for
+//              byte; a value holding a byte no header carries, 0x00 to 0x08,
+//              0x0A to 0x1F or 0x7F, is refused, and so is a malformed %
+//   pad=P      at most once, P 1 to 60000 of the letter p: nothing but the
+//              request line's length
+// A query that breaks these gets the 404. The answer: S, then each
+// Set-Cookie in order, then Location when to is given, then Content-Length
+// and Connection, and as its body the request's log line and "\n", but for
+// 204 and 304, which carry no body. Each request is numbered for its key
+// from 1, as its head arrives, and logged once its body is read, one line:
+//   request N face=FACE host=HOST cookies=C cookie="VALUE" ...
+// HOST the first Host header's value, quoted as a VALUE is, or - for none;
+// C the request's Cookie headers, in any case, and then each one's value,
+// as Node parsed it, in order, its bytes as the auth log escapes them, a "
+// as \x22. GET /cookie-log?key=K answers 200 with "cookie-log K N\n", N the
+// lines logged for K, then each line, ending "\n", in their order. On the
+// http face, a connection that closes holding bytes after its last blank
+// line, a head whose blank line never came, whose request line is a
+// /cookies request's, logs to that request's key, in its turn:
+//   open-head face=http bytes=B headers="BYTES"
+// B the bytes it held, its request line among them, and BYTES those after
+// the request line's CRLF, quoted as a VALUE is: libcurl's head left open,
+// by a Cookie line past its cap, which no complete-head log would show.
+// The face keeps its connections alive, as Node does, so no transfer meets
+// a connection the origin closed unsaid. The logs live as long as the
+// origin.
+//
 // The suites (tests/test-origin.sps, tests/test-origin-tls.sps) hold their
 // own copy of each scenario's bytes, written separately from these. They
 // never read them from here, so changing a script here fails them.
@@ -595,7 +633,54 @@ function route(target) {
   if (path === '/proxy-log') {
     return queried('proxy-log', queryOf(query, { from: (v) => decimal(v, 0, 1000000000) }, ['from']));
   }
+  if (path === '/cookies' || path.startsWith('/cookies/')) return queried('cookies', cookieQuery(query));
+  if (path === '/cookie-log') return queried('cookie-log', queryOf(query, { key: keyValue }, ['key']));
   return { kind: 'not-found' };
+}
+
+// cookieQuery: the cookie route's query, its pairs NAME=VALUE, the value
+// after the first =: key, once and required, a key as retry takes it;
+// status, at most once, 200 to 599; to, at most once, decoded as
+// headerTarget decodes; set, any number of times, accountBytes' bytes, none
+// of 0x00 to 0x08, 0x0A to 0x1F and 0x7F; pad, at most once, 1 to 60000 of
+// the letter p. The answer: { key, status, to, set }, status 200 and to
+// null when left out, set the values in order; or null for a pair with no
+// =, a name it does not take, a repeat, or a value refused.
+function cookieQuery(query) {
+  if (query === undefined) return null;
+  const found = { status: 200, to: null, set: [] };
+  const seen = new Set();
+  for (const pair of query.split('&')) {
+    const at = pair.indexOf('=');
+    if (at < 0) return null;
+    const name = pair.slice(0, at);
+    const value = pair.slice(at + 1);
+    if (name !== 'set') {
+      if (seen.has(name)) return null;
+      seen.add(name);
+    }
+    if (name === 'key') {
+      if (!retryKey(value)) return null;
+      found.key = value;
+    } else if (name === 'status') {
+      const status = decimal(value, 200, 599);
+      if (status === null) return null;
+      found.status = status;
+    } else if (name === 'to') {
+      const to = headerTarget(value);
+      if (to === null) return null;
+      found.to = to;
+    } else if (name === 'set') {
+      const bytes = accountBytes(value);
+      if (bytes === null || bytes.some((b) => (b < 0x20 && b !== 0x09) || b === 0x7f)) return null;
+      found.set.push(bytes);
+    } else if (name === 'pad') {
+      if (!/^p{1,60000}$/.test(value)) return null;
+    } else {
+      return null;
+    }
+  }
+  return found.key === undefined ? null : found;
 }
 
 // accountBytes: a query value's bytes, each %XX, in either case, the byte
@@ -1088,6 +1173,107 @@ function authAnswer(r, n, face, conn, method, target, pairs, body) {
 // The raw faces' /raw/auth417 connections, counted on each face.
 const auth417Connections = { raw: 0, 'raw-tls': 0 };
 
+// --- the cookie route: its numbers, its lines and its log -----------------
+
+// The cookie route's requests counted for each key, and each key's lines.
+const cookieNumbers = new Map();
+const cookieLogs = new Map();
+
+// cookieNumber: one more request for KEY, numbered as its head arrives.
+function cookieNumber(key) {
+  const n = (cookieNumbers.get(key) || 0) + 1;
+  cookieNumbers.set(key, n);
+  return n;
+}
+
+// cookieLogged: LINE at the end of KEY's log.
+function cookieLogged(key, line) {
+  if (!cookieLogs.has(key)) cookieLogs.set(key, []);
+  cookieLogs.get(key).push(line);
+}
+
+// cookieLogText: the answer of /cookie-log?key=KEY.
+function cookieLogText(key) {
+  const lines = cookieLogs.get(key) || [];
+  return `cookie-log ${key} ${lines.length}\n${lines.map((line) => `${line}\n`).join('')}`;
+}
+
+// quoted: BYTES, quoted, as the auth log escapes them, a " as \x22.
+const quoted = (bytes) => `"${escaped(bytes).replace(/"/g, '\\x22')}"`;
+
+// cookieLine: request N's line on FACE, from its header PAIRS, a flat list
+// of names and values as received: its first Host, and each Cookie header's
+// value, in order.
+function cookieLine(n, face, pairs) {
+  const hosts = [];
+  const cookies = [];
+  for (let i = 0; i + 1 < pairs.length; i += 2) {
+    const name = pairs[i].toLowerCase();
+    if (name === 'host') hosts.push(pairs[i + 1]);
+    if (name === 'cookie') cookies.push(pairs[i + 1]);
+  }
+  return [`request ${n}`, `face=${face}`, `host=${hosts.length > 0 ? quoted(latin1(hosts[0])) : '-'}`,
+          `cookies=${cookies.length}`, ...cookies.map((value) => `cookie=${quoted(latin1(value))}`)].join(' ');
+}
+
+// cookieRespond: the cookie route's answer for its request R, numbered N,
+// on FACE: logged, then written.
+function cookieRespond(res, r, n, face, pairs) {
+  const line = cookieLine(n, face, pairs);
+  cookieLogged(r.key, line);
+  const headers = [];
+  for (const bytes of r.set) headers.push('Set-Cookie', bytes.toString('latin1'));
+  if (r.to !== null) headers.push('Location', r.to);
+  return text(res, r.status, `${line}\n`, headers);
+}
+
+// CRLFCRLF: the blank line that ends a head.
+const CRLFCRLF = Buffer.from('\r\n\r\n', 'latin1');
+
+// OPEN_HEAD_LIMIT: the most bytes a connection's open head keeps.
+const OPEN_HEAD_LIMIT = 64 * 1024;
+
+// openHead: BYTES, which a connection on FACE held after its last blank
+// line as it closed, logged as an open head when its first line is a
+// /cookies request's, to that request's key.
+function openHead(face, bytes) {
+  const end = bytes.indexOf('\r\n', 0, 'latin1');
+  if (end < 0) return;
+  const m = /^[A-Z]+ ([^ ]+) HTTP\/1\.1$/.exec(bytes.subarray(0, end).toString('latin1'));
+  const r = m ? route(m[1]) : { kind: 'not-found' };
+  if (r.kind !== 'cookies') return;
+  cookieLogged(r.key, `open-head face=${face} bytes=${bytes.length} headers=${quoted(bytes.subarray(end + 2))}`);
+}
+
+// headTracker: FACE's connection listener: each connection's bytes after
+// its last blank line, kept to OPEN_HEAD_LIMIT, seen as they arrive, and
+// handed to openHead as it closes. A 'data' listener of its own: Node then
+// feeds its parser from the same events, so the requests go on as before.
+function headTracker(face) {
+  return (socket) => {
+    let pending = Buffer.alloc(0);
+    socket.on('data', (chunk) => {
+      const at = chunk.lastIndexOf(CRLFCRLF);
+      if (at >= 0) {
+        pending = Buffer.from(chunk.subarray(at + 4, at + 4 + OPEN_HEAD_LIMIT));
+        return;
+      }
+      const kept = Math.min(3, pending.length);
+      const seam = Buffer.concat([pending.subarray(pending.length - kept), chunk.subarray(0, 3)]);
+      const across = seam.lastIndexOf(CRLFCRLF);
+      if (across >= 0) {
+        const from = across + 4 - kept;
+        pending = Buffer.from(chunk.subarray(from, from + OPEN_HEAD_LIMIT));
+      } else if (pending.length < OPEN_HEAD_LIMIT) {
+        pending = Buffer.concat([pending, chunk.subarray(0, OPEN_HEAD_LIMIT - pending.length)]);
+      }
+    });
+    socket.on('close', () => {
+      if (pending.length > 0) openHead(face, pending);
+    });
+  };
+}
+
 // --- the well-formed HTTP/1.1 faces: http and the https faces -------------
 
 // send: writes one whole response, its headers in the order given, then
@@ -1142,6 +1328,8 @@ function respond(req, res, body) {
       return text(res, 200, authLogText(r.key));
     case 'proxy-log':
       return text(res, 200, proxyLogText(r.from));
+    case 'cookie-log':
+      return text(res, 200, cookieLogText(r.key));
     case 'echo': {
       let lines = `${req.method} ${req.url} HTTP/${req.httpVersion}\n`;
       for (let i = 0; i < req.rawHeaders.length; i += 2) {
@@ -1225,6 +1413,7 @@ function wellFormed(face) {
     const r = route(req.url);
     if (r.kind === 'sink') countFor(r.key);
     const authN = r.kind === 'auth' ? authNumber(r.key) : null;
+    const cookieN = r.kind === 'cookies' ? cookieNumber(r.key) : null;
     req.on('error', () => res.destroy());
     if (mark === 'cuthead') return socket.destroy();
     if (mark === 'resethead') return socket.resetAndDestroy();
@@ -1249,6 +1438,7 @@ function wellFormed(face) {
                                            req.rawHeaders, Buffer.concat(chunks)));
       }
       if (closeAfter) return text(res, 200, 'ok\n');
+      if (r.kind === 'cookies') return cookieRespond(res, r, cookieN, face, req.rawHeaders);
       return respond(req, res, Buffer.concat(chunks));
     });
   };
@@ -1256,6 +1446,7 @@ function wellFormed(face) {
 
 const httpServer = numbered(http.createServer(wellFormed('http')), 'connection');
 httpServer.on('connection', track);
+httpServer.on('connection', headTracker('http'));
 
 // --- the proxy (the M7 plan, section 6.2) ---------------------------------
 

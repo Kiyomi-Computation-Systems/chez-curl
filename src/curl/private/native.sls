@@ -90,8 +90,19 @@
 ;;; thread's collection while it ran, when the call was plain (the plan's
 ;;; section 4.1, as measured).
 ;;;
+;;; The cookie jar's (ADR-0035; the M7 plan, section 3.5): curl_share_init
+;;; and curl_share_cleanup, plain, a share counted as share; and
+;;; curl_share_setopt, variadic, bound once, for an int, through
+;;; bind-variadic, last, with the other variadics: libcurl reads its value
+;;; for SHARE and UNSHARE with va_arg(param, int), 7.85.0 lib/share.c:74 and
+;;; :127, 8.20.0 lib/curl_share.c:215 and :283, 8.23.0 :218 and :286, Apple's
+;;; 8.7.1 lib/share.c:76 and :141 (read in source). CURLINFO_COOKIELIST's
+;;; answer, a struct curl_slist libcurl made, is counted as slist and owned
+;;; by the thread that read it, in the critical section of the call, and
+;;; walked by (curl private layouts)' curl-slist.
+;;;
 ;;; Each handle's thread (ADR-0012, decision 3; M3 plan, section 3.3). Each
-;;; easy, multi and CURLU handle and each string list native makes is
+;;; easy, multi, share and CURLU handle and each string list native makes is
 ;;; recorded with its kind and the thread that made it, in the critical
 ;;; section that counts it, and forgotten in the one that frees it. Every
 ;;; exported procedure that takes one checks it first, by check-owner: a
@@ -144,7 +155,9 @@
           curl-multi-init curl-multi-cleanup curl-multi-add-handle curl-multi-remove-handle
           curl-multi-perform curl-multi-poll curl-multi-wakeup curl-multi-info-read
           curl-multi-strerror curl-multi-setopt-long
-          curl-easy-pause)
+          curl-easy-pause
+          curl-share-init curl-share-setopt-int curl-share-cleanup
+          curl-easy-getinfo-cookielist curl-slist-strings)
   (import (curl private require-threaded)
           (except (rnrs) dynamic-wind)
           (only (chezscheme) critical-section dynamic-wind ftype-ref ftype-set! ftype-sizeof
@@ -225,7 +238,8 @@
     (critical-section (with-mutex lock (thunk))))
 
   ;; The live handles native made, by address, each with its kind, easy,
-  ;; multi, url or slist, and the get-thread-id of the thread that made it:
+  ;; multi, share, url or slist, and the get-thread-id of the thread that
+  ;; made it:
   ;; (KIND . THREAD). Read and written under the mutex.
   (define owners (make-eqv-hashtable))
   (define owners-lock (make-mutex))
@@ -824,6 +838,16 @@
   (define raw-curl-easy-pause
     (load-step (bind-blocking "curl_easy_pause" (uptr int) int info)))
 
+  ;; The cookie jar's (ADR-0035): the share interface, 7.10.3, below the
+  ;; floor, and required. Neither call waits on anything: plain.
+
+  ;; CURLSH *curl_share_init(void)
+  (define raw-curl-share-init (load-step (bind-required "curl_share_init" () uptr info)))
+
+  ;; CURLSHcode curl_share_cleanup(CURLSH *share)
+  (define raw-curl-share-cleanup
+    (load-step (bind-required "curl_share_cleanup" (uptr) int info)))
+
   ;; CURLcode curl_easy_setopt(CURL *handle, CURLoption option, ...),
   ;; variadic after option: bound once per value type. curl_off_t is 64
   ;; bits on every platform chez-curl supports. Bound last, so a library
@@ -849,6 +873,15 @@
   ;; 2026-10-25).
   (define raw-curl-multi-setopt-long
     (load-step (bind-variadic "curl_multi_setopt" (uptr int long) int info)))
+
+  ;; CURLSHcode curl_share_setopt(CURLSH *share, CURLSHoption option, ...),
+  ;; variadic after option: bound once, for an int, the type libcurl reads
+  ;; for SHARE and UNSHARE, va_arg(param, int) (above), the one option
+  ;; chez-curl sets, CURLSHOPT_SHARE at CURL_LOCK_DATA_COOKIE (ADR-0035,
+  ;; decision 1). tests/test-variadic.sps watches the value arrive by
+  ;; behaviour.
+  (define raw-curl-share-setopt-int
+    (load-step (bind-variadic "curl_share_setopt" (uptr int int) int info)))
 
   ;; --- the counted wrappers, exported: step 7 counts its handle through them ------
 
@@ -1173,6 +1206,80 @@
   ;; libcurl's text for the CURLMcode CODE, copied; #f for NULL.
   (define (curl-multi-strerror code)
     (c-text (raw-curl-multi-strerror code)))
+
+  ;; --- the share interface's wrappers (ADR-0035; the M7 plan, section 3.5) ----
+
+  ;; curl-share-init : -> Natural
+  ;; A fresh share's address, counted as share and owned by this thread, in
+  ;; one critical section; 0, counted as nothing, when libcurl made none.
+  (define (curl-share-init)
+    (critical-section
+     (let ((share (raw-curl-share-init)))
+       (unless (eqv? share 0)
+         (count-up! 'share)
+         (own! share 'share))
+       share)))
+
+  ;; curl-share-setopt-int : Positive-Integer Integer Integer -> Integer
+  ;; SHARE, this thread's, a CURLSHoption from (curl private constants), and
+  ;; an int: the CURLSHcode.
+  (define (curl-share-setopt-int share option value)
+    (check-owner 'curl-share-setopt share 'share)
+    (raw-curl-share-setopt-int share option value))
+
+  ;; curl-share-cleanup : Positive-Integer -> Integer
+  ;; Frees SHARE, this thread's: the CURLSHcode. On CURLSHE_OK it is counted
+  ;; down and forgotten, in the critical section of the call; any other
+  ;; code, CURLSHE_IN_USE while a handle holds it, leaves it counted, and
+  ;; live, as curl-multi-cleanup does.
+  (define (curl-share-cleanup share)
+    (check-owner 'curl-share-cleanup share 'share)
+    (critical-section
+     (let ((code (raw-curl-share-cleanup share)))
+       (when (eqv? code curlshe-ok)
+         (count-down! 'share)
+         (disown! share))
+       code)))
+
+  ;; curl-easy-getinfo-cookielist : Positive-Integer -> (Values Integer Natural)
+  ;; The CURLcode of CURLINFO_COOKIELIST on EASY, this thread's, and the
+  ;; struct curl_slist * it wrote, the jar's lines, which libcurl made and
+  ;; the caller owns: counted as slist and owned by this thread in the
+  ;; critical section of the call, so an escape cannot leave it made and
+  ;; unrecorded; 0, counted as nothing, for an empty jar, or unless the code
+  ;; is CURLE_OK. The caller frees it with curl-slist-free-all. The slot it
+  ;; writes through is a counted block, freed before this returns.
+  (define (curl-easy-getinfo-cookielist easy)
+    (check-owner 'curl-easy-getinfo easy 'easy)
+    (let ((slot #f))
+      (dynamic-wind #t
+        (lambda () (set! slot (foreign-block (foreign-sizeof 'void*))))
+        (lambda ()
+          (critical-section
+           (let ((code (raw-curl-easy-getinfo easy curlinfo-cookielist slot)))
+             (if (eqv? code curle-ok)
+                 (let ((head (foreign-ref 'uptr slot 0)))
+                   (unless (eqv? head 0)
+                     (count-up! 'slist)
+                     (own! head 'slist))
+                   (values code head))
+                 (values code 0)))))
+        (lambda () (free-foreign-block! slot)))))
+
+  ;; curl-slist-strings : Positive-Integer -> (Listof Bytevector)
+  ;; Each string of the string list LIST, this thread's, in its order, as
+  ;; its bytes up to its NUL, copied by the checked copy: the walk of struct
+  ;; curl_slist by data and next, (curl private layouts)' curl-slist. A NULL
+  ;; data reads as no bytes. Whoever reads them decodes them.
+  (define (curl-slist-strings list)
+    (check-owner 'curl-slist-strings list 'slist)
+    (let walk ((node list) (found '()))
+      (if (eqv? node 0)
+          (reverse found)
+          (let* ((cell (make-ftype-pointer curl-slist node))
+                 (bytes (or (c-string->bytevector (ftype-ref curl-slist (data) cell))
+                            (make-bytevector 0))))
+            (walk (ftype-ref curl-slist (next) cell) (cons bytes found))))))
 
   ;; curl-easy-pause : Positive-Integer Integer -> Integer
   ;; EASY, this thread's, given the new pause state ACTION, a CURLPAUSE_*

@@ -167,6 +167,16 @@
    ;;                       refuses a proxy-ca-file, and proxy-verify #f, as
    ;;                       proxy-tls-without-https-proxy; a proxy CA file is
    ;;                       refused against the environment as a CA file is
+   ;;   cookie-jar          a cookie jar, make-curl-cookie-jar's, whose cookies
+   ;;                       the transfer sends, and into which it stores a
+   ;;                       response's, by libcurl's rules, which vary by
+   ;;                       version; or #f, none: no cookie is sent or kept;
+   ;;                       #f. Beside a jar, a Cookie or Host header, in any
+   ;;                       A to Z case, any value, is refused, as
+   ;;                       cookie-beside-jar; a submit refuses another
+   ;;                       engine's jar, as cookie-jar-engine, and one
+   ;;                       closed, as cookie-jar-closed, which a close that
+   ;;                       crosses the submit makes its token's outcome
    ;; A key it does not take, one given twice, and one with no value are
    ;; refused by name, as &curl-request-error, before anything else. A
    ;; Proxy-Authorization header is refused, as proxy-authorization-header.
@@ -197,12 +207,14 @@
    ;; curl-request-proxy-ca-file : Request -> (U String #f)
    ;;   a fresh copy
    ;; curl-request-proxy-verify : Request -> Boolean
+   ;; curl-request-cookie-jar : Request -> (U Jar #f)
    make-curl-request curl-request-with curl-request?
    curl-request-url curl-request-method curl-request-headers curl-request-body
    curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
    curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
    curl-request-stream-buffer curl-request-body-length curl-request-http-version
    curl-request-credentials curl-request-proxy-ca-file curl-request-proxy-verify
+   curl-request-cookie-jar
 
    ;; --- URLs (ADR-0008) ----------------------------------------------------
    ;; curl-url-part : String Symbol -> (U String Natural #f)
@@ -286,6 +298,51 @@
    ;; holds for them as they were when it ran: a submit checks its own
    ;; copies again, and refuses one changed since.
    make-curl-engine curl-engine? curl-engine-stop curl-submit curl-request-check
+
+   ;; --- the cookie jar (ADR-0035) ------------------------------------------
+   ;; A jar is an engine's: one curl_share of cookies, made, read, loaded and
+   ;; freed on the engine's thread, by message. Each procedure below waits for
+   ;; the engine to carry its message out, with no bound, as curl-engine-stop
+   ;; waits, and none may run inside a critical section. A jar of an engine
+   ;; stopping, stopped or failed is refused as a submit to it is: a stop
+   ;; frees every jar.
+   ;; make-curl-cookie-jar : Engine -> Jar
+   ;; A fresh, empty jar of the engine's, for the cookie-jar key.
+   ;; curl-cookie-jar? : Any -> Boolean
+   ;; curl-cookie-jar-cookies : Jar -> (Listof String)
+   ;; The jar's cookies, as Netscape lines, each a Latin-1 string, one char
+   ;; per byte: DOMAIN TAILMATCH PATH SECURE EXPIRY NAME VALUE, tab-separated,
+   ;; #HttpOnly_ before an HttpOnly cookie's domain, in libcurl's order,
+   ;; which moves: compare them sorted. By version some are lines a load
+   ;; refuses: 7.85.0 lists a tab in a name, a value or a server's Path as
+   ;; eight fields; 7.85.0 and 8.5.0 a server's Path=, Path=TRUE, Path=FALSE
+   ;; or a path that is not absolute as given; and 7.85.0, 8.20.0 and 8.23.0
+   ;; a server's cookie whose name starts __Secure- or __Host- in another
+   ;; case than the prefix's own, beside fields the prefix does not allow,
+   ;; which 8.5.0 drops. 7.85.0 and 8.5.0 list a deleted cookie, with expiry
+   ;; 1, and a loaded one whose expiry has passed, until a cookie is added.
+   ;; curl-cookie-jar-load! : Jar (Listof String) -> Void
+   ;; Loads the lines, in order, once every one is checked: one not in the
+   ;; form a read-out writes is refused, &curl-request-error cookie-line,
+   ;; naming its index from 0, never its text, and nothing is loaded. That
+   ;; form: seven tab-separated fields, none holding a control char, U+0000
+   ;; to U+001F or U+007F; the domain, after an optional #HttpOnly_, neither
+   ;; empty nor starting with #, nor the line starting Set-Cookie:; a dot
+   ;; before the domain exactly when the tail-match field is TRUE; the
+   ;; tail-match and secure fields TRUE or FALSE; the path starting with /;
+   ;; the expiry decimal digits, at most 9223372036854775807; a name; no ;
+   ;; in the name or the value, and no = in the name; the name and value at
+   ;; most 4,096 chars together; a name starting __Secure- or __Host-, in
+   ;; any A to Z case, only beside a secure field TRUE, and for __Host- the
+   ;; path / and the tail-match FALSE; no char above U+00FF. A
+   ;; load costs about n^2 on the engine's thread, while its other transfers
+   ;; wait: 10,000 lines 0.24 to 0.50 s, 50,000 up to 27 s.
+   ;; curl-cookie-jar-close! : Jar -> Void
+   ;; Closes the jar: freed at once, or once the last transfer that holds it
+   ;; ends. A later submit with it is refused, cookie-jar-closed, and so are
+   ;; its read-out and its load. A second close does nothing.
+   make-curl-cookie-jar curl-cookie-jar? curl-cookie-jar-cookies curl-cookie-jar-load!
+   curl-cookie-jar-close!
 
    ;; --- the token ----------------------------------------------------------
    ;; curl-token? : Any -> Boolean

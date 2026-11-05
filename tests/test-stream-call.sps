@@ -100,7 +100,7 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
 
 ;; version : (U String List)
 ;; The loaded libcurl's version, read on this thread before any is forked.
@@ -421,7 +421,7 @@
   (let ((s (new-http-session (make-curl-engine-holding-prereq 200)
                              (session-defaults (list (cons 'proxy #f) (cons 'ca-file ca)
                                                      (cons 'timeout-ms 20000)))
-                             20 #f #f)))
+                             20 #f #f #f)))
     (dynamic-wind
       (lambda () #f)
       (lambda () (proc s))
@@ -1496,7 +1496,8 @@
     (guard (e (#t (list 'raised (describe e))))
       (let ((s (new-http-session (make-curl-engine-holding-prereq 200)
                                  (session-defaults (list (cons 'proxy #f) (cons 'timeout-ms 20000)))
-                                 20 #f (make-http-retry 'attempts 3 'backoff-ms 10 'jitter #f 'methods '(post)))))
+                                 20 #f (make-http-retry 'attempts 3 'backoff-ms 10 'jitter #f 'methods '(post))
+                                 #f)))
         (dynamic-wind
           (lambda () #f)
           (lambda ()

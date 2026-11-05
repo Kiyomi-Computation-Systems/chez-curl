@@ -1,0 +1,26 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+  [floor] probe: libcurl "7.85.0"
+  [floor] probe: prefix-plain ("a.localhost\tFALSE\t/\tFALSE\t0\tplain\t1")
+  [floor] probe: prefix-Secure-not-secure ()
+  [floor] probe: prefix-secure-lower-not-secure ()
+  [floor] probe: prefix-SECURE-upper-not-secure ()
+  [floor] probe: prefix-Secure-secure ("a.localhost\tFALSE\t/\tTRUE\t0\t__Secure-d\t1")
+  [floor] probe: prefix-Host-path-p ()
+  [floor] probe: prefix-host-lower-path-p ()
+  [floor] probe: prefix-Host-ok ("a.localhost\tFALSE\t/\tTRUE\t0\t__Host-g\t1")
+  [floor] probe: prefix-HOST-upper-domain ()
+  [floor] probe: pair-load loaded
+  [floor] probe: pair-sent (200 "request 1 face=http host=\"a.localhost:34781\" cookies=1 cookie=\"a=b=c; n=x; admin=1\"\n")
+  [floor] probe: path-tab-set (200 "request 1 face=http host=\"a.localhost:34781\" cookies=0\n")
+  [floor] probe: path-tab-readout ((8 "a.localhost\tFALSE\t/a\tb\tFALSE\t0\tk\tv"))
+  [floor] probe: head-control (200 ("cookie-log control 2" "request 1 face=http host=\"a.localhost:34781\" cookies=0" "request 2 face=http host=\"a.localhost:34781\" cookies=1 cooki"))
+  [floor] probe: head-agent ((transfer-failed perform-failed 28) ("cookie-log agent 2" "request 1 face=http host=\"a.localhost:34781\" cookies=0" "open-head face=http bytes=4395 headers=\"Host: a.localhost:34"))
+  [floor] probe: head-basic ((transfer-failed perform-failed 28) ("cookie-log basic 2" "request 1 face=http host=\"a.localhost:34781\" cookies=0" "open-head face=http bytes=4508 headers=\"Host: a.localhost:34"))
+  [floor] probe: counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))
+  [floor] probe: batch (answered (raised (engine-error failed)))
+  [floor] probe: batch-engine stopped
+  [floor] probe: free ((engine-error failed) 0 closed)
+  [floor] probe: counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))
+exit=0

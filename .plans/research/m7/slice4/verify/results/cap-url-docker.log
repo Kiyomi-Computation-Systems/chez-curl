@@ -1,0 +1,42 @@
+[floor-7.85.0] libcurl/7.85.0 OpenSSL/3.0.13 zlib/1.3 nghttp2/1.59.0
+[floor-7.85.0] path=1000 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] path=4000 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] path=4100 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] path=4200 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] path=4300 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] path=5000 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] server port=41541
+[floor-7.85.0] server conn=1 why=2s bytes=5067 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[floor-7.85.0] server conn=2 why=2s bytes=8067 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[floor-7.85.0] server conn=3 why=2s bytes=8167 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[floor-7.85.0] server conn=4 why=2s bytes=4262 head-ended=false tail="ppp HTTP/1.1\x0d\x0aHost: 127.0.0.1:41541\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[floor-7.85.0] server conn=5 why=2s bytes=4362 head-ended=false tail="ppp HTTP/1.1\x0d\x0aHost: 127.0.0.1:41541\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[floor-7.85.0] server conn=6 why=2s bytes=5062 head-ended=false tail="ppp HTTP/1.1\x0d\x0aHost: 127.0.0.1:41541\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[ubuntu-openssl-8.5.0] libcurl/8.5.0 OpenSSL/3.0.13 zlib/1.3 brotli/1.1.0 zstd/1.5.5 libidn2/2.3.7 libpsl/0.21.2 (+libidn2/2.3.7) libssh/0.10.6/openssl/zlib nghttp2/1.59.0 librtmp/2.3 OpenLDAP/2.6.10
+[ubuntu-openssl-8.5.0] path=1000 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] path=4000 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] path=4100 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] path=4200 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] path=4300 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] path=5000 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] server port=37823
+[ubuntu-openssl-8.5.0] server conn=1 why=2s bytes=5067 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[ubuntu-openssl-8.5.0] server conn=2 why=2s bytes=8067 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[ubuntu-openssl-8.5.0] server conn=3 why=2s bytes=8167 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[ubuntu-openssl-8.5.0] server conn=4 why=2s bytes=8267 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[ubuntu-openssl-8.5.0] server conn=5 why=2s bytes=8367 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[ubuntu-openssl-8.5.0] server conn=6 why=2s bytes=9067 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[current-8.23.0] libcurl/8.23.0 OpenSSL/3.0.13 zlib/1.3 nghttp2/1.59.0
+[current-8.23.0] path=1000 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] path=4000 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] path=4100 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] path=4200 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] path=4300 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] path=5000 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] server port=46791
+[current-8.23.0] server conn=1 why=2s bytes=5067 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[current-8.23.0] server conn=2 why=2s bytes=8067 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[current-8.23.0] server conn=3 why=2s bytes=8167 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[current-8.23.0] server conn=4 why=2s bytes=8267 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[current-8.23.0] server conn=5 why=2s bytes=8367 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[current-8.23.0] server conn=6 why=2s bytes=9067 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"

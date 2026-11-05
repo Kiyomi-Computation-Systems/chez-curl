@@ -2566,6 +2566,120 @@
 
 (proxy-scenarios)
 
+;; --- the cookie route (M7 slice 4; the M7 plan, section 6.4) -------------------------
+;; Each test runs on an origin of its own. Every expected byte is written
+;; here, never read from the origin.
+
+;; cookie-quoted : String -> String
+;; TEXT, a Latin-1 string, as the cookie route quotes a value: printable
+;; ASCII as it is, but \ as \\ and " as \x22, every other byte \xNN, lower
+;; case, inside quotes.
+(define (cookie-quoted text)
+  (string-append
+   "\""
+   (apply string-append
+          (map (lambda (c)
+                 (let ((b (char->integer c)))
+                   (cond ((= b #x5c) "\\\\")
+                         ((or (< b #x20) (> b #x7e) (= b #x22))
+                          (string #\\ #\x (string-ref "0123456789abcdef" (div b 16))
+                                  (string-ref "0123456789abcdef" (mod b 16))))
+                         (else (string c)))))
+               (string->list text)))
+   "\""))
+
+;; cookie-log-text : String (Listof String) -> (List String Symbol)
+;; /cookie-log's whole answer for KEY's LINES, Connection: close.
+(define (cookie-log-text key lines)
+  (list (closed "HTTP/1.1 200 OK" '()
+                (apply string-append "cookie-log " key " " (number->string (length lines)) "\n"
+                       (map (lambda (l) (string-append l "\n")) lines)))
+        'eof))
+
+;; cookie-logged : Origin String -> (List String Symbol)
+(define (cookie-logged o key)
+  (exchange o 'http (get (string-append "/cookie-log?key=" key) close) 2000))
+
+(define (cookie-scenarios)
+  (test-equal "the cookie route: each set= a Set-Cookie, its bytes as given, a tab, a quote and 0xE9 among them, in order; the status and Location the query names; the request's Host and every Cookie header, in any case, each value whole, as its body; numbered for its key"
+    (list 'returned
+          (list (list (closed "HTTP/1.1 302 Found"
+                              (list "Set-Cookie: a=1" (string-append "Set-Cookie: b=" (string (integer->char #xE9)) "\tx\"")
+                                    "Location: http://b.a.localhost:1/x")
+                              (string-append "request 1 face=http host=" (cookie-quoted "127.0.0.1") " cookies=2 cookie="
+                                             (cookie-quoted "n=1; m=\"2\"") " cookie="
+                                             (cookie-quoted (string (integer->char #xE9) #\\ #\;)) "\n"))
+                      'eof)
+                (list (closed "HTTP/1.1 200 OK" '()
+                              (string-append "request 2 face=http host=" (cookie-quoted "127.0.0.1") " cookies=0\n"))
+                      'eof)
+                (list "HTTP/1.1 204 No Content\r\nSet-Cookie: z=\r\nConnection: close\r\n\r\n" 'eof)))
+    (with-origin
+     (lambda (o)
+       (let* ((a (exchange o 'http (get "/cookies?key=c1&set=a%3D1&set=b%3D%E9%09x%22&status=302&to=http%3A%2F%2Fb.a.localhost%3A1%2Fx"
+                                        "Cookie: n=1; m=\"2\"\r\n"
+                                        (string-append "cOOKIE: " (string (integer->char #xE9) #\\ #\;) "\r\n")
+                                        close)
+                           2000))
+              (b (exchange o 'http (get "/cookies?key=c1" close) 2000))
+              (c (exchange o 'http (get "/cookies?status=204&key=c2&set=z%3D" close) 2000)))
+         (list a b c)))))
+
+  (test-equal "the cookie route's log, whole: each request's line, in order, a 204's among them, and none for another key"
+    (list 'returned
+          (list (cookie-log-text "c3" (list (string-append "request 1 face=http host=" (cookie-quoted "127.0.0.1") " cookies=1 cookie=" (cookie-quoted "k=1"))
+                                            (string-append "request 2 face=http host=" (cookie-quoted "a.localhost:9") " cookies=0")))
+                (cookie-log-text "c4" '())))
+    (with-origin
+     (lambda (o)
+       (exchange o 'http (get "/cookies?key=c3" "Cookie: k=1\r\n" close) 2000)
+       (exchange o 'http (string-append "GET /cookies?key=c3&status=204 HTTP/1.1\r\nHost: a.localhost:9\r\n" close "\r\n") 2000)
+       (list (cookie-logged o "c3") (cookie-logged o "c4")))))
+
+  (test-equal "the cookie route refuses, 404, a query that breaks its rules: no key, a key twice, a status out of range, a set= holding 0x01, 0x0A or 0x7F, a malformed %, a to= with a space, a pad= of another letter, a name it does not take; and logs none of them"
+    (list 'returned
+          (append (make-list-of 10 (list (closed "HTTP/1.1 404 Not Found" '() "not found\n") 'eof))
+                  (list (cookie-log-text "c5" '()))))
+    (with-origin
+     (lambda (o)
+       (append
+        (map (lambda (target) (exchange o 'http (get target close) 2000))
+             '("/cookies?set=a%3D1" "/cookies?key=c5&key=c5" "/cookies?key=c5&status=199"
+               "/cookies?key=c5&set=a%01" "/cookies?key=c5&set=a%0A" "/cookies?key=c5&set=a%7F"
+               "/cookies?key=c5&set=a%2" "/cookies?key=c5&to=a%20b" "/cookies?key=c5&pad=pq"
+               "/cookies?key=c5&nope=1"))
+        (list (cookie-logged o "c5"))))))
+
+  (test-equal "the http face keeps a cookie route's connection alive: two requests on one connection, each answered in turn, Connection: keep-alive"
+    (let ((body (lambda (n) (string-append "request " n " face=http host=" (cookie-quoted "127.0.0.1") " cookies=0\n"))))
+      (list 'returned
+            (list (string-append
+                   "HTTP/1.1 200 OK\r\nSet-Cookie: k=1\r\nContent-Length: "
+                   (number->string (string-length (body "1"))) "\r\nConnection: keep-alive\r\n\r\n" (body "1")
+                   (closed "HTTP/1.1 200 OK" '() (body "2")))
+                  'eof)))
+    (with-origin
+     (lambda (o)
+       (exchange o 'http (string-append (get "/cookies?key=c6&set=k%3D1") (get "/cookies?key=c6" close)) 2000))))
+
+  (test-equal "a head left open as its connection closes is logged to its /cookies request's key, its bytes and what followed its request line, quoted; a whole one, and an open head of another route, log none; Node answers the open one 400"
+    (list 'returned
+          (list (list "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n" 'eof)
+                (list "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n" 'eof)
+                (cookie-log-text "c7" (list (string-append "request 1 face=http host=" (cookie-quoted "127.0.0.1") " cookies=0")
+                                            (string-append "open-head face=http bytes=78 headers="
+                                                           (cookie-quoted "Host: 127.0.0.1\r\nAccept: */*\r\nCookie: \r\n"))))))
+    (with-origin
+     (lambda (o)
+       (let* ((whole (exchange o 'http (get "/cookies?key=c7" close) 2000))
+              (open (let ((p (wire-probe-half-close o 'http (octets "GET /cookies?key=c7&pad=ppp HTTP/1.1\r\nHost: 127.0.0.1\r\nAccept: */*\r\nCookie: \r\n") 2000)))
+                      (list (latin-1 (probe-bytes p)) (probe-end p))))
+              (other (let ((p (wire-probe-half-close o 'http (octets "GET /status/200?key=c7 HTTP/1.1\r\nHost: 127.0.0.1\r\n") 2000)))
+                       (list (latin-1 (probe-bytes p)) (probe-end p)))))
+         (list open other (cookie-logged o "c7")))))))
+
+(cookie-scenarios)
+
 ;; --- lifecycle: OS ports, two origins at once ---------------------------------
 
 (test-equal "OS ports: two origins at once announce four ports, none 0 and all different, and both serve"

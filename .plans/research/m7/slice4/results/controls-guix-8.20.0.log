@@ -1,0 +1,45 @@
+1 diff: 261c261
+1 diff: <   for (const [, whole] of cookies) lines.push(`cookie "${esc(whole)}"`);
+1 diff: ---
+1 diff: >   for (const [, whole] of cookies) lines.push(`cookie "${esc(whole.subarray(0, whole.length - 1))}"`);
+1 -- the stand-in as it is:
+1 selftest ok 4 HTTP/1.1 lines and 2 HTTP/2 fields came back whole
+1 exit=0 (0 expected)
+1 -- the copy that drops a byte:
+1 selftest FAIL line 0: wrote 436f6f6b69653a20613d313b20623d32, reported 436f6f6b69653a20613d313b20623d
+1 selftest FAIL line 1: wrote 636f6f6b69653a2063746c3d01091f7f20656e64, reported 636f6f6b69653a2063746c3d01091f7f20656e
+1 selftest FAIL line 2: wrote 434f4f4b49453a2068693d80e9ffc3a9203b3d2c225c2078, reported 434f4f4b49453a2068693d80e9ffc3a9203b3d2c225c20
+1 selftest FAIL line 3: wrote 436f6f6b69653a, reported 436f6f6b6965
+1 exit=1 (1 expected)
+2 diff: 1248c1248
+2 diff: <       (if (eqv? node 0)
+2 diff: ---
+2 diff: >       (if (or (eqv? node 0) (eqv? (ftype-ref curl-slist (next) (make-ftype-pointer curl-slist node)) 0))
+2 -- the walk that skips the last element:
+2 [guix-8.20.0] x walk scratch-handle walk-check DIFFERS file=6 walk=5 getinfo=0
+2 [guix-8.20.0] x walk jar jar-walk-check DIFFERS file=6 jar=5
+2 [guix-8.20.0] part walk exited 0 after about 0 s (124 is timeout's, 9 Valgrind's)
+2 -- the walk as it is:
+2 [guix-8.20.0] x walk scratch-handle walk-check same file=6 walk=6 getinfo=0
+2 [guix-8.20.0] x walk jar jar-walk-check same file=6 jar=6
+2 [guix-8.20.0] part walk exited 0 after about 0 s (124 is timeout's, 9 Valgrind's)
+3 diff: 1546c1546
+3 diff: <         (when (= (locked lock (lambda () (cookie-jar-holders jar))) 0)
+3 diff: ---
+3 diff: >         (when #t
+3 -- the close that frees the share at once:
+3 [guix-8.20.0] x 1 c-close-while-held close => ok closing state=closing holders=2
+3 [guix-8.20.0] x 1 c-close-while-held after t1: holders=1 state=closing
+3 [guix-8.20.0] x 1 c-close-while-held peek after t1's Set-Cookie, which arrived after the close:
+3 [guix-8.20.0] x 1 c-close-while-held after t2: holders=0 state=closed
+3 [guix-8.20.0] x 1 c-close-while-held jar j state=closed holders=0 log=(((probe attached) 2 2) ((probe detached) 2 2) (close 2 #f) (close 2 2) ((probe detached) 2 2) ((probe detached) 1 2) (release 0 0))
+3 [guix-8.20.0] n 1 c-close-while-held counts block=0 easy=0 url=0 slist=0 curl-string=0 transfer=0 multi=0 share=0
+3 [guix-8.20.0] part lifetime-plant exited 0 after about 1 s (124 is timeout's, 9 Valgrind's)
+3 -- the close as it is:
+3 [guix-8.20.0] x 1 c-close-while-held close => ok closing state=closing holders=2
+3 [guix-8.20.0] x 1 c-close-while-held after t1: holders=1 state=closing
+3 [guix-8.20.0] x 1 c-close-while-held peek after t1's Set-Cookie, which arrived after the close:
+3 [guix-8.20.0] x 1 c-close-while-held after t2: holders=0 state=closed
+3 [guix-8.20.0] x 1 c-close-while-held jar j state=closed holders=0 log=(((probe attached) 2 2) ((probe detached) 2 2) (close 2 #f) ((probe detached) 2 2) ((probe detached) 1 2) (release 0 0))
+3 [guix-8.20.0] n 1 c-close-while-held counts block=0 easy=0 url=0 slist=0 curl-string=0 transfer=0 multi=0 share=0
+3 [guix-8.20.0] part lifetime-plant exited 0 after about 2 s (124 is timeout's, 9 Valgrind's)

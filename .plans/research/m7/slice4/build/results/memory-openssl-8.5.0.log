@@ -1,0 +1,62 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-auth.sps
+test-memory: pass tests/test-auth.sps
+=== tests/test-collect-safe.sps
+test-memory: pass tests/test-collect-safe.sps
+=== tests/test-conditions.sps
+test-memory: pass tests/test-conditions.sps
+=== tests/test-constants.sps
+test-memory: pass tests/test-constants.sps
+=== tests/test-cookies.sps
+test-memory: pass tests/test-cookies.sps
+=== tests/test-curl-testing.sps
+test-memory: pass tests/test-curl-testing.sps
+=== tests/test-engine.sps
+test-memory: pass tests/test-engine.sps
+=== tests/test-group.sps
+test-memory: pass tests/test-group.sps
+=== tests/test-http-client.sps
+test-memory: pass tests/test-http-client.sps
+=== tests/test-library-loading.sps
+test-memory: pass tests/test-library-loading.sps
+=== tests/test-mailbox.sps
+test-memory: pass tests/test-mailbox.sps
+=== tests/test-memory-safety.sps
+test-memory: pass tests/test-memory-safety.sps
+=== tests/test-native.sps
+test-memory: pass tests/test-native.sps
+=== tests/test-origin.sps
+test-memory: pass tests/test-origin.sps
+=== tests/test-printed.sps
+test-memory: pass tests/test-printed.sps
+=== tests/test-proxy.sps
+test-memory: pass tests/test-proxy.sps
+=== tests/test-redirect.sps
+test-memory: pass tests/test-redirect.sps
+=== tests/test-request.sps
+test-memory: pass tests/test-request.sps
+=== tests/test-retry.sps
+test-memory: pass tests/test-retry.sps
+=== tests/test-stream-call.sps
+test-memory: pass tests/test-stream-call.sps
+=== tests/test-stream.sps
+test-memory: pass tests/test-stream.sps
+=== tests/test-transfer.sps
+test-memory: pass tests/test-transfer.sps
+=== tests/test-transfer-tls.sps
+test-memory: pass tests/test-transfer-tls.sps
+=== tests/test-unsupported.sps
+test-memory: pass tests/test-unsupported.sps
+=== tests/test-upload.sps
+test-memory: pass tests/test-upload.sps
+=== tests/test-url-location.sps
+test-memory: pass tests/test-url-location.sps
+=== tests/test-url-parts.sps
+test-memory: pass tests/test-url-parts.sps
+=== tests/test-url.sps
+test-memory: pass tests/test-url.sps
+=== tests/test-variadic.sps
+test-memory: pass tests/test-variadic.sps
+=== tests/test-version.sps
+test-memory: pass tests/test-version.sps
+test-memory: ran 30, passed 30, failed 0, hung 0

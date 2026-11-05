@@ -330,8 +330,8 @@
   ;; callable, keyed by the name it is defined as, a symbol. A convention is
   ;; a symbol, __collect_safe, or a list, (__varargs_after 2). A row for an
   ;; entry not bound yet holds the binding to its convention the moment it
-  ;; is made: curl_share_setopt's, to ADR-0001. M2 and M3 bound the others
-  ;; against rows written first, curl_multi_setopt's among them.
+  ;; is made. M2, M3 and M7 slice 4 bound theirs against rows written
+  ;; first, curl_multi_setopt's and curl_share_setopt's among them.
   ;;
   ;; A mark clears the row's bindings of one kind of crossing: a
   ;; bytevector's data, or a string its callee keeps no pointer to. Its
@@ -381,6 +381,8 @@
           (list "curl_easy_nextheader" '() cannot-block)
           (list "curl_slist_append" '() cannot-block)
           (list "curl_slist_free_all" '() cannot-block)
+          (list "curl_share_init" '() cannot-block)
+          (list "curl_share_cleanup" '() cannot-block)
           (list 'write-body '(__collect_safe) callback-in-perform)
           (list 'read-head '(__collect_safe) stream-callables)
           (list 'read-body '(__collect_safe) stream-callables)

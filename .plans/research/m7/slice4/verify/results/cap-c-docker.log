@@ -1,0 +1,74 @@
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+[floor-7.85.0] libcurl/7.85.0 OpenSSL/3.0.13 zlib/1.3 nghttp2/1.59.0
+[floor-7.85.0] value=100 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] value=8100 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] value=8150 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] value=8170 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] value=8180 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] value=8190 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] value=8200 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] value=100000 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[floor-7.85.0] server port=42443
+[floor-7.85.0] server conn=1 why=2s bytes=173 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[floor-7.85.0] server conn=2 why=2s bytes=8174 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[floor-7.85.0] server conn=3 why=2s bytes=69 head-ended=false tail="150 HTTP/1.1\x0d\x0aHost: 127.0.0.1:42443\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[floor-7.85.0] server conn=4 why=2s bytes=69 head-ended=false tail="170 HTTP/1.1\x0d\x0aHost: 127.0.0.1:42443\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[floor-7.85.0] server conn=5 why=2s bytes=69 head-ended=false tail="180 HTTP/1.1\x0d\x0aHost: 127.0.0.1:42443\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[floor-7.85.0] server conn=6 why=2s bytes=69 head-ended=false tail="190 HTTP/1.1\x0d\x0aHost: 127.0.0.1:42443\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[floor-7.85.0] server conn=7 why=2s bytes=69 head-ended=false tail="200 HTTP/1.1\x0d\x0aHost: 127.0.0.1:42443\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[floor-7.85.0] server conn=8 why=2s bytes=71 head-ended=false tail="000 HTTP/1.1\x0d\x0aHost: 127.0.0.1:42443\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[ubuntu-openssl-8.5.0] libcurl/8.5.0 OpenSSL/3.0.13 zlib/1.3 brotli/1.1.0 zstd/1.5.5 libidn2/2.3.7 libpsl/0.21.2 (+libidn2/2.3.7) libssh/0.10.6/openssl/zlib nghttp2/1.59.0 librtmp/2.3 OpenLDAP/2.6.10
+[ubuntu-openssl-8.5.0] value=100 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] value=8100 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] value=8150 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] value=8170 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] value=8180 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] value=8190 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] value=8200 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] value=100000 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-openssl-8.5.0] server port=45103
+[ubuntu-openssl-8.5.0] server conn=1 why=2s bytes=173 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[ubuntu-openssl-8.5.0] server conn=2 why=2s bytes=8174 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[ubuntu-openssl-8.5.0] server conn=3 why=2s bytes=8224 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[ubuntu-openssl-8.5.0] server conn=4 why=2s bytes=8244 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[ubuntu-openssl-8.5.0] server conn=5 why=2s bytes=69 head-ended=false tail="180 HTTP/1.1\x0d\x0aHost: 127.0.0.1:45103\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[ubuntu-openssl-8.5.0] server conn=6 why=2s bytes=69 head-ended=false tail="190 HTTP/1.1\x0d\x0aHost: 127.0.0.1:45103\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[ubuntu-openssl-8.5.0] server conn=7 why=2s bytes=69 head-ended=false tail="200 HTTP/1.1\x0d\x0aHost: 127.0.0.1:45103\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[ubuntu-openssl-8.5.0] server conn=8 why=2s bytes=71 head-ended=false tail="000 HTTP/1.1\x0d\x0aHost: 127.0.0.1:45103\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[ubuntu-gnutls-8.5.0] libcurl/8.5.0 GnuTLS/3.8.3 zlib/1.3 brotli/1.1.0 zstd/1.5.5 libidn2/2.3.7 libpsl/0.21.2 (+libidn2/2.3.7) libssh/0.10.6/openssl/zlib nghttp2/1.59.0 librtmp/2.3 OpenLDAP/2.6.10
+[ubuntu-gnutls-8.5.0] value=100 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-gnutls-8.5.0] value=8100 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-gnutls-8.5.0] value=8150 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-gnutls-8.5.0] value=8170 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-gnutls-8.5.0] value=8180 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-gnutls-8.5.0] value=8190 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-gnutls-8.5.0] value=8200 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-gnutls-8.5.0] value=100000 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[ubuntu-gnutls-8.5.0] server port=42927
+[ubuntu-gnutls-8.5.0] server conn=1 why=2s bytes=173 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[ubuntu-gnutls-8.5.0] server conn=2 why=2s bytes=8174 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[ubuntu-gnutls-8.5.0] server conn=3 why=2s bytes=8224 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[ubuntu-gnutls-8.5.0] server conn=4 why=2s bytes=8244 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[ubuntu-gnutls-8.5.0] server conn=5 why=2s bytes=69 head-ended=false tail="180 HTTP/1.1\x0d\x0aHost: 127.0.0.1:42927\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[ubuntu-gnutls-8.5.0] server conn=6 why=2s bytes=69 head-ended=false tail="190 HTTP/1.1\x0d\x0aHost: 127.0.0.1:42927\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[ubuntu-gnutls-8.5.0] server conn=7 why=2s bytes=69 head-ended=false tail="200 HTTP/1.1\x0d\x0aHost: 127.0.0.1:42927\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[ubuntu-gnutls-8.5.0] server conn=8 why=2s bytes=71 head-ended=false tail="000 HTTP/1.1\x0d\x0aHost: 127.0.0.1:42927\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[current-8.23.0] libcurl/8.23.0 OpenSSL/3.0.13 zlib/1.3 nghttp2/1.59.0
+[current-8.23.0] value=100 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] value=8100 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] value=8150 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] value=8170 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] value=8180 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] value=8190 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] value=8200 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] value=100000 cookielist=0 perform=52 (Server returned nothing (no headers, no data))
+[current-8.23.0] server port=45111
+[current-8.23.0] server conn=1 why=2s bytes=173 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[current-8.23.0] server conn=2 why=2s bytes=8174 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[current-8.23.0] server conn=3 why=2s bytes=8224 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[current-8.23.0] server conn=4 why=2s bytes=8244 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"
+[current-8.23.0] server conn=5 why=2s bytes=69 head-ended=false tail="180 HTTP/1.1\x0d\x0aHost: 127.0.0.1:45111\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[current-8.23.0] server conn=6 why=2s bytes=69 head-ended=false tail="190 HTTP/1.1\x0d\x0aHost: 127.0.0.1:45111\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[current-8.23.0] server conn=7 why=2s bytes=69 head-ended=false tail="200 HTTP/1.1\x0d\x0aHost: 127.0.0.1:45111\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"
+[current-8.23.0] server conn=8 why=2s bytes=71 head-ended=false tail="000 HTTP/1.1\x0d\x0aHost: 127.0.0.1:45111\x0d\x0aAccept: */*\x0d\x0aCookie: \x0d\x0a"

@@ -11,7 +11,11 @@
 ;;;     exactly, so an export with no row fails; each procedure's answer is
 ;;;     its row's, an accessor's an assertion violation from the accessor
 ;;;     naming the string by its kind, (kind string); and no export, at any
-;;;     arity from 1 to 3, prints the password;
+;;;     arity from 1 to 3, prints the password; nor, handed a cookie jar
+;;;     holding a cookie whose value was loaded and one a server set, a line
+;;;     holding the first, or a session keeping both, as every argument,
+;;;     either value (ADR-0035; the M7 plan, section 3.5: a cookie's value
+;;;     is a secret, as a password is);
 ;;;   - (curl private libcurl-info)'s own copy of shown-value's rule, which it
 ;;;     cannot import, alike shown-value on each kind;
 ;;;   - every path that refuses a URL, given one holding a password: the
@@ -135,6 +139,10 @@
     (&curl-url-error syntax)
     (&curl-wrong-thread syntax)
     (curl-connect-error? 1 no-raise)
+    (curl-cookie-jar-close! 1 (assertion curl-cookie-jar-close! ((kind string))))
+    (curl-cookie-jar-cookies 1 (assertion curl-cookie-jar-cookies ((kind string))))
+    (curl-cookie-jar-load! 2 (assertion curl-cookie-jar-load! ((kind string))))
+    (curl-cookie-jar? 1 no-raise)
     (curl-embedded-nul-string 1 (assertion curl-embedded-nul-string ((kind string))))
     (curl-embedded-nul? 1 no-raise)
     (curl-engine-error-condition 1 (assertion curl-engine-error-condition ((kind string))))
@@ -167,6 +175,7 @@
     (curl-request-ca-file 1 (assertion curl-request-ca-file ((kind string))))
     (curl-request-check 1 (assertion curl-request-check ((kind string))))
     (curl-request-connect-timeout-ms 1 (assertion curl-request-connect-timeout-ms ((kind string))))
+    (curl-request-cookie-jar 1 (assertion curl-request-cookie-jar ((kind string))))
     (curl-request-credentials 1 (assertion curl-request-credentials ((kind string))))
     (curl-request-error-field 1 (assertion curl-request-error-field ((kind string))))
     (curl-request-error-reason 1 (assertion curl-request-error-reason ((kind string))))
@@ -245,6 +254,7 @@
     (libcurl-info-version-number 1 (assertion libcurl-info-version-number ((kind string))))
     (libcurl-info? 1 no-raise)
     (loaded-libcurl none)
+    (make-curl-cookie-jar 1 (assertion make-curl-cookie-jar ((kind string))))
     (make-curl-engine none)
     (make-curl-mailbox none)
     (make-curl-request 1 no-raise)))
@@ -307,6 +317,8 @@
     (http-response? 1 no-raise)
     (http-retry? 1 no-raise)
     (http-session-close 1 (assertion http-session-close ((kind string))))
+    (http-session-cookies 1 (assertion http-session-cookies ((kind string))))
+    (http-session-load-cookies! 2 (assertion http-session-load-cookies! ((kind string))))
     (http-session? 1 no-raise)
     (http-timeout-timeout-ms 1 (assertion http-timeout-timeout-ms ((kind string))))
     (http-timeout? 1 no-raise)
@@ -379,6 +391,94 @@
   (filter (lambda (entry) (pair? (cdr entry)))
           (in-order (lambda (name) (cons name (prints-secret name)))
                     (map car (append curl-rows unsupported-rows http-client-rows)))))
+
+;; --- a cookie's value is never printed (ADR-0035; the M7 plan, section 3.5) ---------------
+
+;; Two cookie values, each a secret: one loaded into the jar, one a server
+;; set; and a line holding the first, as a load takes it.
+(define loaded-secret "L0adedC00kie")
+(define server-secret "S3rverC00kie")
+(define secret-line (string-append "a.localhost\tFALSE\t/\tFALSE\t0\tloaded\t" loaded-secret))
+
+;; cookie-holders : (U (List Engine Jar Session Engine) (List 'raised String))
+;; An engine and a jar of its, and a session keeping cookies, each holding
+;; both cookies: the loaded one by a load, the server's by a transfer to
+;; the origin's cookie route, which set it; the session's engine is the
+;; fourth, read back only to be stopped. Made here, in a definition, under
+;; a guard, and freed at the end.
+(define cookie-holders
+  (guard (e (#t (list 'raised (describe e))))
+    (call-with-origin
+     (lambda (o)
+       (let* ((port (number->string (cdr (origin-face o 'http))))
+              (route (string-append "http://a.localhost:" port "/cookies?key=printed&set=server%3D"
+                                    server-secret))
+              (engine (make-curl-engine))
+              (jar (make-curl-cookie-jar engine))
+              (session (make-http-session 'cookies #t 'proxy #f 'timeout-ms 20000)))
+         (curl-cookie-jar-load! jar (list secret-line))
+         (curl-token-await (curl-submit engine (make-curl-request route 'cookie-jar jar 'proxy #f
+                                                                  'timeout-ms 20000)))
+         (http-session-load-cookies! session (list secret-line))
+         (http-get session route)
+         (list engine jar session))))))
+
+(define holders-made? (and (pair? cookie-holders) (curl-engine? (car cookie-holders))))
+
+(test-equal "the jar and the session each hold both secrets: the loaded cookie and the one the server set"
+  '((#t #t) (#t #t))
+  (if holders-made?
+      (map (lambda (lines)
+             (list (and (exists (lambda (l) (contains? l loaded-secret)) lines) #t)
+                   (and (exists (lambda (l) (contains? l server-secret)) lines) #t)))
+           (list (curl-cookie-jar-cookies (cadr cookie-holders))
+                 (http-session-cookies (caddr cookie-holders))))
+      cookie-holders))
+
+;; prints-cookie : Symbol Any -> (Listof Natural)
+;; The arities from 1 to 3 NAME takes at which, called with ARGUMENT as
+;; every argument, what it raised prints either secret.
+(define (prints-cookie name argument)
+  (let ((v (value-of name)))
+    (if (procedure? v)
+        (filter (lambda (n)
+                  (and (logbit? n (procedure-arity-mask v))
+                       (let ((r (raised (lambda () (apply v (make-list n argument))))))
+                         (and (not (eq? r 'no-raise))
+                              (let ((text (printed r)))
+                                (or (contains? text loaded-secret) (contains? text server-secret)))))))
+                '(1 2 3))
+        '())))
+
+;; The exports whose call with a jar, a line or a session as every argument
+;; would close or stop what holds the secrets, or wait on the origin gone,
+;; before the rest are called: called last, apart.
+(define closing-exports
+  '(curl-cookie-jar-close! curl-engine-stop http-session-close call-with-http-session))
+
+(test-equal "no export of the three, at any arity from 1 to 3, handed the jar, a line holding the loaded secret, or the session as every argument, prints either cookie value in what it raises, as write, display and display-condition print it; nor the jar, the session, nor a request with the jar, printed themselves"
+  '(() #f)
+  (if holders-made?
+      (let* ((jar (cadr cookie-holders))
+             (session (caddr cookie-holders))
+             (names (map car (append curl-rows unsupported-rows http-client-rows)))
+             (open (filter (lambda (name) (not (memq name closing-exports))) names))
+             (each (lambda (argument)
+                     (filter (lambda (entry) (pair? (cdr entry)))
+                             (in-order (lambda (name) (cons name (prints-cookie name argument)))
+                                       (append open closing-exports))))))
+        (list (append (each secret-line) (each (list secret-line)) (each jar) (each session))
+              (let ((text (string-append (printed jar) (printed session)
+                                         (printed (make-curl-request "http://a.localhost/" 'cookie-jar jar)))))
+                (or (contains? text loaded-secret) (contains? text server-secret)))))
+      cookie-holders))
+
+(define holders-freed
+  (guard (e (#t (list 'raised (describe e))))
+    (when holders-made?
+      (http-session-close (caddr cookie-holders))
+      (curl-engine-stop (car cookie-holders)))
+    'freed))
 
 ;; --- libcurl-info's own copy of the rule --------------------------------------------------
 
@@ -472,9 +572,9 @@
   (map (lambda (c) (list (car c) (cadr c))) url-cases)
   (in-order (lambda (c) (list (car c) (url-refusal (caddr c)))) url-cases))
 
-(test-equal "every count is zero at the end"
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))
-  (native-counts))
+(test-equal "every count is zero at the end, the jar's and the session's engines stopped"
+  '(freed ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
+  (list holders-freed (native-counts)))
 
 (test-end "printed")
 
