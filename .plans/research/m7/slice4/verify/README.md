@@ -135,3 +135,6 @@ and 16 193 times and 56 7 against the slice's; test-version gave 56 twice more. 
 against the origin as it was before this slice, and the listener moved nothing curl's tool can
 see; why the engine's runs went from 16 in every run through slice 3 to 56 in three of three is
 not known. 8.7.1's row holds both, as AGENTS.md's race rule has it.
+
+With the rows in, at `e04917a`, test-cookies passed 70 of 70 on the Mac and test-version 27 of 27,
+measuring 56 once more ([`../results/mac-8.7.1-test-cookies-version.log`](../results/mac-8.7.1-test-cookies-version.log)).
