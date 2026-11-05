@@ -1,0 +1,12 @@
+== run 1
+(as-done ((live . 6) (closed . 94)) after-stop ((closed . 100)))
+== run 2
+(as-done ((live . 2) (closed . 98)) after-stop ((closed . 100)))
+== run 3
+(as-done ((live . 5) (closed . 95)) after-stop ((closed . 100)))
+== run 4
+(as-done ((live . 4) (closed . 96)) after-stop ((closed . 100)))
+== run 5
+(as-done ((live . 4) (closed . 96)) after-stop ((closed . 100)))
+== run 6
+(as-done ((live . 5) (closed . 95)) after-stop ((closed . 100)))

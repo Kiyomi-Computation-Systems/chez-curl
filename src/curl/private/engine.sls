@@ -27,7 +27,8 @@
 ;;; engine.
 ;;;
 ;;; Messages cross threads; handle calls don't. A submit, a cancel, a
-;;; resume and a stop are queued under the engine's mutex, and then curl_multi_wakeup
+;;; resume, a cookie jar's message and a stop are queued under the engine's
+;;; mutex, and then curl_multi_wakeup
 ;;; wakes the poll, still under the mutex: the one libcurl call a caller's
 ;;; thread makes on the engine's handle. The engine's thread marks itself
 ;;; stopping, stopped, failing or failed under the same mutex before it
@@ -38,7 +39,9 @@
 ;;;   1. take   the queue, marking each submitted token live;
 ;;;   2. setup  each submitted transfer, by start-transfer!, added to the
 ;;;             multi handle, and recorded in the engine's table of live
-;;;             transfers, by its easy handle's address;
+;;;             transfers, by its easy handle's address; and each cookie
+;;;             jar's message carried out, submits and jar messages alike in
+;;;             the order queued;
 ;;;   3. cancel each live transfer a cancel names: taken out and completed
 ;;;             as cancelled; then a stop, which ends the loop;
 ;;;   4. resume each live streamed transfer a resume names, the fourth
@@ -128,6 +131,31 @@
 ;;; fork-thread is this library's alone (check-seam, rule (f)): one engine
 ;;; thread runs every transfer submitted to it.
 ;;;
+;;; The cookie jar (ADR-0035, amended twice; the M7 plan, section 3.5): a
+;;; curl_share of cookies, made, used and freed on this thread, by message:
+;;; make, read out, load and close, each a message queued beside submits,
+;;; taken with them in the order queued, and answered through a reply the
+;;; caller waits on, as curl-engine-stop waits, with no bound: the engine
+;;; answers every jar message, at its turn, at a stop, or at its failure.
+;;; A jar's share and its own easy handle, the one its messages use,
+;;; attached to the share, are each made, and freed, in one critical
+;;; section with its count and its record; the handle is freed first, since
+;;; curl_share_cleanup answers CURLSHE_IN_USE while any handle holds the
+;;; share. A transfer holds the jar from the hold that records it live,
+;;; once start-transfer! has returned, to its take-out, counted in the
+;;; jar's holders and kept in the engine's table of holds, so it is let go
+;;; once: a start-transfer! that raises has freed its handle, and held
+;;; nothing. A close sets a live jar closing, and frees it at once when no
+;;; transfer holds it; otherwise the last to let it go frees it, the jar
+;;; marked closed in the share's section. set-up! checks the jar on this
+;;; thread, and a jar not live, or another engine's, fails the token, as
+;;; cookie-jar-closed or cookie-jar-engine: the submit's check of the same
+;;; is an early refusal only, since a close and a submit on two threads can
+;;; cross. A stop frees every jar, live or closing, once every live
+;;; transfer is taken out; a failure lets go of each transfer it frees, and
+;;; keeps the hold of each handle it abandons, whose share stays in use and
+;;; counted.
+;;;
 ;;; The engine's thread runs no caller code and sets no timer, so nothing
 ;;; escapes there but by a raise. Its records of a transfer, the token's
 ;;; and the table's, are therefore made after start-transfer! and cleared
@@ -159,7 +187,11 @@
           curl-token-room-wait curl-token-put-piece! curl-token-end-body! curl-token-body-count
           curl-token-upload-stats call-with-upload-held make-curl-engine-reusing
           make-curl-engine-rewinding curl-token-plant-put! make-curl-engine-stalling-completion
-          make-curl-engine-holding-prereq curl-engine-prereq-holds)
+          make-curl-engine-holding-prereq curl-engine-prereq-holds
+          make-curl-cookie-jar curl-cookie-jar-cookies curl-cookie-jar-load! curl-cookie-jar-close!
+          curl-cookie-jar-post! curl-cookie-jar-await curl-cookie-jar-state curl-cookie-jar-holders
+          curl-engine-jar-count make-curl-engine-answering-jar make-curl-engine-delaying-take
+          make-curl-engine-abandoning make-curl-cookie-jar-sharing)
   (import (curl private require-threaded)
           (rnrs)
           (only (chezscheme) critical-section disable-interrupts enable-interrupts fork-thread
@@ -270,7 +302,9 @@
   ;; the look's test seam; and the paced poll's probe, #f but for its test
   ;; seam, a vector of the turns it has left, whether it marks them, and
   ;; the polls, fast polls, fast polls in turns that moved bytes, and
-  ;; paced sleeps it has seen.
+  ;; paced sleeps it has seen. Then, from M7 slice 4, under the mutex: its
+  ;; cookie jars, each made and not yet freed, live or closing; and its
+  ;; table of holds, by token, each the jar a live transfer holds.
   (define-record-type (curl-engine make-engine-record curl-engine?)
     (fields (immutable lock curl-engine-lock)
             (mutable queue curl-engine-queue curl-engine-queue-set!)
@@ -292,7 +326,9 @@
             (mutable paced engine-paced engine-paced-set!)
             (mutable passed engine-passed engine-passed-set!)
             (mutable late engine-late engine-late-set!)
-            (mutable probe engine-probe engine-probe-set!))
+            (mutable probe engine-probe engine-probe-set!)
+            (mutable jars engine-jars engine-jars-set!)
+            (immutable holds engine-holds))
     ;; Opaque: Chez prints a record's every field, and an engine's queue and
     ;; table hold its tokens, so a printed engine, or a token's assertion
     ;; that printed its engine, showed another request's credentials (the
@@ -709,13 +745,50 @@
       (assertion-violation 'make-curl-engine-answering-pause "a CURLcode is an exact integer" code))
     (start-engine #f '() #f (list (cons 'pause-answer code))))
 
+  ;; make-curl-engine-answering-jar : (U 'make 'load 'read) Integer -> Engine
+  ;; make-curl-engine's, but its thread takes CODE in place of libcurl's
+  ;; answer, after making the call, at each of WHICH's: make,
+  ;; curl_share_setopt's at a jar's make; load, CURLOPT_COOKIELIST's at each
+  ;; line of a load; read, CURLINFO_COOKIELIST's at a read-out. A test seam,
+  ;; private, so the test can watch an answer no libcurl gives here fail the
+  ;; message, every answer read (ADR-0035; the M7 plan, section 3.5).
+  (define (make-curl-engine-answering-jar which code)
+    (unless (memq which '(make load read))
+      (assertion-violation 'make-curl-engine-answering-jar "the call is make, load or read" which))
+    (unless (and (integer? code) (exact? code))
+      (assertion-violation 'make-curl-engine-answering-jar "an answer is an exact integer" code))
+    (start-engine #f '() #f (list (cons 'jar-answer (cons which code)))))
+
+  ;; make-curl-engine-delaying-take : Positive-Integer -> Engine
+  ;; make-curl-engine's, but its thread sleeps MS milliseconds, holding
+  ;; nothing, before each turn takes its queue: a test seam, private, which
+  ;; widens the time between a message's queueing and its being carried out,
+  ;; so a close and a submit that cross land in each of their three outcomes
+  ;; on purpose, under Valgrind too, whose threads run one at a time.
+  (define (make-curl-engine-delaying-take ms)
+    (unless (and (integer? ms) (exact? ms) (positive? ms))
+      (assertion-violation 'make-curl-engine-delaying-take "a delay is a positive exact integer of milliseconds" ms))
+    (start-engine #f '() #f (list (cons 'take-delay ms))))
+
+  ;; make-curl-engine-abandoning : Symbol -> Engine
+  ;; make-faulty-curl-engine's, the fault planted at STEP, and its failure
+  ;; abandons the easy handle of every live transfer, as for one whose
+  ;; removal from the multi handle failed: a test seam, private, so a test
+  ;; can watch an abandoned handle keep its jar's share in use, and both
+  ;; stay counted (the M7 plan, section 3.5). Its process keeps them for
+  ;; good: a child runs it, and prints its counts.
+  (define (make-curl-engine-abandoning step)
+    (unless (memq step engine-fault-steps)
+      (assertion-violation 'make-curl-engine-abandoning "not a step of the engine's loop" step))
+    (start-engine step '() #f '(abandoning)))
+
   ;; start-engine : (U Symbol #f) (Listof (U 'transfer 'multi)) (U Integer #f) (Listof Seam) -> Engine
   (define (start-engine fault without answer seams)
     (require-interrupts-on 'make-curl-engine)
     (loaded-libcurl)
     (let ((engine (make-engine-record (make-mutex) '() 'starting #f #f #f
                                       (make-eqv-hashtable) fault '() #f 0 without #f answer
-                                      seams (make-vector 1 0) #f 0 0 #f #f)))
+                                      seams (make-vector 1 0) #f 0 0 #f #f '() (make-eq-hashtable))))
       (fork-thread (lambda () (run-engine engine)))
       (wait-until 'make-curl-engine (curl-engine-lock engine) (lambda () (memq (engine-state engine) '(running failed))) #f)
       (let ((failure (locked (curl-engine-lock engine)
@@ -736,7 +809,12 @@
   ;;   - the request's, or the URL's, as prepare-transfer takes and checks
   ;;     the plan, a private copy;
   ;;   - an engine stopping, stopped or failed: &curl-engine-error, reason
-  ;;     stopped, or failed, with what it failed with.
+  ;;     stopped, or failed, with what it failed with;
+  ;;   - then, in the hold that would queue it, a request whose cookie-jar
+  ;;     is another engine's, cookie-jar-engine, or not live,
+  ;;     cookie-jar-closed: &curl-request-error, field cookie-jar. An early
+  ;;     refusal only: set-up! checks the jar again, on the engine's thread,
+  ;;     where a close that crossed this submit fails its token so.
   (define curl-submit
     (case-lambda
       ((engine request) (submit engine request #f #f))
@@ -754,15 +832,21 @@
     (when (and callback (not mailbox))
       (assertion-violation who "a callback needs a mailbox, which a delivery calls it from" (shown-value callback)))
     (let* ((plan (prepare-transfer request))
+           (jar (plan-jar plan))
            (token (make-token engine plan 'queued #f '() #f mailbox callback #f #f))
            (refusal
             (locked (curl-engine-lock engine)
               (lambda ()
                 (case (engine-state engine)
                   ((running)
-                   (curl-engine-queue-set! engine (cons (cons 'submit token) (curl-engine-queue engine)))
-                   (curl-multi-wakeup (engine-multi engine))
-                   #f)
+                   (cond ((and jar (not (eq? (cookie-jar-engine jar) engine)))
+                          (jar-refusal who 'cookie-jar-engine))
+                         ((and jar (not (eq? (cookie-jar-state jar) 'live)))
+                          (jar-refusal who 'cookie-jar-closed))
+                         (else
+                          (curl-engine-queue-set! engine (cons (cons 'submit token) (curl-engine-queue engine)))
+                          (curl-multi-wakeup (engine-multi engine))
+                          #f)))
                   ((failing failed) (engine-failure engine))
                   (else (engine-error 'stopped #f)))))))
       (when refusal (raise refusal))
@@ -1312,6 +1396,358 @@
     (wait-until 'curl-engine-stop (curl-engine-lock engine) (lambda () (memq (engine-state engine) '(stopped failed))) #f)
     (if #f #f))
 
+  ;; --- the cookie jar (ADR-0035, amended twice; the M7 plan, section 3.5) ---------------
+  ;; A jar's message is (jar KIND JAR REPLY ARG), KIND make, read, load or
+  ;; close, ARG a load's lines, as bytes, checked, or #f. REPLY is a vector,
+  ;; #(STATE ANSWER), STATE pending until the engine's thread answers it,
+  ;; then done, both written under the engine's mutex; ANSWER is (ok VALUE)
+  ;; or (raise CONDITION), CONDITION raised on the waiting caller's thread.
+
+  ;; jar-refusal : Symbol Symbol -> Condition
+  ;; WHO's refusal of a request's cookie-jar for REASON, cookie-jar-engine
+  ;; or cookie-jar-closed: &curl-request-error, field cookie-jar, value the
+  ;; symbol cookie-jar; and a read-out's or a load's of a jar not live.
+  (define (jar-refusal who reason)
+    (condition (make-curl-request-error 'cookie-jar 'cookie-jar reason)
+               (make-who-condition who)
+               (make-message-condition
+                (if (eq? reason 'cookie-jar-engine)
+                    "a cookie jar is its engine's alone, and this one is another engine's"
+                    "the cookie jar is closed, or closing: it takes no transfer, read-out or load more"))
+               (make-irritants-condition (list 'cookie-jar))))
+
+  (define (check-jar who x)
+    (unless (curl-cookie-jar? x) (assertion-violation who "not a cookie jar" (shown-value x))))
+
+  ;; post-jar! : Engine Symbol Jar Any -> Reply
+  ;; KIND's message for JAR, with ARG, queued with its wakeup in one hold of
+  ;; ENGINE's mutex, and its reply; an engine not running refuses it, as a
+  ;; submit is refused: &curl-engine-error, stopped, or what it failed with.
+  (define (post-jar! engine kind jar arg)
+    (let* ((reply (vector 'pending #f))
+           (refusal
+            (locked (curl-engine-lock engine)
+              (lambda ()
+                (case (engine-state engine)
+                  ((running)
+                   (curl-engine-queue-set! engine
+                                           (cons (list 'jar kind jar reply arg) (curl-engine-queue engine)))
+                   (curl-multi-wakeup (engine-multi engine))
+                   #f)
+                  ((failing failed) (engine-failure engine))
+                  (else (engine-error 'stopped #f)))))))
+      (when refusal (raise refusal))
+      reply))
+
+  ;; reply-of : Symbol Engine Reply -> Any
+  ;; REPLY's answer, once ENGINE's thread has written it, waiting as
+  ;; curl-engine-stop waits, by wait-until, polling, with no bound: the
+  ;; engine answers every jar message, at its turn, at its stop or at its
+  ;; failure, and a fixed bound would fail a load slow by libcurl's own
+  ;; cost (ADR-0035, decision 9). (ok VALUE) answers VALUE; (raise
+  ;; CONDITION) raises CONDITION here. An escape from the wait leaves the
+  ;; message to be carried out: the engine answers it all the same.
+  (define (reply-of who engine reply)
+    (let ((answer (wait-until who (curl-engine-lock engine)
+                              (lambda () (and (eq? (vector-ref reply 0) 'done) (vector-ref reply 1)))
+                              #f)))
+      (if (eq? (car answer) 'ok) (cadr answer) (raise (cadr answer)))))
+
+  ;; make-curl-cookie-jar : Engine -> Jar
+  ;; A fresh, empty jar of ENGINE's, made on its thread, as its make
+  ;; message is carried out: a curl_share of cookies alone, share-settings'
+  ;; (ADR-0035, decision 1), and the easy handle the engine keeps for the
+  ;; jar's read-outs and loads, attached to it. What is no engine is an
+  ;; assertion violation; inside a critical section, where it could not
+  ;; wait, one too, before anything; an engine stopping, stopped or failed
+  ;; refuses it as a submit is refused; a make libcurl refuses, curl_share_init or
+  ;; curl_easy_init answering NULL, or a curl_share_setopt answering but
+  ;; CURLSHE_OK, raises, what it made freed.
+  (define (make-curl-cookie-jar engine)
+    (define who 'make-curl-cookie-jar)
+    (check-engine who engine)
+    (require-interrupts-on who)
+    (reply-of who engine (post-jar! engine 'make (new-cookie-jar engine) #f)))
+
+  ;; curl-cookie-jar-cookies : Jar -> (Listof String)
+  ;; JAR's cookies, read out on its engine's thread through
+  ;; CURLINFO_COOKIELIST, as Netscape lines, each a Latin-1 string, each byte
+  ;; one char (ADR-0035, decision 8): DOMAIN TAILMATCH PATH SECURE EXPIRY
+  ;; NAME VALUE, tab-separated, #HttpOnly_ before an HttpOnly cookie's
+  ;; domain, in libcurl's order, which moves with its hash table. libcurl's
+  ;; lines as they are: by version, some are lines a load refuses (the M7
+  ;; plan, section 3.7). Refused as make-curl-cookie-jar refuses, and a jar
+  ;; not live as cookie-jar-closed.
+  (define (curl-cookie-jar-cookies jar)
+    (define who 'curl-cookie-jar-cookies)
+    (check-jar who jar)
+    (require-interrupts-on who)
+    (let ((engine (cookie-jar-engine jar)))
+      (map bytes->latin-1 (reply-of who engine (post-jar! engine 'read jar #f)))))
+
+  ;; curl-cookie-jar-load! : Jar (Listof String) -> Void
+  ;; LINES loaded into JAR, in order, on its engine's thread, each through
+  ;; CURLOPT_COOKIELIST, once every line is checked on this thread, on a
+  ;; copy of the list and of each string, by cookie-line-bytes: a line not
+  ;; in the form a read-out writes is refused as cookie-line, naming its
+  ;; index, never its text, and nothing is loaded (ADR-0035, decision 7).
+  ;; Every answer of libcurl's is read: one but 0 fails the load there,
+  ;; naming the line's index and the code, the lines before it loaded. A
+  ;; load costs about n^2 on the engine's thread, whose other transfers wait
+  ;; meanwhile: 10,000 lines 0.24 to 0.50 s, 50,000 up to 27 s (decision
+  ;; 9). Refused as curl-cookie-jar-cookies refuses.
+  (define (curl-cookie-jar-load! jar lines)
+    (define who 'curl-cookie-jar-load!)
+    (check-jar who jar)
+    (require-interrupts-on who)
+    (let ((bytes (cookie-line-bytes who lines))
+          (engine (cookie-jar-engine jar)))
+      (reply-of who engine (post-jar! engine 'load jar bytes))
+      (if #f #f)))
+
+  ;; curl-cookie-jar-close! : Jar -> Void
+  ;; JAR closed, on its engine's thread: a live jar is set closing, and its
+  ;; share freed at once when no transfer holds it, or else as the last
+  ;; that holds it is taken out; one closing or closed is left as it is. It
+  ;; returns once the engine has carried the close out, never waiting for a
+  ;; transfer. A transfer submitted after it is refused, cookie-jar-closed.
+  ;; Refused as make-curl-cookie-jar refuses.
+  (define (curl-cookie-jar-close! jar)
+    (define who 'curl-cookie-jar-close!)
+    (check-jar who jar)
+    (require-interrupts-on who)
+    (reply-of who (cookie-jar-engine jar) (post-jar! (cookie-jar-engine jar) 'close jar #f))
+    (if #f #f))
+
+  ;; make-curl-cookie-jar-sharing : Engine (Listof (Pairof Integer Integer)) -> (Values Jar (Listof Integer))
+  ;; make-curl-cookie-jar's, but its share is made by OPS' curl_share_setopt
+  ;; calls, in order, each (OPTION . VALUE), in place of share-settings',
+  ;; and every answer taken, none refusing it: the jar, live, and each
+  ;; call's CURLSHcode, in order. A test seam, private, so
+  ;; tests/test-variadic.sps can watch curl_share_setopt's int arrive by
+  ;; behaviour, no answer alone telling 2 from 3 (the slice's measurement).
+  (define (make-curl-cookie-jar-sharing engine ops)
+    (define who 'make-curl-cookie-jar-sharing)
+    (check-engine who engine)
+    (unless (and (list? ops)
+                 (for-all (lambda (op) (and (pair? op) (integer? (car op)) (exact? (car op))
+                                            (integer? (cdr op)) (exact? (cdr op))))
+                          ops))
+      (assertion-violation who "the calls are a list of (OPTION . VALUE), exact integers" ops))
+    (require-interrupts-on who)
+    (let ((made (reply-of who engine (post-jar! engine 'make (new-cookie-jar engine)
+                                                (map (lambda (op) (cons (car op) (cdr op))) ops)))))
+      (values (car made) (cdr made))))
+
+  ;; curl-cookie-jar-post! : Jar (U 'read 'load 'close) (Listof String) -> Reply
+  ;; JAR's KIND message, queued with its wakeup, and not waited for: a load
+  ;; of LINES, checked first as curl-cookie-jar-load! checks them, a
+  ;; read-out or a close, LINES () for those. A test seam, private, which
+  ;; may run inside call-with-engine-held, so jar messages and submits can
+  ;; be queued in the order a test chooses; curl-cookie-jar-await answers
+  ;; the reply.
+  (define (curl-cookie-jar-post! jar kind lines)
+    (define who 'curl-cookie-jar-post!)
+    (check-jar who jar)
+    (unless (memq kind '(read load close))
+      (assertion-violation who "a jar's message is read, load or close" kind))
+    (post-jar! (cookie-jar-engine jar) kind jar
+               (and (eq? kind 'load) (cookie-line-bytes who lines))))
+
+  ;; curl-cookie-jar-await : Jar Reply -> Any
+  ;; REPLY's answer, as the public procedures answer: a read-out's lines,
+  ;; Latin-1 strings, as data, never raised; a load's and a close's #t; or
+  ;; (raised CONDITION), what the message raised.
+  (define (curl-cookie-jar-await jar reply)
+    (check-jar 'curl-cookie-jar-await jar)
+    (guard (e (#t (list 'raised e)))
+      (let ((answer (reply-of 'curl-cookie-jar-await (cookie-jar-engine jar) reply)))
+        (if (list? answer) (map bytes->latin-1 answer) #t))))
+
+  ;; curl-cookie-jar-state : Jar -> (U 'pending 'live 'closing 'closed)
+  ;; curl-cookie-jar-holders : Jar -> Natural
+  ;; curl-engine-jar-count : Engine -> Natural
+  ;; A jar's state, how many transfers hold it, and an engine's jars made
+  ;; and not yet freed, each read in a hold of the engine's mutex: private
+  ;; accessors.
+  (define (curl-cookie-jar-state jar)
+    (check-jar 'curl-cookie-jar-state jar)
+    (locked (curl-engine-lock (cookie-jar-engine jar)) (lambda () (cookie-jar-state jar))))
+  (define (curl-cookie-jar-holders jar)
+    (check-jar 'curl-cookie-jar-holders jar)
+    (locked (curl-engine-lock (cookie-jar-engine jar)) (lambda () (cookie-jar-holders jar))))
+  (define (curl-engine-jar-count engine)
+    (check-engine 'curl-engine-jar-count engine)
+    (locked (curl-engine-lock engine) (lambda () (length (engine-jars engine)))))
+
+  ;; answer! : Engine Reply Any -> Void
+  ;; REPLY answered ANSWER, in one hold of ENGINE's mutex, unless it is
+  ;; answered already: the first answer stands.
+  (define (answer! engine reply answer)
+    (locked (curl-engine-lock engine)
+      (lambda ()
+        (when (eq? (vector-ref reply 0) 'pending)
+          (vector-set! reply 1 answer)
+          (vector-set! reply 0 'done)))))
+
+  ;; answer-jar-messages! : Engine (Listof Message) Condition -> Void
+  ;; Every jar message of MESSAGES answered with a raise of CONDITION: a
+  ;; stop's or a failure's, for the messages it never carried out.
+  (define (answer-jar-messages! engine messages condition)
+    (for-each (lambda (message)
+                (when (eq? (car message) 'jar)
+                  (answer! engine (list-ref message 3) (list 'raise condition))))
+              messages))
+
+  ;; jar-answer-seam : Engine Symbol -> (U Integer #f)
+  ;; The answer ENGINE's (jar-answer WHICH . CODE) seam takes in place of
+  ;; libcurl's at WHICH's calls, or #f.
+  (define (jar-answer-seam engine which)
+    (let ((seam (find (lambda (seam) (and (pair? seam) (eq? (car seam) 'jar-answer)
+                                           (eq? (cadr seam) which)))
+                      (engine-seams engine))))
+      (and seam (cddr seam))))
+
+  ;; jar-message! : Engine (List 'jar Symbol Jar Reply Any) -> Void
+  ;; One jar message, carried out on this thread, and answered: a raise
+  ;; there is its answer, never the engine's failure. A read-out and a load
+  ;; of a jar not live are refused, cookie-jar-closed; each runs through the
+  ;; jar's own handle.
+  (define (jar-message! engine message)
+    (let ((kind (list-ref message 1)) (jar (list-ref message 2)) (reply (list-ref message 3))
+          (arg (list-ref message 4)))
+      (answer! engine reply
+               (guard (e (#t (list 'raise e)))
+                 (list 'ok
+                       (case kind
+                         ((make) (make-jar! engine jar arg))
+                         ((read)
+                          (live-jar! engine jar 'curl-cookie-jar-cookies)
+                          (jar-read-lines 'curl-cookie-jar-cookies (cookie-jar-handle jar)
+                                          (jar-answer-seam engine 'read)))
+                         ((load)
+                          (live-jar! engine jar 'curl-cookie-jar-load!)
+                          (jar-load-lines! 'curl-cookie-jar-load! (cookie-jar-handle jar) arg
+                                           (jar-answer-seam engine 'load)))
+                         (else (close-jar! engine jar))))))))
+
+  ;; live-jar! : Engine Jar Symbol -> Void
+  ;; Returns when JAR is live, read in a hold; else raises WHO's
+  ;; cookie-jar-closed.
+  (define (live-jar! engine jar who)
+    (unless (locked (curl-engine-lock engine) (lambda () (eq? (cookie-jar-state jar) 'live)))
+      (raise (jar-refusal who 'cookie-jar-closed))))
+
+  ;; make-jar! : Engine Jar (U (Listof (Pairof Integer Integer)) #f) -> (U Jar (Pairof Jar (Listof Integer)))
+  ;; JAR made on this thread: its share, made and recorded in one critical
+  ;; section with its count, then share-settings' calls, an answer but
+  ;; CURLSHE_OK, or the seam's, refusing it; or with OPS, a test seam's,
+  ;; OPS' calls in their place, every answer kept and none refusing it;
+  ;; then its handle, made and recorded likewise, and attached to the share,
+  ;; jar-attach!'s; then, in one hold, live, and among ENGINE's jars. A
+  ;; refusal frees what was made, by free-jar!, then raises again. Answers
+  ;; JAR, or with OPS JAR and the answers.
+  (define (make-jar! engine jar ops)
+    (let ((lock (curl-engine-lock engine)))
+      (guard (e (#t (free-jar! engine jar) (raise e)))
+        (critical-section
+         (let ((share (curl-share-init)))
+           (when (eqv? share 0)
+             (error 'make-curl-cookie-jar "curl_share_init returned NULL: no memory for a share"))
+           (locked lock (lambda () (cookie-jar-share-set! jar share)))))
+        ;; In order, a loop: map's order is no order (traps.md).
+        (let ((codes
+               (let loop ((rest (or ops share-settings)) (found '()))
+                 (if (null? rest)
+                     (reverse found)
+                     (let* ((setting (car rest))
+                            (given (curl-share-setopt-int (cookie-jar-share jar) (car setting) (cdr setting)))
+                            (code (or (jar-answer-seam engine 'make) given)))
+                       (unless (or ops (eqv? code curlshe-ok))
+                         (error 'make-curl-cookie-jar "curl_share_setopt answered a CURLSHcode"
+                                (car setting) (cdr setting) code))
+                       (loop (cdr rest) (cons code found)))))))
+        (critical-section
+         (let ((easy (curl-easy-init)))
+           (when (eqv? easy 0)
+             (error 'make-curl-cookie-jar "curl_easy_init returned NULL: no memory for the jar's handle"))
+           (locked lock (lambda () (cookie-jar-handle-set! jar easy)))))
+        (jar-attach! (cookie-jar-handle jar) (cookie-jar-share jar))
+        (locked lock
+          (lambda ()
+            (cookie-jar-state-set! jar 'live)
+            (engine-jars-set! engine (cons jar (engine-jars engine)))))
+        (if ops (cons jar codes) jar)))))
+
+  ;; free-jar! : Engine Jar -> Integer
+  ;; JAR's handle freed, then its share, each in one critical section with
+  ;; its record: the handle first, since curl_share_cleanup answers
+  ;; CURLSHE_IN_USE while any handle holds the share, the jar's own among
+  ;; them; then the share, and on CURLSHE_OK the jar marked closed and let
+  ;; go of ENGINE's jars, in the same section. Answers the cleanup's
+  ;; CURLSHcode, CURLSHE_OK for a jar with no share; any other leaves the
+  ;; share counted, and the jar's record of it.
+  (define (free-jar! engine jar)
+    (let ((lock (curl-engine-lock engine)))
+      (critical-section
+       (let ((easy (cookie-jar-handle jar)))
+         (when easy
+           (curl-easy-cleanup easy)
+           (locked lock (lambda () (cookie-jar-handle-set! jar #f))))))
+      (critical-section
+       (let* ((share (cookie-jar-share jar))
+              (code (if share (curl-share-cleanup share) curlshe-ok)))
+         (when (eqv? code curlshe-ok)
+           (locked lock
+             (lambda ()
+               (cookie-jar-share-set! jar #f)
+               (cookie-jar-state-set! jar 'closed)
+               (engine-jars-set! engine (remq jar (engine-jars engine))))))
+         code))))
+
+  ;; close-jar! : Engine Jar -> Void
+  ;; A live JAR set closing, in one hold, and freed at once when no
+  ;; transfer holds it; one closing or closed left as it is.
+  (define (close-jar! engine jar)
+    (when (locked (curl-engine-lock engine)
+            (lambda ()
+              (and (eq? (cookie-jar-state jar) 'live)
+                   (begin (cookie-jar-state-set! jar 'closing)
+                          (= (cookie-jar-holders jar) 0)))))
+      (free-jar! engine jar))
+    (if #f #f))
+
+  ;; release! : Engine Token -> Void
+  ;; TOKEN's hold on its jar let go, once, in one hold: its entry in the
+  ;; table of holds removed, and the jar's count lowered; then a closing
+  ;; jar the count leaves at zero freed, by free-jar!, marked closed in its
+  ;; share's section. A token that holds none, never set up with a jar or
+  ;; let go already, changes nothing.
+  (define (release! engine token)
+    (let ((jar (locked (curl-engine-lock engine)
+                 (lambda ()
+                   (let ((jar (hashtable-ref (engine-holds engine) token #f)))
+                     (and jar
+                          (begin
+                            (hashtable-delete! (engine-holds engine) token)
+                            (cookie-jar-holders-set! jar (- (cookie-jar-holders jar) 1))
+                            (and (eq? (cookie-jar-state jar) 'closing) (= (cookie-jar-holders jar) 0)
+                                 jar))))))))
+      (when jar (free-jar! engine jar))))
+
+  ;; jar-usable? : Engine Jar -> Boolean
+  ;; Whether JAR is ENGINE's and live, its state read in a hold.
+  (define (jar-usable? engine jar)
+    (and (eq? (cookie-jar-engine jar) engine)
+         (locked (curl-engine-lock engine) (lambda () (eq? (cookie-jar-state jar) 'live)))))
+
+  ;; free-jars! : Engine -> (Listof Jar)
+  ;; Each of ENGINE's jars freed, by free-jar!: those whose share stays in
+  ;; use, held by a handle a failure abandoned.
+  (define (free-jars! engine)
+    (filter (lambda (jar) (not (eqv? (free-jar! engine jar) curlshe-ok)))
+            (locked (curl-engine-lock engine) (lambda () (engine-jars engine)))))
+
   ;; --- completing a token ----------------------------------------------------------------
 
   ;; complete-locked! : Engine Token Any (Listof Any) -> Void
@@ -1392,7 +1828,8 @@
 
   ;; turns : Engine Positive-Integer -> Void
   ;; The loop, until a stop: take, set up, cancel, resume, perform, read,
-  ;; look, poll (the M6 plan, section 3.4). The look reads the queue under
+  ;; look, poll (the M6 plan, section 3.4), a cookie jar's messages carried
+  ;; out with the set-ups, in the order queued (the M7 plan, section 3.5). The look reads the queue under
   ;; the mutex, and a message queued skips the poll: Guix's 8.20.0 reads
   ;; back, inside the perform, a wakeup made before it, and the poll would
   ;; then wait for libcurl alone (ADR-0012, amended 2026-10-30). The paced
@@ -1405,6 +1842,7 @@
   ;; what it decided.
   (define (turns engine multi)
     (let turn ()
+      (take-delay! engine)
       (let* ((moved (vector-ref (engine-moves engine) 0))
              ;; Read before the take: a probe armed after it would count
              ;; a turn whose batch took no mark of the seam's.
@@ -1414,7 +1852,10 @@
             (shut-down! engine multi messages)
             (begin
               (for-each (lambda (message)
-                          (when (eq? (car message) 'submit) (set-up! engine multi (cdr message))))
+                          (case (car message)
+                            ((submit) (set-up! engine multi (cdr message)))
+                            ((jar) (jar-message! engine message))
+                            (else #f)))
                         messages)
               (for-each (lambda (message)
                           (when (eq? (car message) 'cancel) (cancel! engine multi (cdr message))))
@@ -1451,6 +1892,17 @@
                       (lambda () (engine-paced-set! engine (+ (engine-paced engine) 1))))
                     (sleep (make-time 'time-duration 1000000 0)))))
               (turn))))))
+
+  ;; take-delay! : Engine -> Void
+  ;; The take's test seam: with ENGINE's (take-delay . MS), its thread
+  ;; sleeps MS milliseconds, holding nothing, before a turn takes its
+  ;; queue. Without it, nothing.
+  (define (take-delay! engine)
+    (let ((seam (find (lambda (seam) (and (pair? seam) (eq? (car seam) 'take-delay)))
+                      (engine-seams engine))))
+      (when seam
+        (let ((ms (cdr seam)))
+          (sleep (make-time 'time-duration (* (mod ms 1000) 1000000) (div ms 1000)))))))
 
   ;; any-paused? : Engine -> Boolean
   ;; Whether a live transfer of ENGINE's is paused, for receiving or for
@@ -1588,25 +2040,43 @@
   ;; multiplexing stopped, so it is the first transfer no other joins. A
   ;; token already done, cancelled while queued, is passed over. A raise
   ;; from start-transfer!, which has freed what it made, completes the
-  ;; token with it: the transfer's own failure, not the engine's.
+  ;; token with it: the transfer's own failure, not the engine's. A plan
+  ;; with a cookie jar is checked first, on this thread: a jar another
+  ;; engine's, or not live, a close having crossed the submit, completes the
+  ;; token with cookie-jar-engine or cookie-jar-closed, and nothing is made;
+  ;; a live one is held from the hold that records the transfer live, its
+  ;; count raised and the hold kept in the table, so a start-transfer! that
+  ;; raises holds nothing.
   (define (set-up! engine multi token)
     (unless (curl-token-done? token)
       (fault-at! engine 'setup)
-      (when (plan-unmultiplex (curl-token-plan token)) (stop-multiplexing! engine multi))
-      (let ((live (guard (e (#t (complete! engine token e '()) #f))
-                    (start-transfer! (curl-token-plan token)
-                                     (not (memq 'transfer (engine-without engine)))
-                                     (engine-moves engine)
-                                     (engine-seams engine)))))
-        (when live
-          (token-live-set! token live)
-          (locked (curl-engine-lock engine)
-            (lambda () (hashtable-set! (engine-live engine) (live-transfer-easy live) (cons token live))))
-          (let ((code (curl-multi-add-handle multi (live-transfer-easy live))))
-            (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_add_handle code)))))))
+      (let ((jar (plan-jar (curl-token-plan token))))
+        (if (and jar (not (jar-usable? engine jar)))
+            (complete! engine token
+                       (jar-refusal 'curl-submit
+                                    (if (eq? (cookie-jar-engine jar) engine) 'cookie-jar-closed 'cookie-jar-engine))
+                       '())
+            (begin
+              (when (plan-unmultiplex (curl-token-plan token)) (stop-multiplexing! engine multi))
+              (let ((live (guard (e (#t (complete! engine token e '()) #f))
+                            (start-transfer! (curl-token-plan token)
+                                             (not (memq 'transfer (engine-without engine)))
+                                             (engine-moves engine)
+                                             (engine-seams engine)))))
+                (when live
+                  (token-live-set! token live)
+                  (locked (curl-engine-lock engine)
+                    (lambda ()
+                      (hashtable-set! (engine-live engine) (live-transfer-easy live) (cons token live))
+                      (when jar
+                        (hashtable-set! (engine-holds engine) token jar)
+                        (cookie-jar-holders-set! jar (+ (cookie-jar-holders jar) 1)))))
+                  (let ((code (curl-multi-add-handle multi (live-transfer-easy live))))
+                    (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_add_handle code))))))))))
 
   ;; take-out! : Engine Positive-Integer Token -> (Listof Any)
-  ;; TOKEN's live transfer removed from MULTI, freed, then taken out of the
+  ;; TOKEN's live transfer removed from MULTI, freed, its hold on a cookie
+  ;; jar let go once its handle is, by release!, then taken out of the
   ;; table: its chunks, read first. The table lets the transfer go last, so a
   ;; raise on the way leaves it there, and the engine's failure completes
   ;; its token.
@@ -1617,6 +2087,7 @@
            (code (curl-multi-remove-handle multi easy)))
       (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_remove_handle code))
       (free-transfer! live)
+      (release! engine token)
       (fault-at! engine 'free)
       (locked (curl-engine-lock engine) (lambda () (hashtable-delete! (engine-live engine) easy)))
       (token-live-set! token #f)
@@ -1658,14 +2129,17 @@
 
   ;; shut-down! : Engine Positive-Integer (Listof Message) -> Void
   ;; A stop: every token MESSAGES submitted completed as stopped, unset up;
-  ;; each cancel carried out; every live transfer taken out and completed as
-  ;; stopped; the table checked empty; the multi handle cleaned up; and the
-  ;; stop signalled, the thread's last act.
+  ;; every jar message they hold answered stopped; each cancel carried out;
+  ;; every live transfer taken out and completed as stopped, each letting go
+  ;; of its jar; the table checked empty; every jar, live or closing, freed,
+  ;; and checked freed; the multi handle cleaned up; and the stop
+  ;; signalled, the thread's last act.
   (define (shut-down! engine multi messages)
     (for-each (lambda (message)
                 (when (eq? (car message) 'submit)
                   (complete! engine (cdr message) (transfer-ended 'stopped) '())))
               messages)
+    (answer-jar-messages! engine messages (engine-error 'stopped #f))
     (for-each (lambda (message)
                 (when (eq? (car message) 'cancel) (cancel! engine multi (cdr message))))
               messages)
@@ -1677,6 +2151,8 @@
               (live-entries engine))
     (unless (live-empty? engine)
       (error 'curl-engine-stop "the table of live transfers is not empty after a stop"))
+    (unless (null? (free-jars! engine))
+      (error 'curl-engine-stop "a cookie jar's share is still in use after a stop"))
     (let ((code (curl-multi-cleanup multi)))
       (locked (curl-engine-lock engine) (lambda () (engine-multi-set! engine #f)))
       (unless (eqv? code curlm-ok) (multi-failed 'curl_multi_cleanup code)))
@@ -1699,11 +2175,14 @@
   ;; RAISED fails ENGINE (section 3.7): it is marked failing under the
   ;; mutex first, so no caller wakes its multi handle again and a submit
   ;; raises the failure; then every token queued, in the turn's batch, or
-  ;; live completes with &curl-engine-error, reason failed, carrying RAISED;
+  ;; live completes with &curl-engine-error, reason failed, carrying RAISED,
+  ;; and every jar message queued or in the batch is answered with it;
   ;; every live transfer is taken out and freed, but an easy handle whose
-  ;; removal failed, which stays counted, and the multi handle cleaned up,
-  ;; each as far as it goes, so a free that fails leaves its count up; and
-  ;; last, the engine is marked failed.
+  ;; removal failed, which stays counted, each freed one letting go of its
+  ;; jar, and an abandoned one keeping its hold; then every jar is freed,
+  ;; one whose share an abandoned handle holds kept, counted, as closing;
+  ;; and the multi handle cleaned up, each as far as it goes, so a free that
+  ;; fails leaves its count up; and last, the engine is marked failed.
   ;; Nothing raised here leaves the thread.
   (define (fail-engine! engine raised)
     (let* ((failure (engine-error 'failed raised))
@@ -1720,23 +2199,30 @@
                   (when (eq? (car message) 'submit)
                     (complete! engine (cdr message) failure '())))
                 (append (engine-batch engine) queued))
+      (answer-jar-messages! engine (append (engine-batch engine) queued) failure)
       (engine-batch-set! engine '())
       (for-each (lambda (keyed)
                   (let ((key (car keyed)) (token (cadr keyed)) (live (cddr keyed)))
                     (let* ((chunks (guard (e (#t '())) (live-transfer-chunks live)))
                            (easy (live-transfer-easy live))
-                           (removed (and multi easy
+                           (removed (and multi easy (not (memq 'abandoning (engine-seams engine)))
                                          (guard (e (#t #f))
                                            (eqv? (curl-multi-remove-handle multi easy) curlm-ok)))))
                       ;; A handle still in the multi handle is not freed:
                       ;; curl_easy_cleanup would remove it, which can
-                      ;; block. It stays counted, so a suite sees it.
+                      ;; block. It stays counted, so a suite sees it, and
+                      ;; keeps its hold on a jar, whose share stays in use.
                       (unless removed (abandon-transfer-easy! live))
                       (guard (e (#t #f)) (free-transfer! live))
+                      (when (or removed (not easy)) (guard (e (#t #f)) (release! engine token)))
                       (locked lock (lambda () (hashtable-delete! (engine-live engine) key)))
                       (token-live-set! token #f)
                       (complete! engine token failure chunks))))
                 (live-entries engine))
+      ;; A jar whose share an abandoned handle holds stays counted, closing.
+      (guard (e (#t #f))
+        (for-each (lambda (jar) (locked lock (lambda () (cookie-jar-state-set! jar 'closing))))
+                  (free-jars! engine)))
       (when multi
         (guard (e (#t #f)) (curl-multi-cleanup multi)))
       (guard (e (#t #f)) (free-slot! engine))

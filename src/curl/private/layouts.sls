@@ -16,7 +16,7 @@
 ;;; It never loads libcurl. (curl private native) does, and reads these
 ;;; through ftype pointers.
 (library (curl private layouts)
-  (export curl-version-info-data curl-easyoption curl-header curl-msg curl-blob)
+  (export curl-version-info-data curl-easyoption curl-header curl-msg curl-blob curl-slist)
   (import (curl private require-threaded)
           (rnrs)
           (only (chezscheme) define-ftype))
@@ -115,4 +115,16 @@
     (struct
       (data uptr)
       (len size_t)
-      (flags unsigned-int))))
+      (flags unsigned-int)))
+
+  ;; curl-slist : Ftype
+  ;; struct curl_slist, curl/curl.h, every field: what CURLINFO_COOKIELIST
+  ;; answers a pointer to, a cookie jar's lines (ADR-0035; the M7 plan,
+  ;; section 3.5). data is a line's NUL-terminated bytes, next the next
+  ;; node, NULL at the last. native walks it, then frees the list with
+  ;; curl_slist_free_all. The suite checks every field and the struct's
+  ;; size.
+  (define-ftype curl-slist
+    (struct
+      (data uptr)
+      (next uptr))))

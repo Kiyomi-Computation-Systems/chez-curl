@@ -92,13 +92,13 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
 
 ;; one-engine-counts : (Listof (Pairof Symbol Natural))
 ;; The counts while one engine runs and no transfer is live: its multi
 ;; handle and its slot.
 (define one-engine-counts
-  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1)))
+  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
 
 ;; The loaded libcurl's version, read here, on this thread, before any
 ;; engine's thread is forked.
@@ -445,15 +445,19 @@
 ;; cannot tell whether it runs under the gate's Valgrind
 ;; (tests/test-upload.sps), so one row holds both modes' outcomes: a cell
 ;; that splits is held to what its runs showed (AGENTS.md). 52, 55 and 56
-;; are send-receive, 16 protocol. 8.7.1's row is Apple's 8.7.1 from the
+;; are send-receive, 16 protocol. 8.7.1's row is Apple's 8.7.1: 16 from the
 ;; Mac's C probe against research/m7/http2's own HTTP/1.1 face
-;; (research/m7/http2/results/mac-8.7.1.log), with no engine run and no
-;; Valgrind: the Mac's make test confirms it, or prints what it measures.
+;; (research/m7/http2/results/mac-8.7.1.log) and its make test through M7
+;; slice 3; then 56, three runs of three, through the engine at slice 4,
+;; where curl's own tool, 200 times, gave 16 194 and 56 6 against the
+;; origin before the slice and 193 and 7 after it
+;; (research/m7/slice4/results/mac-8.7.1-pk-h1-and-test-version.log): a
+;; race the earlier runs had not shown.
 (define prior-knowledge-to-h1
   '(("7.85.0" (failed perform-failed 52 send-receive) (failed perform-failed 55 send-receive)
               (failed perform-failed 16 protocol))
     ("8.5.0" (failed perform-failed 56 send-receive) (failed perform-failed 55 send-receive))
-    ("8.7.1" (failed perform-failed 16 protocol))
+    ("8.7.1" (failed perform-failed 16 protocol) (failed perform-failed 56 send-receive))
     ("8.20.0" (failed perform-failed 16 protocol) (failed perform-failed 55 send-receive))
     ("8.23.0" (failed perform-failed 16 protocol) (failed perform-failed 55 send-receive))))
 
@@ -672,7 +676,7 @@
            (measured (cadr pair)))
       (test-equal (string-append "http-version http/2-prior-knowledge to the http face, HTTP/1.1, fails as "
                                  (if (string? version) version (written version))
-                                 "'s row says, natively 52 on 7.85.0, 56 on 8.5.0, 16 on 8.7.1, 8.20.0 and 8.23.0, and under Valgrind 55 too, and on 7.85.0 16, as the timing moves; a libcurl with no row fails, naming its version and printing what it measured")
+                                 "'s row says, natively 52 on 7.85.0, 56 on 8.5.0, 16 on 8.20.0 and 8.23.0, 16 or 56 on 8.7.1, and under Valgrind 55 too, and on 7.85.0 16, as the timing moves; a libcurl with no row fails, naming its version and printing what it measured")
         (if (and (pair? row) (pair? (car row))) (cons 'one-of row) row)
         (if (and (pair? row) (pair? (car row)))
             (if (member measured row) (cons 'one-of row) (list 'measured measured 'not-one-of row))

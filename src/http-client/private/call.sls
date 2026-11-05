@@ -35,7 +35,7 @@
           http-retry-max-backoff-ms http-retry-jitter http-retry-statuses http-retry-methods
           new-http-session http-session? http-session-engine http-session-defaults
           http-session-redirects http-session-allow-downgrade http-session-retry
-          http-session-draw http-session-generator
+          http-session-draw http-session-generator http-session-jar session-cookies session-on
           default-redirects default-stream-buffer session-defaults session-policy call-request
           call-request-of group-keys group-limit)
   (import (curl)
@@ -72,15 +72,23 @@
   ;; by default (ADR-0026).
   (define policy-keys '(redirects allow-downgrade retry))
 
+  ;; session-only-keys : (Listof Symbol)
+  ;; The session's keys no call takes: cookies, whether the session keeps a
+  ;; cookie jar, #f by default, which every call of the session carries (the
+  ;; M7 plan, section 3.1; ADR-0035): a call cannot make or drop one.
+  (define session-only-keys '(cookies))
+
   ;; session-keys : (Listof Symbol)
-  ;; The keys make-http-session takes: the request's, then the policy's.
-  (define session-keys (append request-session-keys policy-keys))
+  ;; The keys make-http-session takes: the request's, then the policy's,
+  ;; then cookies.
+  (define session-keys (append request-session-keys policy-keys session-only-keys))
 
   ;; call-keys : (Listof Symbol)
-  ;; The keys a call takes: the session's, each replacing the session's
-  ;; value, then body, form, params and body-length, a producer's length
-  ;; (ADR-0031, decision 2).
-  (define call-keys (append session-keys '(body form params body-length)))
+  ;; The keys a call takes: the session's request and policy keys, each
+  ;; replacing the session's value, then body, form, params and
+  ;; body-length, a producer's length (ADR-0031, decision 2). Not cookies:
+  ;; the session's jar is every call's.
+  (define call-keys (append request-session-keys policy-keys '(body form params body-length)))
 
   ;; port-keys : (Listof Symbol)
   ;; The keys call-with-response-port takes: a call's, then stream-buffer,
@@ -326,6 +334,19 @@
   (define (session-policy settings)
     (policy-of 'make-http-session settings default-redirects #f #f))
 
+  ;; session-cookies : (Listof (Pairof Symbol Any)) -> Boolean
+  ;; A session's cookies, from its SETTINGS, #t or #f, #f when they lack
+  ;; it; anything else is refused as make-http-session, not-a-boolean, field
+  ;; cookies, its value named by shown-value.
+  (define (session-cookies settings)
+    (let ((hit (assq 'cookies settings)))
+      (if hit
+          (let ((v (cdr hit)))
+            (unless (boolean? v)
+              (refuse 'make-http-session 'cookies (shown-value v) 'not-a-boolean "cookies is #t or #f"))
+            v)
+          #f)))
+
   ;; --- a request group's keys (the M5 plan, section 3.7) ---------------------------
 
   ;; group-keys : (Listof Symbol)
@@ -459,11 +480,14 @@
   ;; --- the session -----------------------------------------------------------------
 
   ;; A session: its engine; DEFAULTS, a request of the session's request
-  ;; keys, checked by make-curl-request, whose URL nothing reads; its
-  ;; redirect and retry policies, checked; and its jitter generator, with
-  ;; the mutex every draw holds.
-  ;; new-http-session : Engine Request (U Natural #f) Boolean (U Retry #f) -> Session
+  ;; keys, checked by make-curl-request, whose URL nothing reads, its
+  ;; cookie-jar the session's jar; its redirect and retry policies,
+  ;; checked; its jitter generator, with the mutex every draw holds; and its
+  ;; cookie jar, a jar of its engine's, or #f for none (the M7 plan, section
+  ;; 3.1).
+  ;; new-http-session : Engine Request (U Natural #f) Boolean (U Retry #f) (U Jar #f) -> Session
   ;;   a fresh generator, and a fresh mutex
+  ;; http-session-jar : Session -> (U Jar #f)
   ;; http-session? : Any -> Boolean
   ;; http-session-engine : Session -> Engine
   ;; http-session-defaults : Session -> Request
@@ -479,13 +503,30 @@
             (immutable allow-downgrade http-session-allow-downgrade)
             (immutable retry http-session-retry)
             (immutable generator http-session-generator)
-            (immutable lock http-session-lock))
+            (immutable lock http-session-lock)
+            (immutable jar http-session-jar))
     (sealed #t)
     (opaque #t))
 
-  (define (new-http-session engine defaults redirects allow-downgrade retry)
+  (define (new-http-session engine defaults redirects allow-downgrade retry jar)
     (make-session-record engine defaults redirects allow-downgrade retry
-                         (make-pseudo-random-generator) (make-mutex)))
+                         (make-pseudo-random-generator) (make-mutex) jar))
+
+  ;; session-on : Engine Request (List (U Natural #f) Boolean (U Retry #f)) Boolean -> Session
+  ;; A session on ENGINE, made for it, with DEFAULTS, checked already, and
+  ;; POLICY's redirects, allow-downgrade and retry; and with COOKIES, a jar
+  ;; made on ENGINE, by make-curl-cookie-jar, and DEFAULTS made again with
+  ;; it as their cookie-jar, so a Cookie or Host header among the session's
+  ;; own is refused, cookie-beside-jar, as the low level raises it. A raise
+  ;; there, the jar's make's among them, stops ENGINE, which frees the jar,
+  ;; and then leaves as it was raised: a refusal leaves no engine running.
+  (define (session-on engine defaults policy cookies)
+    (let ((made (if cookies
+                    (guard (e (#t (curl-engine-stop engine) (raise e)))
+                      (let ((jar (make-curl-cookie-jar engine)))
+                        (cons jar (curl-request-with defaults 'cookie-jar jar))))
+                    (cons #f defaults))))
+      (new-http-session engine (cdr made) (car policy) (cadr policy) (caddr policy) (car made))))
 
   ;; http-session-draw : Session -> Real
   ;; The next draw from SESSION's generator, a flonum strictly between 0
@@ -586,7 +627,9 @@
   ;; credentials beside a call's Authorization header, or a session's
   ;; Digest beside a call's stream, is refused as the request is built,
   ;; as the low level raises it; a Proxy-Authorization header, a session's
-  ;; or a call's, is refused so too.
+  ;; or a call's, is refused so too; and the session's cookie jar is the
+  ;; request's, so a call's Cookie or Host header beside it is refused,
+  ;; cookie-beside-jar.
   (define (call-request-of who mode session method url plist)
     (let* ((settings (key-settings who (if (eq? mode 'port) port-keys call-keys) plist))
            (body-given (assq 'body settings))
@@ -662,7 +705,8 @@
                                    'proxy-verify (cond ((hit 'proxy-verify)
                                                         (curl-request-proxy-verify checked))
                                                        ((hit 'proxy) #t)
-                                                       (else (curl-request-proxy-verify defaults))))
+                                                       (else (curl-request-proxy-verify defaults)))
+                                   'cookie-jar (curl-request-cookie-jar defaults))
                 (car policy)
                 (cadr policy)
                 (caddr policy)

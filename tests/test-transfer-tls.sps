@@ -147,7 +147,7 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
 
 ;; running-counts : (Listof (Pairof Symbol Natural))
 ;; The counts while the suite's engine runs and no transfer is live: its
@@ -155,7 +155,7 @@
 ;; nothing else. The child's counts, read once its own
 ;; engine has stopped, are zero-counts.
 (define running-counts
-  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1)))
+  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
 
 ;; The loaded libcurl's feature names, read here, on this thread, so the
 ;; load runs before any thread is forked.

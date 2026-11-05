@@ -1,0 +1,22 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-cookies.sps
+%%%% Starting test cookies
+FAIL the name and the value at most 4,096 chars together, split each way: 1 + 4,095, 4,095 + 1, 2,048 + 2,048 and 4,096 + 0 taken; 1 + 4,096, 4,096 + 1, 2,048 + 2,049 and 4,097 + 0 are size
+  expected: (#f #f #f #f size size size size)
+  actual:   (size size size size size size size size)
+test-cookies: crossings on the delaying engine ((ran . 8) (setup . 10) (submit . 18))
+test-cookies: crossings on a plain engine ((ran . 16) (submit . 17))
+test-cookies: refused-readout on "8.20.0" measured (("path-empty" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-true" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-false" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-rel" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("name-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("value-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0"))
+test-cookies: expired-load on "8.20.0" measured (() ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1"))
+test-cookies: open-head on "8.20.0" measured (200 200 (a-request a-request))
+test-cookies: domain-localhost on "8.20.0/psl" measured ((() "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"d=1\"") (() "request 2 face=http host=\"localhost:<port>\" cookies=0"))
+test-cookies: set-cookie-matrix on "8.20.0" measured (((("a.localhost\tFALSE\t/cookies/a/b\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("a.localhost\tFALSE\t/\tFALSE\t0\tpr\t1" #f) ("a.localhost\tFALSE\t/cookies/a/b\tFALSE\t0\tpe\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"pr=1\"") ((("a.localhost\tFALSE\t/\tFALSE\twithin-400-days\tca\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ca=1\"") (() "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1") "request 3 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"keep=1\"" ("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1")))
+# of expected passes      59
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 59, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-cookies.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

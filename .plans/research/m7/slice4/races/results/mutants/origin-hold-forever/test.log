@@ -1,0 +1,37 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (2 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+FAIL h2c POST /answer?status=200&hold=KEY, its HEADERS without END_STREAM: the answer, whole frames, only once /raw/release?key=KEY, from the raw face 1000 ms on, has answered released; eof once the probe has sent its DATA
+  expected: (("000000040000000000000000040100000000000006010400000001880f0d02313100000b000100000001616e73776572203230300a" eof) held-until-released ("HTTP/1.1 200 OK\r\nContent-Length: 9\r\nConnection: close\r\n\r\nreleased\n" eof))
+  actual:   (("000000040000000000000000040100000000" eof) (connected 3 head-at 5) ("HTTP/1.1 200 OK\r\nContent-Length: 9\r\nConnection: close\r\n\r\nreleased\n" eof))
+FAIL h2 POST /answer?status=200&hold=KEY, its HEADERS without END_STREAM: the answer, whole frames, only once /raw/release?key=KEY, from the raw face 1000 ms on, has answered released; eof once the probe has sent its DATA
+  expected: (("000000040000000000000000040100000000000006010400000001880f0d02313100000b000100000001616e73776572203230300a" eof) held-until-released ("HTTP/1.1 200 OK\r\nContent-Length: 9\r\nConnection: close\r\n\r\nreleased\n" eof))
+  actual:   (("000000040000000000000000040100000000" eof) (connected 8 head-at 10) ("HTTP/1.1 200 OK\r\nContent-Length: 9\r\nConnection: close\r\n\r\nreleased\n" eof))
+# of expected passes      159
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 159, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-origin-tls.sps (exit 1)
+=== tests/test-upload.sps
+%%%% Starting test upload
+FAIL the head's body-asked bit: #t for a streamed body whose server answers before reading it over HTTP/2, nothing put by the head, the answer held until the read callable was asked and the empty body ended; over HTTP/1.1 with a close, a race, whether the read callable was ever asked; #t for one whose server reads it before answering, on the raw face and over HTTP/2; #f for a whole body, for none, and for a streamed length of 0, which libcurl never asks for
+  expected: ((raw-answer bit-is-ask) (h2-answer #t) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+  actual:   ((raw-answer bit-is-ask) (h2-answer (no-head not-done)) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+(fill #f 2031616 ms 589 retried () mib (20))
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 1043)
+(throughput http chunked ms 933)
+(throughput https sized ms 842)
+(throughput https chunked ms 1064)
+(throughput h2 sized ms 607)
+(throughput h2 chunked ms 450)
+(read-lock collections-while-live 994)
+# of expected passes      57
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 57, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-upload.sps (exit 1)
+test: ran 2, passed 0, failed 2, hung 0
+make: *** [Makefile:259: test] Error 1

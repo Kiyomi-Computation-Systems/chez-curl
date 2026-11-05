@@ -91,11 +91,11 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
 
 ;; The counts while the suite's engine runs: its multi handle and its slot.
 (define running-counts
-  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1)))
+  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
 
 ;; The loaded libcurl's version, read on this thread before any is forked.
 (define version
@@ -718,8 +718,17 @@
   ;; (research/ci-first-run), so raw-answer's bit is whether the read
   ;; callable was ever asked, as with the answer written at accept below:
   ;; 7.85.0 and 8.5.0 stop sending once they read a final answer with a
-  ;; close.
-  (test-equal "the head's body-asked bit: #t for a streamed body whose server answers before reading it over HTTP/2, nothing put by the head, and over HTTP/1.1 with a close, a race, whether the read callable was ever asked; #t for one whose server reads it before answering, on the raw face and over HTTP/2; #f for a whole body, for none, and for a streamed length of 0, which libcurl never asks for"
+  ;; close. HTTP/2's answer races it too: under Valgrind on 8.5.0 it came
+  ;; first in 4 of 20 runs of M7 slice 4's tree and 5 of 20 of main's, and
+  ;; libcurl then never asked, the bit #f (research/m7/slice4/races). So
+  ;; h2-answer's server holds its answer, hold=KEY, until this thread has
+  ;; seen the read callable asked, and releases KEY: the ask comes first by
+  ;; construction, nothing put by the head. It ends the body, empty, and
+  ;; waits for the read callable to answer the end, before the release: on
+  ;; 8.5.0 an HTTP/2 transfer paused for sending can read nothing more
+  ;; (traps.md): under Valgrind a held answer to a body left paused hung 7
+  ;; times in 160, and the unheld answer once in 120.
+  (test-equal "the head's body-asked bit: #t for a streamed body whose server answers before reading it over HTTP/2, nothing put by the head, the answer held until the read callable was asked and the empty body ended; over HTTP/1.1 with a close, a race, whether the read callable was ever asked; #t for one whose server reads it before answering, on the raw face and over HTTP/2; #f for a whole body, for none, and for a streamed length of 0, which libcurl never asks for"
     '((raw-answer bit-is-ask) (h2-answer #t) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
     (map (lambda (row)
            (on-own-engine make-curl-engine
@@ -738,19 +747,35 @@
                                        (curl-token-put-piece! t (pattern-piece 0 1000) 20000)
                                        (curl-token-end-body! t)
                                        #t)))
+                      (held (and (eq? name 'h2-answer)
+                                 (let* ((asked-first (wait-for (lambda () (ustat t 'asked)) 20000))
+                                        (ended (begin (curl-token-end-body! t)
+                                                      (wait-for (lambda () (and (assq 'ended (ustat t 'reads)) #t))
+                                                                20000)))
+                                        (released (guard (e (#t (list 'raised (describe e))))
+                                                    (curl-response-status
+                                                     (curl-token-await
+                                                      (curl-submit own (make-curl-request
+                                                                        (url-of o 'raw "/raw/release?key=asked-h2-answer")
+                                                                        'proxy #f 'timeout-ms 10000)))))))
+                                   (if (and asked-first ended (eqv? released 200))
+                                       'asked-ended-released
+                                       (list 'asked asked-first 'ended ended 'released released)))))
                       (head (and (curl-token-head-wait t 20000) (curl-token-head t)))
                       (asked (if (curl-head? head) (curl-head-body-asked? head) (list 'no-head (outcome-of t)))))
-                 (when (memq name '(raw-answer h2-answer))
+                 (when (eq? name 'raw-answer)
                    (put-all t 0 1000 1000 1000)
                    (curl-token-end-body! t))
                  (let drain () (when (bytevector? (curl-token-next-piece t 5000)) (drain)))
                  (curl-token-wait t 20000)
-                 (if (eq? name 'raw-answer)
-                     (let ((ask (and (ustat t 'asked) #t)))
-                       (list name (if (and (boolean? asked) (eq? asked ask)) 'bit-is-ask (list 'bit asked 'ask ask))))
-                     (list name asked))))))
+                 (cond ((eq? name 'raw-answer)
+                        (let ((ask (and (ustat t 'asked) #t)))
+                          (list name (if (and (boolean? asked) (eq? asked ask)) 'bit-is-ask (list 'bit asked 'ask ask)))))
+                       ((eq? name 'h2-answer)
+                        (list name (if (eq? held 'asked-ended-released) asked held)))
+                       (else (list name asked)))))))
          '((raw-answer raw "/raw/answer?status=200&close=1" stream #f)
-           (h2-answer h2 "/answer?status=200" stream #f)
+           (h2-answer h2 "/answer?status=200&hold=asked-h2-answer" stream #f)
            (raw-sink raw "/raw/sink?key=asked-raw" stream 1000)
            (h2-sink h2 "/sink?key=asked-h2" stream 1000)
            (whole http "/sink?key=asked-whole" whole #f)

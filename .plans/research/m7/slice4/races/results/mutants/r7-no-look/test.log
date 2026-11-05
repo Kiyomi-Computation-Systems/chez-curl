@@ -1,0 +1,21 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-group.sps
+%%%% Starting test group
+FAIL a raise inside a call's section after the call has ended is raised again, never dropped: a planted submit that cancels its own call, then raises, makes the await that ran the turn raise it; the cancelled call's await raises cancelled
+  expected: (raised-again (raised (http-error) (http-group-error cancelled http-await)))
+  actual:   (no-raise (raised non-condition after-ended))
+FAIL an escape at the take, in a child: SIGINT's handler escapes from the await's take as its critical section ends, the token's notice, which the look had stepped first, taken out of the group's mailbox; caught inside the procedure, the call awaited again answers its 200; no collection ran in the hold; the child's counts zero
+  expected: (0 (lost escaped quiet taken (answered 200 "status 200\n")) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (1 ((lost escaped quiet taken (hung))) "")
+FAIL a lost notice, through the seam: a call's notice taken out of the group's mailbox before any turn stepped it, the call still live; its await finds the token by the next look, and raises its refused connect
+  expected: (#t #t live (raised 7))
+  actual:   (hung 40000)
+# of expected passes      62
+# of unexpected failures  3
+suite-exit-status: exit 1 (pass 62, fail 3, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-group.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

@@ -1,0 +1,15 @@
+== .
+rule: value-U+0002 control-byte
+rule: value-U+000B control-byte
+rule: expiry-U+00B2 expiry
+rule: char-numeric-U+00B2 #t
+== mut/control-enumerated
+rule: value-U+0002 #f
+rule: value-U+000B #f
+rule: expiry-U+00B2 expiry
+rule: char-numeric-U+00B2 #t
+== mut/expiry-char-numeric
+rule: value-U+0002 control-byte
+rule: value-U+000B control-byte
+rule: expiry-U+00B2 (raised <=)
+rule: char-numeric-U+00B2 #t

@@ -1,0 +1,18 @@
+control: 0 FAIL lines; test: ran 1, passed 1, failed 0, hung 0
+jar-handle-unattached: 7 FAIL lines; test: ran 1, passed 0, failed 1, hung 0
+  FAIL bytes above 0x7F, Latin-1 both ways: a server's E9 and FF stored and read out as U+00E9 and U+00FF, and sent byte for byte; a loaded U+00FF sent as FF
+  FAIL a request without the jar sends none of its cookies, and stores none it is sent
+  FAIL a load, a submit and a read-out queued in one hold, taken in one turn: the transfer sends the loaded cookie, and the read-out, carried out before the transfer's exchange, holds the loaded line alone; after it, the s
+  FAIL a session with cookies: its calls carry the jar across requests and hosts, three labels deep; http-session-cookies reads it out, http-session-load-cookies! loads into it, and its refusal names the line's index; the 
+  FAIL the read-out lines a load refuses, by libcurl "8.20.0"'s row: a server's Path=, Path=TRUE, Path=FALSE and Path=rel, a tab in a name and in a value, each line with the rule's fault, and the next request's Cookie head
+  FAIL Domain=localhost from a.localhost and from localhost, and a __Host- cookie with Domain=localhost, by "8.20.0/psl"'s row: each read-out, and the next request's Cookie headers
+expiry-limit-strict: 1 FAIL lines; test: ran 1, passed 0, failed 1, hung 0
+  FAIL the expiry is decimal digits, at most 9223372036854775807: a sign either way, a space before and after, 0x, an exponent, a dot, empty, 2^63 and one past it are expiry; 0, 00, 007, 1 and 2^63 - 1 taken
+size-refuses-limit: 1 FAIL lines; test: ran 1, passed 0, failed 1, hung 0
+  FAIL the name and the value at most 4,096 chars together, split each way: 1 + 4,095, 4,095 + 1, 2,048 + 2,048 and 4,096 + 0 taken; 1 + 4,096, 4,096 + 1, 2,048 + 2,049 and 4,097 + 0 are size
+leading-dot-reads-prefix: 4 FAIL lines; test: ran 1, passed 0, failed 1, hung 0
+  FAIL the base line, each field a value but the default, is taken; so is a plain one
+  FAIL seven fields alone: six, eight, one, and the empty line are fields; a value left empty is taken
+  FAIL a dot before the domain exactly when the tail-match is TRUE: a dot beside FALSE and none beside TRUE, after #HttpOnly_ too, leading-dot; the two that agree taken
+  FAIL a fresh jar reads out empty; loaded lines, an HttpOnly one, a session one, a far expiry, a tab-free value with U+00E9, read out whole; and its read-out loads into a fresh jar as the same lines
+exit=0

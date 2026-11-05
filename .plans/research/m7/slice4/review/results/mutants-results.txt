@@ -1,0 +1,6 @@
+fail-batch-unanswered tests/test-cookies.sps: exit 0
+control-enumerated tests/test-cookies.sps: exit 0
+expiry-char-numeric tests/test-cookies.sps: exit 0
+release-twice tests/test-cookies.sps: exit 0
+no-8.20.0-rows tests/test-cookies.sps: exit 1
+jar-no-wakeup tests/test-cookies.sps: exit 1

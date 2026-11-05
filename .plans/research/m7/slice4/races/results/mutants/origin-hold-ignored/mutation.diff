@@ -1,0 +1,11 @@
+--- a/tests/origin.mjs
++++ b/tests/origin.mjs
+@@ -1751,7 +1751,7 @@
+       // Read while the answer goes, so that Node, which closes a stream it
+       // has answered when nothing reads it, keeps the stream open.
+       stream.on('data', () => {});
+-      if (r.hold === undefined) return h2Text(stream, r.status, `answer ${r.status}\n`);
++      if (true) return h2Text(stream, r.status, `answer ${r.status}\n`);
+       // Held: the answer once its key is released, or none once the stream
+       // has closed first.
+       releasedFor(r.hold, stream)

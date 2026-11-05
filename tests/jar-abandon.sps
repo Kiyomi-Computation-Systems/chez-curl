@@ -1,0 +1,46 @@
+#!r6rs
+;;; tests/jar-abandon.sps: a child of tests/test-cookies.sps, which reads the
+;;; one datum it prints. An engine failed by a fault planted at perform, a
+;;; cookie jar of its, and a transfer that holds the jar, live as the engine
+;;; fails: with abandon as its argument, the engine's failure abandons every
+;;; live transfer's easy handle, as for one whose removal failed, through
+;;; the private seam make-curl-engine-abandoning; with free, it frees each,
+;;; as a failure does (make-faulty-curl-engine), the control. It prints
+;;; (OUTCOME STATE HOLDERS COUNTS): the transfer's outcome, as data; the
+;;; jar's state and how many transfers hold it; and every count, once the
+;;; engine's stop has returned. An abandoned
+;;; handle keeps its hold on the jar, whose share then stays in use: both
+;;; stay counted, for good, so this runs in a process of its own (the M7
+;;; plan, section 3.5). A transfer to port 9 on 127.0.0.1 never connects
+;;; before the fault, which the first perform raises.
+(import (rnrs)
+        (curl)
+        (curl private counters)
+        (only (curl private engine) make-curl-engine-abandoning make-faulty-curl-engine
+              curl-cookie-jar-state curl-cookie-jar-holders))
+
+(define how (let ((args (cdr (command-line)))) (if (pair? args) (car args) "none")))
+
+(define engine
+  (cond ((string=? how "abandon") (make-curl-engine-abandoning 'perform))
+        ((string=? how "free") (make-faulty-curl-engine 'perform))
+        (else (assertion-violation 'jar-abandon "the argument is abandon or free" how))))
+
+(define jar (make-curl-cookie-jar engine))
+
+(define token
+  (curl-submit engine (make-curl-request "http://127.0.0.1:9/" 'cookie-jar jar 'proxy #f
+                                         'timeout-ms 20000)))
+
+(define outcome
+  (if (curl-token-wait token 20000)
+      (let ((o (curl-token-outcome token)))
+        (cond ((curl-engine-error? o) (list 'engine-error (curl-engine-error-reason o)))
+              ((curl-response? o) (list 'response (curl-response-status o)))
+              (else (list 'other))))
+      '(not-done)))
+
+(curl-engine-stop engine)
+
+(write (list outcome (curl-cookie-jar-state jar) (curl-cookie-jar-holders jar) (native-counts)))
+(newline)

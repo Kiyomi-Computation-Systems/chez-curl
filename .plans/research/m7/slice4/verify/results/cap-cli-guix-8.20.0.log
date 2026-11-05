@@ -1,0 +1,11 @@
+curl 8.20.0 (x86_64-unknown-linux-gnu) libcurl/8.20.0 GnuTLS/3.8.13 zlib/1.3.1 zstd/1.5.6 libidn2/2.3.8 libpsl/0.21.5 nghttp2/1.69.0 mit-krb5/1.21
+value=100 curl-exit=52
+value=8100 curl-exit=100
+value=8150 curl-exit=100
+value=8170 curl-exit=100
+value=8180 curl-exit=100
+value=8190 curl-exit=100
+value=8200 curl-exit=100
+value=100000 curl-exit=100
+port=45015
+conn=1 why=2s bytes=198 head-ended=true tail="vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\x0d\x0a\x0d\x0a"

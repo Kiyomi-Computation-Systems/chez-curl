@@ -1,0 +1,22 @@
+--- a/tests/test-group.sps
++++ b/tests/test-group.sps
+@@ -428,7 +428,7 @@
+    "until grep -q '^(ready ' \"$out\" || [ \"$n\" -ge 400 ]; do sleep 0.05; n=$((n + 1)); done\n"
+    "pid=$(sed -n 's/^(ready \\([0-9]*\\))$/\\1/p' \"$out\")\n"
+    "if [ -z \"$pid\" ]; then kill \"$waiter\"; wait \"$waiter\"; cat \"$out\" >&2; rm -f \"$out\"; echo 'group child: the child never said it was ready' >&2; exit 126; fi\n"
+-   "sleep 0.5\n"
++   "sleep 3.5\n"
+    "kill -INT \"$pid\"\n"
+    ": >\"$out.sent\"\n"
+    "wait \"$waiter\"\n"
+--- a/tests/test-group.sps
++++ b/tests/test-group.sps
+@@ -463,7 +463,7 @@
+   '((define child-sent (getenv "GROUP_CHILD_SENT"))
+     (define (until-sent)
+       (let wait ((n 0))
+-        (unless (or (and child-sent (file-exists? child-sent)) (>= n 2000))
++        (unless (>= n 100)
+           (sleep (make-time 'time-duration 10000000 0))
+           (wait (+ n 1)))))
+     (define held-collections #f)

@@ -60,12 +60,13 @@
 
 /* With gcc, curl/curl.h makes curl_easy_setopt and curl_easy_getinfo
    type-checking macros, as its typecheck-gcc.h does for a caller, and
-   8.20.0's makes curl_multi_setopt one too. This file defines the
-   functions themselves, as libcurl's own sources do after the same
-   #undef. */
+   8.20.0's makes curl_multi_setopt one too, and a later one may make
+   curl_share_setopt one. This file defines the functions themselves, as
+   libcurl's own sources do after the same #undef. */
 #undef curl_easy_setopt
 #undef curl_easy_getinfo
 #undef curl_multi_setopt
+#undef curl_share_setopt
 
 static char calls[2048];
 
@@ -446,6 +447,32 @@ CURLMcode curl_multi_setopt(CURLM *multi, CURLMoption option, ...)
 {
   called("curl_multi_setopt(%s,%d)", multi ? "multi" : "NULL", (int)option);
   return CURLM_BAD_HANDLE;
+}
+#endif
+
+/* Bound by the load and never called there: a cookie jar's share. */
+#ifndef DECOY_LACKS_curl_share_init
+CURLSH *curl_share_init(void)
+{
+  called("curl_share_init()");
+  return NULL;
+}
+#endif
+
+#ifndef DECOY_LACKS_curl_share_cleanup
+CURLSHcode curl_share_cleanup(CURLSH *share)
+{
+  called("curl_share_cleanup(%s)", share ? "share" : "NULL");
+  return CURLSHE_INVALID;
+}
+#endif
+
+/* Variadic, bound by the load and never called, as curl_easy_setopt. */
+#ifndef DECOY_LACKS_curl_share_setopt
+CURLSHcode curl_share_setopt(CURLSH *share, CURLSHoption option, ...)
+{
+  called("curl_share_setopt(%s,%d)", share ? "share" : "NULL", (int)option);
+  return CURLSHE_INVALID;
 }
 #endif
 

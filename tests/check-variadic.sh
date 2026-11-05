@@ -1,10 +1,10 @@
 #!/bin/sh
 # `make check-variadic`: proves that a variadic binding without
 # (__varargs_after 2) fails, in a copy of the tree (ADR-0001, decision 1).
-# It mutates src/curl/private/native.sls six ways, each from the unchanged
-# file: the convention removed from bind-variadic's template, which every
-# use loses at once, and then each of the five uses alone bound through
-# bind-required. The steps, in order, each named ok or FAILED:
+# It mutates src/curl/private/native.sls seven ways, each from the
+# unchanged file: the convention removed from bind-variadic's template,
+# which every use loses at once, and then each of the six uses alone bound
+# through bind-required. The steps, in order, each named ok or FAILED:
 #
 #   copy     the copy holds src/, tests/ and .plans/decisions/, all the
 #            three suites read; SRFI-64 comes from the tree's own
@@ -17,7 +17,7 @@
 #            test-transfer, so a failure below is the mutation's doing
 #
 # For the template, then for each use (long, pointer, off-t, getinfo,
-# multi):
+# multi, share):
 #
 #   mutant   the text the mutation replaces stands in the unchanged
 #            native.sls exactly once; after it, that text stands nowhere,
@@ -26,22 +26,26 @@
 #   static   test-collect-safe fails on the mutant, on every platform. Its
 #            only failing tests are the two that read the variadic
 #            bindings, and its violations are exactly the mutated
-#            bindings': for the template, a mismatch for each of the five
+#            bindings': for the template, a mismatch for each of the six
 #            uses of bind-variadic, curl_easy_setopt three times,
-#            curl_easy_getinfo once and curl_multi_setopt once; for a use,
+#            curl_easy_getinfo once, curl_multi_setopt once and
+#            curl_share_setopt once; for a use,
 #            a mismatch and a wrong-binder for that one, and the scan
 #            places bind-required where that use stands
 #   arm64    on Apple arm64 only, test-variadic runs on the mutant:
 #              - the template: it must fail. It may name a test, or die:
 #                getinfo may write through a garbage pointer. Either
 #                passes, and the step says which;
-#              - a setopt use, the multi one included: it must fail by
-#                name, exiting 1, and its failing tests must include one
-#                through that binding. getinfo stays annotated, so nothing
-#                writes through a garbage pointer: a crash, or no named
-#                test, fails. The multi one fails by the two drips, run one
-#                after the other at MAX_TOTAL_CONNECTIONS 1 and together at
-#                2 (ADR-0001, amended 2026-10-25);
+#              - a setopt use, the multi and the share ones included: it
+#                must fail by name, exiting 1, and its failing tests must
+#                include one through that binding. getinfo stays
+#                annotated, so nothing writes through a garbage pointer: a
+#                crash, or no named test, fails. The multi one fails by the
+#                two drips, run one after the other at
+#                MAX_TOTAL_CONNECTIONS 1 and together at 2 (ADR-0001,
+#                amended 2026-10-25); the share one by its rows, a cookie
+#                carried between two transfers by SHARE 2 alone, 99 and -1
+#                refused, and UNSHARE 2 stopping the carrying (M7 slice 4);
 #              - getinfo: it must fail, by name or by dying, and the step
 #                says which
 #   other    on any other machine type, test-variadic runs on the mutant
@@ -61,7 +65,9 @@
 #            never failed: no transfer shows a multi option on Apple's
 #            8.7.1, the Mac's libcurl, which lacks CURLMOPT_QUICK_EXIT, the
 #            one chez-curl sets, and answers any value of it alike. Only
-#            test-variadic's drips show that use
+#            test-variadic's drips show that use. So for the share use: no
+#            transfer of test-transfer's holds a cookie jar, and only
+#            test-variadic's share rows show it
 #
 # The control needs test-transfer to pass, and that needs a row in
 # tests/known-transfer-verdicts.sexp for the libcurl it runs against; and
@@ -249,7 +255,7 @@ mutate() {
 # fails, naming exactly the two tests that read the variadic bindings,
 # with WANT_VIA the actual line of the first and WANT_VIOLATIONS the
 # second's, each whole. SAYS is what the ok line says it named.
-via_test='the scan of src/ finds curl_easy_setopt bound three times, once per value type, curl_easy_getinfo once, and curl_multi_setopt once, for a long, each through bind-variadic with (__varargs_after 2)'
+via_test='the scan of src/ finds curl_easy_setopt bound three times, once per value type, curl_easy_getinfo once, curl_multi_setopt once, for a long, and curl_share_setopt once, for an int, each through bind-variadic with (__varargs_after 2)'
 table_test='src/ holds to the table: no violation'
 want_named="FAIL $via_test
 FAIL $table_test"
@@ -360,16 +366,22 @@ transfer_how() {
 # crash or the bound, each named. Anywhere else its result is reported.
 # For the multi use it is reported on every machine: no transfer shows a
 # multi option on Apple's 8.7.1, which lacks CURLMOPT_QUICK_EXIT, the one
-# chez-curl sets, and answers any value of it alike.
+# chez-curl sets, and answers any value of it alike. For the share use too:
+# no transfer of test-transfer's holds a cookie jar.
 transferred() {
   label=$1
   run_transfer
   got_named=$(named)
-  if [ "$label" = multi ]; then
-    if [ "$status" -eq 0 ]; then
-      ok "$label transfer reported: on $machine, $transfer passes on the mutant (exit 0); reported, never failed: no transfer shows a multi option on Apple's 8.7.1, which lacks CURLMOPT_QUICK_EXIT and answers any value of it alike"
+  if [ "$label" = multi ] || [ "$label" = share ]; then
+    if [ "$label" = multi ]; then
+      why="no transfer shows a multi option on Apple's 8.7.1, which lacks CURLMOPT_QUICK_EXIT and answers any value of it alike"
     else
-      ok "$label transfer reported: on $machine, $transfer fails on the mutant (exit $status), $(transfer_how); reported, never failed: no transfer shows a multi option on Apple's 8.7.1, which lacks CURLMOPT_QUICK_EXIT and answers any value of it alike"
+      why="no transfer of $transfer holds a cookie jar, so only $variadic's share rows show this use"
+    fi
+    if [ "$status" -eq 0 ]; then
+      ok "$label transfer reported: on $machine, $transfer passes on the mutant (exit 0); reported, never failed: $why"
+    else
+      ok "$label transfer reported: on $machine, $transfer fails on the mutant (exit $status), $(transfer_how); reported, never failed: $why"
       list
     fi
   elif [ "$apple_arm64" -eq 1 ]; then
@@ -392,6 +404,7 @@ file='"src/curl/private/native.sls"'
 setopt='"curl_easy_setopt"'
 getinfo='"curl_easy_getinfo"'
 multi='"curl_multi_setopt"'
+share='"curl_share_setopt"'
 annotated='(((__varargs_after 2)) bind-variadic)'
 plain='(() bind-required)'
 
@@ -400,9 +413,9 @@ mutate template '(foreign-procedure (__varargs_after 2) entry (arg ...) result)'
   '(foreign-procedure entry (arg ...) result)'
 mismatch="(mismatch $setopt ((__varargs_after 2)) () $file)"
 static template \
-  "  actual:   (($setopt ((() bind-variadic) (() bind-variadic) (() bind-variadic))) ($getinfo ((() bind-variadic))) ($multi ((() bind-variadic))))" \
-  "  actual:   ($mismatch $mismatch $mismatch (mismatch $getinfo ((__varargs_after 2)) () $file) (mismatch $multi ((__varargs_after 2)) () $file))" \
-  "curl_easy_setopt three times, curl_easy_getinfo once and curl_multi_setopt once as mismatches"
+  "  actual:   (($setopt ((() bind-variadic) (() bind-variadic) (() bind-variadic))) ($getinfo ((() bind-variadic))) ($multi ((() bind-variadic))) ($share ((() bind-variadic))))" \
+  "  actual:   ($mismatch $mismatch $mismatch (mismatch $getinfo ((__varargs_after 2)) () $file) (mismatch $multi ((__varargs_after 2)) () $file) (mismatch $share ((__varargs_after 2)) () $file))" \
+  "curl_easy_setopt three times, curl_easy_getinfo, curl_multi_setopt and curl_share_setopt once each as mismatches"
 run "$variadic"
 got_named=$(named)
 if [ "$apple_arm64" -eq 1 ]; then
@@ -435,15 +448,17 @@ use() {
 }
 
 use long curl_easy_setopt '(uptr int long)' curl-easy-setopt-long \
-  "(($setopt ($plain $annotated $annotated)) ($getinfo ($annotated)) ($multi ($annotated)))"
+  "(($setopt ($plain $annotated $annotated)) ($getinfo ($annotated)) ($multi ($annotated)) ($share ($annotated)))"
 use pointer curl_easy_setopt '(uptr int uptr)' curl-easy-setopt-pointer \
-  "(($setopt ($annotated $plain $annotated)) ($getinfo ($annotated)) ($multi ($annotated)))"
+  "(($setopt ($annotated $plain $annotated)) ($getinfo ($annotated)) ($multi ($annotated)) ($share ($annotated)))"
 use off-t curl_easy_setopt '(uptr int integer-64)' curl-easy-setopt-off-t \
-  "(($setopt ($annotated $annotated $plain)) ($getinfo ($annotated)) ($multi ($annotated)))"
+  "(($setopt ($annotated $annotated $plain)) ($getinfo ($annotated)) ($multi ($annotated)) ($share ($annotated)))"
 use getinfo curl_easy_getinfo '(uptr int uptr)' curl-easy-getinfo \
-  "(($setopt ($annotated $annotated $annotated)) ($getinfo ($plain)) ($multi ($annotated)))"
+  "(($setopt ($annotated $annotated $annotated)) ($getinfo ($plain)) ($multi ($annotated)) ($share ($annotated)))"
 use multi curl_multi_setopt '(uptr int long)' curl-multi-setopt-long \
-  "(($setopt ($annotated $annotated $annotated)) ($getinfo ($annotated)) ($multi ($plain)))"
+  "(($setopt ($annotated $annotated $annotated)) ($getinfo ($annotated)) ($multi ($plain)) ($share ($annotated)))"
+use share curl_share_setopt '(uptr int int)' curl-share-setopt-int \
+  "(($setopt ($annotated $annotated $annotated)) ($getinfo ($annotated)) ($multi ($annotated)) ($share ($plain)))"
 
 if [ "$fail" -eq 0 ]; then
   printf 'check-variadic: all %d steps ok, on %s\n' "$pass" "$machine"

@@ -1,0 +1,6 @@
+run 1: (as-done ((live . 1) (closed . 99)) after-stop ((closed . 100)))
+run 2: (as-done ((closed . 95) (live . 5)) after-stop ((closed . 100)))
+run 3: (as-done ((live . 4) (closed . 96)) after-stop ((closed . 100)))
+run 4: (as-done ((live . 6) (closed . 94)) after-stop ((closed . 100)))
+run 5: (as-done ((live . 1) (closed . 99)) after-stop ((closed . 100)))
+run 6: (as-done ((closed . 100)) after-stop ((closed . 100)))

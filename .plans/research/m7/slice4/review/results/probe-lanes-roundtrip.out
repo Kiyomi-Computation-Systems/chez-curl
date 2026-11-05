@@ -1,0 +1,23 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+  [floor] probe: libcurl "7.85.0"
+  [floor] probe: set ("a.localhost\tFALSE\t/\tFALSE\t0\t__HOST-d\t1" "a.localhost\tFALSE\t/\tFALSE\t0\t__SECURE-b\t1" "a.localhost\tFALSE\t/\tFALSE\t0\t__host-c\t1" "a.localhost\tFALSE\t/\tFALSE\t0\t__secure-a\t1" "a.localhost\tFALSE\t/\tFALSE\t0\tplain\t1")
+  [floor] probe: again ("a.localhost\tFALSE\t/\tFALSE\t0\tplain\t1")
+  [floor] probe: same #f
+  [floor] probe: counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))
+  [openssl] probe: libcurl "8.5.0"
+  [openssl] probe: set ("a.localhost\tFALSE\t/\tFALSE\t0\tplain\t1")
+  [openssl] probe: again ("a.localhost\tFALSE\t/\tFALSE\t0\tplain\t1")
+  [openssl] probe: same #t
+  [openssl] probe: counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))
+  [gnutls] probe: libcurl "8.5.0"
+  [gnutls] probe: set ("a.localhost\tFALSE\t/\tFALSE\t0\tplain\t1")
+  [gnutls] probe: again ("a.localhost\tFALSE\t/\tFALSE\t0\tplain\t1")
+  [gnutls] probe: same #t
+  [gnutls] probe: counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))
+  [current] probe: libcurl "8.23.0"
+  [current] probe: set ("a.localhost\tFALSE\t/\tFALSE\t0\t__HOST-d\t1" "a.localhost\tFALSE\t/\tFALSE\t0\t__SECURE-b\t1" "a.localhost\tFALSE\t/\tFALSE\t0\t__host-c\t1" "a.localhost\tFALSE\t/\tFALSE\t0\t__secure-a\t1" "a.localhost\tFALSE\t/\tFALSE\t0\tplain\t1")
+  [current] probe: again ("a.localhost\tFALSE\t/\tFALSE\t0\t__HOST-d\t1" "a.localhost\tFALSE\t/\tFALSE\t0\t__SECURE-b\t1" "a.localhost\tFALSE\t/\tFALSE\t0\t__host-c\t1" "a.localhost\tFALSE\t/\tFALSE\t0\t__secure-a\t1" "a.localhost\tFALSE\t/\tFALSE\t0\tplain\t1")
+  [current] probe: same #t
+  [current] probe: counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))

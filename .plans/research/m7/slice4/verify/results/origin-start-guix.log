@@ -1,0 +1,12 @@
+== build/m7s4-check/pk/origin-main.mjs
+start 1: 60 ms, {"node":"v24.18.0","pid":30,"http":"127.0.0.1:34271","raw":"
+start 2: 59 ms, {"node":"v24.18.0","pid":44,"http":"127.0.0.1:42261","raw":"
+start 3: 66 ms, {"node":"v24.18.0","pid":58,"http":"127.0.0.1:39513","raw":"
+start 4: 61 ms, {"node":"v24.18.0","pid":72,"http":"127.0.0.1:40283","raw":"
+start 5: 61 ms, {"node":"v24.18.0","pid":86,"http":"127.0.0.1:39297","raw":"
+== tests/origin.mjs
+start 1: 66 ms, {"node":"v24.18.0","pid":101,"http":"127.0.0.1:39029","raw":
+start 2: 60 ms, {"node":"v24.18.0","pid":115,"http":"127.0.0.1:39111","raw":
+start 3: 93 ms, {"node":"v24.18.0","pid":129,"http":"127.0.0.1:39173","raw":
+start 4: 60 ms, {"node":"v24.18.0","pid":143,"http":"127.0.0.1:36077","raw":
+start 5: 58 ms, {"node":"v24.18.0","pid":157,"http":"127.0.0.1:35261","raw":

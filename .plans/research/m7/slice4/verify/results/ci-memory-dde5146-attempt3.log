@@ -1,0 +1,483 @@
+memory (the Valgrind gate)	Set up job	﻿2026-11-05T10:39:32.5347320Z Current runner version: '2.338.2'
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5386807Z ##[group]Runner Image Provisioner
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5388969Z Hosted Compute Agent
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5390135Z Version: 20261021.618
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5391306Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5392768Z Build Date: 2026-10-21T00:45:21Z
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5393998Z Worker ID: {b423bec5-76d1-48d2-8e3e-ea1f19a877d2}
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5395271Z Region: westus3
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5396414Z Cloud: Azure
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5397693Z ##[endgroup]
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5400407Z ##[group]Operating System
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5401736Z Ubuntu
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5402697Z 24.04.5
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5403841Z LTS
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5404935Z ##[endgroup]
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5406187Z ##[group]Runner Image
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5407654Z Image: ubuntu-24.04
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5408717Z Version: 20261025.353.1
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5410732Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261025.353/images/ubuntu/Ubuntu2404-Readme.md
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5414069Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261025.353
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5415875Z ##[endgroup]
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5418886Z ##[group]GITHUB_TOKEN Permissions
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5422211Z Contents: read
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5423318Z Metadata: read
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5424422Z ##[endgroup]
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5428289Z Secret source: Actions
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5430036Z Cache mode: write
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5431844Z Prepare workflow directory
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.5981974Z Prepare all required actions
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:32.6059923Z Getting action download info
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:33.0445446Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:33.1491399Z Download action repository 'actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9' (SHA:55cc8345863c7cc4c66a329aec7e433d2d1c52a9)
+memory (the Valgrind gate)	Set up job	2026-11-05T10:39:33.4466237Z Complete job name: memory (the Valgrind gate)
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	﻿2026-11-05T10:39:33.5438640Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5440006Z with:
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5440585Z   submodules: recursive
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5441306Z   repository: Kiyomi-Computation-Systems/chez-curl
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5445748Z   token: ***
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5446259Z   ssh-strict: true
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5446776Z   ssh-user: git
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5447636Z   persist-credentials: true
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5448229Z   clean: true
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5448752Z   sparse-checkout-cone-mode: true
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5449378Z   fetch-depth: 1
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5449878Z   fetch-tags: false
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5450427Z   show-progress: true
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5450961Z   lfs: false
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5451466Z   set-safe-directory: true
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5452058Z   allow-unsafe-pr-checkout: false
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.5452971Z ##[endgroup]
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8188560Z Syncing repository: Kiyomi-Computation-Systems/chez-curl
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8192292Z ##[group]Getting Git version info
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8193970Z Working directory is '/home/runner/work/chez-curl/chez-curl'
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8200956Z [command]/usr/bin/git version
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8431729Z git version 2.56.0
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8441539Z ##[endgroup]
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8470997Z Temporarily overriding HOME='/home/runner/work/_temp/cb04936e-0440-4331-bd4e-306669875e16' before making global git config changes
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8484980Z Adding repository directory to the temporary git global config as a safe directory
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8487536Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/chez-curl/chez-curl
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8514222Z Deleting the contents of '/home/runner/work/chez-curl/chez-curl'
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8517284Z ##[group]Determining repository object format
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8519843Z ##[endgroup]
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8521762Z ##[group]Initializing the repository
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8523704Z [command]/usr/bin/git init /home/runner/work/chez-curl/chez-curl
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8802147Z hint: Using 'master' as the name for the initial branch. This default branch name
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8814703Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8818429Z hint: to use in all of your new repositories, which will suppress this warning,
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8820582Z hint: call:
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8821673Z hint:
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8822777Z hint: 	git config --global init.defaultBranch <name>
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8824208Z hint:
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8825845Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8828246Z hint: 'development'. The just-created branch can be renamed via this command:
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8830002Z hint:
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8831013Z hint: 	git branch -m <name>
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8832259Z hint:
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8833797Z hint: Disable this message with "git config set advice.defaultBranchName false"
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8836060Z Initialized empty Git repository in /home/runner/work/chez-curl/chez-curl/.git/
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8840552Z [command]/usr/bin/git remote add origin https://github.com/Kiyomi-Computation-Systems/chez-curl
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8845042Z ##[endgroup]
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8847122Z ##[group]Disabling automatic garbage collection
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8848851Z [command]/usr/bin/git config --local gc.auto 0
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8901299Z ##[endgroup]
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8903386Z ##[group]Setting up auth
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8904734Z Removing SSH command configuration
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.8907506Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.9018519Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.9569177Z Removing HTTP extra header
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.9577354Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.9631994Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.9904892Z Removing includeIf entries pointing to credentials config files
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.9909644Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:33.9966499Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:34.0360719Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:34.0437813Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/chez-curl/chez-curl/.git.path /home/runner/work/_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:34.0509784Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/chez-curl/chez-curl/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:34.0549334Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:34.0599659Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:34.0646639Z ##[endgroup]
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:34.0648858Z ##[group]Fetching the repository
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:34.0656041Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +e67a94271fbb62963521a8c4a0bd8a23b46c222f:refs/remotes/pull/45/merge
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.4439426Z From https://github.com/Kiyomi-Computation-Systems/chez-curl
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.4440944Z  * [new ref]         e67a94271fbb62963521a8c4a0bd8a23b46c222f -> pull/45/merge
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.4488994Z ##[endgroup]
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.4490384Z ##[group]Determining the checkout info
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.4510368Z ##[endgroup]
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.4513146Z [command]/usr/bin/git sparse-checkout disable
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.4557837Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.4631457Z ##[group]Checking out the ref
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.4647767Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/45/merge
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8330216Z Note: switching to 'refs/remotes/pull/45/merge'.
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8354356Z 
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8357835Z You are in 'detached HEAD' state. You can look around, make experimental
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8378081Z changes and commit them, and you can discard any commits you make in this
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8397714Z state without impacting any branches by switching back to a branch.
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8398396Z 
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8398795Z If you want to create a new branch to retain commits you create, you may
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8399677Z do so (now or later) by using -c with the switch command. Example:
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8400413Z 
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8415282Z   git switch -c <new-branch-name>
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8437186Z 
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8437796Z Or undo this operation with:
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8438951Z 
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8439426Z   git switch -
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8439905Z 
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8440505Z Turn off this advice by setting config variable advice.detachedHead to false
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8441350Z 
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8442287Z HEAD is now at e67a942 Merge dde51469bd8534d36e7340bbc3dc41db726c5367 into a07562922258b7b4cb1ea5b4cca6ac4fdc784f2c
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8445399Z ##[endgroup]
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8446383Z ##[group]Setting up auth for fetching submodules
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8448624Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8500114Z [command]/usr/bin/git config --global include.path /home/runner/work/_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8558549Z [command]/usr/bin/git config --global --unset-all url.https://github.com/.insteadOf
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8598890Z [command]/usr/bin/git config --global --add url.https://github.com/.insteadOf git@github.com:
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8652539Z [command]/usr/bin/git config --global --add url.https://github.com/.insteadOf org-309242414@github.com:
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8698547Z ##[endgroup]
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8699656Z ##[group]Fetching submodules
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8702745Z [command]/usr/bin/git submodule sync --recursive
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.8986800Z [command]/usr/bin/git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.9266119Z Submodule 'vendor/chez-srfi' (https://github.com/arcfide/chez-srfi.git) registered for path 'vendor/chez-srfi'
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:36.9298349Z Cloning into '/home/runner/work/chez-curl/chez-curl/vendor/chez-srfi'...
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:38.8571579Z From https://github.com/arcfide/chez-srfi
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:38.8572737Z  * branch            7879b527f267f067416552fb989135ad1b4ea436 -> FETCH_HEAD
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:38.8892155Z Submodule path 'vendor/chez-srfi': checked out '7879b527f267f067416552fb989135ad1b4ea436'
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:38.8928645Z [command]/usr/bin/git submodule foreach --recursive git config --local gc.auto 0
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:38.9190577Z Entering 'vendor/chez-srfi'
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:38.9263614Z ##[endgroup]
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:38.9264546Z ##[group]Persisting credentials for submodules
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:38.9266428Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'url\.https\:\/\/github\.com\/\.insteadOf' && git config --local --unset-all 'url.https://github.com/.insteadOf' || :"
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:38.9537553Z Entering 'vendor/chez-srfi'
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:38.9655720Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:38.9932393Z Entering 'vendor/chez-srfi'
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:38.9954685Z file:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config	remote.origin.url
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:38.9994379Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config includeIf.gitdir:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi.path /home/runner/work/_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:39.0045941Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config includeIf.gitdir:/github/workspace/.git/modules/vendor/chez-srfi.path /github/runner_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:39.0104696Z [command]/usr/bin/git submodule foreach --recursive git config --local --add 'url.https://github.com/.insteadOf' 'git@github.com:'
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:39.0388241Z Entering 'vendor/chez-srfi'
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:39.0449166Z [command]/usr/bin/git submodule foreach --recursive git config --local --add 'url.https://github.com/.insteadOf' 'org-309242414@github.com:'
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:39.0725965Z Entering 'vendor/chez-srfi'
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:39.0783447Z ##[endgroup]
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:39.0847339Z [command]/usr/bin/git log -1 --format=%H
+memory (the Valgrind gate)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T10:39:39.0897587Z e67a94271fbb62963521a8c4a0bd8a23b46c222f
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	﻿2026-11-05T10:39:39.1160145Z ##[group]Run pkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:39.1160861Z [36;1mpkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')[0m
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:39.1161301Z [36;1mif [ -z "$pkgs" ]; then[0m
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:39.1161827Z [36;1m  echo "::error::packaging/debian-prereqs.txt yielded no packages: a broken step, not an empty list"[0m
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:39.1162364Z [36;1m  exit 1[0m
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:39.1162575Z [36;1mfi[0m
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:39.1162796Z [36;1msudo apt-get update -qq[0m
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:39.1163073Z [36;1m# shellcheck disable=SC2086[0m
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:39.1163436Z [36;1msudo apt-get install -y --no-install-recommends $pkgs[0m
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:39.1188081Z shell: /usr/bin/bash -e {0}
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:39.1188376Z ##[endgroup]
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:44.7349522Z Reading package lists...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:44.9542375Z Building dependency tree...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:44.9551575Z Reading state information...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1039976Z ca-certificates is already the newest version (20260816ubuntu0.24.04.1).
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1041579Z curl is already the newest version (8.5.0-2ubuntu10.16).
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1047958Z xz-utils is already the newest version (5.6.1+really5.4.5-1ubuntu0.4).
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1049091Z libssl-dev is already the newest version (3.0.13-0ubuntu3.16).
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1050149Z zlib1g-dev is already the newest version (1:1.3.dfsg-3.1ubuntu2.3).
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1051197Z libcurl3t64-gnutls is already the newest version (8.5.0-2ubuntu10.16).
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1052121Z libcurl3t64-gnutls set to manually installed.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1052960Z openssl is already the newest version (3.0.13-0ubuntu3.16).
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1053809Z The following additional packages will be installed:
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1054503Z   libc6-dbg
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1069878Z Suggested packages:
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1070800Z   libcurl4-doc libidn-dev libkrb5-dev libldap2-dev librtmp-dev libssh2-1-dev
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1073798Z   libnghttp2-doc valgrind-dbg valgrind-mpi kcachegrind alleyoop valkyrie
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1076316Z Recommended packages:
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1077208Z   gdb
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1239520Z The following NEW packages will be installed:
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1247765Z   build-essential libc6-dbg libcurl4-openssl-dev libnghttp2-dev valgrind
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1452676Z 0 upgraded, 5 newly installed, 0 to remove and 27 not upgraded.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1453721Z Need to get 23.0 MB of archives.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1454894Z After this operation, 92.8 MB of additional disk space will be used.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.1455924Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.2102313Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 build-essential amd64 12.10ubuntu1 [4928 B]
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.2565496Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl4-openssl-dev amd64 8.5.0-2ubuntu10.16 [447 kB]
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.3064124Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libnghttp2-dev amd64 1.59.0-1ubuntu0.4 [117 kB]
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.3532593Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libc6-dbg amd64 2.39-0ubuntu8.9 [7474 kB]
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:45.5949234Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 valgrind amd64 1:3.22.0-0ubuntu3 [14.9 MB]
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.2734967Z Fetched 23.0 MB in 1s (27.2 MB/s)
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.2979961Z Selecting previously unselected package build-essential.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.3241580Z (Reading database ... 
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.3242706Z (Reading database ... 5%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.3243376Z (Reading database ... 10%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.3243822Z (Reading database ... 15%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.3244230Z (Reading database ... 20%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.3244635Z (Reading database ... 25%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.3245032Z (Reading database ... 30%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.3245432Z (Reading database ... 35%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.3245832Z (Reading database ... 40%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.3246232Z (Reading database ... 45%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.3247270Z (Reading database ... 50%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.3292424Z (Reading database ... 55%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.5165680Z (Reading database ... 60%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.6858494Z (Reading database ... 65%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:46.9139045Z (Reading database ... 70%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.0818167Z (Reading database ... 75%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.2639771Z (Reading database ... 80%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.4252601Z (Reading database ... 85%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.5700585Z (Reading database ... 90%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.7832537Z (Reading database ... 95%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.7833679Z (Reading database ... 100%
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.7834526Z (Reading database ... 215504 files and directories currently installed.)
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.7867546Z Preparing to unpack .../build-essential_12.10ubuntu1_amd64.deb ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.7896360Z Unpacking build-essential (12.10ubuntu1) ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.8179517Z Selecting previously unselected package libcurl4-openssl-dev:amd64.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.8331006Z Preparing to unpack .../libcurl4-openssl-dev_8.5.0-2ubuntu10.16_amd64.deb ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.8340180Z Unpacking libcurl4-openssl-dev:amd64 (8.5.0-2ubuntu10.16) ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.8769694Z Selecting previously unselected package libnghttp2-dev:amd64.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.8923840Z Preparing to unpack .../libnghttp2-dev_1.59.0-1ubuntu0.4_amd64.deb ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.8935061Z Unpacking libnghttp2-dev:amd64 (1.59.0-1ubuntu0.4) ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.9250561Z Selecting previously unselected package libc6-dbg:amd64.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.9403405Z Preparing to unpack .../libc6-dbg_2.39-0ubuntu8.9_amd64.deb ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:47.9412093Z Unpacking libc6-dbg:amd64 (2.39-0ubuntu8.9) ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:48.0663454Z Selecting previously unselected package valgrind.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:48.0821094Z Preparing to unpack .../valgrind_1%3a3.22.0-0ubuntu3_amd64.deb ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:48.0829951Z Unpacking valgrind (1:3.22.0-0ubuntu3) ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:48.4433416Z Setting up libnghttp2-dev:amd64 (1.59.0-1ubuntu0.4) ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:48.4465308Z Setting up libc6-dbg:amd64 (2.39-0ubuntu8.9) ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:48.4487630Z Setting up libcurl4-openssl-dev:amd64 (8.5.0-2ubuntu10.16) ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:48.4509208Z Setting up build-essential (12.10ubuntu1) ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:48.4529647Z Setting up valgrind (1:3.22.0-0ubuntu3) ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:48.4555476Z Processing triggers for man-db (2.12.0-4build2) ...
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:48.4579924Z Not building database; man-db/auto-update is not 'true'.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:49.1412370Z 
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:49.1413174Z Running kernel seems to be up-to-date.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:49.1413758Z 
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:49.1414059Z No services need to be restarted.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:49.1414550Z 
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:49.1414830Z No containers need to be restarted.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:49.1415254Z 
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:49.1415577Z No user sessions are running outdated binaries.
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:49.1416064Z 
+memory (the Valgrind gate)	Install the packages in packaging/debian-prereqs.txt	2026-11-05T10:39:49.1416503Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+memory (the Valgrind gate)	Identify the runner image	﻿2026-11-05T10:39:50.5330997Z ##[group]Run . /etc/os-release
+memory (the Valgrind gate)	Identify the runner image	2026-11-05T10:39:50.5331351Z [36;1m. /etc/os-release[0m
+memory (the Valgrind gate)	Identify the runner image	2026-11-05T10:39:50.5331697Z [36;1mecho "id=${ID}-${VERSION_ID}-${RUNNER_ARCH}" >> "$GITHUB_OUTPUT"[0m
+memory (the Valgrind gate)	Identify the runner image	2026-11-05T10:39:50.5352309Z shell: /usr/bin/bash -e {0}
+memory (the Valgrind gate)	Identify the runner image	2026-11-05T10:39:50.5352589Z ##[endgroup]
+memory (the Valgrind gate)	Restore Chez	﻿2026-11-05T10:39:50.6243618Z ##[group]Run actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+memory (the Valgrind gate)	Restore Chez	2026-11-05T10:39:50.6244098Z with:
+memory (the Valgrind gate)	Restore Chez	2026-11-05T10:39:50.6244358Z   path: /home/runner/work/_temp/chez-threads
+memory (the Valgrind gate)	Restore Chez	2026-11-05T10:39:50.6244920Z   key: chez-threads-dfe62cdc470d40d400781b9df9919c7c4410b8eb22e815eb1158e46317911271-ubuntu-24.04-X64
+memory (the Valgrind gate)	Restore Chez	2026-11-05T10:39:50.6245467Z   enableCrossOsArchive: false
+memory (the Valgrind gate)	Restore Chez	2026-11-05T10:39:50.6245741Z   fail-on-cache-miss: false
+memory (the Valgrind gate)	Restore Chez	2026-11-05T10:39:50.6245984Z   lookup-only: false
+memory (the Valgrind gate)	Restore Chez	2026-11-05T10:39:50.6246207Z ##[endgroup]
+memory (the Valgrind gate)	Restore Chez	2026-11-05T10:39:51.0208243Z Cache hit for: chez-threads-dfe62cdc470d40d400781b9df9919c7c4410b8eb22e815eb1158e46317911271-ubuntu-24.04-X64
+memory (the Valgrind gate)	Restore Chez	2026-11-05T10:39:52.1852465Z Received 3738789 of 3738789 (100.0%), 4.0 MBs/sec
+memory (the Valgrind gate)	Restore Chez	2026-11-05T10:39:52.1854558Z Cache Size: ~4 MB (3738789 B)
+memory (the Valgrind gate)	Restore Chez	2026-11-05T10:39:52.1893655Z [command]/usr/bin/tar -xf /home/runner/work/_temp/f1a159f5-8975-4de2-a2f3-89f1e9b0effd/cache.tzst -P -C /home/runner/work/chez-curl/chez-curl --use-compress-program unzstd
+memory (the Valgrind gate)	Restore Chez	2026-11-05T10:39:52.2148744Z Cache restored successfully
+memory (the Valgrind gate)	Restore Chez	2026-11-05T10:39:52.2315177Z Cache restored from key: chez-threads-dfe62cdc470d40d400781b9df9919c7c4410b8eb22e815eb1158e46317911271-ubuntu-24.04-X64
+memory (the Valgrind gate)	The gate must fail on planted defects	﻿2026-11-05T10:39:52.2490268Z ##[group]Run make check-memory-gate
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:39:52.2490647Z [36;1mmake check-memory-gate[0m
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:39:52.2511122Z shell: /usr/bin/bash -e {0}
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:39:52.2511409Z env:
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:39:52.2511675Z   CHEZ: /home/runner/work/_temp/chez-threads/bin/scheme
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:39:52.2512009Z ##[endgroup]
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:39:52.9485554Z check-memory-gate: ok a plain: tests/memory-plant-overrun.sps exits 0 without Valgrind, and prints only its line
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:39:53.0111506Z check-memory-gate: ok a plain: tests/memory-plant-leak.sps exits 0 without Valgrind, and prints only its line
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:01.3631809Z check-memory-gate: ok b memory-plant-overrun: test-memory names tests/memory-plant-overrun.sps FAIL, with Valgrind's report in its log and its output, and runs the suite after it
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:09.5970829Z check-memory-gate: ok b memory-plant-leak: test-memory names tests/memory-plant-leak.sps FAIL, with Valgrind's report in its log and its output, and runs the suite after it
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:18.0150938Z check-memory-gate: ok b fails: test-memory names a program that exits 1 FAIL, with its exit, its FAIL lines and its last lines, and runs the suite after it
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:18.0218774Z check-memory-gate: ok c suppression: tests/guix-glibc-locpath.supp holds exactly one entry, guix-glibc-locpath, a definite leak under compute_locale_search_path
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:18.0228383Z check-memory-gate: skipped d: GUIX_ENVIRONMENT is unset, so test-memory passes no suppression here, and there is none to hold
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:18.6979373Z check-memory-gate: ok e command, GUIX_ENVIRONMENT unset: timeout runs Valgrind with ADR-0014's flags, no suppression, then Chez, and a Valgrind that runs nothing fails
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:19.3800244Z check-memory-gate: ok e command, GUIX_ENVIRONMENT set: timeout runs Valgrind with ADR-0014's flags and tests/guix-glibc-locpath.supp, then Chez, and a Valgrind that runs nothing fails
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:35.5375925Z check-memory-gate: ok f hangs: a program that never ends is named HUNG
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:36.1540374Z check-memory-gate: ok g none: test-memory refuses to pass with no suite
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:36.8011649Z check-memory-gate: ok h options: test-memory refuses to run with VALGRIND_OPTS set
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:37.4349551Z check-memory-gate: ok h options: test-memory refuses to run with a $HOME/.valgrindrc
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:38.0710055Z check-memory-gate: ok h options: test-memory refuses to run with a ./.valgrindrc, in a copy of the tree
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:38.7012623Z check-memory-gate: ok h options: test-memory refuses to run with VALGRIND_LIB set, at a copy of Valgrind's directory whose default.supp hides every leak
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:39.3316783Z check-memory-gate: ok h options: test-memory refuses to run with any other VALGRIND_ variable set, VALGRIND_LAUNCHER
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:47.6375981Z check-memory-gate: ok h options: a $HOME/.valgrindrc that a suite writes mid-run hides nothing from the next: --command-line-only=yes
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:52.2717459Z check-memory-gate: ok i suppressions: a suppressions file the gate does not pass, named default.supp, beside Valgrind's own, fails the leak plant it hides, by name
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:56.8598398Z check-memory-gate: ok i suppressions: a file named default.supp in place of Valgrind's own fails the leak plant it hides, by name
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:40:58.4512139Z check-memory-gate: ok j evidence: a CHEZ that is a script exec'ing Chez fails the leak plant, which Valgrind never saw
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:00.0698160Z check-memory-gate: ok j evidence: a CHEZ that is a script running Chez as a child fails the leak plant, which Valgrind never saw
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:05.1586207Z check-memory-gate: ok j evidence: a program that execs away from Valgrind, which then reports nothing, fails
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:09.7365399Z check-memory-gate: ok j evidence: a Valgrind that runs another program than the suite fails the suite
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:14.4574883Z check-memory-gate: ok k undef: a program that branches on memory nothing initialised fails, exit 9, with Valgrind's report: the plant the next case hides
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:18.4394563Z check-memory-gate: ok k added: --undef-value-errors=no, added through VALGRIND, hides that plant, and fails it by name
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:23.0904515Z check-memory-gate: ok k dropped: a Valgrind that drops --leak-check=full hides the leak plant, and fails it by name
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:27.6988655Z check-memory-gate: ok k changed: a Valgrind that turns --errors-for-leak-kinds=definite to none hides the leak plant, and fails it by name
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:32.2595920Z check-memory-gate: ok k order: a Valgrind that moves --leak-check=full to the end of its options fails a clean program, by name
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:37.3702356Z check-memory-gate: ok l forged: a suite that prints a clean ERROR SUMMARY with Valgrind's pid, then execs away, fails: the evidence is Valgrind's own log
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:42.6074810Z check-memory-gate: ok l stale: a Valgrind log an earlier run left is never read: a Valgrind that writes none fails
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:43.2410706Z check-memory-gate: ok l names: two suites with one name, in two directories, are refused, so one suite's logs are never another's
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:47.8316136Z check-memory-gate: ok m awk: an awk that fails, printing nothing, fails a clean program, naming the evidence check
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:52.4228127Z check-memory-gate: ok m awk: an awk that prints ok, then exits 2, fails a clean program, naming the evidence check
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:56.9892120Z check-memory-gate: ok m awk: an awk that exits 0, printing nothing, fails a clean program, naming the evidence check
+memory (the Valgrind gate)	The gate must fail on planted defects	2026-11-05T10:41:56.9893821Z check-memory-gate: the memory gate failed, as it must, and its suppression held, in all 33 cases
+memory (the Valgrind gate)	Every suite under Valgrind	﻿2026-11-05T10:41:56.9954085Z ##[group]Run make test-memory
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:41:56.9954415Z [36;1mmake test-memory[0m
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:41:56.9974097Z shell: /usr/bin/bash -e {0}
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:41:56.9974647Z env:
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:41:56.9974916Z   CHEZ: /home/runner/work/_temp/chez-threads/bin/scheme
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:41:56.9975245Z ##[endgroup]
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:41:57.6675079Z deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:41:58.9571199Z === tests/test-auth.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:42:38.0921490Z test-memory: pass tests/test-auth.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:42:38.0941282Z === tests/test-check-floors.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:43:07.0251841Z test-memory: pass tests/test-check-floors.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:43:07.0272145Z === tests/test-check-nothreads.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:43:19.8501715Z test-memory: pass tests/test-check-nothreads.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:43:19.8523000Z === tests/test-check-seam.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:43:37.6151677Z test-memory: pass tests/test-check-seam.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:43:37.6173752Z === tests/test-collect-safe.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:43:56.4230649Z test-memory: pass tests/test-collect-safe.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:43:56.4252747Z === tests/test-conditions.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:44:08.8095715Z test-memory: pass tests/test-conditions.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:44:08.8118699Z === tests/test-constants.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:44:38.3208360Z test-memory: pass tests/test-constants.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:44:38.3228837Z === tests/test-cookies.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:45:20.5158107Z test-memory: pass tests/test-cookies.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:45:20.5176658Z === tests/test-curl-testing.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:46:16.2800837Z test-memory: pass tests/test-curl-testing.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:46:16.2823940Z === tests/test-discovery.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:46:28.7638400Z test-memory: pass tests/test-discovery.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:46:28.7658913Z === tests/test-drift.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:46:50.9425968Z test-memory: pass tests/test-drift.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:46:50.9446663Z === tests/test-engine.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:47:48.8888195Z test-memory: pass tests/test-engine.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:47:48.8906697Z === tests/test-group.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8660478Z test-memory: FAIL tests/test-group.sps (exit 1)
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8668362Z   log: build/memory/test-group.log
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8689617Z   Valgrind's log: build/memory/test-group.valgrind
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8690396Z   ==36491==    definitely lost: 0 bytes in 0 blocks
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8691031Z   ==36491==         suppressed: 0 bytes in 0 blocks
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8691678Z   ==36491== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8723017Z   | %%%% Starting test group
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8725697Z   | FAIL SIGINT while go's submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object, not compounded, as the section ends, after the submit took the mutex: no refusal of the submit's; the group's winds still cancel the transfer, so the engine holds nothing 500 ms after the release; the child's counts zero
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8735552Z   |   expected: (0 (raise #t #f after-release (0 0 0)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8740300Z   |   actual:   (0 (raise #f #t after-release (0 0 0)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8741817Z   | # of expected passes      64
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8742493Z   | # of unexpected failures  1
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8743387Z   | suite-exit-status: exit 1 (pass 64, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:49:21.8749533Z === tests/test-http-client.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:50:09.7931804Z test-memory: pass tests/test-http-client.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:50:09.7952903Z === tests/test-library-loading.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:51:12.2382626Z test-memory: pass tests/test-library-loading.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:51:12.2402739Z === tests/test-load-state.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:51:22.6764804Z test-memory: pass tests/test-load-state.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:51:22.6785055Z === tests/test-mailbox.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:51:53.7081211Z test-memory: pass tests/test-mailbox.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:51:53.7102916Z === tests/test-manifest.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:52:04.0078544Z test-memory: pass tests/test-manifest.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:52:04.0099860Z === tests/test-memory-safety.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:52:26.5128044Z test-memory: pass tests/test-memory-safety.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:52:26.5150165Z === tests/test-native.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:52:49.0366332Z test-memory: pass tests/test-native.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:52:49.0389720Z === tests/test-origin-tls.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:54:03.8892009Z test-memory: pass tests/test-origin-tls.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:54:03.8915975Z === tests/test-origin.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:55:57.8819376Z test-memory: pass tests/test-origin.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:55:57.8841592Z === tests/test-printed.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:56:24.0114027Z test-memory: pass tests/test-printed.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:56:24.0134198Z === tests/test-proxy.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:57:22.1791116Z test-memory: pass tests/test-proxy.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:57:22.1811606Z === tests/test-redirect.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:57:55.1266397Z test-memory: pass tests/test-redirect.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:57:55.1286993Z === tests/test-request.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:58:23.5509252Z test-memory: pass tests/test-request.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:58:23.5529462Z === tests/test-require-threaded.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:58:36.0995740Z test-memory: pass tests/test-require-threaded.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:58:36.1017507Z === tests/test-retry.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:59:25.6171936Z test-memory: pass tests/test-retry.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T10:59:25.6196305Z === tests/test-stream-call.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:00:44.1550883Z test-memory: pass tests/test-stream-call.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:00:44.1571248Z === tests/test-stream.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:02:18.6334239Z test-memory: pass tests/test-stream.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:02:18.6355976Z === tests/test-transfer-tls.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:02:58.7376701Z test-memory: pass tests/test-transfer-tls.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:02:58.7395496Z === tests/test-transfer.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:03:41.1834103Z test-memory: pass tests/test-transfer.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:03:41.1853788Z === tests/test-unsupported.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:04:06.7413593Z test-memory: pass tests/test-unsupported.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:04:06.7434412Z === tests/test-upload.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9360094Z test-memory: FAIL tests/test-upload.sps (exit 1)
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9361178Z   log: build/memory/test-upload.log
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9362089Z   Valgrind's log: build/memory/test-upload.valgrind
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9385815Z   ==51851==    definitely lost: 0 bytes in 0 blocks
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9386622Z   ==51851==         suppressed: 0 bytes in 0 blocks
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9387791Z   ==51851== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9418520Z   | FAIL the head's body-asked bit: #t for a streamed body whose server answers before reading it over HTTP/2, nothing put by the head, and over HTTP/1.1 with a close, a race, whether the read callable was ever asked; #t for one whose server reads it before answering, on the raw face and over HTTP/2; #f for a whole body, for none, and for a streamed length of 0, which libcurl never asks for
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9422077Z   |   expected: ((raw-answer bit-is-ask) (h2-answer #t) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9423714Z   |   actual:   ((raw-answer bit-is-ask) (h2-answer #f) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9425040Z   | (throughput http sized ms 7342)
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9425790Z   | (throughput http chunked ms 7393)
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9426504Z   | (throughput https sized ms 14029)
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9427673Z   | (throughput https chunked ms 14449)
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9428560Z   | (throughput h2 sized ms 15706)
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9429587Z   | (throughput h2 chunked ms 15759)
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9430614Z   | (read-lock collections-while-live 996)
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9431519Z   | # of expected passes      57
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9432401Z   | # of unexpected failures  1
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9433626Z   | suite-exit-status: exit 1 (pass 57, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:23.9444562Z === tests/test-url-location.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:53.2313101Z test-memory: pass tests/test-url-location.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:06:53.2333553Z === tests/test-url-parts.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:07:16.9999416Z test-memory: pass tests/test-url-parts.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:07:17.0020876Z === tests/test-url.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:07:40.0944658Z test-memory: pass tests/test-url.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:07:40.0965505Z === tests/test-variadic.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:08:06.2097143Z test-memory: pass tests/test-variadic.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:08:06.2117729Z === tests/test-verify.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:08:18.3365309Z test-memory: pass tests/test-verify.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:08:18.3385238Z === tests/test-version.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:08:53.0151909Z test-memory: pass tests/test-version.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:08:53.0152918Z test-memory: ran 40, passed 38, failed 2, hung 0
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:08:53.0156076Z make: *** [Makefile:443: test-memory] Error 1
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-05T11:08:53.0174348Z ##[error]Process completed with exit code 2.
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	﻿2026-11-05T11:08:53.0314962Z Post job cleanup.
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.1327823Z [command]/usr/bin/git version
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.1403233Z git version 2.56.0
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.1497041Z Temporarily overriding HOME='/home/runner/work/_temp/24813fa6-283d-4832-bcf5-24217672acce' before making global git config changes
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.1519603Z Adding repository directory to the temporary git global config as a safe directory
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.1521397Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/chez-curl/chez-curl
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.1643551Z Removing SSH command configuration
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.1645553Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.1712611Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.2104079Z Entering 'vendor/chez-srfi'
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.2208422Z Removing HTTP extra header
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.2225138Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.2358593Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.2858109Z Entering 'vendor/chez-srfi'
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.2948651Z Removing includeIf entries pointing to credentials config files
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.2978510Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.2997889Z includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git.path
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3033250Z includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/worktrees/*.path
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3044714Z includeif.gitdir:/github/workspace/.git.path
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3057849Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3080074Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git.path
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3081864Z /home/runner/work/_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3084899Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-3783ca7c\-248a\-4ba3\-a096\-b36c2eb45dc3\.config
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3139875Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/worktrees/*.path
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3184422Z /home/runner/work/_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3196011Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-3783ca7c\-248a\-4ba3\-a096\-b36c2eb45dc3\.config
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3246291Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3286542Z /github/runner_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3298279Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-3783ca7c\-248a\-4ba3\-a096\-b36c2eb45dc3\.config
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3347342Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3386297Z /github/runner_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3394794Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-3783ca7c\-248a\-4ba3\-a096\-b36c2eb45dc3\.config
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3447933Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3750325Z Entering 'vendor/chez-srfi'
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3797982Z file:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config	remote.origin.url
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3868886Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --name-only --get-regexp ^includeIf\.gitdir:
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3937598Z includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi.path
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.3984936Z includeif.gitdir:/github/workspace/.git/modules/vendor/chez-srfi.path
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.4038535Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --get-all includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi.path
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.4069636Z /home/runner/work/_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.4119161Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --unset includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi.path \/home\/runner\/work\/_temp\/git\-credentials\-3783ca7c\-248a\-4ba3\-a096\-b36c2eb45dc3\.config
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.4163732Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --get-all includeif.gitdir:/github/workspace/.git/modules/vendor/chez-srfi.path
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.4209019Z /github/runner_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.4249084Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --unset includeif.gitdir:/github/workspace/.git/modules/vendor/chez-srfi.path \/github\/runner_temp\/git\-credentials\-3783ca7c\-248a\-4ba3\-a096\-b36c2eb45dc3\.config
+memory (the Valgrind gate)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-11-05T11:08:53.4268528Z Removing credentials config '/home/runner/work/_temp/git-credentials-3783ca7c-248a-4ba3-a096-b36c2eb45dc3.config'
+memory (the Valgrind gate)	Complete job	﻿2026-11-05T11:08:53.4467266Z Cleaning up orphan processes

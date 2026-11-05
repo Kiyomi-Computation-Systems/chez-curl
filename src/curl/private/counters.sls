@@ -34,7 +34,8 @@
   ;;   curl-string  a string libcurl made, for curl_free
   ;;   transfer     a transfer (M2, slice 2)
   ;;   multi        a multi handle, an engine's (M3, slice 2)
-  (define native-kinds '(block easy url slist curl-string transfer multi))
+  ;;   share        a share, a cookie jar's (M7, slice 4)
+  (define native-kinds '(block easy url slist curl-string transfer multi share))
 
   ;; The counts, one per kind, in native-kinds order, and the mutex every
   ;; read and write holds.

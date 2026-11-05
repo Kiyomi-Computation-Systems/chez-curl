@@ -225,7 +225,7 @@
     credentials-bytes credentials-empty credentials-beside-userinfo credentials-beside-authorization
     digest-with-stream prior-knowledge-through-proxy proxy-url proxy-scheme proxy-url-parts
     proxy-authorization-header proxy-tls-without-https-proxy proxy-tls-in-tls
-    https-proxy-unsupported))
+    https-proxy-unsupported cookie-line cookie-jar-engine cookie-jar-closed cookie-beside-jar))
 
 (test-equal "request-error: an error and a curl-error, and none of the other kinds, carrying its field, value and reason"
   '(#t #t #f #f #f #f #t #f header-value "a\rb" line-break)
@@ -236,11 +236,11 @@
                   (curl-request-error-field c) (curl-request-error-value c)
                   (curl-request-error-reason c)))))
 
-(test-equal "the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option, unsupported-type, unknown-option, repeated-option, unknown-key, repeated-key, missing-value, body-not-allowed, pkcs11-url, environment-override, keychain-fallback, stream-with-rounds, body-length-without-stream, body-length-mismatch, prior-knowledge-over-https, credentials-bytes, credentials-empty, credentials-beside-userinfo, credentials-beside-authorization, digest-with-stream, prior-knowledge-through-proxy, proxy-url, proxy-scheme, proxy-url-parts, proxy-authorization-header, proxy-tls-without-https-proxy, proxy-tls-in-tls and https-proxy-unsupported, in order"
+(test-equal "the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option, unsupported-type, unknown-option, repeated-option, unknown-key, repeated-key, missing-value, body-not-allowed, pkcs11-url, environment-override, keychain-fallback, stream-with-rounds, body-length-without-stream, body-length-mismatch, prior-knowledge-over-https, credentials-bytes, credentials-empty, credentials-beside-userinfo, credentials-beside-authorization, digest-with-stream, prior-knowledge-through-proxy, proxy-url, proxy-scheme, proxy-url-parts, proxy-authorization-header, proxy-tls-without-https-proxy, proxy-tls-in-tls, https-proxy-unsupported, cookie-line, cookie-jar-engine, cookie-jar-closed and cookie-beside-jar, in order"
   request-reasons
   curl-request-error-reasons)
 
-(test-equal "the request-error constructor takes each of the thirty-five reasons"
+(test-equal "the request-error constructor takes each of the thirty-nine reasons"
   request-reasons
   (map (lambda (reason)
          (curl-request-error-reason (make-curl-request-error 'user-agent "x" reason)))

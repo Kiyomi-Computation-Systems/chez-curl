@@ -1,0 +1,39 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-group.sps
+%%%% Starting test group
+FAIL SIGINT while go's submit blocks on the engine's mutex inside its critical section escapes as the section ends, after the submit took the mutex, out of the group; its winds still cancel the transfer, so the engine holds nothing 500 ms after the release, where the drip runs 10 s; no collection ran in the hold; the child's counts zero
+  expected: (0 (submit escaped after-release quiet (0 0 0)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (submit escaped after-release (collected 77 78) (0 0 0)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+FAIL SIGINT while go's submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object, not compounded, as the section ends, after the submit took the mutex: no refusal of the submit's; the group's winds still cancel the transfer, so the engine holds nothing 500 ms after the release; no collection ran in the hold; the child's counts zero
+  expected: (0 (raise #t #f after-release quiet (0 0 0)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (raise #t #f after-release (collected 77 78) (0 0 0)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+FAIL SIGINT while a turn's due submit, a call's retry, blocks on the engine's mutex inside its critical section escapes as the section ends, after the submit took the mutex, out of the group; the retry is recorded with its submit, so the group's winds cancel it and the engine holds nothing 500 ms after the release, the call ended; no collection ran in the hold; the child's counts zero
+  expected: (0 (turn escaped after-release quiet (0 0 0) ended) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (turn escaped after-release (collected 77 78) (0 0 0) ended) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+FAIL SIGINT while a turn's due submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object, not compounded, as the section ends: the guard that makes a call's own raise its failure sits inside the section, and reads none of a handler's; the group's winds cancel the retry, the engine holding nothing, the call ended; no collection ran in the hold; the child's counts zero
+  expected: (0 (turn (raise #t #f) after-release quiet (0 0 0) ended) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (turn (raise #t #f) after-release (collected 77 78) (0 0 0) ended) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+FAIL http-parallel lets each call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as that section ends, and its handler's close refuses the second call's submit, stopped, with no transfer, the first failure; no collection ran in the hold; the child's counts zero
+  expected: (0 (sections quiet (raised stopped "http://127.0.0.1:37933/raw/hold?key=sections-1&ms=1000" 0)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (sections (collected 76 77) (raised stopped "http://127.0.0.1:37933/raw/hold?key=sections-0&ms=1000" 0)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+FAIL a turn lets each queued call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as that section ends, and its handler's close refuses the second admission's submit, stopped, with no transfer, where the first's token ends stopped, its transfer counted; no collection ran in the hold; the child's counts zero
+  expected: (0 (admissions quiet ((transfer stopped) 1) ((engine stopped) 0)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (admissions (collected 77 78) ((transfer stopped) 1) ((engine stopped) 0)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, case P1: http-parallel suspended after call 1's admission raises call 0's cancel, the first in SPECS' order not done, enters no call more and submits nothing after; no transfer starts after the suspension, no collection ran in the hold, and the child's counts zero
+  expected: (0 (resume P1 quiet (raised cancelled http-await 0) 2 1 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (resume P1 (collected 77 78) (raised #f call-with-parsed-url #f) 0 1 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, case P3: http-parallel suspended after its first step, call 0 done, raises call 1's cancel, the first not done, not call 2's; no transfer starts after the suspension, no collection ran in the hold, and the child's counts zero
+  expected: (0 (resume P3 quiet (raised cancelled http-await 1) 3 1 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (resume P3 (collected 77 78) (raised #f call-with-parsed-url #f) 0 1 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, case G: go suspended in its admissions, after its entry, answers its pending, whose await raises cancelled; a go after it raises closed; no transfer starts after the suspension, no collection ran in the hold, and the child's counts zero
+  expected: (0 (resume G quiet (value (#t (cancelled http-await 0) (closed go #f))) 1 1 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (resume G (collected 77 78) (value (#t (cancelled http-await 0) (closed go #f))) 0 1 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+# of expected passes      56
+# of unexpected failures  9
+suite-exit-status: exit 1 (pass 56, fail 9, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-group.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

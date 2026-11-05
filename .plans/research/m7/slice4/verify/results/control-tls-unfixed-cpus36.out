@@ -1,0 +1,28 @@
+race-gate: mode gate, trees ci, snap build/m7s4b/snap-*, cpus 3,6, suites tests/test-group.sps tests/test-upload.sps tests/test-origin-tls.sps, out build/m7s4r/out/ctl-ci-36
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl4t64 8.5.0-2ubuntu10.16
+package valgrind 1:3.22.0-0ubuntu3
+cpus: 2
+=== round 1, tree ci, mode gate, 243 s
+test-memory: pass tests/test-group.sps
+test-memory: pass tests/test-upload.sps
+test-memory: FAIL tests/test-origin-tls.sps (exit 1)
+test-memory: ran 3, passed 2, failed 1, hung 0
+FAIL h2 POST /refuse?at=0, its HEADERS alone: RST_STREAM REFUSED_STREAM on stream 1 and nothing else, then eof; the key's next request answered as /sink, seen=2
+  expected: (("00000004000000000000000004010000000000000403000000000100000007" eof) ("sink h2 method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+  actual:   (("000000040000000000000000040100000000" eof) ("sink h2 method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+=== round 2, tree ci, mode gate, 245 s
+test-memory: pass tests/test-group.sps
+test-memory: pass tests/test-upload.sps
+test-memory: pass tests/test-origin-tls.sps
+test-memory: ran 3, passed 3, failed 0, hung 0
+=== round 3, tree ci, mode gate, 242 s
+test-memory: pass tests/test-group.sps
+test-memory: pass tests/test-upload.sps
+test-memory: FAIL tests/test-origin-tls.sps (exit 1)
+test-memory: ran 3, passed 2, failed 1, hung 0
+FAIL h2 POST /refuse?at=3, DATA of 3 bytes and the stream left open: RST_STREAM REFUSED_STREAM on stream 1, then eof
+  expected: ("00000004000000000000000004010000000000000403000000000100000007" eof)
+  actual:   ("000000040000000000000000040100000000" eof)
+race-gate: done
+both-done

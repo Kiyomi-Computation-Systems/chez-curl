@@ -1,0 +1,28 @@
+baseline rc=0 fails=0 seconds=117
+r4-guard-outside-section rc=2 fails=4 seconds=49
+r4-record-outside-section rc=2 fails=7 seconds=42
+f1-guard-outside-due rc=2 fails=1 seconds=42
+turn-no-sections rc=2 fails=9 seconds=39
+f6-one-section rc=2 fails=2 seconds=39
+g7-admissions-one-section rc=2 fails=1 seconds=39
+r5-no-take-out rc=2 fails=36 seconds=35
+r7-no-look rc=2 fails=3 seconds=85
+done
+g1-parallel-no-closed rc=2 fails=3 seconds=41
+z-parallel-last-unfinished rc=2 fails=2 seconds=39
+z3-go-closed-after-admit rc=2 fails=1 seconds=40
+plant-trip-in-hold rc=2 fails=10 seconds=238
+control-late-sigint rc=0 fails=0 seconds=69
+plant-late-fixed-hold rc=2 fails=5 seconds=69
+bit-from-handed rc=2 fails=3 seconds=34
+origin-hold-ignored rc=2 fails=2 seconds=82
+origin-hold-forever rc=2 fails=3 seconds=101
+done
+plant-trip-in-hold rc=2 fails=9 seconds=39
+done
+baseline rc=0 fails=0 seconds=119
+bit-from-handed rc=2 fails=3 seconds=34
+origin-hold-ignored rc=2 fails=2 seconds=80
+origin-hold-forever rc=2 fails=3 seconds=101
+make test rc=0
+done

@@ -1,0 +1,608 @@
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	﻿2026-11-04T01:39:10.9412707Z Current runner version: '2.338.2'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9452615Z ##[group]Runner Image Provisioner
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9454095Z Hosted Compute Agent
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9455548Z Version: 20261021.618
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9456706Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9458074Z Build Date: 2026-10-21T00:45:21Z
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9459519Z Worker ID: {50cb00d6-a7fc-48d8-8280-58b7d5a10409}
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9460837Z Region: westus2
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9461934Z Cloud: Azure
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9463035Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9465971Z ##[group]Operating System
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9467299Z Ubuntu
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9468365Z 24.04.5
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9469415Z LTS
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9470311Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9471241Z ##[group]Runner Image
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9472432Z Image: ubuntu-24.04
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9473405Z Version: 20261025.353.1
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9476081Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261025.353/images/ubuntu/Ubuntu2404-Readme.md
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9479006Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261025.353
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9481020Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9483073Z ##[group]GITHUB_TOKEN Permissions
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9486419Z Contents: read
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9487457Z Metadata: read
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9488401Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9492186Z Secret source: Actions
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9493817Z Cache mode: write
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:10.9495459Z Prepare workflow directory
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:11.0258591Z Prepare all required actions
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:11.0333653Z Getting action download info
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:11.4919683Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:11.6008154Z Download action repository 'actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9' (SHA:55cc8345863c7cc4c66a329aec7e433d2d1c52a9)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:11.7234127Z Download action repository 'actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1' (SHA:949feb2413d6458794dcd2491c4babbbce0c15c1)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:11.9423419Z Complete job name: floor (the suites against libcurl at its floor)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0401214Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0402454Z with:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0402936Z   submodules: recursive
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0403528Z   repository: Kiyomi-Computation-Systems/chez-curl
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0407969Z   token: ***
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0408468Z   ssh-strict: true
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0408950Z   ssh-user: git
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0409453Z   persist-credentials: true
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0409992Z   clean: true
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0410484Z   sparse-checkout-cone-mode: true
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0411061Z   fetch-depth: 1
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0411540Z   fetch-tags: false
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0412031Z   show-progress: true
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0412535Z   lfs: false
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0413036Z   set-safe-directory: true
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0413633Z   allow-unsafe-pr-checkout: false
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0414487Z env:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0414953Z   CURL_EXTRA_FLAGS: 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.0415686Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.3831541Z Syncing repository: Kiyomi-Computation-Systems/chez-curl
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.3842512Z ##[group]Getting Git version info
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.3852534Z Working directory is '/home/runner/work/chez-curl/chez-curl'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.3858445Z [command]/usr/bin/git version
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.3981237Z git version 2.56.0
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4031185Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4043572Z Temporarily overriding HOME='/home/runner/work/_temp/7a8b1211-bed6-4ba0-a152-4979b8024b52' before making global git config changes
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4048896Z Adding repository directory to the temporary git global config as a safe directory
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4053472Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/chez-curl/chez-curl
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4124289Z Deleting the contents of '/home/runner/work/chez-curl/chez-curl'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4148610Z ##[group]Determining repository object format
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4152965Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4156855Z ##[group]Initializing the repository
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4160687Z [command]/usr/bin/git init /home/runner/work/chez-curl/chez-curl
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4500348Z hint: Using 'master' as the name for the initial branch. This default branch name
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4540237Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4567496Z hint: to use in all of your new repositories, which will suppress this warning,
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4599867Z hint: call:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4617101Z hint:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4650445Z hint: 	git config --global init.defaultBranch <name>
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4653251Z hint:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4662264Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4667250Z hint: 'development'. The just-created branch can be renamed via this command:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4680365Z hint:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4686029Z hint: 	git branch -m <name>
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4688292Z hint:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4691229Z hint: Disable this message with "git config set advice.defaultBranchName false"
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4695854Z Initialized empty Git repository in /home/runner/work/chez-curl/chez-curl/.git/
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4703562Z [command]/usr/bin/git remote add origin https://github.com/Kiyomi-Computation-Systems/chez-curl
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4711509Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4714737Z ##[group]Disabling automatic garbage collection
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4717964Z [command]/usr/bin/git config --local gc.auto 0
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4724519Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4728168Z ##[group]Setting up auth
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4730406Z Removing SSH command configuration
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4733721Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.4745866Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.5190167Z Removing HTTP extra header
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.5314331Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.5330448Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.5569213Z Removing includeIf entries pointing to credentials config files
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.5572014Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.5629868Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.5906626Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.5968490Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/chez-curl/chez-curl/.git.path /home/runner/work/_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.6033636Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/chez-curl/chez-curl/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.6081985Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.6137405Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.6189118Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.6192591Z ##[group]Fetching the repository
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:12.6198162Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +a07562922258b7b4cb1ea5b4cca6ac4fdc784f2c:refs/remotes/origin/main
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.3961457Z From https://github.com/Kiyomi-Computation-Systems/chez-curl
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.3963046Z  * [new ref]         a07562922258b7b4cb1ea5b4cca6ac4fdc784f2c -> origin/main
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.3970239Z [command]/usr/bin/git branch --list --remote origin/main
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.4012802Z   origin/main
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.4020757Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.4058342Z a07562922258b7b4cb1ea5b4cca6ac4fdc784f2c
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.4067803Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.4069003Z ##[group]Determining the checkout info
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.4070274Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.4071177Z [command]/usr/bin/git sparse-checkout disable
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.4136463Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.4183972Z ##[group]Checking out the ref
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.4188928Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.7755396Z Switched to a new branch 'main'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.7786443Z branch 'main' set up to track 'origin/main'.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.7856185Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.7857208Z ##[group]Setting up auth for fetching submodules
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.7867177Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.7945719Z [command]/usr/bin/git config --global include.path /home/runner/work/_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.8060147Z [command]/usr/bin/git config --global --unset-all url.https://github.com/.insteadOf
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.8157819Z [command]/usr/bin/git config --global --add url.https://github.com/.insteadOf git@github.com:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.8192097Z [command]/usr/bin/git config --global --add url.https://github.com/.insteadOf org-309242414@github.com:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.8229404Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.8230553Z ##[group]Fetching submodules
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.8233118Z [command]/usr/bin/git submodule sync --recursive
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.8529902Z [command]/usr/bin/git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.8805512Z Submodule 'vendor/chez-srfi' (https://github.com/arcfide/chez-srfi.git) registered for path 'vendor/chez-srfi'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:14.8834269Z Cloning into '/home/runner/work/chez-curl/chez-curl/vendor/chez-srfi'...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:15.8998549Z From https://github.com/arcfide/chez-srfi
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:15.9001286Z  * branch            7879b527f267f067416552fb989135ad1b4ea436 -> FETCH_HEAD
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:15.9356882Z Submodule path 'vendor/chez-srfi': checked out '7879b527f267f067416552fb989135ad1b4ea436'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:15.9388262Z [command]/usr/bin/git submodule foreach --recursive git config --local gc.auto 0
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:15.9682012Z Entering 'vendor/chez-srfi'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:15.9746871Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:15.9748063Z ##[group]Persisting credentials for submodules
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:15.9767118Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'url\.https\:\/\/github\.com\/\.insteadOf' && git config --local --unset-all 'url.https://github.com/.insteadOf' || :"
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.0024049Z Entering 'vendor/chez-srfi'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.0116596Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.0376239Z Entering 'vendor/chez-srfi'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.0405016Z file:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config	remote.origin.url
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.0449129Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config includeIf.gitdir:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi.path /home/runner/work/_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.0518581Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config includeIf.gitdir:/github/workspace/.git/modules/vendor/chez-srfi.path /github/runner_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.0566503Z [command]/usr/bin/git submodule foreach --recursive git config --local --add 'url.https://github.com/.insteadOf' 'git@github.com:'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.0819759Z Entering 'vendor/chez-srfi'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.0912891Z [command]/usr/bin/git submodule foreach --recursive git config --local --add 'url.https://github.com/.insteadOf' 'org-309242414@github.com:'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1169071Z Entering 'vendor/chez-srfi'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1228243Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1296253Z [command]/usr/bin/git log -1 --format=%H
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1350381Z a07562922258b7b4cb1ea5b4cca6ac4fdc784f2c
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1585942Z ##[group]Run pkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1586632Z [36;1mpkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1587051Z [36;1mif [ -z "$pkgs" ]; then[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1587546Z [36;1m  echo "::error::packaging/debian-prereqs.txt yielded no packages: a broken step, not an empty list"[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1588028Z [36;1m  exit 1[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1588222Z [36;1mfi[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1588419Z [36;1msudo apt-get update -qq[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1588688Z [36;1m# shellcheck disable=SC2086[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1589039Z [36;1msudo apt-get install -y --no-install-recommends $pkgs[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1613480Z shell: /usr/bin/bash -e {0}
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1613731Z env:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1613919Z   CURL_EXTRA_FLAGS: 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:16.1614157Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.4977709Z Reading package lists...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.7077123Z Building dependency tree...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.7086319Z Reading state information...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8515363Z ca-certificates is already the newest version (20260816ubuntu0.24.04.1).
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8516568Z curl is already the newest version (8.5.0-2ubuntu10.16).
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8517576Z xz-utils is already the newest version (5.6.1+really5.4.5-1ubuntu0.4).
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8518626Z libssl-dev is already the newest version (3.0.13-0ubuntu3.16).
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8519574Z zlib1g-dev is already the newest version (1:1.3.dfsg-3.1ubuntu2.3).
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8520587Z libcurl3t64-gnutls is already the newest version (8.5.0-2ubuntu10.16).
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8521540Z libcurl3t64-gnutls set to manually installed.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8522397Z openssl is already the newest version (3.0.13-0ubuntu3.16).
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8523303Z The following additional packages will be installed:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8524267Z   libc6-dbg
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8527525Z Suggested packages:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8528259Z   libcurl4-doc libidn-dev libkrb5-dev libldap2-dev librtmp-dev libssh2-1-dev
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8529129Z   libnghttp2-doc valgrind-dbg valgrind-mpi kcachegrind alleyoop valkyrie
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8529677Z Recommended packages:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8530035Z   gdb
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8726314Z The following NEW packages will be installed:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8727684Z   build-essential libc6-dbg libcurl4-openssl-dev libnghttp2-dev valgrind
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8942122Z 0 upgraded, 5 newly installed, 0 to remove and 16 not upgraded.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8955808Z Need to get 23.0 MB of archives.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8956793Z After this operation, 92.8 MB of additional disk space will be used.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.8957752Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:21.9857267Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 build-essential amd64 12.10ubuntu1 [4928 B]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:22.0579477Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl4-openssl-dev amd64 8.5.0-2ubuntu10.16 [447 kB]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:22.1593605Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libnghttp2-dev amd64 1.59.0-1ubuntu0.4 [117 kB]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:22.2359102Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libc6-dbg amd64 2.39-0ubuntu8.9 [7474 kB]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:22.9889969Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 valgrind amd64 1:3.22.0-0ubuntu3 [14.9 MB]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5258533Z Fetched 23.0 MB in 2s (9709 kB/s)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5510766Z Selecting previously unselected package build-essential.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5789743Z (Reading database ... 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5790501Z (Reading database ... 5%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5790912Z (Reading database ... 10%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5791157Z (Reading database ... 15%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5791393Z (Reading database ... 20%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5791659Z (Reading database ... 25%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5791893Z (Reading database ... 30%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5792405Z (Reading database ... 35%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5792643Z (Reading database ... 40%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5794676Z (Reading database ... 45%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5795857Z (Reading database ... 50%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.5844719Z (Reading database ... 55%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.7381976Z (Reading database ... 60%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:24.9225348Z (Reading database ... 65%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:25.1303087Z (Reading database ... 70%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:25.3378677Z (Reading database ... 75%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:25.5179658Z (Reading database ... 80%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:25.6375705Z (Reading database ... 85%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:25.7813300Z (Reading database ... 90%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:25.9456405Z (Reading database ... 95%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:25.9475828Z (Reading database ... 100%
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:25.9502195Z (Reading database ... 215504 files and directories currently installed.)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:25.9519582Z Preparing to unpack .../build-essential_12.10ubuntu1_amd64.deb ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:25.9555882Z Unpacking build-essential (12.10ubuntu1) ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:25.9793103Z Selecting previously unselected package libcurl4-openssl-dev:amd64.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:25.9942387Z Preparing to unpack .../libcurl4-openssl-dev_8.5.0-2ubuntu10.16_amd64.deb ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:25.9951402Z Unpacking libcurl4-openssl-dev:amd64 (8.5.0-2ubuntu10.16) ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.0360550Z Selecting previously unselected package libnghttp2-dev:amd64.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.0484175Z Preparing to unpack .../libnghttp2-dev_1.59.0-1ubuntu0.4_amd64.deb ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.0492248Z Unpacking libnghttp2-dev:amd64 (1.59.0-1ubuntu0.4) ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.0763037Z Selecting previously unselected package libc6-dbg:amd64.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.0907720Z Preparing to unpack .../libc6-dbg_2.39-0ubuntu8.9_amd64.deb ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.0915925Z Unpacking libc6-dbg:amd64 (2.39-0ubuntu8.9) ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.2088416Z Selecting previously unselected package valgrind.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.2213146Z Preparing to unpack .../valgrind_1%3a3.22.0-0ubuntu3_amd64.deb ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.2232693Z Unpacking valgrind (1:3.22.0-0ubuntu3) ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.5693136Z Setting up libnghttp2-dev:amd64 (1.59.0-1ubuntu0.4) ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.5727084Z Setting up libc6-dbg:amd64 (2.39-0ubuntu8.9) ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.5748807Z Setting up libcurl4-openssl-dev:amd64 (8.5.0-2ubuntu10.16) ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.5775945Z Setting up build-essential (12.10ubuntu1) ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.5796843Z Setting up valgrind (1:3.22.0-0ubuntu3) ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.5821207Z Processing triggers for man-db (2.12.0-4build2) ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:26.5842598Z Not building database; man-db/auto-update is not 'true'.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:27.2635480Z 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:27.2636468Z Running kernel seems to be up-to-date.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:27.2637170Z 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:27.2637605Z No services need to be restarted.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:27.2638206Z 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:27.2638583Z No containers need to be restarted.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:27.2639448Z 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:27.2639840Z No user sessions are running outdated binaries.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:27.2640392Z 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:27.2640902Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.2182281Z ##[group]Run . /etc/os-release
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.2182606Z [36;1m. /etc/os-release[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.2182948Z [36;1mecho "id=${ID}-${VERSION_ID}-${RUNNER_ARCH}" >> "$GITHUB_OUTPUT"[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.2204195Z shell: /usr/bin/bash -e {0}
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.2204453Z env:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.2204643Z   CURL_EXTRA_FLAGS: 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.2204859Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.3040604Z ##[group]Run actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.3041054Z with:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.3041280Z   path: /home/runner/work/_temp/chez-threads
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.3041843Z   key: chez-threads-dfe62cdc470d40d400781b9df9919c7c4410b8eb22e815eb1158e46317911271-ubuntu-24.04-X64
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.3042428Z   enableCrossOsArchive: false
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.3042695Z   fail-on-cache-miss: false
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.3042933Z   lookup-only: false
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.3043136Z env:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.3043314Z   CURL_EXTRA_FLAGS: 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.3043523Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:28.7160390Z Cache hit for: chez-threads-dfe62cdc470d40d400781b9df9919c7c4410b8eb22e815eb1158e46317911271-ubuntu-24.04-X64
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:29.9824531Z Received 3738789 of 3738789 (100.0%), 3.6 MBs/sec
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:29.9825930Z Cache Size: ~4 MB (3738789 B)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:29.9856738Z [command]/usr/bin/tar -xf /home/runner/work/_temp/a79206c5-8b19-411f-bdbf-8777a889790e/cache.tzst -P -C /home/runner/work/chez-curl/chez-curl --use-compress-program unzstd
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.0098431Z Cache restored successfully
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.0290821Z Cache restored from key: chez-threads-dfe62cdc470d40d400781b9df9919c7c4410b8eb22e815eb1158e46317911271-ubuntu-24.04-X64
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.0441882Z ##[group]Run echo "key=$(printf '%s' "$CURL_EXTRA_FLAGS" | tr -c '[:alnum:]' '-')" >> "$GITHUB_OUTPUT"
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.0442642Z [36;1mecho "key=$(printf '%s' "$CURL_EXTRA_FLAGS" | tr -c '[:alnum:]' '-')" >> "$GITHUB_OUTPUT"[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.0462103Z shell: /usr/bin/bash -e {0}
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.0462371Z env:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.0462561Z   CURL_EXTRA_FLAGS: 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.0462782Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.1342975Z ##[group]Run actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.1343406Z with:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.1343630Z   path: /home/runner/work/_temp/curl-floor
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.1344178Z   key: curl-openssl--be40cf9c1f3708ca596db19c0a24f480a08f9786bdd94190caead890394acbb3-ubuntu-24.04-X64
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.1344718Z   enableCrossOsArchive: false
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.1344974Z   fail-on-cache-miss: false
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.1345549Z   lookup-only: false
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.1345775Z env:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.1345969Z   CURL_EXTRA_FLAGS: 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.1346168Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:30.5660290Z Cache hit for: curl-openssl--be40cf9c1f3708ca596db19c0a24f480a08f9786bdd94190caead890394acbb3-ubuntu-24.04-X64
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.4957526Z Received 854569 of 854569 (100.0%), 1.3 MBs/sec
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.4958735Z Cache Size: ~1 MB (854569 B)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.5187445Z [command]/usr/bin/tar -xf /home/runner/work/_temp/a6eb1872-f8e3-4f80-821a-78f2c37865c1/cache.tzst -P -C /home/runner/work/chez-curl/chez-curl --use-compress-program unzstd
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.5565877Z Cache restored successfully
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.5645822Z Cache restored from key: curl-openssl--be40cf9c1f3708ca596db19c0a24f480a08f9786bdd94190caead890394acbb3-ubuntu-24.04-X64
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.5791330Z ##[group]Run echo "version=$(scripts/ci/floor.sh node)" >> "$GITHUB_OUTPUT"
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.5791926Z [36;1mecho "version=$(scripts/ci/floor.sh node)" >> "$GITHUB_OUTPUT"[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.5811563Z shell: /usr/bin/bash -e {0}
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.5811835Z env:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.5812035Z   CURL_EXTRA_FLAGS: 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.5812440Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.6044412Z ##[group]Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.6044852Z with:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.6045057Z   node-version: 20
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.6045697Z   check-latest: false
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.6048518Z   token: ***
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.6048744Z   package-manager-cache: true
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.6049005Z env:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.6049205Z   CURL_EXTRA_FLAGS: 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.6049429Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:31.7456966Z Attempting to download 20...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:32.3884882Z Acquiring 20.20.2 - x64 from https://github.com/actions/node-versions/releases/download/20.20.2-23521894959/node-20.20.2-linux-x64.tar.gz
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:32.8733087Z Extracting ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:32.8914903Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/e515ec51-9045-42c0-a083-6d9b8acf8849 -f /home/runner/work/_temp/5859de3c-6c22-46fe-85fe-4e976d478de3
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:34.0610877Z Adding to the cache ...
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.1141109Z ##[group]Environment details
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4091743Z node: v20.20.2
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4094557Z npm: 10.8.2
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4094921Z yarn: 1.22.22
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4096051Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4294488Z ##[group]Run set -o pipefail
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4294828Z [36;1mset -o pipefail[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4295114Z [36;1mfloor=$(scripts/ci/floor.sh libcurl)[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4295967Z [36;1mmake build | tee "$RUNNER_TEMP/build.log"[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4296509Z [36;1mif ! grep -qxF "  version:  $floor" "$RUNNER_TEMP/build.log"; then[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4297101Z [36;1m  echo "::error::make build did not load libcurl at its floor ($floor): this lane tests nothing"[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4297562Z [36;1m  exit 1[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4297769Z [36;1mfi[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4298080Z [36;1m# The same for Node: setup-node installs a release of the floor's[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4298561Z [36;1m# major version, and the suites must run under that, not under the[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4298973Z [36;1m# runner's own Node.[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4299337Z [36;1m# make test runs $NODE, so that is the Node checked. A floor may be[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4299829Z [36;1m# a whole version, so it matches exactly or as a prefix.[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4300217Z [36;1mnode_floor=$(scripts/ci/floor.sh node)[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4300554Z [36;1mnode_version=$("${NODE:-node}" --version)[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4300886Z [36;1mecho "node: $node_version"[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4301158Z [36;1mcase $node_version in[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4301440Z [36;1m  "v$node_floor" | "v$node_floor".*) ;;[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4301740Z [36;1m  *)[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4302109Z [36;1m    echo "::error::node is $node_version, not Node $node_floor: this lane tests nothing"[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4302546Z [36;1m    exit 1[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4302757Z [36;1m    ;;[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4302954Z [36;1mesac[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4303172Z [36;1mmake test[0m
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4326031Z shell: /usr/bin/bash -e {0}
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4326296Z env:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4326489Z   CURL_EXTRA_FLAGS: 
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4326789Z   CHEZ: /home/runner/work/_temp/chez-threads/bin/scheme
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4327229Z   CHEZ_CURL_LIBCURL: /home/runner/work/_temp/curl-floor/lib/libcurl.so.4
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4327678Z   C_INCLUDE_PATH: /home/runner/work/_temp/curl-floor/include
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.4328010Z ##[endgroup]
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.9482931Z chez-curl: libcurl loaded and accepted
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.9488745Z   path:     /home/runner/work/_temp/curl-floor/lib/libcurl.so.4 (override)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.9489570Z   version:  7.85.0
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.9490048Z   TLS:      OpenSSL/3.0.13
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.9491224Z   features: ipv6 ssl libz ntlm asynchdns largefile tlsauth-srp ntlm-wb http2 unix-sockets https-proxy altsvc hsts threadsafe
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.9492419Z   host:     x86_64-pc-linux-gnu
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:36.9681882Z node: v20.20.2
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:37.5801862Z deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:37.9553506Z check-suites: every suite ends with (exit (suite-exit-status runner)) (39 checked)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:38.0582403Z check-seam: the seam holds (21 libraries in 21 files checked)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:38.1629555Z check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:38.1672361Z === tests/test-auth.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:39.1699537Z %%%% Starting test auth
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:39.7091021Z test-auth: digest-algorithms on "7.85.0" measured ((200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (401 ("none" 401) ("bad(response)" 401)) (401 ("none" 401) ("bad(response)" 401)))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:39.7129224Z test-auth: utf8-digest-user on "7.85.0" measured (200 (("none" 401) ("ok" 200)) "\\xc3\\xbcser")
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:39.7278986Z test-auth: empty-userinfo on "7.85.0" measured (("@" #f #f ((response 200) ("request 1 face=http conn=A method=GET body=0 verdict=ok status=200 authorization=Basic dXNlcjpwYXNz"))) (":@" #f #f ((response 200) ("request 1 face=http conn=A method=GET body=0 verdict=ok status=200 authorization=Basic dXNlcjpwYXNz"))) (":p@" #f "p" (refused credentials-beside-userinfo)) ("u@" "u" #f (refused credentials-beside-userinfo)) ("u:@" "u" #f (refused credentials-beside-userinfo)))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:39.8998115Z test-auth: mib-credentials on "7.85.0" measured (((failed perform-failed 27 none) 0) ((failed perform-failed 27 none) 0))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:39.9681918Z # of expected passes      66
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:39.9798303Z test: pass tests/test-auth.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:39.9799216Z === tests/test-check-floors.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:40.4761683Z %%%% Starting test check-floors
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:45.8286669Z # of expected passes      375
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:45.8348947Z test: pass tests/test-check-floors.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:45.8350199Z === tests/test-check-nothreads.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:46.1098162Z %%%% Starting test check-nothreads
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:47.6969251Z # of expected passes      17
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:47.7020528Z test: pass tests/test-check-nothreads.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:47.7021543Z === tests/test-check-seam.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:48.0402673Z %%%% Starting test check-seam
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:52.4602777Z # of expected passes      62
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:52.4661166Z test: pass tests/test-check-seam.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:52.4661903Z === tests/test-collect-safe.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:52.9502212Z %%%% Starting test collect-safe
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:53.0760565Z # of expected passes      120
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:53.0823773Z test: pass tests/test-collect-safe.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:53.0824747Z === tests/test-conditions.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:53.4299548Z %%%% Starting test conditions
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:53.4300624Z # of expected passes      41
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:53.4364800Z test: pass tests/test-conditions.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:53.4365980Z === tests/test-constants.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:54.7900094Z %%%% Starting test constants
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:54.9246458Z # of expected passes      713
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:54.9323151Z test: pass tests/test-constants.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:54.9323935Z === tests/test-curl-testing.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:39:55.5363642Z %%%% Starting test curl-testing
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:21.1932951Z # of expected passes      284
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:21.2042511Z test: pass tests/test-curl-testing.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:21.2052204Z === tests/test-discovery.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:21.5460356Z %%%% Starting test discovery
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:21.5486086Z this Chez's binary: /home/runner/work/_temp/chez-threads/lib/csv10.4.0/ta6le/scheme
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:21.5487129Z # of expected passes      47
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:21.5535703Z test: pass tests/test-discovery.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:21.5536565Z === tests/test-drift.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:22.2108971Z %%%% Starting test drift
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:22.2221434Z # of expected passes      55
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:22.2295563Z test: pass tests/test-drift.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:22.2296758Z === tests/test-engine.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:22.9510671Z %%%% Starting test engine
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:50.1417272Z # of expected passes      52
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:50.1486104Z test: pass tests/test-engine.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:50.1486944Z === tests/test-group.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:40:51.1428832Z %%%% Starting test group
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:41:47.4447980Z # of expected passes      65
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:41:47.4544913Z test: pass tests/test-group.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:41:47.4546069Z === tests/test-http-client.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:41:48.3660514Z %%%% Starting test http-client
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:05.7687880Z # of expected passes      77
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:05.7772377Z test: pass tests/test-http-client.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:05.7798301Z === tests/test-library-loading.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:06.1504172Z %%%% Starting test library-loading
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:34.4733689Z # of expected passes      75
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:34.4798529Z test: pass tests/test-library-loading.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:34.4799382Z === tests/test-load-state.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:34.7499571Z %%%% Starting test load-state
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:34.7507765Z # of expected passes      12
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:34.7554888Z test: pass tests/test-load-state.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:34.7555943Z === tests/test-mailbox.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:35.4396682Z %%%% Starting test mailbox
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:42.3576969Z # of expected passes      26
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:42.3650074Z test: pass tests/test-mailbox.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:42.3650786Z === tests/test-manifest.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:42.6255975Z %%%% Starting test manifest
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:42.6257185Z # of expected passes      4
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:42.6303324Z test: pass tests/test-manifest.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:42.6304058Z === tests/test-memory-safety.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:43.0760384Z %%%% Starting test memory-safety
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:43.2717245Z # of expected passes      89
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:43.2776753Z test: pass tests/test-memory-safety.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:43.2777519Z === tests/test-native.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:43.9747235Z %%%% Starting test native
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:44.0311866Z # of expected passes      16
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:44.0386883Z test: pass tests/test-native.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:44.0387657Z === tests/test-origin-tls.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:44.6659205Z %%%% Starting test origin-tls
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:58.8117866Z FAIL h2 POST /refuse?at=0, its HEADERS alone: RST_STREAM REFUSED_STREAM on stream 1 and nothing else, then eof; the key's next request answered as /sink, seen=2
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:58.8121315Z   expected: (("00000004000000000000000004010000000000000403000000000100000007" eof) ("sink h2 method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:42:58.8125684Z   actual:   (("000000040000000000000000040100000000" eof) ("sink h2 method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:43:33.2188412Z suite-exit-status: exit 1 (pass 158, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:43:33.2189245Z # of expected passes      158
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:43:33.2190295Z # of unexpected failures  1
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:43:33.2329867Z test: FAIL tests/test-origin-tls.sps (exit 1)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:43:33.2330660Z === tests/test-origin.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:43:34.0283208Z %%%% Starting test origin
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:35.8106850Z # of expected passes      342
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:35.8316014Z test: pass tests/test-origin.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:35.8316997Z === tests/test-printed.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:36.6304241Z %%%% Starting test printed
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:36.6379662Z # of expected passes      8
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:36.6454409Z test: pass tests/test-printed.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:36.6455068Z === tests/test-proxy.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:37.6856986Z %%%% Starting test proxy
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:37.7684655Z test-proxy: empty-userinfo on "7.85.0" measured (("http://127.0.0.1:3128/" "http" #f) ("http://127.0.0.1:3128/" "http" #f) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u@127.0.0.1:3128/" "http" #t))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:37.8976599Z test-proxy: tls-in-tls-checks on "7.85.0/OpenSSL" measured ((refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise (refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise no-raise)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:38.0757127Z test-proxy: empty-userinfo-wire on "7.85.0" measured (((response 200) ("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1")) ((response 200) ("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1")))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:38.3083290Z test-proxy: refused-connect on "7.85.0" measured ((56 send-receive 403 the-connect) (56 send-receive 407 the-connect) (56 send-receive 502 the-connect) (56 send-receive 503 the-connect) (56 send-receive 407 the-connect) (56 send-receive 407 the-connect) (56 send-receive #f the-connect))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:39.8412573Z test-proxy: unshared-tunnels on "7.85.0" measured (((response 200) (response 200) #t ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:41.3471731Z test-proxy: tunnel-plans on "7.85.0" measured (((("FRESH_CONNECT" . 1) ("FORBID_REUSE" . 1)) #t) ((("FRESH_CONNECT" . 1)) #f) (() #t) (() #f) (() #f))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:47.3563627Z test-proxy: switch-live on "7.85.0" measured ((head head default switched) (1 1 2) (#f #f) ((response 200) (response 200) (response 200) (response 200)))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:51.0046030Z test-proxy: environment-join on "7.85.0" measured (((environment (no_proxy . #f) (NO_PROXY . #f) (http_proxy . #f) (https_proxy . "http://127.0.0.1:39693") (all_proxy . #f)) (multiplexing default switched) (join #t (refused perform-failed 56 send-receive 407) (response 200)) (transfer ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0))) (done)) ("connect http conn=1 target=localhost:<h2> answer=200 head=_ auth=basic:alice:s3cret" "inner h2 via=1 method=GET target=/connection?delay=3000" "connect http conn=2 target=localhost:<h2> answer=407 head=_ auth=-" "close http conn=1" "close http conn=2"))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:51.1748715Z test-proxy: closing-retries on "7.85.0" measured (((failed 56 #f 1) 1) ((failed 56 #f 3) 3))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:56.3890118Z # of expected passes      96
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:56.4023004Z test: pass tests/test-proxy.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:56.4023808Z === tests/test-redirect.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:57.3350325Z %%%% Starting test redirect
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:57.3474743Z (head-predicate-rows 124)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:58.9126992Z # of expected passes      72
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:58.9246767Z test: pass tests/test-redirect.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:58.9247417Z === tests/test-request.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:44:59.6462763Z %%%% Starting test request
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:02.1189348Z # of expected passes      47
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:02.1303150Z test: pass tests/test-request.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:02.1304191Z === tests/test-require-threaded.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:02.4638461Z %%%% Starting test require-threaded
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:02.5098898Z # of expected passes      69
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:02.5150933Z test: pass tests/test-require-threaded.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:02.5151752Z === tests/test-retry.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:03.5632787Z %%%% Starting test retry
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:03.5997393Z (head-predicate-rows 98)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:18.2039566Z # of expected passes      86
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:18.2146930Z test: pass tests/test-retry.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:18.2147787Z === tests/test-stream-call.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:19.2262520Z %%%% Starting test stream-call
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:27.7156910Z (stream-call-throughput raw ms 492)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:28.1744532Z (stream-call-throughput h2 ms 458)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:30.2169115Z (stream-call-idle-cpu ms 9868813/500000)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:37.8691634Z # of expected passes      77
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:37.8791003Z test: pass tests/test-stream-call.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:37.8800004Z === tests/test-stream.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:38.7543839Z %%%% Starting test stream
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:45:58.2312623Z (sweep piece plain call-ticks 6 escaped-kept 12 escaped-lost 0 returned 41)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:01.6002430Z (sweep port plain call-ticks 266 escaped-kept 532 escaped-lost 0 returned 41)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:04.9541534Z (sweep piece planted call-ticks 9 escaped-kept 12 escaped-lost 6 returned 41)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:13.9094749Z # of expected passes      74
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:13.9231068Z test: pass tests/test-stream.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:13.9231941Z === tests/test-transfer-tls.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:14.6796203Z %%%% Starting test transfer-tls
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:23.4249545Z # of expected passes      84
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:23.4536763Z test: pass tests/test-transfer-tls.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:23.4537678Z === tests/test-transfer.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:24.3991574Z %%%% Starting test transfer
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:47.3964548Z # of expected passes      224
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:47.4079298Z test: pass tests/test-transfer.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:47.4080258Z === tests/test-unsupported.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:48.1418477Z %%%% Starting test unsupported
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:48.6949043Z # of expected passes      37
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:48.7061607Z test: pass tests/test-unsupported.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:48.7070948Z === tests/test-upload.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:49.5710268Z %%%% Starting test upload
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:46:54.7952975Z (fill #f 1966080 ms 587 retried () mib (20))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:02.0717990Z (put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:02.0744124Z (put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:31.8168202Z (throughput http sized ms 1767)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:33.5117391Z (throughput http chunked ms 1695)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:35.2302374Z (throughput https sized ms 1719)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:36.9154172Z (throughput https chunked ms 1685)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:37.8757171Z (throughput h2 sized ms 960)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:38.8534109Z (throughput h2 chunked ms 978)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:40.9753345Z (read-lock collections-while-live 998)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:41.0445325Z # of expected passes      58
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:41.0549542Z test: pass tests/test-upload.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:41.0550481Z === tests/test-url-location.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:41.7362382Z %%%% Starting test url-location
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:42.1150564Z # of expected passes      224
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:42.1225948Z test: pass tests/test-url-location.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:42.1226682Z === tests/test-url-parts.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:42.7928291Z %%%% Starting test url-parts
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:42.9268090Z # of expected passes      160
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:42.9352829Z test: pass tests/test-url-parts.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:42.9363431Z === tests/test-url.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:43.6098520Z %%%% Starting test url
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:43.7295489Z # of expected passes      143
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:43.7367954Z test: pass tests/test-url.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:43.7368673Z === tests/test-variadic.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:44.1526115Z %%%% Starting test variadic
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:46.2235712Z test-variadic: two drips at MAX_TOTAL_CONNECTIONS 1: done, the first done at 1008 ms, both at 2014 ms
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:47.2316738Z test-variadic: two drips at MAX_TOTAL_CONNECTIONS 2: done, the first done at 1006 ms, both at 1006 ms
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:47.2466122Z # of expected passes      30
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:47.2508195Z test: pass tests/test-variadic.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:47.2509074Z === tests/test-verify.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:47.6062540Z %%%% Starting test verify
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:47.6063299Z # of expected passes      21
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:47.6114706Z test: pass tests/test-verify.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:47.6116405Z === tests/test-version.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:48.4546624Z %%%% Starting test version
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:48.7005772Z test-version: prior-knowledge-to-h1 on "7.85.0" measured (failed perform-failed 52 send-receive)
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:49.6253496Z test-version: together-by-prior-knowledge on "7.85.0" measured (1 (http/2 http/2))
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.2237573Z # of expected passes      27
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.2348881Z test: pass tests/test-version.sps
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.2349800Z test: ran 39, passed 38, failed 1, hung 0
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.2350524Z make: *** [Makefile:259: test] Error 1
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.2374079Z ##[error]Process completed with exit code 2.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.2492404Z Post job cleanup.
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.3496291Z [command]/usr/bin/git version
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.3583383Z git version 2.56.0
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.3653965Z Temporarily overriding HOME='/home/runner/work/_temp/50639499-1b34-44ee-8161-d4656d5a784a' before making global git config changes
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.3662267Z Adding repository directory to the temporary git global config as a safe directory
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.3670739Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/chez-curl/chez-curl
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.3736677Z Removing SSH command configuration
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.3762335Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.3799153Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.4214133Z Entering 'vendor/chez-srfi'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.4442386Z Removing HTTP extra header
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.4443589Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.4478192Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.4868415Z Entering 'vendor/chez-srfi'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.4974781Z Removing includeIf entries pointing to credentials config files
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.4986503Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5026312Z includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git.path
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5027729Z includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/worktrees/*.path
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5036649Z includeif.gitdir:/github/workspace/.git.path
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5037756Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5066399Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git.path
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5107661Z /home/runner/work/_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5120087Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-06679075\-2645\-4b98\-9e2f\-7f059b9340ea\.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5180142Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/worktrees/*.path
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5228318Z /home/runner/work/_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5239873Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-06679075\-2645\-4b98\-9e2f\-7f059b9340ea\.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5288998Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5331289Z /github/runner_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5337913Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-06679075\-2645\-4b98\-9e2f\-7f059b9340ea\.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5390518Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5430745Z /github/runner_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5438957Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-06679075\-2645\-4b98\-9e2f\-7f059b9340ea\.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5496505Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5865847Z Entering 'vendor/chez-srfi'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5906324Z file:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config	remote.origin.url
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.5963742Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --name-only --get-regexp ^includeIf\.gitdir:
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.6026471Z includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi.path
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.6031344Z includeif.gitdir:/github/workspace/.git/modules/vendor/chez-srfi.path
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.6050237Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --get-all includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi.path
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.6075734Z /home/runner/work/_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.6089348Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --unset includeif.gitdir:/home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi.path \/home\/runner\/work\/_temp\/git\-credentials\-06679075\-2645\-4b98\-9e2f\-7f059b9340ea\.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.6175828Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --get-all includeif.gitdir:/github/workspace/.git/modules/vendor/chez-srfi.path
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.6218117Z /github/runner_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.6231029Z [command]/usr/bin/git config --file /home/runner/work/chez-curl/chez-curl/.git/modules/vendor/chez-srfi/config --unset includeif.gitdir:/github/workspace/.git/modules/vendor/chez-srfi.path \/github\/runner_temp\/git\-credentials\-06679075\-2645\-4b98\-9e2f\-7f059b9340ea\.config
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.6308836Z Removing credentials config '/home/runner/work/_temp/git-credentials-06679075-2645-4b98-9e2f-7f059b9340ea.config'
+floor (the suites against libcurl at its floor)	UNKNOWN STEP	2026-11-04T01:47:54.6567536Z Cleaning up orphan processes

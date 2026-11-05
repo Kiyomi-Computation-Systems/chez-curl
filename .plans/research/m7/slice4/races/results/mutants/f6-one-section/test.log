@@ -1,0 +1,18 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-group.sps
+%%%% Starting test group
+FAIL http-parallel lets each call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as that section ends, and its handler's close refuses the second call's submit, stopped, with no transfer, the first failure; no collection ran in the hold; the child's counts zero
+  expected: (0 (sections quiet (raised stopped "http://127.0.0.1:45465/raw/hold?key=sections-1&ms=1000" 0)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (sections quiet (raised #f "http://127.0.0.1:45465/raw/hold?key=sections-0&ms=1000" 1)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, case P1: http-parallel suspended after call 1's admission raises call 0's cancel, the first in SPECS' order not done, enters no call more and submits nothing after; no transfer starts after the suspension, no collection ran in the hold, and the child's counts zero
+  expected: (0 (resume P1 quiet (raised cancelled http-await 0) 2 1 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (resume P1 quiet (raised cancelled http-await 0) 4 1 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+# of expected passes      63
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 63, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-group.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

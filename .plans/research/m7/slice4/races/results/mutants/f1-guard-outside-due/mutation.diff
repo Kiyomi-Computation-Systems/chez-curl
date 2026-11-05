@@ -1,0 +1,16 @@
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1381,11 +1381,12 @@
+               (live-snapshot group))
+     (critical-section (prune! group))
+     (for-each (lambda (pending)
++                (guard (x (#t (critical-section (strand! group pending x))))
+                 (critical-section
+                  (when (and (eq? (pending-phase pending) 'waiting)
+                             (<= (pending-due pending) (monotonic-ns)))
+                    (group-waiting-set! group (remq pending (group-waiting group)))
+-                   (guarded! group pending (lambda () (submit! group pending))))))
++                   (submit! group pending)))))
+               (by-due (group-waiting group)))
+     (for-each (lambda (pending)
+                 (critical-section

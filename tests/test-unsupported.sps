@@ -83,13 +83,13 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
 
 ;; running-counts : (Listof (Pairof Symbol Natural))
 ;; The counts while the suite's engine runs and no transfer is live: its
 ;; multi handle and its slot, and nothing else.
 (define running-counts
-  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1)))
+  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
 
 ;; The load runs here, on this thread, before any engine's thread is forked.
 (define version
@@ -305,7 +305,9 @@
 ;; (ADR-0036, amended 2026-11-02); the proxy field's NOPROXY and
 ;; FORBID_REUSE, and its twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME,
 ;; PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP,
-;; which 7.85.0 does not know (ADR-0037, amended 2026-11-03); every proxy
+;; which 7.85.0 does not know (ADR-0037, amended 2026-11-03); the
+;; cookie-jar field's SHARE and COOKIEFILE, and its twins COOKIE,
+;; COOKIELIST and COOKIESESSION (ADR-0035, amended 2026-11-04); every proxy
 ;; TLS option.
 (define owned-names
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
@@ -325,6 +327,7 @@
     "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT" "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL" "AWS_SIGV4"
     "FORBID_REUSE" "PROXYAUTH" "PROXYUSERPWD" "PROXYUSERNAME" "PROXYPASSWORD" "HTTPPROXYTUNNEL"
     "HAPROXYPROTOCOL" "HAPROXY_CLIENT_IP"
+    "SHARE" "COOKIE" "COOKIELIST" "COOKIESESSION"
     "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
     "PROXY_CAINFO" "PROXY_CAINFO_BLOB" "PROXY_CAPATH" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
     "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
@@ -448,6 +451,28 @@
                                                      ("PROXY_SERVICE_NAME" . "proxy")
                                                      ("SOCKS5_AUTH" . 1))))))))
 
+;; The cookie jar's (M7 slice 4; ADR-0035, amended 2026-11-04): SHARE and
+;; COOKIEFILE are the cookie-jar field's, SHARE refused by its type before,
+;; an object's; COOKIE joins its own line to the jar's, and beside a
+;; caller's Cookie header is dropped; COOKIELIST reaches past its
+;; transfer, clearing the jar for every holder or loading a line past the
+;; load's rules; COOKIESESSION is the jar's to own; COOKIEJAR stays kept.
+;; Their neighbours stay the hatch's: HSTS_CTRL changed nothing the jar
+;; held, and REFERER, the string option the copies' tests use, touches no
+;; cookie. Each is attached, and kept.
+(test-equal "SHARE and COOKIEFILE, the cookie-jar field's, its twins COOKIE, COOKIELIST and COOKIESESSION, and COOKIEJAR, kept, are refused as owned-option, with values their types take, before anything native; their neighbours HSTS_CTRL and REFERER are taken, each kept as attached"
+  (append (map (lambda (name) (refused-as name 'owned-option))
+               '("SHARE" "COOKIEFILE" "COOKIE" "COOKIELIST" "COOKIESESSION" "COOKIEJAR"))
+          (list taken taken
+                '(("HSTS_CTRL" long 1) ("REFERER" string "http://r.example/"))))
+  (append (map attach '((("SHARE" . 1)) (("COOKIEFILE" . "")) (("COOKIE" . "k=v"))
+                        (("COOKIELIST" . "ALL")) (("COOKIESESSION" . 1)) (("COOKIEJAR" . "-"))))
+          (map attach '((("HSTS_CTRL" . 1)) (("REFERER" . "http://r.example/"))))
+          (list (guard (e (#t (list 'raised (describe e))))
+                  (hatch-settings-of
+                   (curl-request-with-options base '(("HSTS_CTRL" . 1)
+                                                     ("REFERER" . "http://r.example/"))))))))
+
 (test-equal "an alias of an owned option is refused as owned-option, by id: FILE is WRITEDATA's id and RTSPHEADER HTTPHEADER's; and a name in another case, url, Url and cainfo, as curl_easy_option_by_name reads it"
   (list '(same same)
         (refused-as "FILE" 'owned-option) (refused-as "RTSPHEADER" 'owned-option)
@@ -479,18 +504,18 @@
   (cons (map type-of '("STDERR" "DEBUGDATA" "XFERINFOFUNCTION"))
         (map attach '((("STDERR" . 1)) (("DEBUGDATA" . 1)) (("XFERINFOFUNCTION" . 1))))))
 
-(test-equal "an option of each type the hatch takes is attached, its setting a copy of the value given: a long, LOW_SPEED_TIME; enumerated values, IPRESOLVE; an off_t, MAX_RECV_SPEED_LARGE; a string, COOKIE; a string list, HTTP200ALIASES; a blob, SSLCERT_BLOB"
+(test-equal "an option of each type the hatch takes is attached, its setting a copy of the value given: a long, LOW_SPEED_TIME; enumerated values, IPRESOLVE; an off_t, MAX_RECV_SPEED_LARGE; a string, REFERER; a string list, HTTP200ALIASES; a blob, SSLCERT_BLOB"
   (list '(long values off-t string slist blob)
         '(("LOW_SPEED_TIME" long 30) ("IPRESOLVE" values 1) ("MAX_RECV_SPEED_LARGE" off-t 1000000)
-          ("COOKIE" string "a=b") ("HTTP200ALIASES" slist ("ICY 200 OK" "x"))
+          ("REFERER" string "a=b") ("HTTP200ALIASES" slist ("ICY 200 OK" "x"))
           ("SSLCERT_BLOB" blob #vu8(0 1 255)))
         running-counts)
-  (list (map type-of '("LOW_SPEED_TIME" "IPRESOLVE" "MAX_RECV_SPEED_LARGE" "COOKIE" "HTTP200ALIASES"
+  (list (map type-of '("LOW_SPEED_TIME" "IPRESOLVE" "MAX_RECV_SPEED_LARGE" "REFERER" "HTTP200ALIASES"
                        "SSLCERT_BLOB"))
         (guard (e (#t (list 'raised (describe e))))
           (hatch-settings-of
            (curl-request-with-options base '(("LOW_SPEED_TIME" . 30) ("IPRESOLVE" . 1)
-                                             ("MAX_RECV_SPEED_LARGE" . 1000000) ("COOKIE" . "a=b")
+                                             ("MAX_RECV_SPEED_LARGE" . 1000000) ("REFERER" . "a=b")
                                              ("HTTP200ALIASES" "ICY 200 OK" "x")
                                              ("SSLCERT_BLOB" . #vu8(0 1 255))))))
         (native-counts)))
@@ -537,7 +562,7 @@
   (list assertion assertion assertion
         assertion assertion assertion assertion taken
         assertion assertion taken)
-  (append (map (lambda (value) (attach (list (cons "COOKIE" value)))) (list 1 #vu8(1) '("a")))
+  (append (map (lambda (value) (attach (list (cons "REFERER" value)))) (list 1 #vu8(1) '("a")))
           (map (lambda (value) (attach (list (cons "HTTP200ALIASES" value))))
                (list "a" '("a" . "b") '("a" 1) '("a" #\b) '()))
           (map (lambda (value) (attach (list (cons "SSLCERT_BLOB" value)))) (list "x" '(1) #vu8()))))
@@ -548,17 +573,17 @@
   (let ((copy (string-copy s))) (string-set! copy i c) copy))
 
 (test-equal "U+0000, CR and LF at every position of a string are refused, embedded-nul, line-break and line-break, naming the option; the first offending char decides"
-  (append (apply append (map (lambda (i) (list (refused-as "COOKIE" 'embedded-nul)
-                                                (refused-as "COOKIE" 'line-break)
-                                                (refused-as "COOKIE" 'line-break)))
+  (append (apply append (map (lambda (i) (list (refused-as "REFERER" 'embedded-nul)
+                                                (refused-as "REFERER" 'line-break)
+                                                (refused-as "REFERER" 'line-break)))
                              '(0 1 2)))
-          (list (refused-as "COOKIE" 'embedded-nul) (refused-as "COOKIE" 'line-break)
-                (refused-as "COOKIE" 'line-break)))
+          (list (refused-as "REFERER" 'embedded-nul) (refused-as "REFERER" 'line-break)
+                (refused-as "REFERER" 'line-break)))
   (append (apply append (map (lambda (i)
-                               (map (lambda (c) (attach (list (cons "COOKIE" (with-char "abc" i c)))))
+                               (map (lambda (c) (attach (list (cons "REFERER" (with-char "abc" i c)))))
                                     (list #\nul #\return #\newline)))
                              '(0 1 2)))
-          (map (lambda (s) (attach (list (cons "COOKIE" s)))) '("\x0;\r" "\r\x0;" "\n\x0;"))))
+          (map (lambda (s) (attach (list (cons "REFERER" s)))) '("\x0;\r" "\r\x0;" "\n\x0;"))))
 
 (test-equal "every char from U+0001 to U+00FF but CR and LF, and U+0100, U+20AC and U+1F600, is taken in a string, and in a string of a list"
   (list taken taken)
@@ -566,7 +591,7 @@
                 (append (filter (lambda (c) (not (memv c '(#\return #\newline))))
                                 (map integer->char (iota-from 1 255)))
                         (list (integer->char #x100) (integer->char #x20AC) (integer->char #x1F600))))))
-    (list (attach (list (cons "COOKIE" every))) (attach (list (list "HTTP200ALIASES" "a" every))))))
+    (list (attach (list (cons "REFERER" every))) (attach (list (list "HTTP200ALIASES" "a" every))))))
 
 (test-equal "U+0000, CR and LF in each string of a list, at each of its three places, are refused, naming the option"
   (apply append (map (lambda (i) (list (refused-as "HTTP200ALIASES" 'embedded-nul)
@@ -584,11 +609,11 @@
 ;; --- the copies -----------------------------------------------------------------------------
 
 (test-equal "the request keeps copies: the caller's name, string, list, the list's strings and bytevector, each changed after the attach, leave its settings as they were; and the copies hatch-settings-of answers are fresh: a change to one leaves the next as it was"
-  (let ((settings '(("COOKIE" string "k=v") ("HTTP200ALIASES" slist ("ICY 200 OK"))
+  (let ((settings '(("REFERER" string "k=v") ("HTTP200ALIASES" slist ("ICY 200 OK"))
                     ("SSLCERT_BLOB" blob #vu8(1 2 3)))))
     (list (written settings) settings))
   (guard (e (#t (list 'raised (describe e))))
-    (let* ((name (string-copy "COOKIE"))
+    (let* ((name (string-copy "REFERER"))
            (value (string-copy "k=v"))
            (element (string-copy "ICY 200 OK"))
            (aliases (list element))
@@ -605,10 +630,10 @@
         (string-set! (car (car first)) 0 #\Y)
         (list as-read (hatch-settings-of r))))))
 
-(test-equal "hatch-settings-of's answer is the caller's to change, so the check above can see a change to it: Y in COOKIE's first place shows"
-  "YOOKIE"
+(test-equal "hatch-settings-of's answer is the caller's to change, so the check above can see a change to it: Y in REFERER's first place shows"
+  "YEFERER"
   (guard (e (#t (list 'raised (describe e))))
-    (let ((first (hatch-settings-of (curl-request-with-options base '(("COOKIE" . "k=v"))))))
+    (let ((first (hatch-settings-of (curl-request-with-options base '(("REFERER" . "k=v"))))))
       (string-set! (car (car first)) 0 #\Y)
       (car (car first)))))
 
@@ -735,12 +760,12 @@
       (answer-of (lambda ()
                    (perform (curl-request-with-options
                              (make-curl-request echo 'timeout-ms 20000)
-                             (list (cons "COOKIE" (string #\k #\= #\v (integer->char #xE9)))))))))
+                             (list (cons "REFERER" (string #\k #\= #\v (integer->char #xE9)))))))))
     ;; The copy is what is sent, and curl-request-with keeps it.
     (record! 'sent-copy
       (let* ((value (string-copy "k=copied"))
              (r (curl-request-with-options (make-curl-request echo 'timeout-ms 20000)
-                                           (list (cons "COOKIE" value)))))
+                                           (list (cons "REFERER" value)))))
         (string-set! value 0 #\X)
         (list (answer-of (lambda () (perform r)))
               (answer-of (lambda () (perform (curl-request-with r 'timeout-ms 20001)))))))
@@ -771,12 +796,12 @@
     (record! 'string-race
       (let ((value (string-copy "abcdef")))
         (race (lambda () (curl-request-with-options (make-curl-request echo 'timeout-ms 20000)
-                                                    (list (cons "COOKIE" value))))
+                                                    (list (cons "REFERER" value))))
               (flipper-of value 2 #\c)
               (list 'response 200 'http/1.1
                     (string-append "GET /raw/echo HTTP/1.1\r\nHost: " (host-of o 'raw)
-                                   "\r\nAccept: */*\r\nCookie: abcdef\r\n\r\n"))
-              '(request-refused options "COOKIE" line-break))))
+                                   "\r\nAccept: */*\r\nReferer: abcdef\r\n\r\n"))
+              '(request-refused options "REFERER" line-break))))
     (record! 'list-race
       (let ((alias (string-copy "HTP/1.1 200 OK")))
         (race (lambda () (curl-request-with-options
@@ -799,20 +824,20 @@
 
 (define raw-host (let ((h (outcome 'hosts))) (if (string? h) h "no-host")))
 
-;; echoed-cookie : String -> Answer
-;; What /raw/echo answers for a GET whose Cookie header is VALUE, its bytes
+;; echoed-referer : String -> Answer
+;; What /raw/echo answers for a GET whose Referer header is VALUE, its bytes
 ;; read as Latin-1.
-(define (echoed-cookie value)
+(define (echoed-referer value)
   (list 'response 200 'http/1.1
-        (string-append "GET /raw/echo HTTP/1.1\r\nHost: " raw-host "\r\nAccept: */*\r\nCookie: "
+        (string-append "GET /raw/echo HTTP/1.1\r\nHost: " raw-host "\r\nAccept: */*\r\nReferer: "
                        value "\r\n\r\n")))
 
-(test-equal "a string is sent as its UTF-8 bytes: COOKIE k=v<U+00E9> reaches the raw face as k=v, C3 and A9, never Latin-1's E9"
-  (echoed-cookie (string #\k #\= #\v (integer->char #xC3) (integer->char #xA9)))
+(test-equal "a string is sent as its UTF-8 bytes: REFERER k=v<U+00E9> reaches the raw face as k=v, C3 and A9, never Latin-1's E9"
+  (echoed-referer (string #\k #\= #\v (integer->char #xC3) (integer->char #xA9)))
   (outcome 'utf-8))
 
 (test-equal "the engine sends the attach's copy: the caller's string changed after the attach is sent as it was; and curl-request-with keeps the option"
-  (list (echoed-cookie "k=copied") (echoed-cookie "k=copied"))
+  (list (echoed-referer "k=copied") (echoed-referer "k=copied"))
   (outcome 'sent-copy))
 
 (test-equal "a string list reaches libcurl: /raw/bad-status-line's HTP/1.1 is refused alone, protocol error 1, and taken as 200, HTTP/1.0, with HTTP200ALIASES naming it; an empty list sets none; a list's second string is read too"

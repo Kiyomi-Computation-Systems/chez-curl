@@ -237,7 +237,14 @@
     (curl-seekfunc-cantseek . "CURL_SEEKFUNC_CANTSEEK")
     (curl-prereqfunc-ok . "CURL_PREREQFUNC_OK")
     (curl-prereqfunc-abort . "CURL_PREREQFUNC_ABORT")
-    (seek-set . "SEEK_SET")))
+    (seek-set . "SEEK_SET")
+    (curlshopt-share . "CURLSHOPT_SHARE")
+    (curlshopt-unshare . "CURLSHOPT_UNSHARE")
+    (curl-lock-data-cookie . "CURL_LOCK_DATA_COOKIE")
+    (curlshe-ok . "CURLSHE_OK")
+    (curlshe-bad-option . "CURLSHE_BAD_OPTION")
+    (curlshe-in-use . "CURLSHE_IN_USE")
+    (curlinfo-cookielist . "CURLINFO_COOKIELIST")))
 
 ;; c-name-aliases : (Listof (Pairof Symbol String))
 ;; Each export whose row names a C constant other than the export's own
@@ -276,7 +283,8 @@
     (curl-easyoption "struct curl_easyoption" whole)
     (curl-header "struct curl_header" whole)
     (curl-msg "struct CURLMsg" whole)
-    (curl-blob "struct curl_blob" whole)))
+    (curl-blob "struct curl_blob" whole)
+    (curl-slist "struct curl_slist" whole)))
 
 (define extents '(whole prefix))
 
@@ -1139,6 +1147,9 @@
     ("curl_multi_info_read" ("CURLMsg *" ("CURLM *" "int *")))
     ("curl_multi_strerror" ("const char *" ("CURLMcode")))
     ("curl_easy_pause" ("CURLcode" ("CURL *" "int")))
+    ("curl_share_init" ("CURLSH *" ()))
+    ("curl_share_cleanup" ("CURLSHcode" ("CURLSH *")))
+    ("curl_share_setopt" ("CURLSHcode" ("CURLSH *" "CURLSHoption" "...") (variadic int)))
     ("memcpy" ("void *" ("void *" "const void *" "size_t")))
     ("strlen" ("size_t" ("const char *")))))
 
@@ -1184,7 +1195,9 @@
     ("CURLUcode" int)
     ("CURLUPart" int)
     ("CURLMcode" int)
-    ("CURLMoption" int)))
+    ("CURLMoption" int)
+    ("CURLSHcode" int)
+    ("CURLSHoption" int)))
 
 ;; bytevector-rows : (Listof String)
 ;; The rows whose pointers may be bound u8*: the checked copies' memcpy.
@@ -1593,7 +1606,7 @@
 ;; define with typedef enum. c-type-map maps each to int, and nothing else.
 (define enum-names
   '("CURLcode" "CURLversion" "CURLoption" "CURLINFO" "CURLHcode" "CURLUcode" "CURLUPart"
-    "CURLMcode" "CURLMoption"))
+    "CURLMcode" "CURLMoption" "CURLSHcode" "CURLSHoption"))
 
 ;; enums-in : (Listof String) -> (Listof String)
 ;; The names TOKENS give a typedef enum: typedef enum [TAG] { ... } NAME ;
@@ -1957,9 +1970,9 @@
 
 ;; Written out here, not read from the table: a row turned to prefix would
 ;; drop its size check with it.
-(test-equal "curl-easyoption, curl-header, curl-msg and curl-blob are laid out whole, and curl-version-info-data as a prefix"
+(test-equal "curl-easyoption, curl-header, curl-msg, curl-blob and curl-slist are laid out whole, and curl-version-info-data as a prefix"
   '((curl-version-info-data prefix) (curl-easyoption whole) (curl-header whole) (curl-msg whole)
-    (curl-blob whole))
+    (curl-blob whole) (curl-slist whole))
   (map (lambda (row) (list (car row) (caddr row))) layout-rows))
 
 ;; --- curlot-types is complete ---------------------------------------------------------------
@@ -2085,12 +2098,12 @@
 (define (type<? a b) (string<? (written a) (written b)))
 (define (type-sorted types) (list-sort type<? types))
 
-(test-equal "c-type-map is exactly, written out here: void, int, unsigned int, long, size_t and curl_off_t each to its one Chez type, and each of the nine enums to int"
+(test-equal "c-type-map is exactly, written out here: void, int, unsigned int, long, size_t and curl_off_t each to its one Chez type, and each of the eleven enums to int"
   '(("void" void) ("int" int) ("unsigned int" unsigned-int) ("long" long) ("size_t" size_t)
     ("curl_off_t" integer-64)
     ("CURLcode" int) ("CURLversion" int) ("CURLoption" int) ("CURLINFO" int)
     ("CURLHcode" int) ("CURLUcode" int) ("CURLUPart" int) ("CURLMcode" int)
-    ("CURLMoption" int))
+    ("CURLMoption" int) ("CURLSHcode" int) ("CURLSHoption" int))
   c-type-map)
 
 ;; expected-fits : (Listof (Pairof (List String String) (Listof Type)))
@@ -2113,6 +2126,8 @@
     (("x" "CURLUPart") int)
     (("x" "CURLMcode") int)
     (("x" "CURLMoption") int)
+    (("x" "CURLSHcode") int)
+    (("x" "CURLSHoption") int)
     (("x" "double"))
     (("x" "CURL *") uptr void*)
     (("x" "CURLU *") uptr void*)
@@ -2122,13 +2137,14 @@
     (("x" "const void *") uptr void*)
     (("x" "struct curl_header **") uptr void*)
     (("x" "struct curl_header *") uptr void* (* curl-header))
-    (("x" "struct curl_slist *") uptr void*)
+    (("x" "struct curl_slist *") uptr void* (* curl-slist))
     (("x" "char *") uptr void*)
     (("x" "const char *") uptr void* string)
     (("x" "curl_version_info_data *") uptr void* (* curl-version-info-data))
     (("x" "struct curl_easyoption *") uptr void* (* curl-easyoption))
     (("x" "const struct curl_easyoption *") uptr void*)
     (("x" "CURLM *") uptr void*)
+    (("x" "CURLSH *") uptr void*)
     (("x" "int *") uptr void*)
     (("x" "struct curl_waitfd []") uptr void*)
     (("x" "CURLMsg *") uptr void*)
@@ -2137,8 +2153,8 @@
     (("memcpy" "const void *") uptr void* u8*)
     (("memcpy" "const char *") uptr void* u8* string)))
 
-(test-equal "the universe the map is held against: every type the conventions reader reads, for src/'s five layouts, and an ftype no layout defines"
-  (+ 33 1 3 7 1 10 1)
+(test-equal "the universe the map is held against: every type the conventions reader reads, for src/'s six layouts, and an ftype no layout defines"
+  (+ 33 1 3 7 1 12 1)
   (length universe))
 
 (for-each
@@ -2159,9 +2175,9 @@
   (let ((d (cadr row)))
     (and (= (length d) 3) (cdr (caddr d)))))
 
-(test-equal "the variadic rows are curl_easy_setopt's, curl_easy_getinfo's and curl_multi_setopt's alone: setopt passes exactly long, integer-64 and uptr, getinfo exactly uptr, its destination, never int, and multi_setopt exactly long"
+(test-equal "the variadic rows are curl_easy_setopt's, curl_easy_getinfo's, curl_multi_setopt's and curl_share_setopt's alone: setopt passes exactly long, integer-64 and uptr, getinfo exactly uptr, its destination, never int, multi_setopt exactly long, and share_setopt exactly int, the type libcurl's va_arg reads for SHARE"
   '(("curl_easy_setopt" (long integer-64 uptr)) ("curl_easy_getinfo" (uptr))
-    ("curl_multi_setopt" (long)))
+    ("curl_multi_setopt" (long)) ("curl_share_setopt" (int)))
   (map (lambda (row) (list (car row) (variadic-list row)))
        (filter (lambda (row) (and (pair? (cdr row)) (variadic-list row))) prototype-rows)))
 

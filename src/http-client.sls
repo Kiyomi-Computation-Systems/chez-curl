@@ -62,7 +62,8 @@
 ;;; proxy, the proxy CA file and the proxy's verification go to every hop,
 ;;; another origin's too, the proxy URL's credentials with it: a hop to
 ;;; https:// through an https:// proxy where TLS inside TLS stalls fails
-;;; the call so, proxy-tls-in-tls.
+;;; the call so, proxy-tls-in-tls. A session's cookie jar goes to every
+;;; hop, another origin's too: libcurl matches cookies to hosts.
 ;;; Each followed response joins the history. libcurl's own following stays
 ;;; off.
 ;;;
@@ -140,12 +141,23 @@
    ;;                    a boolean; #f (ADR-0027)
    ;;   retry            a policy, made by make-http-retry, that a call
    ;;                    retries by; or #f, none; #f (ADR-0026)
+   ;;   cookies          whether the session keeps cookies: #t makes a jar
+   ;;                    on its engine, (curl)'s make-curl-cookie-jar, which
+   ;;                    every call of the session carries, every hop of a
+   ;;                    redirect among them, another origin's too, and its
+   ;;                    close frees; a boolean; #f, none (ADR-0035). No call
+   ;;                    takes it. Beside it a Cookie or Host header, the
+   ;;                    session's or a call's, in any A to Z case, is
+   ;;                    refused, (curl)'s cookie-beside-jar
    ;; A key it does not take, one given twice, and one with no value are
    ;; refused by name, as &http-request-error; then redirects,
-   ;; allow-downgrade and retry, as &http-request-error,
-   ;; not-a-redirect-count, not-a-boolean and not-a-retry-policy; then each
-   ;; other value, as make-curl-request refuses it; and only then is its
-   ;; engine made, so a refusal leaves none. Each session draws its jitter
+   ;; allow-downgrade, retry and cookies, as &http-request-error,
+   ;; not-a-redirect-count, not-a-boolean, not-a-retry-policy and
+   ;; not-a-boolean; then each other value, as make-curl-request refuses
+   ;; it; and only then is its engine made, so a refusal leaves none. With
+   ;; cookies, its jar is made then, and a session's Cookie or Host header
+   ;; refused: either refusal, and a jar that fails to be made, stops the
+   ;; engine it made, and leaves as it was raised. Each session draws its jitter
    ;; from a generator of its own, under a mutex of its own, so threads may
    ;; share it.
    ;; http-session? : Any -> Boolean
@@ -165,6 +177,18 @@
    ;; engine running until the process exits, as for http-session-close: a
    ;; documented limit, not prevented (ADR-0025, amended 2026-10-27).
    make-http-session http-session? http-session-close call-with-http-session
+
+   ;; http-session-cookies : Session -> (Listof String)
+   ;; The session's cookies, as (curl)'s curl-cookie-jar-cookies reads them
+   ;; out: Netscape lines, Latin-1 strings, in libcurl's order.
+   ;; http-session-load-cookies! : Session (Listof String) -> Void
+   ;; Loads the lines into the session's jar, as (curl)'s
+   ;; curl-cookie-jar-load! loads them, every line checked first, its
+   ;; refusal cookie-line, naming the line's index alone.
+   ;; Each waits for the engine, as a session's close does, with no bound;
+   ;; a session without cookies is an assertion violation, and a closed
+   ;; one's raises its engine's &curl-engine-error, stopped.
+   http-session-cookies http-session-load-cookies!
 
    ;; --- the verbs (ADR-0025) -----------------------------------------------
    ;; http-request : Session Symbol String Any ... -> Response
@@ -554,8 +578,23 @@
   (define (make-http-session . plist)
     (let* ((settings (key-settings 'make-http-session session-keys plist))
            (policy (session-policy settings))
+           (cookies (session-cookies settings))
            (defaults (session-defaults settings)))
-      (new-http-session (make-curl-engine) defaults (car policy) (cadr policy) (caddr policy))))
+      (session-on (make-curl-engine) defaults policy cookies)))
+
+  ;; session-jar : Symbol Session -> Jar
+  ;; SESSION's cookie jar; a session that keeps none is an assertion
+  ;; violation from WHO.
+  (define (session-jar who session)
+    (check-session who session)
+    (or (http-session-jar session)
+        (assertion-violation who "the session keeps no cookies: make it with cookies #t" 'cookies)))
+
+  (define (http-session-cookies session)
+    (curl-cookie-jar-cookies (session-jar 'http-session-cookies session)))
+
+  (define (http-session-load-cookies! session lines)
+    (curl-cookie-jar-load! (session-jar 'http-session-load-cookies! session) lines))
 
   (define (http-session-close session)
     (check-session 'http-session-close session)

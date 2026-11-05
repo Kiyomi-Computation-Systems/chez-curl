@@ -167,6 +167,25 @@
 ;;; 11). A failed transfer carries the status a proxy refused
 ;;; its CONNECT with, CURLINFO_HTTP_CONNECTCODE, when it is no 2xx.
 ;;;
+;;; The cookie jar (ADR-0035, amended twice; the M7 plan, section 3.5). A
+;;; jar is a record of this library's, opaque: the request's cookie-jar key
+;;; checks its value as the request is made, and this library cannot import
+;;; the engine's, which imports it. The engine makes, uses and frees it, on
+;;; its own thread (curl private engine). A request's cookie-jar, a jar or
+;;; #f, makes the settings jar-settings computes, as data, SHARE at the
+;;; jar's share, then COOKIEFILE at "", set with the request's other
+;;; settings, before tls-settings'; the share holds what share-settings
+;;; says, CURL_LOCK_DATA_COOKIE alone. Beside a jar, a header named Cookie
+;;; or Host, A to Z folded, any value, is refused, cookie-beside-jar, as the
+;;; request is made and again at submit, naming the header, never its value:
+;;; libcurl sends a caller's Cookie beside the jar's, and a caller's Host
+;;; moves the host the jar matches cookies against. A load's lines are
+;;; checked here, by cookie-line-fault, on a copy of the caller's list and
+;;; strings, every line before any is loaded, and refused, cookie-line,
+;;; naming the line by its index, never its text: a cookie's value is a
+;;; secret. A line is a Latin-1 string both ways, each char one byte, as a
+;;; header's strings are (ADR-0035, decision 8).
+;;;
 ;;; The callables (M2 plan, section 3.5; ADR-0030): write-body for every
 ;;; transfer, and read-head, the header callable, for a streamed response
 ;;; alone. Each is __collect_safe, since curl_multi_perform and
@@ -260,7 +279,12 @@
           upload-end! upload-room? upload-count upload-stats upload-verdicts clear-pauses!
           live-transfer-paused? resumed! method-settings sends-body? live-transfer-upload
           plan-body-length curl-request-with-upload-fault planted-upload-fault upload-plant-split!
-          upload-split-commit!)
+          upload-split-commit!
+          curl-cookie-jar? new-cookie-jar cookie-jar-engine cookie-jar-share cookie-jar-share-set!
+          cookie-jar-handle cookie-jar-handle-set! cookie-jar-state cookie-jar-state-set!
+          cookie-jar-holders cookie-jar-holders-set! curl-request-cookie-jar plan-jar
+          jar-settings share-settings cookie-line-fault cookie-line-bytes jar-attach!
+          jar-load-lines! jar-read-lines check-cookie-beside-jar)
   (import (curl private require-threaded)
           (rnrs)
           (rnrs mutable-strings)
@@ -377,6 +401,7 @@
                          ((proxy-tls-without-https-proxy) "a proxy CA file, or a proxy's verification off, beside a proxy that is no https:// URL, which has no TLS of its own to set")
                          ((proxy-tls-in-tls) "an https:// URL through an https:// proxy, on a libcurl where TLS inside TLS stalls until the transfer's timeout")
                          ((https-proxy-unsupported) "an https:// proxy URL on a libcurl built without HTTPS-proxy support, which would refuse it and write the whole URL, its password with it, into its error buffer")
+                         ((cookie-beside-jar) "a Cookie or Host header beside a cookie jar: libcurl would send a caller's Cookie beside the jar's, and match the jar's cookies against a caller's Host, sending and storing")
                          (else "a body with get or head, which send none")))
                       (make-irritants-condition (list value)))))
 
@@ -631,7 +656,33 @@
   ;; order. tests/test-request.sps writes it out.
   (define request-keys
     '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
-      stream-buffer body-length http-version credentials proxy-ca-file proxy-verify))
+      stream-buffer body-length http-version credentials proxy-ca-file proxy-verify cookie-jar))
+
+  ;; A cookie jar (ADR-0035; the M7 plan, section 3.5): its engine, the one
+  ;; that made it; and, written on that engine's thread under its mutex,
+  ;; the address of its share, a curl_share of cookies, and of its own easy
+  ;; handle, the one the engine keeps for the jar's messages, attached to
+  ;; the share, each #f until made and once freed; its state, pending until
+  ;; its make is carried out, then live, closing once closed while a
+  ;; transfer holds it, and closed once its share is freed; and how many
+  ;; transfers hold it, each from the hold that records it live to its
+  ;; take-out. Every field is the engine's: (curl) exports the predicate
+  ;; alone, and the engine's procedures read the rest.
+  ;; curl-cookie-jar? : Any -> Boolean
+  ;; new-cookie-jar : Engine -> Jar
+  ;;   ENGINE's jar, pending, with no share, no handle and no holder
+  (define-record-type (curl-cookie-jar make-cookie-jar-record curl-cookie-jar?)
+    (fields (immutable engine cookie-jar-engine)
+            (mutable share cookie-jar-share cookie-jar-share-set!)
+            (mutable handle cookie-jar-handle cookie-jar-handle-set!)
+            (mutable state cookie-jar-state cookie-jar-state-set!)
+            (mutable holders cookie-jar-holders cookie-jar-holders-set!))
+    ;; Opaque: a jar holds its engine, whose queue and table hold tokens,
+    ;; and Chez prints a record's every field. A jar prints as
+    ;; #<curl-cookie-jar>.
+    (opaque #t))
+
+  (define (new-cookie-jar engine) (make-cookie-jar-record engine #f #f 'pending 0))
 
   ;; http-versions : (Listof Symbol)
   ;; The values http-version takes but #f: HTTP/1.1, HTTP/2, and HTTP/2 by
@@ -782,6 +833,7 @@
   ;; curl-request-credentials : Request -> (U (List 'basic String String) (List 'digest String String) (List 'bearer String) #f)
   ;; curl-request-proxy-ca-file : Request -> (U String #f)
   ;; curl-request-proxy-verify : Request -> Boolean
+  ;; curl-request-cookie-jar : Request -> (U Jar #f)
   ;; curl-request-fault : Request -> (U Positive-Integer (List 'head Positive-Integer) #f)   private
   ;; curl-request-follow : Request -> Boolean                  private
   ;; curl-request-options : Request -> (Listof Hatch-Setting)  private
@@ -920,6 +972,17 @@
   ;;                       PROXY_SSL_VERIFYHOST at 1 and 2; #f, both 0, which
   ;;                       beside any proxy but an https:// URL a submit
   ;;                       refuses as proxy-tls-without-https-proxy
+  ;;   cookie-jar          a cookie jar, make-curl-cookie-jar's, whose cookies
+  ;;                       the transfer sends and stores, SHARE at its share
+  ;;                       then COOKIEFILE at "" (ADR-0035): by libcurl's
+  ;;                       rules, which vary by version; or #f, the default,
+  ;;                       none: libcurl's cookie engine stays off, and no
+  ;;                       Set-Cookie is kept. Anything else is an assertion
+  ;;                       violation. Beside it a header named Cookie or
+  ;;                       Host, A to Z folded, any value, is refused as
+  ;;                       cookie-beside-jar. A submit refuses a jar of
+  ;;                       another engine, as cookie-jar-engine, and one not
+  ;;                       live, as cookie-jar-closed: the engine's checks
   ;;
   ;; A caller's Proxy-Authorization header, in any ASCII case, is refused
   ;; whatever proxy names, as proxy-authorization-header. At submit,
@@ -981,6 +1044,7 @@
             (immutable credentials request-credentials)
             (immutable proxy-ca-file request-proxy-ca-file)
             (immutable proxy-verify unchecked-curl-request-proxy-verify)
+            (immutable cookie-jar unchecked-curl-request-cookie-jar)
             (immutable fault curl-request-fault)
             (immutable follow curl-request-follow)
             (immutable options curl-request-options))
@@ -1022,6 +1086,8 @@
     (checked-accessor 'curl-request-http-version curl-request? "a request" unchecked-curl-request-http-version))
   (define curl-request-proxy-verify
     (checked-accessor 'curl-request-proxy-verify curl-request? "a request" unchecked-curl-request-proxy-verify))
+  (define curl-request-cookie-jar
+    (checked-accessor 'curl-request-cookie-jar curl-request? "a request" unchecked-curl-request-cookie-jar))
 
   ;; request-field-names : -> (Listof Symbol)
   ;; The request record's fields, in its order: a private accessor, for
@@ -1055,7 +1121,7 @@
     (let ((path (request-proxy-ca-file request)))
       (and path (string-copy path))))
 
-  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any (Listof Hatch-Setting) -> Request
+  ;; checked-request : Symbol Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any Any (Listof Hatch-Setting) -> Request
   ;; A request of these fields, checked as WHO by make-curl-request's rules,
   ;; after the keys. OPTIONS, the hatch's, were checked as they were
   ;; attached, and are private copies, so they are kept as they are.
@@ -1064,7 +1130,7 @@
   (define (checked-request who url method headers body user-agent timeout-ms
                            connect-timeout-ms body-limit ca-file verify proxy stream-buffer
                            body-length http-version credentials proxy-ca-file proxy-verify
-                           fault follow options)
+                           cookie-jar fault follow options)
     (define (wrong message irritant) (assertion-violation who message (shown-value irritant)))
     (unless (string? url) (wrong "a URL is a string" url))
     (unless (memq method request-methods)
@@ -1106,6 +1172,8 @@
         (wrong "a fault is a positive exact integer, the chunk it raises at, (head N), the head's line it raises at, (read N), (seek N) or (prereq N), that callable's call it raises at, or #f: a request holds no procedure"
                fault))
       (unless (boolean? follow) (wrong "follow is #t or #f" follow))
+      (unless (or (not cookie-jar) (curl-cookie-jar? cookie-jar))
+        (wrong "a cookie-jar is a cookie jar, made by make-curl-cookie-jar, or #f" cookie-jar))
       (when (and body (memq method '(get head)))
         (refuse-field who 'body method 'body-not-allowed))
       (when (and body-length (not (eq? body 'stream)))
@@ -1114,12 +1182,32 @@
         (refuse-field who 'stream-buffer stream-buffer 'stream-with-rounds))
       (let ((header-copies (car (snapshot who headers user-agent))))
         (check-expect-round who stream-buffer header-copies)
-        (check-credentials who credentials header-copies body stream-buffer))
+        (check-credentials who credentials header-copies body stream-buffer)
+        (check-cookie-beside-jar who cookie-jar header-copies))
       (ca-file-copy who ca-file)
       (new-curl-request url method headers body user-agent timeout-ms connect-timeout-ms
                         body-limit ca-file verify proxy stream-buffer body-length http-version
                         credentials (path-copy who 'proxy-ca-file proxy-ca-file) proxy-verify
-                        fault follow options)))
+                        cookie-jar fault follow options)))
+
+  ;; check-cookie-beside-jar : Symbol (U Jar #f) (Listof (Pairof String String)) -> Void
+  ;; Refuses, as WHO, beside a JAR, the first of HEADERS, the snapshot's
+  ;; copies, named Cookie or Host, A to Z folded alone, whatever its value,
+  ;; an empty one too: cookie-beside-jar, field header-name, value its name
+  ;; as given, never its value, a secret. One source holds a request's
+  ;; cookies (ADR-0035, decision 6, as measured): libcurl sends a caller's
+  ;; Cookie, in any case, empty too, as a second header beside the jar's;
+  ;; and a caller's Host, in any case, with any port, sends that host's
+  ;; cookies and stores the answer's there, over HTTP/1.1 and over HTTP/2 as
+  ;; :authority. Never string-ci=?, which folds U+212A KELVIN SIGN to k and
+  ;; U+017F LONG S to s: a server compares bytes (traps.md). Checked as the
+  ;; request is made, and again at submit on the submit's own copies.
+  (define (check-cookie-beside-jar who jar headers)
+    (when jar
+      (for-each (lambda (header)
+                  (when (member (ascii-folded (car header)) '("cookie" "host"))
+                    (refuse-field who 'header-name (car header) 'cookie-beside-jar)))
+                headers)))
 
   ;; chunk-fault? : Any -> Boolean
   ;; X is a fault the write callable raises at: the chunk's number, a
@@ -1209,13 +1297,14 @@
                      (given 'credentials request-credentials)
                      (given 'proxy-ca-file request-proxy-ca-file)
                      (given 'proxy-verify curl-request-proxy-verify)
+                     (given 'cookie-jar curl-request-cookie-jar)
                      fault follow options))
 
   ;; default-request : Request
   ;; Every key at its default, for a URL nothing reads: what
   ;; make-curl-request replaces keys in.
   (define default-request
-    (new-curl-request "" 'get '() #f #f #f #f #f #f #t 'environment #f #f #f #f #f #t #f #f '()))
+    (new-curl-request "" 'get '() #f #f #f #f #f #f #t 'environment #f #f #f #f #f #t #f #f #f '()))
 
   (define (make-curl-request url . plist)
     (request-like 'make-curl-request default-request
@@ -1303,7 +1392,12 @@
             (immutable effective-url unchecked-curl-response-effective-url)
             (immutable headers unchecked-curl-response-headers)
             (immutable body unchecked-curl-response-body)
-            (immutable timings unchecked-curl-response-timings)))
+            (immutable timings unchecked-curl-response-timings))
+    ;; Opaque: Chez prints a record's every field, and a response's headers
+    ;; can hold a Set-Cookie, whose value is a secret, as a password is
+    ;; (ADR-0035; the M7 plan, section 3.5). A response prints as
+    ;; #<curl-response>.
+    (opaque #t))
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
@@ -1509,7 +1603,10 @@
   ;; unshared-tunnel-settings asks (ADR-0037, amended twice): NOPROXY was
   ;; the field's twin before; proxy-ca-file PROXY_CAINFO, its path, then
   ;; PROXY_CAPATH, cleared; proxy-verify PROXY_SSL_VERIFYPEER, then
-  ;; PROXY_SSL_VERIFYHOST, by proxy-settings. follow is the private field's
+  ;; PROXY_SSL_VERIFYHOST, by proxy-settings. cookie-jar sets SHARE at its
+  ;; jar's share, then COOKIEFILE at "", by jar-settings, when it is not #f
+  ;; (ADR-0035): COOKIEFILE was kept from the hatch before, for its "-".
+  ;; follow is the private field's
   ;; (M4 plan, section 3.2). stream-buffer sets the header callable and its
   ;; data, the transfer's key, for a streamed response alone (the M6 plan,
   ;; sections 3.2 and 3.3). http-version sets HTTP_VERSION, by
@@ -1531,6 +1628,7 @@
       (http-version "HTTP_VERSION") (credentials "HTTPAUTH" "USERNAME" "PASSWORD" "XOAUTH2_BEARER")
       (proxy-ca-file "PROXY_CAINFO" "PROXY_CAPATH")
       (proxy-verify "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST")
+      (cookie-jar "SHARE" "COOKIEFILE")
       (follow "FOLLOWLOCATION")))
 
   ;; field-options : Symbol -> (Listof String)
@@ -1607,8 +1705,9 @@
   ;;     request's headers to the proxy in a CONNECT;
   ;;   - and, kept from the hatch though no twin: RESUME_FROM and
   ;;     RESUME_FROM_LARGE, which beside a body read stdin on 7.85.0 and
-  ;;     send part of the body; COOKIEFILE and COOKIEJAR, whose "-" reads
-  ;;     stdin and writes stdout from the engine's thread; CONNECT_ONLY,
+  ;;     send part of the body; COOKIEJAR, whose "-" writes stdout from the
+  ;;     engine's thread, and COOKIEFILE, whose "-" reads stdin, the
+  ;;     cookie-jar field's from M7 slice 4; CONNECT_ONLY,
   ;;     which sends no request and ends OK; DOH_URL, whose lookups ignore
   ;;     the proxy field; RESOLVE, whose entries reach every later request
   ;;     on the engine through the DNS cache its multi handle shares; and
@@ -1659,6 +1758,24 @@
   ;;     SUPPRESS_CONNECT_HEADERS, PROXY_SERVICE_NAME and SOCKS5_AUTH stay
   ;;     the hatch's, each changing no byte either side got, and nothing
   ;;     chez-curl reads;
+  ;;   - the cookie jar's, measured through the engine on five libcurls (M7
+  ;;     slice 4; ADR-0035, amended 2026-11-04): SHARE, which attaches a
+  ;;     share, and COOKIEFILE, which turns the cookie engine on, are the
+  ;;     cookie-jar field's, SHARE refused by its type before; COOKIE,
+  ;;     which joins its own line to the jar's Cookie line, and beside a
+  ;;     caller's Cookie header is dropped; COOKIELIST, which reaches past
+  ;;     its transfer: ALL and SESS cleared the jar for every transfer that
+  ;;     holds it, and a Netscape or Set-Cookie: line set by it went into
+  ;;     the jar past the load's rules, and every later holder sent it; and
+  ;;     COOKIESESSION, which changed nothing the jar held, measured, but
+  ;;     tells libcurl to drop a session's cookies as it starts, which is
+  ;;     the jar's to own. HSTS_CTRL stays the hatch's: it changed nothing
+  ;;     the jar held, and a share of cookies alone carries no HSTS entry.
+  ;;     CONNECT_TO stays the hatch's too (ADR-0035, decision 13): it routes
+  ;;     a transfer to another server, and the jar's cookies follow the
+  ;;     URL's host, libcurl storing the reached server's Set-Cookie under
+  ;;     it and sending it that host's cookies (8.20.0 lib/http.c:3553-3560,
+  ;;     read in source), as they would a hosts file's entry;
   ;; then proxy-tls-option-names. They are compared by id, so an alias name
   ;; is refused too.
   (define owned-option-names
@@ -1671,12 +1788,13 @@
               "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
               "TRANSFERTEXT" "USERPWD" "NETRC" "HSTS"
               "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT"
-              "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEFILE" "COOKIEJAR" "CONNECT_ONLY"
+              "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEJAR" "CONNECT_ONLY"
               "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT"
               "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL"
               "AWS_SIGV4"
               "PROXYAUTH" "PROXYUSERPWD" "PROXYUSERNAME" "PROXYPASSWORD"
-              "HTTPPROXYTUNNEL" "HAPROXYPROTOCOL" "HAPROXY_CLIENT_IP")
+              "HTTPPROXYTUNNEL" "HAPROXYPROTOCOL" "HAPROXY_CLIENT_IP"
+              "COOKIE" "COOKIELIST" "COOKIESESSION")
             proxy-tls-option-names))
 
   ;; pinned-options : (Listof (Pairof String (U String Integer)))
@@ -2027,6 +2145,264 @@
                  tls-in-tls-stalls)
          #t))
 
+  ;; --- the cookie jar (ADR-0035, amended twice; the M7 plan, section 3.5) -------------
+
+  ;; jar-settings : (U Natural #f) -> (Listof (Pairof String (U Natural String)))
+  ;; The settings a transfer's cookie jar makes, as data, in order: for
+  ;; SHARE-ADDRESS, the jar's share, SHARE at it, then COOKIEFILE at "",
+  ;; which turns libcurl's cookie engine on and names no file (ADR-0035,
+  ;; decisions 1 and 2): with the share but without it, a handle stored and
+  ;; sent none of the jar's cookies; for #f, no jar, none. Either order
+  ;; stored and sent alike on the five libcurls (the slice's measurement);
+  ;; the decision's stands. The names are request-field-options'. Pure.
+  ;; tests/test-cookies.sps writes out both answers.
+  (define (jar-settings share-address)
+    (let ((names (field-options 'cookie-jar)))
+      (if share-address
+          (list (cons (car names) share-address) (cons (cadr names) ""))
+          '())))
+
+  ;; plan-share : Plan -> (U Natural #f)
+  ;; The share of PLAN's cookie jar, read on the engine's thread, which
+  ;; wrote it under its mutex: #f for a plan with no jar.
+  (define (plan-share plan)
+    (let ((jar (plan-jar plan)))
+      (and jar (cookie-jar-share jar))))
+
+  ;; share-settings : (Listof (Pairof Integer Integer))
+  ;; What a jar's share holds: the curl_share_setopt calls its make makes,
+  ;; in order, each (OPTION . VALUE), CURLSHOPT_SHARE at
+  ;; CURL_LOCK_DATA_COOKIE alone, and no lock callbacks, since one thread
+  ;; alone touches it (ADR-0035, decision 1). A share that also held
+  ;; CURL_LOCK_DATA_HSTS carried one transfer's Strict-Transport-Security
+  ;; entry to the next, which then went out over https:// for an http://
+  ;; URL, on 8.5.0 and later; one of cookies alone carried none (the
+  ;; slice's measurement). tests/test-cookies.sps writes it out.
+  (define share-settings (list (cons curlshopt-share curl-lock-data-cookie)))
+
+  ;; cookie-line-limit : Positive-Integer
+  ;; The most bytes a loaded line's name and value hold together: 4,096,
+  ;; libcurl's own cap on a server's Set-Cookie (MAX_NAME, 7.85.0
+  ;; lib/cookie.c:561-562, 8.20.0 :490-492). COOKIELIST puts none on a
+  ;; loaded line, and a loaded cookie that passed the Cookie line's cap of
+  ;; 8,190 bytes left every request to its host unterminated, waiting for
+  ;; its timeout, on the five (ADR-0035, amended 2026-11-04, decision 7).
+  (define cookie-line-limit 4096)
+
+  ;; expiry-limit : Positive-Integer
+  ;; The latest expiry a loaded line names: 2^63 - 1, a curl_off_t's most.
+  ;; libcurl drops or splits one past it, by version.
+  (define expiry-limit (- (expt 2 63) 1))
+
+  ;; split-tabs : String -> (Listof String)
+  ;; LINE cut at each tab, every field kept, an empty one too.
+  (define (split-tabs line)
+    (let loop ((i 0) (start 0) (found '()))
+      (cond ((= i (string-length line))
+             (reverse (cons (substring line start i) found)))
+            ((char=? (string-ref line i) #\tab)
+             (loop (+ i 1) (+ i 1) (cons (substring line start i) found)))
+            (else (loop (+ i 1) start found)))))
+
+  ;; string-starts? : String String -> Boolean
+  (define (string-starts? s prefix)
+    (and (>= (string-length s) (string-length prefix))
+         (string=? (substring s 0 (string-length prefix)) prefix)))
+
+  ;; digits? : String -> Boolean
+  ;; One or more decimal digits, 0 to 9, ASCII alone.
+  (define (digits? s)
+    (and (> (string-length s) 0)
+         (for-all (lambda (c) (char<=? #\0 c #\9)) (string->list s))))
+
+  ;; cookie-line-fault : String -> (U Symbol #f)
+  ;; The rule LINE breaks, the first of these in order, or #f when it is a
+  ;; line a load takes: one in the form a read-out writes it (ADR-0035,
+  ;; amended 2026-11-04, decisions 7 and 8), DOMAIN TAILMATCH PATH SECURE
+  ;; EXPIRY NAME VALUE, tab-separated:
+  ;;   not-latin-1   a char above U+00FF, which has no byte;
+  ;;   control-byte  a char U+0000 to U+001F, but a tab, which separates
+  ;;                 the fields, or U+007F, anywhere: before 8.23.0 libcurl
+  ;;                 stores one raw, 8.23.0 drops the line, and a CR or an
+  ;;                 LF cut a value;
+  ;;   set-cookie    a line starting Set-Cookie:, A to Z folded, which
+  ;;                 libcurl reads as a header, not a Netscape line;
+  ;;   fields        not seven fields: six tabs exactly. 7.85.0's strtok_r
+  ;;                 merges an empty field, and a read-out of it lists a
+  ;;                 tab in a name or a value as eight;
+  ;;   domain        the domain, after an optional #HttpOnly_, in that case
+  ;;                 exactly, empty, or starting with #: libcurl drops it;
+  ;;   tail-match    the second field neither TRUE nor FALSE, exactly:
+  ;;                 libcurl reads any other as FALSE;
+  ;;   leading-dot   a domain starting with a dot beside FALSE, or without
+  ;;                 one beside TRUE: libcurl drops the first, and writes
+  ;;                 the second out with a dot;
+  ;;   path          the path not starting with /: kept as given on 7.85.0
+  ;;                 and 8.5.0, made / on 8.20.0 and 8.23.0;
+  ;;   secure        the fourth field neither TRUE nor FALSE, exactly;
+  ;;   expiry        the fifth not one or more decimal digits, ASCII, or
+  ;;                 past 9223372036854775807: a sign, a space, 0x and an
+  ;;                 exponent were dropped or split by version;
+  ;;   name          the sixth, the name, empty;
+  ;;   separator     a ; in the name or the value, or an = in the name: a
+  ;;                 read-out never holds one, since a Set-Cookie ends a
+  ;;                 value at ; and a name at =, and libcurl sent a loaded
+  ;;                 one as more pairs, Cookie: a=b=c; n=x; admin=1, on the
+  ;;                 five (ADR-0035, decision 12). An = in a value stays;
+  ;;   size          the name and the value more than 4,096 chars, each
+  ;;                 one byte, together: cookie-line-limit;
+  ;;   prefix        a name starting __Secure- or __Host-, A to Z folded,
+  ;;                 beside a secure field not TRUE, or for __Host- a path
+  ;;                 not exactly / or a tail-match not FALSE: 7.85.0,
+  ;;                 8.20.0 and Apple's 8.7.1 drop such a loaded line in
+  ;;                 any case, 8.23.0 keeps one in another case than the
+  ;;                 prefix's own, and the load answers 0 either way
+  ;;                 (decision 10).
+  ;; What the slice's measurements loaded, and its review's, on the five
+  ;; libcurls: each line they hold that every rule passes loaded alike and
+  ;; read out the same, but one whose expiry has passed, which 8.20.0 and
+  ;; 8.23.0 drop at once and 7.85.0 and 8.5.0 list until the next cookie is
+  ;; added. A line no measurement held is not claimed. Pure.
+  (define (cookie-line-fault line)
+    (let ((codes (map char->integer (string->list line))))
+      (cond
+        ((exists (lambda (c) (> c 255)) codes) 'not-latin-1)
+        ((exists (lambda (c) (or (and (< c #x20) (not (= c 9))) (= c #x7F))) codes) 'control-byte)
+        ((string-starts? (ascii-folded line) "set-cookie:") 'set-cookie)
+        (else
+         (let ((fields (split-tabs line)))
+           (if (not (= (length fields) 7))
+               'fields
+               (let* ((given (list-ref fields 0))
+                      (domain (if (string-starts? given "#HttpOnly_")
+                                  (substring given 10 (string-length given))
+                                  given))
+                      (tail (list-ref fields 1))
+                      (path (list-ref fields 2))
+                      (secure (list-ref fields 3))
+                      (expiry (list-ref fields 4))
+                      (name (list-ref fields 5))
+                      (value (list-ref fields 6)))
+                 (cond
+                   ((or (= (string-length domain) 0) (char=? (string-ref domain 0) #\#)) 'domain)
+                   ((not (member tail '("TRUE" "FALSE"))) 'tail-match)
+                   ((not (eq? (char=? (string-ref domain 0) #\.) (string=? tail "TRUE"))) 'leading-dot)
+                   ((not (string-starts? path "/")) 'path)
+                   ((not (member secure '("TRUE" "FALSE"))) 'secure)
+                   ((not (and (digits? expiry) (<= (string->number expiry 10) expiry-limit))) 'expiry)
+                   ((= (string-length name) 0) 'name)
+                   ((or (string-holds? name #\;) (string-holds? name #\=) (string-holds? value #\;))
+                    'separator)
+                   ((> (+ (string-length name) (string-length value)) cookie-line-limit) 'size)
+                   ((prefix-broken? name tail path secure) 'prefix)
+                   (else #f)))))))))
+
+  ;; string-holds? : String Char -> Boolean
+  (define (string-holds? s c)
+    (exists (lambda (x) (char=? x c)) (string->list s)))
+
+  ;; prefix-broken? : String String String String -> Boolean
+  ;; Whether NAME, a loaded line's, starts with a cookie prefix, __Secure-
+  ;; or __Host-, A to Z folded alone, and its line breaks the prefix's rule:
+  ;; __Secure- needs SECURE TRUE; __Host- needs SECURE TRUE, PATH exactly /
+  ;; and TAIL FALSE (ADR-0035, decision 10).
+  (define (prefix-broken? name tail path secure)
+    (let ((folded (ascii-folded name)))
+      (cond ((string-starts? folded "__secure-") (not (string=? secure "TRUE")))
+            ((string-starts? folded "__host-")
+             (not (and (string=? secure "TRUE") (string=? path "/") (string=? tail "FALSE"))))
+            (else #f))))
+
+  ;; cookie-line-bytes : Symbol Any -> (Listof Bytevector)
+  ;; LINES, a list of strings, as the bytes a load sets, each char one byte
+  ;; (ADR-0035, decision 8), checked as WHO, before anything is loaded:
+  ;; the list is copied as it is read, walked by the count it had, and each
+  ;; string copied, and the copies are what is checked and loaded, so the
+  ;; caller's list and strings may change once this returns (AGENTS.md's
+  ;; mutable values); anything but a list of strings is an assertion
+  ;; violation from WHO, naming it by its kind; then each copy, in order,
+  ;; by cookie-line-fault, the first that breaks a rule refused, before any
+  ;; line is loaded: &curl-request-error, field lines, value its index in
+  ;; the list, from 0, reason cookie-line, its irritants the index and the
+  ;; rule, never the line, whose value is a secret.
+  (define (cookie-line-bytes who lines)
+    (define (wrong)
+      (assertion-violation who "the lines are a list of strings, cookie lines" (shown-value lines)))
+    (unless (list? lines) (wrong))
+    (let ((copies (let loop ((rest lines) (left (length lines)) (found '()))
+                    (cond ((and (null? rest) (= left 0)) (reverse found))
+                          ((or (= left 0) (not (pair? rest))) (wrong))
+                          (else
+                           (let ((line (car rest)))
+                             (unless (string? line) (wrong))
+                             (loop (cdr rest) (- left 1) (cons (string-copy line) found))))))))
+      (let check ((rest copies) (index 0))
+        (unless (null? rest)
+          (let ((rule (cookie-line-fault (car rest))))
+            (when rule
+              (raise (condition (make-curl-request-error 'lines index 'cookie-line)
+                                (make-who-condition who)
+                                (make-message-condition
+                                 "a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, no ; in the name or the value and no = in the name, a name and value of 4,096 bytes at most, and a __Secure- or __Host- name only beside its prefix's fields")
+                                (make-irritants-condition (list index rule))))))
+          (check (cdr rest) (+ index 1))))
+      (map (lambda (line) (u8-list->bytevector (map char->integer (string->list line)))) copies)))
+
+  ;; jar-attach! : Positive-Integer Natural -> Void
+  ;; EASY, a jar's own handle, attached to SHARE, its share: SHARE set at
+  ;; it, the cookie-jar field's first option, so a load or a read-out
+  ;; through EASY reaches the share's cookies. A refusal raises
+  ;; setopt-failed, naming SHARE. On the engine's thread.
+  (define (jar-attach! easy share)
+    (set-option! easy (car (field-options 'cookie-jar)) share #f))
+
+  ;; jar-load-lines! : Symbol Positive-Integer (Listof Bytevector) (U Integer #f) -> Void
+  ;; Each of LINES, a checked line's bytes, set on EASY, a jar's own
+  ;; handle, as COOKIELIST, in order, each a counted copy ended by a NUL,
+  ;; freed once setopt returns: libcurl parses the line into the share's
+  ;; cookies there. ANSWER, an engine's test seam's, #f but for it, is taken
+  ;; in place of each of libcurl's answers, after the call. Every answer is
+  ;; read: the first but CURLE_OK raises, as WHO, the lines before it
+  ;; loaded, naming the line by its index, from 0, and the CURLcode, never
+  ;; the line. libcurl answers 0 to a line it drops, so the rules are
+  ;; cookie-line-bytes'. On the engine's thread.
+  (define (jar-load-lines! who easy lines answer)
+    (let ((id (car (option-named "COOKIELIST"))))
+      (let loop ((rest lines) (index 0))
+        (unless (null? rest)
+          (let* ((bytes (car rest))
+                 (n (bytevector-length bytes))
+                 (ended (make-bytevector (+ n 1) 0)))
+            (bytevector-copy! bytes 0 ended 0 n)
+            (let* ((given (call-with-foreign-bytes ended
+                            (lambda (address) (curl-easy-setopt-pointer easy id address))))
+                   (code (or answer given)))
+              (unless (eqv? code curle-ok)
+                (error who "libcurl refused a cookie line: CURLOPT_COOKIELIST answered a CURLcode"
+                       index code))
+              (loop (cdr rest) (+ index 1))))))))
+
+  ;; jar-read-lines : Symbol Positive-Integer (U Integer #f) -> (Listof Bytevector)
+  ;; The lines of the jar EASY, a jar's own handle, reaches, as
+  ;; CURLINFO_COOKIELIST writes them, each a line's bytes, in libcurl's
+  ;; order, which moves with its hash table: the list it makes is counted
+  ;; and owned in the call's critical section, walked, and freed with
+  ;; curl_slist_free_all, a raise in the walk freeing it too. ANSWER, an
+  ;; engine's test seam's, #f but for it, is taken in place of libcurl's
+  ;; answer, after the call: one but CURLE_OK raises, as WHO, naming the
+  ;; CURLcode, once the list is freed. On the engine's thread.
+  (define (jar-read-lines who easy answer)
+    (let-values (((given head) (curl-easy-getinfo-cookielist easy)))
+      (let ((lines (if (eqv? head 0)
+                       '()
+                       (guard (e (#t (curl-slist-free-all head) (raise e)))
+                         (curl-slist-strings head)))))
+        (unless (eqv? head 0) (curl-slist-free-all head))
+        (let ((code (or answer given)))
+          (unless (eqv? code curle-ok)
+            (error who "curl_easy_getinfo answered a CURLcode for CURLINFO_COOKIELIST" code)))
+        lines)))
+
   ;; --- the hatch (ADR-0009; the M4 plan, section 3.7) ---------------------------------
 
   ;; hatch-types : (Listof Symbol)
@@ -2332,7 +2708,9 @@
     (fields (immutable status unchecked-curl-head-status)
             (immutable http-version unchecked-curl-head-http-version)
             (immutable headers unchecked-curl-head-headers)
-            (immutable body-asked unchecked-curl-head-body-asked?)))
+            (immutable body-asked unchecked-curl-head-body-asked?))
+    ;; Opaque, as a response is: its headers can hold a Set-Cookie.
+    (opaque #t))
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
@@ -3201,8 +3579,9 @@
   ;; its http-version; the submit's checked copy of its credentials; and its
   ;; proxy's: the proxy, environment, #f or the URL the submit checked and
   ;; hands PROXY, its port set; the proxy CA file's copy and its
-  ;; verification; the tunnel's settings, unshared-tunnel-settings'; and
-  ;; whether it stops its engine's multiplexing, stops-multiplexing?'s.
+  ;; verification; the tunnel's settings, unshared-tunnel-settings';
+  ;; whether it stops its engine's multiplexing, stops-multiplexing?'s;
+  ;; and its cookie jar, the request's, or #f.
   (define-record-type plan
     (fields (immutable url) (immutable method) (immutable headers) (immutable agent)
             (immutable body) (immutable timeout-ms) (immutable connect-timeout-ms)
@@ -3210,7 +3589,7 @@
             (immutable settings) (immutable fault) (immutable follow) (immutable stream)
             (immutable body-length) (immutable upload) (immutable http-version)
             (immutable credentials) (immutable proxy-ca-file) (immutable proxy-verify)
-            (immutable tunnel) (immutable unmultiplex))
+            (immutable tunnel) (immutable unmultiplex) (immutable jar))
     ;; Opaque, as a request is: a plan holds the submit's copy of its
     ;; credentials, and its proxy URL, and a token holds its plan.
     (opaque #t))
@@ -3221,6 +3600,8 @@
   ;; The plan's request stream, #f for a body that does not stream.
   ;; plan-body-length : Plan -> (U Natural #f)
   ;; The plan's body-length, the request's, #f for none.
+  ;; plan-jar : Plan -> (U Jar #f)
+  ;; The plan's cookie jar, the request's, #f for none.
 
   ;; prepare-transfer : Request -> Plan
   ;; REQUEST's plan, checked on the caller's thread, before anything is
@@ -3257,7 +3638,8 @@
                    (curl-request-follow request)
                    stream length (and (eq? body 'stream) (make-upload stream length))
                    (curl-request-http-version request) credentials proxy-ca-file
-                   (curl-request-proxy-verify request) tunnel unmultiplex))))
+                   (curl-request-proxy-verify request) tunnel unmultiplex
+                   (unchecked-curl-request-cookie-jar request)))))
 
   ;; request-checks : Symbol Request
   ;;                  -> (Values String (Pairof Headers (U String #f)) (U String #f)
@@ -3273,7 +3655,9 @@
   ;; holding 100-continue in the snapshot's copies beside a stream-buffer,
   ;; stream-with-rounds, by check-expect-round, since the caller's strings
   ;; may have changed since the request was made; the credentials beside
-  ;; those copies, by check-credentials, for the same reason; then the CA
+  ;; those copies, by check-credentials, for the same reason; a Cookie or
+  ;; Host header beside a cookie jar, by check-cookie-beside-jar, for the
+  ;; same reason; then the CA
   ;; file against the environment the libcurl loaded with, by
   ;; check-ca-environment; then a proxy URL, by check-proxy-url; then an
   ;; https:// proxy URL against the features libcurl reports after its
@@ -3308,6 +3692,7 @@
       (check-expect-round who (curl-request-stream-buffer request) (car fields))
       (check-credentials who credentials (car fields) (curl-request-body request)
                          (curl-request-stream-buffer request))
+      (check-cookie-beside-jar who (unchecked-curl-request-cookie-jar request) (car fields))
       (check-ca-environment who 'ca-file ca-file (curl-request-verify request))
       (let ((reading (and (string? proxy) (check-proxy-url who proxy))))
         (check-https-proxy who (and reading (string=? (cadr reading) "https"))
@@ -3724,7 +4109,9 @@
   ;; http-version, HTTP_VERSION when it is not #f; then
   ;; credentials-settings' for the plan's credentials, HTTPAUTH, then
   ;; USERNAME and PASSWORD or XOAUTH2_BEARER, each string a counted UTF-8
-  ;; copy, set-string-option!'s, when they are not #f; then, always,
+  ;; copy, set-string-option!'s, when they are not #f; then jar-settings'
+  ;; for the plan's cookie jar's share, plan-share's, SHARE at it and
+  ;; COOKIEFILE at "", when it is not #f; then, always,
   ;; tls-settings' for the plan's CA file and verification, through
   ;; set-tls-options!; then
   ;; FOLLOWLOCATION at 1 for the private follow field; then, last, the hatch's
@@ -3787,6 +4174,11 @@
                     (set-string-option! easy (car setting) (cdr setting) buffer)
                     (set-option! easy (car setting) (cdr setting) buffer)))
               (credentials-settings (plan-credentials plan)))
+    (for-each (lambda (setting)
+                (if (string? (cdr setting))
+                    (set-string-option! easy (car setting) (cdr setting) buffer)
+                    (set-option! easy (car setting) (cdr setting) buffer)))
+              (jar-settings (plan-share plan)))
     (set-tls-options! easy (plan-ca-file plan) (plan-verify plan) buffer)
     (when (plan-follow plan)
       (set-option! easy (field-option 'follow) 1 buffer))

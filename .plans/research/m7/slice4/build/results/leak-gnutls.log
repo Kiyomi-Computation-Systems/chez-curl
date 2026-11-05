@@ -1,0 +1,112 @@
+load refused, not-latin-1: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, and a name and value of 4,096 bytes at most with irritants (1 not-latin-1)"
+load refused, control-byte: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, and a name and value of 4,096 bytes at most with irritants (1 control-byte)"
+load refused, set-cookie: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, and a name and value of 4,096 bytes at most with irritants (1 set-cookie)"
+load refused, fields: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, and a name and value of 4,096 bytes at most with irritants (1 fields)"
+load refused, domain: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, and a name and value of 4,096 bytes at most with irritants (1 domain)"
+load refused, tail-match: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, and a name and value of 4,096 bytes at most with irritants (1 tail-match)"
+load refused, leading-dot: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, and a name and value of 4,096 bytes at most with irritants (1 leading-dot)"
+load refused, path: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, and a name and value of 4,096 bytes at most with irritants (1 path)"
+load refused, secure: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, and a name and value of 4,096 bytes at most with irritants (1 secure)"
+load refused, expiry: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, and a name and value of 4,096 bytes at most with irritants (1 expiry)"
+load refused, name: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, and a name and value of 4,096 bytes at most with irritants (1 name)"
+load refused, size: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, and a name and value of 4,096 bytes at most with irritants (1 size)"
+load of a vector of the line: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: the lines are a list of strings, cookie lines with irritant (kind vector)"
+load of an improper list: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: the lines are a list of strings, cookie lines with irritant (kind list)"
+load of a list holding a symbol: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: the lines are a list of strings, cookie lines with irritant (kind list)"
+load of the line alone: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: the lines are a list of strings, cookie lines with irritant (kind string)"
+make-curl-cookie-jar of the line: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in make-curl-cookie-jar: not an engine with irritant (kind string)"
+curl-cookie-jar-cookies of the line: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-cookies: not a cookie jar with irritant (kind string)"
+curl-cookie-jar-load! of the line, then lines: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: not a cookie jar with irritant (kind string)"
+curl-cookie-jar-close! of the line: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-close!: not a cookie jar with irritant (kind string)"
+curl-cookie-jar? of the line: secret printed: no
+  "#f\n#f\n"
+cookie-jar key of the line: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in make-curl-request: a cookie-jar is a cookie jar, made by make-curl-cookie-jar, or #f with irritant (kind string)"
+curl-request-cookie-jar of the line: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-request-cookie-jar: not a request with irritant (kind string)"
+curl-response-status of the jar: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-response-status: not a response with irritant (kind other)"
+curl-token-await of the jar: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-token-await: not a token with irritant (kind other)"
+Cookie header beside the jar, as made: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in make-curl-request: a Cookie or Host header beside a cookie jar: libcurl would send a caller's Cookie beside the jar's, and match the jar's cookies against a caller's Host, sending and storing with irritant \"Cookie\""
+Host header beside the jar, as made: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in make-curl-request: a Cookie or Host header beside a cookie jar: libcurl would send a caller's Cookie beside the jar's, and match the jar's cookies against a caller's Host, sending and storing with irritant \"Host\""
+Cookie header renamed after made, at submit: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-submit: a Cookie or Host header beside a cookie jar: libcurl would send a caller's Cookie beside the jar's, and match the jar's cookies against a caller's Host, sending and storing with irritant \"Cookie\""
+Cookie header renamed after made, at curl-request-check: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-request-check: a Cookie or Host header beside a cookie jar: libcurl would send a caller's Cookie beside the jar's, and match the jar's cookies against a caller's Host, sending and storing with irritant \"Cookie\""
+a submit of another engine's jar: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-submit: a cookie jar is its engine's alone, and this one is another engine's with irritant cookie-jar"
+a refused connect holding the jar, its token: secret printed: no
+  "#<curl-token>\n#<curl-token>\n"
+a refused connect holding the jar, its outcome: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-transfer: Couldn't connect to server"
+a timeout holding the jar, its outcome: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-transfer: Timeout was reached"
+the jar: secret printed: no
+  "#<curl-cookie-jar>\n#<curl-cookie-jar>\n"
+the request: secret printed: no
+  "#<curl-request>\n#<curl-request>\n"
+the token: secret printed: no
+  "#<curl-token>\n#<curl-token>\n"
+the response: secret printed: no
+  "#<curl-response>\n#<curl-response>\n"
+the response's headers, which hold the Set-Cookie: a caller's own read: secret printed: no
+  "holds-it-as-data\nholds-it-as-data\n"
+a streamed head: secret printed: no
+  "#<curl-head>\n#<curl-head>\n"
+a submit of a closed jar: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-submit: the cookie jar is closed, or closing: it takes no transfer, read-out or load more with irritant cookie-jar"
+a read-out of a closed jar: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-cookies: the cookie jar is closed, or closing: it takes no transfer, read-out or load more with irritant cookie-jar"
+a load into a closed jar: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: the cookie jar is closed, or closing: it takes no transfer, read-out or load more with irritant cookie-jar"
+a closed jar: secret printed: no
+  "#<curl-cookie-jar>\n#<curl-cookie-jar>\n"
+the session: secret printed: no
+  "#<http-session>\n#<http-session>\n"
+the session's response: secret printed: no
+  "#<http-response>\n#<http-response>\n"
+the session's redirect error: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in http-request: the call has followed as many redirects as it may"
+the session's load refused: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-cookie-jar-load!: a cookie line a load takes is one in the form a read-out writes: seven tab-separated fields, no control byte, TRUE or FALSE, an absolute path, an expiry of decimal digits, a name, and a name and value of 4,096 bytes at most with irritants (1 not-latin-1)"
+the session's call with a Cookie header: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in make-curl-request: a Cookie or Host header beside a cookie jar: libcurl would send a caller's Cookie beside the jar's, and match the jar's cookies against a caller's Host, sending and storing with irritant \"Cookie\""
+http-session-cookies of the line: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in http-session-cookies: not a session with irritant (kind string)"
+http-session-load-cookies! of the line: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in http-session-load-cookies!: not a session with irritant (kind string)"
+a closed session's read-out: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-engine: the engine was stopped, so it takes no more transfers"
+a session with a Cookie header and cookies: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-request-with: a Cookie or Host header beside a cookie jar: libcurl would send a caller's Cookie beside the jar's, and match the jar's cookies against a caller's Host, sending and storing with irritant \"Cookie\""
+control: the jar's read-out holds the loaded secret: yes
+control: the search finds the secret in the line itself: yes
+a stopped engine's jar, read out: secret printed: no
+  "#<compound condition>\n#<compound condition>\nException in curl-engine: the engine was stopped, so it takes no more transfers"
+a stopped engine's jar: secret printed: no
+  "#<curl-cookie-jar>\n#<curl-cookie-jar>\n"
+cookie-leak: 54 exits, 0 printed a secret
+counts: ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))

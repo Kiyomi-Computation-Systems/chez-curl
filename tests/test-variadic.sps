@@ -1,8 +1,9 @@
 #!r6rs
 ;;; The suite for the variadic bindings of (curl private native), in a
 ;;; process of its own: curl_easy_setopt, bound once per value type,
-;;; curl_easy_getinfo, and curl_multi_setopt, bound once for a long, each
-;;; with (__varargs_after 2) (ADR-0001, decision 1, amended 2026-10-25). It
+;;; curl_easy_getinfo, curl_multi_setopt, bound once for a long, and
+;;; curl_share_setopt, bound once for an int, each with (__varargs_after 2)
+;;; (ADR-0001, decision 1, amended 2026-10-25; M7 slice 4). It
 ;;; imports native, so the whole load runs before its first line, as in
 ;;; tests/test-native.sps.
 ;;;
@@ -63,6 +64,20 @@
 ;;;            curl-easy-setopt-pointer, so they run only when PRIVATE read
 ;;;            back exactly through it: a pointer that did not arrive would
 ;;;            have libcurl read or write through garbage.
+;;;   share    SHARE and UNSHARE through curl-share-setopt-int, by their
+;;;            effect, on an engine, through its private seam
+;;;            make-curl-cookie-jar-sharing: a jar whose share those calls
+;;;            alone made, then two transfers holding it, the first to the
+;;;            origin's cookie route setting k=1, the second sending what the
+;;;            share carried, as the origin logged it. An answer of 0 alone
+;;;            proves nothing: 3, 4 and 5 answer 0 too. On the five Linux
+;;;            libcurls, SHARE 2, CURL_LOCK_DATA_COOKIE, is the one value of 0
+;;;            to 9 that carries the cookie; 0, 1, 8, 9, 99 and -1 answer 1,
+;;;            CURLSHE_BAD_OPTION; and UNSHARE 2 after it answers 0 and stops
+;;;            the carrying, which UNSHARE of no other value does (M7 slice
+;;;            4's measurement). 6, PSL, and 7, HSTS, answer by build, so
+;;;            neither is here. A binding that handed libcurl another int
+;;;            shows as 2 not carrying, or 99 not refused.
 ;;;
 ;;; Options are looked up by name, through curl-easy-option, never written
 ;;; as numbers (ADR-0001, decision 2). Each one's CURLOT type code must be
@@ -81,8 +96,8 @@
 ;;; garbage pointer and crash. make check-variadic removes the convention
 ;;; in a copy, from the template and then from each binding alone, and
 ;;; requires this suite to fail on arm64osx and tarm64osx: by name, naming
-;;; that binding's tests, for each setopt binding alone, the multi one
-;;; included.
+;;; that binding's tests, for each setopt binding alone, the multi and the
+;;; share ones included.
 ;;;
 ;;; It frees what it makes: each easy handle with curl_easy_cleanup, each
 ;;; multi handle with curl_multi_cleanup, each FILE * with fclose, and the
@@ -96,7 +111,10 @@
         (curl-testing)
         (curl private constants)
         (curl private libcurl-info)
-        (curl private native))
+        (curl private native)
+        (only (curl private engine) make-curl-engine curl-engine-stop curl-submit curl-token-await
+              make-curl-cookie-jar-sharing curl-cookie-jar-close!)
+        (only (curl private transfer) make-curl-request curl-response-body))
 
 ;; SRFI-64 sets no exit status. This suite's last line turns the runner's
 ;; counts into one.
@@ -638,6 +656,91 @@
 (test-equal "MAX_TOTAL_CONNECTIONS set to 2^40 through curl-multi-setopt-long answers CURLM_OK on every libcurl, and its handle is freed"
   (list 'setopt curlm-ok 'cleanup curlm-ok)
   (multi-answer (expt 2 40)))
+
+;; --- the share int, by its effect: a cookie carried, or not --------------------------------
+
+;; share-cases : (Listof (List String (Listof (Pairof Integer Integer)) (Listof Integer) Boolean))
+;; Each case: its key on the origin, the share's curl_share_setopt calls,
+;; (OPTION . VALUE), the CURLSHcode each answers, and whether the second
+;; transfer sent the first's cookie, alike on the five Linux libcurls (M7
+;; slice 4's measurement): SHARE V on a fresh share, then UNSHARE V after
+;; SHARE 2. Written out here.
+(define share-values '(0 1 2 3 4 5 8 9 99 -1))
+(define share-answers '(1 1 0 0 0 0 1 1 1 1))
+(define share-cases
+  (append
+   (map (lambda (v code)
+          (list (string-append "share-" (number->string v)) (list (cons curlshopt-share v)) (list code)
+                (= v 2)))
+        share-values share-answers)
+   (map (lambda (v code)
+          (list (string-append "unshare-" (number->string v))
+                (list (cons curlshopt-share curl-lock-data-cookie) (cons curlshopt-unshare v))
+                (list curlshe-ok code) (not (= v 2))))
+        share-values share-answers)))
+
+;; key-text : String -> String
+;; KEY, a case's, as the cookie route takes a key: a minus as m.
+(define (key-text key)
+  (list->string (map (lambda (c) (if (char=? c #\-) #\m c)) (string->list key))))
+
+;; carried : Engine String Natural (Listof (Pairof Integer Integer)) -> (List (Listof Integer) String)
+;; A jar on ENGINE whose share OPS alone made, through the seam: its
+;; answers; then the second of two transfers holding it, to the cookie
+;; route on PORT under KEY, the first setting k=1: the body the origin
+;; answered, its log line, the Cookie headers it got. The jar is closed
+;; after.
+(define (carried engine key port ops)
+  (let-values (((jar codes) (make-curl-cookie-jar-sharing engine ops)))
+    (let* ((url (lambda (query)
+                  (string-append "http://127.0.0.1:" port "/cookies?key=" (key-text key) query)))
+           (get (lambda (query)
+                  (curl-token-await
+                   (curl-submit engine (make-curl-request (url query) 'cookie-jar jar 'proxy #f
+                                                          'timeout-ms 20000)))))
+           (first (get "&set=k%3D1"))
+           (second (get "")))
+      (curl-cookie-jar-close! jar)
+      (list codes (utf8->string (curl-response-body second))))))
+
+;; shares : (U (List 'ran String (Listof Any)) (List 'raised String))
+;; Every case's answer, on one engine and one origin, in order, and the
+;; origin's port; or why none ran.
+(define shares
+  (guard (e (#t (list 'raised (describe e))))
+    (call-with-origin
+     (lambda (origin)
+       (let ((port (number->string (cdr (origin-face origin 'http))))
+             (engine (make-curl-engine)))
+         (dynamic-wind
+           (lambda () #f)
+           (lambda ()
+             (let loop ((rest share-cases) (found '()))
+               (if (null? rest)
+                   (list 'ran port (reverse found))
+                   (loop (cdr rest) (cons (carried engine (car (car rest)) port (cadr (car rest)))
+                                          found)))))
+           (lambda () (curl-engine-stop engine))))))))
+
+;; sent-body : String Boolean -> String
+;; The second transfer's body for PORT: request 2, the cookie sent or not.
+(define (sent-body port sent)
+  (string-append "request 2 face=http host=\"127.0.0.1:" port "\" "
+                 (if sent "cookies=1 cookie=\"k=1\"" "cookies=0") "\n"))
+
+(for-each
+ (lambda (case index)
+   (let ((key (car case)) (codes (caddr case)) (sent (cadddr case)))
+     (test-equal (string-append "the share's " (if (= (length codes) 1) "SHARE" "SHARE 2, then UNSHARE")
+                                " of " key " through curl-share-setopt-int answers "
+                                (call-with-string-output-port (lambda (p) (write codes p)))
+                                ", and the second transfer holding it "
+                                (if sent "sends" "sends no") " cookie the first stored")
+       (if (eq? (car shares) 'ran) (list codes (sent-body (cadr shares) sent)) 'ran)
+       (if (eq? (car shares) 'ran) (list-ref (caddr shares) index) shares))))
+ share-cases
+ (let loop ((i 0) (n (length share-cases)) (found '()))
+   (if (= i n) (reverse found) (loop (+ i 1) n (cons i found)))))
 
 ;; --- freeing what it made --------------------------------------------------------------------
 

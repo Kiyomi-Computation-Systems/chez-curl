@@ -1,0 +1,53 @@
+% make check-variadic NODE="$(asdf which node)"
+(the maintainer's Mac, macOS 26.7.1, tarm64osx, Apple's libcurl 8.7.1, 2026-11-04, at 47481b2; pasted into
+ the session. Abridged: every step line is kept whole; the FAIL titles under each are kept for the share
+ steps, and counted for the rest, as each step's own line counts them.)
+check-variadic: ok copy: src/, tests/ and .plans/decisions/ copied to .../T/check-variadic.gYbxFL/tree
+check-variadic: ok machine: Chez's machine type is tarm64osx
+check-variadic: ok control: tests/test-collect-safe.sps passes on the unchanged copy
+check-variadic: ok control: tests/test-variadic.sps passes on the unchanged copy
+check-variadic: ok control: tests/test-transfer.sps passes on the unchanged copy
+check-variadic: ok template mutant: (foreign-procedure (__varargs_after 2) entry (arg ...) result) is now (foreign-procedure entry (arg ...) result), and no other line changed
+check-variadic: ok template static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl_easy_setopt three times, curl_easy_getinfo, curl_multi_setopt and curl_share_setopt once each as mismatches
+check-variadic: ok template arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant (exit 1), naming 30 failing tests
+  (30 FAIL titles: PRIVATE twice, RTSP_CLIENT_CSEQ twice, MAXFILESIZE twice, MAXFILESIZE_LARGE twice, the two drips, and the 20 share rows below)
+check-variadic: ok template transfer: on tarm64osx, tests/test-transfer.sps fails on the mutant (exit 1), naming 121 failing tests
+check-variadic: ok long mutant: (bind-variadic "curl_easy_setopt" (uptr int long) int info) is now (bind-required "curl_easy_setopt" (uptr int long) int info), and no other line changed
+check-variadic: ok long static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-easy-setopt-long alone: a mismatch and a wrong-binder for curl_easy_setopt
+check-variadic: ok long arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant by name (exit 1), naming 4 failing tests, 4 of them through curl-easy-setopt-long
+check-variadic: ok long transfer: on tarm64osx, tests/test-transfer.sps fails on the mutant (exit 124), timed out: no exit within 180s, which counts as failing
+check-variadic: ok pointer mutant: (bind-variadic "curl_easy_setopt" (uptr int uptr) int info) is now (bind-required "curl_easy_setopt" (uptr int uptr) int info), and no other line changed
+check-variadic: ok pointer static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-easy-setopt-pointer alone: a mismatch and a wrong-binder for curl_easy_setopt
+check-variadic: ok pointer arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant by name (exit 1), naming 24 failing tests, 2 of them through curl-easy-setopt-pointer
+check-variadic: ok pointer transfer: on tarm64osx, tests/test-transfer.sps fails on the mutant (exit 1), naming 121 failing tests
+check-variadic: ok off-t mutant: (bind-variadic "curl_easy_setopt" (uptr int integer-64) int info) is now (bind-required "curl_easy_setopt" (uptr int integer-64) int info), and no other line changed
+check-variadic: ok off-t static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-easy-setopt-off-t alone: a mismatch and a wrong-binder for curl_easy_setopt
+check-variadic: ok off-t arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant by name (exit 1), naming 2 failing tests, 2 of them through curl-easy-setopt-off-t
+check-variadic: ok off-t transfer: on tarm64osx, tests/test-transfer.sps fails on the mutant (exit 1), naming 7 failing tests
+check-variadic: ok getinfo mutant: (bind-variadic "curl_easy_getinfo" (uptr int uptr) int info) is now (bind-required "curl_easy_getinfo" (uptr int uptr) int info), and no other line changed
+check-variadic: ok getinfo static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-easy-getinfo alone: a mismatch and a wrong-binder for curl_easy_getinfo
+check-variadic: ok getinfo arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant (exit 1), naming 6 failing tests
+check-variadic: ok getinfo transfer: on tarm64osx, tests/test-transfer.sps fails on the mutant (exit 1), naming 55 failing tests
+check-variadic: ok multi mutant: (bind-variadic "curl_multi_setopt" (uptr int long) int info) is now (bind-required "curl_multi_setopt" (uptr int long) int info), and no other line changed
+check-variadic: ok multi static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-multi-setopt-long alone: a mismatch and a wrong-binder for curl_multi_setopt
+check-variadic: ok multi arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant by name (exit 1), naming 1 failing tests, 1 of them through curl-multi-setopt-long
+check-variadic: ok multi transfer reported: on tarm64osx, tests/test-transfer.sps passes on the mutant (exit 0); reported, never failed: no transfer shows a multi option on Apple's 8.7.1, which lacks CURLMOPT_QUICK_EXIT and answers any value of it alike
+check-variadic: ok share mutant: (bind-variadic "curl_share_setopt" (uptr int int) int info) is now (bind-required "curl_share_setopt" (uptr int int) int info), and no other line changed
+check-variadic: ok share static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-share-setopt-int alone: a mismatch and a wrong-binder for curl_share_setopt
+check-variadic: ok share arm64: on tarm64osx, tests/test-variadic.sps fails on the mutant by name (exit 1), naming 14 failing tests, 14 of them through curl-share-setopt-int
+  FAIL the share's SHARE of share-2 through curl-share-setopt-int answers (0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE of share-3 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-4 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE of share-5 through curl-share-setopt-int answers (0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-0 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-1 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-2 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends no cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-3 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-4 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-5 through curl-share-setopt-int answers (0 0), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-8 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-9 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare-99 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+  FAIL the share's SHARE 2, then UNSHARE of unshare--1 through curl-share-setopt-int answers (0 1), and the second transfer holding it sends cookie the first stored
+check-variadic: ok share transfer reported: on tarm64osx, tests/test-transfer.sps passes on the mutant (exit 0); reported, never failed: no transfer of tests/test-transfer.sps holds a cookie jar, so only tests/test-variadic.sps's share rows show this use
+check-variadic: all 33 steps ok, on tarm64osx

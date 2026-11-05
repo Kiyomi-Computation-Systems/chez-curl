@@ -1,0 +1,11 @@
+--- a/src/curl/private/transfer.sls
++++ b/src/curl/private/transfer.sls
+@@ -3073,7 +3073,7 @@
+           (locked (stream-lock stream)
+             (lambda ()
+               (stream-head-set! stream (make-curl-head status version headers
+-                                                       (and up (upload-asked up) #t)))
++                                                       (and up (> (upload-handed up) 0))))
+               (stream-head-at-set! stream (monotonic-ns))))))))
+ 
+   ;; read-head : Code

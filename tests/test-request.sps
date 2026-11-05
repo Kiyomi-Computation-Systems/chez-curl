@@ -78,13 +78,13 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
 
 ;; running-counts : (Listof (Pairof Symbol Natural))
 ;; The counts while the suite's engine runs and no transfer is live: its
 ;; multi handle and its slot, and nothing else.
 (define running-counts
-  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1)))
+  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
 
 ;; The load runs here, on this thread, before any engine's thread is forked.
 (define version
@@ -235,9 +235,9 @@
 
 ;; --- the keys --------------------------------------------------------------------------
 
-(test-equal "the keys are exactly method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer, body-length, http-version, credentials, proxy-ca-file and proxy-verify, in order"
+(test-equal "the keys are exactly method, headers, body, user-agent, timeout-ms, connect-timeout-ms, body-limit, ca-file, verify, proxy, stream-buffer, body-length, http-version, credentials, proxy-ca-file, proxy-verify and cookie-jar, in order"
   '(method headers body user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy
-    stream-buffer body-length http-version credentials proxy-ca-file proxy-verify)
+    stream-buffer body-length http-version credentials proxy-ca-file proxy-verify cookie-jar)
   request-keys)
 
 (test-equal "the methods are exactly get, head, post, put, patch and delete, in order"
@@ -245,7 +245,9 @@
   request-methods)
 
 ;; request-fields : Request -> (Listof Any)
-;; Every field of R, the private two last.
+;; Every field of R, the private two last; a cookie jar as the symbol jar,
+;; when it is one: a jar prints as #<curl-cookie-jar>, which reads back as
+;; nothing.
 (define (request-fields r)
   (list (curl-request-url r) (curl-request-method r) (curl-request-headers r)
         (curl-request-body r) (curl-request-user-agent r) (curl-request-timeout-ms r)
@@ -253,30 +255,46 @@
         (curl-request-verify r) (curl-request-proxy r) (curl-request-stream-buffer r)
         (curl-request-body-length r) (curl-request-http-version r) (curl-request-credentials r)
         (curl-request-proxy-ca-file r) (curl-request-proxy-verify r)
+        (let ((jar (curl-request-cookie-jar r))) (if (curl-cookie-jar? jar) 'jar jar))
         (curl-request-fault r) (curl-request-follow r)))
 
-(test-equal "a request with no key takes every default: get, no headers, no body, no user agent, no timeouts, no body limit, the system store, verification on, the environment's proxy, the whole body kept, no body-length, no HTTP version, no credentials, no proxy CA file, the proxy's verification on; and no fault, no following"
-  (list '("http://a/b" get () #f #f #f #f #f #f #t environment #f #f #f #f #f #t #f #f) running-counts)
+(test-equal "a request with no key takes every default: get, no headers, no body, no user agent, no timeouts, no body limit, the system store, verification on, the environment's proxy, the whole body kept, no body-length, no HTTP version, no credentials, no proxy CA file, the proxy's verification on, no cookie jar; and no fault, no following"
+  (list '("http://a/b" get () #f #f #f #f #f #f #t environment #f #f #f #f #f #t #f #f #f) running-counts)
   (with-counts (request-fields (make-curl-request "http://a/b"))))
 
+;; all-keys : Jar -> List
 ;; Each value differs from its default. verify's and proxy-verify's are
 ;; #f, the one value each takes but its default; proxy's a URL string;
-;; every other key's differs.
-(define all-keys
+;; cookie-jar's JAR; every other key's differs.
+(define (all-keys jar)
   (list 'method 'put 'headers '(("X-A" . "1")) 'body #vu8(1 2 3) 'user-agent "agent"
         'timeout-ms 4000 'connect-timeout-ms 3000 'body-limit 9 'ca-file "ca.pem" 'verify #f
         'proxy "https://p:1" 'stream-buffer 65536 'http-version 'http/2-prior-knowledge
-        'credentials '(basic "u" "p") 'proxy-ca-file "proxy-ca.pem" 'proxy-verify #f))
+        'credentials '(basic "u" "p") 'proxy-ca-file "proxy-ca.pem" 'proxy-verify #f
+        'cookie-jar jar))
 
-(test-equal "each key sets its own field, in any order"
-  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f #f)
-        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f #f))
-  (list (request-fields (apply make-curl-request "http://a/b" all-keys))
-        (request-fields (apply make-curl-request "http://a/b"
-                       (let loop ((rest all-keys) (pairs '()))
-                         (if (null? rest)
-                             (apply append pairs)
-                             (loop (cddr rest) (cons (list (car rest) (cadr rest)) pairs))))))))
+;; with-jar : (Jar -> Any) -> (List Any (Listof (Pairof Symbol Natural)))
+;; PROC's answer, given a jar of an engine of its own, which is stopped
+;; after, whatever PROC does; then the counts, once it is.
+(define (with-jar proc)
+  (let ((e (make-curl-engine)))
+    (let ((answer (dynamic-wind (lambda () #f)
+                                (lambda () (proc (make-curl-cookie-jar e)))
+                                (lambda () (curl-engine-stop e)))))
+      (list answer (native-counts)))))
+
+(test-equal "each key sets its own field, in any order, a cookie jar among them; the jar's engine, stopped, leaves nothing"
+  (list (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f jar #f #f)
+              '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f jar #f #f))
+        running-counts)
+  (with-jar
+   (lambda (jar)
+     (list (request-fields (apply make-curl-request "http://a/b" (all-keys jar)))
+           (request-fields (apply make-curl-request "http://a/b"
+                                  (let loop ((rest (all-keys jar)) (pairs '()))
+                                    (if (null? rest)
+                                        (apply append pairs)
+                                        (loop (cddr rest) (cons (list (car rest) (cadr rest)) pairs))))))))))
 
 (test-equal "each body method takes a body, and an empty one; get and head take #f"
   '((post #vu8(1)) (put #vu8(1)) (patch #vu8(1)) (delete #vu8(1))
@@ -420,9 +438,9 @@
 
 (test-equal "body takes stream with post, put, patch and delete, and body-length sets its own field beside it: a natural, 0 and 2^63 - 2 among them, or #f, the default, kept by curl-request-with when not given and replaced when given; the other fields keep their defaults; nothing native made"
   (list '((post stream 7) (put stream 0) (patch stream 9223372036854775806) (delete stream #f))
-        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 7 #f #f #f #t #f #f)
-        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 5 #f #f #f #t #f #f)
-        '("http://a/b" post () stream #f #f #f #f #f #t environment #f #f #f #f #f #t #f #f)
+        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 7 #f #f #f #t #f #f #f)
+        '("http://a/b" post () stream #f #f #f #f #f #t environment #f 5 #f #f #f #t #f #f #f)
+        '("http://a/b" post () stream #f #f #f #f #f #t environment #f #f #f #f #f #t #f #f #f)
         running-counts)
   (then-counts
    (list (map (lambda (args)
@@ -495,11 +513,11 @@
 
 ;; --- curl-request-with, and the private constructors -----------------------------------
 
-(define base (apply make-curl-request "http://a/b" all-keys))
+(define base (apply make-curl-request "http://a/b" (all-keys #f)))
 
 (test-equal "curl-request-with replaces the keys given and keeps the rest; with none, every field"
-  (list '("http://a/b" patch (("X-A" . "1")) #vu8(4) "agent" 4000 10 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f #f)
-        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f #f))
+  (list '("http://a/b" patch (("X-A" . "1")) #vu8(4) "agent" 4000 10 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f #f #f)
+        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f #f #f))
   (list (request-fields (curl-request-with base 'connect-timeout-ms 10 'method 'patch 'body #vu8(4)))
         (request-fields (curl-request-with base))))
 
@@ -523,9 +541,9 @@
 (define whole (curl-request-with base 'stream-buffer #f))
 
 (test-equal "the private constructors set the fault and following, keep every other field, and curl-request-with keeps both"
-  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f 2 #f)
-        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" #f #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f #t)
-        '("http://a/b" delete (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" #f #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f 2 #t))
+  (list '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" 65536 #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f 2 #f)
+        '("http://a/b" put (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" #f #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f #f #t)
+        '("http://a/b" delete (("X-A" . "1")) #vu8(1 2 3) "agent" 4000 3000 9 "ca.pem" #f "https://p:1" #f #f http/2-prior-knowledge (basic "u" "p") "proxy-ca.pem" #f #f 2 #t))
   (list (request-fields (curl-request-with-fault base 2))
         (request-fields (curl-request-following whole))
         (request-fields (curl-request-with (curl-request-following (curl-request-with-fault whole 2))

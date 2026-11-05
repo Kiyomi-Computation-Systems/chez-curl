@@ -244,6 +244,81 @@ own =proxy= drops the session's =proxy-ca-file= and =proxy-verify=. Every
 hop of a redirect goes through the same proxy, another server's too, with
 the proxy's credentials.
 
+*** Keeping cookies
+
+A cookie jar is an engine's. Give it to each request whose cookies it should
+keep:
+
+#+begin_src scheme
+(define engine (make-curl-engine))
+(define jar (make-curl-cookie-jar engine))
+(curl-token-await (curl-submit engine (make-curl-request "https://example.com/login"
+                                                         'cookie-jar jar)))
+(curl-cookie-jar-cookies jar)            ; its cookies, as lines
+(curl-cookie-jar-load! jar saved-lines)  ; put lines back in
+(curl-cookie-jar-close! jar)
+#+end_src
+
+- *The rules are libcurl's:* which cookies are kept, and which go to which
+  host and path. They vary by version, below.
+- *A jar holds cookies alone,* in memory: no file, and no HSTS entry.
+- *A line is a Netscape line,* =DOMAIN TAILMATCH PATH SECURE EXPIRY NAME
+  VALUE=, tab-separated, =#HttpOnly_= before an HttpOnly cookie's domain. It
+  is a Latin-1 string both ways: each byte one char. Their order moves:
+  compare them sorted.
+- *A load takes a line in the form a read-out writes it,* and checks every
+  line before it loads any: seven fields, none holding a control char;
+  =TRUE= or =FALSE= in the second and the fourth, the domain starting with
+  a dot exactly beside =TRUE=; a domain neither empty nor starting with =#=,
+  and no =Set-Cookie:= line; a path starting with =/=; an expiry of digits,
+  at most 9223372036854775807; a name; no ~;~ in the name or the value,
+  and no ~=~ in the name; a name and value of 4,096 bytes at most
+  together; a name starting =__Secure-= or =__Host-=, in any case, only
+  beside =TRUE= in the fourth, and for =__Host-= the path =/= and =FALSE= in
+  the second; no char above U+00FF. Any other is refused, =cookie-line=,
+  naming the line's index, never its text: a cookie's value is a secret.
+- *A read-out can give lines a load refuses,* by version: 7.85.0 lists a
+  tab in a name, a value or a server's =Path= as an eighth field; 7.85.0
+  and 8.5.0 list a server's =Path==, =Path=TRUE=, =Path=FALSE= and
+  =Path=rel= as given; and 7.85.0, 8.20.0 and 8.23.0 list a server's
+  =__secure-= or =__HOST-= cookie, a prefix in another case, that breaks
+  its prefix's rule, which 8.5.0 drops.
+- *What varies by version:* =Domain=localhost= is kept without PSL and
+  dropped with it, and set from =localhost= itself is host-only on 8.5.0; the
+  default path ends in =/= on 7.85.0 and 8.5.0; 8.20.0 and later cap an
+  expiry at 400 days; =Max-Age=-1= keeps a session cookie on 7.85.0;
+  7.85.0 and 8.5.0 list a deleted cookie, with expiry 1, and a loaded one
+  whose expiry has passed until another is added.
+- *A load is slow for many lines,* about n^2, on the engine's thread, while
+  its other transfers wait: 10,000 lines took 0.24 to 0.50 s, 50,000 up to
+  27 s. A read-out of 50,000 took 1.7 to 6.4 s.
+- *On 7.85.0 a long head can hang a request:* its cap on the =Cookie= line
+  counts everything written before it, the request line, =Host=, the
+  credentials' =Authorization= and =User-Agent= among it. A server's 4 KB
+  cookie beside a URL of 4,200 bytes, or a 4,300-byte user agent, leaves
+  the request's head unended, and it waits for its timeout, 28. Pass a
+  =timeout-ms=.
+- *Refused when you make the request:* a =Cookie= or =Host= header beside a
+  jar, in any case, any value (=cookie-beside-jar=): libcurl would send a
+  second =Cookie=, or match the jar against your =Host=.
+- *Refused when you submit:* another engine's jar (=cookie-jar-engine=), and
+  a closed one (=cookie-jar-closed=). A close that crosses a submit fails its
+  token so.
+- *A close frees the jar* once no transfer holds it, and an engine's stop
+  frees every jar. Each jar procedure waits for the engine, as a stop does,
+  and a stopped engine's jar raises as a submit would.
+- *The hatch refuses* =SHARE=, =COOKIE=, =COOKIEFILE=, =COOKIEJAR=,
+  =COOKIELIST= and =COOKIESESSION=: =COOKIELIST= would clear or fill the jar
+  of every transfer that holds it. =HSTS_CTRL= stays its, and so does
+  =CONNECT_TO=: a jar's cookies follow the URL's host, not the server it
+  routes to, as they would a hosts file's entry.
+
+=(http-client)='s session takes =cookies=, =#f= by default: =#t= keeps a
+jar on its engine, which every call carries, every hop of a redirect too,
+and its close frees. =http-session-cookies= reads it out, and
+=http-session-load-cookies!= loads lines into it. A =Cookie= or =Host=
+header, the session's or a call's, is refused beside it.
+
 *** Options chez-curl does not wrap
 
 =(curl unsupported)= attaches a libcurl option to a request by its name, for
@@ -266,6 +341,7 @@ anything the request's own keys do not cover:
 - *Options chez-curl sets itself are refused,* and so is any option that
   would do the same job another way. So are a few that would reach past
   your request: read stdin or write stdout (=COOKIEFILE=, =COOKIEJAR=),
+  reach a cookie jar (=COOKIELIST=),
   steer later requests (=RESOLVE=), or skip the =proxy= key (=DOH_URL=). The
   refusal names the option.
 - *It is checked when you attach it.* The request keeps its own copy, so

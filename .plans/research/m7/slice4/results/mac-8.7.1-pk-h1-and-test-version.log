@@ -1,0 +1,34 @@
+% git pull --ff-only
+git show origin/main:tests/origin.mjs > "$TMPDIR/origin-main.mjs"
+NODE="$(asdf which node)" CURL=/usr/bin/curl sh .plans/research/m7/slice4/verify/pk-h1.sh "$TMPDIR/origin-main.mjs" 200
+NODE="$(asdf which node)" CURL=/usr/bin/curl sh .plans/research/m7/slice4/verify/pk-h1.sh tests/origin.mjs 200
+make test SUITES=tests/test-version.sps NODE="$(asdf which node)"
+make test SUITES=tests/test-version.sps NODE="$(asdf which node)"
+(the maintainer's Mac, macOS 26.7.1, Apple's libcurl 8.7.1, 2026-11-04, at d176ed7; pasted into the
+ session whole but the pull's file list, and test-version's second run, whose lines are the first's.)
+origin /var/folders/hh/q367ppx15fvcb_hb0zb_gp2h0000gn/T//origin-main.mjs, node v20.10.0, curl 8.7.1 (x86_64-apple-darwin25.0) libcurl/8.7.1 (SecureTransport) LibreSSL/3.3.6 zlib/1.2.12 nghttp2/1.68.1
+exit 16: 194 of 200
+exit 56: 6 of 200
+.plans/research/m7/slice4/verify/pk-h1.sh: line 36: 33258 Terminated: 15          "$node" "$origin" < "$tmp/in" > "$tmp/out" 2> "$tmp/err"
+origin tests/origin.mjs, node v20.10.0, curl 8.7.1 (x86_64-apple-darwin25.0) libcurl/8.7.1 (SecureTransport) LibreSSL/3.3.6 zlib/1.2.12 nghttp2/1.68.1
+exit 16: 193 of 200
+exit 56: 7 of 200
+.plans/research/m7/slice4/verify/pk-h1.sh: line 36: 33476 Terminated: 15          "$node" "$origin" < "$tmp/in" > "$tmp/out" 2> "$tmp/err"
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-version.sps
+%%%% Starting test version
+test-version: prior-knowledge-to-h1 on "8.7.1" measured (failed perform-failed 56 send-receive)
+FAIL http-version http/2-prior-knowledge to the http face, HTTP/1.1, fails as 8.7.1's row says, natively 52 on 7.85.0, 56 on 8.5.0, 16 on 8.7.1, 8.20.0 and 8.23.0, and under Valgrind 55 too, and on 7.85.0 16, as the timing moves; a libcurl with no row fails, naming its version and printing what it measured
+  expected: (one-of (failed perform-failed 16 protocol))
+  actual:   (measured (failed perform-failed 56 send-receive) not-one-of ((failed perform-failed 16 protocol)))
+test-version: together-by-prior-knowledge on "8.7.1" measured (2 (http/2 http/2))
+# of expected passes      26
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 26, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-version.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [test] Error 1
+(the second run: the same lines, measured (failed perform-failed 56 send-receive) again)

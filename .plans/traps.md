@@ -213,7 +213,12 @@ it should not be a comment. (chez-cmark-gfm)
   55 and 16 each ([research](research/m7/slice1/valgrind-race/)). The builder's reading, not
   measured: the face's 400 and the end of its connection race libcurl's next send. A by-version test holding one code
   per row passed natively and failed the gate every time. A row of a failure's code is read
-  natively and under the gate, and holds every code either gave. (chez-curl, M7 slice 1)
+  natively and under the gate, and holds every code either gave. (chez-curl, M7 slice 1) And a
+  row from runs that all agreed can still miss a code: Apple's 8.7.1 gave 16 in every run
+  through M7 slice 3, then 56 through the engine three runs of three at slice 4, where curl's
+  own tool gave 56 6 times of 200 against the origin as it was before the slice
+  ([log](research/m7/slice4/results/mac-8.7.1-pk-h1-and-test-version.log)). A row of a racing
+  code is read many times, not twice. (chez-curl, M7 slice 4, the Mac's run)
 * **libcurl resends after a 417 only on a connection it keeps.** A caller's `Expect:
   100-continue` answered 417 makes libcurl send the request again inside the transfer, and a
   server that answers 417 to every such request makes it loop until `MAXREDIRS`; but 7.85.0
@@ -1307,6 +1312,12 @@ it should not be a comment. (chez-cmark-gfm)
   and held runs read `#t` on 7.85.0 and 8.5.0. The case now asserts what holds both ways, that
   its bit is whether the read callable was ever asked. (chez-curl, CI's first run)
 
+  Over HTTP/2 too: `/answer`, written as the headers arrive, came before libcurl's first ask under
+  the memory gate on 8.5.0 in 9 runs of 40, 4 of 20 on M7 slice 4's tree and 5 of 20 on main's,
+  libcurl then never asking, and CI's memory job read `#f` on two attempts of three on PR #45
+  ([races](research/m7/slice4/races/)). Its server now holds the answer, `hold=KEY`, until the
+  test has seen the ask and ended the body. (chez-curl, M7 slice 4, CI)
+
 * **On 8.20.0 and 8.23.0, an HTTP/2 3xx that arrives before a request's body is sent whole never
   ends the transfer.** libcurl logs "HTTP error before end of send, stop sending", aborts the
   upload, holds the whole response, then waits for its timeout: "Operation timed out after 5006
@@ -1364,3 +1375,73 @@ it should not be a comment. (chez-cmark-gfm)
   the call after the init that reads the backend reads the word too, and the decoy libcurl's
   MultiSSL build sets the bit at its init, so a check that reads the word before fails on Linux.
   (chez-curl, M7 slice 3, the Mac's run)
+* **A loaded cookie past the `Cookie` line's cap leaves every request to its host unterminated.**
+  `COOKIELIST` caps no loaded line's name and value, where a server's `Set-Cookie` is held to
+  4,096 bytes. When the first cookie a request would send passes 8,190 bytes, libcurl has written
+  `Cookie: `, counts no cookie, and so writes no line end: the head's own last CRLF ends that
+  line, the head never ends, and the request waits for its timeout, 28 (8.20.0
+  `lib/http.c:2557-2600`). On all five lanes through the engine, and in plain C on a bare handle
+  from a value of 8,180 bytes (8,150 on 7.85.0, whose cap counts the head built before the
+  `Cookie` line, so a server's 4 KB cookie and a 4,200-byte path hang it too)
+  ([verify](research/m7/slice4/verify/)). A stand-in that logs whole heads alone shows nothing:
+  log a head left open when its connection closes. A load now caps name and value at 4,096
+  (ADR-0035, decision 7). (chez-curl, M7 slice 4's measurement)
+* **`node:http` drops a head its client leaves open:** a connection that ends mid-head reaches
+  the server only as `clientError` `HPE_INVALID_EOF_STATE`, `bytesParsed` 0, `rawPacket`
+  undefined, so an origin that logs requests saw nothing of libcurl's unterminated `Cookie:`
+  head. A `'data'` listener of the server's own on each connection sees the bytes, and Node keeps
+  parsing from the same events. Shown by the builder's `open-head-node.mjs`, and by me on Node
+  24.18.0 and 20.10.0 ([build](research/m7/slice4/build/),
+  [verify](research/m7/slice4/verify/results/trap-open-head-node-20.log)). (chez-curl, M7 slice 4)
+* **`display-condition` prints every field of a condition that has no `&message`:** one holding a
+  secret printed it, `&held: "S3cr3t"`; with a message it prints the who, the message and the
+  irritants alone. Shown by the builder's `display-condition.sps`, and by me on Chez 10.4.0
+  ([verify](research/m7/slice4/verify/results/trap-display-condition-guix.log)). A condition that
+  can hold a secret carries a message. (chez-curl, M7 slice 4)
+* **7.85.0 and 8.5.0 list a deleted or expired cookie only until libcurl next adds or sends
+  one:** 7.85.0 purges as a cookie is added, as a transfer gathers the cookies it sends, and as a
+  file is written, never as the jar is read out (`lib/cookie.c:1033`, `:1427`, `:1665`). The
+  plan's probe loaded an expired line among fourteen, and read it as dropped on every lane; loaded
+  alone it is listed. A test of what such a jar lists reads it out before anything else touches
+  it. (chez-curl, M7 slice 4)
+* **libcurl reads a cookie prefix's case one way for a load and another for a server's
+  `Set-Cookie`:** 7.85.0, 8.20.0 and Apple's 8.7.1 match a loaded name's `__Secure-` or `__Host-`
+  in any case, a `Set-Cookie` name's in its own case alone (8.20.0 `lib/cookie.c:499`, `:742`).
+  So a server's `__secure-a`, not `Secure`, was stored and read out, then dropped as it was loaded
+  back, every load answering 0: five lines out, one back, on 8.20.0. The load rule had been
+  written from a matrix with no prefixed name. A load now refuses a prefixed line that breaks
+  its prefix's rule (ADR-0035, decision 10). (chez-curl, M7 slice 4's review)
+* **A failed engine completes its tokens before it frees its jars:** a jar's state read as soon
+  as the failure's token is done can still be `live`. The builder's `failed-jar-state.sps`, six at
+  once, 100 runs each: 17 of 600 reads saw `live`, and 26 of 600 in my run; after
+  `curl-engine-stop` returned, all 600 read `closed`
+  ([build](research/m7/slice4/build/results/failed-jar-state-guix-6x.log),
+  [verify](research/m7/slice4/verify/results/trap-failed-jar-state-guix-6x.log)). The builder's
+  first test of a hold let go once read it before the stop, and failed under load. Read what a
+  failure leaves after the stop. (chez-curl, M7 slice 4's fix round)
+* **`char-numeric?` takes Latin-1's other numerics:** U+00B2, U+00B3, U+00B9 and U+00BC to
+  U+00BE, each of which `string->number` reads as `#f`. A digits check by `char-numeric?` let
+  U+00B2 into an expiry, which then raised from `<=` where the rule meant to refuse it
+  ([verify](research/m7/slice4/verify/results/trap-char-numeric-guix.log)). Where the other side
+  reads ASCII digits, compare `#\0` to `#\9`. (chez-curl, M7 slice 4's review)
+* **A collection requested while a thread sleeps inside a critical section stalls every other
+  thread at its next event check, and a Ctrl-C made pending meanwhile runs where the stalled
+  thread stopped.** test-group's children hold the engine's mutex from a thread that sleeps inside
+  `call-with-engine-held`'s section; a collection the main thread asked for then waited for the
+  hold's end, and so did the main thread, before go's submit had blocked. Its handler ran after
+  the release in go's request building, where `call-state`'s guard compounded the child's planted
+  `&curl-error`: CI's memory job, two attempts of three on PR #45. A collection planted 1 KiB past
+  the child's ready line gave CI's answer, `(raise #f #t after-release ...)`, and main's tree
+  failed as readily under planted collections; and submit-child, stalled so, passed with nothing
+  submitted ([races](research/m7/slice4/races/), `results/trip-*`). The children now
+  `collect-rendezvous` before the hold, hold until the signal has been sent, and assert that
+  `(collections)` did not move between the hold's start and the handler. (chez-curl, M7 slice 4,
+  CI)
+* **libcurl 8.5.0 reads nothing from an HTTP/2 transfer paused for sending.** `drain_stream` sets
+  the OUT bit beside IN while the upload is open (`lib/http2.c:211-218`), and `Curl_readwrite`
+  returns at once when a paused direction's bit is set (`lib/transfer.c:1019-1056`), so the
+  response waits until the body resumes. Under the memory gate, a held `/answer` to a streamed
+  body left paused hung 7 times of 160, the origin having answered within 1 ms of its release
+  ([races](research/m7/slice4/races/), `results/hold-hang-*`). A test that needs the head before
+  its body ends the body, or puts, first; a caller who waits for the head before putting can wait
+  for the transfer's timeout. (chez-curl, M7 slice 4, CI)

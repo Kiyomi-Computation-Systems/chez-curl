@@ -1,0 +1,22 @@
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1530,7 +1530,7 @@
+          (with-group group
+            (lambda ()
+              (let ((pendings
+-                    (let loop ((rest states) (made '()))
++                    (critical-section (let loop ((rest states) (made '()))
+                       (if (null? rest)
+                           (reverse made)
+                           (let ((pending
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1546,7 +1546,7 @@
+                                 (begin
+                                   (admit! group)
+                                   (loop (cdr rest) (cons pending made)))
+-                                (reverse made)))))))
++                                (reverse made))))))))
+                (let ((over? (lambda ()
+                               (or (= (group-unended group) 0) (pair? (group-failed group))))))
+                  (let run ()

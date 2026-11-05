@@ -1,0 +1,16 @@
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1260,9 +1260,10 @@
+   ;; group's: go and run-parallel call it after an entry's section, and a
+   ;; turn between its other sections.
+   (define (admit! group)
+-    (let loop ()
+-      (when (critical-section (admit-one! group))
+-        (loop))))
++    (critical-section
++     (let loop ()
++      (when (admit-one! group)
++        (loop)))))
+ 
+   ;; admit-one! : Group -> Boolean
+   ;; The queue's first call let in, when GROUP has a slot free: it takes

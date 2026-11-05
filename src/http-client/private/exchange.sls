@@ -238,7 +238,11 @@
             (immutable body unchecked-http-response-body)
             (immutable timings unchecked-http-response-timings)
             (immutable history unchecked-http-response-history))
-    (sealed #t))
+    (sealed #t)
+    ;; Opaque, as (curl)'s response is: its headers can hold a Set-Cookie,
+    ;; whose value is a secret, and its URL a password (the M7 plan,
+    ;; section 3.5). A response prints as #<http-response>.
+    (opaque #t))
 
   ;; Each accessor checks its argument first: anything else is an assertion
   ;; violation from the accessor, naming it by its kind, shown-value's,
@@ -737,7 +741,10 @@
   ;; proxy verification, to every hop, another origin's too: a proxy's
   ;; credentials are the proxy's, not the origin's (ADR-0037, amended
   ;; 2026-11-03). A hop to https:// through an https:// proxy where TLS
-  ;; inside TLS stalls is refused as it is submitted, proxy-tls-in-tls.
+  ;; inside TLS stalls is refused as it is submitted, proxy-tls-in-tls; and
+  ;; its cookie jar, the session's, to every hop, another origin's too:
+  ;; libcurl matches each cookie to a host, so a jar needs no drop; a jar
+  ;; closed since is refused as the hop is submitted, cookie-jar-closed.
   (define (next-request last url status across another-host)
     (let* ((method (curl-request-method last))
            (dropped (body-dropped? status method))
@@ -763,7 +770,8 @@
                          'http-version (curl-request-http-version last)
                          'credentials (if across #f (curl-request-credentials last))
                          'proxy-ca-file (curl-request-proxy-ca-file last)
-                         'proxy-verify (curl-request-proxy-verify last))))
+                         'proxy-verify (curl-request-proxy-verify last)
+                         'cookie-jar (curl-request-cookie-jar last))))
 
   ;; follow : State Response Integer String
   ;;          -> (U (List 'fail Condition) (List 'next State Request 0))

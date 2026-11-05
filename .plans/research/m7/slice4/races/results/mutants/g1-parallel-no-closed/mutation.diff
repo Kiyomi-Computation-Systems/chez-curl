@@ -1,0 +1,11 @@
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1535,7 +1535,7 @@
+                           (reverse made)
+                           (let ((pending
+                                  (critical-section
+-                                  (and (not (group-closed? group))
++                                  (and #t
+                                        (let ((pending (make-pending group (car rest) 'queued #f
+                                                                     (exchange-deadline (car rest))
+                                                                     #f #f #f #f #f #f)))

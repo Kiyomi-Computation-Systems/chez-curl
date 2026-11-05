@@ -1,0 +1,15 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-group.sps
+%%%% Starting test group
+FAIL a turn lets each queued call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as that section ends, and its handler's close refuses the second admission's submit, stopped, with no transfer, where the first's token ends stopped, its transfer counted; no collection ran in the hold; the child's counts zero
+  expected: (0 (admissions quiet ((transfer stopped) 1) ((engine stopped) 0)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (admissions quiet ((transfer stopped) 1) ((transfer stopped) 1)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+# of expected passes      64
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 64, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-group.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1
