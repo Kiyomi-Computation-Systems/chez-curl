@@ -110,3 +110,21 @@ On the builder's hand-back, before the review:
   ([`results/trap-failed-jar-state-guix-6x.log`](results/trap-failed-jar-state-guix-6x.log));
   `char-numeric?` takes U+00B2, U+00B3, U+00B9 and U+00BC to U+00BE
   ([`results/trap-char-numeric-guix.log`](results/trap-char-numeric-guix.log)).
+
+## The Mac's run (2026-11-04)
+
+At `47481b2`, `make test` 38 of 40 ([`../results/mac-8.7.1-make-test.log`](../results/mac-8.7.1-make-test.log)):
+test-cookies failed its five by-version tests for want of 8.7.1's rows, which test-cookies alone
+printed again character for character; `make check-variadic` passed all 33 steps, the share's
+mutant failing 14 of test-variadic's share rows by name
+([`../results/mac-8.7.1-check-variadic.log`](../results/mac-8.7.1-check-variadic.log)). The five
+rows are added.
+
+And slice 1's test-version failed: prior knowledge to the `http` face, HTTP/1.1, gave 56 on 8.7.1,
+whose row holds 16, the code every earlier Mac run gave. This slice gave that face a `'data'`
+listener, for the open-head log, and Node unconsumes an HTTP server's socket handle once one is
+added (`_http_server.js`), so the face now reads through JS events. Not shown to be the cause: on
+Guix's 8.20.0, curl's own tool with prior knowledge, 200 times against each origin, gave 16 and 55
+both ways, 186 and 14 against main's, 197 and 3 against the slice's, and 56 against neither
+([`results/pk-h1-guix-8.20.0.log`](results/pk-h1-guix-8.20.0.log), by [`pk-h1.sh`](pk-h1.sh)).
+The Mac runs the same comparison.
