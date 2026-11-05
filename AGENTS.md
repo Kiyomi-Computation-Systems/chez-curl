@@ -138,7 +138,8 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * A failure's code can be a race Valgrind settles the other way: prior
   knowledge to an HTTP/1.1 server failed 52, 56 or 16 natively, by version,
   and mostly 55 under the memory gate. Read a row of codes natively and under
-  the gate, and hold every code either gave.
+  the gate, and hold every code either gave. Read it many times: 8.7.1 gave
+  16 in every run for three slices, then 56, which curl's tool gives 3%.
 * libcurl resends after a 417 only on a connection it keeps: a server's
   `Connection: close` ends the transfer at its 417. A test of the 417 loop
   needs a server that keeps the connection while the body never comes, which

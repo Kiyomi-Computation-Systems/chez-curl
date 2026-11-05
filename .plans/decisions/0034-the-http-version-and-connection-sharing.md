@@ -84,7 +84,10 @@ on the five Linux libcurls, two runs each, with no cell split between the kept r
   natively, every time, but mostly 55 under the memory gate's Valgrind
   ([research](../research/m7/slice1/valgrind-race/)); by the builder's reading, not measured, the
   server's answer and the end of its connection beat libcurl's next send there. A suite cannot
-  tell which it runs under, so the test's rows hold every code seen.
+  tell which it runs under, so the test's rows hold every code seen. Apple's 8.7.1, 16 in every
+  run through M7 slice 3, gave 56 through the engine at slice 4, three runs of three, and curl's
+  own tool there 56 6 times of 200 against the origin as it was before that slice
+  ([log](../research/m7/slice4/results/mac-8.7.1-pk-h1-and-test-version.log)): its row holds both.
 - **Through a proxy that does not tunnel, prior knowledge is ignored** on all five, the
   environment's proxy and a named one alike: the request goes as HTTP/1.1 in absolute form and
   reads 200 over 1.1, even to an HTTP/1.1 server that prior knowledge fails directly. Through a

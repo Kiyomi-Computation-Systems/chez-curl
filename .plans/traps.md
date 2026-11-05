@@ -213,7 +213,12 @@ it should not be a comment. (chez-cmark-gfm)
   55 and 16 each ([research](research/m7/slice1/valgrind-race/)). The builder's reading, not
   measured: the face's 400 and the end of its connection race libcurl's next send. A by-version test holding one code
   per row passed natively and failed the gate every time. A row of a failure's code is read
-  natively and under the gate, and holds every code either gave. (chez-curl, M7 slice 1)
+  natively and under the gate, and holds every code either gave. (chez-curl, M7 slice 1) And a
+  row from runs that all agreed can still miss a code: Apple's 8.7.1 gave 16 in every run
+  through M7 slice 3, then 56 through the engine three runs of three at slice 4, where curl's
+  own tool gave 56 6 times of 200 against the origin as it was before the slice
+  ([log](research/m7/slice4/results/mac-8.7.1-pk-h1-and-test-version.log)). A row of a racing
+  code is read many times, not twice. (chez-curl, M7 slice 4, the Mac's run)
 * **libcurl resends after a 417 only on a connection it keeps.** A caller's `Expect:
   100-continue` answered 417 makes libcurl send the request again inside the transfer, and a
   server that answers 417 to every such request makes it loop until `MAXREDIRS`; but 7.85.0

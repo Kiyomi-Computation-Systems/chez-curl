@@ -128,3 +128,10 @@ Guix's 8.20.0, curl's own tool with prior knowledge, 200 times against each orig
 both ways, 186 and 14 against main's, 197 and 3 against the slice's, and 56 against neither
 ([`results/pk-h1-guix-8.20.0.log`](results/pk-h1-guix-8.20.0.log), by [`pk-h1.sh`](pk-h1.sh)).
 The Mac runs the same comparison.
+
+On the Mac, at `d176ed7` ([`../results/mac-8.7.1-pk-h1-and-test-version.log`](../results/mac-8.7.1-pk-h1-and-test-version.log)):
+curl's own tool, Apple's 8.7.1, 200 times each, gave 16 194 times and 56 6 against main's origin,
+and 16 193 times and 56 7 against the slice's; test-version gave 56 twice more. So 8.7.1 gives 56
+against the origin as it was before this slice, and the listener moved nothing curl's tool can
+see; why the engine's runs went from 16 in every run through slice 3 to 56 in three of three is
+not known. 8.7.1's row holds both, as AGENTS.md's race rule has it.
