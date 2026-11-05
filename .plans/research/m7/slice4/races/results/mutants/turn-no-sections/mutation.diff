@@ -1,0 +1,44 @@
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1375,7 +1375,7 @@
+   ;; nothing guards it.
+   (define (turn! group wait? stop?)
+     (for-each (lambda (token)
+-                (critical-section
++                (begin
+                  (when (and (hashtable-contains? (group-live group) token) (curl-token-done? token))
+                    (step-token! group token))))
+               (live-snapshot group))
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1381,7 +1381,7 @@
+               (live-snapshot group))
+     (critical-section (prune! group))
+     (for-each (lambda (pending)
+-                (critical-section
++                (begin
+                  (when (and (eq? (pending-phase pending) 'waiting)
+                             (<= (pending-due pending) (monotonic-ns)))
+                    (group-waiting-set! group (remq pending (group-waiting group)))
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1261,7 +1261,7 @@
+   ;; turn between its other sections.
+   (define (admit! group)
+     (let loop ()
+-      (when (critical-section (admit-one! group))
++      (when (begin (admit-one! group))
+         (loop))))
+ 
+   ;; admit-one! : Group -> Boolean
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1398,7 +1398,7 @@
+     (let ((token (curl-mailbox-take (group-mailbox group)
+                                     (if (and wait? (not (stop?))) (take-bound group) 0))))
+       (when token
+-        (critical-section (step-token! group token)))))
++        (begin (step-token! group token)))))
+ 
+   ;; settled? : Group -> Boolean
+   ;; Whether every call of GROUP has ended, and no token is live or

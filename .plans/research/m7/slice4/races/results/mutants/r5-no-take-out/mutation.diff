@@ -1,0 +1,10 @@
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1190,7 +1190,6 @@
+     (let ((entry (hashtable-ref (group-live group) token #f)))
+       (when entry
+         (let ((pending (cdr entry)))
+-          (hashtable-delete! (group-live group) token)
+           (pending-token-set! pending #f)
+           (guarded! group pending
+             (lambda ()

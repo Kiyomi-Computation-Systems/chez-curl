@@ -1,0 +1,11 @@
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1378,7 +1378,7 @@
+                 (critical-section
+                  (when (and (hashtable-contains? (group-live group) token) (curl-token-done? token))
+                    (step-token! group token))))
+-              (live-snapshot group))
++              '())
+     (critical-section (prune! group))
+     (for-each (lambda (pending)
+                 (critical-section

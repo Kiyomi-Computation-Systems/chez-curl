@@ -1,0 +1,10 @@
+--- a/tests/test-group.sps
++++ b/tests/test-group.sps
+@@ -462,6 +462,7 @@
+ (define child-hold
+   '((define child-sent (getenv "GROUP_CHILD_SENT"))
+     (define (until-sent)
++      (collect-trip-bytes 1024)
+       (let wait ((n 0))
+         (unless (or (and child-sent (file-exists? child-sent)) (>= n 2000))
+           (sleep (make-time 'time-duration 10000000 0))

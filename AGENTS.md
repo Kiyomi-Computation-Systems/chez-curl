@@ -522,7 +522,7 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   did, 20 of 20. A test that needs the answer first holds the client after
   connect; one that cannot asserts what holds both ways. An answer written as
   the head arrives races libcurl's first ask for the body too, and a hold
-  before the request does not order it.
+  before the request does not order it: over HTTP/2 under Valgrind, 9 of 40.
 * On 8.20.0 and 8.23.0, an HTTP/2 3xx that arrives before a request's body is
   sent whole never ends the transfer: libcurl aborts the upload, holds the whole
   response, and waits for its timeout, or for ever; a 413 ends at once. A test
@@ -566,6 +566,14 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   leaves after `curl-engine-stop` returns.
 * `char-numeric?` takes U+00B2, U+00B3, U+00B9 and U+00BC to U+00BE, which
   `string->number` reads as `#f`: check ASCII digits by `#\0` to `#\9`.
+* A collection requested while a thread sleeps inside a critical section
+  stalls every other thread at its next event check, and a Ctrl-C made
+  pending meanwhile runs where the stalled thread stopped, not where the test
+  meant: `collect-rendezvous` before such a hold, and assert `(collections)`
+  did not move across it.
+* libcurl 8.5.0 reads nothing from an HTTP/2 transfer paused for sending, its
+  response waiting until the body resumes: a test that needs the head first
+  ends the body, or puts, first.
 
 ## Closing ritual
 

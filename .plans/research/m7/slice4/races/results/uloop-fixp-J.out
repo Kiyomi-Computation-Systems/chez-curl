@@ -1,0 +1,6 @@
+race-gate: mode gate, trees uloop-fixp, snap build/m7s4r/snap-*, cpus 10,11, suites tests/test-upload.sps, out build/m7s4r/out/uloop-fixp-J
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl4t64 8.5.0-2ubuntu10.16
+package valgrind 1:3.22.0-0ubuntu3
+cpus: 2
+exit 137

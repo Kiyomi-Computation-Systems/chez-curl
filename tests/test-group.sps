@@ -413,14 +413,16 @@
 ;; sh -c INTERRUPT-SCRIPT sh COMMAND...: COMMAND under GNU timeout
 ;; (gtimeout on macOS), killed with SIGKILL after 60 s, its output in a
 ;; file made under TMPDIR; once it prints (ready PID), 500 ms later,
-;; SIGINT to PID, the child Chez itself; then its exit status, and its
-;; output but the ready line. Exit 125 with no timeout, 126 when the
-;; child never says it is ready, within 20 s.
+;; SIGINT to PID, the child Chez itself, then the file the child's
+;; GROUP_CHILD_SENT names, made once the kill has returned, which lets the
+;; child's holder go (child-hold); then its exit status, and its output but
+;; the ready line. Exit 125 with no timeout, 126 when the child never says
+;; it is ready, within 20 s.
 (define interrupt-script
   (string-append
    "t=$(command -v timeout || command -v gtimeout) || { echo 'group child: no timeout' >&2; exit 125; }\n"
    "out=$(mktemp \"${TMPDIR:-/tmp}/group-child.XXXXXX\") || exit 125\n"
-   "\"$t\" -s KILL 60 \"$@\" >\"$out\" 2>&1 </dev/null &\n"
+   "GROUP_CHILD_SENT=\"$out.sent\" \"$t\" -s KILL 60 \"$@\" >\"$out\" 2>&1 </dev/null &\n"
    "waiter=$!\n"
    "n=0\n"
    "until grep -q '^(ready ' \"$out\" || [ \"$n\" -ge 400 ]; do sleep 0.05; n=$((n + 1)); done\n"
@@ -428,11 +430,48 @@
    "if [ -z \"$pid\" ]; then kill \"$waiter\"; wait \"$waiter\"; cat \"$out\" >&2; rm -f \"$out\"; echo 'group child: the child never said it was ready' >&2; exit 126; fi\n"
    "sleep 0.5\n"
    "kill -INT \"$pid\"\n"
+   ": >\"$out.sent\"\n"
    "wait \"$waiter\"\n"
    "status=$?\n"
    "grep -v '^(ready ' \"$out\"\n"
-   "rm -f \"$out\"\n"
+   "rm -f \"$out\" \"$out.sent\"\n"
    "exit $status\n"))
+
+;; child-hold : (Listof Datum)
+;; The forms every SIGINT child below splices in after its import, for its
+;; hold (M7 slice 4's races, research/m7/slice4/races):
+;;   - (until-sent), which the holder sleeps in, holding its mutex, until
+;;     the suite has sent the SIGINT: interrupt-script makes the file
+;;     GROUP_CHILD_SENT names once its kill has returned, polled every 10 ms,
+;;     for 20 s at most. So no release comes before the SIGINT, however late
+;;     the script runs; the signal is then pending on the main thread, which
+;;     runs Chez's C handler before it can take the mutex.
+;;   - held-collections, (collections) as the holder starts to hold, and
+;;     handler-collections, as the Ctrl-C handler starts: (quiet) answers
+;;     quiet when they are equal. A collection asked for while the holder
+;;     sleeps in its critical section waits for the hold to end, and so does
+;;     every thread that reaches an event check meanwhile: a main thread
+;;     that met one before its call blocked ran its handler only after the
+;;     release, where it had stopped, in go's checks, whose guard read the
+;;     handler's raise as the call's (measured: the CI failure of PR #45,
+;;     reproduced by a trip planted at ready); and a submit-child so ended
+;;     passed, its submit never made. Each child asks for a collection by
+;;     collect-rendezvous before its holder starts, which leaves none due in
+;;     the hold (collect-rendezvous, not collect, which refuses while the
+;;     engines' threads are alive), and quiet shows none ran.
+(define child-hold
+  '((define child-sent (getenv "GROUP_CHILD_SENT"))
+    (define (until-sent)
+      (let wait ((n 0))
+        (unless (or (and child-sent (file-exists? child-sent)) (>= n 2000))
+          (sleep (make-time 'time-duration 10000000 0))
+          (wait (+ n 1)))))
+    (define held-collections #f)
+    (define handler-collections #f)
+    (define (quiet)
+      (if (and held-collections (eqv? held-collections handler-collections))
+          'quiet
+          (list 'collected held-collections handler-collections)))))
 
 ;; run-child : (Listof Datum) String String ... -> (List Integer (Listof Any) String)
 ;; PROGRAM, written to a directory of its own, run on URL and MORE under
@@ -455,11 +494,12 @@
 ;; first argument, a fast 200. It waits for the call's token to be done,
 ;; with no turn run, so the token's notice is in the group's mailbox. A
 ;; second thread then holds that mailbox's mutex, through the seam and the
-;; private call-with-mailbox-held, for 1 s, and this thread prints (ready
-;; PID) and awaits the call, inside the group's procedure, under a Ctrl-C
-;; handler that escapes. The await's turn looks first: the token is done,
-;; so the look steps the call, which ends, before the turn's take. The
-;; take then blocks inside its critical section on the held mutex; the
+;; private call-with-mailbox-held, until the suite has sent its SIGINT
+;; (child-hold), and this thread prints (ready PID) and awaits the call,
+;; inside the group's procedure, under a Ctrl-C handler that escapes. The
+;; await's turn looks first: the token is done, so the look steps the
+;; call, which ends, before the turn's take. The take then blocks inside
+;; its critical section on the held mutex; the
 ;; suite sends SIGINT meanwhile, so the handler escapes as the take's
 ;; section ends, once it has taken the notice out (traps.md: a Chez timer
 ;; cannot plant it there). So what this shows is an escape at a take that
@@ -469,15 +509,17 @@
 ;; is caught inside the procedure, which then awaits the call again,
 ;; bounded by 5 s.
 ;;
-;; Prints (lost HOW TAKEN AGAIN): HOW, escaped or returned; TAKEN, taken
+;; Prints (lost HOW QUIET TAKEN AGAIN): HOW, escaped or returned; QUIET,
+;; quiet when no collection ran in the hold (child-hold); TAKEN, taken
 ;; when the mailbox no longer holds the notice, else still-there; AGAIN,
 ;; the second await's (answered STATUS BODY), (raised ...) or (hung). Then
 ;; (counts COUNTS), once the group has returned and the session is closed.
 (define lost-child
-  '((import (chezscheme) (curl) (http-client)
+  `((import (chezscheme) (curl) (http-client)
             (only (http-client private drive) http-pending-mailbox http-pending-token)
             (only (curl private engine) call-with-mailbox-held)
             (curl private counters))
+    ,@child-hold
     (define url (car (command-line-arguments)))
     (define (now-ms)
       (let ((t (current-time 'time-monotonic)))
@@ -509,12 +551,13 @@
                  (token (http-pending-token p)))
             (let wait ((n 0))
               (unless (or (curl-token-wait token 100) (> n 100)) (wait (+ n 1))))
+            (collect-rendezvous)
             (fork-thread
              (lambda ()
                (call-with-mailbox-held (http-pending-mailbox p)
                  (lambda ()
-                   (with-mutex lock (set! holding #t))
-                   (sleep (make-time 'time-duration 0 1))))
+                   (with-mutex lock (set! held-collections (collections)) (set! holding #t))
+                   (until-sent)))
                (critical-section (with-mutex lock (set! released #t)))))
             (let spin ()
               (unless (flag (lambda () holding))
@@ -522,7 +565,8 @@
                 (spin)))
             (let ((how (call/cc
                         (lambda (out)
-                          (keyboard-interrupt-handler (lambda () (out 'escaped)))
+                          (keyboard-interrupt-handler
+                           (lambda () (set! handler-collections (collections)) (out 'escaped)))
                           (write (list 'ready (get-process-id)))
                           (newline)
                           (flush-output-port (current-output-port))
@@ -535,7 +579,7 @@
                   (spin)))
               (let* ((taken (if (curl-mailbox-take (http-pending-mailbox p) 0) 'still-there 'taken))
                      (second (again p)))
-                (write (list 'lost how taken second))
+                (write (list 'lost how (quiet) taken second))
                 (newline)
                 (flush-output-port (current-output-port))
                 (when (equal? second '(hung)) (exit 1))
@@ -546,9 +590,10 @@
 
 ;; submit-child : (Listof Datum)
 ;; A program: it holds its session's engine's mutex from another thread
-;; for 3 s, through the private call-with-engine-held, prints (ready PID),
-;; and enters a group whose procedure calls go on URL, its first argument,
-;; a 10 s drip, under a Ctrl-C handler that escapes from outside the group.
+;; until the suite has sent its SIGINT (child-hold), through the private
+;; call-with-engine-held, prints (ready PID), and enters a group whose
+;; procedure calls go on URL, its first argument, a 10 s drip, under a
+;; Ctrl-C handler that escapes from outside the group.
 ;; go's submit blocks on that mutex inside its critical section; the suite
 ;; sends SIGINT meanwhile, so the handler escapes as the section ends, once
 ;; the submit has taken the mutex (traps.md). The group's winds then
@@ -563,15 +608,17 @@
 ;; neither count). A transfer the group did not record would run on there,
 ;; its 10 s drip.
 ;;
-;; Prints (submit HOW WHEN HOLDS), then (counts COUNTS), once the session
-;; is closed.
+;; Prints (submit HOW WHEN QUIET HOLDS), QUIET quiet when no collection
+;; ran in the hold (child-hold), then (counts COUNTS), once the session is
+;; closed.
 (define submit-child
-  '((import (chezscheme) (curl) (http-client)
+  `((import (chezscheme) (curl) (http-client)
             (only (http-client private call) http-session-engine http-session-draw
               http-session-generator)
             (only (curl private engine) call-with-engine-held curl-engine-live-count
                   curl-engine-queued-count)
             (curl private counters))
+    ,@child-hold
     (define url (car (command-line-arguments)))
     (define session (make-http-session 'timeout-ms 30000))
     (define engine (http-session-engine session))
@@ -580,12 +627,13 @@
     (define letting-go #f)
     (define released #f)
     (define (flag get) (critical-section (with-mutex lock (get))))
+    (collect-rendezvous)
     (fork-thread
      (lambda ()
        (call-with-engine-held engine
          (lambda ()
-           (critical-section (with-mutex lock (set! holding #t)))
-           (sleep (make-time 'time-duration 0 3))
+           (critical-section (with-mutex lock (set! held-collections (collections)) (set! holding #t)))
+           (until-sent)
            (critical-section (with-mutex lock (set! letting-go #t)))))
        (critical-section (with-mutex lock (set! released #t)))))
     (let spin ()
@@ -598,6 +646,7 @@
        (lambda (out)
          (keyboard-interrupt-handler
           (lambda ()
+            (set! handler-collections (collections))
             (set! when-escaped (if (flag (lambda () letting-go)) 'after-release 'before-release))
             (out 'escaped)))
          (write (list 'ready (get-process-id)))
@@ -614,7 +663,7 @@
       (let* ((live (curl-engine-live-count engine))
              (queued (curl-engine-queued-count engine)))
         (list live queued (cdr (assq 'transfer (native-counts))))))
-    (write (list 'submit how when-escaped holds))
+    (write (list 'submit how when-escaped (quiet) holds))
     (newline)
     (http-session-close session)
     (write (list 'counts (native-counts)))
@@ -628,17 +677,18 @@
 ;; guard that reads one sits inside the section), so it leaves go as
 ;; raised, and the group's winds cancel the transfer it recorded.
 ;;
-;; Prints (raise SAME COMPOUNDED WHEN HOLDS): SAME, whether what left the
-;; group is that very object; COMPOUNDED, whether it carries an
+;; Prints (raise SAME COMPOUNDED WHEN QUIET HOLDS): SAME, whether what left
+;; the group is that very object; COMPOUNDED, whether it carries an
 ;; &http-exchange; then (counts COUNTS), once the session is closed.
 (define raise-child
-  '((import (chezscheme) (curl) (http-client)
+  `((import (chezscheme) (curl) (http-client)
             (only (http-client private call) http-session-engine http-session-draw
               http-session-generator)
             (only (curl private engine) call-with-engine-held curl-engine-live-count
                   curl-engine-queued-count)
             (only (curl private conditions) make-curl-engine-error)
             (curl private counters))
+    ,@child-hold
     (define url (car (command-line-arguments)))
     (define session (make-http-session 'timeout-ms 30000))
     (define engine (http-session-engine session))
@@ -647,12 +697,13 @@
     (define letting-go #f)
     (define released #f)
     (define (flag get) (critical-section (with-mutex lock (get))))
+    (collect-rendezvous)
     (fork-thread
      (lambda ()
        (call-with-engine-held engine
          (lambda ()
-           (critical-section (with-mutex lock (set! holding #t)))
-           (sleep (make-time 'time-duration 0 3))
+           (critical-section (with-mutex lock (set! held-collections (collections)) (set! holding #t)))
+           (until-sent)
            (critical-section (with-mutex lock (set! letting-go #t)))))
        (critical-section (with-mutex lock (set! released #t)))))
     (let spin ()
@@ -666,6 +717,7 @@
       (guard (e (#t e))
         (keyboard-interrupt-handler
          (lambda ()
+           (set! handler-collections (collections))
            (set! when-raised (if (flag (lambda () letting-go)) 'after-release 'before-release))
            (raise planted)))
         (write (list 'ready (get-process-id)))
@@ -683,7 +735,7 @@
              (queued (curl-engine-queued-count engine)))
         (list live queued (cdr (assq 'transfer (native-counts))))))
     (write (list 'raise (eq? caught planted) (and (condition? caught) (http-exchange? caught))
-                 when-raised holds))
+                 when-raised (quiet) holds))
     (newline)
     (http-session-close session)
     (write (list 'counts (native-counts)))
@@ -696,18 +748,17 @@
 ;; retry; the call waits 1000 ms to retry. With the call waiting, the
 ;; group's live and draining sets are empty, so the due submit is the
 ;; turn's first hold of the engine's mutex. 800 ms into the wait another
-;; thread takes that mutex, through call-with-engine-held, for 3 s, and this
-;; thread prints (ready PID) and awaits the call, under a Ctrl-C handler
-;; that escapes from outside the group. The await's turn reaches the due
-;; submit about 200 ms later and blocks there, inside its critical section;
+;; thread takes that mutex, through call-with-engine-held, until the suite
+;; has sent its SIGINT (child-hold), and this thread prints (ready PID) and
+;; awaits the call, under a Ctrl-C handler that escapes from outside the
+;; group. The await's turn reaches the due submit about 200 ms later and
+;; blocks there, inside its critical section;
 ;; the suite sends SIGINT 500 ms after ready, so the handler escapes as the
 ;; section ends, once the submit has taken the mutex. With the submit and
 ;; its record in one section, the group's winds cancel the retry; without,
 ;; the escape lands between them, and the stalled retry runs on,
 ;; unrecorded. A collection asked for before the holder starts leaves none
-;; due in the window: the holder sleeps in a critical section, where a
-;; collection waits for it (traps.md). collect-rendezvous, not collect,
-;; which refuses while the engines' threads are alive.
+;; due in the window (child-hold).
 ;;
 ;; Its second argument is its mode: escape, as above; or raise, where the
 ;; handler raises a &curl-error of its own making instead, caught outside
@@ -718,21 +769,22 @@
 ;; call's failure. HOW is then (raise SAME COMPOUNDED): whether what left
 ;; the group is that object, and whether it carries an &http-exchange.
 ;;
-;; Prints (turn HOW WHEN HOLDS PHASE), HOLDS the engine's live and queued
-;; counts and the transfer count 500 ms after the holder let go, once the
-;; engine's queue has settled, for up to 2 s more: a token the winds
-;; cancelled while it was still queued is completed on this thread, and its
-;; submit stays in the engine's queue until the engine's next turn, which a
-;; poll of up to 1000 ms can put off. Then (counts COUNTS), once the session
-;; is closed.
+;; Prints (turn HOW WHEN QUIET HOLDS PHASE), QUIET as child-hold reads it,
+;; HOLDS the engine's live and queued counts and the transfer count 500 ms
+;; after the holder let go, once the engine's queue has settled, for up to 2
+;; s more: a token the winds cancelled while it was still queued is
+;; completed on this thread, and its submit stays in the engine's queue
+;; until the engine's next turn, which a poll of up to 1000 ms can put off.
+;; Then (counts COUNTS), once the session is closed.
 (define turn-child
-  '((import (chezscheme) (curl) (http-client)
+  `((import (chezscheme) (curl) (http-client)
             (only (http-client private call) http-session-engine)
             (only (http-client private drive) http-pending-phase)
             (only (curl private engine) call-with-engine-held curl-engine-live-count
                   curl-engine-queued-count)
             (only (curl private conditions) make-curl-engine-error)
             (curl private counters))
+    ,@child-hold
     (define url (car (command-line-arguments)))
     (define mode (string->symbol (cadr (command-line-arguments))))
     (define planted (condition (make-curl-engine-error 'stopped #f)
@@ -765,8 +817,8 @@
               (lambda ()
                 (call-with-engine-held engine
                   (lambda ()
-                    (critical-section (with-mutex lock (set! holding #t)))
-                    (sleep (make-time 'time-duration 0 3))
+                    (critical-section (with-mutex lock (set! held-collections (collections)) (set! holding #t)))
+                    (until-sent)
                     (critical-section (with-mutex lock (set! letting-go #t)))))
                 (critical-section (with-mutex lock (set! released #t)))))
              (let spin ()
@@ -775,6 +827,7 @@
                  (spin)))
              (keyboard-interrupt-handler
               (lambda ()
+                (set! handler-collections (collections))
                 (set! when-escaped (if (flag (lambda () letting-go)) 'after-release 'before-release))
                 (if (eq? mode 'raise) (raise planted) (out 'escaped))))
              (write (list 'ready (get-process-id)))
@@ -796,7 +849,7 @@
       (let* ((live (curl-engine-live-count engine))
              (queued (curl-engine-queued-count engine)))
         (list live queued (cdr (assq 'transfer (native-counts))))))
-    (write (list 'turn how when-escaped holds (http-pending-phase pending)))
+    (write (list 'turn how when-escaped (quiet) holds (http-pending-phase pending)))
     (newline)
     (http-session-close session)
     (write (list 'counts (native-counts)))
@@ -807,10 +860,11 @@
 ;; one critical section a call, watched by a pending keyboard interrupt,
 ;; which runs as the section it was made in ends (traps.md). BASE, its
 ;; first argument, is the raw face. Another thread holds the session's
-;; engine's mutex for 2 s; this thread prints ready, then calls
-;; http-parallel with three 1 s holds. The checks take no engine's mutex,
-;; so the first admission's submit is the first to, and blocks there,
-;; inside its section; the suite sends SIGINT meanwhile. The handler does
+;; engine's mutex until the suite has sent its SIGINT (child-hold); this
+;; thread prints ready, then calls http-parallel with three 1 s holds. The
+;; checks take no engine's mutex, so the first admission's submit is the
+;; first to, and blocks there, inside its section; the suite sends SIGINT
+;; meanwhile. The handler does
 ;; not escape: it closes the session, so every submit after it is refused
 ;; as stopped, in its own section, its call a failure with no transfer,
 ;; before any turn. With a section an admission, it runs as the first
@@ -819,13 +873,14 @@
 ;; token ends stopped, and a turn's look finds them in submit order: the
 ;; first failure is the first call's, with its transfer counted.
 ;;
-;; Prints (sections RAISED), RAISED (raised REASON URL TRANSFERS), then
-;; (counts COUNTS).
+;; Prints (sections QUIET RAISED), QUIET as child-hold reads it, RAISED
+;; (raised REASON URL TRANSFERS), then (counts COUNTS).
 (define sections-child
-  '((import (chezscheme) (curl) (http-client)
+  `((import (chezscheme) (curl) (http-client)
             (only (http-client private call) http-session-engine)
             (only (curl private engine) call-with-engine-held)
             (curl private counters))
+    ,@child-hold
     (define base (car (command-line-arguments)))
     (define (hold i) (string-append base "/raw/hold?key=sections-" (number->string i) "&ms=1000"))
     (define session (make-http-session 'timeout-ms 30000))
@@ -838,13 +893,14 @@
      (lambda ()
        (call-with-engine-held engine
          (lambda ()
-           (critical-section (with-mutex lock (set! holding #t)))
-           (sleep (make-time 'time-duration 0 2))))))
+           (critical-section (with-mutex lock (set! held-collections (collections)) (set! holding #t)))
+           (until-sent)))))
     (let spin ()
       (unless (flag (lambda () holding))
         (sleep (make-time 'time-duration 1000000 0))
         (spin)))
-    (keyboard-interrupt-handler (lambda () (http-session-close session)))
+    (keyboard-interrupt-handler
+     (lambda () (set! handler-collections (collections)) (http-session-close session)))
     (write (list 'ready (get-process-id)))
     (newline)
     (flush-output-port (current-output-port))
@@ -856,7 +912,7 @@
         (map http-response-status
              (http-parallel session (list (list 'get (hold 0)) (list 'get (hold 1)) (list 'get (hold 2)))))))
     (keyboard-interrupt-handler void)
-    (write (list 'sections raised))
+    (write (list 'sections (quiet) raised))
     (newline)
     (http-session-close session)
     (write (list 'counts (native-counts)))
@@ -866,10 +922,11 @@
 ;; The same for a turn's admissions, each a section of its own (the slice's
 ;; second review). BASE, its first argument, is the raw face. At a limit
 ;; of 2, two calls are put in retry waits of 5 s, holding both slots, and
-;; two more queued behind them. Another thread then holds the engine's
-;; mutex for 2 s; this thread prints ready, cancels the two waiting calls,
-;; which frees their slots and takes no engine's mutex, and runs a turn,
-;; by http-pending-done?. The turn has no live token to look at, so its
+;; two more queued behind them. Another thread then holds the engine's mutex
+;; until the suite has sent its SIGINT (child-hold); this thread prints
+;; ready, cancels the two waiting calls, which frees their slots and takes
+;; no engine's mutex, and runs a turn, by http-pending-done?. The turn has
+;; no live token to look at, so its
 ;; first admission's submit is its first hold of the engine's mutex, and
 ;; blocks there, inside its section; SIGINT arrives meanwhile, and its
 ;; handler closes the session. With a section an admission, it runs as the
@@ -878,15 +935,17 @@
 ;; runs after both were submitted, and the second's token ends stopped, a
 ;; transfer's own failure, its transfer counted, as the first's always is.
 ;;
-;; Prints (admissions FIRST SECOND), each ((KIND REASON) TRANSFERS) of what
-;; its await raised, KIND engine for a &curl-engine-error, transfer for a
-;; &curl-transfer-error, then (counts COUNTS).
+;; Prints (admissions QUIET FIRST SECOND), QUIET as child-hold reads it,
+;; each ((KIND REASON) TRANSFERS) of what its await raised, KIND engine for
+;; a &curl-engine-error, transfer for a &curl-transfer-error, then (counts
+;; COUNTS).
 (define admissions-child
-  '((import (chezscheme) (curl) (http-client)
+  `((import (chezscheme) (curl) (http-client)
             (only (http-client private call) http-session-engine)
             (only (http-client private drive) http-pending-phase)
             (only (curl private engine) call-with-engine-held)
             (curl private counters))
+    ,@child-hold
     (define base (car (command-line-arguments)))
     (define (url path) (string-append base path))
     (define session (make-http-session 'timeout-ms 30000))
@@ -922,13 +981,14 @@
              (lambda ()
                (call-with-engine-held engine
                  (lambda ()
-                   (critical-section (with-mutex lock (set! holding #t)))
-                   (sleep (make-time 'time-duration 0 2))))))
+                   (critical-section (with-mutex lock (set! held-collections (collections)) (set! holding #t)))
+                   (until-sent)))))
             (let spin ()
               (unless (flag (lambda () holding))
                 (sleep (make-time 'time-duration 1000000 0))
                 (spin)))
-            (keyboard-interrupt-handler (lambda () (http-session-close session)))
+            (keyboard-interrupt-handler
+             (lambda () (set! handler-collections (collections)) (http-session-close session)))
             (write (list 'ready (get-process-id)))
             (newline)
             (flush-output-port (current-output-port))
@@ -937,7 +997,7 @@
             (http-pending-done? b1)
             (keyboard-interrupt-handler void)
             (list (raised b1) (raised b2))))))
-    (write (cons 'admissions outcome))
+    (write (cons* 'admissions (quiet) outcome))
     (newline)
     (http-session-close session)
     (write (list 'counts (native-counts)))
@@ -948,10 +1008,11 @@
 ;; engine's expiry and resume do, but placed where a timer cannot be: a
 ;; keyboard interrupt made pending inside a section runs as it ends
 ;; (traps.md). BASE, its first argument, is the raw face; CASE, its second,
-;; the case. Another thread holds a mutex, the gate, for 2 s, inside a
-;; critical section; this thread prints (ready PID) and runs the case,
-;; whose seam blocks on the gate inside a section of the group's; SIGINT
-;; arrives meanwhile, and its handler, run as the section ends, captures
+;; the case. Another thread holds a mutex, the gate, inside a critical
+;; section, until the suite has sent its SIGINT (child-hold); this thread
+;; prints (ready PID) and runs the case, whose seam blocks on the gate
+;; inside a section of the group's; SIGINT arrives meanwhile, and its
+;; handler, run as the section ends, captures
 ;; its continuation and escapes out of the group: the winds run, closing
 ;; the group, cancelling every call and waiting for each transfer to end.
 ;; The program then re-enters the continuation, once: the run resumes
@@ -968,18 +1029,20 @@
 ;;       resumed, go answers its pending, whose await raises cancelled;
 ;;       a go after it raises closed.
 ;;
-;; Prints (resume CASE RESULT SUBMITS SUSPENSIONS STARTED-AFTER
-;; SUBMITS-AFTER): RESULT (raised REASON WHO INDEX), INDEX the URL's in the
-;; case's list, or (value ...); SUBMITS, the submits made before the
-;; suspension; the transfers started and submits made after it. Then
-;; (counts COUNTS), once the session is closed.
+;; Prints (resume CASE QUIET RESULT SUBMITS SUSPENSIONS STARTED-AFTER
+;; SUBMITS-AFTER): QUIET as child-hold reads it at the first suspension;
+;; RESULT (raised REASON WHO INDEX), INDEX the URL's in the case's list, or
+;; (value ...); SUBMITS, the submits made before the suspension; the
+;; transfers started and submits made after it. Then (counts COUNTS), once
+;; the session is closed.
 (define resume-child
-  '((import (chezscheme) (curl) (http-client)
+  `((import (chezscheme) (curl) (http-client)
             (only (http-client private call) http-session-engine call-request)
             (only (http-client private drive) call-with-group run-parallel monotonic-ns)
             (only (http-client private exchange) make-exchange)
             (only (curl private transfer) transfers-started)
             (curl private counters))
+    ,@child-hold
     (define base (car (command-line-arguments)))
     (define which (string->symbol (cadr (command-line-arguments))))
     (define (ok k) (string-append base "/raw/retry?key=resume-" k "&fail=0&how=close"))
@@ -1042,8 +1105,8 @@
      (lambda ()
        (critical-section
         (with-mutex gate
-          (critical-section (with-mutex lock (set! holding #t)))
-          (sleep (make-time 'time-duration 0 2))))))
+          (critical-section (with-mutex lock (set! held-collections (collections)) (set! holding #t)))
+          (until-sent)))))
     (let spin ()
       (unless (flag (lambda () holding))
         (sleep (make-time 'time-duration 1000000 0))
@@ -1055,6 +1118,7 @@
     (define submits-at #f)
     (keyboard-interrupt-handler
      (lambda ()
+       (unless handler-collections (set! handler-collections (collections)))
        (set! suspensions (+ suspensions 1))
        (call/cc (lambda (k) (set! suspended k) (escape-k 'suspended)))))
     (write (list 'ready (get-process-id)))
@@ -1073,7 +1137,7 @@
               (suspended #f))
             r)))
     (keyboard-interrupt-handler void)
-    (write (list 'resume which result submits-at suspensions
+    (write (list 'resume which (quiet) result submits-at suspensions
                  (and at (- (transfers-started) at)) (and submits-at (- submits submits-at))))
     (newline)
     (http-session-close session)
@@ -1948,8 +2012,8 @@
 
    ;; --- each token stepped once
 
-   (test-equal "an escape at the take, in a child: SIGINT's handler escapes from the await's take as its critical section ends, the token's notice, which the look had stepped first, taken out of the group's mailbox; caught inside the procedure, the call awaited again answers its 200; the child's counts zero"
-     (list 0 (list 'lost 'escaped 'taken '(answered 200 "status 200\n")) (list 'counts zero-counts) "")
+   (test-equal "an escape at the take, in a child: SIGINT's handler escapes from the await's take as its critical section ends, the token's notice, which the look had stepped first, taken out of the group's mailbox; caught inside the procedure, the call awaited again answers its 200; no collection ran in the hold; the child's counts zero"
+     (list 0 (list 'lost 'escaped 'quiet 'taken '(answered 200 "status 200\n")) (list 'counts zero-counts) "")
      (let ((r (run-child lost-child ok)))
        (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
            (list (car r) (car (cadr r)) (cadr (cadr r)) (caddr r))
@@ -2004,46 +2068,46 @@
 
    ;; --- a submit and its record
 
-   (test-equal "SIGINT while go's submit blocks on the engine's mutex inside its critical section escapes as the section ends, after the submit took the mutex, out of the group; its winds still cancel the transfer, so the engine holds nothing 500 ms after the release, where the drip runs 10 s; the child's counts zero"
-     (list 0 '(submit escaped after-release (0 0 0)) (list 'counts zero-counts) "")
+   (test-equal "SIGINT while go's submit blocks on the engine's mutex inside its critical section escapes as the section ends, after the submit took the mutex, out of the group; its winds still cancel the transfer, so the engine holds nothing 500 ms after the release, where the drip runs 10 s; no collection ran in the hold; the child's counts zero"
+     (list 0 '(submit escaped after-release quiet (0 0 0)) (list 'counts zero-counts) "")
      (let ((r (run-child submit-child (url-of 'raw "/raw/pause-mid-body?ms=10000"))))
        (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
            (list (car r) (car (cadr r)) (cadr (cadr r)) (caddr r))
            r)))
 
-   (test-equal "SIGINT while go's submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object, not compounded, as the section ends, after the submit took the mutex: no refusal of the submit's; the group's winds still cancel the transfer, so the engine holds nothing 500 ms after the release; the child's counts zero"
-     (list 0 '(raise #t #f after-release (0 0 0)) (list 'counts zero-counts) "")
+   (test-equal "SIGINT while go's submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object, not compounded, as the section ends, after the submit took the mutex: no refusal of the submit's; the group's winds still cancel the transfer, so the engine holds nothing 500 ms after the release; no collection ran in the hold; the child's counts zero"
+     (list 0 '(raise #t #f after-release quiet (0 0 0)) (list 'counts zero-counts) "")
      (let ((r (run-child raise-child (url-of 'raw "/raw/pause-mid-body?ms=10000"))))
        (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
            (list (car r) (car (cadr r)) (cadr (cadr r)) (caddr r))
            r)))
 
-   (test-equal "SIGINT while a turn's due submit, a call's retry, blocks on the engine's mutex inside its critical section escapes as the section ends, after the submit took the mutex, out of the group; the retry is recorded with its submit, so the group's winds cancel it and the engine holds nothing 500 ms after the release, the call ended; the child's counts zero"
-     (list 0 '(turn escaped after-release (0 0 0) ended) (list 'counts zero-counts) "")
+   (test-equal "SIGINT while a turn's due submit, a call's retry, blocks on the engine's mutex inside its critical section escapes as the section ends, after the submit took the mutex, out of the group; the retry is recorded with its submit, so the group's winds cancel it and the engine holds nothing 500 ms after the release, the call ended; no collection ran in the hold; the child's counts zero"
+     (list 0 '(turn escaped after-release quiet (0 0 0) ended) (list 'counts zero-counts) "")
      (let ((r (run-child turn-child (url-of 'raw "/raw/retry?key=turn-submit&fail=1&how=close&then=stall")
                          "escape")))
        (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
            (list (car r) (car (cadr r)) (cadr (cadr r)) (caddr r))
            r)))
 
-   (test-equal "SIGINT while a turn's due submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object, not compounded, as the section ends: the guard that makes a call's own raise its failure sits inside the section, and reads none of a handler's; the group's winds cancel the retry, the engine holding nothing, the call ended; the child's counts zero"
-     (list 0 '(turn (raise #t #f) after-release (0 0 0) ended) (list 'counts zero-counts) "")
+   (test-equal "SIGINT while a turn's due submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object, not compounded, as the section ends: the guard that makes a call's own raise its failure sits inside the section, and reads none of a handler's; the group's winds cancel the retry, the engine holding nothing, the call ended; no collection ran in the hold; the child's counts zero"
+     (list 0 '(turn (raise #t #f) after-release quiet (0 0 0) ended) (list 'counts zero-counts) "")
      (let ((r (run-child turn-child (url-of 'raw "/raw/retry?key=turn-raise&fail=1&how=close&then=stall")
                          "raise")))
        (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
            (list (car r) (car (cadr r)) (cadr (cadr r)) (caddr r))
            r)))
 
-   (test-equal "http-parallel lets each call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as that section ends, and its handler's close refuses the second call's submit, stopped, with no transfer, the first failure; the child's counts zero"
-     (list 0 (list 'sections (list 'raised 'stopped (url-of 'raw "/raw/hold?key=sections-1&ms=1000") 0))
+   (test-equal "http-parallel lets each call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as that section ends, and its handler's close refuses the second call's submit, stopped, with no transfer, the first failure; no collection ran in the hold; the child's counts zero"
+     (list 0 (list 'sections 'quiet (list 'raised 'stopped (url-of 'raw "/raw/hold?key=sections-1&ms=1000") 0))
            (list 'counts zero-counts) "")
      (let ((r (run-child sections-child (url-of 'raw ""))))
        (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
            (list (car r) (car (cadr r)) (cadr (cadr r)) (caddr r))
            r)))
 
-   (test-equal "a turn lets each queued call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as that section ends, and its handler's close refuses the second admission's submit, stopped, with no transfer, where the first's token ends stopped, its transfer counted; the child's counts zero"
-     (list 0 '(admissions ((transfer stopped) 1) ((engine stopped) 0)) (list 'counts zero-counts) "")
+   (test-equal "a turn lets each queued call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as that section ends, and its handler's close refuses the second admission's submit, stopped, with no transfer, where the first's token ends stopped, its transfer counted; no collection ran in the hold; the child's counts zero"
+     (list 0 '(admissions quiet ((transfer stopped) 1) ((engine stopped) 0)) (list 'counts zero-counts) "")
      (let ((r (run-child admissions-child (url-of 'raw ""))))
        (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
            (list (car r) (car (cadr r)) (cadr (cadr r)) (caddr r))
@@ -2056,16 +2120,16 @@
                                    ((P1) "http-parallel suspended after call 1's admission raises call 0's cancel, the first in SPECS' order not done, enters no call more and submits nothing after")
                                    ((P3) "http-parallel suspended after its first step, call 0 done, raises call 1's cancel, the first not done, not call 2's")
                                    (else "go suspended in its admissions, after its entry, answers its pending, whose await raises cancelled; a go after it raises closed"))
-                                 "; no transfer starts after the suspension, and the child's counts zero")
+                                 "; no transfer starts after the suspension, no collection ran in the hold, and the child's counts zero")
         (list 0 expected (list 'counts zero-counts) "")
         (let ((r (run-child resume-child (url-of 'raw "") (symbol->string which))))
           (if (and (pair? r) (= (length r) 3) (list? (cadr r)) (= (length (cadr r)) 2))
               (list (car r) (car (cadr r)) (cadr (cadr r)) (caddr r))
               r))))
     '(P1 P3 G)
-    '((resume P1 (raised cancelled http-await 0) 2 1 0 0)
-      (resume P3 (raised cancelled http-await 1) 3 1 0 0)
-      (resume G (value (#t (cancelled http-await 0) (closed go #f))) 1 1 0 0)))
+    '((resume P1 quiet (raised cancelled http-await 0) 2 1 0 0)
+      (resume P3 quiet (raised cancelled http-await 1) 3 1 0 0)
+      (resume G quiet (value (#t (cancelled http-await 0) (closed go #f))) 1 1 0 0)))
 
    ;; --- one call proceeds while another is awaited
 

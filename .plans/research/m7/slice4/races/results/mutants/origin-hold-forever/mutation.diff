@@ -1,0 +1,11 @@
+--- a/tests/origin.mjs
++++ b/tests/origin.mjs
+@@ -1756,7 +1756,7 @@
+       // has closed first.
+       releasedFor(r.hold, stream)
+         .then((how) => {
+-          if (how === 'released' && !stream.destroyed) h2Text(stream, r.status, `answer ${r.status}\n`);
++          if (false) h2Text(stream, r.status, `answer ${r.status}\n`);
+         })
+         .catch((err) => fatal('a held answer failed', err));
+       return undefined;

@@ -596,6 +596,27 @@
     (let ((p (parameterize ((wire-probe-tls tls)) (wire-probe-half-close o face bytes 2000))))
       (list (hex (probe-bytes p)) (probe-end p)))))
 
+;; spawned-probe : Origin Symbol Bytevector Natural (Listof String) -> (-> Probe)
+;; The wire probe of BYTES to FACE, with OPTIONS, idle bound IDLE ms, started
+;; through open-process-ports, not capture-command, so that this thread can
+;; make another exchange while it waits: on the Mac, two threads' system
+;; calls run one after the other (traps.md). Answers a thunk that reads the
+;; probe's output to its end, closes its pipes, and parses it.
+(define (spawned-probe o face bytes idle options)
+  (let ((f (origin-face o face)))
+    (let-values (((to from err pid)
+                  (open-process-ports
+                   (apply string-append "exec " (shell-word node) " tests/wire-probe.mjs"
+                          (append (map (lambda (w) (string-append " " (shell-word w))) options)
+                                  (list " --deadline " (number->string (wire-probe-deadline))
+                                        " " (shell-word (car f)) " " (number->string (cdr f))
+                                        " " (shell-word (hex bytes)) " " (number->string idle))))
+                   (buffer-mode block) #f)))
+      (lambda ()
+        (let ((out (get-bytevector-all from)))
+          (for-each (lambda (port) (guard (e (#t #f)) (close-port port))) (list to from err))
+          (parse-wire-probe (if (eof-object? out) "" (latin-1 out))))))))
+
 ;; The new faces, and how a probe opens a connection to each and then waits.
 (define tls-faces '(https https-expired https-wrong-host https-untrusted raw-tls h2))
 (define new-faces (cons 'h2c tls-faces))
@@ -936,6 +957,33 @@
               (b (h2-exchange o face (request scheme "GET" "/answer?status=599" '() #f) tls))
               (c (h2-exchange o face (request scheme "GET" "/answer?status=204" '() #f) tls)))
          (list a b c)))
+     ;; With hold=KEY the answer waits for /raw/release?key=KEY, sent to the
+     ;; raw face 1000 ms after the probe starts, while the probe runs in a
+     ;; process of its own: the origin's SETTINGS frames come at once, the
+     ;; answer's HEADERS, at offset 18, only once the release is made, 500 ms
+     ;; after the probe connected at least. The probe's DATA follows 4000 ms
+     ;; after its HEADERS, ending the stream, then its half-close, which ends
+     ;; the connection.
+     (test-equal (named "POST /answer?status=200&hold=KEY, its HEADERS without END_STREAM: the answer, whole frames, only once /raw/release?key=KEY, from the raw face 1000 ms on, has answered released; eof once the probe has sent its DATA")
+       (list (list (hex (answer #vu8(#x88 #x0f #x0d 2 #x31 #x31) "answer 200\n")) 'eof)
+             'held-until-released
+             '("HTTP/1.1 200 OK\r\nContent-Length: 9\r\nConnection: close\r\n\r\nreleased\n" eof))
+       (guard (e (#t (list 'raised (describe e))))
+         (let* ((first (h2-start scheme "POST" (string-append "/answer?status=200&hold=" (key "hold"))
+                                 '(("content-length" . "5"))))
+                (finish (spawned-probe o face (join (list first (frame DATA END-STREAM 1 (octets "hello")))) 6000
+                                       (append (list "--half-close" "--split"
+                                                     (string-append (number->string (bytevector-length first)) ":4000"))
+                                               options)))
+                (released (begin (pause-ms 1000)
+                                 (exchange o 'raw (get (string-append "/raw/release?key=" (key "hold"))) 2000 #f)))
+                (p (finish))
+                (head-at (arrival (probe-arrivals p) 18)))
+           (list (list (hex (probe-bytes p)) (probe-end p))
+                 (if (and head-at (probe-connected p) (>= (- head-at (probe-connected p)) 500))
+                     'held-until-released
+                     (list 'connected (probe-connected p) 'head-at head-at))
+                 released))))
      ;; RST_STREAM on stream 1, its code REFUSED_STREAM, 7, and nothing else
      ;; for the stream; then the next request for the key is read whole and
      ;; answered as /sink, the second counted.
@@ -997,9 +1045,11 @@
                                                            sha-abcdefg " pattern=bad@0 arrivals=1 gap=~@0 seen=1\n"))
                    (list (probe-end p))))))
      (test-equal (named "a query /sink, /seen, /answer or /refuse refuses, and /close-after, an HTTP/1.1 route: each 404, a refused /refuse counting nothing")
-       (append (map (lambda (n) (h2-not-found)) '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15)) (list (h2-seen 0)))
+       (append (map (lambda (n) (h2-not-found)) '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18)) (list (h2-seen 0)))
        (let loop ((targets (list "/sink" "/sink?key=" "/sink?key=k&list=0" "/seen" "/seen?key=k&x=1" "/answer"
                                  "/answer?status=199" "/answer?status=600" "/answer?status=200&status=200"
+                                 "/answer?status=200&hold=" "/answer?status=200&hold=a%2Fb"
+                                 "/answer?status=200&hold=h&hold=h"
                                  (string-append "/refuse?key=" (key "refused"))
                                  (string-append "/refuse?key=" (key "refused") "&at=268435457")
                                  (string-append "/refuse?key=" (key "refused") "&at=0&at=0")

@@ -1,0 +1,34 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+== lane floor: CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/e1/ci/curl-floor/include make test SUITES='tests/test-group.sps tests/test-upload.sps tests/test-origin-tls.sps tests/test-origin.sps'
+lane floor: pass (188 s)
+  [floor] test: pass tests/test-group.sps
+  [floor] test: pass tests/test-upload.sps
+  [floor] test: pass tests/test-origin-tls.sps
+  [floor] test: pass tests/test-origin.sps
+  [floor] test: ran 4, passed 4, failed 0, hung 0
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test SUITES='tests/test-group.sps tests/test-upload.sps tests/test-origin-tls.sps tests/test-origin.sps'
+lane openssl: pass (176 s)
+  [openssl] test: pass tests/test-group.sps
+  [openssl] test: pass tests/test-upload.sps
+  [openssl] test: pass tests/test-origin-tls.sps
+  [openssl] test: pass tests/test-origin.sps
+  [openssl] test: ran 4, passed 4, failed 0, hung 0
+== lane gnutls: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 make test SUITES='tests/test-group.sps tests/test-upload.sps tests/test-origin-tls.sps tests/test-origin.sps'
+lane gnutls: pass (173 s)
+  [gnutls] test: pass tests/test-group.sps
+  [gnutls] test: pass tests/test-upload.sps
+  [gnutls] test: pass tests/test-origin-tls.sps
+  [gnutls] test: pass tests/test-origin.sps
+  [gnutls] test: ran 4, passed 4, failed 0, hung 0
+== lane current: CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include make test SUITES='tests/test-group.sps tests/test-upload.sps tests/test-origin-tls.sps tests/test-origin.sps'
+lane current: pass (173 s)
+  [current] test: pass tests/test-group.sps
+  [current] test: pass tests/test-upload.sps
+  [current] test: pass tests/test-origin-tls.sps
+  [current] test: pass tests/test-origin.sps
+  [current] test: ran 4, passed 4, failed 0, hung 0
+exit 0

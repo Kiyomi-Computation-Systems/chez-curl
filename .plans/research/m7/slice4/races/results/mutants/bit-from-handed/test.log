@@ -1,0 +1,31 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-upload.sps
+%%%% Starting test upload
+FAIL the head's body-asked bit: #t for a streamed body whose server answers before reading it over HTTP/2, nothing put by the head, the answer held until the read callable was asked and the empty body ended; over HTTP/1.1 with a close, a race, whether the read callable was ever asked; #t for one whose server reads it before answering, on the raw face and over HTTP/2; #f for a whole body, for none, and for a streamed length of 0, which libcurl never asks for
+  expected: ((raw-answer bit-is-ask) (h2-answer #t) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+  actual:   ((raw-answer (bit #f ask #t)) (h2-answer #f) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+FAIL the head's body-asked bit with the answer first, by version, on 8.20.0: on an engine whose prerequest callable holds 200 ms once connected, the raw face's answer, written as it accepts, lands before the request; 7.85.0 and 8.5.0 read it and stop sending, never asking, #f; 8.20.0 and 8.23.0 ask with the head, #t; each ends with the early status, 200 and 413, sized and chunked, the hold made once; a libcurl with no row fails, showing what it measured
+  expected: ((sized 200 #t asked (response 200 http/1.1) 1) (chunked 200 #t asked (response 200 http/1.1) 1) (sized 413 #t asked (response 413 http/1.1) 1) (chunked 413 #t asked (response 413 http/1.1) 1))
+  actual:   ((sized 200 #f asked (response 200 http/1.1) 1) (chunked 200 #f asked (response 200 http/1.1) 1) (sized 413 #f asked (response 413 http/1.1) 1) (chunked 413 #f asked (response 413 http/1.1) 1))
+FAIL the head's body-asked bit with the answer written as the connection is accepted, on a caller's engine: whether the answer lands before the request is a race, so each case's bit is whether the read callable was ever asked, and it ends with the early status, 200 and 413, sized and chunked; no hold made
+  expected: ((sized 200 bit-is-ask (response 200 http/1.1) 0) (chunked 200 bit-is-ask (response 200 http/1.1) 0) (sized 413 bit-is-ask (response 413 http/1.1) 0) (chunked 413 bit-is-ask (response 413 http/1.1) 0))
+  actual:   ((sized 200 (bit #f asked) (response 200 http/1.1) 0) (chunked 200 (bit #f asked) (response 200 http/1.1) 0) (sized 413 (bit #f asked) (response 413 http/1.1) 0) (chunked 413 (bit #f asked) (response 413 http/1.1) 0))
+(fill #f 1966080 ms 760 retried () mib (18))
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 1115)
+(throughput http chunked ms 968)
+(throughput https sized ms 972)
+(throughput https chunked ms 878)
+(throughput h2 sized ms 427)
+(throughput h2 chunked ms 509)
+(read-lock collections-while-live 990)
+# of expected passes      55
+# of unexpected failures  3
+suite-exit-status: exit 1 (pass 55, fail 3, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-upload.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

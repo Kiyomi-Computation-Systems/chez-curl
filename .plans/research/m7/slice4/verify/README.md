@@ -138,3 +138,76 @@ not known. 8.7.1's row holds both, as AGENTS.md's race rule has it.
 
 With the rows in, at `e04917a`, test-cookies passed 70 of 70 on the Mac and test-version 27 of 27,
 measuring 56 once more ([`../results/mac-8.7.1-test-cookies-version.log`](../results/mac-8.7.1-test-cookies-version.log)).
+
+## CI on PR #45, at `dde5146` (2026-11-05)
+
+Six jobs of eight passed ([`results/ci-gnutls-dde5146.log`](results/ci-gnutls-dde5146.log),
+[`results/ci-memory-dde5146.log`](results/ci-memory-dde5146.log)):
+
+- **gnutls:** test-auth, the job's first suite, failed one test: its origin wrote no announcement
+  within 5,000 ms, and the bound's kill left status 137, stdout and stderr empty. The origin
+  starts in about 60 ms on main's tree and on the slice's, five starts each with the run's PKI
+  ([`results/origin-start-guix.log`](results/origin-start-guix.log), by
+  [`origin-start.sh`](origin-start.sh)): the runner, not the origin, by every reading here.
+- **memory:** test-group, under Valgrind on Ubuntu's 8.5.0 with OpenSSL, failed M5's test of a
+  Ctrl-C handler raising its own `&curl-error` while `go`'s submit blocks on the engine's mutex:
+  what left the group was compounded, `(raise #f #t after-release ...)` where `(raise #t #f
+  after-release ...)` is held. The handler ran after the release, and the raise came out
+  compounded, which fits only a signal handled once go's submit section had ended, in the group's
+  await. My reading, not measured: Valgrind hands a guest a signal at its own scheduling points, so a
+  thread blocked in a mutex wait may see it late. The slice's submit path is one `locked` section
+  as before, its new checks only for a request with a jar. test-group passed natively and under
+  the gate on that lane in Docker, three runs on the slice's tree and three on main's, interleaved
+  ([`results/group-memory-runs.out`](results/group-memory-runs.out)).
+
+**Decided by the maintainer, 2026-11-05, the recommended option:** rerun the two failed jobs.
+
+The rerun ([`results/ci-memory-dde5146-attempt2.log`](results/ci-memory-dde5146-attempt2.log)): gnutls
+passed; memory failed elsewhere, test-group passing. M6 slice 2's test-upload read the HTTP/2
+body-asked cell `#f` where `#t` is held: its server answers before reading the body, the race the
+raw face's cell was loosened for after CI's first runs (`tests/test-upload.sps:708-721`). What the
+HTTP/2 cell could hold both ways is not measured: libcurl may still ask for the body over HTTP/2
+after the answer. **Decided by the maintainer, 2026-11-05, the recommended option:** rerun the
+memory job once more; measure both races under the gate and fix them on the next branch, in a PR
+of their own.
+
+The third attempt ([`results/ci-memory-dde5146-attempt3.log`](results/ci-memory-dde5146-attempt3.log))
+failed both, test-group and test-upload: each failed two attempts of three on this PR, and neither
+had failed on a CI run before it. Locally, in Docker pinned to two CPUs, the memory gate on
+Ubuntu's 8.5.0 with OpenSSL, three rounds of both suites a tree
+([`results/memory-race.out`](results/memory-race.out), by [`memory-race.sh`](memory-race.sh)):
+test-upload's HTTP/2 cell failed once on this slice's tree, never on main's; test-group passed
+every run. main's own push run after slice 3, at `a075629`, which I did not watch, had failed the
+floor job in test-origin-tls, an HTTP/2 frame sequence after a refused stream
+([`results/ci-main-floor-a075629.log`](results/ci-main-floor-a075629.log)), a race of its own.
+**Decided by the maintainer, 2026-11-05, the recommended option:** fix both tests on this PR,
+measured first; test-origin-tls's race goes to the follow-up.
+
+## The two races, measured and fixed (2026-11-05)
+
+An Opus agent measured both under the gate on both trees and fixed both tests
+([`../races/README.md`](../races/README.md)); I checked its hand-back:
+
+- **test-group's cause,** reproduced by a collection planted 1 KiB past the child's ready line:
+  CI's own answer, `(raise #f #t after-release (0 0 0))`, the handler in `call-request-of`
+  ([`../races/results/trip-1k-raise-ci-guix.log`](../races/results/trip-1k-raise-ci-guix.log)),
+  and main's tree failing as readily ([`../races/results/trip-tables.txt`](../races/results/trip-tables.txt)).
+  My hypothesis, a SIGINT handed to the holder thread, was wrong: Chez drops one there.
+- **test-upload's,** read in 8.5.0's source as the agent had it: `drain_stream` sets OUT beside IN
+  while the upload is open (`lib/http2.c:211-218`), and `Curl_readwrite` returns early on a
+  paused direction (`lib/transfer.c:1051`), so a held answer to a paused body hung.
+- **test-origin-tls's `/refuse` failures** under the gate on two pinned CPUs, 6 of 10 on the fixed
+  tree, are older than the fix and the slice: in the same container, on the same CPUs, the
+  unfixed tree failed 2 of 3 and main's 1 of 3, at `/refuse?at=0` and `at=3`
+  ([`results/control-tls-unfixed-cpus36.out`](results/control-tls-unfixed-cpus36.out),
+  [`results/control-tls-main-cpus01.out`](results/control-tls-main-cpus01.out)). It is the race
+  main's floor job hit; CI's memory job passed it on all three attempts. Carried, as decided.
+- **Carried for the follow-up, from the agent's report:** `call-state`'s guard compounds a
+  caller's Ctrl-C handler raise that lands in go's request building, on main too; test-http-client,
+  test-engine and test-mailbox hold a section across a SIGINT without `collect-rendezvous`; and a
+  caller who streams a body over HTTP/2 on 8.5.0 and waits for the head before putting can wait
+  for the transfer's timeout.
+- **My checks of the fix:** `make test` 40 of 40 in the container
+  ([`results/races-make-test-guix-8.20.0.log`](results/races-make-test-guix-8.20.0.log)); test-group
+  and test-upload under the gate, two CPUs, two rounds of two
+  ([`results/races-gate-fixed-cpus01.out`](results/races-gate-fixed-cpus01.out)).

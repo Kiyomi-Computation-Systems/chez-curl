@@ -1,0 +1,85 @@
+=== run 1, tree ci
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test SUITES='tests/test-group.sps'
+lane openssl: pass (56 s)
+  [openssl] test: pass tests/test-group.sps
+  [openssl] test: ran 1, passed 1, failed 0, hung 0
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test-memory MEMORY_SUITES='tests/test-group.sps'
+lane openssl memory: pass
+  [openssl memory] test-memory: pass tests/test-group.sps
+  [openssl memory] test-memory: ran 1, passed 1, failed 0, hung 0
+=== run 1, tree main
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test SUITES='tests/test-group.sps'
+lane openssl: pass (56 s)
+  [openssl] test: pass tests/test-group.sps
+  [openssl] test: ran 1, passed 1, failed 0, hung 0
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test-memory MEMORY_SUITES='tests/test-group.sps'
+lane openssl memory: pass
+  [openssl memory] test-memory: pass tests/test-group.sps
+  [openssl memory] test-memory: ran 1, passed 1, failed 0, hung 0
+=== run 2, tree ci
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test SUITES='tests/test-group.sps'
+lane openssl: pass (56 s)
+  [openssl] test: pass tests/test-group.sps
+  [openssl] test: ran 1, passed 1, failed 0, hung 0
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test-memory MEMORY_SUITES='tests/test-group.sps'
+lane openssl memory: pass
+  [openssl memory] test-memory: pass tests/test-group.sps
+  [openssl memory] test-memory: ran 1, passed 1, failed 0, hung 0
+=== run 2, tree main
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test SUITES='tests/test-group.sps'
+lane openssl: pass (56 s)
+  [openssl] test: pass tests/test-group.sps
+  [openssl] test: ran 1, passed 1, failed 0, hung 0
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test-memory MEMORY_SUITES='tests/test-group.sps'
+lane openssl memory: pass
+  [openssl memory] test-memory: pass tests/test-group.sps
+  [openssl memory] test-memory: ran 1, passed 1, failed 0, hung 0
+=== run 3, tree ci
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test SUITES='tests/test-group.sps'
+lane openssl: pass (57 s)
+  [openssl] test: pass tests/test-group.sps
+  [openssl] test: ran 1, passed 1, failed 0, hung 0
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test-memory MEMORY_SUITES='tests/test-group.sps'
+lane openssl memory: pass
+  [openssl memory] test-memory: pass tests/test-group.sps
+  [openssl memory] test-memory: ran 1, passed 1, failed 0, hung 0
+=== run 3, tree main
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test SUITES='tests/test-group.sps'
+lane openssl: pass (56 s)
+  [openssl] test: pass tests/test-group.sps
+  [openssl] test: ran 1, passed 1, failed 0, hung 0
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make test-memory MEMORY_SUITES='tests/test-group.sps'
+lane openssl memory: pass
+  [openssl memory] test-memory: pass tests/test-group.sps
+  [openssl memory] test-memory: ran 1, passed 1, failed 0, hung 0
+all done

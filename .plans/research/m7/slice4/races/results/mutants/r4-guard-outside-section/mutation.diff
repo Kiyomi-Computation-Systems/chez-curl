@@ -1,0 +1,27 @@
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1261,7 +1261,7 @@
+   ;; turn between its other sections.
+   (define (admit! group)
+     (let loop ()
+-      (when (critical-section (admit-one! group))
++      (when (admit-one! group)
+         (loop))))
+ 
+   ;; admit-one! : Group -> Boolean
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1143,9 +1143,10 @@
+         ((submit)
+          (pending-state-set! pending (cadr submission))
+          (let ((refusal (guard (e ((curl-error? e) (list 'refused e)))
+-                          (record! group pending
+-                                   ((group-submit group) (group-engine group) (caddr submission)
+-                                                         (group-mailbox group)))
++                          (critical-section
++                           (record! group pending
++                                    ((group-submit group) (group-engine group) (caddr submission)
++                                                          (group-mailbox group))))
+                           #f)))
+            (when refusal (step! group pending refusal))))
+         (else

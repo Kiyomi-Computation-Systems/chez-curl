@@ -203,7 +203,8 @@
 //         is written, or the client has gone: a response kept live after the
 //         body's end until a test lets it go.
 //         /raw/release?key=KEY releases KEY, for good: every answer-at held
-//         on it writes its last byte. It writes "HTTP/1.1 200 OK",
+//         on it writes its last byte, and every HTTP/2 /answer held on it
+//         answers. It writes "HTTP/1.1 200 OK",
 //         Content-Length: 9, Connection: close and "released\n", and ends.
 //         /raw/mirror, which takes no query, writes, as the head arrives,
 //         "HTTP/1.1 200 OK", then Content-Length: L, L the request's own,
@@ -293,10 +294,13 @@
 // content-length at once, then, MS ms on, "connection K\n", K the
 // connection's number among this face's, from 1, so two streams share a
 // connection exactly when they answer one K. /sink and /seen are http's,
-// with content-length. /answer?status=S, HTTP/2's alone, answers S,
-// content-length and "answer S\n", or for 204, 304 and 205 as /status does,
-// as the headers arrive, ending its side; it then reads the body, if any,
-// and answers nothing more. It counts nothing.
+// with content-length. /answer?status=S[&hold=KEY], HTTP/2's alone,
+// answers S, content-length and "answer S\n", or for 204, 304 and 205 as
+// /status does, as the headers arrive, ending its side; with hold=KEY, KEY
+// as retry takes it, at most once, the answer waits until /raw/release
+// names KEY, at once when it has, and never comes once the stream has
+// closed; it reads the body meanwhile, and after, if any, and answers
+// nothing more. It counts nothing.
 // /refuse?key=K&at=N, HTTP/2's alone, N 0 to 268435456, counts as /sink
 // does; the first request for K is reset with RST_STREAM REFUSED_STREAM
 // once N DATA bytes have come, N 0 as its headers arrive, before any DATA;
@@ -594,7 +598,7 @@ function route(target) {
   if (path === '/sink') return queried('sink', queryOf(query, { key: keyValue, list: oneValue }, ['key']));
   if (path === '/seen') return queried('seen', queryOf(query, { key: keyValue }, ['key']));
   if (path === '/answer') {
-    return queried('answer', queryOf(query, { status: (v) => decimal(v, 200, 599) }, ['status']));
+    return queried('answer', queryOf(query, { status: (v) => decimal(v, 200, 599), hold: keyValue }, ['status']));
   }
   if (path === '/refuse') {
     return queried('refuse', queryOf(query, { key: keyValue, at: (v) => decimal(v, 0, 268435456) }, ['key', 'at']));
@@ -1732,7 +1736,7 @@ function h2Respond(stream, headers, rawHeaders, body) {
 }
 
 // h2Stream: FACE's stream listener. /answer answers as the headers arrive,
-// then reads the body; /answer-at once N DATA bytes have come; /mirror
+// or with hold=KEY once /raw/release names KEY, then reads the body; /answer-at once N DATA bytes have come; /mirror
 // writes each DATA chunk back as it comes; /sink, /refuse and /seq count
 // as they arrive, and read the body, or refuse the stream; every other
 // route reads the body whole, then answers.
@@ -1747,7 +1751,15 @@ function h2Stream(face) {
       // Read while the answer goes, so that Node, which closes a stream it
       // has answered when nothing reads it, keeps the stream open.
       stream.on('data', () => {});
-      return h2Text(stream, r.status, `answer ${r.status}\n`);
+      if (r.hold === undefined) return h2Text(stream, r.status, `answer ${r.status}\n`);
+      // Held: the answer once its key is released, or none once the stream
+      // has closed first.
+      releasedFor(r.hold, stream)
+        .then((how) => {
+          if (how === 'released' && !stream.destroyed) h2Text(stream, r.status, `answer ${r.status}\n`);
+        })
+        .catch((err) => fatal('a held answer failed', err));
+      return undefined;
     }
     if (r.kind === 'answer-at') {
       // Read before and after the answer, as /answer does, and answer once.
@@ -2401,7 +2413,8 @@ function releaseEntry(key) {
 }
 
 // releasedFor: resolves 'released' once /raw/release names KEY, at once for
-// a key released already; or 'gone' once SOCKET closes first.
+// a key released already; or 'gone' once SOCKET, a socket or an HTTP/2
+// stream, closes first.
 function releasedFor(key, socket) {
   const entry = releaseEntry(key);
   if (entry.released) return Promise.resolve('released');

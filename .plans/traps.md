@@ -1312,6 +1312,12 @@ it should not be a comment. (chez-cmark-gfm)
   and held runs read `#t` on 7.85.0 and 8.5.0. The case now asserts what holds both ways, that
   its bit is whether the read callable was ever asked. (chez-curl, CI's first run)
 
+  Over HTTP/2 too: `/answer`, written as the headers arrive, came before libcurl's first ask under
+  the memory gate on 8.5.0 in 9 runs of 40, 4 of 20 on M7 slice 4's tree and 5 of 20 on main's,
+  libcurl then never asking, and CI's memory job read `#f` on two attempts of three on PR #45
+  ([races](research/m7/slice4/races/)). Its server now holds the answer, `hold=KEY`, until the
+  test has seen the ask and ended the body. (chez-curl, M7 slice 4, CI)
+
 * **On 8.20.0 and 8.23.0, an HTTP/2 3xx that arrives before a request's body is sent whole never
   ends the transfer.** libcurl logs "HTTP error before end of send, stop sending", aborts the
   upload, holds the whole response, then waits for its timeout: "Operation timed out after 5006
@@ -1418,3 +1424,24 @@ it should not be a comment. (chez-cmark-gfm)
   U+00B2 into an expiry, which then raised from `<=` where the rule meant to refuse it
   ([verify](research/m7/slice4/verify/results/trap-char-numeric-guix.log)). Where the other side
   reads ASCII digits, compare `#\0` to `#\9`. (chez-curl, M7 slice 4's review)
+* **A collection requested while a thread sleeps inside a critical section stalls every other
+  thread at its next event check, and a Ctrl-C made pending meanwhile runs where the stalled
+  thread stopped.** test-group's children hold the engine's mutex from a thread that sleeps inside
+  `call-with-engine-held`'s section; a collection the main thread asked for then waited for the
+  hold's end, and so did the main thread, before go's submit had blocked. Its handler ran after
+  the release in go's request building, where `call-state`'s guard compounded the child's planted
+  `&curl-error`: CI's memory job, two attempts of three on PR #45. A collection planted 1 KiB past
+  the child's ready line gave CI's answer, `(raise #f #t after-release ...)`, and main's tree
+  failed as readily under planted collections; and submit-child, stalled so, passed with nothing
+  submitted ([races](research/m7/slice4/races/), `results/trip-*`). The children now
+  `collect-rendezvous` before the hold, hold until the signal has been sent, and assert that
+  `(collections)` did not move between the hold's start and the handler. (chez-curl, M7 slice 4,
+  CI)
+* **libcurl 8.5.0 reads nothing from an HTTP/2 transfer paused for sending.** `drain_stream` sets
+  the OUT bit beside IN while the upload is open (`lib/http2.c:211-218`), and `Curl_readwrite`
+  returns at once when a paused direction's bit is set (`lib/transfer.c:1019-1056`), so the
+  response waits until the body resumes. Under the memory gate, a held `/answer` to a streamed
+  body left paused hung 7 times of 160, the origin having answered within 1 ms of its release
+  ([races](research/m7/slice4/races/), `results/hold-hang-*`). A test that needs the head before
+  its body ends the body, or puts, first; a caller who waits for the head before putting can wait
+  for the transfer's timeout. (chez-curl, M7 slice 4, CI)

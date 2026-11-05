@@ -1,0 +1,61 @@
+== test-group SIGINT children
+tag	child	verdict	sig-thread	ready->saw	ready->sent	ready->sig	hold	sig->hold-end	rax	main-at-hold-end	handler	hold-end->handler
+late-sigint-3.5s-unfixed-ci-guix.log:-:-	lost	WRONG	none	17.4	3521.2		1000.2			202	never	
+late-sigint-3.5s-unfixed-ci-guix.log:-:-	submit	ok	main	53.7	3557.6	3555.3	3000.2	-556.2	-4	202	wait-until/turn!	556.2
+late-sigint-3.5s-unfixed-ci-guix.log:-:-	raise	ok	main	52.4	3557.0	3554.3	3000.2	-554.9	-4	202	wait-until/turn!	554.9
+late-sigint-3.5s-unfixed-ci-guix.log:-:-	turn-escape	ok	main	41.8	3546.4	3544.3	3000.1	-545.0	-4	202	wait-until/turn!/http-await	545.0
+late-sigint-3.5s-unfixed-ci-guix.log:-:-	turn-raise	ok	main	57.7	3561.1	3560.0	3000.3	-560.6	-4	202	wait-until/turn!/http-await	560.6
+late-sigint-3.5s-unfixed-ci-guix.log:-:-	sections	WRONG	none	40.7	3545.4		2000.2			202	never	
+late-sigint-3.5s-unfixed-ci-guix.log:-:-	admissions	WRONG	none	42.7	3546.6		2000.1			202	never	
+late-sigint-3.5s-unfixed-ci-guix.log:-:-	P1	WRONG	none	29.8	3534.8		2000.2			202	never	
+late-sigint-3.5s-unfixed-ci-guix.log:-:-	P3	WRONG	none	28.8	3533.9		2000.2			202	never	
+late-sigint-3.5s-unfixed-ci-guix.log:-:-	G	ok	main	34.1	3539.8	3537.0	2000.1	-1537.9	-4	202	wait-until/turn!/http-await	1537.9
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	39.4	2944.0	2941.8	3000.1	57.4	-4	202	enable-interrupts/admit!/go	0.1
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	56.5	2960.9	2958.7	3000.1	40.5	-4	202	enable-interrupts/admit!/go	0.2
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	55.5	2969.6	2968.2	3000.1	31.0	-4	202	enable-interrupts/admit!/go	0.1
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	57.3	2972.2	2969.8	3000.2	29.4	-4	202	enable-interrupts/admit!/go	0.3
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	41.0	2965.1	2962.8	3000.1	36.4	-4	202	enable-interrupts/admit!/go	0.1
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	44.2	2969.3	2966.8	3000.2	32.6	-4	202	enable-interrupts/admit!/go	0.2
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	4.9	2940.2	2937.5	3000.2	61.8	-4	202	enable-interrupts/admit!/go	0.2
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	35.3	2970.5	2968.1	3000.2	31.1	-4	202	enable-interrupts/admit!/go	0.2
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	10.0	2956.0	2952.9	3000.2	46.3	-4	202	enable-interrupts/admit!/go	0.2
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	14.5	2958.0	2956.1	3000.2	43.1	-4	202	enable-interrupts/admit!/go	0.1
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	31.4	2986.6	2983.8	3000.2	15.4	-4	202	enable-interrupts/admit!/go	0.3
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	41.7	2996.6	2994.4	3000.2	4.9	-4	202	enable-interrupts/admit!/go	0.2
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	8.2	2973.3	2971.0	3000.2	28.3	-4	202	enable-interrupts/admit!/go	0.2
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	17.7	2981.9	2979.5	3000.2	19.7	-4	202	enable-interrupts/admit!/go	0.1
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	41.6	3014.6	3013.1	3000.1	-14.0	-4	202	wait-until/turn!	14.1
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	22.6	2994.8	2993.8	3000.2	5.6	-4	202	enable-interrupts/admit!/go	0.2
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	25.5	3008.3	3007.0	3000.1	-7.9	-4	202	wait-until/turn!	7.9
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	8.8	2991.1	2990.1	3000.1	9.0	-4	202	enable-interrupts/admit!/go	0.1
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	44.4	3036.8	3035.7	3000.2	-36.6	-4	202	wait-until/turn!	36.6
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	54.0	3048.3	3046.1	3000.2	-46.9	-4	202	wait-until/turn!	46.9
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	52.7	3057.7	3055.3	3000.2	-56.1	-4	202	wait-until/turn!	56.1
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	31.7	3037.0	3034.1	3000.2	-34.9	-4	202	wait-until/turn!	34.9
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	16.1	3030.7	3029.0	3000.2	-29.8	-4	202	wait-until/turn!	29.8
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	3.4	3017.0	3015.0	3000.2	-15.8	-4	202	wait-until/turn!	15.8
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	48.2	3074.0	3071.2	3000.2	-72.0	-4	202	wait-until/turn!	72.1
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	47.7	3071.5	3069.4	3000.2	-70.1	-4	202	wait-until/turn!	70.1
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	12.3	3046.6	3044.4	3000.2	-45.3	-4	202	wait-until/turn!	45.3
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	35.4	3070.1	3067.6	3000.2	-68.5	-4	202	wait-until/turn!	68.5
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	51.4	3095.8	3094.1	3000.2	-94.8	-4	202	wait-until/turn!	94.8
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	46.8	3091.5	3089.2	3000.2	-90.1	-4	202	wait-until/turn!	90.1
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	36.7	3091.9	3089.3	3000.2	-90.1	-4	202	wait-until/turn!	90.1
+sigint-across-release-raise-ci-guix.log:-:-	raise	ok	main	39.7	3094.4	3092.1	3000.1	-92.8	-4	202	wait-until/turn!	92.8
+== summary by tree and child: runs, verdicts, signal thread, handler place, min margin (ms)
+- G 1 {'ok': 1} {'main': 1} {'wait-until/turn!/http-await': 1} min-margin -1537.9 max-ready->sent 3539.8
+- P1 1 {'WRONG': 1} {'none': 1} {'never': 1} min-margin None max-ready->sent 3534.8
+- P3 1 {'WRONG': 1} {'none': 1} {'never': 1} min-margin None max-ready->sent 3533.9
+- admissions 1 {'WRONG': 1} {'none': 1} {'never': 1} min-margin None max-ready->sent 3546.6
+- lost 1 {'WRONG': 1} {'none': 1} {'never': 1} min-margin None max-ready->sent 3521.2
+- raise 33 {'ok': 33} {'main': 33} {'wait-until/turn!': 17, 'enable-interrupts/admit!/go': 16} min-margin -554.9 max-ready->sent 3557.0
+- sections 1 {'WRONG': 1} {'none': 1} {'never': 1} min-margin None max-ready->sent 3545.4
+- submit 1 {'ok': 1} {'main': 1} {'wait-until/turn!': 1} min-margin -556.2 max-ready->sent 3557.6
+- turn-escape 1 {'ok': 1} {'main': 1} {'wait-until/turn!/http-await': 1} min-margin -545.0 max-ready->sent 3546.4
+- turn-raise 1 {'ok': 1} {'main': 1} {'wait-until/turn!/http-await': 1} min-margin -560.6 max-ready->sent 3561.1
+== wrong verdicts, whole
+{'tag': 'late-sigint-3.5s-unfixed-ci-guix.log:-:-', 'child': 'lost', 'verdict': 'WRONG', 'kept': ['lost', 'returned', 'taken', ['answered', 200, 'status 200\n']], 'sigs': 0, 'ready->saw': 17.4, 'ready->sent': 3521.2, 'hold': 1000.2, 'main-at-hold-end': 202, 'sig-thread': 'none', 'handler': 'never', 'await-call': 0.0, 'await-return': 999.3}
+{'tag': 'late-sigint-3.5s-unfixed-ci-guix.log:-:-', 'child': 'sections', 'verdict': 'WRONG', 'kept': ['sections', [200, 200, 200]], 'sigs': 0, 'ready->saw': 40.7, 'ready->sent': 3545.4, 'hold': 2000.2, 'main-at-hold-end': 202, 'sig-thread': 'none', 'handler': 'never', 'parallel-call': 0.0}
+{'tag': 'late-sigint-3.5s-unfixed-ci-guix.log:-:-', 'child': 'admissions', 'verdict': 'WRONG', 'kept': ['admissions', 'no-raise', 'no-raise'], 'sigs': 0, 'ready->saw': 42.7, 'ready->sent': 3546.6, 'hold': 2000.1, 'main-at-hold-end': 202, 'sig-thread': 'none', 'handler': 'never', 'done-call': 0.0, 'done-return': 1999.4}
+{'tag': 'late-sigint-3.5s-unfixed-ci-guix.log:-:-', 'child': 'P1', 'verdict': 'WRONG', 'kept': ['resume', 'P1', ['value', [200, 200, 200, 200]], False, 0, False, False], 'sigs': 0, 'ready->saw': 29.8, 'ready->sent': 3534.8, 'hold': 2000.2, 'main-at-hold-end': 202, 'sig-thread': 'none', 'handler': 'never', 'run-call': 0.0}
+{'tag': 'late-sigint-3.5s-unfixed-ci-guix.log:-:-', 'child': 'P3', 'verdict': 'WRONG', 'kept': ['resume', 'P3', ['value', [200, 200, 200]], False, 0, False, False], 'sigs': 0, 'ready->saw': 28.8, 'ready->sent': 3533.9, 'hold': 2000.2, 'main-at-hold-end': 202, 'sig-thread': 'none', 'handler': 'never', 'run-call': 0.0}

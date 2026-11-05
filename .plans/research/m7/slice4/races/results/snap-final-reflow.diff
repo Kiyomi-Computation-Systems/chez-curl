@@ -1,0 +1,73 @@
+680,681c680,681
+< ;; Prints (raise SAME COMPOUNDED WHEN QUIET HOLDS): SAME, whether what left the
+< ;; group is that very object; COMPOUNDED, whether it carries an
+---
+> ;; Prints (raise SAME COMPOUNDED WHEN QUIET HOLDS): SAME, whether what left
+> ;; the group is that very object; COMPOUNDED, whether it carries an
+754,755c754,755
+< ;; group. The await's turn reaches the due
+< ;; submit about 200 ms later and blocks there, inside its critical section;
+---
+> ;; group. The await's turn reaches the due submit about 200 ms later and
+> ;; blocks there, inside its critical section;
+774,779c774,778
+< ;; after the holder let go, once the
+< ;; engine's queue has settled, for up to 2 s more: a token the winds
+< ;; cancelled while it was still queued is completed on this thread, and its
+< ;; submit stays in the engine's queue until the engine's next turn, which a
+< ;; poll of up to 1000 ms can put off. Then (counts COUNTS), once the session
+< ;; is closed.
+---
+> ;; after the holder let go, once the engine's queue has settled, for up to 2
+> ;; s more: a token the winds cancelled while it was still queued is
+> ;; completed on this thread, and its submit stays in the engine's queue
+> ;; until the engine's next turn, which a poll of up to 1000 ms can put off.
+> ;; Then (counts COUNTS), once the session is closed.
+865,868c864,867
+< ;; thread prints ready, then calls
+< ;; http-parallel with three 1 s holds. The checks take no engine's mutex,
+< ;; so the first admission's submit is the first to, and blocks there,
+< ;; inside its section; the suite sends SIGINT meanwhile. The handler does
+---
+> ;; thread prints ready, then calls http-parallel with three 1 s holds. The
+> ;; checks take no engine's mutex, so the first admission's submit is the
+> ;; first to, and blocks there, inside its section; the suite sends SIGINT
+> ;; meanwhile. The handler does
+926,930c925,929
+< ;; two more queued behind them. Another thread then holds the engine's
+< ;; mutex until the suite has sent its SIGINT (child-hold); this thread
+< ;; prints ready, cancels the two waiting calls,
+< ;; which frees their slots and takes no engine's mutex, and runs a turn,
+< ;; by http-pending-done?. The turn has no live token to look at, so its
+---
+> ;; two more queued behind them. Another thread then holds the engine's mutex
+> ;; until the suite has sent its SIGINT (child-hold); this thread prints
+> ;; ready, cancels the two waiting calls, which frees their slots and takes
+> ;; no engine's mutex, and runs a turn, by http-pending-done?. The turn has
+> ;; no live token to look at, so its
+940,942c939,941
+< ;; each ((KIND REASON) TRANSFERS) of what
+< ;; its await raised, KIND engine for a &curl-engine-error, transfer for a
+< ;; &curl-transfer-error, then (counts COUNTS).
+---
+> ;; each ((KIND REASON) TRANSFERS) of what its await raised, KIND engine for
+> ;; a &curl-engine-error, transfer for a &curl-transfer-error, then (counts
+> ;; COUNTS).
+1014,1016c1013,1015
+< ;; prints (ready PID) and runs the case,
+< ;; whose seam blocks on the gate inside a section of the group's; SIGINT
+< ;; arrives meanwhile, and its handler, run as the section ends, captures
+---
+> ;; prints (ready PID) and runs the case, whose seam blocks on the gate
+> ;; inside a section of the group's; SIGINT arrives meanwhile, and its
+> ;; handler, run as the section ends, captures
+1035,1038c1034,1037
+< ;; RESULT (raised REASON WHO INDEX), INDEX the URL's in the
+< ;; case's list, or (value ...); SUBMITS, the submits made before the
+< ;; suspension; the transfers started and submits made after it. Then
+< ;; (counts COUNTS), once the session is closed.
+---
+> ;; RESULT (raised REASON WHO INDEX), INDEX the URL's in the case's list, or
+> ;; (value ...); SUBMITS, the submits made before the suspension; the
+> ;; transfers started and submits made after it. Then (counts COUNTS), once
+> ;; the session is closed.

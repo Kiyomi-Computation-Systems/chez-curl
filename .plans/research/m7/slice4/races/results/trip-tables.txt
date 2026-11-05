@@ -1,0 +1,66 @@
+== .plans/research/m7/slice4/races/results/trip-delta-raise-ci-guix.log
+delta=0  ok  [True, False]  go-call-bytes=3680  creq@2999.5ms bytes+32480 after-hold-end  handler=enable-interrupts/admit!/go
+delta=4096  ok  [True, False]  go-call-bytes=3696  creq@2999.4ms bytes+32496 after-hold-end  handler=enable-interrupts/admit!/go
+delta=8192  ok  [True, False]  go-call-bytes=3824  creq@3499.9ms bytes+55264 after-hold-end  handler=enable-interrupts/admit!/go
+delta=12288  ok  [True, False]  go-call-bytes=3824  creq@2999.4ms bytes+-961792 after-hold-end  handler=enable-interrupts/admit!/go
+delta=16384  ok  [True, False]  go-call-bytes=3824  creq@3499.9ms bytes+55264 after-hold-end  handler=enable-interrupts/admit!/go
+delta=20480  ok  [True, False]  go-call-bytes=3824  creq@3499.4ms bytes+40896 after-hold-end  handler=enable-interrupts/admit!/go
+delta=24576  ok  [True, False]  go-call-bytes=3824  creq@3499.9ms bytes+55264 after-hold-end  handler=enable-interrupts/admit!/go
+delta=28672  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=32768  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=36864  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=40960  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=45056  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=49152  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=53248  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=57344  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=61440  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=65536  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=69632  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=73728  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=77824  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=81920  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=86016  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=90112  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=94208  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=98304  ok  [True, False]  go-call-bytes=3952  no-creq  handler=enable-interrupts/admit!/go
+== .plans/research/m7/slice4/races/results/trip-delta-raise-main-guix.log
+delta=0  WRONG  [False, True]  go-call-bytes=3680  creq@2999.3ms bytes+7648 after-hold-end  handler=enable-interrupts/enable-interrupts/set-url-flagged!/call-request-of/go
+delta=4096  WRONG  [False, True]  go-call-bytes=3696  creq@2999.3ms bytes+7664 after-hold-end  handler=enable-interrupts/enable-interrupts/set-url-flagged!/call-request-of/go
+delta=8192  WRONG  [False, True]  go-call-bytes=3824  creq@2999.3ms bytes+7792 after-hold-end  handler=enable-interrupts/enable-interrupts/set-url-flagged!/call-request-of/go
+delta=12288  WRONG  [False, True]  go-call-bytes=3824  creq@2999.6ms bytes+7792 after-hold-end  handler=enable-interrupts/enable-interrupts/set-url-flagged!/call-request-of/go
+delta=16384  WRONG  [False, True]  go-call-bytes=3824  creq@2999.5ms bytes+7792 after-hold-end  handler=enable-interrupts/enable-interrupts/set-url-flagged!/call-request-of/go
+delta=20480  ok  [True, False]  go-call-bytes=3824  creq@2999.3ms bytes+32512 after-hold-end  handler=enable-interrupts/admit!/go
+delta=24576  ok  [True, False]  go-call-bytes=3824  creq@2999.5ms bytes+32512 after-hold-end  handler=enable-interrupts/admit!/go
+delta=28672  ok  [True, False]  go-call-bytes=3824  creq@2999.5ms bytes+32512 after-hold-end  handler=enable-interrupts/admit!/go
+delta=32768  ok  [True, False]  go-call-bytes=3824  creq@2999.2ms bytes+32512 after-hold-end  handler=enable-interrupts/admit!/go
+delta=36864  ok  [True, False]  go-call-bytes=3824  creq@3499.5ms bytes+40736 after-hold-end  handler=enable-interrupts/admit!/go
+delta=40960  ok  [True, False]  go-call-bytes=3824  creq@3499.5ms bytes+40736 after-hold-end  handler=enable-interrupts/admit!/go
+delta=45056  ok  [True, False]  go-call-bytes=3824  creq@3499.5ms bytes+40736 after-hold-end  handler=enable-interrupts/admit!/go
+delta=49152  ok  [True, False]  go-call-bytes=3824  creq@2999.5ms bytes+-844272 after-hold-end  handler=enable-interrupts/admit!/go
+delta=53248  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=57344  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=61440  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=65536  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=69632  ok  [True, False]  go-call-bytes=3824  creq@3499.9ms bytes+73792 after-hold-end  handler=enable-interrupts/admit!/go
+delta=73728  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=77824  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=81920  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=86016  ok  [True, False]  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+delta=90112  ok  [True, False]  go-call-bytes=3952  no-creq  handler=enable-interrupts/admit!/go
+delta=94208  ok  [True, False]  go-call-bytes=3952  no-creq  handler=enable-interrupts/admit!/go
+delta=98304  ok  [True, False]  go-call-bytes=3952  no-creq  handler=enable-interrupts/admit!/go
+== .plans/research/m7/slice4/races/results/trip-delta-submit-main-guix.log
+delta=0  ok  ['escaped', 'after-release']  go-call-bytes=3680  creq@2999.4ms bytes+32368 after-hold-end  handler=enable-interrupts/admit!/go
+delta=8192  ok  ['escaped', 'after-release']  go-call-bytes=3696  creq@2999.3ms bytes+32384 after-hold-end  handler=enable-interrupts/admit!/go
+delta=16384  ok  ['escaped', 'after-release']  go-call-bytes=3696  creq@2999.3ms bytes+-840576 after-hold-end  handler=enable-interrupts/admit!/go
+delta=32768  ok  ['escaped', 'after-release']  go-call-bytes=3824  no-creq  handler=enable-interrupts/admit!/go
+== .plans/research/m7/slice4/races/results/trip-1k-submit-ci-guix.log
+delta=#f  ok  ['escaped', 'after-release']  go-call-bytes=3696  creq@2999.4ms bytes+7856 after-hold-end  handler=enable-interrupts/enable-interrupts/live-handle/curl-url-set/set-url-flagged!
+delta=#f  ok  ['escaped', 'after-release']  go-call-bytes=3696  creq@2999.3ms bytes+7664 after-hold-end  handler=enable-interrupts/enable-interrupts/set-url-flagged!/call-request-of/go
+delta=#f  ok  ['escaped', 'after-release']  go-call-bytes=3824  creq@2999.5ms bytes+8448 after-hold-end  handler=enable-interrupts/enable-interrupts/set-url-flagged!/call-request-of/go
+delta=#f  ok  ['escaped', 'after-release']  go-call-bytes=3824  creq@2999.3ms bytes+15808 after-hold-end  handler=enable-interrupts/enable-interrupts/go
+== .plans/research/m7/slice4/races/results/trip-1k-raise-ci-guix.log
+delta=None  WRONG  [False, True]  go-call-bytes=None  creq@2999.4ms bytes+None after-hold-end  handler=enable-interrupts/enable-interrupts/transcoded-port/bytevector->string/proc
+delta=None  ok  [True, False]  go-call-bytes=None  creq@2999.4ms bytes+None after-hold-end  handler=enable-interrupts/enable-interrupts/go
+delta=None  WRONG  [False, True]  go-call-bytes=None  creq@2999.4ms bytes+None after-hold-end  handler=enable-interrupts/enable-interrupts/transcoded-port/bytevector->string/proc

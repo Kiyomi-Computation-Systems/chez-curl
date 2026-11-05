@@ -1,0 +1,11 @@
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1569,7 +1569,7 @@
+                   (else
+                    (critical-section (cancel-all! group))
+                    (drain-all! group)
+-                   (raise (unfinished-condition pendings states))))))))))))
++                   (raise (let ((c (unfinished-condition pendings states))) (let loop ((ps (reverse pendings))) (cond ((null? ps) c) ((eq? (car (pending-answer (car ps))) 'done) (loop (cdr ps))) (else (cancelled-condition (car ps)))))))))))))))))
+ 
+   ;; unfinished-condition : (Listof Pending) (Listof State) -> Condition
+   ;; What run-parallel raises when no call failed but not every one is

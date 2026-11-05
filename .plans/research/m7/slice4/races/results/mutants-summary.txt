@@ -1,0 +1,131 @@
+== baseline: control: no mutation
+  test: pass tests/test-group.sps
+  test: pass tests/test-upload.sps
+  test: pass tests/test-origin-tls.sps
+== r4-guard-outside-section: M5: rule 4: the refusal's guard around the submit's section
+  test: FAIL tests/test-group.sps (exit 1)
+  FAIL an engine's expiry anywhere in http-parallel, swept from 200 to 9000 ticks by 100, then by 1 for 100 ticks either side of its first cancel, acros
+  FAIL the http-parallel sweep's evidence: some expiry landed before its group, its four responses answered with all four transfers started after the ex
+  FAIL an engine's expiry anywhere in a group of four calls of go, swept from 200 to 6000 ticks by 100: each call answers, raises cancelled or closed, o
+  FAIL SIGINT while go's submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that very obj
+== r4-record-outside-section: M5: rule 4: the token recorded after the submit section
+  test: FAIL tests/test-group.sps (exit 1)
+  FAIL an engine's expiry anywhere in http-parallel, swept from 200 to 9000 ticks by 100, then by 1 for 100 ticks either side of its first cancel, acros
+  FAIL the http-parallel sweep's evidence: some expiry landed before its group, its four responses answered with all four transfers started after the ex
+  FAIL an engine's expiry anywhere in a group of four calls of go, swept from 200 to 6000 ticks by 100: each call answers, raises cancelled or closed, o
+  FAIL SIGINT while go's submit blocks on the engine's mutex inside its critical section escapes as the section ends, after the submit took the mutex, o
+  FAIL SIGINT while go's submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that very obj
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+== f1-guard-outside-due: M5: fix 1: the due submit's guard outside its critical section
+  test: FAIL tests/test-group.sps (exit 1)
+  FAIL SIGINT while a turn's due submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that 
+== turn-no-sections: M5: review: the turn's per-call changes outside critical sections
+  test: FAIL tests/test-group.sps (exit 1)
+  FAIL an engine's expiry anywhere in http-parallel, swept from 200 to 9000 ticks by 100, then by 1 for 100 ticks either side of its first cancel, acros
+  FAIL the http-parallel sweep's evidence: some expiry landed before its group, its four responses answered with all four transfers started after the ex
+  FAIL an engine's expiry anywhere in a group of four calls of go, swept from 200 to 6000 ticks by 100: each call answers, raises cancelled or closed, o
+  FAIL SIGINT while go's submit blocks on the engine's mutex inside its critical section escapes as the section ends, after the submit took the mutex, o
+  FAIL SIGINT while go's submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that very obj
+  FAIL SIGINT while a turn's due submit, a call's retry, blocks on the engine's mutex inside its critical section escapes as the section ends, after the
+  FAIL SIGINT while a turn's due submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that 
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+== f6-one-section: M5: fix 6: http-parallel's calls entered and let in in one section
+  test: FAIL tests/test-group.sps (exit 1)
+  FAIL http-parallel lets each call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as 
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+== g7-admissions-one-section: M5: fix 2.7: a turn's admissions in one section
+  test: FAIL tests/test-group.sps (exit 1)
+  FAIL a turn lets each queued call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as 
+== r5-no-take-out: M5: rule 5: a stepped token stays in the set
+  test: FAIL tests/test-group.sps (exit 1)
+  FAIL inside a critical section, in a group: http-await and http-pending-done? refuse, assertion violations naming each, the call untouched; go answers
+  FAIL go checks the call first, as http-request does: an unknown key, a method the low level refuses and a URL curl_url refuses each raise from go, com
+  FAIL a group is its thread's: go, http-await, http-pending-done? and http-pending-cancel from another thread each raise &http-group-error, wrong-threa
+  FAIL the join on a return: a procedure that starts three holds of 500 ms and returns two values without awaiting gets both back only once all three ha
+  FAIL the join raises the first call to fail that no await answered, as the call raised it, the same object its await raises after: a refused connect b
+  FAIL two failures found in one look are numbered in the order their calls were submitted: the join raises the first submitted's
+  FAIL a raise inside a call's own section is that call's failure alone: a draw that raises in the look's step, a submit that raises a symbol at a due r
+  FAIL the join on a raise, three times: four live holds, a call in a retry's wait and a queued one, at a limit of 5, are each ended as cancelled once t
+  FAIL an engine's expiry anywhere in http-parallel, swept from 200 to 9000 ticks by 100, then by 1 for 100 ticks either side of its first cancel, acros
+  FAIL the http-parallel sweep's evidence: some expiry landed before its group, its four responses answered with all four transfers started after the ex
+  FAIL an engine's expiry anywhere in a group of four calls of go, swept from 200 to 6000 ticks by 100: each call answers, raises cancelled or closed, o
+  FAIL a step reads its clocks after its draw: a first draw of 300 ms, then a retry due 100 ms after the step, is submitted at least 50 ms after the dra
+  FAIL a raise planted at a turn's admission is that call's failure alone: at a limit of 1, a call let in as the first ends has its submit raise a symbo
+  FAIL a raise inside a call's section after the call has ended is raised again, never dropped: a planted submit that cancels its own call, then raises,
+  FAIL an escape at the take, in a child: SIGINT's handler escapes from the await's take as its critical section ends, the token's notice, which the loo
+  FAIL a lost notice, through the seam: a call's notice taken out of the group's mailbox before any turn stepped it, the call still live; its await find
+  FAIL a late notice: a token found done by a look after a take had answered #f is stepped once, its redirect's request counted once at the origin, thou
+  FAIL SIGINT while a turn's due submit, a call's retry, blocks on the engine's mutex inside its critical section escapes as the section ends, after the
+  FAIL SIGINT while a turn's due submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that 
+  FAIL a turn lets each queued call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as 
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+  FAIL a redirect and a retry of one call proceed while another is awaited: by the end of a 1500 ms hold's await, the other call has followed its 302 an
+  FAIL a redirect keeps its call's slot: at a limit of 1, a 302's follow-up is submitted at once, ahead of a call queued behind it, its await ending wit
+  FAIL queued calls are let in first in, first out: at a limit of 1, four of go's calls reach the origin in go's order, and three of http-parallel's in 
+  FAIL a deferred submit that raises is that call's failure alone: at a limit of 1, a call queued behind a done one, the session then closed, is let in 
+  FAIL http-pending-done? moves the group on: polled alone, never awaited, a call follows its 302 and ends, its follow-up counted at the origin before a
+  FAIL a cancelled call is exempt from the join's raise: a live 3 s hold, a queued call and a waiting one, each cancelled, and the procedure returns its
+  FAIL a caller's cancel exempts a call from the join's raise in either order: cancelled before any turn stepped its failure, its await raises cancelled
+  FAIL a cancel of an ended call does nothing: its await answers its response, the same object, before and after the cancel; and an await answers twice 
+  FAIL a queued call is on its clock: at a limit of 1, behind a 1500 ms hold, a call bounded by 300 ms fails with &http-timeout, no transfer made, withi
+  FAIL a retry's wait in a group ends at its due time, not at the take's 100 ms: ten waits of 10 ms take less than 500 ms more than ten of 0; both calls
+  FAIL 20 calls of 500 ms in one group with no limit: all 20 held at once at the origin, every one a 200, all ended within 2 s
+  FAIL the control, 20 calls of 500 ms at a limit of 2: at most 2 held at once at the origin, every one a 200, which takes 5 s at least
+  FAIL http-parallel answers the responses in SPECS' order, whatever order they end in: holds of 600, 300 and 0 ms; at a limit of 1, one at a time, stil
+  FAIL http-parallel raises its first failure, as the call raised it, once the rest are cancelled and ended, three times: a refused connect beside a 5 s
+  FAIL a group's call draws from its session's generator, once per step: its retry's wait is that draw times the backoff, predicted from a copy of the g
+== r7-no-look: M5: rule 7: no look at the set's tokens
+  test: FAIL tests/test-group.sps (exit 1)
+  FAIL a raise inside a call's section after the call has ended is raised again, never dropped: a planted submit that cancels its own call, then raises,
+  FAIL an escape at the take, in a child: SIGINT's handler escapes from the await's take as its critical section ends, the token's notice, which the loo
+  FAIL a lost notice, through the seam: a call's notice taken out of the group's mailbox before any turn stepped it, the call still live; its await find
+== g1-parallel-no-closed: M5: fix 2.1: run-parallel enters calls into a closed group
+  test: FAIL tests/test-group.sps (exit 1)
+  FAIL an engine's expiry anywhere in http-parallel, swept from 200 to 9000 ticks by 100, then by 1 for 100 ticks either side of its first cancel, acros
+  FAIL the http-parallel sweep's evidence: some expiry landed before its group, its four responses answered with all four transfers started after the ex
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+== z-parallel-last-unfinished: M5: coordinator, fix 3.7: http-parallel raises the last entered call's cancel, not the first not done
+  test: FAIL tests/test-group.sps (exit 1)
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+== z3-go-closed-after-admit: M5: fix 3.2: a go resumed after its entry raises closed, not its pending
+  test: FAIL tests/test-group.sps (exit 1)
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+== plant-trip-in-hold: plant: a collection asked for in every hold
+  test: FAIL tests/test-group.sps (exit 1)
+  FAIL SIGINT while go's submit blocks on the engine's mutex inside its critical section escapes as the section ends, after the submit took the mutex, o
+  FAIL SIGINT while go's submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that very obj
+  FAIL SIGINT while a turn's due submit, a call's retry, blocks on the engine's mutex inside its critical section escapes as the section ends, after the
+  FAIL SIGINT while a turn's due submit blocks on the engine's mutex, whose handler raises a &curl-error of its own, reaches the caller as raised, that 
+  FAIL http-parallel lets each call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as 
+  FAIL a turn lets each queued call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as 
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+== control-late-sigint: control: the SIGINT sent 3.5 s after ready
+  test: pass tests/test-group.sps
+== plant-late-fixed-hold: plant: the SIGINT 3.5 s after ready, each hold 1 s
+  test: FAIL tests/test-group.sps (exit 1)
+  FAIL an escape at the take, in a child: SIGINT's handler escapes from the await's take as its critical section ends, the token's notice, which the loo
+  FAIL http-parallel lets each call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as 
+  FAIL a turn lets each queued call in in a critical section of its own: SIGINT while its first admission's submit blocks on the engine's mutex runs as 
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+  FAIL a run suspended by an escape out of its group and resumed, as an engine's expiry and resume do, placed by SIGINT as a section ends, in a child, c
+== bit-from-handed: the head's body-asked bit: bytes handed, not libcurl's ask
+  test: FAIL tests/test-upload.sps (exit 1)
+  FAIL the head's body-asked bit: #t for a streamed body whose server answers before reading it over HTTP/2, nothing put by the head, the answer held un
+  FAIL the head's body-asked bit with the answer first, by version, on 8.20.0: on an engine whose prerequest callable holds 200 ms once connected, the r
+  FAIL the head's body-asked bit with the answer written as the connection is accepted, on a caller's engine: whether the answer lands before the reques
+== origin-hold-ignored: the origin: HTTP/2's /answer answers at once, hold or not
+  test: FAIL tests/test-origin-tls.sps (exit 1)
+  test: pass tests/test-upload.sps
+  FAIL h2c POST /answer?status=200&hold=KEY, its HEADERS without END_STREAM: the answer, whole frames, only once /raw/release?key=KEY, from the raw face
+  FAIL h2 POST /answer?status=200&hold=KEY, its HEADERS without END_STREAM: the answer, whole frames, only once /raw/release?key=KEY, from the raw face 
+== origin-hold-forever: the origin: HTTP/2's held /answer never answers
+  test: FAIL tests/test-origin-tls.sps (exit 1)
+  test: FAIL tests/test-upload.sps (exit 1)
+  FAIL h2c POST /answer?status=200&hold=KEY, its HEADERS without END_STREAM: the answer, whole frames, only once /raw/release?key=KEY, from the raw face
+  FAIL h2 POST /answer?status=200&hold=KEY, its HEADERS without END_STREAM: the answer, whole frames, only once /raw/release?key=KEY, from the raw face 
+  FAIL the head's body-asked bit: #t for a streamed body whose server answers before reading it over HTTP/2, nothing put by the head, the answer held un

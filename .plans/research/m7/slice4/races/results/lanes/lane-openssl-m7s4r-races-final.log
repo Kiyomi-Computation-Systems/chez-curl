@@ -1,0 +1,31 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (4 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-group.sps
+%%%% Starting test group
+# of expected passes      65
+test: pass tests/test-group.sps
+=== tests/test-upload.sps
+%%%% Starting test upload
+(fill #f 1966080 ms 595 retried () mib (20))
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 1078)
+(throughput http chunked ms 983)
+(throughput https sized ms 878)
+(throughput https chunked ms 1046)
+(throughput h2 sized ms 391)
+(throughput h2 chunked ms 338)
+(read-lock collections-while-live 990)
+# of expected passes      58
+test: pass tests/test-upload.sps
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      161
+test: pass tests/test-origin-tls.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      347
+test: pass tests/test-origin.sps
+test: ran 4, passed 4, failed 0, hung 0

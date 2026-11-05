@@ -1,0 +1,33 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl4t64 8.5.0-2ubuntu10.16
+package valgrind 1:3.22.0-0ubuntu3
+cpus: 2
+=== round 1, tree ci, 180 s
+test-memory: pass tests/test-group.sps
+test-memory: pass tests/test-upload.sps
+test-memory: ran 2, passed 2, failed 0, hung 0
+=== round 1, tree main, 180 s
+test-memory: pass tests/test-group.sps
+test-memory: pass tests/test-upload.sps
+test-memory: ran 2, passed 2, failed 0, hung 0
+=== round 2, tree ci, 181 s
+test-memory: pass tests/test-group.sps
+test-memory: FAIL tests/test-upload.sps (exit 1)
+test-memory: ran 2, passed 1, failed 1, hung 0
+FAIL the head's body-asked bit: #t for a streamed body whose server answers before reading it over HTTP/2, nothing put by the head, and over HTTP/1.1 with a close, a race, whether the read callable was ever asked; #t for one whose server reads it before answering, on the raw face and over HTTP/2; #f for a whole body, for none, and for a streamed length of 0, which libcurl never asks for
+  expected: ((raw-answer bit-is-ask) (h2-answer #t) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+  actual:   ((raw-answer bit-is-ask) (h2-answer #f) (raw-sink #t) (h2-sink #t) (whole #f) (none #f) (zero #f))
+=== round 2, tree main, 179 s
+test-memory: pass tests/test-group.sps
+test-memory: pass tests/test-upload.sps
+test-memory: ran 2, passed 2, failed 0, hung 0
+=== round 3, tree ci, 180 s
+test-memory: pass tests/test-group.sps
+test-memory: pass tests/test-upload.sps
+test-memory: ran 2, passed 2, failed 0, hung 0
+=== round 3, tree main, 179 s
+test-memory: pass tests/test-group.sps
+test-memory: pass tests/test-upload.sps
+test-memory: ran 2, passed 2, failed 0, hung 0
+memory-race: done
+exit=0

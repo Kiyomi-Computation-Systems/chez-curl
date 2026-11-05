@@ -1,0 +1,11 @@
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -1485,6 +1485,8 @@
+                                   "the request group was closed while go checked the call: go starts no call"
+                                   (list method url))))
+           (admit! group)
++          (when (group-closed? group)
++            (raise (group-refusal 'closed 'go "the request group closed during go's admissions" (list method url))))
+           pending))
+       (with-group group
+         (lambda ()
