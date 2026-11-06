@@ -101,3 +101,10 @@ which I checked against the logs:
   102,399.
 
 Each is a row of `test-headers`' per-version table, and the docs list them by version.
+
+**Apple's 8.7.1, on the Mac, 2026-11-06** (`results/mac-8.7.1-1.log` and `-2.log`): its byte cap
+is 8.5.0's, 307,200 a response, and it counts no headers. The cap's refusal ends an HTTP/2 transfer
+56 there, not 23, which decision 2's recorded reason already covers; it does not lose a refused
+HTTP/2 trailer, as 8.5.0 does. A line of 102,400 bytes is 100 over HTTP/1.1 and 56 over HTTP/2, 16
+if HPACK cannot code it; a 5,000-byte trailer line is 100; nghttp2's limit is 56. One walk of 5,000
+headers took 107 to 146 ms of CPU. No decision moved.

@@ -28,7 +28,9 @@ close-out under **Close-outs**, newest first.
     a path resolved once and checked by `stat` on the caller's side, the engine opening it; and
     the FIFO window recorded (ADR-0039, amended). Its three probes, which I reran, are kept in
     [`research/m8/review/`](research/m8/review/).
-  - **Owed before the plan's pull request:** the Mac's three probes (the plan, §9).
+  - **The Mac ran the three probes, 2026-11-06,** against Apple's 8.7.1, every process exiting
+    0: they revise no decision, and fill the plan's 8.7.1 rows (§9). The cap's refusal ends an
+    HTTP/2 transfer 56 there, not 23, which its recorded reason covers.
 - **M7, HTTP/2, cookies, auth and proxies:** **done on 2026-11-05.** Its four slices are merged
   (PRs #42 to #45): the HTTP version, server credentials, a proxy given by URL and the cookie
   jar, per the [M7 plan](2026-11-02-m7-plan.md), merged as PR #41 (`c238fe7`). The Mac has run

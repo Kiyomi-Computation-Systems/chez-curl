@@ -165,3 +165,9 @@ family is amended as slice 3 builds.
   (mime-files README, C-shrunk);
 - a file removed after the engine's check fails the transfer 26 once the head and the earlier parts
   have reached the server, in a request cut short (C-removed).
+
+**Apple's 8.7.1, on the Mac, 2026-11-06** (each probe's `results/mac-8.7.1.log`): it answers as
+8.5.0 and later do. `curl_formadd` answers 0 and `curl_mime_init` a mime, so the load reads mime
+there; a FIFO's open blocked `curl_multi_perform` 1.5 s; with `CURLMIMEOPT_FORMESCAPE`, CR and LF in
+a name go out raw, as on 7.85.0 to 8.20.0; `CURLINFO_REQUEST_SIZE` reads 0, the earlier trap's. No
+decision moved.
