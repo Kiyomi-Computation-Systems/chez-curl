@@ -536,9 +536,10 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   during a probe arrived after it. A check that needs two commands at once
   starts the long one through `open-process-ports`.
 * libcurl's `curl_easy_nextheader` walks every header it holds on each call,
-  so a response's n headers cost n²: on 7.85.0, which caps none, 100,000 took
-  30 s of CPU once the transfer had ended. A check of many headers stays near
-  the newer caps: 300 KiB, and 5,000 from 8.20.0.
+  so a response's n headers cost n² before 8.23.0, which caches: on 7.85.0,
+  which caps none, 100,000 took 30 s of CPU once the transfer had ended, and
+  8.20.0's walk costs about three times 7.85.0's. A check of many headers
+  stays near the newer caps: 300 KiB from 8.5.0, and 5,000 from 8.20.0.
 * `FRESH_CONNECT` keeps the transfer that sets it off other connections,
   never others off its own, and 7.85.0 reads `FORBID_REUSE` only as a
   transfer ends: an environment proxy's transfer joined a live HTTP/2 tunnel
@@ -599,6 +600,22 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * A group submits a redirect's next hop inside its step's critical section,
   before a pending Ctrl-C runs, so the raise's cancel races the engine
   starting it: count a group's started transfers there as one or two.
+* A blank `Content-Type:` beside `MIMEPOST` sends `Content-Type: ; boundary=B`
+  and every part as `attachment`: a multipart transfer leaves the blank out.
+* libcurl opens a file part only as the body reaches it, on the transfer's
+  thread, its size fixed at `curl_mime_filedata`: a FIFO blocks
+  `curl_multi_perform` past `TIMEOUT_MS`, `/dev/stdin` reads stdin, a grown
+  file sends a malformed body answered 200, and a path refused with 26 is
+  still sent, as an empty field from 8.20.0. Check a path where it is taken
+  and again before `curl_mime_filedata`, and fail on any answer but 0.
+* A 7.85.0 built `--disable-mime`, with SMTP or IMAP, keeps the mime API and
+  sends every multipart `POST` empty, answered 200; 8.23.0's answers NULL from
+  `curl_mime_init`. No symbol, option or feature bit shows either: only
+  `curl_formadd`'s 7.
+* 8.5.0 loses a header callback's refusal of an HTTP/2 trailer: the transfer
+  ends 0. Read a callable's refusal from its recorded reason.
+* `UPLOAD` 1 or `POST` 1 set after `MIMEPOST` reads stdin: set the mime last,
+  and own every option that could follow it.
 
 ## Closing ritual
 

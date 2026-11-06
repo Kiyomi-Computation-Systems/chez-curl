@@ -1346,14 +1346,18 @@ it should not be a comment. (chez-cmark-gfm)
   A check that needs two commands running at once starts the long one through
   `open-process-ports`, which does not call `system`. (chez-curl, M6 slice 3, the Mac's run)
 * **libcurl's `curl_easy_nextheader` walks every header it holds on each call, so reading n
-  headers costs n².** Each call counts, from the first header, every one that shares the name
-  of the one it returns: the loop is in `lib/headers.c` on 7.85.0, 8.20.0 and 8.23.0. 7.85.0
-  caps no response's headers; 8.7.1 and 8.20.0 cap them at 300 KiB, 8.20.0 at 5,000 too. So on
-  7.85.0 a GET of 100,000 headers took 30.4 to 31.5 s, all of it CPU, after the transfer had
-  ended, and 50,000 took 7.3 to 7.7 s; 8.5.0 took 20,000, under its cap, in 1.9 s
+  headers costs n², up to 8.23.0.** Each call counts, from the first header, every one that
+  shares the name of the one it returns: the loop is in `lib/headers.c` on 7.85.0 and 8.20.0.
+  8.23.0 caches each header's count (`nextheader_cache_build`), so its walk is linear. 7.85.0
+  caps no response's headers; 8.5.0 and later cap them at 300 KiB, 8.20.0 and 8.23.0 at 5,000
+  too. So on 7.85.0 a GET of 100,000 headers took 30.4 to 31.5 s, all of it CPU, after the
+  transfer had ended, and 50,000 took 7.3 to 7.7 s; 8.5.0 took 20,000, under its cap, in 1.9 s
   ([research](research/ci-first-run/)). test-transfer's 100,000 outlasted its 60 s bound on CI's
   floor lane once in three runs, and is now 50,000, still past every cap. A check of many headers
-  stays near the newer caps. (chez-curl, CI's first run)
+  stays near the newer caps. M8 measured one walk of 5,000 at 140 to 158 ms of CPU on 7.85.0, 159
+  to 205 on 8.5.0, 454 to 536 on 8.20.0 and 0.39 to 0.54 on 8.23.0, and the names move it: with
+  names `x-000001` on, 7.85.0's 50,000 took 12.2 to 12.5 s ([caps](research/m8/caps/), case 5;
+  my rerun of lane X matched). (chez-curl, CI's first run; M8's plan)
 * **`FRESH_CONNECT` keeps the transfer that sets it off other connections, never others off
   its own,** and 7.85.0 reads `FORBID_REUSE` only as a transfer ends (`lib/multi.c:703`). So on
   7.85.0 a transfer through the environment's proxy, with no credentials, joined as a second
@@ -1513,3 +1517,37 @@ it should not be a comment. (chez-cmark-gfm)
   ([guard](research/m7/carried/guard/), the fix round's tally; rerun in `verify/`). A single call
   submits after its section. Count a group's started transfers there as one or two. (chez-curl,
   after M7)
+* **A blank `Content-Type:` beside `MIMEPOST` breaks the form.** chez-curl hands `HTTPHEADER`
+  `Content-Type:` with every body the caller gives no type, to take libcurl's own away. Beside a
+  mime body libcurl then sent `Content-Type: ; boundary=B`, with no media type, and every part's
+  `Content-Disposition` as `attachment`, on the five Linux libcurls, two runs each
+  ([mime-wire](research/m8/mime-wire/), question 2; my rerun of lane X). A caller's type gets
+  `; boundary=B` appended, a second one beside a caller's own. A multipart transfer leaves the
+  blank out, and refuses a caller's type (ADR-0039). (chez-curl, M8's plan)
+* **libcurl opens a file part's file only as the body reaches it, on the transfer's thread, and
+  fixes its size at `curl_mime_filedata`.** On the five Linux libcurls, two runs each
+  ([mime-files](research/m8/mime-files/), tables 1 to 3; my rerun of lane X): a FIFO's `fopen`
+  blocked `curl_multi_perform` until a writer came, 1.5 s with `TIMEOUT_MS` at 500; `/dev/stdin`
+  read the process's stdin to its end; a directory or `/dev/null` sent an empty part, answered
+  200; a file grown since sent its old length of new bytes over the closing delimiter, answered
+  200; a relative path opened against the working directory at the transfer. And a path
+  `curl_mime_filedata` refused with 26 still left a part that 8.20.0 and 8.23.0 sent as an empty
+  field, answered 200. Check a path where it is taken, again just before `curl_mime_filedata`, and
+  fail the transfer on any answer but 0 (ADR-0039). (chez-curl, M8's plan)
+* **A libcurl built `--disable-mime` can keep the whole mime API.** On 7.85.0, `lib/mime.c`
+  compiles it whenever SMTP or IMAP is built, as the floor's build has them, and HTTP alone stops
+  using it: every mime call answered 0, and each multipart `POST` went out with no body, answered
+  200. On 8.23.0 the same flag leaves stubs, `curl_mime_init` answering NULL. On both, every
+  symbol stays, `MIMEPOST` is still found by name, and the features word does not change; only
+  `curl_formadd` answered 7, `CURL_FORMADD_DISABLED` ([mime-files](research/m8/mime-files/),
+  table 8; my rerun). (chez-curl, M8's plan)
+* **8.5.0 loses a header callback's refusal of an HTTP/2 trailer.** A `HEADERFUNCTION` that
+  answered a short count for a trailer line ended the transfer 0 on both 8.5.0 builds, `Failed
+  writing header` left in the error buffer, in four runs and my rerun; 7.85.0 ended it 23
+  ([caps](research/m8/caps/), case 4, cell `toward tr-2+6000 h2 cap`). A callable's refusal is
+  read from its recorded reason, never from libcurl's code alone. (chez-curl, M8's plan)
+* **`UPLOAD` 1 or `POST` 1 set after `MIMEPOST` reads stdin** through libcurl's default read
+  callback, on the five Linux libcurls, and on 7.85.0 `UPLOAD` 1 set before it does too
+  ([mime-wire](research/m8/mime-wire/), question 7; my rerun of lane X). The last body option
+  set wins, so the transfer sets the mime last, and owns every option that could follow it.
+  (chez-curl, M8's plan)

@@ -1,0 +1,223 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+network interfaces: lo 
+package gcc 4:13.2.0-7ubuntu1
+package libnghttp2-dev 1.59.0-1ubuntu0.4
+package libssl-dev 3.0.13-0ubuntu3.16
+package zlib1g-dev 1:1.3.dfsg-3.1ubuntu2.3
+build 7.85.0: already built in /home/kishu/src/chez-curl/build/m8/mime-files/nomime-7.85.0
+build 7.85.0: curl-config --version: libcurl 7.85.0
+build 7.85.0: curl-config --features: AsynchDNS HSTS HTTP2 HTTPS-proxy IPv6 Largefile NTLM NTLM_WB SSL TLS-SRP UnixSockets alt-svc libz threadsafe 
+build 7.85.0: curl-config --protocols: DICT FILE FTP FTPS GOPHER GOPHERS HTTP HTTPS IMAP IMAPS MQTT POP3 POP3S RTSP SMB SMBS SMTP SMTPS TELNET TFTP 
+build 7.85.0: curl-config --configure:  '--prefix=/home/kishu/src/chez-curl/build/m8/mime-files/nomime-7.85.0' '--enable-option-checking=fatal' '--disable-static' '--with-openssl' '--with-zlib' '--with-nghttp2' '--enable-ipv6' '--without-brotli' '--without-zstd' '--without-libidn2' '--without-libpsl' '--without-libgsasl' '--without-gssapi' '--disable-ldap' '--disable-ldaps' '--without-libssh2' '--without-libssh' '--without-librtmp' '--without-wolfssh' '--disable-ares' '--without-hyper' '--without-quiche' '--without-msh3' '--without-ngtcp2' '--without-nghttp3' '--disable-mime'
+build 7.85.0: nm -D defined curl_mime_/curl_form symbols: curl_formadd curl_formfree curl_formget curl_mime_addpart curl_mime_data curl_mime_data_cb curl_mime_encoder curl_mime_filedata curl_mime_filename curl_mime_free curl_mime_headers curl_mime_init curl_mime_name curl_mime_subparts curl_mime_type 
+build 8.23.0: already built in /home/kishu/src/chez-curl/build/m8/mime-files/nomime-8.23.0
+build 8.23.0: curl-config --version: libcurl 8.23.0
+build 8.23.0: curl-config --features: alt-svc AsynchDNS HSTS HTTP2 HTTPS-proxy IPv6 Largefile libz SSL threadsafe UnixSockets 
+build 8.23.0: curl-config --protocols: DICT FILE FTP FTPS GOPHER GOPHERS HTTP HTTPS IMAP IMAPS IPFS IPNS MQTT MQTTS POP3 POP3S RTSP SMTP SMTPS TELNET TFTP WS WSS 
+build 8.23.0: curl-config --configure:  '--prefix=/home/kishu/src/chez-curl/build/m8/mime-files/nomime-8.23.0' '--enable-option-checking=fatal' '--disable-static' '--with-openssl' '--with-zlib' '--with-nghttp2' '--enable-ipv6' '--without-brotli' '--without-zstd' '--without-libidn2' '--without-libpsl' '--without-libgsasl' '--without-gssapi' '--disable-ldap' '--disable-ldaps' '--without-libssh2' '--without-libssh' '--without-libuv' '--without-apple-idn' '--disable-ares' '--without-quiche' '--without-ngtcp2' '--without-nghttp3' '--disable-mime'
+build 8.23.0: nm -D defined curl_mime_/curl_form symbols: curl_formadd curl_formfree curl_formget curl_mime_addpart curl_mime_data curl_mime_data_cb curl_mime_encoder curl_mime_filedata curl_mime_filename curl_mime_free curl_mime_headers curl_mime_init curl_mime_name curl_mime_subparts curl_mime_type 
+[nomime-7.85.0] libcurl /home/kishu/src/chez-curl/build/m8/mime-files/nomime-7.85.0/lib/libcurl.so.4 -> /home/kishu/src/chez-curl/build/m8/mime-files/nomime-7.85.0/lib/libcurl.so.4.8.0, headers /home/kishu/src/chez-curl/build/m8/mime-files/nomime-7.85.0/include
+[nomime-7.85.0] node v24.18.0 uname Linux x86_64 uid=1000 CURL_SSL_BACKEND=unset cpus=Cpus_allowed_list:6-11
+[nomime-7.85.0] version headers=7.85.0 runtime=7.85.0 ssl=OpenSSL/3.0.13 features=0x5129c29d age=9
+[nomime-7.85.0] server ctl=46595 raw=40297 h2c=38235
+[nomime-7.85.0] case D-calls start plain=0 live=0
+[nomime-7.85.0] case D-calls version runtime=7.85.0 age=9 features=0x5129c29d ssl=OpenSSL/3.0.13
+[nomime-7.85.0] case D-calls curl_mime_init(easy) -> a mime
+[nomime-7.85.0] case D-calls curl_mime_addpart -> a part
+[nomime-7.85.0] case D-calls curl_mime_name rc=0 (No error)
+[nomime-7.85.0] case D-calls curl_mime_data rc=0 (No error)
+[nomime-7.85.0] case D-calls curl_mime_type rc=0 (No error)
+[nomime-7.85.0] case D-calls curl_mime_filename rc=0 (No error)
+[nomime-7.85.0] case D-calls curl_mime_filedata(part) rc=0 (No error)
+[nomime-7.85.0] case D-calls curl_mime_name(NULL) rc=43 (A libcurl function was given a bad argument)
+[nomime-7.85.0] case D-calls setopt MIMEPOST NULL rc=0 (No error)
+[nomime-7.85.0] case D-calls setopt MIMEPOST init's answer (a mime) rc=0 (No error)
+[nomime-7.85.0] case D-calls curl_easy_option_by_name MIMEPOST -> found id=10269 type=3
+[nomime-7.85.0] case D-calls curl_easy_option_by_name MIME_OPTIONS -> found
+[nomime-7.85.0] case D-calls curl_formadd rc=7 post=NULL
+[nomime-7.85.0] case D-calls setopt HTTPPOST rc=0 (No error)
+[nomime-7.85.0] case D-calls D-send-init setopt MIMEPOST rc=0 (No error)
+[nomime-7.85.0] case D-calls D-send-init dbg text t=0.1 "  Trying 127.0.0.1:40297..."
+[nomime-7.85.0] case D-calls D-send-init dbg text t=0.1 "Connected to 127.0.0.1 (127.0.0.1) port 40297 (#0)"
+[nomime-7.85.0] case D-calls D-send-init dbg header_out n=1 t=0.2 "POST /sink?tag=D-send-init HTTP/1.1\r\nHost: 127.0.0.1:40297\r\nAccept: */*\r\nContent-Length: 0\r\n\r\n"
+[nomime-7.85.0] case D-calls D-send-init dbg text t=3.0 "Mark bundle as not supporting multiuse"
+[nomime-7.85.0] case D-calls D-send-init dbg header_in t=3.0 "HTTP/1.1 200 OK"
+[nomime-7.85.0] case D-calls D-send-init dbg header_in t=3.0 "Content-Length: 3"
+[nomime-7.85.0] case D-calls D-send-init dbg header_in t=3.0 ""
+[nomime-7.85.0] case D-calls D-send-init dbg text t=3.0 "Connection #0 to host 127.0.0.1 left intact"
+[nomime-7.85.0] case D-calls D-send-init done code=0 (No error) errbuf="" status=200 num_connects=1 attempts=1 data_out=0 t_end=3.0 resp="ok\n"
+[nomime-7.85.0] case D-calls D-send-init perform_max=0.2 ms at pf=1
+[nomime-7.85.0] case D-calls D-send-init server: ev 1 t=78.3 accept face=raw conn=34880
+[nomime-7.85.0] case D-calls D-send-init server: ev 2 t=79.0 req face=raw conn=34880 tag=D-send-init idx=0 POST /sink cl=0 te=- expect=- ct="-" auth=no head="POST /sink?tag=D-send-init HTTP/1.1\r\nHost: 127.0.0.1:40297\r\nAccept: */*\r\nContent-Length: 0\r\n\r\n"
+[nomime-7.85.0] case D-calls D-send-init server: ev 3 t=79.6 body face=raw conn=34880 tag=D-send-init idx=0 framing=cl declared=0 got=0 chunks=0 fnv=811c9dc5 first=""
+[nomime-7.85.0] case D-calls D-send-init server: ev 4 t=79.8 answer face=raw conn=34880 tag=D-send-init idx=0 status=200
+[nomime-7.85.0] case D-calls D-send-init server-events after=0 n=4
+[nomime-7.85.0] case D-calls D-send-mimepost-null setopt MIMEPOST rc=0 (No error)
+[nomime-7.85.0] case D-calls D-send-mimepost-null dbg text t=0.0 "  Trying 127.0.0.1:40297..."
+[nomime-7.85.0] case D-calls D-send-mimepost-null dbg text t=0.1 "Connected to 127.0.0.1 (127.0.0.1) port 40297 (#0)"
+[nomime-7.85.0] case D-calls D-send-mimepost-null dbg header_out n=1 t=0.1 "POST /sink?tag=D-send-mimepost-null HTTP/1.1\r\nHost: 127.0.0.1:40297\r\nAccept: */*\r\nContent-Length: 0\r\n\r\n"
+[nomime-7.85.0] case D-calls D-send-mimepost-null dbg text t=0.4 "Mark bundle as not supporting multiuse"
+[nomime-7.85.0] case D-calls D-send-mimepost-null dbg header_in t=0.4 "HTTP/1.1 200 OK"
+[nomime-7.85.0] case D-calls D-send-mimepost-null dbg header_in t=0.4 "Content-Length: 3"
+[nomime-7.85.0] case D-calls D-send-mimepost-null dbg header_in t=0.4 ""
+[nomime-7.85.0] case D-calls D-send-mimepost-null dbg text t=0.4 "Connection #0 to host 127.0.0.1 left intact"
+[nomime-7.85.0] case D-calls D-send-mimepost-null done code=0 (No error) errbuf="" status=200 num_connects=1 attempts=1 data_out=0 t_end=0.4 resp="ok\n"
+[nomime-7.85.0] case D-calls D-send-mimepost-null perform_max=0.1 ms at pf=4
+[nomime-7.85.0] case D-calls D-send-mimepost-null server: ev 6 t=80.9 accept face=raw conn=34896
+[nomime-7.85.0] case D-calls D-send-mimepost-null server: ev 7 t=81.1 req face=raw conn=34896 tag=D-send-mimepost-null idx=0 POST /sink cl=0 te=- expect=- ct="-" auth=no head="POST /sink?tag=D-send-mimepost-null HTTP/1.1\r\nHost: 127.0.0.1:40297\r\nAccept: */*\r\nContent-Length: 0\r\n\r\n"
+[nomime-7.85.0] case D-calls D-send-mimepost-null server: ev 8 t=81.1 body face=raw conn=34896 tag=D-send-mimepost-null idx=0 framing=cl declared=0 got=0 chunks=0 fnv=811c9dc5 first=""
+[nomime-7.85.0] case D-calls D-send-mimepost-null server: ev 9 t=81.2 answer face=raw conn=34896 tag=D-send-mimepost-null idx=0 status=200
+[nomime-7.85.0] case D-calls D-send-mimepost-null server-events after=5 n=4
+[nomime-7.85.0] case D-calls all done live_before_global_cleanup=0
+[nomime-7.85.0] case D-calls live_after_global_cleanup=0
+[nomime-7.85.0] probe D-calls exit=0
+[nomime-7.85.0] probe D-calls took about 0 s
+[nomime-7.85.0] case R-when start plain=0 live=0
+[nomime-7.85.0] case R-when mime fn=curl_mime_data part=field len=7 rc=0
+[nomime-7.85.0] case R-when fs stat step=filedata pf=0 tid=main path="/tmp/m8mf.cbyFeG/c-R-when/when1.txt" ret=0 errno=0 size=3000 mode=0100644
+[nomime-7.85.0] case R-when fs access step=filedata pf=0 tid=main path="/tmp/m8mf.cbyFeG/c-R-when/when1.txt" mode=4 ret=0 errno=0
+[nomime-7.85.0] case R-when mime fn=curl_mime_filedata part=first path="/tmp/m8mf.cbyFeG/c-R-when/when1.txt" rc=0 (No error)
+[nomime-7.85.0] case R-when fs stat step=filedata pf=0 tid=main path="/tmp/m8mf.cbyFeG/c-R-when/when2.txt" ret=0 errno=0 size=2000 mode=0100644
+[nomime-7.85.0] case R-when fs access step=filedata pf=0 tid=main path="/tmp/m8mf.cbyFeG/c-R-when/when2.txt" mode=4 ret=0 errno=0
+[nomime-7.85.0] case R-when mime fn=curl_mime_filedata part=second path="/tmp/m8mf.cbyFeG/c-R-when/when2.txt" rc=0 (No error)
+[nomime-7.85.0] case R-when expect part=first len=3000 fnv=9df31c69
+[nomime-7.85.0] case R-when expect part=second len=2000 fnv=147de9f3
+[nomime-7.85.0] case R-when R-when setopt MIMEPOST rc=0 (No error)
+[nomime-7.85.0] case R-when R-when dbg text t=0.1 "  Trying 127.0.0.1:40297..."
+[nomime-7.85.0] case R-when R-when dbg text t=0.1 "Connected to 127.0.0.1 (127.0.0.1) port 40297 (#0)"
+[nomime-7.85.0] case R-when R-when dbg header_out n=1 t=0.1 "POST /sink?tag=R-when HTTP/1.1\r\nHost: 127.0.0.1:40297\r\nAccept: */*\r\nContent-Length: 0\r\n\r\n"
+[nomime-7.85.0] case R-when R-when dbg text t=0.4 "Mark bundle as not supporting multiuse"
+[nomime-7.85.0] case R-when R-when dbg header_in t=0.4 "HTTP/1.1 200 OK"
+[nomime-7.85.0] case R-when R-when dbg header_in t=0.4 "Content-Length: 3"
+[nomime-7.85.0] case R-when R-when dbg header_in t=0.4 ""
+[nomime-7.85.0] case R-when R-when dbg text t=0.4 "Connection #0 to host 127.0.0.1 left intact"
+[nomime-7.85.0] case R-when R-when done code=0 (No error) errbuf="" status=200 num_connects=1 attempts=1 data_out=0 t_end=0.4 resp="ok\n"
+[nomime-7.85.0] case R-when R-when perform_max=0.1 ms at pf=1
+[nomime-7.85.0] case R-when R-when:1 server: ev 11 t=87.6 accept face=raw conn=34902
+[nomime-7.85.0] case R-when R-when:1 server: ev 12 t=87.7 req face=raw conn=34902 tag=R-when idx=0 POST /sink cl=0 te=- expect=- ct="-" auth=no head="POST /sink?tag=R-when HTTP/1.1\r\nHost: 127.0.0.1:40297\r\nAccept: */*\r\nContent-Length: 0\r\n\r\n"
+[nomime-7.85.0] case R-when R-when:1 server: ev 13 t=87.7 body face=raw conn=34902 tag=R-when idx=0 framing=cl declared=0 got=0 chunks=0 fnv=811c9dc5 first=""
+[nomime-7.85.0] case R-when R-when:1 server: ev 14 t=87.8 answer face=raw conn=34902 tag=R-when idx=0 status=200
+[nomime-7.85.0] case R-when R-when:1 server-events after=10 n=4
+[nomime-7.85.0] case R-when R-when-again dbg text t=0.0 "Found bundle for host: 0x5afe0156d810 [serially]"
+[nomime-7.85.0] case R-when R-when-again dbg text t=0.0 "Can not multiplex, even if we wanted to"
+[nomime-7.85.0] case R-when R-when-again dbg text t=0.0 "Re-using existing connection #0 with host 127.0.0.1"
+[nomime-7.85.0] case R-when R-when-again dbg text t=0.0 "Connected to 127.0.0.1 (127.0.0.1) port 40297 (#0)"
+[nomime-7.85.0] case R-when R-when-again dbg header_out n=1 t=0.1 "POST /sink?tag=R-when HTTP/1.1\r\nHost: 127.0.0.1:40297\r\nAccept: */*\r\nContent-Length: 0\r\n\r\n"
+[nomime-7.85.0] case R-when R-when-again dbg text t=0.2 "Mark bundle as not supporting multiuse"
+[nomime-7.85.0] case R-when R-when-again dbg header_in t=0.2 "HTTP/1.1 200 OK"
+[nomime-7.85.0] case R-when R-when-again dbg header_in t=0.2 "Content-Length: 3"
+[nomime-7.85.0] case R-when R-when-again dbg header_in t=0.2 ""
+[nomime-7.85.0] case R-when R-when-again dbg text t=0.2 "Connection #0 to host 127.0.0.1 left intact"
+[nomime-7.85.0] case R-when R-when-again done code=0 (No error) errbuf="" status=200 num_connects=0 attempts=1 data_out=0 t_end=0.3 resp="ok\n"
+[nomime-7.85.0] case R-when R-when-again perform_max=0.1 ms at pf=4
+[nomime-7.85.0] case R-when R-when:2 server: ev 15 t=88.5 req face=raw conn=34902 tag=R-when idx=1 POST /sink cl=0 te=- expect=- ct="-" auth=no head="POST /sink?tag=R-when HTTP/1.1\r\nHost: 127.0.0.1:40297\r\nAccept: */*\r\nContent-Length: 0\r\n\r\n"
+[nomime-7.85.0] case R-when R-when:2 server: ev 16 t=88.5 body face=raw conn=34902 tag=R-when idx=1 framing=cl declared=0 got=0 chunks=0 fnv=811c9dc5 first=""
+[nomime-7.85.0] case R-when R-when:2 server: ev 17 t=88.6 answer face=raw conn=34902 tag=R-when idx=1 status=200
+[nomime-7.85.0] case R-when R-when:2 server-events after=14 n=3
+[nomime-7.85.0] case R-when all done live_before_global_cleanup=0
+[nomime-7.85.0] case R-when live_after_global_cleanup=0
+[nomime-7.85.0] probe R-when exit=0
+[nomime-7.85.0] probe R-when took about 0 s
+[nomime-7.85.0] -- 2 cases run
+[nomime-8.23.0] libcurl /home/kishu/src/chez-curl/build/m8/mime-files/nomime-8.23.0/lib/libcurl.so.4 -> /home/kishu/src/chez-curl/build/m8/mime-files/nomime-8.23.0/lib/libcurl.so.4.8.0, headers /home/kishu/src/chez-curl/build/m8/mime-files/nomime-8.23.0/include
+[nomime-8.23.0] node v24.18.0 uname Linux x86_64 uid=1000 CURL_SSL_BACKEND=unset cpus=Cpus_allowed_list:6-11
+[nomime-8.23.0] version headers=8.23.0 runtime=8.23.0 ssl=OpenSSL/3.0.13 features=0x5129028d age=11
+[nomime-8.23.0] server ctl=37975 raw=45341 h2c=42249
+[nomime-8.23.0] case D-calls start plain=0 live=0
+[nomime-8.23.0] case D-calls version runtime=8.23.0 age=11 features=0x5129028d ssl=OpenSSL/3.0.13
+[nomime-8.23.0] case D-calls curl_mime_init(easy) -> NULL
+[nomime-8.23.0] case D-calls curl_mime_addpart -> NULL
+[nomime-8.23.0] case D-calls curl_mime_name rc=4 (A requested feature, protocol or option was not found built-in in this libcurl due to a build-time decision.)
+[nomime-8.23.0] case D-calls curl_mime_data rc=4 (A requested feature, protocol or option was not found built-in in this libcurl due to a build-time decision.)
+[nomime-8.23.0] case D-calls curl_mime_type rc=4 (A requested feature, protocol or option was not found built-in in this libcurl due to a build-time decision.)
+[nomime-8.23.0] case D-calls curl_mime_filename rc=4 (A requested feature, protocol or option was not found built-in in this libcurl due to a build-time decision.)
+[nomime-8.23.0] case D-calls curl_mime_filedata(NULL) rc=4 (A requested feature, protocol or option was not found built-in in this libcurl due to a build-time decision.)
+[nomime-8.23.0] case D-calls curl_mime_name(NULL) rc=4 (A requested feature, protocol or option was not found built-in in this libcurl due to a build-time decision.)
+[nomime-8.23.0] case D-calls setopt MIMEPOST NULL rc=48 (An unknown option was passed in to libcurl)
+[nomime-8.23.0] case D-calls setopt MIMEPOST init's answer (NULL) rc=48 (An unknown option was passed in to libcurl)
+[nomime-8.23.0] case D-calls curl_easy_option_by_name MIMEPOST -> found id=10269 type=3
+[nomime-8.23.0] case D-calls curl_easy_option_by_name MIME_OPTIONS -> found
+[nomime-8.23.0] case D-calls curl_formadd rc=7 post=NULL
+[nomime-8.23.0] case D-calls setopt HTTPPOST rc=48 (An unknown option was passed in to libcurl)
+[nomime-8.23.0] case D-calls D-send-init setopt MIMEPOST rc=48 (An unknown option was passed in to libcurl)
+[nomime-8.23.0] case D-calls D-send-init dbg text t=0.1 "  Trying 127.0.0.1:45341..."
+[nomime-8.23.0] case D-calls D-send-init dbg text t=0.1 "Established connection to 127.0.0.1 (127.0.0.1 port 45341) from 127.0.0.1 port 41604 "
+[nomime-8.23.0] case D-calls D-send-init dbg text t=0.1 "using HTTP/1.x"
+[nomime-8.23.0] case D-calls D-send-init dbg header_out n=1 t=0.2 "GET /sink?tag=D-send-init HTTP/1.1\r\nHost: 127.0.0.1:45341\r\nAccept: */*\r\n\r\n"
+[nomime-8.23.0] case D-calls D-send-init dbg text t=0.2 "Request completely sent off"
+[nomime-8.23.0] case D-calls D-send-init dbg header_in t=2.3 "HTTP/1.1 200 OK"
+[nomime-8.23.0] case D-calls D-send-init dbg header_in t=2.3 "Content-Length: 3"
+[nomime-8.23.0] case D-calls D-send-init dbg header_in t=2.3 ""
+[nomime-8.23.0] case D-calls D-send-init dbg text t=2.4 "Connection #0 to host 127.0.0.1:45341 left intact"
+[nomime-8.23.0] case D-calls D-send-init done code=0 (No error) errbuf="" status=200 num_connects=1 attempts=1 data_out=0 t_end=2.4 resp="ok\n"
+[nomime-8.23.0] case D-calls D-send-init perform_max=0.1 ms at pf=1
+[nomime-8.23.0] case D-calls D-send-init server: ev 1 t=77.3 accept face=raw conn=41604
+[nomime-8.23.0] case D-calls D-send-init server: ev 2 t=77.8 req face=raw conn=41604 tag=D-send-init idx=0 GET /sink cl=- te=- expect=- ct="-" auth=no head="GET /sink?tag=D-send-init HTTP/1.1\r\nHost: 127.0.0.1:45341\r\nAccept: */*\r\n\r\n"
+[nomime-8.23.0] case D-calls D-send-init server: ev 3 t=78.4 body face=raw conn=41604 tag=D-send-init idx=0 framing=none declared=- got=0 chunks=0 fnv=811c9dc5 first=""
+[nomime-8.23.0] case D-calls D-send-init server: ev 4 t=78.7 answer face=raw conn=41604 tag=D-send-init idx=0 status=200
+[nomime-8.23.0] case D-calls D-send-init server-events after=0 n=4
+[nomime-8.23.0] case D-calls D-send-mimepost-null setopt MIMEPOST rc=48 (An unknown option was passed in to libcurl)
+[nomime-8.23.0] case D-calls D-send-mimepost-null dbg text t=0.0 "  Trying 127.0.0.1:45341..."
+[nomime-8.23.0] case D-calls D-send-mimepost-null dbg text t=0.1 "Established connection to 127.0.0.1 (127.0.0.1 port 45341) from 127.0.0.1 port 41606 "
+[nomime-8.23.0] case D-calls D-send-mimepost-null dbg text t=0.1 "using HTTP/1.x"
+[nomime-8.23.0] case D-calls D-send-mimepost-null dbg header_out n=1 t=0.1 "GET /sink?tag=D-send-mimepost-null HTTP/1.1\r\nHost: 127.0.0.1:45341\r\nAccept: */*\r\n\r\n"
+[nomime-8.23.0] case D-calls D-send-mimepost-null dbg text t=0.1 "Request completely sent off"
+[nomime-8.23.0] case D-calls D-send-mimepost-null dbg header_in t=0.6 "HTTP/1.1 200 OK"
+[nomime-8.23.0] case D-calls D-send-mimepost-null dbg header_in t=0.6 "Content-Length: 3"
+[nomime-8.23.0] case D-calls D-send-mimepost-null dbg header_in t=0.6 ""
+[nomime-8.23.0] case D-calls D-send-mimepost-null dbg text t=0.6 "Connection #0 to host 127.0.0.1:45341 left intact"
+[nomime-8.23.0] case D-calls D-send-mimepost-null done code=0 (No error) errbuf="" status=200 num_connects=1 attempts=1 data_out=0 t_end=0.6 resp="ok\n"
+[nomime-8.23.0] case D-calls D-send-mimepost-null perform_max=0.1 ms at pf=4
+[nomime-8.23.0] case D-calls D-send-mimepost-null server: ev 6 t=79.7 accept face=raw conn=41606
+[nomime-8.23.0] case D-calls D-send-mimepost-null server: ev 7 t=80.0 req face=raw conn=41606 tag=D-send-mimepost-null idx=0 GET /sink cl=- te=- expect=- ct="-" auth=no head="GET /sink?tag=D-send-mimepost-null HTTP/1.1\r\nHost: 127.0.0.1:45341\r\nAccept: */*\r\n\r\n"
+[nomime-8.23.0] case D-calls D-send-mimepost-null server: ev 8 t=80.1 body face=raw conn=41606 tag=D-send-mimepost-null idx=0 framing=none declared=- got=0 chunks=0 fnv=811c9dc5 first=""
+[nomime-8.23.0] case D-calls D-send-mimepost-null server: ev 9 t=80.2 answer face=raw conn=41606 tag=D-send-mimepost-null idx=0 status=200
+[nomime-8.23.0] case D-calls D-send-mimepost-null server-events after=5 n=4
+[nomime-8.23.0] case D-calls all done live_before_global_cleanup=0
+[nomime-8.23.0] case D-calls live_after_global_cleanup=0
+[nomime-8.23.0] probe D-calls exit=0
+[nomime-8.23.0] probe D-calls took about 0 s
+[nomime-8.23.0] case R-when start plain=0 live=0
+[nomime-8.23.0] case R-when mime fn=curl_mime_addpart part=field answered NULL
+[nomime-8.23.0] case R-when mime fn=curl_mime_addpart part=first answered NULL
+[nomime-8.23.0] case R-when mime fn=curl_mime_addpart part=second answered NULL
+[nomime-8.23.0] case R-when expect part=first len=3000 fnv=9df31c69
+[nomime-8.23.0] case R-when expect part=second len=2000 fnv=147de9f3
+[nomime-8.23.0] case R-when R-when setopt MIMEPOST rc=48 (An unknown option was passed in to libcurl)
+[nomime-8.23.0] case R-when R-when dbg text t=0.0 "  Trying 127.0.0.1:45341..."
+[nomime-8.23.0] case R-when R-when dbg text t=0.1 "Established connection to 127.0.0.1 (127.0.0.1 port 45341) from 127.0.0.1 port 41614 "
+[nomime-8.23.0] case R-when R-when dbg text t=0.1 "using HTTP/1.x"
+[nomime-8.23.0] case R-when R-when dbg header_out n=1 t=0.1 "GET /sink?tag=R-when HTTP/1.1\r\nHost: 127.0.0.1:45341\r\nAccept: */*\r\n\r\n"
+[nomime-8.23.0] case R-when R-when dbg text t=0.1 "Request completely sent off"
+[nomime-8.23.0] case R-when R-when dbg header_in t=0.4 "HTTP/1.1 200 OK"
+[nomime-8.23.0] case R-when R-when dbg header_in t=0.4 "Content-Length: 3"
+[nomime-8.23.0] case R-when R-when dbg header_in t=0.4 ""
+[nomime-8.23.0] case R-when R-when dbg text t=0.4 "Connection #0 to host 127.0.0.1:45341 left intact"
+[nomime-8.23.0] case R-when R-when done code=0 (No error) errbuf="" status=200 num_connects=1 attempts=1 data_out=0 t_end=0.4 resp="ok\n"
+[nomime-8.23.0] case R-when R-when perform_max=0.1 ms at pf=1
+[nomime-8.23.0] case R-when R-when:1 server: ev 11 t=86.6 accept face=raw conn=41614
+[nomime-8.23.0] case R-when R-when:1 server: ev 12 t=86.7 req face=raw conn=41614 tag=R-when idx=0 GET /sink cl=- te=- expect=- ct="-" auth=no head="GET /sink?tag=R-when HTTP/1.1\r\nHost: 127.0.0.1:45341\r\nAccept: */*\r\n\r\n"
+[nomime-8.23.0] case R-when R-when:1 server: ev 13 t=86.7 body face=raw conn=41614 tag=R-when idx=0 framing=none declared=- got=0 chunks=0 fnv=811c9dc5 first=""
+[nomime-8.23.0] case R-when R-when:1 server: ev 14 t=86.8 answer face=raw conn=41614 tag=R-when idx=0 status=200
+[nomime-8.23.0] case R-when R-when:1 server-events after=10 n=4
+[nomime-8.23.0] case R-when R-when-again dbg text t=0.0 "Reusing existing http: connection with host 127.0.0.1"
+[nomime-8.23.0] case R-when R-when-again dbg header_out n=1 t=0.0 "GET /sink?tag=R-when HTTP/1.1\r\nHost: 127.0.0.1:45341\r\nAccept: */*\r\n\r\n"
+[nomime-8.23.0] case R-when R-when-again dbg text t=0.0 "Request completely sent off"
+[nomime-8.23.0] case R-when R-when-again dbg header_in t=0.2 "HTTP/1.1 200 OK"
+[nomime-8.23.0] case R-when R-when-again dbg header_in t=0.2 "Content-Length: 3"
+[nomime-8.23.0] case R-when R-when-again dbg header_in t=0.2 ""
+[nomime-8.23.0] case R-when R-when-again dbg text t=0.2 "Connection #0 to host 127.0.0.1:45341 left intact"
+[nomime-8.23.0] case R-when R-when-again done code=0 (No error) errbuf="" status=200 num_connects=0 attempts=1 data_out=0 t_end=0.2 resp="ok\n"
+[nomime-8.23.0] case R-when R-when-again perform_max=0.0 ms at pf=5
+[nomime-8.23.0] case R-when R-when:2 server: ev 15 t=87.5 req face=raw conn=41614 tag=R-when idx=1 GET /sink cl=- te=- expect=- ct="-" auth=no head="GET /sink?tag=R-when HTTP/1.1\r\nHost: 127.0.0.1:45341\r\nAccept: */*\r\n\r\n"
+[nomime-8.23.0] case R-when R-when:2 server: ev 16 t=87.5 body face=raw conn=41614 tag=R-when idx=1 framing=none declared=- got=0 chunks=0 fnv=811c9dc5 first=""
+[nomime-8.23.0] case R-when R-when:2 server: ev 17 t=87.6 answer face=raw conn=41614 tag=R-when idx=1 status=200
+[nomime-8.23.0] case R-when R-when:2 server-events after=14 n=3
+[nomime-8.23.0] case R-when all done live_before_global_cleanup=0
+[nomime-8.23.0] case R-when live_after_global_cleanup=0
+[nomime-8.23.0] probe R-when exit=0
+[nomime-8.23.0] probe R-when took about 0 s
+[nomime-8.23.0] -- 2 cases run
+nomime.sh: kept the build's output as .plans/research/m8/mime-files/results/nomime-build-7.85.0.log
+nomime.sh: kept the build's output as .plans/research/m8/mime-files/results/nomime-build-8.23.0.log
+nomime.sh exit=0 took 8 s

@@ -1,0 +1,10 @@
+[guix-8.20.0] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 -> /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0, headers /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/../include
+[guix-8.20.0] version 8.20.0 ssl=GnuTLS/3.8.13
+[guix-8.20.0] formget-cb rc=0 calls=1 bytes=37
+[guix-8.20.0] formadd-end rc=5 post=NULL
+[guix-8.20.0] formadd-nc rc=0 post=made
+[guix-8.20.0] formget-form rc=0 calls=1 bytes=243
+[guix-8.20.0] formadd-bad rc=4 post=NULL
+[guix-8.20.0] mime-null a mime
+[guix-8.20.0] exit 0
+[guix-8.20.0] probe exit=0

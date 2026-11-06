@@ -6,6 +6,31 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
+- **M8, multipart, the header cap, the docs and v0.1.0:** **planned on 2026-11-06,** in the
+  [M8 plan](2026-11-06-m8-plan.md), a draft on `docs/m8-plan`. Five slices: the memory job in two;
+  the header cap; multipart; the docs; the release.
+  - **Decided by the maintainer, 2026-11-06,** each the recommended option, from three read-only
+    surveys and three probes on the five Linux libcurls ([`research/m8/`](research/m8/)):
+    - the scope ([ADR-0038](decisions/0038-m8s-scope.md)): parts in memory and files by path; a
+      fixed cap of chez-curl's own; the siblings' docs, no site; a tag in the private repository;
+      the platforms that ran;
+    - the memory job split in two, each gating every pull request (ADR-0014, amended);
+    - libcurl's form type, a caller's refused; strict part bytes, `MIME_OPTIONS` owned; regular
+      files, resolved at submit; mime probed at load
+      ([ADR-0039](decisions/0039-a-multipart-body.md));
+    - 1,000 header lines and 102,400 bytes a transfer
+      ([ADR-0040](decisions/0040-a-cap-on-response-headers.md)).
+  - **An adversarial review of the plan** (Opus, read-only): no blocker, ten majors and twenty
+    minors, each answered in the plan (§12). Among them: the submit's file check opened the file
+    inside the high level's critical sections, where a blocked open stalls every thread; a path
+    re-resolved at each submit met a later `chdir`; and a FIFO swapped in after the engine's
+    check holds the engine for ever. **The maintainer then chose,** each the recommended option:
+    a path resolved once and checked by `stat` on the caller's side, the engine opening it; and
+    the FIFO window recorded (ADR-0039, amended). Its three probes, which I reran, are kept in
+    [`research/m8/review/`](research/m8/review/).
+  - **The Mac ran the three probes, 2026-11-06,** against Apple's 8.7.1, every process exiting
+    0: they revise no decision, and fill the plan's 8.7.1 rows (§9). The cap's refusal ends an
+    HTTP/2 transfer 56 there, not 23, which its recorded reason covers.
 - **M7, HTTP/2, cookies, auth and proxies:** **done on 2026-11-05.** Its four slices are merged
   (PRs #42 to #45): the HTTP version, server credentials, a proxy given by URL and the cookie
   jar, per the [M7 plan](2026-11-02-m7-plan.md), merged as PR #41 (`c238fe7`). The Mac has run

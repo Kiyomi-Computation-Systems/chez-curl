@@ -535,8 +535,9 @@ provisional. They bind until that record is accepted or amended.
     and `ERROR SUMMARY: 0 errors from 0 contexts`.
 
   (ADR-0014, amended)
-- **When the gate runs:** CI runs it on every pull request, on `main` and on tags. Locally it
-  runs in the container (ADR-0014, amended).
+- **When the gate runs:** CI runs it on every pull request, on `main` and on tags, as two jobs
+  that run every suite once between them, the planted defects in the first; `check-memory-gate`
+  holds the split. Locally it runs in the container (ADR-0014, amended 2026-11-06).
 - **Counters:** every native object is counted, always on, per process, and an engine's
   transfers in its table of live transfers too, which a stop empties and checks empty before
   the engine's thread ends (ADR-0014, amended 2026-10-25). A multi handle is counted as
@@ -921,3 +922,36 @@ provisional. They bind until that record is accepted or amended.
   `(curl)`, `(curl unsupported)` and `(http-client)` has a row in `tests/test-printed.sps`, so a
   new export fails until it has one (ADR-0036 and ADR-0008, amended 2026-11-03).
 - **A request with a jar refuses a caller's `Cookie` or `Host` header** (ADR-0035, amended).
+
+## M8: multipart, the header cap, the docs and the release
+
+- **M8's scope** is a multipart body of parts in memory and files by path, at both levels; a cap
+  of chez-curl's own on response headers; the siblings' docs without a site; and a `v0.1.0` tag in
+  the private repository, claiming Linux amd64 and macOS arm64 (ADR-0038). No streamed, nested or
+  encoded part, no part headers, no key for the cap, no publishing.
+- **A multipart body's type is libcurl's:** a multipart transfer leaves `Content-Type:` out of its
+  blanks and keeps `Expect:`, and refuses a caller's `Content-Type` header. A part's name, filename
+  and type hold no character U+0000 to U+001F or U+007F, a name and filename no `"`, and a name is
+  never empty, so libcurl escapes nothing; `MIME_OPTIONS` is owned and never set. `MIMEPOST` is a
+  transfer's last body option (ADR-0039).
+- **A file part names a regular file:** a relative path is resolved against the current directory
+  once, when the request is made, and a high-level call's once per call; the path is checked by
+  `stat` alone there and at submit, and nothing is opened on the caller's side, where every
+  high-level submit runs in a critical section. The engine's thread, outside any critical section,
+  checks it by `stat` and opens and closes the file just before `curl_mime_filedata`, and fails the
+  transfer on any answer but 0. A path swapped to a FIFO after that check holds the engine's thread
+  for ever, and a file changed after it is the caller's: both documented (ADR-0039, amended).
+- **The mime is the transfer's, on the engine's thread:** made after `curl_easy_init` on that
+  handle, counted as `mime`, freed after `curl_easy_cleanup`; no part's address leaves `native.sls`.
+  The load probes for mime with `curl_formadd`, a whole field, and `curl_mime_init`: mime is there
+  only when the first answers 0 and the second a mime. A libcurl without it refuses a multipart
+  body at submit, and keeps every other request (ADR-0039, amended).
+- **Every transfer caps its response headers** at 1,000 lines and 102,400 bytes over the whole
+  transfer, in a header callable that records `header-limit`, of `&curl-too-large`, before
+  libcurl's code is read. libcurl's refusals that come before a line reaches the callable keep
+  their codes, by version (ADR-0040).
+- **The docs:** a thin README.org, Markdown in `docs/`, a hand-written `docs/reference.md` that a
+  test holds to every export, and examples a test runs (ADR-0038). No page cites `.plans/` (the
+  M8 plan, §3.5).
+- **The release:** `Akku.manifest`'s version is CHANGELOG.md's latest release, held by a test. A
+  tag is made and pushed only when the maintainer asks (ADR-0038; the M8 plan, §3.6).

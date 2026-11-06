@@ -1,0 +1,63 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+network interfaces: lo 
+package gcc 4:13.2.0-7ubuntu1
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+[floor-7.85.0] libcurl /home/kishu/src/chez-curl/build/e1/ci/curl-floor/lib/libcurl.so.4 -> /home/kishu/src/chez-curl/build/e1/ci/curl-floor/lib/libcurl.so.4.8.0, headers /home/kishu/src/chez-curl/build/e1/ci/curl-floor/lib/../include
+[floor-7.85.0] version 7.85.0 ssl=OpenSSL/3.0.13
+[floor-7.85.0] formget-cb rc=0 calls=1 bytes=37
+[floor-7.85.0] formadd-end rc=5 post=NULL
+[floor-7.85.0] formadd-nc rc=0 post=made
+[floor-7.85.0] formget-form rc=0 calls=1 bytes=225
+[floor-7.85.0] formadd-bad rc=4 post=NULL
+[floor-7.85.0] mime-null a mime
+[floor-7.85.0] exit 0
+[floor-7.85.0] probe exit=0
+[ubuntu-openssl-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 -> /usr/lib/x86_64-linux-gnu/libcurl.so.4.8.0, headers the compiler's
+[ubuntu-openssl-8.5.0] version 8.5.0 ssl=OpenSSL/3.0.13
+[ubuntu-openssl-8.5.0] formget-cb rc=0 calls=1 bytes=37
+[ubuntu-openssl-8.5.0] formadd-end rc=5 post=NULL
+[ubuntu-openssl-8.5.0] formadd-nc rc=0 post=made
+[ubuntu-openssl-8.5.0] formget-form rc=0 calls=1 bytes=243
+[ubuntu-openssl-8.5.0] formadd-bad rc=4 post=NULL
+[ubuntu-openssl-8.5.0] mime-null a mime
+[ubuntu-openssl-8.5.0] exit 0
+[ubuntu-openssl-8.5.0] probe exit=0
+[ubuntu-gnutls-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 -> /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4.8.0, headers the compiler's
+[ubuntu-gnutls-8.5.0] version 8.5.0 ssl=GnuTLS/3.8.3
+[ubuntu-gnutls-8.5.0] formget-cb rc=0 calls=1 bytes=37
+[ubuntu-gnutls-8.5.0] formadd-end rc=5 post=NULL
+[ubuntu-gnutls-8.5.0] formadd-nc rc=0 post=made
+[ubuntu-gnutls-8.5.0] formget-form rc=0 calls=1 bytes=243
+[ubuntu-gnutls-8.5.0] formadd-bad rc=4 post=NULL
+[ubuntu-gnutls-8.5.0] mime-null a mime
+[ubuntu-gnutls-8.5.0] exit 0
+[ubuntu-gnutls-8.5.0] probe exit=0
+[current-8.23.0] libcurl /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 -> /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/libcurl.so.4.8.0, headers /home/kishu/src/chez-curl/build/verify/c823/lane1/curl-current/lib/../include
+[current-8.23.0] version 8.23.0 ssl=OpenSSL/3.0.13
+[current-8.23.0] formget-cb rc=0 calls=1 bytes=37
+[current-8.23.0] formadd-end rc=5 post=NULL
+[current-8.23.0] formadd-nc rc=0 post=made
+[current-8.23.0] formget-form rc=0 calls=1 bytes=243
+[current-8.23.0] formadd-bad rc=4 post=NULL
+[current-8.23.0] mime-null a mime
+[current-8.23.0] exit 0
+[current-8.23.0] probe exit=0
+[nomime-7.85.0] libcurl /home/kishu/src/chez-curl/build/m8/mime-files/nomime-7.85.0/lib/libcurl.so.4 -> /home/kishu/src/chez-curl/build/m8/mime-files/nomime-7.85.0/lib/libcurl.so.4.8.0, headers /home/kishu/src/chez-curl/build/m8/mime-files/nomime-7.85.0/lib/../include
+[nomime-7.85.0] version 7.85.0 ssl=OpenSSL/3.0.13
+[nomime-7.85.0] formget-cb rc=7 calls=0 bytes=0
+[nomime-7.85.0] formadd-end rc=7 post=NULL
+[nomime-7.85.0] formadd-nc rc=7 post=NULL
+[nomime-7.85.0] formadd-bad rc=7 post=NULL
+[nomime-7.85.0] mime-null a mime
+[nomime-7.85.0] exit 0
+[nomime-7.85.0] probe exit=0
+[nomime-8.23.0] libcurl /home/kishu/src/chez-curl/build/m8/mime-files/nomime-8.23.0/lib/libcurl.so.4 -> /home/kishu/src/chez-curl/build/m8/mime-files/nomime-8.23.0/lib/libcurl.so.4.8.0, headers /home/kishu/src/chez-curl/build/m8/mime-files/nomime-8.23.0/lib/../include
+[nomime-8.23.0] version 8.23.0 ssl=OpenSSL/3.0.13
+[nomime-8.23.0] formget-cb rc=7 calls=0 bytes=0
+[nomime-8.23.0] formadd-end rc=7 post=NULL
+[nomime-8.23.0] formadd-nc rc=7 post=NULL
+[nomime-8.23.0] formadd-bad rc=7 post=NULL
+[nomime-8.23.0] mime-null NULL
+[nomime-8.23.0] exit 0
+[nomime-8.23.0] probe exit=0

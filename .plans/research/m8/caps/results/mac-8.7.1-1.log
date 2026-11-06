@@ -1,0 +1,966 @@
+mac.sh start 2026-11-06T19:29:56Z macOS 26.7.1 arm64 node=/Users/yuzu/.asdf/installs/nodejs/20.10.0/bin/node cc=/usr/bin/cc
+mac.sh system curl: curl 8.7.1 (x86_64-apple-darwin25.0) libcurl/8.7.1 (SecureTransport) LibreSSL/3.3.6 zlib/1.2.12 nghttp2/1.68.1
+mac.sh system curl: Release-Date: 2024-03-27
+mac.sh system curl: Protocols: dict file ftp ftps gopher gophers http https imap imaps ipfs ipns ldap ldaps mqtt pop3 pop3s rtsp smb smbs smtp smtps telnet tftp
+mac.sh system curl: Features: alt-svc AsynchDNS GSS-API HSTS HTTP2 HTTPS-proxy IPv6 Kerberos Largefile libz MultiSSL NTLM SPNEGO SSL threadsafe UnixSockets
+[mac-8.7.1-1] node v20.10.0 uname Darwin arm64 CURL_SSL_BACKEND=secure-transport cpus=8 affinity=
+[mac-8.7.1-1] cases=count bytes toward walk PROBE_MODES=default WALK_NS=default WALK_ROUNDS=default PROBE_VALGRIND=unset
+[mac-8.7.1-1] version headers=8.7.1 runtime=8.7.1 num=0x080701 ssl=SecureTransport (LibreSSL/3.3.6) nghttp2=1.68.1 http2=1 features=0x516f039d
+[mac-8.7.1-1] server ctl=61420 h1=61421 h1tls=61422 h2=61423 proxy=61424
+[mac-8.7.1-1] cell count n1000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.6 cpu_ms=0.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=16022 stored=1000 walk_ms=5.47 walk_cpu_ms=5.47 live_kb=67
+[mac-8.7.1-1] srv ev 3 t=90.9 wrote face=h1 conn=61426 tag=count.n1000.none.1 proto=h1 heads=[200:1000:16022] bytes=16022
+[mac-8.7.1-1] cell count n1000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=1.3 cpu_ms=0.3 calls=1002 hdr_lines=1000 bytes=16022 heads=[200:1000:16022] refused=- header_size=16022 stored=1000 walk_ms=5.07 walk_cpu_ms=5.07 live_kb=67
+[mac-8.7.1-1] srv ev 7 t=99.3 wrote face=h1 conn=61429 tag=count.n1000.obs.2 proto=h1 heads=[200:1000:16022] bytes=16022
+[mac-8.7.1-1] cell count n1000 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=1.2 cpu_ms=0.2 calls=1002 hdr_lines=1000 bytes=16022 heads=[200:1000:16022] refused=none header_size=16022 stored=1000 walk_ms=5.00 walk_cpu_ms=5.00 live_kb=67
+[mac-8.7.1-1] srv ev 11 t=107.0 wrote face=h1 conn=61432 tag=count.n1000.cap.3 proto=h1 heads=[200:1000:16022] bytes=16022
+[mac-8.7.1-1] cell count n4999 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=3.1 cpu_ms=0.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80006 stored=4999 walk_ms=109.38 walk_cpu_ms=109.38 live_kb=309
+[mac-8.7.1-1] srv ev 15 t=116.3 wrote face=h1 conn=61435 tag=count.n4999.none.4 proto=h1 heads=[200:4999:80006] bytes=80006
+[mac-8.7.1-1] cell count n4999 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=3.2 cpu_ms=0.7 calls=5001 hdr_lines=4999 bytes=80006 heads=[200:4999:80006] refused=- header_size=80006 stored=4999 walk_ms=110.04 walk_cpu_ms=110.00 live_kb=309
+[mac-8.7.1-1] srv ev 19 t=231.5 wrote face=h1 conn=61438 tag=count.n4999.obs.5 proto=h1 heads=[200:4999:80006] bytes=80006
+[mac-8.7.1-1] cell count n4999 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=2.1 cpu_ms=0.4 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 23 t=346.4 wrote face=h1 conn=61441 tag=count.n4999.cap.6 proto=h1 heads=[200:4999:80006] bytes=80006
+[mac-8.7.1-1] cell count n5000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.3 cpu_ms=0.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80022 stored=5000 walk_ms=108.79 walk_cpu_ms=108.80 live_kb=309
+[mac-8.7.1-1] srv ev 27 t=350.2 wrote face=h1 conn=61444 tag=count.n5000.none.7 proto=h1 heads=[200:5000:80022] bytes=80022
+[mac-8.7.1-1] cell count n5000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.8 cpu_ms=0.7 calls=5002 hdr_lines=5000 bytes=80022 heads=[200:5000:80022] refused=- header_size=80022 stored=5000 walk_ms=109.26 walk_cpu_ms=109.26 live_kb=309
+[mac-8.7.1-1] srv ev 31 t=464.1 wrote face=h1 conn=61447 tag=count.n5000.obs.8 proto=h1 heads=[200:5000:80022] bytes=80022
+[mac-8.7.1-1] cell count n5000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=2.0 cpu_ms=0.4 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 35 t=578.0 wrote face=h1 conn=61450 tag=count.n5000.cap.9 proto=h1 heads=[200:5000:80022] bytes=80022
+[mac-8.7.1-1] cell count n5001 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=1.5 cpu_ms=0.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80038 stored=5001 walk_ms=109.16 walk_cpu_ms=109.17 live_kb=309
+[mac-8.7.1-1] srv ev 39 t=580.3 wrote face=h1 conn=61453 tag=count.n5001.none.10 proto=h1 heads=[200:5001:80038] bytes=80038
+[mac-8.7.1-1] cell count n5001 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.4 cpu_ms=0.6 calls=5003 hdr_lines=5001 bytes=80038 heads=[200:5001:80038] refused=- header_size=80038 stored=5001 walk_ms=109.26 walk_cpu_ms=109.27 live_kb=309
+[mac-8.7.1-1] srv ev 43 t=693.9 wrote face=h1 conn=61456 tag=count.n5001.obs.11 proto=h1 heads=[200:5001:80038] bytes=80038
+[mac-8.7.1-1] cell count n5001 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=1.9 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 47 t=807.2 wrote face=h1 conn=61459 tag=count.n5001.cap.12 proto=h1 heads=[200:5001:80038] bytes=80038
+[mac-8.7.1-1] cell count n10000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=3.2 cpu_ms=1.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=160022 stored=10000 walk_ms=423.41 walk_cpu_ms=423.41 live_kb=611
+[mac-8.7.1-1] srv ev 51 t=812.0 wrote face=h1 conn=61462 tag=count.n10000.none.13 proto=h1 heads=[200:10000:160022] bytes=160022
+[mac-8.7.1-1] cell count n10000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.8 cpu_ms=1.1 calls=10002 hdr_lines=10000 bytes=160022 heads=[200:10000:160022] refused=- header_size=160022 stored=10000 walk_ms=424.10 walk_cpu_ms=424.12 live_kb=611
+[mac-8.7.1-1] srv ev 55 t=1240.8 wrote face=h1 conn=61465 tag=count.n10000.obs.14 proto=h1 heads=[200:10000:160022] bytes=160022
+[mac-8.7.1-1] cell count n10000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=2.6 cpu_ms=0.5 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 59 t=1670.5 wrote face=h1 conn=61468 tag=count.n10000.cap.15 proto=h1 heads=[200:10000:160022] bytes=160022
+[mac-8.7.1-1] cell count n50000 face=h1 mode=none code=56 err="Too large response headers: 307204 > 307200" status=200 ver=2 t_ms=23.3 cpu_ms=2.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307204 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=1169
+[mac-8.7.1-1] srv ev 63 t=1694.4 wrote face=h1 conn=61471 tag=count.n50000.none.16 proto=h1 heads=[200:50000:800022] bytes=800022
+[mac-8.7.1-1] cell count n50000 face=h1 mode=obs code=56 err="Too large response headers: 307204 > 307200" status=200 ver=2 t_ms=15.6 cpu_ms=2.9 calls=19200 hdr_lines=19199 bytes=307204 heads=[200:19199:307204] refused=- header_size=307204 stored=19199 walk_ms=1433.57 walk_cpu_ms=1433.42 live_kb=1169
+[mac-8.7.1-1] srv ev 67 t=1710.2 wrote face=h1 conn=61474 tag=count.n50000.obs.17 proto=h1 heads=[200:50000:800022] bytes=800022
+[mac-8.7.1-1] cell count n50000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=13.2 cpu_ms=0.7 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 71 t=3161.3 wrote face=h1 conn=61477 tag=count.n50000.cap.18 proto=h1 heads=[200:50000:800022] bytes=800022
+[mac-8.7.1-1] cell count n1000 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=9.0 cpu_ms=3.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=16022 stored=1000 walk_ms=4.85 walk_cpu_ms=4.85 live_kb=67
+[mac-8.7.1-1] srv ev 76 t=3173.0 wrote face=h1tls conn=61480 tag=count.n1000.none.19 proto=h1 heads=[200:1000:16022] bytes=16022
+[mac-8.7.1-1] cell count n1000 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=4.8 cpu_ms=1.6 calls=1002 hdr_lines=1000 bytes=16022 heads=[200:1000:16022] refused=- header_size=16022 stored=1000 walk_ms=4.85 walk_cpu_ms=4.85 live_kb=67
+[mac-8.7.1-1] srv ev 81 t=3184.6 wrote face=h1tls conn=61483 tag=count.n1000.obs.20 proto=h1 heads=[200:1000:16022] bytes=16022
+[mac-8.7.1-1] cell count n1000 face=h1tls mode=cap code=0 err="" status=200 ver=2 t_ms=3.6 cpu_ms=1.3 calls=1002 hdr_lines=1000 bytes=16022 heads=[200:1000:16022] refused=none header_size=16022 stored=1000 walk_ms=4.82 walk_cpu_ms=4.82 live_kb=67
+[mac-8.7.1-1] srv ev 86 t=3194.9 wrote face=h1tls conn=61486 tag=count.n1000.cap.21 proto=h1 heads=[200:1000:16022] bytes=16022
+[mac-8.7.1-1] cell count n4999 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=4.5 cpu_ms=1.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80006 stored=4999 walk_ms=114.62 walk_cpu_ms=114.62 live_kb=309
+[mac-8.7.1-1] srv ev 91 t=3205.5 wrote face=h1tls conn=61489 tag=count.n4999.none.22 proto=h1 heads=[200:4999:80006] bytes=80006
+[mac-8.7.1-1] cell count n4999 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=5.1 cpu_ms=1.9 calls=5001 hdr_lines=4999 bytes=80006 heads=[200:4999:80006] refused=- header_size=80006 stored=4999 walk_ms=108.99 walk_cpu_ms=109.00 live_kb=309
+[mac-8.7.1-1] srv ev 96 t=3327.5 wrote face=h1tls conn=61492 tag=count.n4999.obs.23 proto=h1 heads=[200:4999:80006] bytes=80006
+[mac-8.7.1-1] cell count n4999 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=4.8 cpu_ms=1.7 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 101 t=3443.9 wrote face=h1tls conn=61495 tag=count.n4999.cap.24 proto=h1 heads=[200:4999:80006] bytes=80006
+[mac-8.7.1-1] cell count n5000 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=4.1 cpu_ms=1.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80022 stored=5000 walk_ms=114.67 walk_cpu_ms=114.67 live_kb=309
+[mac-8.7.1-1] srv ev 106 t=3448.7 wrote face=h1tls conn=61498 tag=count.n5000.none.25 proto=h1 heads=[200:5000:80022] bytes=80022
+[mac-8.7.1-1] cell count n5000 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=4.8 cpu_ms=1.7 calls=5002 hdr_lines=5000 bytes=80022 heads=[200:5000:80022] refused=- header_size=80022 stored=5000 walk_ms=113.96 walk_cpu_ms=113.96 live_kb=309
+[mac-8.7.1-1] srv ev 111 t=3570.1 wrote face=h1tls conn=61501 tag=count.n5000.obs.26 proto=h1 heads=[200:5000:80022] bytes=80022
+[mac-8.7.1-1] cell count n5000 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=4.5 cpu_ms=1.4 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 116 t=3691.0 wrote face=h1tls conn=61504 tag=count.n5000.cap.27 proto=h1 heads=[200:5000:80022] bytes=80022
+[mac-8.7.1-1] cell count n5001 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=4.5 cpu_ms=1.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80038 stored=5001 walk_ms=109.64 walk_cpu_ms=109.64 live_kb=309
+[mac-8.7.1-1] srv ev 121 t=3696.2 wrote face=h1tls conn=61507 tag=count.n5001.none.28 proto=h1 heads=[200:5001:80038] bytes=80038
+[mac-8.7.1-1] cell count n5001 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=5.5 cpu_ms=2.0 calls=5003 hdr_lines=5001 bytes=80038 heads=[200:5001:80038] refused=- header_size=80038 stored=5001 walk_ms=109.70 walk_cpu_ms=109.70 live_kb=309
+[mac-8.7.1-1] srv ev 126 t=3813.8 wrote face=h1tls conn=61510 tag=count.n5001.obs.29 proto=h1 heads=[200:5001:80038] bytes=80038
+[mac-8.7.1-1] cell count n5001 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=4.3 cpu_ms=1.4 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 131 t=3929.5 wrote face=h1tls conn=61513 tag=count.n5001.cap.30 proto=h1 heads=[200:5001:80038] bytes=80038
+[mac-8.7.1-1] cell count n10000 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=7.2 cpu_ms=2.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=160022 stored=10000 walk_ms=424.97 walk_cpu_ms=424.98 live_kb=612
+[mac-8.7.1-1] srv ev 136 t=3937.5 wrote face=h1tls conn=61516 tag=count.n10000.none.31 proto=h1 heads=[200:10000:160022] bytes=160022
+[mac-8.7.1-1] cell count n10000 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=6.7 cpu_ms=2.6 calls=10002 hdr_lines=10000 bytes=160022 heads=[200:10000:160022] refused=- header_size=160022 stored=10000 walk_ms=425.84 walk_cpu_ms=425.85 live_kb=612
+[mac-8.7.1-1] srv ev 141 t=4371.6 wrote face=h1tls conn=61519 tag=count.n10000.obs.32 proto=h1 heads=[200:10000:160022] bytes=160022
+[mac-8.7.1-1] cell count n10000 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=5.5 cpu_ms=1.9 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 146 t=4805.6 wrote face=h1tls conn=61522 tag=count.n10000.cap.33 proto=h1 heads=[200:10000:160022] bytes=160022
+[mac-8.7.1-1] cell count n50000 face=h1tls mode=none code=56 err="Too large response headers: 307204 > 307200" status=200 ver=2 t_ms=13.3 cpu_ms=3.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307204 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=1169
+[mac-8.7.1-1] srv ev 151 t=4818.2 wrote face=h1tls conn=61525 tag=count.n50000.none.34 proto=h1 heads=[200:50000:800022] bytes=800022
+[mac-8.7.1-1] cell count n50000 face=h1tls mode=obs code=56 err="Too large response headers: 307204 > 307200" status=200 ver=2 t_ms=17.7 cpu_ms=3.4 calls=19200 hdr_lines=19199 bytes=307204 heads=[200:19199:307204] refused=- header_size=307204 stored=19199 walk_ms=1431.61 walk_cpu_ms=1431.62 live_kb=1169
+[mac-8.7.1-1] srv ev 156 t=4836.9 wrote face=h1tls conn=61528 tag=count.n50000.obs.35 proto=h1 heads=[200:50000:800022] bytes=800022
+[mac-8.7.1-1] cell count n50000 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=17.6 cpu_ms=2.0 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 161 t=6291.0 wrote face=h1tls conn=61531 tag=count.n50000.cap.36 proto=h1 heads=[200:50000:800022] bytes=800022
+[mac-8.7.1-1] cell count n1000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=7.0 cpu_ms=1.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=16018 stored=1000 walk_ms=4.83 walk_cpu_ms=4.83 live_kb=67
+[mac-8.7.1-1] srv ev 164 t=6299.7 h2-close face=h2 conn=61534 tag=count.n1000.none.37 heads=[200:1000] rst=0
+[mac-8.7.1-1] srv ev 165 t=6300.4 h2-wire face=h2 conn=61534 tag=count.n1000.none.37 wire_bytes_written=13944 wire_bytes_read=552
+[mac-8.7.1-1] cell count n1000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=6.3 cpu_ms=1.6 calls=1002 hdr_lines=1000 bytes=16018 heads=[200:1000:16018] refused=- header_size=16018 stored=1000 walk_ms=4.83 walk_cpu_ms=4.83 live_kb=67
+[mac-8.7.1-1] srv ev 167 t=6312.8 h2-close face=h2 conn=61537 tag=count.n1000.obs.38 heads=[200:1000] rst=0
+[mac-8.7.1-1] srv ev 168 t=6313.5 h2-wire face=h2 conn=61537 tag=count.n1000.obs.38 wire_bytes_written=13943 wire_bytes_read=583
+[mac-8.7.1-1] cell count n1000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=4.8 cpu_ms=1.6 calls=1002 hdr_lines=1000 bytes=16018 heads=[200:1000:16018] refused=none header_size=16018 stored=1000 walk_ms=5.14 walk_cpu_ms=5.09 live_kb=67
+[mac-8.7.1-1] srv ev 170 t=6325.1 h2-close face=h2 conn=61540 tag=count.n1000.cap.39 heads=[200:1000] rst=0
+[mac-8.7.1-1] srv ev 171 t=6326.6 h2-wire face=h2 conn=61540 tag=count.n1000.cap.39 wire_bytes_written=13943 wire_bytes_read=583
+[mac-8.7.1-1] cell count n4999 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=10.1 cpu_ms=2.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80002 stored=4999 walk_ms=119.05 walk_cpu_ms=119.05 live_kb=309
+[mac-8.7.1-1] srv ev 173 t=6340.4 h2-close face=h2 conn=61543 tag=count.n4999.none.40 heads=[200:4999] rst=0
+[mac-8.7.1-1] srv ev 174 t=6342.5 h2-wire face=h2 conn=61543 tag=count.n4999.none.40 wire_bytes_written=66044 wire_bytes_read=585
+[mac-8.7.1-1] cell count n4999 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=9.2 cpu_ms=2.8 calls=5001 hdr_lines=4999 bytes=80002 heads=[200:4999:80002] refused=- header_size=80002 stored=4999 walk_ms=116.90 walk_cpu_ms=116.90 live_kb=309
+[mac-8.7.1-1] srv ev 176 t=6470.9 h2-close face=h2 conn=61546 tag=count.n4999.obs.41 heads=[200:4999] rst=0
+[mac-8.7.1-1] srv ev 177 t=6473.0 h2-wire face=h2 conn=61546 tag=count.n4999.obs.41 wire_bytes_written=66044 wire_bytes_read=584
+[mac-8.7.1-1] cell count n4999 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=8.0 cpu_ms=1.7 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 179 t=6599.0 h2-close face=h2 conn=61549 tag=count.n4999.cap.42 heads=[200:4999] rst=0
+[mac-8.7.1-1] srv ev 180 t=6600.1 h2-wire face=h2 conn=61549 tag=count.n4999.cap.42 wire_bytes_written=66043 wire_bytes_read=584
+[mac-8.7.1-1] cell count n5000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=8.8 cpu_ms=2.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80018 stored=5000 walk_ms=115.83 walk_cpu_ms=115.83 live_kb=309
+[mac-8.7.1-1] srv ev 182 t=6608.8 h2-close face=h2 conn=61552 tag=count.n5000.none.43 heads=[200:5000] rst=0
+[mac-8.7.1-1] srv ev 183 t=6610.9 h2-wire face=h2 conn=61552 tag=count.n5000.none.43 wire_bytes_written=66056 wire_bytes_read=584
+[mac-8.7.1-1] cell count n5000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=9.5 cpu_ms=2.7 calls=5002 hdr_lines=5000 bytes=80018 heads=[200:5000:80018] refused=- header_size=80018 stored=5000 walk_ms=113.77 walk_cpu_ms=113.78 live_kb=309
+[mac-8.7.1-1] srv ev 185 t=6736.5 h2-close face=h2 conn=61555 tag=count.n5000.obs.44 heads=[200:5000] rst=0
+[mac-8.7.1-1] srv ev 186 t=6738.4 h2-wire face=h2 conn=61555 tag=count.n5000.obs.44 wire_bytes_written=66058 wire_bytes_read=583
+[mac-8.7.1-1] cell count n5000 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=8.0 cpu_ms=1.7 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 188 t=6861.5 h2-close face=h2 conn=61558 tag=count.n5000.cap.45 heads=[200:5000] rst=0
+[mac-8.7.1-1] srv ev 189 t=6862.5 h2-wire face=h2 conn=61558 tag=count.n5000.cap.45 wire_bytes_written=66057 wire_bytes_read=583
+[mac-8.7.1-1] cell count n5001 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=8.8 cpu_ms=2.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80034 stored=5001 walk_ms=120.04 walk_cpu_ms=115.58 live_kb=309
+[mac-8.7.1-1] srv ev 191 t=6871.3 h2-close face=h2 conn=61561 tag=count.n5001.none.46 heads=[200:5001] rst=0
+[mac-8.7.1-1] srv ev 192 t=6873.3 h2-wire face=h2 conn=61561 tag=count.n5001.none.46 wire_bytes_written=66070 wire_bytes_read=584
+[mac-8.7.1-1] cell count n5001 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=9.8 cpu_ms=3.1 calls=5003 hdr_lines=5001 bytes=80034 heads=[200:5001:80034] refused=- header_size=80034 stored=5001 walk_ms=114.49 walk_cpu_ms=114.29 live_kb=309
+[mac-8.7.1-1] srv ev 194 t=7003.5 h2-close face=h2 conn=61564 tag=count.n5001.obs.47 heads=[200:5001] rst=0
+[mac-8.7.1-1] srv ev 195 t=7005.3 h2-wire face=h2 conn=61564 tag=count.n5001.obs.47 wire_bytes_written=66070 wire_bytes_read=583
+[mac-8.7.1-1] cell count n5001 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=7.4 cpu_ms=1.9 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 197 t=7127.8 h2-close face=h2 conn=61567 tag=count.n5001.cap.48 heads=[200:5001] rst=0
+[mac-8.7.1-1] srv ev 198 t=7128.7 h2-wire face=h2 conn=61567 tag=count.n5001.cap.48 wire_bytes_written=66071 wire_bytes_read=583
+[mac-8.7.1-1] cell count n10000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=14.2 cpu_ms=4.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=160018 stored=10000 walk_ms=424.93 walk_cpu_ms=424.89 live_kb=612
+[mac-8.7.1-1] srv ev 200 t=7140.9 h2-close face=h2 conn=61570 tag=count.n10000.none.49 heads=[200:10000] rst=0
+[mac-8.7.1-1] srv ev 201 t=7144.2 h2-wire face=h2 conn=61570 tag=count.n10000.none.49 wire_bytes_written=131210 wire_bytes_read=585
+[mac-8.7.1-1] cell count n10000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=14.2 cpu_ms=4.2 calls=10002 hdr_lines=10000 bytes=160018 heads=[200:10000:160018] refused=- header_size=160018 stored=10000 walk_ms=436.22 walk_cpu_ms=434.83 live_kb=612
+[mac-8.7.1-1] srv ev 203 t=7582.3 h2-close face=h2 conn=61573 tag=count.n10000.obs.50 heads=[200:10000] rst=0
+[mac-8.7.1-1] srv ev 204 t=7586.0 h2-wire face=h2 conn=61573 tag=count.n10000.obs.50 wire_bytes_written=131209 wire_bytes_read=584
+[mac-8.7.1-1] cell count n10000 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=12.7 cpu_ms=1.8 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 206 t=8035.5 h2-close face=h2 conn=61576 tag=count.n10000.cap.51 heads=[200:10000] rst=0
+[mac-8.7.1-1] srv ev 207 t=8036.4 h2-wire face=h2 conn=61576 tag=count.n10000.cap.51 wire_bytes_written=131209 wire_bytes_read=584
+[mac-8.7.1-1] cell count n50000 face=h2 mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=53.2 cpu_ms=4.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=181504 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=693
+[mac-8.7.1-1] srv ev 209 t=8087.0 h2-close face=h2 conn=61579 tag=count.n50000.none.52 heads=[200:50000] rst=0
+[mac-8.7.1-1] srv ev 210 t=8091.0 h2-wire face=h2 conn=61579 tag=count.n50000.none.52 wire_bytes_written=652425 wire_bytes_read=585
+[mac-8.7.1-1] cell count n50000 face=h2 mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=50.1 cpu_ms=4.5 calls=11344 hdr_lines=11343 bytes=181504 heads=[200:11343:181504] refused=- header_size=181504 stored=11343 walk_ms=530.44 walk_cpu_ms=530.36 live_kb=693
+[mac-8.7.1-1] srv ev 212 t=8139.2 h2-close face=h2 conn=61582 tag=count.n50000.obs.53 heads=[200:50000] rst=0
+[mac-8.7.1-1] srv ev 213 t=8142.8 h2-wire face=h2 conn=61582 tag=count.n50000.obs.53 wire_bytes_written=652424 wire_bytes_read=585
+[mac-8.7.1-1] cell count n50000 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=49.0 cpu_ms=2.4 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 215 t=8723.6 h2-close face=h2 conn=61585 tag=count.n50000.cap.54 heads=[200:50000] rst=0
+[mac-8.7.1-1] srv ev 216 t=8725.1 h2-wire face=h2 conn=61585 tag=count.n50000.cap.54 wire_bytes_written=652394 wire_bytes_read=585
+[mac-8.7.1-1] cell count n4999-same face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=9.9 cpu_ms=3.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80002 stored=4999 walk_ms=144.62 walk_cpu_ms=144.62 live_kb=309
+[mac-8.7.1-1] srv ev 218 t=8735.4 h2-close face=h2 conn=61588 tag=count.n4999-same.none.55 heads=[200:4999] rst=0
+[mac-8.7.1-1] srv ev 219 t=8736.4 h2-wire face=h2 conn=61588 tag=count.n4999-same.none.55 wire_bytes_written=5967 wire_bytes_read=593
+[mac-8.7.1-1] cell count n4999-same face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=5.9 cpu_ms=2.2 calls=5001 hdr_lines=4999 bytes=80002 heads=[200:4999:80002] refused=- header_size=80002 stored=4999 walk_ms=146.40 walk_cpu_ms=146.40 live_kb=309
+[mac-8.7.1-1] srv ev 221 t=8887.7 h2-close face=h2 conn=61591 tag=count.n4999-same.obs.56 heads=[200:4999] rst=0
+[mac-8.7.1-1] srv ev 222 t=8888.9 h2-wire face=h2 conn=61591 tag=count.n4999-same.obs.56 wire_bytes_written=5968 wire_bytes_read=593
+[mac-8.7.1-1] cell count n4999-same face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=4.6 cpu_ms=1.5 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 224 t=9041.1 h2-close face=h2 conn=61594 tag=count.n4999-same.cap.57 heads=[200:4999] rst=0
+[mac-8.7.1-1] srv ev 225 t=9041.6 h2-wire face=h2 conn=61594 tag=count.n4999-same.cap.57 wire_bytes_written=5968 wire_bytes_read=593
+[mac-8.7.1-1] cell count n5000-same face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=5.2 cpu_ms=2.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80018 stored=5000 walk_ms=150.81 walk_cpu_ms=150.81 live_kb=309
+[mac-8.7.1-1] srv ev 227 t=9046.9 h2-close face=h2 conn=61597 tag=count.n5000-same.none.58 heads=[200:5000] rst=0
+[mac-8.7.1-1] srv ev 228 t=9048.1 h2-wire face=h2 conn=61597 tag=count.n5000-same.none.58 wire_bytes_written=5968 wire_bytes_read=593
+[mac-8.7.1-1] cell count n5000-same face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=5.3 cpu_ms=2.2 calls=5002 hdr_lines=5000 bytes=80018 heads=[200:5000:80018] refused=- header_size=80018 stored=5000 walk_ms=151.50 walk_cpu_ms=151.50 live_kb=309
+[mac-8.7.1-1] srv ev 230 t=9205.5 h2-close face=h2 conn=61600 tag=count.n5000-same.obs.59 heads=[200:5000] rst=0
+[mac-8.7.1-1] srv ev 231 t=9206.7 h2-wire face=h2 conn=61600 tag=count.n5000-same.obs.59 wire_bytes_written=5967 wire_bytes_read=592
+[mac-8.7.1-1] cell count n5000-same face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=4.8 cpu_ms=1.5 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 233 t=9364.6 h2-close face=h2 conn=61603 tag=count.n5000-same.cap.60 heads=[200:5000] rst=0
+[mac-8.7.1-1] srv ev 234 t=9365.3 h2-wire face=h2 conn=61603 tag=count.n5000-same.cap.60 wire_bytes_written=5967 wire_bytes_read=592
+[mac-8.7.1-1] cell count n5001-same face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=4.7 cpu_ms=2.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80034 stored=5001 walk_ms=148.25 walk_cpu_ms=148.26 live_kb=309
+[mac-8.7.1-1] srv ev 236 t=9370.1 h2-close face=h2 conn=61606 tag=count.n5001-same.none.61 heads=[200:5001] rst=0
+[mac-8.7.1-1] srv ev 237 t=9371.1 h2-wire face=h2 conn=61606 tag=count.n5001-same.none.61 wire_bytes_written=5969 wire_bytes_read=592
+[mac-8.7.1-1] cell count n5001-same face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=5.4 cpu_ms=2.0 calls=5003 hdr_lines=5001 bytes=80034 heads=[200:5001:80034] refused=- header_size=80034 stored=5001 walk_ms=148.89 walk_cpu_ms=148.89 live_kb=309
+[mac-8.7.1-1] srv ev 239 t=9525.8 h2-close face=h2 conn=61609 tag=count.n5001-same.obs.62 heads=[200:5001] rst=0
+[mac-8.7.1-1] srv ev 240 t=9527.1 h2-wire face=h2 conn=61609 tag=count.n5001-same.obs.62 wire_bytes_written=5968 wire_bytes_read=592
+[mac-8.7.1-1] cell count n5001-same face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=4.6 cpu_ms=1.5 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 242 t=9682.5 h2-close face=h2 conn=61612 tag=count.n5001-same.cap.63 heads=[200:5001] rst=0
+[mac-8.7.1-1] srv ev 243 t=9683.0 h2-wire face=h2 conn=61612 tag=count.n5001-same.cap.63 wire_bytes_written=5968 wire_bytes_read=592
+[mac-8.7.1-1] cell count n10000-same face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=6.3 cpu_ms=2.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=160018 stored=10000 walk_ms=575.54 walk_cpu_ms=575.48 live_kb=612
+[mac-8.7.1-1] srv ev 245 t=9689.6 h2-close face=h2 conn=61615 tag=count.n10000-same.none.64 heads=[200:10000] rst=0
+[mac-8.7.1-1] srv ev 246 t=9691.5 h2-wire face=h2 conn=61615 tag=count.n10000-same.none.64 wire_bytes_written=10969 wire_bytes_read=594
+[mac-8.7.1-1] cell count n10000-same face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=6.7 cpu_ms=3.1 calls=10002 hdr_lines=10000 bytes=160018 heads=[200:10000:160018] refused=- header_size=160018 stored=10000 walk_ms=576.27 walk_cpu_ms=576.26 live_kb=612
+[mac-8.7.1-1] srv ev 248 t=10273.8 h2-close face=h2 conn=61618 tag=count.n10000-same.obs.65 heads=[200:10000] rst=0
+[mac-8.7.1-1] srv ev 249 t=10275.7 h2-wire face=h2 conn=61618 tag=count.n10000-same.obs.65 wire_bytes_written=10968 wire_bytes_read=593
+[mac-8.7.1-1] cell count n10000-same face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=5.7 cpu_ms=1.8 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 251 t=10859.2 h2-close face=h2 conn=61621 tag=count.n10000-same.cap.66 heads=[200:10000] rst=0
+[mac-8.7.1-1] srv ev 252 t=10859.9 h2-wire face=h2 conn=61621 tag=count.n10000-same.cap.66 wire_bytes_written=10967 wire_bytes_read=593
+[mac-8.7.1-1] cell count n50000-same face=h2 mode=none code=56 err="Too large response headers: 307216 > 307200" status=200 ver=3 t_ms=16.8 cpu_ms=4.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307216 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=1169
+[mac-8.7.1-1] srv ev 254 t=10875.6 h2-close face=h2 conn=61624 tag=count.n50000-same.none.67 heads=[200:50000] rst=0
+[mac-8.7.1-1] srv ev 255 t=10879.0 h2-wire face=h2 conn=61624 tag=count.n50000-same.none.67 wire_bytes_written=51082 wire_bytes_read=594
+[mac-8.7.1-1] cell count n50000-same face=h2 mode=obs code=56 err="Too large response headers: 307216 > 307200" status=200 ver=3 t_ms=15.0 cpu_ms=4.3 calls=19201 hdr_lines=19200 bytes=307216 heads=[200:19200:307216] refused=- header_size=307216 stored=19200 walk_ms=2100.09 walk_cpu_ms=2099.94 live_kb=1169
+[mac-8.7.1-1] srv ev 257 t=10892.5 h2-close face=h2 conn=61627 tag=count.n50000-same.obs.68 heads=[200:50000] rst=0
+[mac-8.7.1-1] srv ev 258 t=10895.9 h2-wire face=h2 conn=61627 tag=count.n50000-same.obs.68 wire_bytes_written=51081 wire_bytes_read=593
+[mac-8.7.1-1] cell count n50000-same face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=14.6 cpu_ms=1.8 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=67
+[mac-8.7.1-1] srv ev 260 t=13012.3 h2-close face=h2 conn=61630 tag=count.n50000-same.cap.69 heads=[200:50000] rst=0
+[mac-8.7.1-1] srv ev 261 t=13013.3 h2-wire face=h2 conn=61630 tag=count.n50000-same.cap.69 wire_bytes_written=51081 wire_bytes_read=593
+[mac-8.7.1-1] case count all done live_before_global_cleanup=0
+[mac-8.7.1-1] case count live_after_global_cleanup=0
+[mac-8.7.1-1] probe count exit=0
+[mac-8.7.1-1] probe count took about 13 s
+[mac-8.7.1-1] cell bytes total307199 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.4 cpu_ms=0.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307199 stored=1201 walk_ms=9.71 walk_cpu_ms=9.71 live_kb=360
+[mac-8.7.1-1] srv ev 264 t=13031.6 wrote face=h1 conn=61633 tag=bytes.total307199.none.1 proto=h1 heads=[200:1201:307199] bytes=307199
+[mac-8.7.1-1] cell bytes total307199 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.6 cpu_ms=0.6 calls=1203 hdr_lines=1201 bytes=307199 heads=[200:1201:307199] refused=- header_size=307199 stored=1201 walk_ms=9.60 walk_cpu_ms=9.60 live_kb=360
+[mac-8.7.1-1] srv ev 268 t=13044.8 wrote face=h1 conn=61636 tag=bytes.total307199.obs.2 proto=h1 heads=[200:1201:307199] bytes=307199
+[mac-8.7.1-1] cell bytes total307199 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=1.6 cpu_ms=0.4 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 272 t=13058.5 wrote face=h1 conn=61639 tag=bytes.total307199.cap.3 proto=h1 heads=[200:1201:307199] bytes=307199
+[mac-8.7.1-1] cell bytes total307200 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.7 cpu_ms=0.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307200 stored=1201 walk_ms=9.60 walk_cpu_ms=9.60 live_kb=360
+[mac-8.7.1-1] srv ev 276 t=13061.6 wrote face=h1 conn=61642 tag=bytes.total307200.none.4 proto=h1 heads=[200:1201:307200] bytes=307200
+[mac-8.7.1-1] cell bytes total307200 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.1 cpu_ms=0.6 calls=1203 hdr_lines=1201 bytes=307200 heads=[200:1201:307200] refused=- header_size=307200 stored=1201 walk_ms=9.60 walk_cpu_ms=9.60 live_kb=360
+[mac-8.7.1-1] srv ev 280 t=13075.0 wrote face=h1 conn=61645 tag=bytes.total307200.obs.5 proto=h1 heads=[200:1201:307200] bytes=307200
+[mac-8.7.1-1] cell bytes total307200 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=1.3 cpu_ms=0.3 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 284 t=13088.0 wrote face=h1 conn=61648 tag=bytes.total307200.cap.6 proto=h1 heads=[200:1201:307200] bytes=307200
+[mac-8.7.1-1] cell bytes total307201 face=h1 mode=none code=56 err="Too large response headers: 307201 > 307200" status=200 ver=2 t_ms=2.1 cpu_ms=0.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307201 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=361
+[mac-8.7.1-1] srv ev 288 t=13090.8 wrote face=h1 conn=61651 tag=bytes.total307201.none.7 proto=h1 heads=[200:1201:307201] bytes=307201
+[mac-8.7.1-1] cell bytes total307201 face=h1 mode=obs code=56 err="Too large response headers: 307201 > 307200" status=200 ver=2 t_ms=2.1 cpu_ms=0.6 calls=1203 hdr_lines=1201 bytes=307201 heads=[200:1201:307201] refused=- header_size=307201 stored=1201 walk_ms=9.60 walk_cpu_ms=9.60 live_kb=361
+[mac-8.7.1-1] srv ev 292 t=13094.1 wrote face=h1 conn=61654 tag=bytes.total307201.obs.8 proto=h1 heads=[200:1201:307201] bytes=307201
+[mac-8.7.1-1] cell bytes total307201 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=1.4 cpu_ms=0.3 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 296 t=13107.2 wrote face=h1 conn=61657 tag=bytes.total307201.cap.9 proto=h1 heads=[200:1201:307201] bytes=307201
+[mac-8.7.1-1] cell bytes total1048576 face=h1 mode=none code=56 err="Too large response headers: 307236 > 307200" status=200 ver=2 t_ms=3.7 cpu_ms=0.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307236 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=361
+[mac-8.7.1-1] srv ev 300 t=13110.7 wrote face=h1 conn=61660 tag=bytes.total1048576.none.10 proto=h1 heads=[200:4097:1048576] bytes=1048576
+[mac-8.7.1-1] cell bytes total1048576 face=h1 mode=obs code=56 err="Too large response headers: 307236 > 307200" status=200 ver=2 t_ms=3.7 cpu_ms=0.6 calls=1202 hdr_lines=1201 bytes=307236 heads=[200:1201:307236] refused=- header_size=307236 stored=1201 walk_ms=9.75 walk_cpu_ms=9.75 live_kb=361
+[mac-8.7.1-1] srv ev 304 t=13117.1 wrote face=h1 conn=61663 tag=bytes.total1048576.obs.11 proto=h1 heads=[200:4097:1048576] bytes=1048576
+[mac-8.7.1-1] cell bytes total1048576 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=2.2 cpu_ms=0.4 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 308 t=13132.2 wrote face=h1 conn=61666 tag=bytes.total1048576.cap.12 proto=h1 heads=[200:4097:1048576] bytes=1048576
+[mac-8.7.1-1] cell bytes line102398 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=1.1 cpu_ms=0.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=102436 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=106
+[mac-8.7.1-1] srv ev 312 t=13135.9 wrote face=h1 conn=61669 tag=bytes.line102398.none.13 proto=h1 heads=[200:2:102436] bytes=102436
+[mac-8.7.1-1] cell bytes line102398 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=0.7 cpu_ms=0.2 calls=4 hdr_lines=2 bytes=102436 heads=[200:2:102436] refused=- header_size=102436 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=106
+[mac-8.7.1-1] srv ev 316 t=13137.8 wrote face=h1 conn=61672 tag=bytes.line102398.obs.14 proto=h1 heads=[200:2:102436] bytes=102436
+[mac-8.7.1-1] cell bytes line102398 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 102398 returned 0" status=200 ver=2 t_ms=0.8 cpu_ms=0.2 calls=3 hdr_lines=2 bytes=102434 heads=[200:2:102434] refused=bytes@102434 header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=206
+[mac-8.7.1-1] srv ev 320 t=13139.6 wrote face=h1 conn=61675 tag=bytes.line102398.cap.15 proto=h1 heads=[200:2:102436] bytes=102436
+[mac-8.7.1-1] cell bytes line102399 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=0.9 cpu_ms=0.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=102437 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=106
+[mac-8.7.1-1] srv ev 324 t=13141.7 wrote face=h1 conn=61678 tag=bytes.line102399.none.16 proto=h1 heads=[200:2:102437] bytes=102437
+[mac-8.7.1-1] cell bytes line102399 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=1.0 cpu_ms=0.2 calls=4 hdr_lines=2 bytes=102437 heads=[200:2:102437] refused=- header_size=102437 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=106
+[mac-8.7.1-1] srv ev 328 t=13144.0 wrote face=h1 conn=61681 tag=bytes.line102399.obs.17 proto=h1 heads=[200:2:102437] bytes=102437
+[mac-8.7.1-1] cell bytes line102399 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 102399 returned 0" status=200 ver=2 t_ms=1.1 cpu_ms=0.3 calls=3 hdr_lines=2 bytes=102435 heads=[200:2:102435] refused=bytes@102435 header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=206
+[mac-8.7.1-1] srv ev 332 t=13146.6 wrote face=h1 conn=61684 tag=bytes.line102399.cap.18 proto=h1 heads=[200:2:102437] bytes=102437
+[mac-8.7.1-1] cell bytes line102400 face=h1 mode=none code=100 err="" status=200 ver=2 t_ms=0.9 cpu_ms=0.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=6
+[mac-8.7.1-1] srv ev 336 t=13148.8 wrote face=h1 conn=61687 tag=bytes.line102400.none.19 proto=h1 heads=[200:2:102438] bytes=102438
+[mac-8.7.1-1] cell bytes line102400 face=h1 mode=obs code=100 err="" status=200 ver=2 t_ms=0.9 cpu_ms=0.2 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=- header_size=36 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=6
+[mac-8.7.1-1] srv ev 340 t=13151.1 wrote face=h1 conn=61690 tag=bytes.line102400.obs.20 proto=h1 heads=[200:2:102438] bytes=102438
+[mac-8.7.1-1] cell bytes line102400 face=h1 mode=cap code=100 err="" status=200 ver=2 t_ms=0.9 cpu_ms=0.2 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=none header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=6
+[mac-8.7.1-1] srv ev 344 t=13153.3 wrote face=h1 conn=61693 tag=bytes.line102400.cap.21 proto=h1 heads=[200:2:102438] bytes=102438
+[mac-8.7.1-1] cell bytes line102401 face=h1 mode=none code=100 err="" status=200 ver=2 t_ms=0.6 cpu_ms=0.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=6
+[mac-8.7.1-1] srv ev 348 t=13155.4 wrote face=h1 conn=61696 tag=bytes.line102401.none.22 proto=h1 heads=[200:2:102439] bytes=102439
+[mac-8.7.1-1] cell bytes line102401 face=h1 mode=obs code=100 err="" status=200 ver=2 t_ms=0.4 cpu_ms=0.2 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=- header_size=36 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=6
+[mac-8.7.1-1] srv ev 352 t=13156.4 wrote face=h1 conn=61699 tag=bytes.line102401.obs.23 proto=h1 heads=[200:2:102439] bytes=102439
+[mac-8.7.1-1] cell bytes line102401 face=h1 mode=cap code=100 err="" status=200 ver=2 t_ms=0.4 cpu_ms=0.2 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=none header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=6
+[mac-8.7.1-1] srv ev 356 t=13157.3 wrote face=h1 conn=61702 tag=bytes.line102401.cap.24 proto=h1 heads=[200:2:102439] bytes=102439
+[mac-8.7.1-1] cell bytes total307199 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=8.8 cpu_ms=4.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307199 stored=1201 walk_ms=9.63 walk_cpu_ms=9.63 live_kb=360
+[mac-8.7.1-1] srv ev 361 t=13165.6 wrote face=h1tls conn=61705 tag=bytes.total307199.none.25 proto=h1 heads=[200:1201:307199] bytes=307199
+[mac-8.7.1-1] cell bytes total307199 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=4.9 cpu_ms=1.9 calls=1203 hdr_lines=1201 bytes=307199 heads=[200:1201:307199] refused=- header_size=307199 stored=1201 walk_ms=10.15 walk_cpu_ms=10.15 live_kb=360
+[mac-8.7.1-1] srv ev 366 t=13181.4 wrote face=h1tls conn=61708 tag=bytes.total307199.obs.26 proto=h1 heads=[200:1201:307199] bytes=307199
+[mac-8.7.1-1] cell bytes total307199 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=5.1 cpu_ms=1.8 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 371 t=13199.0 wrote face=h1tls conn=61711 tag=bytes.total307199.cap.27 proto=h1 heads=[200:1201:307199] bytes=307199
+[mac-8.7.1-1] cell bytes total307200 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=5.8 cpu_ms=1.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307200 stored=1201 walk_ms=9.91 walk_cpu_ms=9.91 live_kb=360
+[mac-8.7.1-1] srv ev 376 t=13205.7 wrote face=h1tls conn=61714 tag=bytes.total307200.none.28 proto=h1 heads=[200:1201:307200] bytes=307200
+[mac-8.7.1-1] cell bytes total307200 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=5.5 cpu_ms=1.9 calls=1203 hdr_lines=1201 bytes=307200 heads=[200:1201:307200] refused=- header_size=307200 stored=1201 walk_ms=10.30 walk_cpu_ms=10.30 live_kb=360
+[mac-8.7.1-1] srv ev 381 t=13222.9 wrote face=h1tls conn=61717 tag=bytes.total307200.obs.29 proto=h1 heads=[200:1201:307200] bytes=307200
+[mac-8.7.1-1] cell bytes total307200 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=5.1 cpu_ms=1.8 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 386 t=13241.1 wrote face=h1tls conn=61720 tag=bytes.total307200.cap.30 proto=h1 heads=[200:1201:307200] bytes=307200
+[mac-8.7.1-1] cell bytes total307201 face=h1tls mode=none code=56 err="Too large response headers: 307201 > 307200" status=200 ver=2 t_ms=5.7 cpu_ms=1.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307201 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=361
+[mac-8.7.1-1] srv ev 391 t=13247.5 wrote face=h1tls conn=61723 tag=bytes.total307201.none.31 proto=h1 heads=[200:1201:307201] bytes=307201
+[mac-8.7.1-1] cell bytes total307201 face=h1tls mode=obs code=56 err="Too large response headers: 307201 > 307200" status=200 ver=2 t_ms=5.3 cpu_ms=1.7 calls=1203 hdr_lines=1201 bytes=307201 heads=[200:1201:307201] refused=- header_size=307201 stored=1201 walk_ms=9.63 walk_cpu_ms=9.63 live_kb=361
+[mac-8.7.1-1] srv ev 396 t=13254.3 wrote face=h1tls conn=61726 tag=bytes.total307201.obs.32 proto=h1 heads=[200:1201:307201] bytes=307201
+[mac-8.7.1-1] cell bytes total307201 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=3.9 cpu_ms=1.5 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 401 t=13270.7 wrote face=h1tls conn=61729 tag=bytes.total307201.cap.33 proto=h1 heads=[200:1201:307201] bytes=307201
+[mac-8.7.1-1] cell bytes total1048576 face=h1tls mode=none code=56 err="Too large response headers: 307236 > 307200" status=200 ver=2 t_ms=6.1 cpu_ms=2.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307236 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=361
+[mac-8.7.1-1] srv ev 406 t=13276.6 wrote face=h1tls conn=61732 tag=bytes.total1048576.none.34 proto=h1 heads=[200:4097:1048576] bytes=1048576
+[mac-8.7.1-1] cell bytes total1048576 face=h1tls mode=obs code=56 err="Too large response headers: 307236 > 307200" status=200 ver=2 t_ms=7.7 cpu_ms=2.1 calls=1202 hdr_lines=1201 bytes=307236 heads=[200:1201:307236] refused=- header_size=307236 stored=1201 walk_ms=9.68 walk_cpu_ms=9.68 live_kb=361
+[mac-8.7.1-1] srv ev 411 t=13286.6 wrote face=h1tls conn=61735 tag=bytes.total1048576.obs.35 proto=h1 heads=[200:4097:1048576] bytes=1048576
+[mac-8.7.1-1] cell bytes total1048576 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=6.2 cpu_ms=1.7 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 416 t=13307.0 wrote face=h1tls conn=61738 tag=bytes.total1048576.cap.36 proto=h1 heads=[200:4097:1048576] bytes=1048576
+[mac-8.7.1-1] cell bytes line102398 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=3.3 cpu_ms=1.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=102436 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=106
+[mac-8.7.1-1] srv ev 421 t=13312.1 wrote face=h1tls conn=61741 tag=bytes.line102398.none.37 proto=h1 heads=[200:2:102436] bytes=102436
+[mac-8.7.1-1] cell bytes line102398 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=4.0 cpu_ms=1.3 calls=4 hdr_lines=2 bytes=102436 heads=[200:2:102436] refused=- header_size=102436 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=106
+[mac-8.7.1-1] srv ev 426 t=13317.1 wrote face=h1tls conn=61744 tag=bytes.line102398.obs.38 proto=h1 heads=[200:2:102436] bytes=102436
+[mac-8.7.1-1] cell bytes line102398 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 102398 returned 0" status=200 ver=2 t_ms=3.9 cpu_ms=1.3 calls=3 hdr_lines=2 bytes=102434 heads=[200:2:102434] refused=bytes@102434 header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=207
+[mac-8.7.1-1] srv ev 431 t=13323.3 wrote face=h1tls conn=61747 tag=bytes.line102398.cap.39 proto=h1 heads=[200:2:102436] bytes=102436
+[mac-8.7.1-1] cell bytes line102399 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=3.9 cpu_ms=1.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=102437 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=106
+[mac-8.7.1-1] srv ev 436 t=13329.5 wrote face=h1tls conn=61750 tag=bytes.line102399.none.40 proto=h1 heads=[200:2:102437] bytes=102437
+[mac-8.7.1-1] cell bytes line102399 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=3.9 cpu_ms=1.3 calls=4 hdr_lines=2 bytes=102437 heads=[200:2:102437] refused=- header_size=102437 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=106
+[mac-8.7.1-1] srv ev 441 t=13335.7 wrote face=h1tls conn=61753 tag=bytes.line102399.obs.41 proto=h1 heads=[200:2:102437] bytes=102437
+[mac-8.7.1-1] cell bytes line102399 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 102399 returned 0" status=200 ver=2 t_ms=3.8 cpu_ms=1.3 calls=3 hdr_lines=2 bytes=102435 heads=[200:2:102435] refused=bytes@102435 header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=207
+[mac-8.7.1-1] srv ev 446 t=13341.8 wrote face=h1tls conn=61756 tag=bytes.line102399.cap.42 proto=h1 heads=[200:2:102437] bytes=102437
+[mac-8.7.1-1] cell bytes line102400 face=h1tls mode=none code=100 err="" status=200 ver=2 t_ms=4.0 cpu_ms=1.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=6
+[mac-8.7.1-1] srv ev 451 t=13348.0 wrote face=h1tls conn=61759 tag=bytes.line102400.none.43 proto=h1 heads=[200:2:102438] bytes=102438
+[mac-8.7.1-1] cell bytes line102400 face=h1tls mode=obs code=100 err="" status=200 ver=2 t_ms=4.1 cpu_ms=1.4 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=- header_size=36 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=6
+[mac-8.7.1-1] srv ev 456 t=13354.4 wrote face=h1tls conn=61762 tag=bytes.line102400.obs.44 proto=h1 heads=[200:2:102438] bytes=102438
+[mac-8.7.1-1] cell bytes line102400 face=h1tls mode=cap code=100 err="" status=200 ver=2 t_ms=4.0 cpu_ms=1.4 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=none header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=6
+[mac-8.7.1-1] srv ev 461 t=13360.8 wrote face=h1tls conn=61765 tag=bytes.line102400.cap.45 proto=h1 heads=[200:2:102438] bytes=102438
+[mac-8.7.1-1] cell bytes line102401 face=h1tls mode=none code=100 err="" status=200 ver=2 t_ms=3.8 cpu_ms=1.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=6
+[mac-8.7.1-1] srv ev 466 t=13367.1 wrote face=h1tls conn=61768 tag=bytes.line102401.none.46 proto=h1 heads=[200:2:102439] bytes=102439
+[mac-8.7.1-1] cell bytes line102401 face=h1tls mode=obs code=100 err="" status=200 ver=2 t_ms=3.4 cpu_ms=1.3 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=- header_size=36 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=6
+[mac-8.7.1-1] srv ev 471 t=13372.0 wrote face=h1tls conn=61771 tag=bytes.line102401.obs.47 proto=h1 heads=[200:2:102439] bytes=102439
+[mac-8.7.1-1] cell bytes line102401 face=h1tls mode=cap code=100 err="" status=200 ver=2 t_ms=3.3 cpu_ms=1.3 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=none header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=6
+[mac-8.7.1-1] srv ev 476 t=13377.0 wrote face=h1tls conn=61774 tag=bytes.line102401.cap.48 proto=h1 heads=[200:2:102439] bytes=102439
+[mac-8.7.1-1] cell bytes total307199 face=h2 mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=6.8 cpu_ms=2.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168480 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=201
+[mac-8.7.1-1] srv ev 479 t=13384.4 h2-close face=h2 conn=61777 tag=bytes.total307199.none.49 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 480 t=13386.2 h2-wire face=h2 conn=61777 tag=bytes.total307199.none.49 wire_bytes_written=270333 wire_bytes_read=567
+[mac-8.7.1-1] cell bytes total307199 face=h2 mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=6.8 cpu_ms=2.6 calls=660 hdr_lines=659 bytes=168480 heads=[200:659:168480] refused=- header_size=168480 stored=659 walk_ms=3.04 walk_cpu_ms=3.04 live_kb=201
+[mac-8.7.1-1] srv ev 482 t=13392.8 h2-close face=h2 conn=61780 tag=bytes.total307199.obs.50 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 483 t=13394.8 h2-wire face=h2 conn=61780 tag=bytes.total307199.obs.50 wire_bytes_written=270333 wire_bytes_read=598
+[mac-8.7.1-1] cell bytes total307199 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=5.8 cpu_ms=2.0 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 485 t=13404.6 h2-close face=h2 conn=61783 tag=bytes.total307199.cap.51 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 486 t=13406.3 h2-wire face=h2 conn=61783 tag=bytes.total307199.cap.51 wire_bytes_written=270333 wire_bytes_read=598
+[mac-8.7.1-1] cell bytes total307200 face=h2 mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=7.2 cpu_ms=2.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168480 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=201
+[mac-8.7.1-1] srv ev 488 t=13413.5 h2-close face=h2 conn=61786 tag=bytes.total307200.none.52 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 489 t=13415.6 h2-wire face=h2 conn=61786 tag=bytes.total307200.none.52 wire_bytes_written=270334 wire_bytes_read=599
+[mac-8.7.1-1] cell bytes total307200 face=h2 mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=6.8 cpu_ms=2.6 calls=660 hdr_lines=659 bytes=168480 heads=[200:659:168480] refused=- header_size=168480 stored=659 walk_ms=3.04 walk_cpu_ms=3.05 live_kb=201
+[mac-8.7.1-1] srv ev 491 t=13422.4 h2-close face=h2 conn=61789 tag=bytes.total307200.obs.53 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 492 t=13424.4 h2-wire face=h2 conn=61789 tag=bytes.total307200.obs.53 wire_bytes_written=270335 wire_bytes_read=598
+[mac-8.7.1-1] cell bytes total307200 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=6.2 cpu_ms=2.0 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 494 t=13434.4 h2-close face=h2 conn=61792 tag=bytes.total307200.cap.54 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 495 t=13436.3 h2-wire face=h2 conn=61792 tag=bytes.total307200.cap.54 wire_bytes_written=270334 wire_bytes_read=598
+[mac-8.7.1-1] cell bytes total307201 face=h2 mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=8.1 cpu_ms=2.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168480 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=201
+[mac-8.7.1-1] srv ev 497 t=13444.5 h2-close face=h2 conn=61795 tag=bytes.total307201.none.55 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 498 t=13446.4 h2-wire face=h2 conn=61795 tag=bytes.total307201.none.55 wire_bytes_written=270334 wire_bytes_read=599
+[mac-8.7.1-1] cell bytes total307201 face=h2 mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=7.5 cpu_ms=2.7 calls=660 hdr_lines=659 bytes=168480 heads=[200:659:168480] refused=- header_size=168480 stored=659 walk_ms=3.08 walk_cpu_ms=3.08 live_kb=201
+[mac-8.7.1-1] srv ev 500 t=13452.6 h2-close face=h2 conn=61798 tag=bytes.total307201.obs.56 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 501 t=13455.2 h2-wire face=h2 conn=61798 tag=bytes.total307201.obs.56 wire_bytes_written=270334 wire_bytes_read=598
+[mac-8.7.1-1] cell bytes total307201 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=6.3 cpu_ms=2.1 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 503 t=13465.4 h2-close face=h2 conn=61801 tag=bytes.total307201.cap.57 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 504 t=13467.3 h2-wire face=h2 conn=61801 tag=bytes.total307201.cap.57 wire_bytes_written=270335 wire_bytes_read=598
+[mac-8.7.1-1] cell bytes total1048576 face=h2 mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=10.9 cpu_ms=2.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168480 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=201
+[mac-8.7.1-1] srv ev 506 t=13477.7 h2-close face=h2 conn=61804 tag=bytes.total1048576.none.58 heads=[200:4097] rst=0
+[mac-8.7.1-1] srv ev 507 t=13481.6 h2-wire face=h2 conn=61804 tag=bytes.total1048576.none.58 wire_bytes_written=920519 wire_bytes_read=601
+[mac-8.7.1-1] cell bytes total1048576 face=h2 mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=13.1 cpu_ms=2.8 calls=660 hdr_lines=659 bytes=168480 heads=[200:659:168480] refused=- header_size=168480 stored=659 walk_ms=3.05 walk_cpu_ms=3.05 live_kb=201
+[mac-8.7.1-1] srv ev 509 t=13494.5 h2-close face=h2 conn=61807 tag=bytes.total1048576.obs.59 heads=[200:4097] rst=0
+[mac-8.7.1-1] srv ev 510 t=13498.3 h2-wire face=h2 conn=61807 tag=bytes.total1048576.obs.59 wire_bytes_written=920549 wire_bytes_read=600
+[mac-8.7.1-1] cell bytes total1048576 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=9.9 cpu_ms=2.2 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 512 t=13510.9 h2-close face=h2 conn=61810 tag=bytes.total1048576.cap.60 heads=[200:4097] rst=0
+[mac-8.7.1-1] srv ev 513 t=13513.0 h2-wire face=h2 conn=61810 tag=bytes.total1048576.cap.60 wire_bytes_written=920518 wire_bytes_read=600
+[mac-8.7.1-1] cell bytes line102398 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=4.9 cpu_ms=1.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=102432 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=106
+[mac-8.7.1-1] srv ev 515 t=13518.8 h2-close face=h2 conn=61813 tag=bytes.line102398.none.61 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 516 t=13520.0 h2-wire face=h2 conn=61813 tag=bytes.line102398.none.61 wire_bytes_written=65074 wire_bytes_read=588
+[mac-8.7.1-1] cell bytes line102398 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=3.8 cpu_ms=1.8 calls=4 hdr_lines=2 bytes=102432 heads=[200:2:102432] refused=- header_size=102432 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=106
+[mac-8.7.1-1] srv ev 518 t=13524.1 h2-close face=h2 conn=61816 tag=bytes.line102398.obs.62 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 519 t=13525.0 h2-wire face=h2 conn=61816 tag=bytes.line102398.obs.62 wire_bytes_written=65074 wire_bytes_read=587
+[mac-8.7.1-1] cell bytes line102398 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 102398 returned 0" status=200 ver=3 t_ms=4.3 cpu_ms=1.8 calls=3 hdr_lines=2 bytes=102430 heads=[200:2:102430] refused=bytes@102430 header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=207
+[mac-8.7.1-1] srv ev 521 t=13529.6 h2-close face=h2 conn=61819 tag=bytes.line102398.cap.63 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 522 t=13530.6 h2-wire face=h2 conn=61819 tag=bytes.line102398.cap.63 wire_bytes_written=65074 wire_bytes_read=587
+[mac-8.7.1-1] cell bytes line102399 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=4.6 cpu_ms=1.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=102433 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=106
+[mac-8.7.1-1] srv ev 524 t=13536.2 h2-close face=h2 conn=61822 tag=bytes.line102399.none.64 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 525 t=13537.3 h2-wire face=h2 conn=61822 tag=bytes.line102399.none.64 wire_bytes_written=65074 wire_bytes_read=588
+[mac-8.7.1-1] cell bytes line102399 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=4.5 cpu_ms=1.8 calls=4 hdr_lines=2 bytes=102433 heads=[200:2:102433] refused=- header_size=102433 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=106
+[mac-8.7.1-1] srv ev 527 t=13542.9 h2-close face=h2 conn=61825 tag=bytes.line102399.obs.65 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 528 t=13544.1 h2-wire face=h2 conn=61825 tag=bytes.line102399.obs.65 wire_bytes_written=65075 wire_bytes_read=587
+[mac-8.7.1-1] cell bytes line102399 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 102399 returned 0" status=200 ver=3 t_ms=4.5 cpu_ms=1.7 calls=3 hdr_lines=2 bytes=102431 heads=[200:2:102431] refused=bytes@102431 header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=207
+[mac-8.7.1-1] srv ev 530 t=13549.6 h2-close face=h2 conn=61828 tag=bytes.line102399.cap.66 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 531 t=13550.7 h2-wire face=h2 conn=61828 tag=bytes.line102399.cap.66 wire_bytes_written=65074 wire_bytes_read=587
+[mac-8.7.1-1] cell bytes line102400 face=h2 mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -902:The user callback function failed" status=200 ver=3 t_ms=4.6 cpu_ms=1.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=7
+[mac-8.7.1-1] srv ev 533 t=13556.4 h2-close face=h2 conn=61831 tag=bytes.line102400.none.67 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 534 t=13557.6 h2-wire face=h2 conn=61831 tag=bytes.line102400.none.67 wire_bytes_written=65074 wire_bytes_read=587
+[mac-8.7.1-1] cell bytes line102400 face=h2 mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -902:The user callback function failed" status=200 ver=3 t_ms=4.4 cpu_ms=1.7 calls=2 hdr_lines=1 bytes=32 heads=[200:1:32] refused=- header_size=32 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=7
+[mac-8.7.1-1] srv ev 536 t=13563.1 h2-close face=h2 conn=61834 tag=bytes.line102400.obs.68 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 537 t=13564.3 h2-wire face=h2 conn=61834 tag=bytes.line102400.obs.68 wire_bytes_written=65075 wire_bytes_read=587
+[mac-8.7.1-1] cell bytes line102400 face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -902:The user callback function failed" status=200 ver=3 t_ms=4.6 cpu_ms=1.7 calls=2 hdr_lines=1 bytes=32 heads=[200:1:32] refused=none header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=7
+[mac-8.7.1-1] srv ev 539 t=13569.9 h2-close face=h2 conn=61837 tag=bytes.line102400.cap.69 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 540 t=13571.1 h2-wire face=h2 conn=61837 tag=bytes.line102400.cap.69 wire_bytes_written=65076 wire_bytes_read=587
+[mac-8.7.1-1] cell bytes line102401 face=h2 mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -902:The user callback function failed" status=200 ver=3 t_ms=4.5 cpu_ms=1.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=7
+[mac-8.7.1-1] srv ev 542 t=13576.6 h2-close face=h2 conn=61840 tag=bytes.line102401.none.70 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 543 t=13577.8 h2-wire face=h2 conn=61840 tag=bytes.line102401.none.70 wire_bytes_written=65076 wire_bytes_read=587
+[mac-8.7.1-1] cell bytes line102401 face=h2 mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -902:The user callback function failed" status=200 ver=3 t_ms=5.0 cpu_ms=1.9 calls=2 hdr_lines=1 bytes=32 heads=[200:1:32] refused=- header_size=32 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=7
+[mac-8.7.1-1] srv ev 545 t=13584.1 h2-close face=h2 conn=61843 tag=bytes.line102401.obs.71 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 546 t=13585.0 h2-wire face=h2 conn=61843 tag=bytes.line102401.obs.71 wire_bytes_written=65075 wire_bytes_read=587
+[mac-8.7.1-1] cell bytes line102401 face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -902:The user callback function failed" status=200 ver=3 t_ms=3.8 cpu_ms=1.7 calls=2 hdr_lines=1 bytes=32 heads=[200:1:32] refused=none header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=7
+[mac-8.7.1-1] srv ev 548 t=13589.1 h2-close face=h2 conn=61846 tag=bytes.line102401.cap.72 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 549 t=13589.9 h2-wire face=h2 conn=61846 tag=bytes.line102401.cap.72 wire_bytes_written=65076 wire_bytes_read=587
+[mac-8.7.1-1] cell bytes total307199-same face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=4.4 cpu_ms=1.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307199 stored=1201 walk_ms=11.26 walk_cpu_ms=11.26 live_kb=360
+[mac-8.7.1-1] srv ev 551 t=13595.7 h2-close face=h2 conn=61849 tag=bytes.total307199-same.none.73 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 552 t=13596.4 h2-wire face=h2 conn=61849 tag=bytes.total307199-same.none.73 wire_bytes_written=2568 wire_bytes_read=608
+[mac-8.7.1-1] cell bytes total307199-same face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=4.5 cpu_ms=1.7 calls=1203 hdr_lines=1201 bytes=307199 heads=[200:1201:307199] refused=- header_size=307199 stored=1201 walk_ms=11.30 walk_cpu_ms=11.30 live_kb=360
+[mac-8.7.1-1] srv ev 554 t=13613.8 h2-close face=h2 conn=61852 tag=bytes.total307199-same.obs.74 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 555 t=13614.6 h2-wire face=h2 conn=61852 tag=bytes.total307199-same.obs.74 wire_bytes_written=2567 wire_bytes_read=607
+[mac-8.7.1-1] cell bytes total307199-same face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=4.3 cpu_ms=1.4 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 557 t=13631.8 h2-close face=h2 conn=61855 tag=bytes.total307199-same.cap.75 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 558 t=13632.4 h2-wire face=h2 conn=61855 tag=bytes.total307199-same.cap.75 wire_bytes_written=2567 wire_bytes_read=607
+[mac-8.7.1-1] cell bytes total307200-same face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=4.4 cpu_ms=1.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307200 stored=1201 walk_ms=11.25 walk_cpu_ms=11.25 live_kb=360
+[mac-8.7.1-1] srv ev 560 t=13638.4 h2-close face=h2 conn=61858 tag=bytes.total307200-same.none.76 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 561 t=13639.2 h2-wire face=h2 conn=61858 tag=bytes.total307200-same.none.76 wire_bytes_written=2569 wire_bytes_read=607
+[mac-8.7.1-1] cell bytes total307200-same face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=4.5 cpu_ms=1.6 calls=1203 hdr_lines=1201 bytes=307200 heads=[200:1201:307200] refused=- header_size=307200 stored=1201 walk_ms=11.24 walk_cpu_ms=11.24 live_kb=360
+[mac-8.7.1-1] srv ev 563 t=13656.3 h2-close face=h2 conn=61861 tag=bytes.total307200-same.obs.77 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 564 t=13657.2 h2-wire face=h2 conn=61861 tag=bytes.total307200-same.obs.77 wire_bytes_written=2568 wire_bytes_read=606
+[mac-8.7.1-1] cell bytes total307200-same face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=4.6 cpu_ms=1.5 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 566 t=13674.8 h2-close face=h2 conn=61864 tag=bytes.total307200-same.cap.78 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 567 t=13675.2 h2-wire face=h2 conn=61864 tag=bytes.total307200-same.cap.78 wire_bytes_written=2568 wire_bytes_read=606
+[mac-8.7.1-1] cell bytes total307201-same face=h2 mode=none code=56 err="Too large response headers: 307201 > 307200" status=200 ver=3 t_ms=3.8 cpu_ms=1.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307201 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=361
+[mac-8.7.1-1] srv ev 569 t=13679.5 h2-close face=h2 conn=61867 tag=bytes.total307201-same.none.79 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 570 t=13680.1 h2-wire face=h2 conn=61867 tag=bytes.total307201-same.none.79 wire_bytes_written=2568 wire_bytes_read=607
+[mac-8.7.1-1] cell bytes total307201-same face=h2 mode=obs code=56 err="Too large response headers: 307201 > 307200" status=200 ver=3 t_ms=4.2 cpu_ms=1.6 calls=1203 hdr_lines=1201 bytes=307201 heads=[200:1201:307201] refused=- header_size=307201 stored=1201 walk_ms=11.23 walk_cpu_ms=11.23 live_kb=361
+[mac-8.7.1-1] srv ev 572 t=13684.8 h2-close face=h2 conn=61870 tag=bytes.total307201-same.obs.80 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 573 t=13685.6 h2-wire face=h2 conn=61870 tag=bytes.total307201-same.obs.80 wire_bytes_written=2569 wire_bytes_read=606
+[mac-8.7.1-1] cell bytes total307201-same face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=4.2 cpu_ms=1.3 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 575 t=13702.7 h2-close face=h2 conn=61873 tag=bytes.total307201-same.cap.81 heads=[200:1201] rst=0
+[mac-8.7.1-1] srv ev 576 t=13703.2 h2-wire face=h2 conn=61873 tag=bytes.total307201-same.cap.81 wire_bytes_written=2570 wire_bytes_read=606
+[mac-8.7.1-1] cell bytes total1048576-same face=h2 mode=none code=56 err="Too large response headers: 307232 > 307200" status=200 ver=3 t_ms=5.2 cpu_ms=1.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307232 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=361
+[mac-8.7.1-1] srv ev 578 t=13709.9 h2-close face=h2 conn=61876 tag=bytes.total1048576-same.none.82 heads=[200:4097] rst=0
+[mac-8.7.1-1] srv ev 579 t=13710.7 h2-wire face=h2 conn=61876 tag=bytes.total1048576-same.none.82 wire_bytes_written=5464 wire_bytes_read=609
+[mac-8.7.1-1] cell bytes total1048576-same face=h2 mode=obs code=56 err="Too large response headers: 307232 > 307200" status=200 ver=3 t_ms=5.9 cpu_ms=1.9 calls=1202 hdr_lines=1201 bytes=307232 heads=[200:1201:307232] refused=- header_size=307232 stored=1201 walk_ms=11.23 walk_cpu_ms=11.23 live_kb=361
+[mac-8.7.1-1] srv ev 581 t=13718.1 h2-close face=h2 conn=61879 tag=bytes.total1048576-same.obs.83 heads=[200:4097] rst=0
+[mac-8.7.1-1] srv ev 582 t=13718.8 h2-wire face=h2 conn=61879 tag=bytes.total1048576-same.obs.83 wire_bytes_written=5464 wire_bytes_read=608
+[mac-8.7.1-1] cell bytes total1048576-same face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=5.1 cpu_ms=1.4 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 584 t=13736.8 h2-close face=h2 conn=61882 tag=bytes.total1048576-same.cap.84 heads=[200:4097] rst=0
+[mac-8.7.1-1] srv ev 585 t=13737.5 h2-wire face=h2 conn=61882 tag=bytes.total1048576-same.cap.84 wire_bytes_written=5463 wire_bytes_read=608
+[mac-8.7.1-1] cell bytes line102400-X face=h2 mode=none code=16 err="" status=200 ver=3 t_ms=5.5 cpu_ms=1.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=7
+[mac-8.7.1-1] srv ev 587 t=13741.6 h2-close face=h2 conn=61885 tag=bytes.line102400-X.none.85 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 588 t=13742.1 goaway face=h2 conn=61885 received from the client, code=9 last_stream=0
+[mac-8.7.1-1] srv ev 589 t=13743.9 h2-wire face=h2 conn=61885 tag=bytes.line102400-X.none.85 wire_bytes_written=103631 wire_bytes_read=610
+[mac-8.7.1-1] srv ev 590 t=13744.0 server-session-error face=h2 conn=- code=ERR_HTTP2_SESSION_ERROR "Session closed with error code 9"
+[mac-8.7.1-1] srv ev 591 t=13744.0 session-error face=h2 conn=61885 code=ERR_HTTP2_SESSION_ERROR "Session closed with error code 9"
+[mac-8.7.1-1] cell bytes line102400-X face=h2 mode=obs code=16 err="" status=200 ver=3 t_ms=5.0 cpu_ms=1.5 calls=2 hdr_lines=1 bytes=32 heads=[200:1:32] refused=- header_size=32 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=7
+[mac-8.7.1-1] srv ev 593 t=13748.6 h2-close face=h2 conn=61888 tag=bytes.line102400-X.obs.86 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 594 t=13749.5 goaway face=h2 conn=61888 received from the client, code=9 last_stream=0
+[mac-8.7.1-1] srv ev 595 t=13749.6 h2-wire face=h2 conn=61888 tag=bytes.line102400-X.obs.86 wire_bytes_written=103632 wire_bytes_read=610
+[mac-8.7.1-1] srv ev 596 t=13749.7 server-session-error face=h2 conn=- code=ERR_HTTP2_SESSION_ERROR "Session closed with error code 9"
+[mac-8.7.1-1] srv ev 597 t=13749.7 session-error face=h2 conn=61888 code=ERR_HTTP2_SESSION_ERROR "Session closed with error code 9"
+[mac-8.7.1-1] cell bytes line102400-X face=h2 mode=cap code=16 err="" status=200 ver=3 t_ms=5.0 cpu_ms=1.5 calls=2 hdr_lines=1 bytes=32 heads=[200:1:32] refused=none header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=7
+[mac-8.7.1-1] srv ev 599 t=13755.7 h2-close face=h2 conn=61891 tag=bytes.line102400-X.cap.87 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 600 t=13756.7 goaway face=h2 conn=61891 received from the client, code=9 last_stream=0
+[mac-8.7.1-1] srv ev 601 t=13756.8 h2-wire face=h2 conn=61891 tag=bytes.line102400-X.cap.87 wire_bytes_written=103631 wire_bytes_read=610
+[mac-8.7.1-1] srv ev 602 t=13756.8 server-session-error face=h2 conn=- code=ERR_HTTP2_SESSION_ERROR "Session closed with error code 9"
+[mac-8.7.1-1] srv ev 603 t=13756.8 session-error face=h2 conn=61891 code=ERR_HTTP2_SESSION_ERROR "Session closed with error code 9"
+[mac-8.7.1-1] cell bytes total131071 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=5.7 cpu_ms=2.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=131071 stored=513 walk_ms=1.86 walk_cpu_ms=1.86 live_kb=157
+[mac-8.7.1-1] srv ev 605 t=13763.7 h2-close face=h2 conn=61894 tag=bytes.total131071.none.88 heads=[200:513] rst=0
+[mac-8.7.1-1] srv ev 606 t=13765.1 h2-wire face=h2 conn=61894 tag=bytes.total131071.none.88 wire_bytes_written=115871 wire_bytes_read=599
+[mac-8.7.1-1] cell bytes total131071 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=6.6 cpu_ms=2.2 calls=515 hdr_lines=513 bytes=131071 heads=[200:513:131071] refused=- header_size=131071 stored=513 walk_ms=1.86 walk_cpu_ms=1.86 live_kb=157
+[mac-8.7.1-1] srv ev 608 t=13773.2 h2-close face=h2 conn=61897 tag=bytes.total131071.obs.89 heads=[200:513] rst=0
+[mac-8.7.1-1] srv ev 609 t=13774.8 h2-wire face=h2 conn=61897 tag=bytes.total131071.obs.89 wire_bytes_written=115869 wire_bytes_read=598
+[mac-8.7.1-1] cell bytes total131071 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=5.1 cpu_ms=2.0 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 611 t=13782.4 h2-close face=h2 conn=61900 tag=bytes.total131071.cap.90 heads=[200:513] rst=0
+[mac-8.7.1-1] srv ev 612 t=13783.8 h2-wire face=h2 conn=61900 tag=bytes.total131071.cap.90 wire_bytes_written=115869 wire_bytes_read=598
+[mac-8.7.1-1] cell bytes total131072 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=5.4 cpu_ms=2.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=131072 stored=513 walk_ms=1.86 walk_cpu_ms=1.86 live_kb=157
+[mac-8.7.1-1] srv ev 614 t=13789.7 h2-close face=h2 conn=61903 tag=bytes.total131072.none.91 heads=[200:513] rst=0
+[mac-8.7.1-1] srv ev 615 t=13791.3 h2-wire face=h2 conn=61903 tag=bytes.total131072.none.91 wire_bytes_written=115871 wire_bytes_read=599
+[mac-8.7.1-1] cell bytes total131072 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=5.4 cpu_ms=2.2 calls=515 hdr_lines=513 bytes=131072 heads=[200:513:131072] refused=- header_size=131072 stored=513 walk_ms=1.86 walk_cpu_ms=1.86 live_kb=157
+[mac-8.7.1-1] srv ev 617 t=13799.0 h2-close face=h2 conn=61906 tag=bytes.total131072.obs.92 heads=[200:513] rst=0
+[mac-8.7.1-1] srv ev 618 t=13800.6 h2-wire face=h2 conn=61906 tag=bytes.total131072.obs.92 wire_bytes_written=115871 wire_bytes_read=598
+[mac-8.7.1-1] cell bytes total131072 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=5.2 cpu_ms=2.0 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 620 t=13808.4 h2-close face=h2 conn=61909 tag=bytes.total131072.cap.93 heads=[200:513] rst=0
+[mac-8.7.1-1] srv ev 621 t=13809.8 h2-wire face=h2 conn=61909 tag=bytes.total131072.cap.93 wire_bytes_written=115872 wire_bytes_read=598
+[mac-8.7.1-1] cell bytes total131073 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=5.5 cpu_ms=2.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=131073 stored=513 walk_ms=1.86 walk_cpu_ms=1.86 live_kb=157
+[mac-8.7.1-1] srv ev 623 t=13815.7 h2-close face=h2 conn=61912 tag=bytes.total131073.none.94 heads=[200:513] rst=0
+[mac-8.7.1-1] srv ev 624 t=13817.3 h2-wire face=h2 conn=61912 tag=bytes.total131073.none.94 wire_bytes_written=115872 wire_bytes_read=599
+[mac-8.7.1-1] cell bytes total131073 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=5.4 cpu_ms=2.2 calls=515 hdr_lines=513 bytes=131073 heads=[200:513:131073] refused=- header_size=131073 stored=513 walk_ms=1.86 walk_cpu_ms=1.86 live_kb=157
+[mac-8.7.1-1] srv ev 626 t=13825.1 h2-close face=h2 conn=61915 tag=bytes.total131073.obs.95 heads=[200:513] rst=0
+[mac-8.7.1-1] srv ev 627 t=13826.7 h2-wire face=h2 conn=61915 tag=bytes.total131073.obs.95 wire_bytes_written=115872 wire_bytes_read=598
+[mac-8.7.1-1] cell bytes total131073 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=5.5 cpu_ms=2.1 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=125
+[mac-8.7.1-1] srv ev 629 t=13834.5 h2-close face=h2 conn=61918 tag=bytes.total131073.cap.96 heads=[200:513] rst=0
+[mac-8.7.1-1] srv ev 630 t=13836.2 h2-wire face=h2 conn=61918 tag=bytes.total131073.cap.96 wire_bytes_written=115872 wire_bytes_read=598
+[mac-8.7.1-1] case bytes all done live_before_global_cleanup=0
+[mac-8.7.1-1] case bytes live_after_global_cleanup=0
+[mac-8.7.1-1] probe bytes exit=0
+[mac-8.7.1-1] probe bytes took about 1 s
+[mac-8.7.1-1] cell toward pre103-6000+2 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.2 cpu_ms=0.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96082 stored=2 walk_ms=0.04 walk_cpu_ms=0.04 stored_all=6002 stored_r0=6002 stored_r1=0 live_kb=369
+[mac-8.7.1-1] srv ev 633 t=13852.1 wrote face=h1 conn=61921 tag=toward.pre103-6000.2.none.1 proto=h1 heads=[103:6000:96028,200:2:54] bytes=96082
+[mac-8.7.1-1] cell toward pre103-6000+2 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.4 cpu_ms=0.8 calls=6006 hdr_lines=6002 bytes=96082 heads=[103:6000:96028,200:2:54] refused=- header_size=96082 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=6002 stored_r0=6002 stored_r1=0 live_kb=369
+[mac-8.7.1-1] srv ev 637 t=14163.1 wrote face=h1 conn=61924 tag=toward.pre103-6000.2.obs.2 proto=h1 heads=[103:6000:96028,200:2:54] bytes=96082
+[mac-8.7.1-1] cell toward pre103-6000+2 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=2 t_ms=1.8 cpu_ms=0.4 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 641 t=14479.8 wrote face=h1 conn=61927 tag=toward.pre103-6000.2.cap.3 proto=h1 heads=[103:6000:96028,200:2:54] bytes=96082
+[mac-8.7.1-1] cell toward pre103-3000+3000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.2 cpu_ms=0.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96050 stored=3000 walk_ms=80.26 walk_cpu_ms=80.26 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=369
+[mac-8.7.1-1] srv ev 645 t=14493.4 wrote face=h1 conn=61930 tag=toward.pre103-3000.3000.none.4 proto=h1 heads=[103:3000:48028,200:3000:48022] bytes=96050
+[mac-8.7.1-1] cell toward pre103-3000+3000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.2 cpu_ms=0.7 calls=6004 hdr_lines=6000 bytes=96050 heads=[103:3000:48028,200:3000:48022] refused=- header_size=96050 stored=3000 walk_ms=80.62 walk_cpu_ms=80.62 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=369
+[mac-8.7.1-1] srv ev 649 t=14898.1 wrote face=h1 conn=61933 tag=toward.pre103-3000.3000.obs.5 proto=h1 heads=[103:3000:48028,200:3000:48022] bytes=96050
+[mac-8.7.1-1] cell toward pre103-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=2 t_ms=2.0 cpu_ms=0.4 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 653 t=15307.4 wrote face=h1 conn=61936 tag=toward.pre103-3000.3000.cap.6 proto=h1 heads=[103:3000:48028,200:3000:48022] bytes=96050
+[mac-8.7.1-1] cell toward pre100-3000+3000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.2 cpu_ms=0.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96047 stored=3000 walk_ms=80.97 walk_cpu_ms=80.97 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=369
+[mac-8.7.1-1] srv ev 657 t=15321.1 wrote face=h1 conn=61939 tag=toward.pre100-3000.3000.none.7 proto=h1 heads=[100:3000:48025,200:3000:48022] bytes=96047
+[mac-8.7.1-1] cell toward pre100-3000+3000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.4 cpu_ms=0.7 calls=6004 hdr_lines=6000 bytes=96047 heads=[100:3000:48025,200:3000:48022] refused=- header_size=96047 stored=3000 walk_ms=81.29 walk_cpu_ms=81.29 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=369
+[mac-8.7.1-1] srv ev 661 t=15728.0 wrote face=h1 conn=61942 tag=toward.pre100-3000.3000.obs.8 proto=h1 heads=[100:3000:48025,200:3000:48022] bytes=96047
+[mac-8.7.1-1] cell toward pre100-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=100 ver=2 t_ms=1.7 cpu_ms=0.5 calls=1002 hdr_lines=1001 bytes=16039 heads=[100:1001:16039] refused=lines@1001 header_size=16023 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 665 t=16137.4 wrote face=h1 conn=61945 tag=toward.pre100-3000.3000.cap.9 proto=h1 heads=[100:3000:48025,200:3000:48022] bytes=96047
+[mac-8.7.1-1] cell toward pre103-2500x2+1000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.0 cpu_ms=0.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96078 stored=1000 walk_ms=27.44 walk_cpu_ms=27.43 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=369
+[mac-8.7.1-1] srv ev 669 t=16150.0 wrote face=h1 conn=61948 tag=toward.pre103-2500x2.1000.none.10 proto=h1 heads=[103:2500:40028,103:2500:40028,200:1000:16022] bytes=96078
+[mac-8.7.1-1] cell toward pre103-2500x2+1000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.4 cpu_ms=0.8 calls=6006 hdr_lines=6000 bytes=96078 heads=[103:2500:40028,103:2500:40028,200:1000:16022] refused=- header_size=96078 stored=1000 walk_ms=27.57 walk_cpu_ms=27.57 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=369
+[mac-8.7.1-1] srv ev 673 t=16505.1 wrote face=h1 conn=61951 tag=toward.pre103-2500x2.1000.obs.11 proto=h1 heads=[103:2500:40028,103:2500:40028,200:1000:16022] bytes=96078
+[mac-8.7.1-1] cell toward pre103-2500x2+1000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=2 t_ms=2.1 cpu_ms=0.4 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 677 t=16860.9 wrote face=h1 conn=61954 tag=toward.pre103-2500x2.1000.cap.12 proto=h1 heads=[103:2500:40028,103:2500:40028,200:1000:16022] bytes=96078
+[mac-8.7.1-1] cell toward pre103-400K+2 face=h1 mode=none code=56 err="Too large response headers: 307226 > 307200" status=103 ver=2 t_ms=3.2 cpu_ms=0.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307226 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1200 stored_r0=1200 stored_r1=0 live_kb=361
+[mac-8.7.1-1] srv ev 681 t=16873.6 wrote face=h1 conn=61957 tag=toward.pre103-400K.2.none.13 proto=h1 heads=[103:1600:409628,200:2:54] bytes=409682
+[mac-8.7.1-1] cell toward pre103-400K+2 face=h1 mode=obs code=56 err="Too large response headers: 307226 > 307200" status=103 ver=2 t_ms=2.2 cpu_ms=0.7 calls=1201 hdr_lines=1200 bytes=307226 heads=[103:1200:307226] refused=- header_size=307226 stored=0 walk_ms=0.01 walk_cpu_ms=0.01 stored_all=1200 stored_r0=1200 stored_r1=0 live_kb=361
+[mac-8.7.1-1] srv ev 685 t=16898.2 wrote face=h1 conn=61960 tag=toward.pre103-400K.2.obs.14 proto=h1 heads=[103:1600:409628,200:2:54] bytes=409682
+[mac-8.7.1-1] cell toward pre103-400K+2 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=103 ver=2 t_ms=1.3 cpu_ms=0.3 calls=401 hdr_lines=400 bytes=102426 heads=[103:400:102426] refused=bytes@102426 header_size=102170 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[mac-8.7.1-1] srv ev 689 t=16921.7 wrote face=h1 conn=61963 tag=toward.pre103-400K.2.cap.15 proto=h1 heads=[103:1600:409628,200:2:54] bytes=409682
+[mac-8.7.1-1] cell toward pre103-200K+200K face=h1 mode=none code=56 err="Too large response headers: 307264 > 307200" status=200 ver=2 t_ms=2.2 cpu_ms=0.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307264 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1201 stored_r0=1201 stored_r1=0 live_kb=361
+[mac-8.7.1-1] srv ev 693 t=16925.8 wrote face=h1 conn=61966 tag=toward.pre103-200K.200K.none.16 proto=h1 heads=[103:800:204828,200:800:204582] bytes=409410
+[mac-8.7.1-1] cell toward pre103-200K+200K face=h1 mode=obs code=56 err="Too large response headers: 307264 > 307200" status=200 ver=2 t_ms=2.7 cpu_ms=0.7 calls=1204 hdr_lines=1201 bytes=307264 heads=[103:800:204828,200:401:102436] refused=- header_size=307264 stored=401 walk_ms=3.52 walk_cpu_ms=3.52 stored_all=1201 stored_r0=1201 stored_r1=0 live_kb=361
+[mac-8.7.1-1] srv ev 697 t=16951.0 wrote face=h1 conn=61969 tag=toward.pre103-200K.200K.obs.17 proto=h1 heads=[103:800:204828,200:800:204582] bytes=409410
+[mac-8.7.1-1] cell toward pre103-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=103 ver=2 t_ms=1.4 cpu_ms=0.4 calls=401 hdr_lines=400 bytes=102426 heads=[103:400:102426] refused=bytes@102426 header_size=102170 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[mac-8.7.1-1] srv ev 701 t=16979.2 wrote face=h1 conn=61972 tag=toward.pre103-200K.200K.cap.18 proto=h1 heads=[103:800:204828,200:800:204582] bytes=409410
+[mac-8.7.1-1] cell toward tr-2+6000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=3.3 cpu_ms=0.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=63 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=6002 stored_r0=6002 stored_r1=0 live_kb=369
+[mac-8.7.1-1] srv ev 705 t=16984.8 wrote face=h1 conn=61975 tag=toward.tr-2.6000.none.19 proto=h1 heads=[200:2:63,trailers:6000:96002] bytes=96068
+[mac-8.7.1-1] cell toward tr-2+6000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.7 cpu_ms=1.1 calls=6004 hdr_lines=6002 bytes=96063 heads=[200:2:63,T:6000:96000] refused=- header_size=63 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=6002 stored_r0=6002 stored_r1=0 live_kb=369
+[mac-8.7.1-1] srv ev 709 t=17301.7 wrote face=h1 conn=61978 tag=toward.tr-2.6000.obs.20 proto=h1 heads=[200:2:63,trailers:6000:96002] bytes=96068
+[mac-8.7.1-1] cell toward tr-2+6000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=1.9 cpu_ms=0.4 calls=1003 hdr_lines=1001 bytes=16047 heads=[200:2:63,T:999:15984] refused=lines@1001 header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 713 t=17630.5 wrote face=h1 conn=61981 tag=toward.tr-2.6000.cap.21 proto=h1 heads=[200:2:63,trailers:6000:96002] bytes=96068
+[mac-8.7.1-1] cell toward tr-3000+3000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.3 cpu_ms=0.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=48031 stored=3000 walk_ms=79.96 walk_cpu_ms=79.96 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=369
+[mac-8.7.1-1] srv ev 717 t=17643.8 wrote face=h1 conn=61984 tag=toward.tr-3000.3000.none.22 proto=h1 heads=[200:3000:48031,trailers:3000:48002] bytes=96036
+[mac-8.7.1-1] cell toward tr-3000+3000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.0 cpu_ms=0.9 calls=6002 hdr_lines=6000 bytes=96031 heads=[200:3000:48031,T:3000:48000] refused=- header_size=48031 stored=3000 walk_ms=80.50 walk_cpu_ms=80.50 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=369
+[mac-8.7.1-1] srv ev 721 t=18048.3 wrote face=h1 conn=61987 tag=toward.tr-3000.3000.obs.23 proto=h1 heads=[200:3000:48031,trailers:3000:48002] bytes=96036
+[mac-8.7.1-1] cell toward tr-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=1.9 cpu_ms=0.4 calls=1002 hdr_lines=1001 bytes=16045 heads=[200:1001:16045] refused=lines@1001 header_size=16029 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 725 t=18460.6 wrote face=h1 conn=61990 tag=toward.tr-3000.3000.cap.24 proto=h1 heads=[200:3000:48031,trailers:3000:48002] bytes=96036
+[mac-8.7.1-1] cell toward tr-2+400K face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=3.8 cpu_ms=2.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=63 stored=2 walk_ms=0.03 walk_cpu_ms=0.03 stored_all=1602 stored_r0=1602 stored_r1=0 live_kb=478
+[mac-8.7.1-1] srv ev 729 t=18473.9 wrote face=h1 conn=61993 tag=toward.tr-2.400K.none.25 proto=h1 heads=[200:2:63,trailers:1600:409602] bytes=409668
+[mac-8.7.1-1] cell toward tr-2+400K face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=4.8 cpu_ms=2.5 calls=1604 hdr_lines=1602 bytes=409663 heads=[200:2:63,T:1600:409600] refused=- header_size=63 stored=2 walk_ms=0.03 walk_cpu_ms=0.03 stored_all=1602 stored_r0=1602 stored_r1=0 live_kb=478
+[mac-8.7.1-1] srv ev 733 t=18513.7 wrote face=h1 conn=61996 tag=toward.tr-2.400K.obs.26 proto=h1 heads=[200:2:63,trailers:1600:409602] bytes=409668
+[mac-8.7.1-1] cell toward tr-2+400K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=2.4 cpu_ms=0.8 calls=404 hdr_lines=402 bytes=102463 heads=[200:2:63,T:400:102400] refused=bytes@102463 header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=125
+[mac-8.7.1-1] srv ev 737 t=18554.8 wrote face=h1 conn=61999 tag=toward.tr-2.400K.cap.27 proto=h1 heads=[200:2:63,trailers:1600:409602] bytes=409668
+[mac-8.7.1-1] cell toward tr-200K+200K face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=5.1 cpu_ms=1.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=204591 stored=800 walk_ms=9.13 walk_cpu_ms=9.13 stored_all=1600 stored_r0=1600 stored_r1=0 live_kb=478
+[mac-8.7.1-1] srv ev 741 t=18560.6 wrote face=h1 conn=62002 tag=toward.tr-200K.200K.none.28 proto=h1 heads=[200:800:204591,trailers:800:204802] bytes=409396
+[mac-8.7.1-1] cell toward tr-200K+200K face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=5.1 cpu_ms=1.7 calls=1602 hdr_lines=1600 bytes=409391 heads=[200:800:204591,T:800:204800] refused=- header_size=204591 stored=800 walk_ms=9.13 walk_cpu_ms=9.13 stored_all=1600 stored_r0=1600 stored_r1=0 live_kb=478
+[mac-8.7.1-1] srv ev 745 t=18613.2 wrote face=h1 conn=62005 tag=toward.tr-200K.200K.obs.29 proto=h1 heads=[200:800:204591,trailers:800:204802] bytes=409396
+[mac-8.7.1-1] cell toward tr-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=2.0 cpu_ms=0.4 calls=402 hdr_lines=401 bytes=102445 heads=[200:401:102445] refused=bytes@102445 header_size=102189 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=401 stored_r0=401 stored_r1=0 live_kb=125
+[mac-8.7.1-1] srv ev 749 t=18665.8 wrote face=h1 conn=62008 tag=toward.tr-200K.200K.cap.30 proto=h1 heads=[200:800:204591,trailers:800:204802] bytes=409396
+[mac-8.7.1-1] cell toward tr-line4000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=0.9 cpu_ms=0.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=63 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=10
+[mac-8.7.1-1] srv ev 753 t=18670.8 wrote face=h1 conn=62011 tag=toward.tr-line4000.none.31 proto=h1 heads=[200:2:63,trailers:1:4002] bytes=4068
+[mac-8.7.1-1] cell toward tr-line4000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=0.9 cpu_ms=0.2 calls=5 hdr_lines=3 bytes=4063 heads=[200:2:63,T:1:4000] refused=- header_size=63 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=10
+[mac-8.7.1-1] srv ev 757 t=18673.6 wrote face=h1 conn=62014 tag=toward.tr-line4000.obs.32 proto=h1 heads=[200:2:63,trailers:1:4002] bytes=4068
+[mac-8.7.1-1] cell toward tr-line4000 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.6 cpu_ms=0.1 calls=5 hdr_lines=3 bytes=4063 heads=[200:2:63,T:1:4000] refused=none header_size=63 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=10
+[mac-8.7.1-1] srv ev 761 t=18675.7 wrote face=h1 conn=62017 tag=toward.tr-line4000.cap.33 proto=h1 heads=[200:2:63,trailers:1:4002] bytes=4068
+[mac-8.7.1-1] cell toward tr-line5000 face=h1 mode=none code=100 err="Out of memory in chunked-encoding" status=200 ver=2 t_ms=0.6 cpu_ms=0.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=6
+[mac-8.7.1-1] srv ev 765 t=18677.7 wrote face=h1 conn=62020 tag=toward.tr-line5000.none.34 proto=h1 heads=[200:2:63,trailers:1:5002] bytes=5068
+[mac-8.7.1-1] cell toward tr-line5000 face=h1 mode=obs code=100 err="Out of memory in chunked-encoding" status=200 ver=2 t_ms=0.7 cpu_ms=0.2 calls=4 hdr_lines=2 bytes=63 heads=[200:2:63] refused=- header_size=63 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=6
+[mac-8.7.1-1] srv ev 769 t=18680.0 wrote face=h1 conn=62023 tag=toward.tr-line5000.obs.35 proto=h1 heads=[200:2:63,trailers:1:5002] bytes=5068
+[mac-8.7.1-1] cell toward tr-line5000 face=h1 mode=cap code=100 err="Out of memory in chunked-encoding" status=200 ver=2 t_ms=0.6 cpu_ms=0.2 calls=4 hdr_lines=2 bytes=63 heads=[200:2:63] refused=none header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=6
+[mac-8.7.1-1] srv ev 773 t=18682.0 wrote face=h1 conn=62026 tag=toward.tr-line5000.cap.36 proto=h1 heads=[200:2:63,trailers:1:5002] bytes=5068
+[mac-8.7.1-1] cell toward pre103-6000+2 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=14.1 cpu_ms=5.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96065 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=6002 stored_r0=6002 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 776 t=18695.4 h2-close face=h2 conn=62029 tag=toward.pre103-6000.2.none.37 heads=[103:6000,200:2] rst=0
+[mac-8.7.1-1] srv ev 777 t=18697.6 h2-wire face=h2 conn=62029 tag=toward.pre103-6000.2.none.37 wire_bytes_written=79134 wire_bytes_read=562
+[mac-8.7.1-1] cell toward pre103-6000+2 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=10.3 cpu_ms=3.4 calls=6006 hdr_lines=6002 bytes=96065 heads=[103:6000:96015,200:2:50] refused=- header_size=96065 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=6002 stored_r0=6002 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 779 t=19016.8 h2-close face=h2 conn=62032 tag=toward.pre103-6000.2.obs.38 heads=[103:6000,200:2] rst=0
+[mac-8.7.1-1] srv ev 780 t=19018.9 h2-wire face=h2 conn=62032 tag=toward.pre103-6000.2.obs.38 wire_bytes_written=79134 wire_bytes_read=594
+[mac-8.7.1-1] cell toward pre103-6000+2 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=3 t_ms=9.1 cpu_ms=1.9 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 782 t=19342.5 h2-close face=h2 conn=62035 tag=toward.pre103-6000.2.cap.39 heads=[103:6000,200:2] rst=0
+[mac-8.7.1-1] srv ev 783 t=19343.4 h2-wire face=h2 conn=62035 tag=toward.pre103-6000.2.cap.39 wire_bytes_written=79134 wire_bytes_read=594
+[mac-8.7.1-1] cell toward pre103-3000+3000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=10.7 cpu_ms=3.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96033 stored=3000 walk_ms=79.92 walk_cpu_ms=79.92 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 785 t=19363.9 h2-close face=h2 conn=62038 tag=toward.pre103-3000.3000.none.40 heads=[103:3000,200:3000] rst=0
+[mac-8.7.1-1] srv ev 786 t=19366.3 h2-wire face=h2 conn=62038 tag=toward.pre103-3000.3000.none.40 wire_bytes_written=79108 wire_bytes_read=598
+[mac-8.7.1-1] cell toward pre103-3000+3000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=10.0 cpu_ms=3.2 calls=6004 hdr_lines=6000 bytes=96033 heads=[103:3000:48015,200:3000:48018] refused=- header_size=96033 stored=3000 walk_ms=80.06 walk_cpu_ms=80.06 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 788 t=19776.3 h2-close face=h2 conn=62041 tag=toward.pre103-3000.3000.obs.41 heads=[103:3000,200:3000] rst=0
+[mac-8.7.1-1] srv ev 789 t=19778.4 h2-wire face=h2 conn=62041 tag=toward.pre103-3000.3000.obs.41 wire_bytes_written=79108 wire_bytes_read=597
+[mac-8.7.1-1] cell toward pre103-3000+3000 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=3 t_ms=9.4 cpu_ms=2.0 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 791 t=20190.6 h2-close face=h2 conn=62044 tag=toward.pre103-3000.3000.cap.42 heads=[103:3000,200:3000] rst=0
+[mac-8.7.1-1] srv ev 792 t=20191.6 h2-wire face=h2 conn=62044 tag=toward.pre103-3000.3000.cap.42 wire_bytes_written=79108 wire_bytes_read=597
+[mac-8.7.1-1] cell toward pre100-3000+3000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=9.4 cpu_ms=3.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96033 stored=3000 walk_ms=80.05 walk_cpu_ms=80.05 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 794 t=20210.5 h2-close face=h2 conn=62047 tag=toward.pre100-3000.3000.none.43 heads=[100:3000,200:3000] rst=0
+[mac-8.7.1-1] srv ev 795 t=20212.6 h2-wire face=h2 conn=62047 tag=toward.pre100-3000.3000.none.43 wire_bytes_written=79107 wire_bytes_read=598
+[mac-8.7.1-1] cell toward pre100-3000+3000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=11.9 cpu_ms=3.6 calls=6004 hdr_lines=6000 bytes=96033 heads=[100:3000:48015,200:3000:48018] refused=- header_size=96033 stored=3000 walk_ms=80.11 walk_cpu_ms=80.12 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 797 t=20625.6 h2-close face=h2 conn=62050 tag=toward.pre100-3000.3000.obs.44 heads=[100:3000,200:3000] rst=0
+[mac-8.7.1-1] srv ev 798 t=20627.7 h2-wire face=h2 conn=62050 tag=toward.pre100-3000.3000.obs.44 wire_bytes_written=79108 wire_bytes_read=597
+[mac-8.7.1-1] cell toward pre100-3000+3000 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=100 ver=3 t_ms=8.6 cpu_ms=1.9 calls=1002 hdr_lines=1001 bytes=16029 heads=[100:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 800 t=21038.3 h2-close face=h2 conn=62053 tag=toward.pre100-3000.3000.cap.45 heads=[100:3000,200:3000] rst=0
+[mac-8.7.1-1] srv ev 801 t=21039.1 h2-wire face=h2 conn=62053 tag=toward.pre100-3000.3000.cap.45 wire_bytes_written=79108 wire_bytes_read=597
+[mac-8.7.1-1] cell toward pre103-2500x2+1000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=8.9 cpu_ms=3.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96048 stored=1000 walk_ms=27.43 walk_cpu_ms=27.43 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 803 t=21056.7 h2-close face=h2 conn=62056 tag=toward.pre103-2500x2.1000.none.46 heads=[103:2500,103:2500,200:1000] rst=0
+[mac-8.7.1-1] srv ev 804 t=21058.9 h2-wire face=h2 conn=62056 tag=toward.pre103-2500x2.1000.none.46 wire_bytes_written=79103 wire_bytes_read=608
+[mac-8.7.1-1] cell toward pre103-2500x2+1000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=12.8 cpu_ms=3.5 calls=6006 hdr_lines=6000 bytes=96048 heads=[103:2500:40015,103:2500:40015,200:1000:16018] refused=- header_size=96048 stored=1000 walk_ms=27.37 walk_cpu_ms=27.37 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 806 t=21423.6 h2-close face=h2 conn=62059 tag=toward.pre103-2500x2.1000.obs.47 heads=[103:2500,103:2500,200:1000] rst=0
+[mac-8.7.1-1] srv ev 807 t=21425.8 h2-wire face=h2 conn=62059 tag=toward.pre103-2500x2.1000.obs.47 wire_bytes_written=79102 wire_bytes_read=608
+[mac-8.7.1-1] cell toward pre103-2500x2+1000 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=3 t_ms=8.9 cpu_ms=1.9 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 809 t=21785.6 h2-close face=h2 conn=62062 tag=toward.pre103-2500x2.1000.cap.48 heads=[103:2500,103:2500,200:1000] rst=0
+[mac-8.7.1-1] srv ev 810 t=21786.3 h2-wire face=h2 conn=62062 tag=toward.pre103-2500x2.1000.cap.48 wire_bytes_written=79103 wire_bytes_read=608
+[mac-8.7.1-1] cell toward pre103-400K+2 face=h2 mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=103 ver=3 t_ms=7.9 cpu_ms=2.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168461 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=658 stored_r0=658 stored_r1=0 live_kb=201
+[mac-8.7.1-1] srv ev 812 t=21803.8 h2-close face=h2 conn=62065 tag=toward.pre103-400K.2.none.49 heads=[103:1600,200:2] rst=0
+[mac-8.7.1-1] srv ev 813 t=21806.1 h2-wire face=h2 conn=62065 tag=toward.pre103-400K.2.none.49 wire_bytes_written=360181 wire_bytes_read=595
+[mac-8.7.1-1] cell toward pre103-400K+2 face=h2 mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=103 ver=3 t_ms=7.9 cpu_ms=2.7 calls=659 hdr_lines=658 bytes=168461 heads=[103:658:168461] refused=- header_size=168461 stored=0 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=658 stored_r0=658 stored_r1=0 live_kb=201
+[mac-8.7.1-1] srv ev 815 t=21819.7 h2-close face=h2 conn=62068 tag=toward.pre103-400K.2.obs.50 heads=[103:1600,200:2] rst=0
+[mac-8.7.1-1] srv ev 816 t=21822.3 h2-wire face=h2 conn=62068 tag=toward.pre103-400K.2.obs.50 wire_bytes_written=360180 wire_bytes_read=594
+[mac-8.7.1-1] cell toward pre103-400K+2 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=103 ver=3 t_ms=6.6 cpu_ms=2.1 calls=401 hdr_lines=400 bytes=102413 heads=[103:400:102413] refused=bytes@102413 header_size=102157 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[mac-8.7.1-1] srv ev 818 t=21835.7 h2-close face=h2 conn=62071 tag=toward.pre103-400K.2.cap.51 heads=[103:1600,200:2] rst=0
+[mac-8.7.1-1] srv ev 819 t=21837.6 h2-wire face=h2 conn=62071 tag=toward.pre103-400K.2.cap.51 wire_bytes_written=360179 wire_bytes_read=594
+[mac-8.7.1-1] cell toward pre103-200K+200K face=h2 mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=103 ver=3 t_ms=9.7 cpu_ms=2.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168461 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=658 stored_r0=658 stored_r1=0 live_kb=201
+[mac-8.7.1-1] srv ev 821 t=21847.7 h2-close face=h2 conn=62074 tag=toward.pre103-200K.200K.none.52 heads=[103:800,200:800] rst=0
+[mac-8.7.1-1] srv ev 822 t=21850.3 h2-wire face=h2 conn=62074 tag=toward.pre103-200K.200K.none.52 wire_bytes_written=359935 wire_bytes_read=605
+[mac-8.7.1-1] cell toward pre103-200K+200K face=h2 mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=103 ver=3 t_ms=7.9 cpu_ms=2.7 calls=659 hdr_lines=658 bytes=168461 heads=[103:658:168461] refused=- header_size=168461 stored=0 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=658 stored_r0=658 stored_r1=0 live_kb=201
+[mac-8.7.1-1] srv ev 824 t=21864.0 h2-close face=h2 conn=62077 tag=toward.pre103-200K.200K.obs.53 heads=[103:800,200:800] rst=0
+[mac-8.7.1-1] srv ev 825 t=21866.5 h2-wire face=h2 conn=62077 tag=toward.pre103-200K.200K.obs.53 wire_bytes_written=359933 wire_bytes_read=604
+[mac-8.7.1-1] cell toward pre103-200K+200K face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=103 ver=3 t_ms=7.1 cpu_ms=2.4 calls=401 hdr_lines=400 bytes=102413 heads=[103:400:102413] refused=bytes@102413 header_size=102157 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[mac-8.7.1-1] srv ev 827 t=21879.6 h2-close face=h2 conn=62080 tag=toward.pre103-200K.200K.cap.54 heads=[103:800,200:800] rst=0
+[mac-8.7.1-1] srv ev 828 t=21881.1 h2-wire face=h2 conn=62080 tag=toward.pre103-200K.200K.cap.54 wire_bytes_written=359934 wire_bytes_read=604
+[mac-8.7.1-1] cell toward tr-2+6000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=13.7 cpu_ms=4.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=47 stored=2 walk_ms=0.07 walk_cpu_ms=0.07 stored_all=6002 stored_r0=6002 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 830 t=21894.8 h2-close face=h2 conn=62083 tag=toward.tr-2.6000.none.55 heads=[200:2,trailers:6000] rst=0
+[mac-8.7.1-1] srv ev 831 t=21897.8 h2-wire face=h2 conn=62083 tag=toward.tr-2.6000.none.55 wire_bytes_written=79144 wire_bytes_read=590
+[mac-8.7.1-1] cell toward tr-2+6000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=11.9 cpu_ms=4.1 calls=6004 hdr_lines=6002 bytes=96047 heads=[200:2:47,T:6000:96000] refused=- header_size=47 stored=2 walk_ms=0.07 walk_cpu_ms=0.06 stored_all=6002 stored_r0=6002 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 833 t=22220.3 h2-close face=h2 conn=62086 tag=toward.tr-2.6000.obs.56 heads=[200:2,trailers:6000] rst=0
+[mac-8.7.1-1] srv ev 834 t=22223.6 h2-wire face=h2 conn=62086 tag=toward.tr-2.6000.obs.56 wire_bytes_written=79143 wire_bytes_read=589
+[mac-8.7.1-1] cell toward tr-2+6000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=10.5 cpu_ms=3.0 calls=1003 hdr_lines=1001 bytes=16031 heads=[200:2:47,T:999:15984] refused=lines@1001 header_size=47 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 836 t=22557.4 h2-close face=h2 conn=62089 tag=toward.tr-2.6000.cap.57 heads=[200:2,trailers:6000] rst=0
+[mac-8.7.1-1] srv ev 837 t=22559.7 h2-wire face=h2 conn=62089 tag=toward.tr-2.6000.cap.57 wire_bytes_written=79143 wire_bytes_read=589
+[mac-8.7.1-1] cell toward tr-3000+3000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=10.0 cpu_ms=3.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=48015 stored=3000 walk_ms=80.42 walk_cpu_ms=80.38 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 839 t=22579.9 h2-close face=h2 conn=62092 tag=toward.tr-3000.3000.none.58 heads=[200:3000,trailers:3000] rst=0
+[mac-8.7.1-1] srv ev 840 t=22581.3 h2-wire face=h2 conn=62092 tag=toward.tr-3000.3000.none.58 wire_bytes_written=79141 wire_bytes_read=594
+[mac-8.7.1-1] cell toward tr-3000+3000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=10.8 cpu_ms=3.8 calls=6002 hdr_lines=6000 bytes=96015 heads=[200:3000:48015,T:3000:48000] refused=- header_size=48015 stored=3000 walk_ms=80.72 walk_cpu_ms=80.72 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 842 t=22994.2 h2-close face=h2 conn=62095 tag=toward.tr-3000.3000.obs.59 heads=[200:3000,trailers:3000] rst=0
+[mac-8.7.1-1] srv ev 843 t=22995.7 h2-wire face=h2 conn=62095 tag=toward.tr-3000.3000.obs.59 wire_bytes_written=79142 wire_bytes_read=593
+[mac-8.7.1-1] cell toward tr-3000+3000 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=10.1 cpu_ms=2.3 calls=1002 hdr_lines=1001 bytes=16029 heads=[200:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 845 t=23411.0 h2-close face=h2 conn=62098 tag=toward.tr-3000.3000.cap.60 heads=[200:3000,trailers:3000] rst=0
+[mac-8.7.1-1] srv ev 846 t=23411.1 h2-wire face=h2 conn=62098 tag=toward.tr-3000.3000.cap.60 wire_bytes_written=79111 wire_bytes_read=593
+[mac-8.7.1-1] cell toward tr-2+400K face=h2 mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=8.0 cpu_ms=2.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=47 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=7
+[mac-8.7.1-1] srv ev 848 t=23428.2 h2-close face=h2 conn=62101 tag=toward.tr-2.400K.none.61 heads=[200:2,trailers:1600] rst=0
+[mac-8.7.1-1] srv ev 849 t=23430.7 h2-wire face=h2 conn=62101 tag=toward.tr-2.400K.none.61 wire_bytes_written=360201 wire_bytes_read=591
+[mac-8.7.1-1] cell toward tr-2+400K face=h2 mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=7.7 cpu_ms=2.6 calls=4 hdr_lines=2 bytes=47 heads=[200:2:47] refused=- header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=7
+[mac-8.7.1-1] srv ev 851 t=23438.7 h2-close face=h2 conn=62104 tag=toward.tr-2.400K.obs.62 heads=[200:2,trailers:1600] rst=0
+[mac-8.7.1-1] srv ev 852 t=23440.3 h2-wire face=h2 conn=62104 tag=toward.tr-2.400K.obs.62 wire_bytes_written=360202 wire_bytes_read=590
+[mac-8.7.1-1] cell toward tr-2+400K face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=7.4 cpu_ms=2.7 calls=4 hdr_lines=2 bytes=47 heads=[200:2:47] refused=none header_size=47 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=7
+[mac-8.7.1-1] srv ev 854 t=23446.5 h2-close face=h2 conn=62107 tag=toward.tr-2.400K.cap.63 heads=[200:2,trailers:1600] rst=0
+[mac-8.7.1-1] srv ev 855 t=23449.1 h2-wire face=h2 conn=62107 tag=toward.tr-2.400K.cap.63 wire_bytes_written=360202 wire_bytes_read=590
+[mac-8.7.1-1] cell toward tr-200K+200K face=h2 mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=7.5 cpu_ms=2.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168461 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=658 stored_r0=658 stored_r1=0 live_kb=201
+[mac-8.7.1-1] srv ev 857 t=23456.4 h2-close face=h2 conn=62110 tag=toward.tr-200K.200K.none.64 heads=[200:800,trailers:800] rst=0
+[mac-8.7.1-1] srv ev 858 t=23458.5 h2-wire face=h2 conn=62110 tag=toward.tr-200K.200K.none.64 wire_bytes_written=360151 wire_bytes_read=601
+[mac-8.7.1-1] cell toward tr-200K+200K face=h2 mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=7.4 cpu_ms=2.9 calls=659 hdr_lines=658 bytes=168461 heads=[200:658:168461] refused=- header_size=168461 stored=658 walk_ms=3.19 walk_cpu_ms=3.19 stored_all=658 stored_r0=658 stored_r1=0 live_kb=201
+[mac-8.7.1-1] srv ev 860 t=23472.0 h2-close face=h2 conn=62113 tag=toward.tr-200K.200K.obs.65 heads=[200:800,trailers:800] rst=0
+[mac-8.7.1-1] srv ev 861 t=23473.9 h2-wire face=h2 conn=62113 tag=toward.tr-200K.200K.obs.65 wire_bytes_written=360150 wire_bytes_read=600
+[mac-8.7.1-1] cell toward tr-200K+200K face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=6.9 cpu_ms=2.3 calls=401 hdr_lines=400 bytes=102413 heads=[200:400:102413] refused=bytes@102413 header_size=102157 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[mac-8.7.1-1] srv ev 863 t=23491.1 h2-close face=h2 conn=62116 tag=toward.tr-200K.200K.cap.66 heads=[200:800,trailers:800] rst=0
+[mac-8.7.1-1] srv ev 864 t=23492.5 h2-wire face=h2 conn=62116 tag=toward.tr-200K.200K.cap.66 wire_bytes_written=360150 wire_bytes_read=600
+[mac-8.7.1-1] cell toward tr-line4000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=3.9 cpu_ms=1.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=10
+[mac-8.7.1-1] srv ev 866 t=23499.2 h2-close face=h2 conn=62119 tag=toward.tr-line4000.none.67 heads=[200:2,trailers:1] rst=0
+[mac-8.7.1-1] srv ev 867 t=23499.8 h2-wire face=h2 conn=62119 tag=toward.tr-line4000.none.67 wire_bytes_written=4510 wire_bytes_read=591
+[mac-8.7.1-1] cell toward tr-line4000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=3.8 cpu_ms=1.3 calls=5 hdr_lines=3 bytes=4047 heads=[200:2:47,T:1:4000] refused=- header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=10
+[mac-8.7.1-1] srv ev 869 t=23505.1 h2-close face=h2 conn=62122 tag=toward.tr-line4000.obs.68 heads=[200:2,trailers:1] rst=0
+[mac-8.7.1-1] srv ev 870 t=23505.6 h2-wire face=h2 conn=62122 tag=toward.tr-line4000.obs.68 wire_bytes_written=4512 wire_bytes_read=590
+[mac-8.7.1-1] cell toward tr-line4000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=3.6 cpu_ms=1.3 calls=5 hdr_lines=3 bytes=4047 heads=[200:2:47,T:1:4000] refused=none header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=10
+[mac-8.7.1-1] srv ev 872 t=23510.7 h2-close face=h2 conn=62125 tag=toward.tr-line4000.cap.69 heads=[200:2,trailers:1] rst=0
+[mac-8.7.1-1] srv ev 873 t=23511.3 h2-wire face=h2 conn=62125 tag=toward.tr-line4000.cap.69 wire_bytes_written=4510 wire_bytes_read=590
+[mac-8.7.1-1] cell toward tr-line5000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=3.7 cpu_ms=1.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=11
+[mac-8.7.1-1] srv ev 875 t=23516.5 h2-close face=h2 conn=62128 tag=toward.tr-line5000.none.70 heads=[200:2,trailers:1] rst=0
+[mac-8.7.1-1] srv ev 876 t=23517.0 h2-wire face=h2 conn=62128 tag=toward.tr-line5000.none.70 wire_bytes_written=5386 wire_bytes_read=591
+[mac-8.7.1-1] cell toward tr-line5000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=3.8 cpu_ms=1.2 calls=5 hdr_lines=3 bytes=5047 heads=[200:2:47,T:1:5000] refused=- header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=11
+[mac-8.7.1-1] srv ev 878 t=23522.3 h2-close face=h2 conn=62131 tag=toward.tr-line5000.obs.71 heads=[200:2,trailers:1] rst=0
+[mac-8.7.1-1] srv ev 879 t=23522.9 h2-wire face=h2 conn=62131 tag=toward.tr-line5000.obs.71 wire_bytes_written=5386 wire_bytes_read=590
+[mac-8.7.1-1] cell toward tr-line5000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=3.7 cpu_ms=1.3 calls=5 hdr_lines=3 bytes=5047 heads=[200:2:47,T:1:5000] refused=none header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=11
+[mac-8.7.1-1] srv ev 881 t=23528.2 h2-close face=h2 conn=62134 tag=toward.tr-line5000.cap.72 heads=[200:2,trailers:1] rst=0
+[mac-8.7.1-1] srv ev 882 t=23528.7 h2-wire face=h2 conn=62134 tag=toward.tr-line5000.cap.72 wire_bytes_written=5386 wire_bytes_read=590
+[mac-8.7.1-1] cell toward auth-2+2 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=1.4 cpu_ms=0.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=210 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=6
+[mac-8.7.1-1] srv ev 885 t=23531.5 wrote face=h1 conn=62137 tag=toward.auth-2.2.none.73 proto=h1 heads=[401:3:156] bytes=156
+[mac-8.7.1-1] srv ev 887 t=23531.8 wrote face=h1 conn=62137 tag=toward.auth-2.2.none.73 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward auth-2+2 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=1.2 cpu_ms=0.2 calls=9 hdr_lines=5 bytes=210 heads=[401:3:156,200:2:54] refused=- header_size=210 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=6
+[mac-8.7.1-1] srv ev 891 t=23534.7 wrote face=h1 conn=62140 tag=toward.auth-2.2.obs.74 proto=h1 heads=[401:3:156] bytes=156
+[mac-8.7.1-1] srv ev 893 t=23535.0 wrote face=h1 conn=62140 tag=toward.auth-2.2.obs.74 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward auth-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=1.3 cpu_ms=0.2 calls=9 hdr_lines=5 bytes=210 heads=[401:3:156,200:2:54] refused=none header_size=210 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=6
+[mac-8.7.1-1] srv ev 897 t=23537.8 wrote face=h1 conn=62143 tag=toward.auth-2.2.cap.75 proto=h1 heads=[401:3:156] bytes=156
+[mac-8.7.1-1] srv ev 899 t=23538.2 wrote face=h1 conn=62143 tag=toward.auth-2.2.cap.75 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward auth-6000+2 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.5 cpu_ms=0.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96178 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=2 stored_r0=6001 stored_r1=2 live_kb=370
+[mac-8.7.1-1] srv ev 903 t=23541.7 wrote face=h1 conn=62146 tag=toward.auth-6000.2.none.76 proto=h1 heads=[401:6001:96124] bytes=96124
+[mac-8.7.1-1] srv ev 905 t=23542.6 wrote face=h1 conn=62146 tag=toward.auth-6000.2.none.76 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward auth-6000+2 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.8 cpu_ms=0.8 calls=6007 hdr_lines=6003 bytes=96178 heads=[401:6001:96124,200:2:54] refused=- header_size=96178 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=2 stored_r0=6001 stored_r1=2 live_kb=370
+[mac-8.7.1-1] srv ev 909 t=23701.6 wrote face=h1 conn=62149 tag=toward.auth-6000.2.obs.77 proto=h1 heads=[401:6001:96124] bytes=96124
+[mac-8.7.1-1] srv ev 911 t=23702.7 wrote face=h1 conn=62149 tag=toward.auth-6000.2.obs.77 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward auth-6000+2 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=401 ver=2 t_ms=1.5 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16122 heads=[401:1001:16122] refused=lines@1001 header_size=16106 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 915 t=23861.3 wrote face=h1 conn=62152 tag=toward.auth-6000.2.cap.78 proto=h1 heads=[401:6001:96124] bytes=96124
+[mac-8.7.1-1] cell toward auth-3000+3000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.0 cpu_ms=0.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96146 stored=3000 walk_ms=82.28 walk_cpu_ms=82.28 stored_all=3000 stored_r0=3001 stored_r1=3000 live_kb=370
+[mac-8.7.1-1] srv ev 919 t=23873.2 wrote face=h1 conn=62155 tag=toward.auth-3000.3000.none.79 proto=h1 heads=[401:3001:48124] bytes=48124
+[mac-8.7.1-1] srv ev 921 t=23874.1 wrote face=h1 conn=62155 tag=toward.auth-3000.3000.none.79 proto=h1 heads=[200:3000:48022] bytes=48022
+[mac-8.7.1-1] cell toward auth-3000+3000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.3 cpu_ms=0.8 calls=6005 hdr_lines=6001 bytes=96146 heads=[401:3001:48124,200:3000:48022] refused=- header_size=96146 stored=3000 walk_ms=80.22 walk_cpu_ms=80.22 stored_all=3000 stored_r0=3001 stored_r1=3000 live_kb=370
+[mac-8.7.1-1] srv ev 925 t=24206.5 wrote face=h1 conn=62158 tag=toward.auth-3000.3000.obs.80 proto=h1 heads=[401:3001:48124] bytes=48124
+[mac-8.7.1-1] srv ev 927 t=24207.4 wrote face=h1 conn=62158 tag=toward.auth-3000.3000.obs.80 proto=h1 heads=[200:3000:48022] bytes=48022
+[mac-8.7.1-1] cell toward auth-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=401 ver=2 t_ms=1.6 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16122 heads=[401:1001:16122] refused=lines@1001 header_size=16106 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 931 t=24531.9 wrote face=h1 conn=62161 tag=toward.auth-3000.3000.cap.81 proto=h1 heads=[401:3001:48124] bytes=48124
+[mac-8.7.1-1] cell toward auth-200K+200K face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=4.0 cpu_ms=0.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=409266 stored=800 walk_ms=9.28 walk_cpu_ms=9.28 stored_all=800 stored_r0=801 stored_r1=800 live_kb=478
+[mac-8.7.1-1] srv ev 935 t=24545.4 wrote face=h1 conn=62164 tag=toward.auth-200K.200K.none.82 proto=h1 heads=[401:801:204684] bytes=204684
+[mac-8.7.1-1] srv ev 937 t=24547.5 wrote face=h1 conn=62164 tag=toward.auth-200K.200K.none.82 proto=h1 heads=[200:800:204582] bytes=204582
+[mac-8.7.1-1] cell toward auth-200K+200K face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=4.0 cpu_ms=0.8 calls=1605 hdr_lines=1601 bytes=409266 heads=[401:801:204684,200:800:204582] refused=- header_size=409266 stored=800 walk_ms=9.16 walk_cpu_ms=9.16 stored_all=800 stored_r0=801 stored_r1=800 live_kb=478
+[mac-8.7.1-1] srv ev 941 t=24587.6 wrote face=h1 conn=62167 tag=toward.auth-200K.200K.obs.83 proto=h1 heads=[401:801:204684] bytes=204684
+[mac-8.7.1-1] srv ev 943 t=24589.7 wrote face=h1 conn=62167 tag=toward.auth-200K.200K.obs.83 proto=h1 heads=[200:800:204582] bytes=204582
+[mac-8.7.1-1] cell toward auth-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=401 ver=2 t_ms=1.2 cpu_ms=0.3 calls=403 hdr_lines=402 bytes=102538 heads=[401:402:102538] refused=bytes@102538 header_size=102282 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=125
+[mac-8.7.1-1] srv ev 947 t=24629.0 wrote face=h1 conn=62170 tag=toward.auth-200K.200K.cap.84 proto=h1 heads=[401:801:204684] bytes=204684
+[mac-8.7.1-1] cell toward redir-2+2 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=1.2 cpu_ms=0.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=161 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=6
+[mac-8.7.1-1] srv ev 951 t=24632.9 wrote face=h1 conn=62173 tag=toward.redir-2.2.none.85 proto=h1 heads=[302:3:107] bytes=107
+[mac-8.7.1-1] srv ev 953 t=24633.2 wrote face=h1 conn=62173 tag=toward.redir-2.2.none.85 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward redir-2+2 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=1.0 cpu_ms=0.2 calls=9 hdr_lines=5 bytes=160 heads=[302:3:106,200:2:54] refused=- header_size=160 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=6
+[mac-8.7.1-1] srv ev 957 t=24635.1 wrote face=h1 conn=62176 tag=toward.redir-2.2.obs.86 proto=h1 heads=[302:3:106] bytes=106
+[mac-8.7.1-1] srv ev 959 t=24635.3 wrote face=h1 conn=62176 tag=toward.redir-2.2.obs.86 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward redir-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=1.2 cpu_ms=0.2 calls=9 hdr_lines=5 bytes=160 heads=[302:3:106,200:2:54] refused=none header_size=160 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=6
+[mac-8.7.1-1] srv ev 963 t=24638.2 wrote face=h1 conn=62179 tag=toward.redir-2.2.cap.87 proto=h1 heads=[302:3:106] bytes=106
+[mac-8.7.1-1] srv ev 965 t=24638.4 wrote face=h1 conn=62179 tag=toward.redir-2.2.cap.87 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward redir-3000+3000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.1 cpu_ms=0.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96106 stored=3000 walk_ms=79.95 walk_cpu_ms=79.95 stored_all=3000 stored_r0=3001 stored_r1=3000 live_kb=369
+[mac-8.7.1-1] srv ev 969 t=24640.7 wrote face=h1 conn=62182 tag=toward.redir-3000.3000.none.88 proto=h1 heads=[302:3001:48084] bytes=48084
+[mac-8.7.1-1] srv ev 971 t=24641.6 wrote face=h1 conn=62182 tag=toward.redir-3000.3000.none.88 proto=h1 heads=[200:3000:48022] bytes=48022
+[mac-8.7.1-1] cell toward redir-3000+3000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.1 cpu_ms=0.7 calls=6005 hdr_lines=6001 bytes=96105 heads=[302:3001:48083,200:3000:48022] refused=- header_size=96105 stored=3000 walk_ms=83.06 walk_cpu_ms=83.05 stored_all=3000 stored_r0=3001 stored_r1=3000 live_kb=369
+[mac-8.7.1-1] srv ev 975 t=24965.5 wrote face=h1 conn=62185 tag=toward.redir-3000.3000.obs.89 proto=h1 heads=[302:3001:48083] bytes=48083
+[mac-8.7.1-1] srv ev 977 t=24966.3 wrote face=h1 conn=62185 tag=toward.redir-3000.3000.obs.89 proto=h1 heads=[200:3000:48022] bytes=48022
+[mac-8.7.1-1] cell toward redir-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=302 ver=2 t_ms=1.1 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16081 heads=[302:1001:16081] refused=lines@1001 header_size=16065 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 981 t=25299.7 wrote face=h1 conn=62188 tag=toward.redir-3000.3000.cap.90 proto=h1 heads=[302:3001:48083] bytes=48083
+[mac-8.7.1-1] cell toward redir-200K+200K face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=3.9 cpu_ms=0.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=409234 stored=800 walk_ms=9.16 walk_cpu_ms=9.16 stored_all=800 stored_r0=801 stored_r1=800 live_kb=478
+[mac-8.7.1-1] srv ev 985 t=25312.6 wrote face=h1 conn=62191 tag=toward.redir-200K.200K.none.91 proto=h1 heads=[302:801:204652] bytes=204652
+[mac-8.7.1-1] srv ev 987 t=25314.7 wrote face=h1 conn=62191 tag=toward.redir-200K.200K.none.91 proto=h1 heads=[200:800:204582] bytes=204582
+[mac-8.7.1-1] cell toward redir-200K+200K face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.6 cpu_ms=0.7 calls=1605 hdr_lines=1601 bytes=409233 heads=[302:801:204651,200:800:204582] refused=- header_size=409233 stored=800 walk_ms=10.09 walk_cpu_ms=9.74 stored_all=800 stored_r0=801 stored_r1=800 live_kb=478
+[mac-8.7.1-1] srv ev 991 t=25354.5 wrote face=h1 conn=62194 tag=toward.redir-200K.200K.obs.92 proto=h1 heads=[302:801:204651] bytes=204651
+[mac-8.7.1-1] srv ev 993 t=25355.8 wrote face=h1 conn=62194 tag=toward.redir-200K.200K.obs.92 proto=h1 heads=[200:800:204582] bytes=204582
+[mac-8.7.1-1] cell toward redir-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=302 ver=2 t_ms=1.9 cpu_ms=0.4 calls=403 hdr_lines=402 bytes=102505 heads=[302:402:102505] refused=bytes@102505 header_size=102249 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=125
+[mac-8.7.1-1] srv ev 997 t=25397.6 wrote face=h1 conn=62197 tag=toward.redir-200K.200K.cap.93 proto=h1 heads=[302:801:204651] bytes=204651
+[mac-8.7.1-1] cell toward auth-2+2 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=5.2 cpu_ms=1.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=192 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[mac-8.7.1-1] srv ev 1000 t=25406.6 h2-close face=h2 conn=62200 tag=toward.auth-2.2.none.94 heads=[401:3] rst=0
+[mac-8.7.1-1] srv ev 1002 t=25406.9 h2-close face=h2 conn=62200 tag=toward.auth-2.2.none.94 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 1003 t=25407.3 h2-wire face=h2 conn=62200 tag=toward.auth-2.2.none.94 wire_bytes_written=1073 wire_bytes_read=860
+[mac-8.7.1-1] cell toward auth-2+2 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=3.9 cpu_ms=1.3 calls=9 hdr_lines=5 bytes=192 heads=[401:3:142,200:2:50] refused=- header_size=192 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[mac-8.7.1-1] srv ev 1005 t=25412.6 h2-close face=h2 conn=62203 tag=toward.auth-2.2.obs.95 heads=[401:3] rst=0
+[mac-8.7.1-1] srv ev 1007 t=25412.9 h2-close face=h2 conn=62203 tag=toward.auth-2.2.obs.95 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 1008 t=25413.3 h2-wire face=h2 conn=62203 tag=toward.auth-2.2.obs.95 wire_bytes_written=1075 wire_bytes_read=859
+[mac-8.7.1-1] cell toward auth-2+2 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=4.0 cpu_ms=1.3 calls=9 hdr_lines=5 bytes=192 heads=[401:3:142,200:2:50] refused=none header_size=192 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[mac-8.7.1-1] srv ev 1010 t=25418.6 h2-close face=h2 conn=62206 tag=toward.auth-2.2.cap.96 heads=[401:3] rst=0
+[mac-8.7.1-1] srv ev 1012 t=25419.0 h2-close face=h2 conn=62206 tag=toward.auth-2.2.cap.96 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 1013 t=25419.3 h2-wire face=h2 conn=62206 tag=toward.auth-2.2.cap.96 wire_bytes_written=1074 wire_bytes_read=860
+[mac-8.7.1-1] cell toward auth-6000+2 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=9.8 cpu_ms=2.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96160 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=2 stored_r0=6001 stored_r1=2 live_kb=370
+[mac-8.7.1-1] srv ev 1015 t=25427.8 h2-close face=h2 conn=62209 tag=toward.auth-6000.2.none.97 heads=[401:6001] rst=0
+[mac-8.7.1-1] srv ev 1017 t=25430.0 h2-close face=h2 conn=62209 tag=toward.auth-6000.2.none.97 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 1018 t=25430.4 h2-wire face=h2 conn=62209 tag=toward.auth-6000.2.none.97 wire_bytes_written=79212 wire_bytes_read=872
+[mac-8.7.1-1] cell toward auth-6000+2 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=10.4 cpu_ms=3.2 calls=6007 hdr_lines=6003 bytes=96160 heads=[401:6001:96110,200:2:50] refused=- header_size=96160 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=2 stored_r0=6001 stored_r1=2 live_kb=370
+[mac-8.7.1-1] srv ev 1020 t=25596.9 h2-close face=h2 conn=62212 tag=toward.auth-6000.2.obs.98 heads=[401:6001] rst=0
+[mac-8.7.1-1] srv ev 1022 t=25598.9 h2-close face=h2 conn=62212 tag=toward.auth-6000.2.obs.98 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 1023 t=25599.1 h2-wire face=h2 conn=62212 tag=toward.auth-6000.2.obs.98 wire_bytes_written=79211 wire_bytes_read=871
+[mac-8.7.1-1] cell toward auth-6000+2 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=401 ver=3 t_ms=8.6 cpu_ms=1.8 calls=1002 hdr_lines=1001 bytes=16108 heads=[401:1001:16108] refused=lines@1001 header_size=16092 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 1025 t=25764.4 h2-close face=h2 conn=62215 tag=toward.auth-6000.2.cap.99 heads=[401:6001] rst=0
+[mac-8.7.1-1] srv ev 1026 t=25765.3 h2-wire face=h2 conn=62215 tag=toward.auth-6000.2.cap.99 wire_bytes_written=79156 wire_bytes_read=589
+[mac-8.7.1-1] cell toward auth-3000+3000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=10.0 cpu_ms=2.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96128 stored=3000 walk_ms=80.37 walk_cpu_ms=80.37 stored_all=3000 stored_r0=3001 stored_r1=3000 live_kb=370
+[mac-8.7.1-1] srv ev 1028 t=25782.4 h2-close face=h2 conn=62218 tag=toward.auth-3000.3000.none.100 heads=[401:3001] rst=0
+[mac-8.7.1-1] srv ev 1030 t=25785.7 h2-close face=h2 conn=62218 tag=toward.auth-3000.3000.none.100 heads=[200:3000] rst=0
+[mac-8.7.1-1] srv ev 1031 t=25786.9 h2-wire face=h2 conn=62218 tag=toward.auth-3000.3000.none.100 wire_bytes_written=79186 wire_bytes_read=888
+[mac-8.7.1-1] cell toward auth-3000+3000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=10.2 cpu_ms=3.2 calls=6005 hdr_lines=6001 bytes=96128 heads=[401:3001:48110,200:3000:48018] refused=- header_size=96128 stored=3000 walk_ms=83.24 walk_cpu_ms=83.23 stored_all=3000 stored_r0=3001 stored_r1=3000 live_kb=370
+[mac-8.7.1-1] srv ev 1033 t=26119.0 h2-close face=h2 conn=62221 tag=toward.auth-3000.3000.obs.101 heads=[401:3001] rst=0
+[mac-8.7.1-1] srv ev 1035 t=26122.3 h2-close face=h2 conn=62221 tag=toward.auth-3000.3000.obs.101 heads=[200:3000] rst=0
+[mac-8.7.1-1] srv ev 1036 t=26123.6 h2-wire face=h2 conn=62221 tag=toward.auth-3000.3000.obs.101 wire_bytes_written=79186 wire_bytes_read=883
+[mac-8.7.1-1] cell toward auth-3000+3000 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=401 ver=3 t_ms=6.4 cpu_ms=1.7 calls=1002 hdr_lines=1001 bytes=16108 heads=[401:1001:16108] refused=lines@1001 header_size=16092 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 1038 t=26466.1 h2-close face=h2 conn=62224 tag=toward.auth-3000.3000.cap.102 heads=[401:3001] rst=0
+[mac-8.7.1-1] srv ev 1039 t=26466.9 h2-wire face=h2 conn=62224 tag=toward.auth-3000.3000.cap.102 wire_bytes_written=40080 wire_bytes_read=593
+[mac-8.7.1-1] cell toward auth-200K+200K face=h2 mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=401 ver=3 t_ms=6.2 cpu_ms=2.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168316 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=659 stored_r0=659 stored_r1=0 live_kb=201
+[mac-8.7.1-1] srv ev 1041 t=26482.8 h2-close face=h2 conn=62227 tag=toward.auth-200K.200K.none.103 heads=[401:801] rst=0
+[mac-8.7.1-1] srv ev 1042 t=26484.8 h2-wire face=h2 conn=62227 tag=toward.auth-200K.200K.none.103 wire_bytes_written=180373 wire_bytes_read=609
+[mac-8.7.1-1] cell toward auth-200K+200K face=h2 mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=401 ver=3 t_ms=6.0 cpu_ms=2.5 calls=660 hdr_lines=659 bytes=168316 heads=[401:659:168316] refused=- header_size=168316 stored=659 walk_ms=3.06 walk_cpu_ms=3.06 stored_all=659 stored_r0=659 stored_r1=0 live_kb=201
+[mac-8.7.1-1] srv ev 1044 t=26496.9 h2-close face=h2 conn=62230 tag=toward.auth-200K.200K.obs.104 heads=[401:801] rst=0
+[mac-8.7.1-1] srv ev 1045 t=26498.8 h2-wire face=h2 conn=62230 tag=toward.auth-200K.200K.obs.104 wire_bytes_written=180373 wire_bytes_read=608
+[mac-8.7.1-1] cell toward auth-200K+200K face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=401 ver=3 t_ms=5.4 cpu_ms=2.0 calls=403 hdr_lines=402 bytes=102524 heads=[401:402:102524] refused=bytes@102524 header_size=102268 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=125
+[mac-8.7.1-1] srv ev 1047 t=26513.9 h2-close face=h2 conn=62233 tag=toward.auth-200K.200K.cap.105 heads=[401:801] rst=0
+[mac-8.7.1-1] srv ev 1048 t=26515.3 h2-wire face=h2 conn=62233 tag=toward.auth-200K.200K.cap.105 wire_bytes_written=180373 wire_bytes_read=608
+[mac-8.7.1-1] cell toward redir-2+2 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=3.9 cpu_ms=1.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=151 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[mac-8.7.1-1] srv ev 1050 t=26521.8 h2-close face=h2 conn=62236 tag=toward.redir-2.2.none.106 heads=[302:3] rst=0
+[mac-8.7.1-1] srv ev 1052 t=26522.1 h2-close face=h2 conn=62236 tag=toward.redir-2.2.none.106 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 1053 t=26522.5 h2-wire face=h2 conn=62236 tag=toward.redir-2.2.none.106 wire_bytes_written=1048 wire_bytes_read=660
+[mac-8.7.1-1] cell toward redir-2+2 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=3.8 cpu_ms=1.3 calls=9 hdr_lines=5 bytes=150 heads=[302:3:100,200:2:50] refused=- header_size=150 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[mac-8.7.1-1] srv ev 1055 t=26527.7 h2-close face=h2 conn=62239 tag=toward.redir-2.2.obs.107 heads=[302:3] rst=0
+[mac-8.7.1-1] srv ev 1057 t=26528.0 h2-close face=h2 conn=62239 tag=toward.redir-2.2.obs.107 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 1058 t=26528.4 h2-wire face=h2 conn=62239 tag=toward.redir-2.2.obs.107 wire_bytes_written=1046 wire_bytes_read=659
+[mac-8.7.1-1] cell toward redir-2+2 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=4.0 cpu_ms=1.2 calls=9 hdr_lines=5 bytes=150 heads=[302:3:100,200:2:50] refused=none header_size=150 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[mac-8.7.1-1] srv ev 1060 t=26533.8 h2-close face=h2 conn=62242 tag=toward.redir-2.2.cap.108 heads=[302:3] rst=0
+[mac-8.7.1-1] srv ev 1062 t=26534.1 h2-close face=h2 conn=62242 tag=toward.redir-2.2.cap.108 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 1063 t=26534.5 h2-wire face=h2 conn=62242 tag=toward.redir-2.2.cap.108 wire_bytes_written=1046 wire_bytes_read=659
+[mac-8.7.1-1] cell toward redir-3000+3000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=9.6 cpu_ms=2.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96096 stored=3000 walk_ms=80.33 walk_cpu_ms=80.33 stored_all=3000 stored_r0=3001 stored_r1=3000 live_kb=370
+[mac-8.7.1-1] srv ev 1065 t=26541.8 h2-close face=h2 conn=62245 tag=toward.redir-3000.3000.none.109 heads=[302:3001] rst=0
+[mac-8.7.1-1] srv ev 1067 t=26544.9 h2-close face=h2 conn=62245 tag=toward.redir-3000.3000.none.109 heads=[200:3000] rst=0
+[mac-8.7.1-1] srv ev 1068 t=26546.3 h2-wire face=h2 conn=62245 tag=toward.redir-3000.3000.none.109 wire_bytes_written=79166 wire_bytes_read=674
+[mac-8.7.1-1] cell toward redir-3000+3000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=11.0 cpu_ms=3.2 calls=6005 hdr_lines=6001 bytes=96095 heads=[302:3001:48077,200:3000:48018] refused=- header_size=96095 stored=3000 walk_ms=81.20 walk_cpu_ms=81.19 stored_all=3000 stored_r0=3001 stored_r1=3000 live_kb=370
+[mac-8.7.1-1] srv ev 1070 t=26875.6 h2-close face=h2 conn=62248 tag=toward.redir-3000.3000.obs.110 heads=[302:3001] rst=0
+[mac-8.7.1-1] srv ev 1072 t=26878.7 h2-close face=h2 conn=62248 tag=toward.redir-3000.3000.obs.110 heads=[200:3000] rst=0
+[mac-8.7.1-1] srv ev 1073 t=26880.0 h2-wire face=h2 conn=62248 tag=toward.redir-3000.3000.obs.110 wire_bytes_written=79164 wire_bytes_read=672
+[mac-8.7.1-1] cell toward redir-3000+3000 face=h2 mode=cap code=56 err="Failure writing output to destination, passed 16 returned 0" status=302 ver=3 t_ms=6.5 cpu_ms=1.8 calls=1002 hdr_lines=1001 bytes=16075 heads=[302:1001:16075] refused=lines@1001 header_size=16059 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 1075 t=27216.6 h2-close face=h2 conn=62251 tag=toward.redir-3000.3000.cap.111 heads=[302:3001] rst=0
+[mac-8.7.1-1] srv ev 1076 t=27217.4 h2-wire face=h2 conn=62251 tag=toward.redir-3000.3000.cap.111 wire_bytes_written=40058 wire_bytes_read=594
+[mac-8.7.1-1] cell toward redir-200K+200K face=h2 mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=302 ver=3 t_ms=6.0 cpu_ms=2.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168548 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=660 stored_r0=660 stored_r1=0 live_kb=201
+[mac-8.7.1-1] srv ev 1078 t=27233.2 h2-close face=h2 conn=62254 tag=toward.redir-200K.200K.none.112 heads=[302:801] rst=0
+[mac-8.7.1-1] srv ev 1079 t=27235.1 h2-wire face=h2 conn=62254 tag=toward.redir-200K.200K.none.112 wire_bytes_written=180359 wire_bytes_read=610
+[mac-8.7.1-1] cell toward redir-200K+200K face=h2 mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=302 ver=3 t_ms=5.9 cpu_ms=2.5 calls=661 hdr_lines=660 bytes=168547 heads=[302:660:168547] refused=- header_size=168547 stored=660 walk_ms=3.05 walk_cpu_ms=3.05 stored_all=660 stored_r0=660 stored_r1=0 live_kb=201
+[mac-8.7.1-1] srv ev 1081 t=27246.6 h2-close face=h2 conn=62257 tag=toward.redir-200K.200K.obs.113 heads=[302:801] rst=0
+[mac-8.7.1-1] srv ev 1082 t=27248.3 h2-wire face=h2 conn=62257 tag=toward.redir-200K.200K.obs.113 wire_bytes_written=180358 wire_bytes_read=610
+[mac-8.7.1-1] cell toward redir-200K+200K face=h2 mode=cap code=56 err="Failure writing output to destination, passed 256 returned 0" status=302 ver=3 t_ms=5.6 cpu_ms=2.0 calls=403 hdr_lines=402 bytes=102499 heads=[302:402:102499] refused=bytes@102499 header_size=102243 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=125
+[mac-8.7.1-1] srv ev 1084 t=27263.6 h2-close face=h2 conn=62260 tag=toward.redir-200K.200K.cap.114 heads=[302:801] rst=0
+[mac-8.7.1-1] srv ev 1085 t=27265.0 h2-wire face=h2 conn=62260 tag=toward.redir-200K.200K.cap.114 wire_bytes_written=180359 wire_bytes_read=610
+[mac-8.7.1-1] cell toward expect-2+2 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=1.6 cpu_ms=0.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=2 live_kb=70
+[mac-8.7.1-1] srv ev 1088 t=27268.9 wrote face=h1 conn=62263 tag=toward.expect-2.2.none.115 proto=h1 heads=[417:2:70] bytes=70
+[mac-8.7.1-1] srv ev 1090 t=27269.2 wrote face=h1 conn=62263 tag=toward.expect-2.2.none.115 proto=h1 heads=[100:0:25] bytes=25
+[mac-8.7.1-1] srv ev 1091 t=27269.6 wrote face=h1 conn=62263 tag=toward.expect-2.2.none.115 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward expect-2+2 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=1.5 cpu_ms=0.2 calls=10 hdr_lines=4 bytes=149 heads=[417:2:70,100:0:25,200:2:54] refused=- header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=2 live_kb=70
+[mac-8.7.1-1] srv ev 1095 t=27272.4 wrote face=h1 conn=62266 tag=toward.expect-2.2.obs.116 proto=h1 heads=[417:2:70] bytes=70
+[mac-8.7.1-1] srv ev 1097 t=27272.7 wrote face=h1 conn=62266 tag=toward.expect-2.2.obs.116 proto=h1 heads=[100:0:25] bytes=25
+[mac-8.7.1-1] srv ev 1098 t=27273.0 wrote face=h1 conn=62266 tag=toward.expect-2.2.obs.116 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward expect-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=1.4 cpu_ms=0.2 calls=10 hdr_lines=4 bytes=149 heads=[417:2:70,100:0:25,200:2:54] refused=none header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=2 live_kb=70
+[mac-8.7.1-1] srv ev 1102 t=27275.8 wrote face=h1 conn=62269 tag=toward.expect-2.2.cap.117 proto=h1 heads=[417:2:70] bytes=70
+[mac-8.7.1-1] srv ev 1104 t=27276.1 wrote face=h1 conn=62269 tag=toward.expect-2.2.cap.117 proto=h1 heads=[100:0:25] bytes=25
+[mac-8.7.1-1] srv ev 1105 t=27276.4 wrote face=h1 conn=62269 tag=toward.expect-2.2.cap.117 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward expect-6000+2 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.4 cpu_ms=0.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96117 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=2 stored_r0=6000 stored_r1=2 live_kb=433
+[mac-8.7.1-1] srv ev 1109 t=27279.5 wrote face=h1 conn=62272 tag=toward.expect-6000.2.none.118 proto=h1 heads=[417:6000:96038] bytes=96038
+[mac-8.7.1-1] srv ev 1111 t=27280.3 wrote face=h1 conn=62272 tag=toward.expect-6000.2.none.118 proto=h1 heads=[100:0:25] bytes=25
+[mac-8.7.1-1] srv ev 1112 t=27280.6 wrote face=h1 conn=62272 tag=toward.expect-6000.2.none.118 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward expect-6000+2 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=3.0 cpu_ms=0.8 calls=6008 hdr_lines=6002 bytes=96117 heads=[417:6000:96038,100:0:25,200:2:54] refused=- header_size=96117 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=2 stored_r0=6000 stored_r1=2 live_kb=433
+[mac-8.7.1-1] srv ev 1116 t=27439.4 wrote face=h1 conn=62275 tag=toward.expect-6000.2.obs.119 proto=h1 heads=[417:6000:96038] bytes=96038
+[mac-8.7.1-1] srv ev 1118 t=27440.6 wrote face=h1 conn=62275 tag=toward.expect-6000.2.obs.119 proto=h1 heads=[100:0:25] bytes=25
+[mac-8.7.1-1] srv ev 1119 t=27440.9 wrote face=h1 conn=62275 tag=toward.expect-6000.2.obs.119 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward expect-6000+2 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=417 ver=2 t_ms=2.2 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16052 heads=[417:1001:16052] refused=lines@1001 header_size=16036 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=131
+[mac-8.7.1-1] srv ev 1123 t=27602.4 wrote face=h1 conn=62278 tag=toward.expect-6000.2.cap.120 proto=h1 heads=[417:6000:96038] bytes=96038
+[mac-8.7.1-1] cell toward expect-3000+3000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=3.0 cpu_ms=0.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96085 stored=3000 walk_ms=79.84 walk_cpu_ms=79.84 stored_all=3000 stored_r0=3000 stored_r1=3000 live_kb=433
+[mac-8.7.1-1] srv ev 1127 t=27615.3 wrote face=h1 conn=62281 tag=toward.expect-3000.3000.none.121 proto=h1 heads=[417:3000:48038] bytes=48038
+[mac-8.7.1-1] srv ev 1129 t=27616.0 wrote face=h1 conn=62281 tag=toward.expect-3000.3000.none.121 proto=h1 heads=[100:0:25] bytes=25
+[mac-8.7.1-1] srv ev 1130 t=27616.7 wrote face=h1 conn=62281 tag=toward.expect-3000.3000.none.121 proto=h1 heads=[200:3000:48022] bytes=48022
+[mac-8.7.1-1] cell toward expect-3000+3000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.4 cpu_ms=0.8 calls=6006 hdr_lines=6000 bytes=96085 heads=[417:3000:48038,100:0:25,200:3000:48022] refused=- header_size=96085 stored=3000 walk_ms=80.56 walk_cpu_ms=80.56 stored_all=3000 stored_r0=3000 stored_r1=3000 live_kb=433
+[mac-8.7.1-1] srv ev 1134 t=27939.3 wrote face=h1 conn=62284 tag=toward.expect-3000.3000.obs.122 proto=h1 heads=[417:3000:48038] bytes=48038
+[mac-8.7.1-1] srv ev 1136 t=27939.9 wrote face=h1 conn=62284 tag=toward.expect-3000.3000.obs.122 proto=h1 heads=[100:0:25] bytes=25
+[mac-8.7.1-1] srv ev 1137 t=27940.5 wrote face=h1 conn=62284 tag=toward.expect-3000.3000.obs.122 proto=h1 heads=[200:3000:48022] bytes=48022
+[mac-8.7.1-1] cell toward expect-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=417 ver=2 t_ms=1.4 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16052 heads=[417:1001:16052] refused=lines@1001 header_size=16036 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=131
+[mac-8.7.1-1] srv ev 1141 t=28265.7 wrote face=h1 conn=62287 tag=toward.expect-3000.3000.cap.123 proto=h1 heads=[417:3000:48038] bytes=48038
+[mac-8.7.1-1] cell toward expect-200K+200K face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.5 cpu_ms=0.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=409205 stored=800 walk_ms=9.15 walk_cpu_ms=9.16 stored_all=800 stored_r0=800 stored_r1=800 live_kb=542
+[mac-8.7.1-1] srv ev 1145 t=28277.7 wrote face=h1 conn=62290 tag=toward.expect-200K.200K.none.124 proto=h1 heads=[417:800:204598] bytes=204598
+[mac-8.7.1-1] srv ev 1147 t=28278.6 wrote face=h1 conn=62290 tag=toward.expect-200K.200K.none.124 proto=h1 heads=[100:0:25] bytes=25
+[mac-8.7.1-1] srv ev 1148 t=28279.1 wrote face=h1 conn=62290 tag=toward.expect-200K.200K.none.124 proto=h1 heads=[200:800:204582] bytes=204582
+[mac-8.7.1-1] cell toward expect-200K+200K face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=4.1 cpu_ms=0.8 calls=1606 hdr_lines=1600 bytes=409205 heads=[417:800:204598,100:0:25,200:800:204582] refused=- header_size=409205 stored=800 walk_ms=9.11 walk_cpu_ms=9.11 stored_all=800 stored_r0=800 stored_r1=800 live_kb=542
+[mac-8.7.1-1] srv ev 1152 t=28319.0 wrote face=h1 conn=62293 tag=toward.expect-200K.200K.obs.125 proto=h1 heads=[417:800:204598] bytes=204598
+[mac-8.7.1-1] srv ev 1154 t=28320.8 wrote face=h1 conn=62293 tag=toward.expect-200K.200K.obs.125 proto=h1 heads=[100:0:25] bytes=25
+[mac-8.7.1-1] srv ev 1155 t=28321.4 wrote face=h1 conn=62293 tag=toward.expect-200K.200K.obs.125 proto=h1 heads=[200:800:204582] bytes=204582
+[mac-8.7.1-1] cell toward expect-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=417 ver=2 t_ms=1.8 cpu_ms=0.4 calls=402 hdr_lines=401 bytes=102452 heads=[417:401:102452] refused=bytes@102452 header_size=102196 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=401 stored_r0=401 stored_r1=0 live_kb=189
+[mac-8.7.1-1] srv ev 1159 t=28361.5 wrote face=h1 conn=62296 tag=toward.expect-200K.200K.cap.126 proto=h1 heads=[417:800:204598] bytes=204598
+[mac-8.7.1-1] cell toward connect-2+2 face=h1tls+proxy mode=none code=0 err="" status=200 ver=2 t_ms=6.8 cpu_ms=1.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=125 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=7
+[mac-8.7.1-1] srv ev 1162 t=28368.3 connect-answered face=proxy conn=62300 tag=toward.connect-2.2.none.127 target=127.0.0.1:61422 lines=2 bytes=71
+[mac-8.7.1-1] srv ev 1166 t=28373.2 wrote face=h1tls conn=62301 tag=toward.connect-2.2.none.127 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward connect-2+2 face=h1tls+proxy mode=obs code=0 err="" status=200 ver=2 t_ms=5.2 cpu_ms=1.3 calls=8 hdr_lines=4 bytes=125 heads=[200:2:71,200:2:54] refused=- header_size=125 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=6
+[mac-8.7.1-1] srv ev 1169 t=28377.9 connect-answered face=proxy conn=62305 tag=toward.connect-2.2.obs.128 target=127.0.0.1:61422 lines=2 bytes=71
+[mac-8.7.1-1] srv ev 1173 t=28381.8 wrote face=h1tls conn=62306 tag=toward.connect-2.2.obs.128 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward connect-2+2 face=h1tls+proxy mode=cap code=0 err="" status=200 ver=2 t_ms=4.5 cpu_ms=1.3 calls=8 hdr_lines=4 bytes=125 heads=[200:2:71,200:2:54] refused=none header_size=125 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=6
+[mac-8.7.1-1] srv ev 1176 t=28386.4 connect-answered face=proxy conn=62310 tag=toward.connect-2.2.cap.129 target=127.0.0.1:61422 lines=2 bytes=71
+[mac-8.7.1-1] srv ev 1180 t=28389.7 wrote face=h1tls conn=62311 tag=toward.connect-2.2.cap.129 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward connect-6000+2 face=h1tls+proxy mode=none code=0 err="" status=200 ver=2 t_ms=45.9 cpu_ms=40.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96093 stored=2 walk_ms=0.06 walk_cpu_ms=0.06 stored_all=6002 stored_r0=6002 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 1183 t=28394.2 connect-answered face=proxy conn=62315 tag=toward.connect-6000.2.none.130 target=127.0.0.1:61422 lines=6000 bytes=96039
+[mac-8.7.1-1] srv ev 1187 t=28437.9 wrote face=h1tls conn=62316 tag=toward.connect-6000.2.none.130 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward connect-6000+2 face=h1tls+proxy mode=obs code=0 err="" status=200 ver=2 t_ms=45.8 cpu_ms=40.7 calls=6006 hdr_lines=6002 bytes=96093 heads=[200:6000:96039,200:2:54] refused=- header_size=96093 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=6002 stored_r0=6002 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 1190 t=28757.4 connect-answered face=proxy conn=62320 tag=toward.connect-6000.2.obs.131 target=127.0.0.1:61422 lines=6000 bytes=96039
+[mac-8.7.1-1] srv ev 1194 t=28801.1 wrote face=h1tls conn=62321 tag=toward.connect-6000.2.obs.131 proto=h1 heads=[200:2:54] bytes=54
+[mac-8.7.1-1] cell toward connect-6000+2 face=h1tls+proxy mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=0 ver=0 t_ms=8.5 cpu_ms=7.1 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 1197 t=29118.9 connect-answered face=proxy conn=62325 tag=toward.connect-6000.2.cap.132 target=127.0.0.1:61422 lines=6000 bytes=96039
+[mac-8.7.1-1] srv ev 1199 t=29126.5 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[mac-8.7.1-1] cell toward connect-3000+3000 face=h1tls+proxy mode=none code=0 err="" status=200 ver=2 t_ms=25.8 cpu_ms=21.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96061 stored=3000 walk_ms=80.66 walk_cpu_ms=80.66 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 1201 t=29138.3 connect-answered face=proxy conn=62330 tag=toward.connect-3000.3000.none.133 target=127.0.0.1:61422 lines=3000 bytes=48039
+[mac-8.7.1-1] srv ev 1205 t=29162.0 wrote face=h1tls conn=62331 tag=toward.connect-3000.3000.none.133 proto=h1 heads=[200:3000:48022] bytes=48022
+[mac-8.7.1-1] cell toward connect-3000+3000 face=h1tls+proxy mode=obs code=0 err="" status=200 ver=2 t_ms=27.2 cpu_ms=21.7 calls=6004 hdr_lines=6000 bytes=96061 heads=[200:3000:48039,200:3000:48022] refused=- header_size=96061 stored=3000 walk_ms=80.51 walk_cpu_ms=80.51 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 1208 t=29574.5 connect-answered face=proxy conn=62335 tag=toward.connect-3000.3000.obs.134 target=127.0.0.1:61422 lines=3000 bytes=48039
+[mac-8.7.1-1] srv ev 1212 t=29599.2 wrote face=h1tls conn=62336 tag=toward.connect-3000.3000.obs.134 proto=h1 heads=[200:3000:48022] bytes=48022
+[mac-8.7.1-1] cell toward connect-3000+3000 face=h1tls+proxy mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=0 ver=0 t_ms=8.0 cpu_ms=7.0 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 1215 t=30009.2 connect-answered face=proxy conn=62340 tag=toward.connect-3000.3000.cap.135 target=127.0.0.1:61422 lines=3000 bytes=48039
+[mac-8.7.1-1] srv ev 1217 t=30016.5 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[mac-8.7.1-1] cell toward connect-400K+2 face=h1tls+proxy mode=none code=56 err="Too large response headers: 307237 > 307200" status=0 ver=0 t_ms=128.9 cpu_ms=125.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307237 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1200 stored_r0=1200 stored_r1=0 live_kb=360
+[mac-8.7.1-1] srv ev 1219 t=30031.7 connect-answered face=proxy conn=62345 tag=toward.connect-400K.2.none.136 target=127.0.0.1:61422 lines=1600 bytes=409639
+[mac-8.7.1-1] srv ev 1221 t=30157.8 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[mac-8.7.1-1] cell toward connect-400K+2 face=h1tls+proxy mode=obs code=56 err="Too large response headers: 307237 > 307200" status=0 ver=0 t_ms=127.6 cpu_ms=124.7 calls=1201 hdr_lines=1200 bytes=307237 heads=[200:1200:307237] refused=- header_size=307237 stored=0 walk_ms=0.01 walk_cpu_ms=0.01 stored_all=1200 stored_r0=1200 stored_r1=0 live_kb=360
+[mac-8.7.1-1] srv ev 1223 t=30181.4 connect-answered face=proxy conn=62350 tag=toward.connect-400K.2.obs.137 target=127.0.0.1:61422 lines=1600 bytes=409639
+[mac-8.7.1-1] srv ev 1225 t=30307.7 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[mac-8.7.1-1] cell toward connect-400K+2 face=h1tls+proxy mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=0 ver=0 t_ms=45.1 cpu_ms=42.1 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=124
+[mac-8.7.1-1] srv ev 1227 t=30331.2 connect-answered face=proxy conn=62355 tag=toward.connect-400K.2.cap.138 target=127.0.0.1:61422 lines=1600 bytes=409639
+[mac-8.7.1-1] srv ev 1229 t=30374.9 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[mac-8.7.1-1] cell toward connect-200K+200K face=h1tls+proxy mode=none code=0 err="" status=200 ver=2 t_ms=92.4 cpu_ms=85.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=409421 stored=800 walk_ms=9.15 walk_cpu_ms=9.15 stored_all=1600 stored_r0=1600 stored_r1=0 live_kb=478
+[mac-8.7.1-1] srv ev 1231 t=30380.4 connect-answered face=proxy conn=62360 tag=toward.connect-200K.200K.none.139 target=127.0.0.1:61422 lines=800 bytes=204839
+[mac-8.7.1-1] srv ev 1235 t=30468.8 wrote face=h1tls conn=62361 tag=toward.connect-200K.200K.none.139 proto=h1 heads=[200:800:204582] bytes=204582
+[mac-8.7.1-1] cell toward connect-200K+200K face=h1tls+proxy mode=obs code=0 err="" status=200 ver=2 t_ms=92.2 cpu_ms=84.8 calls=1604 hdr_lines=1600 bytes=409421 heads=[200:800:204839,200:800:204582] refused=- header_size=409421 stored=800 walk_ms=9.12 walk_cpu_ms=9.12 stored_all=1600 stored_r0=1600 stored_r1=0 live_kb=478
+[mac-8.7.1-1] srv ev 1238 t=30521.6 connect-answered face=proxy conn=62365 tag=toward.connect-200K.200K.obs.140 target=127.0.0.1:61422 lines=800 bytes=204839
+[mac-8.7.1-1] srv ev 1242 t=30609.8 wrote face=h1tls conn=62366 tag=toward.connect-200K.200K.obs.140 proto=h1 heads=[200:800:204582] bytes=204582
+[mac-8.7.1-1] cell toward connect-200K+200K face=h1tls+proxy mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=0 ver=0 t_ms=43.9 cpu_ms=41.8 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=124
+[mac-8.7.1-1] srv ev 1245 t=30662.4 connect-answered face=proxy conn=62370 tag=toward.connect-200K.200K.cap.141 target=127.0.0.1:61422 lines=800 bytes=204839
+[mac-8.7.1-1] srv ev 1247 t=30705.3 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[mac-8.7.1-1] cell toward connect-2+2 face=h2+proxy mode=none code=0 err="" status=200 ver=3 t_ms=5.8 cpu_ms=1.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=121 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=7
+[mac-8.7.1-1] srv ev 1249 t=30710.5 connect-answered face=proxy conn=62375 tag=toward.connect-2.2.none.142 target=127.0.0.1:61423 lines=2 bytes=71
+[mac-8.7.1-1] srv ev 1251 t=30714.9 h2-close face=h2 conn=62376 tag=toward.connect-2.2.none.142 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 1252 t=30715.8 h2-wire face=h2 conn=62376 tag=toward.connect-2.2.none.142 wire_bytes_written=968 wire_bytes_read=582
+[mac-8.7.1-1] cell toward connect-2+2 face=h2+proxy mode=obs code=0 err="" status=200 ver=3 t_ms=5.5 cpu_ms=1.3 calls=8 hdr_lines=4 bytes=121 heads=[200:2:71,200:2:50] refused=- header_size=121 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=6
+[mac-8.7.1-1] srv ev 1254 t=30719.5 connect-answered face=proxy conn=62380 tag=toward.connect-2.2.obs.143 target=127.0.0.1:61423 lines=2 bytes=71
+[mac-8.7.1-1] srv ev 1256 t=30723.5 h2-close face=h2 conn=62381 tag=toward.connect-2.2.obs.143 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 1257 t=30724.6 h2-wire face=h2 conn=62381 tag=toward.connect-2.2.obs.143 wire_bytes_written=968 wire_bytes_read=581
+[mac-8.7.1-1] cell toward connect-2+2 face=h2+proxy mode=cap code=0 err="" status=200 ver=3 t_ms=5.5 cpu_ms=1.2 calls=8 hdr_lines=4 bytes=121 heads=[200:2:71,200:2:50] refused=none header_size=121 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=6
+[mac-8.7.1-1] srv ev 1259 t=30728.4 connect-answered face=proxy conn=62385 tag=toward.connect-2.2.cap.144 target=127.0.0.1:61423 lines=2 bytes=71
+[mac-8.7.1-1] srv ev 1261 t=30732.4 h2-close face=h2 conn=62386 tag=toward.connect-2.2.cap.144 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 1262 t=30733.5 h2-wire face=h2 conn=62386 tag=toward.connect-2.2.cap.144 wire_bytes_written=969 wire_bytes_read=581
+[mac-8.7.1-1] cell toward connect-6000+2 face=h2+proxy mode=none code=0 err="" status=200 ver=3 t_ms=45.7 cpu_ms=40.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96089 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=6002 stored_r0=6002 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 1264 t=30738.0 connect-answered face=proxy conn=62390 tag=toward.connect-6000.2.none.145 target=127.0.0.1:61423 lines=6000 bytes=96039
+[mac-8.7.1-1] srv ev 1266 t=30781.7 h2-close face=h2 conn=62391 tag=toward.connect-6000.2.none.145 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 1267 t=30782.5 h2-wire face=h2 conn=62391 tag=toward.connect-6000.2.none.145 wire_bytes_written=969 wire_bytes_read=584
+[mac-8.7.1-1] cell toward connect-6000+2 face=h2+proxy mode=obs code=0 err="" status=200 ver=3 t_ms=44.9 cpu_ms=40.6 calls=6006 hdr_lines=6002 bytes=96089 heads=[200:6000:96039,200:2:50] refused=- header_size=96089 stored=2 walk_ms=0.06 walk_cpu_ms=0.06 stored_all=6002 stored_r0=6002 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 1269 t=31097.9 connect-answered face=proxy conn=62395 tag=toward.connect-6000.2.obs.146 target=127.0.0.1:61423 lines=6000 bytes=96039
+[mac-8.7.1-1] srv ev 1271 t=31140.9 h2-close face=h2 conn=62396 tag=toward.connect-6000.2.obs.146 heads=[200:2] rst=0
+[mac-8.7.1-1] srv ev 1272 t=31141.5 h2-wire face=h2 conn=62396 tag=toward.connect-6000.2.obs.146 wire_bytes_written=970 wire_bytes_read=583
+[mac-8.7.1-1] cell toward connect-6000+2 face=h2+proxy mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=0 ver=0 t_ms=9.2 cpu_ms=6.9 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 1274 t=31459.4 connect-answered face=proxy conn=62400 tag=toward.connect-6000.2.cap.147 target=127.0.0.1:61423 lines=6000 bytes=96039
+[mac-8.7.1-1] srv ev 1275 t=31466.8 h2-wire face=h2 conn=62401 tag=- wire_bytes_written=0 wire_bytes_read=0
+[mac-8.7.1-1] srv ev 1276 t=31466.9 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[mac-8.7.1-1] cell toward connect-3000+3000 face=h2+proxy mode=none code=0 err="" status=200 ver=3 t_ms=30.7 cpu_ms=21.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=96057 stored=3000 walk_ms=80.33 walk_cpu_ms=80.33 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 1278 t=31480.6 connect-answered face=proxy conn=62405 tag=toward.connect-3000.3000.none.148 target=127.0.0.1:61423 lines=3000 bytes=48039
+[mac-8.7.1-1] srv ev 1280 t=31507.4 h2-close face=h2 conn=62406 tag=toward.connect-3000.3000.none.148 heads=[200:3000] rst=0
+[mac-8.7.1-1] srv ev 1281 t=31510.1 h2-wire face=h2 conn=62406 tag=toward.connect-3000.3000.none.148 wire_bytes_written=40020 wire_bytes_read=588
+[mac-8.7.1-1] cell toward connect-3000+3000 face=h2+proxy mode=obs code=0 err="" status=200 ver=3 t_ms=29.8 cpu_ms=22.0 calls=6004 hdr_lines=6000 bytes=96057 heads=[200:3000:48039,200:3000:48018] refused=- header_size=96057 stored=3000 walk_ms=80.49 walk_cpu_ms=80.49 stored_all=6000 stored_r0=6000 stored_r1=0 live_kb=370
+[mac-8.7.1-1] srv ev 1283 t=31916.3 connect-answered face=proxy conn=62410 tag=toward.connect-3000.3000.obs.149 target=127.0.0.1:61423 lines=3000 bytes=48039
+[mac-8.7.1-1] srv ev 1285 t=31943.2 h2-close face=h2 conn=62411 tag=toward.connect-3000.3000.obs.149 heads=[200:3000] rst=0
+[mac-8.7.1-1] srv ev 1286 t=31945.1 h2-wire face=h2 conn=62411 tag=toward.connect-3000.3000.obs.149 wire_bytes_written=40019 wire_bytes_read=587
+[mac-8.7.1-1] cell toward connect-3000+3000 face=h2+proxy mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=0 ver=0 t_ms=8.8 cpu_ms=7.1 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=67
+[mac-8.7.1-1] srv ev 1288 t=32351.4 connect-answered face=proxy conn=62416 tag=toward.connect-3000.3000.cap.150 target=127.0.0.1:61423 lines=3000 bytes=48039
+[mac-8.7.1-1] srv ev 1289 t=32359.0 h2-wire face=h2 conn=62417 tag=- wire_bytes_written=0 wire_bytes_read=0
+[mac-8.7.1-1] srv ev 1290 t=32359.0 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[mac-8.7.1-1] cell toward connect-400K+2 face=h2+proxy mode=none code=56 err="Too large response headers: 307237 > 307200" status=0 ver=0 t_ms=126.9 cpu_ms=123.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307237 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1200 stored_r0=1200 stored_r1=0 live_kb=360
+[mac-8.7.1-1] srv ev 1292 t=32372.7 connect-answered face=proxy conn=62421 tag=toward.connect-400K.2.none.151 target=127.0.0.1:61423 lines=1600 bytes=409639
+[mac-8.7.1-1] srv ev 1293 t=32498.3 h2-wire face=h2 conn=62422 tag=- wire_bytes_written=0 wire_bytes_read=0
+[mac-8.7.1-1] srv ev 1294 t=32498.3 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[mac-8.7.1-1] cell toward connect-400K+2 face=h2+proxy mode=obs code=56 err="Too large response headers: 307237 > 307200" status=0 ver=0 t_ms=126.9 cpu_ms=123.8 calls=1201 hdr_lines=1200 bytes=307237 heads=[200:1200:307237] refused=- header_size=307237 stored=0 walk_ms=0.01 walk_cpu_ms=0.01 stored_all=1200 stored_r0=1200 stored_r1=0 live_kb=360
+[mac-8.7.1-1] srv ev 1296 t=32521.7 connect-answered face=proxy conn=62426 tag=toward.connect-400K.2.obs.152 target=127.0.0.1:61423 lines=1600 bytes=409639
+[mac-8.7.1-1] srv ev 1297 t=32647.3 h2-wire face=h2 conn=62427 tag=- wire_bytes_written=0 wire_bytes_read=0
+[mac-8.7.1-1] srv ev 1298 t=32647.3 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[mac-8.7.1-1] cell toward connect-400K+2 face=h2+proxy mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=0 ver=0 t_ms=45.9 cpu_ms=42.1 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=124
+[mac-8.7.1-1] srv ev 1300 t=32672.6 connect-answered face=proxy conn=62431 tag=toward.connect-400K.2.cap.153 target=127.0.0.1:61423 lines=1600 bytes=409639
+[mac-8.7.1-1] srv ev 1301 t=32715.3 h2-wire face=h2 conn=62432 tag=- wire_bytes_written=0 wire_bytes_read=0
+[mac-8.7.1-1] srv ev 1302 t=32715.3 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[mac-8.7.1-1] cell toward connect-200K+200K face=h2+proxy mode=none code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=92.8 cpu_ms=84.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=373319 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1459 stored_r0=1459 stored_r1=0 live_kb=437
+[mac-8.7.1-1] srv ev 1304 t=32720.9 connect-answered face=proxy conn=62436 tag=toward.connect-200K.200K.none.154 target=127.0.0.1:61423 lines=800 bytes=204839
+[mac-8.7.1-1] srv ev 1306 t=32809.3 h2-close face=h2 conn=62437 tag=toward.connect-200K.200K.none.154 heads=[200:800] rst=0
+[mac-8.7.1-1] srv ev 1307 t=32812.7 h2-wire face=h2 conn=62437 tag=toward.connect-200K.200K.none.154 wire_bytes_written=180312 wire_bytes_read=594
+[mac-8.7.1-1] cell toward connect-200K+200K face=h2+proxy mode=obs code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=91.5 cpu_ms=84.9 calls=1462 hdr_lines=1459 bytes=373319 heads=[200:800:204839,200:659:168480] refused=- header_size=373319 stored=659 walk_ms=6.92 walk_cpu_ms=6.92 stored_all=1459 stored_r0=1459 stored_r1=0 live_kb=437
+[mac-8.7.1-1] srv ev 1309 t=32847.1 connect-answered face=proxy conn=62441 tag=toward.connect-200K.200K.obs.155 target=127.0.0.1:61423 lines=800 bytes=204839
+[mac-8.7.1-1] srv ev 1311 t=32934.8 h2-close face=h2 conn=62442 tag=toward.connect-200K.200K.obs.155 heads=[200:800] rst=0
+[mac-8.7.1-1] srv ev 1312 t=32937.5 h2-wire face=h2 conn=62442 tag=toward.connect-200K.200K.obs.155 wire_bytes_written=180311 wire_bytes_read=593
+[mac-8.7.1-1] cell toward connect-200K+200K face=h2+proxy mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=0 ver=0 t_ms=43.0 cpu_ms=41.4 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=124
+[mac-8.7.1-1] srv ev 1314 t=32978.0 connect-answered face=proxy conn=62446 tag=toward.connect-200K.200K.cap.156 target=127.0.0.1:61423 lines=800 bytes=204839
+[mac-8.7.1-1] srv ev 1315 t=33020.1 h2-wire face=h2 conn=62447 tag=- wire_bytes_written=0 wire_bytes_read=0
+[mac-8.7.1-1] srv ev 1316 t=33020.1 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[mac-8.7.1-1] case toward all done live_before_global_cleanup=0
+[mac-8.7.1-1] case toward live_after_global_cleanup=0
+[mac-8.7.1-1] probe toward exit=0
+[mac-8.7.1-1] probe toward took about 19 s
+[mac-8.7.1-1] walk n=100 names=distinct round=0 code=0 err="" status=200 t_ms=0.8 stored=100 walk1_ms=0.059 walk1_cpu_ms=0.059 stored2=100 walk2_ms=0.058 walk2_cpu_ms=0.059
+[mac-8.7.1-1] walk n=100 names=same round=0 code=0 err="" status=200 t_ms=0.4 stored=100 walk1_ms=0.059 walk1_cpu_ms=0.059 stored2=100 walk2_ms=0.059 walk2_cpu_ms=0.059
+[mac-8.7.1-1] walk n=1000 names=distinct round=0 code=0 err="" status=200 t_ms=0.6 stored=1000 walk1_ms=4.824 walk1_cpu_ms=4.825 stored2=1000 walk2_ms=4.817 walk2_cpu_ms=4.817
+[mac-8.7.1-1] walk n=1000 names=same round=0 code=0 err="" status=200 t_ms=0.9 stored=1000 walk1_ms=5.660 walk1_cpu_ms=5.660 stored2=1000 walk2_ms=5.635 walk2_cpu_ms=5.634
+[mac-8.7.1-1] walk n=2000 names=distinct round=0 code=0 err="" status=200 t_ms=1.2 stored=2000 walk1_ms=18.226 walk1_cpu_ms=18.227 stored2=2000 walk2_ms=18.180 walk2_cpu_ms=18.180
+[mac-8.7.1-1] walk n=2000 names=same round=0 code=0 err="" status=200 t_ms=1.1 stored=2000 walk1_ms=23.471 walk1_cpu_ms=23.471 stored2=2000 walk2_ms=23.572 walk2_cpu_ms=23.573
+[mac-8.7.1-1] walk n=5000 names=distinct round=0 code=0 err="" status=200 t_ms=2.0 stored=5000 walk1_ms=106.898 walk1_cpu_ms=106.900 stored2=5000 walk2_ms=106.987 walk2_cpu_ms=106.989
+[mac-8.7.1-1] walk n=5000 names=same round=0 code=0 err="" status=200 t_ms=2.5 stored=5000 walk1_ms=141.622 walk1_cpu_ms=141.624 stored2=5000 walk2_ms=142.092 walk2_cpu_ms=142.094
+[mac-8.7.1-1] walk n=1000 names=same round=1 code=0 err="" status=200 t_ms=1.3 stored=1000 walk1_ms=5.679 walk1_cpu_ms=5.678 stored2=1000 walk2_ms=5.634 walk2_cpu_ms=5.634
+[mac-8.7.1-1] walk n=1000 names=distinct round=1 code=0 err="" status=200 t_ms=1.3 stored=1000 walk1_ms=4.815 walk1_cpu_ms=4.815 stored2=1000 walk2_ms=4.809 walk2_cpu_ms=4.810
+[mac-8.7.1-1] walk n=2000 names=same round=1 code=0 err="" status=200 t_ms=1.3 stored=2000 walk1_ms=23.613 walk1_cpu_ms=23.613 stored2=2000 walk2_ms=24.140 walk2_cpu_ms=24.141
+[mac-8.7.1-1] walk n=2000 names=distinct round=1 code=0 err="" status=200 t_ms=1.6 stored=2000 walk1_ms=18.817 walk1_cpu_ms=18.817 stored2=2000 walk2_ms=18.459 walk2_cpu_ms=18.459
+[mac-8.7.1-1] walk n=5000 names=same round=1 code=0 err="" status=200 t_ms=2.1 stored=5000 walk1_ms=141.947 walk1_cpu_ms=141.950 stored2=5000 walk2_ms=142.206 walk2_cpu_ms=142.208
+[mac-8.7.1-1] walk n=5000 names=distinct round=1 code=0 err="" status=200 t_ms=2.0 stored=5000 walk1_ms=108.528 walk1_cpu_ms=108.506 stored2=5000 walk2_ms=108.297 walk2_cpu_ms=108.299
+[mac-8.7.1-1] walk n=100 names=same round=1 code=0 err="" status=200 t_ms=1.1 stored=100 walk1_ms=0.059 walk1_cpu_ms=0.058 stored2=100 walk2_ms=0.059 walk2_cpu_ms=0.059
+[mac-8.7.1-1] walk n=100 names=distinct round=1 code=0 err="" status=200 t_ms=0.6 stored=100 walk1_ms=0.058 walk1_cpu_ms=0.058 stored2=100 walk2_ms=0.058 walk2_cpu_ms=0.059
+[mac-8.7.1-1] walk n=2000 names=distinct round=2 code=0 err="" status=200 t_ms=0.9 stored=2000 walk1_ms=20.340 walk1_cpu_ms=20.337 stored2=2000 walk2_ms=20.247 walk2_cpu_ms=20.247
+[mac-8.7.1-1] walk n=2000 names=same round=2 code=0 err="" status=200 t_ms=1.4 stored=2000 walk1_ms=23.891 walk1_cpu_ms=23.892 stored2=2000 walk2_ms=23.886 walk2_cpu_ms=23.887
+[mac-8.7.1-1] walk n=5000 names=distinct round=2 code=0 err="" status=200 t_ms=2.0 stored=5000 walk1_ms=108.438 walk1_cpu_ms=108.440 stored2=5000 walk2_ms=108.386 walk2_cpu_ms=108.387
+[mac-8.7.1-1] walk n=5000 names=same round=2 code=0 err="" status=200 t_ms=2.0 stored=5000 walk1_ms=142.851 walk1_cpu_ms=142.854 stored2=5000 walk2_ms=143.352 walk2_cpu_ms=143.355
+[mac-8.7.1-1] walk n=100 names=distinct round=2 code=0 err="" status=200 t_ms=1.2 stored=100 walk1_ms=0.058 walk1_cpu_ms=0.058 stored2=100 walk2_ms=0.059 walk2_cpu_ms=0.059
+[mac-8.7.1-1] walk n=100 names=same round=2 code=0 err="" status=200 t_ms=0.9 stored=100 walk1_ms=0.058 walk1_cpu_ms=0.058 stored2=100 walk2_ms=0.059 walk2_cpu_ms=0.059
+[mac-8.7.1-1] walk n=1000 names=distinct round=2 code=0 err="" status=200 t_ms=1.1 stored=1000 walk1_ms=4.814 walk1_cpu_ms=4.814 stored2=1000 walk2_ms=4.808 walk2_cpu_ms=4.808
+[mac-8.7.1-1] walk n=1000 names=same round=2 code=0 err="" status=200 t_ms=1.2 stored=1000 walk1_ms=5.640 walk1_cpu_ms=5.641 stored2=1000 walk2_ms=5.770 walk2_cpu_ms=5.770
+[mac-8.7.1-1] walk n=5000 names=same round=3 code=0 err="" status=200 t_ms=1.5 stored=5000 walk1_ms=143.473 walk1_cpu_ms=143.476 stored2=5000 walk2_ms=143.591 walk2_cpu_ms=143.571
+[mac-8.7.1-1] walk n=5000 names=distinct round=3 code=0 err="" status=200 t_ms=2.6 stored=5000 walk1_ms=110.741 walk1_cpu_ms=110.509 stored2=5000 walk2_ms=109.608 walk2_cpu_ms=109.542
+[mac-8.7.1-1] walk n=100 names=same round=3 code=0 err="" status=200 t_ms=1.5 stored=100 walk1_ms=0.058 walk1_cpu_ms=0.057 stored2=100 walk2_ms=0.059 walk2_cpu_ms=0.059
+[mac-8.7.1-1] walk n=100 names=distinct round=3 code=0 err="" status=200 t_ms=0.9 stored=100 walk1_ms=0.058 walk1_cpu_ms=0.058 stored2=100 walk2_ms=0.059 walk2_cpu_ms=0.059
+[mac-8.7.1-1] walk n=1000 names=same round=3 code=0 err="" status=200 t_ms=1.0 stored=1000 walk1_ms=5.696 walk1_cpu_ms=5.696 stored2=1000 walk2_ms=5.633 walk2_cpu_ms=5.633
+[mac-8.7.1-1] walk n=1000 names=distinct round=3 code=0 err="" status=200 t_ms=1.1 stored=1000 walk1_ms=4.815 walk1_cpu_ms=4.814 stored2=1000 walk2_ms=4.810 walk2_cpu_ms=4.810
+[mac-8.7.1-1] walk n=2000 names=same round=3 code=0 err="" status=200 t_ms=1.3 stored=2000 walk1_ms=23.825 walk1_cpu_ms=23.826 stored2=2000 walk2_ms=23.861 walk2_cpu_ms=23.862
+[mac-8.7.1-1] walk n=2000 names=distinct round=3 code=0 err="" status=200 t_ms=1.3 stored=2000 walk1_ms=20.482 walk1_cpu_ms=20.482 stored2=2000 walk2_ms=20.249 walk2_cpu_ms=20.250
+[mac-8.7.1-1] walk n=100 names=distinct round=4 code=0 err="" status=200 t_ms=1.0 stored=100 walk1_ms=0.058 walk1_cpu_ms=0.058 stored2=100 walk2_ms=0.059 walk2_cpu_ms=0.059
+[mac-8.7.1-1] walk n=100 names=same round=4 code=0 err="" status=200 t_ms=0.8 stored=100 walk1_ms=0.058 walk1_cpu_ms=0.058 stored2=100 walk2_ms=0.059 walk2_cpu_ms=0.059
+[mac-8.7.1-1] walk n=1000 names=distinct round=4 code=0 err="" status=200 t_ms=1.0 stored=1000 walk1_ms=4.816 walk1_cpu_ms=4.817 stored2=1000 walk2_ms=4.809 walk2_cpu_ms=4.810
+[mac-8.7.1-1] walk n=1000 names=same round=4 code=0 err="" status=200 t_ms=1.0 stored=1000 walk1_ms=5.661 walk1_cpu_ms=5.661 stored2=1000 walk2_ms=5.634 walk2_cpu_ms=5.634
+[mac-8.7.1-1] walk n=2000 names=distinct round=4 code=0 err="" status=200 t_ms=1.2 stored=2000 walk1_ms=19.005 walk1_cpu_ms=19.005 stored2=2000 walk2_ms=19.000 walk2_cpu_ms=19.001
+[mac-8.7.1-1] walk n=2000 names=same round=4 code=0 err="" status=200 t_ms=1.3 stored=2000 walk1_ms=25.215 walk1_cpu_ms=25.216 stored2=2000 walk2_ms=25.198 walk2_cpu_ms=25.199
+[mac-8.7.1-1] walk n=5000 names=distinct round=4 code=0 err="" status=200 t_ms=2.0 stored=5000 walk1_ms=110.728 walk1_cpu_ms=110.729 stored2=5000 walk2_ms=111.283 walk2_cpu_ms=111.286
+[mac-8.7.1-1] walk n=5000 names=same round=4 code=0 err="" status=200 t_ms=2.0 stored=5000 walk1_ms=142.103 walk1_cpu_ms=142.106 stored2=5000 walk2_ms=142.320 walk2_cpu_ms=142.302
+[mac-8.7.1-1] walk n=1000 names=same round=5 code=0 err="" status=200 t_ms=1.1 stored=1000 walk1_ms=5.685 walk1_cpu_ms=5.685 stored2=1000 walk2_ms=5.649 walk2_cpu_ms=5.649
+[mac-8.7.1-1] walk n=1000 names=distinct round=5 code=0 err="" status=200 t_ms=0.9 stored=1000 walk1_ms=4.825 walk1_cpu_ms=4.825 stored2=1000 walk2_ms=4.810 walk2_cpu_ms=4.810
+[mac-8.7.1-1] walk n=2000 names=same round=5 code=0 err="" status=200 t_ms=1.4 stored=2000 walk1_ms=22.905 walk1_cpu_ms=22.905 stored2=2000 walk2_ms=23.002 walk2_cpu_ms=23.003
+[mac-8.7.1-1] walk n=2000 names=distinct round=5 code=0 err="" status=200 t_ms=1.3 stored=2000 walk1_ms=19.488 walk1_cpu_ms=19.488 stored2=2000 walk2_ms=19.070 walk2_cpu_ms=19.071
+[mac-8.7.1-1] walk n=5000 names=same round=5 code=0 err="" status=200 t_ms=2.0 stored=5000 walk1_ms=141.647 walk1_cpu_ms=141.657 stored2=5000 walk2_ms=141.818 walk2_cpu_ms=141.821
+[mac-8.7.1-1] walk n=5000 names=distinct round=5 code=0 err="" status=200 t_ms=2.6 stored=5000 walk1_ms=107.702 walk1_cpu_ms=107.704 stored2=5000 walk2_ms=107.302 walk2_cpu_ms=107.303
+[mac-8.7.1-1] walk n=100 names=same round=5 code=0 err="" status=200 t_ms=1.3 stored=100 walk1_ms=0.060 walk1_cpu_ms=0.059 stored2=100 walk2_ms=0.061 walk2_cpu_ms=0.061
+[mac-8.7.1-1] walk n=100 names=distinct round=5 code=0 err="" status=200 t_ms=0.9 stored=100 walk1_ms=0.060 walk1_cpu_ms=0.059 stored2=100 walk2_ms=0.061 walk2_cpu_ms=0.061
+[mac-8.7.1-1] walk n=2000 names=distinct round=6 code=0 err="" status=200 t_ms=1.2 stored=2000 walk1_ms=19.282 walk1_cpu_ms=19.282 stored2=2000 walk2_ms=19.545 walk2_cpu_ms=19.546
+[mac-8.7.1-1] walk n=2000 names=same round=6 code=0 err="" status=200 t_ms=1.3 stored=2000 walk1_ms=23.135 walk1_cpu_ms=23.136 stored2=2000 walk2_ms=23.152 walk2_cpu_ms=23.153
+[mac-8.7.1-1] walk n=5000 names=distinct round=6 code=0 err="" status=200 t_ms=2.1 stored=5000 walk1_ms=107.738 walk1_cpu_ms=107.740 stored2=5000 walk2_ms=107.637 walk2_cpu_ms=107.639
+[mac-8.7.1-1] walk n=5000 names=same round=6 code=0 err="" status=200 t_ms=1.6 stored=5000 walk1_ms=142.195 walk1_cpu_ms=142.174 stored2=5000 walk2_ms=142.712 walk2_cpu_ms=142.715
+[mac-8.7.1-1] walk n=100 names=distinct round=6 code=0 err="" status=200 t_ms=1.3 stored=100 walk1_ms=0.058 walk1_cpu_ms=0.058 stored2=100 walk2_ms=0.059 walk2_cpu_ms=0.059
+[mac-8.7.1-1] walk n=100 names=same round=6 code=0 err="" status=200 t_ms=0.9 stored=100 walk1_ms=0.057 walk1_cpu_ms=0.057 stored2=100 walk2_ms=0.059 walk2_cpu_ms=0.059
+[mac-8.7.1-1] walk n=1000 names=distinct round=6 code=0 err="" status=200 t_ms=1.0 stored=1000 walk1_ms=4.822 walk1_cpu_ms=4.823 stored2=1000 walk2_ms=4.825 walk2_cpu_ms=4.825
+[mac-8.7.1-1] walk n=1000 names=same round=6 code=0 err="" status=200 t_ms=0.9 stored=1000 walk1_ms=5.643 walk1_cpu_ms=5.643 stored2=1000 walk2_ms=5.661 walk2_cpu_ms=5.661
+[mac-8.7.1-1] case walk all done live_before_global_cleanup=0
+[mac-8.7.1-1] case walk live_after_global_cleanup=0
+[mac-8.7.1-1] probe walk exit=0
+[mac-8.7.1-1] probe walk took about 5 s
+[mac-8.7.1-1] -- 4 cases run
+.plans/research/m8/caps/run.sh: line 63: 96236 Terminated: 15          "${NODE:-node}" "$d/server.mjs" "$tmp/pki" < "$tmp/in" > "$tmp/ports" 2> "$tmp/server.err"
+[mac-8.7.1-1] the server exited 143, not 0, after its stdin closed: 143 is the watchdog's kill, 5 s on
+mac.sh run.sh mac-8.7.1-1 exit=0
+mac.sh end 2026-11-06T19:30:39Z

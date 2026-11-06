@@ -1,0 +1,626 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+docker.sh start 2026-11-06T18:12:39Z cpuset=12-17
+network interfaces: lo 
+package gcc 4:13.2.0-7ubuntu1
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+[floor-7.85.0] libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 -> /src/build/e1/ci/curl-floor/lib/libcurl.so.4.8.0, headers /src/build/e1/ci/curl-floor/include
+[floor-7.85.0] node v20.10.0 uname Linux x86_64 CURL_SSL_BACKEND=unset cpus=6 affinity=12-17
+[floor-7.85.0] cases=toward PROBE_MODES=cap WALK_NS=default WALK_ROUNDS=default PROBE_VALGRIND=unset
+[floor-7.85.0] version headers=7.85.0 runtime=7.85.0 num=0x075500 ssl=OpenSSL/3.0.13 nghttp2=1.59.0 http2=1 features=0x5129c29d
+[floor-7.85.0] server ctl=43501 h1=46539 h1tls=35499 h2=34611 proxy=45077
+[floor-7.85.0] cell toward pre103-6000+2 face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=8.5 cpu_ms=0.4 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 3 t=90.0 wrote face=h1 conn=33230 tag=toward.pre103-6000.2.cap.1 proto=h1 heads=[103:6000:96028,200:2:54] bytes=96082
+[floor-7.85.0] cell toward pre103-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=2.7 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 7 t=104.8 wrote face=h1 conn=33234 tag=toward.pre103-3000.3000.cap.2 proto=h1 heads=[103:3000:48028,200:3000:48022] bytes=96050
+[floor-7.85.0] cell toward pre100-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=100 ver=2 t_ms=2.8 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16039 heads=[100:1001:16039] refused=lines@1001 header_size=16023 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 11 t=121.1 wrote face=h1 conn=33246 tag=toward.pre100-3000.3000.cap.3 proto=h1 heads=[100:3000:48025,200:3000:48022] bytes=96047
+[floor-7.85.0] cell toward pre103-2500x2+1000 face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=2.1 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 15 t=137.4 wrote face=h1 conn=33250 tag=toward.pre103-2500x2.1000.cap.4 proto=h1 heads=[103:2500:40028,103:2500:40028,200:1000:16022] bytes=96078
+[floor-7.85.0] cell toward pre103-400K+2 face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=1.2 cpu_ms=0.2 calls=401 hdr_lines=400 bytes=102426 heads=[103:400:102426] refused=bytes@102426 header_size=102170 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=126
+[floor-7.85.0] srv ev 19 t=152.3 wrote face=h1 conn=33262 tag=toward.pre103-400K.2.cap.5 proto=h1 heads=[103:1600:409628,200:2:54] bytes=409682
+[floor-7.85.0] cell toward pre103-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=1.3 cpu_ms=0.2 calls=401 hdr_lines=400 bytes=102426 heads=[103:400:102426] refused=bytes@102426 header_size=102170 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=126
+[floor-7.85.0] srv ev 23 t=156.6 wrote face=h1 conn=33266 tag=toward.pre103-200K.200K.cap.6 proto=h1 heads=[103:800:204828,200:800:204582] bytes=409410
+[floor-7.85.0] cell toward tr-2+6000 face=h1 mode=cap code=23 err="Failed writing header" status=200 ver=2 t_ms=2.9 cpu_ms=0.3 calls=1003 hdr_lines=1001 bytes=16047 heads=[200:2:63,T:999:15984] refused=lines@1001 header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 27 t=162.2 wrote face=h1 conn=33278 tag=toward.tr-2.6000.cap.7 proto=h1 heads=[200:2:63,trailers:6000:96002] bytes=96068
+[floor-7.85.0] cell toward tr-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=200 ver=2 t_ms=1.8 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16045 heads=[200:1001:16045] refused=lines@1001 header_size=16029 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 31 t=177.7 wrote face=h1 conn=33286 tag=toward.tr-3000.3000.cap.8 proto=h1 heads=[200:3000:48031,trailers:3000:48002] bytes=96036
+[floor-7.85.0] cell toward tr-2+400K face=h1 mode=cap code=23 err="Failed writing header" status=200 ver=2 t_ms=2.1 cpu_ms=0.8 calls=404 hdr_lines=402 bytes=102463 heads=[200:2:63,T:400:102400] refused=bytes@102463 header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=126
+[floor-7.85.0] srv ev 35 t=192.9 wrote face=h1 conn=33294 tag=toward.tr-2.400K.cap.9 proto=h1 heads=[200:2:63,trailers:1600:409602] bytes=409668
+[floor-7.85.0] cell toward tr-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=200 ver=2 t_ms=1.4 cpu_ms=0.2 calls=402 hdr_lines=401 bytes=102445 heads=[200:401:102445] refused=bytes@102445 header_size=102189 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=401 stored_r0=401 stored_r1=0 live_kb=126
+[floor-7.85.0] srv ev 39 t=197.6 wrote face=h1 conn=33296 tag=toward.tr-200K.200K.cap.10 proto=h1 heads=[200:800:204591,trailers:800:204802] bytes=409396
+[floor-7.85.0] cell toward tr-line4000 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.4 cpu_ms=0.1 calls=5 hdr_lines=3 bytes=4063 heads=[200:2:63,T:1:4000] refused=none header_size=63 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=11
+[floor-7.85.0] srv ev 43 t=201.6 wrote face=h1 conn=33298 tag=toward.tr-line4000.cap.11 proto=h1 heads=[200:2:63,trailers:1:4002] bytes=4068
+[floor-7.85.0] cell toward tr-line5000 face=h1 mode=cap code=56 err="Out of memory in chunked-encoding" status=200 ver=2 t_ms=0.3 cpu_ms=0.1 calls=4 hdr_lines=2 bytes=63 heads=[200:2:63] refused=none header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=7
+[floor-7.85.0] srv ev 47 t=202.6 wrote face=h1 conn=33306 tag=toward.tr-line5000.cap.12 proto=h1 heads=[200:2:63,trailers:1:5002] bytes=5068
+[floor-7.85.0] cell toward pre103-6000+2 face=h2 mode=cap code=23 err="Failed writing header" status=103 ver=3 t_ms=18.8 cpu_ms=4.3 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 50 t=222.4 h2-close face=h2 conn=39742 tag=toward.pre103-6000.2.cap.13 heads=[103:6000,200:2] rst=0
+[floor-7.85.0] srv ev 51 t=223.2 h2-wire face=h2 conn=39742 tag=toward.pre103-6000.2.cap.13 wire_bytes_written=79699 wire_bytes_read=876
+[floor-7.85.0] cell toward pre103-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=103 ver=3 t_ms=10.7 cpu_ms=2.3 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 53 t=243.1 h2-close face=h2 conn=39746 tag=toward.pre103-3000.3000.cap.14 heads=[103:3000,200:3000] rst=0
+[floor-7.85.0] srv ev 54 t=244.0 h2-wire face=h2 conn=39746 tag=toward.pre103-3000.3000.cap.14 wire_bytes_written=79674 wire_bytes_read=915
+[floor-7.85.0] cell toward pre100-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=100 ver=3 t_ms=9.1 cpu_ms=2.2 calls=1002 hdr_lines=1001 bytes=16029 heads=[100:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 56 t=263.6 h2-close face=h2 conn=39762 tag=toward.pre100-3000.3000.cap.15 heads=[100:3000,200:3000] rst=0
+[floor-7.85.0] srv ev 57 t=264.3 h2-wire face=h2 conn=39762 tag=toward.pre100-3000.3000.cap.15 wire_bytes_written=79674 wire_bytes_read=915
+[floor-7.85.0] cell toward pre103-2500x2+1000 face=h2 mode=cap code=23 err="Failed writing header" status=103 ver=3 t_ms=10.4 cpu_ms=1.9 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 59 t=285.3 h2-close face=h2 conn=39772 tag=toward.pre103-2500x2.1000.cap.16 heads=[103:2500,103:2500,200:1000] rst=0
+[floor-7.85.0] srv ev 60 t=285.8 h2-wire face=h2 conn=39772 tag=toward.pre103-2500x2.1000.cap.16 wire_bytes_written=79668 wire_bytes_read=925
+[floor-7.85.0] cell toward pre103-400K+2 face=h2 mode=cap code=56 err="h2_process_pending_input: nghttp2_session_mem_recv() returned -902:The user callback function failed" status=0 ver=0 t_ms=6.2 cpu_ms=2.1 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[floor-7.85.0] srv ev 62 t=302.3 h2-close face=h2 conn=39782 tag=toward.pre103-400K.2.cap.17 heads=[103:1600,200:2] rst=0
+[floor-7.85.0] srv ev 63 t=303.1 h2-wire face=h2 conn=39782 tag=toward.pre103-400K.2.cap.17 wire_bytes_written=360626 wire_bytes_read=912
+[floor-7.85.0] cell toward pre103-200K+200K face=h2 mode=cap code=56 err="h2_process_pending_input: nghttp2_session_mem_recv() returned -902:The user callback function failed" status=0 ver=0 t_ms=5.8 cpu_ms=2.0 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[floor-7.85.0] srv ev 65 t=308.7 h2-close face=h2 conn=39796 tag=toward.pre103-200K.200K.cap.18 heads=[103:800,200:800] rst=0
+[floor-7.85.0] srv ev 66 t=309.4 h2-wire face=h2 conn=39796 tag=toward.pre103-200K.200K.cap.18 wire_bytes_written=360381 wire_bytes_read=922
+[floor-7.85.0] cell toward tr-2+6000 face=h2 mode=cap code=23 err="Failed writing header" status=200 ver=3 t_ms=12.5 cpu_ms=3.0 calls=1003 hdr_lines=1001 bytes=16031 heads=[200:2:47,T:999:15984] refused=lines@1001 header_size=47 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 68 t=320.6 h2-close face=h2 conn=39798 tag=toward.tr-2.6000.cap.19 heads=[200:2,trailers:6000] rst=0
+[floor-7.85.0] srv ev 69 t=322.5 h2-wire face=h2 conn=39798 tag=toward.tr-2.6000.cap.19 wire_bytes_written=79701 wire_bytes_read=872
+[floor-7.85.0] cell toward tr-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=200 ver=3 t_ms=8.1 cpu_ms=1.9 calls=1002 hdr_lines=1001 bytes=16029 heads=[200:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 71 t=341.8 h2-close face=h2 conn=39808 tag=toward.tr-3000.3000.cap.20 heads=[200:3000,trailers:3000] rst=0
+[floor-7.85.0] srv ev 72 t=342.0 h2-wire face=h2 conn=39808 tag=toward.tr-3000.3000.cap.20 wire_bytes_written=79700 wire_bytes_read=911
+[floor-7.85.0] cell toward tr-2+400K face=h2 mode=cap code=56 err="h2_process_pending_input: nghttp2_session_mem_recv() returned -902:The user callback function failed" status=200 ver=3 t_ms=7.6 cpu_ms=3.1 calls=4 hdr_lines=2 bytes=47 heads=[200:2:47] refused=none header_size=47 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=7
+[floor-7.85.0] srv ev 74 t=358.6 h2-close face=h2 conn=39824 tag=toward.tr-2.400K.cap.21 heads=[200:2,trailers:1600] rst=0
+[floor-7.85.0] srv ev 75 t=360.6 h2-wire face=h2 conn=39824 tag=toward.tr-2.400K.cap.21 wire_bytes_written=360642 wire_bytes_read=908
+[floor-7.85.0] cell toward tr-200K+200K face=h2 mode=cap code=56 err="h2_process_pending_input: nghttp2_session_mem_recv() returned -902:The user callback function failed" status=0 ver=0 t_ms=4.9 cpu_ms=2.1 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[floor-7.85.0] srv ev 77 t=366.0 h2-close face=h2 conn=39834 tag=toward.tr-200K.200K.cap.22 heads=[200:800,trailers:800] rst=0
+[floor-7.85.0] srv ev 78 t=367.3 h2-wire face=h2 conn=39834 tag=toward.tr-200K.200K.cap.22 wire_bytes_written=360572 wire_bytes_read=918
+[floor-7.85.0] cell toward tr-line4000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.2 cpu_ms=1.4 calls=5 hdr_lines=3 bytes=4047 heads=[200:2:47,T:1:4000] refused=none header_size=47 stored=3 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=11
+[floor-7.85.0] srv ev 80 t=369.9 h2-close face=h2 conn=39838 tag=toward.tr-line4000.cap.23 heads=[200:2,trailers:1] rst=0
+[floor-7.85.0] srv ev 81 t=370.1 h2-wire face=h2 conn=39838 tag=toward.tr-line4000.cap.23 wire_bytes_written=5096 wire_bytes_read=873
+[floor-7.85.0] cell toward tr-line5000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.1 cpu_ms=1.3 calls=5 hdr_lines=3 bytes=5047 heads=[200:2:47,T:1:5000] refused=none header_size=47 stored=3 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=12
+[floor-7.85.0] srv ev 83 t=372.4 h2-close face=h2 conn=39846 tag=toward.tr-line5000.cap.24 heads=[200:2,trailers:1] rst=0
+[floor-7.85.0] srv ev 84 t=372.7 h2-wire face=h2 conn=39846 tag=toward.tr-line5000.cap.24 wire_bytes_written=5971 wire_bytes_read=873
+[floor-7.85.0] cell toward auth-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.8 cpu_ms=0.2 calls=9 hdr_lines=5 bytes=210 heads=[401:3:156,200:2:54] refused=none header_size=210 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=8
+[floor-7.85.0] srv ev 87 t=373.8 wrote face=h1 conn=33310 tag=toward.auth-2.2.cap.25 proto=h1 heads=[401:3:156] bytes=156
+[floor-7.85.0] srv ev 89 t=374.0 wrote face=h1 conn=33310 tag=toward.auth-2.2.cap.25 proto=h1 heads=[200:2:54] bytes=54
+[floor-7.85.0] cell toward auth-6000+2 face=h1 mode=cap code=23 err="Failed writing header" status=401 ver=2 t_ms=1.3 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16122 heads=[401:1001:16122] refused=lines@1001 header_size=16106 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 93 t=375.6 wrote face=h1 conn=33320 tag=toward.auth-6000.2.cap.26 proto=h1 heads=[401:6001:96124] bytes=96124
+[floor-7.85.0] cell toward auth-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=401 ver=2 t_ms=0.9 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16122 heads=[401:1001:16122] refused=lines@1001 header_size=16106 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 97 t=388.9 wrote face=h1 conn=33332 tag=toward.auth-3000.3000.cap.27 proto=h1 heads=[401:3001:48124] bytes=48124
+[floor-7.85.0] cell toward auth-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=401 ver=2 t_ms=0.7 cpu_ms=0.2 calls=403 hdr_lines=402 bytes=102538 heads=[401:402:102538] refused=bytes@102538 header_size=102282 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=126
+[floor-7.85.0] srv ev 101 t=402.6 wrote face=h1 conn=33342 tag=toward.auth-200K.200K.cap.28 proto=h1 heads=[401:801:204684] bytes=204684
+[floor-7.85.0] cell toward redir-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.5 cpu_ms=0.1 calls=9 hdr_lines=5 bytes=160 heads=[302:3:106,200:2:54] refused=none header_size=160 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[floor-7.85.0] srv ev 105 t=405.7 wrote face=h1 conn=33352 tag=toward.redir-2.2.cap.29 proto=h1 heads=[302:3:106] bytes=106
+[floor-7.85.0] srv ev 107 t=405.8 wrote face=h1 conn=33352 tag=toward.redir-2.2.cap.29 proto=h1 heads=[200:2:54] bytes=54
+[floor-7.85.0] cell toward redir-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=302 ver=2 t_ms=0.8 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16081 heads=[302:1001:16081] refused=lines@1001 header_size=16065 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 111 t=406.9 wrote face=h1 conn=33364 tag=toward.redir-3000.3000.cap.30 proto=h1 heads=[302:3001:48083] bytes=48083
+[floor-7.85.0] cell toward redir-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=302 ver=2 t_ms=0.7 cpu_ms=0.2 calls=403 hdr_lines=402 bytes=102505 heads=[302:402:102505] refused=bytes@102505 header_size=102249 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=126
+[floor-7.85.0] srv ev 115 t=420.4 wrote face=h1 conn=33368 tag=toward.redir-200K.200K.cap.31 proto=h1 heads=[302:801:204651] bytes=204651
+[floor-7.85.0] cell toward auth-2+2 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.5 cpu_ms=1.5 calls=9 hdr_lines=5 bytes=192 heads=[401:3:142,200:2:50] refused=none header_size=192 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=8
+[floor-7.85.0] srv ev 118 t=425.4 h2-close face=h2 conn=39862 tag=toward.auth-2.2.cap.32 heads=[401:3] rst=0
+[floor-7.85.0] srv ev 120 t=425.7 h2-close face=h2 conn=39862 tag=toward.auth-2.2.cap.32 heads=[200:2] rst=0
+[floor-7.85.0] srv ev 121 t=425.9 h2-wire face=h2 conn=39862 tag=toward.auth-2.2.cap.32 wire_bytes_written=1661 wire_bytes_read=1134
+[floor-7.85.0] cell toward auth-6000+2 face=h2 mode=cap code=23 err="Failed writing header" status=401 ver=3 t_ms=10.2 cpu_ms=3.0 calls=1002 hdr_lines=1001 bytes=16108 heads=[401:1001:16108] refused=lines@1001 header_size=16092 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 123 t=435.5 h2-close face=h2 conn=39872 tag=toward.auth-6000.2.cap.33 heads=[401:6001] rst=0
+[floor-7.85.0] srv ev 124 t=436.8 h2-wire face=h2 conn=39872 tag=toward.auth-6000.2.cap.33 wire_bytes_written=79720 wire_bytes_read=872
+[floor-7.85.0] cell toward auth-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=401 ver=3 t_ms=5.6 cpu_ms=1.9 calls=1002 hdr_lines=1001 bytes=16108 heads=[401:1001:16108] refused=lines@1001 header_size=16092 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 126 t=452.8 h2-close face=h2 conn=39878 tag=toward.auth-3000.3000.cap.34 heads=[401:3001] rst=0
+[floor-7.85.0] srv ev 127 t=453.5 h2-wire face=h2 conn=39878 tag=toward.auth-3000.3000.cap.34 wire_bytes_written=40659 wire_bytes_read=876
+[floor-7.85.0] cell toward auth-200K+200K face=h2 mode=cap code=56 err="h2_process_pending_input: nghttp2_session_mem_recv() returned -902:The user callback function failed" status=0 ver=0 t_ms=4.3 cpu_ms=2.1 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[floor-7.85.0] srv ev 129 t=467.9 h2-close face=h2 conn=39884 tag=toward.auth-200K.200K.cap.35 heads=[401:801] rst=0
+[floor-7.85.0] srv ev 130 t=469.0 h2-wire face=h2 conn=39884 tag=toward.auth-200K.200K.cap.35 wire_bytes_written=180896 wire_bytes_read=926
+[floor-7.85.0] cell toward redir-2+2 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.3 cpu_ms=1.4 calls=9 hdr_lines=5 bytes=149 heads=[302:3:99,200:2:50] refused=none header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[floor-7.85.0] srv ev 132 t=471.5 h2-close face=h2 conn=39892 tag=toward.redir-2.2.cap.36 heads=[302:3] rst=0
+[floor-7.85.0] srv ev 134 t=471.7 h2-close face=h2 conn=39892 tag=toward.redir-2.2.cap.36 heads=[200:2] rst=0
+[floor-7.85.0] srv ev 135 t=471.9 h2-wire face=h2 conn=39892 tag=toward.redir-2.2.cap.36 wire_bytes_written=1632 wire_bytes_read=933
+[floor-7.85.0] cell toward redir-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=302 ver=3 t_ms=5.3 cpu_ms=1.8 calls=1002 hdr_lines=1001 bytes=16074 heads=[302:1001:16074] refused=lines@1001 header_size=16058 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 137 t=477.0 h2-close face=h2 conn=39894 tag=toward.redir-3000.3000.cap.37 heads=[302:3001] rst=0
+[floor-7.85.0] srv ev 138 t=477.7 h2-wire face=h2 conn=39894 tag=toward.redir-3000.3000.cap.37 wire_bytes_written=40636 wire_bytes_read=877
+[floor-7.85.0] cell toward redir-200K+200K face=h2 mode=cap code=56 err="h2_process_pending_input: nghttp2_session_mem_recv() returned -902:The user callback function failed" status=0 ver=0 t_ms=3.9 cpu_ms=2.0 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[floor-7.85.0] srv ev 140 t=491.9 h2-close face=h2 conn=39904 tag=toward.redir-200K.200K.cap.38 heads=[302:801] rst=0
+[floor-7.85.0] srv ev 141 t=492.6 h2-wire face=h2 conn=39904 tag=toward.redir-200K.200K.cap.38 wire_bytes_written=180880 wire_bytes_read=927
+[floor-7.85.0] cell toward expect-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.6 cpu_ms=0.1 calls=10 hdr_lines=4 bytes=149 heads=[417:2:70,100:0:25,200:2:54] refused=none header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=2 live_kb=7
+[floor-7.85.0] srv ev 144 t=493.3 wrote face=h1 conn=33380 tag=toward.expect-2.2.cap.39 proto=h1 heads=[417:2:70] bytes=70
+[floor-7.85.0] srv ev 146 t=493.4 wrote face=h1 conn=33380 tag=toward.expect-2.2.cap.39 proto=h1 heads=[100:0:25] bytes=25
+[floor-7.85.0] srv ev 147 t=493.6 wrote face=h1 conn=33380 tag=toward.expect-2.2.cap.39 proto=h1 heads=[200:2:54] bytes=54
+[floor-7.85.0] cell toward expect-6000+2 face=h1 mode=cap code=23 err="Failed writing header" status=417 ver=2 t_ms=1.3 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16052 heads=[417:1001:16052] refused=lines@1001 header_size=16036 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 151 t=495.2 wrote face=h1 conn=33394 tag=toward.expect-6000.2.cap.40 proto=h1 heads=[417:6000:96038] bytes=96038
+[floor-7.85.0] cell toward expect-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=417 ver=2 t_ms=0.9 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16052 heads=[417:1001:16052] refused=lines@1001 header_size=16036 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[floor-7.85.0] srv ev 155 t=509.3 wrote face=h1 conn=33396 tag=toward.expect-3000.3000.cap.41 proto=h1 heads=[417:3000:48038] bytes=48038
+[floor-7.85.0] cell toward expect-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=417 ver=2 t_ms=0.7 cpu_ms=0.2 calls=402 hdr_lines=401 bytes=102452 heads=[417:401:102452] refused=bytes@102452 header_size=102196 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=401 stored_r0=401 stored_r1=0 live_kb=126
+[floor-7.85.0] srv ev 159 t=522.9 wrote face=h1 conn=33410 tag=toward.expect-200K.200K.cap.42 proto=h1 heads=[417:800:204598] bytes=204598
+[floor-7.85.0] cell toward connect-2+2 face=h1tls+proxy mode=cap code=0 err="" status=200 ver=2 t_ms=4.1 cpu_ms=1.7 calls=8 hdr_lines=4 bytes=125 heads=[200:2:71,200:2:54] refused=none header_size=125 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=7
+[floor-7.85.0] srv ev 163 t=527.1 connect-answered face=proxy conn=57904 tag=toward.connect-2.2.cap.43 target=127.0.0.1:35499 lines=2 bytes=71
+[floor-7.85.0] srv ev 166 t=529.7 wrote face=h1tls conn=55048 tag=toward.connect-2.2.cap.43 proto=h1 heads=[200:2:54] bytes=54
+[floor-7.85.0] cell toward connect-6000+2 face=h1tls+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=7.7 cpu_ms=5.8 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=149
+[floor-7.85.0] srv ev 170 t=533.1 connect-answered face=proxy conn=57918 tag=toward.connect-6000.2.cap.44 target=127.0.0.1:35499 lines=6000 bytes=96039
+[floor-7.85.0] srv ev 171 t=539.4 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[floor-7.85.0] cell toward connect-3000+3000 face=h1tls+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=6.3 cpu_ms=5.6 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=149
+[floor-7.85.0] srv ev 174 t=552.7 connect-answered face=proxy conn=57920 tag=toward.connect-3000.3000.cap.45 target=127.0.0.1:35499 lines=3000 bytes=48039
+[floor-7.85.0] srv ev 175 t=558.5 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[floor-7.85.0] cell toward connect-400K+2 face=h1tls+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=36.7 cpu_ms=35.3 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=205
+[floor-7.85.0] srv ev 178 t=573.0 connect-answered face=proxy conn=57922 tag=toward.connect-400K.2.cap.46 target=127.0.0.1:35499 lines=1600 bytes=409639
+[floor-7.85.0] srv ev 179 t=608.5 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[floor-7.85.0] cell toward connect-200K+200K face=h1tls+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=36.6 cpu_ms=35.2 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=205
+[floor-7.85.0] srv ev 182 t=613.2 connect-answered face=proxy conn=57938 tag=toward.connect-200K.200K.cap.47 target=127.0.0.1:35499 lines=800 bytes=204839
+[floor-7.85.0] srv ev 183 t=648.6 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[floor-7.85.0] cell toward connect-2+2 face=h2+proxy mode=cap code=0 err="" status=200 ver=3 t_ms=3.6 cpu_ms=1.7 calls=8 hdr_lines=4 bytes=121 heads=[200:2:71,200:2:50] refused=none header_size=121 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=7
+[floor-7.85.0] srv ev 185 t=652.5 connect-answered face=proxy conn=57946 tag=toward.connect-2.2.cap.48 target=127.0.0.1:34611 lines=2 bytes=71
+[floor-7.85.0] srv ev 187 t=655.3 h2-close face=h2 conn=39910 tag=toward.connect-2.2.cap.48 heads=[200:2] rst=0
+[floor-7.85.0] srv ev 188 t=655.8 h2-wire face=h2 conn=39910 tag=toward.connect-2.2.cap.48 wire_bytes_written=1539 wire_bytes_read=863
+[floor-7.85.0] cell toward connect-6000+2 face=h2+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=7.6 cpu_ms=5.7 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=149
+[floor-7.85.0] srv ev 190 t=658.5 connect-answered face=proxy conn=57950 tag=toward.connect-6000.2.cap.49 target=127.0.0.1:34611 lines=6000 bytes=96039
+[floor-7.85.0] srv ev 191 t=664.4 h2-wire face=h2 conn=39918 tag=- wire_bytes_written=0 wire_bytes_read=0
+[floor-7.85.0] srv ev 192 t=664.6 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[floor-7.85.0] cell toward connect-3000+3000 face=h2+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=6.3 cpu_ms=5.5 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=149
+[floor-7.85.0] srv ev 194 t=678.3 connect-answered face=proxy conn=57952 tag=toward.connect-3000.3000.cap.50 target=127.0.0.1:34611 lines=3000 bytes=48039
+[floor-7.85.0] srv ev 195 t=684.0 h2-wire face=h2 conn=39932 tag=- wire_bytes_written=0 wire_bytes_read=0
+[floor-7.85.0] srv ev 196 t=684.0 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[floor-7.85.0] cell toward connect-400K+2 face=h2+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=36.1 cpu_ms=34.8 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=205
+[floor-7.85.0] srv ev 198 t=698.0 connect-answered face=proxy conn=57956 tag=toward.connect-400K.2.cap.51 target=127.0.0.1:34611 lines=1600 bytes=409639
+[floor-7.85.0] srv ev 199 t=733.1 h2-wire face=h2 conn=39946 tag=- wire_bytes_written=0 wire_bytes_read=0
+[floor-7.85.0] srv ev 200 t=733.1 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[floor-7.85.0] cell toward connect-200K+200K face=h2+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=38.7 cpu_ms=37.6 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=205
+[floor-7.85.0] srv ev 202 t=737.2 connect-answered face=proxy conn=57968 tag=toward.connect-200K.200K.cap.52 target=127.0.0.1:34611 lines=800 bytes=204839
+[floor-7.85.0] srv ev 203 t=775.1 h2-wire face=h2 conn=39950 tag=- wire_bytes_written=0 wire_bytes_read=0
+[floor-7.85.0] srv ev 204 t=775.1 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[floor-7.85.0] case toward all done live_before_global_cleanup=0
+[floor-7.85.0] case toward live_after_global_cleanup=0
+[floor-7.85.0] probe toward exit=0
+[floor-7.85.0] probe toward took about 0 s
+[floor-7.85.0] -- 1 cases run
+[ubuntu-openssl-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 -> /usr/lib/x86_64-linux-gnu/libcurl.so.4.8.0, headers the compiler's
+[ubuntu-openssl-8.5.0] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset cpus=6 affinity=12-17
+[ubuntu-openssl-8.5.0] cases=toward PROBE_MODES=cap WALK_NS=default WALK_ROUNDS=default PROBE_VALGRIND=unset
+[ubuntu-openssl-8.5.0] version headers=8.5.0 runtime=8.5.0 num=0x080500 ssl=OpenSSL/3.0.13 nghttp2=1.59.0 http2=1 features=0x55bf479d
+[ubuntu-openssl-8.5.0] server ctl=41749 h1=38653 h1tls=34063 h2=43029 proxy=44555
+[ubuntu-openssl-8.5.0] cell toward pre103-6000+2 face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=6.1 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 3 t=74.8 wrote face=h1 conn=32960 tag=toward.pre103-6000.2.cap.1 proto=h1 heads=[103:6000:96028,200:2:54] bytes=96082
+[ubuntu-openssl-8.5.0] cell toward pre103-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=3.1 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 7 t=92.7 wrote face=h1 conn=32972 tag=toward.pre103-3000.3000.cap.2 proto=h1 heads=[103:3000:48028,200:3000:48022] bytes=96050
+[ubuntu-openssl-8.5.0] cell toward pre100-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=100 ver=2 t_ms=2.0 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16039 heads=[100:1001:16039] refused=lines@1001 header_size=16023 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 11 t=113.7 wrote face=h1 conn=32982 tag=toward.pre100-3000.3000.cap.3 proto=h1 heads=[100:3000:48025,200:3000:48022] bytes=96047
+[ubuntu-openssl-8.5.0] cell toward pre103-2500x2+1000 face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=2.4 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 15 t=131.3 wrote face=h1 conn=32994 tag=toward.pre103-2500x2.1000.cap.4 proto=h1 heads=[103:2500:40028,103:2500:40028,200:1000:16022] bytes=96078
+[ubuntu-openssl-8.5.0] cell toward pre103-400K+2 face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=2.2 cpu_ms=0.3 calls=401 hdr_lines=400 bytes=102426 heads=[103:400:102426] refused=bytes@102426 header_size=102170 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[ubuntu-openssl-8.5.0] srv ev 19 t=149.1 wrote face=h1 conn=32996 tag=toward.pre103-400K.2.cap.5 proto=h1 heads=[103:1600:409628,200:2:54] bytes=409682
+[ubuntu-openssl-8.5.0] cell toward pre103-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=2.9 cpu_ms=0.2 calls=401 hdr_lines=400 bytes=102426 heads=[103:400:102426] refused=bytes@102426 header_size=102170 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=126
+[ubuntu-openssl-8.5.0] srv ev 23 t=155.8 wrote face=h1 conn=33000 tag=toward.pre103-200K.200K.cap.6 proto=h1 heads=[103:800:204828,200:800:204582] bytes=409410
+[ubuntu-openssl-8.5.0] cell toward tr-2+6000 face=h1 mode=cap code=23 err="Failed writing header" status=200 ver=2 t_ms=2.0 cpu_ms=0.3 calls=1003 hdr_lines=1001 bytes=16047 heads=[200:2:63,T:999:15984] refused=lines@1001 header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 27 t=160.9 wrote face=h1 conn=33016 tag=toward.tr-2.6000.cap.7 proto=h1 heads=[200:2:63,trailers:6000:96002] bytes=96068
+[ubuntu-openssl-8.5.0] cell toward tr-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=200 ver=2 t_ms=1.6 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16045 heads=[200:1001:16045] refused=lines@1001 header_size=16029 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 31 t=177.2 wrote face=h1 conn=33024 tag=toward.tr-3000.3000.cap.8 proto=h1 heads=[200:3000:48031,trailers:3000:48002] bytes=96036
+[ubuntu-openssl-8.5.0] cell toward tr-2+400K face=h1 mode=cap code=23 err="Failed writing header" status=200 ver=2 t_ms=2.9 cpu_ms=0.8 calls=404 hdr_lines=402 bytes=102463 heads=[200:2:63,T:400:102400] refused=bytes@102463 header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=125
+[ubuntu-openssl-8.5.0] srv ev 35 t=194.5 wrote face=h1 conn=33038 tag=toward.tr-2.400K.cap.9 proto=h1 heads=[200:2:63,trailers:1600:409602] bytes=409668
+[ubuntu-openssl-8.5.0] cell toward tr-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=200 ver=2 t_ms=1.8 cpu_ms=0.2 calls=402 hdr_lines=401 bytes=102445 heads=[200:401:102445] refused=bytes@102445 header_size=102189 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=401 stored_r0=401 stored_r1=0 live_kb=126
+[ubuntu-openssl-8.5.0] srv ev 39 t=199.8 wrote face=h1 conn=33052 tag=toward.tr-200K.200K.cap.10 proto=h1 heads=[200:800:204591,trailers:800:204802] bytes=409396
+[ubuntu-openssl-8.5.0] cell toward tr-line4000 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=5 hdr_lines=3 bytes=4063 heads=[200:2:63,T:1:4000] refused=none header_size=63 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=11
+[ubuntu-openssl-8.5.0] srv ev 43 t=202.8 wrote face=h1 conn=33062 tag=toward.tr-line4000.cap.11 proto=h1 heads=[200:2:63,trailers:1:4002] bytes=4068
+[ubuntu-openssl-8.5.0] cell toward tr-line5000 face=h1 mode=cap code=56 err="Out of memory in chunked-encoding" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=4 hdr_lines=2 bytes=63 heads=[200:2:63] refused=none header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 47 t=203.6 wrote face=h1 conn=33072 tag=toward.tr-line5000.cap.12 proto=h1 heads=[200:2:63,trailers:1:5002] bytes=5068
+[ubuntu-openssl-8.5.0] cell toward pre103-6000+2 face=h2 mode=cap code=23 err="Failed writing header" status=103 ver=3 t_ms=20.6 cpu_ms=5.0 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 50 t=223.5 h2-close face=h2 conn=35340 tag=toward.pre103-6000.2.cap.13 heads=[103:6000,200:2] rst=0
+[ubuntu-openssl-8.5.0] srv ev 51 t=226.4 h2-wire face=h2 conn=35340 tag=toward.pre103-6000.2.cap.13 wire_bytes_written=79722 wire_bytes_read=832
+[ubuntu-openssl-8.5.0] cell toward pre103-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=103 ver=3 t_ms=14.6 cpu_ms=3.2 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 53 t=254.2 h2-close face=h2 conn=35354 tag=toward.pre103-3000.3000.cap.14 heads=[103:3000,200:3000] rst=0
+[ubuntu-openssl-8.5.0] srv ev 54 t=255.9 h2-wire face=h2 conn=35354 tag=toward.pre103-3000.3000.cap.14 wire_bytes_written=79695 wire_bytes_read=836
+[ubuntu-openssl-8.5.0] cell toward pre100-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=100 ver=3 t_ms=17.3 cpu_ms=3.5 calls=1002 hdr_lines=1001 bytes=16029 heads=[100:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 56 t=291.1 h2-close face=h2 conn=35356 tag=toward.pre100-3000.3000.cap.15 heads=[100:3000,200:3000] rst=0
+[ubuntu-openssl-8.5.0] srv ev 57 t=294.3 h2-wire face=h2 conn=35356 tag=toward.pre100-3000.3000.cap.15 wire_bytes_written=79695 wire_bytes_read=836
+[ubuntu-openssl-8.5.0] cell toward pre103-2500x2+1000 face=h2 mode=cap code=23 err="Failed writing header" status=103 ver=3 t_ms=12.4 cpu_ms=3.3 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[ubuntu-openssl-8.5.0] srv ev 59 t=323.9 h2-close face=h2 conn=35370 tag=toward.pre103-2500x2.1000.cap.16 heads=[103:2500,103:2500,200:1000] rst=0
+[ubuntu-openssl-8.5.0] srv ev 60 t=325.4 h2-wire face=h2 conn=35370 tag=toward.pre103-2500x2.1000.cap.16 wire_bytes_written=79690 wire_bytes_read=846
+[ubuntu-openssl-8.5.0] cell toward pre103-400K+2 face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=0 ver=0 t_ms=7.9 cpu_ms=2.9 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 62 t=347.0 h2-close face=h2 conn=35378 tag=toward.pre103-400K.2.cap.17 heads=[103:1600,200:2] rst=0
+[ubuntu-openssl-8.5.0] srv ev 63 t=348.7 h2-wire face=h2 conn=35378 tag=toward.pre103-400K.2.cap.17 wire_bytes_written=360625 wire_bytes_read=868
+[ubuntu-openssl-8.5.0] cell toward pre103-200K+200K face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=0 ver=0 t_ms=6.7 cpu_ms=2.5 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 65 t=354.9 h2-close face=h2 conn=35386 tag=toward.pre103-200K.200K.cap.18 heads=[103:800,200:800] rst=0
+[ubuntu-openssl-8.5.0] srv ev 66 t=356.0 h2-wire face=h2 conn=35386 tag=toward.pre103-200K.200K.cap.18 wire_bytes_written=360403 wire_bytes_read=878
+[ubuntu-openssl-8.5.0] cell toward tr-2+6000 face=h2 mode=cap code=0 err="Failed writing header" status=200 ver=3 t_ms=15.6 cpu_ms=3.7 calls=1003 hdr_lines=1001 bytes=16031 heads=[200:2:47,T:999:15984] refused=lines@1001 header_size=47 stored=2 walk_ms=0.03 walk_cpu_ms=0.03 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 68 t=369.9 h2-close face=h2 conn=35402 tag=toward.tr-2.6000.cap.19 heads=[200:2,trailers:6000] rst=0
+[ubuntu-openssl-8.5.0] srv ev 69 t=372.6 h2-wire face=h2 conn=35402 tag=toward.tr-2.6000.cap.19 wire_bytes_written=79724 wire_bytes_read=828
+[ubuntu-openssl-8.5.0] cell toward tr-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=200 ver=3 t_ms=9.1 cpu_ms=2.4 calls=1002 hdr_lines=1001 bytes=16029 heads=[200:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 71 t=396.8 h2-close face=h2 conn=35406 tag=toward.tr-3000.3000.cap.20 heads=[200:3000,trailers:3000] rst=0
+[ubuntu-openssl-8.5.0] srv ev 72 t=400.0 h2-wire face=h2 conn=35406 tag=toward.tr-3000.3000.cap.20 wire_bytes_written=79721 wire_bytes_read=867
+[ubuntu-openssl-8.5.0] cell toward tr-2+400K face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=8.1 cpu_ms=3.3 calls=4 hdr_lines=2 bytes=47 heads=[200:2:47] refused=none header_size=47 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 74 t=418.6 h2-close face=h2 conn=35418 tag=toward.tr-2.400K.cap.21 heads=[200:2,trailers:1600] rst=0
+[ubuntu-openssl-8.5.0] srv ev 75 t=420.3 h2-wire face=h2 conn=35418 tag=toward.tr-2.400K.cap.21 wire_bytes_written=360663 wire_bytes_read=829
+[ubuntu-openssl-8.5.0] cell toward tr-200K+200K face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=0 ver=0 t_ms=5.6 cpu_ms=2.5 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 77 t=426.5 h2-close face=h2 conn=35430 tag=toward.tr-200K.200K.cap.22 heads=[200:800,trailers:800] rst=0
+[ubuntu-openssl-8.5.0] srv ev 78 t=427.0 h2-wire face=h2 conn=35430 tag=toward.tr-200K.200K.cap.22 wire_bytes_written=360619 wire_bytes_read=874
+[ubuntu-openssl-8.5.0] cell toward tr-line4000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.4 cpu_ms=1.8 calls=5 hdr_lines=3 bytes=4047 heads=[200:2:47,T:1:4000] refused=none header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=11
+[ubuntu-openssl-8.5.0] srv ev 80 t=429.8 h2-close face=h2 conn=35440 tag=toward.tr-line4000.cap.23 heads=[200:2,trailers:1] rst=0
+[ubuntu-openssl-8.5.0] srv ev 81 t=430.0 h2-wire face=h2 conn=35440 tag=toward.tr-line4000.cap.23 wire_bytes_written=5120 wire_bytes_read=829
+[ubuntu-openssl-8.5.0] cell toward tr-line5000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.2 cpu_ms=1.7 calls=5 hdr_lines=3 bytes=5047 heads=[200:2:47,T:1:5000] refused=none header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=12
+[ubuntu-openssl-8.5.0] srv ev 83 t=432.7 h2-close face=h2 conn=35448 tag=toward.tr-line5000.cap.24 heads=[200:2,trailers:1] rst=0
+[ubuntu-openssl-8.5.0] srv ev 84 t=432.9 h2-wire face=h2 conn=35448 tag=toward.tr-line5000.cap.24 wire_bytes_written=5994 wire_bytes_read=829
+[ubuntu-openssl-8.5.0] cell toward auth-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.6 cpu_ms=0.2 calls=9 hdr_lines=5 bytes=210 heads=[401:3:156,200:2:54] refused=none header_size=210 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 87 t=433.6 wrote face=h1 conn=33086 tag=toward.auth-2.2.cap.25 proto=h1 heads=[401:3:156] bytes=156
+[ubuntu-openssl-8.5.0] srv ev 89 t=433.8 wrote face=h1 conn=33086 tag=toward.auth-2.2.cap.25 proto=h1 heads=[200:2:54] bytes=54
+[ubuntu-openssl-8.5.0] cell toward auth-6000+2 face=h1 mode=cap code=23 err="Failed writing header" status=401 ver=2 t_ms=2.5 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16122 heads=[401:1001:16122] refused=lines@1001 header_size=16106 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 93 t=436.6 wrote face=h1 conn=33100 tag=toward.auth-6000.2.cap.26 proto=h1 heads=[401:6001:96124] bytes=96124
+[ubuntu-openssl-8.5.0] cell toward auth-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=401 ver=2 t_ms=1.6 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16122 heads=[401:1001:16122] refused=lines@1001 header_size=16106 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[ubuntu-openssl-8.5.0] srv ev 97 t=456.4 wrote face=h1 conn=33108 tag=toward.auth-3000.3000.cap.27 proto=h1 heads=[401:3001:48124] bytes=48124
+[ubuntu-openssl-8.5.0] cell toward auth-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=401 ver=2 t_ms=1.5 cpu_ms=0.2 calls=403 hdr_lines=402 bytes=102538 heads=[401:402:102538] refused=bytes@102538 header_size=102282 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=126
+[ubuntu-openssl-8.5.0] srv ev 101 t=475.6 wrote face=h1 conn=33110 tag=toward.auth-200K.200K.cap.28 proto=h1 heads=[401:801:204684] bytes=204684
+[ubuntu-openssl-8.5.0] cell toward redir-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.5 cpu_ms=0.2 calls=9 hdr_lines=5 bytes=160 heads=[302:3:106,200:2:54] refused=none header_size=160 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 105 t=479.8 wrote face=h1 conn=33120 tag=toward.redir-2.2.cap.29 proto=h1 heads=[302:3:106] bytes=106
+[ubuntu-openssl-8.5.0] srv ev 107 t=480.0 wrote face=h1 conn=33120 tag=toward.redir-2.2.cap.29 proto=h1 heads=[200:2:54] bytes=54
+[ubuntu-openssl-8.5.0] cell toward redir-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=302 ver=2 t_ms=1.9 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16081 heads=[302:1001:16081] refused=lines@1001 header_size=16065 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 111 t=482.1 wrote face=h1 conn=33130 tag=toward.redir-3000.3000.cap.30 proto=h1 heads=[302:3001:48083] bytes=48083
+[ubuntu-openssl-8.5.0] cell toward redir-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=302 ver=2 t_ms=1.8 cpu_ms=0.3 calls=403 hdr_lines=402 bytes=102505 heads=[302:402:102505] refused=bytes@102505 header_size=102249 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=126
+[ubuntu-openssl-8.5.0] srv ev 115 t=504.3 wrote face=h1 conn=33132 tag=toward.redir-200K.200K.cap.31 proto=h1 heads=[302:801:204651] bytes=204651
+[ubuntu-openssl-8.5.0] cell toward auth-2+2 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=3.4 cpu_ms=2.3 calls=9 hdr_lines=5 bytes=192 heads=[401:3:142,200:2:50] refused=none header_size=192 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 118 t=511.2 h2-close face=h2 conn=35458 tag=toward.auth-2.2.cap.32 heads=[401:3] rst=0
+[ubuntu-openssl-8.5.0] srv ev 120 t=511.5 h2-close face=h2 conn=35458 tag=toward.auth-2.2.cap.32 heads=[200:2] rst=0
+[ubuntu-openssl-8.5.0] srv ev 121 t=511.8 h2-wire face=h2 conn=35458 tag=toward.auth-2.2.cap.32 wire_bytes_written=1683 wire_bytes_read=1089
+[ubuntu-openssl-8.5.0] cell toward auth-6000+2 face=h2 mode=cap code=23 err="Failed writing header" status=401 ver=3 t_ms=14.1 cpu_ms=3.2 calls=1002 hdr_lines=1001 bytes=16108 heads=[401:1001:16108] refused=lines@1001 header_size=16092 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[ubuntu-openssl-8.5.0] srv ev 123 t=525.0 h2-close face=h2 conn=35460 tag=toward.auth-6000.2.cap.33 heads=[401:6001] rst=0
+[ubuntu-openssl-8.5.0] srv ev 124 t=528.5 h2-wire face=h2 conn=35460 tag=toward.auth-6000.2.cap.33 wire_bytes_written=79743 wire_bytes_read=828
+[ubuntu-openssl-8.5.0] cell toward auth-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=401 ver=3 t_ms=7.9 cpu_ms=2.9 calls=1002 hdr_lines=1001 bytes=16108 heads=[401:1001:16108] refused=lines@1001 header_size=16092 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[ubuntu-openssl-8.5.0] srv ev 126 t=554.0 h2-close face=h2 conn=35470 tag=toward.auth-3000.3000.cap.34 heads=[401:3001] rst=0
+[ubuntu-openssl-8.5.0] srv ev 127 t=554.9 h2-wire face=h2 conn=35470 tag=toward.auth-3000.3000.cap.34 wire_bytes_written=40681 wire_bytes_read=832
+[ubuntu-openssl-8.5.0] cell toward auth-200K+200K face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=0 ver=0 t_ms=6.0 cpu_ms=3.1 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 129 t=578.4 h2-close face=h2 conn=35474 tag=toward.auth-200K.200K.cap.35 heads=[401:801] rst=0
+[ubuntu-openssl-8.5.0] srv ev 130 t=579.8 h2-wire face=h2 conn=35474 tag=toward.auth-200K.200K.cap.35 wire_bytes_written=180919 wire_bytes_read=882
+[ubuntu-openssl-8.5.0] cell toward redir-2+2 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.6 cpu_ms=1.9 calls=9 hdr_lines=5 bytes=149 heads=[302:3:99,200:2:50] refused=none header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 132 t=582.8 h2-close face=h2 conn=35478 tag=toward.redir-2.2.cap.36 heads=[302:3] rst=0
+[ubuntu-openssl-8.5.0] srv ev 134 t=583.1 h2-close face=h2 conn=35478 tag=toward.redir-2.2.cap.36 heads=[200:2] rst=0
+[ubuntu-openssl-8.5.0] srv ev 135 t=583.3 h2-wire face=h2 conn=35478 tag=toward.redir-2.2.cap.36 wire_bytes_written=1655 wire_bytes_read=889
+[ubuntu-openssl-8.5.0] cell toward redir-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=302 ver=3 t_ms=7.1 cpu_ms=2.4 calls=1002 hdr_lines=1001 bytes=16074 heads=[302:1001:16074] refused=lines@1001 header_size=16058 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 137 t=590.0 h2-close face=h2 conn=35484 tag=toward.redir-3000.3000.cap.37 heads=[302:3001] rst=0
+[ubuntu-openssl-8.5.0] srv ev 138 t=590.9 h2-wire face=h2 conn=35484 tag=toward.redir-3000.3000.cap.37 wire_bytes_written=40660 wire_bytes_read=833
+[ubuntu-openssl-8.5.0] cell toward redir-200K+200K face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=0 ver=0 t_ms=6.3 cpu_ms=3.3 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 140 t=615.2 h2-close face=h2 conn=35494 tag=toward.redir-200K.200K.cap.38 heads=[302:801] rst=0
+[ubuntu-openssl-8.5.0] srv ev 141 t=616.5 h2-wire face=h2 conn=35494 tag=toward.redir-200K.200K.cap.38 wire_bytes_written=180903 wire_bytes_read=883
+[ubuntu-openssl-8.5.0] cell toward expect-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.7 cpu_ms=0.2 calls=10 hdr_lines=4 bytes=149 heads=[417:2:70,100:0:25,200:2:54] refused=none header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=2 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 144 t=617.3 wrote face=h1 conn=33138 tag=toward.expect-2.2.cap.39 proto=h1 heads=[417:2:70] bytes=70
+[ubuntu-openssl-8.5.0] srv ev 146 t=617.5 wrote face=h1 conn=33138 tag=toward.expect-2.2.cap.39 proto=h1 heads=[100:0:25] bytes=25
+[ubuntu-openssl-8.5.0] srv ev 147 t=617.7 wrote face=h1 conn=33138 tag=toward.expect-2.2.cap.39 proto=h1 heads=[200:2:54] bytes=54
+[ubuntu-openssl-8.5.0] cell toward expect-6000+2 face=h1 mode=cap code=23 err="Failed writing header" status=417 ver=2 t_ms=3.1 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16052 heads=[417:1001:16052] refused=lines@1001 header_size=16036 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 151 t=621.0 wrote face=h1 conn=33148 tag=toward.expect-6000.2.cap.40 proto=h1 heads=[417:6000:96038] bytes=96038
+[ubuntu-openssl-8.5.0] cell toward expect-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=417 ver=2 t_ms=2.1 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16052 heads=[417:1001:16052] refused=lines@1001 header_size=16036 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 155 t=643.3 wrote face=h1 conn=33156 tag=toward.expect-3000.3000.cap.41 proto=h1 heads=[417:3000:48038] bytes=48038
+[ubuntu-openssl-8.5.0] cell toward expect-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=417 ver=2 t_ms=1.8 cpu_ms=0.3 calls=402 hdr_lines=401 bytes=102452 heads=[417:401:102452] refused=bytes@102452 header_size=102196 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=401 stored_r0=401 stored_r1=0 live_kb=125
+[ubuntu-openssl-8.5.0] srv ev 159 t=665.6 wrote face=h1 conn=33170 tag=toward.expect-200K.200K.cap.42 proto=h1 heads=[417:800:204598] bytes=204598
+[ubuntu-openssl-8.5.0] cell toward connect-2+2 face=h1tls+proxy mode=cap code=0 err="" status=200 ver=2 t_ms=5.0 cpu_ms=2.2 calls=8 hdr_lines=4 bytes=125 heads=[200:2:71,200:2:54] refused=none header_size=125 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 163 t=671.7 connect-answered face=proxy conn=35680 tag=toward.connect-2.2.cap.43 target=127.0.0.1:34063 lines=2 bytes=71
+[ubuntu-openssl-8.5.0] srv ev 166 t=674.6 wrote face=h1tls conn=38882 tag=toward.connect-2.2.cap.43 proto=h1 heads=[200:2:54] bytes=54
+[ubuntu-openssl-8.5.0] cell toward connect-6000+2 face=h1tls+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=13.6 cpu_ms=7.8 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 170 t=682.2 connect-answered face=proxy conn=35686 tag=toward.connect-6000.2.cap.44 target=127.0.0.1:34063 lines=6000 bytes=96039
+[ubuntu-openssl-8.5.0] srv ev 171 t=690.7 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[ubuntu-openssl-8.5.0] cell toward connect-3000+3000 face=h1tls+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=9.3 cpu_ms=8.0 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 174 t=711.6 connect-answered face=proxy conn=35702 tag=toward.connect-3000.3000.cap.45 target=127.0.0.1:34063 lines=3000 bytes=48039
+[ubuntu-openssl-8.5.0] srv ev 175 t=720.3 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[ubuntu-openssl-8.5.0] cell toward connect-400K+2 face=h1tls+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=47.9 cpu_ms=46.0 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[ubuntu-openssl-8.5.0] srv ev 178 t=743.5 connect-answered face=proxy conn=35712 tag=toward.connect-400K.2.cap.46 target=127.0.0.1:34063 lines=1600 bytes=409639
+[ubuntu-openssl-8.5.0] srv ev 179 t=789.9 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[ubuntu-openssl-8.5.0] cell toward connect-200K+200K face=h1tls+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=40.5 cpu_ms=39.4 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[ubuntu-openssl-8.5.0] srv ev 182 t=794.4 connect-answered face=proxy conn=35718 tag=toward.connect-200K.200K.cap.47 target=127.0.0.1:34063 lines=800 bytes=204839
+[ubuntu-openssl-8.5.0] srv ev 183 t=834.1 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[ubuntu-openssl-8.5.0] cell toward connect-2+2 face=h2+proxy mode=cap code=0 err="" status=200 ver=3 t_ms=2.8 cpu_ms=1.8 calls=8 hdr_lines=4 bytes=121 heads=[200:2:71,200:2:50] refused=none header_size=121 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=7
+[ubuntu-openssl-8.5.0] srv ev 185 t=837.2 connect-answered face=proxy conn=35732 tag=toward.connect-2.2.cap.48 target=127.0.0.1:43029 lines=2 bytes=71
+[ubuntu-openssl-8.5.0] srv ev 187 t=839.5 h2-close face=h2 conn=35498 tag=toward.connect-2.2.cap.48 heads=[200:2] rst=0
+[ubuntu-openssl-8.5.0] srv ev 188 t=839.9 h2-wire face=h2 conn=35498 tag=toward.connect-2.2.cap.48 wire_bytes_written=1584 wire_bytes_read=819
+[ubuntu-openssl-8.5.0] cell toward connect-6000+2 face=h2+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=7.7 cpu_ms=6.0 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 190 t=842.1 connect-answered face=proxy conn=35748 tag=toward.connect-6000.2.cap.49 target=127.0.0.1:43029 lines=6000 bytes=96039
+[ubuntu-openssl-8.5.0] srv ev 191 t=848.2 h2-wire face=h2 conn=35504 tag=- wire_bytes_written=0 wire_bytes_read=0
+[ubuntu-openssl-8.5.0] srv ev 192 t=848.4 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[ubuntu-openssl-8.5.0] cell toward connect-3000+3000 face=h2+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=7.7 cpu_ms=6.7 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-openssl-8.5.0] srv ev 194 t=865.1 connect-answered face=proxy conn=35756 tag=toward.connect-3000.3000.cap.50 target=127.0.0.1:43029 lines=3000 bytes=48039
+[ubuntu-openssl-8.5.0] srv ev 195 t=872.2 h2-wire face=h2 conn=35518 tag=- wire_bytes_written=0 wire_bytes_read=0
+[ubuntu-openssl-8.5.0] srv ev 196 t=872.3 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[ubuntu-openssl-8.5.0] cell toward connect-400K+2 face=h2+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=38.8 cpu_ms=36.8 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[ubuntu-openssl-8.5.0] srv ev 198 t=890.8 connect-answered face=proxy conn=35768 tag=toward.connect-400K.2.cap.51 target=127.0.0.1:43029 lines=1600 bytes=409639
+[ubuntu-openssl-8.5.0] srv ev 199 t=927.9 h2-wire face=h2 conn=35522 tag=- wire_bytes_written=0 wire_bytes_read=0
+[ubuntu-openssl-8.5.0] srv ev 200 t=928.0 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[ubuntu-openssl-8.5.0] cell toward connect-200K+200K face=h2+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=38.1 cpu_ms=36.6 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[ubuntu-openssl-8.5.0] srv ev 202 t=932.5 connect-answered face=proxy conn=35780 tag=toward.connect-200K.200K.cap.52 target=127.0.0.1:43029 lines=800 bytes=204839
+[ubuntu-openssl-8.5.0] srv ev 203 t=969.3 h2-wire face=h2 conn=35526 tag=- wire_bytes_written=0 wire_bytes_read=0
+[ubuntu-openssl-8.5.0] srv ev 204 t=969.4 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[ubuntu-openssl-8.5.0] case toward all done live_before_global_cleanup=0
+[ubuntu-openssl-8.5.0] case toward live_after_global_cleanup=0
+[ubuntu-openssl-8.5.0] probe toward exit=0
+[ubuntu-openssl-8.5.0] probe toward took about 1 s
+[ubuntu-openssl-8.5.0] -- 1 cases run
+[ubuntu-gnutls-8.5.0] libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 -> /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4.8.0, headers the compiler's
+[ubuntu-gnutls-8.5.0] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset cpus=6 affinity=12-17
+[ubuntu-gnutls-8.5.0] cases=toward PROBE_MODES=cap WALK_NS=default WALK_ROUNDS=default PROBE_VALGRIND=unset
+[ubuntu-gnutls-8.5.0] version headers=8.5.0 runtime=8.5.0 num=0x080500 ssl=GnuTLS/3.8.3 nghttp2=1.59.0 http2=1 features=0x55bf479d
+[ubuntu-gnutls-8.5.0] server ctl=46609 h1=34811 h1tls=34475 h2=33329 proxy=42639
+[ubuntu-gnutls-8.5.0] cell toward pre103-6000+2 face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=7.1 cpu_ms=0.4 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 3 t=73.5 wrote face=h1 conn=46466 tag=toward.pre103-6000.2.cap.1 proto=h1 heads=[103:6000:96028,200:2:54] bytes=96082
+[ubuntu-gnutls-8.5.0] cell toward pre103-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=2.3 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 7 t=91.8 wrote face=h1 conn=46480 tag=toward.pre103-3000.3000.cap.2 proto=h1 heads=[103:3000:48028,200:3000:48022] bytes=96050
+[ubuntu-gnutls-8.5.0] cell toward pre100-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=100 ver=2 t_ms=2.0 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16039 heads=[100:1001:16039] refused=lines@1001 header_size=16023 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 11 t=108.4 wrote face=h1 conn=46488 tag=toward.pre100-3000.3000.cap.3 proto=h1 heads=[100:3000:48025,200:3000:48022] bytes=96047
+[ubuntu-gnutls-8.5.0] cell toward pre103-2500x2+1000 face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=2.4 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 15 t=126.1 wrote face=h1 conn=57326 tag=toward.pre103-2500x2.1000.cap.4 proto=h1 heads=[103:2500:40028,103:2500:40028,200:1000:16022] bytes=96078
+[ubuntu-gnutls-8.5.0] cell toward pre103-400K+2 face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=2.0 cpu_ms=0.3 calls=401 hdr_lines=400 bytes=102426 heads=[103:400:102426] refused=bytes@102426 header_size=102170 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[ubuntu-gnutls-8.5.0] srv ev 19 t=142.7 wrote face=h1 conn=57340 tag=toward.pre103-400K.2.cap.5 proto=h1 heads=[103:1600:409628,200:2:54] bytes=409682
+[ubuntu-gnutls-8.5.0] cell toward pre103-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=103 ver=2 t_ms=2.6 cpu_ms=0.2 calls=401 hdr_lines=400 bytes=102426 heads=[103:400:102426] refused=bytes@102426 header_size=102170 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[ubuntu-gnutls-8.5.0] srv ev 23 t=148.3 wrote face=h1 conn=57346 tag=toward.pre103-200K.200K.cap.6 proto=h1 heads=[103:800:204828,200:800:204582] bytes=409410
+[ubuntu-gnutls-8.5.0] cell toward tr-2+6000 face=h1 mode=cap code=23 err="Failed writing header" status=200 ver=2 t_ms=2.0 cpu_ms=0.3 calls=1003 hdr_lines=1001 bytes=16047 heads=[200:2:63,T:999:15984] refused=lines@1001 header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 27 t=153.0 wrote face=h1 conn=57348 tag=toward.tr-2.6000.cap.7 proto=h1 heads=[200:2:63,trailers:6000:96002] bytes=96068
+[ubuntu-gnutls-8.5.0] cell toward tr-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=200 ver=2 t_ms=1.5 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16045 heads=[200:1001:16045] refused=lines@1001 header_size=16029 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 31 t=169.4 wrote face=h1 conn=57356 tag=toward.tr-3000.3000.cap.8 proto=h1 heads=[200:3000:48031,trailers:3000:48002] bytes=96036
+[ubuntu-gnutls-8.5.0] cell toward tr-2+400K face=h1 mode=cap code=23 err="Failed writing header" status=200 ver=2 t_ms=3.2 cpu_ms=0.8 calls=404 hdr_lines=402 bytes=102463 heads=[200:2:63,T:400:102400] refused=bytes@102463 header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=125
+[ubuntu-gnutls-8.5.0] srv ev 35 t=186.8 wrote face=h1 conn=57366 tag=toward.tr-2.400K.cap.9 proto=h1 heads=[200:2:63,trailers:1600:409602] bytes=409668
+[ubuntu-gnutls-8.5.0] cell toward tr-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=200 ver=2 t_ms=1.9 cpu_ms=0.3 calls=402 hdr_lines=401 bytes=102445 heads=[200:401:102445] refused=bytes@102445 header_size=102189 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=401 stored_r0=401 stored_r1=0 live_kb=126
+[ubuntu-gnutls-8.5.0] srv ev 39 t=192.2 wrote face=h1 conn=57370 tag=toward.tr-200K.200K.cap.10 proto=h1 heads=[200:800:204591,trailers:800:204802] bytes=409396
+[ubuntu-gnutls-8.5.0] cell toward tr-line4000 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=5 hdr_lines=3 bytes=4063 heads=[200:2:63,T:1:4000] refused=none header_size=63 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=11
+[ubuntu-gnutls-8.5.0] srv ev 43 t=195.6 wrote face=h1 conn=57372 tag=toward.tr-line4000.cap.11 proto=h1 heads=[200:2:63,trailers:1:4002] bytes=4068
+[ubuntu-gnutls-8.5.0] cell toward tr-line5000 face=h1 mode=cap code=56 err="Out of memory in chunked-encoding" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=4 hdr_lines=2 bytes=63 heads=[200:2:63] refused=none header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 47 t=196.4 wrote face=h1 conn=57376 tag=toward.tr-line5000.cap.12 proto=h1 heads=[200:2:63,trailers:1:5002] bytes=5068
+[ubuntu-gnutls-8.5.0] cell toward pre103-6000+2 face=h2 mode=cap code=23 err="Failed writing header" status=103 ver=3 t_ms=18.3 cpu_ms=2.7 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 50 t=214.2 h2-close face=h2 conn=57216 tag=toward.pre103-6000.2.cap.13 heads=[103:6000,200:2] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 51 t=216.8 h2-wire face=h2 conn=57216 tag=toward.pre103-6000.2.cap.13 wire_bytes_written=79721 wire_bytes_read=691
+[ubuntu-gnutls-8.5.0] cell toward pre103-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=103 ver=3 t_ms=12.4 cpu_ms=2.4 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 53 t=241.4 h2-close face=h2 conn=57220 tag=toward.pre103-3000.3000.cap.14 heads=[103:3000,200:3000] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 54 t=242.8 h2-wire face=h2 conn=57220 tag=toward.pre103-3000.3000.cap.14 wire_bytes_written=79695 wire_bytes_read=695
+[ubuntu-gnutls-8.5.0] cell toward pre100-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=100 ver=3 t_ms=13.0 cpu_ms=2.4 calls=1002 hdr_lines=1001 bytes=16029 heads=[100:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 56 t=268.9 h2-close face=h2 conn=57232 tag=toward.pre100-3000.3000.cap.15 heads=[100:3000,200:3000] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 57 t=270.5 h2-wire face=h2 conn=57232 tag=toward.pre100-3000.3000.cap.15 wire_bytes_written=79694 wire_bytes_read=695
+[ubuntu-gnutls-8.5.0] cell toward pre103-2500x2+1000 face=h2 mode=cap code=23 err="Failed writing header" status=103 ver=3 t_ms=10.8 cpu_ms=2.5 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 59 t=294.6 h2-close face=h2 conn=57236 tag=toward.pre103-2500x2.1000.cap.16 heads=[103:2500,103:2500,200:1000] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 60 t=296.5 h2-wire face=h2 conn=57236 tag=toward.pre103-2500x2.1000.cap.16 wire_bytes_written=79688 wire_bytes_read=705
+[ubuntu-gnutls-8.5.0] cell toward pre103-400K+2 face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=0 ver=0 t_ms=8.5 cpu_ms=3.3 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 62 t=317.7 h2-close face=h2 conn=57250 tag=toward.pre103-400K.2.cap.17 heads=[103:1600,200:2] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 63 t=319.6 h2-wire face=h2 conn=57250 tag=toward.pre103-400K.2.cap.17 wire_bytes_written=360647 wire_bytes_read=727
+[ubuntu-gnutls-8.5.0] cell toward pre103-200K+200K face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=0 ver=0 t_ms=6.9 cpu_ms=2.4 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 65 t=325.6 h2-close face=h2 conn=57258 tag=toward.pre103-200K.200K.cap.18 heads=[103:800,200:800] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 66 t=327.1 h2-wire face=h2 conn=57258 tag=toward.pre103-200K.200K.cap.18 wire_bytes_written=360401 wire_bytes_read=737
+[ubuntu-gnutls-8.5.0] cell toward tr-2+6000 face=h2 mode=cap code=0 err="Failed writing header" status=200 ver=3 t_ms=15.1 cpu_ms=3.2 calls=1003 hdr_lines=1001 bytes=16031 heads=[200:2:47,T:999:15984] refused=lines@1001 header_size=47 stored=2 walk_ms=0.03 walk_cpu_ms=0.03 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 68 t=340.7 h2-close face=h2 conn=57262 tag=toward.tr-2.6000.cap.19 heads=[200:2,trailers:6000] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 69 t=343.3 h2-wire face=h2 conn=57262 tag=toward.tr-2.6000.cap.19 wire_bytes_written=79724 wire_bytes_read=687
+[ubuntu-gnutls-8.5.0] cell toward tr-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=200 ver=3 t_ms=8.6 cpu_ms=2.0 calls=1002 hdr_lines=1001 bytes=16029 heads=[200:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 71 t=366.2 h2-close face=h2 conn=57278 tag=toward.tr-3000.3000.cap.20 heads=[200:3000,trailers:3000] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 72 t=369.1 h2-wire face=h2 conn=57278 tag=toward.tr-3000.3000.cap.20 wire_bytes_written=79721 wire_bytes_read=726
+[ubuntu-gnutls-8.5.0] cell toward tr-2+400K face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=8.6 cpu_ms=2.9 calls=4 hdr_lines=2 bytes=47 heads=[200:2:47] refused=none header_size=47 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 74 t=388.3 h2-close face=h2 conn=57294 tag=toward.tr-2.400K.cap.21 heads=[200:2,trailers:1600] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 75 t=390.0 h2-wire face=h2 conn=57294 tag=toward.tr-2.400K.cap.21 wire_bytes_written=360662 wire_bytes_read=688
+[ubuntu-gnutls-8.5.0] cell toward tr-200K+200K face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=0 ver=0 t_ms=6.0 cpu_ms=2.5 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 77 t=396.7 h2-close face=h2 conn=57300 tag=toward.tr-200K.200K.cap.22 heads=[200:800,trailers:800] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 78 t=397.2 h2-wire face=h2 conn=57300 tag=toward.tr-200K.200K.cap.22 wire_bytes_written=360617 wire_bytes_read=733
+[ubuntu-gnutls-8.5.0] cell toward tr-line4000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.3 cpu_ms=1.5 calls=5 hdr_lines=3 bytes=4047 heads=[200:2:47,T:1:4000] refused=none header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=11
+[ubuntu-gnutls-8.5.0] srv ev 80 t=399.8 h2-close face=h2 conn=57306 tag=toward.tr-line4000.cap.23 heads=[200:2,trailers:1] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 81 t=400.2 h2-wire face=h2 conn=57306 tag=toward.tr-line4000.cap.23 wire_bytes_written=5117 wire_bytes_read=688
+[ubuntu-gnutls-8.5.0] cell toward tr-line5000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.3 cpu_ms=1.5 calls=5 hdr_lines=3 bytes=5047 heads=[200:2:47,T:1:5000] refused=none header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=12
+[ubuntu-gnutls-8.5.0] srv ev 83 t=402.9 h2-close face=h2 conn=57320 tag=toward.tr-line5000.cap.24 heads=[200:2,trailers:1] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 84 t=403.2 h2-wire face=h2 conn=57320 tag=toward.tr-line5000.cap.24 wire_bytes_written=5993 wire_bytes_read=688
+[ubuntu-gnutls-8.5.0] cell toward auth-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.6 cpu_ms=0.2 calls=9 hdr_lines=5 bytes=210 heads=[401:3:156,200:2:54] refused=none header_size=210 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 87 t=403.9 wrote face=h1 conn=57384 tag=toward.auth-2.2.cap.25 proto=h1 heads=[401:3:156] bytes=156
+[ubuntu-gnutls-8.5.0] srv ev 89 t=404.2 wrote face=h1 conn=57384 tag=toward.auth-2.2.cap.25 proto=h1 heads=[200:2:54] bytes=54
+[ubuntu-gnutls-8.5.0] cell toward auth-6000+2 face=h1 mode=cap code=23 err="Failed writing header" status=401 ver=2 t_ms=2.4 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16122 heads=[401:1001:16122] refused=lines@1001 header_size=16106 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 93 t=406.8 wrote face=h1 conn=57400 tag=toward.auth-6000.2.cap.26 proto=h1 heads=[401:6001:96124] bytes=96124
+[ubuntu-gnutls-8.5.0] cell toward auth-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=401 ver=2 t_ms=1.5 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16122 heads=[401:1001:16122] refused=lines@1001 header_size=16106 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 97 t=425.7 wrote face=h1 conn=57410 tag=toward.auth-3000.3000.cap.27 proto=h1 heads=[401:3001:48124] bytes=48124
+[ubuntu-gnutls-8.5.0] cell toward auth-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=401 ver=2 t_ms=1.4 cpu_ms=0.2 calls=403 hdr_lines=402 bytes=102538 heads=[401:402:102538] refused=bytes@102538 header_size=102282 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=126
+[ubuntu-gnutls-8.5.0] srv ev 101 t=442.4 wrote face=h1 conn=57422 tag=toward.auth-200K.200K.cap.28 proto=h1 heads=[401:801:204684] bytes=204684
+[ubuntu-gnutls-8.5.0] cell toward redir-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.4 cpu_ms=0.1 calls=9 hdr_lines=5 bytes=160 heads=[302:3:106,200:2:54] refused=none header_size=160 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 105 t=446.1 wrote face=h1 conn=57438 tag=toward.redir-2.2.cap.29 proto=h1 heads=[302:3:106] bytes=106
+[ubuntu-gnutls-8.5.0] srv ev 107 t=446.3 wrote face=h1 conn=57438 tag=toward.redir-2.2.cap.29 proto=h1 heads=[200:2:54] bytes=54
+[ubuntu-gnutls-8.5.0] cell toward redir-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=302 ver=2 t_ms=2.7 cpu_ms=0.6 calls=1002 hdr_lines=1001 bytes=16081 heads=[302:1001:16081] refused=lines@1001 header_size=16065 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 111 t=449.0 wrote face=h1 conn=57454 tag=toward.redir-3000.3000.cap.30 proto=h1 heads=[302:3001:48083] bytes=48083
+[ubuntu-gnutls-8.5.0] cell toward redir-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=302 ver=2 t_ms=1.5 cpu_ms=0.2 calls=403 hdr_lines=402 bytes=102505 heads=[302:402:102505] refused=bytes@102505 header_size=102249 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=126
+[ubuntu-gnutls-8.5.0] srv ev 115 t=469.7 wrote face=h1 conn=57462 tag=toward.redir-200K.200K.cap.31 proto=h1 heads=[302:801:204651] bytes=204651
+[ubuntu-gnutls-8.5.0] cell toward auth-2+2 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.8 cpu_ms=1.6 calls=9 hdr_lines=5 bytes=192 heads=[401:3:142,200:2:50] refused=none header_size=192 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 118 t=475.4 h2-close face=h2 conn=57322 tag=toward.auth-2.2.cap.32 heads=[401:3] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 120 t=475.8 h2-close face=h2 conn=57322 tag=toward.auth-2.2.cap.32 heads=[200:2] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 121 t=476.0 h2-wire face=h2 conn=57322 tag=toward.auth-2.2.cap.32 wire_bytes_written=1680 wire_bytes_read=949
+[ubuntu-gnutls-8.5.0] cell toward auth-6000+2 face=h2 mode=cap code=23 err="Failed writing header" status=401 ver=3 t_ms=11.7 cpu_ms=2.6 calls=1002 hdr_lines=1001 bytes=16108 heads=[401:1001:16108] refused=lines@1001 header_size=16092 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[ubuntu-gnutls-8.5.0] srv ev 123 t=486.9 h2-close face=h2 conn=57338 tag=toward.auth-6000.2.cap.33 heads=[401:6001] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 124 t=489.6 h2-wire face=h2 conn=57338 tag=toward.auth-6000.2.cap.33 wire_bytes_written=79742 wire_bytes_read=687
+[ubuntu-gnutls-8.5.0] cell toward auth-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=401 ver=3 t_ms=6.8 cpu_ms=2.4 calls=1002 hdr_lines=1001 bytes=16108 heads=[401:1001:16108] refused=lines@1001 header_size=16092 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=69
+[ubuntu-gnutls-8.5.0] srv ev 126 t=512.1 h2-close face=h2 conn=57352 tag=toward.auth-3000.3000.cap.34 heads=[401:3001] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 127 t=513.5 h2-wire face=h2 conn=57352 tag=toward.auth-3000.3000.cap.34 wire_bytes_written=40681 wire_bytes_read=691
+[ubuntu-gnutls-8.5.0] cell toward auth-200K+200K face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=0 ver=0 t_ms=6.3 cpu_ms=2.9 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 129 t=537.7 h2-close face=h2 conn=57362 tag=toward.auth-200K.200K.cap.35 heads=[401:801] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 130 t=539.3 h2-wire face=h2 conn=57362 tag=toward.auth-200K.200K.cap.35 wire_bytes_written=180917 wire_bytes_read=741
+[ubuntu-gnutls-8.5.0] cell toward redir-2+2 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.5 cpu_ms=1.6 calls=9 hdr_lines=5 bytes=149 heads=[302:3:99,200:2:50] refused=none header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 132 t=541.9 h2-close face=h2 conn=57372 tag=toward.redir-2.2.cap.36 heads=[302:3] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 134 t=542.2 h2-close face=h2 conn=57372 tag=toward.redir-2.2.cap.36 heads=[200:2] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 135 t=542.4 h2-wire face=h2 conn=57372 tag=toward.redir-2.2.cap.36 wire_bytes_written=1654 wire_bytes_read=748
+[ubuntu-gnutls-8.5.0] cell toward redir-3000+3000 face=h2 mode=cap code=23 err="Failed writing header" status=302 ver=3 t_ms=6.8 cpu_ms=2.1 calls=1002 hdr_lines=1001 bytes=16074 heads=[302:1001:16074] refused=lines@1001 header_size=16058 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 137 t=548.8 h2-close face=h2 conn=57384 tag=toward.redir-3000.3000.cap.37 heads=[302:3001] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 138 t=549.7 h2-wire face=h2 conn=57384 tag=toward.redir-3000.3000.cap.37 wire_bytes_written=40657 wire_bytes_read=692
+[ubuntu-gnutls-8.5.0] cell toward redir-200K+200K face=h2 mode=cap code=56 err="process_pending_input: nghttp2_session_mem_recv() returned -905:Too many CONTINUATION frames following a HEADER frame" status=0 ver=0 t_ms=5.5 cpu_ms=2.7 calls=0 hdr_lines=0 bytes=0 heads=[] refused=none header_size=0 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=0 stored_r0=0 stored_r1=0 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 140 t=572.1 h2-close face=h2 conn=57398 tag=toward.redir-200K.200K.cap.38 heads=[302:801] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 141 t=573.5 h2-wire face=h2 conn=57398 tag=toward.redir-200K.200K.cap.38 wire_bytes_written=180903 wire_bytes_read=742
+[ubuntu-gnutls-8.5.0] cell toward expect-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.6 cpu_ms=0.1 calls=10 hdr_lines=4 bytes=149 heads=[417:2:70,100:0:25,200:2:54] refused=none header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=2 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 144 t=574.2 wrote face=h1 conn=57470 tag=toward.expect-2.2.cap.39 proto=h1 heads=[417:2:70] bytes=70
+[ubuntu-gnutls-8.5.0] srv ev 146 t=574.4 wrote face=h1 conn=57470 tag=toward.expect-2.2.cap.39 proto=h1 heads=[100:0:25] bytes=25
+[ubuntu-gnutls-8.5.0] srv ev 147 t=574.5 wrote face=h1 conn=57470 tag=toward.expect-2.2.cap.39 proto=h1 heads=[200:2:54] bytes=54
+[ubuntu-gnutls-8.5.0] cell toward expect-6000+2 face=h1 mode=cap code=23 err="Failed writing header" status=417 ver=2 t_ms=2.9 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16052 heads=[417:1001:16052] refused=lines@1001 header_size=16036 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 151 t=577.7 wrote face=h1 conn=57480 tag=toward.expect-6000.2.cap.40 proto=h1 heads=[417:6000:96038] bytes=96038
+[ubuntu-gnutls-8.5.0] cell toward expect-3000+3000 face=h1 mode=cap code=23 err="Failed writing header" status=417 ver=2 t_ms=1.9 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16052 heads=[417:1001:16052] refused=lines@1001 header_size=16036 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 155 t=596.7 wrote face=h1 conn=57484 tag=toward.expect-3000.3000.cap.41 proto=h1 heads=[417:3000:48038] bytes=48038
+[ubuntu-gnutls-8.5.0] cell toward expect-200K+200K face=h1 mode=cap code=23 err="Failed writing header" status=417 ver=2 t_ms=1.4 cpu_ms=0.2 calls=402 hdr_lines=401 bytes=102452 heads=[417:401:102452] refused=bytes@102452 header_size=102196 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=401 stored_r0=401 stored_r1=0 live_kb=125
+[ubuntu-gnutls-8.5.0] srv ev 159 t=615.6 wrote face=h1 conn=57494 tag=toward.expect-200K.200K.cap.42 proto=h1 heads=[417:800:204598] bytes=204598
+[ubuntu-gnutls-8.5.0] cell toward connect-2+2 face=h1tls+proxy mode=cap code=0 err="" status=200 ver=2 t_ms=44.3 cpu_ms=1.6 calls=8 hdr_lines=4 bytes=125 heads=[200:2:71,200:2:54] refused=none header_size=125 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 163 t=621.2 connect-answered face=proxy conn=49470 tag=toward.connect-2.2.cap.43 target=127.0.0.1:34475 lines=2 bytes=71
+[ubuntu-gnutls-8.5.0] srv ev 166 t=663.4 wrote face=h1tls conn=41524 tag=toward.connect-2.2.cap.43 proto=h1 heads=[200:2:54] bytes=54
+[ubuntu-gnutls-8.5.0] cell toward connect-6000+2 face=h1tls+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=13.3 cpu_ms=7.5 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 170 t=671.4 connect-answered face=proxy conn=49472 tag=toward.connect-6000.2.cap.44 target=127.0.0.1:34475 lines=6000 bytes=96039
+[ubuntu-gnutls-8.5.0] srv ev 171 t=679.5 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[ubuntu-gnutls-8.5.0] cell toward connect-3000+3000 face=h1tls+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=8.2 cpu_ms=7.0 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 174 t=699.1 connect-answered face=proxy conn=49484 tag=toward.connect-3000.3000.cap.45 target=127.0.0.1:34475 lines=3000 bytes=48039
+[ubuntu-gnutls-8.5.0] srv ev 175 t=706.3 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[ubuntu-gnutls-8.5.0] cell toward connect-400K+2 face=h1tls+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=45.1 cpu_ms=43.5 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[ubuntu-gnutls-8.5.0] srv ev 178 t=726.7 connect-answered face=proxy conn=49488 tag=toward.connect-400K.2.cap.46 target=127.0.0.1:34475 lines=1600 bytes=409639
+[ubuntu-gnutls-8.5.0] srv ev 179 t=770.5 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[ubuntu-gnutls-8.5.0] cell toward connect-200K+200K face=h1tls+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=44.0 cpu_ms=42.5 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[ubuntu-gnutls-8.5.0] srv ev 182 t=775.4 connect-answered face=proxy conn=49492 tag=toward.connect-200K.200K.cap.47 target=127.0.0.1:34475 lines=800 bytes=204839
+[ubuntu-gnutls-8.5.0] srv ev 183 t=818.4 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[ubuntu-gnutls-8.5.0] cell toward connect-2+2 face=h2+proxy mode=cap code=0 err="" status=200 ver=3 t_ms=44.0 cpu_ms=1.6 calls=8 hdr_lines=4 bytes=121 heads=[200:2:71,200:2:50] refused=none header_size=121 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=7
+[ubuntu-gnutls-8.5.0] srv ev 185 t=822.2 connect-answered face=proxy conn=49508 tag=toward.connect-2.2.cap.48 target=127.0.0.1:33329 lines=2 bytes=71
+[ubuntu-gnutls-8.5.0] srv ev 187 t=865.1 h2-close face=h2 conn=57414 tag=toward.connect-2.2.cap.48 heads=[200:2] rst=0
+[ubuntu-gnutls-8.5.0] srv ev 188 t=866.1 h2-wire face=h2 conn=57414 tag=toward.connect-2.2.cap.48 wire_bytes_written=1561 wire_bytes_read=678
+[ubuntu-gnutls-8.5.0] cell toward connect-6000+2 face=h2+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=9.3 cpu_ms=7.4 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 190 t=869.3 connect-answered face=proxy conn=49510 tag=toward.connect-6000.2.cap.49 target=127.0.0.1:33329 lines=6000 bytes=96039
+[ubuntu-gnutls-8.5.0] srv ev 191 t=877.0 h2-wire face=h2 conn=57424 tag=- wire_bytes_written=0 wire_bytes_read=0
+[ubuntu-gnutls-8.5.0] srv ev 192 t=877.1 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[ubuntu-gnutls-8.5.0] cell toward connect-3000+3000 face=h2+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=8.2 cpu_ms=7.1 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=68
+[ubuntu-gnutls-8.5.0] srv ev 194 t=895.2 connect-answered face=proxy conn=49514 tag=toward.connect-3000.3000.cap.50 target=127.0.0.1:33329 lines=3000 bytes=48039
+[ubuntu-gnutls-8.5.0] srv ev 195 t=902.6 h2-wire face=h2 conn=57440 tag=- wire_bytes_written=0 wire_bytes_read=0
+[ubuntu-gnutls-8.5.0] srv ev 196 t=902.7 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[ubuntu-gnutls-8.5.0] cell toward connect-400K+2 face=h2+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=48.1 cpu_ms=46.1 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[ubuntu-gnutls-8.5.0] srv ev 198 t=921.6 connect-answered face=proxy conn=49528 tag=toward.connect-400K.2.cap.51 target=127.0.0.1:33329 lines=1600 bytes=409639
+[ubuntu-gnutls-8.5.0] srv ev 199 t=968.0 h2-wire face=h2 conn=57448 tag=- wire_bytes_written=0 wire_bytes_read=0
+[ubuntu-gnutls-8.5.0] srv ev 200 t=968.1 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[ubuntu-gnutls-8.5.0] cell toward connect-200K+200K face=h2+proxy mode=cap code=23 err="Failed writing header" status=0 ver=0 t_ms=48.1 cpu_ms=46.9 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=125
+[ubuntu-gnutls-8.5.0] srv ev 202 t=972.9 connect-answered face=proxy conn=49538 tag=toward.connect-200K.200K.cap.52 target=127.0.0.1:33329 lines=800 bytes=204839
+[ubuntu-gnutls-8.5.0] srv ev 203 t=1020.2 h2-wire face=h2 conn=57450 tag=- wire_bytes_written=0 wire_bytes_read=0
+[ubuntu-gnutls-8.5.0] srv ev 204 t=1020.2 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[ubuntu-gnutls-8.5.0] case toward all done live_before_global_cleanup=0
+[ubuntu-gnutls-8.5.0] case toward live_after_global_cleanup=0
+[ubuntu-gnutls-8.5.0] probe toward exit=0
+[ubuntu-gnutls-8.5.0] probe toward took about 1 s
+[ubuntu-gnutls-8.5.0] -- 1 cases run
+[current-8.23.0] libcurl /src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 -> /src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4.8.0, headers /src/build/verify/c823/lane1/curl-current/include
+[current-8.23.0] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset cpus=6 affinity=12-17
+[current-8.23.0] cases=toward PROBE_MODES=cap WALK_NS=default WALK_ROUNDS=default PROBE_VALGRIND=unset
+[current-8.23.0] version headers=8.23.0 runtime=8.23.0 num=0x081700 ssl=OpenSSL/3.0.13 nghttp2=1.59.0 http2=1 features=0x5129028d
+[current-8.23.0] server ctl=33107 h1=43077 h1tls=42395 h2=36427 proxy=41237
+[current-8.23.0] cell toward pre103-6000+2 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=2 t_ms=10.4 cpu_ms=0.5 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 3 t=67.9 wrote face=h1 conn=48294 tag=toward.pre103-6000.2.cap.1 proto=h1 heads=[103:6000:96028,200:2:54] bytes=96082
+[current-8.23.0] cell toward pre103-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=2 t_ms=3.9 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 7 t=73.0 wrote face=h1 conn=48300 tag=toward.pre103-3000.3000.cap.2 proto=h1 heads=[103:3000:48028,200:3000:48022] bytes=96050
+[current-8.23.0] cell toward pre100-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=100 ver=2 t_ms=3.4 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16039 heads=[100:1001:16039] refused=lines@1001 header_size=16023 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 11 t=77.2 wrote face=h1 conn=48314 tag=toward.pre100-3000.3000.cap.3 proto=h1 heads=[100:3000:48025,200:3000:48022] bytes=96047
+[current-8.23.0] cell toward pre103-2500x2+1000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=2 t_ms=3.0 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 15 t=81.1 wrote face=h1 conn=48326 tag=toward.pre103-2500x2.1000.cap.4 proto=h1 heads=[103:2500:40028,103:2500:40028,200:1000:16022] bytes=96078
+[current-8.23.0] cell toward pre103-400K+2 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=103 ver=2 t_ms=2.2 cpu_ms=0.3 calls=401 hdr_lines=400 bytes=102426 heads=[103:400:102426] refused=bytes@102426 header_size=102170 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 19 t=83.8 wrote face=h1 conn=48336 tag=toward.pre103-400K.2.cap.5 proto=h1 heads=[103:1600:409628,200:2:54] bytes=409682
+[current-8.23.0] cell toward pre103-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=103 ver=2 t_ms=2.1 cpu_ms=0.3 calls=401 hdr_lines=400 bytes=102426 heads=[103:400:102426] refused=bytes@102426 header_size=102170 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 23 t=86.5 wrote face=h1 conn=48338 tag=toward.pre103-200K.200K.cap.6 proto=h1 heads=[103:800:204828,200:800:204582] bytes=409410
+[current-8.23.0] cell toward tr-2+6000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=3.6 cpu_ms=0.3 calls=1003 hdr_lines=1001 bytes=16047 heads=[200:2:63,T:999:15984] refused=lines@1001 header_size=16031 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 27 t=90.4 wrote face=h1 conn=48340 tag=toward.tr-2.6000.cap.7 proto=h1 heads=[200:2:63,trailers:6000:96002] bytes=96068
+[current-8.23.0] cell toward tr-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=1.7 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16045 heads=[200:1001:16045] refused=lines@1001 header_size=16029 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 31 t=92.9 wrote face=h1 conn=48348 tag=toward.tr-3000.3000.cap.8 proto=h1 heads=[200:3000:48031,trailers:3000:48002] bytes=96036
+[current-8.23.0] cell toward tr-2+400K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=3.2 cpu_ms=1.1 calls=404 hdr_lines=402 bytes=102463 heads=[200:2:63,T:400:102400] refused=bytes@102463 header_size=102207 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 35 t=96.0 wrote face=h1 conn=48356 tag=toward.tr-2.400K.cap.9 proto=h1 heads=[200:2:63,trailers:1600:409602] bytes=409668
+[current-8.23.0] cell toward tr-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=2.8 cpu_ms=0.3 calls=402 hdr_lines=401 bytes=102445 heads=[200:401:102445] refused=bytes@102445 header_size=102189 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=401 stored_r0=401 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 39 t=100.0 wrote face=h1 conn=48370 tag=toward.tr-200K.200K.cap.10 proto=h1 heads=[200:800:204591,trailers:800:204802] bytes=409396
+[current-8.23.0] cell toward tr-line4000 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.3 cpu_ms=0.1 calls=5 hdr_lines=3 bytes=4063 heads=[200:2:63,T:1:4000] refused=none header_size=4063 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=7
+[current-8.23.0] srv ev 43 t=100.8 wrote face=h1 conn=48384 tag=toward.tr-line4000.cap.11 proto=h1 heads=[200:2:63,trailers:1:4002] bytes=4068
+[current-8.23.0] cell toward tr-line5000 face=h1 mode=cap code=100 err="Out of memory in chunked-encoding" status=200 ver=2 t_ms=0.3 cpu_ms=0.1 calls=4 hdr_lines=2 bytes=63 heads=[200:2:63] refused=none header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=3
+[current-8.23.0] srv ev 47 t=101.7 wrote face=h1 conn=48390 tag=toward.tr-line5000.cap.12 proto=h1 heads=[200:2:63,trailers:1:5002] bytes=5068
+[current-8.23.0] cell toward pre103-6000+2 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=3 t_ms=22.6 cpu_ms=3.5 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 50 t=124.0 h2-close face=h2 conn=56624 tag=toward.pre103-6000.2.cap.13 heads=[103:6000,200:2] rst=0
+[current-8.23.0] srv ev 52 t=126.1 h2-wire face=h2 conn=56624 tag=toward.pre103-6000.2.cap.13 wire_bytes_written=79712 wire_bytes_read=941
+[current-8.23.0] cell toward pre103-3000+3000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=3 t_ms=15.1 cpu_ms=2.7 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 54 t=141.7 h2-close face=h2 conn=56640 tag=toward.pre103-3000.3000.cap.14 heads=[103:3000,200:3000] rst=0
+[current-8.23.0] srv ev 56 t=142.8 h2-wire face=h2 conn=56640 tag=toward.pre103-3000.3000.cap.14 wire_bytes_written=79712 wire_bytes_read=945
+[current-8.23.0] cell toward pre100-3000+3000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=100 ver=3 t_ms=12.3 cpu_ms=2.5 calls=1002 hdr_lines=1001 bytes=16029 heads=[100:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 58 t=155.0 h2-close face=h2 conn=56654 tag=toward.pre100-3000.3000.cap.15 heads=[100:3000,200:3000] rst=0
+[current-8.23.0] srv ev 60 t=155.9 h2-wire face=h2 conn=56654 tag=toward.pre100-3000.3000.cap.15 wire_bytes_written=79710 wire_bytes_read=945
+[current-8.23.0] cell toward pre103-2500x2+1000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=3 t_ms=10.8 cpu_ms=2.4 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 62 t=166.6 h2-close face=h2 conn=56658 tag=toward.pre103-2500x2.1000.cap.16 heads=[103:2500,103:2500,200:1000] rst=0
+[current-8.23.0] srv ev 64 t=168.2 h2-wire face=h2 conn=56658 tag=toward.pre103-2500x2.1000.cap.16 wire_bytes_written=79681 wire_bytes_read=955
+[current-8.23.0] cell toward pre103-400K+2 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=103 ver=3 t_ms=8.6 cpu_ms=2.9 calls=401 hdr_lines=400 bytes=102413 heads=[103:400:102413] refused=bytes@102413 header_size=102157 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 66 t=176.1 h2-close face=h2 conn=56662 tag=toward.pre103-400K.2.cap.17 heads=[103:1600,200:2] rst=0
+[current-8.23.0] srv ev 68 t=177.7 h2-wire face=h2 conn=56662 tag=toward.pre103-400K.2.cap.17 wire_bytes_written=360639 wire_bytes_read=942
+[current-8.23.0] cell toward pre103-200K+200K face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=103 ver=3 t_ms=8.0 cpu_ms=2.7 calls=401 hdr_lines=400 bytes=102413 heads=[103:400:102413] refused=bytes@102413 header_size=102157 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 70 t=184.8 h2-close face=h2 conn=56670 tag=toward.pre103-200K.200K.cap.18 heads=[103:800,200:800] rst=0
+[current-8.23.0] srv ev 72 t=186.4 h2-wire face=h2 conn=56670 tag=toward.pre103-200K.200K.cap.18 wire_bytes_written=360371 wire_bytes_read=952
+[current-8.23.0] cell toward tr-2+6000 face=h2 mode=cap code=56 err="Error receiving HTTP2 header: 27(Out of memory)" status=200 ver=3 t_ms=15.4 cpu_ms=3.2 calls=4 hdr_lines=2 bytes=47 heads=[200:2:47] refused=none header_size=47 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=3
+[current-8.23.0] srv ev 74 t=200.8 h2-close face=h2 conn=56680 tag=toward.tr-2.6000.cap.19 heads=[200:2,trailers:6000] rst=0
+[current-8.23.0] srv ev 76 t=202.7 h2-wire face=h2 conn=56680 tag=toward.tr-2.6000.cap.19 wire_bytes_written=79740 wire_bytes_read=937
+[current-8.23.0] cell toward tr-3000+3000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=10.0 cpu_ms=2.4 calls=1002 hdr_lines=1001 bytes=16029 heads=[200:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 78 t=213.7 h2-close face=h2 conn=56690 tag=toward.tr-3000.3000.cap.20 heads=[200:3000,trailers:3000] rst=0
+[current-8.23.0] srv ev 80 t=216.5 h2-wire face=h2 conn=56690 tag=toward.tr-3000.3000.cap.20 wire_bytes_written=79714 wire_bytes_read=941
+[current-8.23.0] cell toward tr-2+400K face=h2 mode=cap code=56 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=8.6 cpu_ms=3.0 calls=4 hdr_lines=2 bytes=47 heads=[200:2:47] refused=none header_size=47 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=3
+[current-8.23.0] srv ev 82 t=224.1 h2-close face=h2 conn=56698 tag=toward.tr-2.400K.cap.21 heads=[200:2,trailers:1600] rst=0
+[current-8.23.0] srv ev 84 t=225.9 h2-wire face=h2 conn=56698 tag=toward.tr-2.400K.cap.21 wire_bytes_written=360655 wire_bytes_read=938
+[current-8.23.0] cell toward tr-200K+200K face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=6.8 cpu_ms=2.8 calls=401 hdr_lines=400 bytes=102413 heads=[200:400:102413] refused=bytes@102413 header_size=102157 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 86 t=233.6 h2-close face=h2 conn=56714 tag=toward.tr-200K.200K.cap.22 heads=[200:800,trailers:800] rst=0
+[current-8.23.0] srv ev 88 t=234.1 h2-wire face=h2 conn=56714 tag=toward.tr-200K.200K.cap.22 wire_bytes_written=360549 wire_bytes_read=948
+[current-8.23.0] cell toward tr-line4000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.7 cpu_ms=1.9 calls=5 hdr_lines=3 bytes=4047 heads=[200:2:47,T:1:4000] refused=none header_size=4047 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=7
+[current-8.23.0] srv ev 90 t=237.3 h2-close face=h2 conn=56718 tag=toward.tr-line4000.cap.23 heads=[200:2,trailers:1] rst=0
+[current-8.23.0] srv ev 92 t=237.7 h2-wire face=h2 conn=56718 tag=toward.tr-line4000.cap.23 wire_bytes_written=5135 wire_bytes_read=903
+[current-8.23.0] cell toward tr-line5000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.4 cpu_ms=1.8 calls=5 hdr_lines=3 bytes=5047 heads=[200:2:47,T:1:5000] refused=none header_size=5047 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=8
+[current-8.23.0] srv ev 94 t=240.4 h2-close face=h2 conn=56728 tag=toward.tr-line5000.cap.24 heads=[200:2,trailers:1] rst=0
+[current-8.23.0] srv ev 96 t=240.9 h2-wire face=h2 conn=56728 tag=toward.tr-line5000.cap.24 wire_bytes_written=6009 wire_bytes_read=903
+[current-8.23.0] cell toward auth-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.7 cpu_ms=0.2 calls=9 hdr_lines=5 bytes=210 heads=[401:3:156,200:2:54] refused=none header_size=210 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=4
+[current-8.23.0] srv ev 99 t=241.6 wrote face=h1 conn=48400 tag=toward.auth-2.2.cap.25 proto=h1 heads=[401:3:156] bytes=156
+[current-8.23.0] srv ev 101 t=241.9 wrote face=h1 conn=48400 tag=toward.auth-2.2.cap.25 proto=h1 heads=[200:2:54] bytes=54
+[current-8.23.0] cell toward auth-6000+2 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=401 ver=2 t_ms=2.6 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16122 heads=[401:1001:16122] refused=lines@1001 header_size=16106 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=88
+[current-8.23.0] srv ev 105 t=244.8 wrote face=h1 conn=48408 tag=toward.auth-6000.2.cap.26 proto=h1 heads=[401:6001:96124] bytes=96124
+[current-8.23.0] cell toward auth-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=401 ver=2 t_ms=1.7 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16122 heads=[401:1001:16122] refused=lines@1001 header_size=16106 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=88
+[current-8.23.0] srv ev 109 t=247.0 wrote face=h1 conn=48418 tag=toward.auth-3000.3000.cap.27 proto=h1 heads=[401:3001:48124] bytes=48124
+[current-8.23.0] cell toward auth-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=401 ver=2 t_ms=1.6 cpu_ms=0.3 calls=403 hdr_lines=402 bytes=102538 heads=[401:402:102538] refused=bytes@102538 header_size=102282 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=132
+[current-8.23.0] srv ev 113 t=249.1 wrote face=h1 conn=48426 tag=toward.auth-200K.200K.cap.28 proto=h1 heads=[401:801:204684] bytes=204684
+[current-8.23.0] cell toward redir-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.4 cpu_ms=0.2 calls=9 hdr_lines=5 bytes=160 heads=[302:3:106,200:2:54] refused=none header_size=160 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=3
+[current-8.23.0] srv ev 117 t=250.0 wrote face=h1 conn=48438 tag=toward.redir-2.2.cap.29 proto=h1 heads=[302:3:106] bytes=106
+[current-8.23.0] srv ev 119 t=250.1 wrote face=h1 conn=48438 tag=toward.redir-2.2.cap.29 proto=h1 heads=[200:2:54] bytes=54
+[current-8.23.0] cell toward redir-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=302 ver=2 t_ms=1.8 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16081 heads=[302:1001:16081] refused=lines@1001 header_size=16065 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 123 t=252.2 wrote face=h1 conn=48442 tag=toward.redir-3000.3000.cap.30 proto=h1 heads=[302:3001:48083] bytes=48083
+[current-8.23.0] cell toward redir-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=302 ver=2 t_ms=1.6 cpu_ms=0.4 calls=403 hdr_lines=402 bytes=102505 heads=[302:402:102505] refused=bytes@102505 header_size=102249 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 127 t=254.3 wrote face=h1 conn=48454 tag=toward.redir-200K.200K.cap.31 proto=h1 heads=[302:801:204651] bytes=204651
+[current-8.23.0] cell toward auth-2+2 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=3.2 cpu_ms=2.2 calls=9 hdr_lines=5 bytes=192 heads=[401:3:142,200:2:50] refused=none header_size=192 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=4
+[current-8.23.0] srv ev 130 t=257.6 h2-close face=h2 conn=56734 tag=toward.auth-2.2.cap.32 heads=[401:3] rst=0
+[current-8.23.0] srv ev 132 t=258.0 h2-close face=h2 conn=56734 tag=toward.auth-2.2.cap.32 heads=[200:2] rst=0
+[current-8.23.0] srv ev 134 t=258.3 h2-wire face=h2 conn=56734 tag=toward.auth-2.2.cap.32 wire_bytes_written=1699 wire_bytes_read=1187
+[current-8.23.0] cell toward auth-6000+2 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=401 ver=3 t_ms=12.0 cpu_ms=2.2 calls=1002 hdr_lines=1001 bytes=16108 heads=[401:1001:16108] refused=lines@1001 header_size=16092 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=88
+[current-8.23.0] srv ev 136 t=270.1 h2-close face=h2 conn=56744 tag=toward.auth-6000.2.cap.33 heads=[401:6001] rst=0
+[current-8.23.0] srv ev 138 t=272.7 h2-wire face=h2 conn=56744 tag=toward.auth-6000.2.cap.33 wire_bytes_written=79735 wire_bytes_read=937
+[current-8.23.0] cell toward auth-3000+3000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=401 ver=3 t_ms=6.9 cpu_ms=2.3 calls=1002 hdr_lines=1001 bytes=16108 heads=[401:1001:16108] refused=lines@1001 header_size=16092 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=88
+[current-8.23.0] srv ev 140 t=279.5 h2-close face=h2 conn=56760 tag=toward.auth-3000.3000.cap.34 heads=[401:3001] rst=0
+[current-8.23.0] srv ev 142 t=280.3 h2-wire face=h2 conn=56760 tag=toward.auth-3000.3000.cap.34 wire_bytes_written=40673 wire_bytes_read=941
+[current-8.23.0] cell toward auth-200K+200K face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=401 ver=3 t_ms=5.6 cpu_ms=2.7 calls=403 hdr_lines=402 bytes=102524 heads=[401:402:102524] refused=bytes@102524 header_size=102268 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 144 t=285.1 h2-close face=h2 conn=56772 tag=toward.auth-200K.200K.cap.35 heads=[401:801] rst=0
+[current-8.23.0] srv ev 146 t=286.5 h2-wire face=h2 conn=56772 tag=toward.auth-200K.200K.cap.35 wire_bytes_written=180887 wire_bytes_read=956
+[current-8.23.0] cell toward redir-2+2 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=2.4 cpu_ms=1.8 calls=9 hdr_lines=5 bytes=149 heads=[302:3:99,200:2:50] refused=none header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=4
+[current-8.23.0] srv ev 148 t=289.1 h2-close face=h2 conn=56782 tag=toward.redir-2.2.cap.36 heads=[302:3] rst=0
+[current-8.23.0] srv ev 150 t=289.3 h2-close face=h2 conn=56782 tag=toward.redir-2.2.cap.36 heads=[200:2] rst=0
+[current-8.23.0] srv ev 152 t=289.5 h2-wire face=h2 conn=56782 tag=toward.redir-2.2.cap.36 wire_bytes_written=1669 wire_bytes_read=1011
+[current-8.23.0] cell toward redir-3000+3000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=302 ver=3 t_ms=6.4 cpu_ms=2.0 calls=1002 hdr_lines=1001 bytes=16074 heads=[302:1001:16074] refused=lines@1001 header_size=16058 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 154 t=295.8 h2-close face=h2 conn=56784 tag=toward.redir-3000.3000.cap.37 heads=[302:3001] rst=0
+[current-8.23.0] srv ev 156 t=296.5 h2-wire face=h2 conn=56784 tag=toward.redir-3000.3000.cap.37 wire_bytes_written=40676 wire_bytes_read=942
+[current-8.23.0] cell toward redir-200K+200K face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=302 ver=3 t_ms=5.2 cpu_ms=2.6 calls=403 hdr_lines=402 bytes=102498 heads=[302:402:102498] refused=bytes@102498 header_size=102242 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 158 t=301.1 h2-close face=h2 conn=56800 tag=toward.redir-200K.200K.cap.38 heads=[302:801] rst=0
+[current-8.23.0] srv ev 160 t=302.3 h2-wire face=h2 conn=56800 tag=toward.redir-200K.200K.cap.38 wire_bytes_written=180919 wire_bytes_read=957
+[current-8.23.0] cell toward expect-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.6 cpu_ms=0.2 calls=10 hdr_lines=4 bytes=149 heads=[417:2:70,100:0:25,200:2:54] refused=none header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=2 live_kb=67
+[current-8.23.0] srv ev 163 t=303.0 wrote face=h1 conn=48468 tag=toward.expect-2.2.cap.39 proto=h1 heads=[417:2:70] bytes=70
+[current-8.23.0] srv ev 165 t=303.2 wrote face=h1 conn=48468 tag=toward.expect-2.2.cap.39 proto=h1 heads=[100:0:25] bytes=25
+[current-8.23.0] srv ev 166 t=303.3 wrote face=h1 conn=48468 tag=toward.expect-2.2.cap.39 proto=h1 heads=[200:2:54] bytes=54
+[current-8.23.0] cell toward expect-6000+2 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=417 ver=2 t_ms=2.9 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16052 heads=[417:1001:16052] refused=lines@1001 header_size=16036 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=151
+[current-8.23.0] srv ev 170 t=306.5 wrote face=h1 conn=48476 tag=toward.expect-6000.2.cap.40 proto=h1 heads=[417:6000:96038] bytes=96038
+[current-8.23.0] cell toward expect-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=417 ver=2 t_ms=1.9 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16052 heads=[417:1001:16052] refused=lines@1001 header_size=16036 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=151
+[current-8.23.0] srv ev 174 t=308.8 wrote face=h1 conn=48492 tag=toward.expect-3000.3000.cap.41 proto=h1 heads=[417:3000:48038] bytes=48038
+[current-8.23.0] cell toward expect-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=417 ver=2 t_ms=1.6 cpu_ms=0.3 calls=402 hdr_lines=401 bytes=102452 heads=[417:401:102452] refused=bytes@102452 header_size=102196 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=401 stored_r0=401 stored_r1=0 live_kb=195
+[current-8.23.0] srv ev 178 t=310.8 wrote face=h1 conn=48498 tag=toward.expect-200K.200K.cap.42 proto=h1 heads=[417:800:204598] bytes=204598
+[current-8.23.0] cell toward connect-2+2 face=h1tls+proxy mode=cap code=0 err="" status=200 ver=2 t_ms=4.7 cpu_ms=2.1 calls=8 hdr_lines=4 bytes=125 heads=[200:2:71,200:2:54] refused=none header_size=125 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=3
+[current-8.23.0] srv ev 182 t=313.2 connect-answered face=proxy conn=55896 tag=toward.connect-2.2.cap.43 target=127.0.0.1:42395 lines=2 bytes=71
+[current-8.23.0] srv ev 185 t=315.9 wrote face=h1tls conn=53356 tag=toward.connect-2.2.cap.43 proto=h1 heads=[200:2:54] bytes=54
+[current-8.23.0] cell toward connect-6000+2 face=h1tls+proxy mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=0 ver=0 t_ms=13.2 cpu_ms=7.6 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 189 t=323.5 connect-answered face=proxy conn=55904 tag=toward.connect-6000.2.cap.44 target=127.0.0.1:42395 lines=6000 bytes=96039
+[current-8.23.0] srv ev 190 t=331.8 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[current-8.23.0] cell toward connect-3000+3000 face=h1tls+proxy mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=0 ver=0 t_ms=8.5 cpu_ms=7.4 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 193 t=333.6 connect-answered face=proxy conn=55916 tag=toward.connect-3000.3000.cap.45 target=127.0.0.1:42395 lines=3000 bytes=48039
+[current-8.23.0] srv ev 194 t=341.2 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[current-8.23.0] cell toward connect-400K+2 face=h1tls+proxy mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=0 ver=0 t_ms=45.7 cpu_ms=44.2 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 197 t=343.4 connect-answered face=proxy conn=55920 tag=toward.connect-400K.2.cap.46 target=127.0.0.1:42395 lines=1600 bytes=409639
+[current-8.23.0] srv ev 198 t=388.0 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[current-8.23.0] cell toward connect-200K+200K face=h1tls+proxy mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=0 ver=0 t_ms=46.3 cpu_ms=45.0 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 201 t=390.1 connect-answered face=proxy conn=55930 tag=toward.connect-200K.200K.cap.47 target=127.0.0.1:42395 lines=800 bytes=204839
+[current-8.23.0] srv ev 202 t=436.0 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[current-8.23.0] cell toward connect-2+2 face=h2+proxy mode=cap code=0 err="" status=200 ver=3 t_ms=3.7 cpu_ms=2.3 calls=8 hdr_lines=4 bytes=121 heads=[200:2:71,200:2:50] refused=none header_size=121 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=3
+[current-8.23.0] srv ev 204 t=437.3 connect-answered face=proxy conn=55938 tag=toward.connect-2.2.cap.48 target=127.0.0.1:36427 lines=2 bytes=71
+[current-8.23.0] srv ev 206 t=440.3 h2-close face=h2 conn=56812 tag=toward.connect-2.2.cap.48 heads=[200:2] rst=0
+[current-8.23.0] srv ev 208 t=441.0 h2-wire face=h2 conn=56812 tag=toward.connect-2.2.cap.48 wire_bytes_written=1576 wire_bytes_read=893
+[current-8.23.0] cell toward connect-6000+2 face=h2+proxy mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=0 ver=0 t_ms=10.3 cpu_ms=8.1 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 210 t=443.6 connect-answered face=proxy conn=55946 tag=toward.connect-6000.2.cap.49 target=127.0.0.1:36427 lines=6000 bytes=96039
+[current-8.23.0] srv ev 211 t=452.1 h2-wire face=h2 conn=56814 tag=- wire_bytes_written=0 wire_bytes_read=0
+[current-8.23.0] srv ev 212 t=452.3 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[current-8.23.0] cell toward connect-3000+3000 face=h2+proxy mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=0 ver=0 t_ms=8.5 cpu_ms=7.4 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=87
+[current-8.23.0] srv ev 214 t=454.0 connect-answered face=proxy conn=55954 tag=toward.connect-3000.3000.cap.50 target=127.0.0.1:36427 lines=3000 bytes=48039
+[current-8.23.0] srv ev 215 t=461.5 h2-wire face=h2 conn=56820 tag=- wire_bytes_written=0 wire_bytes_read=0
+[current-8.23.0] srv ev 216 t=461.5 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[current-8.23.0] cell toward connect-400K+2 face=h2+proxy mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=0 ver=0 t_ms=49.7 cpu_ms=47.6 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 218 t=464.2 connect-answered face=proxy conn=55962 tag=toward.connect-400K.2.cap.51 target=127.0.0.1:36427 lines=1600 bytes=409639
+[current-8.23.0] srv ev 219 t=512.5 h2-wire face=h2 conn=56834 tag=- wire_bytes_written=0 wire_bytes_read=0
+[current-8.23.0] srv ev 220 t=512.6 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[current-8.23.0] cell toward connect-200K+200K face=h2+proxy mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=0 ver=0 t_ms=47.9 cpu_ms=46.7 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=131
+[current-8.23.0] srv ev 222 t=514.4 connect-answered face=proxy conn=55978 tag=toward.connect-200K.200K.cap.52 target=127.0.0.1:36427 lines=800 bytes=204839
+[current-8.23.0] srv ev 223 t=561.5 h2-wire face=h2 conn=56842 tag=- wire_bytes_written=0 wire_bytes_read=0
+[current-8.23.0] srv ev 224 t=561.6 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[current-8.23.0] case toward all done live_before_global_cleanup=0
+[current-8.23.0] case toward live_after_global_cleanup=0
+[current-8.23.0] probe toward exit=0
+[current-8.23.0] probe toward took about 1 s
+[current-8.23.0] -- 1 cases run
+docker.sh end 2026-11-06T18:12:51Z
