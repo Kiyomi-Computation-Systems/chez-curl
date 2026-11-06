@@ -939,7 +939,15 @@ it should not be a comment. (chez-cmark-gfm)
   Valgrind while the transfer beside it timed out with no callback. M2 slice 2's race tests,
   a thread flipping a string's chars, then held the gate over 10 minutes with a flipper
   that spun. Pace such a thread: the lock test sleeps 2 ms between collections, and the
-  flippers yield in each state. (chez-curl)
+  flippers yield in each state. (chez-curl) **Pace the loop that races it too.** A flip test's
+  refusal waits for nothing, so the next attempt can read the flipper's same CR, the flipper
+  never run between: test-unsupported's list's-string flip test saw only refusals, all 300,
+  in 6 runs of 20 under the memory gate on `main`'s tree, 5 of 20 on the carried branch's, and
+  CI's memory job at `473b1b4`; with the loop sleeping 1 ms after a refusal, 0 of 20, and it
+  still failed when CR was let through ([verify](research/m7/carried/verify/flip/)).
+  test-transfer's two flip tests got the same pause after failing 5 runs of 22 there
+  ([guard](research/m7/carried/guard/), the fix round). test-transfer-tls's CA-file flip test,
+  the same shape, passed 32 of 32, why not measured. (chez-curl, after M7)
 * **One protocol pin hides the other's removal.** libcurl checks a followed URL against both
   `PROTOCOLS_STR` and `REDIR_PROTOCOLS_STR`, so a redirect to `ftp://` is refused with
   either one alone. M2 slice 2's redirect test caught only both removed. Each pin is held by

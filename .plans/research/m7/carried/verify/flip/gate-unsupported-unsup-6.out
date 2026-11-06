@@ -1,0 +1,39 @@
+race-gate: mode gate, trees main branch, snap build/carried-verify/snap-*, cpus 6-7, suites tests/test-unsupported.sps, out build/m7s4r/out/unsup-6
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl4t64 8.5.0-2ubuntu10.16
+package valgrind 1:3.22.0-0ubuntu3
+cpus: 2
+=== round 1, tree main, mode gate, 23 s
+test-memory: FAIL tests/test-unsupported.sps (exit 1)
+test-memory: ran 1, passed 0, failed 1, hung 0
+FAIL a list's string another thread flips between P and CR while 300 attaches and transfers run: each attach is refused as line-break, or its transfer takes the status line, both seen; the counts back to the engine's alone
+  expected: (() (refused whole) ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+  actual:   (() (refused) ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+=== round 1, tree branch, mode gate, 30 s
+test-memory: pass tests/test-unsupported.sps
+test-memory: ran 1, passed 1, failed 0, hung 0
+=== round 2, tree main, mode gate, 29 s
+test-memory: pass tests/test-unsupported.sps
+test-memory: ran 1, passed 1, failed 0, hung 0
+=== round 2, tree branch, mode gate, 28 s
+test-memory: FAIL tests/test-unsupported.sps (exit 1)
+test-memory: ran 1, passed 0, failed 1, hung 0
+FAIL a list's string another thread flips between P and CR while 300 attaches and transfers run: each attach is refused as line-break, or its transfer takes the status line, both seen; the counts back to the engine's alone
+  expected: (() (refused whole) ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+  actual:   (() (refused) ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+=== round 3, tree main, mode gate, 28 s
+test-memory: FAIL tests/test-unsupported.sps (exit 1)
+test-memory: ran 1, passed 0, failed 1, hung 0
+FAIL a list's string another thread flips between P and CR while 300 attaches and transfers run: each attach is refused as line-break, or its transfer takes the status line, both seen; the counts back to the engine's alone
+  expected: (() (refused whole) ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+  actual:   (() (refused) ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+=== round 3, tree branch, mode gate, 29 s
+test-memory: pass tests/test-unsupported.sps
+test-memory: ran 1, passed 1, failed 0, hung 0
+=== round 4, tree main, mode gate, 29 s
+test-memory: pass tests/test-unsupported.sps
+test-memory: ran 1, passed 1, failed 0, hung 0
+=== round 4, tree branch, mode gate, 27 s
+test-memory: pass tests/test-unsupported.sps
+test-memory: ran 1, passed 1, failed 0, hung 0
+race-gate: done

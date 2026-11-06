@@ -735,6 +735,16 @@
                      (k (cond ((equal? a whole) 'whole)
                               ((equal? a refused) 'refused)
                               (else #f))))
+                ;; A refusal comes before anything waits, so with no yield
+                ;; the next attach can read the flipper's same CR: under
+                ;; Valgrind, which runs one thread at a time, every one of
+                ;; the 300 was refused, the flipper never seen at its char,
+                ;; in 6 of 20 runs of the memory gate on main's tree and 5
+                ;; of 20 on the branch's after M7, the list's string's test
+                ;; each time (research/m7/carried/verify/flip/), as
+                ;; test-transfer's flip tests did. A refusal sleeps 1 ms, so
+                ;; the flipper moves on (traps.md).
+                (when (eq? k 'refused) (pause-ms 1))
                 (loop (+ i 1)
                       (if k odd (cons a odd))
                       (if (and k (not (memq k seen))) (cons k seen) seen))))))

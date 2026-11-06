@@ -337,7 +337,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   between them leaves the mutex held. Hold a mutex through `critical-section`
   around `with-mutex`, and never wait while holding one.
 * Valgrind runs one thread at a time, so a thread that never sleeps starves
-  the rest. Pace a collecting or racing thread.
+  the rest. Pace a collecting or racing thread, and the loop that races it:
+  a flip test whose refusal waits for nothing saw only refusals, the flipper
+  never run between, 6 runs of 20. Sleep 1 ms after a refusal.
 * Under Valgrind a collection takes about 140 ms, so a short timed window
   can catch one. `(collect)` just before it opens, before any thread that
   sleeps in a critical section starts: `(collect)` raises while another thread

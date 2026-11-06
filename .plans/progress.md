@@ -58,6 +58,13 @@ close-out under **Close-outs**, newest first.
 
     The Mac ran the branch at `84e7e22`, 2026-11-06: `make test` 41 of 41, test-call-checks and
     the new `/refuse` test among them ([log](research/m7/carried/mac/mac-8.7.1-make-test.log)).
+    PR #47's CI at `473b1b4`: seven jobs passed, the floor's among them, and the memory job
+    failed in test-unsupported's list's-string flip test, only refusals seen
+    ([log](research/m7/carried/verify/ci/ci-memory-473b1b4.log)). Not the branch's: under the
+    gate it failed 6 runs of 20 on `main`'s tree and 5 of 20 on the branch's. **Decided by the
+    maintainer, the recommended option:** fixed here, its loop sleeping 1 ms after a refusal as
+    test-transfer's do: 0 of 20, and it still fails when CR is let through
+    ([`verify/flip/`](research/m7/carried/verify/flip/)).
 
     Still carried:
     - the curl bug report on the unterminated head, drafted for the maintainer to file

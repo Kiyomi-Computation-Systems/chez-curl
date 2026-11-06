@@ -67,3 +67,19 @@ My checks of the two agents' work on `fix/m7-carried`, 2026-11-05: the races age
 - **A group's next hop:** the tally copy, its handler slowed 100 ms, 10 runs an entry: go and
   `http-parallel` started 2 every time, `http-request` and `call-with-response-port` 1
   ([`group-next-hop-tally.log`](group-next-hop-tally.log)).
+
+## PR #47's memory failure: test-unsupported's flip test
+
+- **CI at `473b1b4`** ([`ci/ci-memory-473b1b4.log`](ci/ci-memory-473b1b4.log)): test-unsupported's
+  list's-string flip test read `(refused)`, only refusals of 300, where `(refused whole)` is held;
+  Valgrind 0 errors. The other seven jobs passed.
+- **Under the gate,** `race-gate.sh` (`../../slice4/races/`), five `--rm` containers at two
+  pinned CPUs each, four rounds: `main`'s tree failed 6 of 20, the branch's 5 of 20, the
+  list's-string test every time ([`flip/gate-unsupported-*.out`](flip/)). So not the branch's.
+  test-transfer-tls's CA-file flip test, the same shape, four containers more: 16 of 16 on each
+  tree ([`flip/gate-transfer-tls-*.out`](flip/)), left as it is.
+- **The fix:** test-unsupported's `race` loop sleeps 1 ms after a refusal, as test-transfer's flip
+  tests do: 20 of 20 under the gate ([`flip/gate-unsupported-fix-*.out`](flip/)), and natively in
+  the container. Under a mutant that lets CR through the hatch's `text-fault`
+  ([`flip/mutant-cr-not-line-break.diff`](flip/mutant-cr-not-line-break.diff)), both flip tests
+  fail, beside the two position tests ([`flip/mutant-cr-not-line-break.log`](flip/mutant-cr-not-line-break.log)).

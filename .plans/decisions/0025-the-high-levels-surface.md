@@ -166,7 +166,8 @@ library (brief §3).
     params 0.4 to 0.7 ms a thousand, a URL about 29 ms a million chars to the cap.
     `tests/test-call-checks.sps` holds all of it, 49 tests. Two older tests changed with it:
     test-transfer's flip tests sleep 1 ms after a refusal, since under Valgrind a loop whose
-    refusal waited for nothing ran through the flipper's CR states once the submit's parse had
-    a section, 5 runs of 22; and a group's step row counts 1 or 2 transfers started, since a
+    refusal waited for nothing ran through the flipper's CR states, 5 runs of 22 once the
+    submit's parse had a section and 0 of 12 before; test-unsupported's twin, which then failed
+    CI's memory job at `473b1b4`, races so on `main` too, 6 runs of 20, and got the same pause; and a group's step row counts 1 or 2 transfers started, since a
     group submits the next hop inside its step's section, before a pending Ctrl-C runs, and the
     raise's cancel then races the engine starting it.
