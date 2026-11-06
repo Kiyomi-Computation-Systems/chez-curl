@@ -1,0 +1,2 @@
+suite test-transfer exit 1 pass 224 fail 1
+  FAIL a submit checks in prepare-transfer's order, each refusal raised at submit: a header, while the CA file and the URL are wrong too; the CA file, while the URL is, each before anything native; then the URL, parsed on this thread, in a section of its own, its CURLU freed before its refusal is rais

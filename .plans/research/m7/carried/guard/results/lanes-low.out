@@ -1,0 +1,13 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+== lane floor: CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/e1/ci/curl-floor/include probe/paused-send.sps
+lane floor: exit 0 (2 s)
+== lane openssl: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 probe/paused-send.sps
+lane openssl: exit 0 (2 s)
+== lane gnutls: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 probe/paused-send.sps
+lane gnutls: exit 0 (2 s)
+== lane current: CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include probe/paused-send.sps
+lane current: exit 0 (2 s)

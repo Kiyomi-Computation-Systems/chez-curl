@@ -1,0 +1,4 @@
+  actual:   (0 ((escape escaped after-release (quiet allocated 115232 trip 8388608) cancelled) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((raise #t #f after-release (quiet allocated 115760 trip 8388608) cancelled) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 (escape lost (quiet allocated 87216 trip 8388608) #f #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (escape lost (quiet allocated 87216 trip 8388608) #f #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")

@@ -1,0 +1,34 @@
+%%%% Starting test call-checks
+FAIL SIGINT while request's first step, a redirect's, blocks at its start, inside its critical section, whose Ctrl-C handler raises a &curl-error of its own: the call raises that very object, the handler run after the step's end, as the section ended; the first transfer alone made; the child's counts zero
+  expected: (0 ((checks request step raise (raised #t #f) (start end) quiet (0 0 0) 1 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks request step raise (raised #t #f) (start) quiet (0 0 0) 1 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL SIGINT while port's first step, a redirect's, blocks at its start, inside its critical section, whose Ctrl-C handler raises a &curl-error of its own: the call raises that very object, the handler run after the step's end, as the section ended; the first transfer alone made; the child's counts zero
+  expected: (0 ((checks port step raise (raised #t #f) (start end) quiet (0 0 0) 1 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks port step raise (raised #t #f) (start) quiet (0 0 0) 1 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL SIGINT while request's first step, a redirect's, blocks at its start, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the call resumes, follows the redirect, and answers 200, the caller's handler returned once; two transfers; the child's counts zero
+  expected: (0 ((checks request step resume (returned 200) (start end) quiet (0 0 0) 2 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks request step resume (raised other (#f #f #t)) (start) quiet (0 0 0) 1 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL SIGINT while port's first step, a redirect's, blocks at its start, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the call resumes, follows the redirect, and answers 200, the caller's handler returned once; two transfers; the child's counts zero
+  expected: (0 ((checks port step resume (returned 200) (start end) quiet (0 0 0) 2 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks port step resume (raised other (#f #f #t)) (start) quiet (0 0 0) 1 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL a timer that runs out at request's first step's start, a redirect's, inside its critical section, fires after its end: its handler's own &curl-error leaves as raised; a continuable &warning its caller's handler returns from resumes the call, which answers 200
+  expected: (((raised #t #f) (start end) 0) ((returned 200) (start end) 1))
+  actual:   (((raised #t #f) (start) 0) ((raised other "Exception occurred with condition components:\n  0. &non-continuable") (start) 1))
+FAIL a timer that runs out at port's first step's start, a redirect's, inside its critical section, fires after its end: its handler's own &curl-error leaves as raised; a continuable &warning its caller's handler returns from resumes the call, which answers 200
+  expected: (((raised #t #f) (start end) 0) ((returned 200) (start end) 1))
+  actual:   (((raised #t #f) (start) 0) ((raised other "Exception occurred with condition components:\n  0. &non-continuable") (start) 1))
+FAIL an engine's expiry swept a tick at a time across request's first step, a redirect's: none lands inside a step, and no resumed call raises (curl)'s refusal to re-enter a URL's parse; the fuels that did, counted, and their first five; and the sweep's evidence, the first expiry after a step's end found, some expiry after the checks and before any step, and some after a step, outside every step
+  expected: ((0 ()) (0 ()) (#t #t #t))
+  actual:   ((522 (2150 2175 2200 2225 2250)) (138 (2400 2425 2450 2475 2500)) (#t #t #t))
+FAIL an engine's expiry swept a tick at a time across port's first step, a redirect's: none lands inside a step, and no resumed call raises (curl)'s refusal to re-enter a URL's parse; the fuels that did, counted, and their first five; and the sweep's evidence, the first expiry after a step's end found, some expiry after the checks and before any step, and some after a step, outside every step
+  expected: ((0 ()) (0 ()) (#t #t #t))
+  actual:   ((704 (1275 1375 1400 1475 1500)) (304 (1475 1500 1550 1575 2425)) (#t #t #t))
+FAIL a timer set 1 to 300 ticks past request's first step's start, a redirect's, whose handler raises a symbol continuably, which the caller's handler returns from: every call resumes and answers 200, no handler runs inside a step, and the handler ran; the counts that did not, and their first five
+  expected: ((0 ()) (0 ()) #t)
+  actual:   ((300 ((1 (raised "Exception occurred with condition components:\n  0. &non-continuable")) (2 (raised "Exception occurred with condition components:\n  0. &non-continuable")) (3 (raised "Exception occurred with condition components:\n  0. &non-continuable")) (4 (raised "Exception occurred with condition components:\n  0. &non-continuable")) (5 (raised "Exception occurred with condition components:\n  0. &non-continuable")))) (300 (1 2 3 4 5)) #t)
+FAIL a timer set 1 to 300 ticks past port's first step's start, a redirect's, whose handler raises a symbol continuably, which the caller's handler returns from: every call resumes and answers 200, no handler runs inside a step, and the handler ran; the counts that did not, and their first five
+  expected: ((0 ()) (0 ()) #t)
+  actual:   ((300 ((1 (raised "Exception occurred with condition components:\n  0. &non-continuable")) (2 (raised "Exception occurred with condition components:\n  0. &non-continuable")) (3 (raised "Exception occurred with condition components:\n  0. &non-continuable")) (4 (raised "Exception occurred with condition components:\n  0. &non-continuable")) (5 (raised "Exception occurred with condition components:\n  0. &non-continuable")))) (300 (1 2 3 4 5)) #t)
+# of expected passes      39
+# of unexpected failures  10
+suite-exit-status: exit 1 (pass 39, fail 10, xpass 0): a suite needs a pass, and no fail or xpass

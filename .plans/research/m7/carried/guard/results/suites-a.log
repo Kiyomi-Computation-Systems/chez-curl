@@ -1,0 +1,10 @@
+suite test-http-client exit 0 pass 78 fail 0
+suite test-group exit 0 pass 65 fail 0
+suite test-stream-call exit 0 pass 77 fail 0
+suite test-retry exit 0 pass 86 fail 0
+suite test-redirect exit 0 pass 72 fail 0
+suite test-auth exit 0 pass 66 fail 0
+suite test-proxy exit 0 pass 96 fail 0
+suite test-cookies exit 0 pass 70 fail 0
+suite test-printed exit 0 pass 10 fail 0
+suite test-version exit 0 pass 27 fail 0

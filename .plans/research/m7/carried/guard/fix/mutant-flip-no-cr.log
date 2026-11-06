@@ -1,0 +1,9 @@
+suite test-transfer exit 1 pass 217 fail 8
+  FAIL a header value with U+D at each of its places, and alone, is refused as line-break, naming header-value and the header's name, never the value, which can be a secret, with nothing native at the raise
+  FAIL a user agent with U+D at each of its places, and alone, is refused as line-break, naming user-agent, with nothing native at the raise
+  FAIL a value's first offending char decides its reason, each way round, for a header value, named by its header's name, and a user agent
+  FAIL the char scan comes first: an offending char anywhere decides before whitespace at an end
+  FAIL a request changed after it was made is refused at submit, at each field, before anything native: the URL, a header's name, its value, CR LF that would inject a header, the user agent, the list, a pair's car and cdr, the second header's value, and the list's or a name's type
+  FAIL a header's name is checked before its value, and headers in order: the first header's fault is the one named
+  FAIL a user agent another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the agent whole, never the CR, both seen; the counts back to the engine's alone
+  FAIL a header value another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the value whole, never the CR, both seen; the counts back to the engine's alone

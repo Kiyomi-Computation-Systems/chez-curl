@@ -1,0 +1,5 @@
+%%%% Starting test stream-call
+(stream-call-throughput raw ms 395)
+(stream-call-throughput h2 ms 348)
+(stream-call-idle-cpu ms 2757819/200000)
+# of expected passes      77

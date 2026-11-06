@@ -1,0 +1,110 @@
+# The carried races' mutants (mut.py), each a copy of the final tree with one mutation, natively in the Guix container on CPUs 8,9: make test of the suites named. KILLED: a suite failed; SURVIVED: every suite passed. Each failing test's actual value follows its title; each mutant's log and diff are in mutants/.
+baseline | control: no mutation | test-origin-tls test-origin test-http-client test-engine test-mailbox | SURVIVED | test: ran 5, passed 5, failed 0, hung 0
+o0-main-origin | main's origin, tests/origin.mjs at 29f4b5d, under the fixed suite | test-origin-tls | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued
+      actual:   (("000000040000000000000000040100000000" eof) stopped-before-the-request answered-after-the-stop)
+o1-no-rst | /refuse's stream left open: no RST_STREAM | test-origin-tls | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL h2c POST /refuse?at=0, its HEADERS alone
+      actual:   (("000000040000000000000000040100000000" eof) ("sink h2c method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+    FAIL h2c POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart
+      actual:   (("000000040000000000000000040100000000" eof) (connected 3 reset-at 4) ("sink h2c method=POST cl=7 te=- expect=- ct=- bytes=7 sha256=7d1a54127b222502f5b79b5fb0803061152a44f92b37e23c6527baf665d4da9a pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-fra
+    FAIL h2c POST /refuse?at=3, DATA of 3 bytes and the stream left open
+      actual:   ("000000040000000000000000040100000000" eof)
+    FAIL h2c POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued
+      actual:   (("000000040000000000000000040100000000" eof) stopped-before-the-request answered-after-the-stop)
+    FAIL h2 POST /refuse?at=0, its HEADERS alone
+      actual:   (("000000040000000000000000040100000000" eof) ("sink h2 method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+    FAIL h2 POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart
+      actual:   (("000000040000000000000000040100000000" eof) (connected 12 reset-at 14) ("sink h2 method=POST cl=7 te=- expect=- ct=- bytes=7 sha256=7d1a54127b222502f5b79b5fb0803061152a44f92b37e23c6527baf665d4da9a pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-fr
+    FAIL h2 POST /refuse?at=3, DATA of 3 bytes and the stream left open
+      actual:   ("000000040000000000000000040100000000" eof)
+    FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued
+      actual:   (("000000040000000000000000040100000000" eof) stopped-before-the-request answered-after-the-stop)
+o2-wrong-code | /refuse resets with INTERNAL_ERROR, not REFUSED_STREAM | test-origin-tls | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL h2c POST /refuse?at=0, its HEADERS alone
+      actual:   (("00000004000000000000000004010000000000000403000000000100000002" eof) ("sink h2c method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-fr
+    FAIL h2c POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart
+      actual:   (("00000004000000000000000004010000000000000403000000000100000002" eof) refused-after ("sink h2c method=POST cl=7 te=- expect=- ct=- bytes=7 sha256=7d1a54127b222502f5b79b5fb0803061152a44f92b37e23c6527baf665d4da9a pattern=bad@0 arrivals=1 gap=~@0 seen
+    FAIL h2c POST /refuse?at=3, DATA of 3 bytes and the stream left open
+      actual:   ("00000004000000000000000004010000000000000403000000000100000002" eof)
+    FAIL h2c POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued
+      actual:   (("00000004000000000000000004010000000000000403000000000100000002" eof) stopped-before-the-request answered-after-the-stop)
+    FAIL h2 POST /refuse?at=0, its HEADERS alone
+      actual:   (("00000004000000000000000004010000000000000403000000000100000002" eof) ("sink h2 method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-fra
+    FAIL h2 POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart
+      actual:   (("00000004000000000000000004010000000000000403000000000100000002" eof) refused-after ("sink h2 method=POST cl=7 te=- expect=- ct=- bytes=7 sha256=7d1a54127b222502f5b79b5fb0803061152a44f92b37e23c6527baf665d4da9a pattern=bad@0 arrivals=1 gap=~@0 seen=
+    FAIL h2 POST /refuse?at=3, DATA of 3 bytes and the stream left open
+      actual:   ("00000004000000000000000004010000000000000403000000000100000002" eof)
+    FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued
+      actual:   (("00000004000000000000000004010000000000000403000000000100000002" eof) stopped-before-the-request answered-after-the-stop)
+o3-wrong-stream | /refuse resets a stream it pushes, stream 2, and leaves the request open | test-origin-tls | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL h2c POST /refuse?at=0, its HEADERS alone
+      actual:   (("00000004000000000000000004010000000000001605040000000100000002048662c2cb6a0b27824186a0e41d139d098600000403000000000200000007" eof) ("sink h2c method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e
+    FAIL h2c POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart
+      actual:   (("00000004000000000000000004010000000000001605040000000100000002048662c2cb6a0b27824186a0e41d139d098600000403000000000200000007" eof) refused-after ("sink h2c method=POST cl=7 te=- expect=- ct=- bytes=7 sha256=7d1a54127b222502f5b79b5fb0803061152a44f9
+    FAIL h2c POST /refuse?at=3, DATA of 3 bytes and the stream left open
+      actual:   ("00000004000000000000000004010000000000001605040000000100000002048662c2cb6a0b27824186a0e41d139d098600000403000000000200000007" eof)
+    FAIL h2c POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued
+      actual:   (("00000004000000000000000004010000000000001605040000000100000002048662c2cb6a0b27824186a0e41d139d098600000403000000000200000007" eof) stopped-before-the-request answered-after-the-stop)
+    FAIL h2 POST /refuse?at=0, its HEADERS alone
+      actual:   (("00000004000000000000000004010000000000001605040000000100000002048662c2cb6a0b27824186a0e41d139d098700000403000000000200000007" eof) ("sink h2 method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e6
+    FAIL h2 POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart
+      actual:   (("00000004000000000000000004010000000000001605040000000100000002048662c2cb6a0b27824186a0e41d139d098700000403000000000200000007" eof) refused-after ("sink h2 method=POST cl=7 te=- expect=- ct=- bytes=7 sha256=7d1a54127b222502f5b79b5fb0803061152a44f92
+    FAIL h2 POST /refuse?at=3, DATA of 3 bytes and the stream left open
+      actual:   ("00000004000000000000000004010000000000001605040000000100000002048662c2cb6a0b27824186a0e41d139d098700000403000000000200000007" eof)
+    FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued
+      actual:   (("00000004000000000000000004010000000000001605040000000100000002048662c2cb6a0b27824186a0e41d139d098700000403000000000200000007" eof) stopped-before-the-request answered-after-the-stop)
+o4-end-at-once | the client's end ends the connection at once, half-open kept | test-origin-tls | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued
+      actual:   (("000000040000000000000000040100000000" eof) stopped-before-the-request answered-after-the-stop)
+o5-node-end | Node's own end: the HTTP/2 servers not half-open | test-origin-tls | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued
+      actual:   (("000000040000000000000000040100000000" eof) stopped-before-the-request answered-after-the-stop)
+o6-next-tick | the client's end ends the connection at the next tick, before the immediates | test-origin-tls | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued
+      actual:   (("000000040000000000000000040100000000" eof) stopped-before-the-request answered-after-the-stop)
+h1-record-after-section | the drive records its token after the submit's critical section | test-http-client | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL SIGINT while a call's submit blocks inside its critical section escapes as the section ends, after the submit took the mutex, no collection 
+      actual:   (0 ((escape escaped after-release quiet still-live) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+    FAIL SIGINT while a call's submit blocks inside its critical section, whose handler raises a &curl-error of its own, reaches the caller as raised
+      actual:   (0 ((raise #t #f after-release quiet still-live) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+h2-guard-outside-section | the drive's refusal guard wraps the submit's critical section | test-http-client | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL SIGINT while a call's submit blocks inside its critical section, whose handler raises a &curl-error of its own, reaches the caller as raised
+      actual:   (0 ((raise #f #t after-release quiet cancelled) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+h3-no-section | the drive's submit in no critical section of its own | test-http-client | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL SIGINT while a call's submit blocks inside its critical section escapes as the section ends, after the submit took the mutex, no collection 
+      actual:   (0 ((escape escaped after-release quiet still-live) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+    FAIL SIGINT while a call's submit blocks inside its critical section, whose handler raises a &curl-error of its own, reaches the caller as raised
+      actual:   (0 ((raise #f #t after-release quiet still-live) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+m1-take-peeks | the take looks inside its section, and takes the token out after it | test-mailbox | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL an interrupt handler that escapes from a take as its critical section ends loses the token's notice, no collection run in the hold, its call
+      actual:   (0 (escape before quiet #f #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+    FAIL an interrupt handler that escapes from a deliver as its critical section ends loses the token's notice, no collection run in the hold, its c
+      actual:   (0 (escape before quiet #f #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+m2-callback-in-section | the delivery's callback runs inside the take's section | test-mailbox | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL an interrupt handler that escapes from a deliver as its critical section ends loses the token's notice, no collection run in the hold, its c
+      actual:   (0 (escape lost quiet #t #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+f1-plant-trip-http-client | plant: a collection asked for in the http-client children's holds | test-http-client | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL SIGINT while a call's submit blocks inside its critical section escapes as the section ends, after the submit took the mutex, no collection 
+      actual:   (0 ((escape escaped after-release (collected 77 79) cancelled) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+    FAIL SIGINT while a call's submit blocks inside its critical section, whose handler raises a &curl-error of its own, reaches the caller as raised
+      actual:   (0 ((raise #t #f after-release (collected 77 78) cancelled) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+f2-plant-trip-mailbox | plant: a collection asked for in the mailbox child's hold, 64 KiB allocated as it prints its ready line | test-mailbox | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL an interrupt handler that escapes from a take as its critical section ends loses the token's notice, no collection run in the hold, its call
+      actual:   (0 (escape returned (collected 57 #f) #f #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "sh: line 10: kill: (61840) - No such process\n")
+    FAIL an interrupt handler that escapes from a deliver as its critical section ends loses the token's notice, no collection run in the hold, its c
+      actual:   (0 (escape returned (collected 57 #f) #t #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "sh: line 10: kill: (62618) - No such process\n")
+f2a-plant-bare-trip-mailbox | plant: a bare 1 KiB trip as the mailbox child prints its ready line, nothing allocated after it | test-mailbox | SURVIVED | test: ran 1, passed 1, failed 0, hung 0
+f2b-plant-trip-mailbox-holder | plant: a collection asked for by the mailbox child's holder as its hold starts, 64 KiB allocated after it | test-mailbox | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL an interrupt handler that escapes from a take as its critical section ends loses the token's notice, no collection run in the hold, its call
+      actual:   (0 (escape returned (collected 57 #f) #f #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "sh: line 10: kill: (65479) - No such process\n")
+    FAIL an interrupt handler that escapes from a deliver as its critical section ends loses the token's notice, no collection run in the hold, its c
+      actual:   (0 (escape returned (collected 57 #f) #t #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "sh: line 10: kill: (66262) - No such process\n")
+f3-late-sigint-fixed-hold-hc | plant: the http-client SIGINT 3.5 s after ready, each hold 1 s | test-http-client | SURVIVED | test: ran 1, passed 1, failed 0, hung 0
+f4-late-sigint-fixed-hold-mb | plant: the mailbox SIGINT 3.5 s after ready, the hold 1 s | test-mailbox | KILLED | test: ran 1, passed 0, failed 1, hung 0
+    FAIL an interrupt handler that escapes from a take as its critical section ends loses the token's notice, no collection run in the hold, its call
+      actual:   (0 (escape returned (collected 57 #f) #f #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "sh: line 10: kill: (69128) - No such process\n")
+    FAIL an interrupt handler that escapes from a deliver as its critical section ends loses the token's notice, no collection run in the hold, its c
+      actual:   (0 (escape returned (collected 57 #f) #t #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "sh: line 10: kill: (69163) - No such process\n")
+f5-late-sigint-hc | control: the http-client SIGINT 3.5 s after ready, the holds until sent | test-http-client | SURVIVED | test: ran 1, passed 1, failed 0, hung 0
+f6-late-sigint-mb | control: the mailbox SIGINT 3.5 s after ready, the hold until sent | test-mailbox | SURVIVED | test: ran 1, passed 1, failed 0, hung 0

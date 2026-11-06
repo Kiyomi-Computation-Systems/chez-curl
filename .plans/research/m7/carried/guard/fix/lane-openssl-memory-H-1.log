@@ -1,0 +1,25 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-call-checks.sps
+test-memory: pass tests/test-call-checks.sps
+=== tests/test-group.sps
+test-memory: pass tests/test-group.sps
+=== tests/test-origin-tls.sps
+test-memory: pass tests/test-origin-tls.sps
+=== tests/test-transfer.sps
+test-memory: FAIL tests/test-transfer.sps (exit 1)
+  log: build/memory/test-transfer.log
+  Valgrind's log: build/memory/test-transfer.valgrind
+  ==11539==    definitely lost: 0 bytes in 0 blocks
+  ==11539==         suppressed: 0 bytes in 0 blocks
+  ==11539== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+  | %%%% Starting test transfer
+  | FAIL a user agent another thread flips between c and CR while 300 transfers run: each is refused as line-break, or sends the agent whole, never the CR, both seen; the counts back to the engine's alone
+  |   expected: (() (refused whole) ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+  |   actual:   (() (refused) ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+  | # of expected passes      224
+  | # of unexpected failures  1
+  | suite-exit-status: exit 1 (pass 224, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+=== tests/test-redirect.sps
+test-memory: pass tests/test-redirect.sps
+test-memory: ran 5, passed 4, failed 1, hung 0
+make: *** [Makefile:443: test-memory] Error 1

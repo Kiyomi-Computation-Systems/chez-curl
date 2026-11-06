@@ -1,0 +1,5 @@
+(condition-clause-takes-a-condition ((inner #<condition &message>) 1))
+(condition-clause-declines-a-symbol ((outer refused-re-entry) 2))
+(condition-clause-declines-false ((outer refused-re-entry) 2))
+(no-wind (outer tick))
+scheme version: 10.4.0

@@ -1,0 +1,39 @@
+# The standalone loop (probe/refuse-loop.mjs), the real origin and probe, the three /refuse shapes test-origin-tls sends, in the Guix container (Node 24.18.0) unless named; TALLY lines of each log.
+## native-idle-main.log
+TALLY h2c at=0 ok 200 miss 0
+TALLY h2c at=3 ok 200 miss 0
+TALLY h2c at=5 ok 200 miss 0
+TALLY h2 at=0 ok 199 miss 1
+TALLY h2 at=3 ok 200 miss 0
+TALLY h2 at=5 ok 200 miss 0
+## native-idle-fix.log
+TALLY h2c at=0 ok 200 miss 0
+TALLY h2c at=3 ok 200 miss 0
+TALLY h2c at=5 ok 200 miss 0
+TALLY h2 at=0 ok 200 miss 0
+TALLY h2 at=3 ok 200 miss 0
+TALLY h2 at=5 ok 200 miss 0
+## native-loaded-main.log
+TALLY h2c at=0 ok 100 miss 0
+TALLY h2c at=3 ok 100 miss 0
+TALLY h2c at=5 ok 100 miss 0
+TALLY h2 at=0 ok 63 miss 37
+TALLY h2 at=3 ok 61 miss 39
+TALLY h2 at=5 ok 100 miss 0
+## native-loaded-fix.log
+TALLY h2c at=0 ok 100 miss 0
+TALLY h2c at=3 ok 100 miss 0
+TALLY h2c at=5 ok 100 miss 0
+TALLY h2 at=0 ok 100 miss 0
+TALLY h2 at=3 ok 100 miss 0
+TALLY h2 at=5 ok 100 miss 0
+## stop0-main.log
+TALLY h2c at=stop0 ok 10 miss 0
+TALLY h2 at=stop0 ok 0 miss 10
+## stop0-fix.log
+TALLY h2c at=stop0 ok 10 miss 0
+TALLY h2 at=stop0 ok 10 miss 0
+## native-trace-main.log
+TALLY h2 at=0 ok 5 miss 5
+## native-trace-main-node20.log
+TALLY h2 at=0 ok 4 miss 6

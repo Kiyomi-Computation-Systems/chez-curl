@@ -695,6 +695,22 @@ provisional. They bind until that record is accepted or amended.
   it submits, by `(curl)`'s own refusal of a wait there. A session's close waits, so it cannot
   wind critically: a second escape as it starts can leave the engine running, documented, not
   prevented (ADR-0025, amended 2026-10-27).
+- **A call's checks run in one `critical-section`,** `call-state`'s, at every entry of the high
+  level: its guard inside the section takes every raise, `#t`, and answers it as data, raised
+  once the section ends, a condition compounded with `&http-exchange` as before. So a Ctrl-C or
+  timer handler's raise there leaves as raised, a continuable one resumes the call, and an
+  engine's expiry lands after the checks, never inside the URL parse's critical wind. Nothing in
+  the checks may wait or run caller code (ADR-0025, amended 2026-11-05).
+- **No guard that can decline a raise wraps a critical wind with interrupts on.** R6RS re-raises
+  a declined object back inside the raise, so the wind's before thunk runs again, and one that
+  refuses re-entry turns the raise into its refusal. Every such guard in `src/`, a redirect
+  step's and `curl-submit`'s proxy check among them, runs inside a `critical-section`, taking
+  every raise as data, raised once the section ends (ADR-0025, after its review, 2026-11-06).
+- **A URL of more than 8,000,000 chars is refused as a call's checks begin,** and wherever
+  `(curl)` reads a URL (`checked-input`), `malformed-input`, code 3, as libcurl refuses it,
+  before any copy but the call's own. The checks' other holds grow with their input, at the rates `(http-client)`'s
+  header gives, and every thread, the engine's among them, stalls once a collection falls due
+  during one (ADR-0025, after its review, 2026-11-06).
 - **A bounded call gives each transfer the time left as its `timeout-ms`, and as its
   `connect-timeout-ms` when the caller gave none, capped at 300,000 ms:** libcurl's connect
   takes that default when none is set, so with more than 300 s left its 28 is not the bound's,

@@ -1062,13 +1062,16 @@
 ;; checked after it, so a check out of order, or one left to the engine's
 ;; thread, names another answer. The hatch's options were checked as they
 ;; were attached, and are private copies: a submit has nothing of theirs
-;; to check (ADR-0009, amended 2026-10-27).
-(test-equal "a submit checks in prepare-transfer's order, each refusal raised at submit: a header, while the CA file and the URL are wrong too; the CA file, while the URL is, each before anything native; then the URL, parsed on this thread, its CURLU live at the raise and freed after"
+;; to check (ADR-0009, amended 2026-10-27). The URL's parse runs in a
+;; critical section of its own, its refusal answered as data and raised
+;; once the section has ended (ADR-0025, as amended after the branch's
+;; review): the CURLU, which the parse makes on this thread, is freed by
+;; then, so the caller's handler counts none, where before the section it
+;; ran inside the parse and counted one.
+(test-equal "a submit checks in prepare-transfer's order, each refusal raised at submit: a header, while the CA file and the URL are wrong too; the CA file, while the URL is, each before anything native; then the URL, parsed on this thread, in a section of its own, its CURLU freed before its refusal is raised"
   (list (list '(request-refused header-name "X Name" not-a-token) running-counts running-counts)
         (list '(request-refused ca-file "/x/c\x0;.pem" embedded-nul) running-counts running-counts)
-        (list '(url-refused scheme-not-http)
-              '((block . 1) (easy . 0) (url . 1) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0))
-              running-counts))
+        (list '(url-refused scheme-not-http) running-counts running-counts))
   (map (lambda (wrong)
          (let* ((name (string-copy "X-Name"))
                 (path (string-copy "/x/ca.pem"))
@@ -2293,6 +2296,16 @@
                        (k (cond ((equal? a clean) 'whole)
                                 ((equal? a '(request-refused user-agent line-break)) 'refused)
                                 (else #f))))
+                  ;; A refusal comes before anything waits, so with no
+                  ;; yield the next transfer can read the flipper's same CR:
+                  ;; under Valgrind, which runs one thread at a time, every
+                  ;; one of the 300 was refused, the flipper never seen at
+                  ;; c, in 5 of 22 runs of the memory gate once the submit's
+                  ;; URL parse ran in a section of its own, and 0 of 12
+                  ;; before (research/m7/carried/guard/, the fix round's
+                  ;; flip logs). A refusal sleeps 1 ms, so the flipper moves
+                  ;; on (traps.md).
+                  (when (eq? k 'refused) (pause-ms 1))
                   (loop (+ i 1)
                         (if k odd (cons a odd))
                         (if (and k (not (memq k seen))) (cons k seen) seen))))))
@@ -2462,6 +2475,16 @@
                        (k (cond ((equal? a clean) 'whole)
                                 ((equal? a '(request-refused header-value line-break)) 'refused)
                                 (else #f))))
+                  ;; A refusal comes before anything waits, so with no
+                  ;; yield the next transfer can read the flipper's same CR:
+                  ;; under Valgrind, which runs one thread at a time, every
+                  ;; one of the 300 was refused, the flipper never seen at
+                  ;; c, in 5 of 22 runs of the memory gate once the submit's
+                  ;; URL parse ran in a section of its own, and 0 of 12
+                  ;; before (research/m7/carried/guard/, the fix round's
+                  ;; flip logs). A refusal sleeps 1 ms, so the flipper moves
+                  ;; on (traps.md).
+                  (when (eq? k 'refused) (pause-ms 1))
                   (loop (+ i 1)
                         (if k odd (cons a odd))
                         (if (and k (not (memq k seen))) (cons k seen) seen))))))

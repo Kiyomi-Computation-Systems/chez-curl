@@ -451,6 +451,11 @@ its length, sent as =Content-Length=; leave it =#f= to send it chunked:
 - *Over HTTP/2, a transfer that streams both ways sends only while you read.*
   With a =stream-buffer= too, read the response's pieces, or the upload
   stops at the peer's window.
+- *On Ubuntu's libcurl 8.5.0, over HTTP/2, a paused upload can hide the
+  answer.* Rarely, once libcurl has asked for the body and you have put
+  nothing, the response waits for your next put or end: a head wait answers
+  =#f= at its bound, and the transfer can wait until its timeout. Put or end
+  the body first, or bound the wait and then put.
 
 *** What follows a redirect
 

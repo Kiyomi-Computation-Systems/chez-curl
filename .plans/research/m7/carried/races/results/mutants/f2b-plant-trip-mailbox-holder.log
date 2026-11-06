@@ -1,0 +1,18 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-mailbox.sps
+%%%% Starting test mailbox
+FAIL an interrupt handler that escapes from a take as its critical section ends loses the token's notice, no collection run in the hold, its callback unrun, never its outcome: the token is done, and await answers its response; the child's counts zero
+  expected: (0 (escape lost quiet #f #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (escape returned (collected 57 #f) #f #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "sh: line 10: kill: (65479) - No such process\n")
+FAIL an interrupt handler that escapes from a deliver as its critical section ends loses the token's notice, no collection run in the hold, its callback unrun, never its outcome: the token is done, and await answers its response; the child's counts zero
+  expected: (0 (escape lost quiet #f #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "")
+  actual:   (0 (escape returned (collected 57 #f) #t #t (response 200)) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) "sh: line 10: kill: (66262) - No such process\n")
+# of expected passes      24
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 24, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-mailbox.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

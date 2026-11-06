@@ -1,0 +1,27 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-call-checks.sps
+%%%% Starting test call-checks
+FAIL an engine's expiry swept a tick at a time across go's first step, a redirect's: none lands inside a step, and no resumed call raises (curl)'s refusal to re-enter a URL's parse; the fuels that did, counted, and their first five; and the sweep's evidence, the first expiry after a step's end found, some expiry after the checks and before any step, and some after a step, outside every step
+  expected: ((0 ()) (0 ()) (#t #t #t))
+  actual:   ((0 ()) (0 ()) (#t #t #f))
+FAIL an engine's expiry swept a tick at a time across curl-submit of a request through a proxy URL, a direct caller's, with interrupts on: no resumed submit raises (curl)'s refusal to re-enter the proxy URL's parse or the URL's; the count, its first five fuels, and the sweep's evidence, a submit that completed unexpired and some that expired
+  expected: (0 () (#t #t))
+  actual:   (593 (118 119 120 121 122) (#t #t))
+FAIL a timer set 1 to 3000 ticks before curl-submit of a request through a proxy URL, whose handler raises a symbol continuably, which the caller's handler returns from: no submit raises (curl)'s refusal to re-enter a parse; the count, its first five, and whether the handler ran
+  expected: (0 () #t)
+  actual:   (389 (112 113 114 115 116) #t)
+FAIL SIGINT while a direct caller's curl-submit, through a proxy URL, blocks at the start of its proxy URL's parse, inside its critical section, whose Ctrl-C handler raises a &curl-error of its own: the submit raises that very object, nothing submitted; the child's counts zero
+  expected: (0 ((checks submit submit raise (raised #t #f) (start) quiet (0 0 0) 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks submit submit raise (returned submitted) never (collected 77 #f) (0 0 0) 1 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL SIGINT while a direct caller's curl-submit, through a proxy URL, blocks at the start of its proxy URL's parse, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the submit resumes and answers its token, whose transfer ends; the caller's handler returned once; the child's counts zero
+  expected: (0 ((checks submit submit resume (returned submitted) (start) quiet (0 0 0) 1 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks submit submit resume (returned submitted) never (collected 77 #f) (0 0 0) 1 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+# of expected passes      44
+# of unexpected failures  5
+suite-exit-status: exit 1 (pass 44, fail 5, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-call-checks.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

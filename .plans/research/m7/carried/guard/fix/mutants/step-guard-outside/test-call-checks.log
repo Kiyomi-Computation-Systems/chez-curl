@@ -1,0 +1,13 @@
+%%%% Starting test call-checks
+FAIL SIGINT while request's first step, a redirect's, blocks at its start, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the call resumes, follows the redirect, and answers 200, the caller's handler returned once; two transfers; the child's counts zero
+  expected: (0 ((checks request step resume (returned 200) (start end) quiet (0 0 0) 2 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks request step resume (raised other (#f #f #t)) (start end) quiet (0 0 0) 1 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL SIGINT while port's first step, a redirect's, blocks at its start, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the call resumes, follows the redirect, and answers 200, the caller's handler returned once; two transfers; the child's counts zero
+  expected: (0 ((checks port step resume (returned 200) (start end) quiet (0 0 0) 2 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks port step resume (raised other (#f #f #t)) (start end) quiet (0 0 0) 1 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL a timer set 1 to 300 ticks past port's first step's start, a redirect's, whose handler raises a symbol continuably, which the caller's handler returns from: every call resumes and answers 200, no handler runs inside a step, and the handler ran; the counts that did not, and their first five
+  expected: ((0 ()) (0 ()) #t)
+  actual:   ((3 ((35 (raised "Exception occurred with condition components:\n  0. &non-continuable")) (36 (raised "Exception occurred with condition components:\n  0. &non-continuable")) (37 (raised "Exception occurred with condition components:\n  0. &non-continuable")))) (0 ()) #t)
+# of expected passes      46
+# of unexpected failures  3
+suite-exit-status: exit 1 (pass 46, fail 3, xpass 0): a suite needs a pass, and no fail or xpass

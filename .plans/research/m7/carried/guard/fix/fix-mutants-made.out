@@ -1,0 +1,14 @@
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-step-pre
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-step-guard-outside
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-step-section-late
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-step-raise-inside
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-submit-pre
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-submit-guard-outside
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-submit-section-late
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-submit-raise-inside
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-cap-pre
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-cap-late
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-cap-off-by-one
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-cap-copying
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-noseam
+mutant /home/kishu/src/chez-curl/build/carried-guard/fixmut-stop-late

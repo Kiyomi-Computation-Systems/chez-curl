@@ -1,0 +1,8 @@
+(bytevector-copy (work-ms 232.9) (handler-after-ms 208.0))
+(string-copy (work-ms 253.5) (handler-after-ms 228.8))
+(string->utf8 (work-ms 228.6) (handler-after-ms 141.8))
+(pieces-control (work-ms 44.6) (handler-after-ms 0.0))
+(bytevector-copy (work-ms 231.2) (handler-after-ms 206.3))
+(string-copy (work-ms 252.8) (handler-after-ms 228.0))
+(string->utf8 (work-ms 229.5) (handler-after-ms 142.5))
+(pieces-control (work-ms 44.8) (handler-after-ms 0.0))

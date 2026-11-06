@@ -1,0 +1,33 @@
+race-gate: mode gate, trees main-probe, cpus 0,1, suites tests/test-origin-tls.sps, race 1, out build/carried-races/out/gate-main-A
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl4t64 8.5.0-2ubuntu10.16
+package valgrind 1:3.22.0-0ubuntu3
+cpus: 2
+=== round 1, tree main-probe, mode gate, 68 s
+test-memory: pass tests/test-origin-tls.sps
+test-memory: ran 1, passed 1, failed 0, hung 0
+=== round 2, tree main-probe, mode gate, 68 s
+test-memory: FAIL tests/test-origin-tls.sps (exit 1)
+test-memory: ran 1, passed 0, failed 1, hung 0
+FAIL h2 POST /refuse?at=3, DATA of 3 bytes and the stream left open: RST_STREAM REFUSED_STREAM on stream 1, then eof
+  expected: ("00000004000000000000000004010000000000000403000000000100000007" eof)
+  actual:   ("000000040000000000000000040100000000" eof)
+=== round 3, tree main-probe, mode gate, 68 s
+test-memory: pass tests/test-origin-tls.sps
+test-memory: ran 1, passed 1, failed 0, hung 0
+=== round 4, tree main-probe, mode gate, 68 s
+test-memory: FAIL tests/test-origin-tls.sps (exit 1)
+test-memory: ran 1, passed 0, failed 1, hung 0
+FAIL h2 POST /refuse?at=0, its HEADERS alone: RST_STREAM REFUSED_STREAM on stream 1 and nothing else, then eof; the key's next request answered as /sink, seen=2
+  expected: (("00000004000000000000000004010000000000000403000000000100000007" eof) ("sink h2 method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+  actual:   (("000000040000000000000000040100000000" eof) ("sink h2 method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+=== round 5, tree main-probe, mode gate, 69 s
+test-memory: pass tests/test-origin-tls.sps
+test-memory: ran 1, passed 1, failed 0, hung 0
+=== round 6, tree main-probe, mode gate, 70 s
+test-memory: pass tests/test-origin-tls.sps
+test-memory: ran 1, passed 1, failed 0, hung 0
+=== round 7, tree main-probe, mode gate, 69 s
+test-memory: pass tests/test-origin-tls.sps
+test-memory: ran 1, passed 1, failed 0, hung 0
+race-gate: done

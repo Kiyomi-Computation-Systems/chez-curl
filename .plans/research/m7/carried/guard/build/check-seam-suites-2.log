@@ -1,0 +1,4 @@
+check-seam: the seam holds (21 libraries in 21 files checked)
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (41 checked)
+make exit 0

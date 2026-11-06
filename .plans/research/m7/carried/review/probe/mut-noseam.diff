@@ -1,0 +1,17 @@
+--- tree/src/http-client.sls	2026-11-05 16:19:43.265553966 -0500
++++ mut-noseam/src/http-client.sls	2026-11-05 17:03:11.721010400 -0500
+@@ -600,12 +600,12 @@
+                                       (if (condition? e)
+                                           (condition e (make-http-exchange method given '() 0))
+                                           e))))
+-                    (run-checks-gate! 'start)
++                    #f
+                     (check-session who session)
+                     (let-values (((request redirects allow-downgrade retry producer)
+                                   (call-request-of who mode session method given plist)))
+                       (when check? (curl-request-check request))
+-                      (run-checks-gate! 'end)
++                      #f
+                       (list 'made
+                             (cons (make-exchange method given request (curl-request-timeout-ms request)
+                                                  start redirects allow-downgrade retry)

@@ -1,0 +1,24 @@
+--- test-origin-tls.sps.orig	2026-11-05 16:49:26.863327186 -0500
++++ tree/tests/test-origin-tls.sps	2026-11-05 16:49:26.875722885 -0500
+@@ -662,6 +662,9 @@
+                           (lambda () #f)
+                           (lambda ()
+                             (set! stopped (kill-origin "-STOP"))
++                            (let ((e (current-error-port)))
++                              (write (list 'margin 'late late 'stop-returned (- (now-ms) spawned ms)) e)
++                              (newline e) (flush-output-port e))
+                             (pause-ms 2700))
+                           (lambda () (when stopped (set! continued (kill-origin "-CONT")))))
+                         (unless (and (eqv? stopped 0) (eqv? continued 0))
+@@ -1117,7 +1120,10 @@
+                                                    '(("content-length" . "4")))
+                                   4000 (append (list "--half-close" "--split" "24:2000") options)))
+                 (p (car r))
+-                (ack-at (arrival (probe-arrivals p) 9)))
++                (ack-at (arrival (probe-arrivals p) 9))
++                (logged (let ((e (current-error-port)))
++                          (write (list 'margin face 'ack-after-connected (and ack-at (probe-connected p) (- ack-at (probe-connected p)))) e)
++                          (newline e) (flush-output-port e))))
+            (list (list (hex (probe-bytes p)) (probe-end p))
+                  (if (< (cadr r) 1700) 'stopped-before-the-request (list 'late (cadr r)))
+                  (if (and ack-at (probe-connected p) (>= (- ack-at (probe-connected p)) 2900))

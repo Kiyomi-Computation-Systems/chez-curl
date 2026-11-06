@@ -1,0 +1,36 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+cpus: 8
+== lane floor round 1: CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/e1/ci/curl-floor/include make deps test SUITES='tests/test-http-client.sps tests/test-stream-call.sps tests/test-group.sps tests/test-call-checks.sps'
+lane floor round 1: pass (97 s)
+  [floor 1] test: pass tests/test-http-client.sps
+  [floor 1] test: pass tests/test-stream-call.sps
+  [floor 1] test: pass tests/test-group.sps
+  [floor 1] test: pass tests/test-call-checks.sps
+  [floor 1] test: ran 4, passed 4, failed 0, hung 0
+== lane openssl round 1: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 make deps test SUITES='tests/test-http-client.sps tests/test-stream-call.sps tests/test-group.sps tests/test-call-checks.sps'
+lane openssl round 1: pass (98 s)
+  [openssl 1] test: pass tests/test-http-client.sps
+  [openssl 1] test: pass tests/test-stream-call.sps
+  [openssl 1] test: pass tests/test-group.sps
+  [openssl 1] test: pass tests/test-call-checks.sps
+  [openssl 1] test: ran 4, passed 4, failed 0, hung 0
+== lane gnutls round 1: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 make deps test SUITES='tests/test-http-client.sps tests/test-stream-call.sps tests/test-group.sps tests/test-call-checks.sps'
+lane gnutls round 1: pass (98 s)
+  [gnutls 1] test: pass tests/test-http-client.sps
+  [gnutls 1] test: pass tests/test-stream-call.sps
+  [gnutls 1] test: pass tests/test-group.sps
+  [gnutls 1] test: pass tests/test-call-checks.sps
+  [gnutls 1] test: ran 4, passed 4, failed 0, hung 0
+== lane current round 1: CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include make deps test SUITES='tests/test-http-client.sps tests/test-stream-call.sps tests/test-group.sps tests/test-call-checks.sps'
+lane current round 1: pass (101 s)
+  [current 1] test: pass tests/test-http-client.sps
+  [current 1] test: pass tests/test-stream-call.sps
+  [current 1] test: pass tests/test-group.sps
+  [current 1] test: pass tests/test-call-checks.sps
+  [current 1] test: ran 4, passed 4, failed 0, hung 0
+lanes-finished

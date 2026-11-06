@@ -1,0 +1,4 @@
+== v1: test: ran 1, passed 1, failed 0, hung 0
+== v1-no-refusal-wait: test: ran 1, passed 1, failed 0, hung 0
+== v1-no-queue-wait: test: ran 1, passed 1, failed 0, hung 0
+== v1-bare: test: ran 1, passed 1, failed 0, hung 0

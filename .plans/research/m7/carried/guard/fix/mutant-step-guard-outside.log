@@ -1,0 +1,4 @@
+suite test-call-checks exit 1 pass 46 fail 3
+  FAIL SIGINT while request's first step, a redirect's, blocks at its start, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the call resumes, follows the redirect, and answers 200, the caller's handler returned once; two transfers; the child's counts zero
+  FAIL SIGINT while port's first step, a redirect's, blocks at its start, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the call resumes, follows the redirect, and answers 200, the caller's handler returned once; two transfers; the child's counts zero
+  FAIL a timer set 1 to 300 ticks past port's first step's start, a redirect's, whose handler raises a symbol continuably, which the caller's handler returns from: every call resumes and answers 200, no handler runs inside a step, and the handler ran; the counts that did not, and their first five

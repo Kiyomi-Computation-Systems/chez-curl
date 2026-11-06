@@ -1,0 +1,25 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (5 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      163
+test: pass tests/test-origin-tls.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      347
+test: pass tests/test-origin.sps
+=== tests/test-http-client.sps
+%%%% Starting test http-client
+# of expected passes      78
+test: pass tests/test-http-client.sps
+=== tests/test-engine.sps
+%%%% Starting test engine
+# of expected passes      54
+test: pass tests/test-engine.sps
+=== tests/test-mailbox.sps
+%%%% Starting test mailbox
+# of expected passes      26
+test: pass tests/test-mailbox.sps
+test: ran 5, passed 5, failed 0, hung 0

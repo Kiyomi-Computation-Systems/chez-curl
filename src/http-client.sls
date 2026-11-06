@@ -80,19 +80,53 @@
 ;;; failures, (curl)'s included, with &http-exchange. A condition the
 ;;; caller's own interrupt handler or timer raises while the call awaits
 ;;; leaves it unchanged, after the call has cancelled its transfer; a
-;;; continuable one a handler returns from resumes the call. One that lands
-;;; earlier, while the call's keys and URL are checked, is compounded as
-;;; the checks' own are: the low level's assertion violations among them
-;;; are no &curl-error, so nothing tells the two apart there. It re-exports
-;;; nothing of (curl): a caller who catches a class of the low level's
-;;; imports (curl) too.
+;;; continuable one a handler returns from resumes the call. A call's
+;;; checks, of its session, keys, body, form, params, request and URL, run
+;;; in one critical section, its guard inside it, so no handler runs inside
+;;; them: a Ctrl-C made pending there runs as the section ends, and a timer
+;;; that runs out there at a later event check, each outside the checks,
+;;; so what it raises leaves as raised, whatever it is, and a continuable
+;;; raise a handler returns from resumes the call (ADR-0025, amended
+;;; 2026-11-05). A guard around the checks with interrupts on read a
+;;; handler's raise there as the call's own: its condition left
+;;; compounded, a continuable one could not resume the call, and an object
+;;; no clause took was re-raised back inside the URL's parse, whose
+;;; critical wind refused the re-entry (the M5 plan, section 10). The
+;;; section holds Ctrl-C and other threads' collections for the checks'
+;;; length, under 0.5 ms for an ordinary call, and each hold grows with
+;;; its input, with no bound but the input's: about 0.4 to 0.5 ms a MiB of
+;;; a bytevector body, as long as its copy, a primitive that makes no event
+;;; check wherever it runs; 2 to 2.7 ms a Mi chars of a string body; 31 to
+;;; 52 ms a Mi chars of a form value; 0.4 to 0.5 ms a thousand headers; 0.6
+;;; to 0.7 ms a thousand params; and about 29 ms a million chars of a URL,
+;;; up to libcurl's 8,000,000-byte cap: a URL longer than 8,000,000 chars,
+;;; whose UTF-8 bytes pass it, is refused at the checks' start, at once, as
+;;; libcurl refuses it, malformed-input, its refusal before the keys'
+;;; (.plans/research/m7/carried/guard/, the fix round's hold-rates.log).
+;;; Once a collection falls due during a hold, every thread stops at its
+;;; next event check until the hold ends, the engine's thread among them,
+;;; and with it every transfer that engine drives (traps.md). A caller who
+;;; takes a body, a form, headers or params from untrusted input bounds
+;;; their sizes first. A refusal is raised once the section has ended, so
+;;; a caller's handler runs with interrupts on. A redirect's step runs in
+;;; a critical section of its own too (the drive's section-step): what a
+;;; handler raises there comes after it, and no expiry lands inside it. A
+;;; group's step submits the next hop inside its section, so a raise that
+;;; comes as it ends cancels a transfer the engine may already have
+;;; started: one or two started, measured (research/m7/carried/guard/,
+;;; the fix round's tally); a single call submits after its section. It
+;;; re-exports nothing of (curl): a caller who catches a class of the low
+;;; level's imports (curl) too.
 ;;;
 ;;; A call that is escaped cancels its transfer: a Ctrl-C whose handler
 ;;; escapes, a timer's, a continuation, and a Chez engine's expiry, which
 ;;; is an escape too. So a call inside an engine that time-slices fails
 ;;; whenever an expiry lands in its await: the expiry cancels the transfer,
 ;;; and the call, once the engine is resumed, raises the low level's
-;;; cancelled, with its &http-exchange and the transfer counted. A call made
+;;; cancelled, with its &http-exchange and the transfer counted. No expiry
+;;; lands inside a call's checks or a step, a redirect's among them: one
+;;; that runs out there lands once its section has ended, and the call
+;;; goes on, resumed. A call made
 ;;; with interrupts off, inside a critical section, is refused before it
 ;;; submits anything: its await could not wait there.
 ;;;
@@ -357,9 +391,11 @@
    ;;   a step or a submit, as its failure. go waits for no transfer, only
    ;;   for brief holds of the engine's mutex, for its submit, and of the
    ;;   session's, for a refused submit's draw; and it copies the call's
-   ;;   body. A condition a caller's interrupt handler or timer raises
-   ;;   while go checks the call is compounded as the checks' own are, as
-   ;;   http-request's is (the M5 plan, section 10, carried).
+   ;;   body. What a caller's interrupt handler or timer raises while go
+   ;;   checks the call comes once the checks' critical section has ended,
+   ;;   as http-request's does: a raise that leaves starts no call; a
+   ;;   continuable one a handler returns from resumes go, which then starts
+   ;;   the call.
    ;; The group's thread drives every call whenever it awaits one, polls one
    ;; or joins, so a redirect or a retry of one call proceeds while another
    ;; is awaited. When PROC returns, the group awaits every call, then
@@ -376,12 +412,9 @@
    ;; expiry is an escape too: around a group, it ends the whole group and
    ;; closes it. Once the engine is resumed, an await raises cancelled; a go
    ;; that had not yet entered its call raises closed, and one that had
-   ;; answers its pending, whose await raises cancelled. An expiry inside a
-   ;; call's checks, whose URL parse runs
-   ;; in (curl)'s critical winds, leaves the parse behind: the resumed call
-   ;; raises (curl)'s refusal to re-enter it, an assertion violation from
-   ;; call-with-parsed-url (the M5 plan, section 10, carried). A group is its
-   ;; thread's: go, http-await,
+   ;; answers its pending, whose await raises cancelled. An expiry that runs
+   ;; out in a call's checks lands once their section has ended, so a go
+   ;; resumed there raises closed. A group is its thread's: go, http-await,
    ;; http-pending-done? and http-pending-cancel from another thread raise
    ;; &http-group-error, wrong-thread, and go once PROC has returned or
    ;; escaped, closed. The join can wait: a cancel ends a transfer once
@@ -429,16 +462,15 @@
    ;; failure, can still come once the calls run, as a failure among them.
    ;; The first call to fail raises, as it raised, once every other is
    ;; cancelled and its transfer has ended: the first the group saw fail,
-   ;; ties in the order of their latest submits. A condition a caller's
-   ;; interrupt handler or timer raises during the checks is compounded as
-   ;; the checks' own are, as http-request's is (the M5 plan, section 10,
-   ;; carried). An escape ends its group, a Chez engine's expiry among them:
-   ;; resumed, it enters no call more, submits none it had not, and raises
-   ;; its first failure, if any, or else the cancel of its first call, in
-   ;; SPECS' order, not done; an expiry inside the checks makes the resumed
-   ;; call raise
-   ;; (curl)'s refusal to re-enter a URL's parse, as go's does. It refuses
-   ;; inside a critical section, before anything else.
+   ;; ties in the order of their latest submits. What a caller's interrupt
+   ;; handler or timer raises during the checks leaves as raised, as
+   ;; http-request's does; each spec's checks are a critical section of
+   ;; their own. An escape ends its group, a Chez engine's expiry among
+   ;; them: resumed, it enters no call more, submits none it had not, and
+   ;; raises its first failure, if any, or else the cancel of its first
+   ;; call, in SPECS' order, not done; an expiry that runs out in the checks
+   ;; lands after them, before the group is made, and the call goes on. It
+   ;; refuses inside a critical section, before anything else.
    http-parallel
 
    ;; --- the response -------------------------------------------------------
@@ -544,11 +576,17 @@
           (http-client private conditions)
           (http-client private call)
           (http-client private exchange)
-          (http-client private drive))
+          (http-client private drive)
+          (only (chezscheme) critical-section))
 
   ;; check-session : Symbol Any -> Void
   (define (check-session who x)
     (unless (http-session? x) (assertion-violation who "not a session" (shown-value x))))
+
+  ;; url-input-cap : Positive-Integer
+  ;; libcurl's cap on a URL's bytes, CURL_MAX_INPUT_LENGTH: 8,000,000 on every
+  ;; libcurl measured. A string of more chars has more UTF-8 bytes.
+  (define url-input-cap 8000000)
 
   ;; call-state : Session Any Any List Boolean (U 'request 'group 'port) Symbol
   ;;              -> (Pairof State (U Procedure #f))
@@ -562,18 +600,48 @@
   ;; checks before any submit (ADR-0023, amended 2026-10-28). Every
   ;; condition raised, a check's, the URL's or the low level's, is
   ;; compounded with &http-exchange, with no transfer made.
+  ;;
+  ;; The checks run in one critical section, the guard inside it, which
+  ;; takes every raise there and answers it as data, raised once the
+  ;; section has ended (ADR-0025, amended 2026-11-05). So no interrupt
+  ;; handler runs inside the guard, which reads the checks' own raises
+  ;; alone: a Ctrl-C made pending in the section runs as it ends, outside
+  ;; the guard, and a timer or an engine's expiry at a later event check;
+  ;; an expiry never leaves a URL's parse behind; and the caller's handler
+  ;; for a refusal runs with interrupts on. Nothing inside waits or calls
+  ;; the caller's code: a producer is kept, not called, and the keys' values
+  ;; are read by length, car, cdr and the copies. The URL's parse takes
+  ;; three mutexes, the counters', native's owners' and memory's, each
+  ;; through locked, briefly, as every holder holds them. The test seam's
+  ;; gate, drive-checks-gate-set!'s, is called at the checks' start and end,
+  ;; inside the section.
   (define (call-state session method url plist check? mode who)
     (let* ((start (monotonic-ns))
-           (given (if (string? url) (string-copy url) url)))
-      (guard (e ((condition? e)
-                 (raise (condition e (make-http-exchange method given '() 0)))))
-        (check-session who session)
-        (let-values (((request redirects allow-downgrade retry producer)
-                      (call-request-of who mode session method given plist)))
-          (when check? (curl-request-check request))
-          (cons (make-exchange method given request (curl-request-timeout-ms request)
-                               start redirects allow-downgrade retry)
-                producer)))))
+           (given (if (string? url) (string-copy url) url))
+           (made (critical-section
+                  (guard (e (#t (list 'refused
+                                      (if (condition? e)
+                                          (condition e (make-http-exchange method given '() 0))
+                                          e))))
+                    (run-checks-gate! 'start)
+                    (check-session who session)
+                    ;; A URL past libcurl's cap is refused first, as (curl)'s
+                    ;; curl-url-part refuses one at once, libcurl's own
+                    ;; refusal, before anything is copied: its checks would
+                    ;; have grown with it, held in this section.
+                    (when (and (string? given) (> (string-length given) url-input-cap))
+                      (curl-url-part given 'url))
+                    (let-values (((request redirects allow-downgrade retry producer)
+                                  (call-request-of who mode session method given plist)))
+                      (when check? (curl-request-check request))
+                      (run-checks-gate! 'end)
+                      (list 'made
+                            (cons (make-exchange method given request (curl-request-timeout-ms request)
+                                                 start redirects allow-downgrade retry)
+                                  producer)))))))
+      (if (eq? (car made) 'refused)
+          (raise (cadr made))
+          (cadr made))))
 
   (define (make-http-session . plist)
     (let* ((settings (key-settings 'make-http-session session-keys plist))

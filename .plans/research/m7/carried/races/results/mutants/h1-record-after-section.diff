@@ -1,0 +1,19 @@
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -327,10 +327,12 @@
+                 (else
+                  (let* ((state (cadr submission))
+                         (request (caddr submission))
+-                        (refusal (critical-section
+-                                  (guard (e ((curl-error? e) (list 'refused e)))
+-                                    (set! token (curl-submit engine request))
+-                                    #f)))
++                        (refusal (let ((t (critical-section
++                                           (guard (e ((curl-error? e) (cons 'refused e)))
++                                             (curl-submit engine request)))))
++                                   (if (and (pair? t) (eq? (car t) 'refused))
++                                       (list 'refused (cdr t))
++                                       (begin (set! token t) #f))))
+                         (outcome (or refusal (outcome-of token)))
+                         (drawn (draw))
+                         (utc (utc-seconds))

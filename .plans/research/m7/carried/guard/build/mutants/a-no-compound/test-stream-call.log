@@ -1,0 +1,19 @@
+%%%% Starting test stream-call
+FAIL call-with-response-port refuses its arguments before anything: no procedure, and a last argument that is no procedure, each an assertion violation from call-with-response-port; a stream-buffer of #f, the same; 0, the low level's assertion violation; an unknown key, a producer with get, and body-length beside a bytevector, each the refusal that names it; all but the arguments' shape compounded with &http-exchange; no transfer started
+  expected: ((raised (assertion call-with-response-port)) (raised (assertion call-with-response-port)) (raised (assertion call-with-response-port) (exchange get "http://127.0.0.1:1/" () 0)) (raised (assertion make-curl-request) (exchange get "http://127.0.0.1:1/" () 0)) (raised (http-error) (http-request-error key limit unknown-key) (exchange get "http://127.0.0.1:1/" () 0)) (raised (http-error) (http-request-error body get body-not-allowed) (exchange get "http://127.0.0.1:1/" () 0)) (raised (curl-request-error body-length 3 body-length-without-stream) (exchange post "http://127.0.0.1:1/" () 0)) 0)
+  actual:   ((raised (assertion call-with-response-port)) (raised (assertion call-with-response-port)) (raised (assertion call-with-response-port)) (raised (assertion make-curl-request)) (raised (http-error) (http-request-error key limit unknown-key)) (raised (http-error) (http-request-error body get body-not-allowed)) (raised (curl-request-error body-length 3 body-length-without-stream)) 0)
+FAIL http-request takes body-length and a producer as its body, and refuses body-length beside a bytevector and a string, (curl)'s body-length-without-stream, and a stream-buffer, which is call-with-response-port's alone, by name; no transfer started
+  expected: ((raised (curl-request-error body-length 2 body-length-without-stream) (exchange post "http://127.0.0.1:1/" () 0)) (raised (curl-request-error body-length 2 body-length-without-stream) (exchange put "http://127.0.0.1:1/" () 0)) (raised (http-error) (http-request-error key stream-buffer unknown-key) (exchange post "http://127.0.0.1:1/" () 0)) 0)
+  actual:   ((raised (curl-request-error body-length 2 body-length-without-stream)) (raised (curl-request-error body-length 2 body-length-without-stream)) (raised (http-error) (http-request-error key stream-buffer unknown-key)) 0)
+FAIL stream-in-group: go with a producer as its body raises &http-request-error, stream-in-group, its field body, its value the producer, compounded with &http-exchange, from go, before anything is submitted; the producer never called; a go after it runs, its one transfer refused at the connect
+  expected: ((raised (http-error) (http-request-error body the-producer stream-in-group) (exchange post "http://127.0.0.1:1/" () 0)) 0 1 (raised (curl-transfer-error connect perform-failed 7) (exchange get "http://127.0.0.1:1/" () 1)))
+  actual:   (raised "Exception in cadddr: incorrect list structure (raised (http-error) (http-request-error body #<procedure at test-stream-call.sps:16079> stream-in-group))")
+FAIL stream-in-group: http-parallel with a producer in its third spec raises it, its value the producer, before any spec is submitted: no transfer started, the producer never called
+  expected: ((raised (http-error) (http-request-error body the-producer stream-in-group) (exchange put "http://127.0.0.1:1/" () 0)) 0 0)
+  actual:   (raised "Exception in cadddr: incorrect list structure (raised (http-error) (http-request-error body #<procedure at test-stream-call.sps:16079> stream-in-group))")
+(stream-call-throughput raw ms 378)
+(stream-call-throughput h2 ms 373)
+(stream-call-idle-cpu ms 2227419/200000)
+# of expected passes      73
+# of unexpected failures  4
+suite-exit-status: exit 1 (pass 73, fail 4, xpass 0): a suite needs a pass, and no fail or xpass

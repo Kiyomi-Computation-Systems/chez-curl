@@ -1,0 +1,360 @@
+# fix-A1 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 44446, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "45729"]}
+    1.382 {"w": "origin", "ev": "session", "face": "h2", "port": 44446}
+    2.000 {"w": "probe", "port": 44446, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2011.534 {"w": "probe", "port": 44446, "ev": "sent"}
+ 2011.661 {"w": "probe", "port": 44446, "ev": "half-close"}
+ 3041.674 {"w": "origin", "ev": "refuse", "face": "h2", "port": 44446, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1452, "sockw": null}
+ 3041.962 {"w": "origin", "ev": "client-end", "face": "h2", "port": 44446, "outq": 1, "tcpw": 1483, "sockw": 18}
+ 3042.020 {"w": "probe", "port": 44446, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3042.221 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 44446, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1518, "sockw": null}
+ 3042.343 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 44446, "tcpw": 1542, "sockw": 31}
+ 3042.378 {"w": "probe", "port": 44446, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3042.500 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 44446, "hadError": false}
+ 3042.536 {"w": "origin", "ev": "session-close", "face": "h2", "port": 44446}
+ 3043.000 {"w": "probe", "port": 44446, "ev": "end", "line": "(end eof 3077)"}
+# fix-A2 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 42568, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "46183"]}
+    0.949 {"w": "origin", "ev": "session", "face": "h2", "port": 42568}
+    1.473 {"w": "probe", "port": 42568, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2011.377 {"w": "probe", "port": 42568, "ev": "sent"}
+ 2011.513 {"w": "probe", "port": 42568, "ev": "half-close"}
+ 3041.045 {"w": "origin", "ev": "refuse", "face": "h2", "port": 42568, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1449, "sockw": null}
+ 3041.360 {"w": "origin", "ev": "client-end", "face": "h2", "port": 42568, "outq": 1, "tcpw": 1480, "sockw": 18}
+ 3041.376 {"w": "probe", "port": 42568, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3041.682 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 42568, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1515, "sockw": null}
+ 3041.695 {"w": "probe", "port": 42568, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3041.836 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 42568, "tcpw": 1539, "sockw": 31}
+ 3042.029 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 42568, "hadError": false}
+ 3042.069 {"w": "origin", "ev": "session-close", "face": "h2", "port": 42568}
+ 3042.212 {"w": "probe", "port": 42568, "ev": "end", "line": "(end eof 3063)"}
+# fix-A3 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 60034, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "41741"]}
+    1.161 {"w": "origin", "ev": "session", "face": "h2", "port": 60034}
+    1.738 {"w": "probe", "port": 60034, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2011.528 {"w": "probe", "port": 60034, "ev": "sent"}
+ 2011.634 {"w": "probe", "port": 60034, "ev": "half-close"}
+ 3043.349 {"w": "origin", "ev": "refuse", "face": "h2", "port": 60034, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1450, "sockw": null}
+ 3043.609 {"w": "probe", "port": 60034, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3043.946 {"w": "origin", "ev": "client-end", "face": "h2", "port": 60034, "outq": 1, "tcpw": 1481, "sockw": 18}
+ 3044.199 {"w": "probe", "port": 60034, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3044.455 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 60034, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1516, "sockw": null}
+ 3045.025 {"w": "probe", "port": 60034, "ev": "end", "line": "(end eof 3078)"}
+ 3046.512 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 60034, "tcpw": 1540, "sockw": 31}
+ 3046.691 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 60034, "hadError": false}
+ 3046.720 {"w": "origin", "ev": "session-close", "face": "h2", "port": 60034}
+# fix-A4 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 49928, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "43109"]}
+    0.917 {"w": "origin", "ev": "session", "face": "h2", "port": 49928}
+    1.423 {"w": "probe", "port": 49928, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2011.518 {"w": "probe", "port": 49928, "ev": "sent"}
+ 2011.650 {"w": "probe", "port": 49928, "ev": "half-close"}
+ 3041.892 {"w": "origin", "ev": "refuse", "face": "h2", "port": 49928, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1450, "sockw": null}
+ 3042.193 {"w": "origin", "ev": "client-end", "face": "h2", "port": 49928, "outq": 1, "tcpw": 1481, "sockw": 18}
+ 3042.256 {"w": "probe", "port": 49928, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3042.452 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 49928, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1516, "sockw": null}
+ 3042.514 {"w": "probe", "port": 49928, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3042.597 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 49928, "tcpw": 1540, "sockw": 31}
+ 3042.808 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 49928, "hadError": false}
+ 3042.855 {"w": "origin", "ev": "session-close", "face": "h2", "port": 49928}
+ 3042.986 {"w": "probe", "port": 49928, "ev": "end", "line": "(end eof 3064)"}
+# fix-A5 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 43586, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "38431"]}
+    0.843 {"w": "origin", "ev": "session", "face": "h2", "port": 43586}
+    1.344 {"w": "probe", "port": 43586, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2011.626 {"w": "probe", "port": 43586, "ev": "sent"}
+ 2011.775 {"w": "probe", "port": 43586, "ev": "half-close"}
+ 3035.440 {"w": "origin", "ev": "refuse", "face": "h2", "port": 43586, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1451, "sockw": null}
+ 3035.660 {"w": "origin", "ev": "client-end", "face": "h2", "port": 43586, "outq": 1, "tcpw": 1482, "sockw": 18}
+ 3035.842 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 43586, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1517, "sockw": null}
+ 3035.939 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 43586, "tcpw": 1541, "sockw": 31}
+ 3036.078 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 43586, "hadError": false}
+ 3036.105 {"w": "origin", "ev": "session-close", "face": "h2", "port": 43586}
+ 3036.226 {"w": "probe", "port": 43586, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3036.489 {"w": "probe", "port": 43586, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3037.019 {"w": "probe", "port": 43586, "ev": "end", "line": "(end eof 3058)"}
+# fix-A6 h2-r0 got end<close
+    0.000 {"w": "probe", "port": 52670, "ev": "connected", "args": ["--half-close", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "39239"]}
+    0.765 {"w": "probe", "port": 52670, "ev": "sent"}
+    0.808 {"w": "probe", "port": 52670, "ev": "half-close"}
+    1.242 {"w": "origin", "ev": "session", "face": "h2", "port": 52670}
+    1.470 {"w": "origin", "ev": "refuse", "face": "h2", "port": 52670, "id": 1, "at": 0, "key": "h2-r0", "outq": 2, "readableEnded": false, "readEnded": false, "tcpw": 847, "sockw": null}
+    1.578 {"w": "origin", "ev": "client-end", "face": "h2", "port": 52670, "outq": 1, "tcpw": 1461, "sockw": 18}
+    1.709 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 52670, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1496, "sockw": null}
+    1.789 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 52670, "tcpw": 1520, "sockw": 31}
+    1.889 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 52670, "hadError": false}
+    1.910 {"w": "origin", "ev": "session-close", "face": "h2", "port": 52670}
+    2.177 {"w": "probe", "port": 52670, "ev": "data", "offset": 0, "length": 18, "hex": "000000040000000000000000040100000000"}
+    2.426 {"w": "probe", "port": 52670, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+    2.873 {"w": "probe", "port": 52670, "ev": "end", "line": "(end eof 23)"}
+# fix-A6 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 52714, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "39239"]}
+    1.061 {"w": "origin", "ev": "session", "face": "h2", "port": 52714}
+    1.497 {"w": "probe", "port": 52714, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2010.782 {"w": "probe", "port": 52714, "ev": "sent"}
+ 2010.909 {"w": "probe", "port": 52714, "ev": "half-close"}
+ 3039.691 {"w": "origin", "ev": "refuse", "face": "h2", "port": 52714, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1452, "sockw": null}
+ 3039.874 {"w": "origin", "ev": "client-end", "face": "h2", "port": 52714, "outq": 1, "tcpw": 1483, "sockw": 18}
+ 3040.034 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 52714, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1518, "sockw": null}
+ 3040.135 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 52714, "tcpw": 1542, "sockw": 31}
+ 3040.259 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 52714, "hadError": false}
+ 3040.283 {"w": "origin", "ev": "session-close", "face": "h2", "port": 52714}
+ 3040.398 {"w": "probe", "port": 52714, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3040.633 {"w": "probe", "port": 52714, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3041.072 {"w": "probe", "port": 52714, "ev": "end", "line": "(end eof 3061)"}
+# fix-A7 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 34258, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "45947"]}
+    0.854 {"w": "origin", "ev": "session", "face": "h2", "port": 34258}
+    1.225 {"w": "probe", "port": 34258, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2010.776 {"w": "probe", "port": 34258, "ev": "sent"}
+ 2010.905 {"w": "probe", "port": 34258, "ev": "half-close"}
+ 3037.092 {"w": "origin", "ev": "refuse", "face": "h2", "port": 34258, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1452, "sockw": null}
+ 3037.314 {"w": "origin", "ev": "client-end", "face": "h2", "port": 34258, "outq": 1, "tcpw": 1483, "sockw": 18}
+ 3037.486 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 34258, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1518, "sockw": null}
+ 3037.573 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 34258, "tcpw": 1542, "sockw": 31}
+ 3037.700 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 34258, "hadError": false}
+ 3037.723 {"w": "origin", "ev": "session-close", "face": "h2", "port": 34258}
+ 3037.849 {"w": "probe", "port": 34258, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3038.101 {"w": "probe", "port": 34258, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3038.566 {"w": "probe", "port": 34258, "ev": "end", "line": "(end eof 3059)"}
+# fix-B1 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 41736, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "37597"]}
+    1.206 {"w": "origin", "ev": "session", "face": "h2", "port": 41736}
+    1.620 {"w": "probe", "port": 41736, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2012.580 {"w": "probe", "port": 41736, "ev": "sent"}
+ 2012.711 {"w": "probe", "port": 41736, "ev": "half-close"}
+ 3042.752 {"w": "origin", "ev": "refuse", "face": "h2", "port": 41736, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1450, "sockw": null}
+ 3043.100 {"w": "origin", "ev": "client-end", "face": "h2", "port": 41736, "outq": 1, "tcpw": 1481, "sockw": 18}
+ 3043.135 {"w": "probe", "port": 41736, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3043.392 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 41736, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1516, "sockw": null}
+ 3043.515 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 41736, "tcpw": 1540, "sockw": 31}
+ 3043.528 {"w": "probe", "port": 41736, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3043.686 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 41736, "hadError": false}
+ 3043.728 {"w": "origin", "ev": "session-close", "face": "h2", "port": 41736}
+ 3044.238 {"w": "probe", "port": 41736, "ev": "end", "line": "(end eof 3072)"}
+# fix-B2 h2-r3 got end<close
+    0.000 {"w": "probe", "port": 41380, "ev": "connected", "args": ["--half-close", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "38553"]}
+    0.785 {"w": "probe", "port": 41380, "ev": "sent"}
+    0.829 {"w": "probe", "port": 41380, "ev": "half-close"}
+    1.290 {"w": "origin", "ev": "session", "face": "h2", "port": 41380}
+    1.580 {"w": "origin", "ev": "refuse", "face": "h2", "port": 41380, "id": 1, "at": 3, "key": "h2-r3", "outq": 2, "readableEnded": false, "readEnded": false, "tcpw": 845, "sockw": null}
+    1.703 {"w": "origin", "ev": "client-end", "face": "h2", "port": 41380, "outq": 1, "tcpw": 1459, "sockw": 18}
+    1.839 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 41380, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1494, "sockw": null}
+    1.908 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 41380, "tcpw": 1518, "sockw": 31}
+    2.002 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 41380, "hadError": false}
+    2.023 {"w": "origin", "ev": "session-close", "face": "h2", "port": 41380}
+    2.302 {"w": "probe", "port": 41380, "ev": "data", "offset": 0, "length": 18, "hex": "000000040000000000000000040100000000"}
+    2.562 {"w": "probe", "port": 41380, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+    3.004 {"w": "probe", "port": 41380, "ev": "end", "line": "(end eof 24)"}
+# fix-B2 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 41384, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "38553"]}
+    0.803 {"w": "origin", "ev": "session", "face": "h2", "port": 41384}
+    1.298 {"w": "probe", "port": 41384, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2011.223 {"w": "probe", "port": 41384, "ev": "sent"}
+ 2011.368 {"w": "probe", "port": 41384, "ev": "half-close"}
+ 3033.734 {"w": "origin", "ev": "refuse", "face": "h2", "port": 41384, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1449, "sockw": null}
+ 3033.994 {"w": "origin", "ev": "client-end", "face": "h2", "port": 41384, "outq": 1, "tcpw": 1480, "sockw": 18}
+ 3034.189 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 41384, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1515, "sockw": null}
+ 3034.283 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 41384, "tcpw": 1539, "sockw": 31}
+ 3034.419 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 41384, "hadError": false}
+ 3034.443 {"w": "origin", "ev": "session-close", "face": "h2", "port": 41384}
+ 3034.575 {"w": "probe", "port": 41384, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3034.890 {"w": "probe", "port": 41384, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3035.509 {"w": "probe", "port": 41384, "ev": "end", "line": "(end eof 3055)"}
+# fix-B3 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 38024, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "40645"]}
+    1.152 {"w": "origin", "ev": "session", "face": "h2", "port": 38024}
+    1.698 {"w": "probe", "port": 38024, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2011.872 {"w": "probe", "port": 38024, "ev": "sent"}
+ 2012.021 {"w": "probe", "port": 38024, "ev": "half-close"}
+ 3040.730 {"w": "origin", "ev": "refuse", "face": "h2", "port": 38024, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1451, "sockw": null}
+ 3041.039 {"w": "origin", "ev": "client-end", "face": "h2", "port": 38024, "outq": 1, "tcpw": 1482, "sockw": 18}
+ 3041.191 {"w": "probe", "port": 38024, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3041.343 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 38024, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1517, "sockw": null}
+ 3041.473 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 38024, "tcpw": 1541, "sockw": 31}
+ 3041.493 {"w": "probe", "port": 38024, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3041.656 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 38024, "hadError": false}
+ 3041.695 {"w": "origin", "ev": "session-close", "face": "h2", "port": 38024}
+ 3041.988 {"w": "probe", "port": 38024, "ev": "end", "line": "(end eof 3074)"}
+23462.063 {"w": "probe", "port": 38024, "ev": "connected", "args": ["127.0.0.1", "43619"]}
+23462.977 {"w": "probe", "port": 38024, "ev": "sent"}
+23992.283 {"w": "probe", "port": 38024, "ev": "end", "line": "(end eof 547)"}
+# fix-B4 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 36112, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "40031"]}
+    1.074 {"w": "origin", "ev": "session", "face": "h2", "port": 36112}
+    1.592 {"w": "probe", "port": 36112, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2012.675 {"w": "probe", "port": 36112, "ev": "sent"}
+ 2012.843 {"w": "probe", "port": 36112, "ev": "half-close"}
+ 3031.463 {"w": "origin", "ev": "refuse", "face": "h2", "port": 36112, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1451, "sockw": null}
+ 3031.697 {"w": "origin", "ev": "client-end", "face": "h2", "port": 36112, "outq": 1, "tcpw": 1482, "sockw": 18}
+ 3031.878 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 36112, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1517, "sockw": null}
+ 3031.973 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 36112, "tcpw": 1541, "sockw": 31}
+ 3032.099 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 36112, "hadError": false}
+ 3032.124 {"w": "origin", "ev": "session-close", "face": "h2", "port": 36112}
+ 3032.338 {"w": "probe", "port": 36112, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3032.605 {"w": "probe", "port": 36112, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3033.128 {"w": "probe", "port": 36112, "ev": "end", "line": "(end eof 3054)"}
+# fix-B5 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 53394, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "42687"]}
+    0.850 {"w": "origin", "ev": "session", "face": "h2", "port": 53394}
+    1.247 {"w": "probe", "port": 53394, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2011.284 {"w": "probe", "port": 53394, "ev": "sent"}
+ 2011.446 {"w": "probe", "port": 53394, "ev": "half-close"}
+ 3042.596 {"w": "origin", "ev": "refuse", "face": "h2", "port": 53394, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1451, "sockw": null}
+ 3042.812 {"w": "origin", "ev": "client-end", "face": "h2", "port": 53394, "outq": 1, "tcpw": 1482, "sockw": 18}
+ 3042.985 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 53394, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1517, "sockw": null}
+ 3043.069 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 53394, "tcpw": 1541, "sockw": 31}
+ 3043.185 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 53394, "hadError": false}
+ 3043.188 {"w": "probe", "port": 53394, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3043.205 {"w": "origin", "ev": "session-close", "face": "h2", "port": 53394}
+ 3043.591 {"w": "probe", "port": 53394, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3044.300 {"w": "probe", "port": 53394, "ev": "end", "line": "(end eof 3065)"}
+# fix-B6 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 46172, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "36399"]}
+    0.917 {"w": "origin", "ev": "session", "face": "h2", "port": 46172}
+    1.367 {"w": "probe", "port": 46172, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2002.513 {"w": "probe", "port": 46172, "ev": "sent"}
+ 2002.644 {"w": "probe", "port": 46172, "ev": "half-close"}
+ 3036.469 {"w": "origin", "ev": "refuse", "face": "h2", "port": 46172, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1449, "sockw": null}
+ 3036.724 {"w": "origin", "ev": "client-end", "face": "h2", "port": 46172, "outq": 1, "tcpw": 1480, "sockw": 18}
+ 3036.893 {"w": "probe", "port": 46172, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3036.919 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 46172, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1515, "sockw": null}
+ 3037.010 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 46172, "tcpw": 1539, "sockw": 31}
+ 3037.146 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 46172, "hadError": false}
+ 3037.174 {"w": "origin", "ev": "session-close", "face": "h2", "port": 46172}
+ 3037.189 {"w": "probe", "port": 46172, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3037.673 {"w": "probe", "port": 46172, "ev": "end", "line": "(end eof 3058)"}
+# fix-B7 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 45324, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "36121"]}
+    0.899 {"w": "origin", "ev": "session", "face": "h2", "port": 45324}
+    1.483 {"w": "probe", "port": 45324, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2011.553 {"w": "probe", "port": 45324, "ev": "sent"}
+ 2011.701 {"w": "probe", "port": 45324, "ev": "half-close"}
+ 3036.293 {"w": "origin", "ev": "refuse", "face": "h2", "port": 45324, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1451, "sockw": null}
+ 3036.604 {"w": "origin", "ev": "client-end", "face": "h2", "port": 45324, "outq": 1, "tcpw": 1482, "sockw": 18}
+ 3036.757 {"w": "probe", "port": 45324, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3036.880 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 45324, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1517, "sockw": null}
+ 3037.032 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 45324, "tcpw": 1541, "sockw": 31}
+ 3037.045 {"w": "probe", "port": 45324, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3037.239 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 45324, "hadError": false}
+ 3037.274 {"w": "origin", "ev": "session-close", "face": "h2", "port": 45324}
+ 3037.503 {"w": "probe", "port": 45324, "ev": "end", "line": "(end eof 3058)"}
+# fix-C1 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 44346, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "39767"]}
+    1.240 {"w": "origin", "ev": "session", "face": "h2", "port": 44346}
+    1.808 {"w": "probe", "port": 44346, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2012.552 {"w": "probe", "port": 44346, "ev": "sent"}
+ 2012.799 {"w": "probe", "port": 44346, "ev": "half-close"}
+ 3051.148 {"w": "origin", "ev": "refuse", "face": "h2", "port": 44346, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1451, "sockw": null}
+ 3051.441 {"w": "origin", "ev": "client-end", "face": "h2", "port": 44346, "outq": 1, "tcpw": 1482, "sockw": 18}
+ 3051.715 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 44346, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1517, "sockw": null}
+ 3051.849 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 44346, "tcpw": 1541, "sockw": 31}
+ 3052.033 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 44346, "hadError": false}
+ 3052.072 {"w": "origin", "ev": "session-close", "face": "h2", "port": 44346}
+ 3052.243 {"w": "probe", "port": 44346, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3052.614 {"w": "probe", "port": 44346, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3053.339 {"w": "probe", "port": 44346, "ev": "end", "line": "(end eof 3082)"}
+# fix-C2 h2-r0 got end<close
+    0.000 {"w": "probe", "port": 55242, "ev": "connected", "args": ["--half-close", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "41471"]}
+    1.136 {"w": "probe", "port": 55242, "ev": "sent"}
+    1.201 {"w": "probe", "port": 55242, "ev": "half-close"}
+    1.892 {"w": "origin", "ev": "session", "face": "h2", "port": 55242}
+    2.280 {"w": "origin", "ev": "refuse", "face": "h2", "port": 55242, "id": 1, "at": 0, "key": "h2-r0", "outq": 2, "readableEnded": false, "readEnded": false, "tcpw": 846, "sockw": null}
+    2.466 {"w": "origin", "ev": "client-end", "face": "h2", "port": 55242, "outq": 1, "tcpw": 1460, "sockw": 18}
+    2.690 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 55242, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1495, "sockw": null}
+    2.812 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 55242, "tcpw": 1519, "sockw": 31}
+    2.967 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 55242, "hadError": false}
+    3.000 {"w": "origin", "ev": "session-close", "face": "h2", "port": 55242}
+    3.418 {"w": "probe", "port": 55242, "ev": "data", "offset": 0, "length": 18, "hex": "000000040000000000000000040100000000"}
+    3.831 {"w": "probe", "port": 55242, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+    4.495 {"w": "probe", "port": 55242, "ev": "end", "line": "(end eof 34)"}
+# fix-C2 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 55288, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "41471"]}
+    1.273 {"w": "origin", "ev": "session", "face": "h2", "port": 55288}
+    1.954 {"w": "probe", "port": 55288, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2012.729 {"w": "probe", "port": 55288, "ev": "sent"}
+ 2012.973 {"w": "probe", "port": 55288, "ev": "half-close"}
+ 3061.532 {"w": "origin", "ev": "refuse", "face": "h2", "port": 55288, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1452, "sockw": null}
+ 3061.823 {"w": "origin", "ev": "client-end", "face": "h2", "port": 55288, "outq": 1, "tcpw": 1483, "sockw": 18}
+ 3062.077 {"w": "probe", "port": 55288, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3062.097 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 55288, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1518, "sockw": null}
+ 3062.241 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 55288, "tcpw": 1542, "sockw": 31}
+ 3062.424 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 55288, "hadError": false}
+ 3062.461 {"w": "origin", "ev": "session-close", "face": "h2", "port": 55288}
+ 3062.537 {"w": "probe", "port": 55288, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3063.208 {"w": "probe", "port": 55288, "ev": "end", "line": "(end eof 3092)"}
+# fix-C3 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 58708, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "38779"]}
+    1.288 {"w": "origin", "ev": "session", "face": "h2", "port": 58708}
+    1.935 {"w": "probe", "port": 58708, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2012.814 {"w": "probe", "port": 58708, "ev": "sent"}
+ 2013.095 {"w": "probe", "port": 58708, "ev": "half-close"}
+ 3052.541 {"w": "origin", "ev": "refuse", "face": "h2", "port": 58708, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1453, "sockw": null}
+ 3052.873 {"w": "origin", "ev": "client-end", "face": "h2", "port": 58708, "outq": 1, "tcpw": 1484, "sockw": 18}
+ 3052.944 {"w": "probe", "port": 58708, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3053.157 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 58708, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1519, "sockw": null}
+ 3053.294 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 58708, "tcpw": 1543, "sockw": 31}
+ 3053.393 {"w": "probe", "port": 58708, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3053.478 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 58708, "hadError": false}
+ 3053.515 {"w": "origin", "ev": "session-close", "face": "h2", "port": 58708}
+ 3054.113 {"w": "probe", "port": 58708, "ev": "end", "line": "(end eof 3083)"}
+# fix-C4 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 38994, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "41911"]}
+    1.414 {"w": "origin", "ev": "session", "face": "h2", "port": 38994}
+    1.969 {"w": "probe", "port": 38994, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2012.832 {"w": "probe", "port": 38994, "ev": "sent"}
+ 2013.116 {"w": "probe", "port": 38994, "ev": "half-close"}
+ 3050.956 {"w": "origin", "ev": "refuse", "face": "h2", "port": 38994, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1451, "sockw": null}
+ 3051.290 {"w": "origin", "ev": "client-end", "face": "h2", "port": 38994, "outq": 1, "tcpw": 1482, "sockw": 18}
+ 3051.351 {"w": "probe", "port": 38994, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3051.561 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 38994, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1517, "sockw": null}
+ 3051.688 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 38994, "tcpw": 1541, "sockw": 31}
+ 3051.807 {"w": "probe", "port": 38994, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3052.557 {"w": "probe", "port": 38994, "ev": "end", "line": "(end eof 3081)"}
+ 3052.598 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 38994, "hadError": false}
+ 3052.650 {"w": "origin", "ev": "session-close", "face": "h2", "port": 38994}
+# fix-C5 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 52754, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "33149"]}
+    1.333 {"w": "origin", "ev": "session", "face": "h2", "port": 52754}
+    2.023 {"w": "probe", "port": 52754, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2012.484 {"w": "probe", "port": 52754, "ev": "sent"}
+ 2012.753 {"w": "probe", "port": 52754, "ev": "half-close"}
+ 3050.417 {"w": "origin", "ev": "refuse", "face": "h2", "port": 52754, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1450, "sockw": null}
+ 3050.720 {"w": "origin", "ev": "client-end", "face": "h2", "port": 52754, "outq": 1, "tcpw": 1481, "sockw": 18}
+ 3050.824 {"w": "probe", "port": 52754, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3050.992 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 52754, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1516, "sockw": null}
+ 3051.111 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 52754, "tcpw": 1540, "sockw": 31}
+ 3051.266 {"w": "probe", "port": 52754, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3051.288 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 52754, "hadError": false}
+ 3051.323 {"w": "origin", "ev": "session-close", "face": "h2", "port": 52754}
+ 3051.968 {"w": "probe", "port": 52754, "ev": "end", "line": "(end eof 3081)"}
+# fix-C6 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 34548, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "42921"]}
+    1.278 {"w": "origin", "ev": "session", "face": "h2", "port": 34548}
+    1.873 {"w": "probe", "port": 34548, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2012.652 {"w": "probe", "port": 34548, "ev": "sent"}
+ 2012.916 {"w": "probe", "port": 34548, "ev": "half-close"}
+ 3053.305 {"w": "origin", "ev": "refuse", "face": "h2", "port": 34548, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1452, "sockw": null}
+ 3053.634 {"w": "origin", "ev": "client-end", "face": "h2", "port": 34548, "outq": 1, "tcpw": 1483, "sockw": 18}
+ 3053.835 {"w": "probe", "port": 34548, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3053.915 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 34548, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1518, "sockw": null}
+ 3054.042 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 34548, "tcpw": 1542, "sockw": 31}
+ 3054.224 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 34548, "hadError": false}
+ 3054.250 {"w": "probe", "port": 34548, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3054.261 {"w": "origin", "ev": "session-close", "face": "h2", "port": 34548}
+ 3054.902 {"w": "probe", "port": 34548, "ev": "end", "line": "(end eof 3083)"}
+# fix-C7 h2-stopped got end<close
+    0.000 {"w": "probe", "port": 53070, "ev": "connected", "args": ["--half-close", "--split", "24:2000", "--tls", "localhost", "--alpn", "h2", "--deadline", "30000", "127.0.0.1", "44447"]}
+    1.179 {"w": "origin", "ev": "session", "face": "h2", "port": 53070}
+    1.723 {"w": "probe", "port": 53070, "ev": "data", "offset": 0, "length": 9, "hex": "000000040000000000"}
+ 2012.563 {"w": "probe", "port": 53070, "ev": "sent"}
+ 2012.849 {"w": "probe", "port": 53070, "ev": "half-close"}
+ 3054.636 {"w": "origin", "ev": "refuse", "face": "h2", "port": 53070, "id": 1, "at": 0, "key": "h2-stopped", "outq": 1, "readableEnded": false, "readEnded": false, "tcpw": 1452, "sockw": null}
+ 3054.963 {"w": "origin", "ev": "client-end", "face": "h2", "port": 53070, "outq": 1, "tcpw": 1483, "sockw": 18}
+ 3055.076 {"w": "probe", "port": 53070, "ev": "data", "offset": 9, "length": 9, "hex": "000000040100000000"}
+ 3055.254 {"w": "origin", "ev": "stream-close", "face": "h2", "port": 53070, "id": 1, "rstCode": 7, "outq": 0, "tcpw": 1518, "sockw": null}
+ 3055.388 {"w": "origin", "ev": "server-finish", "face": "h2", "port": 53070, "tcpw": 1542, "sockw": 31}
+ 3055.535 {"w": "probe", "port": 53070, "ev": "data", "offset": 18, "length": 13, "hex": "00000403000000000100000007"}
+ 3055.566 {"w": "origin", "ev": "socket-close", "face": "h2", "port": 53070, "hadError": false}
+ 3055.610 {"w": "origin", "ev": "session-close", "face": "h2", "port": 53070}
+ 3056.251 {"w": "probe", "port": 53070, "ev": "end", "line": "(end eof 3085)"}

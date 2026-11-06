@@ -1,0 +1,3 @@
+run-in: today sh probe/suites.sh today test-http-client test-group test-stream-call test-retry test-redirect test-auth test-proxy test-cookies test-printed test-version -> results/suites-today.log (exit 0)
+run-in: a sh probe/suites.sh a test-http-client test-group test-stream-call test-retry test-redirect test-auth test-proxy test-cookies test-printed test-version -> results/suites-a.log (exit 0)
+run-in: b sh probe/suites.sh b test-http-client test-group test-stream-call test-retry test-redirect test-auth test-proxy test-cookies test-printed test-version -> results/suites-b.log (exit 0)

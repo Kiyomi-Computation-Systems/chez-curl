@@ -1,0 +1,22 @@
+--- a/tests/origin.mjs
++++ b/tests/origin.mjs
+@@ -1837,7 +1837,7 @@
+     if (r.kind === 'sink' || r.kind === 'refuse') {
+       const seenNow = countFor(r.key);
+       const refuseAt = r.kind === 'refuse' && seenNow === 1 ? r.at : null;
+-      if (refuseAt === 0) return stream.close(http2.constants.NGHTTP2_REFUSED_STREAM);
++      if (refuseAt === 0) return stream.close(http2.constants.NGHTTP2_INTERNAL_ERROR);
+       const record = bodyRecord();
+       let refused = false;
+       stream.on('data', (chunk) => {
+--- a/tests/origin.mjs
++++ b/tests/origin.mjs
+@@ -1845,7 +1845,7 @@
+         arrive(record, [chunk], tenthsSince(headAt));
+         if (refuseAt !== null && record.bytes >= refuseAt) {
+           refused = true;
+-          stream.close(http2.constants.NGHTTP2_REFUSED_STREAM);
++          stream.close(http2.constants.NGHTTP2_INTERNAL_ERROR);
+         }
+       });
+       stream.on('end', () => {

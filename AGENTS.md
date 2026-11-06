@@ -569,11 +569,33 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * A collection requested while a thread sleeps inside a critical section
   stalls every other thread at its next event check, and a Ctrl-C made
   pending meanwhile runs where the stalled thread stopped, not where the test
-  meant: `collect-rendezvous` before such a hold, and assert `(collections)`
-  did not move across it.
-* libcurl 8.5.0 reads nothing from an HTTP/2 transfer paused for sending, its
-  response waiting until the body resumes: a test that needs the head first
-  ends the body, or puts, first.
+  meant: `collect-rendezvous` before such a hold, assert `(collections)` did
+  not move across it, and hold until the signal is sent: a child's output may
+  not show where its handler ran.
+* libcurl 8.5.0 can read nothing from an HTTP/2 transfer paused for sending,
+  its response waiting until the body resumes: a race, 9 of 4,760 runs
+  natively and 6 of 800 under Valgrind. A test that needs the head first
+  ends the body, or puts, first; a check that the stall is gone takes
+  hundreds of runs.
+* A `guard` whose clauses decline a raise rewinds into it to re-raise it,
+  running every before thunk between again: inside a wind that refuses
+  re-entry, the declined object becomes that refusal. A guard that must pass
+  a raise on unchanged takes it `#t` and answers it as data.
+* A large primitive copy, `bytevector-copy`, `string-copy` or
+  `string->utf8`, makes no event check while it runs: 256 MiB held a Ctrl-C
+  208 ms with no critical section. Time a hold by a Ctrl-C, not by a
+  collector alone, whose gaps include moving the copied object.
+* Node's HTTP/2 over TLS lost an `RST_STREAM` queued behind the SETTINGS ACK
+  when the client's close_notify came in the request's read: TLSWrap finishes
+  a write only at the next immediate, and a server that is not half-open ends
+  at once. The origin's HTTP/2 faces are half-open and end at the next
+  immediate; test-origin-tls stops the origin across a request to hold it.
+* A planted collection lands only where allocation next takes fresh space
+  past its trip: a 1 KiB `collect-trip-bytes` with nothing allocated after it
+  never fired. A plant allocates past its trip, or shows that it fired.
+* A group submits a redirect's next hop inside its step's critical section,
+  before a pending Ctrl-C runs, so the raise's cancel races the engine
+  starting it: count a group's started transfers there as one or two.
 
 ## Closing ritual
 

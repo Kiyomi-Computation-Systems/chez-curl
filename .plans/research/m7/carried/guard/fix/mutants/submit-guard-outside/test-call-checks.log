@@ -1,0 +1,7 @@
+%%%% Starting test call-checks
+FAIL SIGINT while a direct caller's curl-submit, through a proxy URL, blocks at the start of its proxy URL's parse, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the submit resumes and answers its token, whose transfer ends; the caller's handler returned once; the child's counts zero
+  expected: (0 ((checks submit submit resume (returned submitted) (start) quiet (0 0 0) 1 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks submit submit resume (raised other (#f #f #t)) (start) quiet (0 0 0) 0 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+# of expected passes      48
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 48, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

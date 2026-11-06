@@ -1,0 +1,13 @@
+--- a/src/http-client/private/drive.sls
++++ b/src/http-client/private/drive.sls
+@@ -327,8 +327,8 @@
+                 (else
+                  (let* ((state (cadr submission))
+                         (request (caddr submission))
+-                        (refusal (critical-section
+-                                  (guard (e ((curl-error? e) (list 'refused e)))
++                        (refusal (guard (e ((curl-error? e) (list 'refused e)))
++                                   (critical-section
+                                     (set! token (curl-submit engine request))
+                                     #f)))
+                         (outcome (or refusal (outcome-of token)))

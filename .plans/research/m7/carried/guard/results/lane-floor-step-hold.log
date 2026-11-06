@@ -1,0 +1,7 @@
+(maxima "7.85.0" location 102387 headers 100000 url-pad 1048508)
+(step "7.85.0" max-location 37 (transfer 3.65 (302 3)) (step next 16.22 17.1) (past #t 14.61 15.96))
+(step "7.85.0" max-headers 38 (transfer 49028.18 (302 100003)) (step next 0.21 0.37) (past #t 0.19 0.2))
+(step "7.85.0" max-url 1048544 (transfer 114.27 (302 3)) (step next 150.98 151.15) (past #t 149.19 155.29))
+(step "7.85.0" max-location-and-headers 42 (transfer 49290.56 (302 100003)) (step next 16.26 23.42) (past #t 14.54 17.12))
+(step "7.85.0" max-all 1048489 (transfer 50140.31 (302 100003)) (step next 167.64 179.83) (past #t 166.93 172.84))
+(counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))

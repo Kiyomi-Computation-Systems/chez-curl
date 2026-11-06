@@ -33,19 +33,40 @@ close-out under **Close-outs**, newest first.
     with GnuTLS; `credentials` is one tagged key (the plan, §9).
   - **The Mac ran the four probes, 2026-11-02,** against Apple's 8.7.1, every run exiting 0: they
     revise no decision, and fill the plan's 8.7.1 rows (§7).
-  - **Carried past M7** (the plan, §10, and slice 4's close-out):
-    - test-origin-tls's `/refuse?at=` race, older than slice 4: it failed main's push run at
-      `a075629`;
-    - call-state's guard compounds a caller's Ctrl-C handler's raise in go's request building
-      (M5's carried list; `src/`);
-    - test-http-client, test-engine and test-mailbox hold across a SIGINT without
-      `collect-rendezvous`;
-    - on 8.5.0, a caller who waits for an HTTP/2 response's head before putting its body gets
-      nothing while the send is paused: not yet documented;
+  - **Carried past M7** (the plan, §10, and slice 4's close-out). Four are fixed on
+    `fix/m7-carried`, not yet merged, measured first by two Opus agents
+    ([`research/m7/carried/`](research/m7/carried/)):
+    - test-origin-tls's `/refuse?at=` race: in the origin, whose TLS face lost an `RST_STREAM`
+      queued behind the SETTINGS ACK when the client's close_notify came with the request. The
+      HTTP/2 faces are now half-open, and a test stops the origin to force the order;
+    - call-state's guard: the maintainer chose one critical section around a call's checks
+      (ADR-0025, amended 2026-11-05), held by `tests/test-call-checks.sps`. The branch's review
+      (Opus, read-only; [`review/`](research/m7/carried/review/)) found the same trap at a single
+      call's redirect step and in `curl-submit`'s proxy check, each reproduced, and the checks'
+      hold growing with the input. The maintainer chose to audit every guard around a critical
+      wind and fix each one reachable, and to refuse a URL past libcurl's 8,000,000-byte cap as
+      the checks begin: done, the review's probes now giving no re-entry refusal, a long URL's
+      Ctrl-C answered in 0.03 ms, and the suite grown to 49 tests;
+    - test-http-client's and test-mailbox's SIGINT children: the stall reached both, and they now
+      hold as test-group's do; test-engine's holds nothing, and needed no change;
+    - 8.5.0's paused HTTP/2 send: a race, not a rule, 9 of 4,760 runs; README.org says so.
+
+    Still carried:
     - the curl bug report on the unterminated head, drafted for the maintainer to file
       ([draft](research/m7/slice4/verify/curl-bug-report.md));
     - with `CURL_SSL_BACKEND` unset, the Mac selects SecureTransport, where ADR-0024 records
-      LibreSSL; slice 1's floor flake; a cap on response headers.
+      LibreSSL: most likely a misreading, since the Makefile exports
+      `CURL_SSL_BACKEND=secure-transport` on macOS; a probe for the Mac is ready
+      ([`mac/`](research/m7/carried/mac/));
+    - slice 1's floor flake; a cap on response headers, for M8's plan;
+    - from the fix round: the public URL functions run with their caller's interrupts, as their
+      header says; `string-pairs`' and `list-within`'s `assertion-violation?` guards read a
+      handler's `&assertion` raised inside `length` as "not a list"; a call copies its URL
+      before the checks, a primitive that holds a Ctrl-C 23 ms at 8 M chars; 8.5.0 stalled to its
+      timeout on a request whose URL passed about 131 KB, cause unknown; test-origin-tls's idle
+      keep-alive probes missed the stop once under five gate containers at once; and a step
+      sweep's evidence in test-call-checks failed once under a mutant that moved its ticks, never
+      on the tree (3 of 3 runs at once, 25 gate rounds).
 - **CI is green.** PR #39 (`80bb2a9`) fixed the four suites CI's first runs failed, and its
   runs at `1a8fcb5` and `c080ca3` passed all eight jobs. Its close-out is below. `main`'s push
   run at `088eddd`, slice 4's merge, passed all eight too. A pull request or a push to `main`

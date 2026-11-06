@@ -259,7 +259,7 @@
           request-keys request-methods sent-header-lines timing-infos
           prepare-transfer curl-request-check start-transfer! finish-transfer free-transfer!
           live-transfer-easy live-transfer-chunks transfer-ended planted-fault transfers-started
-          abandon-transfer-easy!
+          abandon-transfer-easy! transfer-parse-gate-set!
           curl-response? curl-response-status curl-response-http-version
           curl-response-effective-url curl-response-headers curl-response-body
           curl-response-timings
@@ -3700,12 +3700,14 @@
         (check-proxy-tls who (and reading (string=? (cadr reading) "https")) proxy-ca-file
                          proxy-verify)
         (check-ca-environment who 'proxy-ca-file proxy-ca-file proxy-verify)
-        (let ((scheme (call-with-parsed-url url
-                        (lambda (handle)
-                          (let ((scheme (require-http-scheme handle url)))
-                            (when credentials
-                              (check-userinfo who credentials (userinfo-parts handle url)))
-                            scheme)))))
+        (let ((scheme (in-section
+                       (lambda ()
+                         (call-with-parsed-url url
+                           (lambda (handle)
+                             (let ((scheme (require-http-scheme handle url)))
+                               (when credentials
+                                 (check-userinfo who credentials (userinfo-parts handle url)))
+                               scheme)))))))
           (check-prior-knowledge who version scheme)
           (check-prior-knowledge-proxy who version reading)
           (check-tls-in-tls who scheme reading version)
@@ -3714,6 +3716,49 @@
                     (unshared-tunnel-settings version-number scheme
                                               (and reading #t) (and reading (caddr reading)))
                     (stops-multiplexing? version-number (and reading #t) (and reading (caddr reading)))))))))
+
+  ;; in-section : (-> Any) -> Any
+  ;; THUNK's value, a URL parse of the submit's checks, run in a critical
+  ;; section of its own whose guard takes every raise there and answers it
+  ;; as data, raised once the section has ended (ADR-0025, as amended after
+  ;; the branch's review). A direct caller submits with interrupts on, and a
+  ;; parse's critical wind refuses to be re-entered once its handle is
+  ;; freed: an engine's expiry inside the parse left it behind, and a
+  ;; handler's raise there that a guard declined was re-raised back inside
+  ;; it, each coming out as that refusal (research/m7/carried/review, m1).
+  ;; Inside the section no handler runs and no expiry lands, and the guard
+  ;; takes the parse's own raises alone. A parse holds Ctrl-C and other
+  ;; threads' collections for its length, which grows with its URL's, as a
+  ;; call's checks' URL does: about 29 ms a million chars there
+  ;; (research/m7/carried/guard/, the fix round's hold-rates.log). The high
+  ;; level's submits and checks run in sections of their own already,
+  ;; which this nests in.
+  (define (in-section thunk)
+    (let ((r (critical-section
+              (guard (e (#t (list 'raised e)))
+                (run-parse-gate! 'start)
+                (list 'value (thunk))))))
+      (if (eq? (car r) 'raised)
+          (raise (cadr r))
+          (cadr r))))
+
+  ;; parse-gate : (Vector (U (Symbol -> Any) #f))
+  ;; A test seam's procedure, kept until disarmed, called with start at the
+  ;; start of each of in-section's sections, inside it: a test blocks there
+  ;; on a mutex another thread holds while that thread sends SIGINT, so a
+  ;; keyboard interrupt is made pending inside the section (traps.md). #f,
+  ;; unarmed, by default.
+  (define parse-gate (vector #f))
+
+  ;; transfer-parse-gate-set! : (U (Symbol -> Any) #f) -> Void
+  ;; Arms the gate, the test seam above, or disarms it with #f. (curl) does
+  ;; not export it.
+  (define (transfer-parse-gate-set! proc) (vector-set! parse-gate 0 proc))
+
+  ;; run-parse-gate! : Symbol -> Void
+  (define (run-parse-gate! where)
+    (let ((g (vector-ref parse-gate 0)))
+      (when g (g where))))
 
   ;; refuse-proxy : Symbol Any Symbol -> Nothing
   ;; The refusal, as WHO, of a request's proxy URL for REASON, field proxy,
@@ -3792,7 +3837,10 @@
   ;; reports. libcurl's own refusal, which holds the URL, is never handed
   ;; on.
   (define (check-proxy-url who proxy)
-    (let ((reading (guard (e ((curl-url-error? e) #f)) (proxy-url-reading proxy))))
+    (let ((reading (in-section
+                    (lambda ()
+                      (guard (e (#t (if (curl-url-error? e) #f (raise e))))
+                        (proxy-url-reading proxy))))))
       (unless reading (refuse-proxy who 'proxy 'proxy-url))
       (let* ((scheme (ascii-folded (list-ref reading 0)))
              (user (list-ref reading 1))

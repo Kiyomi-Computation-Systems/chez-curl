@@ -1,0 +1,10 @@
+--- a/tests/mailbox-escape.sps
++++ b/tests/mailbox-escape.sps
+@@ -85,6 +85,7 @@
+   (call/cc
+    (lambda (out)
+      (keyboard-interrupt-handler (lambda () (set! handler-collections (collections)) (out 'escaped)))
++     (collect-trip-bytes 1024)
+      (write (list 'ready (get-process-id)))
+      (newline)
+      (flush-output-port (current-output-port))

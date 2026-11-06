@@ -1,0 +1,36 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+FAIL h2c POST /refuse?at=0, its HEADERS alone: RST_STREAM REFUSED_STREAM on stream 1 and nothing else, then eof; the key's next request answered as /sink, seen=2
+  expected: (("00000004000000000000000004010000000000000403000000000100000007" eof) ("sink h2c method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+  actual:   (("00000004000000000000000004010000000000000403000000000100000002" eof) ("sink h2c method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+FAIL h2c POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart: RST_STREAM REFUSED_STREAM only after the second, then eof; the key's next request answered as /sink, seen=2
+  expected: (("00000004000000000000000004010000000000000403000000000100000007" eof) refused-after ("sink h2c method=POST cl=7 te=- expect=- ct=- bytes=7 sha256=7d1a54127b222502f5b79b5fb0803061152a44f92b37e23c6527baf665d4da9a pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+  actual:   (("00000004000000000000000004010000000000000403000000000100000002" eof) refused-after ("sink h2c method=POST cl=7 te=- expect=- ct=- bytes=7 sha256=7d1a54127b222502f5b79b5fb0803061152a44f92b37e23c6527baf665d4da9a pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+FAIL h2c POST /refuse?at=3, DATA of 3 bytes and the stream left open: RST_STREAM REFUSED_STREAM on stream 1, then eof
+  expected: ("00000004000000000000000004010000000000000403000000000100000007" eof)
+  actual:   ("00000004000000000000000004010000000000000403000000000100000002" eof)
+FAIL h2c POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request went, and the answer came after it
+  expected: (("00000004000000000000000004010000000000000403000000000100000007" eof) stopped-before-the-request answered-after-the-stop)
+  actual:   (("00000004000000000000000004010000000000000403000000000100000002" eof) stopped-before-the-request answered-after-the-stop)
+FAIL h2 POST /refuse?at=0, its HEADERS alone: RST_STREAM REFUSED_STREAM on stream 1 and nothing else, then eof; the key's next request answered as /sink, seen=2
+  expected: (("00000004000000000000000004010000000000000403000000000100000007" eof) ("sink h2 method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+  actual:   (("00000004000000000000000004010000000000000403000000000100000002" eof) ("sink h2 method=POST cl=4 te=- expect=- ct=- bytes=4 sha256=230d8358dc8e8890b4c58deeb62912ee2f20357ae92a5cc861b98e68fe31acb5 pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+FAIL h2 POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart: RST_STREAM REFUSED_STREAM only after the second, then eof; the key's next request answered as /sink, seen=2
+  expected: (("00000004000000000000000004010000000000000403000000000100000007" eof) refused-after ("sink h2 method=POST cl=7 te=- expect=- ct=- bytes=7 sha256=7d1a54127b222502f5b79b5fb0803061152a44f92b37e23c6527baf665d4da9a pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+  actual:   (("00000004000000000000000004010000000000000403000000000100000002" eof) refused-after ("sink h2 method=POST cl=7 te=- expect=- ct=- bytes=7 sha256=7d1a54127b222502f5b79b5fb0803061152a44f92b37e23c6527baf665d4da9a pattern=bad@0 arrivals=1 gap=~@0 seen=2\n" whole-frames 1 eof))
+FAIL h2 POST /refuse?at=3, DATA of 3 bytes and the stream left open: RST_STREAM REFUSED_STREAM on stream 1, then eof
+  expected: ("00000004000000000000000004010000000000000403000000000100000007" eof)
+  actual:   ("00000004000000000000000004010000000000000403000000000100000002" eof)
+FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request went, and the answer came after it
+  expected: (("00000004000000000000000004010000000000000403000000000100000007" eof) stopped-before-the-request answered-after-the-stop)
+  actual:   (("00000004000000000000000004010000000000000403000000000100000002" eof) stopped-before-the-request answered-after-the-stop)
+# of expected passes      155
+# of unexpected failures  8
+suite-exit-status: exit 1 (pass 155, fail 8, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-origin-tls.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

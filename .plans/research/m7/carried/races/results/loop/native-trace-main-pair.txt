@@ -1,0 +1,220 @@
+### session 1: MISS (row: 000000040000000000000000040100000000 eof)
+TLSWrap server (40) Created new TLSWrap
+TLSWrap server (40) Read 1595 bytes from underlying stream
+TLSWrap server (40) Trying to write cleartext input
+TLSWrap server (40) Returning from ClearIn(), no pending data
+TLSWrap server (40) Trying to read cleartext output
+TLSWrap server (40) SSLInfoCallback(SSL_CB_HANDSHAKE_START);
+TLSWrap server (40) Read -1 bytes of cleartext output
+TLSWrap server (40) Trying to write encrypted output
+TLSWrap server (40) Writing 1 buffers to the underlying stream
+TLSWrap server (40) Write finished synchronously
+TLSWrap server (40) OnStreamAfterWrite(status = 0)
+TLSWrap server (40) Trying to write cleartext input
+TLSWrap server (40) Returning from ClearIn(), no pending data
+TLSWrap server (40) Trying to write encrypted output
+TLSWrap server (40) No pending encrypted output
+TLSWrap server (40) No pending cleartext input, not inside DoWrite()
+TLSWrap server (40) Invoking queued write callbacks (0, (null))
+TLSWrap server (40) Read 231 bytes from underlying stream
+TLSWrap server (40) Trying to write cleartext input
+TLSWrap server (40) Returning from ClearIn(), no pending data
+TLSWrap server (40) Trying to read cleartext output
+TLSWrap server (40) SSLInfoCallback(SSL_CB_HANDSHAKE_DONE);
+Http2Session server (43) session created
+Http2Session server (43) i/o stream consumed
+Http2Session server (43) scheduling write
+TLSWrap server (40) Read 105 bytes of cleartext output
+Http2Session server (43) receiving 105 bytes, offset 0
+Http2Session server (43) receiving 105 bytes [wants data? 1]
+Http2Session server (43) complete frame received: type: 4
+Http2Session server (43) handling settings frame
+Http2Session server (43) beginning headers for stream 1
+Http2Session server (43) Adding stream: 1
+Http2Session server (43) handling header key/pair for stream 1
+Http2Session server (43) handling header key/pair for stream 1
+Http2Session server (43) handling header key/pair for stream 1
+Http2Session server (43) handling header key/pair for stream 1
+Http2Session server (43) handling header key/pair for stream 1
+Http2Session server (43) complete frame received: type: 1
+Http2Session server (43) handle headers frame for stream 1
+HttpStream 1 (47) [Http2Session server (43)] writable side shutdown
+HttpStream 1 (47) [Http2Session server (43)] sending rst_stream with code 7
+Http2Session server (43) sending pending data
+Http2Session server (43) nghttp2 has 9 bytes to send
+Http2Session server (43) nghttp2 has 9 bytes to send
+TLSWrap server (40) DoWrite()
+TLSWrap server (40) Writing 18 bytes, written = 18
+TLSWrap server (40) Trying to write encrypted output
+TLSWrap server (40) EncOut() write is scheduled
+TLSWrap server (40) Writing 1 buffers to the underlying stream
+TLSWrap server (40) Write finished synchronously
+Http2Session server (43) wants read? 1
+TLSWrap server (40) ReadStop()
+Http2Session server (43) scheduling write
+Http2Session server (43) sending pending data
+TLSWrap server (40) Read 0 bytes of cleartext output
+Http2Session server (43) receiving -4095 bytes, offset 0
+TLSWrap server (40) DoShutdown()
+TLSWrap server (40) Trying to write encrypted output
+TLSWrap server (40) Returning from EncOut(), write currently in progress
+Http2Session server (43) scheduling write
+TLSWrap server (40) Trying to write encrypted output
+TLSWrap server (40) Returning from EncOut(), write currently in progress
+Http2Session server (43) sending pending data
+TLSWrap server (40) OnStreamAfterWrite(status = 0)
+TLSWrap server (40) Trying to write cleartext input
+TLSWrap server (40) Returning from ClearIn(), no pending data
+TLSWrap server (40) Trying to write encrypted output
+TLSWrap server (40) EncOut() write is scheduled
+TLSWrap server (40) Writing 1 buffers to the underlying stream
+TLSWrap server (40) Invoking queued write callbacks (-9, (null))
+Http2Session server (43) write finished with status -9
+TLSWrap server (40) ReadStart()
+Http2Session server (43) scheduling write
+Http2Session server (43) sending pending data
+Http2Session server (43) stream 1 closed with code: 7
+HttpStream 1 (47) [Http2Session server (43)] closed with code 7
+HttpStream 1 (47) [Http2Session server (43)] destroying stream
+HttpStream 1 (47) [Http2Session server (43)] destroying stream
+Http2Session server (43) Removing stream: 1
+Http2Session server (43) nghttp2 has 13 bytes to send
+TLSWrap server (40) DoWrite()
+TLSWrap server (40) Writing 13 bytes, written = -1
+TLSWrap server (40) Got SSL error (1), returning UV_EPROTO
+Http2Session server (43) wants read? 1
+HttpStream 1 (47) [Http2Session server (43)] tearing down stream
+TLSWrap server (40) Invoking queued write callbacks (-125, Canceled because of SSL destruction)
+TLSWrap server (40) DestroySSL() finished
+Http2Session server (43) submitting goaway
+Http2Session server (43) scheduling write
+Http2Session server (43) Setting graceful close initiated flag
+Http2Session server (43) destroying session
+Http2Session server (43) closing session
+TLSWrap server (40) ReadStop()
+Http2Session server (43) make done session callback
+Http2Session server (43) sending pending data
+### session 2: ok (row: 000000040000000000000000040100000000000004030000000001000000 eof)
+TLSWrap server (64) Created new TLSWrap
+TLSWrap server (64) Read 1595 bytes from underlying stream
+TLSWrap server (64) Trying to write cleartext input
+TLSWrap server (64) Returning from ClearIn(), no pending data
+TLSWrap server (64) Trying to read cleartext output
+TLSWrap server (64) SSLInfoCallback(SSL_CB_HANDSHAKE_START);
+TLSWrap server (64) Read -1 bytes of cleartext output
+TLSWrap server (64) Trying to write encrypted output
+TLSWrap server (64) Writing 1 buffers to the underlying stream
+TLSWrap server (64) Write finished synchronously
+TLSWrap server (64) OnStreamAfterWrite(status = 0)
+TLSWrap server (64) Trying to write cleartext input
+TLSWrap server (64) Returning from ClearIn(), no pending data
+TLSWrap server (64) Trying to write encrypted output
+TLSWrap server (64) No pending encrypted output
+TLSWrap server (64) No pending cleartext input, not inside DoWrite()
+TLSWrap server (64) Invoking queued write callbacks (0, (null))
+TLSWrap server (64) Read 207 bytes from underlying stream
+TLSWrap server (64) Trying to write cleartext input
+TLSWrap server (64) Returning from ClearIn(), no pending data
+TLSWrap server (64) Trying to read cleartext output
+TLSWrap server (64) SSLInfoCallback(SSL_CB_HANDSHAKE_DONE);
+Http2Session server (67) session created
+Http2Session server (67) i/o stream consumed
+Http2Session server (67) scheduling write
+TLSWrap server (64) Read 105 bytes of cleartext output
+Http2Session server (67) receiving 105 bytes, offset 0
+Http2Session server (67) receiving 105 bytes [wants data? 1]
+Http2Session server (67) complete frame received: type: 4
+Http2Session server (67) handling settings frame
+Http2Session server (67) beginning headers for stream 1
+Http2Session server (67) Adding stream: 1
+Http2Session server (67) handling header key/pair for stream 1
+Http2Session server (67) handling header key/pair for stream 1
+Http2Session server (67) handling header key/pair for stream 1
+Http2Session server (67) handling header key/pair for stream 1
+Http2Session server (67) handling header key/pair for stream 1
+Http2Session server (67) complete frame received: type: 1
+Http2Session server (67) handle headers frame for stream 1
+HttpStream 1 (71) [Http2Session server (67)] writable side shutdown
+HttpStream 1 (71) [Http2Session server (67)] sending rst_stream with code 7
+Http2Session server (67) sending pending data
+Http2Session server (67) nghttp2 has 9 bytes to send
+Http2Session server (67) nghttp2 has 9 bytes to send
+TLSWrap server (64) DoWrite()
+TLSWrap server (64) Writing 18 bytes, written = 18
+TLSWrap server (64) Trying to write encrypted output
+TLSWrap server (64) EncOut() write is scheduled
+TLSWrap server (64) Writing 1 buffers to the underlying stream
+TLSWrap server (64) Write finished synchronously
+Http2Session server (67) wants read? 1
+TLSWrap server (64) ReadStop()
+Http2Session server (67) scheduling write
+Http2Session server (67) sending pending data
+TLSWrap server (64) Read -1 bytes of cleartext output
+TLSWrap server (64) Trying to write encrypted output
+TLSWrap server (64) Returning from EncOut(), write currently in progress
+TLSWrap server (64) OnStreamAfterWrite(status = 0)
+TLSWrap server (64) Trying to write cleartext input
+TLSWrap server (64) Returning from ClearIn(), no pending data
+TLSWrap server (64) Trying to write encrypted output
+TLSWrap server (64) EncOut() write is scheduled
+TLSWrap server (64) No pending encrypted output
+TLSWrap server (64) No pending cleartext input, not inside DoWrite()
+TLSWrap server (64) Invoking queued write callbacks (0, (null))
+Http2Session server (67) write finished with status 0
+TLSWrap server (64) ReadStart()
+Http2Session server (67) scheduling write
+Http2Session server (67) sending pending data
+Http2Session server (67) stream 1 closed with code: 7
+HttpStream 1 (71) [Http2Session server (67)] closed with code 7
+HttpStream 1 (71) [Http2Session server (67)] destroying stream
+HttpStream 1 (71) [Http2Session server (67)] destroying stream
+Http2Session server (67) Removing stream: 1
+Http2Session server (67) nghttp2 has 13 bytes to send
+TLSWrap server (64) DoWrite()
+TLSWrap server (64) Writing 13 bytes, written = 13
+TLSWrap server (64) Trying to write encrypted output
+TLSWrap server (64) EncOut() write is scheduled
+TLSWrap server (64) Writing 1 buffers to the underlying stream
+TLSWrap server (64) Write finished synchronously
+Http2Session server (67) wants read? 1
+TLSWrap server (64) ReadStop()
+HttpStream 1 (71) [Http2Session server (67)] tearing down stream
+TLSWrap server (64) OnStreamAfterWrite(status = 0)
+TLSWrap server (64) Trying to write cleartext input
+TLSWrap server (64) Returning from ClearIn(), no pending data
+TLSWrap server (64) Trying to write encrypted output
+TLSWrap server (64) EncOut() write is scheduled
+TLSWrap server (64) No pending encrypted output
+TLSWrap server (64) No pending cleartext input, not inside DoWrite()
+TLSWrap server (64) Invoking queued write callbacks (0, (null))
+Http2Session server (67) write finished with status 0
+TLSWrap server (64) ReadStart()
+TLSWrap server (64) Read 24 bytes from underlying stream
+TLSWrap server (64) Trying to write cleartext input
+TLSWrap server (64) Returning from ClearIn(), no pending data
+TLSWrap server (64) Trying to read cleartext output
+TLSWrap server (64) Read 0 bytes of cleartext output
+Http2Session server (67) receiving -4095 bytes, offset 0
+TLSWrap server (64) DoShutdown()
+TLSWrap server (64) Trying to write encrypted output
+TLSWrap server (64) Writing 1 buffers to the underlying stream
+TLSWrap server (64) Write finished synchronously
+TLSWrap server (64) Trying to write encrypted output
+TLSWrap server (64) Returning from EncOut(), write currently in progress
+TLSWrap server (64) OnStreamAfterWrite(status = 0)
+TLSWrap server (64) Trying to write cleartext input
+TLSWrap server (64) Returning from ClearIn(), no pending data
+TLSWrap server (64) Trying to write encrypted output
+TLSWrap server (64) No pending encrypted output
+TLSWrap server (64) No pending cleartext input, not inside DoWrite()
+TLSWrap server (64) Invoking queued write callbacks (0, (null))
+TLSWrap server (64) Invoking queued write callbacks (-125, Canceled because of SSL destruction)
+TLSWrap server (64) DestroySSL() finished
+Http2Session server (67) submitting goaway
+Http2Session server (67) scheduling write
+Http2Session server (67) Setting graceful close initiated flag
+Http2Session server (67) destroying session
+Http2Session server (67) closing session
+TLSWrap server (64) ReadStop()
+Http2Session server (67) make done session callback
+Http2Session server (67) sending pending data

@@ -1,0 +1,1305 @@
+diff -ruN --no-dereference fix-base/src/curl/private/transfer.sls working/src/curl/private/transfer.sls
+--- fix-base/src/curl/private/transfer.sls	2026-11-05 10:59:30.832708774 -0500
++++ working/src/curl/private/transfer.sls	2026-11-06 06:27:38.077427854 -0500
+@@ -259,7 +259,7 @@
+           request-keys request-methods sent-header-lines timing-infos
+           prepare-transfer curl-request-check start-transfer! finish-transfer free-transfer!
+           live-transfer-easy live-transfer-chunks transfer-ended planted-fault transfers-started
+-          abandon-transfer-easy!
++          abandon-transfer-easy! transfer-parse-gate-set!
+           curl-response? curl-response-status curl-response-http-version
+           curl-response-effective-url curl-response-headers curl-response-body
+           curl-response-timings
+@@ -3700,12 +3700,14 @@
+         (check-proxy-tls who (and reading (string=? (cadr reading) "https")) proxy-ca-file
+                          proxy-verify)
+         (check-ca-environment who 'proxy-ca-file proxy-ca-file proxy-verify)
+-        (let ((scheme (call-with-parsed-url url
+-                        (lambda (handle)
+-                          (let ((scheme (require-http-scheme handle url)))
+-                            (when credentials
+-                              (check-userinfo who credentials (userinfo-parts handle url)))
+-                            scheme)))))
++        (let ((scheme (in-section
++                       (lambda ()
++                         (call-with-parsed-url url
++                           (lambda (handle)
++                             (let ((scheme (require-http-scheme handle url)))
++                               (when credentials
++                                 (check-userinfo who credentials (userinfo-parts handle url)))
++                               scheme)))))))
+           (check-prior-knowledge who version scheme)
+           (check-prior-knowledge-proxy who version reading)
+           (check-tls-in-tls who scheme reading version)
+@@ -3715,6 +3717,49 @@
+                                               (and reading #t) (and reading (caddr reading)))
+                     (stops-multiplexing? version-number (and reading #t) (and reading (caddr reading)))))))))
+ 
++  ;; in-section : (-> Any) -> Any
++  ;; THUNK's value, a URL parse of the submit's checks, run in a critical
++  ;; section of its own whose guard takes every raise there and answers it
++  ;; as data, raised once the section has ended (ADR-0025, as amended after
++  ;; the branch's review). A direct caller submits with interrupts on, and a
++  ;; parse's critical wind refuses to be re-entered once its handle is
++  ;; freed: an engine's expiry inside the parse left it behind, and a
++  ;; handler's raise there that a guard declined was re-raised back inside
++  ;; it, each coming out as that refusal (research/m7/carried/review, m1).
++  ;; Inside the section no handler runs and no expiry lands, and the guard
++  ;; takes the parse's own raises alone. A parse holds Ctrl-C and other
++  ;; threads' collections for its length, which grows with its URL's, as a
++  ;; call's checks' URL does: about 29 ms a million chars there
++  ;; (research/m7/carried/guard/, the fix round's hold-rates.log). The high
++  ;; level's submits and checks run in sections of their own already,
++  ;; which this nests in.
++  (define (in-section thunk)
++    (let ((r (critical-section
++              (guard (e (#t (list 'raised e)))
++                (run-parse-gate! 'start)
++                (list 'value (thunk))))))
++      (if (eq? (car r) 'raised)
++          (raise (cadr r))
++          (cadr r))))
++
++  ;; parse-gate : (Vector (U (Symbol -> Any) #f))
++  ;; A test seam's procedure, kept until disarmed, called with start at the
++  ;; start of each of in-section's sections, inside it: a test blocks there
++  ;; on a mutex another thread holds while that thread sends SIGINT, so a
++  ;; keyboard interrupt is made pending inside the section (traps.md). #f,
++  ;; unarmed, by default.
++  (define parse-gate (vector #f))
++
++  ;; transfer-parse-gate-set! : (U (Symbol -> Any) #f) -> Void
++  ;; Arms the gate, the test seam above, or disarms it with #f. (curl) does
++  ;; not export it.
++  (define (transfer-parse-gate-set! proc) (vector-set! parse-gate 0 proc))
++
++  ;; run-parse-gate! : Symbol -> Void
++  (define (run-parse-gate! where)
++    (let ((g (vector-ref parse-gate 0)))
++      (when g (g where))))
++
+   ;; refuse-proxy : Symbol Any Symbol -> Nothing
+   ;; The refusal, as WHO, of a request's proxy URL for REASON, field proxy,
+   ;; naming VALUE, the symbol proxy or (proxy PART), never the URL: its
+@@ -3792,7 +3837,10 @@
+   ;; reports. libcurl's own refusal, which holds the URL, is never handed
+   ;; on.
+   (define (check-proxy-url who proxy)
+-    (let ((reading (guard (e ((curl-url-error? e) #f)) (proxy-url-reading proxy))))
++    (let ((reading (in-section
++                    (lambda ()
++                      (guard (e (#t (if (curl-url-error? e) #f (raise e))))
++                        (proxy-url-reading proxy))))))
+       (unless reading (refuse-proxy who 'proxy 'proxy-url))
+       (let* ((scheme (ascii-folded (list-ref reading 0)))
+              (user (list-ref reading 1))
+diff -ruN --no-dereference fix-base/src/curl/private/url.sls working/src/curl/private/url.sls
+--- fix-base/src/curl/private/url.sls	2026-11-03 20:39:10.202604616 -0500
++++ working/src/curl/private/url.sls	2026-11-06 06:27:27.509779144 -0500
+@@ -98,9 +98,25 @@
+                 (field-of what)))
+       copy))
+ 
++  ;; url-input-cap : Positive-Integer
++  ;; libcurl's cap on a URL, CURL_MAX_INPUT_LENGTH, in bytes: 8,000,000 on
++  ;; every libcurl measured.
++  (define url-input-cap 8000000)
++
+   ;; checked-input : Symbol Any -> String
+-  ;; checked-string for a URL.
++  ;; checked-string for a URL; but a string of more than url-input-cap
++  ;; chars, whose UTF-8 bytes are more than libcurl's cap, is refused at
++  ;; once as libcurl refuses it, malformed-input with libcurl's own message,
++  ;; its input the string as given, before any copy or scan: its cost then
++  ;; stays the same whatever its length, where the copy, the NUL scan and
++  ;; the encoding grew with it, about 22 ms a million chars, inside a call's
++  ;; checks' critical section (research/m7/carried/review, M2;
++  ;; research/m7/carried/guard/, the fix round's url-cap logs). A string of
++  ;; url-input-cap chars or fewer goes to libcurl, which refuses one whose
++  ;; UTF-8 bytes pass the cap itself.
+   (define (checked-input who input)
++    (when (and (string? input) (> (string-length input) url-input-cap))
++      (refuse-code input (code-of 'malformed-input)))
+     (checked-string who input "a URL"))
+ 
+   ;; strict-utf-8 : Transcoder
+diff -ruN --no-dereference fix-base/src/http-client/private/drive.sls working/src/http-client/private/drive.sls
+--- fix-base/src/http-client/private/drive.sls	2026-11-05 16:19:43.265030146 -0500
++++ working/src/http-client/private/drive.sls	2026-11-06 06:28:03.551043930 -0500
+@@ -73,6 +73,16 @@
+ ;;; the call. A raise that leaves the call does so after the after thunk
+ ;;; has cancelled.
+ ;;;
++;;; Each step, exchange-step's, and drive-stream's exchange-steps-past?,
++;;; runs in a critical section of its own, its guard inside it, every raise
++;;; answered as data and raised once the section has ended, as a group's
++;;; turn steps its calls (section-step; ADR-0025, as amended after the
++;;; branch's review): a redirect's step parses URLs through (curl)'s
++;;; critical winds, and with interrupts on an expiry or a handler's raise
++;;; there came out as call-with-parsed-url's refusal to re-enter one. So
++;;; what a handler raises during a step comes once it has ended, as raised,
++;;; and an expiry lands after it.
++;;;
+ ;;; --- the streamed call (the M6 plan, section 3.6) ---
+ ;;;
+ ;;; drive-stream drives a call whose responses stream, call-with-response-
+@@ -229,12 +239,15 @@
+ ;;; http-pending-census, the group's counts; none runs a turn;
+ ;;; drive-checks-gate-set!, a procedure (http-client)'s call-state calls
+ ;;; with start and with end, the first and last forms of a call's checks,
+-;;; inside their critical section, until it is disarmed. And
++;;; inside their critical section, until it is disarmed;
++;;; drive-step-gate-set!, its twin, called with start and end around each
++;;; step, inside the step's section, a group's too. And
+ ;;; call-with-group, the group's own entry, takes an optional submit in
+ ;;; place of curl-submit, so a test can plant a raise in one submit.
+ (library (http-client private drive)
+   (export drive-exchange drive-stream drive-stream-waits drive-produce-gate-set! drive-last-token
+           drive-last-token-arm! drive-before-gate-set! drive-checks-gate-set! run-checks-gate!
++          drive-step-gate-set!
+           monotonic-ns utc-seconds take-refusal?
+           require-interrupts call-with-group run-parallel
+           http-pending? http-await http-pending-done? http-pending-cancel
+@@ -307,6 +320,63 @@
+           (list 'response outcome)
+           (list 'failed outcome))))
+ 
++  ;; section-step : State Outcome Integer Integer Real -> Step
++  ;; exchange-step's answer for STATE and OUTCOME at NOW-NS, UTC-S and DRAW,
++  ;; made in a critical section of its own, whose guard takes every raise
++  ;; there and answers it as data, raised once the section has ended, as a
++  ;; group's turn steps its calls (ADR-0025, as amended after the branch's
++  ;; review). A redirect's step parses its Location and the URLs it
++  ;; compares through (curl)'s critical winds, some under a guard of
++  ;; &curl-url-error alone: with interrupts on, an engine's expiry inside a
++  ;; parse left it behind, and a handler's raise there that the guard
++  ;; declined was re-raised back inside it, each coming out as
++  ;; call-with-parsed-url's refusal to re-enter it, in place of the call's
++  ;; answer (research/m7/carried/review, M1). Inside the section no handler
++  ;; runs and no expiry lands: a Ctrl-C made pending there runs as it ends,
++  ;; a timer and an expiry at a later event check, after the step. A step
++  ;; waits for nothing and calls no caller code; it holds Ctrl-C and other
++  ;; threads' collections for its length, under 0.5 ms for an ordinary
++  ;; redirect, and as its inputs grow, to what libcurl lets in: 124 to 181
++  ;; ms for the largest step 7.85.0, 8.20.0 and 8.23.0 let one make, a
++  ;; requested URL of about 1,048,500 chars, within the 1 MiB they send a
++  ;; request in, a Location of 102,387 bytes, the most each takes under its
++  ;; 100 KiB cap on a header, and the most headers each takes, 5,000, or
++  ;; 100,003 on 7.85.0, which caps none; 11 to 17 ms on 8.5.0, which sent
++  ;; no URL past 131,041 chars, a longer request stalling to its timeout;
++  ;; the headers alone under 0.5 ms (research/m7/carried/guard/, the fix
++  ;; round's step-hold logs).
++  (define (section-step state outcome now-ns utc-s draw)
++    (in-step-section (lambda () (exchange-step state outcome now-ns utc-s draw))))
++
++  ;; sectioned-step : State Outcome Integer Real -> Step
++  ;; section-step's answer, the monotonic clock read inside the section,
++  ;; after UTC-S and DRAW, as the step reads its clocks last.
++  (define (sectioned-step state outcome utc-s draw)
++    (in-step-section (lambda () (exchange-step state outcome (monotonic-ns) utc-s draw))))
++
++  ;; section-steps-past? : State Response Integer Integer Real -> Boolean
++  ;; exchange-steps-past?'s answer, made in a critical section of its own,
++  ;; as section-step makes a step's.
++  (define (section-steps-past? state response now-ns utc-s draw)
++    (in-step-section (lambda () (exchange-steps-past? state response now-ns utc-s draw))))
++
++  ;; in-step-section : (-> Any) -> Any
++  ;; THUNK's value, a step's, run in a critical section of its own whose
++  ;; guard takes every raise there and answers it as data, raised once the
++  ;; section has ended: so the caller's handler for it runs with interrupts
++  ;; on. The test seam's step gate is called with start and end inside the
++  ;; section, around THUNK.
++  (define (in-step-section thunk)
++    (let ((r (critical-section
++              (guard (e (#t (list 'raised e)))
++                (run-step-gate! 'start)
++                (let ((v (thunk)))
++                  (run-step-gate! 'end)
++                  (list 'value v))))))
++      (if (eq? (car r) 'raised)
++          (raise (cadr r))
++          (cadr r))))
++
+   ;; drive-exchange : Engine State (-> Real) -> Response
+   ;; STATE's call, driven on ENGINE until the core answers done, whose
+   ;; response it answers, or fail, whose condition it raises; a next is
+@@ -337,7 +407,7 @@
+                         (outcome (or refusal (outcome-of token)))
+                         (drawn (draw))
+                         (utc (utc-seconds))
+-                        (step (exchange-step state outcome (monotonic-ns) utc drawn)))
++                        (step (sectioned-step state outcome utc drawn)))
+                    (case (car step)
+                      ((done) (cadr step))
+                      ((fail) (raise (cadr step)))
+@@ -723,6 +793,23 @@
+     (let ((g (vector-ref checks-gate 0)))
+       (when g (g where))))
+ 
++  ;; step-gate : (Vector (U (Symbol -> Any) #f))
++  ;; The checks gate's twin for a step: a test seam's procedure, kept until
++  ;; disarmed, called with start and with end around each exchange-step and
++  ;; exchange-steps-past?, inside its critical section, the single-call
++  ;; drives' and a group's alike. #f, unarmed, by default.
++  (define step-gate (vector #f))
++
++  ;; drive-step-gate-set! : (U (Symbol -> Any) #f) -> Void
++  ;; Arms the step gate, or disarms it with #f: a test seam, which
++  ;; (http-client) does not export.
++  (define (drive-step-gate-set! proc) (vector-set! step-gate 0 proc))
++
++  ;; run-step-gate! : Symbol -> Void
++  (define (run-step-gate! where)
++    (let ((g (vector-ref step-gate 0)))
++      (when g (g where))))
++
+   ;; last-token : (Vector Boolean (U Token #f))
+   ;; The test seam's record: whether a test has armed it; then the token
+   ;; the latest streamed call submitted while armed, held only until that
+@@ -930,7 +1017,7 @@
+                                 #f))))
+                (if refusal
+                    (let* ((drawn (draw)) (utc (utc-seconds)) (now (monotonic-ns)))
+-                     (stepped (exchange-step state refusal now utc drawn) now))
++                     (stepped (section-step state refusal now utc drawn) now))
+                    (leg! state request))))
+             (else
+              (assertion-violation 'drive-stream "the core answered a submission this shell does not know"
+@@ -948,7 +1035,7 @@
+                  (asked (and head (curl-head-body-asked? head)))
+                  (state (if (or asked (call-called? call)) (exchange-mark-called state) state)))
+             (if (and ended (eq? (car ended) 'failed))
+-                (stepped (exchange-step state ended now utc drawn) now)
++                (stepped (section-step state ended now utc drawn) now)
+                 (let ((response
+                        (if head
+                            (head-response (curl-head-status head) (curl-head-http-version head)
+@@ -956,26 +1043,26 @@
+                            (let ((r (cadr ended)))
+                              (head-response (curl-response-status r) (curl-response-http-version r)
+                                             (curl-response-headers r))))))
+-                  (if (exchange-steps-past? state response now utc drawn)
++                  (if (section-steps-past? state response now utc drawn)
+                       (hop! leg state request response now utc drawn)
+                       (final! leg state response now utc drawn)))))))
+       (define (hop! leg state request response now utc drawn)
+         (if (curl-request-body request)
+             (begin
+               (end-hop! token)
+-              (stepped (exchange-step state (list 'response response) now utc drawn) now))
++              (stepped (section-step state (list 'response response) now utc drawn) now))
+             (let ((read (read-whole! leg state)))
+               (if (eq? (car read) 'response)
+-                  (stepped (exchange-step state
+-                                          (list 'response
+-                                                (http-response-with response (caddr read)
+-                                                                    (curl-response-timings (cadr read))))
+-                                          now utc drawn)
++                  (stepped (section-step state
++                                         (list 'response
++                                               (http-response-with response (caddr read)
++                                                                   (curl-response-timings (cadr read))))
++                                         now utc drawn)
+                            now)
+                   (let* ((utc (utc-seconds)) (now (monotonic-ns)))
+-                    (stepped (exchange-step state read now utc drawn) now))))))
++                    (stepped (section-step state read now utc drawn) now))))))
+       (define (final! leg state response now utc drawn)
+-        (let ((step (exchange-step state (list 'response response) now utc drawn)))
++        (let ((step (section-step state (list 'response response) now utc drawn)))
+           (case (car step)
+             ((fail) (raise (cadr step)))
+             ((done)
+@@ -994,7 +1081,7 @@
+                          ;; no retry takes it (ADR-0032, decision 3).
+                          (let* ((utc (utc-seconds)) (now (monotonic-ns))
+                                 (state (if (call-called? call) (exchange-mark-called state) state)))
+-                           (stepped (exchange-step state read now utc drawn) now)))))))
++                           (stepped (section-step state read now utc drawn) now)))))))
+             (else
+              (assertion-violation 'drive-stream "the head's predicate and exchange-step disagree" step)))))
+       (define (ended-with r)
+@@ -1185,7 +1272,11 @@
+     (let* ((drawn ((group-draw group)))
+            (utc (utc-seconds))
+            (now (monotonic-ns))
+-           (step (exchange-step (pending-state pending) outcome now utc drawn)))
++           (step (begin
++                   (run-step-gate! 'start)
++                   (let ((s (exchange-step (pending-state pending) outcome now utc drawn)))
++                     (run-step-gate! 'end)
++                     s))))
+       (case (car step)
+         ((done) (end! group pending (list 'done (cadr step))))
+         ((fail) (end! group pending (list 'fail (cadr step))))
+diff -ruN --no-dereference fix-base/src/http-client.sls working/src/http-client.sls
+--- fix-base/src/http-client.sls	2026-11-05 16:19:43.265553966 -0500
++++ working/src/http-client.sls	2026-11-06 06:27:27.497305350 -0500
+@@ -93,15 +93,26 @@
+ ;;; no clause took was re-raised back inside the URL's parse, whose
+ ;;; critical wind refused the re-entry (the M5 plan, section 10). The
+ ;;; section holds Ctrl-C and other threads' collections for the checks'
+-;;; length: under 0.5 ms for an ordinary call; for a large body about as
+-;;; long as its copy, a primitive that makes no event check wherever it
+-;;; runs, 27 to 33 ms for 64 MiB and 0.10 to 0.12 s for 256 MiB; 0.23 to
+-;;; 0.27 s for a 7.9 MB URL, 45 to 48 ms for 100,000 headers, 65 to 69 ms
+-;;; for 100,000 params, and 0.62 to 0.83 s for a form value of 16 Mi chars
+-;;; (.plans/research/m7/carried/guard/, two runs). A refusal is raised
+-;;; once the section has ended, so a caller's handler runs with interrupts
+-;;; on. It re-exports nothing of (curl): a caller who catches a class of
+-;;; the low level's imports (curl) too.
++;;; length, under 0.5 ms for an ordinary call, and each hold grows with
++;;; its input, with no bound but the input's: about 0.4 to 0.5 ms a MiB of
++;;; a bytevector body, as long as its copy, a primitive that makes no event
++;;; check wherever it runs; 2 to 2.7 ms a Mi chars of a string body; 31 to
++;;; 52 ms a Mi chars of a form value; 0.4 to 0.5 ms a thousand headers; 0.6
++;;; to 0.7 ms a thousand params; and about 29 ms a million chars of a URL,
++;;; up to libcurl's 8,000,000-byte cap: a URL longer than 8,000,000 chars,
++;;; whose UTF-8 bytes pass it, is refused at the checks' start, at once, as
++;;; libcurl refuses it, malformed-input, its refusal before the keys'
++;;; (.plans/research/m7/carried/guard/, the fix round's hold-rates.log).
++;;; Once a collection falls due during a hold, every thread stops at its
++;;; next event check until the hold ends, the engine's thread among them,
++;;; and with it every transfer that engine drives (traps.md). A caller who
++;;; takes a body, a form, headers or params from untrusted input bounds
++;;; their sizes first. A refusal is raised once the section has ended, so
++;;; a caller's handler runs with interrupts on. A redirect's step runs in
++;;; a critical section of its own too (the drive's section-step): what a
++;;; handler raises there comes after it, and no expiry lands inside it. It
++;;; re-exports nothing of (curl): a caller who catches a class of the low
++;;; level's imports (curl) too.
+ ;;;
+ ;;; A call that is escaped cancels its transfer: a Ctrl-C whose handler
+ ;;; escapes, a timer's, a continuation, and a Chez engine's expiry, which
+@@ -109,8 +120,9 @@
+ ;;; whenever an expiry lands in its await: the expiry cancels the transfer,
+ ;;; and the call, once the engine is resumed, raises the low level's
+ ;;; cancelled, with its &http-exchange and the transfer counted. No expiry
+-;;; lands inside a call's checks: one that runs out there lands once their
+-;;; section has ended, and the call goes on, resumed. A call made
++;;; lands inside a call's checks or a step, a redirect's among them: one
++;;; that runs out there lands once its section has ended, and the call
++;;; goes on, resumed. A call made
+ ;;; with interrupts off, inside a critical section, is refused before it
+ ;;; submits anything: its await could not wait there.
+ ;;;
+@@ -376,8 +388,10 @@
+    ;;   for brief holds of the engine's mutex, for its submit, and of the
+    ;;   session's, for a refused submit's draw; and it copies the call's
+    ;;   body. What a caller's interrupt handler or timer raises while go
+-   ;;   checks the call leaves as raised, once the checks' critical section
+-   ;;   has ended, as http-request's does, and starts no call.
++   ;;   checks the call comes once the checks' critical section has ended,
++   ;;   as http-request's does: a raise that leaves starts no call; a
++   ;;   continuable one a handler returns from resumes go, which then starts
++   ;;   the call.
+    ;; The group's thread drives every call whenever it awaits one, polls one
+    ;; or joins, so a redirect or a retry of one call proceeds while another
+    ;; is awaited. When PROC returns, the group awaits every call, then
+@@ -565,6 +579,11 @@
+   (define (check-session who x)
+     (unless (http-session? x) (assertion-violation who "not a session" (shown-value x))))
+ 
++  ;; url-input-cap : Positive-Integer
++  ;; libcurl's cap on a URL's bytes, CURL_MAX_INPUT_LENGTH: 8,000,000 on every
++  ;; libcurl measured. A string of more chars has more UTF-8 bytes.
++  (define url-input-cap 8000000)
++
+   ;; call-state : Session Any Any List Boolean (U 'request 'group 'port) Symbol
+   ;;              -> (Pairof State (U Procedure #f))
+   ;; A call's exchange, as http-request, go and call-with-response-port
+@@ -602,6 +621,12 @@
+                                           e))))
+                     (run-checks-gate! 'start)
+                     (check-session who session)
++                    ;; A URL past libcurl's cap is refused first, as (curl)'s
++                    ;; curl-url-part refuses one at once, libcurl's own
++                    ;; refusal, before anything is copied: its checks would
++                    ;; have grown with it, held in this section.
++                    (when (and (string? given) (> (string-length given) url-input-cap))
++                      (curl-url-part given 'url))
+                     (let-values (((request redirects allow-downgrade retry producer)
+                                   (call-request-of who mode session method given plist)))
+                       (when check? (curl-request-check request))
+diff -ruN --no-dereference fix-base/tests/origin.mjs working/tests/origin.mjs
+--- fix-base/tests/origin.mjs	2026-11-05 14:05:54.116932102 -0500
++++ working/tests/origin.mjs	2026-11-06 05:53:08.510934351 -0500
+@@ -1869,7 +1869,11 @@
+ // the client's close_notify lost its RST_STREAM, the SETTINGS ACK written
+ // before it still in progress (M7's carried races, research/m7/carried/races).
+ // A write the kernel holds, to a client that has stopped reading, can still
+-// be in progress then.
++// be in progress then; and so can any write chained on drains, which a
++// client's half-close can still cut: a stream body over 16 KiB, written one
++// write at a time, and /mirror's closing empty DATA, which goes once the
++// last write has gone (test-origin-tls's comments on the stream routes and
++// on /mirror).
+ function h2EndNext(socket) {
+   setImmediate(() => {
+     if (!socket.destroyed && !socket.writableEnded) socket.end();
+diff -ruN --no-dereference fix-base/tests/test-call-checks.sps working/tests/test-call-checks.sps
+--- fix-base/tests/test-call-checks.sps	2026-11-05 16:19:43.265957766 -0500
++++ working/tests/test-call-checks.sps	2026-11-06 08:43:42.102978247 -0500
+@@ -1,10 +1,10 @@
+ #!r6rs
+-;;; The suite for a call's checks, their critical section (ADR-0025,
+-;;; amended 2026-11-05): (http-client)'s call-state, which every entry
+-;;; reaches, http-request, call-with-response-port, a group's go and
+-;;; http-parallel, runs its checks in one critical section, its guard
+-;;; inside it, each raise there answered as data and raised once the
+-;;; section has ended. At each entry:
++;;; The suite for a call's checks and steps, their critical sections
++;;; (ADR-0025, amended 2026-11-05, and after the branch's review):
++;;; (http-client)'s call-state, which every entry reaches, http-request,
++;;; call-with-response-port, a group's go and http-parallel, runs its
++;;; checks in one critical section, its guard inside it, each raise there
++;;; answered as data and raised once the section has ended. At each entry:
+ ;;;
+ ;;;   - Ctrl-C, in a child: the checks blocked at their start, through the
+ ;;;     private gate, on a mutex another thread holds until the suite has
+@@ -29,6 +29,24 @@
+ ;;;     &http-exchange, raised once the section has ended, so the caller's
+ ;;;     handler runs with interrupts on.
+ ;;;
++;;; A redirect's step, whose follow parses URLs through (curl)'s critical
++;;; winds, runs in a critical section of its own too, at every entry (as
++;;; amended after the branch's review, research/m7/carried/review, M1):
++;;; the same Ctrl-C children and timers at the first step's start, through
++;;; the step gate; an engine's expiry swept a tick at a time across the
++;;; first step, none landing inside a step and no resumed call raising
++;;; (curl)'s refusal to re-enter a parse; a timer set 1 to 300 ticks past
++;;; the step's start whose handler raises continuably, every call resuming;
++;;; and a raise made inside the step, through the gate, leaving with
++;;; interrupts on. A group's step ran in its turn's section before, and
++;;; passes as it did. A direct caller's curl-submit through a proxy URL
++;;; parses its URLs in sections of their own (m1): swept by an engine and
++;;; by a timer, a tick at a time, no submit raises a re-entry refusal. And
++;;; a URL past libcurl's 8,000,000-byte cap is refused at the checks'
++;;; start (M2): as libcurl refuses it, malformed-input, before the keys,
++;;; and in under a tenth of the time a URL at the cap takes to reach
++;;; libcurl's own refusal.
++;;;
+ ;;; Every wait here is bounded: a child by its script's 60 s, the suite's
+ ;;; calls by their sessions' timeout-ms. Every expected value is one the
+ ;;; code under test cannot produce by failing: SRFI-64 makes #f of a raise
+@@ -40,7 +58,7 @@
+         (curl-testing)
+         (curl)
+         (http-client)
+-        (only (http-client private drive) drive-checks-gate-set!)
++        (only (http-client private drive) drive-checks-gate-set! drive-step-gate-set!)
+         (only (curl private conditions) make-curl-engine-error)
+         (curl private counters))
+ 
+@@ -207,18 +225,21 @@
+           (list 'collected held-collections handler-collections)))))
+ 
+ ;; checks-child : (Listof Datum)
+-;; A program, run on URL ENTRY ACTION: a call of ENTRY, call-of's, to URL,
+-;; a fast 200, on a session of its own. A second thread holds a mutex
+-;; until the suite has sent its SIGINT (child-hold); the private gate,
+-;; armed, blocks the checks at their start on that mutex, once, inside
+-;; their critical section; every gate call is marked. This thread prints
++;; A program, run on URL ENTRY ACTION WHERE: a call of ENTRY, call-of's, to
++;; URL, on a session of its own; or, for ENTRY submit, curl-submit on that
++;; session's engine of a get of http://127.0.0.1:9/never through URL as its
++;; proxy, awaited. A second thread holds a mutex until the suite has sent
++;; its SIGINT (child-hold); the private gate WHERE names, checks, step or
++;; submit, armed, blocks at its first start on that mutex, once, inside the
++;; checks' critical section, the first step's, or the submit's first URL
++;; parse's, the proxy URL's; every call of that gate is marked. This thread prints
+ ;; (ready PID) and makes the call, under a Ctrl-C handler that, by ACTION:
+ ;; raise, raises a &curl-engine-error of the child's own making; resume,
+ ;; raises a &warning continuably, which the caller's with-exception-handler
+ ;; returns from when the condition it is handed is a warning, as
+ ;; test-http-client's M5 timer test's does.
+ ;;
+-;; Prints (checks ENTRY ACTION OUTCOME MARKS QUIET HOLDS STARTED RETURNED):
++;; Prints (checks ENTRY WHERE ACTION OUTCOME MARKS QUIET HOLDS STARTED RETURNED):
+ ;; OUTCOME (returned STATUS), or (raised SAME COMPOUNDED), SAME whether it
+ ;; raised the planted object itself, COMPOUNDED whether what it raised
+ ;; carries an &http-exchange, or (raised other DESCRIPTION); MARKS the
+@@ -230,9 +251,9 @@
+ (define checks-child
+   `((import (chezscheme) (curl) (http-client)
+             (only (http-client private call) http-session-engine)
+-            (only (http-client private drive) drive-checks-gate-set!)
++            (only (http-client private drive) drive-checks-gate-set! drive-step-gate-set!)
+             (only (curl private engine) curl-engine-live-count curl-engine-queued-count)
+-            (only (curl private transfer) transfers-started)
++            (only (curl private transfer) transfers-started transfer-parse-gate-set!)
+             (only (curl private conditions) make-curl-engine-error)
+             (curl private counters))
+     ,@child-hold
+@@ -240,6 +261,11 @@
+     (define url (list-ref args 0))
+     (define entry (string->symbol (list-ref args 1)))
+     (define action (string->symbol (list-ref args 2)))
++    (define where (string->symbol (list-ref args 3)))
++    (define gate-set! (case where
++                        ((step) drive-step-gate-set!)
++                        ((submit) transfer-parse-gate-set!)
++                        (else drive-checks-gate-set!)))
+     (define session (make-http-session 'timeout-ms 20000))
+     (define engine (http-session-engine session))
+     (define gate-lock (make-mutex))
+@@ -266,14 +292,19 @@
+       (unless (flag (lambda () holding))
+         (sleep (make-time 'time-duration 1000000 0))
+         (spin)))
+-    (drive-checks-gate-set!
+-     (lambda (where)
+-       (set! marks (cons where marks))
+-       (when (and armed (eq? where 'start))
++    (gate-set!
++     (lambda (at)
++       (set! marks (cons at marks))
++       (when (and armed (eq? at 'start))
+          (set! armed #f)
+          (critical-section (with-mutex gate-lock #t)))))
+     (define (run)
+       (case entry
++        ((submit)
++         (let ((token (curl-submit engine (make-curl-request "http://127.0.0.1:9/never" 'proxy url
++                                                             'timeout-ms 5000))))
++           (curl-token-wait token 5000)
++           'submitted))
+         ((request) (http-response-status (http-get session url)))
+         ((port)
+          (call-with-response-port session 'get url
+@@ -313,7 +344,7 @@
+             (flush-output-port (current-output-port))
+             (list 'returned (run))))))
+     (keyboard-interrupt-handler void)
+-    (drive-checks-gate-set! #f)
++    (gate-set! #f)
+     (let spin ()
+       (unless (flag (lambda () released))
+         (sleep (make-time 'time-duration 1000000 0))
+@@ -321,17 +352,17 @@
+     (sleep (make-time 'time-duration 500000000 0))
+     (define holds (list (curl-engine-live-count engine) (curl-engine-queued-count engine)
+                         (cdr (assq 'transfer (native-counts)))))
+-    (write (list 'checks entry action outcome handler-marks (quiet) holds (transfers-started) returned))
++    (write (list 'checks entry where action outcome handler-marks (quiet) holds (transfers-started) returned))
+     (newline)
+     (http-session-close session)
+     (write (list 'counts (native-counts)))
+     (newline)))
+ 
+-;; run-child : String Symbol Symbol -> (List Integer (Listof Any) String)
+-;; checks-child, written to a directory of its own, run on URL, ENTRY and
+-;; ACTION under interrupt-script: its exit status, what it printed but its
+-;; ready line, read as data, and the script's stderr.
+-(define (run-child url entry action)
++;; run-child : String Symbol Symbol Symbol -> (List Integer (Listof Any) String)
++;; checks-child, written to a directory of its own, run on URL, ENTRY,
++;; ACTION and WHERE under interrupt-script: its exit status, what it
++;; printed but its ready line, read as data, and the script's stderr.
++(define (run-child url entry action where)
+   (guard (e (#t (list 'raised (describe e) "")))
+     (call-with-temp-directory
+      (lambda (dir)
+@@ -340,19 +371,21 @@
+            (lambda (port) (for-each (lambda (form) (write form port) (newline port)) checks-child)))
+          (let ((r (capture-command (list "sh" "-c" interrupt-script "sh" (getenv "CHEZ")
+                                          "--libdirs" (library-path) "--program" path url
+-                                         (symbol->string entry) (symbol->string action)))))
++                                         (symbol->string entry) (symbol->string action)
++                                         (symbol->string where)))))
+            (list (car r) (read-all (cadr r)) (caddr r))))))))
+ 
+-;; timer-row : Session Symbol Symbol String -> (List Any Any Natural)
+-;; ENTRY's call to URL on SESSION, the private gate setting the timer to 1
+-;; tick at the checks' start, once; the timer's handler raises, by
++;; timer-row : Session Symbol Symbol String [Symbol] -> (List Any Any Natural)
++;; ENTRY's call to URL on SESSION, the private gate WHERE names, checks by
++;; default or step, setting the timer to 1 tick at its first start, once; the timer's handler raises, by
+ ;; ACTION, raise, a &curl-engine-error of its own, or resume, a &warning
+ ;; continuably, which the caller's handler returns from. Answers what the
+ ;; call answered or raised, as checks-child reads it, the gate's marks
+ ;; before the handler ran, and how many times the caller's handler
+ ;; returned.
+-(define (timer-row session entry action url)
+-  (let* ((planted (condition (make-curl-engine-error 'stopped #f)
++(define (timer-row session entry action url . more)
++  (let* ((gate-set! (if (and (pair? more) (eq? (car more) 'step)) drive-step-gate-set! drive-checks-gate-set!))
++         (planted (condition (make-curl-engine-error 'stopped #f)
+                              (make-message-condition "planted by the timer's handler")))
+          (planted-warning (condition (make-warning) (make-message-condition "planted warning")))
+          (marks '())
+@@ -360,7 +393,7 @@
+          (armed #t)
+          (returned 0)
+          (previous (timer-interrupt-handler)))
+-    (drive-checks-gate-set!
++    (gate-set!
+      (lambda (where)
+        (set! marks (cons where marks))
+        (when (and armed (eq? where 'start))
+@@ -385,7 +418,7 @@
+                  (list 'returned ((call-of entry session url))))))))
+       (set-timer 0)
+       (timer-interrupt-handler previous)
+-      (drive-checks-gate-set! #f)
++      (gate-set! #f)
+       (list outcome handler-marks returned))))
+ 
+ ;; sweep : Session Symbol String -> (List (Listof Natural) (Listof Natural) Any)
+@@ -395,8 +428,11 @@
+ ;; past the first whose expiry came after the end, or at 4000. Answers the
+ ;; fuels whose expiry came after the start and before the end; those whose
+ ;; resumed call raised (curl)'s refusal to re-enter a URL's parse; and the
+-;; evidence: (crossed F BEFORE), F the first fuel whose expiry came after
+-;; the end and BEFORE the marks the expiry at F - 1 saw, or (never-crossed).
++;; evidence: (crossed F AT BEFORE), F the first fuel whose expiry came after
++;; the end, or whose call completed, AT the marks the expiry at F saw, or
++;; completed, and BEFORE those at F - 1; or (never-crossed). A sweep that
++;; crossed the checks reads AT (start end): a call that completed unexpired,
++;; or one whose gate was never called, reads completed or ().
+ (define (sweep session entry url)
+   (let loop ((fuel 1) (inside '()) (re-entries '()) (crossed #f) (last-marks #f) (left #f))
+     (if (or (> fuel 4000) (and left (= left 0)))
+@@ -421,7 +457,7 @@
+           (drive-checks-gate-set! #f)
+           (let* ((in? (and (list? seen) (memq 'start seen) (not (memq 'end seen)) #t))
+                  (after? (or (eq? seen 'completed) (and (memq 'end seen) #t)))
+-                 (now-crossed (or crossed (and after? (list 'crossed fuel last-marks)))))
++                 (now-crossed (or crossed (and after? (list 'crossed fuel seen last-marks)))))
+             (loop (+ fuel 1)
+                   (if in? (cons fuel inside) inside)
+                   (if (eq? (cadr row) 're-entry) (cons fuel re-entries) re-entries)
+@@ -473,12 +509,271 @@
+                      'no-refusal)))))
+     (list (list 'interrupts-on seen) left)))
+ 
++
++;; --- a redirect's step, a submit's checks and the URL's cap --------------------------
++
++;; any-re-entry? : Any -> Boolean
++;; Whether E is any of (curl)'s refusals to re-enter a critical wind once
++;; its handle or its string was freed: an assertion violation whose message
++;; begins "re-entered after", call-with-parsed-url's, proxy-url-reading's,
++;; get-part's and a C string's alike.
++(define (any-re-entry? e)
++  (and (condition? e) (assertion-violation? e) (message-condition? e)
++       (let ((m (condition-message e)))
++         (and (>= (string-length m) 16) (string=? (substring m 0 16) "re-entered after")))))
++
++;; counted : (Listof Symbol) Symbol -> Natural
++(define (counted marks mark)
++  (length (filter (lambda (m) (eq? m mark)) marks)))
++
++;; step-sweep : Session Symbol String -> (List (Listof Natural) (Listof Natural) (List Boolean Boolean Boolean))
++;; ENTRY's call to URL, a redirect, on SESSION inside a Chez engine of FUEL
++;; ticks, each expiry resumed with 10^8 ticks, the checks gate marking
++;; start and end and the step gate step-start and step-end. Fuel goes up by
++;; 25 to the first whose expiry came after a step's end, F; then a tick at a
++;; time from F - 400 to F + 200, across the first step: where it lands moves
++;; between runs with the await's polls, the more under Valgrind. Answers, of
++;; every fuel run, the coarse ones too, the ones whose expiry came inside a
++;; step, a step-start not yet
++;; ended; those whose resumed call raised (curl)'s refusal to re-enter; and
++;; the evidence: whether F was found, and whether some expiry came after
++;; the checks and before any step, and some after a step, outside every
++;; step, before the call ended. A streamed hop steps twice, at its head,
++;; whether it steps past it, then once read.
++(define (step-sweep session entry url)
++  (define (run-at fuel)
++    (let ((marks '()))
++      (drive-checks-gate-set! (lambda (w) (set! marks (cons w marks))))
++      (drive-step-gate-set! (lambda (w) (set! marks (cons (if (eq? w 'start) 'step-start 'step-end) marks))))
++      (let* ((eng (make-engine
++                   (lambda ()
++                     (guard (e (#t (if (any-re-entry? e) 're-entry 'raised)))
++                       ((call-of entry session url))
++                       'answered))))
++             (row (eng fuel
++                       (lambda (ticks value) (list 'completed value))
++                       (lambda (next)
++                         (let ((at (reverse marks)))
++                           (list at (next 100000000
++                                          (lambda (ticks value) value)
++                                          (lambda (next) 'expired-again))))))))
++        (drive-checks-gate-set! #f)
++        (drive-step-gate-set! #f)
++        row)))
++  (define (inside? at) (and (list? at) (> (counted at 'step-start) (counted at 'step-end))))
++  (define (before-step? at) (and (list? at) (memq 'end at) (= (counted at 'step-start) 0) #t))
++  (define (after-a-step? at)
++    (and (list? at) (>= (counted at 'step-end) 1) (= (counted at 'step-start) (counted at 'step-end))))
++  (let* ((coarse '())
++         (first-end (let loop ((fuel 25))
++                      (if (> fuel 20000)
++                          #f
++                          (let ((row (run-at fuel)))
++                            (set! coarse (cons (cons fuel row) coarse))
++                            (if (let ((at (car row))) (and (list? at) (memq 'step-end at)))
++                                fuel
++                                (loop (+ fuel 25)))))))
++         (fine (if first-end
++                   (let loop ((fuel (max 1 (- first-end 400))) (acc '()))
++                     (if (> fuel (+ first-end 200))
++                         (reverse acc)
++                         (loop (+ fuel 1) (cons (cons fuel (run-at fuel)) acc))))
++                   '()))
++         (rows (append (reverse coarse) fine)))
++    (list (map car (filter (lambda (r) (inside? (cadr r))) rows))
++          (map car (filter (lambda (r) (eq? (caddr r) 're-entry)) rows))
++          (list (and first-end #t)
++                (and (exists (lambda (r) (before-step? (cadr r))) rows) #t)
++                (and (exists (lambda (r) (after-a-step? (cadr r))) rows) #t)))))
++
++;; step-timer-sweep : Session Symbol String Natural -> (List (Listof Any) (Listof Natural) Boolean)
++;; ENTRY's call to URL, a redirect, on SESSION, for N from 1 to K: the step
++;; gate sets the timer to N ticks at the first step's start; the timer's
++;; handler raises the symbol tick continuably, which the caller's handler
++;; returns from, so the call should resume and answer 200. Answers the Ns
++;; whose call answered anything else, with what it answered; those whose
++;; handler ran inside a step, its marks a step-start not yet ended; and
++;; whether the handler ran for some N.
++(define (step-timer-sweep session entry url k)
++  (let loop ((n 1) (bad '()) (inside '()) (ran #f))
++    (if (> n k)
++        (list (reverse bad) (reverse inside) ran)
++        (let ((marks '()) (handler-marks #f) (armed #t) (previous (timer-interrupt-handler)))
++          (drive-step-gate-set!
++           (lambda (w)
++             (set! marks (cons w marks))
++             (when (and armed (eq? w 'start))
++               (set! armed #f)
++               (set-timer n))))
++          (let ((outcome
++                 (guard (e (#t (list 'raised (cond ((any-re-entry? e) 're-entry)
++                                                   ((condition? e) (describe e))
++                                                   (else e)))))
++                   (with-exception-handler
++                     (lambda (c) (if (eq? c 'tick) 'ignored (raise-continuable c)))
++                     (lambda ()
++                       (timer-interrupt-handler
++                        (lambda ()
++                          (unless handler-marks (set! handler-marks (reverse marks)))
++                          (raise-continuable 'tick)))
++                       (list 'returned ((call-of entry session url))))))))
++            (set-timer 0)
++            (timer-interrupt-handler previous)
++            (drive-step-gate-set! #f)
++            (loop (+ n 1)
++                  (if (equal? outcome '(returned 200)) bad (cons (list n outcome) bad))
++                  (if (and handler-marks (> (counted handler-marks 'start) (counted handler-marks 'end)))
++                      (cons n inside)
++                      inside)
++                  (or ran (and handler-marks #t))))))))
++
++;; step-raise-row : Session Symbol String -> (List Any Any)
++;; ENTRY's call to URL, a redirect, its first step raising, through the
++;; step gate at its start, inside the step's section, a &curl-engine-error
++;; of the suite's own: the caller's with-exception-handler records whether
++;; interrupts were on where it ran, then hands it on. Answers that, and
++;; what left: the-planted-condition, compounded, or (other E).
++(define (step-raise-row session entry url)
++  (let* ((planted (condition (make-curl-engine-error 'stopped #f)
++                             (make-message-condition "planted at the step's start")))
++         (armed #t)
++         (seen 'handler-not-run))
++    (drive-step-gate-set!
++     (lambda (w)
++       (when (and armed (eq? w 'start))
++         (set! armed #f)
++         (raise planted))))
++    (let ((left (guard (e (#t (cond ((eq? e planted) 'the-planted-condition)
++                                    ((and (condition? e) (http-exchange? e)) 'compounded)
++                                    (else (list 'other (if (condition? e) (describe e) e))))))
++                  (with-exception-handler
++                    (lambda (c) (set! seen (interrupts-on?)) (raise-continuable c))
++                    (lambda () ((call-of entry session url)) 'no-raise)))))
++      (drive-step-gate-set! #f)
++      (list (list 'interrupts-on seen) left))))
++
++;; submit-sweep : Engine String String -> (List Natural (Listof Natural) (List Boolean Boolean))
++;; curl-submit on ENGINE of a request for TARGET through PROXY, a proxy
++;; URL, inside a Chez engine of FUEL ticks, for FUEL from 1 up, a tick at a
++;; time, each expiry resumed with 10^8 ticks, each token cancelled and
++;; awaited after; it stops 20 fuels past the first whose submit completed
++;; unexpired, or at 8000. Answers how many resumed submits raised (curl)'s
++;; refusal to re-enter, the first five such fuels, and the evidence: whether
++;; a submit completed unexpired, and whether some expired.
++(define (submit-sweep engine proxy target)
++  (let ((request (make-curl-request target 'proxy proxy 'timeout-ms 5000)))
++    (let loop ((fuel 1) (re-entries '()) (completed #f) (left #f) (expired #f))
++      (if (or (> fuel 8000) (and left (= left 0)))
++          (list (length re-entries) (take-up-to (reverse re-entries) 5) (list completed expired))
++          (let* ((token #f)
++                 (eng (make-engine
++                       (lambda ()
++                         (guard (e (#t (if (any-re-entry? e) 're-entry 'raised)))
++                           (set! token (curl-submit engine request))
++                           'submitted))))
++                 (row (eng fuel
++                           (lambda (ticks value) (list 'completed value))
++                           (lambda (next)
++                             (list 'expired (next 100000000
++                                                  (lambda (ticks value) value)
++                                                  (lambda (next) 'expired-again)))))))
++            (when token
++              (curl-token-cancel token)
++              (curl-token-wait token 5000))
++            (loop (+ fuel 1)
++                  (if (eq? (cadr row) 're-entry) (cons fuel re-entries) re-entries)
++                  (or completed (eq? (car row) 'completed))
++                  (cond (left (- left 1)) ((eq? (car row) 'completed) 20) (else #f))
++                  (or expired (eq? (car row) 'expired))))))))
++
++;; submit-timer-sweep : Engine String String Natural -> (List Natural (Listof Natural) Boolean)
++;; curl-submit as submit-sweep makes it, the timer set to N ticks just
++;; before it, for N from 1 to K; the timer's handler raises the symbol tick
++;; continuably, which the caller's handler returns from, so the submit
++;; should resume and answer its token. Answers how many submits raised
++;; (curl)'s refusal to re-enter, the first five such Ns, and whether the
++;; handler ran for some N.
++(define (submit-timer-sweep engine proxy target k)
++  (let ((request (make-curl-request target 'proxy proxy 'timeout-ms 5000)))
++    (let loop ((n 1) (re-entries '()) (ran #f))
++      (if (> n k)
++          (list (length re-entries) (take-up-to (reverse re-entries) 5) ran)
++          (let* ((token #f)
++                 (handled #f)
++                 (previous (timer-interrupt-handler))
++                 (outcome
++                  (guard (e (#t (if (any-re-entry? e) 're-entry 'raised)))
++                    (with-exception-handler
++                      (lambda (c) (if (eq? c 'tick) 'ignored (raise-continuable c)))
++                      (lambda ()
++                        (timer-interrupt-handler (lambda () (set! handled #t) (raise-continuable 'tick)))
++                        (set-timer n)
++                        (set! token (curl-submit engine request))
++                        'submitted)))))
++            (set-timer 0)
++            (timer-interrupt-handler previous)
++            (when token
++              (curl-token-cancel token)
++              (curl-token-wait token 5000))
++            (loop (+ n 1) (if (eq? outcome 're-entry) (cons n re-entries) re-entries) (or ran handled)))))))
++
++;; long-url : Natural -> String
++;; http://127.0.0.1:9/ then a's, N chars in all.
++(define (long-url n)
++  (let ((head "http://127.0.0.1:9/"))
++    (string-append head (make-string (- n (string-length head)) #\a))))
++
++;; cap-row : Session Symbol String List -> (List Any Any Integer)
++;; ENTRY's get of URL, with the keys KEYS, on SESSION, its checks gate
++;; marking: the gate's marks, what it raised, as its fields, and the ns
++;; from the checks' start to the raise.
++(define (cap-row session entry url keys)
++  (let ((marks '()) (start #f))
++    (drive-checks-gate-set!
++     (lambda (w)
++       (set! marks (cons w marks))
++       (when (and (eq? w 'start) (not start)) (set! start (monotonic-ns)))))
++    (let* ((left (guard (e (#t (let ((at (monotonic-ns)))
++                                 (list at
++                                       (if (condition? e)
++                                           (list (and (curl-url-error? e)
++                                                      (list (curl-url-error-reason e) (curl-url-error-code e)
++                                                            (curl-url-error-message e)
++                                                            (equal? (curl-url-error-input e) url)))
++                                                 (and (http-request-error? e) (list 'request-error (http-request-error-reason e)))
++                                                 (and (who-condition? e) (condition-who e))
++                                                 (and (message-condition? e) (condition-message e))
++                                                 (and (irritants-condition? e) (condition-irritants e))
++                                                 (and (http-exchange? e)
++                                                      (list (http-exchange-method e) (equal? (http-exchange-url e) url)
++                                                            (http-exchange-history e) (http-exchange-transfers e))))
++                                           (list 'non-condition e))))))
++                   (case entry
++                     ((request) (apply http-get session url keys))
++                     ((port) (apply call-with-response-port session 'get url
++                                    (append keys (list (lambda (r p) 'proc-called)))))
++                     ((go) (call-with-request-group session (lambda (go) (apply go 'get url keys))))
++                     (else (http-parallel session (list (cons 'get (cons url keys))))))
++                   (list (monotonic-ns) 'no-raise))))
++      (drive-checks-gate-set! #f)
++      (list (reverse marks) (cadr left) (if start (- (car left) start) #f)))))
++
++;; monotonic-ns : -> Integer
++(define (monotonic-ns)
++  (let ((t (current-time 'time-monotonic)))
++    (+ (* (time-second t) 1000000000) (time-nanosecond t))))
++
+ (call-with-origin
+  (lambda (o)
+    (define url
+      (let ((f (origin-face o 'http)))
+        (string-append "http://" (car f) ":" (number->string (cdr f)) "/status/200")))
+ 
++   ;; url-of-face : Origin Symbol String -> String
++   (define (url-of-face o face path)
++     (let ((f (origin-face o face)))
++       (string-append "http://" (car f) ":" (number->string (cdr f)) path)))
++
+    ;; --- Ctrl-C, in a child ------------------------------------------------------------
+ 
+    (for-each
+@@ -486,10 +781,10 @@
+       (test-equal (string-append
+                    "SIGINT while " (symbol->string entry)
+                    "'s checks block at their start, inside their critical section, whose Ctrl-C handler raises a &curl-error of its own: the call raises that very object, not compounded with &http-exchange, the handler run after the checks' end, as the section ended; nothing was submitted; the hold quiet, the child's counts zero")
+-        (list 0 (list (list 'checks entry 'raise '(raised #t #f) '(start end) 'quiet '(0 0 0) 0 0)
++        (list 0 (list (list 'checks entry 'checks 'raise '(raised #t #f) '(start end) 'quiet '(0 0 0) 0 0)
+                       (list 'counts zero-counts))
+               "")
+-        (run-child url entry 'raise)))
++        (run-child url entry 'raise 'checks)))
+     entries)
+ 
+    (for-each
+@@ -497,10 +792,10 @@
+       (test-equal (string-append
+                    "SIGINT while " (symbol->string entry)
+                    "'s checks block at their start, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the call resumes and answers 200, the caller's handler returned once, the handler run after the checks' end; one transfer; the child's counts zero")
+-        (list 0 (list (list 'checks entry 'resume '(returned 200) '(start end) 'quiet '(0 0 0) 1 1)
++        (list 0 (list (list 'checks entry 'checks 'resume '(returned 200) '(start end) 'quiet '(0 0 0) 1 1)
+                       (list 'counts zero-counts))
+               "")
+-        (run-child url entry 'resume)))
++        (run-child url entry 'resume 'checks)))
+     entries)
+ 
+    ;; --- a timer -----------------------------------------------------------------------
+@@ -532,11 +827,169 @@
+                   (list (length (cadr swept)) (take-up-to (cadr swept) 5))))
+           (test-equal (string-append
+                        "the " (symbol->string entry)
+-                       " sweep's evidence: it crossed the checks, the expiry at the fuel before the first one after their end having seen neither mark")
+-            '(crossed ())
++                       " sweep's evidence: it crossed the checks a tick at a time, the first expiry after their end having seen both marks, start and end, and the one at the fuel before it neither")
++            '(crossed (start end) ())
+             (let ((c (caddr swept)))
+-              (if (eq? (car c) 'crossed) (list 'crossed (caddr c)) c)))))
++              (if (eq? (car c) 'crossed) (list 'crossed (caddr c) (cadddr c)) c)))))
++      entries)
++     (http-session-close session))
++
++   ;; --- a redirect's step ----------------------------------------------------------------
++
++   ;; A group, go's and parallel's, submits the next hop inside the step's
++   ;; own section, before the handler runs, and the raise cancels it: the
++   ;; engine's thread can start that transfer first. On the 8.5.0 OpenSSL
++   ;; lane's make test it did, once: 2 transfers started. With the child's
++   ;; handler made to sleep 100 ms before its raise, go and parallel started
++   ;; 2 in 10 of 10 runs each, request and port 1 in 10 of 10; without the
++   ;; sleep, every run started 1: 40 of each entry natively, and on that
++   ;; lane 40 each of request, port and go and 60 of parallel
++   ;; (research/m7/carried/guard/, the fix round's step-raise tallies). So a
++   ;; group's row reads 1 or 2 as one-or-two; a single call's, which
++   ;; submits after its step's section, is 1.
++   (let ((redirect (url-of-face o 'http "/redirect/302?to=/status/200"))
++         (group-started
++          (lambda (r)
++            (guard (e (#t r))
++              (let* ((row (car (cadr r)))
++                     (n (list-ref row 8)))
++                (list (car r)
++                      (cons (append (take-up-to row 8)
++                                    (cons (if (memv n '(1 2)) 'one-or-two n) (list-tail row 9)))
++                            (cdr (cadr r)))
++                      (caddr r)))))))
++     (for-each
++      (lambda (entry)
++        (let ((group? (memq entry '(go parallel))))
++          (test-equal (string-append
++                       "SIGINT while " (symbol->string entry)
++                       "'s first step, a redirect's, blocks at its start, inside its critical section, whose Ctrl-C handler raises a &curl-error of its own: the call raises that very object, the handler run after the step's end, as the section ended; "
++                       (if group?
++                           "the first transfer made, and the next hop's, which the group submits inside the step's section, started or not as the cancel and the engine's thread meet"
++                           "the first transfer alone made")
++                       "; the child's counts zero")
++            (list 0 (list (list 'checks entry 'step 'raise '(raised #t #f) '(start end) 'quiet '(0 0 0)
++                                (if group? 'one-or-two 1) 0)
++                          (list 'counts zero-counts))
++                  "")
++            (let ((r (run-child redirect entry 'raise 'step)))
++              (if group? (group-started r) r)))))
+       entries)
++
++     (for-each
++      (lambda (entry)
++        (test-equal (string-append
++                     "SIGINT while " (symbol->string entry)
++                     "'s first step, a redirect's, blocks at its start, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the call resumes, follows the redirect, and answers 200, the caller's handler returned once; two transfers; the child's counts zero")
++          (list 0 (list (list 'checks entry 'step 'resume '(returned 200) '(start end) 'quiet '(0 0 0) 2 1)
++                        (list 'counts zero-counts))
++                "")
++          (run-child redirect entry 'resume 'step)))
++      entries)
++
++     (let ((session (make-http-session 'timeout-ms 20000)))
++       (for-each
++        (lambda (entry)
++          (test-equal (string-append
++                       "a timer that runs out at " (symbol->string entry)
++                       "'s first step's start, a redirect's, inside its critical section, fires after its end: its handler's own &curl-error leaves as raised; a continuable &warning its caller's handler returns from resumes the call, which answers 200")
++            (list (list '(raised #t #f) '(start end) 0)
++                  (list '(returned 200) '(start end) 1))
++            (list (timer-row session entry 'raise redirect 'step)
++                  (timer-row session entry 'resume redirect 'step))))
++        entries)
++
++       (for-each
++        (lambda (entry)
++          (let ((swept (guard (e (#t (list (list 'raised (describe e)) '() '()))) (step-sweep session entry redirect))))
++            (test-equal (string-append
++                         "an engine's expiry swept a tick at a time across " (symbol->string entry)
++                         "'s first step, a redirect's: none lands inside a step, and no resumed call raises (curl)'s refusal to re-enter a URL's parse; the fuels that did, counted, and their first five; and the sweep's evidence, the first expiry after a step's end found, some expiry after the checks and before any step, and some after a step, outside every step")
++              '((0 ()) (0 ()) (#t #t #t))
++              (list (list (length (car swept)) (take-up-to (car swept) 5))
++                    (list (length (cadr swept)) (take-up-to (cadr swept) 5))
++                    (caddr swept)))))
++        '(request port go))
++
++       (for-each
++        (lambda (entry)
++          (let ((swept (guard (e (#t (list (list 'raised (describe e)) '() #f)))
++                         (step-timer-sweep session entry redirect 300))))
++            (test-equal (string-append
++                         "a timer set 1 to 300 ticks past " (symbol->string entry)
++                         "'s first step's start, a redirect's, whose handler raises a symbol continuably, which the caller's handler returns from: every call resumes and answers 200, no handler runs inside a step, and the handler ran; the counts that did not, and their first five")
++              '((0 ()) (0 ()) #t)
++              (list (list (length (car swept)) (take-up-to (car swept) 5))
++                    (list (length (cadr swept)) (take-up-to (cadr swept) 5))
++                    (caddr swept)))))
++        '(request port go))
++
++       (test-equal "a raise made inside a redirect's step, through the step gate at its start, leaves http-request and call-with-response-port as raised, once the step's critical section has ended, so the caller's handler runs with interrupts on; a group's call fails with it, compounded, and its await raises it, interrupts on"
++         '((request ((interrupts-on #t) the-planted-condition))
++           (port ((interrupts-on #t) the-planted-condition))
++           (go ((interrupts-on #t) compounded)))
++         (in-order (lambda (entry) (list entry (step-raise-row session entry redirect))) '(request port go)))
++       (http-session-close session)))
++
++   ;; --- a submit's checks, with a proxy URL --------------------------------------------------
++
++   (let ((engine (make-curl-engine))
++         (proxy (url-of-face o 'http "/"))
++         (target "http://127.0.0.1:9/never"))
++     (let ((swept (guard (e (#t (list 'raised (describe e) '()))) (submit-sweep engine proxy target))))
++       (test-equal "an engine's expiry swept a tick at a time across curl-submit of a request through a proxy URL, a direct caller's, with interrupts on: no resumed submit raises (curl)'s refusal to re-enter the proxy URL's parse or the URL's; the count, its first five fuels, and the sweep's evidence, a submit that completed unexpired and some that expired"
++         '(0 () (#t #t))
++         swept))
++     (let ((swept (guard (e (#t (list 'raised (describe e) #f))) (submit-timer-sweep engine proxy target 3000))))
++       (test-equal "a timer set 1 to 3000 ticks before curl-submit of a request through a proxy URL, whose handler raises a symbol continuably, which the caller's handler returns from: no submit raises (curl)'s refusal to re-enter a parse; the count, its first five, and whether the handler ran"
++         '(0 () #t)
++         swept))
++     (let ((seen 'handler-not-run))
++       (test-equal "a direct caller's curl-submit refused by its URL's parse, an ftp URL, raises it once the parse's critical section has ended: the caller's handler runs with interrupts on"
++         '((interrupts-on #t) (curl-url-error scheme-not-http))
++         (let ((left (guard (e (#t (if (curl-url-error? e) (list 'curl-url-error (curl-url-error-reason e)) (list 'other (describe e)))))
++                       (with-exception-handler
++                         (lambda (c) (set! seen (interrupts-on?)) (raise-continuable c))
++                         (lambda () (curl-submit engine (make-curl-request "ftp://127.0.0.1/x")) 'no-refusal)))))
++           (list (list 'interrupts-on seen) left))))
++     (curl-engine-stop engine))
++
++   (test-equal "SIGINT while a direct caller's curl-submit, through a proxy URL, blocks at the start of its proxy URL's parse, inside its critical section, whose Ctrl-C handler raises a &curl-error of its own: the submit raises that very object, nothing submitted; the child's counts zero"
++     (list 0 (list (list 'checks 'submit 'submit 'raise '(raised #t #f) '(start) 'quiet '(0 0 0) 0 0)
++                   (list 'counts zero-counts))
++           "")
++     (run-child (url-of-face o 'http "/") 'submit 'raise 'submit))
++
++   (test-equal "SIGINT while a direct caller's curl-submit, through a proxy URL, blocks at the start of its proxy URL's parse, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the submit resumes and answers its token, whose transfer ends; the caller's handler returned once; the child's counts zero"
++     (list 0 (list (list 'checks 'submit 'submit 'resume '(returned submitted) '(start) 'quiet '(0 0 0) 1 1)
++                   (list 'counts zero-counts))
++           "")
++     (run-child (url-of-face o 'http "/") 'submit 'resume 'submit))
++
++   ;; --- the URL's cap --------------------------------------------------------------------------
++
++   (let ((session (make-http-session 'timeout-ms 20000 'proxy #f))
++         (over (long-url 8000001))
++         (at-cap (long-url 8000000)))
++     (test-equal "a URL of 8,000,001 chars, past libcurl's 8,000,000-byte cap, at each entry: refused at the checks' start, the gate's end never reached, as libcurl refuses it on every libcurl measured, &curl-url-error malformed-input, code 3, libcurl's message, its input the URL, who chez-curl, irritants (url), compounded with the call's &http-exchange, no transfer"
++       (map (lambda (entry)
++              (list entry '(start)
++                    (list '(malformed-input 3 "Malformed input to a URL function" #t) #f 'chez-curl
++                          "Malformed input to a URL function" '(url) '(get #t () 0))))
++            entries)
++       (in-order (lambda (entry)
++                   (let ((row (cap-row session entry over '())))
++                     (list entry (car row) (cadr row))))
++                 entries))
++     (test-equal "the cap comes first: a URL of 8,000,001 chars beside an unknown key is refused for its length, before the keys; one of 8,000,000, the cap itself, goes to the checks in their order, the key refused first, the URL left to libcurl"
++       '((over malformed-input) (at-cap (request-error unknown-key)))
++       (list (list 'over (let ((d (cadr (cap-row session 'request over '(bogus 1))))) (if (car d) (caar d) d)))
++             (list 'at-cap (let ((d (cadr (cap-row session 'request at-cap '(bogus 1))))) (if (car d) d (cadr d))))))
++     (test-equal "a URL past the cap is refused before anything reads it: from the checks' start to its raise, under a tenth of the time a URL of 8,000,000 chars takes to reach libcurl's own refusal, the URL copied, scanned, encoded and parsed"
++       '(#t)
++       (let ((fast (caddr (cap-row session 'request over '())))
++             (slow (caddr (cap-row session 'request at-cap '()))))
++         (list (and fast slow (< (* fast 10) slow)))))
+      (http-session-close session))
+ 
+    ;; --- the checks' refusals --------------------------------------------------------------
+diff -ruN --no-dereference fix-base/tests/test-group.sps working/tests/test-group.sps
+--- fix-base/tests/test-group.sps	2026-11-05 16:19:43.266313543 -0500
++++ working/tests/test-group.sps	2026-11-06 05:52:54.562753605 -0500
+@@ -1808,7 +1808,9 @@
+ 
+    ;; go's recheck after an engine's expiry, placed by engine-block in
+    ;; PREPARE, outside every section of the group's, where a real expiry
+-   ;; can land (engine-block inside a section suspends there at once, the
++   ;; can land: in or just after the call's checks, whose own critical
++   ;; section an expiry that runs out in them lands after, before go's
++   ;; entry (engine-block inside a section suspends there at once, the
+    ;; slice's third review). The first go enters its call; the second's
+    ;; checks block the engine, whose expiry closes the group and cancels
+    ;; the first. Resumed, the second go asks again inside its entry's
+@@ -1816,7 +1818,7 @@
+    ;; installed around go by with-exception-handler runs with interrupts on,
+    ;; disable-interrupts answering 1, and sees the recheck's message. A
+    ;; hang here has no bound but make's timeout: the engine owns the timer.
+-   (test-equal "go's recheck, after an engine's expiry in its checks, raises closed once its entry's section has ended: a handler around go runs with interrupts on and sees the recheck's message; the call entered before the expiry raises cancelled; no transfer starts after the expiry"
++   (test-equal "go's recheck, after an engine's expiry in or just after its checks, raises closed once its entry's section has ended: a handler around go runs with interrupts on and sees the recheck's message; the call entered before the expiry raises cancelled; no transfer starts after the expiry"
+      (list #t
+            (list (list 'handler #t 'closed 'go "the request group was closed while go checked the call: go starts no call")
+                  '(cancelled http-await))
+diff -ruN --no-dereference fix-base/tests/test-origin-tls.sps working/tests/test-origin-tls.sps
+--- fix-base/tests/test-origin-tls.sps	2026-11-05 14:24:37.735206213 -0500
++++ working/tests/test-origin-tls.sps	2026-11-06 05:54:08.599097142 -0500
+@@ -622,12 +622,16 @@
+ ;; as spawned-probe starts it, with the origin stopped (SIGSTOP to its pid)
+ ;; from 300 ms after this thread reads the probe's (connected MS) line until
+ ;; 3000 ms after, then continued (SIGCONT), whatever is raised meanwhile.
+-;; Answers the probe, and LATE: when the line was read, less when the probe
+-;; was spawned, less MS, by this process's clock, so at least how late the
+-;; line was read, Node's start included. With OPTIONS' --split OFFSET:2000,
+-;; LATE under 1700 shows the stop began before the probe sent its rest,
+-;; 2000 ms after its first OFFSET bytes by its clock. It raises when a kill
+-;; fails, or when no connected line comes within 10 s.
++;; Answers the probe, and STOPPED: when the kill -STOP returned, less when
++;; the probe was spawned, less MS, by this process's clock, so at least how
++;; long after the probe connected, by the probe's clock, the origin was
++;; stopped, Node's start, the 300 ms pause oversleeping, and the kill's own
++;; spawn and return all included. With OPTIONS' --split OFFSET:2000,
++;; STOPPED under 2000 shows the stop began before the probe sent its rest,
++;; 2000 ms after it connected by its clock: 342 to 390 ms natively and
++;; beside busy loops, and 372 to 377 ms under Valgrind
++;; (research/m7/carried/review, m3). It raises when a kill fails, or when no
++;; connected line comes within 10 s.
+ (define (stopped-probe o face bytes idle options)
+   (let ((f (origin-face o face))
+         (spawned (now-ms)))
+@@ -654,21 +658,22 @@
+               (cond
+                 ((connected-ms text)
+                  => (lambda (ms)
+-                      (let ((late (- (now-ms) spawned ms))
+-                            (stopped #f)
++                      (let ((stopped #f)
++                            (stopped-at #f)
+                             (continued #f))
+                         (pause-ms 300)
+                         (dynamic-wind
+                           (lambda () #f)
+                           (lambda ()
+                             (set! stopped (kill-origin "-STOP"))
++                            (set! stopped-at (- (now-ms) spawned ms))
+                             (pause-ms 2700))
+                           (lambda () (when stopped (set! continued (kill-origin "-CONT")))))
+                         (unless (and (eqv? stopped 0) (eqv? continued 0))
+                           (error 'stopped-probe "a kill of the origin failed" stopped continued))
+                         (let ((rest (get-bytevector-all from)))
+                           (list (parse-wire-probe (string-append text (if (eof-object? rest) "" (latin-1 rest))))
+-                                late)))))
++                                stopped-at)))))
+                 ((> (now-ms) deadline) (error 'stopped-probe "the probe wrote no connected line within 10 s" text))
+                 ((input-port-ready? from)
+                  (let ((b (get-bytevector-some from)))
+@@ -1103,10 +1108,14 @@
+      ;; refusal first writes the SETTINGS ACK, a TLS write that completes only
+      ;; at the next immediate, and the RST_STREAM waits for it; Node's own end
+      ;; of the TLS socket, at the close_notify, came before that, and the
+-     ;; frame was never written. Main's origin failed this on h2 6 runs of 6,
+-     ;; where unstopped CI's floor job and the memory gate met it as a race.
+-     ;; h2c reads its FIN in a read of its own, after the data, and passed
+-     ;; either way.
++     ;; frame was never written. Main's origin lost it on h2 10 times of 10
++     ;; in the races' forced loop, and h2c 0 of 10 (research/m7/carried/
++     ;; races, results/loop/stop0-main.log); this test failed with main's
++     ;; origin in each of its three kept runs, mutant o0's (results/mutants/
++     ;; there, build/carried-races/out/ and research/m7/carried/verify/
++     ;; mutants/), where unstopped CI's floor job and the memory gate met it
++     ;; as a race. h2c reads its FIN in a read of its own, after the data,
++     ;; and passed either way.
+      (test-equal (named "POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request went, and the answer came after it")
+        (list (list (hex (join (list (frame SETTINGS 0 0 #vu8()) (frame SETTINGS ACK 0 #vu8())
+                                     (frame RST-STREAM 0 1 #vu8(0 0 0 7)))))
+@@ -1119,7 +1128,7 @@
+                 (p (car r))
+                 (ack-at (arrival (probe-arrivals p) 9)))
+            (list (list (hex (probe-bytes p)) (probe-end p))
+-                 (if (< (cadr r) 1700) 'stopped-before-the-request (list 'late (cadr r)))
++                 (if (< (cadr r) 2000) 'stopped-before-the-request (list 'stopped-at (cadr r)))
+                  (if (and ack-at (probe-connected p) (>= (- ack-at (probe-connected p)) 2900))
+                      'answered-after-the-stop
+                      (list 'connected (probe-connected p) 'ack-at ack-at))))))
+diff -ruN --no-dereference fix-base/tests/test-transfer.sps working/tests/test-transfer.sps
+--- fix-base/tests/test-transfer.sps	2026-11-05 10:59:30.841252766 -0500
++++ working/tests/test-transfer.sps	2026-11-06 07:49:47.531788116 -0500
+@@ -1062,13 +1062,16 @@
+ ;; checked after it, so a check out of order, or one left to the engine's
+ ;; thread, names another answer. The hatch's options were checked as they
+ ;; were attached, and are private copies: a submit has nothing of theirs
+-;; to check (ADR-0009, amended 2026-10-27).
+-(test-equal "a submit checks in prepare-transfer's order, each refusal raised at submit: a header, while the CA file and the URL are wrong too; the CA file, while the URL is, each before anything native; then the URL, parsed on this thread, its CURLU live at the raise and freed after"
++;; to check (ADR-0009, amended 2026-10-27). The URL's parse runs in a
++;; critical section of its own, its refusal answered as data and raised
++;; once the section has ended (ADR-0025, as amended after the branch's
++;; review): the CURLU, which the parse makes on this thread, is freed by
++;; then, so the caller's handler counts none, where before the section it
++;; ran inside the parse and counted one.
++(test-equal "a submit checks in prepare-transfer's order, each refusal raised at submit: a header, while the CA file and the URL are wrong too; the CA file, while the URL is, each before anything native; then the URL, parsed on this thread, in a section of its own, its CURLU freed before its refusal is raised"
+   (list (list '(request-refused header-name "X Name" not-a-token) running-counts running-counts)
+         (list '(request-refused ca-file "/x/c\x0;.pem" embedded-nul) running-counts running-counts)
+-        (list '(url-refused scheme-not-http)
+-              '((block . 1) (easy . 0) (url . 1) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0))
+-              running-counts))
++        (list '(url-refused scheme-not-http) running-counts running-counts))
+   (map (lambda (wrong)
+          (let* ((name (string-copy "X-Name"))
+                 (path (string-copy "/x/ca.pem"))
+@@ -2293,6 +2296,16 @@
+                        (k (cond ((equal? a clean) 'whole)
+                                 ((equal? a '(request-refused user-agent line-break)) 'refused)
+                                 (else #f))))
++                  ;; A refusal comes before anything waits, so with no
++                  ;; yield the next transfer can read the flipper's same CR:
++                  ;; under Valgrind, which runs one thread at a time, every
++                  ;; one of the 300 was refused, the flipper never seen at
++                  ;; c, in 5 of 22 runs of the memory gate once the submit's
++                  ;; URL parse ran in a section of its own, and 0 of 12
++                  ;; before (research/m7/carried/guard/, the fix round's
++                  ;; flip logs). A refusal sleeps 1 ms, so the flipper moves
++                  ;; on (traps.md).
++                  (when (eq? k 'refused) (pause-ms 1))
+                   (loop (+ i 1)
+                         (if k odd (cons a odd))
+                         (if (and k (not (memq k seen))) (cons k seen) seen))))))
+@@ -2462,6 +2475,16 @@
+                        (k (cond ((equal? a clean) 'whole)
+                                 ((equal? a '(request-refused header-value line-break)) 'refused)
+                                 (else #f))))
++                  ;; A refusal comes before anything waits, so with no
++                  ;; yield the next transfer can read the flipper's same CR:
++                  ;; under Valgrind, which runs one thread at a time, every
++                  ;; one of the 300 was refused, the flipper never seen at
++                  ;; c, in 5 of 22 runs of the memory gate once the submit's
++                  ;; URL parse ran in a section of its own, and 0 of 12
++                  ;; before (research/m7/carried/guard/, the fix round's
++                  ;; flip logs). A refusal sleeps 1 ms, so the flipper moves
++                  ;; on (traps.md).
++                  (when (eq? k 'refused) (pause-ms 1))
+                   (loop (+ i 1)
+                         (if k odd (cons a odd))
+                         (if (and k (not (memq k seen))) (cons k seen) seen))))))

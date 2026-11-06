@@ -1436,12 +1436,70 @@ it should not be a comment. (chez-cmark-gfm)
   submitted ([races](research/m7/slice4/races/), `results/trip-*`). The children now
   `collect-rendezvous` before the hold, hold until the signal has been sent, and assert that
   `(collections)` did not move between the hold's start and the handler. (chez-curl, M7 slice 4,
-  CI)
-* **libcurl 8.5.0 reads nothing from an HTTP/2 transfer paused for sending.** `drain_stream` sets
-  the OUT bit beside IN while the upload is open (`lib/http2.c:211-218`), and `Curl_readwrite`
-  returns at once when a paused direction's bit is set (`lib/transfer.c:1019-1056`), so the
-  response waits until the body resumes. Under the memory gate, a held `/answer` to a streamed
-  body left paused hung 7 times of 160, the origin having answered within 1 ms of its release
-  ([races](research/m7/slice4/races/), `results/hold-hang-*`). A test that needs the head before
-  its body ends the body, or puts, first; a caller who waits for the head before putting can wait
-  for the transfer's timeout. (chez-curl, M7 slice 4, CI)
+  CI) **The same stall reached test-http-client's and test-mailbox's children,** never checked
+  for it until after M7: with a collection planted at the ready line, http-client's raise-child
+  left compounded 1 time of 10, and its escape-child passed 10 of 10 though stalled, its output
+  unable to show it; the mailbox child read `before` or `returned` 9 times of 20, M5's `escape
+  before` on the floor lane among them. test-engine's child holds nothing, and the plant moved
+  nothing there. Hold until the signal is sent, too: with a fixed 1 s hold and the signal at
+  3.5 s, http-client's children passed, their handler run in the await, not the section
+  ([races](research/m7/carried/races/), `results/children/`, mutant `f3`). (chez-curl, after M7)
+* **libcurl 8.5.0 can read nothing from an HTTP/2 transfer paused for sending.** `drain_stream`
+  sets the OUT bit beside IN while the upload is open (`lib/http2.c:211-218`), and
+  `Curl_readwrite` returns at once when a paused direction's bit is set
+  (`lib/transfer.c:1019-1056`), so the response can wait until the body resumes. Under the
+  memory gate, a held `/answer` to a streamed body left paused hung 7 times of 160, the origin
+  having answered within 1 ms of its release ([races](research/m7/slice4/races/),
+  `results/hold-hang-*`). **It is a race, not a rule:** with the answer held and released as the
+  request went out, racing libcurl's first ask for the body, a head wait saw nothing 9 times in
+  4,760 native runs and 6 in 800 under Valgrind, on 8.5.0 alone; with the answer sent as the
+  head arrived, 0 of 144; and 7.85.0, 8.20.0 and 8.23.0 never stalled. Stalled with nothing put,
+  the wait ended only at the transfer's timeout, 28; the body's end brought the head 1 to 35 ms
+  later ([guard](research/m7/carried/guard/), `results/lane-*-held*.log`). A test that needs the
+  head before its body ends the body, or puts, first, and a check that the stall is gone takes
+  hundreds of runs, not a handful. (chez-curl, M7 slice 4, CI; amended after M7)
+* **A `guard` whose clauses decline a raise rewinds into it to re-raise it,** running every
+  before thunk between again: R6RS re-raises a declined object "in the dynamic environment of the
+  original call to raise". Inside `call-with-flagged-url`'s critical wind, whose before thunk
+  refuses re-entry once its handle is freed, a Ctrl-C or timer handler's `(raise #f)` or
+  `(raise-continuable 'tick)` came out of `call-state`'s `condition?` guard as
+  `call-with-parsed-url`'s re-entry refusal, compounded, at every entry of the high level; in
+  pure Chez, a declined symbol came out as a before thunk's raise, that thunk run twice
+  ([guard](research/m7/carried/guard/), `results/guard-rewind.log`, `results/sigint-today.log`,
+  rerun in `verify/`). A guard that must pass a raise on unchanged takes it `#t` and answers it
+  as data. (chez-curl, after M7)
+* **A large primitive copy makes no event check while it runs,** so it holds off a Ctrl-C and
+  every other thread's collection with no critical section. A Ctrl-C raised just before a
+  256 MiB `bytevector-copy` ran 206 to 208 ms later, before a 64 Mi-char `string-copy` 228 ms,
+  before `string->utf8` of it 142 ms; the same 256 MiB copied in 4 KiB pieces answered it at
+  once ([guard](research/m7/carried/guard/), `verify/copy-hold.log`). A call's checks copy its
+  body so: the 256 MiB one held another thread's collection 149 ms (`results/cost-today.log`).
+  A hold measured by a thread that asks for collections back to back counts the gaps its
+  wake-ups wait too, and a collection just after a copy moves the new object, so time a Ctrl-C
+  to see the copy alone. (chez-curl, after M7)
+* **Node's HTTP/2 over TLS lost an `RST_STREAM` queued behind a write in progress.**
+  test-origin-tls's `/refuse` read SETTINGS, its ACK and eof, no `RST_STREAM`: `main`'s floor run at `a075629`, and
+  under the gate 5 runs of 21. Instrumented, the refusal first flushed the pending SETTINGS ACK
+  and queued the frame behind it; TLSWrap reports a write that finished at once only at the next
+  immediate; the client's close_notify, read with the request, ended Node's TLS socket at once,
+  since the server was not half-open; and the frame's write then failed, `UV_EPROTO`. On 2 CPUs
+  beside three busy loops, 76 of 200 refusals lost it; idle, 1 of 400. h2c never did, its writes
+  finishing at once and its FIN in a read of its own, nor a refusal with nothing pending. The
+  origin's HTTP/2 faces are now half-open and end a connection at the next immediate after the
+  client's, and a test stops the origin across a request to force the order; `main`'s origin
+  fails it every time ([races](research/m7/carried/races/), `results/`; rerun as mutant `o0`).
+  (chez-curl, after M7)
+* **A planted collection lands only where allocation next takes fresh space past its trip.**
+  `(collect-trip-bytes 1024)` set just after a `collect-rendezvous`, with nothing much allocated
+  after it, never fired, and the mutant that planted it passed every test; with 64 KiB allocated
+  after it, the plant landed and the test failed ([races](research/m7/carried/races/), mutants
+  `f2a` and `f2`, rerun in `verify/`). A plant allocates past its trip, or shows that it fired.
+  (chez-curl, after M7)
+* **A group submits a redirect's next hop inside its step's critical section,** before a Ctrl-C
+  made pending there runs, so the raise's cancel races the engine's thread starting that
+  transfer. test-call-checks' raise row at a step held 1 transfer started at every entry, and
+  the OpenSSL lane started 2 once; with the child's handler made to sleep 100 ms, go and
+  `http-parallel` started 2 in 10 runs of 10, `http-request` and `call-with-response-port` 1
+  ([guard](research/m7/carried/guard/), the fix round's tally; rerun in `verify/`). A single call
+  submits after its section. Count a group's started transfers there as one or two. (chez-curl,
+  after M7)

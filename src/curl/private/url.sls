@@ -98,9 +98,25 @@
                 (field-of what)))
       copy))
 
+  ;; url-input-cap : Positive-Integer
+  ;; libcurl's cap on a URL, CURL_MAX_INPUT_LENGTH, in bytes: 8,000,000 on
+  ;; every libcurl measured.
+  (define url-input-cap 8000000)
+
   ;; checked-input : Symbol Any -> String
-  ;; checked-string for a URL.
+  ;; checked-string for a URL; but a string of more than url-input-cap
+  ;; chars, whose UTF-8 bytes are more than libcurl's cap, is refused at
+  ;; once as libcurl refuses it, malformed-input with libcurl's own message,
+  ;; its input the string as given, before any copy or scan: its cost then
+  ;; stays the same whatever its length, where the copy, the NUL scan and
+  ;; the encoding grew with it, about 22 ms a million chars, inside a call's
+  ;; checks' critical section (research/m7/carried/review, M2;
+  ;; research/m7/carried/guard/, the fix round's url-cap logs). A string of
+  ;; url-input-cap chars or fewer goes to libcurl, which refuses one whose
+  ;; UTF-8 bytes pass the cap itself.
   (define (checked-input who input)
+    (when (and (string? input) (> (string-length input) url-input-cap))
+      (refuse-code input (code-of 'malformed-input)))
     (checked-string who input "a URL"))
 
   ;; strict-utf-8 : Transcoder

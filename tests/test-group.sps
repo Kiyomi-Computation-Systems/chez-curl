@@ -381,7 +381,7 @@
 ;; What a raise out of a group under an engine is: cancelled, closed or
 ;; another reason of &http-group-error; re-entry, (curl)'s refusal to
 ;; re-enter a URL's parse, an assertion violation from
-;; call-with-parsed-url; failure, a call's failure, with its
+;; call-with-parsed-url, which the sweeps refuse; failure, a call's failure, with its
 ;; &http-exchange; or (other ...).
 (define (expiry-class e)
   (cond ((and (condition? e) (http-group-error? e)) (http-group-error-reason e))
@@ -1733,12 +1733,14 @@
      ;; Four responses after an expiry mean the expiry landed before the
      ;; group, every transfer started after it, or after the last transfer
      ;; had started, none after it; anything else raises with none started
-     ;; after it: its first call's cancel, unentered, the cancel of a call
-     ;; never entered, its group closed before its first entry, or (curl)'s
-     ;; refusal to re-enter a parse. A run that never expired answers its
-     ;; responses. No call here can fail, so a failure is no outcome: none
-     ;; was seen from 200 to 40000 ticks (the slice's third review).
-     (test-equal "an engine's expiry anywhere in http-parallel, swept from 200 to 9000 ticks by 100, then by 1 for 100 ticks either side of its first cancel, across its entries: the outcome is all four responses, with every transfer started after the expiry, its group made after it, or none, or with no expiry; or the cancel of its first call, a never-entered call's cancel, or (curl)'s refusal to re-enter a URL's parse, with no transfer started after the expiry"
+     ;; after it: its first call's cancel, or unentered, the cancel of a call
+     ;; never entered, its group closed before its first entry. Never
+     ;; (curl)'s refusal to re-enter a parse: each call's checks are one
+     ;; critical section, which no expiry lands inside (ADR-0025, amended
+     ;; 2026-11-05). A run that never expired answers its responses. No
+     ;; call here can fail, so a failure is no outcome: none was seen from
+     ;; 200 to 40000 ticks (the slice's third review).
+     (test-equal "an engine's expiry anywhere in http-parallel, swept from 200 to 9000 ticks by 100, then by 1 for 100 ticks either side of its first cancel, across its entries: the outcome is all four responses, with every transfer started after the expiry, its group made after it, or none, or with no expiry; or the cancel of its first call or a never-entered call's cancel, with no transfer started after the expiry; never (curl)'s refusal to re-enter a URL's parse"
        '()
        (filter (lambda (row) row)
                (map (lambda (fuel row)
@@ -1748,7 +1750,7 @@
                                            (and (eq? expired #t)
                                                 (if (eq? class 'responses)
                                                     (memv after '(0 4))
-                                                    (and (memq class '(cancelled unentered re-entry)) (eqv? after 0))))))))
+                                                    (and (memq class '(cancelled unentered)) (eqv? after 0))))))))
                            (list fuel row)))
                     fuels rows)))
      (test-equal "the http-parallel sweep's evidence: some expiry landed before its group, its four responses answered with all four transfers started after the expiry; some inside it before its first entry, a never-entered call's cancel raised; and some after an entry, its first call's cancel raised"
@@ -1784,7 +1786,7 @@
                        (http-session-close s)
                        r)))
                  fuels)))
-     (test-equal "an engine's expiry anywhere in a group of four calls of go, swept from 200 to 6000 ticks by 100: each call answers, raises cancelled or closed, or raises (curl)'s refusal to re-enter a URL's parse; and with any call not answered, no transfer starts after the expiry"
+     (test-equal "an engine's expiry anywhere in a group of four calls of go, swept from 200 to 6000 ticks by 100: each call answers, or raises cancelled or closed, never (curl)'s refusal to re-enter a URL's parse; and with any call not answered, no transfer starts after the expiry"
        '()
        (filter (lambda (row) row)
                (map (lambda (fuel row)
@@ -1793,7 +1795,7 @@
                              (calls (and shaped (cadr row)))
                              (after (and shaped (caddr row)))
                              (known (and shaped (list? calls) (= (length calls) 4)
-                                         (for-all (lambda (c) (memq c '(answered cancelled closed re-entry))) calls))))
+                                         (for-all (lambda (c) (memq c '(answered cancelled closed))) calls))))
                         (and (not (and known
                                        (or (not expired) (for-all (lambda (c) (eq? c 'answered)) calls)
                                            (eqv? after 0))))
@@ -1806,7 +1808,9 @@
 
    ;; go's recheck after an engine's expiry, placed by engine-block in
    ;; PREPARE, outside every section of the group's, where a real expiry
-   ;; can land (engine-block inside a section suspends there at once, the
+   ;; can land: in or just after the call's checks, whose own critical
+   ;; section an expiry that runs out in them lands after, before go's
+   ;; entry (engine-block inside a section suspends there at once, the
    ;; slice's third review). The first go enters its call; the second's
    ;; checks block the engine, whose expiry closes the group and cancels
    ;; the first. Resumed, the second go asks again inside its entry's
@@ -1814,7 +1818,7 @@
    ;; installed around go by with-exception-handler runs with interrupts on,
    ;; disable-interrupts answering 1, and sees the recheck's message. A
    ;; hang here has no bound but make's timeout: the engine owns the timer.
-   (test-equal "go's recheck, after an engine's expiry in its checks, raises closed once its entry's section has ended: a handler around go runs with interrupts on and sees the recheck's message; the call entered before the expiry raises cancelled; no transfer starts after the expiry"
+   (test-equal "go's recheck, after an engine's expiry in or just after its checks, raises closed once its entry's section has ended: a handler around go runs with interrupts on and sees the recheck's message; the call entered before the expiry raises cancelled; no transfer starts after the expiry"
      (list #t
            (list (list 'handler #t 'closed 'go "the request group was closed while go checked the call: go starts no call")
                  '(cancelled http-await))

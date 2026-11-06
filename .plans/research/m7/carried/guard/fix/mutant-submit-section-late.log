@@ -1,0 +1,3 @@
+suite test-call-checks exit 1 pass 47 fail 2
+  FAIL an engine's expiry swept a tick at a time across curl-submit of a request through a proxy URL, a direct caller's, with interrupts on: no resumed submit raises (curl)'s refusal to re-enter the proxy URL's parse or the URL's; the count, its first five fuels, and the sweep's evidence, a submit tha
+  FAIL SIGINT while a direct caller's curl-submit, through a proxy URL, blocks at the start of its proxy URL's parse, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the submit resumes and answers its token, whose transfer ends; the caller's handler returne
