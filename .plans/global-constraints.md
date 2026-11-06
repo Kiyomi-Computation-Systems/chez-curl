@@ -536,8 +536,10 @@ provisional. They bind until that record is accepted or amended.
 
   (ADR-0014, amended)
 - **When the gate runs:** CI runs it on every pull request, on `main` and on tags, as two jobs
-  that run every suite once between them, the planted defects in the first; `check-memory-gate`
-  holds the split. Locally it runs in the container (ADR-0014, amended 2026-11-06).
+  that run every suite once between them, `make test-memory MEMORY_SHARD=1` and `=2`, the
+  planted defects first in each; `check-memory-gate` holds the split, by what each shard runs, and
+  `ci.yml`'s two jobs. A new suite goes in one of the Makefile's two lists. Locally it runs in the
+  container, every suite with no `MEMORY_SHARD` (ADR-0014, amended 2026-11-06).
 - **Counters:** every native object is counted, always on, per process, and an engine's
   transfers in its table of live transfers too, which a stop empties and checks empty before
   the engine's thread ends (ADR-0014, amended 2026-10-25). A multi handle is counted as

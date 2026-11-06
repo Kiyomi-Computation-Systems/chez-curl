@@ -1,0 +1,4 @@
+shard 1: test-auth test-call-checks test-check-nothreads test-collect-safe test-conditions test-drift test-engine test-group test-http-client test-load-state test-manifest test-origin-tls test-origin test-printed test-redirect test-request test-retry test-transfer test-url-location test-url-parts test-url
+  21 suites; seconds, by run: 128020391358 645.7 128133882402 809.7 127999579512 872.0 128110200781 977.3; by each suite's slowest: 979.6
+shard 2: test-check-floors test-check-seam test-constants test-cookies test-curl-testing test-discovery test-library-loading test-mailbox test-memory-safety test-native test-proxy test-require-threaded test-stream-call test-stream test-transfer-tls test-unsupported test-upload test-variadic test-verify test-version
+  20 suites; seconds, by run: 128020391358 606.4 128133882402 799.7 127999579512 860.9 128110200781 959.8; by each suite's slowest: 970.4

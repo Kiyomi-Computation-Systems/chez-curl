@@ -72,6 +72,71 @@ MEMORY_TIMEOUT ?= 3600
 # The suites make test-memory runs: every suite, unless a run names others.
 MEMORY_SUITES ?= $(SUITES)
 
+# The memory gate's two shards, CI's two memory jobs (ADR-0014, amended
+# 2026-11-06): make test-memory MEMORY_SHARD=1 runs the first list, 2 the
+# second, and with no MEMORY_SHARD it runs MEMORY_SUITES. Written out, and
+# balanced by each suite's time under the gate in four CI runs
+# (.plans/research/m8/slice1/). A new suite goes in one of them:
+# check-memory-gate requires the two to run every suite once between them,
+# and ci.yml to run each in a job of its own.
+MEMORY_SHARD ?=
+MEMORY_SUITES_1 := \
+  tests/test-auth.sps \
+  tests/test-call-checks.sps \
+  tests/test-check-nothreads.sps \
+  tests/test-collect-safe.sps \
+  tests/test-conditions.sps \
+  tests/test-drift.sps \
+  tests/test-engine.sps \
+  tests/test-group.sps \
+  tests/test-http-client.sps \
+  tests/test-load-state.sps \
+  tests/test-manifest.sps \
+  tests/test-origin-tls.sps \
+  tests/test-origin.sps \
+  tests/test-printed.sps \
+  tests/test-redirect.sps \
+  tests/test-request.sps \
+  tests/test-retry.sps \
+  tests/test-transfer.sps \
+  tests/test-url-location.sps \
+  tests/test-url-parts.sps \
+  tests/test-url.sps
+MEMORY_SUITES_2 := \
+  tests/test-check-floors.sps \
+  tests/test-check-seam.sps \
+  tests/test-constants.sps \
+  tests/test-cookies.sps \
+  tests/test-curl-testing.sps \
+  tests/test-discovery.sps \
+  tests/test-library-loading.sps \
+  tests/test-mailbox.sps \
+  tests/test-memory-safety.sps \
+  tests/test-native.sps \
+  tests/test-proxy.sps \
+  tests/test-require-threaded.sps \
+  tests/test-stream-call.sps \
+  tests/test-stream.sps \
+  tests/test-transfer-tls.sps \
+  tests/test-unsupported.sps \
+  tests/test-upload.sps \
+  tests/test-variadic.sps \
+  tests/test-verify.sps \
+  tests/test-version.sps
+
+# What make test-memory runs, and the variable that names it: the
+# Makefile's own, which test-memory refuses to take from outside, as it
+# refuses a shard's list. Neither holds MEMORY_SHARD's own text:
+# test-memory refuses any but 1 or 2, and a quote in it would break the
+# recipe's shell before that refusal ran. A newline still does, and the
+# shell then refuses the recipe, running no suite.
+MEMORY_RUN = $(if $(MEMORY_SHARD),$(MEMORY_SUITES_$(filter 1 2,$(MEMORY_SHARD))),$(MEMORY_SUITES))
+MEMORY_RUN_NAME = $(if $(MEMORY_SHARD),MEMORY_SUITES_$(filter 1 2,$(MEMORY_SHARD)),MEMORY_SUITES)
+
+# Where a variable the Makefile sets was set instead, for test-memory's
+# refusal: on make's command line, or in the environment under make -e.
+memory-where = $(if $(findstring command line,$(origin $(1))),on make's command line,in the environment)
+
 # Where make test-memory writes each suite's logs: <suite>.log, the suite's
 # own output, and <suite>.valgrind, Valgrind's.
 MEMORY_LOGS := build/memory
@@ -377,7 +442,12 @@ check-variadic: deps ## Remove (__varargs_after 2) from bind-variadic's template
 	@TIMEOUT='$(TIMEOUT)' CHEZ='$(CHEZ)' TEST_TIMEOUT='$(TEST_TIMEOUT)' sh tests/check-variadic.sh
 
 # Runs every MEMORY_SUITES suite under Valgrind, in order, each under
-# timeout, and goes on after a failure (ADR-0014). timeout wraps Valgrind
+# timeout, and goes on after a failure (ADR-0014); with MEMORY_SHARD 1 or 2,
+# that shard's list instead. It refuses any other MEMORY_SHARD, and one
+# beside a MEMORY_SUITES of the command line's or the environment's, which
+# the shard would ignore; and a shard's list, MEMORY_RUN or MEMORY_RUN_NAME
+# set on the command line or, under make -e, in the environment, so a
+# shard runs the Makefile's list or nothing. timeout wraps Valgrind
 # and never sits between it and Chez: Valgrind checks only the command it
 # is handed. A suite's own output goes to build/memory/<suite>.log, and
 # Valgrind writes its report to build/memory/<suite>.valgrind (--log-file),
@@ -438,10 +508,22 @@ check-variadic: deps ## Remove (__varargs_after 2) from bind-variadic's template
 # and VALGRIND_LAUNCHER) or a .valgrindrc exists in $HOME or here, and
 # hands Valgrind --command-line-only=yes, so that no .valgrindrc a suite
 # writes reaches the next. `make check-memory-gate` proves each rule fails.
-test-memory: deps ## Run every MEMORY_SUITES suite under Valgrind; fail on any error or definite leak, a hang, or no suite
+test-memory: deps ## Run every MEMORY_SUITES suite, or MEMORY_SHARD=1's or 2's, under Valgrind; fail on any error or definite leak, a hang, or no suite
 	@scripts/require-tools "$(GOAL)" $(firstword $(VALGRIND)) $(TIMEOUT) $(CHEZ) $(NODE) $(OPENSSL)
-	@if [ -z "$(strip $(MEMORY_SUITES))" ]; then \
-	  echo "test-memory: no suites: MEMORY_SUITES is empty" >&2; \
+	@shard='$(subst ','"'"',$(MEMORY_SHARD))'; \
+	case $$shard in \
+	  ''|1|2) ;; \
+	  *) printf 'test-memory: MEMORY_SHARD is "%s": it takes 1 or 2, or none to run MEMORY_SUITES (ADR-0014)\n' "$$shard" >&2; \
+	     exit 1 ;; \
+	esac; \
+	$(foreach v,MEMORY_RUN MEMORY_RUN_NAME,$(if $(filter-out file,$(origin $(v))),echo "test-memory: $(v) is set $(call memory-where,$(v)): it is the Makefile's own; give MEMORY_SUITES or MEMORY_SHARD (ADR-0014)" >&2; exit 1;)) \
+	$(if $(filter 1 2,$(MEMORY_SHARD)),$(if $(filter-out file,$(origin $(MEMORY_RUN_NAME))),echo "test-memory: $(MEMORY_RUN_NAME) is set $(call memory-where,$(MEMORY_RUN_NAME)): the shard's list is the Makefile's; to run other suites give MEMORY_SUITES and no MEMORY_SHARD (ADR-0014)" >&2; exit 1;)) \
+	if [ -n "$$shard" ] && [ '$(origin MEMORY_SUITES)' != file ]; then \
+	  echo "test-memory: MEMORY_SUITES is set $(if $(findstring command line,$(origin MEMORY_SUITES)),on make's command line,in the environment) beside MEMORY_SHARD=$$shard, which names its own suites: give one (ADR-0014)" >&2; \
+	  exit 1; \
+	fi; \
+	if [ -z "$(strip $(MEMORY_RUN))" ]; then \
+	  echo "test-memory: no suites: $(MEMORY_RUN_NAME) is empty" >&2; \
 	  exit 1; \
 	fi; \
 	refused=0; \
@@ -461,7 +543,7 @@ test-memory: deps ## Run every MEMORY_SUITES suite under Valgrind; fail on any e
 	  fi; \
 	done; \
 	seen=; \
-	for t in $(MEMORY_SUITES); do \
+	for t in $(MEMORY_RUN); do \
 	  name=$$(basename "$$t" .sps); \
 	  for u in $$seen; do \
 	    if [ "$$(basename "$$u" .sps)" = "$$name" ]; then \
@@ -486,7 +568,7 @@ test-memory: deps ## Run every MEMORY_SUITES suite under Valgrind; fail on any e
 	chez=$$(readlink -f "$$(command -v $(CHEZ))"); \
 	mkdir -p $(MEMORY_LOGS); \
 	passed=0; failed=0; hung=0; \
-	for t in $(MEMORY_SUITES); do \
+	for t in $(MEMORY_RUN); do \
 	  name=$$(basename "$$t" .sps); \
 	  log=$(MEMORY_LOGS)/$$name.log; \
 	  vlog=$(MEMORY_LOGS)/$$name.valgrind; \

@@ -6,9 +6,19 @@ close-out under **Close-outs**, newest first.
 
 ## Now
 
-- **M8, multipart, the header cap, the docs and v0.1.0:** **planned on 2026-11-06,** in the
-  [M8 plan](2026-11-06-m8-plan.md), a draft on `docs/m8-plan`. Five slices: the memory job in two;
-  the header cap; multipart; the docs; the release.
+- **M8, multipart, the header cap, the docs and v0.1.0:** in progress. The
+  [M8 plan](2026-11-06-m8-plan.md) merged as PR #49 (`74d7aca`), CI passing all eight jobs on it.
+  Five slices: the memory job in two; the header cap; multipart; the docs; the release. Slice 1,
+  the memory job in two (the plan, §3.2 and §4), is built on `feat/m8-memory-shards`, not yet
+  merged: measured first from four CI runs' memory logs, each suite's time under the gate
+  ([research](research/m8/slice1/)), then split by those times into two written-out lists, the
+  slower shard's suites 14.5 minutes on PR #47's runner, where all of them took 28.9, and 16.3 on
+  PR #49's, the slowest of the four, past the plan's aim of 16 (§3.2). CI's memory
+  job becomes `memory-1` and `memory-2`, `make test-memory MEMORY_SHARD=1` and `=2`, each after
+  the planted defects; `check-memory-gate` holds the split by what each shard runs, and
+  `ci.yml`'s two jobs. The branch's required checks are the maintainer's setting: the one
+  `memory (the Valgrind gate)` becomes `memory-1 (the Valgrind gate, shard 1 of 2)` and
+  `memory-2 (the Valgrind gate, shard 2 of 2)`.
   - **Decided by the maintainer, 2026-11-06,** each the recommended option, from three read-only
     surveys and three probes on the five Linux libcurls ([`research/m8/`](research/m8/)):
     - the scope ([ADR-0038](decisions/0038-m8s-scope.md)): parts in memory and files by path; a
