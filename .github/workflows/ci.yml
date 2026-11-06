@@ -11,10 +11,10 @@ name: CI
 #
 # Node runs the test origin and the byte probe, tests/origin.mjs and
 # tests/wire-probe.mjs (ADR-0005, amended), so every lane that runs the suites
-# needs it. main and memory use the runner's own Node. floor installs Node at
-# its floor with actions/setup-node, which takes its version from a step that
-# runs scripts/ci/floor.sh node: check-floors refuses any other way of giving
-# it one.
+# needs it. main, memory-1 and memory-2 use the runner's own Node. floor
+# installs Node at its floor with actions/setup-node, which takes its version
+# from a step that runs scripts/ci/floor.sh node: check-floors refuses any
+# other way of giving it one.
 #
 # The jobs, all independent, and every one of them on every event below: each
 # pull request, each push to main or a v* tag, and each run asked for from the
@@ -40,8 +40,11 @@ name: CI
 #               each as missing-api, naming the entry point whose probe failed.
 #   nothreads   every public library must be refused, by name, on a Chez built
 #               with --nothreads (ADR-0001).
-#   memory      the Valgrind gate (ADR-0014): the planted defects must fail it,
-#               then every suite runs under it.
+#   memory-1, memory-2
+#               the Valgrind gate (ADR-0014), in two shards (amended
+#               2026-11-06): in each, the planted defects must fail it, then
+#               the shard's suites run under it. The Makefile lists each
+#               shard's; between them they run every suite once.
 #
 # This workflow states no floor. The scripts that build Chez and libcurl at
 # their floors, scripts/ci/build-chez.sh and build-curl.sh, take no version and
@@ -590,11 +593,16 @@ jobs:
           CHEZ: ${{ runner.temp }}/chez-nothreads/bin/scheme
         run: make check-nothreads
 
-  # The Valgrind gate, on every run (ADR-0014). Measured in the Guix
-  # container: about 75 seconds for check-memory-gate and 100 for every suite
-  # under test-memory; a cold cache adds the Chez build.
-  memory:
-    name: memory (the Valgrind gate)
+  # The Valgrind gate, on every run (ADR-0014), in two shards, one job each
+  # (ADR-0014, amended 2026-11-06): the Makefile lists each shard's suites,
+  # and check-memory-gate requires the two to run every suite once between
+  # them, and this file to run each in a job of its own, after its planted
+  # defects, with no if or continue-on-error key. Measured on CI's runners in
+  # four runs, 2026-11-06: 84 to 124 seconds for check-memory-gate before
+  # its shard cases, and about 606 to 977 for each shard's suites
+  # (.plans/research/m8/slice1/); a cold cache adds the Chez build.
+  memory-1:
+    name: memory-1 (the Valgrind gate, shard 1 of 2)
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -646,7 +654,65 @@ jobs:
           CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
         run: make check-memory-gate
 
-      - name: Every suite under Valgrind
+      - name: Shard 1's suites under Valgrind
         env:
           CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
-        run: make test-memory
+        run: make test-memory MEMORY_SHARD=1
+
+  memory-2:
+    name: memory-2 (the Valgrind gate, shard 2 of 2)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Install the packages in packaging/debian-prereqs.txt
+        run: |
+          pkgs=$(grep -v -e '^#' -e '^$' packaging/debian-prereqs.txt | tr '\n' ' ')
+          if [ -z "$pkgs" ]; then
+            echo "::error::packaging/debian-prereqs.txt yielded no packages: a broken step, not an empty list"
+            exit 1
+          fi
+          sudo apt-get update -qq
+          # shellcheck disable=SC2086
+          sudo apt-get install -y --no-install-recommends $pkgs
+
+      - name: Identify the runner image
+        id: image
+        run: |
+          . /etc/os-release
+          echo "id=${ID}-${VERSION_ID}-${RUNNER_ARCH}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Chez
+        id: chez
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: chez-threads-${{ hashFiles('packaging/floors.sexp', 'scripts/ci/build-chez.sh') }}-${{ steps.image.outputs.id }}
+
+      - name: Build Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        run: scripts/ci/build-chez.sh "$RUNNER_TEMP/chez-threads"
+
+      - name: Save Chez
+        if: steps.chez.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/chez-threads
+          key: ${{ steps.chez.outputs.cache-primary-key }}
+
+      # The gate proves nothing unless it can fail, so the planted defects run
+      # first: a heap overrun and a definite leak must each fail it, by
+      # Valgrind's own marker. Outside any Guix environment: no suppression is
+      # passed, and no flag that hides a report.
+      - name: The gate must fail on planted defects
+        env:
+          CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
+        run: make check-memory-gate
+
+      - name: Shard 2's suites under Valgrind
+        env:
+          CHEZ: ${{ runner.temp }}/chez-threads/bin/scheme
+        run: make test-memory MEMORY_SHARD=2

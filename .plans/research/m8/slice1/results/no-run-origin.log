@@ -1,0 +1,350 @@
+mutation: no-run-origin
+519d518
+< 	$(foreach v,MEMORY_RUN MEMORY_RUN_NAME,$(if $(filter-out file,$(origin $(v))),echo "test-memory: $(v) is set $(call memory-where,$(v)): it is the Makefile's own; give MEMORY_SUITES or MEMORY_SHARD (ADR-0014)" >&2; exit 1;)) \
+---
+check-memory-gate: ok a plain: tests/memory-plant-overrun.sps exits 0 without Valgrind, and prints only its line
+check-memory-gate: ok a plain: tests/memory-plant-leak.sps exits 0 without Valgrind, and prints only its line
+check-memory-gate: ok b memory-plant-overrun: test-memory names tests/memory-plant-overrun.sps FAIL, with Valgrind's report in its log and its output, and runs the suite after it
+check-memory-gate: ok b memory-plant-leak: test-memory names tests/memory-plant-leak.sps FAIL, with Valgrind's report in its log and its output, and runs the suite after it
+check-memory-gate: ok b fails: test-memory names a program that exits 1 FAIL, with its exit, its FAIL lines and its last lines, and runs the suite after it
+check-memory-gate: ok c suppression: tests/guix-glibc-locpath.supp holds exactly one entry, guix-glibc-locpath, a definite leak under compute_locale_search_path
+check-memory-gate: ok d used: a run that loads libcurl through (curl) passes, and Valgrind reports guix-glibc-locpath used on one block
+check-memory-gate: ok d needed: without the suppression, the same run fails on the one block lost under compute_locale_search_path
+check-memory-gate: ok d leak: the leak plant fails with the suppression read
+check-memory-gate: ok d more: a second block lost under newlocale, which the entry matches, fails the suite
+check-memory-gate: ok d alone: one block lost under newlocale in a run that loads no libcurl, and so no p11-kit, fails the suite
+check-memory-gate: ok d override: MEMORY_SUPPRESSION_FILE on make's command line, naming a file that hides the overrun plant, is ignored, so the plant fails
+check-memory-gate: ok e command, GUIX_ENVIRONMENT unset: timeout runs Valgrind with ADR-0014's flags, no suppression, then Chez, and a Valgrind that runs nothing fails
+check-memory-gate: ok e command, GUIX_ENVIRONMENT set: timeout runs Valgrind with ADR-0014's flags and tests/guix-glibc-locpath.supp, then Chez, and a Valgrind that runs nothing fails
+check-memory-gate: ok f hangs: a program that never ends is named HUNG
+check-memory-gate: ok g none: test-memory refuses to pass with no suite
+check-memory-gate: ok h options: test-memory refuses to run with VALGRIND_OPTS set
+check-memory-gate: ok h options: test-memory refuses to run with a $HOME/.valgrindrc
+check-memory-gate: ok h options: test-memory refuses to run with a ./.valgrindrc, in a copy of the tree
+check-memory-gate: ok h options: test-memory refuses to run with VALGRIND_LIB set, at a copy of Valgrind's directory whose default.supp hides every leak
+check-memory-gate: ok h options: test-memory refuses to run with any other VALGRIND_ variable set, VALGRIND_LAUNCHER
+check-memory-gate: ok h options: a $HOME/.valgrindrc that a suite writes mid-run hides nothing from the next: --command-line-only=yes
+check-memory-gate: ok i suppressions: a suppressions file the gate does not pass, named default.supp, beside Valgrind's own, fails the leak plant it hides, by name
+check-memory-gate: ok i suppressions: a file named default.supp in place of Valgrind's own fails the leak plant it hides, by name
+check-memory-gate: ok j evidence: a CHEZ that is a script exec'ing Chez fails the leak plant, which Valgrind never saw
+check-memory-gate: ok j evidence: a CHEZ that is a script running Chez as a child fails the leak plant, which Valgrind never saw
+check-memory-gate: ok j evidence: a program that execs away from Valgrind, which then reports nothing, fails
+check-memory-gate: ok j evidence: a Valgrind that runs another program than the suite fails the suite
+check-memory-gate: ok k undef: a program that branches on memory nothing initialised fails, exit 9, with Valgrind's report: the plant the next case hides
+check-memory-gate: ok k added: --undef-value-errors=no, added through VALGRIND, hides that plant, and fails it by name
+check-memory-gate: ok k dropped: a Valgrind that drops --leak-check=full hides the leak plant, and fails it by name
+check-memory-gate: ok k changed: a Valgrind that turns --errors-for-leak-kinds=definite to none hides the leak plant, and fails it by name
+check-memory-gate: ok k order: a Valgrind that moves --leak-check=full to the end of its options fails a clean program, by name
+check-memory-gate: ok l forged: a suite that prints a clean ERROR SUMMARY with Valgrind's pid, then execs away, fails: the evidence is Valgrind's own log
+check-memory-gate: ok l stale: a Valgrind log an earlier run left is never read: a Valgrind that writes none fails
+check-memory-gate: ok l names: two suites with one name, in two directories, are refused, so one suite's logs are never another's
+check-memory-gate: ok m awk: an awk that fails, printing nothing, fails a clean program, naming the evidence check
+check-memory-gate: ok m awk: an awk that prints ok, then exits 2, fails a clean program, naming the evidence check
+check-memory-gate: ok m awk: an awk that exits 0, printing nothing, fails a clean program, naming the evidence check
+check-memory-gate: ok n all: with no MEMORY_SHARD, test-memory runs every suite in tests/, in order
+check-memory-gate: ok n split: MEMORY_SHARD=1 and 2 each run a list of their own, and the two run every suite in tests/ once between them, and nothing else, each handed to Valgrind as case e's is
+check-memory-gate: ok n refused: test-memory refuses a MEMORY_SHARD of 0, 3, "1 2", 1', 1" or one, running no suite
+check-memory-gate: ok n beside: test-memory refuses a MEMORY_SHARD beside a MEMORY_SUITES on its command line or in the environment, running no suite
+check-memory-gate: FAILED n lists: test-memory refuses a shard's list set on its command line or, under make -e, in the environment, and MEMORY_RUN or MEMORY_RUN_NAME set on its command line, running no suite
+  make test-memory's lines differ:
+    wanted: test-memory: MEMORY_RUN is set on make's command line: it is the Makefile's own; give MEMORY_SUITES or MEMORY_SHARD (ADR-0014)
+    got:    test-memory: FAIL build/check-memory-gate/after.sps (exit 0, but Valgrind wrote no log, build/memory/after.valgrind)
+    got:    test-memory: ran 1, passed 0, failed 1, hung 0
+  with a command line's MEMORY_RUN, a suite ran
+  make test-memory's lines differ:
+    wanted: test-memory: MEMORY_RUN_NAME is set on make's command line: it is the Makefile's own; give MEMORY_SUITES or MEMORY_SHARD (ADR-0014)
+    got:    test-memory: FAIL tests/test-auth.sps (exit 0, but Valgrind wrote no log, build/memory/test-auth.valgrind)
+    got:    test-memory: FAIL tests/test-call-checks.sps (exit 0, but Valgrind wrote no log, build/memory/test-call-checks.valgrind)
+    got:    test-memory: FAIL tests/test-check-floors.sps (exit 0, but Valgrind wrote no log, build/memory/test-check-floors.valgrind)
+    got:    test-memory: FAIL tests/test-check-nothreads.sps (exit 0, but Valgrind wrote no log, build/memory/test-check-nothreads.valgrind)
+    got:    test-memory: FAIL tests/test-check-seam.sps (exit 0, but Valgrind wrote no log, build/memory/test-check-seam.valgrind)
+    got:    test-memory: FAIL tests/test-collect-safe.sps (exit 0, but Valgrind wrote no log, build/memory/test-collect-safe.valgrind)
+    got:    test-memory: FAIL tests/test-conditions.sps (exit 0, but Valgrind wrote no log, build/memory/test-conditions.valgrind)
+    got:    test-memory: FAIL tests/test-constants.sps (exit 0, but Valgrind wrote no log, build/memory/test-constants.valgrind)
+    got:    test-memory: FAIL tests/test-cookies.sps (exit 0, but Valgrind wrote no log, build/memory/test-cookies.valgrind)
+    got:    test-memory: FAIL tests/test-curl-testing.sps (exit 0, but Valgrind wrote no log, build/memory/test-curl-testing.valgrind)
+    got:    test-memory: FAIL tests/test-discovery.sps (exit 0, but Valgrind wrote no log, build/memory/test-discovery.valgrind)
+    got:    test-memory: FAIL tests/test-drift.sps (exit 0, but Valgrind wrote no log, build/memory/test-drift.valgrind)
+    got:    test-memory: FAIL tests/test-engine.sps (exit 0, but Valgrind wrote no log, build/memory/test-engine.valgrind)
+    got:    test-memory: FAIL tests/test-group.sps (exit 0, but Valgrind wrote no log, build/memory/test-group.valgrind)
+    got:    test-memory: FAIL tests/test-http-client.sps (exit 0, but Valgrind wrote no log, build/memory/test-http-client.valgrind)
+    got:    test-memory: FAIL tests/test-library-loading.sps (exit 0, but Valgrind wrote no log, build/memory/test-library-loading.valgrind)
+    got:    test-memory: FAIL tests/test-load-state.sps (exit 0, but Valgrind wrote no log, build/memory/test-load-state.valgrind)
+    got:    test-memory: FAIL tests/test-mailbox.sps (exit 0, but Valgrind wrote no log, build/memory/test-mailbox.valgrind)
+    got:    test-memory: FAIL tests/test-manifest.sps (exit 0, but Valgrind wrote no log, build/memory/test-manifest.valgrind)
+    got:    test-memory: FAIL tests/test-memory-safety.sps (exit 0, but Valgrind wrote no log, build/memory/test-memory-safety.valgrind)
+    got:    test-memory: FAIL tests/test-native.sps (exit 0, but Valgrind wrote no log, build/memory/test-native.valgrind)
+    got:    test-memory: FAIL tests/test-origin-tls.sps (exit 0, but Valgrind wrote no log, build/memory/test-origin-tls.valgrind)
+    got:    test-memory: FAIL tests/test-origin.sps (exit 0, but Valgrind wrote no log, build/memory/test-origin.valgrind)
+    got:    test-memory: FAIL tests/test-printed.sps (exit 0, but Valgrind wrote no log, build/memory/test-printed.valgrind)
+    got:    test-memory: FAIL tests/test-proxy.sps (exit 0, but Valgrind wrote no log, build/memory/test-proxy.valgrind)
+    got:    test-memory: FAIL tests/test-redirect.sps (exit 0, but Valgrind wrote no log, build/memory/test-redirect.valgrind)
+    got:    test-memory: FAIL tests/test-request.sps (exit 0, but Valgrind wrote no log, build/memory/test-request.valgrind)
+    got:    test-memory: FAIL tests/test-require-threaded.sps (exit 0, but Valgrind wrote no log, build/memory/test-require-threaded.valgrind)
+    got:    test-memory: FAIL tests/test-retry.sps (exit 0, but Valgrind wrote no log, build/memory/test-retry.valgrind)
+    got:    test-memory: FAIL tests/test-stream-call.sps (exit 0, but Valgrind wrote no log, build/memory/test-stream-call.valgrind)
+    got:    test-memory: FAIL tests/test-stream.sps (exit 0, but Valgrind wrote no log, build/memory/test-stream.valgrind)
+    got:    test-memory: FAIL tests/test-transfer-tls.sps (exit 0, but Valgrind wrote no log, build/memory/test-transfer-tls.valgrind)
+    got:    test-memory: FAIL tests/test-transfer.sps (exit 0, but Valgrind wrote no log, build/memory/test-transfer.valgrind)
+    got:    test-memory: FAIL tests/test-unsupported.sps (exit 0, but Valgrind wrote no log, build/memory/test-unsupported.valgrind)
+    got:    test-memory: FAIL tests/test-upload.sps (exit 0, but Valgrind wrote no log, build/memory/test-upload.valgrind)
+    got:    test-memory: FAIL tests/test-url-location.sps (exit 0, but Valgrind wrote no log, build/memory/test-url-location.valgrind)
+    got:    test-memory: FAIL tests/test-url-parts.sps (exit 0, but Valgrind wrote no log, build/memory/test-url-parts.valgrind)
+    got:    test-memory: FAIL tests/test-url.sps (exit 0, but Valgrind wrote no log, build/memory/test-url.valgrind)
+    got:    test-memory: FAIL tests/test-variadic.sps (exit 0, but Valgrind wrote no log, build/memory/test-variadic.valgrind)
+    got:    test-memory: FAIL tests/test-verify.sps (exit 0, but Valgrind wrote no log, build/memory/test-verify.valgrind)
+    got:    test-memory: FAIL tests/test-version.sps (exit 0, but Valgrind wrote no log, build/memory/test-version.valgrind)
+    got:    test-memory: ran 41, passed 0, failed 41, hung 0
+  with a command line's MEMORY_RUN_NAME, a suite ran
+  | deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+  | === tests/test-auth.sps
+  | test-memory: FAIL tests/test-auth.sps (exit 0, but Valgrind wrote no log, build/memory/test-auth.valgrind)
+  |   log: build/memory/test-auth.log
+  |   Valgrind's log: build/memory/test-auth.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-call-checks.sps
+  | test-memory: FAIL tests/test-call-checks.sps (exit 0, but Valgrind wrote no log, build/memory/test-call-checks.valgrind)
+  |   log: build/memory/test-call-checks.log
+  |   Valgrind's log: build/memory/test-call-checks.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-check-floors.sps
+  | test-memory: FAIL tests/test-check-floors.sps (exit 0, but Valgrind wrote no log, build/memory/test-check-floors.valgrind)
+  |   log: build/memory/test-check-floors.log
+  |   Valgrind's log: build/memory/test-check-floors.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-check-nothreads.sps
+  | test-memory: FAIL tests/test-check-nothreads.sps (exit 0, but Valgrind wrote no log, build/memory/test-check-nothreads.valgrind)
+  |   log: build/memory/test-check-nothreads.log
+  |   Valgrind's log: build/memory/test-check-nothreads.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-check-seam.sps
+  | test-memory: FAIL tests/test-check-seam.sps (exit 0, but Valgrind wrote no log, build/memory/test-check-seam.valgrind)
+  |   log: build/memory/test-check-seam.log
+  |   Valgrind's log: build/memory/test-check-seam.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-collect-safe.sps
+  | test-memory: FAIL tests/test-collect-safe.sps (exit 0, but Valgrind wrote no log, build/memory/test-collect-safe.valgrind)
+  |   log: build/memory/test-collect-safe.log
+  |   Valgrind's log: build/memory/test-collect-safe.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-conditions.sps
+  | test-memory: FAIL tests/test-conditions.sps (exit 0, but Valgrind wrote no log, build/memory/test-conditions.valgrind)
+  |   log: build/memory/test-conditions.log
+  |   Valgrind's log: build/memory/test-conditions.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-constants.sps
+  | test-memory: FAIL tests/test-constants.sps (exit 0, but Valgrind wrote no log, build/memory/test-constants.valgrind)
+  |   log: build/memory/test-constants.log
+  |   Valgrind's log: build/memory/test-constants.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-cookies.sps
+  | test-memory: FAIL tests/test-cookies.sps (exit 0, but Valgrind wrote no log, build/memory/test-cookies.valgrind)
+  |   log: build/memory/test-cookies.log
+  |   Valgrind's log: build/memory/test-cookies.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-curl-testing.sps
+  | test-memory: FAIL tests/test-curl-testing.sps (exit 0, but Valgrind wrote no log, build/memory/test-curl-testing.valgrind)
+  |   log: build/memory/test-curl-testing.log
+  |   Valgrind's log: build/memory/test-curl-testing.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-discovery.sps
+  | test-memory: FAIL tests/test-discovery.sps (exit 0, but Valgrind wrote no log, build/memory/test-discovery.valgrind)
+  |   log: build/memory/test-discovery.log
+  |   Valgrind's log: build/memory/test-discovery.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-drift.sps
+  | test-memory: FAIL tests/test-drift.sps (exit 0, but Valgrind wrote no log, build/memory/test-drift.valgrind)
+  |   log: build/memory/test-drift.log
+  |   Valgrind's log: build/memory/test-drift.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-engine.sps
+  | test-memory: FAIL tests/test-engine.sps (exit 0, but Valgrind wrote no log, build/memory/test-engine.valgrind)
+  |   log: build/memory/test-engine.log
+  |   Valgrind's log: build/memory/test-engine.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-group.sps
+  | test-memory: FAIL tests/test-group.sps (exit 0, but Valgrind wrote no log, build/memory/test-group.valgrind)
+  |   log: build/memory/test-group.log
+  |   Valgrind's log: build/memory/test-group.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-http-client.sps
+  | test-memory: FAIL tests/test-http-client.sps (exit 0, but Valgrind wrote no log, build/memory/test-http-client.valgrind)
+  |   log: build/memory/test-http-client.log
+  |   Valgrind's log: build/memory/test-http-client.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-library-loading.sps
+  | test-memory: FAIL tests/test-library-loading.sps (exit 0, but Valgrind wrote no log, build/memory/test-library-loading.valgrind)
+  |   log: build/memory/test-library-loading.log
+  |   Valgrind's log: build/memory/test-library-loading.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-load-state.sps
+  | test-memory: FAIL tests/test-load-state.sps (exit 0, but Valgrind wrote no log, build/memory/test-load-state.valgrind)
+  |   log: build/memory/test-load-state.log
+  |   Valgrind's log: build/memory/test-load-state.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-mailbox.sps
+  | test-memory: FAIL tests/test-mailbox.sps (exit 0, but Valgrind wrote no log, build/memory/test-mailbox.valgrind)
+  |   log: build/memory/test-mailbox.log
+  |   Valgrind's log: build/memory/test-mailbox.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-manifest.sps
+  | test-memory: FAIL tests/test-manifest.sps (exit 0, but Valgrind wrote no log, build/memory/test-manifest.valgrind)
+  |   log: build/memory/test-manifest.log
+  |   Valgrind's log: build/memory/test-manifest.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-memory-safety.sps
+  | test-memory: FAIL tests/test-memory-safety.sps (exit 0, but Valgrind wrote no log, build/memory/test-memory-safety.valgrind)
+  |   log: build/memory/test-memory-safety.log
+  |   Valgrind's log: build/memory/test-memory-safety.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-native.sps
+  | test-memory: FAIL tests/test-native.sps (exit 0, but Valgrind wrote no log, build/memory/test-native.valgrind)
+  |   log: build/memory/test-native.log
+  |   Valgrind's log: build/memory/test-native.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-origin-tls.sps
+  | test-memory: FAIL tests/test-origin-tls.sps (exit 0, but Valgrind wrote no log, build/memory/test-origin-tls.valgrind)
+  |   log: build/memory/test-origin-tls.log
+  |   Valgrind's log: build/memory/test-origin-tls.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-origin.sps
+  | test-memory: FAIL tests/test-origin.sps (exit 0, but Valgrind wrote no log, build/memory/test-origin.valgrind)
+  |   log: build/memory/test-origin.log
+  |   Valgrind's log: build/memory/test-origin.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-printed.sps
+  | test-memory: FAIL tests/test-printed.sps (exit 0, but Valgrind wrote no log, build/memory/test-printed.valgrind)
+  |   log: build/memory/test-printed.log
+  |   Valgrind's log: build/memory/test-printed.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-proxy.sps
+  | test-memory: FAIL tests/test-proxy.sps (exit 0, but Valgrind wrote no log, build/memory/test-proxy.valgrind)
+  |   log: build/memory/test-proxy.log
+  |   Valgrind's log: build/memory/test-proxy.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-redirect.sps
+  | test-memory: FAIL tests/test-redirect.sps (exit 0, but Valgrind wrote no log, build/memory/test-redirect.valgrind)
+  |   log: build/memory/test-redirect.log
+  |   Valgrind's log: build/memory/test-redirect.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-request.sps
+  | test-memory: FAIL tests/test-request.sps (exit 0, but Valgrind wrote no log, build/memory/test-request.valgrind)
+  |   log: build/memory/test-request.log
+  |   Valgrind's log: build/memory/test-request.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-require-threaded.sps
+  | test-memory: FAIL tests/test-require-threaded.sps (exit 0, but Valgrind wrote no log, build/memory/test-require-threaded.valgrind)
+  |   log: build/memory/test-require-threaded.log
+  |   Valgrind's log: build/memory/test-require-threaded.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-retry.sps
+  | test-memory: FAIL tests/test-retry.sps (exit 0, but Valgrind wrote no log, build/memory/test-retry.valgrind)
+  |   log: build/memory/test-retry.log
+  |   Valgrind's log: build/memory/test-retry.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-stream-call.sps
+  | test-memory: FAIL tests/test-stream-call.sps (exit 0, but Valgrind wrote no log, build/memory/test-stream-call.valgrind)
+  |   log: build/memory/test-stream-call.log
+  |   Valgrind's log: build/memory/test-stream-call.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-stream.sps
+  | test-memory: FAIL tests/test-stream.sps (exit 0, but Valgrind wrote no log, build/memory/test-stream.valgrind)
+  |   log: build/memory/test-stream.log
+  |   Valgrind's log: build/memory/test-stream.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-transfer-tls.sps
+  | test-memory: FAIL tests/test-transfer-tls.sps (exit 0, but Valgrind wrote no log, build/memory/test-transfer-tls.valgrind)
+  |   log: build/memory/test-transfer-tls.log
+  |   Valgrind's log: build/memory/test-transfer-tls.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-transfer.sps
+  | test-memory: FAIL tests/test-transfer.sps (exit 0, but Valgrind wrote no log, build/memory/test-transfer.valgrind)
+  |   log: build/memory/test-transfer.log
+  |   Valgrind's log: build/memory/test-transfer.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-unsupported.sps
+  | test-memory: FAIL tests/test-unsupported.sps (exit 0, but Valgrind wrote no log, build/memory/test-unsupported.valgrind)
+  |   log: build/memory/test-unsupported.log
+  |   Valgrind's log: build/memory/test-unsupported.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-upload.sps
+  | test-memory: FAIL tests/test-upload.sps (exit 0, but Valgrind wrote no log, build/memory/test-upload.valgrind)
+  |   log: build/memory/test-upload.log
+  |   Valgrind's log: build/memory/test-upload.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-url-location.sps
+  | test-memory: FAIL tests/test-url-location.sps (exit 0, but Valgrind wrote no log, build/memory/test-url-location.valgrind)
+  |   log: build/memory/test-url-location.log
+  |   Valgrind's log: build/memory/test-url-location.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-url-parts.sps
+  | test-memory: FAIL tests/test-url-parts.sps (exit 0, but Valgrind wrote no log, build/memory/test-url-parts.valgrind)
+  |   log: build/memory/test-url-parts.log
+  |   Valgrind's log: build/memory/test-url-parts.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-url.sps
+  | test-memory: FAIL tests/test-url.sps (exit 0, but Valgrind wrote no log, build/memory/test-url.valgrind)
+  |   log: build/memory/test-url.log
+  |   Valgrind's log: build/memory/test-url.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-variadic.sps
+  | test-memory: FAIL tests/test-variadic.sps (exit 0, but Valgrind wrote no log, build/memory/test-variadic.valgrind)
+  |   log: build/memory/test-variadic.log
+  |   Valgrind's log: build/memory/test-variadic.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-verify.sps
+  | test-memory: FAIL tests/test-verify.sps (exit 0, but Valgrind wrote no log, build/memory/test-verify.valgrind)
+  |   log: build/memory/test-verify.log
+  |   Valgrind's log: build/memory/test-verify.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | === tests/test-version.sps
+  | test-memory: FAIL tests/test-version.sps (exit 0, but Valgrind wrote no log, build/memory/test-version.valgrind)
+  |   log: build/memory/test-version.log
+  |   Valgrind's log: build/memory/test-version.valgrind
+  |   (Valgrind wrote no log)
+  |   | --1-- Reading suppressions file: /check-memory-gate/valgrind-stub/default.supp
+  | test-memory: ran 41, passed 0, failed 41, hung 0
+  | make: *** [Makefile:513: test-memory] Error 1
+check-memory-gate: ok o ci: .github/workflows/ci.yml runs make test-memory MEMORY_SHARD=1 and =2 in a job each, after make check-memory-gate, with no if: or continue-on-error:
+make: *** [Makefile:692: check-memory-gate] Error 1
+exit 2

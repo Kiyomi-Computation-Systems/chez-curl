@@ -1,0 +1,36 @@
+neither: exit 2
+  check-memory-gate: FAILED n split: MEMORY_SHARD=1 and 2 each run a list of their own, and the two run every suite in tests/ once between them, and nothing else, each handed to Valgrind as case e's is
+both: exit 2
+  check-memory-gate: FAILED n split: MEMORY_SHARD=1 and 2 each run a list of their own, and the two run every suite in tests/ once between them, and nothing else, each handed to Valgrind as case e's is
+missing: exit 2
+  check-memory-gate: FAILED n split: MEMORY_SHARD=1 and 2 each run a list of their own, and the two run every suite in tests/ once between them, and nothing else, each handed to Valgrind as case e's is
+new-suite: exit 2
+  check-memory-gate: FAILED n split: MEMORY_SHARD=1 and 2 each run a list of their own, and the two run every suite in tests/ once between them, and nothing else, each handed to Valgrind as case e's is
+two-on-one: exit 2
+  check-memory-gate: FAILED o ci: .github/workflows/ci.yml runs make test-memory MEMORY_SHARD=1 and =2 in a job each, after make check-memory-gate, with no if: or continue-on-error:
+deleted: exit 2
+  check-memory-gate: FAILED o ci: .github/workflows/ci.yml runs make test-memory MEMORY_SHARD=1 and =2 in a job each, after make check-memory-gate, with no if: or continue-on-error:
+misspelt: exit 2
+  check-memory-gate: FAILED o ci: .github/workflows/ci.yml runs make test-memory MEMORY_SHARD=1 and =2 in a job each, after make check-memory-gate, with no if: or continue-on-error:
+no-gate: exit 2
+  check-memory-gate: FAILED o ci: .github/workflows/ci.yml runs make test-memory MEMORY_SHARD=1 and =2 in a job each, after make check-memory-gate, with no if: or continue-on-error:
+continue: exit 2
+  check-memory-gate: FAILED o ci: .github/workflows/ci.yml runs make test-memory MEMORY_SHARD=1 and =2 in a job each, after make check-memory-gate, with no if: or continue-on-error:
+job-if: exit 2
+  check-memory-gate: FAILED o ci: .github/workflows/ci.yml runs make test-memory MEMORY_SHARD=1 and =2 in a job each, after make check-memory-gate, with no if: or continue-on-error:
+block: exit 2
+  check-memory-gate: FAILED o ci: .github/workflows/ci.yml runs make test-memory MEMORY_SHARD=1 and =2 in a job each, after make check-memory-gate, with no if: or continue-on-error:
+run-ignores: exit 2
+  check-memory-gate: FAILED n split: MEMORY_SHARD=1 and 2 each run a list of their own, and the two run every suite in tests/ once between them, and nothing else, each handed to Valgrind as case e's is
+no-refusal: exit 2
+  check-memory-gate: FAILED n refused: test-memory refuses a MEMORY_SHARD of 0, 3, "1 2", 1', 1" or one, running no suite
+no-origin: exit 2
+  check-memory-gate: FAILED n beside: test-memory refuses a MEMORY_SHARD beside a MEMORY_SUITES on its command line or in the environment, running no suite
+gate-if: exit 2
+  check-memory-gate: FAILED o ci: .github/workflows/ci.yml runs make test-memory MEMORY_SHARD=1 and =2 in a job each, after make check-memory-gate, with no if: or continue-on-error:
+shard-flags: exit 2
+  check-memory-gate: FAILED n split: MEMORY_SHARD=1 and 2 each run a list of their own, and the two run every suite in tests/ once between them, and nothing else, each handed to Valgrind as case e's is
+no-list-origin: exit 2
+  check-memory-gate: FAILED n lists: test-memory refuses a shard's list set on its command line or, under make -e, in the environment, and MEMORY_RUN or MEMORY_RUN_NAME set on its command line, running no suite
+no-run-origin: exit 2
+  check-memory-gate: FAILED n lists: test-memory refuses a shard's list set on its command line or, under make -e, in the environment, and MEMORY_RUN or MEMORY_RUN_NAME set on its command line, running no suite
