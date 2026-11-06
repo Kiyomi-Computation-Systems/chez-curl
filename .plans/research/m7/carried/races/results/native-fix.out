@@ -1,0 +1,82 @@
+native-loop: tree build/carried-races/work-fix-probe, 20 runs, suites tests/test-origin-tls.sps tests/test-mailbox.sps, out build/carried-races/out/native-fix, node v24.18.0, libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+=== run 1, 56 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 2, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 3, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 4, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 5, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 6, 56 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 7, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 8, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 9, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 10, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 11, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 12, 56 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 13, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 14, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 15, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 16, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 17, 56 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 18, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 19, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+=== run 20, 57 s
+test: pass tests/test-origin-tls.sps
+test: pass tests/test-mailbox.sps
+test: ran 2, passed 2, failed 0, hung 0
+native-loop: done

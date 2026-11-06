@@ -1,0 +1,11 @@
+--- a/tests/origin.mjs
++++ b/tests/origin.mjs
+@@ -1871,7 +1871,7 @@
+ // A write the kernel holds, to a client that has stopped reading, can still
+ // be in progress then.
+ function h2EndNext(socket) {
+-  setImmediate(() => {
++  process.nextTick(() => {
+     if (!socket.destroyed && !socket.writableEnded) socket.end();
+   });
+ }

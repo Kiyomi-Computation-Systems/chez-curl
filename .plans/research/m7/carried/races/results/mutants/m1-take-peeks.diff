@@ -1,0 +1,19 @@
+--- a/src/curl/private/engine.sls
++++ b/src/curl/private/engine.sls
+@@ -1327,7 +1327,15 @@
+   (define (take who mailbox ms)
+     (check-mailbox who mailbox)
+     (let ((deadline (deadline-after who ms)))
+-      (wait-until who (mailbox-lock mailbox) (lambda () (mailbox-pop! mailbox)) deadline)))
++      (let ((token (wait-until who (mailbox-lock mailbox)
++                               (lambda ()
++                                 (when (null? (mailbox-front mailbox))
++                                   (mailbox-front-set! mailbox (reverse (mailbox-back mailbox)))
++                                   (mailbox-back-set! mailbox '()))
++                                 (let ((front (mailbox-front mailbox))) (and (pair? front) (car front))))
++                               deadline)))
++        (when token (locked (mailbox-lock mailbox) (lambda () (mailbox-pop! mailbox))))
++        token)))
+ 
+   ;; curl-mailbox-take : Mailbox Natural -> (U Token #f)
+   ;; MAILBOX's next finished token, taken out, waiting up to MS

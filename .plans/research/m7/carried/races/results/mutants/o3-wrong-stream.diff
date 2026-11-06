@@ -1,0 +1,33 @@
+--- a/tests/origin.mjs
++++ b/tests/origin.mjs
+@@ -1837,7 +1837,14 @@
+     if (r.kind === 'sink' || r.kind === 'refuse') {
+       const seenNow = countFor(r.key);
+       const refuseAt = r.kind === 'refuse' && seenNow === 1 ? r.at : null;
+-      if (refuseAt === 0) return stream.close(http2.constants.NGHTTP2_REFUSED_STREAM);
++      if (refuseAt === 0) {
++        stream.pushStream({ ':path': '/refused' }, (err, push) => {
++          if (err) return;
++          push.on('error', () => {});
++          push.close(http2.constants.NGHTTP2_REFUSED_STREAM);
++        });
++        return undefined;
++      }
+       const record = bodyRecord();
+       let refused = false;
+       stream.on('data', (chunk) => {
+--- a/tests/origin.mjs
++++ b/tests/origin.mjs
+@@ -1852,7 +1852,11 @@
+         arrive(record, [chunk], tenthsSince(headAt));
+         if (refuseAt !== null && record.bytes >= refuseAt) {
+           refused = true;
+-          stream.close(http2.constants.NGHTTP2_REFUSED_STREAM);
++          { stream.pushStream({ ':path': '/refused' }, (err, push) => {
++            if (err) return;
++            push.on('error', () => {});
++            push.close(http2.constants.NGHTTP2_REFUSED_STREAM);
++          }); }
+         }
+       });
+       stream.on('end', () => {

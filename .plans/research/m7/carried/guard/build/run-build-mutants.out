@@ -1,0 +1,6 @@
+run-in: build-today sh probe/suites.sh mutant-today test-call-checks test-group -> results/../build/mutant-today.log (exit 0)
+run-in: build-a-guard-outside sh probe/suites.sh mutant-a-guard-outside test-call-checks test-group -> results/../build/mutant-a-guard-outside.log (exit 0)
+run-in: build-a-raise-inside sh probe/suites.sh mutant-a-raise-inside test-call-checks test-group -> results/../build/mutant-a-raise-inside.log (exit 0)
+run-in: build-a-section-late sh probe/suites.sh mutant-a-section-late test-call-checks test-group -> results/../build/mutant-a-section-late.log (exit 0)
+run-in: build-a-no-compound sh probe/suites.sh mutant-a-no-compound test-call-checks test-group test-http-client test-stream-call -> results/../build/mutant-a-no-compound.log (exit 0)
+mutants-finished

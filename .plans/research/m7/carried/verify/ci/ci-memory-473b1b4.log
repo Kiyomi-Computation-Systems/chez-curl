@@ -1,0 +1,104 @@
+memory (the Valgrind gate)	Every suite under Valgrind	﻿2026-11-06T14:47:03.2197523Z ##[group]Run make test-memory
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:47:03.2198101Z [36;1mmake test-memory[0m
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:47:03.2228780Z shell: /usr/bin/bash -e {0}
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:47:03.2229217Z env:
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:47:03.2229646Z   CHEZ: /home/runner/work/_temp/chez-threads/bin/scheme
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:47:03.2230222Z ##[endgroup]
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:47:03.9149333Z deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:47:05.2903727Z === tests/test-auth.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:47:45.2279342Z test-memory: pass tests/test-auth.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:47:45.2303658Z === tests/test-call-checks.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:49:23.7528882Z test-memory: pass tests/test-call-checks.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:49:23.7552489Z === tests/test-check-floors.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:49:53.7120309Z test-memory: pass tests/test-check-floors.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:49:53.7141424Z === tests/test-check-nothreads.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:50:05.8461473Z test-memory: pass tests/test-check-nothreads.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:50:05.8482367Z === tests/test-check-seam.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:50:22.8813381Z test-memory: pass tests/test-check-seam.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:50:22.8834610Z === tests/test-collect-safe.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:50:40.9866579Z test-memory: pass tests/test-collect-safe.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:50:40.9887322Z === tests/test-conditions.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:50:52.9167038Z test-memory: pass tests/test-conditions.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:50:52.9188557Z === tests/test-constants.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:51:21.9377952Z test-memory: pass tests/test-constants.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:51:21.9398484Z === tests/test-cookies.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:52:04.2462746Z test-memory: pass tests/test-cookies.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:52:04.2482566Z === tests/test-curl-testing.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:52:59.9317100Z test-memory: pass tests/test-curl-testing.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:52:59.9340407Z === tests/test-discovery.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:53:12.0686780Z test-memory: pass tests/test-discovery.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:53:12.0709903Z === tests/test-drift.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:53:33.8178451Z test-memory: pass tests/test-drift.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:53:33.8200904Z === tests/test-engine.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:54:32.4788361Z test-memory: pass tests/test-engine.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:54:32.4812315Z === tests/test-group.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:55:50.8191007Z test-memory: pass tests/test-group.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:55:50.8215163Z === tests/test-http-client.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:56:33.2116296Z test-memory: pass tests/test-http-client.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:56:33.2138471Z === tests/test-library-loading.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:57:40.1996444Z test-memory: pass tests/test-library-loading.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:57:40.2021505Z === tests/test-load-state.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:57:50.4356528Z test-memory: pass tests/test-load-state.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:57:50.4380330Z === tests/test-mailbox.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:58:20.7863994Z test-memory: pass tests/test-mailbox.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:58:20.7885805Z === tests/test-manifest.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:58:30.8269444Z test-memory: pass tests/test-manifest.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:58:30.8290962Z === tests/test-memory-safety.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:58:53.0409925Z test-memory: pass tests/test-memory-safety.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:58:53.0429317Z === tests/test-native.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:59:14.3703429Z test-memory: pass tests/test-native.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T14:59:14.3724749Z === tests/test-origin-tls.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:00:44.1623943Z test-memory: pass tests/test-origin-tls.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:00:44.1645665Z === tests/test-origin.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:02:43.0642521Z test-memory: pass tests/test-origin.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:02:43.0664503Z === tests/test-printed.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:03:09.0062677Z test-memory: pass tests/test-printed.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:03:09.0082841Z === tests/test-proxy.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:04:06.6702721Z test-memory: pass tests/test-proxy.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:04:06.6723778Z === tests/test-redirect.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:04:38.4104004Z test-memory: pass tests/test-redirect.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:04:38.4121863Z === tests/test-request.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:05:06.2358815Z test-memory: pass tests/test-request.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:05:06.2381672Z === tests/test-require-threaded.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:05:18.2072439Z test-memory: pass tests/test-require-threaded.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:05:18.2095509Z === tests/test-retry.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:06:06.5419176Z test-memory: pass tests/test-retry.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:06:06.5440638Z === tests/test-stream-call.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:07:24.7105251Z test-memory: pass tests/test-stream-call.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:07:24.7125555Z === tests/test-stream.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:09:00.4151467Z test-memory: pass tests/test-stream.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:09:00.4212226Z === tests/test-transfer-tls.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:09:41.3802344Z test-memory: pass tests/test-transfer-tls.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:09:41.3822832Z === tests/test-transfer.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:12:37.6913070Z test-memory: pass tests/test-transfer.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:12:37.6935099Z === tests/test-unsupported.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3522475Z test-memory: FAIL tests/test-unsupported.sps (exit 1)
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3523312Z   log: build/memory/test-unsupported.log
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3524071Z   Valgrind's log: build/memory/test-unsupported.valgrind
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3550220Z   ==57401==    definitely lost: 0 bytes in 0 blocks
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3551261Z   ==57401==         suppressed: 0 bytes in 0 blocks
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3552181Z   ==57401== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3586879Z   | %%%% Starting test unsupported
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3588297Z   | FAIL a list's string another thread flips between P and CR while 300 attaches and transfers run: each attach is refused as line-break, or its transfer takes the status line, both seen; the counts back to the engine's alone
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3591700Z   |   expected: (() (refused whole) ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3593238Z   |   actual:   (() (refused) ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3594306Z   | # of expected passes      37
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3595000Z   | # of unexpected failures  1
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3595944Z   | suite-exit-status: exit 1 (pass 37, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:13:03.3613441Z === tests/test-upload.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:15:23.9139176Z test-memory: pass tests/test-upload.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:15:23.9160696Z === tests/test-url-location.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:15:52.6241839Z test-memory: pass tests/test-url-location.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:15:52.6262759Z === tests/test-url-parts.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:16:16.2874064Z test-memory: pass tests/test-url-parts.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:16:16.2897210Z === tests/test-url.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:16:39.1452130Z test-memory: pass tests/test-url.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:16:39.1473029Z === tests/test-variadic.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:17:04.7580706Z test-memory: pass tests/test-variadic.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:17:04.7603000Z === tests/test-verify.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:17:16.5240871Z test-memory: pass tests/test-verify.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:17:16.5262613Z === tests/test-version.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:17:50.7288865Z test-memory: pass tests/test-version.sps
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:17:50.7289547Z test-memory: ran 41, passed 40, failed 1, hung 0
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:17:50.7290830Z make: *** [Makefile:443: test-memory] Error 1
+memory (the Valgrind gate)	Every suite under Valgrind	2026-11-06T15:17:50.7313954Z ##[error]Process completed with exit code 2.

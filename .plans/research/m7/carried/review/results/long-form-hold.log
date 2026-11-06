@@ -1,0 +1,5 @@
+(long-form 1000000 (call-ms 26.55) (ctrl-c-ms 22.88) (refused "Could not connect to server"))
+(long-form 16000000 (call-ms 498.27) (ctrl-c-ms 462.29) (refused "Could not connect to server"))
+(long-form 32000000 (call-ms 893.32) (ctrl-c-ms 856.02) (refused "Could not connect to server"))
+(long-form 64000000 (call-ms 1700.36) (ctrl-c-ms 1632.07) (refused "Could not connect to server"))
+(counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))

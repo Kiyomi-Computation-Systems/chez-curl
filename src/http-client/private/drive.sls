@@ -73,6 +73,16 @@
 ;;; the call. A raise that leaves the call does so after the after thunk
 ;;; has cancelled.
 ;;;
+;;; Each step, exchange-step's, and drive-stream's exchange-steps-past?,
+;;; runs in a critical section of its own, its guard inside it, every raise
+;;; answered as data and raised once the section has ended, as a group's
+;;; turn steps its calls (section-step; ADR-0025, as amended after the
+;;; branch's review): a redirect's step parses URLs through (curl)'s
+;;; critical winds, and with interrupts on an expiry or a handler's raise
+;;; there came out as call-with-parsed-url's refusal to re-enter one. So
+;;; what a handler raises during a step comes once it has ended, as raised,
+;;; and an expiry lands after it.
+;;;
 ;;; --- the streamed call (the M6 plan, section 3.6) ---
 ;;;
 ;;; drive-stream drives a call whose responses stream, call-with-response-
@@ -203,10 +213,10 @@
 ;;; A go resumed after its entry, in its admissions, answers its pending,
 ;;; whose await raises cancelled. A resumed http-parallel enters no call
 ;;; more, and raises its first failure, if any, or else the cancel of its
-;;; first call not done. An expiry inside a call's checks, which parse its
-;;; URL through (curl)'s critical winds, leaves that parse behind: the
-;;; resumed call raises (curl)'s refusal to re-enter it, an assertion
-;;; violation from call-with-parsed-url (the M5 plan, section 10, carried).
+;;; first call not done. A call's checks, go's and http-parallel's among
+;;; them, run in one critical section of (http-client)'s call-state, so no
+;;; expiry lands inside them: one that runs out there lands after them,
+;;; once the section has ended (ADR-0025, amended 2026-11-05).
 ;;;
 ;;; A group is its thread's, by get-thread-id: go, http-await,
 ;;; http-pending-done? and http-pending-cancel from any other raise
@@ -226,12 +236,18 @@
 ;;; drive-last-token-arm! arms it, the latest streamed call's token, until
 ;;; that call ends; http-pending-mailbox, the group's mailbox;
 ;;; http-pending-token, a call's live token; http-pending-phase, its phase;
-;;; http-pending-census, the group's counts; none runs a turn. And call-with-group, the group's own
-;;; entry, takes an optional submit in place of curl-submit, so a test can
-;;; plant a raise in one submit.
+;;; http-pending-census, the group's counts; none runs a turn;
+;;; drive-checks-gate-set!, a procedure (http-client)'s call-state calls
+;;; with start and with end, the first and last forms of a call's checks,
+;;; inside their critical section, until it is disarmed;
+;;; drive-step-gate-set!, its twin, called with start and end around each
+;;; step, inside the step's section, a group's too. And
+;;; call-with-group, the group's own entry, takes an optional submit in
+;;; place of curl-submit, so a test can plant a raise in one submit.
 (library (http-client private drive)
   (export drive-exchange drive-stream drive-stream-waits drive-produce-gate-set! drive-last-token
-          drive-last-token-arm! drive-before-gate-set!
+          drive-last-token-arm! drive-before-gate-set! drive-checks-gate-set! run-checks-gate!
+          drive-step-gate-set!
           monotonic-ns utc-seconds take-refusal?
           require-interrupts call-with-group run-parallel
           http-pending? http-await http-pending-done? http-pending-cancel
@@ -304,6 +320,63 @@
           (list 'response outcome)
           (list 'failed outcome))))
 
+  ;; section-step : State Outcome Integer Integer Real -> Step
+  ;; exchange-step's answer for STATE and OUTCOME at NOW-NS, UTC-S and DRAW,
+  ;; made in a critical section of its own, whose guard takes every raise
+  ;; there and answers it as data, raised once the section has ended, as a
+  ;; group's turn steps its calls (ADR-0025, as amended after the branch's
+  ;; review). A redirect's step parses its Location and the URLs it
+  ;; compares through (curl)'s critical winds, some under a guard of
+  ;; &curl-url-error alone: with interrupts on, an engine's expiry inside a
+  ;; parse left it behind, and a handler's raise there that the guard
+  ;; declined was re-raised back inside it, each coming out as
+  ;; call-with-parsed-url's refusal to re-enter it, in place of the call's
+  ;; answer (research/m7/carried/review, M1). Inside the section no handler
+  ;; runs and no expiry lands: a Ctrl-C made pending there runs as it ends,
+  ;; a timer and an expiry at a later event check, after the step. A step
+  ;; waits for nothing and calls no caller code; it holds Ctrl-C and other
+  ;; threads' collections for its length, under 0.5 ms for an ordinary
+  ;; redirect, and as its inputs grow, to what libcurl lets in: 124 to 181
+  ;; ms for the largest step 7.85.0, 8.20.0 and 8.23.0 let one make, a
+  ;; requested URL of about 1,048,500 chars, within the 1 MiB they send a
+  ;; request in, a Location of 102,387 bytes, the most each takes under its
+  ;; 100 KiB cap on a header, and the most headers each takes, 5,000, or
+  ;; 100,003 on 7.85.0, which caps none; 11 to 17 ms on 8.5.0, which sent
+  ;; no URL past 131,041 chars, a longer request stalling to its timeout;
+  ;; the headers alone under 0.5 ms (research/m7/carried/guard/, the fix
+  ;; round's step-hold logs).
+  (define (section-step state outcome now-ns utc-s draw)
+    (in-step-section (lambda () (exchange-step state outcome now-ns utc-s draw))))
+
+  ;; sectioned-step : State Outcome Integer Real -> Step
+  ;; section-step's answer, the monotonic clock read inside the section,
+  ;; after UTC-S and DRAW, as the step reads its clocks last.
+  (define (sectioned-step state outcome utc-s draw)
+    (in-step-section (lambda () (exchange-step state outcome (monotonic-ns) utc-s draw))))
+
+  ;; section-steps-past? : State Response Integer Integer Real -> Boolean
+  ;; exchange-steps-past?'s answer, made in a critical section of its own,
+  ;; as section-step makes a step's.
+  (define (section-steps-past? state response now-ns utc-s draw)
+    (in-step-section (lambda () (exchange-steps-past? state response now-ns utc-s draw))))
+
+  ;; in-step-section : (-> Any) -> Any
+  ;; THUNK's value, a step's, run in a critical section of its own whose
+  ;; guard takes every raise there and answers it as data, raised once the
+  ;; section has ended: so the caller's handler for it runs with interrupts
+  ;; on. The test seam's step gate is called with start and end inside the
+  ;; section, around THUNK.
+  (define (in-step-section thunk)
+    (let ((r (critical-section
+              (guard (e (#t (list 'raised e)))
+                (run-step-gate! 'start)
+                (let ((v (thunk)))
+                  (run-step-gate! 'end)
+                  (list 'value v))))))
+      (if (eq? (car r) 'raised)
+          (raise (cadr r))
+          (cadr r))))
+
   ;; drive-exchange : Engine State (-> Real) -> Response
   ;; STATE's call, driven on ENGINE until the core answers done, whose
   ;; response it answers, or fail, whose condition it raises; a next is
@@ -334,7 +407,7 @@
                         (outcome (or refusal (outcome-of token)))
                         (drawn (draw))
                         (utc (utc-seconds))
-                        (step (exchange-step state outcome (monotonic-ns) utc drawn)))
+                        (step (sectioned-step state outcome utc drawn)))
                    (case (car step)
                      ((done) (cadr step))
                      ((fail) (raise (cadr step)))
@@ -700,6 +773,43 @@
         (vector-set! before-gate 0 #f)
         (g))))
 
+  ;; checks-gate : (Vector (U (Symbol -> Any) #f))
+  ;; A test seam's procedure, kept until disarmed, which call-state calls
+  ;; with start and with end, the first and last forms of a call's checks,
+  ;; inside their critical section: a test blocks at start on a mutex
+  ;; another thread holds while that thread sends SIGINT, so a keyboard
+  ;; interrupt is made pending inside the section (traps.md), and an
+  ;; engine's sweep reads where its expiry landed. #f, unarmed, by default.
+  (define checks-gate (vector #f))
+
+  ;; drive-checks-gate-set! : (U (Symbol -> Any) #f) -> Void
+  ;; Arms the gate, the test seam above, or disarms it with #f: a test
+  ;; seam, which (http-client) does not export.
+  (define (drive-checks-gate-set! proc) (vector-set! checks-gate 0 proc))
+
+  ;; run-checks-gate! : Symbol -> Void
+  ;; The gate's procedure called with WHERE, start or end, when armed.
+  (define (run-checks-gate! where)
+    (let ((g (vector-ref checks-gate 0)))
+      (when g (g where))))
+
+  ;; step-gate : (Vector (U (Symbol -> Any) #f))
+  ;; The checks gate's twin for a step: a test seam's procedure, kept until
+  ;; disarmed, called with start and with end around each exchange-step and
+  ;; exchange-steps-past?, inside its critical section, the single-call
+  ;; drives' and a group's alike. #f, unarmed, by default.
+  (define step-gate (vector #f))
+
+  ;; drive-step-gate-set! : (U (Symbol -> Any) #f) -> Void
+  ;; Arms the step gate, or disarms it with #f: a test seam, which
+  ;; (http-client) does not export.
+  (define (drive-step-gate-set! proc) (vector-set! step-gate 0 proc))
+
+  ;; run-step-gate! : Symbol -> Void
+  (define (run-step-gate! where)
+    (let ((g (vector-ref step-gate 0)))
+      (when g (g where))))
+
   ;; last-token : (Vector Boolean (U Token #f))
   ;; The test seam's record: whether a test has armed it; then the token
   ;; the latest streamed call submitted while armed, held only until that
@@ -907,7 +1017,7 @@
                                 #f))))
                (if refusal
                    (let* ((drawn (draw)) (utc (utc-seconds)) (now (monotonic-ns)))
-                     (stepped (exchange-step state refusal now utc drawn) now))
+                     (stepped (section-step state refusal now utc drawn) now))
                    (leg! state request))))
             (else
              (assertion-violation 'drive-stream "the core answered a submission this shell does not know"
@@ -925,7 +1035,7 @@
                  (asked (and head (curl-head-body-asked? head)))
                  (state (if (or asked (call-called? call)) (exchange-mark-called state) state)))
             (if (and ended (eq? (car ended) 'failed))
-                (stepped (exchange-step state ended now utc drawn) now)
+                (stepped (section-step state ended now utc drawn) now)
                 (let ((response
                        (if head
                            (head-response (curl-head-status head) (curl-head-http-version head)
@@ -933,26 +1043,26 @@
                            (let ((r (cadr ended)))
                              (head-response (curl-response-status r) (curl-response-http-version r)
                                             (curl-response-headers r))))))
-                  (if (exchange-steps-past? state response now utc drawn)
+                  (if (section-steps-past? state response now utc drawn)
                       (hop! leg state request response now utc drawn)
                       (final! leg state response now utc drawn)))))))
       (define (hop! leg state request response now utc drawn)
         (if (curl-request-body request)
             (begin
               (end-hop! token)
-              (stepped (exchange-step state (list 'response response) now utc drawn) now))
+              (stepped (section-step state (list 'response response) now utc drawn) now))
             (let ((read (read-whole! leg state)))
               (if (eq? (car read) 'response)
-                  (stepped (exchange-step state
-                                          (list 'response
-                                                (http-response-with response (caddr read)
-                                                                    (curl-response-timings (cadr read))))
-                                          now utc drawn)
+                  (stepped (section-step state
+                                         (list 'response
+                                               (http-response-with response (caddr read)
+                                                                   (curl-response-timings (cadr read))))
+                                         now utc drawn)
                            now)
                   (let* ((utc (utc-seconds)) (now (monotonic-ns)))
-                    (stepped (exchange-step state read now utc drawn) now))))))
+                    (stepped (section-step state read now utc drawn) now))))))
       (define (final! leg state response now utc drawn)
-        (let ((step (exchange-step state (list 'response response) now utc drawn)))
+        (let ((step (section-step state (list 'response response) now utc drawn)))
           (case (car step)
             ((fail) (raise (cadr step)))
             ((done)
@@ -971,7 +1081,7 @@
                          ;; no retry takes it (ADR-0032, decision 3).
                          (let* ((utc (utc-seconds)) (now (monotonic-ns))
                                 (state (if (call-called? call) (exchange-mark-called state) state)))
-                           (stepped (exchange-step state read now utc drawn) now)))))))
+                           (stepped (section-step state read now utc drawn) now)))))))
             (else
              (assertion-violation 'drive-stream "the head's predicate and exchange-step disagree" step)))))
       (define (ended-with r)
@@ -1162,7 +1272,11 @@
     (let* ((drawn ((group-draw group)))
            (utc (utc-seconds))
            (now (monotonic-ns))
-           (step (exchange-step (pending-state pending) outcome now utc drawn)))
+           (step (begin
+                   (run-step-gate! 'start)
+                   (let ((s (exchange-step (pending-state pending) outcome now utc drawn)))
+                     (run-step-gate! 'end)
+                     s))))
       (case (car step)
         ((done) (end! group pending (list 'done (cadr step))))
         ((fail) (end! group pending (list 'fail (cadr step))))

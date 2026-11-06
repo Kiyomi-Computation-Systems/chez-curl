@@ -1,0 +1,11 @@
+--- v1/tests/origin.mjs	2026-11-05 16:13:59.367261103 -0500
++++ v1-bare/tests/origin.mjs	2026-11-05 16:13:59.611977485 -0500
+@@ -1879,7 +1879,7 @@
+     if (socket.destroyed || socket.writableEnded) return;
+     const pending = h2Refusals.get(session);
+     const queued = session.destroyed ? 0 : (session.state.outboundQueueSize || 0);
+-    if (((!pending || pending.size === 0) && queued === 0) || performance.now() > deadline) socket.end();
++    if (true || performance.now() > deadline) socket.end();
+     else setImmediate(check);
+   };
+   setImmediate(check);

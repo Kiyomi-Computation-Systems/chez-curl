@@ -1,0 +1,15 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request went, and the answer came after it
+  expected: (("00000004000000000000000004010000000000000403000000000100000007" eof) stopped-before-the-request answered-after-the-stop)
+  actual:   (("000000040000000000000000040100000000" eof) stopped-before-the-request answered-after-the-stop)
+# of expected passes      162
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 162, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-origin-tls.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

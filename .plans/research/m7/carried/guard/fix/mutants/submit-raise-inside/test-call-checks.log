@@ -1,0 +1,7 @@
+%%%% Starting test call-checks
+FAIL a direct caller's curl-submit refused by its URL's parse, an ftp URL, raises it once the parse's critical section has ended: the caller's handler runs with interrupts on
+  expected: ((interrupts-on #t) (curl-url-error scheme-not-http))
+  actual:   ((interrupts-on #f) (curl-url-error scheme-not-http))
+# of expected passes      48
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 48, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

@@ -1,0 +1,62 @@
+native-loop: tree build/carried-races/snap-main-probe, 20 runs, suites tests/test-origin-tls.sps, out build/carried-races/out/native-main, node v24.18.0, libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+=== run 1, 45 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 2, 44 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 3, 45 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 4, 44 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 5, 45 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 6, 45 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 7, 44 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 8, 45 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 9, 44 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 10, 45 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 11, 45 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 12, 44 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 13, 45 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 14, 44 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 15, 45 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 16, 44 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 17, 45 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 18, 45 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 19, 44 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+=== run 20, 45 s
+test: pass tests/test-origin-tls.sps
+test: ran 1, passed 1, failed 0, hung 0
+native-loop: done

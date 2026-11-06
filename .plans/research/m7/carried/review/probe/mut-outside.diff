@@ -1,0 +1,16 @@
+--- tree/src/http-client.sls	2026-11-05 16:19:43.265553966 -0500
++++ mut-outside/src/http-client.sls	2026-11-05 17:03:11.720809813 -0500
+@@ -595,11 +595,11 @@
+   (define (call-state session method url plist check? mode who)
+     (let* ((start (monotonic-ns))
+            (given (if (string? url) (string-copy url) url))
+-           (made (critical-section
+-                  (guard (e (#t (list 'refused
++           (made (guard (e (#t (list 'refused
+                                       (if (condition? e)
+                                           (condition e (make-http-exchange method given '() 0))
+                                           e))))
++                  (critical-section
+                     (run-checks-gate! 'start)
+                     (check-session who session)
+                     (let-values (((request redirects allow-downgrade retry producer)

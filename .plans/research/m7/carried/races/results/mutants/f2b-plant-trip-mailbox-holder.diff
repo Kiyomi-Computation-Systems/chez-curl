@@ -1,0 +1,11 @@
+--- a/tests/mailbox-escape.sps
++++ b/tests/mailbox-escape.sps
+@@ -61,6 +61,8 @@
+ (define released #f)
+ (define child-sent (getenv "MAILBOX_CHILD_SENT"))
+ (define (until-sent)
++  (collect-trip-bytes 1024)
++  (make-bytevector 65536 0)
+   (let wait ((n 0))
+     (unless (or (and child-sent (file-exists? child-sent)) (>= n 2000))
+       (sleep (make-time 'time-duration 10000000 0))

@@ -1,0 +1,7 @@
+%%%% Starting test call-checks
+FAIL a raise made inside a redirect's step, through the step gate at its start, leaves http-request and call-with-response-port as raised, once the step's critical section has ended, so the caller's handler runs with interrupts on; a group's call fails with it, compounded, and its await raises it, interrupts on
+  expected: ((request ((interrupts-on #t) the-planted-condition)) (port ((interrupts-on #t) the-planted-condition)) (go ((interrupts-on #t) compounded)))
+  actual:   ((request ((interrupts-on #f) the-planted-condition)) (port ((interrupts-on #f) the-planted-condition)) (go ((interrupts-on #t) compounded)))
+# of expected passes      48
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 48, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

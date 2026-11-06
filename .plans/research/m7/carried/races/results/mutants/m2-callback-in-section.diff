@@ -1,0 +1,23 @@
+--- a/src/curl/private/engine.sls
++++ b/src/curl/private/engine.sls
+@@ -1344,11 +1344,15 @@
+   ;; milliseconds pass, never what the callback answered. The callback's
+   ;; raise leaves through here.
+   (define (curl-mailbox-deliver mailbox ms)
+-    (let ((token (take 'curl-mailbox-deliver mailbox ms)))
+-      (when token
+-        (let ((callback (token-callback token)))
+-          (when callback (callback token))))
+-      token))
++    (check-mailbox 'curl-mailbox-deliver mailbox)
++    (wait-until 'curl-mailbox-deliver (mailbox-lock mailbox)
++                (lambda ()
++                  (let ((token (mailbox-pop! mailbox)))
++                    (when token
++                      (let ((callback (token-callback token)))
++                        (when callback (callback token))))
++                    token))
++                (deadline-after 'curl-mailbox-deliver ms)))
+ 
+   ;; curl-token-cancel : Token -> Void
+   ;; Returns at once. A token still queued completes as cancelled, here,

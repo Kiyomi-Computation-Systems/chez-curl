@@ -1,0 +1,105 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package openssl 3.0.13-0ubuntu3.16
+== lane gnutls: CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 make test 
+lane gnutls: pass (424 s)
+  [gnutls] test: pass tests/test-auth.sps
+  [gnutls] test: pass tests/test-check-floors.sps
+  [gnutls] test: pass tests/test-check-nothreads.sps
+  [gnutls] test: pass tests/test-check-seam.sps
+  [gnutls] test: pass tests/test-collect-safe.sps
+  [gnutls] test: pass tests/test-conditions.sps
+  [gnutls] test: pass tests/test-constants.sps
+  [gnutls] test: pass tests/test-cookies.sps
+  [gnutls] test: pass tests/test-curl-testing.sps
+  [gnutls] test: pass tests/test-discovery.sps
+  [gnutls] test: pass tests/test-drift.sps
+  [gnutls] test: pass tests/test-engine.sps
+  [gnutls] test: pass tests/test-group.sps
+  [gnutls] test: pass tests/test-http-client.sps
+  [gnutls] test: pass tests/test-library-loading.sps
+  [gnutls] test: pass tests/test-load-state.sps
+  [gnutls] test: pass tests/test-mailbox.sps
+  [gnutls] test: pass tests/test-manifest.sps
+  [gnutls] test: pass tests/test-memory-safety.sps
+  [gnutls] test: pass tests/test-native.sps
+  [gnutls] test: pass tests/test-origin-tls.sps
+  [gnutls] test: pass tests/test-origin.sps
+  [gnutls] test: pass tests/test-printed.sps
+  [gnutls] test: pass tests/test-proxy.sps
+  [gnutls] test: pass tests/test-redirect.sps
+  [gnutls] test: pass tests/test-request.sps
+  [gnutls] test: pass tests/test-require-threaded.sps
+  [gnutls] test: pass tests/test-retry.sps
+  [gnutls] test: pass tests/test-stream-call.sps
+  [gnutls] test: pass tests/test-stream.sps
+  [gnutls] test: pass tests/test-transfer-tls.sps
+  [gnutls] test: pass tests/test-transfer.sps
+  [gnutls] test: pass tests/test-unsupported.sps
+  [gnutls] test: pass tests/test-upload.sps
+  [gnutls] test: pass tests/test-url-location.sps
+  [gnutls] test: pass tests/test-url-parts.sps
+  [gnutls] test: pass tests/test-url.sps
+  [gnutls] test: pass tests/test-variadic.sps
+  [gnutls] test: pass tests/test-verify.sps
+  [gnutls] test: pass tests/test-version.sps
+  [gnutls] test: ran 40, passed 40, failed 0, hung 0
+  [gnutls] test-cookies: crossings on the delaying engine ((ran . 8) (setup . 5) (submit . 23))
+  [gnutls] test-cookies: crossings on a plain engine ((ran . 16) (setup . 1) (submit . 16))
+  [gnutls] test-cookies: refused-readout on "8.5.0" measured (("path-empty" (("a.localhost\tFALSE\t\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-true" (("a.localhost\tFALSE\tTRUE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-false" (("a.localhost\tFALSE\tFALSE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-rel" (("a.localhost\tFALSE\trel\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cooki
+  [gnutls] test-cookies: expired-load on "8.5.0" measured (("a.localhost\tFALSE\t/\tFALSE\t1\texp\tv") ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1"))
+  [gnutls] test-cookies: open-head on "8.5.0" measured (200 200 (a-request a-request) 200 200 (a-request a-request))
+  [gnutls] test-cookies: domain-localhost on "8.5.0/psl" measured ((() "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("localhost\tFALSE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"d=1\"") ((("localhost\tFALSE\t/\tTRUE\t0\t__Host-dom\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"__Host-dom=1\""))
+  [gnutls] test-cookies: set-cookie-matrix on "8.5.0" measured (((("a.localhost\tFALSE\t/cookies/a/b/\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("a.localhost\tFALSE\t\tFALSE\t0\tpe\t1" path) ("a.localhost\tFALSE\trel\tFALSE\t0\tpr\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"pr=1; pe=1\"") ((("a.localhost\tFALSE\t/\tFALSE\tbeyond-400-days\tca\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ca=1\"") ((("a.localhost\tFALSE\t/\tFALSE\t1\tma\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cook
+== lane current: CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include make test 
+lane current: pass (425 s)
+  [current] test: pass tests/test-auth.sps
+  [current] test: pass tests/test-check-floors.sps
+  [current] test: pass tests/test-check-nothreads.sps
+  [current] test: pass tests/test-check-seam.sps
+  [current] test: pass tests/test-collect-safe.sps
+  [current] test: pass tests/test-conditions.sps
+  [current] test: pass tests/test-constants.sps
+  [current] test: pass tests/test-cookies.sps
+  [current] test: pass tests/test-curl-testing.sps
+  [current] test: pass tests/test-discovery.sps
+  [current] test: pass tests/test-drift.sps
+  [current] test: pass tests/test-engine.sps
+  [current] test: pass tests/test-group.sps
+  [current] test: pass tests/test-http-client.sps
+  [current] test: pass tests/test-library-loading.sps
+  [current] test: pass tests/test-load-state.sps
+  [current] test: pass tests/test-mailbox.sps
+  [current] test: pass tests/test-manifest.sps
+  [current] test: pass tests/test-memory-safety.sps
+  [current] test: pass tests/test-native.sps
+  [current] test: pass tests/test-origin-tls.sps
+  [current] test: pass tests/test-origin.sps
+  [current] test: pass tests/test-printed.sps
+  [current] test: pass tests/test-proxy.sps
+  [current] test: pass tests/test-redirect.sps
+  [current] test: pass tests/test-request.sps
+  [current] test: pass tests/test-require-threaded.sps
+  [current] test: pass tests/test-retry.sps
+  [current] test: pass tests/test-stream-call.sps
+  [current] test: pass tests/test-stream.sps
+  [current] test: pass tests/test-transfer-tls.sps
+  [current] test: pass tests/test-transfer.sps
+  [current] test: pass tests/test-unsupported.sps
+  [current] test: pass tests/test-upload.sps
+  [current] test: pass tests/test-url-location.sps
+  [current] test: pass tests/test-url-parts.sps
+  [current] test: pass tests/test-url.sps
+  [current] test: pass tests/test-variadic.sps
+  [current] test: pass tests/test-verify.sps
+  [current] test: pass tests/test-version.sps
+  [current] test: ran 40, passed 40, failed 0, hung 0
+  [current] test-cookies: crossings on the delaying engine ((ran . 8) (setup . 3) (submit . 25))
+  [current] test-cookies: crossings on a plain engine ((ran . 16) (setup . 1) (submit . 16))
+  [current] test-cookies: refused-readout on "8.23.0" measured (("path-empty" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-true" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-false" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-rel" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("n
+  [current] test-cookies: expired-load on "8.23.0" measured (() ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1"))
+  [current] test-cookies: open-head on "8.23.0" measured (200 200 (a-request a-request) 200 200 (a-request a-request))
+  [current] test-cookies: domain-localhost on "8.23.0/no-psl" measured ((((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"d=1\"") (() "request 2 face=http host=\"localhost:<port>\" cookies=0"))
+  [current] test-cookies: set-cookie-matrix on "8.23.0" measured (((("a.localhost\tFALSE\t/cookies/a/b\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("a.localhost\tFALSE\t/\tFALSE\t0\tpr\t1" #f) ("a.localhost\tFALSE\t/cookies/a/b\tFALSE\t0\tpe\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"pr=1\"") ((("a.localhost\tFALSE\t/\tFALSE\twithin-400-days\tca\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ca=1\"") (() "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (("a.localhost\tFALSE\t/\tFALSE\t0\tk

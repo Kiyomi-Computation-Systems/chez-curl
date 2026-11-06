@@ -1,0 +1,7 @@
+%%%% Starting test call-checks
+FAIL an engine's expiry swept a tick at a time across request's first step, a redirect's: none lands inside a step, and no resumed call raises (curl)'s refusal to re-enter a URL's parse; the fuels that did, counted, and their first five; and the sweep's evidence, the first expiry after a step's end found, some expiry after the checks and before any step, and some after a step, outside every step
+  expected: ((0 ()) (0 ()) (#t #t #t))
+  actual:   ((0 ()) (0 ()) (#t #t #f))
+# of expected passes      48
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 48, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

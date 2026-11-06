@@ -1,0 +1,22 @@
+--- a/tests/origin.mjs
++++ b/tests/origin.mjs
+@@ -1895,7 +1895,7 @@
+   return server;
+ }
+ 
+-const h2cServer = h2Face(http2.createServer({ allowHalfOpen: true }), 'h2c');
++const h2cServer = h2Face(http2.createServer(), 'h2c');
+ 
+ function h2Server(name, leafOf) {
+   const server = h2Face(http2.createSecureServer({ ...leafOf.options, allowHTTP1: false, allowHalfOpen: true }), name);
+--- a/tests/origin.mjs
++++ b/tests/origin.mjs
+@@ -1898,7 +1898,7 @@
+ const h2cServer = h2Face(http2.createServer(), 'h2c');
+ 
+ function h2Server(name, leafOf) {
+-  const server = h2Face(http2.createSecureServer({ ...leafOf.options, allowHTTP1: false, allowHalfOpen: true }), name);
++  const server = h2Face(http2.createSecureServer({ ...leafOf.options, allowHTTP1: false }), name);
+   server.on('secureConnection', track);
+   server.on('tlsClientError', (err, socket) => socket.destroy());
+   // A client that did not choose h2: destroyed with nothing written. With

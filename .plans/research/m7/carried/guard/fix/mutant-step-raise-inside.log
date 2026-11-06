@@ -1,0 +1,2 @@
+suite test-call-checks exit 1 pass 48 fail 1
+  FAIL a raise made inside a redirect's step, through the step gate at its start, leaves http-request and call-with-response-port as raised, once the step's critical section has ended, so the caller's handler runs with interrupts on; a group's call fails with it, compounded, and its await raises it, i

@@ -1,0 +1,22 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (1 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-call-checks.sps
+%%%% Starting test call-checks
+FAIL SIGINT while go's first step, a redirect's, blocks at its start, inside its critical section, whose Ctrl-C handler raises a &curl-error of its own: the call raises that very object, the handler run after the step's end, as the section ended; the first transfer alone made; the child's counts zero
+  expected: (0 ((checks go step raise (raised #t #f) (start end) quiet (0 0 0) 1 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks go step raise (raised #t #f) (start end) quiet (0 0 0) 2 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL SIGINT while parallel's first step, a redirect's, blocks at its start, inside its critical section, whose Ctrl-C handler raises a &curl-error of its own: the call raises that very object, the handler run after the step's end, as the section ended; the first transfer alone made; the child's counts zero
+  expected: (0 ((checks parallel step raise (raised #t #f) (start end) quiet (0 0 0) 1 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks parallel step raise (raised #t #f) (start end) quiet (0 0 0) 2 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+(tally request (((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1)))
+(tally port (((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1) ((raised #t #f) (start end) 1)))
+(tally go (((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2)))
+(tally parallel (((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2) ((raised #t #f) (start end) 2)))
+# of expected passes      47
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 47, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-call-checks.sps (exit 1)
+test: ran 1, passed 0, failed 1, hung 0
+make: *** [Makefile:259: test] Error 1

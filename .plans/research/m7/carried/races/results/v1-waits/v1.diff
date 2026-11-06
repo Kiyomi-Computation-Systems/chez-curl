@@ -1,0 +1,74 @@
+--- ../snap-fix/tests/origin.mjs	2026-11-05 14:05:54.116932102 -0500
++++ v1/tests/origin.mjs	2026-11-05 16:13:59.367261103 -0500
+@@ -1837,7 +1837,7 @@
+     if (r.kind === 'sink' || r.kind === 'refuse') {
+       const seenNow = countFor(r.key);
+       const refuseAt = r.kind === 'refuse' && seenNow === 1 ? r.at : null;
+-      if (refuseAt === 0) return stream.close(http2.constants.NGHTTP2_REFUSED_STREAM);
++      if (refuseAt === 0) return h2Refuse(stream);
+       const record = bodyRecord();
+       let refused = false;
+       stream.on('data', (chunk) => {
+@@ -1845,7 +1845,7 @@
+         arrive(record, [chunk], tenthsSince(headAt));
+         if (refuseAt !== null && record.bytes >= refuseAt) {
+           refused = true;
+-          stream.close(http2.constants.NGHTTP2_REFUSED_STREAM);
++          h2Refuse(stream);
+         }
+       });
+       stream.on('end', () => {
+@@ -1860,20 +1860,29 @@
+   };
+ }
+ 
+-// h2EndNext: SOCKET, an HTTP/2 session's, ended at the next immediate, as its
+-// client's end comes. Node's native immediates run first, in that check
+-// phase, and drain whatever they queue: a TLS write that finished at once
+-// completes there (TLSWrap simulates the asynchronous finish), and so does
+-// the session's write of what waited for it, an RST_STREAM among them. Node's
+-// own end, at once, came first: a refusal whose request came in one read with
+-// the client's close_notify lost its RST_STREAM, the SETTINGS ACK written
+-// before it still in progress (M7's carried races, research/m7/carried/races).
+-// A write the kernel holds, to a client that has stopped reading, can still
+-// be in progress then.
+-function h2EndNext(socket) {
+-  setImmediate(() => {
+-    if (!socket.destroyed && !socket.writableEnded) socket.end();
+-  });
++// The streams each HTTP/2 session has reset whose RST_STREAM nghttp2 has
++// not yet written (the first version of the fix).
++const h2Refusals = new WeakMap();
++
++function h2Refuse(stream) {
++  const pending = h2Refusals.get(stream.session);
++  if (pending) {
++    pending.add(stream);
++    stream.once('close', () => pending.delete(stream));
++  }
++  stream.close(http2.constants.NGHTTP2_REFUSED_STREAM);
++}
++
++function h2EndOnceWritten(session, socket) {
++  const deadline = performance.now() + 5000;
++  const check = () => {
++    if (socket.destroyed || socket.writableEnded) return;
++    const pending = h2Refusals.get(session);
++    const queued = session.destroyed ? 0 : (session.state.outboundQueueSize || 0);
++    if (((!pending || pending.size === 0) && queued === 0) || performance.now() > deadline) socket.end();
++    else setImmediate(check);
++  };
++  setImmediate(check);
+ }
+ 
+ // h2Face: SERVER, the face NAME, with the listeners every HTTP/2 face
+@@ -1888,7 +1897,8 @@
+     sessionsSeen += 1;
+     session.connectionNumber = sessionsSeen;
+     trackSession(session);
+-    session.socket.on('end', function clientEnded() { h2EndNext(this); });
++    h2Refusals.set(session, new Set());
++    session.socket.on('end', function clientEnded() { h2EndOnceWritten(session, this); });
+   });
+   server.on('sessionError', (err, session) => session.destroy());
+   server.on('stream', h2Stream(name));

@@ -1,0 +1,3 @@
+suite test-call-checks exit 1 pass 21 fail 1
+  FAIL a refusal the checks make, at each entry, leaves compounded with &http-exchange, raised once their critical section has ended: the caller's handler runs with interrupts on, for the high level's unknown-key, make-curl-request's not-a-token, and curl-request-check's prior-knowledge-over-https in 
+suite test-group exit 0 pass 65 fail 0

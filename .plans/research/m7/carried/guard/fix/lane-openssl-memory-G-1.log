@@ -1,0 +1,12 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-call-checks.sps
+test-memory: pass tests/test-call-checks.sps
+=== tests/test-group.sps
+test-memory: pass tests/test-group.sps
+=== tests/test-origin-tls.sps
+test-memory: pass tests/test-origin-tls.sps
+=== tests/test-transfer.sps
+test-memory: pass tests/test-transfer.sps
+=== tests/test-redirect.sps
+test-memory: pass tests/test-redirect.sps
+test-memory: ran 5, passed 5, failed 0, hung 0

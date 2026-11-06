@@ -1,0 +1,10 @@
+%%%% Starting test call-checks
+FAIL the cap comes first: a URL of 8,000,001 chars beside an unknown key is refused for its length, before the keys; one of 8,000,000, the cap itself, goes to the checks in their order, the key refused first, the URL left to libcurl
+  expected: ((over malformed-input) (at-cap (request-error unknown-key)))
+  actual:   ((over malformed-input) (at-cap ((malformed-input 3 "Malformed input to a URL function" #t) #f chez-curl "Malformed input to a URL function" (url) (get #t () 0))))
+FAIL a URL past the cap is refused before anything reads it: from the checks' start to its raise, under a tenth of the time a URL of 8,000,000 chars takes to reach libcurl's own refusal, the URL copied, scanned, encoded and parsed
+  expected: (#t)
+  actual:   (#f)
+# of expected passes      47
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 47, fail 2, xpass 0): a suite needs a pass, and no fail or xpass

@@ -1,0 +1,13 @@
+--- a/tests/origin.mjs
++++ b/tests/origin.mjs
+@@ -1871,9 +1871,7 @@
+ // A write the kernel holds, to a client that has stopped reading, can still
+ // be in progress then.
+ function h2EndNext(socket) {
+-  setImmediate(() => {
+-    if (!socket.destroyed && !socket.writableEnded) socket.end();
+-  });
++  if (!socket.destroyed && !socket.writableEnded) socket.end();
+ }
+ 
+ // h2Face: SERVER, the face NAME, with the listeners every HTTP/2 face

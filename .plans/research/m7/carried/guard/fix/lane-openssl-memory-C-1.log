@@ -1,0 +1,25 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-call-checks.sps
+test-memory: FAIL tests/test-call-checks.sps (exit 1)
+  log: build/memory/test-call-checks.log
+  Valgrind's log: build/memory/test-call-checks.valgrind
+  ==3338==    definitely lost: 0 bytes in 0 blocks
+  ==3338==         suppressed: 0 bytes in 0 blocks
+  ==3338== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+  | %%%% Starting test call-checks
+  | FAIL an engine's expiry swept a tick at a time across go's first step, a redirect's: none lands inside a step, and no resumed call raises (curl)'s refusal to re-enter a URL's parse; the fuels that did, counted, and their first five; and the sweep's evidence, the first expiry after a step's end found, some expiry after the checks and before any step, and some after a step, outside every step
+  |   expected: ((0 ()) (0 ()) (#t #t #t))
+  |   actual:   ((0 ()) (0 ()) (#t #t #f))
+  | # of expected passes      48
+  | # of unexpected failures  1
+  | suite-exit-status: exit 1 (pass 48, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+=== tests/test-group.sps
+test-memory: pass tests/test-group.sps
+=== tests/test-origin-tls.sps
+test-memory: pass tests/test-origin-tls.sps
+=== tests/test-transfer.sps
+test-memory: pass tests/test-transfer.sps
+=== tests/test-redirect.sps
+test-memory: pass tests/test-redirect.sps
+test-memory: ran 5, passed 4, failed 1, hung 0
+make: *** [Makefile:443: test-memory] Error 1

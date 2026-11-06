@@ -1,0 +1,10 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-http-client.sps
+test-memory: pass tests/test-http-client.sps
+=== tests/test-stream-call.sps
+test-memory: pass tests/test-stream-call.sps
+=== tests/test-group.sps
+test-memory: pass tests/test-group.sps
+=== tests/test-call-checks.sps
+test-memory: pass tests/test-call-checks.sps
+test-memory: ran 4, passed 4, failed 0, hung 0

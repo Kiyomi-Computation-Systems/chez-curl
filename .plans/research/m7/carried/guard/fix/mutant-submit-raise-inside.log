@@ -1,0 +1,2 @@
+suite test-call-checks exit 1 pass 48 fail 1
+  FAIL a direct caller's curl-submit refused by its URL's parse, an ftp URL, raises it once the parse's critical section has ended: the caller's handler runs with interrupts on

@@ -1,0 +1,10 @@
+--- a/tests/test-http-client.sps
++++ b/tests/test-http-client.sps
+@@ -874,6 +874,7 @@
+ (define child-hold
+   '((define child-sent (getenv "HTTP_CLIENT_CHILD_SENT"))
+     (define (until-sent)
++      (collect-trip-bytes 1024)
+       (let wait ((n 0))
+         (unless (or (and child-sent (file-exists? child-sent)) (>= n 2000))
+           (sleep (make-time 'time-duration 10000000 0))

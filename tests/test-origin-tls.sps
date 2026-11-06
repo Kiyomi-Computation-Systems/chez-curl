@@ -617,6 +617,72 @@
           (for-each (lambda (port) (guard (e (#t #f)) (close-port port))) (list to from err))
           (parse-wire-probe (if (eof-object? out) "" (latin-1 out))))))))
 
+;; stopped-probe : Origin Symbol Bytevector Natural (Listof String) -> (List Probe Integer)
+;; The wire probe of BYTES to FACE, with OPTIONS, idle bound IDLE ms, started
+;; as spawned-probe starts it, with the origin stopped (SIGSTOP to its pid)
+;; from 300 ms after this thread reads the probe's (connected MS) line until
+;; 3000 ms after, then continued (SIGCONT), whatever is raised meanwhile.
+;; Answers the probe, and STOPPED: when the kill -STOP returned, less when
+;; the probe was spawned, less MS, by this process's clock, so at least how
+;; long after the probe connected, by the probe's clock, the origin was
+;; stopped, Node's start, the 300 ms pause oversleeping, and the kill's own
+;; spawn and return all included. With OPTIONS' --split OFFSET:2000,
+;; STOPPED under 2000 shows the stop began before the probe sent its rest,
+;; 2000 ms after it connected by its clock: 342 to 390 ms natively and
+;; beside busy loops, and 372 to 377 ms under Valgrind
+;; (research/m7/carried/review, m3). It raises when a kill fails, or when no
+;; connected line comes within 10 s.
+(define (stopped-probe o face bytes idle options)
+  (let ((f (origin-face o face))
+        (spawned (now-ms)))
+    (let-values (((to from err pid)
+                  (open-process-ports
+                   (apply string-append "exec " (shell-word node) " tests/wire-probe.mjs"
+                          (append (map (lambda (w) (string-append " " (shell-word w))) options)
+                                  (list " --deadline " (number->string (wire-probe-deadline))
+                                        " " (shell-word (car f)) " " (number->string (cdr f))
+                                        " " (shell-word (hex bytes)) " " (number->string idle))))
+                   (buffer-mode block) #f)))
+      (define (kill-origin signal)
+        (car (capture-command (list "kill" signal (number->string (origin-pid o))))))
+      (define (connected-ms text)
+        (let ((datum (guard (e (#t #f)) (read (open-string-input-port text)))))
+          (and (pair? datum) (eq? (car datum) 'connected) (pair? (cdr datum)) (integer? (cadr datum))
+               (memv #\newline (string->list text))
+               (cadr datum))))
+      (dynamic-wind
+        (lambda () #f)
+        (lambda ()
+          (let ((deadline (+ (now-ms) 10000)))
+            (let read-connected ((text ""))
+              (cond
+                ((connected-ms text)
+                 => (lambda (ms)
+                      (let ((stopped #f)
+                            (stopped-at #f)
+                            (continued #f))
+                        (pause-ms 300)
+                        (dynamic-wind
+                          (lambda () #f)
+                          (lambda ()
+                            (set! stopped (kill-origin "-STOP"))
+                            (set! stopped-at (- (now-ms) spawned ms))
+                            (pause-ms 2700))
+                          (lambda () (when stopped (set! continued (kill-origin "-CONT")))))
+                        (unless (and (eqv? stopped 0) (eqv? continued 0))
+                          (error 'stopped-probe "a kill of the origin failed" stopped continued))
+                        (let ((rest (get-bytevector-all from)))
+                          (list (parse-wire-probe (string-append text (if (eof-object? rest) "" (latin-1 rest))))
+                                stopped-at)))))
+                ((> (now-ms) deadline) (error 'stopped-probe "the probe wrote no connected line within 10 s" text))
+                ((input-port-ready? from)
+                 (let ((b (get-bytevector-some from)))
+                   (if (eof-object? b)
+                       (error 'stopped-probe "the probe ended before its connected line" text)
+                       (read-connected (string-append text (latin-1 b))))))
+                (else (pause-ms 5) (read-connected text))))))
+        (lambda () (for-each (lambda (port) (guard (e (#t #f)) (close-port port))) (list to from err)))))))
+
 ;; The new faces, and how a probe opens a connection to each and then waits.
 (define tls-faces '(https https-expired https-wrong-host https-untrusted raw-tls h2))
 (define new-faces (cons 'h2c tls-faces))
@@ -1034,6 +1100,38 @@
                                                  '(("content-length" . "7")))
                                        (frame DATA 0 1 (octets "abc"))))
                     tls))
+     ;; The request and the client's end in one read (research/m7/carried/
+     ;; races): the preface, then, 2000 ms on, the SETTINGS and HEADERS of
+     ;; POST /refuse?at=0 and the probe's half-close, while the origin is
+     ;; stopped, from 300 ms after the probe connected to 3000 ms after. Over
+     ;; TLS the HEADERS record and the close_notify then come in one read. The
+     ;; refusal first writes the SETTINGS ACK, a TLS write that completes only
+     ;; at the next immediate, and the RST_STREAM waits for it; Node's own end
+     ;; of the TLS socket, at the close_notify, came before that, and the
+     ;; frame was never written. Main's origin lost it on h2 10 times of 10
+     ;; in the races' forced loop, and h2c 0 of 10 (research/m7/carried/
+     ;; races, results/loop/stop0-main.log); this test failed with main's
+     ;; origin in each of its three kept runs, mutant o0's (results/mutants/
+     ;; there, build/carried-races/out/ and research/m7/carried/verify/
+     ;; mutants/), where unstopped CI's floor job and the memory gate met it
+     ;; as a race. h2c reads its FIN in a read of its own, after the data,
+     ;; and passed either way.
+     (test-equal (named "POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request went, and the answer came after it")
+       (list (list (hex (join (list (frame SETTINGS 0 0 #vu8()) (frame SETTINGS ACK 0 #vu8())
+                                    (frame RST-STREAM 0 1 #vu8(0 0 0 7)))))
+                   'eof)
+             'stopped-before-the-request 'answered-after-the-stop)
+       (guard (e (#t (list 'raised (describe e))))
+         (let* ((r (stopped-probe o face (h2-start scheme "POST" (string-append "/refuse?key=" (key "stopped") "&at=0")
+                                                   '(("content-length" . "4")))
+                                  4000 (append (list "--half-close" "--split" "24:2000") options)))
+                (p (car r))
+                (ack-at (arrival (probe-arrivals p) 9)))
+           (list (list (hex (probe-bytes p)) (probe-end p))
+                 (if (< (cadr r) 2000) 'stopped-before-the-request (list 'stopped-at (cadr r)))
+                 (if (and ack-at (probe-connected p) (>= (- ack-at (probe-connected p)) 2900))
+                     'answered-after-the-stop
+                     (list 'connected (probe-connected p) 'ack-at ack-at))))))
      (test-equal (named "POST /refuse?at=100, a first request whose 7 bytes end short of 100: answered as /sink, seen=1")
        (list (string-append "sink " (symbol->string face) " method=POST cl=7 te=- expect=- ct=- bytes=7 sha256="
                             sha-abcdefg " pattern=bad@0 arrivals=1 gap=~@0 seen=1\n")

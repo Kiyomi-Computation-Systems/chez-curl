@@ -1,0 +1,2 @@
+suite test-call-checks exit 1 pass 48 fail 1
+  FAIL the cap comes first: a URL of 8,000,001 chars beside an unknown key is refused for its length, before the keys; one of 8,000,000, the cap itself, goes to the checks in their order, the key refused first, the URL left to libcurl

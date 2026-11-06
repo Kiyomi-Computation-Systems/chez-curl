@@ -264,6 +264,11 @@
 //         request is logged to KEY's auth log, as the auth route's are
 //         (below), judged by the default account. The client's end ends it.
 //   h2c   node:http2, plaintext, by prior knowledge: the HTTP/2 routes.
+//         Half-open (allowHalfOpen), as h2 is: a client's end, its FIN, or
+//         over TLS its close_notify, ends the connection at the next
+//         immediate, once Node has written what waited on a write it had in
+//         progress. Node's own end came at once, and over TLS lost an
+//         RST_STREAM queued behind the SETTINGS ACK (M7's carried races).
 //   With --pki DIR:
 //   https, https-expired, https-wrong-host, https-untrusted
 //         node:https, serving DIR's good, expired, wrong-host and untrusted
@@ -276,11 +281,12 @@
 //         socket under the TLS one: resetAndDestroy() on a TLS socket throws
 //         ERR_INVALID_HANDLE_TYPE (measured).
 //   h2    node:http2, secure, with the good leaf, ALPN h2 alone and no
-//         HTTP/1.1: the HTTP/2 routes. A client that does not choose h2 has
-//         its socket destroyed at once, with no byte written. Without the
-//         unknownProtocol listener, Node 20.10.0 and 24.18.0 write
-//         "HTTP/1.0 403 Forbidden ... Missing ALPN Protocol ..." to it, then
-//         close (measured), and a client would read that as a response.
+//         HTTP/1.1: the HTTP/2 routes, half-open as h2c is. A client that
+//         does not choose h2 has its socket destroyed at once, with no byte
+//         written. Without the unknownProtocol listener, Node 20.10.0 and
+//         24.18.0 write "HTTP/1.0 403 Forbidden ... Missing ALPN Protocol
+//         ..." to it, then close (measured), and a client would read that as
+//         a response.
 //
 // The HTTP/2 routes follow http's, with the same paths, ranges and bodies:
 // /status/CODE answers :status, then content-length; /redirect/CODE?to=TARGET
@@ -305,6 +311,8 @@
 // does; the first request for K is reset with RST_STREAM REFUSED_STREAM
 // once N DATA bytes have come, N 0 as its headers arrive, before any DATA;
 // a later one, or a first whose body ends short of N, is answered as /sink.
+// A client's end that comes with the request leaves the RST_STREAM written
+// first (h2c's, above).
 // /answer-at?status=S&after=N[&to=PATH], HTTP/2's alone, S 200 to 599 and
 // N 0 to 268435456 exactly once each, PATH at most once, decoded as
 // /redirect's TARGET is, answers once N DATA bytes have come, N 0 as the
@@ -1852,9 +1860,31 @@ function h2Stream(face) {
   };
 }
 
+// h2EndNext: SOCKET, an HTTP/2 session's, ended at the next immediate, as its
+// client's end comes. Node's native immediates run first, in that check
+// phase, and drain whatever they queue: a TLS write that finished at once
+// completes there (TLSWrap simulates the asynchronous finish), and so does
+// the session's write of what waited for it, an RST_STREAM among them. Node's
+// own end, at once, came first: a refusal whose request came in one read with
+// the client's close_notify lost its RST_STREAM, the SETTINGS ACK written
+// before it still in progress (M7's carried races, research/m7/carried/races).
+// A write the kernel holds, to a client that has stopped reading, can still
+// be in progress then; and so can any write chained on drains, which a
+// client's half-close can still cut: a stream body over 16 KiB, written one
+// write at a time, and /mirror's closing empty DATA, which goes once the
+// last write has gone (test-origin-tls's comments on the stream routes and
+// on /mirror).
+function h2EndNext(socket) {
+  setImmediate(() => {
+    if (!socket.destroyed && !socket.writableEnded) socket.end();
+  });
+}
+
 // h2Face: SERVER, the face NAME, with the listeners every HTTP/2 face
 // shares. Each session is numbered, from 1, among its face's, for
-// /connection.
+// /connection. SERVER is half-open: a client's end ends the connection at
+// the next immediate (h2EndNext). The listener's this is the session's
+// socket itself: session.socket is a proxy, which refuses end.
 function h2Face(server, name) {
   let sessionsSeen = 0;
   server.on('connection', track);
@@ -1862,16 +1892,17 @@ function h2Face(server, name) {
     sessionsSeen += 1;
     session.connectionNumber = sessionsSeen;
     trackSession(session);
+    session.socket.on('end', function clientEnded() { h2EndNext(this); });
   });
   server.on('sessionError', (err, session) => session.destroy());
   server.on('stream', h2Stream(name));
   return server;
 }
 
-const h2cServer = h2Face(http2.createServer(), 'h2c');
+const h2cServer = h2Face(http2.createServer({ allowHalfOpen: true }), 'h2c');
 
 function h2Server(name, leafOf) {
-  const server = h2Face(http2.createSecureServer({ ...leafOf.options, allowHTTP1: false }), name);
+  const server = h2Face(http2.createSecureServer({ ...leafOf.options, allowHTTP1: false, allowHalfOpen: true }), name);
   server.on('secureConnection', track);
   server.on('tlsClientError', (err, socket) => socket.destroy());
   // A client that did not choose h2: destroyed with nothing written. With

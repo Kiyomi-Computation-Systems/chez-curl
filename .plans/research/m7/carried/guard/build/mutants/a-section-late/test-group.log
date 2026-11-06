@@ -1,0 +1,10 @@
+%%%% Starting test group
+FAIL an engine's expiry anywhere in http-parallel, swept from 200 to 9000 ticks by 100, then by 1 for 100 ticks either side of its first cancel, across its entries: the outcome is all four responses, with every transfer started after the expiry, its group made after it, or none, or with no expiry; or the cancel of its first call or a never-entered call's cancel, with no transfer started after the expiry; never (curl)'s refusal to re-enter a URL's parse
+  expected: ()
+  actual:   ((1000 (#t re-entry 0)) (1100 (#t re-entry 0)) (1800 (#t re-entry 0)) (1900 (#t re-entry 0)) (2600 (#t re-entry 0)) (2700 (#t re-entry 0)) (3400 (#t re-entry 0)) (3500 (#t re-entry 0)) (3600 (#t re-entry 0)))
+FAIL an engine's expiry anywhere in a group of four calls of go, swept from 200 to 6000 ticks by 100: each call answers, or raises cancelled or closed, never (curl)'s refusal to re-enter a URL's parse; and with any call not answered, no transfer starts after the expiry
+  expected: ()
+  actual:   ((500 (#t (re-entry closed closed closed) 0)) (600 (#t (re-entry closed closed closed) 0)) (1500 (#t (cancelled re-entry closed closed) 0)) (1600 (#t (cancelled re-entry closed closed) 0)) (2400 (#t (cancelled cancelled re-entry closed) 0)) (2500 (#t (cancelled cancelled re-entry closed) 0)) (3400 (#t (cancelled cancelled cancelled re-entry) 0)) (3500 (#t (cancelled cancelled cancelled re-entry) 0)))
+# of expected passes      63
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 63, fail 2, xpass 0): a suite needs a pass, and no fail or xpass

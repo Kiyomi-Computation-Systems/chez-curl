@@ -1,0 +1,6 @@
+(long-url 1000000 (call-ms 104.26) (ctrl-c-ms 28.66) (refused "Could not connect to server"))
+(long-url 8000000 (call-ms 134.06) (ctrl-c-ms 116.56) (refused malformed-input))
+(long-url 16000000 (call-ms 270.73) (ctrl-c-ms 235.52) (refused malformed-input))
+(long-url 32000000 (call-ms 560.52) (ctrl-c-ms 487.85) (refused malformed-input))
+(long-url 64000000 (call-ms 1019.43) (ctrl-c-ms 860.12) (refused malformed-input))
+(counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))

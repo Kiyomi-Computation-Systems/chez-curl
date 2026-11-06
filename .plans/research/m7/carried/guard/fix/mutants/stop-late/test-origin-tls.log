@@ -1,0 +1,10 @@
+%%%% Starting test origin-tls
+FAIL h2c POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request went, and the answer came after it
+  expected: (("00000004000000000000000004010000000000000403000000000100000007" eof) stopped-before-the-request answered-after-the-stop)
+  actual:   (("00000004000000000000000004010000000000000403000000000100000007" eof) (stopped-at 2361) (connected 2 ack-at 2016))
+FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request went, and the answer came after it
+  expected: (("00000004000000000000000004010000000000000403000000000100000007" eof) stopped-before-the-request answered-after-the-stop)
+  actual:   (("00000004000000000000000004010000000000000403000000000100000007" eof) (stopped-at 2357) (connected 11 ack-at 2024))
+# of expected passes      161
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 161, fail 2, xpass 0): a suite needs a pass, and no fail or xpass

@@ -1,0 +1,34 @@
+race-gate: mode gate, trees fix, cpus 8,9, suites tests/test-origin-tls.sps tests/test-origin.sps tests/test-http-client.sps tests/test-engine.sps tests/test-mailbox.sps, race 0, out build/carried-races/out/finalgate-C
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+package libcurl4t64 8.5.0-2ubuntu10.16
+package valgrind 1:3.22.0-0ubuntu3
+cpus: 2
+=== round 1, tree fix, mode gate, 325 s
+test-memory: pass tests/test-origin-tls.sps
+test-memory: pass tests/test-origin.sps
+test-memory: pass tests/test-http-client.sps
+test-memory: pass tests/test-engine.sps
+test-memory: pass tests/test-mailbox.sps
+test-memory: ran 5, passed 5, failed 0, hung 0
+=== round 2, tree fix, mode gate, 332 s
+test-memory: pass tests/test-origin-tls.sps
+test-memory: pass tests/test-origin.sps
+test-memory: pass tests/test-http-client.sps
+test-memory: pass tests/test-engine.sps
+test-memory: pass tests/test-mailbox.sps
+test-memory: ran 5, passed 5, failed 0, hung 0
+=== round 3, tree fix, mode gate, 326 s
+test-memory: pass tests/test-origin-tls.sps
+test-memory: pass tests/test-origin.sps
+test-memory: pass tests/test-http-client.sps
+test-memory: pass tests/test-engine.sps
+test-memory: pass tests/test-mailbox.sps
+test-memory: ran 5, passed 5, failed 0, hung 0
+=== round 4, tree fix, mode gate, 321 s
+test-memory: pass tests/test-origin-tls.sps
+test-memory: pass tests/test-origin.sps
+test-memory: pass tests/test-http-client.sps
+test-memory: pass tests/test-engine.sps
+test-memory: pass tests/test-mailbox.sps
+test-memory: ran 5, passed 5, failed 0, hung 0
+race-gate: done

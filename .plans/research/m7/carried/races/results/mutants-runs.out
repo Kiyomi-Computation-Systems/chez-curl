@@ -1,0 +1,81 @@
+== baseline (199 s): test: ran 5, passed 5, failed 0, hung 0
+== o0-main-origin (62 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-origin-tls.sps (exit 1)
+   FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request wen
+== o1-no-rst (62 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-origin-tls.sps (exit 1)
+   FAIL h2c POST /refuse?at=0, its HEADERS alone: RST_STREAM REFUSED_STREAM on stream 1 and nothing else, then eof; the key's next request answered as /sink, seen=2
+   FAIL h2c POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart: RST_STREAM REFUSED_STREAM only after the second, then eof; the key's next request answered as /sink, seen=2
+   FAIL h2c POST /refuse?at=3, DATA of 3 bytes and the stream left open: RST_STREAM REFUSED_STREAM on stream 1, then eof
+   FAIL h2c POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request we
+   FAIL h2 POST /refuse?at=0, its HEADERS alone: RST_STREAM REFUSED_STREAM on stream 1 and nothing else, then eof; the key's next request answered as /sink, seen=2
+   FAIL h2 POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart: RST_STREAM REFUSED_STREAM only after the second, then eof; the key's next request answered as /sink, seen=2
+   FAIL h2 POST /refuse?at=3, DATA of 3 bytes and the stream left open: RST_STREAM REFUSED_STREAM on stream 1, then eof
+   FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request wen
+== o2-wrong-code (61 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-origin-tls.sps (exit 1)
+   FAIL h2c POST /refuse?at=0, its HEADERS alone: RST_STREAM REFUSED_STREAM on stream 1 and nothing else, then eof; the key's next request answered as /sink, seen=2
+   FAIL h2c POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart: RST_STREAM REFUSED_STREAM only after the second, then eof; the key's next request answered as /sink, seen=2
+   FAIL h2c POST /refuse?at=3, DATA of 3 bytes and the stream left open: RST_STREAM REFUSED_STREAM on stream 1, then eof
+   FAIL h2c POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request we
+   FAIL h2 POST /refuse?at=0, its HEADERS alone: RST_STREAM REFUSED_STREAM on stream 1 and nothing else, then eof; the key's next request answered as /sink, seen=2
+   FAIL h2 POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart: RST_STREAM REFUSED_STREAM only after the second, then eof; the key's next request answered as /sink, seen=2
+   FAIL h2 POST /refuse?at=3, DATA of 3 bytes and the stream left open: RST_STREAM REFUSED_STREAM on stream 1, then eof
+   FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request wen
+== o3-wrong-stream (63 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-origin-tls.sps (exit 1)
+   FAIL h2c POST /refuse?at=0, its HEADERS alone: RST_STREAM REFUSED_STREAM on stream 1 and nothing else, then eof; the key's next request answered as /sink, seen=2
+   FAIL h2c POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart: RST_STREAM REFUSED_STREAM only after the second, then eof; the key's next request answered as /sink, seen=2
+   FAIL h2c POST /refuse?at=3, DATA of 3 bytes and the stream left open: RST_STREAM REFUSED_STREAM on stream 1, then eof
+   FAIL h2c POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request we
+   FAIL h2 POST /refuse?at=0, its HEADERS alone: RST_STREAM REFUSED_STREAM on stream 1 and nothing else, then eof; the key's next request answered as /sink, seen=2
+   FAIL h2 POST /refuse?at=5, its DATA split 3 then 4 bytes, 300 ms apart: RST_STREAM REFUSED_STREAM only after the second, then eof; the key's next request answered as /sink, seen=2
+   FAIL h2 POST /refuse?at=3, DATA of 3 bytes and the stream left open: RST_STREAM REFUSED_STREAM on stream 1, then eof
+   FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request wen
+== o4-end-at-once (60 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-origin-tls.sps (exit 1)
+   FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request wen
+== o5-node-end (62 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-origin-tls.sps (exit 1)
+   FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request wen
+== o6-next-tick (62 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-origin-tls.sps (exit 1)
+   FAIL h2 POST /refuse?at=0, its SETTINGS, HEADERS and half-close sent while the origin is stopped, then continued: RST_STREAM REFUSED_STREAM on stream 1, then eof; the stop began before the request wen
+== h1-record-after-section (21 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-http-client.sps (exit 1)
+   FAIL SIGINT while a call's submit blocks inside its critical section escapes as the section ends, after the submit took the mutex, no collection run in the hold, and the drive still cancels the transf
+   FAIL SIGINT while a call's submit blocks inside its critical section, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object and not compounded with &http-exchan
+== h2-guard-outside-section (15 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-http-client.sps (exit 1)
+   FAIL SIGINT while a call's submit blocks inside its critical section, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object and not compounded with &http-exchan
+== h3-no-section (22 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-http-client.sps (exit 1)
+   FAIL SIGINT while a call's submit blocks inside its critical section escapes as the section ends, after the submit took the mutex, no collection run in the hold, and the drive still cancels the transf
+   FAIL SIGINT while a call's submit blocks inside its critical section, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object and not compounded with &http-exchan
+== m1-take-peeks (7 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-mailbox.sps (exit 1)
+   FAIL an interrupt handler that escapes from a take as its critical section ends loses the token's notice, no collection run in the hold, its callback unrun, never its outcome: the token is done, and a
+   FAIL an interrupt handler that escapes from a deliver as its critical section ends loses the token's notice, no collection run in the hold, its callback unrun, never its outcome: the token is done, an
+== m2-callback-in-section (9 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-mailbox.sps (exit 1)
+   FAIL an interrupt handler that escapes from a deliver as its critical section ends loses the token's notice, no collection run in the hold, its callback unrun, never its outcome: the token is done, an
+== f1-plant-trip-http-client (15 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-http-client.sps (exit 1)
+   FAIL SIGINT while a call's submit blocks inside its critical section escapes as the section ends, after the submit took the mutex, no collection run in the hold, and the drive still cancels the transf
+   FAIL SIGINT while a call's submit blocks inside its critical section, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object and not compounded with &http-exchan
+== f2-plant-trip-mailbox (48 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-mailbox.sps (exit 1)
+   FAIL an interrupt handler that escapes from a take as its critical section ends loses the token's notice, no collection run in the hold, its callback unrun, never its outcome: the token is done, and a
+   FAIL an interrupt handler that escapes from a deliver as its critical section ends loses the token's notice, no collection run in the hold, its callback unrun, never its outcome: the token is done, an
+== f2a-plant-bare-trip-mailbox (8 s): test: ran 1, passed 1, failed 0, hung 0
+== f2b-plant-trip-mailbox-holder (49 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-mailbox.sps (exit 1)
+   FAIL an interrupt handler that escapes from a take as its critical section ends loses the token's notice, no collection run in the hold, its callback unrun, never its outcome: the token is done, and a
+   FAIL an interrupt handler that escapes from a deliver as its critical section ends loses the token's notice, no collection run in the hold, its callback unrun, never its outcome: the token is done, an
+== f3-late-sigint-fixed-hold-hc (20 s): test: ran 1, passed 1, failed 0, hung 0
+== f4-late-sigint-fixed-hold-mb (14 s): test: ran 1, passed 0, failed 1, hung 0
+   test: FAIL tests/test-mailbox.sps (exit 1)
+   FAIL an interrupt handler that escapes from a take as its critical section ends loses the token's notice, no collection run in the hold, its callback unrun, never its outcome: the token is done, and a
+   FAIL an interrupt handler that escapes from a deliver as its critical section ends loses the token's notice, no collection run in the hold, its callback unrun, never its outcome: the token is done, an
+== f5-late-sigint-hc (21 s): test: ran 1, passed 1, failed 0, hung 0
+== f6-late-sigint-mb (14 s): test: ran 1, passed 1, failed 0, hung 0

@@ -1,0 +1,6 @@
+%%%% Starting test auth
+test-auth: digest-algorithms on "8.20.0" measured ((200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)))
+test-auth: utf8-digest-user on "8.20.0" measured (200 (("none" 401) ("ok" 200)) "\\xc3\\xbcser")
+test-auth: empty-userinfo on "8.20.0" measured (("@" "" #f (refused credentials-beside-userinfo)) (":@" "" "" (refused credentials-beside-userinfo)) (":p@" "" "p" (refused credentials-beside-userinfo)) ("u@" "u" #f (refused credentials-beside-userinfo)) ("u:@" "u" "" (refused credentials-beside-userinfo)))
+test-auth: mib-credentials on "8.20.0" measured (((failed perform-failed 100 too-large) 0) ((failed perform-failed 100 too-large) 0))
+# of expected passes      66

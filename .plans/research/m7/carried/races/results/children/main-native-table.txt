@@ -1,0 +1,15 @@
+engine-interrupt             CHILD_TRIP=1024        runs 10  suite-fails  0  1x pass [506 2017] n/a; 1x pass [508 2018] n/a; 1x pass [512 2024] n/a; 1x pass [528 2019] n/a; 1x pass [539 2030] n/a; 1x pass [544 2025] n/a; 1x pass [553 2023] n/a; 1x pass [553 2024] n/a; 1x pass [554 2025] n/a; 1x pass [555 2026] n/a
+engine-interrupt             CHILD_TRIP_AFTER=1024  runs 10  suite-fails  0  1x pass [508 2019] n/a; 1x pass [514 2024] n/a; 1x pass [515 2026] n/a; 1x pass [524 2027] n/a; 1x pass [527 2026] n/a; 1x pass [530 2020] n/a; 1x pass [550 2021] n/a; 1x pass [552 2022] n/a; 2x pass [558 2019] n/a
+engine-interrupt             NONE=1                 runs  5  suite-fails  0  1x pass [548 2019] n/a; 1x pass [552 2023] n/a; 2x pass [554 2025] n/a; 1x pass [556 2016] n/a
+hc-escape                    CHILD_TRIP=1024        runs 10  suite-fails  0  10x pass [escaped after-release cancelled] collected(76,77)
+hc-escape                    CHILD_TRIP_AFTER=1024  runs 10  suite-fails  0  10x pass [escaped after-release cancelled] quiet
+hc-escape                    NONE=1                 runs  5  suite-fails  0  5x pass [escaped after-release cancelled] quiet
+hc-raise                     CHILD_TRIP=1024        runs 10  suite-fails  1  1x FAIL [#f #t after-release cancelled] collected(76,77); 9x pass [#t #f after-release cancelled] collected(76,77)
+hc-raise                     CHILD_TRIP_AFTER=1024  runs 10  suite-fails  0  10x pass [#t #f after-release cancelled] quiet
+hc-raise                     NONE=1                 runs  5  suite-fails  0  5x pass [#t #f after-release cancelled] quiet
+mailbox-escape-deliver       CHILD_TRIP=1024        runs 10  suite-fails  4  3x FAIL [before #f #t] collected(56,57); 1x FAIL [returned #t #t] collected(56,#f); 6x pass [lost #f #t] quiet
+mailbox-escape-deliver       CHILD_TRIP_AFTER=1024  runs 10  suite-fails  0  10x pass [lost #f #t] quiet
+mailbox-escape-deliver       NONE=1                 runs  5  suite-fails  0  5x pass [lost #f #t] quiet
+mailbox-escape-take          CHILD_TRIP=1024        runs 10  suite-fails  5  2x FAIL [before #f #t] collected(56,57); 3x FAIL [returned #f #t] collected(56,#f); 2x pass [lost #f #t] collected(56,57); 3x pass [lost #f #t] quiet
+mailbox-escape-take          CHILD_TRIP_AFTER=1024  runs 10  suite-fails  0  10x pass [lost #f #t] quiet
+mailbox-escape-take          NONE=1                 runs  5  suite-fails  0  5x pass [lost #f #t] quiet

@@ -1,0 +1,84 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (2 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-call-checks.sps
+%%%% Starting test call-checks
+FAIL SIGINT while request's checks block at their start, inside their critical section, whose Ctrl-C handler raises a &curl-error of its own: the call raises that very object, not compounded with &http-exchange, the handler run after the checks' end, as the section ended; nothing was submitted; the hold quiet, the child's counts zero
+  expected: (0 ((checks request raise (raised #t #f) (start end) quiet (0 0 0) 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks request raise (raised #f #t) (start) quiet (0 0 0) 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL SIGINT while port's checks block at their start, inside their critical section, whose Ctrl-C handler raises a &curl-error of its own: the call raises that very object, not compounded with &http-exchange, the handler run after the checks' end, as the section ended; nothing was submitted; the hold quiet, the child's counts zero
+  expected: (0 ((checks port raise (raised #t #f) (start end) quiet (0 0 0) 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks port raise (raised #f #t) (start) quiet (0 0 0) 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL SIGINT while go's checks block at their start, inside their critical section, whose Ctrl-C handler raises a &curl-error of its own: the call raises that very object, not compounded with &http-exchange, the handler run after the checks' end, as the section ended; nothing was submitted; the hold quiet, the child's counts zero
+  expected: (0 ((checks go raise (raised #t #f) (start end) quiet (0 0 0) 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks go raise (raised #f #t) (start) quiet (0 0 0) 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL SIGINT while parallel's checks block at their start, inside their critical section, whose Ctrl-C handler raises a &curl-error of its own: the call raises that very object, not compounded with &http-exchange, the handler run after the checks' end, as the section ended; nothing was submitted; the hold quiet, the child's counts zero
+  expected: (0 ((checks parallel raise (raised #t #f) (start end) quiet (0 0 0) 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks parallel raise (raised #f #t) (start) quiet (0 0 0) 0 0) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL SIGINT while request's checks block at their start, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the call resumes and answers 200, the caller's handler returned once, the handler run after the checks' end; one transfer; the child's counts zero
+  expected: (0 ((checks request resume (returned 200) (start end) quiet (0 0 0) 1 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks request resume (raised other (#f #f #t)) (start) quiet (0 0 0) 0 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL SIGINT while port's checks block at their start, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the call resumes and answers 200, the caller's handler returned once, the handler run after the checks' end; one transfer; the child's counts zero
+  expected: (0 ((checks port resume (returned 200) (start end) quiet (0 0 0) 1 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks port resume (raised other (#f #f #t)) (start) quiet (0 0 0) 0 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL SIGINT while go's checks block at their start, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the call resumes and answers 200, the caller's handler returned once, the handler run after the checks' end; one transfer; the child's counts zero
+  expected: (0 ((checks go resume (returned 200) (start end) quiet (0 0 0) 1 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks go resume (raised other (#f #f #t)) (start) quiet (0 0 0) 0 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL SIGINT while parallel's checks block at their start, whose Ctrl-C handler raises a &warning continuably, which the caller's handler returns from: the call resumes and answers 200, the caller's handler returned once, the handler run after the checks' end; one transfer; the child's counts zero
+  expected: (0 ((checks parallel resume (returned 200) (start end) quiet (0 0 0) 1 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+  actual:   (0 ((checks parallel resume (raised other (#f #f #t)) (start) quiet (0 0 0) 0 1) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))) "")
+FAIL a timer that runs out at request's checks' start, inside their critical section, fires after their end: its handler's own &curl-error leaves as raised, not compounded; a continuable &warning its caller's handler returns from resumes the call, which answers 200
+  expected: (((raised #t #f) (start end) 0) ((returned 200) (start end) 1))
+  actual:   (((raised #f #t) (start) 0) ((raised other "Exception occurred with condition components:\n  0. &non-continuable") (start) 1))
+FAIL a timer that runs out at port's checks' start, inside their critical section, fires after their end: its handler's own &curl-error leaves as raised, not compounded; a continuable &warning its caller's handler returns from resumes the call, which answers 200
+  expected: (((raised #t #f) (start end) 0) ((returned 200) (start end) 1))
+  actual:   (((raised #f #t) (start) 0) ((raised other "Exception occurred with condition components:\n  0. &non-continuable") (start) 1))
+FAIL a timer that runs out at go's checks' start, inside their critical section, fires after their end: its handler's own &curl-error leaves as raised, not compounded; a continuable &warning its caller's handler returns from resumes the call, which answers 200
+  expected: (((raised #t #f) (start end) 0) ((returned 200) (start end) 1))
+  actual:   (((raised #f #t) (start) 0) ((raised other "Exception occurred with condition components:\n  0. &non-continuable") (start) 1))
+FAIL a timer that runs out at parallel's checks' start, inside their critical section, fires after their end: its handler's own &curl-error leaves as raised, not compounded; a continuable &warning its caller's handler returns from resumes the call, which answers 200
+  expected: (((raised #t #f) (start end) 0) ((returned 200) (start end) 1))
+  actual:   (((raised #f #t) (start) 0) ((raised other "Exception occurred with condition components:\n  0. &non-continuable") (start) 1))
+FAIL an engine's expiry swept a tick at a time across request's checks: none lands between their start and end, and no resumed call raises (curl)'s refusal to re-enter a URL's parse; the fuels that did, counted, and their first five
+  expected: ((0 ()) (0 ()))
+  actual:   ((648 (26 27 28 29 30)) (158 (199 200 201 202 203)))
+FAIL the request sweep's evidence: it crossed the checks, the expiry at the fuel before the first one after their end having seen neither mark
+  expected: (crossed ())
+  actual:   (crossed (start))
+FAIL an engine's expiry swept a tick at a time across port's checks: none lands between their start and end, and no resumed call raises (curl)'s refusal to re-enter a URL's parse; the fuels that did, counted, and their first five
+  expected: ((0 ()) (0 ()))
+  actual:   ((675 (31 32 33 34 35)) (158 (230 231 232 233 234)))
+FAIL the port sweep's evidence: it crossed the checks, the expiry at the fuel before the first one after their end having seen neither mark
+  expected: (crossed ())
+  actual:   (crossed (start))
+FAIL an engine's expiry swept a tick at a time across go's checks: none lands between their start and end, and no resumed call raises (curl)'s refusal to re-enter a URL's parse; the fuels that did, counted, and their first five
+  expected: ((0 ()) (0 ()))
+  actual:   ((648 (60 61 62 63 64)) (158 (233 234 235 236 237)))
+FAIL the go sweep's evidence: it crossed the checks, the expiry at the fuel before the first one after their end having seen neither mark
+  expected: (crossed ())
+  actual:   (crossed (start))
+FAIL an engine's expiry swept a tick at a time across parallel's checks: none lands between their start and end, and no resumed call raises (curl)'s refusal to re-enter a URL's parse; the fuels that did, counted, and their first five
+  expected: ((0 ()) (0 ()))
+  actual:   ((1032 (71 72 73 74 75)) (387 (244 245 246 247 248)))
+FAIL the parallel sweep's evidence: it crossed the checks, the expiry at the fuel before the first one after their end having seen neither mark
+  expected: (crossed ())
+  actual:   (crossed (start))
+# of expected passes      2
+# of unexpected failures  20
+suite-exit-status: exit 1 (pass 2, fail 20, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-call-checks.sps (exit 1)
+=== tests/test-group.sps
+%%%% Starting test group
+FAIL an engine's expiry anywhere in http-parallel, swept from 200 to 9000 ticks by 100, then by 1 for 100 ticks either side of its first cancel, across its entries: the outcome is all four responses, with every transfer started after the expiry, its group made after it, or none, or with no expiry; or the cancel of its first call or a never-entered call's cancel, with no transfer started after the expiry; never (curl)'s refusal to re-enter a URL's parse
+  expected: ()
+  actual:   ((1000 (#t re-entry 0)) (1100 (#t re-entry 0)) (1700 (#t re-entry 0)) (1800 (#t re-entry 0)) (1900 (#t re-entry 0)) (2300 (#t re-entry 0)) (2400 (#t re-entry 0)) (3000 (#t re-entry 0)) (3100 (#t re-entry 0)) (3200 (#t re-entry 0)) (3600 (#t re-entry 0)) (3700 (#t re-entry 0)) (4400 (#t re-entry 0)) (4500 (#t re-entry 0)) (4600 (#t re-entry 0)) (4900 (#t re-entry 0)) (5000 (#t re-entry 0)) (5100 (#t re-entry 0)) (5700 (#t re-entry 0)) (5800 (#t re-entry 0)) (5900 (#t re-entry 0)) (5900 (#t re-entry 0)) (5901 (#t re-entry 0)) (5902 (#t re-entry 0)) (5903 (#t re-entry 0)) (5904 (#t re-entry 0)) (5905 (#t re-entry 0)) (5906 (#t re-entry 0)) (5907 (#t re-entry 0)) (5908 (#t re-entry 0)) (5909 (#t re-entry 0)) (5910 (#t re-entry 0)) (5911 (#t re-entry 0)) (5912 (#t re-entry 0)) (5913 (#t re-entry 0)) (5914 (#t re-entry 0)) (5915 (#t re-entry 0)) (5916 (#t re-entry 0)))
+FAIL an engine's expiry anywhere in a group of four calls of go, swept from 200 to 6000 ticks by 100: each call answers, or raises cancelled or closed, never (curl)'s refusal to re-enter a URL's parse; and with any call not answered, no transfer starts after the expiry
+  expected: ()
+  actual:   ((500 (#t (re-entry closed closed closed) 0)) (600 (#t (re-entry closed closed closed) 0)) (1500 (#t (cancelled re-entry closed closed) 0)) (1600 (#t (cancelled re-entry closed closed) 0)) (2400 (#t (cancelled cancelled re-entry closed) 0)) (2500 (#t (cancelled cancelled re-entry closed) 0)) (3400 (#t (cancelled cancelled cancelled re-entry) 0)) (3500 (#t (cancelled cancelled cancelled re-entry) 0)))
+# of expected passes      63
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 63, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-group.sps (exit 1)
+test: ran 2, passed 0, failed 2, hung 0
+make: *** [Makefile:259: test] Error 1

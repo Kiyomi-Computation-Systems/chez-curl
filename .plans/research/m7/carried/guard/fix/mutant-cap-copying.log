@@ -1,0 +1,2 @@
+suite test-call-checks exit 1 pass 48 fail 1
+  FAIL a URL past the cap is refused before anything reads it: from the checks' start to its raise, under a tenth of the time a URL of 8,000,000 chars takes to reach libcurl's own refusal, the URL copied, scanned, encoded and parsed

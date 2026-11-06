@@ -1,0 +1,13 @@
+%%%% Starting test group
+FAIL go checks the call first, as http-request does: an unknown key, a method the low level refuses and a URL curl_url refuses each raise from go, compounded with &http-exchange and no transfer; no call is made, so the group holds the one valid call alone
+  expected: ((raised (http-error) (http-request-error key bogus unknown-key http-request) (exchange get "http://127.0.0.1:40625/status/200" 0 0)) (raised (assertion make-curl-request) (exchange options "http://127.0.0.1:40625/status/200" 0 0)) (raised (curl-url-error bad-port-number) (exchange get "http://h:99999/" 0 0)) 1 1 (answered 200 "status 200\n"))
+  actual:   ((raised (http-error) (http-request-error key bogus unknown-key http-request)) (raised (assertion make-curl-request)) (raised (curl-url-error bad-port-number)) 1 1 (answered 200 "status 200\n"))
+FAIL http-parallel checks every spec before any is submitted: a later spec's unknown key, its method the low level refuses, and its ftp URL each raise, compounded with &http-exchange, and nothing reached the origin for the first spec
+  expected: ((raised (http-error) (http-request-error key bogus unknown-key http-request) (exchange get "http://127.0.0.1:40625/status/200" 0 0)) (raised (assertion make-curl-request) (exchange options "http://127.0.0.1:40625/status/200" 0 0)) (raised (curl-url-error scheme-not-http) (exchange get "ftp://h.example/x" 0 0)) 0 "held 0 most 0\n")
+  actual:   ((raised (http-error) (http-request-error key bogus unknown-key http-request)) (raised (assertion make-curl-request)) (raised (curl-url-error scheme-not-http)) 0 "held 0 most 0\n")
+FAIL http-parallel's scheme refusal is curl-request-check's of the call's first request: &curl-url-error, scheme-not-http, its input, code, message, who and irritants as the check raises them, and as a submit does; compounded with the call's &http-exchange, no transfer made; and made before any submit: a refused submit's step would have drawn from the session's generator, which no step drew from
+  expected: (the-check-s a-submit-s (exchange get "FTP://h.example/a/../x" 0 0) no-step-drew)
+  actual:   (the-check-s a-submit-s #f no-step-drew)
+# of expected passes      62
+# of unexpected failures  3
+suite-exit-status: exit 1 (pass 62, fail 3, xpass 0): a suite needs a pass, and no fail or xpass

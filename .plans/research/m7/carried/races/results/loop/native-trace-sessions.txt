@@ -1,0 +1,22 @@
+## native-trace-main: main's origin, NODE_DEBUG_NATIVE=HTTP2SESSION,HTTP2STREAM,TLS, Node 24.18.0, the Guix container, CPUs 0,1 beside three busy loops, h2 /refuse?at=0, 10 runs; per session the trace line numbers, from its TLSWrap's creation, of the client's EOF (receiving -4095), the TLS socket's DoShutdown, the RST_STREAM serialized (nghttp2 has 13 bytes) and its SSL_write failing (written = -1)
+1 MISS eof@55 shutdown@56 rst-serialized@79 ssl-write-failed@81
+2 ok   eof@99 shutdown@100 rst-serialized@74 ssl-write-failed@None
+3 MISS eof@55 shutdown@56 rst-serialized@79 ssl-write-failed@81
+4 ok   eof@99 shutdown@100 rst-serialized@74 ssl-write-failed@None
+5 MISS eof@55 shutdown@56 rst-serialized@79 ssl-write-failed@81
+6 MISS eof@55 shutdown@56 rst-serialized@79 ssl-write-failed@81
+7 MISS eof@55 shutdown@56 rst-serialized@79 ssl-write-failed@81
+8 ok   eof@99 shutdown@100 rst-serialized@74 ssl-write-failed@None
+9 ok   eof@99 shutdown@100 rst-serialized@74 ssl-write-failed@None
+10 ok   eof@99 shutdown@100 rst-serialized@74 ssl-write-failed@None
+## native-trace-main-node20: main's origin, NODE_DEBUG_NATIVE=HTTP2SESSION,HTTP2STREAM,TLS, Node 20.10.0, Docker ubuntu:24.04, CPUs 0,1 beside three busy loops, h2 /refuse?at=0, 10 runs; per session the trace line numbers, from its TLSWrap's creation, of the client's EOF (receiving -4095), the TLS socket's DoShutdown, the RST_STREAM serialized (nghttp2 has 13 bytes) and its SSL_write failing (written = -1)
+1 MISS eof@48 shutdown@49 rst-serialized@71 ssl-write-failed@73
+2 MISS eof@48 shutdown@49 rst-serialized@71 ssl-write-failed@73
+3 MISS eof@48 shutdown@49 rst-serialized@71 ssl-write-failed@73
+4 ok   eof@94 shutdown@95 rst-serialized@69 ssl-write-failed@None
+5 ok   eof@91 shutdown@92 rst-serialized@66 ssl-write-failed@None
+6 MISS eof@48 shutdown@49 rst-serialized@71 ssl-write-failed@73
+7 MISS eof@48 shutdown@49 rst-serialized@71 ssl-write-failed@73
+8 ok   eof@91 shutdown@92 rst-serialized@66 ssl-write-failed@None
+9 MISS eof@48 shutdown@49 rst-serialized@71 ssl-write-failed@73
+10 ok   eof@91 shutdown@92 rst-serialized@66 ssl-write-failed@None

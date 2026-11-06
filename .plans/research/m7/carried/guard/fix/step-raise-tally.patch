@@ -1,0 +1,38 @@
+--- tests/test-call-checks.sps (the fix round's, before the group rows' change)
++++ tests/test-call-checks.sps (the tally copy: TALLY rows, HANDLER_SLEEP)
+@@ -336,6 +336,8 @@
+              (lambda ()
+                (set! handler-collections (collections))
+                (set! handler-marks (reverse marks))
++               (when (getenv "HANDLER_SLEEP")
++                 (sleep (make-time 'time-duration (* 1000000 (string->number (getenv "HANDLER_SLEEP"))) 0)))
+                (if (eq? action 'raise)
+                    (raise planted)
+                    (raise-continuable planted-warning))))
+@@ -848,6 +850,26 @@
+           (run-child redirect entry 'raise 'step)))
+       entries)
+ 
++     (when (or (getenv "TALLY") (file-exists? "/src/.plans"))
++       (for-each
++        (lambda (entry)
++          (let loop ((i 0) (acc '()))
++            (if (= i (string->number (or (getenv "TALLY") "60")))
++                (let ((line (list 'tally entry (reverse acc))))
++                  (write line) (newline) (flush-output-port (current-output-port))
++                  (when (file-exists? "/src/.plans")
++                    (let ((p (open-file-output-port
++                              (string-append "/src/.plans/research/m7/carried/guard/fix/step-raise-tally-docker-"
++                                             (symbol->string entry) ".out")
++                              (file-options no-fail) (buffer-mode block) (native-transcoder))))
++                      (write line p) (newline p) (close-port p))))
++                (let ((r (guard (e (#t (list 'raised e))) (run-child redirect entry 'raise 'step))))
++                  (loop (+ i 1)
++                        (cons (guard (e (#t (list 'odd r)))
++                                (let ((c (car (cadr r)))) (list (list-ref c 4) (list-ref c 5) (list-ref c 8))))
++                              acc))))))
++        '(request port go parallel)))
++
+      (for-each
+       (lambda (entry)
+         (test-equal (string-append
