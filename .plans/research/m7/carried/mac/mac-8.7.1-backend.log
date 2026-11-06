@@ -1,0 +1,40 @@
+uname: Darwin arm64, shell CURL_SSL_BACKEND: unset
+=== CURL_SSL_BACKEND unset
+c: CURL_SSL_BACKEND (unset)
+c: libcurl 8.7.1, before the init: SecureTransport (LibreSSL/3.3.6)
+c: curl_global_init 0
+c: after the init: (SecureTransport) LibreSSL/3.3.6
+c exit 0
+chez: CURL_SSL_BACKEND (unset)
+chez: loaded-tls-backend "LibreSSL/3.3.6"
+chez exit 0
+=== CURL_SSL_BACKEND secure-transport
+c: CURL_SSL_BACKEND secure-transport
+c: libcurl 8.7.1, before the init: SecureTransport (LibreSSL/3.3.6)
+c: curl_global_init 0
+c: after the init: SecureTransport (LibreSSL/3.3.6)
+c exit 0
+chez: CURL_SSL_BACKEND secure-transport
+chez: loaded-tls-backend "SecureTransport"
+chez exit 0
+=== CURL_SSL_BACKEND securetransport
+c: CURL_SSL_BACKEND securetransport
+c: libcurl 8.7.1, before the init: SecureTransport (LibreSSL/3.3.6)
+c: curl_global_init 0
+c: after the init: SecureTransport (LibreSSL/3.3.6)
+c exit 0
+chez: CURL_SSL_BACKEND securetransport
+chez: loaded-tls-backend "SecureTransport"
+chez exit 0
+=== CURL_SSL_BACKEND openssl
+c: CURL_SSL_BACKEND openssl
+c: libcurl 8.7.1, before the init: SecureTransport (LibreSSL/3.3.6)
+c: curl_global_init 0
+c: after the init: (SecureTransport) LibreSSL/3.3.6
+c exit 0
+chez: CURL_SSL_BACKEND openssl
+chez: loaded-tls-backend "LibreSSL/3.3.6"
+chez exit 0
+=== what make gives its suites, the shell's variable unset
+CURL_SSL_BACKEND = secure-transport
+backend.sh: done

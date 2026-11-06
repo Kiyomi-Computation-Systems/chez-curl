@@ -378,8 +378,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   alone also trusts the system store. No lane's store trusts the run CA, so
   no behavioural test can see it: the transfer clears `CAPATH`, and its TLS
   settings are held as data.
-* Apple's LibreSSL checks the keychain when a CA file fails; a library
-  process on the Mac selects SecureTransport, and no test can show the
+* Apple's LibreSSL checks the keychain when a CA file fails, and Apple's
+  8.7.1 puts it in use at the init unless `CURL_SSL_BACKEND` names another;
+  `make` sets `secure-transport` for the Mac's suites. No test can show the
   fallback.
 * libcurl's cleanup reads nothing a transfer handed it, so freeing the
   `CURLU`, the header list or the error buffer before `curl_easy_cleanup`

@@ -973,10 +973,12 @@ it should not be a comment. (chez-cmark-gfm)
 * **Apple's LibreSSL checks the keychain when a CA file fails.** Reported as curl issue
   12604 (2024), and called intended by Apple: with `--cacert`, a server the CA file does not
   verify still passes if the keychain trusts it. It is in Apple's LibreSSL, not curl. The
-  Mac's libcurl is MultiSSL, and its drift row reads `SecureTransport (LibreSSL/3.3.6)`, so a
-  library process selects SecureTransport. curl's documentation says `CURL_SSL_BACKEND`
-  selects another; that is unmeasured on the Mac. No test can show the fallback without
-  adding a CA to the keychain. (curl, chez-curl)
+  Mac's libcurl is MultiSSL, and its drift row reads `SecureTransport (LibreSSL/3.3.6)`, which
+  this entry first read as a library process selecting SecureTransport. That row is read before
+  the init: the init puts LibreSSL in use unless `CURL_SSL_BACKEND` names another, by a C probe
+  and by chez-curl alike, and the Makefile sets `secure-transport` for the Mac's suites
+  ([mac](research/m7/carried/mac/mac-8.7.1-backend.log), after M7; the MultiSSL entry below).
+  No test can show the fallback without adding a CA to the keychain. (curl, chez-curl)
 * **A stalled name lookup blocks libcurl's teardown, and a timeout, for about
   10 s.** libcurl resolves on a thread, and by default waits for it. With a DNS
   server that never answers:

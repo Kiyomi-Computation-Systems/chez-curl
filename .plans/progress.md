@@ -33,7 +33,7 @@ close-out under **Close-outs**, newest first.
     with GnuTLS; `credentials` is one tagged key (the plan, §9).
   - **The Mac ran the four probes, 2026-11-02,** against Apple's 8.7.1, every run exiting 0: they
     revise no decision, and fill the plan's 8.7.1 rows (§7).
-  - **Carried past M7** (the plan, §10, and slice 4's close-out). Four are fixed on
+  - **Carried past M7** (the plan, §10, and slice 4's close-out). Five are settled on
     `fix/m7-carried`, not yet merged, measured first by two Opus agents
     ([`research/m7/carried/`](research/m7/carried/)):
     - test-origin-tls's `/refuse?at=` race: in the origin, whose TLS face lost an `RST_STREAM`
@@ -49,15 +49,19 @@ close-out under **Close-outs**, newest first.
       Ctrl-C answered in 0.03 ms, and the suite grown to 49 tests;
     - test-http-client's and test-mailbox's SIGINT children: the stall reached both, and they now
       hold as test-group's do; test-engine's holds nothing, and needed no change;
-    - 8.5.0's paused HTTP/2 send: a race, not a rule, 9 of 4,760 runs; README.org says so.
+    - 8.5.0's paused HTTP/2 send: a race, not a rule, 9 of 4,760 runs; README.org says so;
+    - the Mac's backend: no fault. With `CURL_SSL_BACKEND` unset, Apple's 8.7.1 puts LibreSSL in
+      use at the init, read alike by a C probe and by chez-curl, as ADR-0024 records; the
+      SecureTransport the Mac's suites read is the Makefile's, which exports
+      `CURL_SSL_BACKEND=secure-transport` on macOS
+      ([log](research/m7/carried/mac/mac-8.7.1-backend.log)).
+
+    The Mac ran the branch at `84e7e22`, 2026-11-06: `make test` 41 of 41, test-call-checks and
+    the new `/refuse` test among them ([log](research/m7/carried/mac/mac-8.7.1-make-test.log)).
 
     Still carried:
     - the curl bug report on the unterminated head, drafted for the maintainer to file
       ([draft](research/m7/slice4/verify/curl-bug-report.md));
-    - with `CURL_SSL_BACKEND` unset, the Mac selects SecureTransport, where ADR-0024 records
-      LibreSSL: most likely a misreading, since the Makefile exports
-      `CURL_SSL_BACKEND=secure-transport` on macOS; a probe for the Mac is ready
-      ([`mac/`](research/m7/carried/mac/));
     - slice 1's floor flake; a cap on response headers, for M8's plan;
     - from the fix round: the public URL functions run with their caller's interrupts, as their
       header says; `string-pairs`' and `list-within`'s `assertion-violation?` guards read a
