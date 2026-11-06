@@ -1,0 +1,950 @@
+[guix-8.20.0-1] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 -> /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0, headers /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/../include
+[guix-8.20.0-1] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset cpus=6 affinity=12-17
+[guix-8.20.0-1] cases=count bytes toward walk PROBE_MODES=default WALK_NS=default WALK_ROUNDS=default PROBE_VALGRIND=unset
+[guix-8.20.0-1] version headers=8.20.0 runtime=8.20.0 num=0x081400 ssl=GnuTLS/3.8.13 nghttp2=1.69.0 http2=1 features=0x553f478d
+[guix-8.20.0-1] server ctl=36211 h1=32971 h1tls=41401 h2=37079 proxy=36433
+[guix-8.20.0-1] cell count n1000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.3 cpu_ms=0.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=16022 stored=1000 walk_ms=21.00 walk_cpu_ms=21.00 live_kb=73
+[guix-8.20.0-1] srv ev 3 t=75.1 wrote face=h1 conn=59040 tag=count.n1000.none.1 proto=h1 heads=[200:1000:16022] bytes=16022
+[guix-8.20.0-1] cell count n1000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=0.9 cpu_ms=0.2 calls=1002 hdr_lines=1000 bytes=16022 heads=[200:1000:16022] refused=- header_size=16022 stored=1000 walk_ms=20.82 walk_cpu_ms=20.82 live_kb=73
+[guix-8.20.0-1] srv ev 7 t=97.8 wrote face=h1 conn=59056 tag=count.n1000.obs.2 proto=h1 heads=[200:1000:16022] bytes=16022
+[guix-8.20.0-1] cell count n1000 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.8 cpu_ms=0.2 calls=1002 hdr_lines=1000 bytes=16022 heads=[200:1000:16022] refused=none header_size=16022 stored=1000 walk_ms=20.74 walk_cpu_ms=20.74 live_kb=73
+[guix-8.20.0-1] srv ev 11 t=119.9 wrote face=h1 conn=59072 tag=count.n1000.cap.3 proto=h1 heads=[200:1000:16022] bytes=16022
+[guix-8.20.0-1] cell count n4999 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.7 cpu_ms=0.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80006 stored=4999 walk_ms=449.68 walk_cpu_ms=449.67 live_kb=347
+[guix-8.20.0-1] srv ev 15 t=143.6 wrote face=h1 conn=59078 tag=count.n4999.none.4 proto=h1 heads=[200:4999:80006] bytes=80006
+[guix-8.20.0-1] cell count n4999 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=4.5 cpu_ms=0.6 calls=5001 hdr_lines=4999 bytes=80006 heads=[200:4999:80006] refused=- header_size=80006 stored=4999 walk_ms=462.77 walk_cpu_ms=462.75 live_kb=347
+[guix-8.20.0-1] srv ev 19 t=599.8 wrote face=h1 conn=59092 tag=count.n4999.obs.5 proto=h1 heads=[200:4999:80006] bytes=80006
+[guix-8.20.0-1] cell count n4999 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=2.3 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=73
+[guix-8.20.0-1] srv ev 23 t=1067.2 wrote face=h1 conn=59098 tag=count.n4999.cap.6 proto=h1 heads=[200:4999:80006] bytes=80006
+[guix-8.20.0-1] cell count n5000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=1.5 cpu_ms=0.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80022 stored=5000 walk_ms=472.65 walk_cpu_ms=472.63 live_kb=347
+[guix-8.20.0-1] srv ev 27 t=1069.4 wrote face=h1 conn=59104 tag=count.n5000.none.7 proto=h1 heads=[200:5000:80022] bytes=80022
+[guix-8.20.0-1] cell count n5000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=4.0 cpu_ms=0.6 calls=5002 hdr_lines=5000 bytes=80022 heads=[200:5000:80022] refused=- header_size=80022 stored=5000 walk_ms=467.23 walk_cpu_ms=467.17 live_kb=347
+[guix-8.20.0-1] srv ev 31 t=1547.6 wrote face=h1 conn=59120 tag=count.n5000.obs.8 proto=h1 heads=[200:5000:80022] bytes=80022
+[guix-8.20.0-1] cell count n5000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=1.4 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=73
+[guix-8.20.0-1] srv ev 35 t=2017.7 wrote face=h1 conn=59128 tag=count.n5000.cap.9 proto=h1 heads=[200:5000:80022] bytes=80022
+[guix-8.20.0-1] cell count n5001 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=1.4 cpu_ms=0.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 39 t=2019.5 wrote face=h1 conn=59136 tag=count.n5001.none.10 proto=h1 heads=[200:5001:80038] bytes=80038
+[guix-8.20.0-1] cell count n5001 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=2.0 cpu_ms=0.6 calls=5001 hdr_lines=5000 bytes=80020 heads=[200:5000:80020] refused=- header_size=80020 stored=5000 walk_ms=507.27 walk_cpu_ms=507.24 live_kb=347
+[guix-8.20.0-1] srv ev 43 t=2021.9 wrote face=h1 conn=59142 tag=count.n5001.obs.11 proto=h1 heads=[200:5001:80038] bytes=80038
+[guix-8.20.0-1] cell count n5001 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=1.3 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=73
+[guix-8.20.0-1] srv ev 47 t=2531.8 wrote face=h1 conn=59150 tag=count.n5001.cap.12 proto=h1 heads=[200:5001:80038] bytes=80038
+[guix-8.20.0-1] cell count n10000 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=4.8 cpu_ms=0.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 51 t=2536.9 wrote face=h1 conn=59152 tag=count.n10000.none.13 proto=h1 heads=[200:10000:160022] bytes=160022
+[guix-8.20.0-1] cell count n10000 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=3.5 cpu_ms=0.6 calls=5001 hdr_lines=5000 bytes=80020 heads=[200:5000:80020] refused=- header_size=80020 stored=5000 walk_ms=479.75 walk_cpu_ms=479.63 live_kb=347
+[guix-8.20.0-1] srv ev 55 t=2540.9 wrote face=h1 conn=59164 tag=count.n10000.obs.14 proto=h1 heads=[200:10000:160022] bytes=160022
+[guix-8.20.0-1] cell count n10000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=2.5 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=73
+[guix-8.20.0-1] srv ev 59 t=3024.4 wrote face=h1 conn=59174 tag=count.n10000.cap.15 proto=h1 heads=[200:10000:160022] bytes=160022
+[guix-8.20.0-1] cell count n50000 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=19.1 cpu_ms=0.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 63 t=3043.9 wrote face=h1 conn=59178 tag=count.n50000.none.16 proto=h1 heads=[200:50000:800022] bytes=800022
+[guix-8.20.0-1] cell count n50000 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=19.9 cpu_ms=0.7 calls=5001 hdr_lines=5000 bytes=80020 heads=[200:5000:80020] refused=- header_size=80020 stored=5000 walk_ms=461.57 walk_cpu_ms=461.56 live_kb=347
+[guix-8.20.0-1] srv ev 67 t=3069.1 wrote face=h1 conn=59188 tag=count.n50000.obs.17 proto=h1 heads=[200:50000:800022] bytes=800022
+[guix-8.20.0-1] cell count n50000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=16.5 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=73
+[guix-8.20.0-1] srv ev 71 t=3549.2 wrote face=h1 conn=59190 tag=count.n50000.cap.18 proto=h1 heads=[200:50000:800022] bytes=800022
+[guix-8.20.0-1] cell count n1000 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=6.0 cpu_ms=2.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=16022 stored=1000 walk_ms=20.38 walk_cpu_ms=20.38 live_kb=73
+[guix-8.20.0-1] srv ev 76 t=3557.1 wrote face=h1tls conn=36416 tag=count.n1000.none.19 proto=h1 heads=[200:1000:16022] bytes=16022
+[guix-8.20.0-1] cell count n1000 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=2.5 cpu_ms=1.7 calls=1002 hdr_lines=1000 bytes=16022 heads=[200:1000:16022] refused=- header_size=16022 stored=1000 walk_ms=20.72 walk_cpu_ms=20.72 live_kb=73
+[guix-8.20.0-1] srv ev 81 t=3580.7 wrote face=h1tls conn=36430 tag=count.n1000.obs.20 proto=h1 heads=[200:1000:16022] bytes=16022
+[guix-8.20.0-1] cell count n1000 face=h1tls mode=cap code=0 err="" status=200 ver=2 t_ms=2.1 cpu_ms=1.6 calls=1002 hdr_lines=1000 bytes=16022 heads=[200:1000:16022] refused=none header_size=16022 stored=1000 walk_ms=20.71 walk_cpu_ms=20.71 live_kb=73
+[guix-8.20.0-1] srv ev 86 t=3604.1 wrote face=h1tls conn=36442 tag=count.n1000.cap.21 proto=h1 heads=[200:1000:16022] bytes=16022
+[guix-8.20.0-1] cell count n4999 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=4.5 cpu_ms=3.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80006 stored=4999 walk_ms=449.62 walk_cpu_ms=449.56 live_kb=347
+[guix-8.20.0-1] srv ev 91 t=3629.4 wrote face=h1tls conn=36452 tag=count.n4999.none.22 proto=h1 heads=[200:4999:80006] bytes=80006
+[guix-8.20.0-1] cell count n4999 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=5.4 cpu_ms=2.2 calls=5001 hdr_lines=4999 bytes=80006 heads=[200:4999:80006] refused=- header_size=80006 stored=4999 walk_ms=462.92 walk_cpu_ms=462.90 live_kb=347
+[guix-8.20.0-1] srv ev 96 t=4086.0 wrote face=h1tls conn=33902 tag=count.n4999.obs.23 proto=h1 heads=[200:4999:80006] bytes=80006
+[guix-8.20.0-1] cell count n4999 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=4.3 cpu_ms=1.9 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 101 t=4555.2 wrote face=h1tls conn=33904 tag=count.n4999.cap.24 proto=h1 heads=[200:4999:80006] bytes=80006
+[guix-8.20.0-1] cell count n5000 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=3.8 cpu_ms=1.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80022 stored=5000 walk_ms=479.80 walk_cpu_ms=479.68 live_kb=347
+[guix-8.20.0-1] srv ev 106 t=4559.7 wrote face=h1tls conn=33906 tag=count.n5000.none.25 proto=h1 heads=[200:5000:80022] bytes=80022
+[guix-8.20.0-1] cell count n5000 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=5.1 cpu_ms=2.9 calls=5002 hdr_lines=5000 bytes=80022 heads=[200:5000:80022] refused=- header_size=80022 stored=5000 walk_ms=479.39 walk_cpu_ms=479.38 live_kb=347
+[guix-8.20.0-1] srv ev 111 t=5045.6 wrote face=h1tls conn=33916 tag=count.n5000.obs.26 proto=h1 heads=[200:5000:80022] bytes=80022
+[guix-8.20.0-1] cell count n5000 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=3.3 cpu_ms=1.8 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 116 t=5529.8 wrote face=h1tls conn=33928 tag=count.n5000.cap.27 proto=h1 heads=[200:5000:80022] bytes=80022
+[guix-8.20.0-1] cell count n5001 face=h1tls mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=3.5 cpu_ms=1.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 121 t=5533.7 wrote face=h1tls conn=33932 tag=count.n5001.none.28 proto=h1 heads=[200:5001:80038] bytes=80038
+[guix-8.20.0-1] cell count n5001 face=h1tls mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=3.2 cpu_ms=1.9 calls=5001 hdr_lines=5000 bytes=80020 heads=[200:5000:80020] refused=- header_size=80020 stored=5000 walk_ms=467.82 walk_cpu_ms=467.82 live_kb=347
+[guix-8.20.0-1] srv ev 126 t=5537.5 wrote face=h1tls conn=33942 tag=count.n5001.obs.29 proto=h1 heads=[200:5001:80038] bytes=80038
+[guix-8.20.0-1] cell count n5001 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=3.8 cpu_ms=1.8 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 131 t=6010.3 wrote face=h1tls conn=33954 tag=count.n5001.cap.30 proto=h1 heads=[200:5001:80038] bytes=80038
+[guix-8.20.0-1] cell count n10000 face=h1tls mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=5.5 cpu_ms=2.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 136 t=6016.3 wrote face=h1tls conn=33966 tag=count.n10000.none.31 proto=h1 heads=[200:10000:160022] bytes=160022
+[guix-8.20.0-1] cell count n10000 face=h1tls mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=5.1 cpu_ms=1.9 calls=5001 hdr_lines=5000 bytes=80020 heads=[200:5000:80020] refused=- header_size=80020 stored=5000 walk_ms=466.10 walk_cpu_ms=466.09 live_kb=347
+[guix-8.20.0-1] srv ev 141 t=6021.9 wrote face=h1tls conn=33974 tag=count.n10000.obs.32 proto=h1 heads=[200:10000:160022] bytes=160022
+[guix-8.20.0-1] cell count n10000 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=6.1 cpu_ms=1.8 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 146 t=6495.7 wrote face=h1tls conn=33988 tag=count.n10000.cap.33 proto=h1 heads=[200:10000:160022] bytes=160022
+[guix-8.20.0-1] cell count n50000 face=h1tls mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=13.4 cpu_ms=2.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 151 t=6511.4 wrote face=h1tls conn=33994 tag=count.n50000.none.34 proto=h1 heads=[200:50000:800022] bytes=800022
+[guix-8.20.0-1] cell count n50000 face=h1tls mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=23.9 cpu_ms=2.1 calls=5001 hdr_lines=5000 bytes=80020 heads=[200:5000:80020] refused=- header_size=80020 stored=5000 walk_ms=498.39 walk_cpu_ms=497.76 live_kb=347
+[guix-8.20.0-1] srv ev 156 t=6535.9 wrote face=h1tls conn=33996 tag=count.n50000.obs.35 proto=h1 heads=[200:50000:800022] bytes=800022
+[guix-8.20.0-1] cell count n50000 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=13.2 cpu_ms=1.9 calls=1002 hdr_lines=1001 bytes=16036 heads=[200:1001:16036] refused=lines@1001 header_size=16020 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 161 t=7049.8 wrote face=h1tls conn=34004 tag=count.n50000.cap.36 proto=h1 heads=[200:50000:800022] bytes=800022
+[guix-8.20.0-1] cell count n1000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=7.3 cpu_ms=2.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=16018 stored=1000 walk_ms=20.38 walk_cpu_ms=20.38 live_kb=73
+[guix-8.20.0-1] srv ev 164 t=7057.5 h2-close face=h2 conn=59528 tag=count.n1000.none.37 heads=[200:1000] rst=0
+[guix-8.20.0-1] srv ev 166 t=7058.8 h2-wire face=h2 conn=59528 tag=count.n1000.none.37 wire_bytes_written=14548 wire_bytes_read=773
+[guix-8.20.0-1] cell count n1000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=4.0 cpu_ms=1.9 calls=1002 hdr_lines=1000 bytes=16018 heads=[200:1000:16018] refused=- header_size=16018 stored=1000 walk_ms=20.90 walk_cpu_ms=20.89 live_kb=73
+[guix-8.20.0-1] srv ev 168 t=7082.7 h2-close face=h2 conn=59540 tag=count.n1000.obs.38 heads=[200:1000] rst=0
+[guix-8.20.0-1] srv ev 170 t=7083.5 h2-wire face=h2 conn=59540 tag=count.n1000.obs.38 wire_bytes_written=14574 wire_bytes_read=772
+[guix-8.20.0-1] cell count n1000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=4.0 cpu_ms=2.0 calls=1002 hdr_lines=1000 bytes=16018 heads=[200:1000:16018] refused=none header_size=16018 stored=1000 walk_ms=20.84 walk_cpu_ms=20.84 live_kb=73
+[guix-8.20.0-1] srv ev 172 t=7108.2 h2-close face=h2 conn=59554 tag=count.n1000.cap.39 heads=[200:1000] rst=0
+[guix-8.20.0-1] srv ev 174 t=7111.0 h2-wire face=h2 conn=59554 tag=count.n1000.cap.39 wire_bytes_written=14573 wire_bytes_read=772
+[guix-8.20.0-1] cell count n4999 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=10.5 cpu_ms=2.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80002 stored=4999 walk_ms=461.03 walk_cpu_ms=461.01 live_kb=347
+[guix-8.20.0-1] srv ev 176 t=7139.6 h2-close face=h2 conn=59558 tag=count.n4999.none.40 heads=[200:4999] rst=0
+[guix-8.20.0-1] srv ev 178 t=7141.3 h2-wire face=h2 conn=59558 tag=count.n4999.none.40 wire_bytes_written=66630 wire_bytes_read=774
+[guix-8.20.0-1] cell count n4999 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=10.0 cpu_ms=3.0 calls=5001 hdr_lines=4999 bytes=80002 heads=[200:4999:80002] refused=- header_size=80002 stored=4999 walk_ms=474.90 walk_cpu_ms=474.83 live_kb=347
+[guix-8.20.0-1] srv ev 180 t=7612.0 h2-close face=h2 conn=59572 tag=count.n4999.obs.41 heads=[200:4999] rst=0
+[guix-8.20.0-1] srv ev 182 t=7613.8 h2-wire face=h2 conn=59572 tag=count.n4999.obs.41 wire_bytes_written=66629 wire_bytes_read=773
+[guix-8.20.0-1] cell count n4999 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=8.5 cpu_ms=2.1 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 184 t=8098.1 h2-close face=h2 conn=59588 tag=count.n4999.cap.42 heads=[200:4999] rst=0
+[guix-8.20.0-1] srv ev 186 t=8098.9 h2-wire face=h2 conn=59588 tag=count.n4999.cap.42 wire_bytes_written=66653 wire_bytes_read=808
+[guix-8.20.0-1] cell count n5000 face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=8.3 cpu_ms=2.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80000 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 188 t=8106.2 h2-close face=h2 conn=59598 tag=count.n5000.none.43 heads=[200:5000] rst=0
+[guix-8.20.0-1] srv ev 190 t=8109.6 h2-wire face=h2 conn=59598 tag=count.n5000.none.43 wire_bytes_written=66642 wire_bytes_read=773
+[guix-8.20.0-1] cell count n5000 face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=8.2 cpu_ms=2.8 calls=5000 hdr_lines=4999 bytes=80000 heads=[200:4999:80000] refused=- header_size=80000 stored=4999 walk_ms=465.07 walk_cpu_ms=465.05 live_kb=347
+[guix-8.20.0-1] srv ev 192 t=8116.8 h2-close face=h2 conn=59614 tag=count.n5000.obs.44 heads=[200:5000] rst=0
+[guix-8.20.0-1] srv ev 194 t=8118.5 h2-wire face=h2 conn=59614 tag=count.n5000.obs.44 wire_bytes_written=66667 wire_bytes_read=772
+[guix-8.20.0-1] cell count n5000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=8.2 cpu_ms=2.1 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 196 t=8593.0 h2-close face=h2 conn=59620 tag=count.n5000.cap.45 heads=[200:5000] rst=0
+[guix-8.20.0-1] srv ev 198 t=8593.7 h2-wire face=h2 conn=59620 tag=count.n5000.cap.45 wire_bytes_written=66667 wire_bytes_read=807
+[guix-8.20.0-1] cell count n5001 face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=7.8 cpu_ms=2.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80000 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 200 t=8600.5 h2-close face=h2 conn=59624 tag=count.n5001.none.46 heads=[200:5001] rst=0
+[guix-8.20.0-1] srv ev 202 t=8602.2 h2-wire face=h2 conn=59624 tag=count.n5001.none.46 wire_bytes_written=66656 wire_bytes_read=773
+[guix-8.20.0-1] cell count n5001 face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=9.2 cpu_ms=4.1 calls=5000 hdr_lines=4999 bytes=80000 heads=[200:4999:80000] refused=- header_size=80000 stored=4999 walk_ms=461.85 walk_cpu_ms=461.78 live_kb=347
+[guix-8.20.0-1] srv ev 204 t=8610.1 h2-close face=h2 conn=59632 tag=count.n5001.obs.47 heads=[200:5001] rst=0
+[guix-8.20.0-1] srv ev 206 t=8612.0 h2-wire face=h2 conn=59632 tag=count.n5001.obs.47 wire_bytes_written=66654 wire_bytes_read=772
+[guix-8.20.0-1] cell count n5001 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=9.0 cpu_ms=2.1 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 208 t=9083.5 h2-close face=h2 conn=59648 tag=count.n5001.cap.48 heads=[200:5001] rst=0
+[guix-8.20.0-1] srv ev 210 t=9084.3 h2-wire face=h2 conn=59648 tag=count.n5001.cap.48 wire_bytes_written=66655 wire_bytes_read=807
+[guix-8.20.0-1] cell count n10000 face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=15.4 cpu_ms=2.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80000 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 212 t=9098.5 h2-close face=h2 conn=59654 tag=count.n10000.none.49 heads=[200:10000] rst=0
+[guix-8.20.0-1] srv ev 214 t=9100.5 h2-wire face=h2 conn=59654 tag=count.n10000.none.49 wire_bytes_written=131766 wire_bytes_read=809
+[guix-8.20.0-1] cell count n10000 face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=13.7 cpu_ms=3.0 calls=5000 hdr_lines=4999 bytes=80000 heads=[200:4999:80000] refused=- header_size=80000 stored=4999 walk_ms=462.93 walk_cpu_ms=462.92 live_kb=347
+[guix-8.20.0-1] srv ev 216 t=9113.1 h2-close face=h2 conn=59666 tag=count.n10000.obs.50 heads=[200:10000] rst=0
+[guix-8.20.0-1] srv ev 218 t=9118.7 h2-wire face=h2 conn=59666 tag=count.n10000.obs.50 wire_bytes_written=131766 wire_bytes_read=808
+[guix-8.20.0-1] cell count n10000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=13.7 cpu_ms=2.2 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 220 t=9592.6 h2-close face=h2 conn=59680 tag=count.n10000.cap.51 heads=[200:10000] rst=0
+[guix-8.20.0-1] srv ev 222 t=9593.4 h2-wire face=h2 conn=59680 tag=count.n10000.cap.51 wire_bytes_written=131766 wire_bytes_read=808
+[guix-8.20.0-1] cell count n50000 face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=69.9 cpu_ms=3.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80000 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 224 t=9660.5 h2-close face=h2 conn=59692 tag=count.n50000.none.52 heads=[200:50000] rst=0
+[guix-8.20.0-1] srv ev 226 t=9664.0 h2-wire face=h2 conn=59692 tag=count.n50000.none.52 wire_bytes_written=652758 wire_bytes_read=809
+[guix-8.20.0-1] cell count n50000 face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=78.1 cpu_ms=3.1 calls=5000 hdr_lines=4999 bytes=80000 heads=[200:4999:80000] refused=- header_size=80000 stored=4999 walk_ms=463.62 walk_cpu_ms=462.93 live_kb=347
+[guix-8.20.0-1] srv ev 228 t=9741.2 h2-close face=h2 conn=59704 tag=count.n50000.obs.53 heads=[200:50000] rst=0
+[guix-8.20.0-1] srv ev 230 t=9743.5 h2-wire face=h2 conn=59704 tag=count.n50000.obs.53 wire_bytes_written=652759 wire_bytes_read=809
+[guix-8.20.0-1] cell count n50000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=73.5 cpu_ms=2.3 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 232 t=10281.4 h2-close face=h2 conn=59710 tag=count.n50000.cap.54 heads=[200:50000] rst=0
+[guix-8.20.0-1] srv ev 234 t=10282.8 h2-wire face=h2 conn=59710 tag=count.n50000.cap.54 wire_bytes_written=652758 wire_bytes_read=809
+[guix-8.20.0-1] cell count n4999-same face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=4.9 cpu_ms=2.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80002 stored=4999 walk_ms=473.66 walk_cpu_ms=473.62 live_kb=347
+[guix-8.20.0-1] srv ev 236 t=10287.7 h2-close face=h2 conn=59718 tag=count.n4999-same.none.55 heads=[200:4999] rst=0
+[guix-8.20.0-1] srv ev 238 t=10288.7 h2-wire face=h2 conn=59718 tag=count.n4999-same.none.55 wire_bytes_written=6596 wire_bytes_read=782
+[guix-8.20.0-1] cell count n4999-same face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=4.8 cpu_ms=2.8 calls=5001 hdr_lines=4999 bytes=80002 heads=[200:4999:80002] refused=- header_size=80002 stored=4999 walk_ms=480.77 walk_cpu_ms=480.65 live_kb=347
+[guix-8.20.0-1] srv ev 240 t=10767.4 h2-close face=h2 conn=59720 tag=count.n4999-same.obs.56 heads=[200:4999] rst=0
+[guix-8.20.0-1] srv ev 242 t=10768.8 h2-wire face=h2 conn=59720 tag=count.n4999-same.obs.56 wire_bytes_written=6597 wire_bytes_read=782
+[guix-8.20.0-1] cell count n4999-same face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=4.4 cpu_ms=2.2 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 244 t=11254.4 h2-close face=h2 conn=59736 tag=count.n4999-same.cap.57 heads=[200:4999] rst=0
+[guix-8.20.0-1] srv ev 246 t=11255.3 h2-wire face=h2 conn=59736 tag=count.n4999-same.cap.57 wire_bytes_written=6573 wire_bytes_read=782
+[guix-8.20.0-1] cell count n5000-same face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=3.8 cpu_ms=2.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80000 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 248 t=11258.5 h2-close face=h2 conn=59748 tag=count.n5000-same.none.58 heads=[200:5000] rst=0
+[guix-8.20.0-1] srv ev 250 t=11259.7 h2-wire face=h2 conn=59748 tag=count.n5000-same.none.58 wire_bytes_written=6574 wire_bytes_read=782
+[guix-8.20.0-1] cell count n5000-same face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=3.7 cpu_ms=2.4 calls=5000 hdr_lines=4999 bytes=80000 heads=[200:4999:80000] refused=- header_size=80000 stored=4999 walk_ms=471.33 walk_cpu_ms=471.32 live_kb=347
+[guix-8.20.0-1] srv ev 252 t=11262.8 h2-close face=h2 conn=59762 tag=count.n5000-same.obs.59 heads=[200:5000] rst=0
+[guix-8.20.0-1] srv ev 254 t=11263.9 h2-wire face=h2 conn=59762 tag=count.n5000-same.obs.59 wire_bytes_written=6597 wire_bytes_read=781
+[guix-8.20.0-1] cell count n5000-same face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=4.9 cpu_ms=2.1 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 256 t=11741.2 h2-close face=h2 conn=59774 tag=count.n5000-same.cap.60 heads=[200:5000] rst=0
+[guix-8.20.0-1] srv ev 258 t=11742.0 h2-wire face=h2 conn=59774 tag=count.n5000-same.cap.60 wire_bytes_written=6599 wire_bytes_read=781
+[guix-8.20.0-1] cell count n5001-same face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=4.4 cpu_ms=2.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80000 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 260 t=11746.1 h2-close face=h2 conn=59784 tag=count.n5001-same.none.61 heads=[200:5001] rst=0
+[guix-8.20.0-1] srv ev 262 t=11747.2 h2-wire face=h2 conn=59784 tag=count.n5001-same.none.61 wire_bytes_written=6574 wire_bytes_read=781
+[guix-8.20.0-1] cell count n5001-same face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=4.2 cpu_ms=2.4 calls=5000 hdr_lines=4999 bytes=80000 heads=[200:4999:80000] refused=- header_size=80000 stored=4999 walk_ms=479.48 walk_cpu_ms=479.41 live_kb=347
+[guix-8.20.0-1] srv ev 264 t=11750.7 h2-close face=h2 conn=59800 tag=count.n5001-same.obs.62 heads=[200:5001] rst=0
+[guix-8.20.0-1] srv ev 266 t=11751.9 h2-wire face=h2 conn=59800 tag=count.n5001-same.obs.62 wire_bytes_written=6598 wire_bytes_read=781
+[guix-8.20.0-1] cell count n5001-same face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=4.9 cpu_ms=2.2 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 268 t=12237.1 h2-close face=h2 conn=59810 tag=count.n5001-same.cap.63 heads=[200:5001] rst=0
+[guix-8.20.0-1] srv ev 270 t=12238.0 h2-wire face=h2 conn=59810 tag=count.n5001-same.cap.63 wire_bytes_written=6599 wire_bytes_read=781
+[guix-8.20.0-1] cell count n10000-same face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=5.7 cpu_ms=2.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80000 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 272 t=12243.2 h2-close face=h2 conn=59822 tag=count.n10000-same.none.64 heads=[200:10000] rst=0
+[guix-8.20.0-1] srv ev 274 t=12244.5 h2-wire face=h2 conn=59822 tag=count.n10000-same.none.64 wire_bytes_written=11575 wire_bytes_read=783
+[guix-8.20.0-1] cell count n10000-same face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=5.9 cpu_ms=2.5 calls=5000 hdr_lines=4999 bytes=80000 heads=[200:4999:80000] refused=- header_size=80000 stored=4999 walk_ms=471.49 walk_cpu_ms=471.46 live_kb=347
+[guix-8.20.0-1] srv ev 276 t=12249.6 h2-close face=h2 conn=59824 tag=count.n10000-same.obs.65 heads=[200:10000] rst=0
+[guix-8.20.0-1] srv ev 278 t=12251.0 h2-wire face=h2 conn=59824 tag=count.n10000-same.obs.65 wire_bytes_written=11573 wire_bytes_read=782
+[guix-8.20.0-1] cell count n10000-same face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=6.4 cpu_ms=2.4 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 280 t=12729.1 h2-close face=h2 conn=59832 tag=count.n10000-same.cap.66 heads=[200:10000] rst=0
+[guix-8.20.0-1] srv ev 282 t=12730.3 h2-wire face=h2 conn=59832 tag=count.n10000-same.cap.66 wire_bytes_written=11574 wire_bytes_read=782
+[guix-8.20.0-1] cell count n50000-same face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=18.8 cpu_ms=2.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80000 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=347
+[guix-8.20.0-1] srv ev 284 t=12747.4 h2-close face=h2 conn=59838 tag=count.n50000-same.none.67 heads=[200:50000] rst=0
+[guix-8.20.0-1] srv ev 286 t=12758.3 h2-wire face=h2 conn=59838 tag=count.n50000-same.none.67 wire_bytes_written=51667 wire_bytes_read=818
+[guix-8.20.0-1] cell count n50000-same face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=17.0 cpu_ms=3.3 calls=5000 hdr_lines=4999 bytes=80000 heads=[200:4999:80000] refused=- header_size=80000 stored=4999 walk_ms=472.37 walk_cpu_ms=472.25 live_kb=347
+[guix-8.20.0-1] srv ev 288 t=12773.7 h2-close face=h2 conn=59854 tag=count.n50000-same.obs.68 heads=[200:50000] rst=0
+[guix-8.20.0-1] srv ev 290 t=12776.1 h2-wire face=h2 conn=59854 tag=count.n50000-same.obs.68 wire_bytes_written=51690 wire_bytes_read=817
+[guix-8.20.0-1] cell count n50000-same face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=17.0 cpu_ms=2.8 calls=1002 hdr_lines=1001 bytes=16032 heads=[200:1001:16032] refused=lines@1001 header_size=16016 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=74
+[guix-8.20.0-1] srv ev 292 t=13264.9 h2-close face=h2 conn=59870 tag=count.n50000-same.cap.69 heads=[200:50000] rst=0
+[guix-8.20.0-1] srv ev 294 t=13268.5 h2-wire face=h2 conn=59870 tag=count.n50000-same.cap.69 wire_bytes_written=51667 wire_bytes_read=817
+[guix-8.20.0-1] case count all done live_before_global_cleanup=0
+[guix-8.20.0-1] case count live_after_global_cleanup=0
+[guix-8.20.0-1] probe count exit=0
+[guix-8.20.0-1] probe count took about 13 s
+[guix-8.20.0-1] cell bytes total307199 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.1 cpu_ms=0.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307199 stored=1201 walk_ms=28.57 walk_cpu_ms=28.57 live_kb=368
+[guix-8.20.0-1] srv ev 297 t=13282.2 wrote face=h1 conn=43462 tag=bytes.total307199.none.1 proto=h1 heads=[200:1201:307199] bytes=307199
+[guix-8.20.0-1] cell bytes total307199 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=1.4 cpu_ms=0.3 calls=1203 hdr_lines=1201 bytes=307199 heads=[200:1201:307199] refused=- header_size=307199 stored=1201 walk_ms=29.42 walk_cpu_ms=29.42 live_kb=368
+[guix-8.20.0-1] srv ev 301 t=13312.8 wrote face=h1 conn=43474 tag=bytes.total307199.obs.2 proto=h1 heads=[200:1201:307199] bytes=307199
+[guix-8.20.0-1] cell bytes total307199 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=1.5 cpu_ms=0.2 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=127
+[guix-8.20.0-1] srv ev 305 t=13344.4 wrote face=h1 conn=43490 tag=bytes.total307199.cap.3 proto=h1 heads=[200:1201:307199] bytes=307199
+[guix-8.20.0-1] cell bytes total307200 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=1.6 cpu_ms=0.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307200 stored=1201 walk_ms=29.18 walk_cpu_ms=29.18 live_kb=368
+[guix-8.20.0-1] srv ev 309 t=13346.4 wrote face=h1 conn=43504 tag=bytes.total307200.none.4 proto=h1 heads=[200:1201:307200] bytes=307200
+[guix-8.20.0-1] cell bytes total307200 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=1.5 cpu_ms=0.3 calls=1203 hdr_lines=1201 bytes=307200 heads=[200:1201:307200] refused=- header_size=307200 stored=1201 walk_ms=29.32 walk_cpu_ms=29.32 live_kb=368
+[guix-8.20.0-1] srv ev 313 t=13377.6 wrote face=h1 conn=43510 tag=bytes.total307200.obs.5 proto=h1 heads=[200:1201:307200] bytes=307200
+[guix-8.20.0-1] cell bytes total307200 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=1.5 cpu_ms=0.2 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=127
+[guix-8.20.0-1] srv ev 317 t=13409.2 wrote face=h1 conn=43520 tag=bytes.total307200.cap.6 proto=h1 heads=[200:1201:307200] bytes=307200
+[guix-8.20.0-1] cell bytes total307201 face=h1 mode=none code=56 err="Too large response headers: 307201 > 307200" status=200 ver=2 t_ms=1.6 cpu_ms=0.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307201 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=369
+[guix-8.20.0-1] srv ev 321 t=13411.2 wrote face=h1 conn=43532 tag=bytes.total307201.none.7 proto=h1 heads=[200:1201:307201] bytes=307201
+[guix-8.20.0-1] cell bytes total307201 face=h1 mode=obs code=56 err="Too large response headers: 307201 > 307200" status=200 ver=2 t_ms=1.7 cpu_ms=0.3 calls=1203 hdr_lines=1201 bytes=307201 heads=[200:1201:307201] refused=- header_size=307201 stored=1201 walk_ms=29.37 walk_cpu_ms=29.37 live_kb=369
+[guix-8.20.0-1] srv ev 325 t=13413.4 wrote face=h1 conn=43540 tag=bytes.total307201.obs.8 proto=h1 heads=[200:1201:307201] bytes=307201
+[guix-8.20.0-1] cell bytes total307201 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=1.5 cpu_ms=0.2 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=127
+[guix-8.20.0-1] srv ev 329 t=13444.9 wrote face=h1 conn=43556 tag=bytes.total307201.cap.9 proto=h1 heads=[200:1201:307201] bytes=307201
+[guix-8.20.0-1] cell bytes total1048576 face=h1 mode=none code=56 err="Too large response headers: 307236 > 307200" status=200 ver=2 t_ms=4.4 cpu_ms=0.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307236 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=369
+[guix-8.20.0-1] srv ev 333 t=13449.6 wrote face=h1 conn=43558 tag=bytes.total1048576.none.10 proto=h1 heads=[200:4097:1048576] bytes=1048576
+[guix-8.20.0-1] cell bytes total1048576 face=h1 mode=obs code=56 err="Too large response headers: 307236 > 307200" status=200 ver=2 t_ms=4.5 cpu_ms=0.5 calls=1202 hdr_lines=1201 bytes=307236 heads=[200:1201:307236] refused=- header_size=307236 stored=1201 walk_ms=30.75 walk_cpu_ms=30.75 live_kb=369
+[guix-8.20.0-1] srv ev 337 t=13454.3 wrote face=h1 conn=43572 tag=bytes.total1048576.obs.11 proto=h1 heads=[200:4097:1048576] bytes=1048576
+[guix-8.20.0-1] cell bytes total1048576 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=4.3 cpu_ms=0.2 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=127
+[guix-8.20.0-1] srv ev 341 t=13490.5 wrote face=h1 conn=43582 tag=bytes.total1048576.cap.12 proto=h1 heads=[200:4097:1048576] bytes=1048576
+[guix-8.20.0-1] cell bytes line102398 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=0.4 cpu_ms=0.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=102436 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 345 t=13491.2 wrote face=h1 conn=43594 tag=bytes.line102398.none.13 proto=h1 heads=[200:2:102436] bytes=102436
+[guix-8.20.0-1] cell bytes line102398 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=4 hdr_lines=2 bytes=102436 heads=[200:2:102436] refused=- header_size=102436 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 349 t=13491.7 wrote face=h1 conn=43598 tag=bytes.line102398.obs.14 proto=h1 heads=[200:2:102436] bytes=102436
+[guix-8.20.0-1] cell bytes line102398 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 102398 returned 0" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=3 hdr_lines=2 bytes=102434 heads=[200:2:102434] refused=bytes@102434 header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=205
+[guix-8.20.0-1] srv ev 353 t=13492.4 wrote face=h1 conn=43604 tag=bytes.line102398.cap.15 proto=h1 heads=[200:2:102436] bytes=102436
+[guix-8.20.0-1] cell bytes line102399 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=0.3 cpu_ms=0.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=102437 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 357 t=13493.0 wrote face=h1 conn=43612 tag=bytes.line102399.none.16 proto=h1 heads=[200:2:102437] bytes=102437
+[guix-8.20.0-1] cell bytes line102399 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=4 hdr_lines=2 bytes=102437 heads=[200:2:102437] refused=- header_size=102437 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 361 t=13493.6 wrote face=h1 conn=43622 tag=bytes.line102399.obs.17 proto=h1 heads=[200:2:102437] bytes=102437
+[guix-8.20.0-1] cell bytes line102399 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 102399 returned 0" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=3 hdr_lines=2 bytes=102435 heads=[200:2:102435] refused=bytes@102435 header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=205
+[guix-8.20.0-1] srv ev 365 t=13494.1 wrote face=h1 conn=43630 tag=bytes.line102399.cap.18 proto=h1 heads=[200:2:102437] bytes=102437
+[guix-8.20.0-1] cell bytes line102400 face=h1 mode=none code=100 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 369 t=13494.6 wrote face=h1 conn=43636 tag=bytes.line102400.none.19 proto=h1 heads=[200:2:102438] bytes=102438
+[guix-8.20.0-1] cell bytes line102400 face=h1 mode=obs code=100 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=- header_size=36 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 373 t=13495.0 wrote face=h1 conn=43644 tag=bytes.line102400.obs.20 proto=h1 heads=[200:2:102438] bytes=102438
+[guix-8.20.0-1] cell bytes line102400 face=h1 mode=cap code=100 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=none header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 377 t=13495.4 wrote face=h1 conn=43646 tag=bytes.line102400.cap.21 proto=h1 heads=[200:2:102438] bytes=102438
+[guix-8.20.0-1] cell bytes line102401 face=h1 mode=none code=100 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 381 t=13495.9 wrote face=h1 conn=43658 tag=bytes.line102401.none.22 proto=h1 heads=[200:2:102439] bytes=102439
+[guix-8.20.0-1] cell bytes line102401 face=h1 mode=obs code=100 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=- header_size=36 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 385 t=13496.3 wrote face=h1 conn=43670 tag=bytes.line102401.obs.23 proto=h1 heads=[200:2:102439] bytes=102439
+[guix-8.20.0-1] cell bytes line102401 face=h1 mode=cap code=100 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=none header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 389 t=13496.7 wrote face=h1 conn=43672 tag=bytes.line102401.cap.24 proto=h1 heads=[200:2:102439] bytes=102439
+[guix-8.20.0-1] cell bytes total307199 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=4.1 cpu_ms=2.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307199 stored=1201 walk_ms=29.19 walk_cpu_ms=29.19 live_kb=368
+[guix-8.20.0-1] srv ev 394 t=13500.8 wrote face=h1tls conn=34018 tag=bytes.total307199.none.25 proto=h1 heads=[200:1201:307199] bytes=307199
+[guix-8.20.0-1] cell bytes total307199 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=3.4 cpu_ms=1.7 calls=1203 hdr_lines=1201 bytes=307199 heads=[200:1201:307199] refused=- header_size=307199 stored=1201 walk_ms=29.20 walk_cpu_ms=29.20 live_kb=368
+[guix-8.20.0-1] srv ev 399 t=13533.9 wrote face=h1tls conn=34032 tag=bytes.total307199.obs.26 proto=h1 heads=[200:1201:307199] bytes=307199
+[guix-8.20.0-1] cell bytes total307199 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=3.2 cpu_ms=1.5 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=127
+[guix-8.20.0-1] srv ev 404 t=13567.1 wrote face=h1tls conn=34048 tag=bytes.total307199.cap.27 proto=h1 heads=[200:1201:307199] bytes=307199
+[guix-8.20.0-1] cell bytes total307200 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=3.3 cpu_ms=1.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307200 stored=1201 walk_ms=29.26 walk_cpu_ms=29.26 live_kb=368
+[guix-8.20.0-1] srv ev 409 t=13570.5 wrote face=h1tls conn=34052 tag=bytes.total307200.none.28 proto=h1 heads=[200:1201:307200] bytes=307200
+[guix-8.20.0-1] cell bytes total307200 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=3.4 cpu_ms=1.8 calls=1203 hdr_lines=1201 bytes=307200 heads=[200:1201:307200] refused=- header_size=307200 stored=1201 walk_ms=29.45 walk_cpu_ms=29.45 live_kb=368
+[guix-8.20.0-1] srv ev 414 t=13603.7 wrote face=h1tls conn=34068 tag=bytes.total307200.obs.29 proto=h1 heads=[200:1201:307200] bytes=307200
+[guix-8.20.0-1] cell bytes total307200 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=3.4 cpu_ms=1.6 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=127
+[guix-8.20.0-1] srv ev 419 t=13637.3 wrote face=h1tls conn=34072 tag=bytes.total307200.cap.30 proto=h1 heads=[200:1201:307200] bytes=307200
+[guix-8.20.0-1] cell bytes total307201 face=h1tls mode=none code=56 err="Too large response headers: 307201 > 307200" status=200 ver=2 t_ms=3.3 cpu_ms=1.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307201 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=369
+[guix-8.20.0-1] srv ev 424 t=13640.9 wrote face=h1tls conn=34076 tag=bytes.total307201.none.31 proto=h1 heads=[200:1201:307201] bytes=307201
+[guix-8.20.0-1] cell bytes total307201 face=h1tls mode=obs code=56 err="Too large response headers: 307201 > 307200" status=200 ver=2 t_ms=3.2 cpu_ms=1.6 calls=1203 hdr_lines=1201 bytes=307201 heads=[200:1201:307201] refused=- header_size=307201 stored=1201 walk_ms=28.39 walk_cpu_ms=28.39 live_kb=369
+[guix-8.20.0-1] srv ev 429 t=13644.6 wrote face=h1tls conn=34090 tag=bytes.total307201.obs.32 proto=h1 heads=[200:1201:307201] bytes=307201
+[guix-8.20.0-1] cell bytes total307201 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=3.3 cpu_ms=1.5 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=127
+[guix-8.20.0-1] srv ev 434 t=13677.1 wrote face=h1tls conn=34092 tag=bytes.total307201.cap.33 proto=h1 heads=[200:1201:307201] bytes=307201
+[guix-8.20.0-1] cell bytes total1048576 face=h1tls mode=none code=56 err="Too large response headers: 307236 > 307200" status=200 ver=2 t_ms=6.6 cpu_ms=1.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307236 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=369
+[guix-8.20.0-1] srv ev 439 t=13684.1 wrote face=h1tls conn=34108 tag=bytes.total1048576.none.34 proto=h1 heads=[200:4097:1048576] bytes=1048576
+[guix-8.20.0-1] cell bytes total1048576 face=h1tls mode=obs code=56 err="Too large response headers: 307236 > 307200" status=200 ver=2 t_ms=6.3 cpu_ms=1.7 calls=1202 hdr_lines=1201 bytes=307236 heads=[200:1201:307236] refused=- header_size=307236 stored=1201 walk_ms=29.20 walk_cpu_ms=29.20 live_kb=369
+[guix-8.20.0-1] srv ev 444 t=13690.8 wrote face=h1tls conn=34114 tag=bytes.total1048576.obs.35 proto=h1 heads=[200:4097:1048576] bytes=1048576
+[guix-8.20.0-1] cell bytes total1048576 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=6.5 cpu_ms=1.6 calls=402 hdr_lines=401 bytes=102436 heads=[200:401:102436] refused=bytes@102436 header_size=102180 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=127
+[guix-8.20.0-1] srv ev 449 t=13727.3 wrote face=h1tls conn=34124 tag=bytes.total1048576.cap.36 proto=h1 heads=[200:4097:1048576] bytes=1048576
+[guix-8.20.0-1] cell bytes line102398 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=1.9 cpu_ms=1.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=102436 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 454 t=13730.0 wrote face=h1tls conn=34130 tag=bytes.line102398.none.37 proto=h1 heads=[200:2:102436] bytes=102436
+[guix-8.20.0-1] cell bytes line102398 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=1.8 cpu_ms=1.4 calls=4 hdr_lines=2 bytes=102436 heads=[200:2:102436] refused=- header_size=102436 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 459 t=13732.1 wrote face=h1tls conn=34140 tag=bytes.line102398.obs.38 proto=h1 heads=[200:2:102436] bytes=102436
+[guix-8.20.0-1] cell bytes line102398 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 102398 returned 0" status=200 ver=2 t_ms=1.8 cpu_ms=1.4 calls=3 hdr_lines=2 bytes=102434 heads=[200:2:102434] refused=bytes@102434 header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=205
+[guix-8.20.0-1] srv ev 464 t=13734.3 wrote face=h1tls conn=34142 tag=bytes.line102398.cap.39 proto=h1 heads=[200:2:102436] bytes=102436
+[guix-8.20.0-1] cell bytes line102399 face=h1tls mode=none code=0 err="" status=200 ver=2 t_ms=1.7 cpu_ms=1.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=102437 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 469 t=13736.3 wrote face=h1tls conn=34156 tag=bytes.line102399.none.40 proto=h1 heads=[200:2:102437] bytes=102437
+[guix-8.20.0-1] cell bytes line102399 face=h1tls mode=obs code=0 err="" status=200 ver=2 t_ms=1.7 cpu_ms=1.4 calls=4 hdr_lines=2 bytes=102437 heads=[200:2:102437] refused=- header_size=102437 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 474 t=13738.4 wrote face=h1tls conn=34170 tag=bytes.line102399.obs.41 proto=h1 heads=[200:2:102437] bytes=102437
+[guix-8.20.0-1] cell bytes line102399 face=h1tls mode=cap code=23 err="Failure writing output to destination, passed 102399 returned 0" status=200 ver=2 t_ms=1.7 cpu_ms=1.4 calls=3 hdr_lines=2 bytes=102435 heads=[200:2:102435] refused=bytes@102435 header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=205
+[guix-8.20.0-1] srv ev 479 t=13740.4 wrote face=h1tls conn=34180 tag=bytes.line102399.cap.42 proto=h1 heads=[200:2:102437] bytes=102437
+[guix-8.20.0-1] cell bytes line102400 face=h1tls mode=none code=100 err="" status=200 ver=2 t_ms=1.7 cpu_ms=1.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 484 t=13742.5 wrote face=h1tls conn=34186 tag=bytes.line102400.none.43 proto=h1 heads=[200:2:102438] bytes=102438
+[guix-8.20.0-1] cell bytes line102400 face=h1tls mode=obs code=100 err="" status=200 ver=2 t_ms=1.7 cpu_ms=1.4 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=- header_size=36 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 489 t=13744.6 wrote face=h1tls conn=34198 tag=bytes.line102400.obs.44 proto=h1 heads=[200:2:102438] bytes=102438
+[guix-8.20.0-1] cell bytes line102400 face=h1tls mode=cap code=100 err="" status=200 ver=2 t_ms=1.7 cpu_ms=1.4 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=none header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 494 t=13746.6 wrote face=h1tls conn=34204 tag=bytes.line102400.cap.45 proto=h1 heads=[200:2:102438] bytes=102438
+[guix-8.20.0-1] cell bytes line102401 face=h1tls mode=none code=100 err="" status=200 ver=2 t_ms=2.0 cpu_ms=1.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 499 t=13748.9 wrote face=h1tls conn=34206 tag=bytes.line102401.none.46 proto=h1 heads=[200:2:102439] bytes=102439
+[guix-8.20.0-1] cell bytes line102401 face=h1tls mode=obs code=100 err="" status=200 ver=2 t_ms=1.9 cpu_ms=1.5 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=- header_size=36 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 504 t=13751.2 wrote face=h1tls conn=34220 tag=bytes.line102401.obs.47 proto=h1 heads=[200:2:102439] bytes=102439
+[guix-8.20.0-1] cell bytes line102401 face=h1tls mode=cap code=100 err="" status=200 ver=2 t_ms=1.8 cpu_ms=1.4 calls=2 hdr_lines=1 bytes=36 heads=[200:1:36] refused=none header_size=36 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 509 t=13753.4 wrote face=h1tls conn=34222 tag=bytes.line102401.cap.48 proto=h1 heads=[200:2:102439] bytes=102439
+[guix-8.20.0-1] cell bytes total307199 face=h2 mode=none code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=6.9 cpu_ms=2.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168480 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=204
+[guix-8.20.0-1] srv ev 512 t=13759.5 h2-close face=h2 conn=59872 tag=bytes.total307199.none.49 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 514 t=13760.9 h2-wire face=h2 conn=59872 tag=bytes.total307199.none.49 wire_bytes_written=270850 wire_bytes_read=823
+[guix-8.20.0-1] cell bytes total307199 face=h2 mode=obs code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=5.4 cpu_ms=2.3 calls=660 hdr_lines=659 bytes=168480 heads=[200:659:168480] refused=- header_size=168480 stored=659 walk_ms=9.19 walk_cpu_ms=9.19 live_kb=204
+[guix-8.20.0-1] srv ev 516 t=13765.6 h2-close face=h2 conn=59888 tag=bytes.total307199.obs.50 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 518 t=13766.9 h2-wire face=h2 conn=59888 tag=bytes.total307199.obs.50 wire_bytes_written=270851 wire_bytes_read=822
+[guix-8.20.0-1] cell bytes total307199 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=5.2 cpu_ms=2.0 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=126
+[guix-8.20.0-1] srv ev 520 t=13780.8 h2-close face=h2 conn=59892 tag=bytes.total307199.cap.51 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 522 t=13781.8 h2-wire face=h2 conn=59892 tag=bytes.total307199.cap.51 wire_bytes_written=270851 wire_bytes_read=822
+[guix-8.20.0-1] cell bytes total307200 face=h2 mode=none code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=5.4 cpu_ms=2.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168480 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=204
+[guix-8.20.0-1] srv ev 524 t=13786.4 h2-close face=h2 conn=59900 tag=bytes.total307200.none.52 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 526 t=13787.7 h2-wire face=h2 conn=59900 tag=bytes.total307200.none.52 wire_bytes_written=270852 wire_bytes_read=823
+[guix-8.20.0-1] cell bytes total307200 face=h2 mode=obs code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=5.4 cpu_ms=2.3 calls=660 hdr_lines=659 bytes=168480 heads=[200:659:168480] refused=- header_size=168480 stored=659 walk_ms=9.18 walk_cpu_ms=9.18 live_kb=204
+[guix-8.20.0-1] srv ev 528 t=13792.2 h2-close face=h2 conn=59910 tag=bytes.total307200.obs.53 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 530 t=13793.5 h2-wire face=h2 conn=59910 tag=bytes.total307200.obs.53 wire_bytes_written=270852 wire_bytes_read=822
+[guix-8.20.0-1] cell bytes total307200 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=5.1 cpu_ms=2.0 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=126
+[guix-8.20.0-1] srv ev 532 t=13807.3 h2-close face=h2 conn=59924 tag=bytes.total307200.cap.54 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 534 t=13808.3 h2-wire face=h2 conn=59924 tag=bytes.total307200.cap.54 wire_bytes_written=270851 wire_bytes_read=822
+[guix-8.20.0-1] cell bytes total307201 face=h2 mode=none code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=5.3 cpu_ms=2.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168480 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=204
+[guix-8.20.0-1] srv ev 536 t=13812.8 h2-close face=h2 conn=59926 tag=bytes.total307201.none.55 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 538 t=13814.1 h2-wire face=h2 conn=59926 tag=bytes.total307201.none.55 wire_bytes_written=270852 wire_bytes_read=823
+[guix-8.20.0-1] cell bytes total307201 face=h2 mode=obs code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=5.3 cpu_ms=2.3 calls=660 hdr_lines=659 bytes=168480 heads=[200:659:168480] refused=- header_size=168480 stored=659 walk_ms=9.19 walk_cpu_ms=9.19 live_kb=204
+[guix-8.20.0-1] srv ev 540 t=13818.5 h2-close face=h2 conn=59934 tag=bytes.total307201.obs.56 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 542 t=13819.8 h2-wire face=h2 conn=59934 tag=bytes.total307201.obs.56 wire_bytes_written=270853 wire_bytes_read=822
+[guix-8.20.0-1] cell bytes total307201 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=5.0 cpu_ms=2.0 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=126
+[guix-8.20.0-1] srv ev 544 t=13833.5 h2-close face=h2 conn=59944 tag=bytes.total307201.cap.57 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 546 t=13834.5 h2-wire face=h2 conn=59944 tag=bytes.total307201.cap.57 wire_bytes_written=270852 wire_bytes_read=822
+[guix-8.20.0-1] cell bytes total1048576 face=h2 mode=none code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=13.1 cpu_ms=2.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168480 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=204
+[guix-8.20.0-1] srv ev 548 t=13846.5 h2-close face=h2 conn=59956 tag=bytes.total1048576.none.58 heads=[200:4097] rst=0
+[guix-8.20.0-1] srv ev 550 t=13848.3 h2-wire face=h2 conn=59956 tag=bytes.total1048576.none.58 wire_bytes_written=920763 wire_bytes_read=825
+[guix-8.20.0-1] cell bytes total1048576 face=h2 mode=obs code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=12.2 cpu_ms=2.6 calls=660 hdr_lines=659 bytes=168480 heads=[200:659:168480] refused=- header_size=168480 stored=659 walk_ms=9.27 walk_cpu_ms=9.27 live_kb=204
+[guix-8.20.0-1] srv ev 552 t=13860.0 h2-close face=h2 conn=59968 tag=bytes.total1048576.obs.59 heads=[200:4097] rst=0
+[guix-8.20.0-1] srv ev 554 t=13861.8 h2-wire face=h2 conn=59968 tag=bytes.total1048576.obs.59 wire_bytes_written=920764 wire_bytes_read=824
+[guix-8.20.0-1] cell bytes total1048576 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=13.0 cpu_ms=2.4 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=126
+[guix-8.20.0-1] srv ev 556 t=13884.0 h2-close face=h2 conn=59980 tag=bytes.total1048576.cap.60 heads=[200:4097] rst=0
+[guix-8.20.0-1] srv ev 558 t=13885.5 h2-wire face=h2 conn=59980 tag=bytes.total1048576.cap.60 wire_bytes_written=920788 wire_bytes_read=824
+[guix-8.20.0-1] cell bytes line102398 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=2.8 cpu_ms=2.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=102432 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 560 t=13888.7 h2-close face=h2 conn=59992 tag=bytes.line102398.none.61 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 562 t=13901.0 h2-wire face=h2 conn=59992 tag=bytes.line102398.none.61 wire_bytes_written=65658 wire_bytes_read=777
+[guix-8.20.0-1] cell bytes line102398 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=3.0 cpu_ms=2.2 calls=4 hdr_lines=2 bytes=102432 heads=[200:2:102432] refused=- header_size=102432 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 564 t=13904.0 h2-close face=h2 conn=59998 tag=bytes.line102398.obs.62 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 566 t=13904.7 h2-wire face=h2 conn=59998 tag=bytes.line102398.obs.62 wire_bytes_written=65682 wire_bytes_read=776
+[guix-8.20.0-1] cell bytes line102398 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 102398 returned 0" status=200 ver=3 t_ms=2.7 cpu_ms=2.0 calls=3 hdr_lines=2 bytes=102430 heads=[200:2:102430] refused=bytes@102430 header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 568 t=13907.3 h2-close face=h2 conn=60006 tag=bytes.line102398.cap.63 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 570 t=13907.9 h2-wire face=h2 conn=60006 tag=bytes.line102398.cap.63 wire_bytes_written=65683 wire_bytes_read=776
+[guix-8.20.0-1] cell bytes line102399 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=2.5 cpu_ms=1.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=102433 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 572 t=13910.3 h2-close face=h2 conn=60010 tag=bytes.line102399.none.64 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 574 t=13910.9 h2-wire face=h2 conn=60010 tag=bytes.line102399.none.64 wire_bytes_written=65683 wire_bytes_read=777
+[guix-8.20.0-1] cell bytes line102399 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=2.7 cpu_ms=2.0 calls=4 hdr_lines=2 bytes=102433 heads=[200:2:102433] refused=- header_size=102433 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 576 t=13913.4 h2-close face=h2 conn=60026 tag=bytes.line102399.obs.65 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 578 t=13914.1 h2-wire face=h2 conn=60026 tag=bytes.line102399.obs.65 wire_bytes_written=65682 wire_bytes_read=776
+[guix-8.20.0-1] cell bytes line102399 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 102399 returned 0" status=200 ver=3 t_ms=2.8 cpu_ms=2.1 calls=3 hdr_lines=2 bytes=102431 heads=[200:2:102431] refused=bytes@102431 header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=105
+[guix-8.20.0-1] srv ev 580 t=13916.7 h2-close face=h2 conn=60038 tag=bytes.line102399.cap.66 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 582 t=13917.4 h2-wire face=h2 conn=60038 tag=bytes.line102399.cap.66 wire_bytes_written=65683 wire_bytes_read=776
+[guix-8.20.0-1] cell bytes line102400 face=h2 mode=none code=16 err="Error receiving HTTP2 header: 100(A value or data field grew larger than allowed)" status=200 ver=3 t_ms=2.7 cpu_ms=2.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 584 t=13920.0 h2-close face=h2 conn=60052 tag=bytes.line102400.none.67 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 586 t=13920.7 h2-wire face=h2 conn=60052 tag=bytes.line102400.none.67 wire_bytes_written=65684 wire_bytes_read=811
+[guix-8.20.0-1] cell bytes line102400 face=h2 mode=obs code=16 err="Error receiving HTTP2 header: 100(A value or data field grew larger than allowed)" status=200 ver=3 t_ms=2.6 cpu_ms=2.0 calls=2 hdr_lines=1 bytes=32 heads=[200:1:32] refused=- header_size=32 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 588 t=13923.2 h2-close face=h2 conn=60066 tag=bytes.line102400.obs.68 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 590 t=13923.9 h2-wire face=h2 conn=60066 tag=bytes.line102400.obs.68 wire_bytes_written=65684 wire_bytes_read=811
+[guix-8.20.0-1] cell bytes line102400 face=h2 mode=cap code=16 err="Error receiving HTTP2 header: 100(A value or data field grew larger than allowed)" status=200 ver=3 t_ms=2.7 cpu_ms=2.0 calls=2 hdr_lines=1 bytes=32 heads=[200:1:32] refused=none header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 592 t=13926.3 h2-close face=h2 conn=60082 tag=bytes.line102400.cap.69 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 594 t=13927.0 h2-wire face=h2 conn=60082 tag=bytes.line102400.cap.69 wire_bytes_written=65661 wire_bytes_read=811
+[guix-8.20.0-1] cell bytes line102401 face=h2 mode=none code=16 err="Error receiving HTTP2 header: 100(A value or data field grew larger than allowed)" status=200 ver=3 t_ms=2.7 cpu_ms=2.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 596 t=13929.6 h2-close face=h2 conn=60088 tag=bytes.line102401.none.70 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 598 t=13930.3 h2-wire face=h2 conn=60088 tag=bytes.line102401.none.70 wire_bytes_written=65684 wire_bytes_read=811
+[guix-8.20.0-1] cell bytes line102401 face=h2 mode=obs code=16 err="Error receiving HTTP2 header: 100(A value or data field grew larger than allowed)" status=200 ver=3 t_ms=2.7 cpu_ms=2.0 calls=2 hdr_lines=1 bytes=32 heads=[200:1:32] refused=- header_size=32 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 600 t=13932.7 h2-close face=h2 conn=60096 tag=bytes.line102401.obs.71 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 602 t=13933.4 h2-wire face=h2 conn=60096 tag=bytes.line102401.obs.71 wire_bytes_written=65685 wire_bytes_read=811
+[guix-8.20.0-1] cell bytes line102401 face=h2 mode=cap code=16 err="Error receiving HTTP2 header: 100(A value or data field grew larger than allowed)" status=200 ver=3 t_ms=2.6 cpu_ms=2.0 calls=2 hdr_lines=1 bytes=32 heads=[200:1:32] refused=none header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 604 t=13935.8 h2-close face=h2 conn=60102 tag=bytes.line102401.cap.72 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 606 t=13936.5 h2-wire face=h2 conn=60102 tag=bytes.line102401.cap.72 wire_bytes_written=65683 wire_bytes_read=811
+[guix-8.20.0-1] cell bytes total307199-same face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=3.7 cpu_ms=2.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307199 stored=1201 walk_ms=29.72 walk_cpu_ms=29.72 live_kb=368
+[guix-8.20.0-1] srv ev 608 t=13939.9 h2-close face=h2 conn=60116 tag=bytes.total307199-same.none.73 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 610 t=13940.6 h2-wire face=h2 conn=60116 tag=bytes.total307199-same.none.73 wire_bytes_written=3196 wire_bytes_read=797
+[guix-8.20.0-1] cell bytes total307199-same face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=3.9 cpu_ms=2.1 calls=1203 hdr_lines=1201 bytes=307199 heads=[200:1201:307199] refused=- header_size=307199 stored=1201 walk_ms=28.20 walk_cpu_ms=28.14 live_kb=368
+[guix-8.20.0-1] srv ev 612 t=13974.4 h2-close face=h2 conn=60124 tag=bytes.total307199-same.obs.74 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 614 t=13975.1 h2-wire face=h2 conn=60124 tag=bytes.total307199-same.obs.74 wire_bytes_written=3198 wire_bytes_read=796
+[guix-8.20.0-1] cell bytes total307199-same face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=3.9 cpu_ms=2.1 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=126
+[guix-8.20.0-1] srv ev 616 t=14007.6 h2-close face=h2 conn=60132 tag=bytes.total307199-same.cap.75 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 618 t=14008.3 h2-wire face=h2 conn=60132 tag=bytes.total307199-same.cap.75 wire_bytes_written=3174 wire_bytes_read=796
+[guix-8.20.0-1] cell bytes total307200-same face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=3.5 cpu_ms=1.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307200 stored=1201 walk_ms=27.94 walk_cpu_ms=27.94 live_kb=368
+[guix-8.20.0-1] srv ev 620 t=14011.6 h2-close face=h2 conn=60138 tag=bytes.total307200-same.none.76 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 622 t=14012.3 h2-wire face=h2 conn=60138 tag=bytes.total307200-same.none.76 wire_bytes_written=3198 wire_bytes_read=796
+[guix-8.20.0-1] cell bytes total307200-same face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=3.8 cpu_ms=2.0 calls=1203 hdr_lines=1201 bytes=307200 heads=[200:1201:307200] refused=- header_size=307200 stored=1201 walk_ms=27.57 walk_cpu_ms=27.57 live_kb=368
+[guix-8.20.0-1] srv ev 624 t=14044.2 h2-close face=h2 conn=60146 tag=bytes.total307200-same.obs.77 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 626 t=14045.0 h2-wire face=h2 conn=60146 tag=bytes.total307200-same.obs.77 wire_bytes_written=3197 wire_bytes_read=795
+[guix-8.20.0-1] cell bytes total307200-same face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=3.8 cpu_ms=2.0 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=126
+[guix-8.20.0-1] srv ev 628 t=14076.5 h2-close face=h2 conn=48112 tag=bytes.total307200-same.cap.78 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 630 t=14077.2 h2-wire face=h2 conn=48112 tag=bytes.total307200-same.cap.78 wire_bytes_written=3197 wire_bytes_read=795
+[guix-8.20.0-1] cell bytes total307201-same face=h2 mode=none code=56 err="Too large response headers: 307201 > 307200" status=200 ver=3 t_ms=3.5 cpu_ms=1.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307201 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=369
+[guix-8.20.0-1] srv ev 632 t=14080.6 h2-close face=h2 conn=48114 tag=bytes.total307201-same.none.79 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 634 t=14081.3 h2-wire face=h2 conn=48114 tag=bytes.total307201-same.none.79 wire_bytes_written=3199 wire_bytes_read=796
+[guix-8.20.0-1] cell bytes total307201-same face=h2 mode=obs code=56 err="Too large response headers: 307201 > 307200" status=200 ver=3 t_ms=3.4 cpu_ms=1.9 calls=1203 hdr_lines=1201 bytes=307201 heads=[200:1201:307201] refused=- header_size=307201 stored=1201 walk_ms=27.55 walk_cpu_ms=27.55 live_kb=369
+[guix-8.20.0-1] srv ev 636 t=14084.7 h2-close face=h2 conn=48120 tag=bytes.total307201-same.obs.80 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 638 t=14085.4 h2-wire face=h2 conn=48120 tag=bytes.total307201-same.obs.80 wire_bytes_written=3198 wire_bytes_read=795
+[guix-8.20.0-1] cell bytes total307201-same face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=3.9 cpu_ms=2.0 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=126
+[guix-8.20.0-1] srv ev 640 t=14117.1 h2-close face=h2 conn=48128 tag=bytes.total307201-same.cap.81 heads=[200:1201] rst=0
+[guix-8.20.0-1] srv ev 642 t=14117.8 h2-wire face=h2 conn=48128 tag=bytes.total307201-same.cap.81 wire_bytes_written=3198 wire_bytes_read=795
+[guix-8.20.0-1] cell bytes total1048576-same face=h2 mode=none code=56 err="Too large response headers: 307232 > 307200" status=200 ver=3 t_ms=7.5 cpu_ms=2.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307232 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=369
+[guix-8.20.0-1] srv ev 644 t=14124.9 h2-close face=h2 conn=48138 tag=bytes.total1048576-same.none.82 heads=[200:4097] rst=0
+[guix-8.20.0-1] srv ev 646 t=14126.1 h2-wire face=h2 conn=48138 tag=bytes.total1048576-same.none.82 wire_bytes_written=6093 wire_bytes_read=798
+[guix-8.20.0-1] cell bytes total1048576-same face=h2 mode=obs code=56 err="Too large response headers: 307232 > 307200" status=200 ver=3 t_ms=7.3 cpu_ms=2.4 calls=1202 hdr_lines=1201 bytes=307232 heads=[200:1201:307232] refused=- header_size=307232 stored=1201 walk_ms=28.15 walk_cpu_ms=28.15 live_kb=369
+[guix-8.20.0-1] srv ev 648 t=14132.8 h2-close face=h2 conn=48142 tag=bytes.total1048576-same.obs.83 heads=[200:4097] rst=0
+[guix-8.20.0-1] srv ev 650 t=14134.0 h2-wire face=h2 conn=48142 tag=bytes.total1048576-same.obs.83 wire_bytes_written=6095 wire_bytes_read=797
+[guix-8.20.0-1] cell bytes total1048576-same face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=8.3 cpu_ms=2.7 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=126
+[guix-8.20.0-1] srv ev 652 t=14170.4 h2-close face=h2 conn=48154 tag=bytes.total1048576-same.cap.84 heads=[200:4097] rst=0
+[guix-8.20.0-1] srv ev 654 t=14171.8 h2-wire face=h2 conn=48154 tag=bytes.total1048576-same.cap.84 wire_bytes_written=6095 wire_bytes_read=797
+[guix-8.20.0-1] cell bytes line102400-X face=h2 mode=none code=16 err="nghttp2 shuts down connection with error 9: COMPRESSION_ERROR" status=200 ver=3 t_ms=2.6 cpu_ms=1.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 656 t=14174.7 h2-close face=h2 conn=48164 tag=bytes.line102400-X.none.85 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 657 t=14174.9 goaway face=h2 conn=48164 received from the client, code=9 last_stream=0
+[guix-8.20.0-1] srv ev 658 t=14175.5 h2-wire face=h2 conn=48164 tag=bytes.line102400-X.none.85 wire_bytes_written=104149 wire_bytes_read=751
+[guix-8.20.0-1] srv ev 659 t=14175.7 server-session-error face=h2 conn=- code=ERR_HTTP2_SESSION_ERROR "Session closed with error code 9"
+[guix-8.20.0-1] srv ev 660 t=14175.7 session-error face=h2 conn=48164 code=ERR_HTTP2_SESSION_ERROR "Session closed with error code 9"
+[guix-8.20.0-1] cell bytes line102400-X face=h2 mode=obs code=16 err="nghttp2 shuts down connection with error 9: COMPRESSION_ERROR" status=200 ver=3 t_ms=3.6 cpu_ms=1.8 calls=2 hdr_lines=1 bytes=32 heads=[200:1:32] refused=- header_size=32 stored=1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 662 t=14179.0 h2-close face=h2 conn=48174 tag=bytes.line102400-X.obs.86 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 663 t=14179.3 goaway face=h2 conn=48174 received from the client, code=9 last_stream=0
+[guix-8.20.0-1] srv ev 664 t=14179.6 h2-wire face=h2 conn=48174 tag=bytes.line102400-X.obs.86 wire_bytes_written=104152 wire_bytes_read=720
+[guix-8.20.0-1] srv ev 665 t=14179.6 server-session-error face=h2 conn=- code=ERR_HTTP2_SESSION_ERROR "Session closed with error code 9"
+[guix-8.20.0-1] srv ev 666 t=14179.6 session-error face=h2 conn=48174 code=ERR_HTTP2_SESSION_ERROR "Session closed with error code 9"
+[guix-8.20.0-1] cell bytes line102400-X face=h2 mode=cap code=16 err="nghttp2 shuts down connection with error 9: COMPRESSION_ERROR" status=200 ver=3 t_ms=3.5 cpu_ms=1.8 calls=2 hdr_lines=1 bytes=32 heads=[200:1:32] refused=none header_size=32 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=5
+[guix-8.20.0-1] srv ev 668 t=14183.8 h2-close face=h2 conn=48190 tag=bytes.line102400-X.cap.87 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 669 t=14184.3 goaway face=h2 conn=48190 received from the client, code=9 last_stream=0
+[guix-8.20.0-1] srv ev 670 t=14184.6 h2-wire face=h2 conn=48190 tag=bytes.line102400-X.cap.87 wire_bytes_written=104126 wire_bytes_read=720
+[guix-8.20.0-1] srv ev 671 t=14184.7 server-session-error face=h2 conn=- code=ERR_HTTP2_SESSION_ERROR "Session closed with error code 9"
+[guix-8.20.0-1] srv ev 672 t=14184.7 session-error face=h2 conn=48190 code=ERR_HTTP2_SESSION_ERROR "Session closed with error code 9"
+[guix-8.20.0-1] cell bytes total131071 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=4.3 cpu_ms=2.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=131071 stored=513 walk_ms=5.72 walk_cpu_ms=5.72 live_kb=160
+[guix-8.20.0-1] srv ev 674 t=14188.6 h2-close face=h2 conn=48198 tag=bytes.total131071.none.88 heads=[200:513] rst=0
+[guix-8.20.0-1] srv ev 676 t=14189.7 h2-wire face=h2 conn=48198 tag=bytes.total131071.none.88 wire_bytes_written=116451 wire_bytes_read=788
+[guix-8.20.0-1] cell bytes total131071 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=4.0 cpu_ms=2.2 calls=515 hdr_lines=513 bytes=131071 heads=[200:513:131071] refused=- header_size=131071 stored=513 walk_ms=5.65 walk_cpu_ms=5.65 live_kb=160
+[guix-8.20.0-1] srv ev 678 t=14198.9 h2-close face=h2 conn=48206 tag=bytes.total131071.obs.89 heads=[200:513] rst=0
+[guix-8.20.0-1] srv ev 680 t=14199.9 h2-wire face=h2 conn=48206 tag=bytes.total131071.obs.89 wire_bytes_written=116451 wire_bytes_read=787
+[guix-8.20.0-1] cell bytes total131071 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=3.8 cpu_ms=2.1 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=126
+[guix-8.20.0-1] srv ev 682 t=14208.9 h2-close face=h2 conn=48216 tag=bytes.total131071.cap.90 heads=[200:513] rst=0
+[guix-8.20.0-1] srv ev 684 t=14209.8 h2-wire face=h2 conn=48216 tag=bytes.total131071.cap.90 wire_bytes_written=116451 wire_bytes_read=822
+[guix-8.20.0-1] cell bytes total131072 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=3.8 cpu_ms=2.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=131072 stored=513 walk_ms=5.47 walk_cpu_ms=5.47 live_kb=160
+[guix-8.20.0-1] srv ev 686 t=14213.1 h2-close face=h2 conn=48232 tag=bytes.total131072.none.91 heads=[200:513] rst=0
+[guix-8.20.0-1] srv ev 688 t=14214.1 h2-wire face=h2 conn=48232 tag=bytes.total131072.none.91 wire_bytes_written=116428 wire_bytes_read=788
+[guix-8.20.0-1] cell bytes total131072 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=3.9 cpu_ms=2.2 calls=515 hdr_lines=513 bytes=131072 heads=[200:513:131072] refused=- header_size=131072 stored=513 walk_ms=5.94 walk_cpu_ms=5.94 live_kb=160
+[guix-8.20.0-1] srv ev 690 t=14222.9 h2-close face=h2 conn=48242 tag=bytes.total131072.obs.92 heads=[200:513] rst=0
+[guix-8.20.0-1] srv ev 692 t=14223.9 h2-wire face=h2 conn=48242 tag=bytes.total131072.obs.92 wire_bytes_written=116428 wire_bytes_read=787
+[guix-8.20.0-1] cell bytes total131072 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=4.7 cpu_ms=2.6 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=126
+[guix-8.20.0-1] srv ev 694 t=14233.8 h2-close face=h2 conn=48256 tag=bytes.total131072.cap.93 heads=[200:513] rst=0
+[guix-8.20.0-1] srv ev 696 t=14235.1 h2-wire face=h2 conn=48256 tag=bytes.total131072.cap.93 wire_bytes_written=116428 wire_bytes_read=822
+[guix-8.20.0-1] cell bytes total131073 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=7.5 cpu_ms=3.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=131073 stored=513 walk_ms=7.06 walk_cpu_ms=7.06 live_kb=160
+[guix-8.20.0-1] srv ev 698 t=14242.1 h2-close face=h2 conn=48270 tag=bytes.total131073.none.94 heads=[200:513] rst=0
+[guix-8.20.0-1] srv ev 700 t=14243.7 h2-wire face=h2 conn=48270 tag=bytes.total131073.none.94 wire_bytes_written=116454 wire_bytes_read=788
+[guix-8.20.0-1] cell bytes total131073 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=5.2 cpu_ms=3.0 calls=515 hdr_lines=513 bytes=131073 heads=[200:513:131073] refused=- header_size=131073 stored=513 walk_ms=7.56 walk_cpu_ms=7.55 live_kb=160
+[guix-8.20.0-1] srv ev 702 t=14255.4 h2-close face=h2 conn=48276 tag=bytes.total131073.obs.95 heads=[200:513] rst=0
+[guix-8.20.0-1] srv ev 704 t=14256.8 h2-wire face=h2 conn=48276 tag=bytes.total131073.obs.95 wire_bytes_written=116430 wire_bytes_read=787
+[guix-8.20.0-1] cell bytes total131073 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=5.2 cpu_ms=2.8 calls=402 hdr_lines=401 bytes=102432 heads=[200:401:102432] refused=bytes@102432 header_size=102176 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 live_kb=126
+[guix-8.20.0-1] srv ev 706 t=14269.2 h2-close face=h2 conn=48286 tag=bytes.total131073.cap.96 heads=[200:513] rst=0
+[guix-8.20.0-1] srv ev 708 t=14270.4 h2-wire face=h2 conn=48286 tag=bytes.total131073.cap.96 wire_bytes_written=116453 wire_bytes_read=822
+[guix-8.20.0-1] case bytes all done live_before_global_cleanup=0
+[guix-8.20.0-1] case bytes live_after_global_cleanup=0
+[guix-8.20.0-1] probe bytes exit=0
+[guix-8.20.0-1] probe bytes took about 1 s
+[guix-8.20.0-1] cell toward pre103-6000+2 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=103 ver=2 t_ms=3.1 cpu_ms=0.9 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 711 t=14280.4 wrote face=h1 conn=53110 tag=toward.pre103-6000.2.none.1 proto=h1 heads=[103:6000:96028,200:2:54] bytes=96082
+[guix-8.20.0-1] cell toward pre103-6000+2 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=103 ver=2 t_ms=3.4 cpu_ms=0.5 calls=5001 hdr_lines=5000 bytes=80026 heads=[103:5000:80026] refused=- header_size=80026 stored=0 walk_ms=0.01 walk_cpu_ms=0.01 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 715 t=15229.4 wrote face=h1 conn=53112 tag=toward.pre103-6000.2.obs.2 proto=h1 heads=[103:6000:96028,200:2:54] bytes=96082
+[guix-8.20.0-1] cell toward pre103-6000+2 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=2 t_ms=2.6 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 719 t=16199.0 wrote face=h1 conn=53124 tag=toward.pre103-6000.2.cap.3 proto=h1 heads=[103:6000:96028,200:2:54] bytes=96082
+[guix-8.20.0-1] cell toward pre103-3000+3000 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=2.5 cpu_ms=0.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80048 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 723 t=16246.5 wrote face=h1 conn=53136 tag=toward.pre103-3000.3000.none.4 proto=h1 heads=[103:3000:48028,200:3000:48022] bytes=96050
+[guix-8.20.0-1] cell toward pre103-3000+3000 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=2.7 cpu_ms=0.6 calls=5003 hdr_lines=5000 bytes=80048 heads=[103:3000:48028,200:2000:32020] refused=- header_size=80048 stored=2000 walk_ms=211.46 walk_cpu_ms=211.45 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 727 t=17286.5 wrote face=h1 conn=53152 tag=toward.pre103-3000.3000.obs.5 proto=h1 heads=[103:3000:48028,200:3000:48022] bytes=96050
+[guix-8.20.0-1] cell toward pre103-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=2 t_ms=1.7 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 731 t=18526.7 wrote face=h1 conn=53168 tag=toward.pre103-3000.3000.cap.6 proto=h1 heads=[103:3000:48028,200:3000:48022] bytes=96050
+[guix-8.20.0-1] cell toward pre100-3000+3000 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=1.8 cpu_ms=0.6 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80045 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 735 t=18569.7 wrote face=h1 conn=53176 tag=toward.pre100-3000.3000.none.7 proto=h1 heads=[100:3000:48025,200:3000:48022] bytes=96047
+[guix-8.20.0-1] cell toward pre100-3000+3000 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=3.4 cpu_ms=0.6 calls=5003 hdr_lines=5000 bytes=80045 heads=[100:3000:48025,200:2000:32020] refused=- header_size=80045 stored=2000 walk_ms=206.95 walk_cpu_ms=206.92 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 739 t=19598.7 wrote face=h1 conn=53186 tag=toward.pre100-3000.3000.obs.8 proto=h1 heads=[100:3000:48025,200:3000:48022] bytes=96047
+[guix-8.20.0-1] cell toward pre100-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=100 ver=2 t_ms=2.9 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16039 heads=[100:1001:16039] refused=lines@1001 header_size=16023 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 743 t=20788.3 wrote face=h1 conn=53202 tag=toward.pre100-3000.3000.cap.9 proto=h1 heads=[100:3000:48025,200:3000:48022] bytes=96047
+[guix-8.20.0-1] cell toward pre103-2500x2+1000 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=2.2 cpu_ms=0.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80073 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 747 t=20833.4 wrote face=h1 conn=53214 tag=toward.pre103-2500x2.1000.none.10 proto=h1 heads=[103:2500:40028,103:2500:40028,200:1000:16022] bytes=96078
+[guix-8.20.0-1] cell toward pre103-2500x2+1000 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=1.8 cpu_ms=0.6 calls=5005 hdr_lines=5000 bytes=80073 heads=[103:2500:40028,103:2500:40028,200:0:17] refused=- header_size=80073 stored=0 walk_ms=0.01 walk_cpu_ms=0.01 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 751 t=21912.3 wrote face=h1 conn=53218 tag=toward.pre103-2500x2.1000.obs.11 proto=h1 heads=[103:2500:40028,103:2500:40028,200:1000:16022] bytes=96078
+[guix-8.20.0-1] cell toward pre103-2500x2+1000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=2 t_ms=2.7 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16042 heads=[103:1001:16042] refused=lines@1001 header_size=16026 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 755 t=22900.0 wrote face=h1 conn=53220 tag=toward.pre103-2500x2.1000.cap.12 proto=h1 heads=[103:2500:40028,103:2500:40028,200:1000:16022] bytes=96078
+[guix-8.20.0-1] cell toward pre103-400K+2 face=h1 mode=none code=56 err="Too large response headers: 307226 > 307200" status=103 ver=2 t_ms=2.2 cpu_ms=0.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307226 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1200 stored_r0=1200 stored_r1=0 live_kb=369
+[guix-8.20.0-1] srv ev 759 t=22951.4 wrote face=h1 conn=53224 tag=toward.pre103-400K.2.none.13 proto=h1 heads=[103:1600:409628,200:2:54] bytes=409682
+[guix-8.20.0-1] cell toward pre103-400K+2 face=h1 mode=obs code=56 err="Too large response headers: 307226 > 307200" status=103 ver=2 t_ms=2.3 cpu_ms=0.4 calls=1201 hdr_lines=1200 bytes=307226 heads=[103:1200:307226] refused=- header_size=307226 stored=0 walk_ms=0.01 walk_cpu_ms=0.01 stored_all=1200 stored_r0=1200 stored_r1=0 live_kb=369
+[guix-8.20.0-1] srv ev 763 t=23023.4 wrote face=h1 conn=53230 tag=toward.pre103-400K.2.obs.14 proto=h1 heads=[103:1600:409628,200:2:54] bytes=409682
+[guix-8.20.0-1] cell toward pre103-400K+2 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=103 ver=2 t_ms=2.5 cpu_ms=0.3 calls=401 hdr_lines=400 bytes=102426 heads=[103:400:102426] refused=bytes@102426 header_size=102170 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=127
+[guix-8.20.0-1] srv ev 767 t=23093.0 wrote face=h1 conn=53240 tag=toward.pre103-400K.2.cap.15 proto=h1 heads=[103:1600:409628,200:2:54] bytes=409682
+[guix-8.20.0-1] cell toward pre103-200K+200K face=h1 mode=none code=56 err="Too large response headers: 307264 > 307200" status=200 ver=2 t_ms=2.1 cpu_ms=0.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307264 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1201 stored_r0=1201 stored_r1=0 live_kb=369
+[guix-8.20.0-1] srv ev 771 t=23103.5 wrote face=h1 conn=53250 tag=toward.pre103-200K.200K.none.16 proto=h1 heads=[103:800:204828,200:800:204582] bytes=409410
+[guix-8.20.0-1] cell toward pre103-200K+200K face=h1 mode=obs code=56 err="Too large response headers: 307264 > 307200" status=200 ver=2 t_ms=3.7 cpu_ms=0.4 calls=1204 hdr_lines=1201 bytes=307264 heads=[103:800:204828,200:401:102436] refused=- header_size=307264 stored=401 walk_ms=11.99 walk_cpu_ms=11.98 stored_all=1201 stored_r0=1201 stored_r1=0 live_kb=369
+[guix-8.20.0-1] srv ev 775 t=23179.1 wrote face=h1 conn=53266 tag=toward.pre103-200K.200K.obs.17 proto=h1 heads=[103:800:204828,200:800:204582] bytes=409410
+[guix-8.20.0-1] cell toward pre103-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=103 ver=2 t_ms=2.4 cpu_ms=0.3 calls=401 hdr_lines=400 bytes=102426 heads=[103:400:102426] refused=bytes@102426 header_size=102170 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=127
+[guix-8.20.0-1] srv ev 779 t=23271.6 wrote face=h1 conn=53268 tag=toward.pre103-200K.200K.cap.18 proto=h1 heads=[103:800:204828,200:800:204582] bytes=409410
+[guix-8.20.0-1] cell toward tr-2+6000 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=3.4 cpu_ms=1.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 783 t=23283.3 wrote face=h1 conn=53270 tag=toward.tr-2.6000.none.19 proto=h1 heads=[200:2:63,trailers:6000:96002] bytes=96068
+[guix-8.20.0-1] cell toward tr-2+6000 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=3.3 cpu_ms=1.4 calls=5002 hdr_lines=5000 bytes=80031 heads=[200:2:63,T:4998:79968] refused=- header_size=63 stored=2 walk_ms=0.22 walk_cpu_ms=0.22 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 787 t=24360.8 wrote face=h1 conn=45542 tag=toward.tr-2.6000.obs.20 proto=h1 heads=[200:2:63,trailers:6000:96002] bytes=96068
+[guix-8.20.0-1] cell toward tr-2+6000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=3.1 cpu_ms=0.8 calls=1003 hdr_lines=1001 bytes=16047 heads=[200:2:63,T:999:15984] refused=lines@1001 header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 791 t=25453.8 wrote face=h1 conn=45544 tag=toward.tr-2.6000.cap.21 proto=h1 heads=[200:2:63,trailers:6000:96002] bytes=96068
+[guix-8.20.0-1] cell toward tr-3000+3000 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=2.7 cpu_ms=0.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=48031 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 795 t=25504.3 wrote face=h1 conn=45554 tag=toward.tr-3000.3000.none.22 proto=h1 heads=[200:3000:48031,trailers:3000:48002] bytes=96036
+[guix-8.20.0-1] cell toward tr-3000+3000 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=3.3 cpu_ms=1.0 calls=5002 hdr_lines=5000 bytes=80031 heads=[200:3000:48031,T:2000:32000] refused=- header_size=48031 stored=3000 walk_ms=327.14 walk_cpu_ms=327.00 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 799 t=26644.4 wrote face=h1 conn=45566 tag=toward.tr-3000.3000.obs.23 proto=h1 heads=[200:3000:48031,trailers:3000:48002] bytes=96036
+[guix-8.20.0-1] cell toward tr-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=2 t_ms=1.5 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16045 heads=[200:1001:16045] refused=lines@1001 header_size=16029 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 803 t=28070.8 wrote face=h1 conn=45574 tag=toward.tr-3000.3000.cap.24 proto=h1 heads=[200:3000:48031,trailers:3000:48002] bytes=96036
+[guix-8.20.0-1] cell toward tr-2+400K face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=4.8 cpu_ms=3.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=63 stored=2 walk_ms=0.06 walk_cpu_ms=0.06 stored_all=1602 stored_r0=1602 stored_r1=0 live_kb=489
+[guix-8.20.0-1] srv ev 807 t=28115.1 wrote face=h1 conn=45590 tag=toward.tr-2.400K.none.25 proto=h1 heads=[200:2:63,trailers:1600:409602] bytes=409668
+[guix-8.20.0-1] cell toward tr-2+400K face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=6.3 cpu_ms=3.0 calls=1604 hdr_lines=1602 bytes=409663 heads=[200:2:63,T:1600:409600] refused=- header_size=63 stored=2 walk_ms=0.05 walk_cpu_ms=0.05 stored_all=1602 stored_r0=1602 stored_r1=0 live_kb=489
+[guix-8.20.0-1] srv ev 811 t=28231.3 wrote face=h1 conn=45592 tag=toward.tr-2.400K.obs.26 proto=h1 heads=[200:2:63,trailers:1600:409602] bytes=409668
+[guix-8.20.0-1] cell toward tr-2+400K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=4.1 cpu_ms=1.0 calls=404 hdr_lines=402 bytes=102463 heads=[200:2:63,T:400:102400] refused=bytes@102463 header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=127
+[guix-8.20.0-1] srv ev 815 t=28349.1 wrote face=h1 conn=45600 tag=toward.tr-2.400K.cap.27 proto=h1 heads=[200:2:63,trailers:1600:409602] bytes=409668
+[guix-8.20.0-1] cell toward tr-200K+200K face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=5.7 cpu_ms=1.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=204591 stored=800 walk_ms=32.06 walk_cpu_ms=32.06 stored_all=1600 stored_r0=1600 stored_r1=0 live_kb=489
+[guix-8.20.0-1] srv ev 819 t=28362.5 wrote face=h1 conn=45606 tag=toward.tr-200K.200K.none.28 proto=h1 heads=[200:800:204591,trailers:800:204802] bytes=409396
+[guix-8.20.0-1] cell toward tr-200K+200K face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=4.8 cpu_ms=1.6 calls=1602 hdr_lines=1600 bytes=409391 heads=[200:800:204591,T:800:204800] refused=- header_size=204591 stored=800 walk_ms=27.21 walk_cpu_ms=27.21 stored_all=1600 stored_r0=1600 stored_r1=0 live_kb=489
+[guix-8.20.0-1] srv ev 823 t=28517.9 wrote face=h1 conn=45618 tag=toward.tr-200K.200K.obs.29 proto=h1 heads=[200:800:204591,trailers:800:204802] bytes=409396
+[guix-8.20.0-1] cell toward tr-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=2 t_ms=3.3 cpu_ms=0.3 calls=402 hdr_lines=401 bytes=102445 heads=[200:401:102445] refused=bytes@102445 header_size=102189 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=401 stored_r0=401 stored_r1=0 live_kb=127
+[guix-8.20.0-1] srv ev 827 t=28659.6 wrote face=h1 conn=45622 tag=toward.tr-200K.200K.cap.30 proto=h1 heads=[200:800:204591,trailers:800:204802] bytes=409396
+[guix-8.20.0-1] cell toward tr-line4000 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=0.4 cpu_ms=0.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=63 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=9
+[guix-8.20.0-1] srv ev 831 t=28667.6 wrote face=h1 conn=45628 tag=toward.tr-line4000.none.31 proto=h1 heads=[200:2:63,trailers:1:4002] bytes=4068
+[guix-8.20.0-1] cell toward tr-line4000 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=5 hdr_lines=3 bytes=4063 heads=[200:2:63,T:1:4000] refused=- header_size=63 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=9
+[guix-8.20.0-1] srv ev 835 t=28668.1 wrote face=h1 conn=45634 tag=toward.tr-line4000.obs.32 proto=h1 heads=[200:2:63,trailers:1:4002] bytes=4068
+[guix-8.20.0-1] cell toward tr-line4000 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=5 hdr_lines=3 bytes=4063 heads=[200:2:63,T:1:4000] refused=none header_size=63 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=9
+[guix-8.20.0-1] srv ev 839 t=28668.6 wrote face=h1 conn=45636 tag=toward.tr-line4000.cap.33 proto=h1 heads=[200:2:63,trailers:1:4002] bytes=4068
+[guix-8.20.0-1] cell toward tr-line5000 face=h1 mode=none code=100 err="Out of memory in chunked-encoding" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=5
+[guix-8.20.0-1] srv ev 843 t=28669.0 wrote face=h1 conn=45642 tag=toward.tr-line5000.none.34 proto=h1 heads=[200:2:63,trailers:1:5002] bytes=5068
+[guix-8.20.0-1] cell toward tr-line5000 face=h1 mode=obs code=100 err="Out of memory in chunked-encoding" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=4 hdr_lines=2 bytes=63 heads=[200:2:63] refused=- header_size=63 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=5
+[guix-8.20.0-1] srv ev 847 t=28669.4 wrote face=h1 conn=45648 tag=toward.tr-line5000.obs.35 proto=h1 heads=[200:2:63,trailers:1:5002] bytes=5068
+[guix-8.20.0-1] cell toward tr-line5000 face=h1 mode=cap code=100 err="Out of memory in chunked-encoding" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=4 hdr_lines=2 bytes=63 heads=[200:2:63] refused=none header_size=63 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=5
+[guix-8.20.0-1] srv ev 851 t=28669.7 wrote face=h1 conn=45652 tag=toward.tr-line5000.cap.36 proto=h1 heads=[200:2:63,trailers:1:5002] bytes=5068
+[guix-8.20.0-1] cell toward pre103-6000+2 face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=103 ver=3 t_ms=12.8 cpu_ms=3.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=79997 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4999 stored_r0=4999 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 854 t=28681.4 h2-close face=h2 conn=45604 tag=toward.pre103-6000.2.none.37 heads=[103:6000,200:2] rst=0
+[guix-8.20.0-1] srv ev 856 t=28683.1 h2-wire face=h2 conn=45604 tag=toward.pre103-6000.2.none.37 wire_bytes_written=79736 wire_bytes_read=818
+[guix-8.20.0-1] cell toward pre103-6000+2 face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=103 ver=3 t_ms=12.1 cpu_ms=3.0 calls=5000 hdr_lines=4999 bytes=79997 heads=[103:4999:79997] refused=- header_size=79997 stored=0 walk_ms=0.04 walk_cpu_ms=0.04 stored_all=4999 stored_r0=4999 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 858 t=29615.8 h2-close face=h2 conn=45608 tag=toward.pre103-6000.2.obs.38 heads=[103:6000,200:2] rst=0
+[guix-8.20.0-1] srv ev 860 t=29617.5 h2-wire face=h2 conn=45608 tag=toward.pre103-6000.2.obs.38 wire_bytes_written=79712 wire_bytes_read=818
+[guix-8.20.0-1] cell toward pre103-6000+2 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=3 t_ms=10.4 cpu_ms=2.1 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 862 t=30560.6 h2-close face=h2 conn=45618 tag=toward.pre103-6000.2.cap.39 heads=[103:6000,200:2] rst=0
+[guix-8.20.0-1] srv ev 864 t=30561.4 h2-wire face=h2 conn=45618 tag=toward.pre103-6000.2.cap.39 wire_bytes_written=79711 wire_bytes_read=818
+[guix-8.20.0-1] cell toward pre103-3000+3000 face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=10.1 cpu_ms=2.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=79999 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4998 stored_r0=4998 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 866 t=30613.2 h2-close face=h2 conn=45620 tag=toward.pre103-3000.3000.none.40 heads=[103:3000,200:3000] rst=0
+[guix-8.20.0-1] srv ev 868 t=30621.7 h2-wire face=h2 conn=45620 tag=toward.pre103-3000.3000.none.40 wire_bytes_written=79685 wire_bytes_read=822
+[guix-8.20.0-1] cell toward pre103-3000+3000 face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=11.4 cpu_ms=3.1 calls=5001 hdr_lines=4998 bytes=79999 heads=[103:3000:48015,200:1998:31984] refused=- header_size=79999 stored=1998 walk_ms=190.63 walk_cpu_ms=190.63 stored_all=4998 stored_r0=4998 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 870 t=31586.5 h2-close face=h2 conn=45632 tag=toward.pre103-3000.3000.obs.41 heads=[103:3000,200:3000] rst=0
+[guix-8.20.0-1] srv ev 872 t=31588.3 h2-wire face=h2 conn=45632 tag=toward.pre103-3000.3000.obs.41 wire_bytes_written=79686 wire_bytes_read=821
+[guix-8.20.0-1] cell toward pre103-3000+3000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=3 t_ms=10.2 cpu_ms=2.1 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 874 t=32766.9 h2-close face=h2 conn=45636 tag=toward.pre103-3000.3000.cap.42 heads=[103:3000,200:3000] rst=0
+[guix-8.20.0-1] srv ev 876 t=32767.7 h2-wire face=h2 conn=45636 tag=toward.pre103-3000.3000.cap.42 wire_bytes_written=79686 wire_bytes_read=821
+[guix-8.20.0-1] cell toward pre100-3000+3000 face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=12.4 cpu_ms=5.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=79999 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4998 stored_r0=4998 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 878 t=32818.7 h2-close face=h2 conn=45638 tag=toward.pre100-3000.3000.none.43 heads=[100:3000,200:3000] rst=0
+[guix-8.20.0-1] srv ev 880 t=32822.6 h2-wire face=h2 conn=45638 tag=toward.pre100-3000.3000.none.43 wire_bytes_written=79686 wire_bytes_read=822
+[guix-8.20.0-1] cell toward pre100-3000+3000 face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=11.1 cpu_ms=3.0 calls=5001 hdr_lines=4998 bytes=79999 heads=[100:3000:48015,200:1998:31984] refused=- header_size=79999 stored=1998 walk_ms=191.50 walk_cpu_ms=191.50 stored_all=4998 stored_r0=4998 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 882 t=33789.4 h2-close face=h2 conn=45642 tag=toward.pre100-3000.3000.obs.44 heads=[100:3000,200:3000] rst=0
+[guix-8.20.0-1] srv ev 884 t=33791.1 h2-wire face=h2 conn=45642 tag=toward.pre100-3000.3000.obs.44 wire_bytes_written=79685 wire_bytes_read=821
+[guix-8.20.0-1] cell toward pre100-3000+3000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=100 ver=3 t_ms=10.1 cpu_ms=2.1 calls=1002 hdr_lines=1001 bytes=16029 heads=[100:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 886 t=34942.2 h2-close face=h2 conn=57022 tag=toward.pre100-3000.3000.cap.45 heads=[100:3000,200:3000] rst=0
+[guix-8.20.0-1] srv ev 888 t=34943.0 h2-wire face=h2 conn=57022 tag=toward.pre100-3000.3000.cap.45 wire_bytes_written=79710 wire_bytes_read=821
+[guix-8.20.0-1] cell toward pre103-2500x2+1000 face=h2 mode=none code=16 err="Too many response headers, 5000 is max" status=103 ver=3 t_ms=12.7 cpu_ms=4.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=79996 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4998 stored_r0=4998 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 890 t=35004.4 h2-close face=h2 conn=57036 tag=toward.pre103-2500x2.1000.none.46 heads=[103:2500,103:2500,200:1000] rst=0
+[guix-8.20.0-1] srv ev 892 t=35006.5 h2-wire face=h2 conn=57036 tag=toward.pre103-2500x2.1000.none.46 wire_bytes_written=79681 wire_bytes_read=832
+[guix-8.20.0-1] cell toward pre103-2500x2+1000 face=h2 mode=obs code=16 err="Too many response headers, 5000 is max" status=103 ver=3 t_ms=10.2 cpu_ms=3.0 calls=5001 hdr_lines=4998 bytes=79996 heads=[103:2500:40015,103:2498:39981] refused=- header_size=79996 stored=0 walk_ms=0.03 walk_cpu_ms=0.03 stored_all=4998 stored_r0=4998 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 894 t=35981.9 h2-close face=h2 conn=57052 tag=toward.pre103-2500x2.1000.obs.47 heads=[103:2500,103:2500,200:1000] rst=0
+[guix-8.20.0-1] srv ev 896 t=35983.7 h2-wire face=h2 conn=57052 tag=toward.pre103-2500x2.1000.obs.47 wire_bytes_written=79681 wire_bytes_read=832
+[guix-8.20.0-1] cell toward pre103-2500x2+1000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=103 ver=3 t_ms=9.5 cpu_ms=2.1 calls=1002 hdr_lines=1001 bytes=16029 heads=[103:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 898 t=36953.5 h2-close face=h2 conn=57064 tag=toward.pre103-2500x2.1000.cap.48 heads=[103:2500,103:2500,200:1000] rst=0
+[guix-8.20.0-1] srv ev 900 t=36954.3 h2-wire face=h2 conn=57064 tag=toward.pre103-2500x2.1000.cap.48 wire_bytes_written=79682 wire_bytes_read=832
+[guix-8.20.0-1] cell toward pre103-400K+2 face=h2 mode=none code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=103 ver=3 t_ms=7.2 cpu_ms=2.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168461 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=658 stored_r0=658 stored_r1=0 live_kb=204
+[guix-8.20.0-1] srv ev 902 t=37002.5 h2-close face=h2 conn=57076 tag=toward.pre103-400K.2.none.49 heads=[103:1600,200:2] rst=0
+[guix-8.20.0-1] srv ev 904 t=37003.9 h2-wire face=h2 conn=57076 tag=toward.pre103-400K.2.none.49 wire_bytes_written=360640 wire_bytes_read=819
+[guix-8.20.0-1] cell toward pre103-400K+2 face=h2 mode=obs code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=103 ver=3 t_ms=8.3 cpu_ms=2.9 calls=659 hdr_lines=658 bytes=168461 heads=[103:658:168461] refused=- header_size=168461 stored=0 walk_ms=0.02 walk_cpu_ms=0.02 stored_all=658 stored_r0=658 stored_r1=0 live_kb=204
+[guix-8.20.0-1] srv ev 906 t=37029.2 h2-close face=h2 conn=57080 tag=toward.pre103-400K.2.obs.50 heads=[103:1600,200:2] rst=0
+[guix-8.20.0-1] srv ev 908 t=37031.2 h2-wire face=h2 conn=57080 tag=toward.pre103-400K.2.obs.50 wire_bytes_written=360663 wire_bytes_read=818
+[guix-8.20.0-1] cell toward pre103-400K+2 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=103 ver=3 t_ms=9.2 cpu_ms=3.1 calls=401 hdr_lines=400 bytes=102413 heads=[103:400:102413] refused=bytes@102413 header_size=102157 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=126
+[guix-8.20.0-1] srv ev 910 t=37064.6 h2-close face=h2 conn=57090 tag=toward.pre103-400K.2.cap.51 heads=[103:1600,200:2] rst=0
+[guix-8.20.0-1] srv ev 912 t=37066.3 h2-wire face=h2 conn=57090 tag=toward.pre103-400K.2.cap.51 wire_bytes_written=360638 wire_bytes_read=818
+[guix-8.20.0-1] cell toward pre103-200K+200K face=h2 mode=none code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=103 ver=3 t_ms=9.3 cpu_ms=3.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168461 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=658 stored_r0=658 stored_r1=0 live_kb=204
+[guix-8.20.0-1] srv ev 914 t=37083.7 h2-close face=h2 conn=57102 tag=toward.pre103-200K.200K.none.52 heads=[103:800,200:800] rst=0
+[guix-8.20.0-1] srv ev 916 t=37085.7 h2-wire face=h2 conn=57102 tag=toward.pre103-200K.200K.none.52 wire_bytes_written=360417 wire_bytes_read=829
+[guix-8.20.0-1] cell toward pre103-200K+200K face=h2 mode=obs code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=103 ver=3 t_ms=8.1 cpu_ms=3.0 calls=659 hdr_lines=658 bytes=168461 heads=[103:658:168461] refused=- header_size=168461 stored=0 walk_ms=0.01 walk_cpu_ms=0.01 stored_all=658 stored_r0=658 stored_r1=0 live_kb=204
+[guix-8.20.0-1] srv ev 918 t=37116.2 h2-close face=h2 conn=57112 tag=toward.pre103-200K.200K.obs.53 heads=[103:800,200:800] rst=0
+[guix-8.20.0-1] srv ev 920 t=37117.9 h2-wire face=h2 conn=57112 tag=toward.pre103-200K.200K.obs.53 wire_bytes_written=360416 wire_bytes_read=828
+[guix-8.20.0-1] cell toward pre103-200K+200K face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=103 ver=3 t_ms=7.0 cpu_ms=2.3 calls=401 hdr_lines=400 bytes=102413 heads=[103:400:102413] refused=bytes@102413 header_size=102157 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=126
+[guix-8.20.0-1] srv ev 922 t=37143.4 h2-close face=h2 conn=57124 tag=toward.pre103-200K.200K.cap.54 heads=[103:800,200:800] rst=0
+[guix-8.20.0-1] srv ev 924 t=37144.5 h2-wire face=h2 conn=57124 tag=toward.pre103-200K.200K.cap.54 wire_bytes_written=360418 wire_bytes_read=828
+[guix-8.20.0-1] cell toward tr-2+6000 face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=12.9 cpu_ms=4.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=47 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4999 stored_r0=4999 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 926 t=37162.0 h2-close face=h2 conn=57140 tag=toward.tr-2.6000.none.55 heads=[200:2,trailers:6000] rst=0
+[guix-8.20.0-1] srv ev 928 t=37165.2 h2-wire face=h2 conn=57140 tag=toward.tr-2.6000.none.55 wire_bytes_written=79715 wire_bytes_read=779
+[guix-8.20.0-1] cell toward tr-2+6000 face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=15.2 cpu_ms=6.3 calls=5001 hdr_lines=4999 bytes=79999 heads=[200:2:47,T:4997:79952] refused=- header_size=47 stored=2 walk_ms=0.27 walk_cpu_ms=0.27 stored_all=4999 stored_r0=4999 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 930 t=38095.0 h2-close face=h2 conn=57144 tag=toward.tr-2.6000.obs.56 heads=[200:2,trailers:6000] rst=0
+[guix-8.20.0-1] srv ev 932 t=38098.9 h2-wire face=h2 conn=57144 tag=toward.tr-2.6000.obs.56 wire_bytes_written=79716 wire_bytes_read=778
+[guix-8.20.0-1] cell toward tr-2+6000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=12.1 cpu_ms=3.6 calls=1003 hdr_lines=1001 bytes=16031 heads=[200:2:47,T:999:15984] refused=lines@1001 header_size=47 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 934 t=39099.8 h2-close face=h2 conn=57156 tag=toward.tr-2.6000.cap.57 heads=[200:2,trailers:6000] rst=0
+[guix-8.20.0-1] srv ev 936 t=39102.0 h2-wire face=h2 conn=57156 tag=toward.tr-2.6000.cap.57 wire_bytes_written=79714 wire_bytes_read=778
+[guix-8.20.0-1] cell toward tr-3000+3000 face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=10.0 cpu_ms=3.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=48015 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4999 stored_r0=4999 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 938 t=39153.1 h2-close face=h2 conn=57168 tag=toward.tr-3000.3000.none.58 heads=[200:3000,trailers:3000] rst=0
+[guix-8.20.0-1] srv ev 940 t=39154.5 h2-wire face=h2 conn=57168 tag=toward.tr-3000.3000.none.58 wire_bytes_written=79712 wire_bytes_read=783
+[guix-8.20.0-1] cell toward tr-3000+3000 face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=19.2 cpu_ms=5.2 calls=5001 hdr_lines=4999 bytes=79999 heads=[200:3000:48015,T:1999:31984] refused=- header_size=48015 stored=3000 walk_ms=283.90 walk_cpu_ms=283.88 stored_all=4999 stored_r0=4999 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 942 t=40136.2 h2-close face=h2 conn=57174 tag=toward.tr-3000.3000.obs.59 heads=[200:3000,trailers:3000] rst=0
+[guix-8.20.0-1] srv ev 944 t=40139.8 h2-wire face=h2 conn=57174 tag=toward.tr-3000.3000.obs.59 wire_bytes_written=79712 wire_bytes_read=782
+[guix-8.20.0-1] cell toward tr-3000+3000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=200 ver=3 t_ms=9.8 cpu_ms=2.1 calls=1002 hdr_lines=1001 bytes=16029 heads=[200:1001:16029] refused=lines@1001 header_size=16013 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 946 t=41387.3 h2-close face=h2 conn=57188 tag=toward.tr-3000.3000.cap.60 heads=[200:3000,trailers:3000] rst=0
+[guix-8.20.0-1] srv ev 948 t=41387.7 h2-wire face=h2 conn=57188 tag=toward.tr-3000.3000.cap.60 wire_bytes_written=79713 wire_bytes_read=817
+[guix-8.20.0-1] cell toward tr-2+400K face=h2 mode=none code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=7.5 cpu_ms=2.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=47 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=5
+[guix-8.20.0-1] srv ev 950 t=41436.3 h2-close face=h2 conn=57198 tag=toward.tr-2.400K.none.61 heads=[200:2,trailers:1600] rst=0
+[guix-8.20.0-1] srv ev 952 t=41437.4 h2-wire face=h2 conn=57198 tag=toward.tr-2.400K.none.61 wire_bytes_written=360655 wire_bytes_read=815
+[guix-8.20.0-1] cell toward tr-2+400K face=h2 mode=obs code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=6.7 cpu_ms=2.4 calls=4 hdr_lines=2 bytes=47 heads=[200:2:47] refused=- header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=5
+[guix-8.20.0-1] srv ev 954 t=41443.3 h2-close face=h2 conn=57204 tag=toward.tr-2.400K.obs.62 heads=[200:2,trailers:1600] rst=0
+[guix-8.20.0-1] srv ev 956 t=41444.6 h2-wire face=h2 conn=57204 tag=toward.tr-2.400K.obs.62 wire_bytes_written=360655 wire_bytes_read=814
+[guix-8.20.0-1] cell toward tr-2+400K face=h2 mode=cap code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=6.6 cpu_ms=2.3 calls=4 hdr_lines=2 bytes=47 heads=[200:2:47] refused=none header_size=47 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=0 live_kb=5
+[guix-8.20.0-1] srv ev 958 t=41450.5 h2-close face=h2 conn=57208 tag=toward.tr-2.400K.cap.63 heads=[200:2,trailers:1600] rst=0
+[guix-8.20.0-1] srv ev 960 t=41451.7 h2-wire face=h2 conn=57208 tag=toward.tr-2.400K.cap.63 wire_bytes_written=360678 wire_bytes_read=814
+[guix-8.20.0-1] cell toward tr-200K+200K face=h2 mode=none code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=5.2 cpu_ms=2.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168461 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=658 stored_r0=658 stored_r1=0 live_kb=204
+[guix-8.20.0-1] srv ev 962 t=41457.5 h2-close face=h2 conn=57220 tag=toward.tr-200K.200K.none.64 heads=[200:800,trailers:800] rst=0
+[guix-8.20.0-1] srv ev 964 t=41457.8 h2-wire face=h2 conn=57220 tag=toward.tr-200K.200K.none.64 wire_bytes_written=360609 wire_bytes_read=825
+[guix-8.20.0-1] cell toward tr-200K+200K face=h2 mode=obs code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=5.2 cpu_ms=2.3 calls=659 hdr_lines=658 bytes=168461 heads=[200:658:168461] refused=- header_size=168461 stored=658 walk_ms=9.20 walk_cpu_ms=9.20 stored_all=658 stored_r0=658 stored_r1=0 live_kb=204
+[guix-8.20.0-1] srv ev 966 t=41481.4 h2-close face=h2 conn=57228 tag=toward.tr-200K.200K.obs.65 heads=[200:800,trailers:800] rst=0
+[guix-8.20.0-1] srv ev 968 t=41481.7 h2-wire face=h2 conn=57228 tag=toward.tr-200K.200K.obs.65 wire_bytes_written=360608 wire_bytes_read=824
+[guix-8.20.0-1] cell toward tr-200K+200K face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=200 ver=3 t_ms=4.9 cpu_ms=2.0 calls=401 hdr_lines=400 bytes=102413 heads=[200:400:102413] refused=bytes@102413 header_size=102157 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=126
+[guix-8.20.0-1] srv ev 970 t=41514.9 h2-close face=h2 conn=57244 tag=toward.tr-200K.200K.cap.66 heads=[200:800,trailers:800] rst=0
+[guix-8.20.0-1] srv ev 972 t=41515.1 h2-wire face=h2 conn=57244 tag=toward.tr-200K.200K.cap.66 wire_bytes_written=360610 wire_bytes_read=824
+[guix-8.20.0-1] cell toward tr-line4000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=2.2 cpu_ms=1.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=9
+[guix-8.20.0-1] srv ev 974 t=41523.9 h2-close face=h2 conn=57258 tag=toward.tr-line4000.none.67 heads=[200:2,trailers:1] rst=0
+[guix-8.20.0-1] srv ev 976 t=41524.2 h2-wire face=h2 conn=57258 tag=toward.tr-line4000.none.67 wire_bytes_written=5111 wire_bytes_read=780
+[guix-8.20.0-1] cell toward tr-line4000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=3.1 cpu_ms=1.5 calls=5 hdr_lines=3 bytes=4047 heads=[200:2:47,T:1:4000] refused=- header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=9
+[guix-8.20.0-1] srv ev 978 t=41527.5 h2-close face=h2 conn=57272 tag=toward.tr-line4000.obs.68 heads=[200:2,trailers:1] rst=0
+[guix-8.20.0-1] srv ev 980 t=41527.7 h2-wire face=h2 conn=57272 tag=toward.tr-line4000.obs.68 wire_bytes_written=5110 wire_bytes_read=779
+[guix-8.20.0-1] cell toward tr-line4000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=1.9 cpu_ms=1.4 calls=5 hdr_lines=3 bytes=4047 heads=[200:2:47,T:1:4000] refused=none header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=9
+[guix-8.20.0-1] srv ev 982 t=41529.8 h2-close face=h2 conn=57278 tag=toward.tr-line4000.cap.69 heads=[200:2,trailers:1] rst=0
+[guix-8.20.0-1] srv ev 984 t=41530.1 h2-wire face=h2 conn=57278 tag=toward.tr-line4000.cap.69 wire_bytes_written=5135 wire_bytes_read=779
+[guix-8.20.0-1] cell toward tr-line5000 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=1.9 cpu_ms=1.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=10
+[guix-8.20.0-1] srv ev 986 t=41532.1 h2-close face=h2 conn=57282 tag=toward.tr-line5000.none.70 heads=[200:2,trailers:1] rst=0
+[guix-8.20.0-1] srv ev 988 t=41532.4 h2-wire face=h2 conn=57282 tag=toward.tr-line5000.none.70 wire_bytes_written=6010 wire_bytes_read=780
+[guix-8.20.0-1] cell toward tr-line5000 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=1.8 cpu_ms=1.4 calls=5 hdr_lines=3 bytes=5047 heads=[200:2:47,T:1:5000] refused=- header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=10
+[guix-8.20.0-1] srv ev 990 t=41534.3 h2-close face=h2 conn=57290 tag=toward.tr-line5000.obs.71 heads=[200:2,trailers:1] rst=0
+[guix-8.20.0-1] srv ev 992 t=41534.6 h2-wire face=h2 conn=57290 tag=toward.tr-line5000.obs.71 wire_bytes_written=6009 wire_bytes_read=779
+[guix-8.20.0-1] cell toward tr-line5000 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=1.8 cpu_ms=1.4 calls=5 hdr_lines=3 bytes=5047 heads=[200:2:47,T:1:5000] refused=none header_size=47 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=3 stored_r0=3 stored_r1=0 live_kb=10
+[guix-8.20.0-1] srv ev 994 t=41536.5 h2-close face=h2 conn=57294 tag=toward.tr-line5000.cap.72 heads=[200:2,trailers:1] rst=0
+[guix-8.20.0-1] srv ev 996 t=41536.8 h2-wire face=h2 conn=57294 tag=toward.tr-line5000.cap.72 wire_bytes_written=6009 wire_bytes_read=779
+[guix-8.20.0-1] cell toward auth-2+2 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=0.8 cpu_ms=0.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=210 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=6
+[guix-8.20.0-1] srv ev 999 t=41537.6 wrote face=h1 conn=57252 tag=toward.auth-2.2.none.73 proto=h1 heads=[401:3:156] bytes=156
+[guix-8.20.0-1] srv ev 1001 t=41537.8 wrote face=h1 conn=57252 tag=toward.auth-2.2.none.73 proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0-1] cell toward auth-2+2 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=0.3 cpu_ms=0.1 calls=9 hdr_lines=5 bytes=210 heads=[401:3:156,200:2:54] refused=- header_size=210 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=6
+[guix-8.20.0-1] srv ev 1005 t=41538.3 wrote face=h1 conn=57260 tag=toward.auth-2.2.obs.74 proto=h1 heads=[401:3:156] bytes=156
+[guix-8.20.0-1] srv ev 1007 t=41538.5 wrote face=h1 conn=57260 tag=toward.auth-2.2.obs.74 proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0-1] cell toward auth-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=9 hdr_lines=5 bytes=210 heads=[401:3:156,200:2:54] refused=none header_size=210 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=6
+[guix-8.20.0-1] srv ev 1011 t=41538.9 wrote face=h1 conn=57262 tag=toward.auth-2.2.cap.75 proto=h1 heads=[401:3:156] bytes=156
+[guix-8.20.0-1] srv ev 1013 t=41538.9 wrote face=h1 conn=57262 tag=toward.auth-2.2.cap.75 proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0-1] cell toward auth-6000+2 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=401 ver=2 t_ms=1.7 cpu_ms=0.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80106 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 1017 t=41540.5 wrote face=h1 conn=57276 tag=toward.auth-6000.2.none.76 proto=h1 heads=[401:6001:96124] bytes=96124
+[guix-8.20.0-1] cell toward auth-6000+2 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=401 ver=2 t_ms=3.4 cpu_ms=0.8 calls=5001 hdr_lines=5000 bytes=80106 heads=[401:5000:80106] refused=- header_size=80106 stored=5000 walk_ms=468.14 walk_cpu_ms=468.00 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 1021 t=42466.4 wrote face=h1 conn=57286 tag=toward.auth-6000.2.obs.77 proto=h1 heads=[401:6001:96124] bytes=96124
+[guix-8.20.0-1] cell toward auth-6000+2 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=401 ver=2 t_ms=2.9 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16122 heads=[401:1001:16122] refused=lines@1001 header_size=16106 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 1025 t=43883.1 wrote face=h1 conn=57300 tag=toward.auth-6000.2.cap.78 proto=h1 heads=[401:6001:96124] bytes=96124
+[guix-8.20.0-1] cell toward auth-3000+3000 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=3.1 cpu_ms=0.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80128 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1999 stored_r0=3001 stored_r1=1999 live_kb=347
+[guix-8.20.0-1] srv ev 1029 t=43927.2 wrote face=h1 conn=57310 tag=toward.auth-3000.3000.none.79 proto=h1 heads=[401:3001:48124] bytes=48124
+[guix-8.20.0-1] srv ev 1031 t=43928.4 wrote face=h1 conn=57310 tag=toward.auth-3000.3000.none.79 proto=h1 heads=[200:3000:48022] bytes=48022
+[guix-8.20.0-1] cell toward auth-3000+3000 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=2.4 cpu_ms=0.8 calls=5003 hdr_lines=5000 bytes=80128 heads=[401:3001:48124,200:1999:32004] refused=- header_size=80128 stored=1999 walk_ms=192.19 walk_cpu_ms=192.19 stored_all=1999 stored_r0=3001 stored_r1=1999 live_kb=347
+[guix-8.20.0-1] srv ev 1035 t=44605.9 wrote face=h1 conn=35584 tag=toward.auth-3000.3000.obs.80 proto=h1 heads=[401:3001:48124] bytes=48124
+[guix-8.20.0-1] srv ev 1037 t=44607.2 wrote face=h1 conn=35584 tag=toward.auth-3000.3000.obs.80 proto=h1 heads=[200:3000:48022] bytes=48022
+[guix-8.20.0-1] cell toward auth-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=401 ver=2 t_ms=1.1 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16122 heads=[401:1001:16122] refused=lines@1001 header_size=16106 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 1041 t=45471.9 wrote face=h1 conn=35594 tag=toward.auth-3000.3000.cap.81 proto=h1 heads=[401:3001:48124] bytes=48124
+[guix-8.20.0-1] cell toward auth-200K+200K face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.2 cpu_ms=0.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=409266 stored=800 walk_ms=27.14 walk_cpu_ms=27.14 stored_all=800 stored_r0=801 stored_r1=800 live_kb=490
+[guix-8.20.0-1] srv ev 1045 t=45515.1 wrote face=h1 conn=35604 tag=toward.auth-200K.200K.none.82 proto=h1 heads=[401:801:204684] bytes=204684
+[guix-8.20.0-1] srv ev 1047 t=45516.2 wrote face=h1 conn=35604 tag=toward.auth-200K.200K.none.82 proto=h1 heads=[200:800:204582] bytes=204582
+[guix-8.20.0-1] cell toward auth-200K+200K face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=2.2 cpu_ms=0.5 calls=1605 hdr_lines=1601 bytes=409266 heads=[401:801:204684,200:800:204582] refused=- header_size=409266 stored=800 walk_ms=27.24 walk_cpu_ms=27.24 stored_all=800 stored_r0=801 stored_r1=800 live_kb=490
+[guix-8.20.0-1] srv ev 1051 t=45627.2 wrote face=h1 conn=35606 tag=toward.auth-200K.200K.obs.83 proto=h1 heads=[401:801:204684] bytes=204684
+[guix-8.20.0-1] srv ev 1053 t=45628.3 wrote face=h1 conn=35606 tag=toward.auth-200K.200K.obs.83 proto=h1 heads=[200:800:204582] bytes=204582
+[guix-8.20.0-1] cell toward auth-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=401 ver=2 t_ms=1.0 cpu_ms=0.2 calls=403 hdr_lines=402 bytes=102538 heads=[401:402:102538] refused=bytes@102538 header_size=102282 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=127
+[guix-8.20.0-1] srv ev 1057 t=45739.3 wrote face=h1 conn=35612 tag=toward.auth-200K.200K.cap.84 proto=h1 heads=[401:801:204684] bytes=204684
+[guix-8.20.0-1] cell toward redir-2+2 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=0.5 cpu_ms=0.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=161 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=5
+[guix-8.20.0-1] srv ev 1061 t=45747.1 wrote face=h1 conn=35626 tag=toward.redir-2.2.none.85 proto=h1 heads=[302:3:107] bytes=107
+[guix-8.20.0-1] srv ev 1063 t=45747.2 wrote face=h1 conn=35626 tag=toward.redir-2.2.none.85 proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0-1] cell toward redir-2+2 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=9 hdr_lines=5 bytes=160 heads=[302:3:106,200:2:54] refused=- header_size=160 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=5
+[guix-8.20.0-1] srv ev 1067 t=45747.6 wrote face=h1 conn=35636 tag=toward.redir-2.2.obs.86 proto=h1 heads=[302:3:106] bytes=106
+[guix-8.20.0-1] srv ev 1069 t=45747.7 wrote face=h1 conn=35636 tag=toward.redir-2.2.obs.86 proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0-1] cell toward redir-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.2 cpu_ms=0.1 calls=9 hdr_lines=5 bytes=160 heads=[302:3:106,200:2:54] refused=none header_size=160 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=5
+[guix-8.20.0-1] srv ev 1073 t=45748.1 wrote face=h1 conn=35640 tag=toward.redir-2.2.cap.87 proto=h1 heads=[302:3:106] bytes=106
+[guix-8.20.0-1] srv ev 1075 t=45748.1 wrote face=h1 conn=35640 tag=toward.redir-2.2.cap.87 proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0-1] cell toward redir-3000+3000 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=1.7 cpu_ms=0.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80088 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1999 stored_r0=3001 stored_r1=1999 live_kb=347
+[guix-8.20.0-1] srv ev 1079 t=45748.9 wrote face=h1 conn=35644 tag=toward.redir-3000.3000.none.88 proto=h1 heads=[302:3001:48084] bytes=48084
+[guix-8.20.0-1] srv ev 1081 t=45749.8 wrote face=h1 conn=35644 tag=toward.redir-3000.3000.none.88 proto=h1 heads=[200:3000:48022] bytes=48022
+[guix-8.20.0-1] cell toward redir-3000+3000 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=3.7 cpu_ms=0.7 calls=5003 hdr_lines=5000 bytes=80087 heads=[302:3001:48083,200:1999:32004] refused=- header_size=80087 stored=1999 walk_ms=196.10 walk_cpu_ms=196.07 stored_all=1999 stored_r0=3001 stored_r1=1999 live_kb=347
+[guix-8.20.0-1] srv ev 1085 t=46420.9 wrote face=h1 conn=35660 tag=toward.redir-3000.3000.obs.89 proto=h1 heads=[302:3001:48083] bytes=48083
+[guix-8.20.0-1] srv ev 1087 t=46422.2 wrote face=h1 conn=35660 tag=toward.redir-3000.3000.obs.89 proto=h1 heads=[200:3000:48022] bytes=48022
+[guix-8.20.0-1] cell toward redir-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=302 ver=2 t_ms=1.9 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16081 heads=[302:1001:16081] refused=lines@1001 header_size=16065 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 1091 t=47283.0 wrote face=h1 conn=35664 tag=toward.redir-3000.3000.cap.90 proto=h1 heads=[302:3001:48083] bytes=48083
+[guix-8.20.0-1] cell toward redir-200K+200K face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=3.6 cpu_ms=0.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=409234 stored=800 walk_ms=27.36 walk_cpu_ms=27.36 stored_all=800 stored_r0=801 stored_r1=800 live_kb=489
+[guix-8.20.0-1] srv ev 1095 t=47327.8 wrote face=h1 conn=35668 tag=toward.redir-200K.200K.none.91 proto=h1 heads=[302:801:204652] bytes=204652
+[guix-8.20.0-1] srv ev 1097 t=47329.1 wrote face=h1 conn=35668 tag=toward.redir-200K.200K.none.91 proto=h1 heads=[200:800:204582] bytes=204582
+[guix-8.20.0-1] cell toward redir-200K+200K face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=3.7 cpu_ms=0.5 calls=1605 hdr_lines=1601 bytes=409233 heads=[302:801:204651,200:800:204582] refused=- header_size=409233 stored=800 walk_ms=27.45 walk_cpu_ms=27.45 stored_all=800 stored_r0=801 stored_r1=800 live_kb=489
+[guix-8.20.0-1] srv ev 1101 t=47441.4 wrote face=h1 conn=35676 tag=toward.redir-200K.200K.obs.92 proto=h1 heads=[302:801:204651] bytes=204651
+[guix-8.20.0-1] srv ev 1103 t=47442.8 wrote face=h1 conn=35676 tag=toward.redir-200K.200K.obs.92 proto=h1 heads=[200:800:204582] bytes=204582
+[guix-8.20.0-1] cell toward redir-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=302 ver=2 t_ms=2.0 cpu_ms=0.2 calls=403 hdr_lines=402 bytes=102505 heads=[302:402:102505] refused=bytes@102505 header_size=102249 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=127
+[guix-8.20.0-1] srv ev 1107 t=47554.6 wrote face=h1 conn=35678 tag=toward.redir-200K.200K.cap.93 proto=h1 heads=[302:801:204651] bytes=204651
+[guix-8.20.0-1] cell toward auth-2+2 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=2.9 cpu_ms=1.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=192 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=6
+[guix-8.20.0-1] srv ev 1110 t=47564.7 h2-close face=h2 conn=58840 tag=toward.auth-2.2.none.94 heads=[401:3] rst=0
+[guix-8.20.0-1] srv ev 1112 t=47565.0 h2-close face=h2 conn=58840 tag=toward.auth-2.2.none.94 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 1114 t=47565.3 h2-wire face=h2 conn=58840 tag=toward.auth-2.2.none.94 wire_bytes_written=1697 wire_bytes_read=1066
+[guix-8.20.0-1] cell toward auth-2+2 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=2.2 cpu_ms=1.6 calls=9 hdr_lines=5 bytes=192 heads=[401:3:142,200:2:50] refused=- header_size=192 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=6
+[guix-8.20.0-1] srv ev 1116 t=47567.4 h2-close face=h2 conn=58842 tag=toward.auth-2.2.obs.95 heads=[401:3] rst=0
+[guix-8.20.0-1] srv ev 1118 t=47567.7 h2-close face=h2 conn=58842 tag=toward.auth-2.2.obs.95 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 1120 t=47568.0 h2-wire face=h2 conn=58842 tag=toward.auth-2.2.obs.95 wire_bytes_written=1698 wire_bytes_read=1066
+[guix-8.20.0-1] cell toward auth-2+2 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=3.2 cpu_ms=2.7 calls=9 hdr_lines=5 bytes=192 heads=[401:3:142,200:2:50] refused=none header_size=192 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=6
+[guix-8.20.0-1] srv ev 1122 t=47571.3 h2-close face=h2 conn=58850 tag=toward.auth-2.2.cap.96 heads=[401:3] rst=0
+[guix-8.20.0-1] srv ev 1124 t=47571.5 h2-close face=h2 conn=58850 tag=toward.auth-2.2.cap.96 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 1126 t=47571.7 h2-wire face=h2 conn=58850 tag=toward.auth-2.2.cap.96 wire_bytes_written=1697 wire_bytes_read=1066
+[guix-8.20.0-1] cell toward auth-6000+2 face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=401 ver=3 t_ms=10.1 cpu_ms=2.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80076 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4999 stored_r0=4999 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 1128 t=47580.7 h2-close face=h2 conn=58860 tag=toward.auth-6000.2.none.97 heads=[401:6001] rst=0
+[guix-8.20.0-1] srv ev 1130 t=47582.3 h2-wire face=h2 conn=58860 tag=toward.auth-6000.2.none.97 wire_bytes_written=79758 wire_bytes_read=813
+[guix-8.20.0-1] cell toward auth-6000+2 face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=401 ver=3 t_ms=10.9 cpu_ms=3.1 calls=5000 hdr_lines=4999 bytes=80076 heads=[401:4999:80076] refused=- header_size=80076 stored=4999 walk_ms=469.55 walk_cpu_ms=469.41 stored_all=4999 stored_r0=4999 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 1132 t=48526.0 h2-close face=h2 conn=58872 tag=toward.auth-6000.2.obs.98 heads=[401:6001] rst=0
+[guix-8.20.0-1] srv ev 1134 t=48527.8 h2-wire face=h2 conn=58872 tag=toward.auth-6000.2.obs.98 wire_bytes_written=79734 wire_bytes_read=813
+[guix-8.20.0-1] cell toward auth-6000+2 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=401 ver=3 t_ms=9.3 cpu_ms=2.1 calls=1002 hdr_lines=1001 bytes=16108 heads=[401:1001:16108] refused=lines@1001 header_size=16092 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 1136 t=49930.6 h2-close face=h2 conn=58880 tag=toward.auth-6000.2.cap.99 heads=[401:6001] rst=0
+[guix-8.20.0-1] srv ev 1138 t=49931.3 h2-wire face=h2 conn=58880 tag=toward.auth-6000.2.cap.99 wire_bytes_written=79758 wire_bytes_read=813
+[guix-8.20.0-1] cell toward auth-3000+3000 face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=10.7 cpu_ms=3.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80078 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1997 stored_r0=3001 stored_r1=1997 live_kb=348
+[guix-8.20.0-1] srv ev 1140 t=49980.4 h2-close face=h2 conn=58886 tag=toward.auth-3000.3000.none.100 heads=[401:3001] rst=0
+[guix-8.20.0-1] srv ev 1142 t=49984.5 h2-close face=h2 conn=58886 tag=toward.auth-3000.3000.none.100 heads=[200:3000] rst=0
+[guix-8.20.0-1] srv ev 1144 t=49985.5 h2-wire face=h2 conn=58886 tag=toward.auth-3000.3000.none.100 wire_bytes_written=79757 wire_bytes_read=1128
+[guix-8.20.0-1] cell toward auth-3000+3000 face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=10.3 cpu_ms=3.3 calls=5001 hdr_lines=4998 bytes=80078 heads=[401:3001:48110,200:1997:31968] refused=- header_size=80078 stored=1997 walk_ms=194.32 walk_cpu_ms=194.31 stored_all=1997 stored_r0=3001 stored_r1=1997 live_kb=347
+[guix-8.20.0-1] srv ev 1146 t=50658.6 h2-close face=h2 conn=58898 tag=toward.auth-3000.3000.obs.101 heads=[401:3001] rst=0
+[guix-8.20.0-1] srv ev 1148 t=50662.8 h2-close face=h2 conn=58898 tag=toward.auth-3000.3000.obs.101 heads=[200:3000] rst=0
+[guix-8.20.0-1] srv ev 1150 t=50673.3 h2-wire face=h2 conn=58898 tag=toward.auth-3000.3000.obs.101 wire_bytes_written=79757 wire_bytes_read=1125
+[guix-8.20.0-1] cell toward auth-3000+3000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=401 ver=3 t_ms=7.2 cpu_ms=2.1 calls=1002 hdr_lines=1001 bytes=16108 heads=[401:1001:16108] refused=lines@1001 header_size=16092 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 1152 t=51557.4 h2-close face=h2 conn=58912 tag=toward.auth-3000.3000.cap.102 heads=[401:3001] rst=0
+[guix-8.20.0-1] srv ev 1154 t=51558.2 h2-wire face=h2 conn=58912 tag=toward.auth-3000.3000.cap.102 wire_bytes_written=40672 wire_bytes_read=817
+[guix-8.20.0-1] cell toward auth-200K+200K face=h2 mode=none code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=401 ver=3 t_ms=5.5 cpu_ms=2.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168316 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=659 stored_r0=659 stored_r1=0 live_kb=204
+[guix-8.20.0-1] srv ev 1156 t=51604.9 h2-close face=h2 conn=58928 tag=toward.auth-200K.200K.none.103 heads=[401:801] rst=0
+[guix-8.20.0-1] srv ev 1158 t=51606.3 h2-wire face=h2 conn=58928 tag=toward.auth-200K.200K.none.103 wire_bytes_written=180910 wire_bytes_read=833
+[guix-8.20.0-1] cell toward auth-200K+200K face=h2 mode=obs code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=401 ver=3 t_ms=4.8 cpu_ms=2.4 calls=660 hdr_lines=659 bytes=168316 heads=[401:659:168316] refused=- header_size=168316 stored=659 walk_ms=9.05 walk_cpu_ms=9.05 stored_all=659 stored_r0=659 stored_r1=0 live_kb=204
+[guix-8.20.0-1] srv ev 1160 t=51628.4 h2-close face=h2 conn=58938 tag=toward.auth-200K.200K.obs.104 heads=[401:801] rst=0
+[guix-8.20.0-1] srv ev 1162 t=51629.6 h2-wire face=h2 conn=58938 tag=toward.auth-200K.200K.obs.104 wire_bytes_written=180908 wire_bytes_read=832
+[guix-8.20.0-1] cell toward auth-200K+200K face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=401 ver=3 t_ms=4.3 cpu_ms=2.1 calls=403 hdr_lines=402 bytes=102524 heads=[401:402:102524] refused=bytes@102524 header_size=102268 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=127
+[guix-8.20.0-1] srv ev 1164 t=51660.7 h2-close face=h2 conn=58944 tag=toward.auth-200K.200K.cap.105 heads=[401:801] rst=0
+[guix-8.20.0-1] srv ev 1166 t=51661.6 h2-wire face=h2 conn=58944 tag=toward.auth-200K.200K.cap.105 wire_bytes_written=180910 wire_bytes_read=832
+[guix-8.20.0-1] cell toward redir-2+2 face=h2 mode=none code=0 err="" status=200 ver=3 t_ms=2.2 cpu_ms=1.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=151 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=5
+[guix-8.20.0-1] srv ev 1168 t=51670.6 h2-close face=h2 conn=58948 tag=toward.redir-2.2.none.106 heads=[302:3] rst=0
+[guix-8.20.0-1] srv ev 1170 t=51670.9 h2-close face=h2 conn=58948 tag=toward.redir-2.2.none.106 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 1172 t=51671.2 h2-wire face=h2 conn=58948 tag=toward.redir-2.2.none.106 wire_bytes_written=1670 wire_bytes_read=890
+[guix-8.20.0-1] cell toward redir-2+2 face=h2 mode=obs code=0 err="" status=200 ver=3 t_ms=2.0 cpu_ms=1.5 calls=9 hdr_lines=5 bytes=150 heads=[302:3:100,200:2:50] refused=- header_size=150 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=5
+[guix-8.20.0-1] srv ev 1174 t=51673.2 h2-close face=h2 conn=58950 tag=toward.redir-2.2.obs.107 heads=[302:3] rst=0
+[guix-8.20.0-1] srv ev 1176 t=51673.4 h2-close face=h2 conn=58950 tag=toward.redir-2.2.obs.107 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 1178 t=51673.6 h2-wire face=h2 conn=58950 tag=toward.redir-2.2.obs.107 wire_bytes_written=1671 wire_bytes_read=889
+[guix-8.20.0-1] cell toward redir-2+2 face=h2 mode=cap code=0 err="" status=200 ver=3 t_ms=1.9 cpu_ms=1.5 calls=9 hdr_lines=5 bytes=150 heads=[302:3:100,200:2:50] refused=none header_size=150 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=3 stored_r1=2 live_kb=5
+[guix-8.20.0-1] srv ev 1180 t=51675.5 h2-close face=h2 conn=58956 tag=toward.redir-2.2.cap.108 heads=[302:3] rst=0
+[guix-8.20.0-1] srv ev 1182 t=51675.7 h2-close face=h2 conn=58956 tag=toward.redir-2.2.cap.108 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 1184 t=51675.9 h2-wire face=h2 conn=58956 tag=toward.redir-2.2.cap.108 wire_bytes_written=1670 wire_bytes_read=889
+[guix-8.20.0-1] cell toward redir-3000+3000 face=h2 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=10.0 cpu_ms=2.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80046 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1997 stored_r0=3001 stored_r1=1997 live_kb=347
+[guix-8.20.0-1] srv ev 1186 t=51681.1 h2-close face=h2 conn=58966 tag=toward.redir-3000.3000.none.109 heads=[302:3001] rst=0
+[guix-8.20.0-1] srv ev 1188 t=51685.4 h2-close face=h2 conn=58966 tag=toward.redir-3000.3000.none.109 heads=[200:3000] rst=0
+[guix-8.20.0-1] srv ev 1190 t=51686.3 h2-wire face=h2 conn=58966 tag=toward.redir-3000.3000.none.109 wire_bytes_written=79761 wire_bytes_read=939
+[guix-8.20.0-1] cell toward redir-3000+3000 face=h2 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=11.3 cpu_ms=3.3 calls=5001 hdr_lines=4998 bytes=80045 heads=[302:3001:48077,200:1997:31968] refused=- header_size=80045 stored=1997 walk_ms=187.95 walk_cpu_ms=187.94 stored_all=1997 stored_r0=3001 stored_r1=1997 live_kb=347
+[guix-8.20.0-1] srv ev 1192 t=52368.5 h2-close face=h2 conn=58968 tag=toward.redir-3000.3000.obs.110 heads=[302:3001] rst=0
+[guix-8.20.0-1] srv ev 1194 t=52372.9 h2-close face=h2 conn=58968 tag=toward.redir-3000.3000.obs.110 heads=[200:3000] rst=0
+[guix-8.20.0-1] srv ev 1196 t=52374.0 h2-wire face=h2 conn=58968 tag=toward.redir-3000.3000.obs.110 wire_bytes_written=79736 wire_bytes_read=937
+[guix-8.20.0-1] cell toward redir-3000+3000 face=h2 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=302 ver=3 t_ms=6.2 cpu_ms=2.0 calls=1002 hdr_lines=1001 bytes=16075 heads=[302:1001:16075] refused=lines@1001 header_size=16059 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=74
+[guix-8.20.0-1] srv ev 1198 t=53254.8 h2-close face=h2 conn=58978 tag=toward.redir-3000.3000.cap.111 heads=[302:3001] rst=0
+[guix-8.20.0-1] srv ev 1200 t=53255.5 h2-wire face=h2 conn=58978 tag=toward.redir-3000.3000.cap.111 wire_bytes_written=40674 wire_bytes_read=818
+[guix-8.20.0-1] cell toward redir-200K+200K face=h2 mode=none code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=302 ver=3 t_ms=5.0 cpu_ms=2.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=168548 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=660 stored_r0=660 stored_r1=0 live_kb=205
+[guix-8.20.0-1] srv ev 1202 t=53301.9 h2-close face=h2 conn=58980 tag=toward.redir-200K.200K.none.112 heads=[302:801] rst=0
+[guix-8.20.0-1] srv ev 1204 t=53303.3 h2-wire face=h2 conn=58980 tag=toward.redir-200K.200K.none.112 wire_bytes_written=180894 wire_bytes_read=834
+[guix-8.20.0-1] cell toward redir-200K+200K face=h2 mode=obs code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=302 ver=3 t_ms=4.7 cpu_ms=2.4 calls=661 hdr_lines=660 bytes=168547 heads=[302:660:168547] refused=- header_size=168547 stored=660 walk_ms=9.27 walk_cpu_ms=9.27 stored_all=660 stored_r0=660 stored_r1=0 live_kb=205
+[guix-8.20.0-1] srv ev 1206 t=53325.5 h2-close face=h2 conn=58982 tag=toward.redir-200K.200K.obs.113 heads=[302:801] rst=0
+[guix-8.20.0-1] srv ev 1208 t=53326.8 h2-wire face=h2 conn=58982 tag=toward.redir-200K.200K.obs.113 wire_bytes_written=180918 wire_bytes_read=834
+[guix-8.20.0-1] cell toward redir-200K+200K face=h2 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=302 ver=3 t_ms=5.4 cpu_ms=2.6 calls=403 hdr_lines=402 bytes=102499 heads=[302:402:102499] refused=bytes@102499 header_size=102243 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=402 stored_r0=402 stored_r1=0 live_kb=126
+[guix-8.20.0-1] srv ev 1210 t=53360.8 h2-close face=h2 conn=58990 tag=toward.redir-200K.200K.cap.114 heads=[302:801] rst=0
+[guix-8.20.0-1] srv ev 1212 t=53361.9 h2-wire face=h2 conn=58990 tag=toward.redir-200K.200K.cap.114 wire_bytes_written=180918 wire_bytes_read=834
+[guix-8.20.0-1] cell toward expect-2+2 face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=0.7 cpu_ms=0.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=2 live_kb=69
+[guix-8.20.0-1] srv ev 1215 t=53370.7 wrote face=h1 conn=35682 tag=toward.expect-2.2.none.115 proto=h1 heads=[417:2:70] bytes=70
+[guix-8.20.0-1] srv ev 1217 t=53370.8 wrote face=h1 conn=35682 tag=toward.expect-2.2.none.115 proto=h1 heads=[100:0:25] bytes=25
+[guix-8.20.0-1] srv ev 1218 t=53371.0 wrote face=h1 conn=35682 tag=toward.expect-2.2.none.115 proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0-1] cell toward expect-2+2 face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=0.3 cpu_ms=0.1 calls=10 hdr_lines=4 bytes=149 heads=[417:2:70,100:0:25,200:2:54] refused=- header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=2 live_kb=69
+[guix-8.20.0-1] srv ev 1222 t=53371.6 wrote face=h1 conn=35686 tag=toward.expect-2.2.obs.116 proto=h1 heads=[417:2:70] bytes=70
+[guix-8.20.0-1] srv ev 1224 t=53371.7 wrote face=h1 conn=35686 tag=toward.expect-2.2.obs.116 proto=h1 heads=[100:0:25] bytes=25
+[guix-8.20.0-1] srv ev 1225 t=53371.7 wrote face=h1 conn=35686 tag=toward.expect-2.2.obs.116 proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0-1] cell toward expect-2+2 face=h1 mode=cap code=0 err="" status=200 ver=2 t_ms=0.3 cpu_ms=0.1 calls=10 hdr_lines=4 bytes=149 heads=[417:2:70,100:0:25,200:2:54] refused=none header_size=149 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2 stored_r0=2 stored_r1=2 live_kb=69
+[guix-8.20.0-1] srv ev 1229 t=53372.2 wrote face=h1 conn=35702 tag=toward.expect-2.2.cap.117 proto=h1 heads=[417:2:70] bytes=70
+[guix-8.20.0-1] srv ev 1231 t=53372.3 wrote face=h1 conn=35702 tag=toward.expect-2.2.cap.117 proto=h1 heads=[100:0:25] bytes=25
+[guix-8.20.0-1] srv ev 1232 t=53372.3 wrote face=h1 conn=35702 tag=toward.expect-2.2.cap.117 proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0-1] cell toward expect-6000+2 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=417 ver=2 t_ms=1.7 cpu_ms=0.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80036 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=411
+[guix-8.20.0-1] srv ev 1236 t=53373.9 wrote face=h1 conn=35716 tag=toward.expect-6000.2.none.118 proto=h1 heads=[417:6000:96038] bytes=96038
+[guix-8.20.0-1] cell toward expect-6000+2 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=417 ver=2 t_ms=2.9 cpu_ms=0.6 calls=5001 hdr_lines=5000 bytes=80036 heads=[417:5000:80036] refused=- header_size=80036 stored=5000 walk_ms=464.22 walk_cpu_ms=464.15 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=411
+[guix-8.20.0-1] srv ev 1240 t=54314.7 wrote face=h1 conn=37738 tag=toward.expect-6000.2.obs.119 proto=h1 heads=[417:6000:96038] bytes=96038
+[guix-8.20.0-1] cell toward expect-6000+2 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=417 ver=2 t_ms=2.7 cpu_ms=0.3 calls=1002 hdr_lines=1001 bytes=16052 heads=[417:1001:16052] refused=lines@1001 header_size=16036 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=138
+[guix-8.20.0-1] srv ev 1244 t=55707.4 wrote face=h1 conn=37740 tag=toward.expect-6000.2.cap.120 proto=h1 heads=[417:6000:96038] bytes=96038
+[guix-8.20.0-1] cell toward expect-3000+3000 face=h1 mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=2.9 cpu_ms=0.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80083 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=2000 stored_r0=3000 stored_r1=2000 live_kb=411
+[guix-8.20.0-1] srv ev 1248 t=55751.5 wrote face=h1 conn=37752 tag=toward.expect-3000.3000.none.121 proto=h1 heads=[417:3000:48038] bytes=48038
+[guix-8.20.0-1] srv ev 1250 t=55752.0 wrote face=h1 conn=37752 tag=toward.expect-3000.3000.none.121 proto=h1 heads=[100:0:25] bytes=25
+[guix-8.20.0-1] srv ev 1251 t=55752.8 wrote face=h1 conn=37752 tag=toward.expect-3000.3000.none.121 proto=h1 heads=[200:3000:48022] bytes=48022
+[guix-8.20.0-1] cell toward expect-3000+3000 face=h1 mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=3.4 cpu_ms=0.7 calls=5005 hdr_lines=5000 bytes=80083 heads=[417:3000:48038,100:0:25,200:2000:32020] refused=- header_size=80083 stored=2000 walk_ms=185.82 walk_cpu_ms=185.80 stored_all=2000 stored_r0=3000 stored_r1=2000 live_kb=411
+[guix-8.20.0-1] srv ev 1255 t=56421.6 wrote face=h1 conn=37758 tag=toward.expect-3000.3000.obs.122 proto=h1 heads=[417:3000:48038] bytes=48038
+[guix-8.20.0-1] srv ev 1257 t=56422.2 wrote face=h1 conn=37758 tag=toward.expect-3000.3000.obs.122 proto=h1 heads=[100:0:25] bytes=25
+[guix-8.20.0-1] srv ev 1258 t=56423.0 wrote face=h1 conn=37758 tag=toward.expect-3000.3000.obs.122 proto=h1 heads=[200:3000:48022] bytes=48022
+[guix-8.20.0-1] cell toward expect-3000+3000 face=h1 mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=417 ver=2 t_ms=0.8 cpu_ms=0.2 calls=1002 hdr_lines=1001 bytes=16052 heads=[417:1001:16052] refused=lines@1001 header_size=16036 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=138
+[guix-8.20.0-1] srv ev 1262 t=57297.8 wrote face=h1 conn=37772 tag=toward.expect-3000.3000.cap.123 proto=h1 heads=[417:3000:48038] bytes=48038
+[guix-8.20.0-1] cell toward expect-200K+200K face=h1 mode=none code=0 err="" status=200 ver=2 t_ms=2.7 cpu_ms=0.5 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=409205 stored=800 walk_ms=26.88 walk_cpu_ms=26.88 stored_all=800 stored_r0=800 stored_r1=800 live_kb=553
+[guix-8.20.0-1] srv ev 1266 t=57342.5 wrote face=h1 conn=37776 tag=toward.expect-200K.200K.none.124 proto=h1 heads=[417:800:204598] bytes=204598
+[guix-8.20.0-1] srv ev 1268 t=57342.9 wrote face=h1 conn=37776 tag=toward.expect-200K.200K.none.124 proto=h1 heads=[100:0:25] bytes=25
+[guix-8.20.0-1] srv ev 1269 t=57343.7 wrote face=h1 conn=37776 tag=toward.expect-200K.200K.none.124 proto=h1 heads=[200:800:204582] bytes=204582
+[guix-8.20.0-1] cell toward expect-200K+200K face=h1 mode=obs code=0 err="" status=200 ver=2 t_ms=3.7 cpu_ms=0.5 calls=1606 hdr_lines=1600 bytes=409205 heads=[417:800:204598,100:0:25,200:800:204582] refused=- header_size=409205 stored=800 walk_ms=26.38 walk_cpu_ms=26.38 stored_all=800 stored_r0=800 stored_r1=800 live_kb=553
+[guix-8.20.0-1] srv ev 1273 t=57454.8 wrote face=h1 conn=37792 tag=toward.expect-200K.200K.obs.125 proto=h1 heads=[417:800:204598] bytes=204598
+[guix-8.20.0-1] srv ev 1275 t=57455.2 wrote face=h1 conn=37792 tag=toward.expect-200K.200K.obs.125 proto=h1 heads=[100:0:25] bytes=25
+[guix-8.20.0-1] srv ev 1276 t=57456.3 wrote face=h1 conn=37792 tag=toward.expect-200K.200K.obs.125 proto=h1 heads=[200:800:204582] bytes=204582
+[guix-8.20.0-1] cell toward expect-200K+200K face=h1 mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=417 ver=2 t_ms=2.4 cpu_ms=0.2 calls=402 hdr_lines=401 bytes=102452 heads=[417:401:102452] refused=bytes@102452 header_size=102196 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=401 stored_r0=401 stored_r1=0 live_kb=191
+[guix-8.20.0-1] srv ev 1280 t=57565.7 wrote face=h1 conn=37808 tag=toward.expect-200K.200K.cap.126 proto=h1 heads=[417:800:204598] bytes=204598
+[guix-8.20.0-1] cell toward connect-2+2 face=h1tls+proxy mode=none code=0 err="" status=200 ver=2 t_ms=44.6 cpu_ms=1.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=125 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=5
+[guix-8.20.0-1] srv ev 1284 t=57575.5 connect-answered face=proxy conn=32892 tag=toward.connect-2.2.none.127 target=127.0.0.1:41401 lines=2 bytes=71
+[guix-8.20.0-1] srv ev 1287 t=57617.9 wrote face=h1tls conn=60660 tag=toward.connect-2.2.none.127 proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0-1] cell toward connect-2+2 face=h1tls+proxy mode=obs code=0 err="" status=200 ver=2 t_ms=42.7 cpu_ms=1.8 calls=8 hdr_lines=4 bytes=125 heads=[200:2:71,200:2:54] refused=- header_size=125 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=5
+[guix-8.20.0-1] srv ev 1291 t=57620.8 connect-answered face=proxy conn=32908 tag=toward.connect-2.2.obs.128 target=127.0.0.1:41401 lines=2 bytes=71
+[guix-8.20.0-1] srv ev 1294 t=57662.7 wrote face=h1tls conn=60666 tag=toward.connect-2.2.obs.128 proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0-1] cell toward connect-2+2 face=h1tls+proxy mode=cap code=0 err="" status=200 ver=2 t_ms=43.5 cpu_ms=1.7 calls=8 hdr_lines=4 bytes=125 heads=[200:2:71,200:2:54] refused=none header_size=125 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=5
+[guix-8.20.0-1] srv ev 1298 t=57665.1 connect-answered face=proxy conn=32918 tag=toward.connect-2.2.cap.129 target=127.0.0.1:41401 lines=2 bytes=71
+[guix-8.20.0-1] srv ev 1301 t=57707.7 wrote face=h1tls conn=60682 tag=toward.connect-2.2.cap.129 proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0-1] cell toward connect-6000+2 face=h1tls+proxy mode=none code=100 err="Too many response headers, 5000 is max" status=0 ver=0 t_ms=24.5 cpu_ms=22.4 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 1305 t=57712.1 connect-answered face=proxy conn=32932 tag=toward.connect-6000.2.none.130 target=127.0.0.1:41401 lines=6000 bytes=96039
+[guix-8.20.0-1] srv ev 1306 t=57735.1 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-6000+2 face=h1tls+proxy mode=obs code=100 err="Too many response headers, 5000 is max" status=0 ver=0 t_ms=23.7 cpu_ms=21.0 calls=5001 hdr_lines=5000 bytes=80037 heads=[200:5000:80037] refused=- header_size=80037 stored=0 walk_ms=0.01 walk_cpu_ms=0.01 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 1309 t=58667.5 connect-answered face=proxy conn=32946 tag=toward.connect-6000.2.obs.131 target=127.0.0.1:41401 lines=6000 bytes=96039
+[guix-8.20.0-1] srv ev 1310 t=58688.9 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-6000+2 face=h1tls+proxy mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=0 ver=0 t_ms=7.3 cpu_ms=4.6 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=73
+[guix-8.20.0-1] srv ev 1313 t=59640.9 connect-answered face=proxy conn=32956 tag=toward.connect-6000.2.cap.132 target=127.0.0.1:41401 lines=6000 bytes=96039
+[guix-8.20.0-1] srv ev 1314 t=59645.9 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-3000+3000 face=h1tls+proxy mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=58.8 cpu_ms=14.2 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80059 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 1317 t=59690.5 connect-answered face=proxy conn=32968 tag=toward.connect-3000.3000.none.133 target=127.0.0.1:41401 lines=3000 bytes=48039
+[guix-8.20.0-1] srv ev 1320 t=59747.1 wrote face=h1tls conn=60714 tag=toward.connect-3000.3000.none.133 proto=h1 heads=[200:3000:48022] bytes=48022
+[guix-8.20.0-1] cell toward connect-3000+3000 face=h1tls+proxy mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=2 t_ms=59.0 cpu_ms=14.4 calls=5003 hdr_lines=5000 bytes=80059 heads=[200:3000:48039,200:2000:32020] refused=- header_size=80059 stored=2000 walk_ms=187.24 walk_cpu_ms=187.20 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 1324 t=60731.9 connect-answered face=proxy conn=32976 tag=toward.connect-3000.3000.obs.134 target=127.0.0.1:41401 lines=3000 bytes=48039
+[guix-8.20.0-1] srv ev 1327 t=60788.1 wrote face=h1tls conn=60730 tag=toward.connect-3000.3000.obs.134 proto=h1 heads=[200:3000:48022] bytes=48022
+[guix-8.20.0-1] cell toward connect-3000+3000 face=h1tls+proxy mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=0 ver=0 t_ms=6.4 cpu_ms=4.3 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=73
+[guix-8.20.0-1] srv ev 1331 t=61929.9 connect-answered face=proxy conn=32988 tag=toward.connect-3000.3000.cap.135 target=127.0.0.1:41401 lines=3000 bytes=48039
+[guix-8.20.0-1] srv ev 1332 t=61934.6 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-400K+2 face=h1tls+proxy mode=none code=56 err="Too large response headers: 307237 > 307200" status=0 ver=0 t_ms=81.9 cpu_ms=79.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307237 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1200 stored_r0=1200 stored_r1=0 live_kb=368
+[guix-8.20.0-1] srv ev 1335 t=61979.5 connect-answered face=proxy conn=33004 tag=toward.connect-400K.2.none.136 target=127.0.0.1:41401 lines=1600 bytes=409639
+[guix-8.20.0-1] srv ev 1336 t=62059.3 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-400K+2 face=h1tls+proxy mode=obs code=56 err="Too large response headers: 307237 > 307200" status=0 ver=0 t_ms=81.7 cpu_ms=79.3 calls=1201 hdr_lines=1200 bytes=307237 heads=[200:1200:307237] refused=- header_size=307237 stored=0 walk_ms=0.01 walk_cpu_ms=0.01 stored_all=1200 stored_r0=1200 stored_r1=0 live_kb=368
+[guix-8.20.0-1] srv ev 1339 t=62121.0 connect-answered face=proxy conn=33020 tag=toward.connect-400K.2.obs.137 target=127.0.0.1:41401 lines=1600 bytes=409639
+[guix-8.20.0-1] srv ev 1340 t=62200.7 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-400K+2 face=h1tls+proxy mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=0 ver=0 t_ms=28.5 cpu_ms=26.0 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=126
+[guix-8.20.0-1] srv ev 1343 t=62262.6 connect-answered face=proxy conn=33026 tag=toward.connect-400K.2.cap.138 target=127.0.0.1:41401 lines=1600 bytes=409639
+[guix-8.20.0-1] srv ev 1344 t=62288.8 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-200K+200K face=h1tls+proxy mode=none code=0 err="" status=200 ver=2 t_ms=99.9 cpu_ms=54.0 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=409421 stored=800 walk_ms=27.49 walk_cpu_ms=27.49 stored_all=1600 stored_r0=1600 stored_r1=0 live_kb=489
+[guix-8.20.0-1] srv ev 1347 t=62297.9 connect-answered face=proxy conn=33042 tag=toward.connect-200K.200K.none.139 target=127.0.0.1:41401 lines=800 bytes=204839
+[guix-8.20.0-1] srv ev 1350 t=62395.9 wrote face=h1tls conn=60774 tag=toward.connect-200K.200K.none.139 proto=h1 heads=[200:800:204582] bytes=204582
+[guix-8.20.0-1] cell toward connect-200K+200K face=h1tls+proxy mode=obs code=0 err="" status=200 ver=2 t_ms=111.2 cpu_ms=65.4 calls=1604 hdr_lines=1600 bytes=409421 heads=[200:800:204839,200:800:204582] refused=- header_size=409421 stored=800 walk_ms=28.12 walk_cpu_ms=28.12 stored_all=1600 stored_r0=1600 stored_r1=0 live_kb=489
+[guix-8.20.0-1] srv ev 1354 t=62538.2 connect-answered face=proxy conn=33052 tag=toward.connect-200K.200K.obs.140 target=127.0.0.1:41401 lines=800 bytes=204839
+[guix-8.20.0-1] srv ev 1357 t=62647.0 wrote face=h1tls conn=60786 tag=toward.connect-200K.200K.obs.140 proto=h1 heads=[200:800:204582] bytes=204582
+[guix-8.20.0-1] cell toward connect-200K+200K face=h1tls+proxy mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=0 ver=0 t_ms=27.7 cpu_ms=25.9 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=126
+[guix-8.20.0-1] srv ev 1361 t=62787.5 connect-answered face=proxy conn=33068 tag=toward.connect-200K.200K.cap.141 target=127.0.0.1:41401 lines=800 bytes=204839
+[guix-8.20.0-1] srv ev 1362 t=62813.6 tls-error face=h1tls conn=undefined code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-2+2 face=h2+proxy mode=none code=0 err="" status=200 ver=3 t_ms=43.3 cpu_ms=1.7 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=121 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=5
+[guix-8.20.0-1] srv ev 1364 t=62821.8 connect-answered face=proxy conn=33070 tag=toward.connect-2.2.none.142 target=127.0.0.1:37079 lines=2 bytes=71
+[guix-8.20.0-1] srv ev 1366 t=62864.1 h2-close face=h2 conn=50684 tag=toward.connect-2.2.none.142 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 1368 t=62865.1 h2-wire face=h2 conn=50684 tag=toward.connect-2.2.none.142 wire_bytes_written=1552 wire_bytes_read=771
+[guix-8.20.0-1] cell toward connect-2+2 face=h2+proxy mode=obs code=0 err="" status=200 ver=3 t_ms=43.4 cpu_ms=1.8 calls=8 hdr_lines=4 bytes=121 heads=[200:2:71,200:2:50] refused=- header_size=121 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=5
+[guix-8.20.0-1] srv ev 1370 t=62866.3 connect-answered face=proxy conn=33080 tag=toward.connect-2.2.obs.143 target=127.0.0.1:37079 lines=2 bytes=71
+[guix-8.20.0-1] srv ev 1372 t=62908.9 h2-close face=h2 conn=50694 tag=toward.connect-2.2.obs.143 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 1374 t=62909.9 h2-wire face=h2 conn=50694 tag=toward.connect-2.2.obs.143 wire_bytes_written=1553 wire_bytes_read=770
+[guix-8.20.0-1] cell toward connect-2+2 face=h2+proxy mode=cap code=0 err="" status=200 ver=3 t_ms=43.7 cpu_ms=2.3 calls=8 hdr_lines=4 bytes=121 heads=[200:2:71,200:2:50] refused=none header_size=121 stored=2 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4 stored_r0=4 stored_r1=0 live_kb=5
+[guix-8.20.0-1] srv ev 1376 t=62911.3 connect-answered face=proxy conn=33086 tag=toward.connect-2.2.cap.144 target=127.0.0.1:37079 lines=2 bytes=71
+[guix-8.20.0-1] srv ev 1378 t=62954.0 h2-close face=h2 conn=50704 tag=toward.connect-2.2.cap.144 heads=[200:2] rst=0
+[guix-8.20.0-1] srv ev 1380 t=62955.2 h2-wire face=h2 conn=50704 tag=toward.connect-2.2.cap.144 wire_bytes_written=1552 wire_bytes_read=770
+[guix-8.20.0-1] cell toward connect-6000+2 face=h2+proxy mode=none code=100 err="Too many response headers, 5000 is max" status=0 ver=0 t_ms=23.6 cpu_ms=22.3 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 1382 t=62957.7 connect-answered face=proxy conn=33094 tag=toward.connect-6000.2.none.145 target=127.0.0.1:37079 lines=6000 bytes=96039
+[guix-8.20.0-1] srv ev 1383 t=62980.3 h2-wire face=h2 conn=50714 tag=- wire_bytes_written=0 wire_bytes_read=0
+[guix-8.20.0-1] srv ev 1384 t=62980.4 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-6000+2 face=h2+proxy mode=obs code=100 err="Too many response headers, 5000 is max" status=0 ver=0 t_ms=30.2 cpu_ms=21.5 calls=5001 hdr_lines=5000 bytes=80037 heads=[200:5000:80037] refused=- header_size=80037 stored=0 walk_ms=0.06 walk_cpu_ms=0.06 stored_all=5000 stored_r0=5000 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 1386 t=63920.8 connect-answered face=proxy conn=33098 tag=toward.connect-6000.2.obs.146 target=127.0.0.1:37079 lines=6000 bytes=96039
+[guix-8.20.0-1] srv ev 1387 t=63942.9 h2-wire face=h2 conn=50728 tag=- wire_bytes_written=0 wire_bytes_read=0
+[guix-8.20.0-1] srv ev 1388 t=63943.0 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-6000+2 face=h2+proxy mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=0 ver=0 t_ms=7.6 cpu_ms=4.5 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=73
+[guix-8.20.0-1] srv ev 1390 t=64868.2 connect-answered face=proxy conn=57796 tag=toward.connect-6000.2.cap.147 target=127.0.0.1:37079 lines=6000 bytes=96039
+[guix-8.20.0-1] srv ev 1391 t=64873.0 h2-wire face=h2 conn=56174 tag=- wire_bytes_written=0 wire_bytes_read=0
+[guix-8.20.0-1] srv ev 1392 t=64873.1 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-3000+3000 face=h2+proxy mode=none code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=64.9 cpu_ms=14.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=80039 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=4999 stored_r0=4999 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 1394 t=64917.4 connect-answered face=proxy conn=57806 tag=toward.connect-3000.3000.none.148 target=127.0.0.1:37079 lines=3000 bytes=48039
+[guix-8.20.0-1] srv ev 1396 t=64979.2 h2-close face=h2 conn=56180 tag=toward.connect-3000.3000.none.148 heads=[200:3000] rst=0
+[guix-8.20.0-1] srv ev 1398 t=64980.9 h2-wire face=h2 conn=56180 tag=toward.connect-3000.3000.none.148 wire_bytes_written=40588 wire_bytes_read=812
+[guix-8.20.0-1] cell toward connect-3000+3000 face=h2+proxy mode=obs code=100 err="Too many response headers, 5000 is max" status=200 ver=3 t_ms=63.4 cpu_ms=14.9 calls=5002 hdr_lines=4999 bytes=80039 heads=[200:3000:48039,200:1999:32000] refused=- header_size=80039 stored=1999 walk_ms=191.73 walk_cpu_ms=191.70 stored_all=4999 stored_r0=4999 stored_r1=0 live_kb=347
+[guix-8.20.0-1] srv ev 1400 t=65934.8 connect-answered face=proxy conn=57814 tag=toward.connect-3000.3000.obs.149 target=127.0.0.1:37079 lines=3000 bytes=48039
+[guix-8.20.0-1] srv ev 1402 t=65994.7 h2-close face=h2 conn=56184 tag=toward.connect-3000.3000.obs.149 heads=[200:3000] rst=0
+[guix-8.20.0-1] srv ev 1404 t=65996.3 h2-wire face=h2 conn=56184 tag=toward.connect-3000.3000.obs.149 wire_bytes_written=40588 wire_bytes_read=811
+[guix-8.20.0-1] cell toward connect-3000+3000 face=h2+proxy mode=cap code=23 err="Failure writing output to destination, passed 16 returned 0" status=0 ver=0 t_ms=6.1 cpu_ms=4.3 calls=1002 hdr_lines=1001 bytes=16053 heads=[200:1001:16053] refused=lines@1001 header_size=16037 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1001 stored_r0=1001 stored_r1=0 live_kb=73
+[guix-8.20.0-1] srv ev 1406 t=67155.5 connect-answered face=proxy conn=57824 tag=toward.connect-3000.3000.cap.150 target=127.0.0.1:37079 lines=3000 bytes=48039
+[guix-8.20.0-1] srv ev 1407 t=67160.1 h2-wire face=h2 conn=56200 tag=- wire_bytes_written=0 wire_bytes_read=0
+[guix-8.20.0-1] srv ev 1408 t=67160.2 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-400K+2 face=h2+proxy mode=none code=56 err="Too large response headers: 307237 > 307200" status=0 ver=0 t_ms=81.5 cpu_ms=79.8 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=307237 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1200 stored_r0=1200 stored_r1=0 live_kb=368
+[guix-8.20.0-1] srv ev 1410 t=67204.2 connect-answered face=proxy conn=57840 tag=toward.connect-400K.2.none.151 target=127.0.0.1:37079 lines=1600 bytes=409639
+[guix-8.20.0-1] srv ev 1411 t=67284.4 h2-wire face=h2 conn=56214 tag=- wire_bytes_written=0 wire_bytes_read=0
+[guix-8.20.0-1] srv ev 1412 t=67284.5 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-400K+2 face=h2+proxy mode=obs code=56 err="Too large response headers: 307237 > 307200" status=0 ver=0 t_ms=81.7 cpu_ms=79.2 calls=1201 hdr_lines=1200 bytes=307237 heads=[200:1200:307237] refused=- header_size=307237 stored=0 walk_ms=0.01 walk_cpu_ms=0.01 stored_all=1200 stored_r0=1200 stored_r1=0 live_kb=368
+[guix-8.20.0-1] srv ev 1414 t=67346.6 connect-answered face=proxy conn=57848 tag=toward.connect-400K.2.obs.152 target=127.0.0.1:37079 lines=1600 bytes=409639
+[guix-8.20.0-1] srv ev 1415 t=67426.1 h2-wire face=h2 conn=56226 tag=- wire_bytes_written=0 wire_bytes_read=0
+[guix-8.20.0-1] srv ev 1416 t=67426.1 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-400K+2 face=h2+proxy mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=0 ver=0 t_ms=28.5 cpu_ms=26.2 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=126
+[guix-8.20.0-1] srv ev 1418 t=67488.8 connect-answered face=proxy conn=57856 tag=toward.connect-400K.2.cap.153 target=127.0.0.1:37079 lines=1600 bytes=409639
+[guix-8.20.0-1] srv ev 1419 t=67515.2 h2-wire face=h2 conn=56240 tag=- wire_bytes_written=0 wire_bytes_read=0
+[guix-8.20.0-1] srv ev 1420 t=67515.2 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] cell toward connect-200K+200K face=h2+proxy mode=none code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=107.1 cpu_ms=61.1 calls=-1 hdr_lines=-1 bytes=-1 heads=[] refused=- header_size=373319 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=1459 stored_r0=1459 stored_r1=0 live_kb=447
+[guix-8.20.0-1] srv ev 1422 t=67524.3 connect-answered face=proxy conn=57868 tag=toward.connect-200K.200K.none.154 target=127.0.0.1:37079 lines=800 bytes=204839
+[guix-8.20.0-1] srv ev 1424 t=67628.2 h2-close face=h2 conn=56252 tag=toward.connect-200K.200K.none.154 heads=[200:800] rst=0
+[guix-8.20.0-1] srv ev 1426 t=67630.3 h2-wire face=h2 conn=56252 tag=toward.connect-200K.200K.none.154 wire_bytes_written=180827 wire_bytes_read=818
+[guix-8.20.0-1] cell toward connect-200K+200K face=h2+proxy mode=obs code=16 err="nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame" status=200 ver=3 t_ms=103.6 cpu_ms=55.6 calls=1462 hdr_lines=1459 bytes=373319 heads=[200:800:204839,200:659:168480] refused=- header_size=373319 stored=659 walk_ms=20.58 walk_cpu_ms=20.58 stored_all=1459 stored_r0=1459 stored_r1=0 live_kb=447
+[guix-8.20.0-1] srv ev 1428 t=67729.6 connect-answered face=proxy conn=57884 tag=toward.connect-200K.200K.obs.155 target=127.0.0.1:37079 lines=800 bytes=204839
+[guix-8.20.0-1] srv ev 1430 t=67829.5 h2-close face=h2 conn=56256 tag=toward.connect-200K.200K.obs.155 heads=[200:800] rst=0
+[guix-8.20.0-1] srv ev 1432 t=67831.7 h2-wire face=h2 conn=56256 tag=toward.connect-200K.200K.obs.155 wire_bytes_written=180827 wire_bytes_read=817
+[guix-8.20.0-1] cell toward connect-200K+200K face=h2+proxy mode=cap code=23 err="Failure writing output to destination, passed 256 returned 0" status=0 ver=0 t_ms=28.0 cpu_ms=26.1 calls=401 hdr_lines=400 bytes=102437 heads=[200:400:102437] refused=bytes@102437 header_size=102181 stored=-1 walk_ms=0.00 walk_cpu_ms=0.00 stored_all=400 stored_r0=400 stored_r1=0 live_kb=126
+[guix-8.20.0-1] srv ev 1434 t=67945.9 connect-answered face=proxy conn=57890 tag=toward.connect-200K.200K.cap.156 target=127.0.0.1:37079 lines=800 bytes=204839
+[guix-8.20.0-1] srv ev 1435 t=67972.1 h2-wire face=h2 conn=56268 tag=- wire_bytes_written=0 wire_bytes_read=0
+[guix-8.20.0-1] srv ev 1436 t=67972.2 tls-error face=h2 conn=- code=ECONNRESET "socket hang up"
+[guix-8.20.0-1] case toward all done live_before_global_cleanup=0
+[guix-8.20.0-1] case toward live_after_global_cleanup=0
+[guix-8.20.0-1] probe toward exit=0
+[guix-8.20.0-1] probe toward took about 53 s
+[guix-8.20.0-1] walk n=100 names=distinct round=0 code=0 err="" status=200 t_ms=0.4 stored=100 walk1_ms=0.238 walk1_cpu_ms=0.238 stored2=100 walk2_ms=0.231 walk2_cpu_ms=0.231
+[guix-8.20.0-1] walk n=100 names=same round=0 code=0 err="" status=200 t_ms=0.2 stored=100 walk1_ms=0.185 walk1_cpu_ms=0.185 stored2=100 walk2_ms=0.183 walk2_cpu_ms=0.184
+[guix-8.20.0-1] walk n=1000 names=distinct round=0 code=0 err="" status=200 t_ms=0.5 stored=1000 walk1_ms=20.903 walk1_cpu_ms=20.902 stored2=1000 walk2_ms=21.584 walk2_cpu_ms=21.584
+[guix-8.20.0-1] walk n=1000 names=same round=0 code=0 err="" status=200 t_ms=0.8 stored=1000 walk1_ms=19.048 walk1_cpu_ms=19.048 stored2=1000 walk2_ms=18.927 walk2_cpu_ms=18.927
+[guix-8.20.0-1] walk n=2000 names=distinct round=0 code=0 err="" status=200 t_ms=1.9 stored=2000 walk1_ms=77.160 walk1_cpu_ms=77.141 stored2=2000 walk2_ms=77.200 walk2_cpu_ms=77.200
+[guix-8.20.0-1] walk n=2000 names=same round=0 code=0 err="" status=200 t_ms=1.6 stored=2000 walk1_ms=75.343 walk1_cpu_ms=75.273 stored2=2000 walk2_ms=75.603 walk2_cpu_ms=75.603
+[guix-8.20.0-1] walk n=5000 names=distinct round=0 code=0 err="" status=200 t_ms=3.4 stored=5000 walk1_ms=494.904 walk1_cpu_ms=494.822 stored2=5000 walk2_ms=472.282 walk2_cpu_ms=472.192
+[guix-8.20.0-1] walk n=5000 names=same round=0 code=0 err="" status=200 t_ms=2.9 stored=5000 walk1_ms=472.195 walk1_cpu_ms=472.161 stored2=5000 walk2_ms=472.804 walk2_cpu_ms=472.760
+[guix-8.20.0-1] walk n=1000 names=same round=1 code=0 err="" status=200 t_ms=1.3 stored=1000 walk1_ms=18.779 walk1_cpu_ms=18.779 stored2=1000 walk2_ms=18.949 walk2_cpu_ms=18.878
+[guix-8.20.0-1] walk n=1000 names=distinct round=1 code=0 err="" status=200 t_ms=1.3 stored=1000 walk1_ms=20.676 walk1_cpu_ms=20.676 stored2=1000 walk2_ms=20.674 walk2_cpu_ms=20.674
+[guix-8.20.0-1] walk n=2000 names=same round=1 code=0 err="" status=200 t_ms=1.5 stored=2000 walk1_ms=75.529 walk1_cpu_ms=75.511 stored2=2000 walk2_ms=75.686 walk2_cpu_ms=75.676
+[guix-8.20.0-1] walk n=2000 names=distinct round=1 code=0 err="" status=200 t_ms=1.6 stored=2000 walk1_ms=75.459 walk1_cpu_ms=75.459 stored2=2000 walk2_ms=76.353 walk2_cpu_ms=76.344
+[guix-8.20.0-1] walk n=5000 names=same round=1 code=0 err="" status=200 t_ms=2.6 stored=5000 walk1_ms=500.824 walk1_cpu_ms=500.774 stored2=5000 walk2_ms=487.016 walk2_cpu_ms=486.933
+[guix-8.20.0-1] walk n=5000 names=distinct round=1 code=0 err="" status=200 t_ms=1.8 stored=5000 walk1_ms=465.292 walk1_cpu_ms=465.265 stored2=5000 walk2_ms=463.325 walk2_cpu_ms=463.223
+[guix-8.20.0-1] walk n=100 names=same round=1 code=0 err="" status=200 t_ms=0.6 stored=100 walk1_ms=0.192 walk1_cpu_ms=0.192 stored2=100 walk2_ms=0.183 walk2_cpu_ms=0.183
+[guix-8.20.0-1] walk n=100 names=distinct round=1 code=0 err="" status=200 t_ms=0.4 stored=100 walk1_ms=0.234 walk1_cpu_ms=0.234 stored2=100 walk2_ms=0.238 walk2_cpu_ms=0.238
+[guix-8.20.0-1] walk n=2000 names=distinct round=2 code=0 err="" status=200 t_ms=0.7 stored=2000 walk1_ms=77.204 walk1_cpu_ms=77.195 stored2=2000 walk2_ms=78.414 walk2_cpu_ms=78.404
+[guix-8.20.0-1] walk n=2000 names=same round=2 code=0 err="" status=200 t_ms=0.8 stored=2000 walk1_ms=75.924 walk1_cpu_ms=75.912 stored2=2000 walk2_ms=75.548 walk2_cpu_ms=75.530
+[guix-8.20.0-1] walk n=5000 names=distinct round=2 code=0 err="" status=200 t_ms=1.7 stored=5000 walk1_ms=466.302 walk1_cpu_ms=466.284 stored2=5000 walk2_ms=457.099 walk2_cpu_ms=457.021
+[guix-8.20.0-1] walk n=5000 names=same round=2 code=0 err="" status=200 t_ms=2.9 stored=5000 walk1_ms=489.871 walk1_cpu_ms=489.825 stored2=5000 walk2_ms=489.871 walk2_cpu_ms=489.764
+[guix-8.20.0-1] walk n=100 names=distinct round=2 code=0 err="" status=200 t_ms=0.6 stored=100 walk1_ms=0.235 walk1_cpu_ms=0.235 stored2=100 walk2_ms=0.237 walk2_cpu_ms=0.237
+[guix-8.20.0-1] walk n=100 names=same round=2 code=0 err="" status=200 t_ms=0.4 stored=100 walk1_ms=0.185 walk1_cpu_ms=0.185 stored2=100 walk2_ms=0.189 walk2_cpu_ms=0.189
+[guix-8.20.0-1] walk n=1000 names=distinct round=2 code=0 err="" status=200 t_ms=0.6 stored=1000 walk1_ms=20.161 walk1_cpu_ms=20.160 stored2=1000 walk2_ms=20.260 walk2_cpu_ms=20.232
+[guix-8.20.0-1] walk n=1000 names=same round=2 code=0 err="" status=200 t_ms=0.5 stored=1000 walk1_ms=18.820 walk1_cpu_ms=18.820 stored2=1000 walk2_ms=18.772 walk2_cpu_ms=18.772
+[guix-8.20.0-1] walk n=5000 names=same round=3 code=0 err="" status=200 t_ms=1.4 stored=5000 walk1_ms=474.269 walk1_cpu_ms=474.251 stored2=5000 walk2_ms=507.178 walk2_cpu_ms=507.104
+[guix-8.20.0-1] walk n=5000 names=distinct round=3 code=0 err="" status=200 t_ms=3.5 stored=5000 walk1_ms=477.923 walk1_cpu_ms=477.866 stored2=5000 walk2_ms=482.282 walk2_cpu_ms=482.143
+[guix-8.20.0-1] walk n=100 names=same round=3 code=0 err="" status=200 t_ms=0.8 stored=100 walk1_ms=0.187 walk1_cpu_ms=0.186 stored2=100 walk2_ms=0.184 walk2_cpu_ms=0.184
+[guix-8.20.0-1] walk n=100 names=distinct round=3 code=0 err="" status=200 t_ms=0.8 stored=100 walk1_ms=0.237 walk1_cpu_ms=0.237 stored2=100 walk2_ms=0.234 walk2_cpu_ms=0.234
+[guix-8.20.0-1] walk n=1000 names=same round=3 code=0 err="" status=200 t_ms=0.8 stored=1000 walk1_ms=18.809 walk1_cpu_ms=18.809 stored2=1000 walk2_ms=18.824 walk2_cpu_ms=18.824
+[guix-8.20.0-1] walk n=1000 names=distinct round=3 code=0 err="" status=200 t_ms=1.1 stored=1000 walk1_ms=21.403 walk1_cpu_ms=21.390 stored2=1000 walk2_ms=21.350 walk2_cpu_ms=21.350
+[guix-8.20.0-1] walk n=2000 names=same round=3 code=0 err="" status=200 t_ms=1.5 stored=2000 walk1_ms=75.955 walk1_cpu_ms=75.955 stored2=2000 walk2_ms=79.584 walk2_cpu_ms=79.584
+[guix-8.20.0-1] walk n=2000 names=distinct round=3 code=0 err="" status=200 t_ms=1.8 stored=2000 walk1_ms=77.118 walk1_cpu_ms=77.111 stored2=2000 walk2_ms=77.379 walk2_cpu_ms=77.369
+[guix-8.20.0-1] walk n=100 names=distinct round=4 code=0 err="" status=200 t_ms=1.0 stored=100 walk1_ms=0.241 walk1_cpu_ms=0.241 stored2=100 walk2_ms=0.231 walk2_cpu_ms=0.231
+[guix-8.20.0-1] walk n=100 names=same round=4 code=0 err="" status=200 t_ms=0.6 stored=100 walk1_ms=0.185 walk1_cpu_ms=0.185 stored2=100 walk2_ms=0.185 walk2_cpu_ms=0.185
+[guix-8.20.0-1] walk n=1000 names=distinct round=4 code=0 err="" status=200 t_ms=1.0 stored=1000 walk1_ms=20.714 walk1_cpu_ms=20.714 stored2=1000 walk2_ms=20.761 walk2_cpu_ms=20.761
+[guix-8.20.0-1] walk n=1000 names=same round=4 code=0 err="" status=200 t_ms=1.0 stored=1000 walk1_ms=18.784 walk1_cpu_ms=18.784 stored2=1000 walk2_ms=19.087 walk2_cpu_ms=19.087
+[guix-8.20.0-1] walk n=2000 names=distinct round=4 code=0 err="" status=200 t_ms=1.7 stored=2000 walk1_ms=75.128 walk1_cpu_ms=75.128 stored2=2000 walk2_ms=84.054 walk2_cpu_ms=83.981
+[guix-8.20.0-1] walk n=2000 names=same round=4 code=0 err="" status=200 t_ms=1.5 stored=2000 walk1_ms=75.494 walk1_cpu_ms=75.493 stored2=2000 walk2_ms=76.588 walk2_cpu_ms=76.587
+[guix-8.20.0-1] walk n=5000 names=distinct round=4 code=0 err="" status=200 t_ms=3.4 stored=5000 walk1_ms=454.124 walk1_cpu_ms=454.105 stored2=5000 walk2_ms=487.328 walk2_cpu_ms=487.201
+[guix-8.20.0-1] walk n=5000 names=same round=4 code=0 err="" status=200 t_ms=2.2 stored=5000 walk1_ms=536.554 walk1_cpu_ms=536.477 stored2=5000 walk2_ms=572.243 walk2_cpu_ms=572.123
+[guix-8.20.0-1] walk n=1000 names=same round=5 code=0 err="" status=200 t_ms=0.9 stored=1000 walk1_ms=24.240 walk1_cpu_ms=24.240 stored2=1000 walk2_ms=24.162 walk2_cpu_ms=24.162
+[guix-8.20.0-1] walk n=1000 names=distinct round=5 code=0 err="" status=200 t_ms=0.9 stored=1000 walk1_ms=25.271 walk1_cpu_ms=25.271 stored2=1000 walk2_ms=22.137 walk2_cpu_ms=22.137
+[guix-8.20.0-1] walk n=2000 names=same round=5 code=0 err="" status=200 t_ms=1.1 stored=2000 walk1_ms=75.777 walk1_cpu_ms=75.777 stored2=2000 walk2_ms=75.830 walk2_cpu_ms=75.830
+[guix-8.20.0-1] walk n=2000 names=distinct round=5 code=0 err="" status=200 t_ms=1.3 stored=2000 walk1_ms=75.196 walk1_cpu_ms=75.196 stored2=2000 walk2_ms=81.576 walk2_cpu_ms=81.538
+[guix-8.20.0-1] walk n=5000 names=same round=5 code=0 err="" status=200 t_ms=3.1 stored=5000 walk1_ms=473.211 walk1_cpu_ms=473.059 stored2=5000 walk2_ms=531.317 walk2_cpu_ms=531.230
+[guix-8.20.0-1] walk n=5000 names=distinct round=5 code=0 err="" status=200 t_ms=3.5 stored=5000 walk1_ms=480.302 walk1_cpu_ms=480.186 stored2=5000 walk2_ms=469.690 walk2_cpu_ms=469.664
+[guix-8.20.0-1] walk n=100 names=same round=5 code=0 err="" status=200 t_ms=1.0 stored=100 walk1_ms=0.186 walk1_cpu_ms=0.186 stored2=100 walk2_ms=0.183 walk2_cpu_ms=0.183
+[guix-8.20.0-1] walk n=100 names=distinct round=5 code=0 err="" status=200 t_ms=0.6 stored=100 walk1_ms=0.233 walk1_cpu_ms=0.233 stored2=100 walk2_ms=0.236 walk2_cpu_ms=0.236
+[guix-8.20.0-1] walk n=2000 names=distinct round=6 code=0 err="" status=200 t_ms=1.7 stored=2000 walk1_ms=77.831 walk1_cpu_ms=77.793 stored2=2000 walk2_ms=77.670 walk2_cpu_ms=77.659
+[guix-8.20.0-1] walk n=2000 names=same round=6 code=0 err="" status=200 t_ms=1.6 stored=2000 walk1_ms=75.851 walk1_cpu_ms=75.839 stored2=2000 walk2_ms=75.660 walk2_cpu_ms=75.660
+[guix-8.20.0-1] walk n=5000 names=distinct round=6 code=0 err="" status=200 t_ms=3.2 stored=5000 walk1_ms=473.998 walk1_cpu_ms=473.800 stored2=5000 walk2_ms=478.902 walk2_cpu_ms=478.882
+[guix-8.20.0-1] walk n=5000 names=same round=6 code=0 err="" status=200 t_ms=3.0 stored=5000 walk1_ms=481.210 walk1_cpu_ms=481.123 stored2=5000 walk2_ms=474.992 walk2_cpu_ms=474.934
+[guix-8.20.0-1] walk n=100 names=distinct round=6 code=0 err="" status=200 t_ms=1.1 stored=100 walk1_ms=0.234 walk1_cpu_ms=0.234 stored2=100 walk2_ms=0.231 walk2_cpu_ms=0.231
+[guix-8.20.0-1] walk n=100 names=same round=6 code=0 err="" status=200 t_ms=0.6 stored=100 walk1_ms=0.185 walk1_cpu_ms=0.185 stored2=100 walk2_ms=0.183 walk2_cpu_ms=0.183
+[guix-8.20.0-1] walk n=1000 names=distinct round=6 code=0 err="" status=200 t_ms=0.8 stored=1000 walk1_ms=20.481 walk1_cpu_ms=20.481 stored2=1000 walk2_ms=20.576 walk2_cpu_ms=20.565
+[guix-8.20.0-1] walk n=1000 names=same round=6 code=0 err="" status=200 t_ms=1.0 stored=1000 walk1_ms=18.827 walk1_cpu_ms=18.827 stored2=1000 walk2_ms=19.356 walk2_cpu_ms=19.356
+[guix-8.20.0-1] case walk all done live_before_global_cleanup=0
+[guix-8.20.0-1] case walk live_after_global_cleanup=0
+[guix-8.20.0-1] probe walk exit=0
+[guix-8.20.0-1] probe walk took about 17 s
+[guix-8.20.0-1] -- 4 cases run

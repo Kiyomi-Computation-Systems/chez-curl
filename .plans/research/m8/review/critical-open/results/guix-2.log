@@ -1,0 +1,10 @@
+chez 10.4.0 threaded=#t
+run 1 case inside open-ms 1952 worker-worst-gap-ms 1952 worker-allocations 791648 collections-across-open 1
+run 1 case outside open-ms 1955 worker-worst-gap-ms 1 worker-allocations 1905109 collections-across-open 71166
+run 1 case regular open-ms 0 worker-worst-gap-ms 1 worker-allocations 766797 collections-across-open 1
+run 2 case inside open-ms 1960 worker-worst-gap-ms 1960 worker-allocations 747928 collections-across-open 2
+run 2 case outside open-ms 1956 worker-worst-gap-ms 1 worker-allocations 1909533 collections-across-open 70959
+run 2 case regular open-ms 0 worker-worst-gap-ms 1 worker-allocations 744160 collections-across-open 1
+run 3 case inside open-ms 1958 worker-worst-gap-ms 1958 worker-allocations 750464 collections-across-open 1
+run 3 case outside open-ms 1955 worker-worst-gap-ms 1 worker-allocations 1871184 collections-across-open 69846
+run 3 case regular open-ms 1 worker-worst-gap-ms 1 worker-allocations 759623 collections-across-open 1

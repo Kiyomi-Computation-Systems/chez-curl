@@ -6,7 +6,9 @@
   every pull request ([amendment](#amendment-2026-10-16-the-gate-runs-on-every-pull-request-and-cannot-see-chezs-heap)),
   and the counters ([amendment](#amendment-2026-10-23-the-counters-are-built-m2-slice-1));
   amended 2026-10-24: the Guix count is the entry's own
-  ([amendment](#amendment-2026-10-24-the-guix-count-is-the-entrys-own-m2-slice-3))
+  ([amendment](#amendment-2026-10-24-the-guix-count-is-the-entrys-own-m2-slice-3));
+  amended 2026-11-06: the memory job is split in two
+  ([amendment](#amendment-2026-11-06-the-memory-job-is-split-in-two-m8s-scope))
 - **Date:** 2026-10-04
 - **Scope:** chez-curl: every suite that touches native memory, locally and in CI
 - **Related:**
@@ -283,3 +285,18 @@ Both were settled by the maintainer.
   6 reads in 100 (measured on 8.20.0), so a suite could see the engine mid-call. A suite that
   keeps an engine for its scenarios asserts those two counts until it stops it, and zero
   after.
+
+## Amendment, 2026-11-06: the memory job is split in two (M8's scope)
+
+- **The line was crossed.** The 2026-10-16 amendment moves the gate to `main` and tags, by a
+  decision, once the memory job takes longer than 20 minutes. `main`'s push run for `fbc6fce`
+  (42255186047) took 22 min 43 s, its suites 20 min 54 s of it; PR #47's last run (42249246013),
+  31 min 4 s. M8 adds suites.
+- **Decided by the maintainer, the recommended option** ([ADR-0038](0038-m8s-scope.md)): the
+  Valgrind suites run as two jobs in parallel, and each gates every pull request, every push to
+  `main` and every `v*` tag, as before. `check-memory-gate` holds that the two run every suite of
+  `test-memory` once between them.
+- **Rejected:** moving the gate to `main` and tags, as the line said, since several of M7's races
+  were first seen on a pull request's memory run; and one job with a later line, which leaves the
+  wall time growing with each slice.
+- **How the suites are split, and where the planted defects run, are M8's plan.**

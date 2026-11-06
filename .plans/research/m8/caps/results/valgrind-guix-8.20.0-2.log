@@ -1,0 +1,23 @@
+[valgrind-guix-8.20.0-2] libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 -> /gnu/store/67lpb53npkkjp5mab0arpnrq2i3xxdbg-curl-8.20.0/lib/libcurl.so.4.8.0, headers /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/../include
+[valgrind-guix-8.20.0-2] node v24.18.0 uname Linux x86_64 CURL_SSL_BACKEND=unset cpus=6 affinity=12-17
+[valgrind-guix-8.20.0-2] cases=walk PROBE_MODES=default WALK_NS=1000 5000 WALK_ROUNDS=3 PROBE_VALGRIND=.plans/research/m8/caps/results/valgrind-guix-8.20.0-2.vg
+[valgrind-guix-8.20.0-2] version headers=8.20.0 runtime=8.20.0 num=0x081400 ssl=GnuTLS/3.8.13 nghttp2=1.69.0 http2=1 features=0x553f478d
+[valgrind-guix-8.20.0-2] server ctl=37353 h1=40881 h1tls=45705 h2=38959 proxy=33549
+[valgrind-guix-8.20.0-2] walk n=1000 names=distinct round=0 code=0 err="" status=200 t_ms=131.9 stored=1000 walk1_ms=338.583 walk1_cpu_ms=338.599 stored2=1000 walk2_ms=369.515 walk2_cpu_ms=369.494
+[valgrind-guix-8.20.0-2] walk n=1000 names=same round=0 code=0 err="" status=200 t_ms=8.1 stored=1000 walk1_ms=346.886 walk1_cpu_ms=346.866 stored2=1000 walk2_ms=349.853 walk2_cpu_ms=349.763
+[valgrind-guix-8.20.0-2] walk n=5000 names=distinct round=0 code=0 err="" status=200 t_ms=29.0 stored=5000 walk1_ms=7337.671 walk1_cpu_ms=7335.048 stored2=5000 walk2_ms=7308.468 walk2_cpu_ms=7305.506
+[valgrind-guix-8.20.0-2] walk n=5000 names=same round=0 code=0 err="" status=200 t_ms=23.7 stored=5000 walk1_ms=8521.145 walk1_cpu_ms=8517.515 stored2=5000 walk2_ms=8573.545 walk2_cpu_ms=8566.129
+[valgrind-guix-8.20.0-2] walk n=5000 names=same round=1 code=0 err="" status=200 t_ms=24.2 stored=5000 walk1_ms=8432.482 walk1_cpu_ms=8428.793 stored2=5000 walk2_ms=8609.330 walk2_cpu_ms=8605.830
+[valgrind-guix-8.20.0-2] walk n=5000 names=distinct round=1 code=0 err="" status=200 t_ms=23.0 stored=5000 walk1_ms=7348.919 walk1_cpu_ms=7345.646 stored2=5000 walk2_ms=7420.708 walk2_cpu_ms=7417.658
+[valgrind-guix-8.20.0-2] walk n=1000 names=same round=1 code=0 err="" status=200 t_ms=6.3 stored=1000 walk1_ms=338.036 walk1_cpu_ms=337.605 stored2=1000 walk2_ms=339.507 walk2_cpu_ms=339.483
+[valgrind-guix-8.20.0-2] walk n=1000 names=distinct round=1 code=0 err="" status=200 t_ms=6.1 stored=1000 walk1_ms=333.848 walk1_cpu_ms=333.737 stored2=1000 walk2_ms=329.329 walk2_cpu_ms=329.143
+[valgrind-guix-8.20.0-2] walk n=1000 names=distinct round=2 code=0 err="" status=200 t_ms=6.8 stored=1000 walk1_ms=326.412 walk1_cpu_ms=326.347 stored2=1000 walk2_ms=321.624 walk2_cpu_ms=321.547
+[valgrind-guix-8.20.0-2] walk n=1000 names=same round=2 code=0 err="" status=200 t_ms=6.0 stored=1000 walk1_ms=335.125 walk1_cpu_ms=334.741 stored2=1000 walk2_ms=332.906 walk2_cpu_ms=332.895
+[valgrind-guix-8.20.0-2] walk n=5000 names=distinct round=2 code=0 err="" status=200 t_ms=23.6 stored=5000 walk1_ms=7351.675 walk1_cpu_ms=7348.595 stored2=5000 walk2_ms=7249.570 walk2_cpu_ms=7246.354
+[valgrind-guix-8.20.0-2] walk n=5000 names=same round=2 code=0 err="" status=200 t_ms=22.7 stored=5000 walk1_ms=8418.620 walk1_cpu_ms=8414.099 stored2=5000 walk2_ms=8461.730 walk2_cpu_ms=8458.383
+[valgrind-guix-8.20.0-2] case walk all done live_before_global_cleanup=0
+[valgrind-guix-8.20.0-2] case walk live_after_global_cleanup=0
+[valgrind-guix-8.20.0-2] probe walk exit=0
+[valgrind-guix-8.20.0-2] valgrind valgrind-3.27.0 log .plans/research/m8/caps/results/valgrind-guix-8.20.0-2.vg: 157 lines; ==76== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+[valgrind-guix-8.20.0-2] probe walk took about 99 s
+[valgrind-guix-8.20.0-2] -- 1 cases run
