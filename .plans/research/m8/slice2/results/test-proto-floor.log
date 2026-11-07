@@ -1,0 +1,226 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (41 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-auth.sps
+%%%% Starting test auth
+test-auth: digest-algorithms on "7.85.0" measured ((200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (401 ("none" 401) ("bad(response)" 401)) (401 ("none" 401) ("bad(response)" 401)))
+test-auth: utf8-digest-user on "7.85.0" measured (200 (("none" 401) ("ok" 200)) "\\xc3\\xbcser")
+test-auth: empty-userinfo on "7.85.0" measured (("@" #f #f ((response 200) ("request 1 face=http conn=A method=GET body=0 verdict=ok status=200 authorization=Basic dXNlcjpwYXNz"))) (":@" #f #f ((response 200) ("request 1 face=http conn=A method=GET body=0 verdict=ok status=200 authorization=Basic dXNlcjpwYXNz"))) (":p@" #f "p" (refused credentials-beside-userinfo)) ("u@" "u" #f (refused credentials-beside-userinfo)) ("u:@" "u" #f (refused credentials-beside-userinfo)))
+test-auth: mib-credentials on "7.85.0" measured (((failed perform-failed 27 none) 0) ((failed perform-failed 27 none) 0))
+# of expected passes      66
+test: pass tests/test-auth.sps
+=== tests/test-call-checks.sps
+%%%% Starting test call-checks
+# of expected passes      49
+test: pass tests/test-call-checks.sps
+=== tests/test-check-floors.sps
+%%%% Starting test check-floors
+# of expected passes      375
+test: pass tests/test-check-floors.sps
+=== tests/test-check-nothreads.sps
+%%%% Starting test check-nothreads
+# of expected passes      17
+test: pass tests/test-check-nothreads.sps
+=== tests/test-check-seam.sps
+%%%% Starting test check-seam
+# of expected passes      62
+test: pass tests/test-check-seam.sps
+=== tests/test-collect-safe.sps
+%%%% Starting test collect-safe
+# of expected passes      120
+test: pass tests/test-collect-safe.sps
+=== tests/test-conditions.sps
+%%%% Starting test conditions
+FAIL the transfer-error reasons are exactly perform-failed, body-limit, callback-raised, setopt-failed, unknown-option, no-handle, cancelled, stopped, pause-failed, body-length-mismatch and body-not-replayable, in order
+  expected: (perform-failed body-limit callback-raised setopt-failed unknown-option no-handle cancelled stopped pause-failed body-length-mismatch body-not-replayable)
+  actual:   (perform-failed body-limit callback-raised setopt-failed unknown-option no-handle cancelled stopped pause-failed body-length-mismatch body-not-replayable header-limit)
+# of expected passes      40
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 40, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-conditions.sps (exit 1)
+=== tests/test-constants.sps
+%%%% Starting test constants
+# of expected passes      757
+test: pass tests/test-constants.sps
+=== tests/test-cookies.sps
+%%%% Starting test cookies
+test-cookies: crossings on the delaying engine ((ran . 8) (setup . 4) (submit . 24))
+test-cookies: crossings on a plain engine ((ran . 16) (submit . 17))
+test-cookies: refused-readout on "7.85.0" measured (("path-empty" (("a.localhost\tFALSE\t\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-true" (("a.localhost\tFALSE\tTRUE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-false" (("a.localhost\tFALSE\tFALSE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-rel" (("a.localhost\tFALSE\trel\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("name-tab" (("a.localhost\tFALSE\t/\tFALSE\t0\tn\tm\tv" fields)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"n\\x09m=v\"") ("value-tab" (("a.localhost\tFALSE\t/\tFALSE\t0\tnm\tv\tw" fields)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"nm=v\\x09w\"") ("prefix-secure-lower" (("a.localhost\tFALSE\t/\tFALSE\t0\t__secure-a\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__secure-a=1\"") ("prefix-SECURE-upper" (("a.localhost\tFALSE\t/\tFALSE\t0\t__SECURE-b\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__SECURE-b=1\"") ("prefix-host-path" (("a.localhost\tFALSE\t/cookies\tFALSE\t0\t__host-c\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__host-c=1\"") ("prefix-HOST-domain" ((".a.localhost\tTRUE\t/\tFALSE\t0\t__HOST-d\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__HOST-d=1\"") ("path-tab" (("a.localhost\tFALSE\t/a\tb\tFALSE\t0\tk\tv" fields)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0"))
+test-cookies: expired-load on "7.85.0" measured (("a.localhost\tFALSE\t/\tFALSE\t1\texp\tv") ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1"))
+test-cookies: open-head on "7.85.0" measured (200 (transfer-failed perform-failed 28) (a-request the-head-left-open) 200 (transfer-failed perform-failed 28) (a-request the-head-left-open))
+test-cookies: domain-localhost on "7.85.0/no-psl" measured ((((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"d=1\"") (() "request 2 face=http host=\"localhost:<port>\" cookies=0"))
+test-cookies: set-cookie-matrix on "7.85.0" measured (((("a.localhost\tFALSE\t/cookies/a/b/\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("a.localhost\tFALSE\t\tFALSE\t0\tpe\t1" path) ("a.localhost\tFALSE\trel\tFALSE\t0\tpr\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"pr=1; pe=1\"") ((("a.localhost\tFALSE\t/\tFALSE\tbeyond-400-days\tca\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ca=1\"") ((("a.localhost\tFALSE\t/\tFALSE\t0\tma\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ma=1\"") (("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1" "a.localhost\tFALSE\t/\tFALSE\t1\tdel\t") "request 3 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"keep=1\"" ("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1")))
+# of expected passes      70
+test: pass tests/test-cookies.sps
+=== tests/test-curl-testing.sps
+%%%% Starting test curl-testing
+# of expected passes      285
+test: pass tests/test-curl-testing.sps
+=== tests/test-discovery.sps
+%%%% Starting test discovery
+this Chez's binary: /src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme
+# of expected passes      47
+test: pass tests/test-discovery.sps
+=== tests/test-drift.sps
+%%%% Starting test drift
+# of expected passes      55
+test: pass tests/test-drift.sps
+=== tests/test-engine.sps
+%%%% Starting test engine
+# of expected passes      52
+test: pass tests/test-engine.sps
+=== tests/test-group.sps
+%%%% Starting test group
+# of expected passes      65
+test: pass tests/test-group.sps
+=== tests/test-http-client.sps
+%%%% Starting test http-client
+# of expected passes      78
+test: pass tests/test-http-client.sps
+=== tests/test-library-loading.sps
+%%%% Starting test library-loading
+# of expected passes      78
+test: pass tests/test-library-loading.sps
+=== tests/test-load-state.sps
+%%%% Starting test load-state
+# of expected passes      12
+test: pass tests/test-load-state.sps
+=== tests/test-mailbox.sps
+%%%% Starting test mailbox
+# of expected passes      26
+test: pass tests/test-mailbox.sps
+=== tests/test-manifest.sps
+%%%% Starting test manifest
+# of expected passes      4
+test: pass tests/test-manifest.sps
+=== tests/test-memory-safety.sps
+%%%% Starting test memory-safety
+# of expected passes      91
+test: pass tests/test-memory-safety.sps
+=== tests/test-native.sps
+%%%% Starting test native
+# of expected passes      16
+test: pass tests/test-native.sps
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      163
+test: pass tests/test-origin-tls.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      347
+test: pass tests/test-origin.sps
+=== tests/test-printed.sps
+%%%% Starting test printed
+# of expected passes      10
+test: pass tests/test-printed.sps
+=== tests/test-proxy.sps
+%%%% Starting test proxy
+test-proxy: empty-userinfo on "7.85.0" measured (("http://127.0.0.1:3128/" "http" #f) ("http://127.0.0.1:3128/" "http" #f) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u@127.0.0.1:3128/" "http" #t))
+test-proxy: tls-in-tls-checks on "7.85.0/OpenSSL" measured ((refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise (refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise no-raise)
+test-proxy: empty-userinfo-wire on "7.85.0" measured (((response 200) ("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1")) ((response 200) ("request http conn=1 method=GET target=http://127.0.0.1:<http>/status/200 auth=-" "close http conn=1")))
+test-proxy: refused-connect on "7.85.0" measured ((56 send-receive 403 the-connect) (56 send-receive 407 the-connect) (56 send-receive 502 the-connect) (56 send-receive 503 the-connect) (56 send-receive 407 the-connect) (56 send-receive 407 the-connect) (56 send-receive #f the-connect))
+test-proxy: unshared-tunnels on "7.85.0" measured (((response 200) (response 200) #t ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")))
+test-proxy: tunnel-plans on "7.85.0" measured (((("FRESH_CONNECT" . 1) ("FORBID_REUSE" . 1)) #t) ((("FRESH_CONNECT" . 1)) #f) (() #t) (() #f) (() #f))
+test-proxy: switch-live on "7.85.0" measured ((head head default switched) (1 1 2) (#f #f) ((response 200) (response 200) (response 200) (response 200)))
+test-proxy: environment-join on "7.85.0" measured (((environment (no_proxy . #f) (NO_PROXY . #f) (http_proxy . #f) (https_proxy . "http://127.0.0.1:37805") (all_proxy . #f)) (multiplexing default switched) (join #t (refused perform-failed 56 send-receive 407) (response 200)) (transfer ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) (done)) ("connect http conn=1 target=localhost:<h2> answer=200 head=_ auth=basic:alice:s3cret" "inner h2 via=1 method=GET target=/connection?delay=3000" "connect http conn=2 target=localhost:<h2> answer=407 head=_ auth=-" "close http conn=1" "close http conn=2"))
+test-proxy: closing-retries on "7.85.0" measured (((failed 56 #f 1) 1) ((failed 56 #f 3) 3))
+# of expected passes      96
+test: pass tests/test-proxy.sps
+=== tests/test-redirect.sps
+%%%% Starting test redirect
+(head-predicate-rows 124)
+# of expected passes      72
+test: pass tests/test-redirect.sps
+=== tests/test-request.sps
+%%%% Starting test request
+# of expected passes      47
+test: pass tests/test-request.sps
+=== tests/test-require-threaded.sps
+%%%% Starting test require-threaded
+# of expected passes      69
+test: pass tests/test-require-threaded.sps
+=== tests/test-retry.sps
+%%%% Starting test retry
+(head-predicate-rows 98)
+# of expected passes      86
+test: pass tests/test-retry.sps
+=== tests/test-stream-call.sps
+%%%% Starting test stream-call
+(stream-call-throughput raw ms 570)
+(stream-call-throughput h2 ms 287)
+(stream-call-idle-cpu ms 893839/125000)
+# of expected passes      77
+test: pass tests/test-stream-call.sps
+=== tests/test-stream.sps
+%%%% Starting test stream
+(sweep piece plain call-ticks 6 escaped-kept 12 escaped-lost 0 returned 41)
+(sweep port plain call-ticks 266 escaped-kept 532 escaped-lost 0 returned 41)
+(sweep piece planted call-ticks 9 escaped-kept 12 escaped-lost 6 returned 41)
+# of expected passes      74
+test: pass tests/test-stream.sps
+=== tests/test-transfer-tls.sps
+%%%% Starting test transfer-tls
+# of expected passes      84
+test: pass tests/test-transfer-tls.sps
+=== tests/test-transfer.sps
+%%%% Starting test transfer
+FAIL shared: GET raw /raw/big-header?bytes=102380, whole, and the counts back to the engine's alone
+  expected: ((response 200 http/1.1 (("X-Big" "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...
+  actual:   ((refused header-limit 23) ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+FAIL varying: GET raw /raw/many-headers?count=50000, as this libcurl's row says, and the counts back to the engine's alone
+  expected: ((response 200 http/1.1 (("X-H-1" "v") ("X-H-2" "v") ("X-H-3" "v") ("X-H-4" "v") ("X-H-5" "v") ("X-H-6" "v") ("X-H-7" "v") ("X-H-8" "v") ("X-H-9" "v") ("X-H-10" "v") ("X-H-11" "v") ("X-H-12" "v") ("X-H-13" "v") ("X-H-14" "v") ("X-H-15" "v") ("X-H-16" "v") ("X-H-17" "v") ("X-H-18" "v") ("X-H-19" "v") ("X-H-20" "v") ("X-H-21" "v") ("X-H-22" "v") ("X-H-23" "v") ("X-H-24" "v") ("X-H-25" "v") ("X-H-26" "v") ("X-H-27" "v") ("X-H-28" "v") ("X-H-29" "v") ("X-H-30" "v") ("X-H-31" "v") ("X-H-32" "v") ("X-H-33" "v") ("X-H-34" "v") ("X-H-35" "v") ("X-H-36" "v") ("X-H-37" "v") ("X-H-38" "v") ("X-H-39" "v") ("X-H-40" "v") ("X-H-41" "v") ("X-H-42" "v") ("X-H-43" "v") ("X-H-44" "v") ("X-H-45" "v") ("X-H-46" "v") ("X-H-47" "v") ("X-H-48" "v") ("X-H-49" "v") ("X-H-50" "v") ("X-H-51" "v") ("X-H-52" "v") ("X-H-53" "v") ("X-H-54" "v") ("X-H-55" "v") ("X-H-56" "v") ("X-H-57" "v") ("X-H-58" "v") ("X-H-59" "v") ("X-H-60" "v") ("X-H-61" "v") ("X-H-62" "v") ("X-H-63" "v") ("X-H-64" "v") ("X-H-65" "v") ("X-H-66" "v") ("X-H-67" "v") ("X-H-68" "v") ("X-H-69" "v") ("X-H-70" "v") ("X-H-71" "v") ("X-H-72" "v") ("X-H-73" "v") ("X-H-74" "v") ("X-H-75" "v") ("X-H-76" "v") ("X-H-77" "v") ("X-H-78" "v") ("X-H-79" "v") ("X-H-80" "v") ("X-H-81" "v") ("X-H-82" "v") ("X-H-83" "v") ("X-H-84" "v") ("X-H-85" "v") ("X-H-86" "v") ("X-H-87" "v") ("X-H-88" "v") ("X-H-89" "v") ("X-H-90" "v") ("X-H-91" "v") ("X-H-92" "v") ("X-H-93" "v") ("X-H-94" "v") ("X-H-95" "v") ("X-H-96" "v") ("X-H-97" "v") ("X-H-98" "v") ("X-H-99" "v") ("X-H-100" "v") ("X-H-101" "v") ("X-H-102" "v") ("X-H-103" "v") ("X-H-104" "v") ("X-H-105" "v") ("X-H-106" "v") ("X-H-107" "v") ("X-H-108" "v") ("X-H-109" "v") ("X-H-110" "v") ("X-H-111" "v") ("X-H-112" "v") ("X-H-113" "v") ("X-H-114" "v") ("X-H-115" "v") ("X-H-116" "v") ("X-H-117" "v") ("X-H-118" "v") ("X-H-119" "v") ("X-H-120" "v") ("X-H-121" "v") ("X-H-122" "v") ("X-H-123" "v") ("X-H-124" "v") ("X-H-125" "v") ("X-H-126" "v") ("X-H-127" "v") ("X-H-128" "v") ("X-H-129" "v") ("X-H-130" "v") ("X-H-131" "v") ("X-H-132" "v") ("X-H-133" "v") ("X-H-134" "v") ("X-H-135" "v") ("X-H-136" "v") ("X-H-137" "v") ("X-H-138" "v") ("X-H-139" "v") ("X-H-140" "v") ("X-H-141" "v") ("X-H-142" "v") ("X-H-143" "v") ("X-H-144" "v") ("X-H-145" "v") ("X-H-146" "v") ("X-H-147" "v") ("X-H-148" "v") ("X-H-149" "v") ("X-H-150" "v") ("X-H-151" "v") ("X-H-152" "v") ("X-H-153" "v") ("X-H-154" "v") ("X-H-155" "v") ("X-H-156" "v") ("X-H-157" "v") ("X-H-158" "v") ("X-H-159" "v") ("X-H-160" "v") ("X-H-161" "v") ("X-H-162" "v") ("X-H-163" "v") ("X-H-164" "v") ("X-H-165" "v") ("X-H-166" "v") ("X-H-167" "v") ("X-H-168" "v") ("X-H-169" "v") ("X-H-170" "v") ("X-H-171" "v") ("X-H-172" "v") ("X-H-173" "v") ("X-H-174" "v") ("X-H-175" "v") ("X-H-176" "v") ("X-H-177" "v") ("X-H-178" "v") ("X-H-179" "v") ("X-H-180" "v") ("X-H-181" "v") ("X-H-182" "v") ("X-H-183" "v") ("X-H-184" "v") ("X-H-185" "v") ("X-H-186" "v") ("X-H-187" "v") ("X-H-188" "v") ("X-H-189" "v") ("X-H-190" "v") ("X-H-191" "v") ("X-H-192" "v") ("X-H-193" ...
+  actual:   ((refused header-limit 23) ((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+# of expected passes      222
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 222, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-transfer.sps (exit 1)
+=== tests/test-unsupported.sps
+%%%% Starting test unsupported
+# of expected passes      38
+test: pass tests/test-unsupported.sps
+=== tests/test-upload.sps
+%%%% Starting test upload
+(fill #f 1966080 ms 592 retried () mib (20))
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 1014)
+(throughput http chunked ms 895)
+(throughput https sized ms 946)
+(throughput https chunked ms 997)
+(throughput h2 sized ms 301)
+(throughput h2 chunked ms 299)
+(read-lock collections-while-live 985)
+# of expected passes      58
+test: pass tests/test-upload.sps
+=== tests/test-url-location.sps
+%%%% Starting test url-location
+# of expected passes      224
+test: pass tests/test-url-location.sps
+=== tests/test-url-parts.sps
+%%%% Starting test url-parts
+# of expected passes      160
+test: pass tests/test-url-parts.sps
+=== tests/test-url.sps
+%%%% Starting test url
+# of expected passes      143
+test: pass tests/test-url.sps
+=== tests/test-variadic.sps
+%%%% Starting test variadic
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 1: done, the first done at 1013 ms, both at 2027 ms
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 2: done, the first done at 1012 ms, both at 1012 ms
+# of expected passes      50
+test: pass tests/test-variadic.sps
+=== tests/test-verify.sps
+%%%% Starting test verify
+# of expected passes      21
+test: pass tests/test-verify.sps
+=== tests/test-version.sps
+%%%% Starting test version
+test-version: prior-knowledge-to-h1 on "7.85.0" measured (failed perform-failed 52 send-receive)
+test-version: together-by-prior-knowledge on "7.85.0" measured (1 (http/2 http/2))
+# of expected passes      27
+test: pass tests/test-version.sps
+test: ran 41, passed 39, failed 2, hung 0
+make: *** [Makefile:324: test] Error 1

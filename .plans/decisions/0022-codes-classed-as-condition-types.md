@@ -1,6 +1,6 @@
 # ADR-0022: libcurl's codes are classed as condition types
 
-- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: a failure carries its request size, and the table as built (M4 slice 1); amended 2026-10-27: 8.7.1 reports no request size; amended 2026-10-28: the request size and the classes over TLS and HTTP/2 (M5 slice 3), and on the Mac (2026-10-29)
+- **Status:** Accepted; amended 2026-10-26: after the plan's review; amended 2026-10-26: a failure carries its request size, and the table as built (M4 slice 1); amended 2026-10-27: 8.7.1 reports no request size; amended 2026-10-28: the request size and the classes over TLS and HTTP/2 (M5 slice 3), and on the Mac (2026-10-29); amended 2026-11-06: `header-limit` is too-large (M8 slice 2)
 - **Date:** 2026-10-26
 - **Scope:** chez-curl v1, what a failed transfer raises, from M4
 - **Settles:** the brief's "error taxonomy mapping `CURLE_*` to conditions" (§8, M4); the
@@ -235,3 +235,13 @@ with GnuTLS, Guix's 8.20.0 and 8.23.0: 40 transfers each, a `get` and a `post` o
   ([results/mac-8.7.1.log](../research/m5/retry/results/mac-8.7.1.log)). The runner's first run
   there set no backend, and every submit refused its CA file
   ([results/mac-8.7.1-refused.log](../research/m5/retry/results/mac-8.7.1-refused.log)).
+
+## Amendment, 2026-11-06: `header-limit` is too-large (M8 slice 2)
+
+The cap on response headers ([ADR-0040](0040-a-cap-on-response-headers.md)) records
+`header-limit`, a twelfth reason, and it raises the too-large class whatever its code, as
+`body-limit` does: the code is libcurl's answer to the header callable's refusal, 23 on every
+Linux libcurl but 0 for 8.5.0's HTTP/2 trailers, whose refusal libcurl loses, and 56 for an
+HTTP/2 head on Apple's 8.7.1, 23 for its trailers. `&curl-too-large` now holds 63, 100, the body limit and the header cap. Its request
+size is CURLINFO_REQUEST_SIZE's, as `body-limit`'s is. `test-conditions` writes the twelve out, and
+`test-transfer`'s and `test-headers`' class tables give `header-limit` too-large.

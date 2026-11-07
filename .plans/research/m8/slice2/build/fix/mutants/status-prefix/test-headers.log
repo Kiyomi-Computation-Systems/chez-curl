@@ -1,0 +1,8 @@
+%%%% Starting test headers
+FAIL HTTP/1.1: a trailer section's first line named HTTP/x is a header line, though it starts the section: 2 head lines and 998 trailers are taken, buffered and streamed; 999 are refused, header-limit, after the head was published; 300 trailers of 256 bytes, the first HTTP/x, are taken, and 400 refused
+  expected: (((response 200 2) ((response 200 2) (head 200 2) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) (head 200 2) (raised header-limit))) ((response 200 2) ((response 200 2) (head 200 2) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) (head 200 2) (raised header-limit))))
+  actual:   (((response 200 2) ((response 200 2) (head 200 2) (eof 0))) ((response 200 2) ((response 200 2) (head 200 2) (eof 0))) ((response 200 2) ((response 200 2) (head 200 2) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) (head 200 2) (raised header-limit))))
+# of expected passes      42
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 42, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

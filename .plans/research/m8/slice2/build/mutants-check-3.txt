@@ -1,0 +1,109 @@
+control: clean; 0 failing test(s); test-headers.sps exit 0; test-unsupported.sps exit 0; test-origin-tls.sps exit 0; test-transfer.sps exit 0; test-conditions.sps exit 0
+lines-cap-1001: killed; 18 failing test(s); test-headers.sps exit 1
+    FAIL the cap's values, written out: 1,000 header lines and 102,400 bytes, over the whole transfer
+    FAIL HTTP/1.1: 1,000 header lines are taken, buffered and streamed; 1,001 are refused, header-limit, of &curl-too-large, buffered, and streamed with no head publishe
+    FAIL HTTP/2: 1,000 header lines are taken, buffered and streamed; 1,001 are refused, header-limit, of &curl-too-large, buffered, and streamed with no head published 
+    FAIL HTTP/1.1: a 103 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, 
+    FAIL HTTP/1.1: a 100 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, 
+    FAIL HTTP/1.1: a head of 2 lines and 998 trailers are taken, buffered and streamed, the stream's head published before them; 999 trailers are refused, header-limit, 
+    FAIL HTTP/1.1: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 
+    FAIL HTTP/2: a 103 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, ea
+    FAIL HTTP/2: a 100 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, ea
+    FAIL HTTP/2: a head of 2 lines and 998 trailers are taken, buffered and streamed, the stream's head published before them; 999 trailers are refused, header-limit, af
+    FAIL HTTP/2: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 25
+    FAIL HTTP/1.1: a 417 of 500 lines and its resend's 200 of 500 are taken; of 500 and 501, refused, header-limit, the count across both responses; of 250 and 250 lines
+lines-cap-999: killed; 15 failing test(s); test-headers.sps exit 1
+    FAIL the cap's values, written out: 1,000 header lines and 102,400 bytes, over the whole transfer
+    FAIL HTTP/1.1: 1,000 header lines are taken, buffered and streamed; 1,001 are refused, header-limit, of &curl-too-large, buffered, and streamed with no head publishe
+    FAIL HTTP/2: 1,000 header lines are taken, buffered and streamed; 1,001 are refused, header-limit, of &curl-too-large, buffered, and streamed with no head published 
+    FAIL HTTP/1.1: a 103 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, 
+    FAIL HTTP/1.1: a 100 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, 
+    FAIL HTTP/1.1: a head of 2 lines and 998 trailers are taken, buffered and streamed, the stream's head published before them; 999 trailers are refused, header-limit, 
+    FAIL HTTP/1.1: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 
+    FAIL HTTP/2: a 103 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, ea
+    FAIL HTTP/2: a 100 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, ea
+    FAIL HTTP/2: a head of 2 lines and 998 trailers are taken, buffered and streamed, the stream's head published before them; 999 trailers are refused, header-limit, af
+    FAIL HTTP/2: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 25
+    FAIL HTTP/1.1: a 417 of 500 lines and its resend's 200 of 500 are taken; of 500 and 501, refused, header-limit, the count across both responses; of 250 and 250 lines
+bytes-cap-102401: killed; 5 failing test(s); test-headers.sps exit 1
+    FAIL the cap's values, written out: 1,000 header lines and 102,400 bytes, over the whole transfer
+    FAIL HTTP/1.1: a head of 102,400 bytes as the callable counts them, its status line of 17 bytes, every line's CR LF and the empty line in, is taken, buffered and str
+    FAIL HTTP/1.1: one line of 102362 bytes after content-length: 0 takes the head to 102,400 bytes, taken; one byte more is refused, header-limit, though libcurl takes 
+    FAIL HTTP/2: a head of 102,400 bytes as the callable counts them, its status line of 13 bytes, every line's CR LF and the empty line in, is taken, buffered and strea
+    FAIL HTTP/2: one line of 102366 bytes after content-length: 0 takes the head to 102,400 bytes, taken; one byte more is refused, header-limit, though libcurl takes a 
+bytes-cap-102399: killed; 5 failing test(s); test-headers.sps exit 1
+    FAIL the cap's values, written out: 1,000 header lines and 102,400 bytes, over the whole transfer
+    FAIL HTTP/1.1: a head of 102,400 bytes as the callable counts them, its status line of 17 bytes, every line's CR LF and the empty line in, is taken, buffered and str
+    FAIL HTTP/1.1: one line of 102362 bytes after content-length: 0 takes the head to 102,400 bytes, taken; one byte more is refused, header-limit, though libcurl takes 
+    FAIL HTTP/2: a head of 102,400 bytes as the callable counts them, its status line of 13 bytes, every line's CR LF and the empty line in, is taken, buffered and strea
+    FAIL HTTP/2: one line of 102366 bytes after content-length: 0 takes the head to 102,400 bytes, taken; one byte more is refused, header-limit, though libcurl takes a 
+count-per-response: killed; 11 failing test(s); test-headers.sps exit 1
+    FAIL HTTP/1.1: a 103 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, 
+    FAIL HTTP/1.1: a 100 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, 
+    FAIL HTTP/1.1: a 103 head of 150 lines of 256 bytes and a final head of 150 are taken; of 250 and 250, 128,000 bytes or so, refused, header-limit, the bytes across b
+    FAIL HTTP/1.1: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 
+    FAIL HTTP/2: a 103 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, ea
+    FAIL HTTP/2: a 100 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, ea
+    FAIL HTTP/2: a 103 head of 150 lines of 256 bytes and a final head of 150 are taken; of 250 and 250, 128,000 bytes or so, refused, header-limit, the bytes across bot
+    FAIL HTTP/2: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 25
+    FAIL HTTP/1.1: a 417 of 500 lines and its resend's 200 of 500 are taken; of 500 and 501, refused, header-limit, the count across both responses; of 250 and 250 lines
+    FAIL HTTP/1.1 over TLS through the proxy: a CONNECT answer of 500 lines and a response of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit
+    FAIL HTTP/2 through the proxy: a CONNECT answer of 500 lines and a response of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count
+status-line-counted: killed; 14 failing test(s); test-headers.sps exit 1
+    FAIL HTTP/1.1: 1,000 header lines are taken, buffered and streamed; 1,001 are refused, header-limit, of &curl-too-large, buffered, and streamed with no head publishe
+    FAIL HTTP/2: 1,000 header lines are taken, buffered and streamed; 1,001 are refused, header-limit, of &curl-too-large, buffered, and streamed with no head published 
+    FAIL HTTP/1.1: a 103 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, 
+    FAIL HTTP/1.1: a 100 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, 
+    FAIL HTTP/1.1: a head of 2 lines and 998 trailers are taken, buffered and streamed, the stream's head published before them; 999 trailers are refused, header-limit, 
+    FAIL HTTP/1.1: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 
+    FAIL HTTP/2: a 103 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, ea
+    FAIL HTTP/2: a 100 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, ea
+    FAIL HTTP/2: a head of 2 lines and 998 trailers are taken, buffered and streamed, the stream's head published before them; 999 trailers are refused, header-limit, af
+    FAIL HTTP/2: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 25
+    FAIL HTTP/1.1: a 417 of 500 lines and its resend's 200 of 500 are taken; of 500 and 501, refused, header-limit, the count across both responses; of 250 and 250 lines
+    FAIL HTTP/1.1 over TLS through the proxy: a CONNECT answer of 500 lines and a response of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit
+reason-not-recorded: killed; 28 failing test(s); test-headers.sps exit 1
+    FAIL HTTP/1.1: 1,000 header lines are taken, buffered and streamed; 1,001 are refused, header-limit, of &curl-too-large, buffered, and streamed with no head publishe
+    FAIL HTTP/1.1: a head of 102,400 bytes as the callable counts them, its status line of 17 bytes, every line's CR LF and the empty line in, is taken, buffered and str
+    FAIL HTTP/1.1: one line of 102362 bytes after content-length: 0 takes the head to 102,400 bytes, taken; one byte more is refused, header-limit, though libcurl takes 
+    FAIL HTTP/2: 1,000 header lines are taken, buffered and streamed; 1,001 are refused, header-limit, of &curl-too-large, buffered, and streamed with no head published 
+    FAIL HTTP/2: a head of 102,400 bytes as the callable counts them, its status line of 13 bytes, every line's CR LF and the empty line in, is taken, buffered and strea
+    FAIL HTTP/2: one line of 102366 bytes after content-length: 0 takes the head to 102,400 bytes, taken; one byte more is refused, header-limit, though libcurl takes a 
+    FAIL HTTP/1.1: a 103 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, 
+    FAIL HTTP/1.1: a 100 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, 
+    FAIL HTTP/1.1: a 103 head of 150 lines of 256 bytes and a final head of 150 are taken; of 250 and 250, 128,000 bytes or so, refused, header-limit, the bytes across b
+    FAIL HTTP/1.1: a head of 2 lines and 998 trailers are taken, buffered and streamed, the stream's head published before them; 999 trailers are refused, header-limit, 
+    FAIL HTTP/1.1: 300 trailers of 256 bytes are taken; 400, 102,400 bytes of trailers, are refused, header-limit, the bytes across the head and the trailers
+    FAIL HTTP/1.1: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 
+later-call-taken: killed; 1 failing test(s); test-headers.sps exit 1
+    FAIL a reason recorded at the head's line 2 by the private mark refuses every later call: buffered, callback-raised, (planted-head-mark 2), ended at line 3 with this
+suppress-taken: killed; 3 failing test(s); test-unsupported.sps exit 1; test-transfer.sps exit 1
+    FAIL each owned option and twin, written out here, is refused as owned-option where the loaded libcurl knows it, by id, and as unknown-option where it does not, befo
+    FAIL HEADERFUNCTION and HEADERDATA, the header callable's, and their twin SUPPRESS_CONNECT_HEADERS are refused as owned-option, with values their types take; their n
+    FAIL owned-option-names, written out: the options the transfer always sets, QUICK_EXIT and MAXREDIRS among them, and the pins' bitmasks; then each request field's, a
+reason-unclassed: killed; 29 failing test(s); test-headers.sps exit 1; test-conditions.sps exit 1
+    FAIL HTTP/1.1: 1,000 header lines are taken, buffered and streamed; 1,001 are refused, header-limit, of &curl-too-large, buffered, and streamed with no head publishe
+    FAIL HTTP/1.1: a head of 102,400 bytes as the callable counts them, its status line of 17 bytes, every line's CR LF and the empty line in, is taken, buffered and str
+    FAIL HTTP/1.1: one line of 102362 bytes after content-length: 0 takes the head to 102,400 bytes, taken; one byte more is refused, header-limit, though libcurl takes 
+    FAIL HTTP/2: 1,000 header lines are taken, buffered and streamed; 1,001 are refused, header-limit, of &curl-too-large, buffered, and streamed with no head published 
+    FAIL HTTP/2: a head of 102,400 bytes as the callable counts them, its status line of 13 bytes, every line's CR LF and the empty line in, is taken, buffered and strea
+    FAIL HTTP/2: one line of 102366 bytes after content-length: 0 takes the head to 102,400 bytes, taken; one byte more is refused, header-limit, though libcurl takes a 
+    FAIL HTTP/1.1: a 103 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, 
+    FAIL HTTP/1.1: a 100 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, 
+    FAIL HTTP/1.1: a 103 head of 150 lines of 256 bytes and a final head of 150 are taken; of 250 and 250, 128,000 bytes or so, refused, header-limit, the bytes across b
+    FAIL HTTP/1.1: a head of 2 lines and 998 trailers are taken, buffered and streamed, the stream's head published before them; 999 trailers are refused, header-limit, 
+    FAIL HTTP/1.1: 300 trailers of 256 bytes are taken; 400, 102,400 bytes of trailers, are refused, header-limit, the bytes across the head and the trailers
+    FAIL HTTP/1.1: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 
+origin-send-limit-default: killed; 16 failing test(s); test-origin-tls.sps exit 1; test-headers.sps exit 1
+    FAIL h2c GET /head?n=6000: every field of each block, as this suite lists them, the last block past 64 KiB, END_STREAM, no other frame, then idle
+    FAIL h2c GET /head?n=2&tn=6000: every field of each block, as this suite lists them, the last block past 64 KiB, END_STREAM, no other frame, then idle
+    FAIL h2 GET /head?n=6000: every field of each block, as this suite lists them, the last block past 64 KiB, END_STREAM, no other frame, then idle
+    FAIL h2 GET /head?n=2&tn=6000: every field of each block, as this suite lists them, the last block past 64 KiB, END_STREAM, no other frame, then idle
+    FAIL HTTP/2: a head of 102,400 bytes as the callable counts them, its status line of 13 bytes, every line's CR LF and the empty line in, is taken, buffered and strea
+    FAIL HTTP/2: one line of 102366 bytes after content-length: 0 takes the head to 102,400 bytes, taken; one byte more is refused, header-limit, though libcurl takes a 
+    FAIL HTTP/2: a 103 head of 150 lines of 256 bytes and a final head of 150 are taken; of 250 and 250, 128,000 bytes or so, refused, header-limit, the bytes across bot
+    FAIL HTTP/2: 300 trailers of 256 bytes are taken; 400, 102,400 bytes of trailers, are refused, header-limit, the bytes across the head and the trailers
+    FAIL HTTP/2: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 25
+    FAIL HTTP/2 through the proxy: a CONNECT answer of 500 lines and a response of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count
+    FAIL by version, line-102400-h2: GET h2 /head?n=1&big=102400 answers as this libcurl's row says
+    FAIL by version, line-102400-h2-raw: GET h2 /head?n=1&big=102400&bigch=X answers as this libcurl's row says

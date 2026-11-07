@@ -1,0 +1,107 @@
+--- proto/src/curl/private/transfer.sls	2026-11-06 17:59:56.455440424 -0500
++++ probe/src/curl/private/transfer.sls	2026-11-06 18:01:20.972380868 -0500
+@@ -245,7 +245,8 @@
+ ;;; lock-object, which check-seam lets this library alone import (ADR-0007,
+ ;;; M2 plan, section 3.6).
+ (library (curl private transfer)
+-  (export make-curl-request curl-request-with curl-request?
++  (export take-header-tallies!
++           make-curl-request curl-request-with curl-request?
+           curl-request-url curl-request-method curl-request-headers curl-request-body
+           curl-request-user-agent curl-request-timeout-ms curl-request-connect-timeout-ms
+           curl-request-body-limit curl-request-ca-file curl-request-verify curl-request-proxy
+@@ -2613,7 +2614,7 @@
+             (immutable stream) (immutable moves) (mutable offers) (mutable easy)
+             (mutable published) (mutable lines) (immutable upload) (immutable rewinding)
+             (mutable reads) (immutable prereq-hold)
+-            (mutable hlines) (mutable hbytes) (mutable hstart)))
++            (mutable hlines) (mutable hbytes) (mutable hstart) (mutable heads) (mutable hcalls) (mutable hafter)))
+ 
+   ;; The live transfers, by key, and the next key, under the mutex. Every
+   ;; engine's thread reads it: each callable serves them all.
+@@ -3059,6 +3060,44 @@
+            (copy-foreign->bytevector! data bytes 0 5)
+            (bytevector=? bytes (string->utf8 "HTTP/")))))
+ 
++  ;; status-of : Positive-Integer Natural -> (U Integer String)
++  ;; The probe's seam: a status line's code, its second word.
++  (define (status-of data n)
++    (let ((bytes (make-bytevector (min n 64))))
++      (copy-foreign->bytevector! data bytes 0 (min n 64))
++      (let* ((text (utf8->string bytes))
++             (start (let loop ((i 0)) (if (or (= i (string-length text)) (char=? (string-ref text i) #\space)) (+ i 1) (loop (+ i 1)))))
++             (end (let loop ((i start)) (if (or (>= i (string-length text)) (not (char<=? #\0 (string-ref text i) #\9))) i (loop (+ i 1))))))
++        (or (and (< start end) (string->number (substring text start end))) text))))
++
++  ;; bump-head! : Sink Natural Natural -> Void
++  (define (bump-head! sink lines n)
++    (when (pair? (sink-heads sink))
++      (let ((head (car (sink-heads sink))))
++        (sink-heads-set! sink (cons (list (car head) (+ (cadr head) lines) (+ (caddr head) n))
++                                    (cdr (sink-heads sink)))))))
++
++  ;; The log of what the header callable was handed, each transfer's, as
++  ;; finish-transfer read it, newest first, under sinks-lock.
++  (define header-tallies '())
++
++  ;; take-header-tallies! : -> (Listof (List Natural Natural Natural (Listof (List Any Natural Natural))))
++  ;; The probe's seam: the log, oldest first, each entry (CALLS LINES BYTES
++  ;; HEADS AFTER), HEADS oldest first, AFTER the calls the callable refused
++  ;; because a reason was recorded already; the log emptied.
++  (define (take-header-tallies!)
++    (locked sinks-lock
++      (lambda ()
++        (let ((log (reverse header-tallies)))
++          (set! header-tallies '())
++          log))))
++
++  ;; tally! : Sink -> Void
++  (define (tally! sink)
++    (let ((entry (list (sink-hcalls sink) (sink-hlines sink) (sink-hbytes sink) (reverse (sink-heads sink))
++                       (sink-hafter sink))))
++      (locked sinks-lock (lambda () (set! header-tallies (cons entry header-tallies))))))
++
+   ;; count-header-line! : Sink Positive-Integer Natural -> Boolean
+   ;; The line of N bytes at DATA counted against SINK's cap: every byte,
+   ;; and a header line unless it is a head's empty line or, at a head's
+@@ -3073,6 +3112,13 @@
+             (status (sink-hstart-set! sink #f))
+             (else (sink-hstart-set! sink #f)
+                   (sink-hlines-set! sink (+ (sink-hlines sink) 1))))
++      ;; The probe's seam: each head as (STATUS LINES BYTES), T for a
++      ;; section no status line opened, newest first.
++      (cond (empty (bump-head! sink 0 n))
++            (status (sink-heads-set! sink (cons (list (status-of data n) 0 n) (sink-heads sink))))
++            (else (when (or (null? (sink-heads sink)) start)
++                    (sink-heads-set! sink (cons (list 'T 0 0) (sink-heads sink))))
++                  (bump-head! sink 1 n)))
+       (and (<= (sink-hlines sink) header-line-cap) (<= (sink-hbytes sink) header-byte-cap))))
+ 
+   ;; empty-line? : Positive-Integer Natural -> Boolean
+@@ -3128,7 +3174,8 @@
+           (let ((sink (sink-of key)) (n (* size nitems)))
+             (cond
+               ((not sink) 0)
+-              ((sink-recorded sink) 0)
++              ((begin (sink-hcalls-set! sink (+ (sink-hcalls sink) 1)) #f) 0)
++              ((sink-recorded sink) (sink-hafter-set! sink (+ (sink-hafter sink) 1)) 0)
+               ((not (count-header-line! sink data n))
+                (record! key 'header-limit #f)
+                0)
+@@ -4300,7 +4347,7 @@
+                                 (let ((seam (find (lambda (seam) (and (pair? seam) (eq? (car seam) 'prereq-hold)))
+                                                   seams)))
+                                   (and seam (cdr seam)))
+-                                0 0 #t)))
++                                0 0 #t '() 0 0)))
+            (locked sinks-lock
+              (lambda ()
+                (let ((key next-key))
+@@ -4500,6 +4547,7 @@
+            (buffer (live-transfer-buffer live))
+            (easy (live-transfer-easy live))
+            (recorded (reason-of sink)))
++      (tally! sink)
+       (cond
+         (recorded
+          (failure (car recorded) code #f buffer

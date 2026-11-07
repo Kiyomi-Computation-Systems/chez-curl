@@ -1,0 +1,160 @@
+== none, run 1 (limits-none-guix-8.20.0-1.log): 139 cells, 31 differ from send+pairs+settings
+  edge total102400 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46706 tag=total102400.buffered heads=[200:401] rst=0 frame-error=type1:code6:stream1
+  edge total102400 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46720 tag=total102400.streamed heads=[200:401] rst=0 frame-error=type1:code6:stream1
+  edge total102401 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46728 tag=total102401.buffered heads=[200:401] rst=0 frame-error=type1:code6:stream1
+  edge total102401 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46732 tag=total102401.streamed heads=[200:401] rst=0 frame-error=type1:code6:stream1
+  edge line102366 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46736 tag=line102366.buffered heads=[200:2] rst=0 frame-error=type1:code6:stream1
+  edge line102366 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46740 tag=line102366.streamed heads=[200:2] rst=0 frame-error=type1:code6:stream1
+  edge line102367 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46744 tag=line102367.buffered heads=[200:2] rst=0 frame-error=type1:code6:stream1
+  edge line102367 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46756 tag=line102367.streamed heads=[200:2] rst=0 frame-error=type1:code6:stream1
+  toward pre103-250x256+250x256 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46842 tag=pre103-250x256 250x256.buffered heads=[103:250,200:250] rst=0 frame-error=type1:code6:stream1 frame-error=type1:code6:stream1
+  toward pre103-250x256+250x256 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46850 tag=pre103-250x256 250x256.streamed heads=[103:250,200:250] rst=0 frame-error=type1:code6:stream1 frame-error=type1:code6:stream1
+  toward tr-2+400x256 h2 buffered -
+    (status 200 version http/2 headers 2)
+    h2-close face=h2 conn=46898 tag=tr-2 400x256.buffered heads=[200:2,trailers:400] rst=0 frame-error=type1:code6:stream1
+  toward tr-2+400x256 h2 streamed -
+    (status 200 version http/2 headers 2)
+    h2-close face=h2 conn=46912 tag=tr-2 400x256.streamed heads=[200:2,trailers:400] rst=0 frame-error=type1:code6:stream1
+  toward auth-250x256+250x256 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46932 tag=auth-250x256 250x256.buffered heads=[401:251] rst=0 frame-error=type1:code6:stream1
+  toward connect-250x256+250x256 h2+proxy buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46978 tag=connect-250x256 250x256.buffered heads=[200:250] rst=0 frame-error=type1:code6:stream1
+  toward connect-250x256+250x256 h2+proxy streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46994 tag=connect-250x256 250x256.streamed heads=[200:250] rst=0 frame-error=type1:code6:stream1
+  early line102400 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=46998 tag=line102400.buffered heads=[200:2] rst=0 frame-error=type1:code6:stream1
+  early line102400 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=47002 tag=line102400.streamed heads=[200:2] rst=0 frame-error=type1:code6:stream1
+  early line102400-X h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=47012 tag=line102400-X.buffered heads=[200:2] rst=0 frame-error=type1:code6:stream1
+  early line102400-X h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=47028 tag=line102400-X.streamed heads=[200:2] rst=0 frame-error=type1:code6:stream1
+  early total131071 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=47044 tag=total131071.buffered heads=[200:513] rst=0 frame-error=type1:code6:stream1
+  early total131071 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=47048 tag=total131071.streamed heads=[200:513] rst=0 frame-error=type1:code6:stream1
+  early total131072 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=47060 tag=total131072.buffered heads=[200:513] rst=0 frame-error=type1:code6:stream1
+  early total131072 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=47066 tag=total131072.streamed heads=[200:513] rst=0 frame-error=type1:code6:stream1
+  early total307199 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=47076 tag=total307199.buffered heads=[200:1201] rst=0 frame-error=type1:code6:stream1
+  early total307199 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=47078 tag=total307199.streamed heads=[200:1201] rst=0 frame-error=type1:code6:stream1
+  early tr-2+1600x256 h2 buffered -
+    (status 200 version http/2 headers 2)
+    h2-close face=h2 conn=47080 tag=tr-2 1600x256.buffered heads=[200:2,trailers:1600] rst=0 frame-error=type1:code6:stream1
+  early tr-2+1600x256 h2 streamed -
+    (status 200 version http/2 headers 2)
+    h2-close face=h2 conn=47092 tag=tr-2 1600x256.streamed heads=[200:2,trailers:1600] rst=0 frame-error=type1:code6:stream1
+  early tr-2+6000 h2 buffered -
+    (status 200 version http/2 headers 2)
+    h2-close face=h2 conn=47126 tag=tr-2 6000.buffered heads=[200:2,trailers:6000] rst=0 frame-error=type1:code6:stream1
+  early tr-2+6000 h2 streamed -
+    (status 200 version http/2 headers 2)
+    h2-close face=h2 conn=47140 tag=tr-2 6000.streamed heads=[200:2,trailers:6000] rst=0 frame-error=type1:code6:stream1
+  suppress connect-900x256+350x256 h2+proxy buffered SUPPRESS_CONNECT_HEADERS=1;
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=47264 tag=connect-900x256 350x256.buffered heads=[200:350] rst=0 frame-error=type1:code6:stream1
+  suppress connect-900x256+350x256 h2+proxy streamed SUPPRESS_CONNECT_HEADERS=1;
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=47270 tag=connect-900x256 350x256.streamed heads=[200:350] rst=0 frame-error=type1:code6:stream1
+== none, run 2 (limits-none-guix-8.20.0-2.log): 81 cells, 21 differ from send+pairs+settings
+  toward pre103-250x256+250x256 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=41184 tag=pre103-250x256 250x256.buffered heads=[103:250,200:250] rst=0 frame-error=type1:code6:stream1 frame-error=type1:code6:stream1
+  toward pre103-250x256+250x256 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=41196 tag=pre103-250x256 250x256.streamed heads=[103:250,200:250] rst=0 frame-error=type1:code6:stream1 frame-error=type1:code6:stream1
+  toward tr-2+400x256 h2 buffered -
+    (status 200 version http/2 headers 2)
+    h2-close face=h2 conn=41234 tag=tr-2 400x256.buffered heads=[200:2,trailers:400] rst=0 frame-error=type1:code6:stream1
+  toward tr-2+400x256 h2 streamed -
+    (status 200 version http/2 headers 2)
+    h2-close face=h2 conn=41246 tag=tr-2 400x256.streamed heads=[200:2,trailers:400] rst=0 frame-error=type1:code6:stream1
+  toward auth-250x256+250x256 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=41278 tag=auth-250x256 250x256.buffered heads=[401:251] rst=0 frame-error=type1:code6:stream1
+  toward connect-250x256+250x256 h2+proxy buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=44636 tag=connect-250x256 250x256.buffered heads=[200:250] rst=0 frame-error=type1:code6:stream1
+  toward connect-250x256+250x256 h2+proxy streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=44642 tag=connect-250x256 250x256.streamed heads=[200:250] rst=0 frame-error=type1:code6:stream1
+  early line102400 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=44654 tag=line102400.buffered heads=[200:2] rst=0 frame-error=type1:code6:stream1
+  early line102400 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=44658 tag=line102400.streamed heads=[200:2] rst=0 frame-error=type1:code6:stream1
+  early line102400-X h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=44662 tag=line102400-X.buffered heads=[200:2] rst=0 frame-error=type1:code6:stream1
+  early line102400-X h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=44676 tag=line102400-X.streamed heads=[200:2] rst=0 frame-error=type1:code6:stream1
+  early total131071 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=44692 tag=total131071.buffered heads=[200:513] rst=0 frame-error=type1:code6:stream1
+  early total131071 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=44706 tag=total131071.streamed heads=[200:513] rst=0 frame-error=type1:code6:stream1
+  early total131072 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=44722 tag=total131072.buffered heads=[200:513] rst=0 frame-error=type1:code6:stream1
+  early total131072 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=44728 tag=total131072.streamed heads=[200:513] rst=0 frame-error=type1:code6:stream1
+  early total307199 h2 buffered -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=44730 tag=total307199.buffered heads=[200:1201] rst=0 frame-error=type1:code6:stream1
+  early total307199 h2 streamed -
+    (failed perform-failed 92 protocol "HTTP/2 stream 1 was closed cleanly, but before getting all response header fields, treated as error")
+    h2-close face=h2 conn=44744 tag=total307199.streamed heads=[200:1201] rst=0 frame-error=type1:code6:stream1
+  early tr-2+1600x256 h2 buffered -
+    (status 200 version http/2 headers 2)
+    h2-close face=h2 conn=44760 tag=tr-2 1600x256.buffered heads=[200:2,trailers:1600] rst=0 frame-error=type1:code6:stream1
+  early tr-2+1600x256 h2 streamed -
+    (status 200 version http/2 headers 2)
+    h2-close face=h2 conn=44770 tag=tr-2 1600x256.streamed heads=[200:2,trailers:1600] rst=0 frame-error=type1:code6:stream1
+  early tr-2+6000 h2 buffered -
+    (status 200 version http/2 headers 2)
+    h2-close face=h2 conn=44780 tag=tr-2 6000.buffered heads=[200:2,trailers:6000] rst=0 frame-error=type1:code6:stream1
+  early tr-2+6000 h2 streamed -
+    (status 200 version http/2 headers 2)
+    h2-close face=h2 conn=44784 tag=tr-2 6000.streamed heads=[200:2,trailers:6000] rst=0 frame-error=type1:code6:stream1
+== send (limits-send-guix-8.20.0.log): 139 cells, 0 differ from send+pairs+settings
+== send+pairs (limits-send+pairs-guix-8.20.0.log): 139 cells, 0 differ from send+pairs+settings

@@ -1,0 +1,46 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+lanes.sh start 2026-11-07T00:45:05Z mode=test tree=snap1 lanes= floor openssl gnutls current cpuset=6-11 args=
+network interfaces: lo 
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+== lane floor: make test in a copy of /w/snap1, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/e1/ci/curl-floor/include NODE=/src/build/verify/m3s2/node20/node SUITES='tests/test-headers.sps tests/test-transfer.sps tests/test-conditions.sps tests/test-unsupported.sps tests/test-origin.sps tests/test-origin-tls.sps'
+lane floor: pass (122 s)
+  [floor] test: pass tests/test-headers.sps
+  [floor] test: pass tests/test-transfer.sps
+  [floor] test: pass tests/test-conditions.sps
+  [floor] test: pass tests/test-unsupported.sps
+  [floor] test: pass tests/test-origin.sps
+  [floor] test: pass tests/test-origin-tls.sps
+  [floor] test: ran 6, passed 6, failed 0, hung 0
+== lane openssl: make test in a copy of /w/snap1, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 CC=gcc NODE=/src/build/verify/m3s2/node20/node SUITES='tests/test-headers.sps tests/test-transfer.sps tests/test-conditions.sps tests/test-unsupported.sps tests/test-origin.sps tests/test-origin-tls.sps'
+lane openssl: pass (121 s)
+  [openssl] test: pass tests/test-headers.sps
+  [openssl] test: pass tests/test-transfer.sps
+  [openssl] test: pass tests/test-conditions.sps
+  [openssl] test: pass tests/test-unsupported.sps
+  [openssl] test: pass tests/test-origin.sps
+  [openssl] test: pass tests/test-origin-tls.sps
+  [openssl] test: ran 6, passed 6, failed 0, hung 0
+== lane gnutls: make test in a copy of /w/snap1, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 CC=gcc NODE=/src/build/verify/m3s2/node20/node SUITES='tests/test-headers.sps tests/test-transfer.sps tests/test-conditions.sps tests/test-unsupported.sps tests/test-origin.sps tests/test-origin-tls.sps'
+lane gnutls: pass (120 s)
+  [gnutls] test: pass tests/test-headers.sps
+  [gnutls] test: pass tests/test-transfer.sps
+  [gnutls] test: pass tests/test-conditions.sps
+  [gnutls] test: pass tests/test-unsupported.sps
+  [gnutls] test: pass tests/test-origin.sps
+  [gnutls] test: pass tests/test-origin-tls.sps
+  [gnutls] test: ran 6, passed 6, failed 0, hung 0
+== lane current: make test in a copy of /w/snap1, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include NODE=/src/build/verify/m3s2/node20/node SUITES='tests/test-headers.sps tests/test-transfer.sps tests/test-conditions.sps tests/test-unsupported.sps tests/test-origin.sps tests/test-origin-tls.sps'
+lane current: FAIL (119 s)
+  [current] test: FAIL tests/test-headers.sps (exit 1)
+  [current] test: pass tests/test-transfer.sps
+  [current] test: pass tests/test-conditions.sps
+  [current] test: pass tests/test-unsupported.sps
+  [current] test: pass tests/test-origin.sps
+  [current] test: pass tests/test-origin-tls.sps
+  [current] test: ran 6, passed 5, failed 1, hung 0

@@ -307,8 +307,9 @@
 ;; PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP,
 ;; which 7.85.0 does not know (ADR-0037, amended 2026-11-03); the
 ;; cookie-jar field's SHARE and COOKIEFILE, and its twins COOKIE,
-;; COOKIELIST and COOKIESESSION (ADR-0035, amended 2026-11-04); every proxy
-;; TLS option.
+;; COOKIELIST and COOKIESESSION (ADR-0035, amended 2026-11-04); the header
+;; callable's twin SUPPRESS_CONNECT_HEADERS (ADR-0040, amended 2026-11-06);
+;; every proxy TLS option.
 (define owned-names
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
     "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
@@ -328,6 +329,7 @@
     "FORBID_REUSE" "PROXYAUTH" "PROXYUSERPWD" "PROXYUSERNAME" "PROXYPASSWORD" "HTTPPROXYTUNNEL"
     "HAPROXYPROTOCOL" "HAPROXY_CLIENT_IP"
     "SHARE" "COOKIE" "COOKIELIST" "COOKIESESSION"
+    "SUPPRESS_CONNECT_HEADERS"
     "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
     "PROXY_CAINFO" "PROXY_CAINFO_BLOB" "PROXY_CAPATH" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
     "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
@@ -427,29 +429,51 @@
 ;; proxy, or inside a tunnel to the origin; and HAPROXY_CLIENT_IP, which
 ;; rewrote that line, and which 7.85.0 does not know, so there the hatch
 ;; refuses it as unknown-option, by name, first. Their neighbours stay the
-;; hatch's: SUPPRESS_CONNECT_HEADERS, PROXY_SERVICE_NAME and SOCKS5_AUTH
-;; changed no byte either side got. Each is attached, and kept.
-(test-equal "PROXY, NOPROXY, FORBID_REUSE, PROXY_CAINFO, PROXY_CAPATH, PROXY_SSL_VERIFYPEER and PROXY_SSL_VERIFYHOST, the proxy fields', and their twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME, PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP are refused as owned-option where the libcurl knows each, with values their types take; their neighbours SUPPRESS_CONNECT_HEADERS, PROXY_SERVICE_NAME and SOCKS5_AUTH are taken, each kept as attached"
+;; hatch's: PROXY_SERVICE_NAME and SOCKS5_AUTH changed no byte either side
+;; got. SUPPRESS_CONNECT_HEADERS was among them until M8 slice 2 made it the
+;; header callable's twin, below. Each is attached, and kept.
+(test-equal "PROXY, NOPROXY, FORBID_REUSE, PROXY_CAINFO, PROXY_CAPATH, PROXY_SSL_VERIFYPEER and PROXY_SSL_VERIFYHOST, the proxy fields', and their twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME, PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP are refused as owned-option where the libcurl knows each, with values their types take; their neighbours PROXY_SERVICE_NAME and SOCKS5_AUTH are taken, each kept as attached"
   (append (map (lambda (name) (refused-as name (if (curl-easy-option name) 'owned-option 'unknown-option)))
                '("PROXY" "NOPROXY" "FORBID_REUSE" "PROXY_CAINFO" "PROXY_CAPATH" "PROXY_SSL_VERIFYPEER"
                  "PROXY_SSL_VERIFYHOST" "PROXYAUTH" "PROXYUSERPWD" "PROXYUSERNAME" "PROXYPASSWORD"
                  "HTTPPROXYTUNNEL" "HAPROXYPROTOCOL" "HAPROXY_CLIENT_IP"))
-          (list taken taken taken
-                '(("SUPPRESS_CONNECT_HEADERS" long 1) ("PROXY_SERVICE_NAME" string "proxy")
-                  ("SOCKS5_AUTH" long 1))))
+          (list taken taken
+                '(("PROXY_SERVICE_NAME" string "proxy") ("SOCKS5_AUTH" long 1))))
   (append (map attach '((("PROXY" . "http://127.0.0.1:1")) (("NOPROXY" . "")) (("FORBID_REUSE" . 1))
                         (("PROXY_CAINFO" . "ca.pem")) (("PROXY_CAPATH" . "certs"))
                         (("PROXY_SSL_VERIFYPEER" . 0)) (("PROXY_SSL_VERIFYHOST" . 0))
                         (("PROXYAUTH" . 1)) (("PROXYUSERPWD" . "u:p")) (("PROXYUSERNAME" . "u"))
                         (("PROXYPASSWORD" . "p")) (("HTTPPROXYTUNNEL" . 1)) (("HAPROXYPROTOCOL" . 1))
                         (("HAPROXY_CLIENT_IP" . "10.1.2.3"))))
-          (map attach '((("SUPPRESS_CONNECT_HEADERS" . 1)) (("PROXY_SERVICE_NAME" . "proxy"))
-                        (("SOCKS5_AUTH" . 1))))
+          (map attach '((("PROXY_SERVICE_NAME" . "proxy")) (("SOCKS5_AUTH" . 1))))
           (list (guard (e (#t (list 'raised (describe e))))
                   (hatch-settings-of
-                   (curl-request-with-options base '(("SUPPRESS_CONNECT_HEADERS" . 1)
-                                                     ("PROXY_SERVICE_NAME" . "proxy")
+                   (curl-request-with-options base '(("PROXY_SERVICE_NAME" . "proxy")
                                                      ("SOCKS5_AUTH" . 1))))))))
+
+;; The header callable's (M8 slice 2; ADR-0040, amended 2026-11-06, decided
+;; by the maintainer): every transfer sets HEADERFUNCTION and HEADERDATA,
+;; for the cap on response headers, and SUPPRESS_CONNECT_HEADERS, which
+;; hides a CONNECT answer from the callable on every libcurl, so the cap
+;; would never count it, is their twin. Its neighbours stay the hatch's:
+;; HTTP_TRANSFER_DECODING, whose 0 moves trailers to the body, which
+;; body-limit bounds; HTTP200ALIASES, whose alias status line the cap counts
+;; as a header line; and HTTP09_ALLOWED, a response with no head. Each is
+;; attached, and kept.
+(test-equal "HEADERFUNCTION and HEADERDATA, the header callable's, and their twin SUPPRESS_CONNECT_HEADERS are refused as owned-option, with values their types take; their neighbours HTTP_TRANSFER_DECODING, HTTP200ALIASES and HTTP09_ALLOWED are taken, each kept as attached"
+  (append (map (lambda (name) (refused-as name 'owned-option)) '("HEADERFUNCTION" "HEADERDATA" "SUPPRESS_CONNECT_HEADERS"))
+          (list taken taken taken
+                '(("HTTP_TRANSFER_DECODING" long 0) ("HTTP200ALIASES" slist ("ICY 200 OK"))
+                  ("HTTP09_ALLOWED" long 1))))
+  (append (map (lambda (name) (attach (list (cons name (value-for name)))))
+               '("HEADERFUNCTION" "HEADERDATA" "SUPPRESS_CONNECT_HEADERS"))
+          (map attach '((("HTTP_TRANSFER_DECODING" . 0)) (("HTTP200ALIASES" . ("ICY 200 OK")))
+                        (("HTTP09_ALLOWED" . 1))))
+          (list (guard (e (#t (list 'raised (describe e))))
+                  (hatch-settings-of
+                   (curl-request-with-options base '(("HTTP_TRANSFER_DECODING" . 0)
+                                                     ("HTTP200ALIASES" . ("ICY 200 OK"))
+                                                     ("HTTP09_ALLOWED" . 1))))))))
 
 ;; The cookie jar's (M7 slice 4; ADR-0035, amended 2026-11-04): SHARE and
 ;; COOKIEFILE are the cookie-jar field's, SHARE refused by its type before,

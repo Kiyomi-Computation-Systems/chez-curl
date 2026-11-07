@@ -1,0 +1,63 @@
+--- /home/kishu/src/chez-curl/tests/origin.mjs	2026-11-06 20:41:11.668522328 -0500
++++ tests/origin.mjs	2026-11-06 21:51:58.484213270 -0500
+@@ -512,7 +512,7 @@
+ // never read them from here, so changing a script here fails them.
+ 
+ import { createHash } from 'node:crypto';
+-import { readFileSync } from 'node:fs';
++import { appendFileSync, readFileSync } from 'node:fs';
+ import http from 'node:http';
+ import http2 from 'node:http2';
+ import https from 'node:https';
+@@ -3206,18 +3206,35 @@
+             return true;
+           };
+           const send = (bytes) => new Promise((resolve) => socket.write(bytes, () => resolve()));
++          const port = socket.remotePort;
++          const log = (event, rest) => {
++            if (process.env.HEAD417_LOG) {
++              appendFileSync(process.env.HEAD417_LOG,
++                             `head417 ${event} conn=${port} t=${performance.now().toFixed(1)}${rest ? ` ${rest}` : ''}\n`);
++            }
++          };
++          const queued = () => buffer.length + s.conn.input.items.reduce((n, item) => n + item[0].length, 0);
++          socket.on('close', () => log('close', ''));
++          log('start', `head-at=${s.conn.headAt.toFixed(1)}`);
+           let head = s.head;
++          let refused = false;
+           for (;;) {
+             const pairs = headPairs(head);
+             const framing = framingOf(pairs);
+             const length = framing !== null && framing.kind === 'length' ? framing.length : 0;
+-            if (!head417Keys.has(s.key) && expectsContinue(pairs)) {
+-              head417Keys.add(s.key);
++            log('request', `line="${head.toString('latin1').split('\r\n')[0]}" expect=${expectsContinue(pairs)} cl=${length} queued=${queued()} held=${refused}`);
++            if (!refused && expectsContinue(pairs)) {
++              refused = true;
++              log('writing-417', `queued=${queued()}`);
+               await send(h1Response(417, s.a, []));
+-              while (buffer.length === 0) if (!(await more())) return;
+-              if (!(buffer[0] >= 0x41 && buffer[0] <= 0x5a)) {
++              log('wrote-417', `queued=${queued()}`);
++              while (buffer.length === 0) if (!(await more())) { log('ended-after-417', `queued=${queued()}`); return; }
++              const letter = buffer[0] >= 0x41 && buffer[0] <= 0x5a;
++              log('next', `first=0x${buffer[0].toString(16)} read-as=${letter ? 'request' : 'body'} queued=${queued()}`);
++              if (!letter) {
+                 while (buffer.length < length) if (!(await more())) return;
+                 buffer = buffer.subarray(length);
++                log('skipped', `bytes=${length}`);
+               }
+               let end;
+               while ((end = buffer.indexOf('\r\n\r\n')) < 0) {
+@@ -3228,9 +3245,10 @@
+               if (socket.destroyed || !socket.writable) return;
+               continue;
+             }
+-            if (expectsContinue(pairs)) await send(ascii('HTTP/1.1 100 Continue\r\n\r\n'));
++            if (expectsContinue(pairs)) { await send(ascii('HTTP/1.1 100 Continue\r\n\r\n')); log('wrote-100', ''); }
+             while (buffer.length < length) if (!(await more())) return;
+             await send(h1Response(200, s.b, []));
++            log('wrote-200', '');
+             break;
+           }
+           break;

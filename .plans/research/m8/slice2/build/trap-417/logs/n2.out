@@ -1,0 +1,6 @@
+trap417 run=n2 variant=plain i=0 key=rn2-plain-0 ended=yes outcome=(response 200 500) ms=34.0
+trap417 run=n2 variant=plain i=1 key=rn2-plain-1 ended=yes outcome=(response 200 500) ms=23.0
+trap417 run=n2 variant=plain i=2 key=rn2-plain-2 ended=yes outcome=(response 200 500) ms=23.0
+trap417 run=n2 variant=plain i=3 key=rn2-plain-3 ended=yes outcome=(response 200 500) ms=23.0
+trap417 run=n2 variant=plain i=4 key=rn2-plain-4 ended=yes outcome=(response 200 500) ms=23.0
+exit 0

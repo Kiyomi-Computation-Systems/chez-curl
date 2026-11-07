@@ -16,7 +16,7 @@
 ;;;   &curl-request-error         a request's key or field refused before
 ;;;                               anything native is made, with one of
 ;;;                               twenty-seven reasons
-;;;   &curl-transfer-error        a transfer failed, with one of eleven
+;;;   &curl-transfer-error        a transfer failed, with one of twelve
 ;;;                               reasons, its code, option, libcurl's texts,
 ;;;                               what the write callable recorded and its
 ;;;                               request size (M2 plan, section 5.3),
@@ -258,7 +258,7 @@
 
 (define transfer-reasons
   '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle
-    cancelled stopped pause-failed body-length-mismatch body-not-replayable))
+    cancelled stopped pause-failed body-length-mismatch body-not-replayable header-limit))
 
 ;; A recorded object no field could hand back by another route.
 (define the-raised (list 'raised-in-the-callable))
@@ -277,11 +277,11 @@
                   (let ((r (curl-transfer-error-recorded c))) (if (eq? r the-raised) 'the-raised r))
                   (curl-transfer-error-request-size c) (curl-transfer-error-connect-code c)))))
 
-(test-equal "the transfer-error reasons are exactly perform-failed, body-limit, callback-raised, setopt-failed, unknown-option, no-handle, cancelled, stopped, pause-failed, body-length-mismatch and body-not-replayable, in order"
+(test-equal "the transfer-error reasons are exactly perform-failed, body-limit, callback-raised, setopt-failed, unknown-option, no-handle, cancelled, stopped, pause-failed, body-length-mismatch, body-not-replayable and header-limit, in order"
   transfer-reasons
   curl-transfer-error-reasons)
 
-(test-equal "the transfer-error constructor takes each of the eleven reasons, with #f in every other field"
+(test-equal "the transfer-error constructor takes each of the twelve reasons, with #f in every other field"
   (map (lambda (reason) (list reason #f #f #f #f 'no-recorded #f #f)) transfer-reasons)
   (map (lambda (reason)
          (let ((c (make-curl-transfer-error reason #f #f #f #f #f #f #f)))
@@ -368,7 +368,7 @@
                  (class-of c))))
        (append (map car code-rows) '(102 999))))
 
-(test-equal "the class follows the code for perform-failed alone: body-limit is too-large whatever its code, 23, 28 or none; every other reason raises the base type, a setopt-failed, callback-raised, pause-failed, body-length-mismatch or body-not-replayable whose code a class names among them"
+(test-equal "the class follows the code for perform-failed alone: body-limit and header-limit are too-large whatever the code, 23, 28 or none; every other reason raises the base type, a setopt-failed, callback-raised, pause-failed, body-length-mismatch or body-not-replayable whose code a class names among them"
   '((perform-failed (timeout connect send-receive tls protocol too-large none none))
     (body-limit (too-large too-large too-large too-large too-large too-large too-large too-large))
     (callback-raised (none none none none none none none none))
@@ -379,7 +379,8 @@
     (stopped (none none none none none none none none))
     (pause-failed (none none none none none none none none))
     (body-length-mismatch (none none none none none none none none))
-    (body-not-replayable (none none none none none none none none)))
+    (body-not-replayable (none none none none none none none none))
+    (header-limit (too-large too-large too-large too-large too-large too-large too-large too-large)))
   (map (lambda (reason)
          (list reason
                (map (lambda (code)
@@ -403,7 +404,7 @@
              (list 'send-receive make-curl-send-receive-error 56) (list 'tls make-curl-tls-error 60)
              (list 'protocol make-curl-protocol-error 8) (list 'too-large make-curl-too-large 100))))
 
-(test-equal "each class's constructor refuses a reason it does not take, and a code it does not name; too-large alone takes body-limit, with any code"
+(test-equal "each class's constructor refuses a reason it does not take, and a code it does not name; too-large alone takes body-limit and header-limit, with any code"
   '((assertion-violation make-curl-timeout (body-limit 28))
     (assertion-violation make-curl-timeout (perform-failed 7))
     (assertion-violation make-curl-timeout (setopt-failed 28))
@@ -417,7 +418,9 @@
     (assertion-violation make-curl-protocol-error (no-handle 1))
     (assertion-violation make-curl-too-large (perform-failed 23))
     (assertion-violation make-curl-too-large (callback-raised 23))
-    too-large too-large)
+    (assertion-violation make-curl-tls-error (header-limit 60))
+    (assertion-violation make-curl-send-receive-error (header-limit 56))
+    too-large too-large too-large too-large too-large)
   (append
    (map (lambda (args)
           (raised (lambda () ((car args) (cadr args) (caddr args) #f #f #f #f 0 #f))))
@@ -431,9 +434,13 @@
               (list make-curl-protocol-error 'perform-failed 102)
               (list make-curl-protocol-error 'no-handle 1)
               (list make-curl-too-large 'perform-failed 23)
-              (list make-curl-too-large 'callback-raised 23)))
+              (list make-curl-too-large 'callback-raised 23)
+              (list make-curl-tls-error 'header-limit 60)
+              (list make-curl-send-receive-error 'header-limit 56)))
    (map (lambda (code) (class-of (make-curl-too-large 'body-limit code #f #f #f #f 0 #f)))
-        (list 23 #f))))
+        (list 23 #f))
+   (map (lambda (code) (class-of (make-curl-too-large 'header-limit code #f #f #f #f 0 #f)))
+        (list 23 0 #f))))
 
 (test-equal "make-classed-transfer-error refuses a symbol that is no reason, a reason spelled as a string, and #f"
   '((assertion-violation make-classed-transfer-error (timed-out))

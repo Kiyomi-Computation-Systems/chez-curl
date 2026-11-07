@@ -1,0 +1,6 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-headers.sps
+test-memory: pass tests/test-headers.sps
+test-memory: ran 1, passed 1, failed 0, hung 0
+test-memory exit 0
+wall 42.59 s

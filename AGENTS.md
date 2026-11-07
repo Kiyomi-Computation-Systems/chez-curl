@@ -616,6 +616,13 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
   ends 0. Read a callable's refusal from its recorded reason.
 * `UPLOAD` 1 or `POST` 1 set after `MIMEPOST` reads stdin: set the mime last,
   and own every option that could follow it.
+* Node's HTTP/2 server answers a header block past its send limit by Node's
+  version: Node 24 dropped a trailer block past 64 KiB and ended the stream
+  cleanly, a 200 with no trailers, and Node 20 reset it. Assert the trailers arrived, and
+  raise the origin's `maxSendHeaderBlockLength`.
+* Under the memory gate, 8.20.0 sometimes reads a 417 as cutting an upload
+  short, though no body byte went, and resends on a new connection: a test
+  server holds a 417 by key, never by connection.
 
 ## Closing ritual
 

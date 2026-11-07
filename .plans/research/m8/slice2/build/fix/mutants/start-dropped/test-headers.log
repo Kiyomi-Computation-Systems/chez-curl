@@ -1,0 +1,8 @@
+%%%% Starting test headers
+FAIL HTTP/1.1: 1,000 header lines named HTTP/1.1 x-NNNNNN, as a status line begins, are taken, buffered and streamed; 1,001 are refused, header-limit: a status line is exempt at a head's start alone
+  expected: (((response 200 1000) ((response 200 1000) (head 200 1000) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((response 200 1000) ((response 200 1000) (head 200 1000) (eof 0))) ((response 200 1001) ((response 200 1001) (head 200 1001) (eof 0))))
+# of expected passes      42
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 42, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

@@ -70,6 +70,12 @@
 //           ANY /auth?key=K&ch=CH[&...]  the auth route, below
 //           GET /auth-log?key=K          the auth route's log for K, below
 //           GET /proxy-log?from=N        the proxy's log from line N, below
+//           GET /proxy-arm?n=N[&line=L]  arms the proxy: the next CONNECT it
+//                                        answers 200 carries N header lines,
+//                                        0 to 100000, of L bytes, 13 to 65536,
+//                                        16 when left out, as the head
+//                                        routes make them (below), once; 200,
+//                                        body "armed\n"
 //           ANY /cookies[/P]?key=K[&...] the cookie route, below
 //           GET /cookie-log?key=K        the cookie route's log for K, below
 //           anything else                404, body "not found\n"
@@ -252,6 +258,20 @@
 //         connection, then the face plays scripts again; a second arm before
 //         that replaces the first. The arm itself writes "HTTP/1.1 200 OK",
 //         Content-Length: 6, Connection: close and "armed\n", and ends.
+//         /raw/head?SPEC writes the head SPEC names (the head routes,
+//         below), status 200, and ends. /raw/head-auth?a.SPEC&b.SPEC, a
+//         Digest round's two answers: a request with no Authorization header
+//         gets a 401 by a., www-authenticate: Digest realm="chez-curl-test",
+//         qop="auth", nonce="n0", algorithm=MD5 first; one with any, unchecked,
+//         a 200 by b.; then the end. /raw/head417?key=KEY&a.SPEC&b.SPEC, KEY as
+//         retry takes it, a 417 and its resend: KEY's first request whose
+//         Expect holds 100-continue gets a 417 by a. as its head arrives, kept
+//         alive, and the next bytes decide as auth417's do (below); every
+//         later request for KEY, on that connection or another, gets
+//         "HTTP/1.1 100 Continue" when its Expect holds 100-continue, its body
+//         read by its Content-Length, then a 200 by b.; so does a first
+//         request without that Expect; then the end. A spec the head routes
+//         refuse, or no key, gets the fixed 400.
 //         /raw/auth417?key=KEY, KEY as retry takes it, serves the
 //         connection's requests one after another, kept alive: one whose
 //         Expect holds 100-continue, in any ASCII case, gets "HTTP/1.1 417
@@ -263,7 +283,8 @@
 //         gets "HTTP/1.1 200 OK", Content-Length: 8 and "auth ok\n". Each
 //         request is logged to KEY's auth log, as the auth route's are
 //         (below), judged by the default account. The client's end ends it.
-//   h2c   node:http2, plaintext, by prior knowledge: the HTTP/2 routes.
+//   h2c   node:http2, plaintext, by prior knowledge: the HTTP/2 routes. Its
+//         send limit, maxSendHeaderBlockLength, raised to 64 MiB, as h2's is.
 //         Half-open (allowHalfOpen), as h2 is: a client's end, its FIN, or
 //         over TLS its close_notify, ends the connection at the next
 //         immediate, once Node has written what waited on a write it had in
@@ -325,6 +346,10 @@
 // each DATA chunk, written back as it arrives, the stream paused while a
 // write waits for its drain, so a client that stops reading stops its own
 // upload; and ends its side at the request's end.
+// /head?SPEC and /head-auth?a.SPEC&b.SPEC, HTTP/2's alone, answer as the
+// raw face's /raw/head and /raw/head-auth do (the head routes, below), a
+// trailer block in a trailers HEADERS frame, a 1xx head in a HEADERS frame of
+// its own; a spec they refuse, or one naming hname, tname or v10, is 404.
 // /seq?key=K&bytes=N, HTTP/2's alone, N 0 to 268435456, counts as /sink
 // does and reads the body whole; then answers :status 200, a sink header
 // holding the summary line without its newline, content-length N, and N
@@ -642,6 +667,17 @@ function route(target) {
     }, ['key', 'ch']));
   }
   if (path === '/auth-log') return queried('auth-log', queryOf(query, { key: keyValue }, ['key']));
+  if (path === '/head') {
+    const spec = headQuery(query);
+    return spec === null || rawOnly(spec) ? { kind: 'not-found' } : { kind: 'head', spec };
+  }
+  if (path === '/head-auth') {
+    const specs = flowQuery(query);
+    return specs === null || rawOnly(specs.a) || rawOnly(specs.b) ? { kind: 'not-found' } : { kind: 'head-auth', ...specs };
+  }
+  if (path === '/proxy-arm') {
+    return queried('proxy-arm', queryOf(query, { n: (v) => decimal(v, 0, 100000), line: (v) => decimal(v, 13, 65536) }, ['n']));
+  }
   if (path === '/proxy-log') {
     return queried('proxy-log', queryOf(query, { from: (v) => decimal(v, 0, 1000000000) }, ['from']));
   }
@@ -1342,6 +1378,9 @@ function respond(req, res, body) {
       return text(res, 200, proxyLogText(r.from));
     case 'cookie-log':
       return text(res, 200, cookieLogText(r.key));
+    case 'proxy-arm':
+      connectArm = headLines({ n: r.n, line: r.line }, null, 0);
+      return text(res, 200, 'armed\n');
     case 'echo': {
       let lines = `${req.method} ${req.url} HTTP/${req.httpVersion}\n`;
       for (let i = 0; i < req.rawHeaders.length; i += 2) {
@@ -1352,8 +1391,9 @@ function respond(req, res, body) {
       return send(res, 200, ['Content-Length', String(bytes.length)], bytes);
     }
     default:
-      // /answer, /refuse, /answer-at, /mirror and /seq are HTTP/2's routes,
-      // and /close-after http's, which wellFormed serves.
+      // /answer, /refuse, /answer-at, /mirror, /seq, /head and /head-auth
+      // are HTTP/2's routes, and /close-after http's, which wellFormed
+      // serves.
       return text(res, 404, 'not found\n');
   }
 }
@@ -1618,7 +1658,9 @@ function proxyConnect(face) {
         });
         connects += 1;
         logged('200');
-        client.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+        const armed = connectArm || [];
+        connectArm = null;
+        client.write(ascii(`HTTP/1.1 200 Connection Established\r\n${armed.map(([k, v]) => `${k}: ${v}\r\n`).join('')}\r\n`));
         if (early && early.length > 0) far.write(early);
         far.pipe(client);
         client.pipe(far);
@@ -1647,6 +1689,226 @@ function httpsServer(name, leafOf) {
   server.on('connect', proxyConnect(name));
   return server;
 }
+
+// --- the head routes (M8 slice 2; ADR-0040) ------------------------------
+//
+// A head's spec, read from a query's pairs, each name once at most, and no
+// other; the same on the raw face and the HTTP/2 faces, as the M8 caps
+// probe's stand-in reads it, so its measured sizes carry over:
+//   n=N      the head's header lines, its framing line among them, 1 to
+//            100000; 1 when left out
+//   line=L   each generated line's bytes as libcurl hands it, CR LF in, 13 to
+//            65536; 16 when left out. Names x-000001 on, each value v
+//            repeated, so every line is L bytes; same=1 makes every one
+//            x-same: vvv..., one pair
+//   total=T  in place of n: lines of L bytes until the head, its status line
+//            (slen=S bytes, 1 to 64, as libcurl hands it: 17, HTTP/1.1 200
+//            OK, on raw, 13, HTTP/2 200, on HTTP/2, when left out) and its
+//            empty line in, holds T bytes, 0 to 4194304; the last line takes
+//            what is left, and a remainder too short for a line goes to the
+//            line before
+//   big=B    one more line, x-big: a..., of B bytes, 9 to 1048576; bigch=C,
+//            its value C repeated in place of a, C a letter or a digit
+//   pre=C:N:L,...  up to 16 1xx heads before the final one, each status C,
+//            100 or 103, with N lines, 0 to 100000, of L bytes, 13 to 65536
+//   tn=N     N trailers, 0 to 100000, of tl=L bytes, 13 to 65536, 16 when
+//            left out: on HTTP/1.1 a chunked body of no data, on HTTP/2 a
+//            trailers HEADERS frame
+// and, on the raw face alone, since nghttp2 refuses a / in a name:
+//   hname=1  every generated line named HTTP/1.1 x-000001 on, in place of
+//            x-000001, as a status line begins, its line 22 bytes or more:
+//            libcurl takes it as a header, its name holding the space
+//   tname=1  the first trailer named HTTP/x, with tn
+//   v10=1    every head's status line HTTP/1.0, in place of HTTP/1.1
+// The framing line is content-length: 0, or, with trailers on HTTP/1.1,
+// transfer-encoding: chunked; on HTTP/2 there is none with trailers.
+// Prefixed a. and b., the specs of a flow's first and second response
+// (/raw/head-auth, /raw/head417 and HTTP/2's /head-auth).
+const HEAD_REASONS = { 100: 'Continue', 103: 'Early Hints', 200: 'OK', 401: 'Unauthorized', 417: 'Expectation Failed' };
+const HEAD_DIGEST = 'Digest realm="chez-curl-test", qop="auth", nonce="n0", algorithm=MD5';
+
+// headSpecOf: the spec of PAIRS, [name, value] as given, or null.
+function headSpecOf(pairs) {
+  const spec = {};
+  const ranged = (v, low, high) => decimal(v, low, high);
+  for (const [name, value] of pairs) {
+    if (Object.hasOwn(spec, name)) return null;
+    let read;
+    switch (name) {
+      case 'n': read = ranged(value, 1, 100000); break;
+      case 'line': case 'tl': read = ranged(value, 13, 65536); break;
+      case 'total': read = ranged(value, 0, 4194304); break;
+      case 'slen': read = ranged(value, 1, 64); break;
+      case 'same': read = value === '1' ? true : null; break;
+      case 'big': read = ranged(value, 9, 1048576); break;
+      case 'bigch': read = /^[A-Za-z0-9]$/.test(value) ? value : null; break;
+      case 'tn': read = ranged(value, 0, 100000); break;
+      case 'hname': case 'tname': case 'v10': read = value === '1' ? true : null; break;
+      case 'pre': {
+        const heads = value.split(',').map((h) => {
+          const m = /^(100|103):(0|[1-9][0-9]*):(0|[1-9][0-9]*)$/.exec(h);
+          if (!m) return null;
+          const n = decimal(m[2], 0, 100000);
+          const l = decimal(m[3], 13, 65536);
+          return n === null || l === null ? null : { status: Number(m[1]), n, line: l };
+        });
+        read = heads.length <= 16 && heads.every((h) => h !== null) ? heads : null;
+        break;
+      }
+      default: read = null;
+    }
+    if (read === null) return null;
+    spec[name] = read;
+  }
+  if ((Object.hasOwn(spec, 'n') && Object.hasOwn(spec, 'total')) || (Object.hasOwn(spec, 'bigch') && !Object.hasOwn(spec, 'big'))
+      || (Object.hasOwn(spec, 'tl') && !Object.hasOwn(spec, 'tn')) || (spec.tname && !Object.hasOwn(spec, 'tn'))
+      || (spec.hname && (spec.line === undefined || spec.line < 22))) {
+    return null;
+  }
+  return spec;
+}
+
+// rawOnly: whether SPEC names what the raw face alone writes.
+const rawOnly = (spec) => Boolean(spec.hname || spec.tname || spec.v10);
+
+// queryPairs: QUERY's pairs, [name, value], or null for a pair with no =.
+function queryPairs(query) {
+  if (query === undefined || query === '') return [];
+  const pairs = [];
+  for (const pair of query.split('&')) {
+    const at = pair.indexOf('=');
+    if (at < 0) return null;
+    pairs.push([pair.slice(0, at), pair.slice(at + 1)]);
+  }
+  return pairs;
+}
+
+// headQuery: the one spec QUERY holds, or null.
+function headQuery(query) {
+  const pairs = queryPairs(query);
+  return pairs === null ? null : headSpecOf(pairs);
+}
+
+// flowQuery: the two specs, a. and b., QUERY holds, or null: every pair
+// prefixed a. or b.
+function flowQuery(query) {
+  const pairs = queryPairs(query);
+  if (pairs === null) return null;
+  const a = [];
+  const b = [];
+  for (const [name, value] of pairs) {
+    if (name.startsWith('a.')) a.push([name.slice(2), value]);
+    else if (name.startsWith('b.')) b.push([name.slice(2), value]);
+    else return null;
+  }
+  const specs = { a: headSpecOf(a), b: headSpecOf(b) };
+  return specs.a === null || specs.b === null ? null : specs;
+}
+
+// headLine: a generated line, [name, value], of LENGTH bytes as
+// "name: value\r\n" counts them.
+const headLine = (name, length, ch) => [name, ch.repeat(Math.max(0, length - name.length - 4))];
+const headLineBytes = (l) => l[0].length + 2 + l[1].length + 2;
+
+// headLines: SPEC's generated lines, after FIXED, the framing line, or
+// null; with SLEN, the status line's bytes as libcurl hands it, for total.
+function headLines(spec, fixed, slen) {
+  const L = spec.line === undefined ? 16 : spec.line;
+  const name = (i) => (spec.same ? 'x-same' : `${spec.hname ? 'HTTP/1.1 ' : ''}x-${String(i).padStart(6, '0')}`);
+  const out = [];
+  if (spec.total !== undefined) {
+    let left = spec.total - (spec.slen === undefined ? slen : spec.slen) - 2 - (fixed ? headLineBytes(fixed) : 0)
+      - (spec.big === undefined ? 0 : spec.big);
+    let i = 1;
+    while (left >= L) { out.push(headLine(name(i), L, 'v')); i += 1; left -= L; }
+    if (left > 0) {
+      if (left >= name(i).length + 5) out.push(headLine(name(i), left, 'v'));
+      else if (out.length > 0) out[out.length - 1][1] += 'v'.repeat(left);
+    }
+  } else {
+    const n = (spec.n === undefined ? 1 : spec.n) - (fixed ? 1 : 0);
+    for (let i = 1; i <= n; i++) out.push(headLine(name(i), L, 'v'));
+  }
+  if (spec.big !== undefined) out.push(headLine('x-big', spec.big, spec.bigch || 'a'));
+  return out;
+}
+
+// preHeads: SPEC's 1xx heads, each { status, lines }.
+const preHeads = (spec) => (spec.pre || []).map((h) => ({ status: h.status, lines: headLines({ n: h.n, line: h.line }, null, 0) }));
+
+// trailerLines: SPEC's trailers, or null for none; with tname, the first
+// named HTTP/x, its bytes kept.
+function trailerLines(spec) {
+  if (spec.tn === undefined) return null;
+  const lines = headLines({ n: spec.tn, line: spec.tl }, null, 0);
+  if (spec.tname && lines.length > 0) lines[0] = headLine('HTTP/x', spec.tl === undefined ? 16 : spec.tl, 'v');
+  return lines;
+}
+
+// h1Head: an HTTP/1.1 head, its status line, LINES and its empty line;
+// with V10, an HTTP/1.0 one.
+function h1Head(status, lines, v10) {
+  let s = `HTTP/1.${v10 ? 0 : 1} ${status} ${HEAD_REASONS[status]}\r\n`;
+  for (const [k, v] of lines) s += `${k}: ${v}\r\n`;
+  return `${s}\r\n`;
+}
+
+// h1Response: the whole HTTP/1.1 response SPEC makes, STATUS's, EXTRA lines
+// first: its 1xx heads, its head, and, with trailers, a chunked body of no
+// data and the trailers.
+function h1Response(status, spec, extra) {
+  const trailers = trailerLines(spec);
+  const fixed = trailers ? ['transfer-encoding', 'chunked'] : ['content-length', '0'];
+  let out = '';
+  for (const h of preHeads(spec)) out += h1Head(h.status, h.lines, spec.v10);
+  out += h1Head(status, [...extra, fixed, ...headLines(spec, fixed, 17)], spec.v10);
+  if (trailers) {
+    out += '0\r\n';
+    for (const [k, v] of trailers) out += `${k}: ${v}\r\n`;
+    out += '\r\n';
+  }
+  return ascii(out);
+}
+
+// h2Object: Node's header object for STATUS, or none, and LINES, a name
+// given twice an array of its values.
+function h2Object(status, lines) {
+  const o = status === undefined ? {} : { ':status': status };
+  for (const [k, v] of lines) {
+    if (o[k] === undefined) o[k] = v;
+    else if (Array.isArray(o[k])) o[k].push(v);
+    else o[k] = [o[k], v];
+  }
+  return o;
+}
+
+// h2Head: the HTTP/2 response SPEC makes on STREAM, STATUS's, EXTRA lines
+// first: its 1xx heads, its HEADERS, and its trailers, or none.
+function h2Head(stream, status, spec, extra) {
+  if (stream.destroyed) return;
+  for (const h of preHeads(spec)) stream.additionalHeaders(h2Object(h.status, h.lines));
+  const trailers = trailerLines(spec);
+  const fixed = trailers ? null : ['content-length', '0'];
+  const lines = [...extra, ...(fixed ? [fixed] : []), ...headLines(spec, fixed, 13)];
+  if (trailers) {
+    stream.respond(h2Object(status, lines), { waitForTrailers: true, sendDate: false });
+    // A trailer block Node cannot send throws: it ends this stream only.
+    stream.on('wantTrailers', () => {
+      try { stream.sendTrailers(h2Object(undefined, trailers)); } catch { stream.destroy(); }
+    });
+    stream.end();
+  } else {
+    stream.respond(h2Object(status, lines), { endStream: true, sendDate: false });
+  }
+}
+
+// head417Keys: the keys /raw/head417 has answered 417, for as long as the
+// origin lives.
+const head417Keys = new Set();
+
+// connectArm: what /proxy-arm set for the proxy's next CONNECT it answers
+// 200, the lines its answer carries, or null.
+let connectArm = null;
 
 // --- the HTTP/2 faces: h2c and h2 -----------------------------------------
 
@@ -1730,6 +1992,12 @@ function h2Respond(stream, headers, rawHeaders, body) {
       return h2Text(stream, 200, `seen ${counts.get(r.key) || 0}\n`);
     case 'auth-log':
       return h2Text(stream, 200, authLogText(r.key));
+    case 'head':
+      return h2Head(stream, 200, r.spec, []);
+    case 'head-auth':
+      return headers.authorization === undefined
+        ? h2Head(stream, 401, r.a, [['www-authenticate', HEAD_DIGEST]])
+        : h2Head(stream, 200, r.b, []);
     case 'echo': {
       let lines = '';
       for (let i = 0; i < rawHeaders.length; i += 2) lines += `${rawHeaders[i]}: ${rawHeaders[i + 1]}\n`;
@@ -1738,7 +2006,7 @@ function h2Respond(stream, headers, rawHeaders, body) {
       return h2Send(stream, 200, ['content-length', String(bytes.length)], bytes);
     }
     default:
-      // /chunked and /close-after are HTTP/1.1 routes.
+      // /chunked, /close-after and /proxy-arm are HTTP/1.1 routes.
       return h2Text(stream, 404, 'not found\n');
   }
 }
@@ -1899,10 +2167,18 @@ function h2Face(server, name) {
   return server;
 }
 
-const h2cServer = h2Face(http2.createServer({ allowHalfOpen: true }), 'h2c');
+// Both HTTP/2 faces raise Node's send limit, maxSendHeaderBlockLength, from
+// 64 KiB to 64 MiB, so a head or a trailer block past 64 KiB is sent whole:
+// at the default, a head past it is never sent, and a trailer block past it
+// is dropped, the stream ended cleanly on Node 24.18.0 and reset on 20.10.0
+// (M8 slice 2; traps.md). Node's two receive limits stay their defaults: the
+// SETTINGS frame each face sends first stays empty, as tests hold it.
+const H2_SEND_LIMIT = 64 << 20;
+const h2cServer = h2Face(http2.createServer({ allowHalfOpen: true, maxSendHeaderBlockLength: H2_SEND_LIMIT }), 'h2c');
 
 function h2Server(name, leafOf) {
-  const server = h2Face(http2.createSecureServer({ ...leafOf.options, allowHTTP1: false, allowHalfOpen: true }), name);
+  const server = h2Face(http2.createSecureServer({ ...leafOf.options, allowHTTP1: false, allowHalfOpen: true,
+                                                 maxSendHeaderBlockLength: H2_SEND_LIMIT }), name);
   server.on('secureConnection', track);
   server.on('tlsClientError', (err, socket) => socket.destroy());
   // A client that did not choose h2: destroyed with nothing written. With
@@ -2165,6 +2441,36 @@ const scripts = {
       conn.input = inputOf();
       auth417Connections[conn.face] += 1;
       return [{ step: 'auth417', conn, head, key, number: auth417Connections[conn.face] }, END];
+    },
+  },
+  // The head routes (M8 slice 2): a head of a chosen size and shape; a
+  // Digest round's two responses; a 417 and its resend's.
+  'head': {
+    query: headQuery,
+    play: (spec) => [write(h1Response(200, spec, [])), END],
+  },
+  'head-auth': {
+    query: flowQuery,
+    play: ({ a, b }, head) => [
+      write(authorizations(headPairs(head)).length === 0
+        ? h1Response(401, a, [['www-authenticate', HEAD_DIGEST]])
+        : h1Response(200, b, [])),
+      END,
+    ],
+  },
+  'head417': {
+    query: (query) => {
+      const pairs = queryPairs(query);
+      if (pairs === null) return null;
+      const keys = pairs.filter(([name]) => name === 'key');
+      if (keys.length !== 1 || !retryKey(keys[0][1])) return null;
+      const rest = pairs.filter(([name]) => name !== 'key').map(([name, value]) => `${name}=${value}`).join('&');
+      const specs = flowQuery(rest === '' ? undefined : rest);
+      return specs === null ? null : { key: keys[0][1], ...specs };
+    },
+    play: ({ key, a, b }, head, conn) => {
+      conn.input = inputOf();
+      return [{ step: 'head417', conn, head, key, a, b }, END];
     },
   },
   'sink': {
@@ -2903,6 +3209,55 @@ async function play(socket, reset, state, steps) {
             buffer = buffer.subarray(end + 4);
             if (socket.destroyed || !socket.writable) return;
           }
+        }
+        case 'head417': {
+          // KEY's first request whose Expect holds 100-continue gets a 417
+          // by spec a. as its head arrives, kept alive, and the next bytes
+          // decide, as auth417's do: a letter A to Z the next request, any
+          // other byte the refused request's body, read by its
+          // Content-Length and dropped. Every later request for KEY, on this
+          // connection or another, gets a 100 Continue when its Expect holds
+          // 100-continue, has its body read by its Content-Length, and gets a
+          // 200 by spec b.; so does a first request without that Expect.
+          // Then the script ends. The key, not the connection, holds the
+          // 417: libcurl may resend on a new connection (M8 slice 2's build:
+          // under Valgrind, 8.20.0 did).
+          let buffer = Buffer.alloc(0);
+          const more = async () => {
+            const item = await nextItem(s.conn.input);
+            if (item === null) return false;
+            buffer = Buffer.concat([buffer, item[0]]);
+            return true;
+          };
+          const send = (bytes) => new Promise((resolve) => socket.write(bytes, () => resolve()));
+          let head = s.head;
+          for (;;) {
+            const pairs = headPairs(head);
+            const framing = framingOf(pairs);
+            const length = framing !== null && framing.kind === 'length' ? framing.length : 0;
+            if (!head417Keys.has(s.key) && expectsContinue(pairs)) {
+              head417Keys.add(s.key);
+              await send(h1Response(417, s.a, []));
+              while (buffer.length === 0) if (!(await more())) return;
+              if (!(buffer[0] >= 0x41 && buffer[0] <= 0x5a)) {
+                while (buffer.length < length) if (!(await more())) return;
+                buffer = buffer.subarray(length);
+              }
+              let end;
+              while ((end = buffer.indexOf('\r\n\r\n')) < 0) {
+                if (buffer.length >= HEAD_LIMIT || !(await more())) return;
+              }
+              head = Buffer.from(buffer.subarray(0, end + 4));
+              buffer = buffer.subarray(end + 4);
+              if (socket.destroyed || !socket.writable) return;
+              continue;
+            }
+            if (expectsContinue(pairs)) await send(ascii('HTTP/1.1 100 Continue\r\n\r\n'));
+            while (buffer.length < length) if (!(await more())) return;
+            await send(h1Response(200, s.b, []));
+            break;
+          }
+          break;
         }
         case 'end':
           socket.end();

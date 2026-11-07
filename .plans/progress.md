@@ -9,16 +9,18 @@ close-out under **Close-outs**, newest first.
 - **M8, multipart, the header cap, the docs and v0.1.0:** in progress. The
   [M8 plan](2026-11-06-m8-plan.md) merged as PR #49 (`74d7aca`), CI passing all eight jobs on it.
   Five slices: the memory job in two; the header cap; multipart; the docs; the release. Slice 1,
-  the memory job in two (the plan, §3.2 and §4), is built on `feat/m8-memory-shards`, not yet
-  merged: measured first from four CI runs' memory logs, each suite's time under the gate
-  ([research](research/m8/slice1/)), then split by those times into two written-out lists, the
-  slower shard's suites 14.5 minutes on PR #47's runner, where all of them took 28.9, and 16.3 on
-  PR #49's, the slowest of the four, past the plan's aim of 16 (§3.2). CI's memory
-  job becomes `memory-1` and `memory-2`, `make test-memory MEMORY_SHARD=1` and `=2`, each after
-  the planted defects; `check-memory-gate` holds the split by what each shard runs, and
-  `ci.yml`'s two jobs. The branch's required checks are the maintainer's setting: the one
-  `memory (the Valgrind gate)` becomes `memory-1 (the Valgrind gate, shard 1 of 2)` and
-  `memory-2 (the Valgrind gate, shard 2 of 2)`.
+  the memory job in two, merged as PR #50 (`9fdb9f3`); its close-out is below. Slice 2, the header
+  cap (the plan, §3.3 and §5), is built and reviewed on `feat/m8-header-cap`, not yet merged:
+  measured first through a prototype in the engine on the five Linux lanes
+  ([research](research/m8/slice2/)), then two answers by the maintainer, each the recommended
+  option (ADR-0040, amended, decisions 5 and 6): `SUPPRESS_CONNECT_HEADERS` owned, and
+  `HTTP_TRANSFER_DECODING` the hatch's. Every transfer's header callable caps its response
+  headers at 1,000 lines and 102,400 bytes, `header-limit`, of `&curl-too-large`, the recorded
+  reason winning over libcurl's code, 0 among them; `test-headers` holds the edges, every head
+  kind and a per-version table. Two traps found and reproduced: Node's HTTP/2 send limit, and
+  8.20.0's 417 resend on a new connection under the gate. The Mac ran `make test` on it,
+  2026-11-07, at `dd6888c`: 42 of 42, `test-headers`' 8.7.1 row matching in every cell
+  ([log](research/m8/slice2/mac/mac-8.7.1-make-test.log)).
   - **Decided by the maintainer, 2026-11-06,** each the recommended option, from three read-only
     surveys and three probes on the five Linux libcurls ([`research/m8/`](research/m8/)):
     - the scope ([ADR-0038](decisions/0038-m8s-scope.md)): parts in memory and files by path; a
@@ -256,6 +258,39 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-11-06 — M8 slice 1: the memory job in two (PR #50, `9fdb9f3`)
+
+- **Measured first** ([`research/m8/slice1/`](research/m8/slice1/)): each suite's time under the
+  gate, from the memory logs of four CI runs of the same suites. The runner's speed varied 1.55
+  times between them; test-transfer and test-unsupported moved most.
+- **Built** (the plan, §3.2): `MEMORY_SUITES_1` (21 suites) and `MEMORY_SUITES_2` (20), written
+  out and balanced by those times; `make test-memory MEMORY_SHARD=1` and `=2`, with no shard every
+  suite as before; refusals of any other shard, of one beside a `MEMORY_SUITES` from outside, and
+  of a shard's list, `MEMORY_RUN` or `MEMORY_RUN_NAME` set from outside. CI's `memory-1` and
+  `memory-2` each run the planted defects first. `check-memory-gate` gains six cases: every suite
+  once between the shards, read from what `test-memory` ran, each suite's command to Valgrind held
+  to case e's; the refusals; and `ci.yml`'s two jobs, after the planted defects, with no `if:` or
+  `continue-on-error:`.
+- **Watched failing:** 18 mutations, each in a copy of the tree, each failing in one case alone,
+  naming its defect. The check's first run found a quote in `MEMORY_SHARD` breaking the recipe's
+  shell before its refusal ran.
+- **Reviewed** (Opus, read-only): no blocker or major. Its first minor, reproduced: Valgrind's
+  flags weakened on the shard path alone passed every case, since no plant runs through a shard;
+  hence each suite's command held. Its second: a shard's list could be set from outside.
+- **CI:** at `20cd0d3`, all nine jobs passed. `memory-1` took 18 min 47 s, its 21 suites 967 s;
+  `memory-2` 18 min 34 s, its 20 suites 954 s; the planted defects 135 s each, 39 cases. The run
+  took 18 min 47 s, where the four before it took 23 to 35 minutes; as one job, these suites would
+  have taken 32 minutes on that runner. `main`'s push run for `9fdb9f3` (42305322110) passed all
+  nine: `memory-1` took 13 min 22 s, its suites 688 s, and `memory-2` 20 min 3 s, its suites 962 s
+  and its setup 102 s. Each job takes a runner of its own, and those two differed.
+- **Not needed:** `main` has no branch protection and no rulesets, so no required check named the
+  old job; the plan named the setting and did not read it until the maintainer asked.
+- **Subagents:** one, Opus: the adversarial review, 195k tokens, 15 min.
+- **Learned:**
+  - the planted defects proved the gate on one path, and CI takes another: a check of a path
+    holds what travels it, not what a neighbouring path showed;
+  - a fact a read-only call settles is read before it is raised as a question.
 
 ### 2026-11-06 — the items carried past M7 (PR #47, `fbc6fce`)
 

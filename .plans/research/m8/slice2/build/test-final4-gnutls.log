@@ -1,0 +1,216 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (42 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-auth.sps
+%%%% Starting test auth
+test-auth: digest-algorithms on "8.5.0" measured ((200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (401 ("none" 401) ("bad(response)" 401)) (401 ("none" 401) ("bad(response)" 401)))
+test-auth: utf8-digest-user on "8.5.0" measured (200 (("none" 401) ("ok" 200)) "\\xc3\\xbcser")
+test-auth: empty-userinfo on "8.5.0" measured (("@" "" #f (refused credentials-beside-userinfo)) (":@" "" "" (refused credentials-beside-userinfo)) (":p@" "" "p" (refused credentials-beside-userinfo)) ("u@" "u" #f (refused credentials-beside-userinfo)) ("u:@" "u" "" (refused credentials-beside-userinfo)))
+test-auth: mib-credentials on "8.5.0" measured (((failed perform-failed 27 none) 0) ((failed perform-failed 27 none) 0))
+# of expected passes      66
+test: pass tests/test-auth.sps
+=== tests/test-call-checks.sps
+%%%% Starting test call-checks
+# of expected passes      49
+test: pass tests/test-call-checks.sps
+=== tests/test-check-floors.sps
+%%%% Starting test check-floors
+# of expected passes      375
+test: pass tests/test-check-floors.sps
+=== tests/test-check-nothreads.sps
+%%%% Starting test check-nothreads
+# of expected passes      17
+test: pass tests/test-check-nothreads.sps
+=== tests/test-check-seam.sps
+%%%% Starting test check-seam
+# of expected passes      62
+test: pass tests/test-check-seam.sps
+=== tests/test-collect-safe.sps
+%%%% Starting test collect-safe
+# of expected passes      120
+test: pass tests/test-collect-safe.sps
+=== tests/test-conditions.sps
+%%%% Starting test conditions
+# of expected passes      41
+test: pass tests/test-conditions.sps
+=== tests/test-constants.sps
+%%%% Starting test constants
+# of expected passes      757
+test: pass tests/test-constants.sps
+=== tests/test-cookies.sps
+%%%% Starting test cookies
+test-cookies: crossings on the delaying engine ((ran . 8) (setup . 5) (submit . 23))
+test-cookies: crossings on a plain engine ((ran . 16) (submit . 17))
+test-cookies: refused-readout on "8.5.0" measured (("path-empty" (("a.localhost\tFALSE\t\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-true" (("a.localhost\tFALSE\tTRUE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-false" (("a.localhost\tFALSE\tFALSE\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-rel" (("a.localhost\tFALSE\trel\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("name-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("value-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("prefix-secure-lower" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("prefix-SECURE-upper" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("prefix-host-path" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("prefix-HOST-domain" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("path-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0"))
+test-cookies: expired-load on "8.5.0" measured (("a.localhost\tFALSE\t/\tFALSE\t1\texp\tv") ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1"))
+test-cookies: open-head on "8.5.0" measured (200 200 (a-request a-request) 200 200 (a-request a-request))
+test-cookies: domain-localhost on "8.5.0/psl" measured ((() "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("localhost\tFALSE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"d=1\"") ((("localhost\tFALSE\t/\tTRUE\t0\t__Host-dom\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"__Host-dom=1\""))
+test-cookies: set-cookie-matrix on "8.5.0" measured (((("a.localhost\tFALSE\t/cookies/a/b/\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("a.localhost\tFALSE\t\tFALSE\t0\tpe\t1" path) ("a.localhost\tFALSE\trel\tFALSE\t0\tpr\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"pr=1; pe=1\"") ((("a.localhost\tFALSE\t/\tFALSE\tbeyond-400-days\tca\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ca=1\"") ((("a.localhost\tFALSE\t/\tFALSE\t1\tma\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1" "a.localhost\tFALSE\t/\tFALSE\t1\tdel\t") "request 3 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"keep=1\"" ("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1")))
+# of expected passes      70
+test: pass tests/test-cookies.sps
+=== tests/test-curl-testing.sps
+%%%% Starting test curl-testing
+# of expected passes      285
+test: pass tests/test-curl-testing.sps
+=== tests/test-discovery.sps
+%%%% Starting test discovery
+this Chez's binary: /src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme
+# of expected passes      47
+test: pass tests/test-discovery.sps
+=== tests/test-drift.sps
+%%%% Starting test drift
+# of expected passes      55
+test: pass tests/test-drift.sps
+=== tests/test-engine.sps
+%%%% Starting test engine
+# of expected passes      54
+test: pass tests/test-engine.sps
+=== tests/test-group.sps
+%%%% Starting test group
+# of expected passes      65
+test: pass tests/test-group.sps
+=== tests/test-headers.sps
+%%%% Starting test headers
+# of expected passes      40
+test: pass tests/test-headers.sps
+=== tests/test-http-client.sps
+%%%% Starting test http-client
+# of expected passes      78
+test: pass tests/test-http-client.sps
+=== tests/test-library-loading.sps
+%%%% Starting test library-loading
+# of expected passes      78
+test: pass tests/test-library-loading.sps
+=== tests/test-load-state.sps
+%%%% Starting test load-state
+# of expected passes      12
+test: pass tests/test-load-state.sps
+=== tests/test-mailbox.sps
+%%%% Starting test mailbox
+# of expected passes      26
+test: pass tests/test-mailbox.sps
+=== tests/test-manifest.sps
+%%%% Starting test manifest
+# of expected passes      4
+test: pass tests/test-manifest.sps
+=== tests/test-memory-safety.sps
+%%%% Starting test memory-safety
+# of expected passes      91
+test: pass tests/test-memory-safety.sps
+=== tests/test-native.sps
+%%%% Starting test native
+# of expected passes      16
+test: pass tests/test-native.sps
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      185
+test: pass tests/test-origin-tls.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      383
+test: pass tests/test-origin.sps
+=== tests/test-printed.sps
+%%%% Starting test printed
+# of expected passes      10
+test: pass tests/test-printed.sps
+=== tests/test-proxy.sps
+%%%% Starting test proxy
+test-proxy: empty-userinfo on "8.5.0" measured ((refused proxy (proxy user) credentials-empty test) (refused proxy (proxy user) credentials-empty test) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u:@127.0.0.1:3128/" "http" #t))
+test-proxy: tls-in-tls-checks on "8.5.0/GnuTLS" measured ((refused proxy proxy proxy-tls-in-tls curl-request-check) (refused proxy proxy proxy-tls-in-tls curl-request-check) (refused proxy proxy proxy-tls-in-tls curl-request-check) no-raise no-raise)
+test-proxy: empty-userinfo-wire on "8.5.0" measured (((refused proxy (proxy user) credentials-empty curl-submit) ()) ((refused proxy (proxy user) credentials-empty curl-submit) ()))
+test-proxy: refused-connect on "8.5.0" measured ((56 send-receive 403 zero) (56 send-receive 407 zero) (56 send-receive 502 zero) (56 send-receive 503 zero) (56 send-receive 407 zero) (56 send-receive 407 zero) (56 send-receive #f zero))
+test-proxy: unshared-tunnels on "8.5.0" measured (((response 200) (response 200) #t ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "connect http conn=2 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=2 method=GET target=/status/200" "close http conn=1" "close http conn=2")))
+test-proxy: tunnel-plans on "8.5.0" measured (((("FRESH_CONNECT" . 1) ("FORBID_REUSE" . 1)) #t) ((("FRESH_CONNECT" . 1)) #f) (() #t) (() #f) (() #f))
+test-proxy: switch-live on "8.5.0" measured ((head head default switched) (1 1 2) (#f #f) ((response 200) (response 200) (response 200) (response 200)))
+test-proxy: environment-join on "8.5.0" measured (((environment (no_proxy . #f) (NO_PROXY . #f) (http_proxy . #f) (https_proxy . "http://127.0.0.1:35651") (all_proxy . #f)) (multiplexing default switched) (join #t (refused perform-failed 56 send-receive 407) (response 200)) (transfer ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) (done)) ("connect http conn=1 target=localhost:<h2> answer=200 head=_ auth=basic:alice:s3cret" "inner h2 via=1 method=GET target=/connection?delay=3000" "connect http conn=2 target=localhost:<h2> answer=407 head=_ auth=-" "close http conn=1" "close http conn=2"))
+test-proxy: closing-retries on "8.5.0" measured (((failed 56 #f 3) 3) ((failed 56 #f 3) 3))
+# of expected passes      96
+test: pass tests/test-proxy.sps
+=== tests/test-redirect.sps
+%%%% Starting test redirect
+(head-predicate-rows 124)
+# of expected passes      72
+test: pass tests/test-redirect.sps
+=== tests/test-request.sps
+%%%% Starting test request
+# of expected passes      47
+test: pass tests/test-request.sps
+=== tests/test-require-threaded.sps
+%%%% Starting test require-threaded
+# of expected passes      69
+test: pass tests/test-require-threaded.sps
+=== tests/test-retry.sps
+%%%% Starting test retry
+(head-predicate-rows 98)
+# of expected passes      86
+test: pass tests/test-retry.sps
+=== tests/test-stream-call.sps
+%%%% Starting test stream-call
+(stream-call-throughput raw ms 404)
+(stream-call-throughput h2 ms 735)
+(stream-call-idle-cpu ms 1946421/125000)
+# of expected passes      77
+test: pass tests/test-stream-call.sps
+=== tests/test-stream.sps
+%%%% Starting test stream
+(sweep piece plain call-ticks 6 escaped-kept 12 escaped-lost 0 returned 41)
+(sweep port plain call-ticks 266 escaped-kept 532 escaped-lost 0 returned 41)
+(sweep piece planted call-ticks 9 escaped-kept 12 escaped-lost 6 returned 41)
+# of expected passes      74
+test: pass tests/test-stream.sps
+=== tests/test-transfer-tls.sps
+%%%% Starting test transfer-tls
+# of expected passes      84
+test: pass tests/test-transfer-tls.sps
+=== tests/test-transfer.sps
+%%%% Starting test transfer
+# of expected passes      223
+test: pass tests/test-transfer.sps
+=== tests/test-unsupported.sps
+%%%% Starting test unsupported
+# of expected passes      39
+test: pass tests/test-unsupported.sps
+=== tests/test-upload.sps
+%%%% Starting test upload
+(fill #f 1966080 ms 545 retried () mib (19))
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 1108)
+(throughput http chunked ms 1145)
+(throughput https sized ms 1083)
+(throughput https chunked ms 1044)
+(throughput h2 sized ms 373)
+(throughput h2 chunked ms 350)
+(read-lock collections-while-live 988)
+# of expected passes      58
+test: pass tests/test-upload.sps
+=== tests/test-url-location.sps
+%%%% Starting test url-location
+# of expected passes      224
+test: pass tests/test-url-location.sps
+=== tests/test-url-parts.sps
+%%%% Starting test url-parts
+# of expected passes      160
+test: pass tests/test-url-parts.sps
+=== tests/test-url.sps
+%%%% Starting test url
+# of expected passes      153
+test: pass tests/test-url.sps
+=== tests/test-variadic.sps
+%%%% Starting test variadic
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 1: done, the first done at 1017 ms, both at 2032 ms
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 2: done, the first done at 1012 ms, both at 1012 ms
+# of expected passes      50
+test: pass tests/test-variadic.sps
+=== tests/test-verify.sps
+%%%% Starting test verify
+# of expected passes      21
+test: pass tests/test-verify.sps
+=== tests/test-version.sps
+%%%% Starting test version
+test-version: prior-knowledge-to-h1 on "8.5.0" measured (failed perform-failed 56 send-receive)
+test-version: together-by-prior-knowledge on "8.5.0" measured (2 (http/2 http/2))
+# of expected passes      27
+test: pass tests/test-version.sps
+test: ran 42, passed 42, failed 0, hung 0

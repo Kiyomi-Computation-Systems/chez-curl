@@ -1,0 +1,17 @@
+fix-control tests/test-headers.sps: exit 0
+fix-control tests/test-transfer.sps: exit 0
+fix-control tests/test-origin.sps: exit 1
+fix-start-dropped tests/test-headers.sps: exit 1
+fix-status-prefix tests/test-headers.sps: exit 1
+fix-status-1.1-only tests/test-headers.sps: exit 1
+fix-control tests/test-origin-tls.sps: exit 0
+fix-status-no-short-form tests/test-headers.sps: exit 1
+fix-route-short tests/test-origin.sps: exit 1
+fix-route-short-old-rows tests/test-origin.sps: exit 1
+fix-mark-request-unchecked tests/test-transfer.sps: exit 1
+fix-mark-line-unchecked tests/test-transfer.sps: exit 1
+fix-head-fault-request-unchecked tests/test-transfer.sps: exit 1
+fix-mark-zero-taken tests/test-transfer.sps: exit 1
+fix-head-zero-taken tests/test-transfer.sps: exit 1
+fix-head-fault-line-unchecked tests/test-transfer.sps: exit 1
+run exit 0

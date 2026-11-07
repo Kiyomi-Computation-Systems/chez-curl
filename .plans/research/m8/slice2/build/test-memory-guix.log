@@ -1,0 +1,41 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-headers.sps
+test-memory: FAIL tests/test-headers.sps (exit 1)
+  log: build/memory/test-headers.log
+  Valgrind's log: build/memory/test-headers.valgrind
+  ==863==    definitely lost: 0 bytes in 0 blocks
+  ==863==         suppressed: 171 bytes in 1 blocks
+  ==863== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+  | %%%% Starting test headers
+  | FAIL HTTP/1.1: a 417 of 500 lines and its resend's 200 of 500 are taken; of 500 and 501, refused, header-limit, the count across both responses; of 250 and 250 lines of 256 bytes, refused, the bytes across both
+  |   expected: ((response 200 500) (refused header-limit too-large #f) (refused header-limit too-large #f))
+  |   actual:   ((refused header-limit too-large #f) (refused header-limit too-large #f) (refused header-limit too-large #f))
+  | # of expected passes      39
+  | # of unexpected failures  1
+  | suite-exit-status: exit 1 (pass 39, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+=== tests/test-transfer.sps
+test-memory: pass tests/test-transfer.sps
+=== tests/test-conditions.sps
+test-memory: pass tests/test-conditions.sps
+=== tests/test-unsupported.sps
+test-memory: pass tests/test-unsupported.sps
+=== tests/test-origin.sps
+test-memory: pass tests/test-origin.sps
+=== tests/test-origin-tls.sps
+test-memory: FAIL tests/test-origin-tls.sps (exit 1)
+  log: build/memory/test-origin-tls.log
+  Valgrind's log: build/memory/test-origin-tls.valgrind
+  ==8858==    definitely lost: 0 bytes in 0 blocks
+  ==8858==         suppressed: 0 bytes in 0 blocks
+  ==8858== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+  | %%%% Starting test origin-tls
+  | FAIL h2 GET /head?n=2&tn=6000: every field of each block, as this suite lists them, the last block past 64 KiB, END_STREAM, no other frame, then eof
+  |   expected: (same past-64-kib #t "" () eof)
+  |   actual:   ((blocks (3) want (3 6000)) (sizes (27)) #f "" () eof)
+  | # of expected passes      184
+  | # of unexpected failures  1
+  | suite-exit-status: exit 1 (pass 184, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test-memory: ran 6, passed 4, failed 2, hung 0
+make: *** [Makefile:514: test-memory] Error 1
+test-memory exit 2
+wall 652.77 s

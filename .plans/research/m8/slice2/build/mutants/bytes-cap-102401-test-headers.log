@@ -1,0 +1,20 @@
+%%%% Starting test headers
+FAIL the cap's values, written out: 1,000 header lines and 102,400 bytes, over the whole transfer
+  expected: (1000 102400)
+  actual:   (1000 102401)
+FAIL HTTP/1.1: a head of 102,400 bytes as the callable counts them, its status line of 17 bytes, every line's CR LF and the empty line in, is taken, buffered and streamed; one of 102,401 is refused, header-limit, at its empty line, with no head published
+  expected: (((response 200 401) ((response 200 401) (head 200 401) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((response 200 401) ((response 200 401) (head 200 401) (eof 0))) ((response 200 401) ((response 200 401) (head 200 401) (eof 0))))
+FAIL HTTP/1.1: one line of 102362 bytes after content-length: 0 takes the head to 102,400 bytes, taken; one byte more is refused, header-limit, though libcurl takes a line of 102,399
+  expected: (((response 200 2) ((response 200 2) (head 200 2) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((response 200 2) ((response 200 2) (head 200 2) (eof 0))) ((response 200 2) ((response 200 2) (head 200 2) (eof 0))))
+FAIL HTTP/2: a head of 102,400 bytes as the callable counts them, its status line of 13 bytes, every line's CR LF and the empty line in, is taken, buffered and streamed; one of 102,401 is refused, header-limit, at its empty line, with no head published
+  expected: (((response 200 401) ((response 200 401) (head 200 401) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((response 200 401) ((response 200 401) (head 200 401) (eof 0))) ((response 200 401) ((response 200 401) (head 200 401) (eof 0))))
+FAIL HTTP/2: one line of 102366 bytes after content-length: 0 takes the head to 102,400 bytes, taken; one byte more is refused, header-limit, though libcurl takes a line of 102,399
+  expected: (((response 200 2) ((response 200 2) (head 200 2) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((response 200 2) ((response 200 2) (head 200 2) (eof 0))) ((response 200 2) ((response 200 2) (head 200 2) (eof 0))))
+# of expected passes      35
+# of unexpected failures  5
+suite-exit-status: exit 1 (pass 35, fail 5, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

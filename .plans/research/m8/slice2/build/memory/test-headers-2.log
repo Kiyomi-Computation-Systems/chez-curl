@@ -1,0 +1,7 @@
+%%%% Starting test headers
+FAIL HTTP/1.1: a 417 of 500 lines and its resend's 200 of 500 are taken; of 500 and 501, refused, header-limit, the count across both responses; of 250 and 250 lines of 256 bytes, refused, the bytes across both
+  expected: ((response 200 500) (refused header-limit too-large #f) (refused header-limit too-large #f))
+  actual:   ((refused header-limit too-large #f) (refused header-limit too-large #f) (refused header-limit too-large #f))
+# of expected passes      39
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 39, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

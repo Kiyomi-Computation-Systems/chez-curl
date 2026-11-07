@@ -28,7 +28,7 @@
 ;;;     &curl-tls-error           35, 53, 54, 58, 59, 60, 64, 66, 77, 80, 82,
 ;;;                               83, 90, 91, 98, 101
 ;;;     &curl-protocol-error      1, 8, 16, 61, 92, 95
-;;;     &curl-too-large           63, 100, and the body limit
+;;;     &curl-too-large           63, 100, the body limit and the header cap
 ;;;   &curl-engine-error          an engine that has stopped, or failed, and
 ;;;                               the condition it failed with (M3 plan,
 ;;;                               sections 3.4 and 3.7)
@@ -603,6 +603,13 @@
   ;;                    curl_multi_info_read gave the engine, and the write
   ;;                    callable recorded nothing
   ;;   body-limit       the callable refused a chunk past the body limit
+  ;;   header-limit     the header callable refused a line past the cap on a
+  ;;                    transfer's response headers, 1,000 header lines or
+  ;;                    102,400 bytes over the whole transfer (ADR-0040); the
+  ;;                    code is libcurl's answer to that refusal, 23, but 0
+  ;;                    on 8.5.0 for an HTTP/2 trailer, whose refusal libcurl
+  ;;                    loses, and on 8.7.1 56 for an HTTP/2 head, 23 for
+  ;;                    its trailers
   ;;   callback-raised  something raised inside the callable, which recorded it
   ;;   setopt-failed    curl_easy_setopt answered a code, for the option named
   ;;   unknown-option   the loaded libcurl does not know the option named
@@ -632,7 +639,7 @@
   ;; field still carries.
   (define curl-transfer-error-reasons
     '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle
-      cancelled stopped pause-failed body-length-mismatch body-not-replayable))
+      cancelled stopped pause-failed body-length-mismatch body-not-replayable header-limit))
 
   ;; The fields:
   ;;
@@ -649,7 +656,8 @@
   ;;                 callback-raised, else #f
   ;;   request-size  (U Natural #f): for a transfer that ran, perform-failed,
   ;;                 body-limit, callback-raised, pause-failed,
-  ;;                 body-length-mismatch or body-not-replayable,
+  ;;                 body-length-mismatch, body-not-replayable or
+  ;;                 header-limit,
   ;;                 CURLINFO_REQUEST_SIZE:
   ;;                 the bytes of request libcurl sent, its body's among
   ;;                 them, summed over every attempt it made, a resend on a
@@ -720,7 +728,7 @@
   ;;                            (U String #f) Any (U Natural #f) (U Positive-Integer #f)
   ;;                            -> &curl-transfer-error
   ;; The base type, unclassed. Refuses a REASON that is not one of the
-  ;; eleven with an assertion violation. It checks nothing else, so a code a
+  ;; twelve with an assertion violation. It checks nothing else, so a code a
   ;; later libcurl answers still reaches the caller.
   (define (make-curl-transfer-error reason code option strerror error-buffer recorded
                                     request-size connect-code)
@@ -789,8 +797,8 @@
 
   ;; Each class is a condition type under &curl-transfer-error, with every
   ;; field the base has, and a constructor that takes perform-failed alone,
-  ;; with a code the class names, or, for too-large, body-limit too, with
-  ;; any code.
+  ;; with a code the class names, or, for too-large, body-limit and
+  ;; header-limit too, with any code.
   ;;
   ;; make-curl-timeout, make-curl-connect-error, make-curl-send-receive-error,
   ;; make-curl-tls-error, make-curl-protocol-error, make-curl-too-large :
@@ -814,10 +822,10 @@
   ;; check-class : Symbol Symbol Symbol Any -> Void
   ;; Refuses, as WHO, with an assertion violation, a REASON and CODE the
   ;; class CLASS does not take: perform-failed with a code CLASS names, or,
-  ;; for too-large, body-limit too.
+  ;; for too-large, body-limit and header-limit too.
   (define (check-class who class reason code)
     (unless (or (and (eq? reason 'perform-failed) (eq? (curl-code-class code) class))
-                (and (eq? class 'too-large) (eq? reason 'body-limit)))
+                (and (eq? class 'too-large) (memq reason '(body-limit header-limit))))
       (assertion-violation who "not a reason and code this class takes" reason code)))
 
   (define (make-curl-timeout reason code option strerror error-buffer recorded
@@ -861,13 +869,14 @@
   ;;                               -> &curl-transfer-error
   ;; What a failed transfer raises (ADR-0022, amended 2026-10-26): for
   ;; perform-failed, the class its CODE has, or the base type for a code no
-  ;; class names; for body-limit, too-large, whatever its code; for every
-  ;; other reason, the base type, a setopt-failed whose code a class names
-  ;; among them. A REASON not among the eleven is an assertion violation.
+  ;; class names; for body-limit and header-limit, too-large, whatever its
+  ;; code; for every other reason, the base type, a setopt-failed whose code
+  ;; a class names among them. A REASON not among the twelve is an
+  ;; assertion violation.
   (define (make-classed-transfer-error reason code option strerror error-buffer recorded
                                        request-size connect-code)
     (check-transfer-error 'make-classed-transfer-error reason curl-transfer-error-reasons)
-    (let ((make (case (if (eq? reason 'body-limit)
+    (let ((make (case (if (memq reason '(body-limit header-limit))
                           'too-large
                           (and (eq? reason 'perform-failed) (curl-code-class code)))
                   ((timeout) make-curl-timeout)

@@ -1,0 +1,11 @@
+%%%% Starting test origin
+FAIL raw /raw/head?total=102400&line=256: the head of exactly that many bytes, as this suite builds it, then eof
+  expected: (102400 same eof)
+  actual:   (102399 same eof)
+FAIL raw /raw/head?total=102401&line=256: the head of exactly that many bytes, as this suite builds it, then eof
+  expected: (102401 same eof)
+  actual:   (102400 same eof)
+# of expected passes      389
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 389, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

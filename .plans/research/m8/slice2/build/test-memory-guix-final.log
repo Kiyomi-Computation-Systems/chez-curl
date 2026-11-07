@@ -1,0 +1,14 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-transfer.sps
+test-memory: pass tests/test-transfer.sps
+=== tests/test-conditions.sps
+test-memory: pass tests/test-conditions.sps
+=== tests/test-unsupported.sps
+test-memory: pass tests/test-unsupported.sps
+=== tests/test-origin.sps
+test-memory: pass tests/test-origin.sps
+=== tests/test-origin-tls.sps
+test-memory: pass tests/test-origin-tls.sps
+test-memory: ran 5, passed 5, failed 0, hung 0
+test-memory exit 0
+wall 765.97 s

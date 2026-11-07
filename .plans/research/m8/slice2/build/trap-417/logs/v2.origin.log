@@ -1,0 +1,24 @@
+head417 start conn=59478 t=423.1 head-at=421.2
+head417 request conn=59478 t=423.6 line="POST /raw/head417?key=rv2-verbose-0&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=false
+head417 writing-417 conn=59478 t=423.6 queued=0
+head417 wrote-417 conn=59478 t=424.9 queued=0
+head417 ended-after-417 conn=59478 t=499.8 queued=0
+head417 close conn=59478 t=500.9
+head417 start conn=59486 t=511.9 head-at=511.6
+head417 request conn=59486 t=512.1 line="POST /raw/head417?key=rv2-verbose-0&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=false
+head417 writing-417 conn=59486 t=512.1 queued=0
+head417 wrote-417 conn=59486 t=512.7 queued=0
+head417 next conn=59486 t=554.6 first=0x50 read-as=request queued=142
+head417 request conn=59486 t=554.8 line="POST /raw/head417?key=rv2-verbose-0&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=true
+head417 wrote-100 conn=59486 t=555.0
+head417 wrote-200 conn=59486 t=558.5
+head417 close conn=59486 t=564.4
+head417 start conn=59490 t=656.1 head-at=655.8
+head417 request conn=59490 t=656.2 line="POST /raw/head417?key=rv2-verbose-1&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=false
+head417 writing-417 conn=59490 t=656.2 queued=0
+head417 wrote-417 conn=59490 t=656.6 queued=0
+head417 next conn=59490 t=682.1 first=0x50 read-as=request queued=142
+head417 request conn=59490 t=682.3 line="POST /raw/head417?key=rv2-verbose-1&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=true
+head417 wrote-100 conn=59490 t=682.4
+head417 wrote-200 conn=59490 t=683.2
+head417 close conn=59490 t=904.1

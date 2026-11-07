@@ -1,0 +1,38 @@
+%%%% Starting test headers
+FAIL HTTP/1.1: a 103 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, each under the cap
+  expected: (((response 200 500) ((response 200 500) (head 200 500) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((response 200 500) ((response 200 500) (head 200 500) (eof 0))) ((response 200 501) ((response 200 501) (head 200 501) (eof 0))))
+FAIL HTTP/1.1: a 100 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, each under the cap
+  expected: (((response 200 500) ((response 200 500) (head 200 500) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((response 200 500) ((response 200 500) (head 200 500) (eof 0))) ((response 200 501) ((response 200 501) (head 200 501) (eof 0))))
+FAIL HTTP/1.1: a 103 head of 150 lines of 256 bytes and a final head of 150 are taken; of 250 and 250, 128,000 bytes or so, refused, header-limit, the bytes across both heads, each under 102,400
+  expected: (((response 200 150) ((response 200 150) (head 200 150) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((response 200 150) ((response 200 150) (head 200 150) (eof 0))) ((response 200 250) ((response 200 250) (head 200 250) (eof 0))))
+FAIL HTTP/1.1: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 250 lines of 256 bytes, refused, the bytes across both
+  expected: ((response 200 500) (refused header-limit too-large #f) (refused header-limit too-large #f))
+  actual:   ((response 200 500) (response 200 501) (response 200 250))
+FAIL HTTP/2: a 103 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, each under the cap
+  expected: (((response 200 500) ((response 200 500) (head 200 500) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((response 200 500) ((response 200 500) (head 200 500) (eof 0))) ((response 200 501) ((response 200 501) (head 200 501) (eof 0))))
+FAIL HTTP/2: a 100 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, each under the cap
+  expected: (((response 200 500) ((response 200 500) (head 200 500) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((response 200 500) ((response 200 500) (head 200 500) (eof 0))) ((response 200 501) ((response 200 501) (head 200 501) (eof 0))))
+FAIL HTTP/2: a 103 head of 150 lines of 256 bytes and a final head of 150 are taken; of 250 and 250, 128,000 bytes or so, refused, header-limit, the bytes across both heads, each under 102,400
+  expected: (((response 200 150) ((response 200 150) (head 200 150) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((response 200 150) ((response 200 150) (head 200 150) (eof 0))) ((response 200 250) ((response 200 250) (head 200 250) (eof 0))))
+FAIL HTTP/2: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 250 lines of 256 bytes, refused, the bytes across both
+  expected: ((response 200 500) (refused header-limit too-large #f) (refused header-limit too-large #f))
+  actual:   ((response 200 500) (response 200 501) (response 200 250))
+FAIL HTTP/1.1: a 417 of 500 lines and its resend's 200 of 500 are taken; of 500 and 501, refused, header-limit, the count across both responses; of 250 and 250 lines of 256 bytes, refused, the bytes across both
+  expected: ((response 200 500) (refused header-limit too-large #f) (refused header-limit too-large #f))
+  actual:   ((response 200 500) (response 200 501) (response 200 250))
+FAIL HTTP/1.1 over TLS through the proxy: a CONNECT answer of 500 lines and a response of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both; of 250 and 250 lines of 256 bytes, refused, the bytes across both
+  expected: (((response 200 500) ((response 200 500) (head 200 500) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((response 200 500) ((response 200 500) (head 200 500) (eof 0))) ((response 200 501) ((response 200 501) (head 200 501) (eof 0))) ((response 200 250) ((response 200 250) (head 200 250) (eof 0))))
+FAIL HTTP/2 through the proxy: a CONNECT answer of 500 lines and a response of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both; of 250 and 250 lines of 256 bytes, refused, the bytes across both
+  expected: (((response 200 500) ((response 200 500) (head 200 500) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((response 200 500) ((response 200 500) (head 200 500) (eof 0))) ((response 200 501) ((response 200 501) (head 200 501) (eof 0))) ((response 200 250) ((response 200 250) (head 200 250) (eof 0))))
+# of expected passes      29
+# of unexpected failures  11
+suite-exit-status: exit 1 (pass 29, fail 11, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

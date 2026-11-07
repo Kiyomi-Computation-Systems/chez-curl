@@ -113,3 +113,30 @@ major, three minors and some nits. I reproduced the first before its fix.
   now said in the Makefile; `ci.yml`'s Node line named the old job; its timing predates the shard
   cases; this README named the pull requests' heads where they checked out merges, gave no
   commands, and mixed the percentage's bases.
+
+## On the pull request
+
+PR #50's run 42300311966 at `20cd0d3`, its two memory jobs' logs in `logs/` (`times.sh` reads
+them as it reads the others):
+
+| Job | Suites | Wall time | Setup | Planted defects | Suites |
+|---|---|---|---|---|---|
+| `memory-1`, 128176068436 | 21 | 18 min 47 s | 21.0 s | 134.6 s | 967.2 s |
+| `memory-2`, 128176068651 | 20 | 18 min 34 s | 21.5 s | 135.9 s | 953.9 s |
+
+The two shards' suites came to within 1.4 per cent of each other, 1,918 s together, near PR
+#49's 1,937 s, the slowest of the four runs above. `check-memory-gate` took 135 s, 39 cases, the
+Guix-only six skipped; before this slice's cases it took 84 to 124 s.
+
+## On `main`
+
+`main`'s push run 42305322110 at `9fdb9f3`, all nine jobs passed, its memory logs in `logs/`:
+
+| Job | Wall time | Setup | Planted defects | Suites |
+|---|---|---|---|---|
+| `memory-1`, 128193088547 | 13 min 22 s | 20.1 s | 90.2 s | 688.1 s |
+| `memory-2`, 128193088459 | 20 min 3 s | 101.5 s | 136.4 s | 962.5 s |
+
+Each job takes a runner of its own. Shard 2's suites took 0.99 to 1.05 times their pull
+request's times, suite by suite; shard 1's 0.54 to 0.84, on a faster runner. A shard's wall time
+follows its runner as much as its list.

@@ -1,0 +1,6 @@
+trap417 run=g6 variant=plain i=0 key=rg6-plain-0 ended=yes outcome=(refused header-limit 23) ms=349.0
+trap417 run=g6 variant=plain i=1 key=rg6-plain-1 ended=yes outcome=(response 200 500) ms=255.0
+trap417 run=g6 variant=plain i=2 key=rg6-plain-2 ended=yes outcome=(response 200 500) ms=259.0
+trap417 run=g6 variant=plain i=3 key=rg6-plain-3 ended=yes outcome=(response 200 500) ms=228.0
+trap417 run=g6 variant=plain i=4 key=rg6-plain-4 ended=yes outcome=(response 200 500) ms=218.0
+exit 0

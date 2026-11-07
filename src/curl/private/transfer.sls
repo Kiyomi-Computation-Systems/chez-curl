@@ -186,9 +186,9 @@
 ;;; secret. A line is a Latin-1 string both ways, each char one byte, as a
 ;;; header's strings are (ADR-0035, decision 8).
 ;;;
-;;; The callables (M2 plan, section 3.5; ADR-0030): write-body for every
-;;; transfer, and read-head, the header callable, for a streamed response
-;;; alone. Each is __collect_safe, since curl_multi_perform and
+;;; The callables (M2 plan, section 3.5; ADR-0030; ADR-0040): write-body
+;;; and read-head, the header callable, for every transfer. Each is
+;;; __collect_safe, since curl_multi_perform and
 ;;; curl_easy_pause, where they fire, are (ADR-0013, accepted 2026-10-24),
 ;;; locked where it is defined and never unlocked, and handed the
 ;;; transfer's key, an integer, as its WRITEDATA or HEADERDATA, so no Scheme
@@ -204,6 +204,21 @@
 ;;; one (M2 plan, section 5.3), so a declared length past that is refused
 ;;; before its body, and the callable refuses the first byte past the limit
 ;;; itself, on every libcurl, a stream's bytes counted as a whole body's.
+;;;
+;;; The cap on response headers (ADR-0040, amended twice) takes that path
+;;; too: read-head counts, over the whole transfer, every byte libcurl hands
+;;; it and every header line, a head's status line and empty line left out,
+;;; each 1xx head's, a trailer section's, a CONNECT answer's and each
+;;; response of an auth round or a resend among them, and refuses the line
+;;; that takes either count past header-line-cap or header-byte-cap,
+;;; recording header-limit, of &curl-too-large. Once any reason is recorded
+;;; against a transfer, read-head refuses every later call, as stream-chunk!
+;;; does: a request's private mark, (mark N), records a planted reason at
+;;; the head's line N and answers that line, so libcurl calls again, which
+;;; the Linux libcurls never do after a refusal. The recorded reason wins
+;;; over libcurl's code, 0 among them: 8.5.0 loses a refused HTTP/2
+;;; trailer, and ends the transfer 0. libcurl's own refusals that come
+;;; before any line reaches the callable keep their codes, by version.
 ;;;
 ;;; A streamed response (ADR-0030; the M6 plan, sections 3.2 to 3.5): a
 ;;; request's stream-buffer gives each submit a stream of its own, made
@@ -275,6 +290,7 @@
           stream-remove! stream-clear-pause! stream-resumed! stream-paused? stream-head
           stream-stats resume-failure stream-verdicts expect-continue? ascii-folded
           curl-request-with-head-fault planted-head-fault stream-plant-stall! stream-stall-state
+          curl-request-with-head-mark planted-head-mark header-line-cap header-byte-cap request-like
           curl-request-body-length plan-upload upload? upload-lock upload-buffer-limit upload-put!
           upload-end! upload-room? upload-count upload-stats upload-verdicts clear-pauses!
           live-transfer-paused? resumed! method-settings sends-body? live-transfer-upload
@@ -834,7 +850,7 @@
   ;; curl-request-proxy-ca-file : Request -> (U String #f)
   ;; curl-request-proxy-verify : Request -> Boolean
   ;; curl-request-cookie-jar : Request -> (U Jar #f)
-  ;; curl-request-fault : Request -> (U Positive-Integer (List 'head Positive-Integer) #f)   private
+  ;; curl-request-fault : Request -> (U Positive-Integer (List (U 'head 'mark 'read 'seek 'prereq) Positive-Integer) #f)   private
   ;; curl-request-follow : Request -> Boolean                  private
   ;; curl-request-options : Request -> (Listof Hatch-Setting)  private
   ;;
@@ -1168,8 +1184,8 @@
       (unless (ca-file? proxy-ca-file)
         (wrong "a proxy CA file is a non-empty string, its path, or #f" proxy-ca-file))
       (unless (boolean? proxy-verify) (wrong "proxy-verify is #t or #f" proxy-verify))
-      (unless (or (not fault) (chunk-fault? fault) (head-fault? fault) (upload-fault? fault))
-        (wrong "a fault is a positive exact integer, the chunk it raises at, (head N), the head's line it raises at, (read N), (seek N) or (prereq N), that callable's call it raises at, or #f: a request holds no procedure"
+      (unless (or (not fault) (chunk-fault? fault) (head-fault? fault) (head-mark? fault) (upload-fault? fault))
+        (wrong "a fault is a positive exact integer, the chunk it raises at, (head N), the head's line it raises at, (mark N), the head's line it records a reason at, (read N), (seek N) or (prereq N), that callable's call it raises at, or #f: a request holds no procedure"
                fault))
       (unless (boolean? follow) (wrong "follow is #t or #f" follow))
       (unless (or (not cookie-jar) (curl-cookie-jar? cookie-jar))
@@ -1219,6 +1235,12 @@
   ;; line, counting from 1, a positive exact integer.
   (define (head-fault? x)
     (and (list? x) (= (length x) 2) (eq? (car x) 'head) (chunk-fault? (cadr x))))
+
+  ;; head-mark? : Any -> Boolean
+  ;; X is a mark the header callable records a reason at, (mark N), N the
+  ;; head's line, counting from 1, a positive exact integer.
+  (define (head-mark? x)
+    (and (list? x) (= (length x) 2) (eq? (car x) 'mark) (chunk-fault? (cadr x))))
 
   ;; upload-fault? : Any -> Boolean
   ;; X is a fault a request stream's callable raises at, (KIND N): KIND
@@ -1341,6 +1363,23 @@
     (unless (chunk-fault? n)
       (assertion-violation 'curl-request-with-head-fault "a head's line is a positive exact integer" n))
     (request-like 'curl-request-with-head-fault request '() (curl-request-url request) (list 'head n)
+                  (curl-request-follow request) (curl-request-options request)))
+
+  ;; curl-request-with-head-mark : Request Positive-Integer -> Request
+  ;; REQUEST with its private mark (mark N): at the head's line N, counting
+  ;; from 1 the lines read-head took, never one it refused, read-head
+  ;; records (planted-head-mark N) as callback-raised and answers the line's
+  ;; length,
+  ;; so libcurl calls it again, which it must then refuse, as every later
+  ;; call once a reason is recorded (ADR-0040, amended 2026-11-06): the
+  ;; Linux libcurls never call it again after a refusal. A test seam;
+  ;; (curl) does not export it.
+  (define (curl-request-with-head-mark request n)
+    (unless (curl-request? request)
+      (assertion-violation 'curl-request-with-head-mark "not a request" (shown-value request)))
+    (unless (chunk-fault? n)
+      (assertion-violation 'curl-request-with-head-mark "a head's line is a positive exact integer" n))
+    (request-like 'curl-request-with-head-mark request '() (curl-request-url request) (list 'mark n)
                   (curl-request-follow request) (curl-request-options request)))
 
   ;; curl-request-with-upload-fault : Request (U 'read 'seek 'prereq) Positive-Integer -> Request
@@ -1607,9 +1646,10 @@
   ;; jar's share, then COOKIEFILE at "", by jar-settings, when it is not #f
   ;; (ADR-0035): COOKIEFILE was kept from the hatch before, for its "-".
   ;; follow is the private field's
-  ;; (M4 plan, section 3.2). stream-buffer sets the header callable and its
-  ;; data, the transfer's key, for a streamed response alone (the M6 plan,
-  ;; sections 3.2 and 3.3). http-version sets HTTP_VERSION, by
+  ;; (M4 plan, section 3.2). stream-buffer owns the header callable and its
+  ;; data, the transfer's key, which every transfer sets, for the cap on
+  ;; response headers (ADR-0040), and which publish a streamed response's
+  ;; head (the M6 plan, sections 3.2 and 3.3). http-version sets HTTP_VERSION, by
   ;; version-settings, when it is not #f (ADR-0034). credentials sets
   ;; HTTPAUTH at its scheme's bit, then USERNAME and PASSWORD, or
   ;; XOAUTH2_BEARER, by credentials-settings, when it is not #f (ADR-0036).
@@ -1755,9 +1795,9 @@
   ;;     that line's addresses: 7.85.0 knows no HAPROXY_CLIENT_IP, and an
   ;;     owned name a libcurl does not know is no id of its own, its
   ;;     attachment refused as unknown-option first.
-  ;;     SUPPRESS_CONNECT_HEADERS, PROXY_SERVICE_NAME and SOCKS5_AUTH stay
-  ;;     the hatch's, each changing no byte either side got, and nothing
-  ;;     chez-curl reads;
+  ;;     PROXY_SERVICE_NAME and SOCKS5_AUTH stay the hatch's, each changing
+  ;;     no byte either side got, and nothing chez-curl reads, and
+  ;;     SUPPRESS_CONNECT_HEADERS did until M8 slice 2;
   ;;   - the cookie jar's, measured through the engine on five libcurls (M7
   ;;     slice 4; ADR-0035, amended 2026-11-04): SHARE, which attaches a
   ;;     share, and COOKIEFILE, which turns the cookie engine on, are the
@@ -1776,6 +1816,16 @@
   ;;     URL's host, libcurl storing the reached server's Set-Cookie under
   ;;     it and sending it that host's cookies (8.20.0 lib/http.c:3553-3560,
   ;;     read in source), as they would a hosts file's entry;
+  ;;   - the header callable's, measured through the engine on five
+  ;;     libcurls (M8 slice 2; ADR-0040, amended 2026-11-06, decided by the
+  ;;     maintainer): SUPPRESS_CONNECT_HEADERS, which hides a CONNECT answer
+  ;;     from the callable on every libcurl, so the cap would never count
+  ;;     it, and libcurl's own caps alone would hold it, by version. Every
+  ;;     transfer sets the callable, its options stream-buffer's.
+  ;;     HTTP_TRANSFER_DECODING stays the hatch's: at 0 a chunked body's
+  ;;     trailers go to the body, which body-limit bounds, and none is
+  ;;     stored as a header; so do HTTP200ALIASES, whose alias status line
+  ;;     the cap counts as a header line, HTTP09_ALLOWED and FAILONERROR;
   ;; then proxy-tls-option-names. They are compared by id, so an alias name
   ;; is refused too.
   (define owned-option-names
@@ -1794,7 +1844,8 @@
               "AWS_SIGV4"
               "PROXYAUTH" "PROXYUSERPWD" "PROXYUSERNAME" "PROXYPASSWORD"
               "HTTPPROXYTUNNEL" "HAPROXYPROTOCOL" "HAPROXY_CLIENT_IP"
-              "COOKIE" "COOKIELIST" "COOKIESESSION")
+              "COOKIE" "COOKIELIST" "COOKIESESSION"
+              "SUPPRESS_CONNECT_HEADERS")
             proxy-tls-option-names))
 
   ;; pinned-options : (Listof (Pairof String (U String Integer)))
@@ -2595,12 +2646,16 @@
   ;; one (the M6 plan, section 3.4); and, for a stream, the write
   ;; callable's calls so far, which a planted fault counts, the easy
   ;; handle the header callable reads, whether it has published the head,
-  ;; and the head's lines so far, which a planted (head N) counts; and, for
+  ;; and the head's lines so far, which a planted (head N) or (mark N)
+  ;; counts; and, for
   ;; a streamed body, its request stream, #f otherwise, whether the
   ;; engine's rewinding seam lets the seek callable answer OK once bytes
   ;; were handed, the read callable's calls so far, which a planted
   ;; (read N) counts, and the engine's prereq-hold seam's HOLD, a thunk the
-  ;; prerequest callable calls at the first attempt, #f but for that seam.
+  ;; prerequest callable calls at the first attempt, #f but for that seam;
+  ;; and, for every transfer, the cap's counts (ADR-0040): the header lines
+  ;; and the bytes the header callable has taken over the transfer, and
+  ;; whether its next line starts a head.
   ;; Every field but the streams' is the engine thread's alone.
   ;;
   ;; The log of a whole body keeps every chunk, (LENGTH THREAD VERDICT),
@@ -2612,7 +2667,8 @@
             (mutable received) (mutable chunks) (mutable log) (mutable recorded)
             (immutable stream) (immutable moves) (mutable offers) (mutable easy)
             (mutable published) (mutable lines) (immutable upload) (immutable rewinding)
-            (mutable reads) (immutable prereq-hold)))
+            (mutable reads) (immutable prereq-hold)
+            (mutable header-lines) (mutable header-bytes) (mutable head-start)))
 
   ;; The live transfers, by key, and the next key, under the mutex. Every
   ;; engine's thread reads it: each callable serves them all.
@@ -2673,6 +2729,11 @@
   ;; What read-head raises at the head's line N a request's (head N) names:
   ;; data, as planted-fault's.
   (define (planted-head-fault n) (list 'planted-head-fault n))
+
+  ;; planted-head-mark : Positive-Integer -> (List 'planted-head-mark Positive-Integer)
+  ;; What read-head records, as callback-raised, at the head's line N a
+  ;; request's private (mark N) names: data, as planted-fault's.
+  (define (planted-head-mark n) (list 'planted-head-mark n))
 
   ;; planted-upload-fault : Symbol Positive-Integer -> (List 'planted-upload-fault Symbol Positive-Integer)
   ;; What the request stream's callable KIND raises at its call N, as a
@@ -3042,6 +3103,59 @@
   ;; write-body-entry : Positive-Integer
   (define write-body-entry (foreign-callable-entry-point write-body))
 
+  ;; header-line-cap : Positive-Integer
+  ;; header-byte-cap : Positive-Integer
+  ;; The cap on a transfer's response headers (ADR-0040, decisions 1 to 3):
+  ;; the header lines and the bytes the header callable takes over the
+  ;; whole transfer. The line that takes either count past it is refused,
+  ;; header-limit. Fixed: no key sets them. tests/test-headers.sps writes
+  ;; both out.
+  (define header-line-cap 1000)
+  (define header-byte-cap 102400)
+
+  ;; status-line? : Positive-Integer Natural -> Boolean
+  ;; Whether the N bytes at DATA begin as libcurl hands a status line:
+  ;; HTTP/, a digit, then a dot and a digit or not, then a space, read by
+  ;; the checked copy. So HTTP/1.1 200 OK, HTTP/1.0 200 OK, a 1xx head's, a
+  ;; CONNECT answer's, and HTTP/2's own rendering, HTTP/2 200, each match,
+  ;; and a header line named HTTP/x or HTTP/1.1, its colon after its name,
+  ;; does not. A status line the pattern misses is counted as a header
+  ;; line, one line over, never under. A header line the pattern matches, a
+  ;; name holding a space that libcurl takes, HTTP/1.1 x, is exempt only at
+  ;; a head's start, where count-header-line! asks: there it can be only a
+  ;; trailer section's first line, one line under, once a section.
+  (define (status-line? data n)
+    (and (>= n 7)
+         (let* ((k (min n 9))
+                (bytes (make-bytevector k)))
+           (copy-foreign->bytevector! data bytes 0 k)
+           (let ((digit? (lambda (i) (<= 48 (bytevector-u8-ref bytes i) 57)))
+                 (is? (lambda (i b) (= (bytevector-u8-ref bytes i) b))))
+             (and (is? 0 72) (is? 1 84) (is? 2 84) (is? 3 80) (is? 4 47) (digit? 5)
+                  (or (is? 6 32)
+                      (and (= k 9) (is? 6 46) (digit? 7) (is? 8 32))))))))
+
+  ;; count-header-line! : Sink Positive-Integer Natural -> Boolean
+  ;; The line of N bytes at DATA counted against SINK's cap, over the whole
+  ;; transfer (ADR-0040, decision 1): every byte; and a header line, unless
+  ;; it is a head's empty line, "\r\n" or "\n", or, at a head's start, the
+  ;; transfer's first line or the one after an empty line, its status line,
+  ;; status-line?'s. So each head counts, a 1xx head's, a trailer
+  ;; section's, which no status line opens, a CONNECT answer's and each
+  ;; response of an auth round or a resend among them. #t while both counts,
+  ;; this line's in, are within the cap.
+  (define (count-header-line! sink data n)
+    (let* ((start (sink-head-start sink))
+           (empty (empty-line? data n))
+           (status (and (not empty) start (status-line? data n))))
+      (sink-header-bytes-set! sink (+ (sink-header-bytes sink) n))
+      (cond (empty (sink-head-start-set! sink #t))
+            (status (sink-head-start-set! sink #f))
+            (else (sink-head-start-set! sink #f)
+                  (sink-header-lines-set! sink (+ (sink-header-lines sink) 1))))
+      (and (<= (sink-header-lines sink) header-line-cap)
+           (<= (sink-header-bytes sink) header-byte-cap))))
+
   ;; empty-line? : Positive-Integer Natural -> Boolean
   ;; Whether the N bytes at DATA are "\r\n" or "\n", a head's end, read by
   ;; the checked copy.
@@ -3077,12 +3191,18 @@
               (stream-head-at-set! stream (monotonic-ns))))))))
 
   ;; read-head : Code
-  ;; libcurl's header callback for a streamed response, which alone sets it:
-  ;; SIZE times NITEMS bytes of a head's line at DATA, for the transfer KEY
-  ;; names. It reads nothing but a head's empty line, before the head is
-  ;; published, where head-line! reads it, and answers the line's length.
-  ;; At the line a request's private (head N) names, counting every line
-  ;; it is handed, it raises (planted-head-fault N), for the guard's test.
+  ;; libcurl's header callback for every transfer: SIZE times NITEMS bytes
+  ;; of a head's line at DATA, for the transfer KEY names. Once a reason is
+  ;; recorded against the transfer, by any callable, it refuses every
+  ;; later call, answering 0. Then it counts the line against the cap,
+  ;; count-header-line!'s, and past it records header-limit and answers 0,
+  ;; a short count. Then, for a streamed response, it reads a head's empty
+  ;; line, before the head is published, where head-line! reads it, and
+  ;; answers the line's length. At the line a request's private (head N)
+  ;; names, counting every line it took, it raises (planted-head-fault N),
+  ;; for the guard's test; at the line its (mark N) names, it records
+  ;; (planted-head-mark N) as callback-raised and still answers the line, so
+  ;; the refusal of a later call can be seen.
   ;; __collect_safe, locked where it is defined, as write-body: it fires
   ;; inside curl_multi_perform and curl_easy_pause (ADR-0030,
   ;; consequences). No raise leaves it: its body runs under a guard that
@@ -3095,6 +3215,10 @@
           (let ((sink (sink-of key)) (n (* size nitems)))
             (cond
               ((not sink) 0)
+              ((sink-recorded sink) 0)
+              ((not (count-header-line! sink data n))
+               (record! key 'header-limit #f)
+               0)
               (else
                (sink-lines-set! sink (+ (sink-lines sink) 1))
                (when (and (head-fault? (sink-fault sink))
@@ -3103,6 +3227,9 @@
                (let ((stream (sink-stream sink)))
                  (when (and stream (not (sink-published sink)) (empty-line? data n))
                    (head-line! sink stream)))
+               (when (and (head-mark? (sink-fault sink))
+                          (= (sink-lines sink) (cadr (sink-fault sink))))
+                 (record! key 'callback-raised (planted-head-mark (cadr (sink-fault sink)))))
                (moved! sink)
                n)))))
       (uptr size_t size_t uptr)
@@ -4140,8 +4267,9 @@
   ;; set-transfer-options! : Positive-Integer Plan Positive-Integer Positive-Integer Natural (Listof (Pairof Hatch-Setting Positive-Integer)) Positive-Integer Boolean Boolean -> Void
   ;; Every setting PLAN's transfer makes on EASY, in order: the pins first,
   ;; QUICK_EXIT among them as QUICK-EXIT says, then ERRORBUFFER at BUFFER,
-  ;; CURLU at URL, WRITEFUNCTION and WRITEDATA at KEY; for a streamed
-  ;; response, HEADERFUNCTION and HEADERDATA at KEY; for a streamed body,
+  ;; CURLU at URL, WRITEFUNCTION and WRITEDATA at KEY, HEADERFUNCTION and
+  ;; HEADERDATA at KEY, on every transfer, for the cap (ADR-0040); for a
+  ;; streamed body,
   ;; READFUNCTION and READDATA, SEEKFUNCTION and SEEKDATA, PREREQFUNCTION and
   ;; PREREQDATA at KEY, then FRESH_CONNECT at 1 unless FRESH is #f, an
   ;; engine's reusing seam (ADR-0032), or when the plan's tunnel settings,
@@ -4172,9 +4300,8 @@
     (set-option! easy (field-option 'url) url buffer)
     (set-option! easy "WRITEFUNCTION" write-body-entry buffer)
     (set-option! easy "WRITEDATA" key buffer)
-    (when (plan-stream plan)
-      (set-option! easy "HEADERFUNCTION" read-head-entry buffer)
-      (set-option! easy "HEADERDATA" key buffer))
+    (set-option! easy "HEADERFUNCTION" read-head-entry buffer)
+    (set-option! easy "HEADERDATA" key buffer)
     (when (plan-upload plan)
       (set-option! easy "READFUNCTION" read-body-entry buffer)
       (set-option! easy "READDATA" key buffer)
@@ -4263,7 +4390,8 @@
                                 (and (memq 'rewinding seams) #t) 0
                                 (let ((seam (find (lambda (seam) (and (pair? seam) (eq? (car seam) 'prereq-hold)))
                                                   seams)))
-                                  (and seam (cdr seam))))))
+                                  (and seam (cdr seam)))
+                                0 0 #t)))
            (locked sinks-lock
              (lambda ()
                (let ((key next-key))

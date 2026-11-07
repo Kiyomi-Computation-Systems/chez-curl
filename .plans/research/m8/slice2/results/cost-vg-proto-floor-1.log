@@ -1,0 +1,65 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+lanes.sh start 2026-11-06T22:57:37Z mode=cost tree=proto lanes= floor cpuset=6-11 args=15
+network interfaces: lo 
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+== lane floor: cost in /w/proto, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/e1/ci/curl-floor/include NODE=/src/build/verify/m3s2/node20/node VALGRIND=/w/logs/cost-vg-proto-1-floor.vg
+[floor] tree /w/proto chez /src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme 10.4.0 libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 node v20.10.0 program m8s2/cost.sps sha256 c10fa9a098fcb238 transfer.sls sha256 b35d930de50bfec1 affinity=6-11 valgrind=/w/logs/cost-vg-proto-1-floor.vg
+[floor] server ctl=33641 h1=34087 h1tls=43255 h2=33967 proxy=39603
+[floor] cost start lane=floor libcurl=7.85.0 port=34087 rounds=15 machine=ta6le
+[floor] cost lane=floor kind=warm round=0 ended=#t status=200 headers=2 cpu_ms=167.780 wall_ms=165.945 total_us=65089
+[floor] cost lane=floor kind=warm round=0 ended=#t status=200 headers=1000 cpu_ms=128.963 wall_ms=130.961 total_us=38656
+[floor] cost lane=floor kind=base round=0 ended=#t status=200 headers=2 cpu_ms=22.869 wall_ms=22.088 total_us=2749
+[floor] cost lane=floor kind=final round=0 ended=#t status=200 headers=1000 cpu_ms=120.114 wall_ms=122.916 total_us=30378
+[floor] cost lane=floor kind=pre round=0 ended=#t status=200 headers=500 cpu_ms=73.656 wall_ms=74.821 total_us=28062
+[floor] cost lane=floor kind=final round=1 ended=#t status=200 headers=1000 cpu_ms=113.989 wall_ms=114.034 total_us=27669
+[floor] cost lane=floor kind=pre round=1 ended=#t status=200 headers=500 cpu_ms=147.423 wall_ms=146.404 total_us=32062
+[floor] cost lane=floor kind=base round=1 ended=#t status=200 headers=2 cpu_ms=5.780 wall_ms=5.766 total_us=1568
+[floor] cost lane=floor kind=pre round=2 ended=#t status=200 headers=500 cpu_ms=74.073 wall_ms=75.157 total_us=28199
+[floor] cost lane=floor kind=base round=2 ended=#t status=200 headers=2 cpu_ms=4.814 wall_ms=5.501 total_us=2322
+[floor] cost lane=floor kind=final round=2 ended=#t status=200 headers=1000 cpu_ms=118.001 wall_ms=119.066 total_us=30946
+[floor] cost lane=floor kind=base round=3 ended=#t status=200 headers=2 cpu_ms=4.956 wall_ms=5.514 total_us=2569
+[floor] cost lane=floor kind=final round=3 ended=#t status=200 headers=1000 cpu_ms=114.220 wall_ms=114.912 total_us=25972
+[floor] cost lane=floor kind=pre round=3 ended=#t status=200 headers=500 cpu_ms=74.352 wall_ms=76.388 total_us=32310
+[floor] cost lane=floor kind=final round=4 ended=#t status=200 headers=1000 cpu_ms=116.084 wall_ms=116.393 total_us=26002
+[floor] cost lane=floor kind=pre round=4 ended=#t status=200 headers=500 cpu_ms=80.158 wall_ms=82.043 total_us=34950
+[floor] cost lane=floor kind=base round=4 ended=#t status=200 headers=2 cpu_ms=4.598 wall_ms=5.065 total_us=2050
+[floor] cost lane=floor kind=pre round=5 ended=#t status=200 headers=500 cpu_ms=75.908 wall_ms=76.476 total_us=27246
+[floor] cost lane=floor kind=base round=5 ended=#t status=200 headers=2 cpu_ms=4.037 wall_ms=4.498 total_us=1958
+[floor] cost lane=floor kind=final round=5 ended=#t status=200 headers=1000 cpu_ms=118.651 wall_ms=119.860 total_us=28376
+[floor] cost lane=floor kind=base round=6 ended=#t status=200 headers=2 cpu_ms=3.090 wall_ms=3.558 total_us=1487
+[floor] cost lane=floor kind=final round=6 ended=#t status=200 headers=1000 cpu_ms=119.280 wall_ms=119.972 total_us=29919
+[floor] cost lane=floor kind=pre round=6 ended=#t status=200 headers=500 cpu_ms=81.012 wall_ms=81.767 total_us=33681
+[floor] cost lane=floor kind=final round=7 ended=#t status=200 headers=1000 cpu_ms=118.322 wall_ms=119.265 total_us=27118
+[floor] cost lane=floor kind=pre round=7 ended=#t status=200 headers=500 cpu_ms=73.077 wall_ms=74.173 total_us=26581
+[floor] cost lane=floor kind=base round=7 ended=#t status=200 headers=2 cpu_ms=4.676 wall_ms=5.070 total_us=1933
+[floor] cost lane=floor kind=pre round=8 ended=#t status=200 headers=500 cpu_ms=74.176 wall_ms=74.179 total_us=26918
+[floor] cost lane=floor kind=base round=8 ended=#t status=200 headers=2 cpu_ms=3.002 wall_ms=3.188 total_us=1061
+[floor] cost lane=floor kind=final round=8 ended=#t status=200 headers=1000 cpu_ms=118.211 wall_ms=118.050 total_us=27377
+[floor] cost lane=floor kind=base round=9 ended=#t status=200 headers=2 cpu_ms=6.349 wall_ms=6.483 total_us=1512
+[floor] cost lane=floor kind=final round=9 ended=#t status=200 headers=1000 cpu_ms=118.244 wall_ms=118.377 total_us=27382
+[floor] cost lane=floor kind=pre round=9 ended=#t status=200 headers=500 cpu_ms=76.798 wall_ms=76.987 total_us=28783
+[floor] cost lane=floor kind=final round=10 ended=#t status=200 headers=1000 cpu_ms=119.098 wall_ms=119.517 total_us=27043
+[floor] cost lane=floor kind=pre round=10 ended=#t status=200 headers=500 cpu_ms=75.844 wall_ms=76.235 total_us=28015
+[floor] cost lane=floor kind=base round=10 ended=#t status=200 headers=2 cpu_ms=4.946 wall_ms=5.082 total_us=1339
+[floor] cost lane=floor kind=pre round=11 ended=#t status=200 headers=500 cpu_ms=73.877 wall_ms=74.534 total_us=27065
+[floor] cost lane=floor kind=base round=11 ended=#t status=200 headers=2 cpu_ms=5.654 wall_ms=5.696 total_us=1361
+[floor] cost lane=floor kind=final round=11 ended=#t status=200 headers=1000 cpu_ms=116.255 wall_ms=116.643 total_us=26456
+[floor] cost lane=floor kind=base round=12 ended=#t status=200 headers=2 cpu_ms=4.719 wall_ms=5.112 total_us=1950
+[floor] cost lane=floor kind=final round=12 ended=#t status=200 headers=1000 cpu_ms=119.640 wall_ms=119.986 total_us=27925
+[floor] cost lane=floor kind=pre round=12 ended=#t status=200 headers=500 cpu_ms=77.529 wall_ms=78.385 total_us=32282
+[floor] cost lane=floor kind=final round=13 ended=#t status=200 headers=1000 cpu_ms=119.056 wall_ms=119.743 total_us=28906
+[floor] cost lane=floor kind=pre round=13 ended=#t status=200 headers=500 cpu_ms=73.448 wall_ms=74.029 total_us=26402
+[floor] cost lane=floor kind=base round=13 ended=#t status=200 headers=2 cpu_ms=6.333 wall_ms=7.068 total_us=2223
+[floor] cost lane=floor kind=pre round=14 ended=#t status=200 headers=500 cpu_ms=72.827 wall_ms=73.362 total_us=26594
+[floor] cost lane=floor kind=base round=14 ended=#t status=200 headers=2 cpu_ms=4.909 wall_ms=5.032 total_us=1266
+[floor] cost lane=floor kind=final round=14 ended=#t status=200 headers=1000 cpu_ms=116.117 wall_ms=116.064 total_us=26321
+[floor] cost done
+[floor] program exit=0
+[floor] valgrind valgrind-3.22.0 log /w/logs/cost-vg-proto-1-floor.vg: ==2403== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+[floor] took about 16 s

@@ -1,0 +1,17 @@
+%%%% Starting test origin-tls
+FAIL h2c GET /head?n=6000: every field of each block, as this suite lists them, the last block past 64 KiB, END_STREAM, no other frame, then idle
+  expected: (same past-64-kib #t "" () timeout)
+  actual:   ((blocks () want (6001)) (sizes ()) #f "" ((3 0 1) (7 0 0) (7 0 0)) eof)
+FAIL h2c GET /head?n=2&tn=6000: every field of each block, as this suite lists them, the last block past 64 KiB, END_STREAM, no other frame, then idle
+  expected: (same past-64-kib #t "" () timeout)
+  actual:   ((blocks (3) want (3 6000)) (sizes (27)) #f "" ((3 0 1) (7 0 0) (7 0 0)) eof)
+FAIL h2 GET /head?n=6000: every field of each block, as this suite lists them, the last block past 64 KiB, END_STREAM, no other frame, then idle
+  expected: (same past-64-kib #t "" () timeout)
+  actual:   ((blocks () want (6001)) (sizes ()) #f "" ((3 0 1) (7 0 0)) eof)
+FAIL h2 GET /head?n=2&tn=6000: every field of each block, as this suite lists them, the last block past 64 KiB, END_STREAM, no other frame, then idle
+  expected: (same past-64-kib #t "" () timeout)
+  actual:   ((blocks (3) want (3 6000)) (sizes (27)) #f "" ((3 0 1) (7 0 0)) eof)
+# of expected passes      181
+# of unexpected failures  4
+suite-exit-status: exit 1 (pass 181, fail 4, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

@@ -316,7 +316,8 @@ provisional. They bind until that record is accepted or amended.
 - **A failed transfer raises its code's class,** a condition type under
   `&curl-transfer-error` with every base field, or the base type for a code no class names. The
   class follows the code, for `perform-failed` alone, never the scenario: one failure's code
-  moves with the version. `body-limit` is too-large, and every other reason the base type. A
+  moves with the version. `body-limit` and, from M8 slice 2, `header-limit` are too-large,
+  whatever their code, and every other reason the base type (ADR-0022, amended 2026-11-06). A
   class is described in curl's words for its codes, never by a cause. Every classed code is a
   constant in `(curl private constants)`, 100 and 101 behind their gates, and every code from 0
   to 101 has a row in one table, written out in the suite. Tests assert the type, the reason and
@@ -391,7 +392,9 @@ provisional. They bind until that record is accepted or amended.
   and its twins `SSL_ENABLE_ALPN`, `ALTSVC` and `ALTSVC_CTRL`; slice 2 made `HTTPAUTH`,
   `USERNAME`, `PASSWORD` and `XOAUTH2_BEARER` the `credentials` field's, `USERNAME` and
   `PASSWORD` no longer twins, and added the twin `AWS_SIGV4` and the pin `MAXREDIRS` (ADR-0009,
-  amended 2026-11-02).
+  amended 2026-11-02). M8 slice 2 added `SUPPRESS_CONNECT_HEADERS`, a twin of the header
+  callable's, which every transfer now sets; `HTTP_TRANSFER_DECODING` stays the hatch's (ADR-0009
+  and ADR-0040, amended 2026-11-06).
 - **The test seam, `curl-engine-submit-with`, is retired into the hatch** (ADR-0009, amended
   2026-10-27). No submit takes options of its own.
 - **Lifetimes.** Blobs are passed with `CURL_BLOB_COPY`, through a counted `struct curl_blob`
@@ -464,6 +467,13 @@ provisional. They bind until that record is accepted or amended.
     Basic, Bearer and Digest by its own arithmetic, `/auth-log` reads back each request of a
     transfer, and `/raw/auth417` answers 417 on a connection it keeps, where a resend can
     happen; `--selftest [PLANT]` holds the Digest arithmetic to the published vectors.
+  - From M8 slice 2, the head routes give a head of a chosen size: `/raw/head`,
+    `/raw/head-auth` and `/raw/head417`, which holds its 417 by a key, not a connection, on the
+    raw face, where `hname`, `tname` and `v10` give lines named like a status line and an
+    HTTP/1.0 head; `/head` and `/head-auth` on the HTTP/2 faces, which answer those three 404;
+    and the `http` face's `/proxy-arm`
+    for the next `CONNECT` answer. Both HTTP/2 faces raise Node's `maxSendHeaderBlockLength`
+    alone, so the SETTINGS frame they send is unchanged (ADR-0040, amended 2026-11-06).
 - **The instrument is checked by a byte probe,** `tests/wire-probe.mjs`, which has no HTTP
   code, and by `openssl`.
   - Each TLS face is checked by three portable facts: `s_client`'s verify errors and code
@@ -950,8 +960,11 @@ provisional. They bind until that record is accepted or amended.
   body at submit, and keeps every other request (ADR-0039, amended).
 - **Every transfer caps its response headers** at 1,000 lines and 102,400 bytes over the whole
   transfer, in a header callable that records `header-limit`, of `&curl-too-large`, before
-  libcurl's code is read. libcurl's refusals that come before a line reaches the callable keep
-  their codes, by version (ADR-0040).
+  libcurl's code is read, so it wins over any code, 0 among them (8.5.0's HTTP/2 trailers);
+  once any reason is recorded the callable refuses every later call. libcurl's refusals that come
+  before a line reaches the callable keep their codes, by version, and `test-headers` holds them
+  and the cap's own codes in a table written out in the suite. `SUPPRESS_CONNECT_HEADERS` is
+  owned; `HTTP_TRANSFER_DECODING` 0 puts trailers in the body (ADR-0040, amended 2026-11-06).
 - **The docs:** a thin README.org, Markdown in `docs/`, a hand-written `docs/reference.md` that a
   test holds to every export, and examples a test runs (ADR-0038). No page cites `.plans/` (the
   M8 plan, §3.5).

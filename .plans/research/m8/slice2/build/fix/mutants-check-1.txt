@@ -1,0 +1,36 @@
+control: NOT CLEAN; 2 failing test(s); test-headers.sps exit 0; test-origin.sps exit 1; test-transfer.sps exit 0; test-origin-tls.sps exit 0
+    FAIL a suite killed with SIGKILL while idle: within 5 s every face of its origin refuses connections
+    FAIL a suite killed with SIGKILL during a probe: its origin lives until the probe's wire-probe-deadline, 2000 ms, ends the probe; within 2000 ms of it plus 2000 ms o
+start-dropped: killed; 1 failing test(s); test-headers.sps exit 1
+    FAIL HTTP/1.1: 1,000 header lines named HTTP/1.1 x-NNNNNN, as a status line begins, are taken, buffered and streamed; 1,001 are refused, header-limit: a status line 
+status-prefix: killed; 1 failing test(s); test-headers.sps exit 1
+    FAIL HTTP/1.1: a trailer section's first line named HTTP/x is a header line, though it starts the section: 2 head lines and 998 trailers are taken, buffered and stre
+status-1.1-only: killed; 1 failing test(s); test-headers.sps exit 1
+    FAIL HTTP/1.0: a head of 1,000 header lines, its status line HTTP/1.0 200 OK, is taken, buffered and streamed; 1,001 are refused, header-limit: an HTTP/1.0 status li
+status-no-short-form: killed; 6 failing test(s); test-headers.sps exit 1
+    FAIL HTTP/2: 1,000 header lines are taken, buffered and streamed; 1,001 are refused, header-limit, of &curl-too-large, buffered, and streamed with no head published 
+    FAIL HTTP/2: a 103 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, ea
+    FAIL HTTP/2: a 100 head of 500 lines and a final head of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count across both heads, ea
+    FAIL HTTP/2: a head of 2 lines and 998 trailers are taken, buffered and streamed, the stream's head published before them; 999 trailers are refused, header-limit, af
+    FAIL HTTP/2: a Digest round, its 401 of 500 lines and its 200 of 500, is taken; of 500 and 501, refused, header-limit, the count across both responses; of 251 and 25
+    FAIL HTTP/2 through the proxy: a CONNECT answer of 500 lines and a response of 500 are taken, buffered and streamed; of 500 and 501, refused, header-limit, the count
+route-short: killed; 4 failing test(s); test-origin.sps exit 1
+    FAIL raw /raw/head?total=102400&line=256: the head of exactly that many bytes, as this suite builds it, then eof
+    FAIL raw /raw/head?total=102401&line=256: the head of exactly that many bytes, as this suite builds it, then eof
+    FAIL a suite killed with SIGKILL while idle: within 5 s every face of its origin refuses connections
+    FAIL a suite killed with SIGKILL during a probe: its origin lives until the probe's wire-probe-deadline, 2000 ms, ends the probe; within 2000 ms of it plus 2000 ms o
+route-short-old-rows: KILLED, not as expected; 2 failing test(s); test-origin.sps exit 1
+    FAIL a suite killed with SIGKILL while idle: within 5 s every face of its origin refuses connections
+    FAIL a suite killed with SIGKILL during a probe: its origin lives until the probe's wire-probe-deadline, 2000 ms, ends the probe; within 2000 ms of it plus 2000 ms o
+mark-request-unchecked: killed; 1 failing test(s); test-transfer.sps exit 1
+    FAIL the header seams' refusals, each an assertion violation from its own constructor, by its own message, with nothing native made: curl-request-with-head-mark and 
+mark-line-unchecked: killed; 1 failing test(s); test-transfer.sps exit 1
+    FAIL the header seams' refusals, each an assertion violation from its own constructor, by its own message, with nothing native made: curl-request-with-head-mark and 
+mark-zero-taken: killed; 1 failing test(s); test-transfer.sps exit 1
+    FAIL a request's checks refuse a header seam's fault of a line that is no positive exact integer, (mark 0), (mark -1), (mark 1.5), (head 0), as an assertion violatio
+head-fault-request-unchecked: killed; 1 failing test(s); test-transfer.sps exit 1
+    FAIL the header seams' refusals, each an assertion violation from its own constructor, by its own message, with nothing native made: curl-request-with-head-mark and 
+head-fault-line-unchecked: killed; 1 failing test(s); test-transfer.sps exit 1
+    FAIL the header seams' refusals, each an assertion violation from its own constructor, by its own message, with nothing native made: curl-request-with-head-mark and 
+head-zero-taken: killed; 1 failing test(s); test-transfer.sps exit 1
+    FAIL a request's checks refuse a header seam's fault of a line that is no positive exact integer, (mark 0), (mark -1), (mark 1.5), (head 0), as an assertion violatio

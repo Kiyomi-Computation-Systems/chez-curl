@@ -1551,3 +1551,21 @@ it should not be a comment. (chez-cmark-gfm)
   ([mime-wire](research/m8/mime-wire/), question 7; my rerun of lane X). The last body option
   set wins, so the transfer sets the mime last, and owns every option that could follow it.
   (chez-curl, M8's plan)
+* **Node's HTTP/2 server answers a header block past its send limit by Node's version, not
+  libcurl's.** With `maxSendHeaderBlockLength` at its default, 64 KiB, Node 24.18.0 dropped a
+  trailer block past it, 400 or 1,600 lines of 256 bytes, and ended the stream cleanly: libcurl
+  read a whole 200 with no trailers, on 8.20.0, 8.23.0 and 7.85.0. Node 20.10.0 reset the stream,
+  `FRAME_SIZE_ERROR`: 92 on 8.23.0, 16 on 7.85.0. A head past the limit was never sent: 92 on
+  8.20.0 and 8.23.0 under Node 24, 16 on 7.85.0 under Node 20
+  ([slice2](research/m8/slice2/), `limits-none-*`; my reruns of both Nodes). A test of large
+  HTTP/2 trailers asserts they arrived, never a 200 alone, and the origin's HTTP/2 faces raise the
+  send limit. (chez-curl, M8 slice 2)
+* **Under the memory gate, 8.20.0 sometimes resends after a 417 on a new connection,** though no
+  body byte has gone. The first transfer of a process logged `Got HTTP failure 417 while sending
+  data`, `abort upload` and shut its connection down, 46 to 75 ms after the 417, where every other
+  logged `while waiting for a 100` and kept it; the same request then came on a new connection.
+  Under Valgrind, the first request did so in 10 of 10 processes, of five requests in eight and
+  of two in two, and in 1 of 2 processes in my rerun; natively, none of 49 requests. `EXPECT_100_TIMEOUT_MS` at 60 s changed nothing. A test
+  server that holds its 417 per connection answers the resend 417 again, so the origin's
+  `/raw/head417` holds it by key ([trap-417](research/m8/slice2/build/trap-417/)). (chez-curl, M8
+  slice 2)

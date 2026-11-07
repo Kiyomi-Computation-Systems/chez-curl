@@ -1,0 +1,87 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (11 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-auth.sps
+%%%% Starting test auth
+test-auth: digest-algorithms on "8.23.0" measured ((200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)))
+test-auth: utf8-digest-user on "8.23.0" measured (401 (("none" 401) ("bad(username)" 401)) "%C3%BCser")
+test-auth: empty-userinfo on "8.23.0" measured (("@" "" #f (refused credentials-beside-userinfo)) (":@" "" "" (refused credentials-beside-userinfo)) (":p@" "" "p" (refused credentials-beside-userinfo)) ("u@" "u" #f (refused credentials-beside-userinfo)) ("u:@" "u" "" (refused credentials-beside-userinfo)))
+test-auth: mib-credentials on "8.23.0" measured (((failed perform-failed 100 too-large) 0) ((failed perform-failed 100 too-large) 0))
+# of expected passes      66
+test: pass tests/test-auth.sps
+=== tests/test-cookies.sps
+%%%% Starting test cookies
+test-cookies: crossings on the delaying engine ((ran . 8) (setup . 4) (submit . 24))
+test-cookies: crossings on a plain engine ((ran . 16) (setup . 1) (submit . 16))
+test-cookies: refused-readout on "8.23.0" measured (("path-empty" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-true" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-false" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-rel" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("name-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("value-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("prefix-secure-lower" (("a.localhost\tFALSE\t/\tFALSE\t0\t__secure-a\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__secure-a=1\"") ("prefix-SECURE-upper" (("a.localhost\tFALSE\t/\tFALSE\t0\t__SECURE-b\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__SECURE-b=1\"") ("prefix-host-path" (("a.localhost\tFALSE\t/cookies\tFALSE\t0\t__host-c\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__host-c=1\"") ("prefix-HOST-domain" ((".a.localhost\tTRUE\t/\tFALSE\t0\t__HOST-d\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__HOST-d=1\"") ("path-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0"))
+test-cookies: expired-load on "8.23.0" measured (() ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1"))
+test-cookies: open-head on "8.23.0" measured (200 200 (a-request a-request) 200 200 (a-request a-request))
+test-cookies: domain-localhost on "8.23.0/no-psl" measured ((((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"d=1\"") (() "request 2 face=http host=\"localhost:<port>\" cookies=0"))
+test-cookies: set-cookie-matrix on "8.23.0" measured (((("a.localhost\tFALSE\t/cookies/a/b\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("a.localhost\tFALSE\t/\tFALSE\t0\tpr\t1" #f) ("a.localhost\tFALSE\t/cookies/a/b\tFALSE\t0\tpe\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"pr=1\"") ((("a.localhost\tFALSE\t/\tFALSE\twithin-400-days\tca\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ca=1\"") (() "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1") "request 3 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"keep=1\"" ("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1")))
+# of expected passes      70
+test: pass tests/test-cookies.sps
+=== tests/test-curl-testing.sps
+%%%% Starting test curl-testing
+# of expected passes      285
+test: pass tests/test-curl-testing.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      347
+test: pass tests/test-origin.sps
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      163
+test: pass tests/test-origin-tls.sps
+=== tests/test-proxy.sps
+%%%% Starting test proxy
+test-proxy: empty-userinfo on "8.23.0" measured ((refused proxy (proxy user) credentials-empty test) (refused proxy (proxy user) credentials-empty test) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u:@127.0.0.1:3128/" "http" #t))
+test-proxy: tls-in-tls-checks on "8.23.0/OpenSSL" measured (no-raise no-raise no-raise no-raise no-raise)
+test-proxy: empty-userinfo-wire on "8.23.0" measured (((refused proxy (proxy user) credentials-empty curl-submit) ()) ((refused proxy (proxy user) credentials-empty curl-submit) ()))
+test-proxy: refused-connect on "8.23.0" measured ((7 connect 403 zero) (7 connect 407 zero) (7 connect 502 zero) (7 connect 503 zero) (7 connect 407 zero) (7 connect 407 zero) (56 send-receive #f zero))
+test-proxy: unshared-tunnels on "8.23.0" measured (((response 200) (response 200) #f ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "inner https via=1 method=GET target=/status/200" "close http conn=1")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "inner https via=1 method=GET target=/status/200" "close http conn=1")))
+test-proxy: tunnel-plans on "8.23.0" measured ((() #f) (() #f) (() #f) (() #f) (() #f))
+test-proxy: switch-live on "8.23.0" measured ((head head default default) (1 1 1) (#f #f) ((response 200) (response 200) (response 200) (response 200)))
+test-proxy: environment-join on "8.23.0" measured (((environment (no_proxy . #f) (NO_PROXY . #f) (http_proxy . #f) (https_proxy . "http://127.0.0.1:39107") (all_proxy . #f)) (multiplexing default default) (join #t (refused perform-failed 7 connect 407) (response 200)) (transfer ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))) (done)) ("connect http conn=1 target=localhost:<h2> answer=200 head=_ auth=basic:alice:s3cret" "inner h2 via=1 method=GET target=/connection?delay=3000" "connect http conn=2 target=localhost:<h2> answer=407 head=_ auth=-" "close http conn=1" "close http conn=2"))
+test-proxy: closing-retries on "8.23.0" measured (((failed 56 #f 3) 3) ((failed 56 #f 3) 3))
+# of expected passes      96
+test: pass tests/test-proxy.sps
+=== tests/test-stream-call.sps
+%%%% Starting test stream-call
+(stream-call-throughput raw ms 471)
+(stream-call-throughput h2 ms 424)
+(stream-call-idle-cpu ms 1711791/125000)
+# of expected passes      77
+test: pass tests/test-stream-call.sps
+=== tests/test-stream.sps
+%%%% Starting test stream
+(sweep piece plain call-ticks 6 escaped-kept 12 escaped-lost 0 returned 41)
+(sweep port plain call-ticks 266 escaped-kept 532 escaped-lost 0 returned 41)
+(sweep piece planted call-ticks 9 escaped-kept 12 escaped-lost 6 returned 41)
+# of expected passes      74
+test: pass tests/test-stream.sps
+=== tests/test-transfer-tls.sps
+%%%% Starting test transfer-tls
+# of expected passes      84
+test: pass tests/test-transfer-tls.sps
+=== tests/test-upload.sps
+%%%% Starting test upload
+(fill #f 1966080 ms 591 retried () mib (19))
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 1047)
+(throughput http chunked ms 1058)
+(throughput https sized ms 938)
+(throughput https chunked ms 1061)
+(throughput h2 sized ms 298)
+(throughput h2 chunked ms 319)
+(read-lock collections-while-live 994)
+# of expected passes      58
+test: pass tests/test-upload.sps
+=== tests/test-version.sps
+%%%% Starting test version
+test-version: prior-knowledge-to-h1 on "8.23.0" measured (failed perform-failed 16 protocol)
+test-version: together-by-prior-knowledge on "8.23.0" measured (2 (http/2 http/2))
+# of expected passes      27
+test: pass tests/test-version.sps
+test: ran 11, passed 11, failed 0, hung 0
