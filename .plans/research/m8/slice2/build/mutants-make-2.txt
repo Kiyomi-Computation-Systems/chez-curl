@@ -1,0 +1,12 @@
+made control: 0 edit(s), suites tests/test-headers.sps tests/test-unsupported.sps tests/test-origin-tls.sps tests/test-transfer.sps tests/test-conditions.sps
+made lines-cap-1001: 1 edit(s), suites tests/test-headers.sps
+made lines-cap-999: 1 edit(s), suites tests/test-headers.sps
+made bytes-cap-102401: 1 edit(s), suites tests/test-headers.sps
+made bytes-cap-102399: 1 edit(s), suites tests/test-headers.sps
+made count-per-response: 1 edit(s), suites tests/test-headers.sps
+made status-line-counted: 1 edit(s), suites tests/test-headers.sps
+made reason-not-recorded: 1 edit(s), suites tests/test-headers.sps
+made later-call-taken: 1 edit(s), suites tests/test-headers.sps
+made suppress-taken: 1 edit(s), suites tests/test-unsupported.sps tests/test-transfer.sps
+made reason-unclassed: 1 edit(s), suites tests/test-headers.sps tests/test-conditions.sps
+made origin-send-limit-default: 1 edit(s), suites tests/test-origin-tls.sps tests/test-headers.sps

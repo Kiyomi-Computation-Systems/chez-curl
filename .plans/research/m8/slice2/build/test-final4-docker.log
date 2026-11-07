@@ -1,0 +1,190 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+lanes.sh start 2026-11-07T01:45:56Z mode=test tree=snap4 lanes= floor openssl gnutls current cpuset=6-11 args=
+network interfaces: lo 
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+== lane floor: make test in a copy of /w/snap4, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/e1/ci/curl-floor/include NODE=/src/build/verify/m3s2/node20/node 
+lane floor: pass (509 s)
+  [floor] test: pass tests/test-auth.sps
+  [floor] test: pass tests/test-call-checks.sps
+  [floor] test: pass tests/test-check-floors.sps
+  [floor] test: pass tests/test-check-nothreads.sps
+  [floor] test: pass tests/test-check-seam.sps
+  [floor] test: pass tests/test-collect-safe.sps
+  [floor] test: pass tests/test-conditions.sps
+  [floor] test: pass tests/test-constants.sps
+  [floor] test: pass tests/test-cookies.sps
+  [floor] test: pass tests/test-curl-testing.sps
+  [floor] test: pass tests/test-discovery.sps
+  [floor] test: pass tests/test-drift.sps
+  [floor] test: pass tests/test-engine.sps
+  [floor] test: pass tests/test-group.sps
+  [floor] test: pass tests/test-headers.sps
+  [floor] test: pass tests/test-http-client.sps
+  [floor] test: pass tests/test-library-loading.sps
+  [floor] test: pass tests/test-load-state.sps
+  [floor] test: pass tests/test-mailbox.sps
+  [floor] test: pass tests/test-manifest.sps
+  [floor] test: pass tests/test-memory-safety.sps
+  [floor] test: pass tests/test-native.sps
+  [floor] test: pass tests/test-origin-tls.sps
+  [floor] test: pass tests/test-origin.sps
+  [floor] test: pass tests/test-printed.sps
+  [floor] test: pass tests/test-proxy.sps
+  [floor] test: pass tests/test-redirect.sps
+  [floor] test: pass tests/test-request.sps
+  [floor] test: pass tests/test-require-threaded.sps
+  [floor] test: pass tests/test-retry.sps
+  [floor] test: pass tests/test-stream-call.sps
+  [floor] test: pass tests/test-stream.sps
+  [floor] test: pass tests/test-transfer-tls.sps
+  [floor] test: pass tests/test-transfer.sps
+  [floor] test: pass tests/test-unsupported.sps
+  [floor] test: pass tests/test-upload.sps
+  [floor] test: pass tests/test-url-location.sps
+  [floor] test: pass tests/test-url-parts.sps
+  [floor] test: pass tests/test-url.sps
+  [floor] test: pass tests/test-variadic.sps
+  [floor] test: pass tests/test-verify.sps
+  [floor] test: pass tests/test-version.sps
+  [floor] test: ran 42, passed 42, failed 0, hung 0
+== lane openssl: make test in a copy of /w/snap4, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 CC=gcc NODE=/src/build/verify/m3s2/node20/node 
+lane openssl: pass (491 s)
+  [openssl] test: pass tests/test-auth.sps
+  [openssl] test: pass tests/test-call-checks.sps
+  [openssl] test: pass tests/test-check-floors.sps
+  [openssl] test: pass tests/test-check-nothreads.sps
+  [openssl] test: pass tests/test-check-seam.sps
+  [openssl] test: pass tests/test-collect-safe.sps
+  [openssl] test: pass tests/test-conditions.sps
+  [openssl] test: pass tests/test-constants.sps
+  [openssl] test: pass tests/test-cookies.sps
+  [openssl] test: pass tests/test-curl-testing.sps
+  [openssl] test: pass tests/test-discovery.sps
+  [openssl] test: pass tests/test-drift.sps
+  [openssl] test: pass tests/test-engine.sps
+  [openssl] test: pass tests/test-group.sps
+  [openssl] test: pass tests/test-headers.sps
+  [openssl] test: pass tests/test-http-client.sps
+  [openssl] test: pass tests/test-library-loading.sps
+  [openssl] test: pass tests/test-load-state.sps
+  [openssl] test: pass tests/test-mailbox.sps
+  [openssl] test: pass tests/test-manifest.sps
+  [openssl] test: pass tests/test-memory-safety.sps
+  [openssl] test: pass tests/test-native.sps
+  [openssl] test: pass tests/test-origin-tls.sps
+  [openssl] test: pass tests/test-origin.sps
+  [openssl] test: pass tests/test-printed.sps
+  [openssl] test: pass tests/test-proxy.sps
+  [openssl] test: pass tests/test-redirect.sps
+  [openssl] test: pass tests/test-request.sps
+  [openssl] test: pass tests/test-require-threaded.sps
+  [openssl] test: pass tests/test-retry.sps
+  [openssl] test: pass tests/test-stream-call.sps
+  [openssl] test: pass tests/test-stream.sps
+  [openssl] test: pass tests/test-transfer-tls.sps
+  [openssl] test: pass tests/test-transfer.sps
+  [openssl] test: pass tests/test-unsupported.sps
+  [openssl] test: pass tests/test-upload.sps
+  [openssl] test: pass tests/test-url-location.sps
+  [openssl] test: pass tests/test-url-parts.sps
+  [openssl] test: pass tests/test-url.sps
+  [openssl] test: pass tests/test-variadic.sps
+  [openssl] test: pass tests/test-verify.sps
+  [openssl] test: pass tests/test-version.sps
+  [openssl] test: ran 42, passed 42, failed 0, hung 0
+== lane gnutls: make test in a copy of /w/snap4, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 CC=gcc NODE=/src/build/verify/m3s2/node20/node 
+lane gnutls: pass (513 s)
+  [gnutls] test: pass tests/test-auth.sps
+  [gnutls] test: pass tests/test-call-checks.sps
+  [gnutls] test: pass tests/test-check-floors.sps
+  [gnutls] test: pass tests/test-check-nothreads.sps
+  [gnutls] test: pass tests/test-check-seam.sps
+  [gnutls] test: pass tests/test-collect-safe.sps
+  [gnutls] test: pass tests/test-conditions.sps
+  [gnutls] test: pass tests/test-constants.sps
+  [gnutls] test: pass tests/test-cookies.sps
+  [gnutls] test: pass tests/test-curl-testing.sps
+  [gnutls] test: pass tests/test-discovery.sps
+  [gnutls] test: pass tests/test-drift.sps
+  [gnutls] test: pass tests/test-engine.sps
+  [gnutls] test: pass tests/test-group.sps
+  [gnutls] test: pass tests/test-headers.sps
+  [gnutls] test: pass tests/test-http-client.sps
+  [gnutls] test: pass tests/test-library-loading.sps
+  [gnutls] test: pass tests/test-load-state.sps
+  [gnutls] test: pass tests/test-mailbox.sps
+  [gnutls] test: pass tests/test-manifest.sps
+  [gnutls] test: pass tests/test-memory-safety.sps
+  [gnutls] test: pass tests/test-native.sps
+  [gnutls] test: pass tests/test-origin-tls.sps
+  [gnutls] test: pass tests/test-origin.sps
+  [gnutls] test: pass tests/test-printed.sps
+  [gnutls] test: pass tests/test-proxy.sps
+  [gnutls] test: pass tests/test-redirect.sps
+  [gnutls] test: pass tests/test-request.sps
+  [gnutls] test: pass tests/test-require-threaded.sps
+  [gnutls] test: pass tests/test-retry.sps
+  [gnutls] test: pass tests/test-stream-call.sps
+  [gnutls] test: pass tests/test-stream.sps
+  [gnutls] test: pass tests/test-transfer-tls.sps
+  [gnutls] test: pass tests/test-transfer.sps
+  [gnutls] test: pass tests/test-unsupported.sps
+  [gnutls] test: pass tests/test-upload.sps
+  [gnutls] test: pass tests/test-url-location.sps
+  [gnutls] test: pass tests/test-url-parts.sps
+  [gnutls] test: pass tests/test-url.sps
+  [gnutls] test: pass tests/test-variadic.sps
+  [gnutls] test: pass tests/test-verify.sps
+  [gnutls] test: pass tests/test-version.sps
+  [gnutls] test: ran 42, passed 42, failed 0, hung 0
+== lane current: make test in a copy of /w/snap4, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include NODE=/src/build/verify/m3s2/node20/node 
+lane current: pass (482 s)
+  [current] test: pass tests/test-auth.sps
+  [current] test: pass tests/test-call-checks.sps
+  [current] test: pass tests/test-check-floors.sps
+  [current] test: pass tests/test-check-nothreads.sps
+  [current] test: pass tests/test-check-seam.sps
+  [current] test: pass tests/test-collect-safe.sps
+  [current] test: pass tests/test-conditions.sps
+  [current] test: pass tests/test-constants.sps
+  [current] test: pass tests/test-cookies.sps
+  [current] test: pass tests/test-curl-testing.sps
+  [current] test: pass tests/test-discovery.sps
+  [current] test: pass tests/test-drift.sps
+  [current] test: pass tests/test-engine.sps
+  [current] test: pass tests/test-group.sps
+  [current] test: pass tests/test-headers.sps
+  [current] test: pass tests/test-http-client.sps
+  [current] test: pass tests/test-library-loading.sps
+  [current] test: pass tests/test-load-state.sps
+  [current] test: pass tests/test-mailbox.sps
+  [current] test: pass tests/test-manifest.sps
+  [current] test: pass tests/test-memory-safety.sps
+  [current] test: pass tests/test-native.sps
+  [current] test: pass tests/test-origin-tls.sps
+  [current] test: pass tests/test-origin.sps
+  [current] test: pass tests/test-printed.sps
+  [current] test: pass tests/test-proxy.sps
+  [current] test: pass tests/test-redirect.sps
+  [current] test: pass tests/test-request.sps
+  [current] test: pass tests/test-require-threaded.sps
+  [current] test: pass tests/test-retry.sps
+  [current] test: pass tests/test-stream-call.sps
+  [current] test: pass tests/test-stream.sps
+  [current] test: pass tests/test-transfer-tls.sps
+  [current] test: pass tests/test-transfer.sps
+  [current] test: pass tests/test-unsupported.sps
+  [current] test: pass tests/test-upload.sps
+  [current] test: pass tests/test-url-location.sps
+  [current] test: pass tests/test-url-parts.sps
+  [current] test: pass tests/test-url.sps
+  [current] test: pass tests/test-variadic.sps
+  [current] test: pass tests/test-verify.sps
+  [current] test: pass tests/test-version.sps
+  [current] test: ran 42, passed 42, failed 0, hung 0

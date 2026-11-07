@@ -1,0 +1,68 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+network interfaces: lo 
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+[floor] chez 10.4.0 libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 node v20.10.0 transfer.sls sha256 fc35b61030882101
+[floor] a (refused perform-failed 8 "Header without colon")
+[floor] b (response 200 (("content-length" . "0") ("HTTP/1 " . "v") ("x-a" . "v")))
+[floor] c (response 200 (("content-length" . "0") ("HTTP/1.1 x" . "v") ("x-a" . "v")))
+[floor] d (response 200 (("content-length" . "0") ("HTTP/1" . "v") ("x-a" . "v")))
+[floor] e (response 200 (("content-length" . "0") ("HTTP/1 200" . "v") ("x-a" . "v")))
+[floor] h (response 200 (("content-length" . "0") ("HTTP/1.1 x-000001" . "vvvv") ("HTTP/1.1 x-000002" . "vvvv")))
+[floor] f (response 200 (("transfer-encoding" . "chunked")))
+[floor] g (refused perform-failed 43 "Failed reading the chunked-encoded stream")
+[floor] j (response 200 (("transfer-encoding" . "chunked")))
+[floor] k (response 200 (("transfer-encoding" . "chunked")))
+[floor] l (response 200 (("transfer-encoding" . "chunked")))
+[floor] m (response 200 (("transfer-encoding" . "chunked")))
+[floor] i (response 200 (("content-length" . "0") ("x-a" . "v")))
+[floor] program exit=0
+[floor] server exit=0
+[openssl] chez 10.4.0 libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 node v20.10.0 transfer.sls sha256 fc35b61030882101
+[openssl] a (refused perform-failed 8 "Header without colon")
+[openssl] b (response 200 (("content-length" . "0") ("HTTP/1 " . "v") ("x-a" . "v")))
+[openssl] c (response 200 (("content-length" . "0") ("HTTP/1.1 x" . "v") ("x-a" . "v")))
+[openssl] d (response 200 (("content-length" . "0") ("HTTP/1" . "v") ("x-a" . "v")))
+[openssl] e (response 200 (("content-length" . "0") ("HTTP/1 200" . "v") ("x-a" . "v")))
+[openssl] h (response 200 (("content-length" . "0") ("HTTP/1.1 x-000001" . "vvvv") ("HTTP/1.1 x-000002" . "vvvv")))
+[openssl] f (response 200 (("transfer-encoding" . "chunked")))
+[openssl] g (refused perform-failed 43 "Failed reading the chunked-encoded stream")
+[openssl] j (response 200 (("transfer-encoding" . "chunked")))
+[openssl] k (response 200 (("transfer-encoding" . "chunked")))
+[openssl] l (response 200 (("transfer-encoding" . "chunked")))
+[openssl] m (response 200 (("transfer-encoding" . "chunked")))
+[openssl] i (response 200 (("content-length" . "0") ("x-a" . "v")))
+[openssl] program exit=0
+[openssl] server exit=0
+[gnutls] chez 10.4.0 libcurl /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 node v20.10.0 transfer.sls sha256 fc35b61030882101
+[gnutls] a (refused perform-failed 8 "Header without colon")
+[gnutls] b (response 200 (("content-length" . "0") ("HTTP/1 " . "v") ("x-a" . "v")))
+[gnutls] c (response 200 (("content-length" . "0") ("HTTP/1.1 x" . "v") ("x-a" . "v")))
+[gnutls] d (response 200 (("content-length" . "0") ("HTTP/1" . "v") ("x-a" . "v")))
+[gnutls] e (response 200 (("content-length" . "0") ("HTTP/1 200" . "v") ("x-a" . "v")))
+[gnutls] h (response 200 (("content-length" . "0") ("HTTP/1.1 x-000001" . "vvvv") ("HTTP/1.1 x-000002" . "vvvv")))
+[gnutls] f (response 200 (("transfer-encoding" . "chunked")))
+[gnutls] g (refused perform-failed 43 "Failed reading the chunked-encoded stream")
+[gnutls] j (response 200 (("transfer-encoding" . "chunked")))
+[gnutls] k (response 200 (("transfer-encoding" . "chunked")))
+[gnutls] l (response 200 (("transfer-encoding" . "chunked")))
+[gnutls] m (response 200 (("transfer-encoding" . "chunked")))
+[gnutls] i (response 200 (("content-length" . "0") ("x-a" . "v")))
+[gnutls] program exit=0
+[gnutls] server exit=0
+[current] chez 10.4.0 libcurl /src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 node v20.10.0 transfer.sls sha256 fc35b61030882101
+[current] a (refused perform-failed 8 "Header without colon")
+[current] b (response 200 (("content-length" . "0") ("HTTP/1 " . "v") ("x-a" . "v")))
+[current] c (response 200 (("content-length" . "0") ("HTTP/1.1 x" . "v") ("x-a" . "v")))
+[current] d (response 200 (("content-length" . "0") ("HTTP/1" . "v") ("x-a" . "v")))
+[current] e (response 200 (("content-length" . "0") ("HTTP/1 200" . "v") ("x-a" . "v")))
+[current] h (response 200 (("content-length" . "0") ("HTTP/1.1 x-000001" . "vvvv") ("HTTP/1.1 x-000002" . "vvvv")))
+[current] f (response 200 (("transfer-encoding" . "chunked")))
+[current] g (refused perform-failed 8 "Header without colon")
+[current] j (response 200 (("transfer-encoding" . "chunked")))
+[current] k (response 200 (("transfer-encoding" . "chunked")))
+[current] l (response 200 (("transfer-encoding" . "chunked")))
+[current] m (response 200 (("transfer-encoding" . "chunked")))
+[current] i (response 200 (("content-length" . "0") ("x-a" . "v")))
+[current] program exit=0
+[current] server exit=0

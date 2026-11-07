@@ -1,0 +1,67 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+lanes.sh start 2026-11-06T22:59:56Z mode=test tree=origin-send lanes= floor openssl gnutls current cpuset=6-11 args=
+network interfaces: lo 
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+== lane floor: make test in a copy of /w/origin-send, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/e1/ci/curl-floor/include NODE=/src/build/verify/m3s2/node20/node SUITES='tests/test-auth.sps tests/test-cookies.sps tests/test-curl-testing.sps tests/test-origin.sps tests/test-origin-tls.sps tests/test-proxy.sps tests/test-stream-call.sps tests/test-stream.sps tests/test-transfer-tls.sps tests/test-upload.sps tests/test-version.sps'
+lane floor: pass (285 s)
+  [floor] test: pass tests/test-auth.sps
+  [floor] test: pass tests/test-cookies.sps
+  [floor] test: pass tests/test-curl-testing.sps
+  [floor] test: pass tests/test-origin.sps
+  [floor] test: pass tests/test-origin-tls.sps
+  [floor] test: pass tests/test-proxy.sps
+  [floor] test: pass tests/test-stream-call.sps
+  [floor] test: pass tests/test-stream.sps
+  [floor] test: pass tests/test-transfer-tls.sps
+  [floor] test: pass tests/test-upload.sps
+  [floor] test: pass tests/test-version.sps
+  [floor] test: ran 11, passed 11, failed 0, hung 0
+== lane openssl: make test in a copy of /w/origin-send, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 CC=gcc NODE=/src/build/verify/m3s2/node20/node SUITES='tests/test-auth.sps tests/test-cookies.sps tests/test-curl-testing.sps tests/test-origin.sps tests/test-origin-tls.sps tests/test-proxy.sps tests/test-stream-call.sps tests/test-stream.sps tests/test-transfer-tls.sps tests/test-upload.sps tests/test-version.sps'
+lane openssl: pass (274 s)
+  [openssl] test: pass tests/test-auth.sps
+  [openssl] test: pass tests/test-cookies.sps
+  [openssl] test: pass tests/test-curl-testing.sps
+  [openssl] test: pass tests/test-origin.sps
+  [openssl] test: pass tests/test-origin-tls.sps
+  [openssl] test: pass tests/test-proxy.sps
+  [openssl] test: pass tests/test-stream-call.sps
+  [openssl] test: pass tests/test-stream.sps
+  [openssl] test: pass tests/test-transfer-tls.sps
+  [openssl] test: pass tests/test-upload.sps
+  [openssl] test: pass tests/test-version.sps
+  [openssl] test: ran 11, passed 11, failed 0, hung 0
+== lane gnutls: make test in a copy of /w/origin-send, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 CC=gcc NODE=/src/build/verify/m3s2/node20/node SUITES='tests/test-auth.sps tests/test-cookies.sps tests/test-curl-testing.sps tests/test-origin.sps tests/test-origin-tls.sps tests/test-proxy.sps tests/test-stream-call.sps tests/test-stream.sps tests/test-transfer-tls.sps tests/test-upload.sps tests/test-version.sps'
+lane gnutls: pass (270 s)
+  [gnutls] test: pass tests/test-auth.sps
+  [gnutls] test: pass tests/test-cookies.sps
+  [gnutls] test: pass tests/test-curl-testing.sps
+  [gnutls] test: pass tests/test-origin.sps
+  [gnutls] test: pass tests/test-origin-tls.sps
+  [gnutls] test: pass tests/test-proxy.sps
+  [gnutls] test: pass tests/test-stream-call.sps
+  [gnutls] test: pass tests/test-stream.sps
+  [gnutls] test: pass tests/test-transfer-tls.sps
+  [gnutls] test: pass tests/test-upload.sps
+  [gnutls] test: pass tests/test-version.sps
+  [gnutls] test: ran 11, passed 11, failed 0, hung 0
+== lane current: make test in a copy of /w/origin-send, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/verify/c823/lane1/curl-current/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/verify/c823/lane1/curl-current/include NODE=/src/build/verify/m3s2/node20/node SUITES='tests/test-auth.sps tests/test-cookies.sps tests/test-curl-testing.sps tests/test-origin.sps tests/test-origin-tls.sps tests/test-proxy.sps tests/test-stream-call.sps tests/test-stream.sps tests/test-transfer-tls.sps tests/test-upload.sps tests/test-version.sps'
+lane current: pass (268 s)
+  [current] test: pass tests/test-auth.sps
+  [current] test: pass tests/test-cookies.sps
+  [current] test: pass tests/test-curl-testing.sps
+  [current] test: pass tests/test-origin.sps
+  [current] test: pass tests/test-origin-tls.sps
+  [current] test: pass tests/test-proxy.sps
+  [current] test: pass tests/test-stream-call.sps
+  [current] test: pass tests/test-stream.sps
+  [current] test: pass tests/test-transfer-tls.sps
+  [current] test: pass tests/test-upload.sps
+  [current] test: pass tests/test-version.sps
+  [current] test: ran 11, passed 11, failed 0, hung 0
+/src/.plans/research/m8/slice2/lanes-in-docker.sh: 67: Syntax error: Unterminated quoted string

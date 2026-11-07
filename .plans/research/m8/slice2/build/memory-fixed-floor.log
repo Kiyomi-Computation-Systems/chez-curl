@@ -1,0 +1,6 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-headers.sps
+test-memory: pass tests/test-headers.sps
+=== tests/test-origin-tls.sps
+test-memory: pass tests/test-origin-tls.sps
+test-memory: ran 2, passed 2, failed 0, hung 0

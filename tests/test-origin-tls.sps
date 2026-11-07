@@ -21,7 +21,10 @@
 ;;;   an empty SETTINGS frame and a HEADERS frame, then DATA for a body, its
 ;;;   HPACK plain literals, sent with --half-close. Each answer's HPACK is
 ;;;   what nghttp2 writes in Node 20.10.0 and 24.18.0, measured, and decoded
-;;;   by hand beside it.
+;;;   by hand beside it. The head routes' blocks (M8 slice 2) are decoded by
+;;;   this suite's own HPACK decoder, RFC 7541's static table, dynamic table
+;;;   and Huffman code, and compared whole with its own lists of fields; the
+;;;   large ones, past Node's default send limit, show the faces raise it.
 ;;;
 ;;; make test runs it from the repository root, with CHEZ, NODE and OPENSSL
 ;;; exported. Each computation that can raise runs under a guard that names
@@ -1355,7 +1358,7 @@
     (#\i . "00110") (#\j . "1110100") (#\k . "1110101") (#\l . "101000") (#\m . "101001")
     (#\n . "101010") (#\o . "00111") (#\p . "101011") (#\q . "1110110") (#\r . "101100")
     (#\s . "01000") (#\t . "01001") (#\u . "101101") (#\v . "1110111") (#\w . "1111000")
-    (#\x . "1111001") (#\y . "1111010") (#\z . "1111011")))
+    (#\x . "1111001") (#\y . "1111010") (#\z . "1111011") (#\" . "1111111001")))
 
 ;; huffman-text : Bytevector -> (U String #f)
 ;; BYTES, in HPACK's Huffman code, decoded by huffman-codes; #f for a code
@@ -1376,6 +1379,191 @@
               ((and (< (- n at) 8) (for-all (lambda (c) (char=? c #\1)) (string->list (substring bits at n))))
                (list->string (reverse chars)))
               (else #f))))))
+
+;; --- HPACK, decoded (M8 slice 2): the head routes' blocks -------------------
+
+;; hpack-static : (Vector (Pair String String))
+;; RFC 7541's static table, appendix A: entry I at index I, 1 to 61.
+(define hpack-static
+  (list->vector
+   (cons #f
+         (map (lambda (e) (if (pair? e) e (cons e "")))
+              '(":authority" (":method" . "GET") (":method" . "POST") (":path" . "/")
+                (":path" . "/index.html") (":scheme" . "http") (":scheme" . "https")
+                (":status" . "200") (":status" . "204") (":status" . "206") (":status" . "304")
+                (":status" . "400") (":status" . "404") (":status" . "500") "accept-charset"
+                ("accept-encoding" . "gzip, deflate") "accept-language" "accept-ranges" "accept"
+                "access-control-allow-origin" "age" "allow" "authorization" "cache-control"
+                "content-disposition" "content-encoding" "content-language" "content-length"
+                "content-location" "content-range" "content-type" "cookie" "date" "etag" "expect"
+                "expires" "from" "host" "if-match" "if-modified-since" "if-none-match" "if-range"
+                "if-unmodified-since" "last-modified" "link" "location" "max-forwards"
+                "proxy-authenticate" "proxy-authorization" "range" "referer" "refresh" "retry-after"
+                "server" "set-cookie" "strict-transport-security" "transfer-encoding" "user-agent"
+                "vary" "via" "www-authenticate")))))
+
+;; huffman-table : Hashtable
+;; huffman-codes, keyed by a code's value times 64 plus its length in bits.
+(define huffman-table
+  (let ((table (make-eqv-hashtable)))
+    (for-each (lambda (code)
+                (hashtable-set! table (+ (* 64 (string->number (cdr code) 2)) (string-length (cdr code)))
+                                (car code)))
+              huffman-codes)
+    table))
+
+;; huffman-decode : Bytevector -> (U String #f)
+;; BYTES in HPACK's Huffman code, as huffman-text reads them, bit by bit:
+;; #f for a code huffman-codes lacks, or padding that is not under 8 bits of
+;; 1s.
+(define (huffman-decode bytes)
+  (let loop ((i 0) (bit 7) (code 0) (k 0) (chars '()))
+    (if (= i (bytevector-length bytes))
+        (and (< k 8) (= code (- (expt 2 k) 1)) (list->string (reverse chars)))
+        (let* ((b (bitwise-and (bitwise-arithmetic-shift-right (bytevector-u8-ref bytes i) bit) 1))
+               (code (+ (* 2 code) b))
+               (k (+ k 1))
+               (next-i (if (= bit 0) (+ i 1) i))
+               (next-bit (if (= bit 0) 7 (- bit 1)))
+               (char (hashtable-ref huffman-table (+ (* 64 code) k) #f)))
+          (cond (char (loop next-i next-bit 0 0 (cons char chars)))
+                ((> k 30) #f)
+                (else (loop next-i next-bit code k chars)))))))
+
+;; hpack-integer : Bytevector Natural Natural -> (U (Pair Natural Natural) #f)
+;; The integer at AT with a BITS-bit prefix (RFC 7541, 5.1), and where it
+;; ends; #f when BLOCK ends first.
+(define (hpack-integer block at bits)
+  (and (< at (bytevector-length block))
+       (let* ((top (- (expt 2 bits) 1))
+              (first (bitwise-and (bytevector-u8-ref block at) top)))
+         (if (< first top)
+             (cons first (+ at 1))
+             (let loop ((i (+ at 1)) (n top) (shift 1))
+               (and (< i (bytevector-length block))
+                    (let* ((b (bytevector-u8-ref block i))
+                           (n (+ n (* shift (mod b 128)))))
+                      (if (>= b 128) (loop (+ i 1) n (* shift 128)) (cons n (+ i 1))))))))))
+
+;; hpack-literal : Bytevector Natural -> (U (Pair String Natural) #f)
+;; The string literal at AT, decoded, and where it ends.
+(define (hpack-literal block at)
+  (let ((s (hpack-string block at)))
+    (and s
+         (let* ((bytes (slice block (cadr s) (caddr s)))
+                (text (if (car s) (huffman-decode bytes) (latin-1 bytes))))
+           (and text (cons text (caddr s)))))))
+
+;; hpack-decode : Bytevector (Pair (Listof (Pair String String)) Natural)
+;;                -> (U (Pair (Listof (Pair String String)) (Pair (Listof ...) Natural)) #f)
+;; BLOCK's fields, in order, and the dynamic table after it, TABLE being the
+;; one before: its entries, newest first, and their size, each entry's name
+;; and value bytes and 32, evicted oldest first past 4,096 bytes, the size
+;; a client's empty SETTINGS leaves it (RFC 7541, 4.1 and 4.4). Indexed
+;; fields, literals with and without indexing, and size updates; #f for
+;; anything else, or an index no table holds.
+(define (hpack-decode block table)
+  (define (entry index entries)
+    (cond ((<= 1 index 61) (vector-ref hpack-static index))
+          ((< (- index 62) (length entries)) (list-ref entries (- index 62)))
+          (else #f)))
+  (define (added entries size field)
+    (let ((n (+ (string-length (car field)) (string-length (cdr field)) 32)))
+      (let trim ((kept (cons field entries)) (total (+ size n)))
+        (if (and (> total 4096) (pair? kept))
+            (let ((last (list-ref kept (- (length kept) 1))))
+              (trim (let take ((rest kept) (k (- (length kept) 1)))
+                      (if (= k 0) '() (cons (car rest) (take (cdr rest) (- k 1)))))
+                    (- total (string-length (car last)) (string-length (cdr last)) 32)))
+            (cons kept total)))))
+  (let loop ((at 0) (fields '()) (entries (car table)) (size (cdr table)))
+    (if (= at (bytevector-length block))
+        (cons (reverse fields) (cons entries size))
+        (let ((b (bytevector-u8-ref block at)))
+          (cond
+            ((>= b 128)
+             (let* ((i (hpack-integer block at 7)) (e (and i (entry (car i) entries))))
+               (and e (loop (cdr i) (cons e fields) entries size))))
+            ((>= b 32)
+             (let* ((incremental (>= b 64))
+                    (i (hpack-integer block at (if incremental 6 5))))
+               (cond
+                 ((not i) #f)
+                 ((not incremental) (loop (cdr i) fields entries size))
+                 (else
+                  (let* ((name (if (= (car i) 0)
+                                   (hpack-literal block (cdr i))
+                                   (let ((e (entry (car i) entries))) (and e (cons (car e) (cdr i))))))
+                         (value (and name (hpack-literal block (cdr name)))))
+                    (and value
+                         (let* ((field (cons (car name) (car value)))
+                                (grown (added entries size field)))
+                           (loop (cdr value) (cons field fields) (car grown) (cdr grown)))))))))
+            (else
+             (let* ((i (hpack-integer block at 4))
+                    (name (and i (if (= (car i) 0)
+                                     (hpack-literal block (cdr i))
+                                     (let ((e (entry (car i) entries))) (and e (cons (car e) (cdr i)))))))
+                    (value (and name (hpack-literal block (cdr name)))))
+               (and value (loop (cdr value) (cons (cons (car name) (car value)) fields) entries size)))))))))
+
+;; h2-heads : Bytevector -> List
+;; What BYTES, a probe's of one request on stream 1, carry there: each
+;; header block, a HEADERS frame's payload and the CONTINUATION frames'
+;; after it, decoded in order with one dynamic table, as fields; each
+;; block's bytes; whether END_STREAM came; the DATA payloads, joined, as
+;; text; and every other frame type stream 1 or the connection carried
+;; past SETTINGS, RST_STREAM and GOAWAY among them. (unread ...) for a
+;; block it cannot decode.
+(define CONTINUATION 9)
+(define (h2-heads bytes)
+  (let loop ((frames (h2-frame-list bytes)) (blocks '()) (sizes '()) (open #f) (table (cons '() 0))
+             (ended #f) (data '()) (others '()))
+    (define (closed)
+      (if open
+          (let ((decoded (hpack-decode open table)))
+            (and decoded (list (car decoded) (bytevector-length open) (cdr decoded))))
+          (list #f #f table)))
+    (if (null? frames)
+        (let ((last (closed)))
+          (if (not last)
+              (list 'unread (hex bytes))
+              (list (reverse (if open (cons (car last) blocks) blocks))
+                    (reverse (if open (cons (cadr last) sizes) sizes))
+                    ended (latin-1 (join (reverse data))) (reverse others))))
+        (let* ((f (car frames)) (type (car f)) (flags (cadr f)) (stream (caddr f)) (payload (cadddr f)))
+          (cond
+            ((and (= type CONTINUATION) open)
+             (loop (cdr frames) blocks sizes (join (list open payload)) table ended data others))
+            (else
+             (let ((last (closed)))
+               (if (not last)
+                   (list 'unread (hex bytes))
+                   (let ((blocks (if open (cons (car last) blocks) blocks))
+                         (sizes (if open (cons (cadr last) sizes) sizes))
+                         (table (caddr last)))
+                     (cond
+                       ((and (= type HEADERS) (= stream 1))
+                        (loop (cdr frames) blocks sizes payload table (or ended (odd? flags)) data others))
+                       ((and (= type DATA) (= stream 1))
+                        (loop (cdr frames) blocks sizes #f table (or ended (odd? flags)) (cons payload data) others))
+                       ((= type SETTINGS) (loop (cdr frames) blocks sizes #f table ended data others))
+                       (else (loop (cdr frames) blocks sizes #f table ended data
+                                   (cons (list type flags stream) others)))))))))))))
+
+;; head-fields : Natural Natural -> (Listof (Pair String String))
+;; The generated fields of an HTTP/2 head of N lines of LINE bytes, as the
+;; head routes make them, written here: x-000001 on, each value v repeated
+;; to LINE less the name, ": " and CR LF.
+(define (head-fields n line)
+  (let loop ((i n) (found '()))
+    (if (= i 0)
+        found
+        (let ((digits (number->string i)))
+          (loop (- i 1)
+                (cons (cons (string-append "x-" (make-string (- 6 (string-length digits)) #\0) digits)
+                            (make-string (- line 12) #\v))
+                      found))))))
 
 ;; hpack-string : Bytevector Natural -> (U (List Boolean Natural Natural) #f)
 ;; The string literal at AT in BLOCK: whether it is Huffman-coded, and where
@@ -1800,6 +1988,92 @@
           (h2-exchange o face (cadr row) tls)))
       (h2-rows scheme)))
    '(h2c h2) '("http" "https") (list #f h2-tls))
+  ;; The head routes (M8 slice 2; ADR-0040), decoded: each block's fields
+  ;; whole, against this suite's own list; END_STREAM; the body; and no other
+  ;; frame. The large ones are past Node's default send limit, 64 KiB, which
+  ;; both faces raise: at the default the head is never sent, and the trailer
+  ;; block is dropped or the stream reset, by Node's version (traps.md). A
+  ;; trailer block goes in a write of its own after the head, and the large
+  ;; head in several, which a client's half-close can cut, as it cuts a long
+  ;; body's (h2EndNext's comment): under the memory gate's load h2 lost the
+  ;; trailers of /head?n=2&tn=6000 so (M8 slice 2's build). Those rows' probe
+  ;; does not half-close: it reads until it has been idle, and ends there.
+  (let ((digest "Digest realm=\"chez-curl-test\", qop=\"auth\", nonce=\"n0\", algorithm=MD5")
+        (cl0 '("content-length" . "0")))
+    (for-each
+     (lambda (face scheme tls)
+       (define (heads path headers)
+         (guard (e (#t (list 'raised (describe e))))
+           (let ((p (parameterize ((wire-probe-tls tls))
+                      (if (string-contains? path "tn=")
+                          (wire-probe o face (request scheme "GET" path headers #f) 1000)
+                          (wire-probe-half-close o face (request scheme "GET" path headers #f) 2000)))))
+             (append (let ((h (h2-heads (probe-bytes p))))
+                       (if (eq? (car h) 'unread) h (list (car h) (caddr h) (cadddr h) (car (cddddr h)))))
+                     (list (probe-end p))))))
+       (for-each
+        (lambda (row)
+          (test-equal (string-append (symbol->string face) " GET " (car row) (cadr row)
+                                     ": each block's fields, whole, END_STREAM, the body, no other frame, then "
+                                     (if (string-contains? (car row) "tn=") "idle" "eof"))
+            (append (caddr row) (list (if (string-contains? (car row) "tn=") 'timeout 'eof)))
+            (heads (car row) (if (null? (cdddr row)) '() (cadddr row)))))
+        (list (list "/head?n=3" "" (list (list (cons '(":status" . "200") (cons cl0 (head-fields 2 16)))) #t "" '()))
+              (list "/head" "" (list (list (list '(":status" . "200") cl0)) #t "" '()))
+              (list "/head?n=2&tn=2" ""
+                    (list (list (cons '(":status" . "200") (head-fields 2 16)) (head-fields 2 16)) #t "" '()))
+              (list "/head?pre=103:2:20&n=2" ""
+                    (list (list (cons '(":status" . "103") (head-fields 2 20))
+                                (cons '(":status" . "200") (cons cl0 (head-fields 1 16))))
+                          #t "" '()))
+              (list "/head?n=1&big=20&bigch=X" ""
+                    (list (list (list '(":status" . "200") cl0 '("x-big" . "XXXXXXXXXXX"))) #t "" '()))
+              (list "/head-auth?a.n=2&b.n=3" ""
+                    (list (list (list '(":status" . "401") (cons "www-authenticate" digest) cl0
+                                      (car (head-fields 1 16))))
+                          #t "" '()))
+              (list "/head-auth?a.n=2&b.n=3" ", with an Authorization, unchecked"
+                    (list (list (cons '(":status" . "200") (cons cl0 (head-fields 2 16)))) #t "" '())
+                    '(("authorization" . "Digest anything")))
+              (list "/head?x=1" ", a parameter it does not take"
+                    (list (list '((":status" . "404") ("content-length" . "10"))) #t "not found\n" '()))
+              (list "/head?n=2&line=32&hname=1" ", hname, the raw face's alone"
+                    (list (list '((":status" . "404") ("content-length" . "10"))) #t "not found\n" '()))
+              (list "/head?n=2&tn=1&tname=1" ", tname, the raw face's alone"
+                    (list (list '((":status" . "404") ("content-length" . "10"))) #t "not found\n" '()))
+              (list "/head-auth?a.n=2&b.v10=1" ", v10, the raw face's alone"
+                    (list (list '((":status" . "404") ("content-length" . "10"))) #t "not found\n" '()))
+              (list "/proxy-arm?n=1" ", an HTTP/1.1 route"
+                    (list (list '((":status" . "404") ("content-length" . "10"))) #t "not found\n" '())))))
+     '(h2c h2) '("http" "https") (list #f h2-tls))
+    ;; The large ones, 6,000 lines of 16 bytes in a head and in a trailer
+    ;; block, each block past 64 KiB on the wire: compared whole, but shown
+    ;; as same or the first field that differs.
+    (for-each
+     (lambda (face scheme tls)
+       (for-each
+        (lambda (row)
+          (test-equal (string-append (symbol->string face) " GET " (car row)
+                                     ": every field of each block, as this suite lists them, the last block past 64 KiB, END_STREAM, no other frame, then idle")
+            '(same past-64-kib #t "" () timeout)
+            (guard (e (#t (list 'raised (describe e))))
+              (let* ((p (parameterize ((wire-probe-tls tls))
+                          (wire-probe o face (request scheme "GET" (car row) '() #f) 2000)))
+                     (h (h2-heads (probe-bytes p))))
+                (if (eq? (car h) 'unread)
+                    (list 'unread (bytevector-length (probe-bytes p)) (probe-end p))
+                    (list (if (equal? (car h) (cadr row))
+                              'same
+                              (list 'blocks (map length (car h)) 'want (map length (cadr row))))
+                          (let ((sizes (cadr h)))
+                            (if (and (pair? sizes) (> (list-ref sizes (- (length sizes) 1)) 65536))
+                                'past-64-kib
+                                (list 'sizes sizes)))
+                          (caddr h) (cadddr h) (car (cddddr h)) (probe-end p)))))))
+        (list (list "/head?n=6000" (list (cons '(":status" . "200") (cons cl0 (head-fields 5999 16)))))
+              (list "/head?n=2&tn=6000"
+                    (list (cons '(":status" . "200") (head-fields 2 16)) (head-fields 6000 16))))))
+     '(h2c h2) '("http" "https") (list #f h2-tls)))
   ;; /connection numbers each connection among its face's: two connections
   ;; one after the other answer K and K + 1, with :status 200 and
   ;; content-length first; with delay, the HEADERS come at once and the

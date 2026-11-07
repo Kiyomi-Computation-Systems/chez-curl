@@ -1,7 +1,9 @@
 # ADR-0040: A cap on response headers: 1,000 lines and 100 KiB a transfer
 
 - **Status:** Accepted; amended 2026-11-06, after the M8 plan's review: decision 4's list made whole
-  ([amendment](#amendment-2026-11-06-decision-4s-list-made-whole))
+  ([amendment](#amendment-2026-11-06-decision-4s-list-made-whole)); amended 2026-11-06, slice 2's
+  measurement through the engine, and two options decided
+  ([amendment](#amendment-2026-11-06-measured-through-the-engine-and-two-options-decided))
 - **Date:** 2026-11-06
 - **Scope:** chez-curl v1, M8: every transfer's response headers
   ([ADR-0038](0038-m8s-scope.md), decision 2)
@@ -103,8 +105,56 @@ which I checked against the logs:
 Each is a row of `test-headers`' per-version table, and the docs list them by version.
 
 **Apple's 8.7.1, on the Mac, 2026-11-06** (`results/mac-8.7.1-1.log` and `-2.log`): its byte cap
-is 8.5.0's, 307,200 a response, and it counts no headers. The cap's refusal ends an HTTP/2 transfer
-56 there, not 23, which decision 2's recorded reason already covers; it does not lose a refused
-HTTP/2 trailer, as 8.5.0 does. A line of 102,400 bytes is 100 over HTTP/1.1 and 56 over HTTP/2, 16
-if HPACK cannot code it; a 5,000-byte trailer line is 100; nghttp2's limit is 56. One walk of 5,000
-headers took 107 to 146 ms of CPU. No decision moved.
+is 8.5.0's, 307,200 a response, and it counts no headers. The cap's refusal of an HTTP/2 head
+ends the transfer 56 there, not 23, which decision 2's recorded reason already covers; it does not
+lose a refused HTTP/2 trailer, as 8.5.0 does. A line of 102,400 bytes is 100 over HTTP/1.1 and 56
+over HTTP/2, 16 if HPACK cannot code it; a 5,000-byte trailer line is 100; nghttp2's limit is 56.
+One walk of 5,000 headers took 107 to 146 ms of CPU. No decision moved.
+
+## Amendment, 2026-11-06: measured through the engine, and two options decided
+
+M8 slice 2 measured a prototype of decisions 1 and 2 through the engine on the five Linux lanes,
+two runs each, every cell alike in both ([research/m8/slice2/](../research/m8/slice2/README.md));
+I reran its Guix lane, 147 cells matching line for line.
+
+- **Decisions 1 and 2 hold on every lane,** buffered and streamed, over HTTP/1.1 and HTTP/2: 1,000
+  lines taken, the 1,001st refused; 102,400 bytes taken, 102,401 refused; and 1xx heads, trailers,
+  a Digest round, a 417's resend and a `CONNECT` answer all count across the transfer.
+- **The recorded reason wins even over 0:** on both 8.5.0 builds, a refused HTTP/2 trailer ends
+  the transfer 0 (the trap), and it now fails `header-limit`, its code 0. No test asserts the
+  cap's code; `test-headers`' table holds it by version: 23, 0 for 8.5.0's HTTP/2 trailers, and 56
+  for an HTTP/2 head on 8.7.1, its trailers 23.
+- **Decision 4's list, corrected:** nghttp2's limit on an HTTP/2 head comes before the cap only on
+  7.85.0 and 8.5.0, 56, which hand no line of such a head. On 8.20.0 and 8.23.0 its lines arrive
+  first and the cap refuses, 23; the earlier "56, or 16 on 8.20.0" was libcurl's answer with no cap.
+- **The cost:** a buffered transfer's callable costs 0.4 to 1.3 µs of CPU a line natively on
+  7.85.0, and 18.5 to 21.5 µs under the memory gate's Valgrind, 21 to 25 ms more for a response of
+  1,000 headers.
+- **5. `SUPPRESS_CONNECT_HEADERS` is owned,** refused by the hatch as `owned-option`. Decided by
+  the maintainer, 2026-11-06, the recommended option. Set, it hides a `CONNECT` answer from the
+  callable on every lane, so the cap never counts it, and libcurl's own caps alone hold it: a
+  60,000-line answer passed 200 on 7.85.0, failed 56 at 8.5.0's 307,200 bytes, and 100 at 5,000
+  lines on 8.20.0 and 8.23.0. chez-curl shows no `CONNECT` answer either way.
+- **6. `HTTP_TRANSFER_DECODING` stays the hatch's.** Decided by the maintainer, 2026-11-06, the
+  recommended option. Set to 0, it puts trailers in the body, where `body-limit` bounds them and
+  nothing is stored as a header; the docs say so. The hatch's `HTTP200ALIASES`, `HTTP09_ALLOWED`
+  and `FAILONERROR` change what the callable sees no further than an alias's status line, counted
+  as a header line.
+- **The origin's HTTP/2 faces raise Node's send limit alone,** `maxSendHeaderBlockLength`: the
+  caps stand-in's other two limits are a receiver's, and put a setting in the SETTINGS frame that
+  84 tests hold byte for byte. With Node's default, Node 24 drops a trailer block it cannot send and
+  ends the stream cleanly, a 200 with no trailers, and Node 20 resets it (the trap).
+- **As built:** `header-line-cap` and `header-byte-cap` in `(curl private transfer)`, each written
+  out in `tests/test-headers.sps`. A Linux libcurl never calls the header callable again after it
+  refuses, so the refusal of every later call is held by a private seam, a request's mark `(mark
+  N)`, which records a planted reason at the head's line N and still answers it.
+  `/raw/head417` holds its 417 by a key, not a connection: under the memory gate a resend reached
+  a new connection (ADR-0014's gate; [the reproduction](../research/m8/slice2/build/trap-417/)).
+- **After the slice's review:** a status line is a line at a head's start reading `HTTP/`, a
+  digit, then `.` and a digit or not, then a space. A status line the pattern missed would be
+  counted one line over, never under. Mid-head, libcurl takes `HTTP/1.1 x: v`, `HTTP/1: v` and the
+  like as headers on all five Linux lanes, and the cap counts them; a trailer section's first line
+  that matches the pattern, `HTTP/1.1 x: v` or `HTTP/1 : v`, libcurl takes as a trailer, so that
+  section counts one line under, once ([fix/odd](../research/m8/slice2/build/fix/)). `request-like`
+  is exported from `(curl private transfer)`, a test seam, for `test-transfer`'s refusals of a
+  malformed mark or head fault.

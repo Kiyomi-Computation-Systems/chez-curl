@@ -1,6 +1,6 @@
 # ADR-0009: A typed escape hatch for unwrapped options, in the low level only
 
-- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built; amended 2026-10-27, the hatch, measured, decided and built (M4 slice 4); amended 2026-10-27, the Mac's runs; amended 2026-10-30, the header callable's options are owned (M6 slice 1); amended 2026-10-31, a streamed body's options are owned (M6 slice 2); amended 2026-11-02, the HTTP version's option and three twins are owned (M7 slice 1); amended 2026-11-02, the credentials field's options, a twin and a pin are owned (M7 slice 2)
+- **Status:** Accepted; amended 2026-10-23, a private test seam held to its rules (M2 slice 2); amended 2026-10-24, the TLS fields' options and twins (M2 slice 3); amended 2026-10-24, `QUICK_EXIT` is owned (M3); amended 2026-10-25, the test seam is a submit (M3 slice 2); amended 2026-10-25, `QUICK_EXIT` is owned, as built (M3 slice 3); amended 2026-10-26, M4's owned options (the M4 plan); amended 2026-10-26, M4 slice 1's owned options, as built; amended 2026-10-27, the hatch, measured, decided and built (M4 slice 4); amended 2026-10-27, the Mac's runs; amended 2026-10-30, the header callable's options are owned (M6 slice 1); amended 2026-10-31, a streamed body's options are owned (M6 slice 2); amended 2026-11-02, the HTTP version's option and three twins are owned (M7 slice 1); amended 2026-11-02, the credentials field's options, a twin and a pin are owned (M7 slice 2); amended 2026-11-06, `SUPPRESS_CONNECT_HEADERS` is owned (M8 slice 2)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1, `(curl ...)` only
 - **Settles:** D3 (brief §10)
@@ -488,3 +488,15 @@ Linux libcurls, the options that could change what the field sends
 
 `rounds-option-names` keeps `PROXYAUTH` alone, slice 3's. `test-unsupported` and
 `test-transfer` write each out.
+
+## Amendment, 2026-11-06: `SUPPRESS_CONNECT_HEADERS` is owned (M8 slice 2)
+
+Every transfer now sets `HEADERFUNCTION` and `HEADERDATA`, for the cap on response headers
+([ADR-0040](0040-a-cap-on-response-headers.md)); both stay the `stream-buffer` field's, owned as
+the 2026-10-30 amendment has them. `SUPPRESS_CONNECT_HEADERS` joins `owned-option-names`, a twin
+of the callable's: set, it hid a `CONNECT` answer from the callable on every Linux libcurl, so the
+cap never counted it (ADR-0040, amended 2026-11-06, decision 5, the maintainer's).
+[ADR-0037](0037-a-proxy-given-by-url.md)'s line that it stays the hatch's is superseded. `HTTP_TRANSFER_DECODING`,
+`HTTP200ALIASES`, `HTTP09_ALLOWED` and `FAILONERROR`, which also change what the callable is handed,
+stay the hatch's (decision 6). `test-unsupported` and `test-transfer` write the grown list out, and
+`test-unsupported` refuses `SUPPRESS_CONNECT_HEADERS` beside three of those the hatch still takes.

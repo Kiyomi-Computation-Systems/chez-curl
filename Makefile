@@ -109,6 +109,7 @@ MEMORY_SUITES_2 := \
   tests/test-cookies.sps \
   tests/test-curl-testing.sps \
   tests/test-discovery.sps \
+  tests/test-headers.sps \
   tests/test-library-loading.sps \
   tests/test-mailbox.sps \
   tests/test-memory-safety.sps \

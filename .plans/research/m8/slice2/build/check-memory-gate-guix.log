@@ -1,0 +1,47 @@
+check-memory-gate: ok a plain: tests/memory-plant-overrun.sps exits 0 without Valgrind, and prints only its line
+check-memory-gate: ok a plain: tests/memory-plant-leak.sps exits 0 without Valgrind, and prints only its line
+check-memory-gate: ok b memory-plant-overrun: test-memory names tests/memory-plant-overrun.sps FAIL, with Valgrind's report in its log and its output, and runs the suite after it
+check-memory-gate: ok b memory-plant-leak: test-memory names tests/memory-plant-leak.sps FAIL, with Valgrind's report in its log and its output, and runs the suite after it
+check-memory-gate: ok b fails: test-memory names a program that exits 1 FAIL, with its exit, its FAIL lines and its last lines, and runs the suite after it
+check-memory-gate: ok c suppression: tests/guix-glibc-locpath.supp holds exactly one entry, guix-glibc-locpath, a definite leak under compute_locale_search_path
+check-memory-gate: ok d used: a run that loads libcurl through (curl) passes, and Valgrind reports guix-glibc-locpath used on one block
+check-memory-gate: ok d needed: without the suppression, the same run fails on the one block lost under compute_locale_search_path
+check-memory-gate: ok d leak: the leak plant fails with the suppression read
+check-memory-gate: ok d more: a second block lost under newlocale, which the entry matches, fails the suite
+check-memory-gate: ok d alone: one block lost under newlocale in a run that loads no libcurl, and so no p11-kit, fails the suite
+check-memory-gate: ok d override: MEMORY_SUPPRESSION_FILE on make's command line, naming a file that hides the overrun plant, is ignored, so the plant fails
+check-memory-gate: ok e command, GUIX_ENVIRONMENT unset: timeout runs Valgrind with ADR-0014's flags, no suppression, then Chez, and a Valgrind that runs nothing fails
+check-memory-gate: ok e command, GUIX_ENVIRONMENT set: timeout runs Valgrind with ADR-0014's flags and tests/guix-glibc-locpath.supp, then Chez, and a Valgrind that runs nothing fails
+check-memory-gate: ok f hangs: a program that never ends is named HUNG
+check-memory-gate: ok g none: test-memory refuses to pass with no suite
+check-memory-gate: ok h options: test-memory refuses to run with VALGRIND_OPTS set
+check-memory-gate: ok h options: test-memory refuses to run with a $HOME/.valgrindrc
+check-memory-gate: ok h options: test-memory refuses to run with a ./.valgrindrc, in a copy of the tree
+check-memory-gate: ok h options: test-memory refuses to run with VALGRIND_LIB set, at a copy of Valgrind's directory whose default.supp hides every leak
+check-memory-gate: ok h options: test-memory refuses to run with any other VALGRIND_ variable set, VALGRIND_LAUNCHER
+check-memory-gate: ok h options: a $HOME/.valgrindrc that a suite writes mid-run hides nothing from the next: --command-line-only=yes
+check-memory-gate: ok i suppressions: a suppressions file the gate does not pass, named default.supp, beside Valgrind's own, fails the leak plant it hides, by name
+check-memory-gate: ok i suppressions: a file named default.supp in place of Valgrind's own fails the leak plant it hides, by name
+check-memory-gate: ok j evidence: a CHEZ that is a script exec'ing Chez fails the leak plant, which Valgrind never saw
+check-memory-gate: ok j evidence: a CHEZ that is a script running Chez as a child fails the leak plant, which Valgrind never saw
+check-memory-gate: ok j evidence: a program that execs away from Valgrind, which then reports nothing, fails
+check-memory-gate: ok j evidence: a Valgrind that runs another program than the suite fails the suite
+check-memory-gate: ok k undef: a program that branches on memory nothing initialised fails, exit 9, with Valgrind's report: the plant the next case hides
+check-memory-gate: ok k added: --undef-value-errors=no, added through VALGRIND, hides that plant, and fails it by name
+check-memory-gate: ok k dropped: a Valgrind that drops --leak-check=full hides the leak plant, and fails it by name
+check-memory-gate: ok k changed: a Valgrind that turns --errors-for-leak-kinds=definite to none hides the leak plant, and fails it by name
+check-memory-gate: ok k order: a Valgrind that moves --leak-check=full to the end of its options fails a clean program, by name
+check-memory-gate: ok l forged: a suite that prints a clean ERROR SUMMARY with Valgrind's pid, then execs away, fails: the evidence is Valgrind's own log
+check-memory-gate: ok l stale: a Valgrind log an earlier run left is never read: a Valgrind that writes none fails
+check-memory-gate: ok l names: two suites with one name, in two directories, are refused, so one suite's logs are never another's
+check-memory-gate: ok m awk: an awk that fails, printing nothing, fails a clean program, naming the evidence check
+check-memory-gate: ok m awk: an awk that prints ok, then exits 2, fails a clean program, naming the evidence check
+check-memory-gate: ok m awk: an awk that exits 0, printing nothing, fails a clean program, naming the evidence check
+check-memory-gate: ok n all: with no MEMORY_SHARD, test-memory runs every suite in tests/, in order
+check-memory-gate: ok n split: MEMORY_SHARD=1 and 2 each run a list of their own, and the two run every suite in tests/ once between them, and nothing else, each handed to Valgrind as case e's is
+check-memory-gate: ok n refused: test-memory refuses a MEMORY_SHARD of 0, 3, "1 2", 1', 1" or one, running no suite
+check-memory-gate: ok n beside: test-memory refuses a MEMORY_SHARD beside a MEMORY_SUITES on its command line or in the environment, running no suite
+check-memory-gate: ok n lists: test-memory refuses a shard's list set on its command line or, under make -e, in the environment, and MEMORY_RUN or MEMORY_RUN_NAME set on its command line, running no suite
+check-memory-gate: ok o ci: .github/workflows/ci.yml runs make test-memory MEMORY_SHARD=1 and =2 in a job each, after make check-memory-gate, with no if: or continue-on-error:
+check-memory-gate: the memory gate failed, as it must, its suppression held, and its two shards run every suite once, in all 45 cases
+check-memory-gate exit 0

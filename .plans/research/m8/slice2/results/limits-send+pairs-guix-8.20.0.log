@@ -1,0 +1,392 @@
+[guix-8.20.0] tree /home/kishu/src/chez-curl/build/m8s2/work.zJZXLW/probe chez /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/scheme 10.4.0 libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 node v24.18.0 program m8s2/engine-probe.sps sha256 3e0f6caa65199d23 transfer.sls sha256 e270357c78a126ee affinity=12-17 valgrind=unset
+[guix-8.20.0] server ctl=35713 h1=40047 h1tls=36909 h2=43893 proxy=42571
+[guix-8.20.0] probe lane=guix-8.20.0 libcurl=8.20.0 GnuTLS/3.8.13 machine=ta6le groups=(edge toward early suppress)
+[guix-8.20.0] cell edge n1000 face=h1 way=buffered opts=- ended=#t outcome=(status 200 version http/1.1 headers 1000) tally=(calls 1002 lines 1000 bytes 16022 heads (200:1000:16022)) stream=- ms=43.5 cpu_ms=32.3
+[guix-8.20.0]   ev 3 t=682.0 wrote face=h1 conn=60334 tag=n1000.buffered proto=h1 heads=[200:1000:16022] bytes=16022
+[guix-8.20.0] cell edge n1000 face=h1 way=streamed opts=- ended=#t outcome=(status 200 version http/1.1 headers 1000) tally=(calls 1002 lines 1000 bytes 16022 heads (200:1000:16022)) stream=(head 200 1000 body 0 end eof) ms=56.7 cpu_ms=45.9
+[guix-8.20.0]   ev 7 t=728.3 wrote face=h1 conn=60344 tag=n1000.streamed proto=h1 heads=[200:1000:16022] bytes=16022
+[guix-8.20.0] cell edge n1001 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1002 lines 1001 bytes 16036 heads (200:1001:16036)) stream=- ms=3.6 cpu_ms=1.2
+[guix-8.20.0]   ev 11 t=791.0 wrote face=h1 conn=60352 tag=n1001.buffered proto=h1 heads=[200:1001:16038] bytes=16038
+[guix-8.20.0] cell edge n1001 face=h1 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1002 lines 1001 bytes 16036 heads (200:1001:16036)) stream=(head none body 0 end (raised header-limit 23)) ms=3.7 cpu_ms=1.8
+[guix-8.20.0]   ev 15 t=798.8 wrote face=h1 conn=60360 tag=n1001.streamed proto=h1 heads=[200:1001:16038] bytes=16038
+[guix-8.20.0] cell edge total102400 face=h1 way=buffered opts=- ended=#t outcome=(status 200 version http/1.1 headers 401) tally=(calls 403 lines 401 bytes 102400 heads (200:401:102400)) stream=- ms=6.8 cpu_ms=5.7
+[guix-8.20.0]   ev 19 t=804.3 wrote face=h1 conn=60370 tag=total102400.buffered proto=h1 heads=[200:401:102400] bytes=102400
+[guix-8.20.0] cell edge total102400 face=h1 way=streamed opts=- ended=#t outcome=(status 200 version http/1.1 headers 401) tally=(calls 403 lines 401 bytes 102400 heads (200:401:102400)) stream=(head 200 401 body 0 end eof) ms=13.5 cpu_ms=10.8
+[guix-8.20.0]   ev 23 t=812.2 wrote face=h1 conn=60384 tag=total102400.streamed proto=h1 heads=[200:401:102400] bytes=102400
+[guix-8.20.0] cell edge total102401 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 2 returned 0") tally=(calls 403 lines 401 bytes 102401 heads (200:401:102401)) stream=- ms=1.9 cpu_ms=0.7
+[guix-8.20.0]   ev 27 t=827.6 wrote face=h1 conn=60388 tag=total102401.buffered proto=h1 heads=[200:401:102401] bytes=102401
+[guix-8.20.0] cell edge total102401 face=h1 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 2 returned 0") tally=(calls 403 lines 401 bytes 102401 heads (200:401:102401)) stream=(head none body 0 end (raised header-limit 23)) ms=1.9 cpu_ms=0.6
+[guix-8.20.0]   ev 31 t=830.4 wrote face=h1 conn=60396 tag=total102401.streamed proto=h1 heads=[200:401:102401] bytes=102401
+[guix-8.20.0] cell edge line102362 face=h1 way=buffered opts=- ended=#t outcome=(status 200 version http/1.1 headers 2) tally=(calls 4 lines 2 bytes 102400 heads (200:2:102400)) stream=- ms=1.8 cpu_ms=1.1
+[guix-8.20.0]   ev 35 t=833.0 wrote face=h1 conn=60398 tag=line102362.buffered proto=h1 heads=[200:2:102400] bytes=102400
+[guix-8.20.0] cell edge line102362 face=h1 way=streamed opts=- ended=#t outcome=(status 200 version http/1.1 headers 2) tally=(calls 4 lines 2 bytes 102400 heads (200:2:102400)) stream=(head 200 2 body 0 end eof) ms=3.6 cpu_ms=2.4
+[guix-8.20.0]   ev 39 t=837.4 wrote face=h1 conn=60408 tag=line102362.streamed proto=h1 heads=[200:2:102400] bytes=102400
+[guix-8.20.0] cell edge line102363 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 2 returned 0") tally=(calls 4 lines 2 bytes 102401 heads (200:2:102401)) stream=- ms=1.0 cpu_ms=0.7
+[guix-8.20.0]   ev 43 t=842.8 wrote face=h1 conn=60424 tag=line102363.buffered proto=h1 heads=[200:2:102401] bytes=102401
+[guix-8.20.0] cell edge line102363 face=h1 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 2 returned 0") tally=(calls 4 lines 2 bytes 102401 heads (200:2:102401)) stream=(head none body 0 end (raised header-limit 23)) ms=1.0 cpu_ms=0.7
+[guix-8.20.0]   ev 47 t=847.1 wrote face=h1 conn=60440 tag=line102363.streamed proto=h1 heads=[200:2:102401] bytes=102401
+[guix-8.20.0] cell edge n1000 face=h2 way=buffered opts=- ended=#t outcome=(status 200 version http/2 headers 1000) tally=(calls 1002 lines 1000 bytes 16018 heads (200:1000:16018)) stream=- ms=43.5 cpu_ms=29.7
+[guix-8.20.0]   ev 50 t=861.8 h2-close face=h2 conn=41656 tag=n1000.buffered heads=[200:1000] rst=0
+[guix-8.20.0]   ev 51 t=894.0 goaway face=h2 conn=41656 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell edge n1000 face=h2 way=streamed opts=- ended=#t outcome=(status 200 version http/2 headers 1000) tally=(calls 1002 lines 1000 bytes 16018 heads (200:1000:16018)) stream=(head 200 1000 body 0 end eof) ms=56.7 cpu_ms=52.6
+[guix-8.20.0]   ev 54 t=902.5 h2-close face=h2 conn=41660 tag=n1000.streamed heads=[200:1000] rst=0
+[guix-8.20.0]   ev 55 t=954.0 goaway face=h2 conn=41660 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell edge n1001 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1002 lines 1001 bytes 16032 heads (200:1001:16032)) stream=- ms=6.8 cpu_ms=3.1
+[guix-8.20.0]   ev 58 t=960.3 h2-close face=h2 conn=41676 tag=n1001.buffered heads=[200:1001] rst=0
+[guix-8.20.0]   ev 59 t=964.5 goaway face=h2 conn=41676 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell edge n1001 face=h2 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1002 lines 1001 bytes 16032 heads (200:1001:16032)) stream=(head none body 0 end (raised header-limit 23)) ms=7.0 cpu_ms=3.3
+[guix-8.20.0]   ev 62 t=969.9 h2-close face=h2 conn=41688 tag=n1001.streamed heads=[200:1001] rst=0
+[guix-8.20.0]   ev 63 t=973.2 goaway face=h2 conn=41688 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell edge total102400 face=h2 way=buffered opts=- ended=#t outcome=(status 200 version http/2 headers 401) tally=(calls 403 lines 401 bytes 102400 heads (200:401:102400)) stream=- ms=13.3 cpu_ms=8.1
+[guix-8.20.0]   ev 66 t=978.2 h2-close face=h2 conn=41704 tag=total102400.buffered heads=[200:401] rst=0
+[guix-8.20.0]   ev 67 t=988.1 goaway face=h2 conn=41704 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell edge total102400 face=h2 way=streamed opts=- ended=#t outcome=(status 200 version http/2 headers 401) tally=(calls 403 lines 401 bytes 102400 heads (200:401:102400)) stream=(head 200 401 body 0 end eof) ms=16.8 cpu_ms=13.6
+[guix-8.20.0]   ev 70 t=994.6 h2-close face=h2 conn=41708 tag=total102400.streamed heads=[200:401] rst=0
+[guix-8.20.0]   ev 71 t=1006.9 goaway face=h2 conn=41708 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell edge total102401 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 2 returned 0") tally=(calls 403 lines 401 bytes 102401 heads (200:401:102401)) stream=- ms=6.8 cpu_ms=3.4
+[guix-8.20.0]   ev 74 t=1012.7 h2-close face=h2 conn=41714 tag=total102401.buffered heads=[200:401] rst=0
+[guix-8.20.0]   ev 75 t=1015.8 goaway face=h2 conn=41714 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell edge total102401 face=h2 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 2 returned 0") tally=(calls 403 lines 401 bytes 102401 heads (200:401:102401)) stream=(head none body 0 end (raised header-limit 23)) ms=6.8 cpu_ms=3.2
+[guix-8.20.0]   ev 78 t=1020.6 h2-close face=h2 conn=41730 tag=total102401.streamed heads=[200:401] rst=0
+[guix-8.20.0]   ev 79 t=1024.0 goaway face=h2 conn=41730 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell edge line102366 face=h2 way=buffered opts=- ended=#t outcome=(status 200 version http/2 headers 2) tally=(calls 4 lines 2 bytes 102400 heads (200:2:102400)) stream=- ms=6.9 cpu_ms=3.3
+[guix-8.20.0]   ev 82 t=1028.4 h2-close face=h2 conn=41738 tag=line102366.buffered heads=[200:2] rst=0
+[guix-8.20.0]   ev 83 t=1032.6 goaway face=h2 conn=41738 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell edge line102366 face=h2 way=streamed opts=- ended=#t outcome=(status 200 version http/2 headers 2) tally=(calls 4 lines 2 bytes 102400 heads (200:2:102400)) stream=(head 200 2 body 0 end eof) ms=6.8 cpu_ms=4.0
+[guix-8.20.0]   ev 86 t=1037.3 h2-close face=h2 conn=41746 tag=line102366.streamed heads=[200:2] rst=0
+[guix-8.20.0]   ev 87 t=1041.2 goaway face=h2 conn=41746 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell edge line102367 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 2 returned 0") tally=(calls 4 lines 2 bytes 102401 heads (200:2:102401)) stream=- ms=3.5 cpu_ms=2.5
+[guix-8.20.0]   ev 90 t=1045.4 h2-close face=h2 conn=41758 tag=line102367.buffered heads=[200:2] rst=0
+[guix-8.20.0]   ev 91 t=1046.4 goaway face=h2 conn=41758 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell edge line102367 face=h2 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 2 returned 0") tally=(calls 4 lines 2 bytes 102401 heads (200:2:102401)) stream=(head none body 0 end (raised header-limit 23)) ms=3.5 cpu_ms=2.4
+[guix-8.20.0]   ev 94 t=1050.3 h2-close face=h2 conn=41762 tag=line102367.streamed heads=[200:2] rst=0
+[guix-8.20.0]   ev 95 t=1051.4 goaway face=h2 conn=41762 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward pre103-500+500 face=h1 way=buffered opts=- ended=#t outcome=(status 200 version http/1.1 headers 500) tally=(calls 1004 lines 1000 bytes 16050 heads (103:500:8028 200:500:8022)) stream=- ms=23.3 cpu_ms=12.6
+[guix-8.20.0]   ev 99 t=1053.6 wrote face=h1 conn=60456 tag=pre103-500 500.buffered proto=h1 heads=[103:500:8028,200:500:8022] bytes=16050
+[guix-8.20.0] cell toward pre103-500+500 face=h1 way=streamed opts=- ended=#t outcome=(status 200 version http/1.1 headers 500) tally=(calls 1004 lines 1000 bytes 16050 heads (103:500:8028 200:500:8022)) stream=(head 200 500 body 0 end eof) ms=26.9 cpu_ms=23.6
+[guix-8.20.0]   ev 103 t=1078.8 wrote face=h1 conn=60460 tag=pre103-500 500.streamed proto=h1 heads=[103:500:8028,200:500:8022] bytes=16050
+[guix-8.20.0] cell toward pre103-500+501 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16064 heads (103:500:8028 200:501:8036)) stream=- ms=1.9 cpu_ms=0.9
+[guix-8.20.0]   ev 107 t=1111.9 wrote face=h1 conn=60470 tag=pre103-500 501.buffered proto=h1 heads=[103:500:8028,200:501:8038] bytes=16066
+[guix-8.20.0] cell toward pre103-500+501 face=h1 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16064 heads (103:500:8028 200:501:8036)) stream=(head none body 0 end (raised header-limit 23)) ms=1.9 cpu_ms=0.9
+[guix-8.20.0]   ev 111 t=1115.2 wrote face=h1 conn=60478 tag=pre103-500 501.streamed proto=h1 heads=[103:500:8028,200:501:8038] bytes=16066
+[guix-8.20.0] cell toward pre100-500+501 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16061 heads (100:500:8025 200:501:8036)) stream=- ms=1.0 cpu_ms=0.8
+[guix-8.20.0]   ev 115 t=1118.2 wrote face=h1 conn=60494 tag=pre100-500 501.buffered proto=h1 heads=[100:500:8025,200:501:8038] bytes=16063
+[guix-8.20.0] cell toward pre100-500+501 face=h1 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16061 heads (100:500:8025 200:501:8036)) stream=(head none body 0 end (raised header-limit 23)) ms=1.9 cpu_ms=0.9
+[guix-8.20.0]   ev 119 t=1120.3 wrote face=h1 conn=60506 tag=pre100-500 501.streamed proto=h1 heads=[100:500:8025,200:501:8038] bytes=16063
+[guix-8.20.0] cell toward pre103-250x256+250x256 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 404 lines 401 bytes 102464 heads (103:250:64028 200:151:38436)) stream=- ms=1.9 cpu_ms=0.5
+[guix-8.20.0]   ev 123 t=1123.8 wrote face=h1 conn=60514 tag=pre103-250x256 250x256.buffered proto=h1 heads=[103:250:64028,200:250:63782] bytes=127810
+[guix-8.20.0] cell toward pre103-250x256+250x256 face=h1 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 404 lines 401 bytes 102464 heads (103:250:64028 200:151:38436)) stream=(head none body 0 end (raised header-limit 23)) ms=2.0 cpu_ms=0.7
+[guix-8.20.0]   ev 127 t=1127.0 wrote face=h1 conn=60516 tag=pre103-250x256 250x256.streamed proto=h1 heads=[103:250:64028,200:250:63782] bytes=127810
+[guix-8.20.0] cell toward tr-2+998 face=h1 way=buffered opts=- ended=#t outcome=(status 200 version http/1.1 headers 2) tally=(calls 1002 lines 1000 bytes 16031 heads (200:2:63 T:998:15968)) stream=- ms=1.9 cpu_ms=1.0
+[guix-8.20.0]   ev 131 t=1130.0 wrote face=h1 conn=60530 tag=tr-2 998.buffered proto=h1 heads=[200:2:63,trailers:998:15970] bytes=16036
+[guix-8.20.0] cell toward tr-2+998 face=h1 way=streamed opts=- ended=#t outcome=(status 200 version http/1.1 headers 2) tally=(calls 1002 lines 1000 bytes 16031 heads (200:2:63 T:998:15968)) stream=(head 200 2 body 0 end eof) ms=1.7 cpu_ms=1.0
+[guix-8.20.0]   ev 135 t=1132.9 wrote face=h1 conn=60544 tag=tr-2 998.streamed proto=h1 heads=[200:2:63,trailers:998:15970] bytes=16036
+[guix-8.20.0] cell toward tr-2+999 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1003 lines 1001 bytes 16047 heads (200:2:63 T:999:15984)) stream=- ms=1.9 cpu_ms=1.0
+[guix-8.20.0]   ev 139 t=1136.2 wrote face=h1 conn=60548 tag=tr-2 999.buffered proto=h1 heads=[200:2:63,trailers:999:15986] bytes=16052
+[guix-8.20.0] cell toward tr-2+999 face=h1 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1003 lines 1001 bytes 16047 heads (200:2:63 T:999:15984)) stream=(head 200 2 body 0 end (raised header-limit 23)) ms=1.5 cpu_ms=1.0
+[guix-8.20.0]   ev 143 t=1139.2 wrote face=h1 conn=60552 tag=tr-2 999.streamed proto=h1 heads=[200:2:63,trailers:999:15986] bytes=16052
+[guix-8.20.0] cell toward tr-2+400x256 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 404 lines 402 bytes 102463 heads (200:2:63 T:400:102400)) stream=- ms=1.9 cpu_ms=1.1
+[guix-8.20.0]   ev 147 t=1142.4 wrote face=h1 conn=60562 tag=tr-2 400x256.buffered proto=h1 heads=[200:2:63,trailers:400:102402] bytes=102468
+[guix-8.20.0] cell toward tr-2+400x256 face=h1 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 404 lines 402 bytes 102463 heads (200:2:63 T:400:102400)) stream=(head 200 2 body 0 end (raised header-limit 23)) ms=1.5 cpu_ms=1.1
+[guix-8.20.0]   ev 151 t=1145.1 wrote face=h1 conn=60574 tag=tr-2 400x256.streamed proto=h1 heads=[200:2:63,trailers:400:102402] bytes=102468
+[guix-8.20.0] cell toward auth-499+500 face=h1 way=buffered opts=- ended=#t outcome=(status 200 version http/1.1 headers 500) tally=(calls 1004 lines 1000 bytes 16130 heads (401:500:8108 200:500:8022)) stream=- ms=13.3 cpu_ms=11.7
+[guix-8.20.0]   ev 155 t=1147.5 wrote face=h1 conn=60588 tag=auth-499 500.buffered proto=h1 heads=[401:500:8108] bytes=8108
+[guix-8.20.0]   ev 157 t=1148.1 wrote face=h1 conn=60588 tag=auth-499 500.buffered proto=h1 heads=[200:500:8022] bytes=8022
+[guix-8.20.0] cell toward auth-499+501 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16144 heads (401:500:8108 200:501:8036)) stream=- ms=1.9 cpu_ms=1.0
+[guix-8.20.0]   ev 161 t=1162.2 wrote face=h1 conn=60592 tag=auth-499 501.buffered proto=h1 heads=[401:500:8108] bytes=8108
+[guix-8.20.0]   ev 163 t=1162.9 wrote face=h1 conn=60592 tag=auth-499 501.buffered proto=h1 heads=[200:501:8038] bytes=8038
+[guix-8.20.0] cell toward auth-250x256+250x256 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 406 lines 403 bytes 102576 heads (401:251:63884 200:152:38692)) stream=- ms=1.8 cpu_ms=0.6
+[guix-8.20.0]   ev 167 t=1165.1 wrote face=h1 conn=60606 tag=auth-250x256 250x256.buffered proto=h1 heads=[401:251:63884] bytes=63884
+[guix-8.20.0]   ev 169 t=1165.5 wrote face=h1 conn=60606 tag=auth-250x256 250x256.buffered proto=h1 heads=[200:250:63782] bytes=63782
+[guix-8.20.0] cell toward pre103-500+500 face=h2 way=buffered opts=- ended=#t outcome=(status 200 version http/2 headers 500) tally=(calls 1004 lines 1000 bytes 16033 heads (103:500:8015 200:500:8018)) stream=- ms=23.3 cpu_ms=13.6
+[guix-8.20.0]   ev 172 t=1170.8 h2-close face=h2 conn=41770 tag=pre103-500 500.buffered heads=[103:500,200:500] rst=0
+[guix-8.20.0]   ev 173 t=1191.0 goaway face=h2 conn=41770 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward pre103-500+500 face=h2 way=streamed opts=- ended=#t outcome=(status 200 version http/2 headers 500) tally=(calls 1004 lines 1000 bytes 16033 heads (103:500:8015 200:500:8018)) stream=(head 200 500 body 0 end eof) ms=26.9 cpu_ms=24.2
+[guix-8.20.0]   ev 176 t=1196.0 h2-close face=h2 conn=41780 tag=pre103-500 500.streamed heads=[103:500,200:500] rst=0
+[guix-8.20.0]   ev 177 t=1220.1 goaway face=h2 conn=41780 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward pre103-500+501 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16047 heads (103:500:8015 200:501:8032)) stream=- ms=6.8 cpu_ms=3.1
+[guix-8.20.0]   ev 180 t=1224.6 h2-close face=h2 conn=41796 tag=pre103-500 501.buffered heads=[103:500,200:501] rst=0
+[guix-8.20.0]   ev 181 t=1228.4 goaway face=h2 conn=41796 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward pre103-500+501 face=h2 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16047 heads (103:500:8015 200:501:8032)) stream=(head none body 0 end (raised header-limit 23)) ms=6.8 cpu_ms=3.2
+[guix-8.20.0]   ev 184 t=1233.0 h2-close face=h2 conn=41802 tag=pre103-500 501.streamed heads=[103:500,200:501] rst=0
+[guix-8.20.0]   ev 185 t=1236.6 goaway face=h2 conn=41802 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward pre100-500+501 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16047 heads (100:500:8015 200:501:8032)) stream=- ms=6.9 cpu_ms=3.5
+[guix-8.20.0]   ev 188 t=1241.9 h2-close face=h2 conn=41814 tag=pre100-500 501.buffered heads=[100:500,200:501] rst=0
+[guix-8.20.0]   ev 189 t=1245.5 goaway face=h2 conn=41814 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward pre100-500+501 face=h2 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16047 heads (100:500:8015 200:501:8032)) stream=(head none body 0 end (raised header-limit 23)) ms=6.9 cpu_ms=3.4
+[guix-8.20.0]   ev 192 t=1250.6 h2-close face=h2 conn=41828 tag=pre100-500 501.streamed heads=[100:500,200:501] rst=0
+[guix-8.20.0]   ev 193 t=1254.1 goaway face=h2 conn=41828 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward pre103-250x256+250x256 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 404 lines 401 bytes 102447 heads (103:250:64015 200:151:38432)) stream=- ms=6.8 cpu_ms=3.1
+[guix-8.20.0]   ev 196 t=1259.1 h2-close face=h2 conn=41836 tag=pre103-250x256 250x256.buffered heads=[103:250,200:250] rst=0
+[guix-8.20.0]   ev 197 t=1262.7 goaway face=h2 conn=41836 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward pre103-250x256+250x256 face=h2 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 404 lines 401 bytes 102447 heads (103:250:64015 200:151:38432)) stream=(head none body 0 end (raised header-limit 23)) ms=6.9 cpu_ms=3.4
+[guix-8.20.0]   ev 200 t=1267.8 h2-close face=h2 conn=41850 tag=pre103-250x256 250x256.streamed heads=[103:250,200:250] rst=0
+[guix-8.20.0]   ev 201 t=1271.4 goaway face=h2 conn=41850 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward tr-2+998 face=h2 way=buffered opts=- ended=#t outcome=(status 200 version http/2 headers 2) tally=(calls 1002 lines 1000 bytes 16015 heads (200:2:47 T:998:15968)) stream=- ms=6.8 cpu_ms=3.0
+[guix-8.20.0]   ev 204 t=1276.5 h2-close face=h2 conn=41856 tag=tr-2 998.buffered heads=[200:2,trailers:998] rst=0
+[guix-8.20.0]   ev 205 t=1279.8 goaway face=h2 conn=41856 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward tr-2+998 face=h2 way=streamed opts=- ended=#t outcome=(status 200 version http/2 headers 2) tally=(calls 1002 lines 1000 bytes 16015 heads (200:2:47 T:998:15968)) stream=(head 200 2 body 0 end eof) ms=4.6 cpu_ms=2.9
+[guix-8.20.0]   ev 208 t=1284.2 h2-close face=h2 conn=41870 tag=tr-2 998.streamed heads=[200:2,trailers:998] rst=0
+[guix-8.20.0]   ev 209 t=1285.9 goaway face=h2 conn=41870 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward tr-2+999 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1003 lines 1001 bytes 16031 heads (200:2:47 T:999:15984)) stream=- ms=6.8 cpu_ms=2.8
+[guix-8.20.0]   ev 212 t=1290.3 h2-close face=h2 conn=41882 tag=tr-2 999.buffered heads=[200:2,trailers:999] rst=0
+[guix-8.20.0]   ev 213 t=1294.2 goaway face=h2 conn=41882 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward tr-2+999 face=h2 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1003 lines 1001 bytes 16031 heads (200:2:47 T:999:15984)) stream=(head 200 2 body 0 end (raised header-limit 23)) ms=4.6 cpu_ms=2.9
+[guix-8.20.0]   ev 216 t=1298.4 h2-close face=h2 conn=41896 tag=tr-2 999.streamed heads=[200:2,trailers:999] rst=0
+[guix-8.20.0]   ev 217 t=1300.1 goaway face=h2 conn=41896 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward tr-2+400x256 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 404 lines 402 bytes 102447 heads (200:2:47 T:400:102400)) stream=- ms=6.8 cpu_ms=3.3
+[guix-8.20.0]   ev 220 t=1304.3 h2-close face=h2 conn=41908 tag=tr-2 400x256.buffered heads=[200:2,trailers:400] rst=0
+[guix-8.20.0]   ev 221 t=1308.3 goaway face=h2 conn=41908 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward tr-2+400x256 face=h2 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 404 lines 402 bytes 102447 heads (200:2:47 T:400:102400)) stream=(head 200 2 body 0 end (raised header-limit 23)) ms=4.5 cpu_ms=3.2
+[guix-8.20.0]   ev 224 t=1312.1 h2-close face=h2 conn=41920 tag=tr-2 400x256.streamed heads=[200:2,trailers:400] rst=0
+[guix-8.20.0]   ev 225 t=1314.0 goaway face=h2 conn=41920 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward auth-499+500 face=h2 way=buffered opts=- ended=#t outcome=(status 200 version http/2 headers 500) tally=(calls 1004 lines 1000 bytes 16112 heads (401:500:8094 200:500:8018)) stream=- ms=23.3 cpu_ms=14.7
+[guix-8.20.0]   ev 228 t=1317.7 h2-close face=h2 conn=41936 tag=auth-499 500.buffered heads=[401:500] rst=0
+[guix-8.20.0]   ev 230 t=1319.0 h2-close face=h2 conn=41936 tag=auth-499 500.buffered heads=[200:500] rst=0
+[guix-8.20.0]   ev 231 t=1338.8 goaway face=h2 conn=41936 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward auth-499+501 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16126 heads (401:500:8094 200:501:8032)) stream=- ms=6.8 cpu_ms=3.7
+[guix-8.20.0]   ev 234 t=1343.5 h2-close face=h2 conn=41952 tag=auth-499 501.buffered heads=[401:500] rst=0
+[guix-8.20.0]   ev 236 t=1345.1 h2-close face=h2 conn=41952 tag=auth-499 501.buffered heads=[200:501] rst=0
+[guix-8.20.0]   ev 237 t=1350.1 goaway face=h2 conn=41952 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward auth-250x256+250x256 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 406 lines 403 bytes 102558 heads (401:251:63870 200:152:38688)) stream=- ms=6.8 cpu_ms=3.4
+[guix-8.20.0]   ev 240 t=1355.8 h2-close face=h2 conn=41958 tag=auth-250x256 250x256.buffered heads=[401:251] rst=0
+[guix-8.20.0]   ev 242 t=1357.5 h2-close face=h2 conn=41958 tag=auth-250x256 250x256.buffered heads=[200:250] rst=0
+[guix-8.20.0]   ev 243 t=1359.5 goaway face=h2 conn=41958 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward expect-500+500 face=h1 way=buffered opts=- ended=#t outcome=(status 200 version http/1.1 headers 500) tally=(calls 1006 lines 1000 bytes 16085 heads (417:500:8038 100:0:25 200:500:8022)) stream=- ms=13.3 cpu_ms=11.7
+[guix-8.20.0]   ev 247 t=1361.5 wrote face=h1 conn=60618 tag=expect-500 500.buffered proto=h1 heads=[417:500:8038] bytes=8038
+[guix-8.20.0]   ev 249 t=1361.9 wrote face=h1 conn=60618 tag=expect-500 500.buffered proto=h1 heads=[100:0:25] bytes=25
+[guix-8.20.0]   ev 250 t=1362.1 wrote face=h1 conn=60618 tag=expect-500 500.buffered proto=h1 heads=[200:500:8022] bytes=8022
+[guix-8.20.0] cell toward expect-500+501 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1006 lines 1001 bytes 16099 heads (417:500:8038 100:0:25 200:501:8036)) stream=- ms=1.9 cpu_ms=0.9
+[guix-8.20.0]   ev 254 t=1376.1 wrote face=h1 conn=60620 tag=expect-500 501.buffered proto=h1 heads=[417:500:8038] bytes=8038
+[guix-8.20.0]   ev 256 t=1376.4 wrote face=h1 conn=60620 tag=expect-500 501.buffered proto=h1 heads=[100:0:25] bytes=25
+[guix-8.20.0]   ev 257 t=1376.6 wrote face=h1 conn=60620 tag=expect-500 501.buffered proto=h1 heads=[200:501:8038] bytes=8038
+[guix-8.20.0] cell toward expect-250x256+250x256 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 407 lines 402 bytes 102515 heads (417:250:63798 100:0:25 200:152:38692)) stream=- ms=1.9 cpu_ms=0.6
+[guix-8.20.0]   ev 261 t=1379.0 wrote face=h1 conn=60628 tag=expect-250x256 250x256.buffered proto=h1 heads=[417:250:63798] bytes=63798
+[guix-8.20.0]   ev 263 t=1379.3 wrote face=h1 conn=60628 tag=expect-250x256 250x256.buffered proto=h1 heads=[100:0:25] bytes=25
+[guix-8.20.0]   ev 264 t=1379.5 wrote face=h1 conn=60628 tag=expect-250x256 250x256.buffered proto=h1 heads=[200:250:63782] bytes=63782
+[guix-8.20.0] cell toward connect-500+500 face=h1tls+proxy way=buffered opts=- ended=#t outcome=(status 200 version http/1.1 headers 500) tally=(calls 1004 lines 1000 bytes 16061 heads (200:500:8039 200:500:8022)) stream=- ms=63.9 cpu_ms=15.9
+[guix-8.20.0]   ev 268 t=1383.2 connect-answered face=proxy conn=48394 tag=connect-500 500.buffered target=127.0.0.1:36909 lines=500 bytes=8039
+[guix-8.20.0]   ev 271 t=1427.8 wrote face=h1tls conn=35688 tag=connect-500 500.buffered proto=h1 heads=[200:500:8022] bytes=8022
+[guix-8.20.0] cell toward connect-500+500 face=h1tls+proxy way=streamed opts=- ended=#t outcome=(status 200 version http/1.1 headers 500) tally=(calls 1004 lines 1000 bytes 16061 heads (200:500:8039 200:500:8022)) stream=(head 200 500 body 0 end eof) ms=67.4 cpu_ms=26.4
+[guix-8.20.0]   ev 275 t=1449.5 connect-answered face=proxy conn=48398 tag=connect-500 500.streamed target=127.0.0.1:36909 lines=500 bytes=8039
+[guix-8.20.0]   ev 278 t=1493.8 wrote face=h1tls conn=35704 tag=connect-500 500.streamed proto=h1 heads=[200:500:8022] bytes=8022
+[guix-8.20.0] cell toward connect-500+501 face=h1tls+proxy way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16075 heads (200:500:8039 200:501:8036)) stream=- ms=53.8 cpu_ms=5.4
+[guix-8.20.0]   ev 282 t=1520.8 connect-answered face=proxy conn=48400 tag=connect-500 501.buffered target=127.0.0.1:36909 lines=500 bytes=8039
+[guix-8.20.0]   ev 285 t=1566.4 wrote face=h1tls conn=35706 tag=connect-500 501.buffered proto=h1 heads=[200:501:8038] bytes=8038
+[guix-8.20.0] cell toward connect-500+501 face=h1tls+proxy way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16075 heads (200:500:8039 200:501:8036)) stream=(head none body 0 end (raised header-limit 23)) ms=53.8 cpu_ms=5.4
+[guix-8.20.0]   ev 289 t=1577.9 connect-answered face=proxy conn=48406 tag=connect-500 501.streamed target=127.0.0.1:36909 lines=500 bytes=8039
+[guix-8.20.0]   ev 292 t=1623.4 wrote face=h1tls conn=35712 tag=connect-500 501.streamed proto=h1 heads=[200:501:8038] bytes=8038
+[guix-8.20.0] cell toward connect-250x256+250x256 face=h1tls+proxy way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 404 lines 401 bytes 102475 heads (200:250:64039 200:151:38436)) stream=- ms=63.9 cpu_ms=19.1
+[guix-8.20.0]   ev 296 t=1634.7 connect-answered face=proxy conn=48420 tag=connect-250x256 250x256.buffered target=127.0.0.1:36909 lines=250 bytes=64039
+[guix-8.20.0]   ev 299 t=1694.2 wrote face=h1tls conn=35718 tag=connect-250x256 250x256.buffered proto=h1 heads=[200:250:63782] bytes=63782
+[guix-8.20.0] cell toward connect-250x256+250x256 face=h1tls+proxy way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 404 lines 401 bytes 102475 heads (200:250:64039 200:151:38436)) stream=(head none body 0 end (raised header-limit 23)) ms=63.9 cpu_ms=18.8
+[guix-8.20.0]   ev 303 t=1701.5 connect-answered face=proxy conn=48434 tag=connect-250x256 250x256.streamed target=127.0.0.1:36909 lines=250 bytes=64039
+[guix-8.20.0]   ev 306 t=1759.9 wrote face=h1tls conn=35726 tag=connect-250x256 250x256.streamed proto=h1 heads=[200:250:63782] bytes=63782
+[guix-8.20.0] cell toward connect-500+500 face=h2+proxy way=buffered opts=- ended=#t outcome=(status 200 version http/2 headers 500) tally=(calls 1004 lines 1000 bytes 16057 heads (200:500:8039 200:500:8018)) stream=- ms=63.9 cpu_ms=17.3
+[guix-8.20.0]   ev 309 t=1767.9 connect-answered face=proxy conn=48436 tag=connect-500 500.buffered target=127.0.0.1:43893 lines=500 bytes=8039
+[guix-8.20.0]   ev 311 t=1814.1 h2-close face=h2 conn=41960 tag=connect-500 500.buffered heads=[200:500] rst=0
+[guix-8.20.0]   ev 312 t=1831.7 goaway face=h2 conn=41960 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward connect-500+500 face=h2+proxy way=streamed opts=- ended=#t outcome=(status 200 version http/2 headers 500) tally=(calls 1004 lines 1000 bytes 16057 heads (200:500:8039 200:500:8018)) stream=(head 200 500 body 0 end eof) ms=77.4 cpu_ms=29.4
+[guix-8.20.0]   ev 315 t=1836.9 connect-answered face=proxy conn=48442 tag=connect-500 500.streamed target=127.0.0.1:43893 lines=500 bytes=8039
+[guix-8.20.0]   ev 317 t=1882.7 h2-close face=h2 conn=41970 tag=connect-500 500.streamed heads=[200:500] rst=0
+[guix-8.20.0]   ev 318 t=1913.0 goaway face=h2 conn=41970 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward connect-500+501 face=h2+proxy way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16071 heads (200:500:8039 200:501:8032)) stream=- ms=53.8 cpu_ms=5.8
+[guix-8.20.0]   ev 321 t=1917.3 connect-answered face=proxy conn=48448 tag=connect-500 501.buffered target=127.0.0.1:43893 lines=500 bytes=8039
+[guix-8.20.0]   ev 323 t=1962.8 h2-close face=h2 conn=41980 tag=connect-500 501.buffered heads=[200:501] rst=0
+[guix-8.20.0]   ev 324 t=1970.6 goaway face=h2 conn=41980 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward connect-500+501 face=h2+proxy way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16071 heads (200:500:8039 200:501:8032)) stream=(head none body 0 end (raised header-limit 23)) ms=53.9 cpu_ms=5.9
+[guix-8.20.0]   ev 327 t=1974.8 connect-answered face=proxy conn=48452 tag=connect-500 501.streamed target=127.0.0.1:43893 lines=500 bytes=8039
+[guix-8.20.0]   ev 329 t=2020.8 h2-close face=h2 conn=41994 tag=connect-500 501.streamed heads=[200:501] rst=0
+[guix-8.20.0]   ev 330 t=2028.4 goaway face=h2 conn=41994 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward connect-250x256+250x256 face=h2+proxy way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 404 lines 401 bytes 102471 heads (200:250:64039 200:151:38432)) stream=- ms=74.1 cpu_ms=22.1
+[guix-8.20.0]   ev 333 t=2032.4 connect-answered face=proxy conn=48454 tag=connect-250x256 250x256.buffered target=127.0.0.1:43893 lines=250 bytes=64039
+[guix-8.20.0]   ev 335 t=2094.8 h2-close face=h2 conn=42004 tag=connect-250x256 250x256.buffered heads=[200:250] rst=0
+[guix-8.20.0]   ev 336 t=2106.2 goaway face=h2 conn=42004 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell toward connect-250x256+250x256 face=h2+proxy way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 404 lines 401 bytes 102471 heads (200:250:64039 200:151:38432)) stream=(head none body 0 end (raised header-limit 23)) ms=64.0 cpu_ms=20.1
+[guix-8.20.0]   ev 339 t=2110.5 connect-answered face=proxy conn=48458 tag=connect-250x256 250x256.streamed target=127.0.0.1:43893 lines=250 bytes=64039
+[guix-8.20.0]   ev 341 t=2170.8 h2-close face=h2 conn=42008 tag=connect-250x256 250x256.streamed heads=[200:250] rst=0
+[guix-8.20.0]   ev 342 t=2174.0 goaway face=h2 conn=42008 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early line102399 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 102399 returned 0") tally=(calls 3 lines 2 bytes 102435 heads (200:2:102435)) stream=- ms=1.1 cpu_ms=0.6
+[guix-8.20.0]   ev 346 t=2177.1 wrote face=h1 conn=60632 tag=line102399.buffered proto=h1 heads=[200:2:102437] bytes=102437
+[guix-8.20.0] cell early line102399 face=h1 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 102399 returned 0") tally=(calls 3 lines 2 bytes 102435 heads (200:2:102435)) stream=(head none body 0 end (raised header-limit 23)) ms=1.0 cpu_ms=0.4
+[guix-8.20.0]   ev 350 t=2179.7 wrote face=h1 conn=60642 tag=line102399.streamed proto=h1 heads=[200:2:102437] bytes=102437
+[guix-8.20.0] cell early line102400 face=h1 way=buffered opts=- ended=#t outcome=(failed perform-failed 100 too-large "") tally=(calls 2 lines 1 bytes 36 heads (200:1:36)) stream=- ms=0.6 cpu_ms=0.3
+[guix-8.20.0]   ev 354 t=2181.8 wrote face=h1 conn=60648 tag=line102400.buffered proto=h1 heads=[200:2:102438] bytes=102438
+[guix-8.20.0] cell early line102400 face=h1 way=streamed opts=- ended=#t outcome=(failed perform-failed 100 too-large "") tally=(calls 2 lines 1 bytes 36 heads (200:1:36)) stream=(head none body 0 end (raised perform-failed 100)) ms=0.6 cpu_ms=0.3
+[guix-8.20.0]   ev 358 t=2183.6 wrote face=h1 conn=60664 tag=line102400.streamed proto=h1 heads=[200:2:102438] bytes=102438
+[guix-8.20.0] cell early line102400 face=h1tls way=buffered opts=- ended=#t outcome=(failed perform-failed 100 too-large "") tally=(calls 2 lines 1 bytes 36 heads (200:1:36)) stream=- ms=3.5 cpu_ms=2.0
+[guix-8.20.0]   ev 363 t=2187.3 wrote face=h1tls conn=35730 tag=line102400.buffered proto=h1 heads=[200:2:102438] bytes=102438
+[guix-8.20.0] cell early line102400 face=h1tls way=streamed opts=- ended=#t outcome=(failed perform-failed 100 too-large "") tally=(calls 2 lines 1 bytes 36 heads (200:1:36)) stream=(head none body 0 end (raised perform-failed 100)) ms=3.6 cpu_ms=2.1
+[guix-8.20.0]   ev 368 t=2192.1 wrote face=h1tls conn=35736 tag=line102400.streamed proto=h1 heads=[200:2:102438] bytes=102438
+[guix-8.20.0] cell early line102400 face=h2 way=buffered opts=- ended=#t outcome=(failed perform-failed 16 protocol "Error receiving HTTP2 header: 100(A value or data field grew larger than allowed)") tally=(calls 2 lines 1 bytes 32 heads (200:1:32)) stream=- ms=3.5 cpu_ms=2.5
+[guix-8.20.0]   ev 371 t=2197.7 h2-close face=h2 conn=42012 tag=line102400.buffered heads=[200:2] rst=0
+[guix-8.20.0]   ev 372 t=2198.6 goaway face=h2 conn=42012 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early line102400 face=h2 way=streamed opts=- ended=#t outcome=(failed perform-failed 16 protocol "Error receiving HTTP2 header: 100(A value or data field grew larger than allowed)") tally=(calls 2 lines 1 bytes 32 heads (200:1:32)) stream=(head none body 0 end (raised perform-failed 16)) ms=3.6 cpu_ms=2.5
+[guix-8.20.0]   ev 375 t=2202.8 h2-close face=h2 conn=42028 tag=line102400.streamed heads=[200:2] rst=0
+[guix-8.20.0]   ev 376 t=2203.9 goaway face=h2 conn=42028 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early line102400-X face=h2 way=buffered opts=- ended=#t outcome=(failed perform-failed 16 protocol "nghttp2 shuts down connection with error 9: COMPRESSION_ERROR") tally=(calls 2 lines 1 bytes 32 heads (200:1:32)) stream=- ms=3.6 cpu_ms=2.1
+[guix-8.20.0]   ev 379 t=2207.9 h2-close face=h2 conn=42034 tag=line102400-X.buffered heads=[200:2] rst=0
+[guix-8.20.0]   ev 380 t=2208.1 goaway face=h2 conn=42034 received from the client, code=9 last_stream=0
+[guix-8.20.0] cell early line102400-X face=h2 way=streamed opts=- ended=#t outcome=(failed perform-failed 16 protocol "nghttp2 shuts down connection with error 9: COMPRESSION_ERROR") tally=(calls 2 lines 1 bytes 32 heads (200:1:32)) stream=(head none body 0 end (raised perform-failed 16)) ms=3.6 cpu_ms=2.2
+[guix-8.20.0]   ev 385 t=2213.1 h2-close face=h2 conn=42044 tag=line102400-X.streamed heads=[200:2] rst=0
+[guix-8.20.0]   ev 386 t=2213.3 goaway face=h2 conn=42044 received from the client, code=9 last_stream=0
+[guix-8.20.0] cell early total131071 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 402 lines 401 bytes 102432 heads (200:401:102432)) stream=- ms=6.8 cpu_ms=3.3
+[guix-8.20.0]   ev 391 t=2219.8 h2-close face=h2 conn=42046 tag=total131071.buffered heads=[200:513] rst=0
+[guix-8.20.0]   ev 392 t=2222.7 goaway face=h2 conn=42046 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early total131071 face=h2 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 402 lines 401 bytes 102432 heads (200:401:102432)) stream=(head none body 0 end (raised header-limit 23)) ms=6.9 cpu_ms=3.1
+[guix-8.20.0]   ev 395 t=2227.5 h2-close face=h2 conn=42054 tag=total131071.streamed heads=[200:513] rst=0
+[guix-8.20.0]   ev 396 t=2231.1 goaway face=h2 conn=42054 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early total131072 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 402 lines 401 bytes 102432 heads (200:401:102432)) stream=- ms=6.8 cpu_ms=3.0
+[guix-8.20.0]   ev 399 t=2236.2 h2-close face=h2 conn=42064 tag=total131072.buffered heads=[200:513] rst=0
+[guix-8.20.0]   ev 400 t=2239.8 goaway face=h2 conn=42064 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early total131072 face=h2 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 402 lines 401 bytes 102432 heads (200:401:102432)) stream=(head none body 0 end (raised header-limit 23)) ms=6.9 cpu_ms=3.0
+[guix-8.20.0]   ev 403 t=2244.6 h2-close face=h2 conn=42072 tag=total131072.streamed heads=[200:513] rst=0
+[guix-8.20.0]   ev 404 t=2248.2 goaway face=h2 conn=42072 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early total307199 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 402 lines 401 bytes 102432 heads (200:401:102432)) stream=- ms=13.2 cpu_ms=3.0
+[guix-8.20.0]   ev 407 t=2254.5 h2-close face=h2 conn=42082 tag=total307199.buffered heads=[200:1201] rst=0
+[guix-8.20.0]   ev 408 t=2262.6 goaway face=h2 conn=42082 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early total307199 face=h2 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 402 lines 401 bytes 102432 heads (200:401:102432)) stream=(head none body 0 end (raised header-limit 23)) ms=6.8 cpu_ms=3.1
+[guix-8.20.0]   ev 411 t=2269.7 h2-close face=h2 conn=42098 tag=total307199.streamed heads=[200:1201] rst=0
+[guix-8.20.0]   ev 412 t=2271.3 goaway face=h2 conn=42098 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early tr-2+1600x256 face=h2 way=buffered opts=- ended=#t outcome=(failed perform-failed 16 protocol "nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame") tally=(calls 4 lines 2 bytes 47 heads (200:2:47)) stream=- ms=13.2 cpu_ms=3.5
+[guix-8.20.0]   ev 415 t=2280.9 h2-close face=h2 conn=42108 tag=tr-2 1600x256.buffered heads=[200:2,trailers:1600] rst=0
+[guix-8.20.0]   ev 416 t=2286.5 goaway face=h2 conn=42108 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early tr-2+1600x256 face=h2 way=streamed opts=- ended=#t outcome=(failed perform-failed 16 protocol "nghttp2 recv error -905: Too many CONTINUATION frames following a HEADER frame") tally=(calls 4 lines 2 bytes 47 heads (200:2:47)) stream=(head 200 2 body 0 end (raised perform-failed 16)) ms=10.3 cpu_ms=3.7
+[guix-8.20.0]   ev 419 t=2296.5 h2-close face=h2 conn=42124 tag=tr-2 1600x256.streamed heads=[200:2,trailers:1600] rst=0
+[guix-8.20.0]   ev 420 t=2299.2 goaway face=h2 conn=42124 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early tr-line4000 face=h1 way=buffered opts=- ended=#t outcome=(status 200 version http/1.1 headers 2) tally=(calls 5 lines 3 bytes 4063 heads (200:2:63 T:1:4000)) stream=- ms=0.5 cpu_ms=0.3
+[guix-8.20.0]   ev 424 t=2301.9 wrote face=h1 conn=60670 tag=tr-line4000.buffered proto=h1 heads=[200:2:63,trailers:1:4002] bytes=4068
+[guix-8.20.0] cell early tr-line4000 face=h1 way=streamed opts=- ended=#t outcome=(status 200 version http/1.1 headers 2) tally=(calls 5 lines 3 bytes 4063 heads (200:2:63 T:1:4000)) stream=(head 200 2 body 0 end eof) ms=0.6 cpu_ms=0.3
+[guix-8.20.0]   ev 428 t=2303.5 wrote face=h1 conn=60680 tag=tr-line4000.streamed proto=h1 heads=[200:2:63,trailers:1:4002] bytes=4068
+[guix-8.20.0] cell early tr-line5000 face=h1 way=buffered opts=- ended=#t outcome=(failed perform-failed 100 too-large "Out of memory in chunked-encoding") tally=(calls 4 lines 2 bytes 63 heads (200:2:63)) stream=- ms=0.5 cpu_ms=0.3
+[guix-8.20.0]   ev 432 t=2305.6 wrote face=h1 conn=60684 tag=tr-line5000.buffered proto=h1 heads=[200:2:63,trailers:1:5002] bytes=5068
+[guix-8.20.0] cell early tr-line5000 face=h1 way=streamed opts=- ended=#t outcome=(failed perform-failed 100 too-large "Out of memory in chunked-encoding") tally=(calls 4 lines 2 bytes 63 heads (200:2:63)) stream=(head 200 2 body 0 end (raised perform-failed 100)) ms=0.6 cpu_ms=0.3
+[guix-8.20.0]   ev 436 t=2307.2 wrote face=h1 conn=60696 tag=tr-line5000.streamed proto=h1 heads=[200:2:63,trailers:1:5002] bytes=5068
+[guix-8.20.0] cell early tr-line5000 face=h2 way=buffered opts=- ended=#t outcome=(status 200 version http/2 headers 2) tally=(calls 5 lines 3 bytes 5047 heads (200:2:47 T:1:5000)) stream=- ms=3.5 cpu_ms=2.4
+[guix-8.20.0]   ev 439 t=2311.5 h2-close face=h2 conn=42128 tag=tr-line5000.buffered heads=[200:2,trailers:1] rst=0
+[guix-8.20.0]   ev 440 t=2312.2 goaway face=h2 conn=42128 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early tr-line5000 face=h2 way=streamed opts=- ended=#t outcome=(status 200 version http/2 headers 2) tally=(calls 5 lines 3 bytes 5047 heads (200:2:47 T:1:5000)) stream=(head 200 2 body 0 end eof) ms=3.5 cpu_ms=2.3
+[guix-8.20.0]   ev 443 t=2316.4 h2-close face=h2 conn=42134 tag=tr-line5000.streamed heads=[200:2,trailers:1] rst=0
+[guix-8.20.0]   ev 444 t=2317.2 goaway face=h2 conn=42134 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early tr-2+6000 face=h1 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1003 lines 1001 bytes 16047 heads (200:2:63 T:999:15984)) stream=- ms=3.5 cpu_ms=1.0
+[guix-8.20.0]   ev 448 t=2320.9 wrote face=h1 conn=60702 tag=tr-2 6000.buffered proto=h1 heads=[200:2:63,trailers:6000:96002] bytes=96068
+[guix-8.20.0] cell early tr-2+6000 face=h1 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1003 lines 1001 bytes 16047 heads (200:2:63 T:999:15984)) stream=(head 200 2 body 0 end (raised header-limit 23)) ms=7.4 cpu_ms=1.4
+[guix-8.20.0]   ev 452 t=2333.4 wrote face=h1 conn=60716 tag=tr-2 6000.streamed proto=h1 heads=[200:2:63,trailers:6000:96002] bytes=96068
+[guix-8.20.0] cell early tr-2+6000 face=h2 way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1003 lines 1001 bytes 16031 heads (200:2:47 T:999:15984)) stream=- ms=23.3 cpu_ms=5.0
+[guix-8.20.0]   ev 455 t=2350.3 h2-close face=h2 conn=42138 tag=tr-2 6000.buffered heads=[200:2,trailers:6000] rst=0
+[guix-8.20.0]   ev 456 t=2361.4 goaway face=h2 conn=42138 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early tr-2+6000 face=h2 way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1003 lines 1001 bytes 16031 heads (200:2:47 T:999:15984)) stream=(head 200 2 body 0 end (raised header-limit 23)) ms=14.2 cpu_ms=4.6
+[guix-8.20.0]   ev 459 t=2374.5 h2-close face=h2 conn=42154 tag=tr-2 6000.streamed heads=[200:2,trailers:6000] rst=0
+[guix-8.20.0]   ev 460 t=2377.7 goaway face=h2 conn=42154 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early tr-2+3 face=h1 way=buffered opts=- ended=#t outcome=(status 200 version http/1.1 headers 2) tally=(calls 7 lines 5 bytes 111 heads (200:2:63 T:3:48)) stream=- ms=0.5 cpu_ms=0.2
+[guix-8.20.0]   ev 464 t=2379.5 wrote face=h1 conn=60724 tag=tr-2 3.buffered proto=h1 heads=[200:2:63,trailers:3:50] bytes=116
+[guix-8.20.0] cell early tr-2+3 face=h1 way=streamed opts=- ended=#t outcome=(status 200 version http/1.1 headers 2) tally=(calls 7 lines 5 bytes 111 heads (200:2:63 T:3:48)) stream=(head 200 2 body 0 end eof) ms=0.3 cpu_ms=0.2
+[guix-8.20.0]   ev 468 t=2380.8 wrote face=h1 conn=60728 tag=tr-2 3.streamed proto=h1 heads=[200:2:63,trailers:3:50] bytes=116
+[guix-8.20.0] cell early tr-2+3 face=h2 way=buffered opts=- ended=#t outcome=(status 200 version http/2 headers 2) tally=(calls 7 lines 5 bytes 95 heads (200:2:47 T:3:48)) stream=- ms=3.5 cpu_ms=1.8
+[guix-8.20.0]   ev 471 t=2384.2 h2-close face=h2 conn=42158 tag=tr-2 3.buffered heads=[200:2,trailers:3] rst=0
+[guix-8.20.0]   ev 472 t=2385.5 goaway face=h2 conn=42158 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell early tr-2+3 face=h2 way=streamed opts=- ended=#t outcome=(status 200 version http/2 headers 2) tally=(calls 7 lines 5 bytes 95 heads (200:2:47 T:3:48)) stream=(head 200 2 body 0 end eof) ms=3.5 cpu_ms=1.7
+[guix-8.20.0]   ev 475 t=2388.6 h2-close face=h2 conn=42170 tag=tr-2 3.streamed heads=[200:2,trailers:3] rst=0
+[guix-8.20.0]   ev 476 t=2390.1 goaway face=h2 conn=42170 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell suppress connect-600+600 face=h1tls+proxy way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16075 heads (200:600:9639 200:401:6436)) stream=- ms=53.6 cpu_ms=5.5
+[guix-8.20.0]   ev 480 t=2392.3 connect-answered face=proxy conn=48470 tag=connect-600 600.buffered target=127.0.0.1:36909 lines=600 bytes=9639
+[guix-8.20.0]   ev 483 t=2438.0 wrote face=h1tls conn=35748 tag=connect-600 600.buffered proto=h1 heads=[200:600:9622] bytes=9622
+[guix-8.20.0] cell suppress connect-600+600 face=h1tls+proxy way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16075 heads (200:600:9639 200:401:6436)) stream=(head none body 0 end (raised header-limit 23)) ms=53.6 cpu_ms=5.5
+[guix-8.20.0]   ev 487 t=2447.9 connect-answered face=proxy conn=48486 tag=connect-600 600.streamed target=127.0.0.1:36909 lines=600 bytes=9639
+[guix-8.20.0]   ev 490 t=2492.9 wrote face=h1tls conn=35754 tag=connect-600 600.streamed proto=h1 heads=[200:600:9622] bytes=9622
+[guix-8.20.0] cell suppress connect-4500+600 face=h1tls+proxy way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1002 lines 1001 bytes 16053 heads (200:1001:16053)) stream=- ms=13.3 cpu_ms=5.7
+[guix-8.20.0]   ev 494 t=2506.4 connect-answered face=proxy conn=48496 tag=connect-4500 600.buffered target=127.0.0.1:36909 lines=4500 bytes=72039
+[guix-8.20.0] cell suppress connect-4500+600 face=h1tls+proxy way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1002 lines 1001 bytes 16053 heads (200:1001:16053)) stream=(head none body 0 end (raised header-limit 23)) ms=6.9 cpu_ms=5.7
+[guix-8.20.0]   ev 498 t=2518.6 connect-answered face=proxy conn=48510 tag=connect-4500 600.streamed target=127.0.0.1:36909 lines=4500 bytes=72039
+[guix-8.20.0] cell suppress connect-900x256+350x256 face=h1tls+proxy way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 401 lines 400 bytes 102437 heads (200:400:102437)) stream=- ms=33.4 cpu_ms=31.3
+[guix-8.20.0]   ev 502 t=2527.2 connect-answered face=proxy conn=48512 tag=connect-900x256 350x256.buffered target=127.0.0.1:36909 lines=900 bytes=230439
+[guix-8.20.0] cell suppress connect-900x256+350x256 face=h1tls+proxy way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 401 lines 400 bytes 102437 heads (200:400:102437)) stream=(head none body 0 end (raised header-limit 23)) ms=33.6 cpu_ms=28.5
+[guix-8.20.0]   ev 506 t=2562.9 connect-answered face=proxy conn=48516 tag=connect-900x256 350x256.streamed target=127.0.0.1:36909 lines=900 bytes=230439
+[guix-8.20.0] cell suppress connect-600+600 face=h1tls+proxy way=buffered opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(status 200 version http/1.1 headers 600) tally=(calls 602 lines 600 bytes 9622 heads (200:600:9622)) stream=- ms=73.7 cpu_ms=23.3
+[guix-8.20.0]   ev 510 t=2599.2 connect-answered face=proxy conn=48524 tag=connect-600 600.buffered target=127.0.0.1:36909 lines=600 bytes=9639
+[guix-8.20.0]   ev 513 t=2645.6 wrote face=h1tls conn=35810 tag=connect-600 600.buffered proto=h1 heads=[200:600:9622] bytes=9622
+[guix-8.20.0] cell suppress connect-600+600 face=h1tls+proxy way=streamed opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(status 200 version http/1.1 headers 600) tally=(calls 602 lines 600 bytes 9622 heads (200:600:9622)) stream=(head 200 600 body 0 end eof) ms=87.0 cpu_ms=39.8
+[guix-8.20.0]   ev 517 t=2678.9 connect-answered face=proxy conn=48530 tag=connect-600 600.streamed target=127.0.0.1:36909 lines=600 bytes=9639
+[guix-8.20.0]   ev 520 t=2727.9 wrote face=h1tls conn=35824 tag=connect-600 600.streamed proto=h1 heads=[200:600:9622] bytes=9622
+[guix-8.20.0] cell suppress connect-4500+600 face=h1tls+proxy way=buffered opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(failed perform-failed 100 too-large "Too many response headers, 5000 is max") tally=(calls 501 lines 500 bytes 8020 heads (200:500:8020)) stream=- ms=73.8 cpu_ms=23.9
+[guix-8.20.0]   ev 524 t=2769.8 connect-answered face=proxy conn=48538 tag=connect-4500 600.buffered target=127.0.0.1:36909 lines=4500 bytes=72039
+[guix-8.20.0]   ev 527 t=2833.8 wrote face=h1tls conn=35828 tag=connect-4500 600.buffered proto=h1 heads=[200:600:9622] bytes=9622
+[guix-8.20.0] cell suppress connect-4500+600 face=h1tls+proxy way=streamed opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(failed perform-failed 100 too-large "Too many response headers, 5000 is max") tally=(calls 501 lines 500 bytes 8020 heads (200:500:8020)) stream=(head none body 0 end (raised perform-failed 100)) ms=73.8 cpu_ms=26.0
+[guix-8.20.0]   ev 531 t=2848.5 connect-answered face=proxy conn=48544 tag=connect-4500 600.streamed target=127.0.0.1:36909 lines=4500 bytes=72039
+[guix-8.20.0]   ev 534 t=2913.7 wrote face=h1tls conn=35834 tag=connect-4500 600.streamed proto=h1 heads=[200:600:9622] bytes=9622
+[guix-8.20.0] cell suppress connect-900x256+350x256 face=h1tls+proxy way=buffered opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(status 200 version http/1.1 headers 350) tally=(calls 352 lines 350 bytes 89382 heads (200:350:89382)) stream=- ms=124.0 cpu_ms=78.1
+[guix-8.20.0]   ev 538 t=2926.6 connect-answered face=proxy conn=48546 tag=connect-900x256 350x256.buffered target=127.0.0.1:36909 lines=900 bytes=230439
+[guix-8.20.0]   ev 541 t=3034.3 wrote face=h1tls conn=35836 tag=connect-900x256 350x256.buffered proto=h1 heads=[200:350:89382] bytes=89382
+[guix-8.20.0] cell suppress connect-900x256+350x256 face=h1tls+proxy way=streamed opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(status 200 version http/1.1 headers 350) tally=(calls 352 lines 350 bytes 89382 heads (200:350:89382)) stream=(head 200 350 body 0 end eof) ms=137.3 cpu_ms=88.0
+[guix-8.20.0]   ev 545 t=3053.7 connect-answered face=proxy conn=48558 tag=connect-900x256 350x256.streamed target=127.0.0.1:36909 lines=900 bytes=230439
+[guix-8.20.0]   ev 548 t=3162.8 wrote face=h1tls conn=35838 tag=connect-900x256 350x256.streamed proto=h1 heads=[200:350:89382] bytes=89382
+[guix-8.20.0] cell suppress connect-600+600 face=h2+proxy way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16071 heads (200:600:9639 200:401:6432)) stream=- ms=53.6 cpu_ms=5.8
+[guix-8.20.0]   ev 551 t=3196.3 connect-answered face=proxy conn=48560 tag=connect-600 600.buffered target=127.0.0.1:43893 lines=600 bytes=9639
+[guix-8.20.0]   ev 553 t=3244.2 h2-close face=h2 conn=42180 tag=connect-600 600.buffered heads=[200:600] rst=0
+[guix-8.20.0]   ev 554 t=3249.2 goaway face=h2 conn=42180 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell suppress connect-600+600 face=h2+proxy way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1004 lines 1001 bytes 16071 heads (200:600:9639 200:401:6432)) stream=(head none body 0 end (raised header-limit 23)) ms=53.5 cpu_ms=5.8
+[guix-8.20.0]   ev 557 t=3251.9 connect-answered face=proxy conn=48574 tag=connect-600 600.streamed target=127.0.0.1:43893 lines=600 bytes=9639
+[guix-8.20.0]   ev 559 t=3297.8 h2-close face=h2 conn=42188 tag=connect-600 600.streamed heads=[200:600] rst=0
+[guix-8.20.0]   ev 560 t=3305.1 goaway face=h2 conn=42188 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell suppress connect-4500+600 face=h2+proxy way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1002 lines 1001 bytes 16053 heads (200:1001:16053)) stream=- ms=13.2 cpu_ms=5.7
+[guix-8.20.0]   ev 563 t=3308.2 connect-answered face=proxy conn=48588 tag=connect-4500 600.buffered target=127.0.0.1:43893 lines=4500 bytes=72039
+[guix-8.20.0] cell suppress connect-4500+600 face=h2+proxy way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1002 lines 1001 bytes 16053 heads (200:1001:16053)) stream=(head none body 0 end (raised header-limit 23)) ms=6.8 cpu_ms=5.5
+[guix-8.20.0]   ev 567 t=3322.3 connect-answered face=proxy conn=48596 tag=connect-4500 600.streamed target=127.0.0.1:43893 lines=4500 bytes=72039
+[guix-8.20.0] cell suppress connect-900x256+350x256 face=h2+proxy way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 401 lines 400 bytes 102437 heads (200:400:102437)) stream=- ms=33.4 cpu_ms=27.4
+[guix-8.20.0]   ev 571 t=3330.3 connect-answered face=proxy conn=48604 tag=connect-900x256 350x256.buffered target=127.0.0.1:43893 lines=900 bytes=230439
+[guix-8.20.0] cell suppress connect-900x256+350x256 face=h2+proxy way=streamed opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 256 returned 0") tally=(calls 401 lines 400 bytes 102437 heads (200:400:102437)) stream=(head none body 0 end (raised header-limit 23)) ms=33.4 cpu_ms=27.6
+[guix-8.20.0]   ev 575 t=3365.6 connect-answered face=proxy conn=48606 tag=connect-900x256 350x256.streamed target=127.0.0.1:43893 lines=900 bytes=230439
+[guix-8.20.0] cell suppress connect-600+600 face=h2+proxy way=buffered opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(status 200 version http/2 headers 600) tally=(calls 602 lines 600 bytes 9618 heads (200:600:9618)) stream=- ms=73.7 cpu_ms=20.6
+[guix-8.20.0]   ev 579 t=3399.8 connect-answered face=proxy conn=48610 tag=connect-600 600.buffered target=127.0.0.1:43893 lines=600 bytes=9639
+[guix-8.20.0]   ev 581 t=3446.5 h2-close face=h2 conn=42258 tag=connect-600 600.buffered heads=[200:600] rst=0
+[guix-8.20.0]   ev 582 t=3473.6 goaway face=h2 conn=42258 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell suppress connect-600+600 face=h2+proxy way=streamed opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(status 200 version http/2 headers 600) tally=(calls 602 lines 600 bytes 9618 heads (200:600:9618)) stream=(head 200 600 body 0 end eof) ms=87.0 cpu_ms=37.1
+[guix-8.20.0]   ev 585 t=3478.0 connect-answered face=proxy conn=48626 tag=connect-600 600.streamed target=127.0.0.1:43893 lines=600 bytes=9639
+[guix-8.20.0]   ev 587 t=3524.9 h2-close face=h2 conn=42264 tag=connect-600 600.streamed heads=[200:600] rst=0
+[guix-8.20.0]   ev 588 t=3564.8 goaway face=h2 conn=42264 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell suppress connect-4500+600 face=h2+proxy way=buffered opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(failed perform-failed 100 too-large "Too many response headers, 5000 is max") tally=(calls 500 lines 499 bytes 8000 heads (200:499:8000)) stream=- ms=73.7 cpu_ms=24.4
+[guix-8.20.0]   ev 591 t=3569.9 connect-answered face=proxy conn=48630 tag=connect-4500 600.buffered target=127.0.0.1:43893 lines=4500 bytes=72039
+[guix-8.20.0]   ev 593 t=3633.4 h2-close face=h2 conn=42272 tag=connect-4500 600.buffered heads=[200:600] rst=0
+[guix-8.20.0]   ev 594 t=3642.2 goaway face=h2 conn=42272 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell suppress connect-4500+600 face=h2+proxy way=streamed opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(failed perform-failed 100 too-large "Too many response headers, 5000 is max") tally=(calls 500 lines 499 bytes 8000 heads (200:499:8000)) stream=(head none body 0 end (raised perform-failed 100)) ms=76.3 cpu_ms=24.4
+[guix-8.20.0]   ev 597 t=3650.2 connect-answered face=proxy conn=48644 tag=connect-4500 600.streamed target=127.0.0.1:43893 lines=4500 bytes=72039
+[guix-8.20.0]   ev 599 t=3715.0 h2-close face=h2 conn=42278 tag=connect-4500 600.streamed heads=[200:600] rst=0
+[guix-8.20.0]   ev 600 t=3721.5 goaway face=h2 conn=42278 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell suppress connect-900x256+350x256 face=h2+proxy way=buffered opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(status 200 version http/2 headers 350) tally=(calls 352 lines 350 bytes 89378 heads (200:350:89378)) stream=- ms=124.1 cpu_ms=74.5
+[guix-8.20.0]   ev 603 t=3724.9 connect-answered face=proxy conn=48658 tag=connect-900x256 350x256.buffered target=127.0.0.1:43893 lines=900 bytes=230439
+[guix-8.20.0]   ev 605 t=3830.9 h2-close face=h2 conn=42280 tag=connect-900x256 350x256.buffered heads=[200:350] rst=0
+[guix-8.20.0]   ev 606 t=3848.1 goaway face=h2 conn=42280 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell suppress connect-900x256+350x256 face=h2+proxy way=streamed opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(status 200 version http/2 headers 350) tally=(calls 352 lines 350 bytes 89378 heads (200:350:89378)) stream=(head 200 350 body 0 end eof) ms=130.7 cpu_ms=84.7
+[guix-8.20.0]   ev 609 t=3851.6 connect-answered face=proxy conn=48674 tag=connect-900x256 350x256.streamed target=127.0.0.1:43893 lines=900 bytes=230439
+[guix-8.20.0]   ev 611 t=3958.2 h2-close face=h2 conn=42282 tag=connect-900x256 350x256.streamed heads=[200:350] rst=0
+[guix-8.20.0]   ev 612 t=3981.4 goaway face=h2 conn=42282 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell suppress connect-15000+2 face=h1tls+proxy way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1002 lines 1001 bytes 16053 heads (200:1001:16053)) stream=- ms=13.3 cpu_ms=5.9
+[guix-8.20.0]   ev 616 t=3989.1 connect-answered face=proxy conn=48686 tag=connect-15000 2.buffered target=127.0.0.1:36909 lines=15000 bytes=240039
+[guix-8.20.0] cell suppress connect-2+2 face=h1tls+proxy way=buffered opts=- ended=#t outcome=(status 200 version http/1.1 headers 2) tally=(calls 8 lines 4 bytes 125 heads (200:2:71 200:2:54)) stream=- ms=53.6 cpu_ms=2.0
+[guix-8.20.0]   ev 620 t=3999.3 connect-answered face=proxy conn=48698 tag=connect-2 2.buffered target=127.0.0.1:36909 lines=2 bytes=71
+[guix-8.20.0]   ev 623 t=4042.1 wrote face=h1tls conn=35856 tag=connect-2 2.buffered proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0] cell suppress connect-15000+2 face=h1tls+proxy way=buffered opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(failed perform-failed 100 too-large "Too many response headers, 5000 is max") tally=(calls 0 lines 0 bytes 0 heads ()) stream=- ms=33.5 cpu_ms=22.7
+[guix-8.20.0]   ev 627 t=4061.2 connect-answered face=proxy conn=48712 tag=connect-15000 2.buffered target=127.0.0.1:36909 lines=15000 bytes=240039
+[guix-8.20.0] cell suppress connect-2+2 face=h1tls+proxy way=buffered opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(status 200 version http/1.1 headers 2) tally=(calls 4 lines 2 bytes 54 heads (200:2:54)) stream=- ms=43.5 cpu_ms=2.5
+[guix-8.20.0]   ev 631 t=4093.9 connect-answered face=proxy conn=48726 tag=connect-2 2.buffered target=127.0.0.1:36909 lines=2 bytes=71
+[guix-8.20.0]   ev 634 t=4135.9 wrote face=h1tls conn=35880 tag=connect-2 2.buffered proto=h1 heads=[200:2:54] bytes=54
+[guix-8.20.0] cell suppress connect-60000+2 face=h1tls+proxy way=buffered opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(failed perform-failed 100 too-large "Too many response headers, 5000 is max") tally=(calls 0 lines 0 bytes 0 heads ()) stream=- ms=64.9 cpu_ms=26.9
+[guix-8.20.0]   ev 638 t=4168.5 connect-answered face=proxy conn=48742 tag=connect-60000 2.buffered target=127.0.0.1:36909 lines=60000 bytes=960039
+[guix-8.20.0] cell suppress connect-15000+2 face=h2+proxy way=buffered opts=- ended=#t outcome=(failed header-limit 23 too-large "Failure writing output to destination, passed 16 returned 0") tally=(calls 1002 lines 1001 bytes 16053 heads (200:1001:16053)) stream=- ms=13.3 cpu_ms=6.4
+[guix-8.20.0]   ev 641 t=4211.9 connect-answered face=proxy conn=48756 tag=connect-15000 2.buffered target=127.0.0.1:43893 lines=15000 bytes=240039
+[guix-8.20.0] cell suppress connect-2+2 face=h2+proxy way=buffered opts=- ended=#t outcome=(status 200 version http/2 headers 2) tally=(calls 8 lines 4 bytes 121 heads (200:2:71 200:2:50)) stream=- ms=43.4 cpu_ms=2.3
+[guix-8.20.0]   ev 645 t=4222.6 connect-answered face=proxy conn=48766 tag=connect-2 2.buffered target=127.0.0.1:43893 lines=2 bytes=71
+[guix-8.20.0]   ev 647 t=4264.9 h2-close face=h2 conn=42302 tag=connect-2 2.buffered heads=[200:2] rst=0
+[guix-8.20.0]   ev 648 t=4265.8 goaway face=h2 conn=42302 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell suppress connect-15000+2 face=h2+proxy way=buffered opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(failed perform-failed 100 too-large "Too many response headers, 5000 is max") tally=(calls 0 lines 0 bytes 0 heads ()) stream=- ms=33.4 cpu_ms=27.8
+[guix-8.20.0]   ev 651 t=4273.4 connect-answered face=proxy conn=48770 tag=connect-15000 2.buffered target=127.0.0.1:43893 lines=15000 bytes=240039
+[guix-8.20.0] cell suppress connect-2+2 face=h2+proxy way=buffered opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(status 200 version http/2 headers 2) tally=(calls 4 lines 2 bytes 50 heads (200:2:50)) stream=- ms=53.5 cpu_ms=2.8
+[guix-8.20.0]   ev 655 t=4304.6 connect-answered face=proxy conn=48786 tag=connect-2 2.buffered target=127.0.0.1:43893 lines=2 bytes=71
+[guix-8.20.0]   ev 657 t=4347.0 h2-close face=h2 conn=42318 tag=connect-2 2.buffered heads=[200:2] rst=0
+[guix-8.20.0]   ev 658 t=4357.9 goaway face=h2 conn=42318 received from the client, code=0 last_stream=0
+[guix-8.20.0] cell suppress connect-60000+2 face=h2+proxy way=buffered opts=SUPPRESS_CONNECT_HEADERS=1; ended=#t outcome=(failed perform-failed 100 too-large "Too many response headers, 5000 is max") tally=(calls 0 lines 0 bytes 0 heads ()) stream=- ms=67.1 cpu_ms=28.4
+[guix-8.20.0]   ev 661 t=4394.1 connect-answered face=proxy conn=48798 tag=connect-60000 2.buffered target=127.0.0.1:43893 lines=60000 bytes=960039
+[guix-8.20.0] probe done
+[guix-8.20.0] program exit=0
+[guix-8.20.0] took about 4 s
+[guix-8.20.0] server-stderr: h2 limits: send,pairs

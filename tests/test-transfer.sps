@@ -298,23 +298,24 @@
   '((1 . protocol)        ; CURLE_UNSUPPORTED_PROTOCOL: bad-status-line, http09, the redirect pin, bad-status-code to 8.7.1
     (8 . protocol)        ; CURLE_WEIRD_SERVER_REPLY: header-no-colon, nul-in-header, conflicting-content-length from 8.20.0
     (18 . send-receive)   ; CURLE_PARTIAL_FILE: short-body
-    (23 . none)           ; CURLE_WRITE_ERROR: the callable's answer, for body-limit and callback-raised
+    (23 . none)           ; CURLE_WRITE_ERROR: the callable's answer, for body-limit, header-limit and callback-raised
     (27 . none)           ; CURLE_OUT_OF_MEMORY: big-header past CURL_MAX_HTTP_HEADER on 7.85.0 and 8.5.0
     (28 . timeout)        ; CURLE_OPERATION_TIMEDOUT: TIMEOUT_MS
     (43 . none)           ; CURLE_BAD_FUNCTION_ARGUMENT: setopt-failed
     (52 . send-receive)   ; CURLE_GOT_NOTHING: close-before-response
-    (56 . send-receive)   ; CURLE_RECV_ERROR: the resets, bad-chunk-size, many-headers on 8.5.0 and 8.7.1
+    (56 . send-receive)   ; CURLE_RECV_ERROR: the resets, bad-chunk-size
     (63 . too-large)      ; CURLE_FILESIZE_EXCEEDED: MAXFILESIZE_LARGE below a Content-Length
-    (100 . too-large)))   ; CURLE_TOO_LARGE: big-header from 8.7.1, many-headers from 8.20.0
+    (100 . too-large)))   ; CURLE_TOO_LARGE: big-header from 8.7.1
 
 ;; table-class : Symbol (U Integer #f) -> Any
 ;; The class a failure of REASON and CODE is raised as, by the suite's
-;; table and ADR-0022's rule for reasons, written out: body-limit,
-;; too-large, whatever its code; perform-failed, its code's row in
-;; code-classes, or (no-row CODE); every other reason, none.
+;; table and ADR-0022's rule for reasons, written out: body-limit and
+;; header-limit, too-large, whatever its code (ADR-0040); perform-failed,
+;; its code's row in code-classes, or (no-row CODE); every other reason,
+;; none.
 (define (table-class reason code)
   (case reason
-    ((body-limit) 'too-large)
+    ((body-limit header-limit) 'too-large)
     ((perform-failed) (let ((row (assv code code-classes))) (if row (cdr row) (list 'no-row code))))
     (else 'none)))
 
@@ -515,8 +516,6 @@
     ((get raw "/raw/reset-after-pause?ms=50") (refused perform-failed ,curle-recv-error))
     ((get raw "/raw/big-header?bytes=1000")
      (response 200 http/1.1 (("X-Big" ,(make-string 1000 #\a))) ""))
-    ((get raw "/raw/big-header?bytes=102380")
-     (response 200 http/1.1 (("X-Big" ,(make-string 102380 #\a))) ""))
     ((get raw "/raw/many-headers?count=10") (response 200 http/1.1 (numbered "X-H-" 10 "v") ""))
     ((get raw "/raw/many-headers?count=1000") (response 200 http/1.1 (numbered "X-H-" 1000 "v") ""))
     ((get raw "/raw/bad-status-line") (refused perform-failed ,curle-unsupported-protocol))
@@ -540,7 +539,10 @@
 ;; varying-cases : (Listof Case)
 ;; The scenarios whose answers vary by version, in the order every row
 ;; answers them: big-header at both sizes past CURL_MAX_HTTP_HEADER,
-;; many-headers, bad-status-code and conflicting-content-length. The plan's
+;; bad-status-code and conflicting-content-length. many-headers at 50,000
+;; varied too, until the cap on response headers made it header-limit on
+;; every libcurl (ADR-0040): it is a cap test now, with big-header at the
+;; cap's edge. The plan's
 ;; fifth, MAXFILESIZE_LARGE alone, is no longer reachable: the hatch
 ;; refuses it, a request field's option (ADR-0009, amended 2026-10-23).
 ;; Then a text: nul-in-header's error buffer, which 8.23.0 capitalised
@@ -548,7 +550,6 @@
 (define varying-cases
   '((get raw "/raw/big-header?bytes=102400")
     (get raw "/raw/big-header?bytes=1048576")
-    (get raw "/raw/many-headers?count=50000")
     (get raw "/raw/bad-status-code")
     (get raw "/raw/conflicting-content-length")
     (error-text raw "/raw/nul-in-header")))
@@ -1260,6 +1261,47 @@
          (refusal (lambda () (curl-request-with-fault (make-curl-request "http://a/") fault))))
        (list 'hook "hook" 0 -1 1.5 (lambda (chunk) chunk))))
 
+(test-equal "the header seams' refusals, each an assertion violation from its own constructor, by its own message, with nothing native made: curl-request-with-head-mark and curl-request-with-head-fault of no request, and of a line of 0, -1, 1.5 or a symbol; beside them, each of line 1, taken"
+  (append (apply append
+                 (map (lambda (who)
+                        (cons (list (list (list 'assertion-violation who) running-counts running-counts)
+                                    (list who "not a request"))
+                              (map (lambda (x)
+                                     (list (list (list 'assertion-violation who) running-counts running-counts)
+                                           (list who "a head's line is a positive exact integer")))
+                                   (iota-from 0 4))))
+                      '(curl-request-with-head-mark curl-request-with-head-fault)))
+          '(no-raise no-raise))
+  (append (map (lambda (args)
+                 (let ((thunk (lambda () ((car args) (cadr args) (caddr args)))))
+                   (list (refusal thunk)
+                         (guard (e ((and (assertion-violation? e) (who-condition? e) (message-condition? e))
+                                    (list (condition-who e) (condition-message e)))
+                                   (#t (list 'raised (describe e))))
+                           (thunk)
+                           'no-raise))))
+               (apply append
+                      (map (lambda (make)
+                             (list (list make 'not-a-request 1) (list make (make-curl-request "http://a/") 0)
+                                   (list make (make-curl-request "http://a/") -1)
+                                   (list make (make-curl-request "http://a/") 1.5)
+                                   (list make (make-curl-request "http://a/") 'two)))
+                           (list curl-request-with-head-mark curl-request-with-head-fault))))
+          (list (car (refusal (lambda () (curl-request-with-head-mark (make-curl-request "http://a/") 1))))
+                (car (refusal (lambda () (curl-request-with-head-fault (make-curl-request "http://a/") 1)))))))
+
+(test-equal "a request's checks refuse a header seam's fault of a line that is no positive exact integer, (mark 0), (mark -1), (mark 1.5), (head 0), as an assertion violation from the checking constructor, through request-like as each constructor reaches them; (mark 1) and (head 1) are taken"
+  (append (map (lambda (x) (list '(assertion-violation checking) running-counts running-counts)) (iota-from 0 4))
+          '(no-raise no-raise))
+  (append (map (lambda (fault)
+                 (refusal (lambda () (request-like 'checking (make-curl-request "http://a/") '() "http://a/"
+                                                   fault #f '()))))
+               '((mark 0) (mark -1) (mark 1.5) (head 0)))
+          (map (lambda (fault)
+                 (car (refusal (lambda () (request-like 'checking (make-curl-request "http://a/") '() "http://a/"
+                                                        fault #f '())))))
+               '((mark 1) (head 1)))))
+
 (test-equal "the edges a request takes: a timeout of 1 and of the largest long, a body limit of 0 and of 2^63 - 2, method head, a fault at chunk 1 and at chunk 2^70"
   '(no-raise no-raise no-raise no-raise no-raise no-raise no-raise)
   (map (lambda (thunk) (car (refusal thunk)))
@@ -1338,7 +1380,7 @@
 
 ;; --- the hatch's deny-list (ADR-0009, amended 2026-10-23 and 2026-10-27) ------------------
 
-(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT and MAXREDIRS among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its read, seek and prerequest callables and their data, and FRESH_CONNECT, stream-buffer's header callable and its data, HEADERFUNCTION and HEADERDATA, body-length's INFILESIZE_LARGE, http-version's HTTP_VERSION, credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, cookie-jar's SHARE and COOKIEFILE, and FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's PRE_PROXY, PROXYPORT and PROXYTYPE; then slice 4's: TRANSFERTEXT, CRLF's twin; the URL's USERPWD, NETRC and HSTS; the proxy field's UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET; the headers' PROXYHEADER and HEADEROPT; and RESUME_FROM, RESUME_FROM_LARGE, COOKIEJAR, CONNECT_ONLY, DOH_URL, RESOLVE and SSLENGINE_DEFAULT, kept from the hatch; then M7 slice 1's, the HTTP version's twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL; then M7 slice 2's, the credentials' twin AWS_SIGV4; then M7 slice 3's, the proxy's twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME, PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP; then M7 slice 4's, the cookie jar's twins COOKIE, COOKIELIST and COOKIESESSION; then every proxy TLS option but the four proxy-ca-file and proxy-verify set, which are fields' now, as NOPROXY and FORBID_REUSE are proxy's, and COOKIEFILE cookie-jar's"
+(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT and MAXREDIRS among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its read, seek and prerequest callables and their data, and FRESH_CONNECT, stream-buffer's header callable and its data, HEADERFUNCTION and HEADERDATA, body-length's INFILESIZE_LARGE, http-version's HTTP_VERSION, credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, cookie-jar's SHARE and COOKIEFILE, and FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's PRE_PROXY, PROXYPORT and PROXYTYPE; then slice 4's: TRANSFERTEXT, CRLF's twin; the URL's USERPWD, NETRC and HSTS; the proxy field's UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET; the headers' PROXYHEADER and HEADEROPT; and RESUME_FROM, RESUME_FROM_LARGE, COOKIEJAR, CONNECT_ONLY, DOH_URL, RESOLVE and SSLENGINE_DEFAULT, kept from the hatch; then M7 slice 1's, the HTTP version's twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL; then M7 slice 2's, the credentials' twin AWS_SIGV4; then M7 slice 3's, the proxy's twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME, PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP; then M7 slice 4's, the cookie jar's twins COOKIE, COOKIELIST and COOKIESESSION; then M8 slice 2's, the header callable's twin SUPPRESS_CONNECT_HEADERS; then every proxy TLS option but the four proxy-ca-file and proxy-verify set, which are fields' now, as NOPROXY and FORBID_REUSE are proxy's, and COOKIEFILE cookie-jar's"
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
     "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
     "CURLU" "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD" "HTTPHEADER"
@@ -1363,6 +1405,7 @@
     "PROXYAUTH" "PROXYUSERPWD" "PROXYUSERNAME" "PROXYPASSWORD"
     "HTTPPROXYTUNNEL" "HAPROXYPROTOCOL" "HAPROXY_CLIENT_IP"
     "COOKIE" "COOKIELIST" "COOKIESESSION"
+    "SUPPRESS_CONNECT_HEADERS"
     "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST"
     "PROXY_CAINFO_BLOB" "PROXY_CRLFILE" "PROXY_ISSUERCERT"
     "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS"
@@ -2004,6 +2047,32 @@
            (expected-classing (cadr pair))
            (cadr answered)))))
    shared-answers)
+
+  ;; --- the cap on response headers (ADR-0040; M8 slice 2), the raw face's
+  ;; oversized scripts at its edges: big-header's status line, 17 bytes, its
+  ;; X-Big line, the value and 9, and the empty line, 2, take 102,400 at
+  ;; bytes=102372; many-headers' status line is left out of the count, so
+  ;; 1,000 X-H lines are taken, the shared answers' count=1000. Each refusal
+  ;; is read by its reason and class, never its code, which is
+  ;; test-headers' to hold by version; 50,000 lines, which each libcurl
+  ;; answered its own way before the cap, are header-limit on every one.
+  (test-equal "the cap: GET raw /raw/big-header?bytes=102372, 102,400 bytes with its status line and empty line, is taken whole; bytes=102373 and bytes=102380 are refused, header-limit, of &curl-too-large; GET raw /raw/many-headers at 1,001 and 50,000 lines, header-limit too; each with the counts back to the engine's alone"
+    (list (list (list 'response 200 'http/1.1 (list (list "X-Big" (make-string 102372 #\a))) "")
+                'no-transfer-error running-counts)
+          (list '(refused header-limit) '(header-limit too-large) running-counts)
+          (list '(refused header-limit) '(header-limit too-large) running-counts)
+          (list '(refused header-limit) '(header-limit too-large) running-counts)
+          (list '(refused header-limit) '(header-limit too-large) running-counts))
+    (map (lambda (path)
+           (let* ((answered (case-classed o (list 'get 'raw path)))
+                  (counts (native-counts))
+                  (answer (car answered))
+                  (seen (cadr answered)))
+             (list (if (refused-answer? answer) (list 'refused (cadr answer)) answer)
+                   (if (pair? seen) (list (car seen) (caddr seen)) seen)
+                   counts)))
+         '("/raw/big-header?bytes=102372" "/raw/big-header?bytes=102373" "/raw/big-header?bytes=102380"
+           "/raw/many-headers?count=1001" "/raw/many-headers?count=50000")))
 
   ;; --- the varying scenarios, against this libcurl's row; and each of its
   ;; refusals' class, by the suite's table. Each entry is (CASE ANSWER
@@ -2673,9 +2742,11 @@
             (map caddr (filter (lambda (a) (and (refused-answer? a) (eq? (cadr a) 'perform-failed)))
                                answers)))))
 
-(test-equal "table-class, the rule written out: body-limit is too-large whatever its code; perform-failed takes its code's row, and a code with no row is (no-row CODE); every other reason is of no class, whatever its code"
-  '(too-large too-large send-receive none (no-row 7) none none none none none none)
-  (list (table-class 'body-limit 23) (table-class 'body-limit 56) (table-class 'perform-failed 56)
+(test-equal "table-class, the rule written out: body-limit and header-limit are too-large whatever the code, 0 among them; perform-failed takes its code's row, and a code with no row is (no-row CODE); every other reason is of no class, whatever its code"
+  '(too-large too-large too-large too-large too-large send-receive none (no-row 7) none none none none none none)
+  (list (table-class 'body-limit 23) (table-class 'body-limit 56)
+        (table-class 'header-limit 23) (table-class 'header-limit 0) (table-class 'header-limit 56)
+        (table-class 'perform-failed 56)
         (table-class 'perform-failed 23) (table-class 'perform-failed 7)
         (table-class 'callback-raised 23) (table-class 'setopt-failed 1)
         (table-class 'unknown-option #f) (table-class 'no-handle #f)

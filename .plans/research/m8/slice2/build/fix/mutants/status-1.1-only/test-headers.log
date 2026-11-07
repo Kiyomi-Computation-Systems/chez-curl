@@ -1,0 +1,8 @@
+%%%% Starting test headers
+FAIL HTTP/1.0: a head of 1,000 header lines, its status line HTTP/1.0 200 OK, is taken, buffered and streamed; 1,001 are refused, header-limit: an HTTP/1.0 status line is exempt as an HTTP/1.1 one is
+  expected: (((response 200 1000) ((response 200 1000) (head 200 1000) (eof 0))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+  actual:   (((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))) ((refused header-limit too-large #f) ((refused header-limit too-large #f) no-head (raised header-limit))))
+# of expected passes      42
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 42, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

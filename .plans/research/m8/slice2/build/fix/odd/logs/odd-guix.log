@@ -1,0 +1,16 @@
+[guix-8.20.0] chez 10.4.0 libcurl /gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4 node v24.18.0 transfer.sls sha256 fc35b61030882101
+[guix-8.20.0] a (refused perform-failed 8 "Header without colon")
+[guix-8.20.0] b (response 200 (("content-length" . "0") ("HTTP/1 " . "v") ("x-a" . "v")))
+[guix-8.20.0] c (response 200 (("content-length" . "0") ("HTTP/1.1 x" . "v") ("x-a" . "v")))
+[guix-8.20.0] d (response 200 (("content-length" . "0") ("HTTP/1" . "v") ("x-a" . "v")))
+[guix-8.20.0] e (response 200 (("content-length" . "0") ("HTTP/1 200" . "v") ("x-a" . "v")))
+[guix-8.20.0] h (response 200 (("content-length" . "0") ("HTTP/1.1 x-000001" . "vvvv") ("HTTP/1.1 x-000002" . "vvvv")))
+[guix-8.20.0] f (response 200 (("transfer-encoding" . "chunked")))
+[guix-8.20.0] g (refused perform-failed 43 "Invalid response header")
+[guix-8.20.0] j (response 200 (("transfer-encoding" . "chunked")))
+[guix-8.20.0] k (response 200 (("transfer-encoding" . "chunked")))
+[guix-8.20.0] l (response 200 (("transfer-encoding" . "chunked")))
+[guix-8.20.0] m (response 200 (("transfer-encoding" . "chunked")))
+[guix-8.20.0] i (response 200 (("content-length" . "0") ("x-a" . "v")))
+[guix-8.20.0] program exit=0
+[guix-8.20.0] server exit=0

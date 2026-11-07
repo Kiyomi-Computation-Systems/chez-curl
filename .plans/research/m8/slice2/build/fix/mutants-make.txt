@@ -1,0 +1,14 @@
+made control: 0 edit(s), suites tests/test-headers.sps tests/test-origin.sps tests/test-transfer.sps tests/test-origin-tls.sps
+made start-dropped: 1 edit(s), suites tests/test-headers.sps
+made status-prefix: 1 edit(s), suites tests/test-headers.sps
+made status-1.1-only: 1 edit(s), suites tests/test-headers.sps
+made status-no-short-form: 1 edit(s), suites tests/test-headers.sps
+made route-short: 2 edit(s), suites tests/test-origin.sps
+made route-short-old-rows: 3 edit(s), suites tests/test-origin.sps
+made mark-request-unchecked: 1 edit(s), suites tests/test-transfer.sps
+made mark-line-unchecked: 1 edit(s), suites tests/test-transfer.sps
+made mark-zero-taken: 1 edit(s), suites tests/test-transfer.sps
+made head-fault-request-unchecked: 1 edit(s), suites tests/test-transfer.sps
+made head-fault-line-unchecked: 1 edit(s), suites tests/test-transfer.sps
+made head-zero-taken: 1 edit(s), suites tests/test-transfer.sps
+exit 0

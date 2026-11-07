@@ -1,0 +1,8 @@
+%%%% Starting test headers
+FAIL a reason recorded at the head's line 2 by the private mark refuses every later call: buffered, callback-raised, (planted-head-mark 2), ended at line 3 with this libcurl's code for a refused HTTP/1.1 line; streamed, no head published, its port raising callback-raised; beside the same request without the mark, taken whole
+  expected: ((response 200 5) ((response 200 5) (head 200 5) (eof 0)) (refused callback-raised 23 none (planted-head-mark 2)) ((refused callback-raised 23 none (planted-head-mark 2)) no-head (raised callback-raised)))
+  actual:   ((response 200 5) ((response 200 5) (head 200 5) (eof 0)) (refused callback-raised 0 none (planted-head-mark 2)) ((refused callback-raised 0 none (planted-head-mark 2)) (head 200 5) (raised callback-raised)))
+# of expected passes      39
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 39, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1

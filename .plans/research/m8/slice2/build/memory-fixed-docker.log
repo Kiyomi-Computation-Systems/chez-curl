@@ -1,0 +1,20 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+lanes.sh start 2026-11-07T01:39:29Z mode=memory tree=snap3 lanes= openssl floor cpuset=6-11 args=
+network interfaces: lo 
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+== lane openssl: make test-memory in a copy of /w/snap3, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 CC=gcc NODE=/src/build/verify/m3s2/node20/node MEMORY_SUITES='tests/test-headers.sps tests/test-origin-tls.sps'
+lane openssl memory: pass (122 s)
+  [openssl] test-memory: pass tests/test-headers.sps
+  [openssl] test-memory: pass tests/test-origin-tls.sps
+  [openssl] test-memory: ran 2, passed 2, failed 0, hung 0
+== lane floor: make test-memory in a copy of /w/snap3, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/e1/ci/curl-floor/include NODE=/src/build/verify/m3s2/node20/node MEMORY_SUITES='tests/test-headers.sps tests/test-origin-tls.sps'
+lane floor memory: pass (119 s)
+  [floor] test-memory: pass tests/test-headers.sps
+  [floor] test-memory: pass tests/test-origin-tls.sps
+  [floor] test-memory: ran 2, passed 2, failed 0, hung 0

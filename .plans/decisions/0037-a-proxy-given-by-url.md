@@ -2,7 +2,8 @@
 
 - **Status:** Accepted; amended 2026-11-02, after the M7 plan's review: a pooled tunnel; and
   decisions 6 and 7, the maintainer's, each the recommended option; amended 2026-11-03, measured
-  through the engine, with decisions 8 to 10, and after the slice's review, decision 11 (M7 slice 3)
+  through the engine, with decisions 8 to 10, and after the slice's review, decision 11 (M7 slice 3);
+  amended 2026-11-06, `SUPPRESS_CONNECT_HEADERS` is owned (M8 slice 2)
 - **Date:** 2026-11-02
 - **Scope:** chez-curl v1, a proxy a caller names, in `(curl)` and `(http-client)`, from M7
 - **Settles:** whether the environment's `no_proxy` applies to a named proxy, how a caller gives
@@ -262,3 +263,12 @@ second transfer's own `CONNECT`, refused 407, on 7.85.0, two runs of two
   `http-version`, no stall ([log](../research/m7/slice3/results/mac-8.7.1-make-test-2.log)). Its
   backend in use read SecureTransport with `CURL_SSL_BACKEND` unset, where ADR-0024's 2026-10-27
   amendment had the init put LibreSSL in use; carried, not traced.
+
+## Amendment, 2026-11-06: `SUPPRESS_CONNECT_HEADERS` is owned (M8 slice 2)
+
+The 2026-11-03 amendment left `SUPPRESS_CONNECT_HEADERS` the hatch's, since it changed no byte
+either side got. From M8 slice 2 every transfer's header callable caps the response's headers, and
+set, the option hid a `CONNECT` answer from it on every Linux libcurl, out of the cap. It is owned,
+refused as `owned-option` ([ADR-0040](0040-a-cap-on-response-headers.md), amended 2026-11-06,
+decision 5, the maintainer's; [ADR-0009](0009-typed-escape-hatch.md), amended 2026-11-06).
+`PROXY_SERVICE_NAME` and `SOCKS5_AUTH` stay the hatch's.

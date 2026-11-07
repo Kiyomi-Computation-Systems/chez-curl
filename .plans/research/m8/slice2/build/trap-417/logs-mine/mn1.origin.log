@@ -1,0 +1,45 @@
+head417 start conn=50674 t=60.4 head-at=58.9
+head417 request conn=50674 t=60.7 line="POST /raw/head417?key=rmn1-fixed-0&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=false
+head417 writing-417 conn=50674 t=60.8 queued=0
+head417 wrote-417 conn=50674 t=61.7 queued=0
+head417 next conn=50674 t=62.9 first=0x50 read-as=request queued=141
+head417 request conn=50674 t=63.0 line="POST /raw/head417?key=rmn1-fixed-0&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=true
+head417 wrote-100 conn=50674 t=63.2
+head417 wrote-200 conn=50674 t=63.6
+head417 close conn=50674 t=80.9
+head417 start conn=50690 t=81.4 head-at=81.1
+head417 request conn=50690 t=81.5 line="POST /raw/head417?key=rmn1-fixed-1&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=false
+head417 writing-417 conn=50690 t=81.5 queued=0
+head417 wrote-417 conn=50690 t=82.0 queued=0
+head417 next conn=50690 t=82.6 first=0x50 read-as=request queued=141
+head417 request conn=50690 t=82.8 line="POST /raw/head417?key=rmn1-fixed-1&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=true
+head417 wrote-100 conn=50690 t=82.8
+head417 wrote-200 conn=50690 t=83.3
+head417 close conn=50690 t=104.0
+head417 start conn=50696 t=104.8 head-at=104.5
+head417 request conn=50696 t=104.9 line="POST /raw/head417?key=rmn1-fixed-2&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=false
+head417 writing-417 conn=50696 t=104.9 queued=0
+head417 wrote-417 conn=50696 t=105.2 queued=0
+head417 next conn=50696 t=105.8 first=0x50 read-as=request queued=141
+head417 request conn=50696 t=105.9 line="POST /raw/head417?key=rmn1-fixed-2&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=true
+head417 wrote-100 conn=50696 t=106.0
+head417 wrote-200 conn=50696 t=106.4
+head417 close conn=50696 t=117.4
+head417 start conn=50708 t=117.9 head-at=117.8
+head417 request conn=50708 t=118.0 line="POST /raw/head417?key=rmn1-fixed-3&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=false
+head417 writing-417 conn=50708 t=118.0 queued=0
+head417 wrote-417 conn=50708 t=118.2 queued=0
+head417 next conn=50708 t=118.6 first=0x50 read-as=request queued=141
+head417 request conn=50708 t=118.7 line="POST /raw/head417?key=rmn1-fixed-3&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=true
+head417 wrote-100 conn=50708 t=118.7
+head417 wrote-200 conn=50708 t=118.9
+head417 close conn=50708 t=130.9
+head417 start conn=50716 t=131.9 head-at=131.6
+head417 request conn=50716 t=132.1 line="POST /raw/head417?key=rmn1-fixed-4&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=false
+head417 writing-417 conn=50716 t=132.2 queued=0
+head417 wrote-417 conn=50716 t=132.7 queued=0
+head417 next conn=50716 t=133.2 first=0x50 read-as=request queued=141
+head417 request conn=50716 t=133.4 line="POST /raw/head417?key=rmn1-fixed-4&a.n=500&b.n=500 HTTP/1.1" expect=true cl=10 queued=0 held=true
+head417 wrote-100 conn=50716 t=133.5
+head417 wrote-200 conn=50716 t=133.9
+head417 close conn=50716 t=154.7

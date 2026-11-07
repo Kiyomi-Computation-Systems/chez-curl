@@ -93,6 +93,28 @@
 
 (define close "Connection: close\r\n")
 
+;; head-text : Natural Natural -> String
+;; What /raw/head?total=TOTAL&line=LINE writes, built here by the route's
+;; rule, written out: the status line, HTTP/1.1 200 OK, 17 bytes, and
+;; content-length: 0, 19, then lines x-000001 on of LINE bytes, CR LF in,
+;; their values v repeated, until the head, its empty line in, holds TOTAL
+;; bytes: the last line takes what is left, and a remainder too short for a
+;; line of its own, its name and ": " and CR LF and one v, goes to the line
+;; before.
+(define (head-text total line)
+  (let* ((name (lambda (i) (let ((digits (number->string i)))
+                             (string-append "x-" (make-string (- 6 (string-length digits)) #\0) digits))))
+         (line-of (lambda (i n) (string-append (name i) ": " (make-string (- n 12) #\v) "\r\n"))))
+    (let loop ((left (- total 17 2 19)) (i 1) (lines '()))
+      (cond ((>= left line) (loop (- left line) (+ i 1) (cons (line-of i line) lines)))
+            ((>= left 13) (loop 0 (+ i 1) (cons (line-of i left) lines)))
+            ((and (> left 0) (pair? lines))
+             (loop 0 i (cons (string-append (substring (car lines) 0 (- (string-length (car lines)) 2))
+                                            (make-string left #\v) "\r\n")
+                             (cdr lines))))
+            (else (apply string-append "HTTP/1.1 200 OK\r\ncontent-length: 0\r\n"
+                         (reverse (cons "\r\n" lines))))))))
+
 ;; pause-ms : Natural -> Unit
 (define (pause-ms ms)
   (sleep (make-time 'time-duration (* (mod ms 1000) 1000000) (div ms 1000))))
@@ -819,6 +841,32 @@
          (list "stalls without a query" (get "/raw/stalls"))
          (list "stalls with another parameter" (get "/raw/stalls?key=k&x=1"))
          (list "early with a parameter" (get "/raw/early?x=1"))
+         (list "head n=0, below its range" (get "/raw/head?n=0"))
+         (list "head n=100001, above its range" (get "/raw/head?n=100001"))
+         (list "head line=12, below its range" (get "/raw/head?line=12"))
+         (list "head n twice" (get "/raw/head?n=2&n=2"))
+         (list "head n beside total" (get "/raw/head?n=2&total=100"))
+         (list "head bigch without big" (get "/raw/head?bigch=X"))
+         (list "head bigch of two chars" (get "/raw/head?big=20&bigch=XY"))
+         (list "head big=8, below its range" (get "/raw/head?big=8"))
+         (list "head tl without tn" (get "/raw/head?tl=20"))
+         (list "head pre with a status of 200" (get "/raw/head?pre=200:1:16"))
+         (list "head pre of 17 heads"
+               (get (string-append "/raw/head?pre=100:0:16"
+                                   (apply string-append (map (lambda (i) ",100:0:16") (iota 16))))))
+         (list "head same=0" (get "/raw/head?same=0"))
+         (list "head with an unknown parameter" (get "/raw/head?x=1"))
+         (list "head with a pair that has no =" (get "/raw/head?n"))
+         (list "head hname without line" (get "/raw/head?n=2&hname=1"))
+         (list "head hname with line=21, a name of 17 bytes too long for it" (get "/raw/head?n=2&line=21&hname=1"))
+         (list "head hname=0" (get "/raw/head?n=2&line=32&hname=0"))
+         (list "head tname without tn" (get "/raw/head?n=2&tname=1"))
+         (list "head v10=2" (get "/raw/head?v10=2"))
+         (list "head-auth with a name neither a. nor b." (get "/raw/head-auth?n=2"))
+         (list "head-auth with an a. spec it refuses" (get "/raw/head-auth?a.n=0"))
+         (list "head417 with a name neither a. nor b." (get "/raw/head417?key=k&b.n=2&x=1"))
+         (list "head417 without key" (get "/raw/head417?a.n=2&b.n=2"))
+         (list "head417 with key twice" (get "/raw/head417?key=k&key=k"))
          (list "a path outside /raw/" (get "/content-length"))
          (list "a request line of two words" "GET /raw/content-length\r\n\r\n")
          (list "a request line of four words" "GET /raw/content-length HTTP/1.1 x\r\n\r\n")
@@ -844,6 +892,97 @@
                           (pattern-text 1))
            'eof)
   (raw-row o "/raw/stalls?key=p-never" (counted-text "written 0 stalled none\n") 'eof)
+  ;; --- the raw face: the head routes (M8 slice 2; ADR-0040): a head of the
+  ;; size and shape its query names, a Digest round's two answers, and a
+  ;; 417 and its resend's, each written here by hand, or for a large one by
+  ;; this suite's own generator, head-text
+  (raw-row o "/raw/head" "HTTP/1.1 200 OK\r\ncontent-length: 0\r\n\r\n" 'eof)
+  (raw-row o "/raw/head?n=3"
+           "HTTP/1.1 200 OK\r\ncontent-length: 0\r\nx-000001: vvvv\r\nx-000002: vvvv\r\n\r\n" 'eof)
+  (raw-row o "/raw/head?n=2&line=20"
+           "HTTP/1.1 200 OK\r\ncontent-length: 0\r\nx-000001: vvvvvvvv\r\n\r\n" 'eof)
+  (raw-row o "/raw/head?n=3&same=1"
+           "HTTP/1.1 200 OK\r\ncontent-length: 0\r\nx-same: vvvvvv\r\nx-same: vvvvvv\r\n\r\n" 'eof)
+  (raw-row o "/raw/head?n=1&big=20"
+           "HTTP/1.1 200 OK\r\ncontent-length: 0\r\nx-big: aaaaaaaaaaa\r\n\r\n" 'eof)
+  (raw-row o "/raw/head?big=20&bigch=X"
+           "HTTP/1.1 200 OK\r\ncontent-length: 0\r\nx-big: XXXXXXXXXXX\r\n\r\n" 'eof)
+  (raw-row o "/raw/head?n=2&tn=2"
+           (string-append "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nx-000001: vvvv\r\n\r\n"
+                          "0\r\nx-000001: vvvv\r\nx-000002: vvvv\r\n\r\n")
+           'eof)
+  (raw-row o "/raw/head?n=1&tn=1&tl=20"
+           (string-append "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\n\r\n"
+                          "0\r\nx-000001: vvvvvvvv\r\n\r\n")
+           'eof)
+  (raw-row o "/raw/head?pre=100:0:16,103:2:20&n=2"
+           (string-append "HTTP/1.1 100 Continue\r\n\r\n"
+                          "HTTP/1.1 103 Early Hints\r\nx-000001: vvvvvvvv\r\nx-000002: vvvvvvvv\r\n\r\n"
+                          "HTTP/1.1 200 OK\r\ncontent-length: 0\r\nx-000001: vvvv\r\n\r\n")
+           'eof)
+  ;; hname names each generated line as a status line begins, HTTP/1.1 and a
+  ;; space; tname, the first trailer HTTP/x; v10, each head HTTP/1.0. Each
+  ;; line keeps its bytes.
+  (raw-row o "/raw/head?n=3&line=32&hname=1"
+           (string-append "HTTP/1.1 200 OK\r\ncontent-length: 0\r\n"
+                          "HTTP/1.1 x-000001: vvvvvvvvvvv\r\nHTTP/1.1 x-000002: vvvvvvvvvvv\r\n\r\n")
+           'eof)
+  (raw-row o "/raw/head?n=2&tn=2&tname=1"
+           (string-append "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nx-000001: vvvv\r\n\r\n"
+                          "0\r\nHTTP/x: vvvvvv\r\nx-000002: vvvv\r\n\r\n")
+           'eof)
+  (raw-row o "/raw/head?pre=103:1:16&n=2&v10=1"
+           (string-append "HTTP/1.0 103 Early Hints\r\nx-000001: vvvv\r\n\r\n"
+                          "HTTP/1.0 200 OK\r\ncontent-length: 0\r\nx-000001: vvvv\r\n\r\n")
+           'eof)
+  ;; total: 60 bytes, the status line's 17, content-length's 19 and the end's
+  ;; 2 leave 22: one line of 16, and 6 too few for another, which go to it.
+  (raw-row o "/raw/head?total=60"
+           "HTTP/1.1 200 OK\r\ncontent-length: 0\r\nx-000001: vvvvvvvvvv\r\n\r\n" 'eof)
+  (for-each
+   (lambda (spec)
+     (let* ((total (car spec)) (line (cadr spec)) (want (head-text total line)))
+       (test-equal (string-append "raw /raw/head?total=" (number->string total) "&line=" (number->string line)
+                                  ": the head of exactly that many bytes, as this suite builds it, then eof")
+         (list total 'same 'eof)
+         (let ((a (exchange o 'raw (get (string-append "/raw/head?total=" (number->string total)
+                                                       "&line=" (number->string line)))
+                            2000)))
+           (if (and (pair? a) (string? (car a)))
+               (list (string-length (car a)) (same-text want (car a)) (cadr a))
+               a)))))
+   '((102400 256) (102401 256) (200 40)))
+  (raw-row o "/raw/head-auth?a.n=2&b.n=3"
+           (string-append "HTTP/1.1 401 Unauthorized\r\n"
+                          "www-authenticate: Digest realm=\"chez-curl-test\", qop=\"auth\", nonce=\"n0\", algorithm=MD5\r\n"
+                          "content-length: 0\r\nx-000001: vvvv\r\n\r\n")
+           'eof)
+  (test-equal "raw /raw/head-auth?a.n=2&b.n=3 with an Authorization header, unchecked: b.'s 200, then eof"
+    '("HTTP/1.1 200 OK\r\ncontent-length: 0\r\nx-000001: vvvv\r\nx-000002: vvvv\r\n\r\n" eof)
+    (exchange o 'raw (get "/raw/head-auth?a.n=2&b.n=3" "Authorization: Digest anything\r\n") 2000))
+  ;; The 417's resend: KEY's first request's Expect gets a.'s 417 as its
+  ;; head arrives; its next bytes, a letter, begin the resend, whose Expect
+  ;; gets a 100 Continue, whose body is read, then b.'s 200, and the end. The
+  ;; key holds the 417, not the connection: a resend on a new connection
+  ;; gets the 100 Continue and the 200 too, and a key's first request
+  ;; without Expect gets the 200 at once.
+  (test-equal "raw /raw/head417?key=K&a.n=2&b.n=3: K's first Expect gets a 417 by a., kept alive; the resend's 100 Continue, its body read, then a 200 by b., then eof; a resend on a new connection gets the same; a first request without Expect gets the 200 at once"
+    (let ((refused "HTTP/1.1 417 Expectation Failed\r\ncontent-length: 0\r\nx-000001: vvvv\r\n\r\n")
+          (answered (string-append "HTTP/1.1 100 Continue\r\n\r\n"
+                                   "HTTP/1.1 200 OK\r\ncontent-length: 0\r\nx-000001: vvvv\r\nx-000002: vvvv\r\n\r\n")))
+      (list (list (string-append refused answered) 'eof)
+            (list refused 'timeout)
+            (list answered 'eof)
+            (list "HTTP/1.1 200 OK\r\ncontent-length: 0\r\nx-000001: vvvv\r\nx-000002: vvvv\r\n\r\n" 'eof)))
+    (let* ((expect (lambda (key) (post (string-append "/raw/head417?key=" key "&a.n=2&b.n=3")
+                                       "Expect: 100-continue\r\n" "Content-Length: 3\r\n")))
+           (same (exchange o 'raw (string-append (expect "h1") (expect "h1") "abc") 2000))
+           (first (exchange o 'raw (expect "h2") 300))
+           (again (exchange o 'raw (string-append (expect "h2") "abc") 2000))
+           (plain (exchange o 'raw (string-append (post "/raw/head417?key=h3&a.n=2&b.n=3" "Content-Length: 3\r\n")
+                                                  "abc")
+                            2000)))
+      (list same first again plain)))
   (raw-row o "/raw/early"
            (string-append "HTTP/1.1 100 Continue\r\n\r\n"
                           "HTTP/1.1 103 Early Hints\r\nLink: </style.css>; rel=preload; as=style\r\n\r\n"
@@ -923,6 +1062,28 @@
                "HTTP/1.1 404 Not Found\r\nContent-Length: 10\r\nConnection: close\r\n\r\nnot found\n"))
    '("/pattern/0" "/pattern/01" "/pattern/268435457" "/pattern/600?delay=60001" "/pattern/600?x=1"
      "/pattern/600?delay=" "/pattern" "/early?x=1" "/connects?x=1" "/connection"))
+  ;; The proxy's arm (M8 slice 2): the next CONNECT it answers 200 carries
+  ;; the lines /proxy-arm names, once; the one after carries none.
+  (test-equal "the CONNECT proxy, armed by /proxy-arm?n=2&line=20: the next tunnel's 200 carries two lines of 20 bytes, then raw's bytes; the one after carries none; /proxy-arm refuses no n, n=100001 and line=12, each 404, and http's /head, HTTP/2's route, is 404"
+    (let ((tunnelled (lambda (lines)
+                       (list (string-append "HTTP/1.1 200 Connection Established\r\n" lines "\r\n"
+                                            "HTTP/1.1 200 OK\r\ncontent-length: 0\r\n\r\n")
+                             'eof)))
+          (not-found '("HTTP/1.1 404 Not Found\r\nContent-Length: 10\r\nConnection: close\r\n\r\nnot found\n" eof)))
+      (list '("HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\narmed\n" eof)
+            (tunnelled "x-000001: vvvvvvvv\r\nx-000002: vvvvvvvv\r\n")
+            (tunnelled "")
+            not-found not-found not-found not-found))
+    (let* ((connect (string-append "CONNECT 127.0.0.1:" (number->string (cdr (origin-face o 'raw))) " HTTP/1.1\r\n"
+                                   "Host: 127.0.0.1\r\n\r\n" (get "/raw/head")))
+           (armed (exchange o 'http (get "/proxy-arm?n=2&line=20" close) 2000))
+           (first (exchange o 'http connect 2000))
+           (second (exchange o 'http connect 2000)))
+      (list armed first second
+            (exchange o 'http (get "/proxy-arm" close) 2000)
+            (exchange o 'http (get "/proxy-arm?n=100001" close) 2000)
+            (exchange o 'http (get "/proxy-arm?n=1&line=12" close) 2000)
+            (exchange o 'http (get "/head?n=2" close) 2000))))
   (test-equal "the CONNECT proxy: a tunnel to the raw face, its request sent behind the CONNECT, gets the tunnel's 200, then raw's bytes, then eof, and is counted; a CONNECT to 127.0.0.1:1, no face of the origin, and to another host, each gets a 403, and the end, and is not; /connects tells each count"
     (let ((connects (lambda (n) (list (string-append "HTTP/1.1 200 OK\r\nContent-Length: "
                                                       (number->string (string-length (string-append "connects " (number->string n) "\n")))
