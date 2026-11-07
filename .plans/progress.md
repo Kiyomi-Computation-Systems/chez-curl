@@ -18,8 +18,9 @@ close-out under **Close-outs**, newest first.
   headers at 1,000 lines and 102,400 bytes, `header-limit`, of `&curl-too-large`, the recorded
   reason winning over libcurl's code, 0 among them; `test-headers` holds the edges, every head
   kind and a per-version table. Two traps found and reproduced: Node's HTTP/2 send limit, and
-  8.20.0's 417 resend on a new connection under the gate. The Mac's `make test` is owed before the
-  pull request (the plan, §9).
+  8.20.0's 417 resend on a new connection under the gate. The Mac ran `make test` on it,
+  2026-11-07, at `dd6888c`: 42 of 42, `test-headers`' 8.7.1 row matching in every cell
+  ([log](research/m8/slice2/mac/mac-8.7.1-make-test.log)).
   - **Decided by the maintainer, 2026-11-06,** each the recommended option, from three read-only
     surveys and three probes on the five Linux libcurls ([`research/m8/`](research/m8/)):
     - the scope ([ADR-0038](decisions/0038-m8s-scope.md)): parts in memory and files by path; a

@@ -701,3 +701,5 @@ python3 $R/tables.py $R/results > tables.md; python3 $R/limits.py $R/results > $
   `make test-memory` of every added or changed suite; and four mutants of the session's own,
   each killed by `test-headers`: the count per response, a later call taken, the head's start
   dropped from the status-line rule, and that rule back to an `HTTP/` prefix.
+- The Mac's `make test` at `dd6888c`, 2026-11-07: 42 of 42, `test-headers` 43 tests, its 8.7.1
+  row matching in every cell ([log](mac/mac-8.7.1-make-test.log)).
