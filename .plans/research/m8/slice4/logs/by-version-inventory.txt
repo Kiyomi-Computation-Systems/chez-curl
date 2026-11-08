@@ -1,0 +1,103 @@
+# git -C . rev-parse HEAD: fb62a0b7719234bc57acd4a0e78f702fdfdcfec8
+# grep -n -E '"7\.85\.0' tests/*.sps (version tables' first rows), suites that hold the drift/floor machinery left out
+tests/test-auth.sps:990:  (list (cons "7.85.0" (append (make-list-of 6 digest-ok) (list digest-512-bad digest-512-bad)))
+tests/test-auth.sps:1017:    (list (cons "7.85.0" raw) (cons "8.5.0" raw) (cons "8.7.1" raw) (cons "8.20.0" raw)
+tests/test-auth.sps:1054:    (list (cons "7.85.0" (list (list "@" #f #f sent-alone) (list ":@" #f #f sent-alone)
+tests/test-auth.sps:1075:    (list (cons "7.85.0" oom) (cons "8.5.0" oom) (cons "8.7.1" large) (cons "8.20.0" large)
+tests/test-headers.sps:263:  '(("7.85.0"
+tests/test-engine.sps:411:  '(("7.85.0" (none unknown #f stalled stalled prompt stalled prompt stalled))
+tests/test-engine.sps:434:  '(("7.85.0" (response 200 "abcd"))
+tests/test-cookies.sps:931:    ("7.85.0" . (("path-empty" (("a.localhost\tFALSE\t\tFALSE\t0\tp\t1" path)) "request 2 face=http host=\"a.localhost:<port>\" cooki
+tests/test-cookies.sps:942:    ("7.85.0" . (("a.localhost\tFALSE\t/\tFALSE\t1\texp\tv") ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1")))
+tests/test-cookies.sps:959:    ("7.85.0" . (200 (transfer-failed perform-failed 28) (a-request the-head-left-open) 200 (transfer-failed perform-failed 28) (a-re
+tests/test-cookies.sps:970:    ("7.85.0/no-psl" . ((((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((
+tests/test-cookies.sps:986:    ("7.85.0" . (((("a.localhost\tFALSE\t/cookies/a/b/\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookie
+tests/test-stream-call.sps:1605:  (let ((rows '(("7.85.0" (303 (text "early 303\n")) (303 "early 303\n"))
+tests/test-stream-call.sps:1653:  (let ((rows '(("7.85.0" (followed 200 whole-body ((307 #f #f ()))) (200 "early 200\n" after-the-head))
+tests/test-redirect.sps:238:    (list (cons "7.85.0" '((javascript followed "/raw/javascript:alert(1)") (bad-ipv6 refused 4)
+tests/test-variadic.sps:202:  '(("7.85.0" 0)
+tests/test-url-location.sps:547:  '("7.85.0" "8.5.0" "8.20.0" "8.23.0" "8.7.1")
+tests/test-proxy.sps:457:  '(("7.85.0" #f (#f http/2)) ("8.5.0" "GnuTLS" (#f http/1.1 http/2)))
+tests/test-proxy.sps:465:       '(("7.85.0" "OpenSSL/3.0.13") ("7.85.0" "GnuTLS/3.8.3") ("8.5.0" "GnuTLS/3.8.3") ("8.5.0" #f)
+tests/test-proxy.sps:531:  (list (cons "7.85.0" '(("http://127.0.0.1:3128/" "http" #f) ("http://127.0.0.1:3128/" "http" #f)
+tests/test-proxy.sps:914:  (list (cons "7.85.0/OpenSSL" (list tls-in-tls-refused 'no-raise tls-in-tls-refused 'no-raise 'no-raise))
+tests/test-proxy.sps:1331:    (list (cons "7.85.0"
+tests/test-proxy.sps:1353:    (list (cons "7.85.0" (refused-row 56 'send-receive 'the-connect))
+tests/test-proxy.sps:1430:      (list (cons "7.85.0" below) (cons "8.5.0" below) (cons "8.20.0" from) (cons "8.23.0" from)
+tests/test-proxy.sps:1442:      (list (cons "7.85.0" below) (cons "8.5.0" below) (cons "8.20.0" from) (cons "8.23.0" from)
+tests/test-proxy.sps:1517:      (list (cons "7.85.0" (list '(head head default switched) '(1 1 2) '(#f #f) ends))
+tests/test-proxy.sps:1564:    (list (cons "7.85.0" (join-row 'default 'switched 56 'send-receive))
+tests/test-proxy.sps:1643:      (list (cons "7.85.0" '(((failed 56 #f 1) 1) ((failed 56 #f 3) 3)))
+tests/test-url.sps:393:  '("7.85.0" "8.5.0" "8.20.0" "8.23.0" "8.7.1")
+tests/test-version.sps:457:  '(("7.85.0" (failed perform-failed 52 send-receive) (failed perform-failed 55 send-receive)
+tests/test-version.sps:474:  '(("7.85.0" . 1) ("8.5.0" . 2) ("8.7.1" . 2) ("8.20.0" . 2) ("8.23.0" . 2)))
+tests/test-upload.sps:826:        (held-rows '(("7.85.0" #f never) ("8.5.0" #f never) ("8.7.1" #t asked) ("8.20.0" #t asked)
+tests/test-upload.sps:1151:    (let ((attempt-rows '(("7.85.0" . 1) ("8.5.0" . 1) ("8.7.1" . 2) ("8.20.0" . 1) ("8.23.0" . 1))))
+tests/test-upload.sps:1281:         '(("7.85.0" (raw-413-close waits 413) (raw-413-keep waits 413) (raw-200-close waits 200)
+tests/test-url-parts.sps:521:  '("7.85.0" "8.5.0" "8.20.0" "8.23.0" "8.7.1")
+tests/test-unsupported.sps:909:  '((("7.85.0" . "OpenSSL") (response 200) (refused perform-failed 83 #f) (refused perform-failed 58 #f))
+tests/test-multipart.sps:1764:  '(("7.85.0"
+tests/test-stream.sps:536:  (map multiplexing-off? '("7.85.0" "8.5.0" "8.6.0" "8.7" "8.7.0" "8.7.1" "8.7.10" "8.7.1-DEV" "8.8.0" "8.20.0" "8.23.0")))
+tests/test-stream.sps:1416:    (let ((spin-rows '(("7.85.0" . quiet) ("8.5.0" . spins) ("8.7.1" . quiet) ("8.20.0" . quiet)
+tests/test-transfer.sps:2710:  '("7.85.0" "8.5.0" "8.7.1" "8.20.0" "8.23.0")
+
+# grep -n -E '8\.7\.0" "8\.7\.1|unmultiplexed|request-size-unreliable|unknown-size-versions|request-size-broken|nothing-sent' tests/*.sps src -r
+tests/test-retry.sps:1174:;; unknown-size-versions : (Listof String)
+tests/test-retry.sps:1178:(define unknown-size-versions '("8.7.0" "8.7.1"))
+tests/test-retry.sps:1181:(define size-known? (not (member version unknown-size-versions)))
+tests/test-proxy.sps:118:(define nothing-sent (if (member version '("8.7.0" "8.7.1")) #f 0))
+tests/test-version.sps:589:(define unmultiplexed '("8.7.0" "8.7.1"))
+tests/test-request.sps:42:              sent-header-lines timing-infos live-transfer-count request-size-unreliable
+tests/test-request.sps:875:;; request-size-broken : (Listof String)
+tests/test-request.sps:876:;; This suite's copy of the library's request-size-unreliable, written
+tests/test-request.sps:880:(define request-size-broken '("8.7.0" "8.7.1"))
+tests/test-request.sps:886:    (and (member (libcurl-info-version (loaded-libcurl)) request-size-broken) #t)))
+tests/test-request.sps:927:(test-equal "request-size-unreliable, the library's table, is this suite's copy: 8.7.0 and 8.7.1"
+tests/test-request.sps:928:  request-size-broken
+tests/test-request.sps:929:  request-size-unreliable)
+tests/test-stream.sps:530:(test-equal "unmultiplexed-versions, written out here: 8.7.0 and 8.7.1"
+tests/test-stream.sps:531:  '("8.7.0" "8.7.1")
+tests/test-stream.sps:532:  unmultiplexed-versions)
+tests/test-stream.sps:536:  (map multiplexing-off? '("7.85.0" "8.5.0" "8.6.0" "8.7" "8.7.0" "8.7.1" "8.7.10" "8.7.1-DEV" "8.8.0" "8.20.0" "8.23.0")))
+tests/test-stream.sps:899:                  (if (or (and (integer? size) (> size 0)) (and (not size) (member version '("8.7.0" "8.7.1"))))
+src/curl/private/engine.sls:182:          unmultiplexed-versions curl-engine-paced-sleeps curl-engine-passed-resumes
+src/curl/private/engine.sls:402:  ;; unmultiplexed-versions : (Listof String)
+src/curl/private/engine.sls:408:  (define unmultiplexed-versions '("8.7.0" "8.7.1"))
+src/curl/private/engine.sls:413:  ;; connection of its own: where unmultiplexed-versions names VERSION.
+src/curl/private/engine.sls:416:    (and (member version unmultiplexed-versions) #t))
+tests/test-stream-call.sps:1151:  ;; unknown-size-versions): the Mac's run made one transfer.
+tests/test-stream-call.sps:1154:                  (list 'exchange 'post nowhere '() (if (member version '("8.7.0" "8.7.1")) 1 3))))
+src/curl/private/transfer.sls:325:          keychain-fallback? request-size-unreliable reported-request-size
+src/curl/private/transfer.sls:1999:  ;; request-size-unreliable : (Listof String)
+src/curl/private/transfer.sls:2005:  (define request-size-unreliable '("8.7.0" "8.7.1"))
+src/curl/private/transfer.sls:2009:  ;; libcurl at VERSION: #f, unknown, where request-size-unreliable names
+src/curl/private/transfer.sls:2012:    (if (member version request-size-unreliable) #f size))
+
+# grep -n '(version "' tests/known-*.sexp
+tests/known-transfer-verdicts.sexp:33: (version "7.85.0")
+tests/known-transfer-verdicts.sexp:44: (version "8.5.0")
+tests/known-transfer-verdicts.sexp:55: (version "8.7.1")
+tests/known-transfer-verdicts.sexp:66: (version "8.20.0")
+tests/known-transfer-verdicts.sexp:76: (version "8.23.0")
+tests/known-url-location-verdicts.sexp:28: (version "7.85.0")
+tests/known-url-location-verdicts.sexp:57: (version "8.5.0")
+tests/known-url-location-verdicts.sexp:86: (version "8.20.0")
+tests/known-url-location-verdicts.sexp:115: (version "8.23.0")
+tests/known-url-location-verdicts.sexp:144: (version "8.7.1")
+tests/known-libcurls.sexp:25: (version "8.20.0")
+tests/known-libcurls.sexp:33: (version "8.5.0")
+tests/known-libcurls.sexp:41: (version "8.5.0")
+tests/known-libcurls.sexp:49: (version "7.85.0")
+tests/known-libcurls.sexp:57: (version "8.20.0")
+tests/known-libcurls.sexp:65: (version "8.23.0")
+tests/known-libcurls.sexp:73: (version "8.7.1")
+tests/known-url-part-verdicts.sexp:29: (version "7.85.0")
+tests/known-url-part-verdicts.sexp:40: (version "8.5.0")
+tests/known-url-part-verdicts.sexp:51: (version "8.20.0")
+tests/known-url-part-verdicts.sexp:62: (version "8.23.0")
+tests/known-url-part-verdicts.sexp:73: (version "8.7.1")
+tests/known-url-verdicts.sexp:27: (version "7.85.0")
+tests/known-url-verdicts.sexp:42: (version "8.5.0")
+tests/known-url-verdicts.sexp:57: (version "8.20.0")
+tests/known-url-verdicts.sexp:72: (version "8.23.0")
+tests/known-url-verdicts.sexp:87: (version "8.7.1")

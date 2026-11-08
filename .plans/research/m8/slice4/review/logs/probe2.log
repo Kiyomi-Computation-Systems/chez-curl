@@ -1,0 +1,15 @@
+jar close after engine stop => RAISED (curl-engine-error stopped)the engine was stopped, so it takes no more transfers
+http-get inside critical-section => RAISED assertion a call needs interrupts on: inside a critical section its await would hold every collection, so nothing was submitted
+second body port => RAISED assertion a token's port is made once
+low-level port read on another thread => (raised curl-wrong-thread)
+low-level port close on another thread => (raised curl-wrong-thread)
+cancel a done token => #f
+high-level port read on another thread => (raised assertion)
+high-level port close on another thread => (raised assertion)
+string body content-type => ("Content-Length: 2")
+form with own content-type => ("content-type: text/x" "Content-Length: 3")
+http-response-url with params => "http://127.0.0.1:41045/status/200?a=b+c"
+http-response-header any case => "11"
+redirect 0 bound => (too-many-redirects "/status/200")
+redirects #f => 302
+exchange on url error => (#t 0)

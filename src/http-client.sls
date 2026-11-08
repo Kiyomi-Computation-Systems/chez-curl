@@ -533,7 +533,9 @@
    ;;   backoff-ms or max-backoff-ms; not-a-status-list, field statuses;
    ;;   not-a-method-list, field methods; not-a-limit, field limit; each
    ;;   the value as given; stream-in-group, field body, the producer: go
-   ;;   and http-parallel take no producer, before anything is submitted
+   ;;   and http-parallel take no producer, before anything is submitted;
+   ;;   body-length-mismatch, field body, the producer: a piece that would
+   ;;   take the body past its body-length
    &http-request-error http-request-error? http-request-error-field
    http-request-error-value http-request-error-reason http-request-error-reasons
 

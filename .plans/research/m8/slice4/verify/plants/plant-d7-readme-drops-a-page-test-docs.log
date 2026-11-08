@@ -1,0 +1,9 @@
+%%%% Starting test docs
+a page the index links and README.org does not:
+  "docs/hatch.md"
+FAIL README.org links every page docs/README.md links
+  expected: ()
+  actual:   ("docs/hatch.md")
+# of expected passes      41
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 41, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

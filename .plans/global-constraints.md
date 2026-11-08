@@ -292,8 +292,8 @@ provisional. They bind until that record is accepted or amended.
   - a CA file's path beginning `pkcs11:`, in any ASCII case and no other fold, is refused as
     `pkcs11-url` when the request is made and again at submit, on every backend: GnuTLS took
     all sixteen ASCII cases;
-  - `SSLKEYLOGFILE`, `OPENSSL_CONF` and `CURL_SSL_BACKEND` are documented in README.org, not
-    refused.
+  - `SSLKEYLOGFILE`, `OPENSSL_CONF` and `CURL_SSL_BACKEND` are documented in the docs, README.org
+    or a page it links, not refused (ADR-0038, amended 2026-11-08).
 
 ## The public request and its failures
 
@@ -978,6 +978,8 @@ provisional. They bind until that record is accepted or amended.
   owned; `HTTP_TRANSFER_DECODING` 0 puts trailers in the body (ADR-0040, amended 2026-11-06).
 - **The docs:** a thin README.org, Markdown in `docs/`, a hand-written `docs/reference.md` that a
   test holds to every export, and examples a test runs (ADR-0038). No page cites `.plans/` (the
-  M8 plan, §3.5).
+  M8 plan, §3.5). A record's "documented in README.org" is kept by README.org or a page it links
+  (ADR-0038, amended 2026-11-08). An example imports public libraries alone; a wrapper prints its
+  native counts.
 - **The release:** `Akku.manifest`'s version is CHANGELOG.md's latest release, held by a test. A
   tag is made and pushed only when the maintainer asks (ADR-0038; the M8 plan, §3.6).

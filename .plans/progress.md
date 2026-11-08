@@ -8,20 +8,20 @@ close-out under **Close-outs**, newest first.
 
 - **M8, multipart, the header cap, the docs and v0.1.0:** in progress. The
   [M8 plan](2026-11-06-m8-plan.md) merged as PR #49 (`74d7aca`), CI passing all eight jobs on it.
-  Five slices: the memory job in two; the header cap; multipart; the docs; the release. Slice 1,
-  the memory job in two, merged as PR #50 (`9fdb9f3`), and slice 2, the header cap, as PR #51
-  (`bd54721`); their close-outs are below. Slice 3, multipart (the plan, §3.4 and §6), is built,
-  reviewed and fixed on `feat/m8-multipart`, not yet merged: measured first through a prototype in
-  the engine on the five Linux lanes and the two builds without mime
-  ([research](research/m8/slice3/)), then four answers by the maintainer, each the recommended
-  option (ADR-0039 and ADR-0023, amended 2026-11-07): `curl-request-body` answers a copy, and a
-  relative path is refused at submit; a grown file, and a pseudo-file whose size is not its
-  content, are documented by version; and `curl-request-with` takes a `url` key, through which the
-  high level builds each hop. The Mac ran it, 2026-11-07, at `424cb5b`
-  ([logs](research/m8/slice3/mac/)): `make check-variadic` passed all 37 steps on `tarm64osx`, the
-  `curl_formadd` use watched failing there; `make test` passed 42 of 43, and `test-multipart`, run
-  twice, filled its 8.7.1 row and failed one test of its own, which the macOS `/private/var`
-  symbolic link exposed, fixed and reproduced on Linux; at `b74407a` it passed there, 73 of 73.
+  Five slices: the memory job in two; the header cap; multipart; the docs; the release. Slices 1
+  to 3 are merged: the memory job in two as PR #50 (`9fdb9f3`), the header cap as PR #51
+  (`bd54721`), multipart as PR #52 (`fb62a0b`); their close-outs are below. Slice 4, the docs (the
+  plan, §3.5 and §7), is in progress on `feat/m8-docs`: measured first, the docs survey's tables
+  again on the merged surface ([research](research/m8/slice4/)), 194 exports, 45 promises and
+  M8's 23 more; then built by two builders on disjoint files, README.org, 14 pages, the reference,
+  ten examples and three suites; reviewed (Opus, read-only), no blocker and seven majors, each
+  reproduced and fixed, and thirteen minors. The suites now fail on 9 of the review's 13 planted
+  faults; a wrong type, a wrong "Raises", a wrong page and a fragment's wrong answer only a reading
+  of the code catches. The CI main chain passed in the container, 46 of 46, and the Mac's `make
+  test` at `ad0cfb0`, 46 of 46, the examples' 45 tests among them
+  ([log](research/m8/slice4/mac/mac-8.7.1-make-test.log)). The measurement's nine questions were the plan's design or the
+  records', each taken as recommended (ADR-0038, amended 2026-11-08; the plan's §3.5 and §3.8
+  corrected).
   - **Decided by the maintainer, 2026-11-06,** each the recommended option, from three read-only
     surveys and three probes on the five Linux libcurls ([`research/m8/`](research/m8/)):
     - the scope ([ADR-0038](decisions/0038-m8s-scope.md)): parts in memory and files by path; a
@@ -75,8 +75,8 @@ close-out under **Close-outs**, newest first.
     below. Still carried:
     - the curl bug report on the unterminated head, drafted for the maintainer to file
       ([draft](research/m7/slice4/verify/curl-bug-report.md));
-    - slice 1's floor flake, which has not recurred in ten floor runs since; a cap on response
-      headers, for M8's plan;
+    - slice 1's floor flake, which has not recurred in ten floor runs since; the cap on response
+      headers, taken into M8, is built (M8 slice 2);
     - from #47's fix round: the public URL functions run with their caller's interrupts, as their
       header says; `string-pairs`' and `list-within`'s `assertion-violation?` guards read a
       handler's `&assertion` raised inside `length` as "not a list"; a call copies its URL
@@ -259,6 +259,64 @@ close-out under **Close-outs**, newest first.
   runs, raises `cyclic dependency`. An engine loads first (ADR-0002, amended 2026-10-24).
 
 ## Close-outs
+
+### 2026-11-08 — M8 slice 3: multipart bodies of fields and files (PR #52, `fb62a0b`)
+
+- **Measured first** ([`research/m8/slice3/`](research/m8/slice3/)), through a prototype in the
+  engine on the five Linux lanes and the two builds without mime, two runs each: the load's probe;
+  each part kind and method over three faces; the default types; hostile bytes; a caller's
+  `Content-Type`; the file check and what follows it; resends; the header cap beside `MIMEPOST`.
+  Through the engine it found what the plan's C probe hid: a file grown after the check is sent
+  past `Content-Length` on 7.85.0 and 8.5.0, which the probe's stand-in had logged as garbage.
+- **Decided by the maintainer,** each the recommended option (ADR-0039 and ADR-0023, amended
+  2026-11-07): `curl-request-body` answers a copy, and submit refuses a relative path; a grown
+  file, and a pseudo-file whose size is not its content, are documented by version; and
+  `curl-request-with` takes a `url` key, through which the high level builds each hop, so its
+  core makes no file-system call.
+- **Built** (the plan, §3.1 and §3.4): the `multipart` body and its rules; ten bindings,
+  `curl_formadd` the seventh variadic use; the load's probe, its answer kept as data; the `mime`
+  kind, freed after `curl_easy_cleanup`; `MIMEPOST` a body field's, set last, `MIME_OPTIONS`
+  owned; no `Content-Type:` blank beside it; the engine's file check outside every critical
+  section; the high level's `multipart` key through redirects, retries and groups;
+  `tests/test-multipart.sps`, 73 tests and a table of 16 cells by six libcurls; the origin's
+  `/parts` route; `tests/mime-abandon.sps`.
+- **Watched failing:** 42 mutants of the builder's, and 6 of mine, of which one survived until
+  the fix round: the engine's open, skipped, which no test reached.
+- **Reviewed** (Opus, read-only): no blocker; three majors, each reproduced: a timer's raise in
+  the engine's check read as `part-file` through a guard; `curl-mime-add-part!`'s step answers
+  went untested; procfs and sysfs files pass the regular-file rule. Fixed, the third documented
+  by the maintainer's choice; seven minors, answered in the same round.
+- **The Mac ran it,** 2026-11-07: `make check-variadic` at `424cb5b`, all 37 steps on
+  `tarm64osx`, the `curl_formadd` use watched failing; `make test` 42 of 43, `test-multipart`
+  run twice to fill its 8.7.1 row, and failing one test of its own on the `/private/var` link;
+  fixed, it passed at `b74407a`, 73 of 73 ([logs](research/m8/slice3/mac/)).
+- **CI:** the first run, at `928ac85`, failed `main`, `gnutls` and `memory-1` on one cell, 8.5.0's
+  grown file over HTTP/2: those jobs run the runner's Node 22.23.4, which answers the overrun 56
+  where Node 20 answers 92. Reproduced in Docker, 6 of 6, and the cell holds both
+  ([research](research/m8/slice3/ci/)). At `a8d5236`, all nine passed
+  ([jobs](research/m8/slice3/ci/pr52-run-42443419929-jobs.txt)): `memory-1` 20 min 59 s,
+  `memory-2` 19 min 51 s. `main`'s push run for `fb62a0b` (42483336626) passed all nine
+  ([jobs](research/m8/slice3/ci/main-run-42483336626-jobs.txt)): `memory-1` 20 min 47 s,
+  `memory-2` 13 min 19 s.
+- **Subagents,** each Opus:
+
+  | Agent | Tokens | Calls | Time |
+  |---|---|---|---|
+  | measure | 835k | 246 | 90 min |
+  | build (the same agent) | 753k | 337 | 130 min |
+  | adversarial review | 395k | 93 | 25 min |
+  | fix round, part 1 | 894k | 55 | 20 min |
+  | fix round, part 2 | 968k | 50 | 53 min |
+- **Traps recorded** (`traps.md`, AGENTS.md): a stand-in that answers at `Content-Length`; a child
+  inheriting a FIFO's fd; Valgrind's suppressed total counting `default.supp`'s blocks; macOS's
+  `/var` link; Node's HTTP/2 answer to DATA past a stream's length, by Node's version.
+- **Learned:**
+  - a cell that measures the test origin's answer measures Node too: run it under CI's Node
+    before the pull request;
+  - a mutant that asks why a check exists finds what a list of mutants does not: the engine's
+    open went untested past 31;
+  - a brief that says "read the traps" does not stop one: name the trap in the work item;
+  - read the seam's rules before naming a mechanism that must cross them.
 
 ### 2026-11-07 — M8 slice 2: the header cap (PR #51, `bd54721`)
 

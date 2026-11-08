@@ -1,0 +1,14 @@
+curl-error_ status=0 procedure
+curl-request-error-reasons status=0 value
+curl-request-with-options status=255 Exception in chez-curl: CHEZ_CURL_LIBCURL must be an absolut
+curl-response_ status=255 Exception in chez-curl: CHEZ_CURL_LIBCURL must be an absolut
+curl-url-part status=255 Exception in chez-curl: CHEZ_CURL_LIBCURL must be an absolut
+http-error_ status=0 procedure
+http-get status=255 Exception in chez-curl: CHEZ_CURL_LIBCURL must be an absolut
+http-request-error-reasons status=0 value
+http-response_ status=255 Exception in chez-curl: CHEZ_CURL_LIBCURL must be an absolut
+http-retry_ status=255 Exception in chez-curl: CHEZ_CURL_LIBCURL must be an absolut
+libcurl-info_ status=0 procedure
+make-curl-mailbox status=255 Exception in chez-curl: CHEZ_CURL_LIBCURL must be an absolut
+make-curl-request status=255 Exception in chez-curl: CHEZ_CURL_LIBCURL must be an absolut
+make-http-retry status=255 Exception in chez-curl: CHEZ_CURL_LIBCURL must be an absolut

@@ -8,579 +8,93 @@ An HTTP Client for Chez Scheme built on libcurl.
 ✨ *AI Disclosure:* LLMs are used extensively in the planning and development of this project.
 #+end_quote
 
+chez-curl is an HTTP client for Chez Scheme. It binds libcurl through Chez's
+foreign interface, and checks what you hand it before any of it reaches C.
+
+It has two levels:
+
+- *=(http-client)=, the high level:* a session, and a call per request,
+  =http-get=, =http-post= and the rest. It follows redirects by its own rules,
+  retries by a policy you give it, keeps cookies, sends forms and multipart
+  bodies, and streams both ways.
+- *=(curl)=, the low level:* a request is data, an engine runs it, and a token
+  hands you the response. =(http-client)= is built on it.
+
+*One engine thread runs many requests.* An engine is one thread that drives
+every transfer submitted to it at once, so making many requests at once
+takes no thread per request: a request group, or many tokens, on your one
+thread.
+
+** Status
+
+chez-curl 0.1.0 is its first release. Its suites run on:
+
+- Linux on amd64, on curl's own 7.85.0 and 8.23.0, built from source, Ubuntu's
+  8.5.0 with OpenSSL and with GnuTLS, and Guix's 8.20.0;
+- macOS on arm64, with Apple's libcurl 8.7.1.
+
+Linux on arm64 and macOS on amd64 have not run them. Windows is not
+supported. [[file:docs/libcurl-versions.md][What varies by libcurl]] lists each behaviour that differs by
+version.
+
 ** Requirements
 
 - Chez Scheme 10.4.0 or later, built with threads
 - libcurl 7.85.0 or later, built with TLS
 - Node.js 20 or later, for the tests
 
-** Status
+** Installing
 
-** Quick start
+Clone the repository, and put its =src= directory on Chez's library path.
+There is nothing to build: libcurl is loaded when your program runs.
 
-** Configuration
-
-*** What a transfer reads from the environment
-
-libcurl, and the TLS library under it, read some variables from your
-program's environment. chez-curl never changes them.
-
-- *Proxies.* =http_proxy=, =https_proxy=, =HTTPS_PROXY=, =all_proxy= and
-  =ALL_PROXY= send a transfer through the proxy they name. =no_proxy= and
-  =NO_PROXY= list hosts that go direct. =HTTP_PROXY= is ignored. A request
-  made with ='proxy #f= goes direct, and one with a proxy URL goes through
-  it, whatever they say (below). Through an =http://= or =https://= proxy
-  that does not tunnel, libcurl ignores ='http/2-prior-knowledge=: the
-  request goes as HTTP/1.1.
-- *A proxy variable's user and password are libcurl's to read;* chez-curl
-  checks none of it. One that decodes to a control byte, =%00= to =%1F=,
-  sends the transfer around the proxy, direct, on 7.85.0 and 8.5.0; 8.20.0
-  and later fail it, 3. Put a proxy's credentials in a request's proxy URL,
-  which is refused for them.
-- *A proxy's TLS.* An =https://= proxy a variable names is checked against
-  libcurl's system store: on Guix, the one =SSL_CERT_FILE= names. A
-  request's =ca-file= and =verify= are for the server, never the proxy; a
-  proxy URL's are =proxy-ca-file= and =proxy-verify=.
-- *Guix's =SSL_CERT_FILE= and =SSL_CERT_DIR=.* Guix's libcurl reads both when
-  it loads. Its 8.20.0 puts =SSL_CERT_FILE= in place of a request's
-  =ca-file=, and adds =SSL_CERT_DIR='s certificates beside it. So on any Guix
-  libcurl, if either was set when your program started, a request with a
-  =ca-file= and =verify= on is refused when you submit it, naming the
-  variable. Unset it before starting the program, or leave out =ca-file= to
-  trust the store it names.
-- *A =ca-file= named =pkcs11:...=.* GnuTLS reads a path that begins
-  =pkcs11:=, in any case, as a PKCS#11 token, not a file. chez-curl refuses
-  such a =ca-file= with every TLS library. Name the file as =./pkcs11:...=.
-- *=SSLKEYLOGFILE=* makes the TLS library write every transfer's secrets to
-  the file it names, so anyone with that file can read the traffic. Use it
-  only to debug.
-- *=OPENSSL_CONF=* can weaken what an OpenSSL build checks: one at security
-  level 0 let a 1024-bit certificate pass.
-- *macOS and =CURL_SSL_BACKEND=.* Apple's libcurl has two TLS libraries and
-  uses LibreSSL unless =CURL_SSL_BACKEND= picks the other. Apple's LibreSSL
-  checks the keychain when a =ca-file= fails, so a server the keychain trusts
-  passes whatever the =ca-file= names. So there a request with a =ca-file=
-  and =verify= on is refused when you submit it. Start the program with
-  =CURL_SSL_BACKEND=secure-transport=, which keeps the =ca-file= the only
-  anchor. =make test= sets it on macOS. Apple's =OPENSSL_X509_TEA_DISABLE=1=
-  turns the keychain fallback off too, but chez-curl does not read it yet,
-  and still refuses.
-- *The request size.* libcurl 8.7.0 and 8.7.1, the Mac's among them, count
-  no bytes sent, ever. On them a failure from a transfer that ran has a
-  request size of =#f=, unknown, not =0=.
-
-*** Choosing the HTTP version
-
-A request's =http-version= asks for one:
-
-#+begin_src scheme
-(make-curl-request "https://example.com/" 'http-version 'http/2)
+#+begin_src sh
+git clone https://github.com/Kiyomi-Computation-Systems/chez-curl.git
+scheme --libdirs chez-curl/src --program app.sps
 #+end_src
 
-- *=#f=, the default,* lets libcurl choose: HTTP/2 over =https://= when the
-  server offers it, else HTTP/1.1.
-- *='http/1.1=* asks for HTTP/1.1 alone. A server that speaks only HTTP/2
-  refuses it.
-- *='http/2=* gets HTTP/2 over =https://= when the server offers it, agreed
-  in the TLS handshake, else HTTP/1.1. Over =http://= it sends HTTP/1.1, with
-  no =Upgrade=.
-- *='http/2-prior-knowledge=* speaks HTTP/2 from the first byte, to an
-  =http://= server you know speaks it. With an =https://= URL it is refused
-  when you submit, =prior-knowledge-over-https=: use ='http/2= there. A
-  redirect to =https://= fails the call the same way. An HTTP/1.1 server
-  fails it: its code depends on the libcurl, and on timing.
-- *Through an =http://= or =https://= proxy that does not tunnel,* the
-  environment's (=http_proxy= and the rest) among them, libcurl ignores prior
-  knowledge, and sends HTTP/1.1 to the proxy.
-- *Requests started together open a connection each.* chez-curl never sets
-  =PIPEWAIT=, so they do not wait to share one HTTP/2 connection; a request
-  started later reuses an open one. libcurl 7.85.0 is the exception: it
-  shares one by prior knowledge even then. On libcurl 8.7.0 and 8.7.1, the
-  Mac's, where the engine does not multiplex, a request started while
-  another runs opens its own connection. The hatch's =PIPEWAIT= still works,
-  unsupported.
-- *A reused connection keeps its version.* Over =http://=, a request with
-  =#f= or ='http/2= to a server the engine already holds an HTTP/2
-  connection to, made by prior knowledge, reuses it, and reads HTTP/2.
-- *The hatch refuses =HTTP_VERSION=,* and =SSL_ENABLE_ALPN=, =ALTSVC= and
-  =ALTSVC_CTRL=, which can change the version or the server a request
-  reaches.
+chez-curl finds the system's libcurl; =CHEZ_CURL_LIBCURL= names another, by
+its absolute path. The [[file:docs/quickstart.md][quick start]] says more.
 
-=(http-client)='s sessions and calls take =http-version= too. A call's
-replaces its session's, and a redirect keeps it.
+** A taste
 
-*** Giving credentials
+=examples/quick-start.sps=, given the test server's base URL, with no trailing
+=/= ([[file:docs/quickstart.md][quick start]]):
 
-A request's =credentials= names one scheme, and what it sends:
+#+begin_src scheme :example examples/quick-start.sps
+(import (rnrs) (http-client))
 
-#+begin_src scheme
-(make-curl-request "https://example.com/" 'credentials '(basic "user" "pass"))
-(make-curl-request "https://example.com/" 'credentials '(digest "user" "pass"))
-(make-curl-request "https://example.com/" 'credentials '(bearer "token"))
-#+end_src
-
-- *Basic and Bearer* go out on the first request.
-- *Digest* sends a bare request first, and its credentials once the server
-  answers with a challenge: a second request inside the transfer. A request
-  with a body, a =post= or a =put=, to a server that never challenges is sent
-  twice, the first time with no body.
-- *Each string is sent as UTF-8.* libcurl 8.23.0 percent-encodes a Digest
-  user name's bytes outside ASCII, and still hashes the raw ones, so a
-  server refuses a non-ASCII Digest user name from it.
-- *A wrong password is no failure:* you get the server's 401.
-- *Refused when you make the request:* a control character, U+0000 to
-  U+001F or U+007F, in any string, which libcurl would write into the header
-  as it is (=credentials-bytes=); a =:= in a Basic user name, where Basic ends
-  the user (the same reason); an empty token, or a user and a password both
-  empty (=credentials-empty=); credentials beside your own =Authorization=
-  header, since libcurl would send one or both (=credentials-beside-authorization=);
-  Digest beside a streamed body or response, since its second request would
-  break the stream (=digest-with-stream=). Basic and Bearer stream fine.
-- *Refused when you submit:* credentials beside a URL that holds a user or a
-  password (=credentials-beside-userinfo=). Give them one way. An empty
-  =@= in the URL counts on libcurl 8.5.0 and later, not on 7.85.0.
-- *A refusal never holds your secret,* only its scheme and part, such as
-  =(basic password)=.
-- *No length is checked.* libcurl sends what fits: 8 KiB goes everywhere,
-  64 KiB over HTTP/1.1 alone, and 1 MiB fails before anything is sent, with
-  libcurl's own code, 27 or 100 by version, but a Digest password, of which
-  only the hash goes.
-- *A printed request, token or engine shows its type alone,* such as
-  =#<curl-request>=, never your credentials.
-- *An error never prints a value you misplaced, nor a URL it refused:* a
-  string where a key, a request or a response belongs is named by its kind,
-  =(kind string)=, and a refused URL by its field, =url=; a header value by
-  its header's name. =curl-url-error-input= still holds the URL.
-- *The hatch refuses* =HTTPAUTH=, =USERNAME=, =PASSWORD=, =XOAUTH2_BEARER=
-  and =AWS_SIGV4=, and =MAXREDIRS=: every transfer stops after 30 of the
-  requests libcurl follows inside it, an auth round's, a stale Digest
-  challenge's and a 417's resend among them, so a server that answers 417 or
-  a stale challenge for ever ends it with 47. libcurl's retry of a request a
-  dead connection lost is no such follow.
-
-=(http-client)='s sessions and calls take =credentials= too. A call's
-replaces its session's. A redirect keeps them within one origin, and drops
-them for another, as it drops =Authorization=. A redirect within the origin
-to a URL holding a user or a password fails the call,
-=credentials-beside-userinfo=.
-
-*** Going through a proxy
-
-A request's =proxy= names one by its URL:
-
-#+begin_src scheme
-(make-curl-request "https://example.com/" 'proxy "http://proxy.example:3128")
-(make-curl-request "https://example.com/"
-                   'proxy "https://user:pass@proxy.example"
-                   'proxy-ca-file "/etc/ssl/proxy-ca.pem")
-#+end_src
-
-- *=environment=, the default,* goes through the proxy a variable names, and
-  =#f= goes direct.
-- *A proxy URL takes every transfer.* =no_proxy=, =NO_PROXY= and the proxy
-  variables send nothing around it.
-- *Its credentials are its user and password,* percent-decoded, sent by Basic
-  on the first request. An =http://= URL's request goes to the proxy whole;
-  an =https://= URL's goes through a =CONNECT= tunnel, the proxy seeing only
-  the =CONNECT=.
-- *A URL with no port gets its scheme's,* 80 or 443, on every libcurl: on its
-  own, libcurl tries 1080, and 8.23.0 80.
-- *An =https://= proxy's TLS is its own.* =proxy-ca-file= is its only CA
-  file, else libcurl's default store, and =proxy-verify=, =#t= by default,
-  checks its certificate and name. The request's =ca-file= and =verify=
-  never reach the proxy, nor these the server. A =proxy-ca-file= is refused
-  against the environment as a =ca-file= is: Guix's =SSL_CERT_FILE= and
-  =SSL_CERT_DIR=, and the Mac's LibreSSL.
-- *Refused when you submit, naming the field, never the URL,* which can hold
-  a password: a URL that does not parse, or whose user or password holds a
-  =%= not followed by two hex digits (=proxy-url=); a scheme but =http= or
-  =https=, =socks5://= among them (=proxy-scheme=); a path, a query or a
-  fragment (=proxy-url-parts=); a user or password that decodes to a control
-  byte, to bytes that are not UTF-8, or a user that decodes to a =:=
-  (=credentials-bytes=), or both empty (=credentials-empty=); a
-  =proxy-ca-file=, or =proxy-verify #f=, beside any proxy but an =https://=
-  URL (=proxy-tls-without-https-proxy=); ='http/2-prior-knowledge=, which
-  libcurl ignores through a proxy (=prior-knowledge-through-proxy=); an
-  =https://= proxy on a libcurl built without HTTPS-proxy support, which
-  would write the whole URL into its error buffer
-  (=https-proxy-unsupported=). Beside
-  =proxy environment= prior knowledge is ignored the same way, when a
-  variable names a proxy. libcurl 7.85.0 reads an empty =@= or =:@= as no
-  credentials at all, and sends none; later ones are refused.
-- *Refused when you make the request:* a =Proxy-Authorization= header, in any
-  case (=proxy-authorization-header=): inside a tunnel libcurl would send it
-  to the server.
-- *TLS inside TLS stalls on two builds:* an =https://= URL through an
-  =https://= proxy waits until its timeout on Ubuntu's 8.5.0 with GnuTLS, and
-  at times on 7.85.0 when the server picks HTTP/2. So it is refused when you
-  submit there (=proxy-tls-in-tls=): always on the first, and on 7.85.0
-  unless the request asks ='http/1.1=. A stalling proxy that a variable
-  names, through =proxy environment=, is not refused: no submit knows it.
-- *A refused =CONNECT=* fails with 56 on 7.85.0 and 8.5.0, and 7 from 8.20.0.
-  =curl-transfer-error-connect-code= holds the proxy's status, 403, 407, 502
-  and the like, on every version. A retry policy treats it as a response
-  with that status, so the default one never retries a 403 or a 407. A proxy
-  that closes keeps the plain rule: on 7.85.0 the request size counts the
-  =CONNECT=, so a =post= is not tried again there.
-- *Before libcurl 8.19.0 no tunnel is shared:* each =https://= request
-  through a proxy URL opens a connection of its own, and with credentials
-  closes it as it ends. 7.85.0 let a later request ride a tunnel another
-  user's credentials had opened (CVE-2026-3784); Ubuntu's 8.5.0 has the fix,
-  but pays for the new connection too.
-- *Before 8.19.0, credentials in a proxy URL stop HTTP/2 multiplexing* on
-  that engine, for good: from its first such request, each later request
-  opens a connection of its own, so none rides a tunnel the credentials
-  opened, a request through =proxy environment= among them.
-- *The hatch refuses* =PROXY=, =NOPROXY=, =PROXYAUTH=, =PROXYUSERPWD=,
-  =PROXYUSERNAME=, =PROXYPASSWORD=, =HTTPPROXYTUNNEL=, =HAPROXYPROTOCOL=,
-  =HAPROXY_CLIENT_IP=, =FORBID_REUSE= and every =PROXY_= TLS option.
-  =SUPPRESS_CONNECT_HEADERS=, =PROXY_SERVICE_NAME= and =SOCKS5_AUTH= stay
-  its, unsupported: none changed what was sent. =CONNECT_TO= stays its too,
-  and moves the host and port the proxy's =CONNECT= names.
-
-=(http-client)='s sessions and calls take =proxy=, =proxy-ca-file= and
-=proxy-verify=. A call's replaces its session's, and a call that names its
-own =proxy= drops the session's =proxy-ca-file= and =proxy-verify=. Every
-hop of a redirect goes through the same proxy, another server's too, with
-the proxy's credentials.
-
-*** Keeping cookies
-
-A cookie jar is an engine's. Give it to each request whose cookies it should
-keep:
-
-#+begin_src scheme
-(define engine (make-curl-engine))
-(define jar (make-curl-cookie-jar engine))
-(curl-token-await (curl-submit engine (make-curl-request "https://example.com/login"
-                                                         'cookie-jar jar)))
-(curl-cookie-jar-cookies jar)            ; its cookies, as lines
-(curl-cookie-jar-load! jar saved-lines)  ; put lines back in
-(curl-cookie-jar-close! jar)
-#+end_src
-
-- *The rules are libcurl's:* which cookies are kept, and which go to which
-  host and path. They vary by version, below.
-- *A jar holds cookies alone,* in memory: no file, and no HSTS entry.
-- *A line is a Netscape line,* =DOMAIN TAILMATCH PATH SECURE EXPIRY NAME
-  VALUE=, tab-separated, =#HttpOnly_= before an HttpOnly cookie's domain. It
-  is a Latin-1 string both ways: each byte one char. Their order moves:
-  compare them sorted.
-- *A load takes a line in the form a read-out writes it,* and checks every
-  line before it loads any: seven fields, none holding a control char;
-  =TRUE= or =FALSE= in the second and the fourth, the domain starting with
-  a dot exactly beside =TRUE=; a domain neither empty nor starting with =#=,
-  and no =Set-Cookie:= line; a path starting with =/=; an expiry of digits,
-  at most 9223372036854775807; a name; no ~;~ in the name or the value,
-  and no ~=~ in the name; a name and value of 4,096 bytes at most
-  together; a name starting =__Secure-= or =__Host-=, in any case, only
-  beside =TRUE= in the fourth, and for =__Host-= the path =/= and =FALSE= in
-  the second; no char above U+00FF. Any other is refused, =cookie-line=,
-  naming the line's index, never its text: a cookie's value is a secret.
-- *A read-out can give lines a load refuses,* by version: 7.85.0 lists a
-  tab in a name, a value or a server's =Path= as an eighth field; 7.85.0
-  and 8.5.0 list a server's =Path==, =Path=TRUE=, =Path=FALSE= and
-  =Path=rel= as given; and 7.85.0, 8.20.0 and 8.23.0 list a server's
-  =__secure-= or =__HOST-= cookie, a prefix in another case, that breaks
-  its prefix's rule, which 8.5.0 drops.
-- *What varies by version:* =Domain=localhost= is kept without PSL and
-  dropped with it, and set from =localhost= itself is host-only on 8.5.0; the
-  default path ends in =/= on 7.85.0 and 8.5.0; 8.20.0 and later cap an
-  expiry at 400 days; =Max-Age=-1= keeps a session cookie on 7.85.0;
-  7.85.0 and 8.5.0 list a deleted cookie, with expiry 1, and a loaded one
-  whose expiry has passed until another is added.
-- *A load is slow for many lines,* about n^2, on the engine's thread, while
-  its other transfers wait: 10,000 lines took 0.24 to 0.50 s, 50,000 up to
-  27 s. A read-out of 50,000 took 1.7 to 6.4 s.
-- *On 7.85.0 a long head can hang a request:* its cap on the =Cookie= line
-  counts everything written before it, the request line, =Host=, the
-  credentials' =Authorization= and =User-Agent= among it. A server's 4 KB
-  cookie beside a URL of 4,200 bytes, or a 4,300-byte user agent, leaves
-  the request's head unended, and it waits for its timeout, 28. Pass a
-  =timeout-ms=.
-- *Refused when you make the request:* a =Cookie= or =Host= header beside a
-  jar, in any case, any value (=cookie-beside-jar=): libcurl would send a
-  second =Cookie=, or match the jar against your =Host=.
-- *Refused when you submit:* another engine's jar (=cookie-jar-engine=), and
-  a closed one (=cookie-jar-closed=). A close that crosses a submit fails its
-  token so.
-- *A close frees the jar* once no transfer holds it, and an engine's stop
-  frees every jar. Each jar procedure waits for the engine, as a stop does,
-  and a stopped engine's jar raises as a submit would.
-- *The hatch refuses* =SHARE=, =COOKIE=, =COOKIEFILE=, =COOKIEJAR=,
-  =COOKIELIST= and =COOKIESESSION=: =COOKIELIST= would clear or fill the jar
-  of every transfer that holds it. =HSTS_CTRL= stays its, and so does
-  =CONNECT_TO=: a jar's cookies follow the URL's host, not the server it
-  routes to, as they would a hosts file's entry.
-
-=(http-client)='s session takes =cookies=, =#f= by default: =#t= keeps a
-jar on its engine, which every call carries, every hop of a redirect too,
-and its close frees. =http-session-cookies= reads it out, and
-=http-session-load-cookies!= loads lines into it. A =Cookie= or =Host=
-header, the session's or a call's, is refused beside it.
-
-*** Options chez-curl does not wrap
-
-=(curl unsupported)= attaches a libcurl option to a request by its name, for
-anything the request's own keys do not cover:
-
-#+begin_src scheme
-(import (curl) (curl unsupported))
-
-(curl-request-with-options
- (make-curl-request "https://example.com/")
- '(("LOW_SPEED_TIME" . 30)))
-#+end_src
-
-- *It is unsupported.* No promise it stays the same, and an option set
-  through it can change what chez-curl tests.
-- *A value is plain data:* an integer, a string, a list of strings, or a
-  bytevector, as the option's type says. Options that take a pointer or a
-  callback are refused.
-- *No string may hold NUL, CR or LF.*
-- *Options chez-curl sets itself are refused,* and so is any option that
-  would do the same job another way. So are a few that would reach past
-  your request: read stdin or write stdout (=COOKIEFILE=, =COOKIEJAR=),
-  reach a cookie jar (=COOKIELIST=),
-  steer later requests (=RESOLVE=), or skip the =proxy= key (=DOH_URL=). The
-  refusal names the option.
-- *It is checked when you attach it.* The request keeps its own copy, so
-  changing your string later changes nothing.
-- *=VERBOSE= and =NOPROGRESS= write to your program's stderr.* =VERBOSE=
-  writes every header it sends, so a password in one too.
-- *A path is opened as given,* and chez-curl does not check it: a path of
-  =/dev/stdin= names your program's stdin.
-
-*** Reading a response as it arrives
-
-Give a request a =stream-buffer=, a size in bytes, and its token hands you
-the body in pieces as it arrives, instead of keeping it whole:
-
-#+begin_src scheme
-(import (curl))
-
-(define engine (make-curl-engine))
-(define token
-  (curl-submit engine (make-curl-request "https://example.com/big"
-                                         'stream-buffer 65536)))
-
-(curl-token-head-wait token 10000)        ; the head comes first
-(curl-head-status (curl-token-head token))
-
-(let loop ()
-  (let ((piece (curl-token-next-piece token 10000)))
-    (when (bytevector? piece)             ; the eof object at the end
-      (loop))))
-
-(curl-token-outcome token)                ; the response, its body #f, or the failure
-#+end_src
-
-- *A full buffer pauses the transfer,* and taking pieces resumes it. Over
-  HTTP/1.1 the server then waits too. Over HTTP/2, a paused stream that
-  shares its connection with a busy one keeps receiving into libcurl's
-  memory, up to its window: tens of megabytes.
-- *The timeout runs while you are not reading.* =timeout-ms= ends a paused
-  transfer as any other.
-- *=curl-token-body-port= reads the pieces through a binary input port.* Read
-  it with =get-bytevector-some= or =get-u8=: when the transfer fails, a
-  =get-bytevector-n=, =-n!= or =-all= call loses the bytes it had read.
-- *The port is its thread's.* Read and close it on the thread that made it.
-  Another thread's close raises =&curl-wrong-thread=, and so does any read of
-  its that needs more than the port had buffered. Bytes the port had already
-  buffered go to whichever thread reads them, and a =get-bytevector-n=,
-  =-n!= or =-all= from another thread that takes them, then raises, loses
-  them. Closing it cancels the transfer. A port you never
-  close leaves its transfer paused until its timeout, or its engine's stop.
-- *One request per transfer.* A =stream-buffer= is refused beside an
-  =Expect= header holding =100-continue=, whose 417 makes libcurl send the
-  request twice, and the stream's head would be the first answer's. The
-  hatch's =HTTPAUTH= and =PROXYAUTH=, which could make a second request too,
-  are refused whatever the request; Digest credentials beside a stream are
-  refused too (=digest-with-stream=).
-- *libcurl 8.7.0 and 8.7.1, the Mac's,* give each HTTP/2 transfer a connection
-  of its own: there one paused stream could fail its neighbours.
-
-*** Sending a body as it is produced
-
-Give a request =body= ='stream=, and its token takes the body from your
-puts, a piece at a time, instead of a bytevector whole. =body-length= is
-its length, sent as =Content-Length=; leave it =#f= to send it chunked:
-
-#+begin_src scheme
-(import (curl))
-
-(define engine (make-curl-engine))
-(define token
-  (curl-submit engine (make-curl-request "https://example.com/upload"
-                                         'method 'put 'body 'stream
-                                         'body-length 11)))
-
-(curl-token-room-wait token 10000)        ; #t once libcurl asks for the body
-(curl-token-put-piece! token (string->utf8 "hello "))
-(curl-token-put-piece! token (string->utf8 "world"))
-(curl-token-end-body! token)
-(curl-token-await token)                  ; the response, or the failure
-#+end_src
-
-- *It is sent at most once, on a fresh connection.* A piece handed to
-  libcurl is gone from chez-curl, so a resend libcurl wants after that, for
-  a dead connection or a refused HTTP/2 stream, fails the transfer as
-  =body-not-replayable=. The upload never reuses a pooled connection, so
-  each opens one, and over TLS a handshake; once it ends, a later transfer
-  may reuse that connection, over HTTP/1.1 or HTTP/2, or share it over
-  HTTP/2 while it runs.
-- *A put waits while the buffer holds 64 KiB.* Give it a bound, in
-  milliseconds, and it answers =#f= when the bound passes.
-- *=done= means the transfer has ended.* A put that answers =done= took
-  nothing; =curl-token-outcome= tells how the transfer ended.
-- *The timeout runs while you are not putting.* =timeout-ms= ends a waiting
-  upload as any other.
-- *The length is checked.* An end short of =body-length=, or a piece past
-  it, fails the transfer as =body-length-mismatch=; the put past it raises.
-- *An early answer ends the upload.* A server may answer, a 413 say, before
-  the body is sent. Then every later put answers =done=. Some libcurls end
-  such a transfer only at your next put or end.
-- *=curl-token-body-count= tells what your puts committed* to chez-curl's
-  buffer, not what reached the server.
-- *An early success can cut the body.* A 200 that arrives while your upload
-  waits can end the transfer as a success with the body cut: over HTTP/1.1,
-  a 200 with a close, on Ubuntu's 8.5.0, 8.20.0 and 8.23.0; over HTTP/2, a
-  200 that ends its stream, on 8.5.0. On 7.85.0 the transfer waits for your
-  next put; over HTTP/2 its upload then never ends, and the timeout ends it.
-  A server that must have the whole body should say so in its answer.
-- *Over HTTP/2, a transfer that streams both ways sends only while you read.*
-  With a =stream-buffer= too, read the response's pieces, or the upload
-  stops at the peer's window.
-- *On Ubuntu's libcurl 8.5.0, over HTTP/2, a paused upload can hide the
-  answer.* Rarely, once libcurl has asked for the body and you have put
-  nothing, the response waits for your next put or end: a head wait answers
-  =#f= at its bound, and the transfer can wait until its timeout. Put or end
-  the body first, or bound the wait and then put.
-
-*** What follows a redirect
-
-=(http-client)= follows a 301, 302, 303, 307 or 308 that has a =Location=,
-up to =redirects= times: 20, unless the session or the call says otherwise.
-=#f= follows none, and answers the redirect.
-
-- *To another origin,* another scheme, host or port, the call drops
-  =Authorization=, =Cookie= and =Proxy-Authorization=, and its
-  =credentials=, and =Host= when the host changes. A header dropped stays dropped, even back on the first
-  origin. *Every other header follows,* so an =X-Api-Key= reaches the new
-  origin too.
-- *A =user:pass@= in the URL* stays for a relative =Location=. An absolute
-  one carries its own, or none.
-- *From https to http is refused,* unless =allow-downgrade= is =#t=.
-- *A 303 makes a =get= of anything but a =head=,* and so do a 301 and a 302
-  of a =post=. The body goes, and with it your =Content-= headers, =Digest=,
-  =Last-Modified= and =Expect=.
-- *A producer's body is never sent twice.* Once libcurl has asked for it, a
-  307 or 308, or a 301 or 302 of anything but a =post=, raises
-  =&http-redirect-error=, =body-not-replayable=.
-
-*** Reading a call's response as it arrives
-
-=call-with-response-port= makes the call and hands your procedure the
-response and a binary input port over its body, as the body arrives:
-
-#+begin_src scheme
-(import (http-client))
+(define base (cadr (command-line)))
 
 (call-with-http-session
- (lambda (s)
-   (call-with-response-port s 'get "https://example.com/big" 'timeout-ms 60000
-     (lambda (response port)
-       (http-response-status response)    ; the head: status, headers, history
-       (let loop ()
-         (let ((bytes (get-bytevector-some port)))
-           (unless (eof-object? bytes)
-             (loop))))))))
+ (lambda (session)
+   (let ((response (http-get session (string-append base "/status/200"))))
+     (display (http-response-status response))
+     (newline)
+     (display (http-response-text response)))))
 #+end_src
 
-- *The response has no body.* Its body and timings are =#f=, and
-  =http-response-text= refuses it: read the port.
-- *Your procedure's values are the call's.* When it returns or escapes, the
-  port is closed and the transfer cancelled. A Chez engine's expiry during
-  the call is an escape too: the transfer is cancelled. Once resumed, reads
-  raise that cancel, then Chez's error for a closed port.
-- *=timeout-ms= bounds the whole call, your reading included,* as Go's
-  =http.Client.Timeout= does. A reader slower than the bound meets
-  =&http-timeout=. Read slowly by design? Pass a longer bound, or =#f=.
-- *Read it with =get-bytevector-some= or =get-u8=,* on the call's thread.
-  When the transfer fails, the read raises its failure, every time after;
-  a =get-bytevector-n=, =-n!= or =-all= call then loses the bytes it had read.
-- *=stream-buffer= sets how much is held,* 64 KiB unless you say. A full
-  buffer pauses the transfer.
-- *Redirects and retries are decided at each head,* in a streamed call:
-  this one, or one whose body is a producer. A hop's body is read into the
-  history. If the hop's request sends a body, it is cancelled at its head
-  instead, and its history entry's body and timings are =#f=. If a retry's
-  wait then leaves no time, the call meets =&http-timeout=.
+[[file:examples/][examples/]] holds nine more, each run by =make test=.
 
-*** Sending a call's body from a producer
+** Documentation
 
-A call's =body= may be a producer: a procedure of no arguments that answers
-the next bytes, or the eof object at the end. =body-length= sends its
-length; leave it out to send the body chunked:
+The pages are in [[file:docs/README.md][docs/]]:
 
-#+begin_src scheme
-(import (http-client))
-
-(call-with-http-session
- (lambda (s)
-   (let ((file (open-file-input-port "big.bin")))
-     (http-put s "https://example.com/big.bin"
-               'body (lambda () (get-bytevector-some file))   ; the eof object ends it
-               'timeout-ms 60000))))
-#+end_src
-
-- *It runs on your thread,* only once libcurl asks for the body, and never
-  after it answered the eof object. It answers a bytevector of a byte or
-  more, or the eof object; anything else is an assertion violation.
-- *The length is checked.* A body short of =body-length=, and a piece past
-  it, each fail as =body-length-mismatch=: the short one from the transfer,
-  the long one as =&http-request-error=, before any of it is sent.
-- *It is sent at most once.* Once libcurl has asked for it, no retry takes
-  the call, whatever the policy says. A refused connect, before any ask, is
-  still retried.
-- *Through =call-with-response-port=, the port feeds the producer while you
-  read.* A server that answers as the body arrives gets the rest. It feeds
-  only when no bytes are waiting, so a server that sends faster than you
-  read holds the upload back; a procedure that never reads, and never
-  returns, starves it.
-- *Inside the port's read, the producer's raise sticks:* every later read
-  raises it, and the call raises it once your procedure returns. A producer
-  that reads its own port is refused.
-- *A request group takes no producer:* =go= and =http-parallel= refuse one,
-  =stream-in-group=.
-- *Over HTTP/2, pass a =timeout-ms=.* On libcurl 8.20.0 and 8.23.0, a 3xx
-  the call does not follow that arrives before the body is sent whole, a
-  producer's or a large bytevector, never ends: only the bound ends it. A
-  bytevector's redirect waits the same way through =http-request=; a
-  producer's redirect is cut at its head. On 7.85.0, an early 200 while a
-  whole body is still owed never ends either.
-- *An early answer cuts the upload.* A server may answer, a 413 say, before
-  the body is sent; the rest is never sent.
-
-*** Running calls at once
-
-=call-with-request-group= runs many calls on your one thread. Its procedure
-gets =go=, which starts a call and hands back a pending one at once;
-=http-await= gives you its response. =limit= caps how many run at once, and
-the rest wait their turn, each on its own clock. =http-parallel= runs a list
-of calls and answers their responses in order.
-
-- *The group waits for every call before it returns,* and then raises the
-  first failure you never awaited. A call you cancelled raises nothing.
-- *If your procedure escapes,* the group cancels every call and waits for
-  each transfer to end. On libcurl 7.85.0 to 7.86.x a stalled name lookup can
-  hold that wait up to glibc's resolver timeout. A second Ctrl-C during it
-  gives up, and leaves those transfers running.
-- *Only the thread that made a group may use it.*
-- *=http-parallel= checks every call before it sends any,* as a send would.
-  Only a stopped or failed engine can still refuse one partway.
-- *Inside a Chez engine,* an expiry ends the whole group: once resumed, its
-  awaits raise =cancelled=, and a new =go= raises =closed=.
+- [[file:docs/quickstart.md][Quick start]]: from a clone to a first request.
+- [[file:docs/high-level.md][The high level]]: sessions, verbs, responses, bodies, forms, multipart,
+  params, timeouts and limits.
+- [[file:docs/redirects-and-retries.md][Redirects and retries]].
+- [[file:docs/auth-and-proxies.md][Auth and proxies]].
+- [[file:docs/cookies.md][Cookies]].
+- [[file:docs/http-version.md][Choosing the HTTP version]].
+- [[file:docs/streams.md][Streams]], each way, at both levels.
+- [[file:docs/groups.md][Groups]]: many calls at once on one thread.
+- [[file:docs/low-level.md][The low level]]: engines, requests, tokens, mailboxes and URLs.
+- [[file:docs/errors.md][Errors]]: each condition type and reason.
+- [[file:docs/tls-and-environment.md][TLS and the environment]]: CA files, the variables read, finding libcurl.
+- [[file:docs/libcurl-versions.md][What varies by libcurl]].
+- [[file:docs/hatch.md][The hatch]]: =(curl unsupported)=.
+- [[file:docs/reference.md][Reference]]: every export, its type, and what it raises.
 
 ** License
 

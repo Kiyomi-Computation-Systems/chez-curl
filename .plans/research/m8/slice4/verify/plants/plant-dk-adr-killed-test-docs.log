@@ -1,0 +1,9 @@
+%%%% Starting test docs
+a stale phrase, as (page line phrase):
+  ("docs/cookies.md" 4 "adr-")
+FAIL no page says ADR- or ADR and a digit, not yet, unreleased, on main, TODO, slice and a digit, M and a digit then slice, or a date, in any case
+  expected: ()
+  actual:   (("docs/cookies.md" 4 "adr-"))
+# of expected passes      41
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 41, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

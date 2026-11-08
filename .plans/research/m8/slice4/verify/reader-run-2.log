@@ -1,0 +1,32 @@
+origin http face: 127.0.0.1:35973
+round 1 cookie-jar           exit 0 stdout same stderr-bytes 0
+round 1 engine-and-tokens    exit 0 stdout same stderr-bytes 0
+round 1 errors               exit 0 stdout same stderr-bytes 0
+round 1 form-and-params      exit 0 stdout same stderr-bytes 0
+round 1 group                exit 0 stdout same stderr-bytes 0
+round 1 multipart            exit 0 stdout same stderr-bytes 0
+round 1 quick-start          exit 0 stdout same stderr-bytes 0
+round 1 session-retries      exit 0 stdout same stderr-bytes 0
+round 1 stream-download      exit 0 stdout same stderr-bytes 0
+round 1 stream-upload        exit 0 stdout same stderr-bytes 0
+round 2 cookie-jar           exit 0 stdout same stderr-bytes 0
+round 2 engine-and-tokens    exit 0 stdout same stderr-bytes 0
+round 2 errors               exit 0 stdout same stderr-bytes 0
+round 2 form-and-params      exit 0 stdout same stderr-bytes 0
+round 2 group                exit 0 stdout same stderr-bytes 0
+round 2 multipart            exit 0 stdout same stderr-bytes 0
+round 2 quick-start          exit 0 stdout same stderr-bytes 0
+round 2 session-retries      exit 0 stdout same stderr-bytes 0
+round 2 stream-download      exit 0 stdout same stderr-bytes 0
+round 2 stream-upload        exit 0 stdout same stderr-bytes 0
+round 3 cookie-jar           exit 0 stdout same stderr-bytes 0
+round 3 engine-and-tokens    exit 0 stdout same stderr-bytes 0
+round 3 errors               exit 0 stdout same stderr-bytes 0
+round 3 form-and-params      exit 0 stdout same stderr-bytes 0
+round 3 group                exit 0 stdout same stderr-bytes 0
+round 3 multipart            exit 0 stdout same stderr-bytes 0
+round 3 quick-start          exit 0 stdout same stderr-bytes 0
+round 3 session-retries      exit 0 stdout same stderr-bytes 0
+round 3 stream-download      exit 0 stdout same stderr-bytes 0
+round 3 stream-upload        exit 0 stdout same stderr-bytes 0
+origin exit 0

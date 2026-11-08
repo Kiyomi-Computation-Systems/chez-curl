@@ -878,8 +878,8 @@
             (when (assq key found) (refuse-field who 'key key 'repeated-key))
             (loop (cddr rest) (cons (cons key (cadr rest)) found))))))
 
-  ;; make-curl-request : String Symbol Any ... -> Request
-  ;; curl-request-with : Request Symbol Any ... -> Request
+  ;; make-curl-request : String Any ... -> Request
+  ;; curl-request-with : Request Any ... -> Request
   ;; curl-request? : Any -> Boolean
   ;; curl-request-url : Request -> String
   ;; curl-request-method : Request -> (U 'get 'head 'post 'put 'patch 'delete)
@@ -1871,7 +1871,7 @@
 
   ;; curl-response? : Any -> Boolean
   ;; curl-response-status : Response -> Integer
-  ;; curl-response-http-version : Response -> (U Symbol Integer #f)
+  ;; curl-response-http-version : Response -> (U 'http/1.0 'http/1.1 'http/2 'http/3 Integer #f)
   ;; curl-response-effective-url : Response -> (U String #f)
   ;; curl-response-headers : Response -> (Listof (Pairof String String))
   ;; curl-response-body : Response -> (U Bytevector #f)
@@ -3216,7 +3216,7 @@
 
   ;; curl-head? : Any -> Boolean
   ;; curl-head-status : Head -> Integer
-  ;; curl-head-http-version : Head -> (U Symbol Integer #f)
+  ;; curl-head-http-version : Head -> (U 'http/1.0 'http/1.1 'http/2 'http/3 Integer #f)
   ;; curl-head-headers : Head -> (Listof (Pairof String String))
   ;; curl-head-body-asked? : Head -> Boolean
   ;; A streamed response's final head, read by the header callable at its

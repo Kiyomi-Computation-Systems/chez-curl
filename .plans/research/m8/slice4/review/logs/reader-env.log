@@ -1,0 +1,27 @@
+--- CHEZSCHEMELIBDIRS=/home/kishu/src/chez-curl/src, CHEZ_CURL_LIBCURL unset
+200
+status 200
+exit 0
+--- the load check, CHEZ_CURL_LIBCURL unset
+8.20.0
+guix-environment
+/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/lib/libcurl.so.4
+exit 0
+--- the low-level fragments (low-level.md URLs)
+8443
+443
+"https://example.com/s?q=1&page=2"
+"http://example.com/a/d?x=2"
+"http://example.com/a#top"
+"http://example.com/a%zz"
+"http://example.com/x"
+"http://Example.COM:80/x"
+"https://example.com/s?q=1&page=2"
+"https://example.com/s?page=2"
+"https://example.com/s?page=2#f"
+"http://example.com/%20%7F%80%FF"
+"http://example.com/a"
+"http://example.com/a"
+"[fe80::1]"
+"eth0"
+exit 0

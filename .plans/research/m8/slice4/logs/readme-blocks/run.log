@@ -1,0 +1,106 @@
+## bound check
+block 1 make-curl-request: ((curl))
+block 2 make-curl-request: ((curl))
+block 3 make-curl-request: ((curl))
+block 4 make-curl-engine: ((curl))
+block 4 make-curl-cookie-jar: ((curl))
+block 4 curl-token-await: ((curl))
+block 4 curl-submit: ((curl))
+block 4 make-curl-request: ((curl))
+block 4 curl-cookie-jar-cookies: ((curl))
+block 4 curl-cookie-jar-load!: ((curl))
+block 4 curl-cookie-jar-close!: ((curl))
+block 4 saved-lines: UNBOUND
+block 5 curl-request-with-options: ((curl unsupported))
+block 5 make-curl-request: ((curl))
+block 6 make-curl-engine: ((curl))
+block 6 curl-submit: ((curl))
+block 6 make-curl-request: ((curl))
+block 6 curl-token-head-wait: ((curl))
+block 6 curl-head-status: ((curl))
+block 6 curl-token-head: ((curl))
+block 6 curl-token-next-piece: ((curl))
+block 6 bytevector?: ((rnrs))
+block 6 curl-token-outcome: ((curl))
+block 7 make-curl-engine: ((curl))
+block 7 curl-submit: ((curl))
+block 7 make-curl-request: ((curl))
+block 7 curl-token-room-wait: ((curl))
+block 7 curl-token-put-piece!: ((curl))
+block 7 string->utf8: ((rnrs))
+block 7 curl-token-end-body!: ((curl))
+block 7 curl-token-await: ((curl))
+block 8 call-with-http-session: ((http-client))
+block 8 call-with-response-port: ((http-client))
+block 8 http-response-status: ((http-client))
+block 8 get-bytevector-some: ((rnrs))
+block 8 eof-object?: ((rnrs))
+block 9 call-with-http-session: ((http-client))
+block 9 open-file-input-port: ((rnrs))
+block 9 http-put: ((http-client))
+block 9 get-bytevector-some: ((rnrs))
+ok bound check done
+## block 1 as a script, (import (curl)) prepended
+ok block 1 ran to its end
+exit 0
+## block 2 as a script, (import (curl)) prepended
+ok block 2 ran to its end
+exit 0
+## block 3 as a script, (import (curl)) prepended
+ok block 3 ran to its end
+exit 0
+## block 4 as a script, (import (curl)) prepended
+Exception in curl-transfer: Could not resolve hostname
+exit 255
+## block 5 as an R6RS program, as written
+Exception: attempt to reference unbound identifier quote
+exit 255
+## block 5 as a script, as written
+ok block 5 ran to its end
+exit 0
+## block 6 as an R6RS program, as written
+Exception: attempt to reference unbound identifier define at line 3, char 2 of .plans/research/m8/slice4/logs/readme-blocks/block-6.ss
+exit 255
+## block 6 as a script, as written
+Exception in curl-head-status: not a head with irritant #f
+exit 255
+## block 7 as an R6RS program, as written
+Exception: attempt to reference unbound identifier define at line 3, char 2 of .plans/research/m8/slice4/logs/readme-blocks/block-7.ss
+exit 255
+## block 7 as a script, as written
+Exception in curl-transfer: Could not resolve hostname
+exit 255
+## block 8 as an R6RS program, as written
+Exception: attempt to reference unbound identifier lambda at line 4, char 3 of .plans/research/m8/slice4/logs/readme-blocks/block-8.ss
+exit 255
+## block 8 as a script, as written
+Exception in curl-transfer: Could not resolve hostname
+exit 255
+## block 9 as an R6RS program, as written
+Exception: attempt to reference unbound identifier lambda at line 4, char 3 of .plans/research/m8/slice4/logs/readme-blocks/block-9.ss
+exit 255
+## block 9 as a script, as written
+Exception in open-file-input-port: failed for big.bin: no such file or directory
+exit 255
+## loopback stand-in on port 44637
+## block 4 against the loopback stand-in, through the REPL, each value printed
+#<curl-response>
+("127.0.0.1\tFALSE\t/\tFALSE\t0\tsession\tabc")
+exit 0
+## block 6 against the loopback stand-in, through the REPL, each value printed
+#t
+200
+#<curl-response>
+exit 0
+## block 7 against the loopback stand-in, through the REPL, each value printed
+#t
+#t
+#t
+#<curl-response>
+exit 0
+## block 8 against the loopback stand-in, through the REPL, each value printed
+exit 0
+## block 9 against the loopback stand-in, through the REPL, each value printed
+#<http-response>
+exit 0
+ok run.sh done

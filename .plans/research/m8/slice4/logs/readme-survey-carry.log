@@ -1,0 +1,69 @@
+## files changed fbc6fce..HEAD among those the ten rest on
+ Makefile                             |  96 +++-
+ src/curl/private/conditions.sls      |  87 +++-
+ src/curl/private/engine.sls          |   9 +-
+ src/curl/private/transfer.sls        | 877 +++++++++++++++++++++++++++++++----
+ src/http-client/private/call.sls     |  70 ++-
+ src/http-client/private/exchange.sls |  35 +-
+ 6 files changed, 1015 insertions(+), 159 deletions(-)
+## hunks: Makefile, conditions.sls, exchange.sls
+# Makefile
+@@ -72,6 +72,73 @@ MEMORY_TIMEOUT ?= 3600
+@@ -377,7 +444,12 @@ check-variadic: deps ## Remove (__varargs_after 2) from bind-variadic's template
+@@ -438,10 +510,22 @@ check-variadic: deps ## Remove (__varargs_after 2) from bind-variadic's template
+@@ -461,7 +545,7 @@ test-memory: deps ## Run every MEMORY_SUITES suite under Valgrind; fail on any e
+@@ -486,7 +570,7 @@ test-memory: deps ## Run every MEMORY_SUITES suite under Valgrind; fail on any e
+# src/curl/private/conditions.sls
+@@ -28,7 +28,7 @@
+@@ -503,6 +503,29 @@
+@@ -515,7 +538,9 @@
+@@ -533,7 +558,9 @@
+@@ -557,7 +584,11 @@
+@@ -603,6 +634,13 @@
+@@ -628,11 +666,19 @@
+@@ -649,16 +695,20 @@
+@@ -720,7 +770,7 @@
+@@ -789,8 +839,8 @@
+@@ -814,10 +864,10 @@
+@@ -861,13 +911,14 @@
+# src/http-client/private/exchange.sls
+@@ -203,7 +203,7 @@
+@@ -745,6 +745,15 @@
+@@ -754,24 +763,12 @@
+## transfer.sls ranges, old (fbc6fce) against new (HEAD)
+same: old 486-560 = new 550-624 (pkcs11-prefix? and the CA file's refusal, claim 3)
+same: old 1815-1822 = new 2330-2337 (pinned-options, MAXREDIRS 30, claim 7)
+same: old 2170-2200 = new 2685-2715 (share-settings and cookie-line-limit, claim 9)
+same: old 3110-3130 = new 3701-3721 (upload-buffer-limit, claim 10)
+## the lines, old and new
+# (define (pkcs11-prefix?: old 499, new 563
+# 'pkcs11-url: old 541, new 605
+# (define pinned-options: old 1818, new 2333
+# "NOSIGNAL" "QUICK_EXIT" "MAXREDIRS": old 1783, new 2297
+# (http-version "HTTP_VERSION"): old 1628, new 2129
+# "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL": old 1793, new 2307
+# (define share-settings: old 2181, new 2696
+# (define cookie-line-limit: old 2190, new 2705
+# (define upload-buffer-limit: old 3124, new 3715
+# PIPEWAIT in src at HEAD:
+src/curl/private/transfer.sls:141:;;; parsed, as prior-knowledge-over-https. No transfer sets PIPEWAIT.
+src/curl/private/transfer.sls:999:  ;;                       measured. No transfer sets PIPEWAIT, so requests
+src/curl/private/transfer.sls:2237:  ;;     follow's, which nothing public sets. PIPEWAIT, HTTP09_ALLOWED,
+# OPENSSL_X509_TEA_DISABLE in src at HEAD (none expected):
+0
+# url.sls 320-332 old = new:
+same
+# call.sls defaults old 101,106 / new 105,110:
+  (define default-redirects 20)
+  (define default-stream-buffer 65536)
+  (define default-redirects 20)
+  (define default-stream-buffer 65536)
+# exchange.sls redirect-statuses old/new 591:
+  (define redirect-statuses '(301 302 303 307 308))
+  (define redirect-statuses '(301 302 303 307 308))
+# engine.sls unmultiplexed-versions old/new 408:
+  (define unmultiplexed-versions '("8.7.0" "8.7.1"))
+  (define unmultiplexed-versions '("8.7.0" "8.7.1"))
+# Makefile 34-37 old = new:
+same
+ok readme-survey-carry done

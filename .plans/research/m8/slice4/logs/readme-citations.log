@@ -1,0 +1,12 @@
+claims rows: 312
+test citations: 347
+# test citations that are no test line or row:
+.github/workflows/ci.yml:314:       - name: Name the Node floor
+Makefile:392: check-floors: ## Fail unless README.org and the CI workflows state the floors in packaging/floors.se
+tests/check-seam.sps:164: (define allowed-chez-names
+tests/test-unsupported.sps:197: (define (refused-as name reason)
+tests/test-version.sps:456: (define prior-knowledge-to-h1
+tests/test-version.sps:473: (define together-by-prior-knowledge
+code citations: 377
+# code citations past their file's end, or to no file:
+ok readme-citations done

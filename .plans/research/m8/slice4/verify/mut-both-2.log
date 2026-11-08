@@ -1,0 +1,26 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (2 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-examples.sps
+%%%% Starting test examples
+FAIL the control, tests/example-leak.sps, run through the runner, exits 0, prints its line, and its counts line, read once its body has returned, holds the engine's multi handle and the jar's share
+  expected: (0 "left an engine and a jar\n" (1 1))
+  actual:   (0 "left an engine and a jar\n" (0 0))
+# of expected passes      44
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 44, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-examples.sps (exit 1)
+=== tests/test-docs.sps
+%%%% Starting test docs
+a block that names no language a rule reads, as (page line language):
+  ("docs/high-level.md" 110 "")
+FAIL every block names its language: scheme, sh or text, and on an Org page a src block of one, or a quote, a verse, a center or a comment
+  expected: ()
+  actual:   (("docs/high-level.md" 110 ""))
+# of expected passes      41
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 41, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-docs.sps (exit 1)
+test: ran 2, passed 0, failed 2, hung 0
+make: *** [Makefile:329: test] Error 1

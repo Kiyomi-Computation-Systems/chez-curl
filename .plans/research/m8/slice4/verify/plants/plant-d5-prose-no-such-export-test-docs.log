@@ -1,0 +1,9 @@
+%%%% Starting test docs
+a name written as chez-curl's that is none of them, as (page line name):
+  ("docs/low-level.md" 69 "curl-token-awaits")
+FAIL every name written as chez-curl's, in a fragment or a prose code span, is an export, a key, a reason, a library's, or the fragment's own
+  expected: ()
+  actual:   (("docs/low-level.md" 69 "curl-token-awaits"))
+# of expected passes      41
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 41, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

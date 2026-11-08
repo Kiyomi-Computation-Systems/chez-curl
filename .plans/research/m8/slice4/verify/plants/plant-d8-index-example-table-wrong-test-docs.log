@@ -1,0 +1,9 @@
+%%%% Starting test docs
+a row of the examples table whose link is not the example its code names, as (name path):
+  ("errors.sps" "examples/group.sps")
+FAIL each row of the index's examples table links the example its code names
+  expected: ()
+  actual:   (("errors.sps" "examples/group.sps"))
+# of expected passes      41
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 41, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
