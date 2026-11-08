@@ -1,0 +1,36 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+lanes.sh start 2026-11-08T03:34:03Z mode=test tree=branch lanes= openssl gnutls cpuset=6-17 args=
+network interfaces: lo 
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+== lane openssl: make test in a copy of /w/branch, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 CC=gcc NODE=/src/build/m8s3/node22/node-v22.23.4-linux-x64/bin/node SUITES='tests/test-multipart.sps'
+lane openssl: pass (16 s)
+  [openssl] test: pass tests/test-multipart.sps
+  [openssl] test: ran 1, passed 1, failed 0, hung 0
+== lane gnutls: make test in a copy of /w/branch, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 CC=gcc NODE=/src/build/m8s3/node22/node-v22.23.4-linux-x64/bin/node SUITES='tests/test-multipart.sps'
+lane gnutls: pass (16 s)
+  [gnutls] test: pass tests/test-multipart.sps
+  [gnutls] test: ran 1, passed 1, failed 0, hung 0
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+lanes.sh start 2026-11-08T03:34:44Z mode=test tree=branch lanes= openssl gnutls cpuset=6-17 args=
+network interfaces: lo 
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+== lane openssl: make test in a copy of /w/branch, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 CC=gcc NODE=/src/build/verify/m3s2/node20/node SUITES='tests/test-multipart.sps'
+lane openssl: pass (15 s)
+  [openssl] test: pass tests/test-multipart.sps
+  [openssl] test: ran 1, passed 1, failed 0, hung 0
+== lane gnutls: make test in a copy of /w/branch, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 CC=gcc NODE=/src/build/verify/m3s2/node20/node SUITES='tests/test-multipart.sps'
+lane gnutls: pass (16 s)
+  [gnutls] test: pass tests/test-multipart.sps
+  [gnutls] test: ran 1, passed 1, failed 0, hung 0

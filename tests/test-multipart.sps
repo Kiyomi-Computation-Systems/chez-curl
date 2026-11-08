@@ -1785,7 +1785,11 @@
      (after-shrunk-none-h1 . (stalled))
      (after-removed-h1 . (failed perform-failed 26))
      (after-fifo-h1 . (response 200 whole held))
-     (after-grown-h2 . (failed perform-failed 92))
+     ;; The test origin's answer to the overrun, by Node's version: 92 under
+     ;; Node 20.10.0 and 24.18.0, 56 under 22.23.4, CI's runner's, in PR
+     ;; #52's run and 6 of 6 runs of research/m8/slice3/ci/. 7.85.0's is 92
+     ;; under 20.10.0 and 22.23.4.
+     (after-grown-h2 . (one-of (failed perform-failed 92) (failed perform-failed 56)))
      (after-shrunk-h2 . (failed perform-failed 92))
      (after-removed-h2 . (failed perform-failed 26))
      (after-fifo-h2 . (response 200 whole held))

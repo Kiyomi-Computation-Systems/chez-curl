@@ -1599,3 +1599,11 @@ it should not be a comment. (chez-cmark-gfm)
   ([slice3 mac](research/m8/slice3/mac/)). Pointing `TMPDIR` at a symbolic link reproduces it on
   Linux (`linux-symlink-tmpdir.log`). A test of a resolved path takes its expectation from
   `current-directory`'s own answer. (chez-curl, M8 slice 3)
+* **Node's HTTP/2 server answers DATA past a stream's `content-length` by Node's version, and
+  libcurl's code shows it.** A file part grown after the engine's check is sent past its length
+  by 7.85.0 and 8.5.0. Over HTTP/2, 8.5.0 ended 92 under Node 20.10.0 and 24.18.0, and 56 under
+  Node 22.23.4, the runner's own, which CI's `main`, `gnutls` and `memory-1` run: PR #52's first
+  run failed there alone, in the three jobs, and 6 of 6 local runs under 22.23.4 gave 56, 2 of 2
+  under 20.10.0 gave 92 ([slice3 ci](research/m8/slice3/ci/)). 7.85.0 ended 92 under 20.10.0 and
+  22.23.4. A cell that measures the test origin's answer holds every answer the Nodes that run it
+  give: CI runs the runner's Node, and its floor job the floor's. (chez-curl, M8 slice 3)

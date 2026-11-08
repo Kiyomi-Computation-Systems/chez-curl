@@ -635,6 +635,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * On macOS `/var` is a symbolic link to `/private/var`: `current-directory`,
   set to a `TMPDIR` path, answers the real one. A test of a resolved path takes
   its expectation from `current-directory`; `TMPDIR` at a link shows it on Linux.
+* Node's HTTP/2 server answers DATA past a stream's length by Node's version:
+  8.5.0 ended 92 under Node 20 and 24, 56 under 22, CI's runner's. A cell that
+  measures the origin's answer holds every Node's that runs it.
 
 ## Closing ritual
 
