@@ -15,8 +15,8 @@
 ;;;                               code the floor's headers lack
 ;;;   &curl-request-error         a request's key or field refused before
 ;;;                               anything native is made, with one of
-;;;                               twenty-seven reasons
-;;;   &curl-transfer-error        a transfer failed, with one of twelve
+;;;                               forty-five reasons
+;;;   &curl-transfer-error        a transfer failed, with one of fourteen
 ;;;                               reasons, its code, option, libcurl's texts,
 ;;;                               what the write callable recorded and its
 ;;;                               request size (M2 plan, section 5.3),
@@ -225,7 +225,8 @@
     credentials-bytes credentials-empty credentials-beside-userinfo credentials-beside-authorization
     digest-with-stream prior-knowledge-through-proxy proxy-url proxy-scheme proxy-url-parts
     proxy-authorization-header proxy-tls-without-https-proxy proxy-tls-in-tls
-    https-proxy-unsupported cookie-line cookie-jar-engine cookie-jar-closed cookie-beside-jar))
+    https-proxy-unsupported cookie-line cookie-jar-engine cookie-jar-closed cookie-beside-jar
+    part-bytes part-empty multipart-empty multipart-content-type part-file multipart-unsupported))
 
 (test-equal "request-error: an error and a curl-error, and none of the other kinds, carrying its field, value and reason"
   '(#t #t #f #f #f #f #t #f header-value "a\rb" line-break)
@@ -236,11 +237,11 @@
                   (curl-request-error-field c) (curl-request-error-value c)
                   (curl-request-error-reason c)))))
 
-(test-equal "the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option, unsupported-type, unknown-option, repeated-option, unknown-key, repeated-key, missing-value, body-not-allowed, pkcs11-url, environment-override, keychain-fallback, stream-with-rounds, body-length-without-stream, body-length-mismatch, prior-knowledge-over-https, credentials-bytes, credentials-empty, credentials-beside-userinfo, credentials-beside-authorization, digest-with-stream, prior-knowledge-through-proxy, proxy-url, proxy-scheme, proxy-url-parts, proxy-authorization-header, proxy-tls-without-https-proxy, proxy-tls-in-tls, https-proxy-unsupported, cookie-line, cookie-jar-engine, cookie-jar-closed and cookie-beside-jar, in order"
+(test-equal "the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option, unsupported-type, unknown-option, repeated-option, unknown-key, repeated-key, missing-value, body-not-allowed, pkcs11-url, environment-override, keychain-fallback, stream-with-rounds, body-length-without-stream, body-length-mismatch, prior-knowledge-over-https, credentials-bytes, credentials-empty, credentials-beside-userinfo, credentials-beside-authorization, digest-with-stream, prior-knowledge-through-proxy, proxy-url, proxy-scheme, proxy-url-parts, proxy-authorization-header, proxy-tls-without-https-proxy, proxy-tls-in-tls, https-proxy-unsupported, cookie-line, cookie-jar-engine, cookie-jar-closed, cookie-beside-jar, part-bytes, part-empty, multipart-empty, multipart-content-type, part-file and multipart-unsupported, in order"
   request-reasons
   curl-request-error-reasons)
 
-(test-equal "the request-error constructor takes each of the thirty-nine reasons"
+(test-equal "the request-error constructor takes each of the forty-five reasons"
   request-reasons
   (map (lambda (reason)
          (curl-request-error-reason (make-curl-request-error 'user-agent "x" reason)))
@@ -258,7 +259,8 @@
 
 (define transfer-reasons
   '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle
-    cancelled stopped pause-failed body-length-mismatch body-not-replayable header-limit))
+    cancelled stopped pause-failed body-length-mismatch body-not-replayable header-limit
+    part-file mime-failed))
 
 ;; A recorded object no field could hand back by another route.
 (define the-raised (list 'raised-in-the-callable))
@@ -277,11 +279,11 @@
                   (let ((r (curl-transfer-error-recorded c))) (if (eq? r the-raised) 'the-raised r))
                   (curl-transfer-error-request-size c) (curl-transfer-error-connect-code c)))))
 
-(test-equal "the transfer-error reasons are exactly perform-failed, body-limit, callback-raised, setopt-failed, unknown-option, no-handle, cancelled, stopped, pause-failed, body-length-mismatch, body-not-replayable and header-limit, in order"
+(test-equal "the transfer-error reasons are exactly perform-failed, body-limit, callback-raised, setopt-failed, unknown-option, no-handle, cancelled, stopped, pause-failed, body-length-mismatch, body-not-replayable, header-limit, part-file and mime-failed, in order"
   transfer-reasons
   curl-transfer-error-reasons)
 
-(test-equal "the transfer-error constructor takes each of the twelve reasons, with #f in every other field"
+(test-equal "the transfer-error constructor takes each of the fourteen reasons, with #f in every other field"
   (map (lambda (reason) (list reason #f #f #f #f 'no-recorded #f #f)) transfer-reasons)
   (map (lambda (reason)
          (let ((c (make-curl-transfer-error reason #f #f #f #f #f #f #f)))
@@ -368,7 +370,7 @@
                  (class-of c))))
        (append (map car code-rows) '(102 999))))
 
-(test-equal "the class follows the code for perform-failed alone: body-limit and header-limit are too-large whatever the code, 23, 28 or none; every other reason raises the base type, a setopt-failed, callback-raised, pause-failed, body-length-mismatch or body-not-replayable whose code a class names among them"
+(test-equal "the class follows the code for perform-failed alone: body-limit and header-limit are too-large whatever the code, 23, 28 or none; every other reason raises the base type, a setopt-failed, callback-raised, pause-failed, body-length-mismatch, body-not-replayable, part-file or mime-failed whose code a class names among them"
   '((perform-failed (timeout connect send-receive tls protocol too-large none none))
     (body-limit (too-large too-large too-large too-large too-large too-large too-large too-large))
     (callback-raised (none none none none none none none none))
@@ -380,7 +382,9 @@
     (pause-failed (none none none none none none none none))
     (body-length-mismatch (none none none none none none none none))
     (body-not-replayable (none none none none none none none none))
-    (header-limit (too-large too-large too-large too-large too-large too-large too-large too-large)))
+    (header-limit (too-large too-large too-large too-large too-large too-large too-large too-large))
+    (part-file (none none none none none none none none))
+    (mime-failed (none none none none none none none none)))
   (map (lambda (reason)
          (list reason
                (map (lambda (code)

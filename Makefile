@@ -92,6 +92,7 @@ MEMORY_SUITES_1 := \
   tests/test-http-client.sps \
   tests/test-load-state.sps \
   tests/test-manifest.sps \
+  tests/test-multipart.sps \
   tests/test-origin-tls.sps \
   tests/test-origin.sps \
   tests/test-printed.sps \

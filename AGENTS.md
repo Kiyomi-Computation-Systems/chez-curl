@@ -623,6 +623,15 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * Under the memory gate, 8.20.0 sometimes reads a 417 as cutting an upload
   short, though no body byte went, and resends on a new connection: a test
   server holds a 417 by key, never by connection.
+* A stand-in that answers at `Content-Length` hides bytes sent past it: 7.85.0
+  and 8.5.0 send a file part grown after `curl_mime_filedata` whole, past the
+  length, and a table read from the framed body showed a clean 200. Read what
+  follows the body too.
+* A child started after `exec 3> FIFO` inherits fd 3, so closing it never ends
+  the FIFO's reader: close the others in each child, `3>&-`.
+* Valgrind's suppressed total counts `default.supp`'s blocks too: the load's
+  `curl_mime_init` added one on Guix. A check of one suppression reads that
+  entry's own `used_suppression` line.
 
 ## Closing ritual
 

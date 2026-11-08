@@ -140,14 +140,14 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))
 
 ;; running-counts : (Listof (Pairof Symbol Natural))
 ;; The counts while the suite's engine runs and no transfer is live: its
 ;; multi handle and its slot, a counted block it holds while it runs, and
 ;; nothing else.
 (define running-counts
-  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+  '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0) (mime . 0)))
 
 ;; The loaded libcurl's version, read here, on this thread, so the load runs
 ;; before any thread is forked.
@@ -1380,12 +1380,12 @@
 
 ;; --- the hatch's deny-list (ADR-0009, amended 2026-10-23 and 2026-10-27) ------------------
 
-(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT and MAXREDIRS among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its read, seek and prerequest callables and their data, and FRESH_CONNECT, stream-buffer's header callable and its data, HEADERFUNCTION and HEADERDATA, body-length's INFILESIZE_LARGE, http-version's HTTP_VERSION, credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, cookie-jar's SHARE and COOKIEFILE, and FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's PRE_PROXY, PROXYPORT and PROXYTYPE; then slice 4's: TRANSFERTEXT, CRLF's twin; the URL's USERPWD, NETRC and HSTS; the proxy field's UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET; the headers' PROXYHEADER and HEADEROPT; and RESUME_FROM, RESUME_FROM_LARGE, COOKIEJAR, CONNECT_ONLY, DOH_URL, RESOLVE and SSLENGINE_DEFAULT, kept from the hatch; then M7 slice 1's, the HTTP version's twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL; then M7 slice 2's, the credentials' twin AWS_SIGV4; then M7 slice 3's, the proxy's twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME, PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP; then M7 slice 4's, the cookie jar's twins COOKIE, COOKIELIST and COOKIESESSION; then M8 slice 2's, the header callable's twin SUPPRESS_CONNECT_HEADERS; then every proxy TLS option but the four proxy-ca-file and proxy-verify set, which are fields' now, as NOPROXY and FORBID_REUSE are proxy's, and COOKIEFILE cookie-jar's"
+(test-equal "owned-option-names, written out: the options the transfer always sets, QUICK_EXIT and MAXREDIRS among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its read, seek and prerequest callables and their data, and FRESH_CONNECT, a multipart body's MIMEPOST, stream-buffer's header callable and its data, HEADERFUNCTION and HEADERDATA, body-length's INFILESIZE_LARGE, http-version's HTTP_VERSION, credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, cookie-jar's SHARE and COOKIEFILE, and FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, a multipart body's MIME_OPTIONS, owned and never set, in MIMEPOST's place among the twins, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's PRE_PROXY, PROXYPORT and PROXYTYPE; then slice 4's: TRANSFERTEXT, CRLF's twin; the URL's USERPWD, NETRC and HSTS; the proxy field's UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET; the headers' PROXYHEADER and HEADEROPT; and RESUME_FROM, RESUME_FROM_LARGE, COOKIEJAR, CONNECT_ONLY, DOH_URL, RESOLVE and SSLENGINE_DEFAULT, kept from the hatch; then M7 slice 1's, the HTTP version's twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL; then M7 slice 2's, the credentials' twin AWS_SIGV4; then M7 slice 3's, the proxy's twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME, PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP; then M7 slice 4's, the cookie jar's twins COOKIE, COOKIELIST and COOKIESESSION; then M8 slice 2's, the header callable's twin SUPPRESS_CONNECT_HEADERS; then every proxy TLS option but the four proxy-ca-file and proxy-verify set, which are fields' now, as NOPROXY and FORBID_REUSE are proxy's, and COOKIEFILE cookie-jar's"
   '("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT"
     "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER"
     "CURLU" "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD" "HTTPHEADER"
     "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA"
-    "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT" "USERAGENT"
+    "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT" "MIMEPOST" "USERAGENT"
     "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "CAINFO" "CAPATH"
     "SSL_VERIFYPEER" "SSL_VERIFYHOST" "PROXY" "NOPROXY" "FORBID_REUSE"
     "HEADERFUNCTION" "HEADERDATA" "INFILESIZE_LARGE"
@@ -1393,7 +1393,7 @@
     "PROXY_CAINFO" "PROXY_CAPATH" "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST"
     "SHARE" "COOKIEFILE" "FOLLOWLOCATION"
     "TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "PUT"
-    "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE"
+    "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIME_OPTIONS" "INFILESIZE"
     "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS"
     "PRE_PROXY" "PROXYPORT" "PROXYTYPE"
     "TRANSFERTEXT" "USERPWD" "NETRC" "HSTS"
@@ -1414,10 +1414,10 @@
     "PROXY_TLSAUTH_PASSWORD")
   owned-option-names)
 
-(test-equal "request-field-options, written out: url's CURLU; method's NOBODY and CUSTOMREQUEST, and a streamed body's POST and UPLOAD; headers' HTTPHEADER; body's POSTFIELDSIZE_LARGE and COPYPOSTFIELDS, then a streamed one's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT; user-agent's USERAGENT; timeout-ms's TIMEOUT_MS; connect-timeout-ms's CONNECTTIMEOUT_MS; body-limit's MAXFILESIZE_LARGE; ca-file's CAINFO and CAPATH; verify's SSL_VERIFYPEER and SSL_VERIFYHOST; proxy's PROXY, NOPROXY and FORBID_REUSE; stream-buffer's HEADERFUNCTION and HEADERDATA; body-length's INFILESIZE_LARGE; http-version's HTTP_VERSION; credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER; proxy-ca-file's PROXY_CAINFO and PROXY_CAPATH; proxy-verify's PROXY_SSL_VERIFYPEER and PROXY_SSL_VERIFYHOST; cookie-jar's SHARE and COOKIEFILE; and follow's FOLLOWLOCATION"
+(test-equal "request-field-options, written out: url's CURLU; method's NOBODY and CUSTOMREQUEST, and a streamed body's POST and UPLOAD; headers' HTTPHEADER; body's POSTFIELDSIZE_LARGE and COPYPOSTFIELDS, then a streamed one's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT, then a multipart one's MIMEPOST; user-agent's USERAGENT; timeout-ms's TIMEOUT_MS; connect-timeout-ms's CONNECTTIMEOUT_MS; body-limit's MAXFILESIZE_LARGE; ca-file's CAINFO and CAPATH; verify's SSL_VERIFYPEER and SSL_VERIFYHOST; proxy's PROXY, NOPROXY and FORBID_REUSE; stream-buffer's HEADERFUNCTION and HEADERDATA; body-length's INFILESIZE_LARGE; http-version's HTTP_VERSION; credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER; proxy-ca-file's PROXY_CAINFO and PROXY_CAPATH; proxy-verify's PROXY_SSL_VERIFYPEER and PROXY_SSL_VERIFYHOST; cookie-jar's SHARE and COOKIEFILE; and follow's FOLLOWLOCATION"
   '((url "CURLU") (method "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD") (headers "HTTPHEADER")
     (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA"
-          "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT")
+          "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT" "MIMEPOST")
     (user-agent "USERAGENT")
     (timeout-ms "TIMEOUT_MS") (connect-timeout-ms "CONNECTTIMEOUT_MS")
     (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH")
@@ -1728,10 +1728,11 @@
 
 ;; live-setters : (Listof Symbol)
 ;; The live record's setters: the key's, its sink's, and one per native
-;; object a transfer holds.
+;; object a transfer holds, a multipart body's mime among them.
 (define live-setters
   '(live-transfer-key-set! live-transfer-sink-set! live-transfer-url-set! live-transfer-buffer-set!
-    live-transfer-header-list-set! live-transfer-lists-set! live-transfer-easy-set!))
+    live-transfer-header-list-set! live-transfer-lists-set! live-transfer-easy-set!
+    live-transfer-mime-set!))
 
 ;; making-order : (Listof Symbol)
 ;; start-transfer!'s setters, its settings' calls and its free, as written.
@@ -1742,45 +1743,56 @@
 ;; freeing-order : (Listof Symbol)
 ;; free-transfer!'s frees and setters, as written.
 (define freeing-order
-  (symbols-in (append live-setters '(curl-easy-cleanup curl-slist-free-all free-foreign-block! free-parsed-url!
-                                     count-down!))
+  (symbols-in (append live-setters '(curl-easy-cleanup curl-mime-free curl-slist-free-all free-foreign-block!
+                                     free-parsed-url! count-down!))
               (transfer-definition 'free-transfer!)))
 
-(test-equal "start-transfer!, read from transfer.sls, records what it makes in order: free-transfer! on a raise; then the key and its sink, the CURLU, the error buffer, the header list, the hatch's string lists, then the easy handle; then set-transfer-options!, once, and no setting of its own"
+(test-equal "start-transfer!, read from transfer.sls, records what it makes in order: free-transfer! on a raise; then the key and its sink, the CURLU, the error buffer, the header list, the hatch's string lists, then the easy handle, then a multipart body's mime, made with it; then set-transfer-options!, once, and no setting of its own"
   '(free-transfer! live-transfer-key-set! live-transfer-sink-set! live-transfer-url-set!
     live-transfer-buffer-set! live-transfer-header-list-set! live-transfer-lists-set!
-    live-transfer-easy-set! set-transfer-options!)
+    live-transfer-easy-set! live-transfer-mime-set! set-transfer-options!)
   making-order)
 
-(test-equal "free-transfer!, read from transfer.sls, frees the other way round from start-transfer!'s making: the easy handle, the hatch's string lists, the header list, the error buffer, the CURLU, then the key, each freed before its record is cleared"
-  (list '(curl-easy-cleanup live-transfer-easy-set! curl-slist-free-all live-transfer-lists-set!
+;; libcurl's cleanup reads nothing a transfer handed it, so a mime freed
+;; before curl_easy_cleanup passes every behavioural check (traps.md): the
+;; order is read here. The mime, made with the easy handle, is freed after
+;; its cleanup, the order libcurl's examples take (the M8 plan, section
+;; 3.4), so it alone stands out of the making reversed.
+(test-equal "free-transfer!, read from transfer.sls, frees the other way round from start-transfer!'s making, but a multipart body's mime: the easy handle, then the mime, after curl_easy_cleanup, then the hatch's string lists, the header list, the error buffer, the CURLU, then the key, each freed before its record is cleared"
+  (list '(curl-easy-cleanup live-transfer-easy-set! curl-mime-free live-transfer-mime-set!
+          curl-slist-free-all live-transfer-lists-set!
           curl-slist-free-all live-transfer-header-list-set!
           free-foreign-block! live-transfer-buffer-set! free-parsed-url! live-transfer-url-set!
           count-down! live-transfer-key-set!)
-        'the-making-reversed)
+        'the-making-reversed-the-mime-after-the-easy-handle)
   (list freeing-order
         (let ((made (filter (lambda (s) (memq s live-setters)) making-order))
               (freed (filter (lambda (s) (memq s live-setters)) freeing-order)))
-          (if (equal? (reverse (remq 'live-transfer-sink-set! made)) freed)
-              'the-making-reversed
+          (if (equal? (let ((reversed (reverse (remq 'live-transfer-sink-set! made))))
+                        (cons* (cadr reversed) (car reversed) (cddr reversed)))
+                      freed)
+              'the-making-reversed-the-mime-after-the-easy-handle
               (list 'made made 'freed freed)))))
 
-(test-equal "prepare-transfer and curl-request-check, read from transfer.sls, share the checks' one owner, request-checks, which checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the credentials' copy, the proxy CA file's copy, the Expect round, the credentials beside the headers' copies and the streams, the CA file against the environment the libcurl loaded with, a proxy URL, an https:// proxy URL against the libcurl's features, the proxy's TLS fields beside it, the proxy CA file against the environment, then the URL, parsed and its scheme checked, its user and password read beside credentials, then prior knowledge against that scheme and against a proxy URL, then TLS inside TLS, the tunnel's settings, and whether it stops the engine's multiplexing; prepare-transfer calls it as curl-submit, then copies the body and makes the plan, the request's hatch settings in it as they are; curl-request-check calls it as curl-request-check, and does nothing else"
+(test-equal "prepare-transfer and curl-request-check, read from transfer.sls, share the checks' one owner, request-checks, which checks on the caller's thread in order: that it has a request, the snapshot of the headers and the user agent, the CA file's copy, the credentials' copy, the proxy CA file's copy, the Expect round, the credentials beside the headers' copies and the streams, a cookie jar beside them, then for a multipart body the loaded libcurl's mime, a Content-Type beside it, and the body's copy, its paths checked unresolved, the CA file against the environment the libcurl loaded with, a proxy URL, an https:// proxy URL against the libcurl's features, the proxy's TLS fields beside it, the proxy CA file against the environment, then the URL, parsed and its scheme checked, its user and password read beside credentials, then prior knowledge against that scheme and against a proxy URL, then TLS inside TLS, the tunnel's settings, and whether it stops the engine's multiplexing; prepare-transfer calls it as curl-submit, then copies the body, a multipart body's data from the checked copy, and makes the plan, the request's hatch settings in it as they are; curl-request-check calls it as curl-request-check, and does nothing else"
   ;; Each definition's header names it first, a symbol like the rest.
   '((request-checks curl-request? snapshot ca-file-copy credentials-copy path-copy check-expect-round
-                    check-credentials check-ca-environment check-proxy-url check-https-proxy check-proxy-tls
+                    check-credentials multipart? check-multipart-supported check-multipart-content-type
+                    multipart-paths-checked multipart-copy check-ca-environment check-proxy-url
+                    check-https-proxy check-proxy-tls
                     check-ca-environment call-with-parsed-url
                     require-http-scheme check-userinfo userinfo-parts check-prior-knowledge
                     check-prior-knowledge-proxy check-tls-in-tls unshared-tunnel-settings
                     stops-multiplexing?)
-    (request-checks curl-submit bytevector-copy make-plan curl-request-options)
+    (request-checks curl-submit bytevector-copy multipart-for-plan make-plan curl-request-options)
     (curl-request-check request-checks curl-request-check))
   (let ((names '(request-checks curl-submit curl-request-check curl-request? snapshot ca-file-copy
                  checked-settings check-ca-environment call-with-parsed-url require-http-scheme
                  credentials-copy check-expect-round check-credentials check-userinfo userinfo-parts
                  check-prior-knowledge bytevector-copy make-plan curl-request-options curl-submit-queue
                  path-copy check-proxy-url check-https-proxy check-proxy-tls check-prior-knowledge-proxy check-tls-in-tls
-                 unshared-tunnel-settings stops-multiplexing?)))
+                 unshared-tunnel-settings stops-multiplexing? multipart? check-multipart-supported
+                 check-multipart-content-type multipart-paths-checked multipart-copy multipart-for-plan)))
     (list (symbols-in names (transfer-definition 'request-checks))
           (symbols-in names (transfer-definition 'prepare-transfer))
           (symbols-in names (transfer-definition 'curl-request-check)))))
@@ -1869,8 +1881,8 @@
 ;; method-settings' names are its fields' rows in request-field-options,
 ;; through field-options: tests/test-request.sps writes out every method's
 ;; answer, names and all.
-(test-equal "every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for those set by (car setting): three in the loop over method-settings' answer for the plan's method, body and body-length, two, a string's and a number's, in the loop over proxy-settings' answer for the plan's proxy, proxy CA file and proxy verification, one in the loop over version-settings' answer for the plan's http-version, two in the loop over credentials-settings' answer for the plan's credentials, and two in the loop over jar-settings' answer for the plan's cookie jar's share; the hatch's settings are set by set-hatch-option!, through its loop alone"
-  '(() (((method-settings (plan-method plan) (plan-body plan) (plan-body-length plan)) 3)
+(test-equal "every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for those set by (car setting): four in the loop over method-settings' answer for the plan's method, body and body-length, a string's, the mime's placeholder's, a bytevector's and a number's, two, a string's and a number's, in the loop over proxy-settings' answer for the plan's proxy, proxy CA file and proxy verification, one in the loop over version-settings' answer for the plan's http-version, two in the loop over credentials-settings' answer for the plan's credentials, and two in the loop over jar-settings' answer for the plan's cookie jar's share; the hatch's settings are set by set-hatch-option!, through its loop alone"
+  '(() (((method-settings (plan-method plan) (plan-body plan) (plan-body-length plan)) 4)
         ((proxy-settings (plan-proxy plan) (plan-proxy-ca-file plan) (plan-proxy-verify plan)) 2)
         ((version-settings (plan-http-version plan)) 1)
         ((credentials-settings (plan-credentials plan)) 2)
@@ -2213,7 +2225,7 @@
   ;; engine's table holds a drip, before the counts and after them: the
   ;; engine records a transfer once start-transfer! has made everything,
   ;; and takes it out before free-transfer! frees anything
-  (let ((live-counts '((block . 2) (easy . 1) (url . 1) (slist . 1) (curl-string . 0) (transfer . 1) (multi . 1) (share . 0))))
+  (let ((live-counts '((block . 2) (easy . 1) (url . 1) (slist . 1) (curl-string . 0) (transfer . 1) (multi . 1) (share . 0) (mime . 0))))
     (test-equal "while a transfer is live, it holds its easy handle, its CURLU, its header list, its error buffer and itself, one each, beside the engine's multi handle and slot, and the live-transfer table and the engine's table each hold it; once it ends, the engine's handle and slot alone, and both tables empty"
       (list live-counts 1 1
             '(response 200 http/1.1 (("Content-Length" "20")) "abcdefghijklmnopqrst")

@@ -1,0 +1,26 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+=== tests/test-multipart.sps
+test-memory: FAIL tests/test-multipart.sps (exit 1)
+  log: build/memory/test-multipart.log
+  Valgrind's log: build/memory/test-multipart.valgrind
+  ==851==    definitely lost: 0 bytes in 0 blocks
+  ==851==         suppressed: 251 bytes in 2 blocks
+  ==851== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 1 from 1)
+  | %%%% Starting test multipart
+  | test-multipart: timer swept a tick at a time to 256 ticks for make-curl-request, 512 for curl-request-check and 512 for curl-submit
+  | FAIL a data part of 1 MiB and one byte, over HTTP/1.1: the whole report, and no Expect, so no second's wait
+  |   expected: (200 as-sent quick)
+  |   actual:   (200 as-sent (took 6097))
+  | test-multipart: libcurl "8.20.0" measured ("8.20.0" (request-size . head-and-body) (after-grown-h1 response 200 unterminated) (after-shrunk-h1 failed perform-failed 26) (after-shrunk-none-h1 failed perform-failed 26) (after-removed-h1 failed perform-failed 26) (after-fifo-h1 response 200 whole held) (after-grown-h2 response 200 unterminated) (after-shrunk-h2 failed perform-failed 26) (after-removed-h2 failed perform-failed 26) (after-fifo-h2 response 200 whole held) (resend-kill-data response 200 whole 2) (resend-kill-file response 200 whole 2) (resend-refused-data response 200 whole 2) (resend-307-data response 200 whole 1) (resend-307-file response 200 whole 1) (resend-reset-file failed perform-failed 55 1))
+  | # of expected passes      72
+  | # of unexpected failures  1
+  | suite-exit-status: exit 1 (pass 72, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+=== tests/test-native.sps
+test-memory: pass tests/test-native.sps
+=== tests/test-request.sps
+test-memory: pass tests/test-request.sps
+=== tests/test-group.sps
+test-memory: pass tests/test-group.sps
+test-memory: ran 4, passed 3, failed 1, hung 0
+make: *** [Makefile:515: test-memory] Error 1
+exit 2 seconds 172

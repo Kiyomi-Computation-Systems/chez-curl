@@ -503,6 +503,29 @@
   ;;                 beside a cookie jar: libcurl sends a caller's Cookie
   ;;                 beside the jar's, and matches the jar's cookies against
   ;;                 a caller's Host (ADR-0035, decision 6)
+  ;;   part-bytes    a multipart part's name, filename or type holding a
+  ;;                 control char, U+0000 to U+001F or U+007F, or its name or
+  ;;                 filename a ", a file part's default filename, its path's
+  ;;                 last component, among them: libcurl would escape some
+  ;;                 and send the rest raw, by version (ADR-0039, decision 2)
+  ;;   part-empty    a multipart part's name, filename or type that is ""
+  ;;   multipart-empty
+  ;;                 a multipart body with no part: libcurl would send a
+  ;;                 closing delimiter alone
+  ;;   multipart-content-type
+  ;;                 a header named Content-Type, A to Z folded, beside a
+  ;;                 multipart body: libcurl writes the body's type, its
+  ;;                 boundary with it (ADR-0039, decision 1)
+  ;;   part-file     a file part's path that is empty, holds U+0000, or names
+  ;;                 no regular file by stat, symlinks followed, as the
+  ;;                 request is made or at submit; or, at submit, a path that
+  ;;                 is not absolute, which only a fault can bring there
+  ;;                 (ADR-0039, amended 2026-11-07)
+  ;;   multipart-unsupported
+  ;;                 a multipart body, at submit, on a libcurl whose load's
+  ;;                 probe found no mime: curl_formadd answered other than 0,
+  ;;                 or curl_mime_init made none (ADR-0039, amended
+  ;;                 2026-11-06); the irritants hold the probe's answer
   ;;
   ;; A value is scanned left to right, and its first offending char decides;
   ;; only when none offends are its ends checked.
@@ -515,7 +538,9 @@
       credentials-beside-authorization digest-with-stream prior-knowledge-through-proxy
       proxy-url proxy-scheme proxy-url-parts proxy-authorization-header
       proxy-tls-without-https-proxy proxy-tls-in-tls https-proxy-unsupported
-      cookie-line cookie-jar-engine cookie-jar-closed cookie-beside-jar))
+      cookie-line cookie-jar-engine cookie-jar-closed cookie-beside-jar
+      part-bytes part-empty multipart-empty multipart-content-type part-file
+      multipart-unsupported))
 
   ;; The fields:
   ;;
@@ -533,7 +558,9 @@
   ;;           proxy-ca-file or proxy-verify for
   ;;           proxy-tls-without-https-proxy; lines for cookie-line, a jar's
   ;;           load's; cookie-jar for cookie-jar-engine and
-  ;;           cookie-jar-closed; header-name for cookie-beside-jar
+  ;;           cookie-jar-closed; header-name for cookie-beside-jar and
+  ;;           multipart-content-type; body for the multipart reasons but
+  ;;           that one
   ;;   value   the string refused, whole, or the option's name, but a header's
   ;;           value, named by its header's name, as given; the key, as
   ;;           given, for a key's refusal, but a key that is no symbol,
@@ -557,7 +584,11 @@
   ;;           cookie-line, whose irritants are the index and the rule it
   ;;           broke; the symbol cookie-jar for cookie-jar-engine and
   ;;           cookie-jar-closed; the header's name, as given, never its
-  ;;           value, for cookie-beside-jar. A cookie's value is a secret,
+  ;;           value, for cookie-beside-jar and multipart-content-type; for
+  ;;           part-bytes, part-empty and part-file, (part I FIELD), the
+  ;;           part's index, from 0, and name, filename, type or path, never
+  ;;           the string, which can be a secret; the symbol multipart for
+  ;;           multipart-empty and multipart-unsupported. A cookie's value is a secret,
   ;;           as a password is. No
   ;;           credentials string is ever a value or an irritant: a refusal
   ;;           names a secret by its part (the M7 plan, section 3.1)
@@ -635,11 +666,19 @@
   ;;                    rewind or a later attempt, once the read callable had
   ;;                    handed it a byte: the seek or the prerequest callable
   ;;                    recorded it and refused (ADR-0032)
+  ;;   part-file        a multipart body's file part failed the engine's
+  ;;                    check, on its thread, before the transfer was set up:
+  ;;                    no regular file there by stat, or one that does not
+  ;;                    open, with no code; or curl_mime_filedata answered
+  ;;                    one, its code (ADR-0039, amended 2026-11-06)
+  ;;   mime-failed      curl_mime_init answered NULL, with no code, or another
+  ;;                    call making the mime's parts answered one, its code
   ;; A reason a callable recorded wins over libcurl's code, which the code
   ;; field still carries.
   (define curl-transfer-error-reasons
     '(perform-failed body-limit callback-raised setopt-failed unknown-option no-handle
-      cancelled stopped pause-failed body-length-mismatch body-not-replayable header-limit))
+      cancelled stopped pause-failed body-length-mismatch body-not-replayable header-limit
+      part-file mime-failed))
 
   ;; The fields:
   ;;
@@ -664,9 +703,12 @@
   ;;                 fresh connection after a dead one included, and 0 when
   ;;                 it sent none, or #f on a libcurl whose count is known
   ;;                 broken, 8.7.0 and 8.7.1 (ADR-0022, amended
-  ;;                 2026-10-27); 0 for one refused while it was set up,
-  ;;                 setopt-failed, unknown-option or no-handle, which sent
-  ;;                 nothing; #f for one cancelled or stopped, taken apart
+  ;;                 2026-10-27); for a multipart body, on 7.85.0 and 8.5.0,
+  ;;                 the head alone, whatever of the body went, and on 8.20.0
+  ;;                 and 8.23.0 the head and the body's bytes sent (the M8
+  ;;                 plan, section 3.8); 0 for one refused while it was set up,
+  ;;                 setopt-failed, unknown-option, no-handle, part-file or
+  ;;                 mime-failed, which sent nothing; #f for one cancelled or stopped, taken apart
   ;;                 unread. Whether it is 0 is what M5's retry policy reads
   ;;                 to tell whether a request was sent: a failure's timings
   ;;                 move with the version, and this does not (ADR-0022,
@@ -728,7 +770,7 @@
   ;;                            (U String #f) Any (U Natural #f) (U Positive-Integer #f)
   ;;                            -> &curl-transfer-error
   ;; The base type, unclassed. Refuses a REASON that is not one of the
-  ;; twelve with an assertion violation. It checks nothing else, so a code a
+  ;; fourteen with an assertion violation. It checks nothing else, so a code a
   ;; later libcurl answers still reaches the caller.
   (define (make-curl-transfer-error reason code option strerror error-buffer recorded
                                     request-size connect-code)
@@ -871,7 +913,7 @@
   ;; perform-failed, the class its CODE has, or the base type for a code no
   ;; class names; for body-limit and header-limit, too-large, whatever its
   ;; code; for every other reason, the base type, a setopt-failed whose code
-  ;; a class names among them. A REASON not among the twelve is an
+  ;; a class names among them. A REASON not among the fourteen is an
   ;; assertion violation.
   (define (make-classed-transfer-error reason code option strerror error-buffer recorded
                                        request-size connect-code)

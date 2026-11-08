@@ -70,12 +70,12 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))
 
 ;; The counts while the suite's two engines run: each one's multi handle and
 ;; its slot, and nothing else.
 (define running-counts
-  '((block . 2) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 2) (share . 0)))
+  '((block . 2) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 2) (share . 0) (mime . 0)))
 
 ;; now-ms : -> Integer
 (define (now-ms)

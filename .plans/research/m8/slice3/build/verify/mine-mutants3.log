@@ -1,0 +1,6 @@
+mutants start 2026-11-07T21:17:12Z, 1 chosen
+mutant mine2-expect-blank-dropped: CAUGHT in 12 s
+  tests/test-multipart.sps exit=1
+    FAIL a data part of 1 MiB and one byte, over HTTP/1.1: the whole report, its expect field - , so the Expect: blank held past libcurl's 1 MiB threshold
+    FAIL by version, resend-reset-file answers as this libcurl's row says
+mutants done: 1 of 1 caught

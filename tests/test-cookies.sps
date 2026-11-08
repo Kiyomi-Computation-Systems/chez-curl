@@ -99,7 +99,7 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))
 
 ;; The loaded libcurl's version, and whether it was built with PSL, read
 ;; here, before any engine's thread is forked.
@@ -1565,7 +1565,7 @@
 
 (test-equal "a failed engine that abandons a live transfer's easy handle keeps its hold on the jar: the share stays in use, the jar closing, held once, and both stay counted, one easy handle and one share; the control, which frees the handle, lets the hold go, frees the share, the jar closed, nothing counted"
   (list (list '((engine-error failed) closing 1 ((block . 0) (easy . 1) (url . 0) (slist . 0) (curl-string . 0)
-                                                 (transfer . 0) (multi . 0) (share . 1))))
+                                                 (transfer . 0) (multi . 0) (share . 1) (mime . 0))))
         (list (list '(engine-error failed) 'closed 0 zero-counts)))
   (list (abandon-child "abandon") (abandon-child "free")))
 

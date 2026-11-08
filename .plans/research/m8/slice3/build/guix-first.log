@@ -1,0 +1,302 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-suites: every suite ends with (exit (suite-exit-status runner)) (42 checked)
+check-seam: the seam holds (21 libraries in 21 files checked)
+check-floors: README.org and .github/workflows (ci.yml) hold the floors in packaging/floors.sexp (chez 10.4.0, libcurl 7.85.0, node 20)
+=== tests/test-auth.sps
+%%%% Starting test auth
+test-auth: digest-algorithms on "8.20.0" measured ((200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)) (200 ("none" 401) ("ok" 200)))
+test-auth: utf8-digest-user on "8.20.0" measured (200 (("none" 401) ("ok" 200)) "\\xc3\\xbcser")
+test-auth: empty-userinfo on "8.20.0" measured (("@" "" #f (refused credentials-beside-userinfo)) (":@" "" "" (refused credentials-beside-userinfo)) (":p@" "" "p" (refused credentials-beside-userinfo)) ("u@" "u" #f (refused credentials-beside-userinfo)) ("u:@" "u" "" (refused credentials-beside-userinfo)))
+test-auth: mib-credentials on "8.20.0" measured (((failed perform-failed 100 too-large) 0) ((failed perform-failed 100 too-large) 0))
+# of expected passes      66
+test: pass tests/test-auth.sps
+=== tests/test-call-checks.sps
+%%%% Starting test call-checks
+# of expected passes      49
+test: pass tests/test-call-checks.sps
+=== tests/test-check-floors.sps
+%%%% Starting test check-floors
+# of expected passes      375
+test: pass tests/test-check-floors.sps
+=== tests/test-check-nothreads.sps
+%%%% Starting test check-nothreads
+# of expected passes      17
+test: pass tests/test-check-nothreads.sps
+=== tests/test-check-seam.sps
+%%%% Starting test check-seam
+# of expected passes      62
+test: pass tests/test-check-seam.sps
+=== tests/test-collect-safe.sps
+%%%% Starting test collect-safe
+# of expected passes      121
+test: pass tests/test-collect-safe.sps
+=== tests/test-conditions.sps
+%%%% Starting test conditions
+FAIL the request-error reasons are exactly embedded-nul, line-break, not-latin-1, not-a-token, surrounding-whitespace, duplicates-field, framing-header, owned-option, unsupported-type, unknown-option, repeated-option, unknown-key, repeated-key, missing-value, body-not-allowed, pkcs11-url, environment-override, keychain-fallback, stream-with-rounds, body-length-without-stream, body-length-mismatch, prior-knowledge-over-https, credentials-bytes, credentials-empty, credentials-beside-userinfo, credentials-beside-authorization, digest-with-stream, prior-knowledge-through-proxy, proxy-url, proxy-scheme, proxy-url-parts, proxy-authorization-header, proxy-tls-without-https-proxy, proxy-tls-in-tls, https-proxy-unsupported, cookie-line, cookie-jar-engine, cookie-jar-closed and cookie-beside-jar, in order
+  expected: (embedded-nul line-break not-latin-1 not-a-token surrounding-whitespace duplicates-field framing-header owned-option unsupported-type unknown-option repeated-option unknown-key repeated-key missing-value body-not-allowed pkcs11-url environment-override keychain-fallback stream-with-rounds body-length-without-stream body-length-mismatch prior-knowledge-over-https credentials-bytes credentials-empty credentials-beside-userinfo credentials-beside-authorization digest-with-stream prior-knowledge-through-proxy proxy-url proxy-scheme proxy-url-parts proxy-authorization-header proxy-tls-without-https-proxy proxy-tls-in-tls https-proxy-unsupported cookie-line cookie-jar-engine cookie-jar-closed cookie-beside-jar)
+  actual:   (embedded-nul line-break not-latin-1 not-a-token surrounding-whitespace duplicates-field framing-header owned-option unsupported-type unknown-option repeated-option unknown-key repeated-key missing-value body-not-allowed pkcs11-url environment-override keychain-fallback stream-with-rounds body-length-without-stream body-length-mismatch prior-knowledge-over-https credentials-bytes credentials-empty credentials-beside-userinfo credentials-beside-authorization digest-with-stream prior-knowledge-through-proxy proxy-url proxy-scheme proxy-url-parts proxy-authorization-header proxy-tls-without-https-proxy proxy-tls-in-tls https-proxy-unsupported cookie-line cookie-jar-engine cookie-jar-closed cookie-beside-jar part-bytes part-empty multipart-empty multipart-content-type part-file multipart-unsupported)
+FAIL the transfer-error reasons are exactly perform-failed, body-limit, callback-raised, setopt-failed, unknown-option, no-handle, cancelled, stopped, pause-failed, body-length-mismatch, body-not-replayable and header-limit, in order
+  expected: (perform-failed body-limit callback-raised setopt-failed unknown-option no-handle cancelled stopped pause-failed body-length-mismatch body-not-replayable header-limit)
+  actual:   (perform-failed body-limit callback-raised setopt-failed unknown-option no-handle cancelled stopped pause-failed body-length-mismatch body-not-replayable header-limit part-file mime-failed)
+# of expected passes      39
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 39, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-conditions.sps (exit 1)
+=== tests/test-constants.sps
+%%%% Starting test constants
+FAIL constants.sls exports curlform-copyname, and constant-rows has a row for it
+  expected: row
+  actual:   no-row
+FAIL constants.sls exports curlform-copycontents, and constant-rows has a row for it
+  expected: row
+  actual:   no-row
+FAIL constants.sls exports curlform-end, and constant-rows has a row for it
+  expected: row
+  actual:   no-row
+FAIL constants.sls exports curl-formadd-ok, and constant-rows has a row for it
+  expected: row
+  actual:   no-row
+FAIL constants.sls exports curl-formadd-unknown-option, and constant-rows has a row for it
+  expected: row
+  actual:   no-row
+FAIL constants.sls exports curl-formadd-disabled, and constant-rows has a row for it
+  expected: row
+  actual:   no-row
+FAIL prototype-rows has a row for every entry point src/ binds, and src/ binds every row's entry
+  expected: ("curl_easy_cleanup" "curl_easy_getinfo" "curl_easy_header" "curl_easy_init" "curl_easy_nextheader" "curl_easy_option_by_name" "curl_easy_pause" "curl_easy_setopt" "curl_easy_strerror" "curl_formadd" "curl_formfree" "curl_free" "curl_global_init" "curl_mime_addpart" "curl_mime_data" "curl_mime_filedata" "curl_mime_filename" "curl_mime_free" "curl_mime_init" "curl_mime_name" "curl_mime_type" "curl_multi_add_handle" "curl_multi_cleanup" "curl_multi_info_read" "curl_multi_init" "curl_multi_perform" "curl_multi_poll" "curl_multi_remove_handle" "curl_multi_setopt" "curl_multi_strerror" "curl_multi_wakeup" "curl_share_cleanup" "curl_share_init" "curl_share_setopt" "curl_slist_append" "curl_slist_free_all" "curl_url" "curl_url_cleanup" "curl_url_get" "curl_url_set" "curl_url_strerror" "curl_version_info" "memcpy" "strlen")
+  actual:   ("curl_easy_cleanup" "curl_easy_getinfo" "curl_easy_header" "curl_easy_init" "curl_easy_nextheader" "curl_easy_option_by_name" "curl_easy_pause" "curl_easy_setopt" "curl_easy_strerror" "curl_free" "curl_global_init" "curl_multi_add_handle" "curl_multi_cleanup" "curl_multi_info_read" "curl_multi_init" "curl_multi_perform" "curl_multi_poll" "curl_multi_remove_handle" "curl_multi_setopt" "curl_multi_strerror" "curl_multi_wakeup" "curl_share_cleanup" "curl_share_init" "curl_share_setopt" "curl_slist_append" "curl_slist_free_all" "curl_url" "curl_url_cleanup" "curl_url_get" "curl_url_set" "curl_url_strerror" "curl_version_info" "memcpy" "strlen")
+FAIL prototype: "curl_mime_init" bound through bind-required as (uptr) -> uptr fits a declaration its row gives
+  expected: fits
+  actual:   no-row
+FAIL prototype: "curl_mime_free" bound through bind-required as (uptr) -> void fits a declaration its row gives
+  expected: fits
+  actual:   no-row
+FAIL prototype: "curl_mime_addpart" bound through bind-required as (uptr) -> uptr fits a declaration its row gives
+  expected: fits
+  actual:   no-row
+FAIL prototype: "curl_mime_name" bound through bind-required as (uptr uptr) -> int fits a declaration its row gives
+  expected: fits
+  actual:   no-row
+FAIL prototype: "curl_mime_data" bound through bind-required as (uptr uptr size_t) -> int fits a declaration its row gives
+  expected: fits
+  actual:   no-row
+FAIL prototype: "curl_mime_filedata" bound through bind-blocking as (uptr uptr) -> int fits a declaration its row gives
+  expected: fits
+  actual:   no-row
+FAIL prototype: "curl_mime_filename" bound through bind-required as (uptr uptr) -> int fits a declaration its row gives
+  expected: fits
+  actual:   no-row
+FAIL prototype: "curl_mime_type" bound through bind-required as (uptr uptr) -> int fits a declaration its row gives
+  expected: fits
+  actual:   no-row
+FAIL prototype: "curl_formfree" bound through bind-required as (uptr) -> void fits a declaration its row gives
+  expected: fits
+  actual:   no-row
+FAIL prototype: "curl_formadd" bound through bind-variadic as (uptr uptr int uptr int uptr int) -> int fits a declaration its row gives
+  expected: fits
+  actual:   no-row
+# of expected passes      756
+# of unexpected failures  17
+suite-exit-status: exit 1 (pass 756, fail 17, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-constants.sps (exit 1)
+=== tests/test-cookies.sps
+%%%% Starting test cookies
+test-cookies: crossings on the delaying engine ((ran . 8) (setup . 10) (submit . 18))
+test-cookies: crossings on a plain engine ((ran . 16) (submit . 17))
+test-cookies: refused-readout on "8.20.0" measured (("path-empty" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-true" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-false" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("path-rel" (("a.localhost\tFALSE\t/\tFALSE\t0\tp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"p=1\"") ("name-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("value-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ("prefix-secure-lower" (("a.localhost\tFALSE\t/\tFALSE\t0\t__secure-a\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__secure-a=1\"") ("prefix-SECURE-upper" (("a.localhost\tFALSE\t/\tFALSE\t0\t__SECURE-b\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__SECURE-b=1\"") ("prefix-host-path" (("a.localhost\tFALSE\t/cookies\tFALSE\t0\t__host-c\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__host-c=1\"") ("prefix-HOST-domain" ((".a.localhost\tTRUE\t/\tFALSE\t0\t__HOST-d\t1" prefix)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"__HOST-d=1\"") ("path-tab" () "request 2 face=http host=\"a.localhost:<port>\" cookies=0"))
+test-cookies: expired-load on "8.20.0" measured (() ("a.localhost\tFALSE\t/\tFALSE\t0\tnext\t1"))
+test-cookies: open-head on "8.20.0" measured (200 200 (a-request a-request) 200 200 (a-request a-request))
+test-cookies: domain-localhost on "8.20.0/psl" measured ((() "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (((".localhost\tTRUE\t/\tFALSE\t0\td\t1" #f)) "request 2 face=http host=\"localhost:<port>\" cookies=1 cookie=\"d=1\"") (() "request 2 face=http host=\"localhost:<port>\" cookies=0"))
+test-cookies: set-cookie-matrix on "8.20.0" measured (((("a.localhost\tFALSE\t/cookies/a/b\tFALSE\t0\tdp\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=0") ((("a.localhost\tFALSE\t/\tFALSE\t0\tpr\t1" #f) ("a.localhost\tFALSE\t/cookies/a/b\tFALSE\t0\tpe\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"pr=1\"") ((("a.localhost\tFALSE\t/\tFALSE\twithin-400-days\tca\t1" #f)) "request 2 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"ca=1\"") (() "request 2 face=http host=\"a.localhost:<port>\" cookies=0") (("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1") "request 3 face=http host=\"a.localhost:<port>\" cookies=1 cookie=\"keep=1\"" ("a.localhost\tFALSE\t/\tFALSE\t0\tkeep\t1")))
+# of expected passes      70
+test: pass tests/test-cookies.sps
+=== tests/test-curl-testing.sps
+%%%% Starting test curl-testing
+# of expected passes      286
+test: pass tests/test-curl-testing.sps
+=== tests/test-discovery.sps
+%%%% Starting test discovery
+this Chez's binary: /gnu/store/nrlh72nrgyna5mm3p2n62mmld6al0lwv-chez-scheme-10.4.0/lib/csv10.4.0/ta6le/scheme
+# of expected passes      47
+test: pass tests/test-discovery.sps
+=== tests/test-drift.sps
+%%%% Starting test drift
+# of expected passes      55
+test: pass tests/test-drift.sps
+=== tests/test-engine.sps
+%%%% Starting test engine
+# of expected passes      54
+test: pass tests/test-engine.sps
+=== tests/test-group.sps
+%%%% Starting test group
+# of expected passes      65
+test: pass tests/test-group.sps
+=== tests/test-headers.sps
+%%%% Starting test headers
+# of expected passes      43
+test: pass tests/test-headers.sps
+=== tests/test-http-client.sps
+%%%% Starting test http-client
+FAIL http-request-error-reasons, written out
+  expected: (unknown-key repeated-key missing-value body-and-form body-not-allowed not-a-body not-name-value-pairs not-a-redirect-count not-a-boolean not-a-retry-policy not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list not-a-limit stream-in-group body-length-mismatch)
+  actual:   (unknown-key repeated-key missing-value body-and-form multipart-beside-body body-not-allowed not-a-body not-name-value-pairs not-a-redirect-count not-a-boolean not-a-retry-policy not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list not-a-limit stream-in-group body-length-mismatch)
+FAIL the keys, written out: a session's, the request's, the policy's, then cookies, its own (the M7 plan, section 3.1); a call's, the session's but cookies, then body, form, params and body-length; a port's, a call's and stream-buffer
+  expected: ((headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy http-version credentials proxy-ca-file proxy-verify redirects allow-downgrade retry cookies) (headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy http-version credentials proxy-ca-file proxy-verify redirects allow-downgrade retry body form params body-length) (headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy http-version credentials proxy-ca-file proxy-verify redirects allow-downgrade retry body form params body-length stream-buffer))
+  actual:   ((headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy http-version credentials proxy-ca-file proxy-verify redirects allow-downgrade retry cookies) (headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy http-version credentials proxy-ca-file proxy-verify redirects allow-downgrade retry body form params body-length multipart) (headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy http-version credentials proxy-ca-file proxy-verify redirects allow-downgrade retry body form params body-length multipart stream-buffer))
+# of expected passes      76
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 76, fail 2, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-http-client.sps (exit 1)
+=== tests/test-library-loading.sps
+%%%% Starting test library-loading
+# of expected passes      95
+test: pass tests/test-library-loading.sps
+=== tests/test-load-state.sps
+%%%% Starting test load-state
+# of expected passes      12
+test: pass tests/test-load-state.sps
+=== tests/test-mailbox.sps
+%%%% Starting test mailbox
+# of expected passes      26
+test: pass tests/test-mailbox.sps
+=== tests/test-manifest.sps
+%%%% Starting test manifest
+# of expected passes      4
+test: pass tests/test-manifest.sps
+=== tests/test-memory-safety.sps
+%%%% Starting test memory-safety
+# of expected passes      93
+test: pass tests/test-memory-safety.sps
+=== tests/test-native.sps
+%%%% Starting test native
+# of expected passes      16
+test: pass tests/test-native.sps
+=== tests/test-origin-tls.sps
+%%%% Starting test origin-tls
+# of expected passes      199
+test: pass tests/test-origin-tls.sps
+=== tests/test-origin.sps
+%%%% Starting test origin
+# of expected passes      398
+test: pass tests/test-origin.sps
+=== tests/test-printed.sps
+%%%% Starting test printed
+# of expected passes      10
+test: pass tests/test-printed.sps
+=== tests/test-proxy.sps
+%%%% Starting test proxy
+test-proxy: empty-userinfo on "8.20.0" measured ((refused proxy (proxy user) credentials-empty test) (refused proxy (proxy user) credentials-empty test) ("http://:p@127.0.0.1:3128/" "http" #t) ("http://u:@127.0.0.1:3128/" "http" #t))
+test-proxy: tls-in-tls-checks on "8.20.0/GnuTLS" measured (no-raise no-raise no-raise no-raise no-raise)
+test-proxy: empty-userinfo-wire on "8.20.0" measured (((refused proxy (proxy user) credentials-empty curl-submit) ()) ((refused proxy (proxy user) credentials-empty curl-submit) ()))
+test-proxy: refused-connect on "8.20.0" measured ((7 connect 403 zero) (7 connect 407 zero) (7 connect 502 zero) (7 connect 503 zero) (7 connect 407 zero) (7 connect 407 zero) (56 send-receive #f zero))
+test-proxy: unshared-tunnels on "8.20.0" measured (((response 200) (response 200) #f ("connect http conn=1 target=localhost:<https> answer=200 head=_ auth=basic:alice:s3cret" "inner https via=1 method=GET target=/status/200" "inner https via=1 method=GET target=/status/200" "close http conn=1")) ((response 200) (response 200) #f ("connect http conn=1 target=127.0.0.1:<https> answer=200 head=_ auth=-" "inner https via=1 method=GET target=/status/200" "inner https via=1 method=GET target=/status/200" "close http conn=1")))
+test-proxy: tunnel-plans on "8.20.0" measured ((() #f) (() #f) (() #f) (() #f) (() #f))
+test-proxy: switch-live on "8.20.0" measured ((head head default default) (1 1 1) (#f #f) ((response 200) (response 200) (response 200) (response 200)))
+test-proxy: environment-join on "8.20.0" measured (((environment (no_proxy . #f) (NO_PROXY . #f) (http_proxy . #f) (https_proxy . "http://127.0.0.1:33403") (all_proxy . #f)) (multiplexing default default) (join #t (refused perform-failed 7 connect 407) (response 200)) (transfer ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))) (done)) ("connect http conn=1 target=localhost:<h2> answer=200 head=_ auth=basic:alice:s3cret" "inner h2 via=1 method=GET target=/connection?delay=3000" "connect http conn=2 target=localhost:<h2> answer=407 head=_ auth=-" "close http conn=1" "close http conn=2"))
+test-proxy: closing-retries on "8.20.0" measured (((failed 56 #f 3) 3) ((failed 56 #f 3) 3))
+# of expected passes      96
+test: pass tests/test-proxy.sps
+=== tests/test-redirect.sps
+%%%% Starting test redirect
+(head-predicate-rows 124)
+# of expected passes      72
+test: pass tests/test-redirect.sps
+=== tests/test-request.sps
+%%%% Starting test request
+# of expected passes      47
+test: pass tests/test-request.sps
+=== tests/test-require-threaded.sps
+%%%% Starting test require-threaded
+# of expected passes      69
+test: pass tests/test-require-threaded.sps
+=== tests/test-retry.sps
+%%%% Starting test retry
+(head-predicate-rows 98)
+# of expected passes      86
+test: pass tests/test-retry.sps
+=== tests/test-stream-call.sps
+%%%% Starting test stream-call
+(stream-call-throughput raw ms 371)
+(stream-call-throughput h2 ms 372)
+(stream-call-idle-cpu ms 2544443/200000)
+# of expected passes      77
+test: pass tests/test-stream-call.sps
+=== tests/test-stream.sps
+%%%% Starting test stream
+(sweep piece plain call-ticks 6 escaped-kept 12 escaped-lost 0 returned 41)
+(sweep port plain call-ticks 266 escaped-kept 532 escaped-lost 0 returned 41)
+(sweep piece planted call-ticks 9 escaped-kept 12 escaped-lost 6 returned 41)
+# of expected passes      74
+test: pass tests/test-stream.sps
+=== tests/test-transfer-tls.sps
+%%%% Starting test transfer-tls
+FAIL the checks hand the plan their snapshot: request-checks' let* binds ca-file to (ca-file-copy who (curl-request-ca-file request)), checks that copy, first, as (check-ca-environment who 'ca-file ca-file (curl-request-verify request)) and answers it, ca-file standing four times there, the field's name among them; prepare-transfer takes it from (request-checks 'curl-submit request), make-plan takes ca-file and (curl-request-verify request) as its ninth and tenth arguments, ca-file standing twice there, and the plan's ninth and tenth fields are ca-file and verify
+  expected: ((ca-file (ca-file-copy who (curl-request-ca-file request))) (check-ca-environment who (quote ca-file) ca-file (curl-request-verify request)) (values url fields ca-file credentials (if reading (car reading) proxy) proxy-ca-file (unshared-tunnel-settings version-number scheme (and reading #t) (and reading (caddr reading))) (stops-multiplexing? version-number (and reading #t) (and reading (caddr reading)))) 4 (request-checks (quote curl-submit) request) (ca-file (curl-request-verify request)) 2 ((immutable ca-file) (immutable verify)))
+  actual:   ((ca-file (ca-file-copy who (curl-request-ca-file request))) (check-ca-environment who (quote ca-file) ca-file (curl-request-verify request)) (values url fields ca-file credentials (if reading (car reading) proxy) proxy-ca-file (unshared-tunnel-settings version-number scheme (and reading #t) (and reading (caddr reading))) (stops-multiplexing? version-number (and reading #t) (and reading (caddr reading))) parts) 4 (request-checks (quote curl-submit) request) (ca-file (curl-request-verify request)) 2 ((immutable ca-file) (immutable verify)))
+# of expected passes      83
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 83, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-transfer-tls.sps (exit 1)
+=== tests/test-transfer.sps
+%%%% Starting test transfer
+FAIL owned-option-names, written out: the options the transfer always sets, QUICK_EXIT and MAXREDIRS among them, and the pins' bitmasks; then each request field's, a streamed body's POST and UPLOAD, its read, seek and prerequest callables and their data, and FRESH_CONNECT, stream-buffer's header callable and its data, HEADERFUNCTION and HEADERDATA, body-length's INFILESIZE_LARGE, http-version's HTTP_VERSION, credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER, cookie-jar's SHARE and COOKIEFILE, and FOLLOWLOCATION the private follow field's; then the owned settings' twins: the timeouts' and the body limit's, the method's and the body's, the URL's PORT and REQUEST_TARGET, the body's CRLF and the response's HEADER, the CA file's CAINFO_BLOB and SSL_OPTIONS, and the proxy field's PRE_PROXY, PROXYPORT and PROXYTYPE; then slice 4's: TRANSFERTEXT, CRLF's twin; the URL's USERPWD, NETRC and HSTS; the proxy field's UNIX_SOCKET_PATH and ABSTRACT_UNIX_SOCKET; the headers' PROXYHEADER and HEADEROPT; and RESUME_FROM, RESUME_FROM_LARGE, COOKIEJAR, CONNECT_ONLY, DOH_URL, RESOLVE and SSLENGINE_DEFAULT, kept from the hatch; then M7 slice 1's, the HTTP version's twins SSL_ENABLE_ALPN, ALTSVC and ALTSVC_CTRL; then M7 slice 2's, the credentials' twin AWS_SIGV4; then M7 slice 3's, the proxy's twins PROXYAUTH, PROXYUSERPWD, PROXYUSERNAME, PROXYPASSWORD, HTTPPROXYTUNNEL, HAPROXYPROTOCOL and HAPROXY_CLIENT_IP; then M7 slice 4's, the cookie jar's twins COOKIE, COOKIELIST and COOKIESESSION; then M8 slice 2's, the header callable's twin SUPPRESS_CONNECT_HEADERS; then every proxy TLS option but the four proxy-ca-file and proxy-verify set, which are fields' now, as NOPROXY and FORBID_REUSE are proxy's, and COOKIEFILE cookie-jar's
+  expected: ("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT" "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER" "CURLU" "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD" "HTTPHEADER" "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA" "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT" "USERAGENT" "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST" "PROXY" "NOPROXY" "FORBID_REUSE" "HEADERFUNCTION" "HEADERDATA" "INFILESIZE_LARGE" "HTTP_VERSION" "HTTPAUTH" "USERNAME" "PASSWORD" "XOAUTH2_BEARER" "PROXY_CAINFO" "PROXY_CAPATH" "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "SHARE" "COOKIEFILE" "FOLLOWLOCATION" "TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "PUT" "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIMEPOST" "INFILESIZE" "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS" "PRE_PROXY" "PROXYPORT" "PROXYTYPE" "TRANSFERTEXT" "USERPWD" "NETRC" "HSTS" "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT" "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEJAR" "CONNECT_ONLY" "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT" "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL" "AWS_SIGV4" "PROXYAUTH" "PROXYUSERPWD" "PROXYUSERNAME" "PROXYPASSWORD" "HTTPPROXYTUNNEL" "HAPROXYPROTOCOL" "HAPROXY_CLIENT_IP" "COOKIE" "COOKIELIST" "COOKIESESSION" "SUPPRESS_CONNECT_HEADERS" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST" "PROXY_CAINFO_BLOB" "PROXY_CRLFILE" "PROXY_ISSUERCERT" "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS" "PROXY_SSLCERT" "PROXY_SSLCERT_BLOB" "PROXY_SSLCERTTYPE" "PROXY_SSLKEY" "PROXY_SSLKEY_BLOB" "PROXY_SSLKEYTYPE" "PROXY_KEYPASSWD" "PROXY_TLSAUTH_TYPE" "PROXY_TLSAUTH_USERNAME" "PROXY_TLSAUTH_PASSWORD")
+  actual:   ("URL" "PROTOCOLS_STR" "REDIR_PROTOCOLS_STR" "PROTOCOLS" "REDIR_PROTOCOLS" "NOSIGNAL" "QUICK_EXIT" "MAXREDIRS" "WRITEFUNCTION" "WRITEDATA" "ERRORBUFFER" "CURLU" "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD" "HTTPHEADER" "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA" "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT" "MIMEPOST" "USERAGENT" "TIMEOUT_MS" "CONNECTTIMEOUT_MS" "MAXFILESIZE_LARGE" "CAINFO" "CAPATH" "SSL_VERIFYPEER" "SSL_VERIFYHOST" "PROXY" "NOPROXY" "FORBID_REUSE" "HEADERFUNCTION" "HEADERDATA" "INFILESIZE_LARGE" "HTTP_VERSION" "HTTPAUTH" "USERNAME" "PASSWORD" "XOAUTH2_BEARER" "PROXY_CAINFO" "PROXY_CAPATH" "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST" "SHARE" "COOKIEFILE" "FOLLOWLOCATION" "TIMEOUT" "CONNECTTIMEOUT" "MAXFILESIZE" "HTTPGET" "PUT" "POSTFIELDS" "POSTFIELDSIZE" "HTTPPOST" "MIME_OPTIONS" "INFILESIZE" "PORT" "REQUEST_TARGET" "CRLF" "HEADER" "CAINFO_BLOB" "SSL_OPTIONS" "PRE_PROXY" "PROXYPORT" "PROXYTYPE" "TRANSFERTEXT" "USERPWD" "NETRC" "HSTS" "UNIX_SOCKET_PATH" "ABSTRACT_UNIX_SOCKET" "PROXYHEADER" "HEADEROPT" "RESUME_FROM" "RESUME_FROM_LARGE" "COOKIEJAR" "CONNECT_ONLY" "DOH_URL" "RESOLVE" "SSLENGINE_DEFAULT" "SSL_ENABLE_ALPN" "ALTSVC" "ALTSVC_CTRL" "AWS_SIGV4" "PROXYAUTH" "PROXYUSERPWD" "PROXYUSERNAME" "PROXYPASSWORD" "HTTPPROXYTUNNEL" "HAPROXYPROTOCOL" "HAPROXY_CLIENT_IP" "COOKIE" "COOKIELIST" "COOKIESESSION" "SUPPRESS_CONNECT_HEADERS" "PROXY_SSL_OPTIONS" "PROXY_SSL_CIPHER_LIST" "PROXY_CAINFO_BLOB" "PROXY_CRLFILE" "PROXY_ISSUERCERT" "PROXY_ISSUERCERT_BLOB" "PROXY_PINNEDPUBLICKEY" "PROXY_SSLVERSION" "PROXY_TLS13_CIPHERS" "PROXY_SSLCERT" "PROXY_SSLCERT_BLOB" "PROXY_SSLCERTTYPE" "PROXY_SSLKEY" "PROXY_SSLKEY_BLOB" "PROXY_SSLKEYTYPE" "PROXY_KEYPASSWD" "PROXY_TLSAUTH_TYPE" "PROXY_TLSAUTH_USERNAME" "PROXY_TLSAUTH_PASSWORD")
+FAIL request-field-options, written out: url's CURLU; method's NOBODY and CUSTOMREQUEST, and a streamed body's POST and UPLOAD; headers' HTTPHEADER; body's POSTFIELDSIZE_LARGE and COPYPOSTFIELDS, then a streamed one's READFUNCTION, READDATA, SEEKFUNCTION, SEEKDATA, PREREQFUNCTION, PREREQDATA and FRESH_CONNECT; user-agent's USERAGENT; timeout-ms's TIMEOUT_MS; connect-timeout-ms's CONNECTTIMEOUT_MS; body-limit's MAXFILESIZE_LARGE; ca-file's CAINFO and CAPATH; verify's SSL_VERIFYPEER and SSL_VERIFYHOST; proxy's PROXY, NOPROXY and FORBID_REUSE; stream-buffer's HEADERFUNCTION and HEADERDATA; body-length's INFILESIZE_LARGE; http-version's HTTP_VERSION; credentials' HTTPAUTH, USERNAME, PASSWORD and XOAUTH2_BEARER; proxy-ca-file's PROXY_CAINFO and PROXY_CAPATH; proxy-verify's PROXY_SSL_VERIFYPEER and PROXY_SSL_VERIFYHOST; cookie-jar's SHARE and COOKIEFILE; and follow's FOLLOWLOCATION
+  expected: ((url "CURLU") (method "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD") (headers "HTTPHEADER") (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA" "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT") (user-agent "USERAGENT") (timeout-ms "TIMEOUT_MS") (connect-timeout-ms "CONNECTTIMEOUT_MS") (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH") (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY" "NOPROXY" "FORBID_REUSE") (stream-buffer "HEADERFUNCTION" "HEADERDATA") (body-length "INFILESIZE_LARGE") (http-version "HTTP_VERSION") (credentials "HTTPAUTH" "USERNAME" "PASSWORD" "XOAUTH2_BEARER") (proxy-ca-file "PROXY_CAINFO" "PROXY_CAPATH") (proxy-verify "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST") (cookie-jar "SHARE" "COOKIEFILE") (follow "FOLLOWLOCATION"))
+  actual:   ((url "CURLU") (method "NOBODY" "CUSTOMREQUEST" "POST" "UPLOAD") (headers "HTTPHEADER") (body "POSTFIELDSIZE_LARGE" "COPYPOSTFIELDS" "READFUNCTION" "READDATA" "SEEKFUNCTION" "SEEKDATA" "PREREQFUNCTION" "PREREQDATA" "FRESH_CONNECT" "MIMEPOST") (user-agent "USERAGENT") (timeout-ms "TIMEOUT_MS") (connect-timeout-ms "CONNECTTIMEOUT_MS") (body-limit "MAXFILESIZE_LARGE") (ca-file "CAINFO" "CAPATH") (verify "SSL_VERIFYPEER" "SSL_VERIFYHOST") (proxy "PROXY" "NOPROXY" "FORBID_REUSE") (stream-buffer "HEADERFUNCTION" "HEADERDATA") (body-length "INFILESIZE_LARGE") (http-version "HTTP_VERSION") (credentials "HTTPAUTH" "USERNAME" "PASSWORD" "XOAUTH2_BEARER") (proxy-ca-file "PROXY_CAINFO" "PROXY_CAPATH") (proxy-verify "PROXY_SSL_VERIFYPEER" "PROXY_SSL_VERIFYHOST") (cookie-jar "SHARE" "COOKIEFILE") (follow "FOLLOWLOCATION"))
+FAIL every option set-transfer-options! sets is an owned option, written as a literal or through field-option, but for those set by (car setting): three in the loop over method-settings' answer for the plan's method, body and body-length, two, a string's and a number's, in the loop over proxy-settings' answer for the plan's proxy, proxy CA file and proxy verification, one in the loop over version-settings' answer for the plan's http-version, two in the loop over credentials-settings' answer for the plan's credentials, and two in the loop over jar-settings' answer for the plan's cookie jar's share; the hatch's settings are set by set-hatch-option!, through its loop alone
+  expected: (() (((method-settings (plan-method plan) (plan-body plan) (plan-body-length plan)) 3) ((proxy-settings (plan-proxy plan) (plan-proxy-ca-file plan) (plan-proxy-verify plan)) 2) ((version-settings (plan-http-version plan)) 1) ((credentials-settings (plan-credentials plan)) 2) ((jar-settings (plan-share plan)) 2)))
+  actual:   (() (((method-settings (plan-method plan) (plan-body plan) (plan-body-length plan)) 4) ((proxy-settings (plan-proxy plan) (plan-proxy-ca-file plan) (plan-proxy-verify plan)) 2) ((version-settings (plan-http-version plan)) 1) ((credentials-settings (plan-credentials plan)) 2) ((jar-settings (plan-share plan)) 2)))
+# of expected passes      222
+# of unexpected failures  3
+suite-exit-status: exit 1 (pass 222, fail 3, xpass 0): a suite needs a pass, and no fail or xpass
+test: FAIL tests/test-transfer.sps (exit 1)
+=== tests/test-unsupported.sps
+%%%% Starting test unsupported
+# of expected passes      39
+test: pass tests/test-unsupported.sps
+=== tests/test-upload.sps
+%%%% Starting test upload
+(fill #f 2031616 ms 550 retried () mib (19))
+(put-sweep plain call-ticks 9 escaped-kept 0 escaped-redone 18 returned 41 at 41 bytes 41 pattern ok)
+(put-sweep planted call-ticks 12 escaped-kept 0 escaped-redone 24 returned 41 at 41 bytes 41 pattern bad@2)
+(throughput http sized ms 1026)
+(throughput http chunked ms 1034)
+(throughput https sized ms 1131)
+(throughput https chunked ms 1080)
+(throughput h2 sized ms 275)
+(throughput h2 chunked ms 274)
+(read-lock collections-while-live 990)
+# of expected passes      58
+test: pass tests/test-upload.sps
+=== tests/test-url-location.sps
+%%%% Starting test url-location
+# of expected passes      224
+test: pass tests/test-url-location.sps
+=== tests/test-url-parts.sps
+%%%% Starting test url-parts
+# of expected passes      160
+test: pass tests/test-url-parts.sps
+=== tests/test-url.sps
+%%%% Starting test url
+# of expected passes      144
+test: pass tests/test-url.sps
+=== tests/test-variadic.sps
+%%%% Starting test variadic
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 1: done, the first done at 1012 ms, both at 2025 ms
+test-variadic: two drips at MAX_TOTAL_CONNECTIONS 2: done, the first done at 1008 ms, both at 1009 ms
+# of expected passes      52
+test: pass tests/test-variadic.sps
+=== tests/test-verify.sps
+%%%% Starting test verify
+# of expected passes      21
+test: pass tests/test-verify.sps
+=== tests/test-version.sps
+%%%% Starting test version
+test-version: prior-knowledge-to-h1 on "8.20.0" measured (failed perform-failed 16 protocol)
+test-version: together-by-prior-knowledge on "8.20.0" measured (2 (http/2 http/2))
+# of expected passes      27
+test: pass tests/test-version.sps
+test: ran 42, passed 37, failed 5, hung 0
+make: *** [Makefile:325: test] Error 1

@@ -9,7 +9,9 @@
 ;;; Every check of a caller's string or list runs on a private copy, and the
 ;;; copy is what is used (ADR-0001, amended): headers, the user agent, the
 ;;; CA file's path, a body, a form, params, and a policy's statuses and
-;;; methods are copied before anything reads them. The keys are refused by
+;;; methods are copied before anything reads them, and a multipart body's
+;;; parts by the low level, each part's data copied here once, as the call
+;;; starts (ADR-0039, amended 2026-11-07). The keys are refused by
 ;;; name first, as the low level refuses its own; then the high level's own
 ;;; values, a body, a form, params, redirects, allow-downgrade and retry;
 ;;; then the low level's, by building a request from them, whose refusal
@@ -86,9 +88,11 @@
   ;; call-keys : (Listof Symbol)
   ;; The keys a call takes: the session's request and policy keys, each
   ;; replacing the session's value, then body, form, params and
-  ;; body-length, a producer's length (ADR-0031, decision 2). Not cookies:
-  ;; the session's jar is every call's.
-  (define call-keys (append request-session-keys policy-keys '(body form params body-length)))
+  ;; body-length, a producer's length (ADR-0031, decision 2), and
+  ;; multipart, a multipart body's parts (ADR-0039; the M8 plan, section
+  ;; 3.1). Not cookies: the session's jar is every call's.
+  (define call-keys
+    (append request-session-keys policy-keys '(body form params body-length multipart)))
 
   ;; port-keys : (Listof Symbol)
   ;; The keys call-with-response-port takes: a call's, then stream-buffer,
@@ -569,6 +573,24 @@
           (else (refuse who 'body (shown-value value) 'not-a-body
                         "a body is a bytevector, a string, sent as UTF-8, or a producer, a procedure of no arguments"))))
 
+  ;; multipart-data-copied : List -> List
+  ;; BODY, a multipart body as curl-request-body answers it, fresh pairs
+  ;; and metadata, its paths resolved, with each part's data copied: a
+  ;; string's chars, a bytevector's bytes. The one copy a call makes of the
+  ;; data, as it starts, as call-body copies a body: a retry or a redirect's
+  ;; hop then sends the bytes the call began with, and each submit copies
+  ;; them again, the low level's own (ADR-0039, amended 2026-11-07).
+  (define (multipart-data-copied body)
+    (cons 'multipart
+          (map (lambda (part)
+                 (let ((source (cadr part)))
+                   (cons* (car part)
+                          (cond ((string? source) (string-copy source))
+                                ((bytevector? source) (bytevector-copy source))
+                                (else source))
+                          (cddr part))))
+               (cdr body))))
+
   ;; call-pairs : Symbol Symbol Any -> (Listof (Pairof String String))
   ;; A copy of a call's form or params, FIELD; anything but a list of
   ;; string pairs is not-name-value-pairs, as WHO.
@@ -601,8 +623,10 @@
   ;;   2. body, not-a-body; form, then params, not-name-value-pairs;
   ;;      redirects, not-a-redirect-count; allow-downgrade, not-a-boolean;
   ;;      retry, not-a-retry-policy;
-  ;;   3. body and form together, body-and-form; either with get or head,
-  ;;      body-not-allowed, field the one given; a producer in a group's
+  ;;   3. body and form together, body-and-form; multipart beside either,
+  ;;      multipart-beside-body; any of the three with get or head,
+  ;;      body-not-allowed, field the one given, body, then form, then
+  ;;      multipart; a producer in a group's
   ;;      call, stream-in-group, field body, before anything is submitted
   ;;      (the M6 plan, section 3.6); a port's stream-buffer of #f, an
   ;;      assertion violation, since every response of its streams;
@@ -613,7 +637,14 @@
   ;;   5. the URL: params, when non-empty, appended by curl-url-append-query,
   ;;      then the whole read back by curl-url-part, the URL requested.
   ;; The merge (merge-fields) gives the headers and the user agent; a form
-  ;; is sent as its encoding's bytes, with-form-type's header added. A
+  ;; is sent as its encoding's bytes, with-form-type's header added; a
+  ;; multipart body as (multipart PART ...), checked by make-curl-request,
+  ;; a wrong shape its assertion violation, a relative path resolved there,
+  ;; once, as the call starts, and each part's data copied then, by
+  ;; multipart-data-copied, with the session's Content-Type headers
+  ;; dropped, as a call's user-agent drops the session's User-Agent: libcurl
+  ;; writes the body's type, and the low level refuses a call's own,
+  ;; multipart-content-type (the M8 plan, section 3.1). A
   ;; producer's request has body stream, and body-length as the call gives
   ;; it; it streams its response too, by the call's stream-buffer for a
   ;; port, 65,536 by default, and by 65,536 for http-request, which reads
@@ -634,6 +665,7 @@
     (let* ((settings (key-settings who (if (eq? mode 'port) port-keys call-keys) plist))
            (body-given (assq 'body settings))
            (form-given (assq 'form settings))
+           (multipart-given (assq 'multipart settings))
            (params-given (assq 'params settings))
            (length-given (assq 'body-length settings))
            (buffer-given (assq 'stream-buffer settings))
@@ -646,9 +678,12 @@
            (producer (and (procedure? body) body)))
       (when (and body-given form-given)
         (refuse who 'form #f 'body-and-form "a body and a form together"))
-      (when (and (memq method '(get head)) (or body-given form-given))
-        (refuse who (if body-given 'body 'form) method 'body-not-allowed
-                "a body or a form with get or head, which send none"))
+      (when (and multipart-given (or body-given form-given))
+        (refuse who 'multipart #f 'multipart-beside-body
+                "a multipart body beside a body or a form: a call sends one body"))
+      (when (and (memq method '(get head)) (or body-given form-given multipart-given))
+        (refuse who (cond (body-given 'body) (form-given 'form) (else 'multipart)) method
+                'body-not-allowed "a body, a form or a multipart body with get or head, which send none"))
       (when (and producer (eq? mode 'group))
         (refuse who 'body producer 'stream-in-group
                 "a request group takes no producer: its calls share one thread, which a producer's wait would hold"))
@@ -658,7 +693,9 @@
           #f))
       (let* ((own (map copied-setting (request-settings settings)))
              (bytes (if producer #f (or body (and form (string->utf8 (form-encode form))))))
-             (sent (cond (producer 'stream) (else bytes)))
+             (sent (cond (producer 'stream)
+                         (multipart-given (cons 'multipart (cdr multipart-given)))
+                         (else bytes)))
              (body-length (and length-given (cdr length-given)))
              (stream-buffer (cond ((eq? mode 'port)
                                    (if buffer-given (cdr buffer-given) default-stream-buffer))
@@ -675,7 +712,14 @@
                                    (curl-request-user-agent defaults)
                                    (curl-request-headers checked)
                                    (if (hit 'user-agent) (list (cdr (hit 'user-agent))) '())))
-             (headers (if form (with-form-type (car merged)) (car merged)))
+             (headers (cond (form (with-form-type (car merged)))
+                            (multipart-given
+                             (filter (lambda (header) (not (ascii-ci=? (car header) "Content-Type")))
+                                     (car merged)))
+                            (else (car merged))))
+             (body-sent (if multipart-given
+                            (multipart-data-copied (curl-request-body checked))
+                            sent))
              (pick (lambda (key accessor)
                      (if (hit key) (accessor checked) (accessor defaults))))
              (target (curl-url-part (if (and params (pair? params))
@@ -685,7 +729,7 @@
         (values (make-curl-request target
                                    'method method
                                    'headers headers
-                                   'body sent
+                                   'body body-sent
                                    'body-length body-length
                                    'stream-buffer stream-buffer
                                    'user-agent (cadr merged)

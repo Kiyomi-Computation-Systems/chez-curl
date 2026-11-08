@@ -104,7 +104,9 @@
   ;;   repeated-key          a key given twice to one call
   ;;   missing-value         a key given last, with no value after it
   ;;   body-and-form         a call given both body and form
-  ;;   body-not-allowed      a body or a form with get or head, which send none
+  ;;   multipart-beside-body a call given multipart beside body or form
+  ;;   body-not-allowed      a body, a form or a multipart body with get or
+  ;;                         head, which send none
   ;;   not-a-body            a body that is neither a bytevector nor a string
   ;;   not-name-value-pairs  a form or params that is not a list of pairs,
   ;;                         each of a name and a value, both strings
@@ -132,7 +134,8 @@
   ;;                         its body-length, refused before any of it is put,
   ;;                         once the transfer is cancelled (ADR-0031, amended)
   (define http-request-error-reasons
-    '(unknown-key repeated-key missing-value body-and-form body-not-allowed not-a-body
+    '(unknown-key repeated-key missing-value body-and-form multipart-beside-body
+      body-not-allowed not-a-body
       not-name-value-pairs not-a-redirect-count not-a-boolean not-a-retry-policy
       not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list not-a-limit
       stream-in-group body-length-mismatch))
@@ -140,8 +143,10 @@
   ;; The fields:
   ;;
   ;;   field   Symbol: key, for unknown-key, repeated-key and missing-value;
-  ;;           form, for body-and-form; body or form, for body-not-allowed,
-  ;;           whichever the call gave; body, for not-a-body; form or params,
+  ;;           form, for body-and-form; multipart, for
+  ;;           multipart-beside-body; body, form or multipart, for
+  ;;           body-not-allowed, whichever the call gave, in that order;
+  ;;           body, for not-a-body; form or params,
   ;;           for not-name-value-pairs; redirects, for not-a-redirect-count;
   ;;           allow-downgrade or jitter, for not-a-boolean; retry, for
   ;;           not-a-retry-policy; attempts, for not-an-attempt-count;
@@ -152,11 +157,12 @@
   ;;   value   the key as given, for a key's refusal, but a key that is no
   ;;           symbol, named by its kind, (kind K), shown-key's; the method,
   ;;           for body-not-allowed; for every other reason but
-  ;;           body-and-form, the value as given where it is a symbol, a
+  ;;           body-and-form and multipart-beside-body, the value as given
+  ;;           where it is a symbol, a
   ;;           number, a boolean, a char or (), else its kind, (kind K),
   ;;           shown-value's: a value where another belongs can be a URL,
   ;;           credentials or a body (M7 slice 3's review); #f, for
-  ;;           body-and-form
+  ;;           body-and-form and multipart-beside-body
   ;;   reason  one of http-request-error-reasons
   (define-condition-type &http-request-error &http-error
     unchecked-make-http-request-error http-request-error?

@@ -1,0 +1,22 @@
+mutants start 2026-11-07T21:05:35Z, 3 chosen
+mutant mine2-engine-open-skipped: CAUGHT in 12 s
+  tests/test-multipart.sps exit=1
+    FAIL the engine's check, before the transfer's setup: a path removed, made a directory, made a FIFO, or made unreadable, mode 000, after the submit's stat fails the transfer part-file, no code, nothing sent, a request size of 0, the origin never counting it, the unreadable file one this suite cannot open
+mutant mine2-hop-keeps-credentials-across: CAUGHT in 18 s
+  tests/test-redirect.sps exit=1
+    FAIL exchange-step's origin rule for the credentials key (ADR-0036; the M7 plan, section 3.1): the same origin keeps it, by the host's case and by an explicit default port too; another port, scheme, the scheme alone on one port among them, host, and zone ID drop it, as they drop an Authorization header
+  tests/test-multipart.sps exit=1
+    FAIL a redirect's hop, made through curl-request-with 'url, holds exactly what the hop make-curl-request built held, every field, the private fault, follow and hatch options among them: for each of 301, 302, 303, 307 and 308, post, put and delete, a multipart and a bytevector body, an Authorization heade
+  tests/test-auth.sps exit=1
+    FAIL credentials are dropped on a hop to another port, the raw face's echo, which reads no Authorization, from a session and from a call
+    FAIL credentials are dropped on a hop to another host, 127.0.0.1 to localhost and localhost to 127.0.0.1: the hop's request carries none, 401
+mutant mine2-hop-keeps-body-on-303: CAUGHT in 16 s
+  tests/test-redirect.sps exit=1
+    FAIL exchange-step's method and body, for each redirecting status and every method, head's among them: a 301 and a 302 make a post a get, a 303 every method but head, each without its body and its headers, Content-*, Digest, Last-Modified and Expect in any case; every other is kept, its body and every he
+    FAIL a 301 to /echo, live, with get, post, put, patch and delete, a body and its headers on each but get: followed, a post as a get without its body or its headers
+    FAIL a 302 to /echo, live, with get, post, put, patch and delete, a body and its headers on each but get: followed, a post as a get without its body or its headers
+    FAIL a 303 to /echo, live, with get, post, put, patch and delete, a body and its headers on each but get: followed as a get without a body or its headers
+  tests/test-multipart.sps exit=1
+    FAIL a redirect's hop, made through curl-request-with 'url, holds exactly what the hop make-curl-request built held, every field, the private fault, follow and hatch options among them: for each of 301, 302, 303, 307 and 308, post, put and delete, a multipart and a bytevector body, an Authorization heade
+    FAIL the high level's multipart key: a post sends the parts, the session's Content-Type header dropped; through a 307 and a 308 each hop sends them again, whole; a 303 sends a get with no body; a group, http-parallel's two calls, sends each: each the whole report
+mutants done: 3 of 3 caught

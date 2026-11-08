@@ -8,7 +8,8 @@
   amended 2026-10-24: the Guix count is the entry's own
   ([amendment](#amendment-2026-10-24-the-guix-count-is-the-entrys-own-m2-slice-3));
   amended 2026-11-06: the memory job is split in two
-  ([amendment](#amendment-2026-11-06-the-memory-job-is-split-in-two-m8s-scope))
+  ([amendment](#amendment-2026-11-06-the-memory-job-is-split-in-two-m8s-scope));
+  amended 2026-11-07: the `mime` kind, and `test-multipart`'s shard (M8 slice 3)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl: every suite that touches native memory, locally and in CI
 - **Related:**
@@ -300,3 +301,16 @@ Both were settled by the maintainer.
   were first seen on a pull request's memory run; and one job with a later line, which leaves the
   wall time growing with each slice.
 - **How the suites are split, and where the planted defects run, are M8's plan.**
+
+## Amendment, 2026-11-07: the `mime` kind, and `test-multipart`'s shard (M8 slice 3)
+
+- **A ninth counted kind, `mime`,** made and freed in one critical section with its count and its
+  owner record, freed by `free-transfer!` after `curl_easy_cleanup`. A part is the mime's, and not
+  counted. An abandoned easy handle keeps its mime, counted and unfreed.
+- **`test-multipart` is in `MEMORY_SUITES_1`,** 39 s under the gate in the container. Locally the
+  shards then ran 1,077 s and 977 s (`research/m8/slice3/build/memory-shard-*.log`).
+- **`check-memory-gate`'s case d reads the Guix entry's own count:** Valgrind's
+  `used_suppression` line for `guix-glibc-locpath`, 2 blocks, not the suppressed total. The load's
+  `curl_mime_init` adds one block that `default.supp`'s `dtv-addr-tail` suppresses on the Guix
+  lane, 80 bytes, so the total read 3 blocks with the entry unchanged
+  (`research/m8/slice3/build/more-with-probe.valgrind` against `more-without-mime-init.valgrind`).

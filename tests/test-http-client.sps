@@ -105,7 +105,7 @@
 ;; --- helpers --------------------------------------------------------------------------
 
 (define zero-counts
-  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
+  '((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))
 
 ;; now-ms : -> Integer
 (define (now-ms)
@@ -256,7 +256,7 @@
           (filter (lambda (name) (memq name (library-exports '(curl)))) exports))))
 
 (test-equal "http-request-error-reasons, written out"
-  '(unknown-key repeated-key missing-value body-and-form body-not-allowed not-a-body
+  '(unknown-key repeated-key missing-value body-and-form multipart-beside-body body-not-allowed not-a-body
     not-name-value-pairs not-a-redirect-count not-a-boolean not-a-retry-policy
     not-an-attempt-count not-a-backoff not-a-status-list not-a-method-list not-a-limit
     stream-in-group body-length-mismatch)
@@ -272,7 +272,7 @@
           (list (serious-condition? c) (error? c) (curl-error? c) (http-error? c) (http-timeout? c)
                 (http-exchange? c)))))
 
-(test-equal "make-http-request-error refuses a reason that is not one of the seventeen, an assertion violation"
+(test-equal "make-http-request-error refuses a reason that is not one of the eighteen, an assertion violation"
   '(raised (assertion make-http-request-error))
   (outcome (lambda () (make-http-request-error 'key 'k 'unknown))))
 
@@ -284,14 +284,15 @@
 
 ;; Written out here, not read from the library: a key dropped from a list
 ;; must fail this test, not shrink it.
-(test-equal "the keys, written out: a session's, the request's, the policy's, then cookies, its own (the M7 plan, section 3.1); a call's, the session's but cookies, then body, form, params and body-length; a port's, a call's and stream-buffer"
+(test-equal "the keys, written out: a session's, the request's, the policy's, then cookies, its own (the M7 plan, section 3.1); a call's, the session's but cookies, then body, form, params, body-length and multipart (the M8 plan, section 3.1); a port's, a call's and stream-buffer"
   '((headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy http-version
      credentials proxy-ca-file proxy-verify redirects allow-downgrade retry cookies)
     (headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy http-version
-     credentials proxy-ca-file proxy-verify redirects allow-downgrade retry body form params body-length)
+     credentials proxy-ca-file proxy-verify redirects allow-downgrade retry body form params body-length
+     multipart)
     (headers user-agent timeout-ms connect-timeout-ms body-limit ca-file verify proxy http-version
      credentials proxy-ca-file proxy-verify redirects allow-downgrade retry body form params body-length
-     stream-buffer))
+     multipart stream-buffer))
   (list session-keys call-keys port-keys))
 
 ;; Before any session is made here: no engine runs, so the multi count is
@@ -1126,7 +1127,7 @@
    ;; The counts while the suite's session runs and no transfer is live: its
    ;; engine's multi handle and slot.
    (define session-counts
-     '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0)))
+     '((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0) (mime . 0)))
 
    ;; long-drip : String
    ;; A drip that pauses 10 s mid-body, on the raw face.
@@ -1586,13 +1587,13 @@
 
    (test-equal "SIGINT while a call's submit blocks inside its critical section escapes as the section ends, after the submit took the mutex, no collection run in the hold, and the drive still cancels the transfer: the engine holds nothing within 3.5 s of the release, where the drip runs 10 s; the child's counts zero"
      (list 0 '((escape escaped after-release quiet cancelled) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0)
-                                                     (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))))
+                                                     (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))))
            "")
      (run-escape-child long-drip))
 
    (test-equal "SIGINT while a call's submit blocks inside its critical section, whose handler raises a &curl-error of its own, reaches the caller as raised, that very object and not compounded with &http-exchange, as the section ends, after the submit took the mutex, no collection run in the hold; the drive still cancels the transfer; the child's counts zero"
      (list 0 '((raise #t #f after-release quiet cancelled) (counts ((block . 0) (easy . 0) (url . 0) (slist . 0)
-                                                             (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))))
+                                                             (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))))
            "")
      (run-escape-child long-drip raise-child))
 

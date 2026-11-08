@@ -76,6 +76,8 @@
 //                                        16 when left out, as the head
 //                                        routes make them (below), once; 200,
 //                                        body "armed\n"
+//           ANY /parts?key=K[&hold=1][&lines=N][&fail=F]  the parts route,
+//                                        below
 //           ANY /cookies[/P]?key=K[&...] the cookie route, below
 //           GET /cookie-log?key=K        the cookie route's log for K, below
 //           anything else                404, body "not found\n"
@@ -102,9 +104,11 @@
 //         hello, waits N ms, then writes " wor" and resets: its last write
 //         and its reset come together, after a pause long enough for a
 //         check to stop the client across both.
-//         /raw/location?code=CODE[&ms=N][&to=BYTES]... reads its own query:
-//         code once, 200 to 599; ms at most once, 0 to 60000, 0 when left
-//         out; to any number of times, each percent-decoded, %XX in either
+//         /raw/location?code=CODE[&ms=N][&key=K][&to=BYTES]... reads its own
+//         query: code once, 200 to 599; ms at most once, 0 to 60000, 0 when
+//         left out; key at most once, as retry takes it, counted for K as the
+//         head arrives, as /sink counts, so /seen?key=K tells the request
+//         came; to any number of times, each percent-decoded, %XX in either
 //         case, every other char its own byte, so any byte can be sent. It
 //         waits N ms, then writes "HTTP/1.1 CODE Redirect", a Location header
 //         for each to, in order, its value the bytes as they are, then
@@ -354,8 +358,33 @@
 // does and reads the body whole; then answers :status 200, a sink header
 // holding the summary line without its newline, content-length N, and N
 // bytes of the pattern, as /pattern/N writes them.
+// /parts is http's, below.
 // Anything else, /chunked, /connects and /close-after included, is 404,
 // "not found\n". No date, and no header beyond these.
+//
+// The parts route (M8 slice 3; the M8 plan, section 6), on http, the https faces, h2c and
+// h2 alike: ANY /parts?key=K[&hold=1][&lines=N][&fail=F], each name once at
+// most, K a key as retry takes it. It counts for K as its head arrives, as /sink does,
+// so /seen?key=K tells that the head came. A request whose Expect holds
+// 100-continue, in any ASCII case, gets a 100 at once; with hold=1, only once
+// /raw/release names K, and none once the request has gone. The body is read
+// whole, then the answer is 200 with its report, which a multipart body's
+// parts fill, by the first boundary= of its Content-Type:
+//   parts FACE method=M cl=CL te=TE expect=E ct=CT bytes=N sha256=HEX boundary=B preamble=P closed=C epilogue=Q count=K
+//   part I headers=ESC len=L sha256=H pattern=P data=ESC
+// CL, TE, E and CT as the sink's line; B the boundary, - for none; P the
+// bytes before the first delimiter; C 1 when the closing delimiter came, 0
+// when the body ended first; Q the bytes after it; then each part, ESC its
+// header lines escaped as the auth log escapes bytes, but | as \x7c, joined
+// by |, L its data's bytes, H their SHA-256's first 16 hex digits, P ok
+// when byte k is k mod 251 for every k, else bad@k for the first that is not, and ESC
+// its data escaped so, or - past 256 bytes; a part the body ended inside is
+// "unterminated", its data to the body's end. With lines=N, 2 to 100000, the
+// answer carries N header lines in all, its framing ones among them: http's
+// Content-Length and Connection, HTTP/2's content-length, then x-pI: v.
+// With fail=F, 1 to 10, the answer's status is 503, its report as ever,
+// while K's count, this request's own among it, is F or less, so a retry
+// policy's resends each show what they sent; 200 after.
 //
 // The auth route (M7 slice 2; the M7 plan, section 5.2), on http, the https
 // faces, h2c and h2 alike: ANY /auth, its query NAME=VALUE pairs as /sink's are,
@@ -681,6 +710,10 @@ function route(target) {
   if (path === '/proxy-log') {
     return queried('proxy-log', queryOf(query, { from: (v) => decimal(v, 0, 1000000000) }, ['from']));
   }
+  if (path === '/parts') {
+    return queried('parts', queryOf(query, { key: keyValue, hold: oneValue, lines: (v) => decimal(v, 2, 100000),
+                                             fail: (v) => decimal(v, 1, 10) }, ['key']));
+  }
   if (path === '/cookies' || path.startsWith('/cookies/')) return queried('cookies', cookieQuery(query));
   if (path === '/cookie-log') return queried('cookie-log', queryOf(query, { key: keyValue }, ['key']));
   return { kind: 'not-found' };
@@ -905,6 +938,112 @@ function summary(face, method, pairs, record, key, list) {
                 `arrivals=${record.arrivals.length}`, `gap=${gap}`, `seen=${counts.get(key) || 0}`];
   if (list) line.push(`list=${record.arrivals.map(([at, n]) => `${tenthsText(at)}:${n}`).join(',')}`);
   return `${line.join(' ')}\n`;
+}
+
+// --- the parts route (M8 slice 3) -------------------------------------------
+
+// partsEscaped: BYTES as the parts report shows them.
+function partsEscaped(bytes) {
+  let text = '';
+  for (const b of bytes) {
+    if (b === 0x5c) text += '\\\\';
+    else if (b >= 0x20 && b < 0x7f && b !== 0x7c) text += String.fromCharCode(b);
+    else text += `\\x${b.toString(16).padStart(2, '0')}`;
+  }
+  return text;
+}
+
+// partsReport: the parts route's answer for a request on FACE, with
+// METHOD, the header PAIRS and the whole BODY.
+function partsReport(face, method, pairs, body) {
+  const field = (name) => {
+    const value = headerValue(pairs, name);
+    return value === null ? '-' : value.replace(/[\t\n\v\f\r ]/g, '_');
+  };
+  const ct = headerValue(pairs, 'content-type') || '';
+  const m = /boundary=([^;]*)/i.exec(ct);
+  const boundary = m ? m[1] : null;
+  const lines = [];
+  let preamble = '-';
+  let closed = 0;
+  let epilogue = '-';
+  if (boundary !== null && boundary !== '') {
+    const delim = Buffer.from(`--${boundary}`, 'latin1');
+    const next = Buffer.from(`\r\n--${boundary}`, 'latin1');
+    let at = body.indexOf(delim);
+    if (at >= 0) {
+      preamble = at;
+      let i = 0;
+      for (;;) {
+        const after = at + delim.length;
+        const tail = body.subarray(after, after + 2).toString('latin1');
+        if (tail === '--') {
+          closed = 1;
+          epilogue = body.length - (after + 2);
+          break;
+        }
+        if (tail !== '\r\n') {
+          lines.push(`part ${i} malformed-after-delimiter`);
+          break;
+        }
+        const start = after + 2;
+        const headEnd = body.indexOf(Buffer.from('\r\n\r\n', 'latin1'), start);
+        const end = body.indexOf(next, start);
+        let headers;
+        let dataStart;
+        if (headEnd >= 0 && (end < 0 || headEnd < end)) {
+          headers = body.subarray(start, headEnd);
+          dataStart = headEnd + 4;
+        } else {
+          headers = Buffer.alloc(0);
+          dataStart = start;
+        }
+        const heads = [];
+        let from = 0;
+        for (;;) {
+          const crlf = headers.indexOf(Buffer.from('\r\n', 'latin1'), from);
+          if (crlf < 0) { if (from < headers.length) heads.push(headers.subarray(from)); break; }
+          heads.push(headers.subarray(from, crlf));
+          from = crlf + 2;
+        }
+        const data = body.subarray(dataStart, end < 0 ? body.length : end);
+        const hash = createHash('sha256').update(data).digest('hex').slice(0, 16);
+        let bad = -1;
+        for (let k = 0; k < data.length; k++) if (data[k] !== k % 251) { bad = k; break; }
+        lines.push(`part ${i} headers=${heads.map(partsEscaped).join('|')} len=${data.length} sha256=${hash} pattern=${bad < 0 ? 'ok' : `bad@${bad}`} data=${data.length <= 256 ? partsEscaped(data) : '-'}${end < 0 ? ' unterminated' : ''}`);
+        if (end < 0) break;
+        at = end + 2;
+        i += 1;
+      }
+    }
+  }
+  const head = [`parts ${face}`, `method=${method}`, `cl=${field('content-length')}`, `te=${field('transfer-encoding')}`,
+                `expect=${field('expect')}`, `ct=${field('content-type')}`, `bytes=${body.length}`,
+                `sha256=${createHash('sha256').update(body).digest('hex')}`, `boundary=${boundary === null ? '-' : partsEscaped(Buffer.from(boundary, 'latin1'))}`,
+                `preamble=${preamble}`, `closed=${closed}`, `epilogue=${epilogue}`,
+                `count=${lines.filter((l) => l.startsWith('part ')).length}`].join(' ');
+  return [head, ...lines].map((l) => `${l}\n`).join('');
+}
+
+// partsPads: the x-pI header pairs that bring an answer of FRAMING framing
+// lines to LINES in all, none when LINES is absent.
+function partsPads(lines, framing) {
+  const pads = [];
+  if (lines !== undefined) for (let i = 0; i < lines - framing; i++) pads.push(`x-p${i}`, 'v');
+  return pads;
+}
+
+// partsStatus: the parts route's status for route R, the request counted
+// N-th for its key: 503 while N is F or less, with fail=F, else 200.
+function partsStatus(r, n) {
+  return r.fail !== undefined && n <= r.fail ? 503 : 200;
+}
+
+// partsContinues: whether a request's Expect, as PAIRS hold it, holds
+// 100-continue, A to Z folded.
+function partsContinues(pairs) {
+  const value = headerValue(pairs, 'expect');
+  return value !== null && value.toLowerCase().includes('100-continue');
 }
 
 // --- the auth route: Digest's arithmetic, the verdicts, the log ----------
@@ -1464,6 +1603,7 @@ function wellFormed(face) {
     marks.delete(socket);
     const r = route(req.url);
     if (r.kind === 'sink') countFor(r.key);
+    const partsN = r.kind !== 'parts' ? null : req.partsCounted ? req.partsN : countFor(r.key);
     const authN = r.kind === 'auth' ? authNumber(r.key) : null;
     const cookieN = r.kind === 'cookies' ? cookieNumber(r.key) : null;
     req.on('error', () => res.destroy());
@@ -1485,6 +1625,10 @@ function wellFormed(face) {
     req.on('end', () => {
       if (mark === 'kill') return socket.destroy();
       if (r.kind === 'sink') return text(res, 200, summary(face, req.method, req.rawHeaders, record, r.key, r.list));
+      if (r.kind === 'parts') {
+        return text(res, partsStatus(r, partsN), partsReport(face, req.method, req.rawHeaders, Buffer.concat(chunks)),
+                    partsPads(r.lines, 2));
+      }
       if (r.kind === 'auth') {
         return authRespond(res, authAnswer(r, authN, face, connectionNumbers.get(socket), req.method, req.url,
                                            req.rawHeaders, Buffer.concat(chunks)));
@@ -1496,7 +1640,33 @@ function wellFormed(face) {
   };
 }
 
+// partsContinue: FACE's checkContinue listener, for LISTENER, its request
+// listener: as Node's own, a 100 then the request, but for a parts request
+// with hold=1, counted as its head arrives and its 100 held until its key is
+// released.
+function partsContinue(listener) {
+  return (req, res) => {
+    const r = route(req.url);
+    if (r.kind !== 'parts' || r.hold === undefined) {
+      res.writeContinue();
+      return listener(req, res);
+    }
+    req.partsN = countFor(r.key);
+    req.partsCounted = true;
+    releasedFor(r.key, req.socket)
+      .then((how) => {
+        if (how === 'released' && !req.socket.destroyed) {
+          res.writeContinue();
+          listener(req, res);
+        }
+      })
+      .catch((err) => fatal('a held parts request failed', err));
+    return undefined;
+  };
+}
+
 const httpServer = numbered(http.createServer(wellFormed('http')), 'connection');
+httpServer.on('checkContinue', partsContinue(wellFormed('http')));
 httpServer.on('connection', track);
 httpServer.on('connection', headTracker('http'));
 
@@ -1687,6 +1857,7 @@ function httpsServer(name, leafOf) {
   server.on('secureConnection', track);
   server.on('tlsClientError', (err, socket) => socket.destroy());
   server.on('connect', proxyConnect(name));
+  server.on('checkContinue', partsContinue(wellFormed(name)));
   return server;
 }
 
@@ -2102,6 +2273,27 @@ function h2Stream(face) {
       });
       return undefined;
     }
+    if (r.kind === 'parts') {
+      const partsN = countFor(r.key);
+      const chunks = [];
+      stream.on('data', (chunk) => chunks.push(chunk));
+      stream.on('end', () => {
+        const report = Buffer.from(partsReport(face, headers[':method'], rawHeaders, Buffer.concat(chunks)), 'latin1');
+        h2Send(stream, partsStatus(r, partsN), ['content-length', String(report.length), ...partsPads(r.lines, 1)],
+               report);
+      });
+      if (partsContinues(rawHeaders)) {
+        if (r.hold === undefined) stream.additionalHeaders({ ':status': 100 });
+        else {
+          releasedFor(r.key, stream)
+            .then((how) => {
+              if (how === 'released' && !stream.destroyed) stream.additionalHeaders({ ':status': 100 });
+            })
+            .catch((err) => fatal('a held parts stream failed', err));
+        }
+      }
+      return undefined;
+    }
     if (r.kind === 'sink' || r.kind === 'refuse') {
       const seenNow = countFor(r.key);
       const refuseAt = r.kind === 'refuse' && seenNow === 1 ? r.at : null;
@@ -2333,7 +2525,8 @@ const scripts = {
   // redirects: a status and Location headers of any bytes, after a wait
   'location': {
     query: locationQuery,
-    play: ({ code, ms, to }) => {
+    play: ({ code, ms, to, key }) => {
+      if (key !== null) countFor(key);
       const head = [ascii(`HTTP/1.1 ${code} Redirect\r\n`)];
       for (const bytes of to) head.push(ascii('Location: '), bytes, ascii('\r\n'));
       head.push(ascii('Content-Length: 0\r\nConnection: close\r\n\r\n'));
@@ -2899,12 +3092,13 @@ function percentDecoded(text) {
 }
 
 // locationQuery: the location script's parameters from QUERY, or null: code
-// exactly once, 200 to 599; ms at most once, 0 to 60000, 0 when absent; to
-// any number of times, in order, each value's bytes. Every pair is
-// NAME=VALUE, the value after the first =.
+// exactly once, 200 to 599; ms at most once, 0 to 60000, 0 when absent; key
+// at most once, as retry takes it, null when absent; to any number of times,
+// in order, each value's bytes. Every pair is NAME=VALUE, the value after the
+// first =.
 function locationQuery(query) {
   if (query === undefined) return null;
-  const found = { code: null, ms: null, to: [] };
+  const found = { code: null, ms: null, key: null, to: [] };
   for (const pair of query.split('&')) {
     const at = pair.indexOf('=');
     if (at < 0) return null;
@@ -2915,6 +3109,9 @@ function locationQuery(query) {
       const n = Number(value);
       if (name === 'code' ? !(n >= 200 && n <= 599) : !(n <= 60000)) return null;
       found[name] = n;
+    } else if (name === 'key') {
+      if (found.key !== null || keyValue(value) === null) return null;
+      found.key = value;
     } else if (name === 'to') {
       const bytes = percentDecoded(value);
       if (bytes === null) return null;
@@ -2924,7 +3121,7 @@ function locationQuery(query) {
     }
   }
   if (found.code === null) return null;
-  return { code: found.code, ms: found.ms === null ? 0 : found.ms, to: found.to };
+  return { code: found.code, ms: found.ms === null ? 0 : found.ms, key: found.key, to: found.to };
 }
 
 // parameters: the query's parameters as SPEC asks for them, or null.

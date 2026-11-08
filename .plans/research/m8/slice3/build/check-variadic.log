@@ -1,0 +1,40 @@
+deps: vendor/chez-srfi linked into build/scheme-libs/srfi
+check-variadic: ok copy: src/, tests/ and .plans/decisions/ copied to /tmp/check-variadic.jnl6ND/tree
+check-variadic: ok machine: Chez's machine type is ta6le
+check-variadic: ok control: tests/test-collect-safe.sps passes on the unchanged copy
+check-variadic: ok control: tests/test-variadic.sps passes on the unchanged copy
+check-variadic: ok control: tests/test-transfer.sps passes on the unchanged copy
+check-variadic: ok template mutant: (foreign-procedure (__varargs_after 2) entry (arg ...) result) is now (foreign-procedure entry (arg ...) result), and no other line changed
+check-variadic: ok template static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl_easy_setopt three times, curl_easy_getinfo, curl_multi_setopt, curl_share_setopt and curl_formadd once each as mismatches
+check-variadic: ok template other: on ta6le, tests/test-variadic.sps passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation
+check-variadic: ok template transfer other: on ta6le, tests/test-transfer.sps passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation
+check-variadic: ok long mutant: (bind-variadic "curl_easy_setopt" (uptr int long) int info) is now (bind-required "curl_easy_setopt" (uptr int long) int info), and no other line changed
+check-variadic: ok long static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-easy-setopt-long alone: a mismatch and a wrong-binder for curl_easy_setopt
+check-variadic: ok long other: on ta6le, tests/test-variadic.sps passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation
+check-variadic: ok long transfer other: on ta6le, tests/test-transfer.sps passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation
+check-variadic: ok pointer mutant: (bind-variadic "curl_easy_setopt" (uptr int uptr) int info) is now (bind-required "curl_easy_setopt" (uptr int uptr) int info), and no other line changed
+check-variadic: ok pointer static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-easy-setopt-pointer alone: a mismatch and a wrong-binder for curl_easy_setopt
+check-variadic: ok pointer other: on ta6le, tests/test-variadic.sps passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation
+check-variadic: ok pointer transfer other: on ta6le, tests/test-transfer.sps passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation
+check-variadic: ok off-t mutant: (bind-variadic "curl_easy_setopt" (uptr int integer-64) int info) is now (bind-required "curl_easy_setopt" (uptr int integer-64) int info), and no other line changed
+check-variadic: ok off-t static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-easy-setopt-off-t alone: a mismatch and a wrong-binder for curl_easy_setopt
+check-variadic: ok off-t other: on ta6le, tests/test-variadic.sps passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation
+check-variadic: ok off-t transfer other: on ta6le, tests/test-transfer.sps passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation
+check-variadic: ok getinfo mutant: (bind-variadic "curl_easy_getinfo" (uptr int uptr) int info) is now (bind-required "curl_easy_getinfo" (uptr int uptr) int info), and no other line changed
+check-variadic: ok getinfo static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-easy-getinfo alone: a mismatch and a wrong-binder for curl_easy_getinfo
+check-variadic: ok getinfo other: on ta6le, tests/test-variadic.sps passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation
+check-variadic: ok getinfo transfer other: on ta6le, tests/test-transfer.sps passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation
+check-variadic: ok multi mutant: (bind-variadic "curl_multi_setopt" (uptr int long) int info) is now (bind-required "curl_multi_setopt" (uptr int long) int info), and no other line changed
+check-variadic: ok multi static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-multi-setopt-long alone: a mismatch and a wrong-binder for curl_multi_setopt
+check-variadic: ok multi other: on ta6le, tests/test-variadic.sps passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation
+check-variadic: ok multi transfer reported: on ta6le, tests/test-transfer.sps passes on the mutant (exit 0); reported, never failed: no transfer shows a multi option on Apple's 8.7.1, which lacks CURLMOPT_QUICK_EXIT and answers any value of it alike
+check-variadic: ok share mutant: (bind-variadic "curl_share_setopt" (uptr int int) int info) is now (bind-required "curl_share_setopt" (uptr int int) int info), and no other line changed
+check-variadic: ok share static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-share-setopt-int alone: a mismatch and a wrong-binder for curl_share_setopt
+check-variadic: ok share other: on ta6le, tests/test-variadic.sps passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation
+check-variadic: ok share transfer reported: on ta6le, tests/test-transfer.sps passes on the mutant (exit 0); reported, never failed: no transfer of tests/test-transfer.sps holds a cookie jar, so only tests/test-variadic.sps's share rows show this use
+check-variadic: ok formadd mutant: (bind-variadic "curl_formadd" (uptr uptr int uptr int uptr int) int info) is now (bind-required "curl_formadd" (uptr uptr int uptr int uptr int) int info), and no other line changed
+check-variadic: ok formadd static: tests/test-collect-safe.sps fails on the mutant (exit 1), naming curl-formadd-code alone: a mismatch and a wrong-binder for curl_formadd
+check-variadic: ok formadd other: on ta6le, tests/test-variadic.sps passes on the mutant (exit 0), as expected: this ABI passes variadic arguments as it passes named ones, so only Apple arm64 (arm64osx, tarm64osx) can show the mutation
+check-variadic: ok formadd transfer reported: on ta6le, tests/test-transfer.sps passes on the mutant (exit 0); reported, never failed: the load's mime probe is tests/test-transfer.sps's one call of curl_formadd, and a broken answer refuses multipart alone, which tests/test-transfer.sps never sends; tests/test-variadic.sps's rows through curl-formadd-code show this use
+check-variadic: all 37 steps ok, on ta6le
+exit 0 seconds 116

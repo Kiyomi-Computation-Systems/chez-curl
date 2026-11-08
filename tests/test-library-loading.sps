@@ -170,7 +170,7 @@
 ;; the load decided (tests/refusal-probe.sps). The counters gate counts per
 ;; process, and this suite's own never loads libcurl.
 (define no-native-objects
-  '(counts . ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0))))
+  '(counts . ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))))
 
 ;; A report is what a loaded library says about itself: (FIELD . VALUE) for
 ;; each of oracle-fields, in order, as the probe prints them after the path
@@ -285,8 +285,27 @@
 (define header-call "curl_easy_header(handle,Content-Type,0,1,-1,hout)")
 (define cleanup-call "curl_easy_cleanup(handle)")
 
-(define every-call
+;; api-calls : (Listof String)
+;; The load's calls up to check-apis: a refusal there stops the load before
+;; the mime probe.
+(define api-calls
   (list version-call init-call backend-call option-call easy-init-call header-call cleanup-call))
+
+;; The mime probe's calls, after check-apis (ADR-0039, amended 2026-11-06):
+;; curl_formadd, its options as the decoy was handed them, CURLFORM_COPYNAME
+;; 1 with chez-curl, CURLFORM_COPYCONTENTS 4 with probe, then CURLFORM_END
+;; 17; curl_formfree of the post it made, NULL when it made none; then
+;; curl_mime_init with NULL, and curl_mime_free of the mime it made.
+(define formadd-call "curl_formadd(post,last,1:chez-curl,4:probe,17)")
+(define formfree-call "curl_formfree(post)")
+(define formfree-null-call "curl_formfree(NULL)")
+(define mime-init-call "curl_mime_init(NULL)")
+(define mime-free-call "curl_mime_free(mime)")
+
+;; every-call : (Listof String)
+;; A whole load's calls, the control's.
+(define every-call
+  (append api-calls (list formadd-call formfree-call mime-init-call mime-free-call)))
 
 ;; decoy-case : String (Listof String) String (String -> Expected) -> Void
 ;; The test DESCRIPTION: compiles the decoy NAME under SWITCHES, runs the
@@ -394,14 +413,14 @@
                         (control so) (list version-call init-call))))
 
 (decoy-case "options-off" '("-DDECOY_OPTIONS_OFF")
-  "no option by name is missing-api, naming curl_easy_option_by_name"
+  "no option by name is missing-api, naming curl_easy_option_by_name, and the mime probe never runs"
   (lambda (so) (refused 'missing-api so 'override "curl_easy_option_by_name" '()
-                        (control so) every-call)))
+                        (control so) api-calls)))
 
 (decoy-case "headers-off" '("-DDECOY_HEADERS_OFF")
-  "CURLHE_NOT_BUILT_IN is missing-api, naming curl_easy_header"
+  "CURLHE_NOT_BUILT_IN is missing-api, naming curl_easy_header, and the mime probe never runs"
   (lambda (so) (refused 'missing-api so 'override "curl_easy_header" '()
-                        (control so) every-call)))
+                        (control so) api-calls)))
 
 (decoy-case "easy-init-null" '("-DDECOY_EASY_INIT_NULL")
   "curl_easy_init answering NULL is load-failed, and curl_easy_header never runs"
@@ -426,7 +445,7 @@
                 (cons 'detail "curl_easy_option_by_name") (cons 'candidates '())
                 (cons 'library (control first))
                 (cons 'then-override second)
-                once no-native-objects (cons 'marker 'absent) (cons 'calls (join every-call)))
+                once no-native-objects (cons 'marker 'absent) (cons 'calls (join api-calls)))
           "")
     (let* ((compiled-first (compile-decoy "sticks" '("-DDECOY_OPTIONS_OFF")))
            (compiled-second (compile-decoy "sticks-then" '("-DDECOY_MARKER"))))
@@ -486,7 +505,73 @@
        (cons "curl_share_init" (list version-call init-call backend-call))
        (cons "curl_share_cleanup" (list version-call init-call backend-call))
        (cons "curl_multi_setopt" (list version-call init-call backend-call))
-       (cons "curl_share_setopt" (list version-call init-call backend-call))))
+       (cons "curl_share_setopt" (list version-call init-call backend-call))
+       (cons "curl_mime_init" (list version-call init-call backend-call))
+       (cons "curl_mime_free" (list version-call init-call backend-call))
+       (cons "curl_mime_addpart" (list version-call init-call backend-call))
+       (cons "curl_mime_name" (list version-call init-call backend-call))
+       (cons "curl_mime_data" (list version-call init-call backend-call))
+       (cons "curl_mime_filedata" (list version-call init-call backend-call))
+       (cons "curl_mime_filename" (list version-call init-call backend-call))
+       (cons "curl_mime_type" (list version-call init-call backend-call))
+       (cons "curl_formfree" (list version-call init-call backend-call))
+       (cons "curl_formadd" (list version-call init-call backend-call))))
+
+;; --- the mime probe's no (ADR-0039, amended 2026-11-06; the M8 plan, section 3.9) ---
+;; Each switch makes one of the probe's two calls say no, as a libcurl built
+;; without mime does: curl_formadd's 7, a code no build answers the form,
+;; and curl_mime_init's NULL. Each load still loads, every other request
+;; with it, and a multipart body is refused at its check, naming what the
+;; probe found; the control, beside them, passes the multipart rule, and
+;; fails as a whole body does, where the decoy's curl_url answers NULL. So
+;; a switch the probe did not read, or a no read as yes, fails its row.
+
+;; whole-check : List
+;; What curl-request-check answers on every decoy, past the multipart rule:
+;; the decoy's curl_url answers NULL.
+(define whole-check '(raised call-with-parsed-url "curl_url returned NULL: no memory for a handle"))
+
+;; multipart-loaded : String (Listof Pair) Any (Listof String) -> Expected
+;; The probe's whole answer with --multipart, for a decoy at SO that loads:
+;; PROBE, what loaded-mime-probe answers; MULTIPART, the multipart body's
+;; check; CALLS, the load's calls, then the checks' curl_url calls.
+(define (multipart-loaded so probe multipart calls)
+  (list 0
+        (append (list (cons 'loaded so) (cons 'source 'override))
+                (decoy-report "DecoyTLS/1.0" "decoy-host")
+                (list (cons 'protocols '()) once (cons 'mime probe) (cons 'multipart multipart)
+                      (cons 'whole whole-check) no-native-objects (cons 'calls (join calls))))
+        ""))
+
+(for-each
+ (lambda (row)
+   (let ((name (list-ref row 0)) (switches (list-ref row 1)) (description (list-ref row 2))
+         (probe (list-ref row 3)) (multipart (list-ref row 4)) (calls (list-ref row 5)))
+     (let ((so (in-scratch (string-append name ".so"))))
+       (test-equal (string-append "decoy " name ", with --multipart: " description)
+         (list 0 (multipart-loaded so probe multipart calls))
+         (let ((compiled (compile-decoy name switches)))
+           (list compiled (probe-with (list (override so)) '("--multipart" "yes"))))))))
+ (list
+  (list "mime-control" '()
+        "curl_formadd answers 0 and curl_mime_init a mime: mime is there, and a multipart check passes the rule, failing where a whole body's does"
+        '((formadd . 0) (mime-init . made)) whole-check
+        (append every-call (list "curl_url()" "curl_url()")))
+  (list "formadd-disabled" '("-DDECOY_FORMADD_DISABLED")
+        "curl_formadd's CURL_FORMADD_DISABLED, 7, and no post: the load loads, and a multipart body is multipart-unsupported, naming the probe's answers"
+        '((formadd . 7) (mime-init . made))
+        '(refused multipart-unsupported body multipart (multipart ((formadd . 7) (mime-init . made))))
+        (append api-calls (list formadd-call formfree-null-call mime-init-call mime-free-call "curl_url()")))
+  (list "formadd-other" '("-DDECOY_FORMADD_OTHER")
+        "curl_formadd's CURL_FORMADD_INCOMPLETE, 5, a code no build answers the load's form: counted as no"
+        '((formadd . 5) (mime-init . made))
+        '(refused multipart-unsupported body multipart (multipart ((formadd . 5) (mime-init . made))))
+        (append api-calls (list formadd-call formfree-null-call mime-init-call mime-free-call "curl_url()")))
+  (list "mime-init-null" '("-DDECOY_MIME_INIT_NULL")
+        "curl_mime_init's NULL, with curl_formadd's 0: no mime, nothing to free, and a multipart body is multipart-unsupported"
+        '((formadd . 0) (mime-init . null))
+        '(refused multipart-unsupported body multipart (multipart ((formadd . 0) (mime-init . null))))
+        (append api-calls (list formadd-call formfree-call mime-init-call "curl_url()")))))
 
 ;; --- the real libcurl ---------------------------------------------------------------
 

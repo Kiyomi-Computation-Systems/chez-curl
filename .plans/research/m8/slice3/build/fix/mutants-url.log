@@ -1,0 +1,18 @@
+mutants start 2026-11-07T20:22:50Z, 3 chosen
+mutant next-request-back-to-make: CAUGHT in 12 s
+  tests/test-multipart.sps exit=1
+    FAIL a hop keeps what only a low-level caller sets: the last request's hatch options, its private fault and its follow, which make-curl-request's hop reset to (), #f and #f
+    FAIL a file part's file lost mid-call fails alike four ways, each at its submit's stat: a 307 hop, a retry with the session's timeout-ms, a retry with no bound, and a group's 307 hop each raise curl-submit's part-file, field body, value (part 0 path), compounded with &http-exchange, the file removed only
+mutant url-key-ignored: CAUGHT in 12 s
+  tests/test-multipart.sps exit=1
+    FAIL curl-request-with's url key, beside make-curl-request's URL, no string: the same refusal, in the same place, its own who where the request is made
+    FAIL curl-request-with's url key, beside make-curl-request's URL, the scheme ftp: the same refusal, in the same place, its own who where the request is made
+    FAIL curl-request-with's url key, beside make-curl-request's URL, past the cap, 8,000,000 chars: the same refusal, in the same place, its own who where the request is made
+    FAIL curl-request-with's url key, beside make-curl-request's URL, a bracket left open: the same refusal, in the same place, its own who where the request is made
+    FAIL curl-request-with's url key, beside make-curl-request's URL, empty: the same refusal, in the same place, its own who where the request is made
+    FAIL curl-request-with's url key, beside make-curl-request's URL, no scheme: the same refusal, in the same place, its own who where the request is made
+    ... and 5 more
+mutant kept-body-restatted: CAUGHT in 12 s
+  tests/test-multipart.sps exit=1
+    FAIL a file part's file lost mid-call fails alike four ways, each at its submit's stat: a 307 hop, a retry with the session's timeout-ms, a retry with no bound, and a group's 307 hop each raise curl-submit's part-file, field body, value (part 0 path), compounded with &http-exchange, the file removed only
+mutants done: 3 of 3 caught

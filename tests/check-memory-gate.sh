@@ -735,7 +735,16 @@ $(count_line 1 0 1 0)"
   want_lines "test-memory: FAIL $more (exit 0, but guix-glibc-locpath suppressed 2 blocks, and covers exactly one, lost when libp11-kit loads)
 $(count_line 1 0 1 0)"
   want_in "$out" "more: newlocale answered 0" "test-memory's own output, the program's last lines"
-  want_in "$out" " bytes in 2 blocks" "test-memory's own output, the suppressed total"
+  want_in "$out" " suppressed: " "test-memory's own output, the suppressed total"
+  # The entry's own count, from Valgrind's used_suppression line: the total
+  # holds default.supp's too, and the load's mime probe, whose
+  # curl_mime_init draws a boundary, grew it by dtv-addr-tail's one block
+  # (M8 slice 3's build, research/m8/slice3/build/).
+  entry_used=$(grep 'used_suppression: .* guix-glibc-locpath ' "$(vlog_of "$more")" 2>/dev/null)
+  case $entry_used in
+    *" bytes in 2 blocks") ;;
+    *) problem "Valgrind's log, the entry's own count: its used_suppression line is \"$entry_used\", not 2 blocks" ;;
+  esac
   verdict "d more: a second block lost under newlocale, which the entry matches, fails the suite"
 
   gate MEMORY_SUITES="$alone"

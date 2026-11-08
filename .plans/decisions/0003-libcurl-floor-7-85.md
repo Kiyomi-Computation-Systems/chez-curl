@@ -1,7 +1,8 @@
 # ADR-0003: The libcurl floor is 7.85.0, and two APIs are probed at load
 
 - **Status:** Accepted; amended 2026-10-16: `missing-api` also names a missing entry point,
-  and the disabled-API lane is measured (M0 slice 5)
+  and the disabled-API lane is measured (M0 slice 5);
+  amended 2026-11-07: the load probes for mime (M8 slice 3)
 - **Date:** 2026-10-04
 - **Scope:** chez-curl v1
 - **Settles:** D10. That decision was raised on 2026-10-04, after the brief was written.
@@ -154,3 +155,15 @@ to avoid. A library that is not libcurl at all is refused this way, as missing
     lane's entry point, and the version.
   - Measured locally, on curls 7.85.0 built in the container and in Docker: each lane passes
     on its own library and fails on the other's, by its detail line alone.
+
+## Amendment, 2026-11-07: the load probes for mime (M8 slice 3)
+
+After `check-apis`, so an API's refusal comes first, the load probes for mime in one critical
+section, through the raw bindings: `curl_formadd` with `CURLFORM_COPYNAME`,
+`CURLFORM_COPYCONTENTS` and `CURLFORM_END`, then `curl_formfree`; `curl_mime_init` with NULL, then
+`curl_mime_free` (ADR-0039, amended 2026-11-06). Nothing it makes is counted or outlives the
+section. **It refuses no load:** its answer is data, `curl_formadd`'s code and whether a mime
+was made, and a multipart body is refused at submit, `multipart-unsupported`, unless the code is
+0 and a mime was made. Measured on the five Linux libcurls and the two builds without mime
+(`research/m8/slice3/`), and in Docker against the built tree
+(`research/m8/slice3/build/test-nomime-*.log`).

@@ -48,7 +48,11 @@ where a line says more, the log.
      holds, but libcurl reads past the old size into the new bytes, and they take the place of the
      part's end and the closing delimiter. The server read a whole body with no closing delimiter,
      the part's bytes the grown file's (`unterminated seed8(1054)`, 1048 on 7.85.0). The transfer
-     answers 0/200: nothing tells the caller.
+     answers 0/200: nothing tells the caller. **Corrected 2026-11-07** (M8 slice 3,
+     [research/m8/slice3/](../slice3/)): on 7.85.0 and 8.5.0 the declared length does not hold.
+     libcurl sends the 2,000 new bytes past it, which this stand-in, answering at
+     `Content-Length`, logged as garbage (`docker-1.log:347`, `:4132`, `:7876`), and these tables
+     did not read; 8.20.0, 8.23.0 and Apple's 8.7.1 stop at the length.
    - **Shrunk** (3000, then 1000): 7.85.0 and 8.5.0 send what there is and wait for the timeout
      (28 at the probe's 5 s); 8.20.0 and 8.23.0 fail at once, 26, "client mime read EOF fail, only
      1309/3309 of needed bytes read" (X1).

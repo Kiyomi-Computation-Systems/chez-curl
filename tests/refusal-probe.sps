@@ -5,6 +5,7 @@
 ;;; outside the tests/test-*.sps glob, so make test never runs it directly.
 ;;;
 ;;;   refusal-probe.sps [--then-override PATH] [--marker NAME] [--backend yes]
+;;;                     [--multipart yes]
 ;;;
 ;;; It references loaded-libcurl three times, each inside its guard. The
 ;;; first reference prints what happened:
@@ -29,8 +30,15 @@
 ;;; (raised TEXT). A load that ran once answers `same` twice; a load that
 ;;; ran again answers a fresh object.
 ;;;
+;;; With --multipart, once the three references are done, (mime . ALIST),
+;;; (curl private native)'s loaded-mime-probe, what the load's mime probe
+;;; found; then (multipart . R) and (whole . R), what curl-request-check
+;;; answers for a post to http://127.0.0.1:1/ with the body (multipart ("a"
+;;; "b")), then with the body #vu8(1): checked, or (refused REASON FIELD
+;;; VALUE IRRITANTS) for a &curl-request-error, or (raised WHO MESSAGE).
+;;;
 ;;; Then (counts . ALIST): (curl private counters)' native-counts, read once
-;;; the three references are done. The counters gate counts per process, and
+;;; the three references, and the checks --multipart makes, are done. The counters gate counts per process, and
 ;;; a suite's suite-exit-status reads only its own, so this process reports
 ;;; its counts, and tests/test-library-loading.sps requires every one zero,
 ;;; refusals included: a native object a refused load left behind shows here
@@ -148,6 +156,26 @@
 (let* ((second (reference))
        (third (reference)))
   (show 'again (list (later first second) (later first third))))
+
+(when (option "--multipart")
+  (show 'mime (guard (e (#t (list 'raised (text e))))
+                (eval '(loaded-mime-probe) (environment '(curl private native)))))
+  (for-each
+   (lambda (key body)
+     (show key
+           (guard (e ((curl-request-error? e)
+                      (list 'refused (curl-request-error-reason e) (curl-request-error-field e)
+                            (curl-request-error-value e)
+                            (if (irritants-condition? e) (condition-irritants e) '())))
+                     (#t (list 'raised (and (who-condition? e) (condition-who e))
+                               (and (message-condition? e) (condition-message e)))))
+             ((eval '(lambda (body)
+                       (curl-request-check (make-curl-request "http://127.0.0.1:1/" 'method 'post 'body body))
+                       'checked)
+                    (environment '(rnrs) '(curl)))
+              body))))
+   '(multipart whole)
+   (list '(multipart ("a" "b")) (u8-list->bytevector '(1)))))
 
 (show 'counts (native-counts))
 

@@ -1,9 +1,10 @@
 #!r6rs
 ;;; The suite for the variadic bindings of (curl private native), in a
 ;;; process of its own: curl_easy_setopt, bound once per value type,
-;;; curl_easy_getinfo, curl_multi_setopt, bound once for a long, and
-;;; curl_share_setopt, bound once for an int, each with (__varargs_after 2)
-;;; (ADR-0001, decision 1, amended 2026-10-25; M7 slice 4). It
+;;; curl_easy_getinfo, curl_multi_setopt, bound once for a long,
+;;; curl_share_setopt, bound once for an int, and curl_formadd, bound once
+;;; for the load's form of one field, each with (__varargs_after 2)
+;;; (ADR-0001, decision 1, amended 2026-10-25; M7 slice 4; M8 slice 3). It
 ;;; imports native, so the whole load runs before its first line, as in
 ;;; tests/test-native.sps.
 ;;;
@@ -78,6 +79,17 @@
 ;;;            4's measurement). 6, PSL, and 7, HSTS, answer by build, so
 ;;;            neither is here. A binding that handed libcurl another int
 ;;;            shows as 2 not carrying, or 99 not refused.
+;;;   formadd  curl_formadd through curl-formadd-code, a form of one field
+;;;            and CURLFORM_END, its post freed: CURLFORM_COPYNAME and
+;;;            CURLFORM_COPYCONTENTS, each with a string, answer
+;;;            CURL_FORMADD_OK, 0, on every full libcurl, and an option no
+;;;            libcurl knows, 9999, in the first's place answers
+;;;            CURL_FORMADD_UNKNOWN_OPTION, 4, before its value is read; with
+;;;            CURLFORM_END alone it answers 5, and 7 on a build without
+;;;            mime (ADR-0039, amended 2026-11-06, from formtell/). Every
+;;;            option and string is variadic: a binding that handed them
+;;;            where this ABI does not read them answers a code but 0 for
+;;;            the first, or reads a garbage option for the second.
 ;;;
 ;;; Options are looked up by name, through curl-easy-option, never written
 ;;; as numbers (ADR-0001, decision 2). Each one's CURLOT type code must be
@@ -97,7 +109,8 @@
 ;;; in a copy, from the template and then from each binding alone, and
 ;;; requires this suite to fail on arm64osx and tarm64osx: by name, naming
 ;;; that binding's tests, for each setopt binding alone, the multi and the
-;;; share ones included.
+;;; share ones included; and by name or by dying for curl_formadd's, which
+;;; the load itself calls.
 ;;;
 ;;; It frees what it makes: each easy handle with curl_easy_cleanup, each
 ;;; multi handle with curl_multi_cleanup, each FILE * with fclose, and the
@@ -741,6 +754,18 @@
  share-cases
  (let loop ((i 0) (n (length share-cases)) (found '()))
    (if (= i n) (reverse found) (loop (+ i 1) n (cons i found)))))
+
+;; --- the form, through curl-formadd-code (M8 slice 3) ------------------------------------------
+
+(test-equal "a form of one field, CURLFORM_COPYNAME and CURLFORM_COPYCONTENTS, each with a string, then CURLFORM_END, through curl-formadd-code answers CURL_FORMADD_OK, 0"
+  (list 'answered curl-formadd-ok)
+  (guard (e (#t (list 'raised (describe e))))
+    (list 'answered (curl-formadd-code curlform-copyname "field" curlform-copycontents "value"))))
+
+(test-equal "an option no libcurl knows, 9999, in the first option's place, then CURLFORM_COPYCONTENTS and CURLFORM_END, through curl-formadd-code answers CURL_FORMADD_UNKNOWN_OPTION, 4"
+  (list 'answered curl-formadd-unknown-option)
+  (guard (e (#t (list 'raised (describe e))))
+    (list 'answered (curl-formadd-code 9999 "field" curlform-copycontents "value"))))
 
 ;; --- freeing what it made --------------------------------------------------------------------
 

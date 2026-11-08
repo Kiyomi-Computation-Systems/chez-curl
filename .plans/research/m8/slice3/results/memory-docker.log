@@ -1,0 +1,86 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+lanes.sh start 2026-11-07T15:15:23Z mode=probe tree=probe lanes= floor openssl cpuset=12-17 args=load memory
+network interfaces: lo 
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+== lane floor: probe in /w/probe, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/e1/ci/curl-floor/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/e1/ci/curl-floor/include NODE=/src/build/verify/m3s2/node20/node  VALGRIND=/w/logs/memory-floor.vg
+[floor] tree /w/probe chez /src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme 10.4.0 libcurl /src/build/e1/ci/curl-floor/lib/libcurl.so.4 node v20.10.0 probe sha256 9d95c6782c5bee26 transfer.sls sha256 23e90bbe1730e990 origin.mjs sha256 7e0b2bb6422536a1 affinity=12-17 uid=1000 valgrind=/w/logs/memory-floor.vg
+[floor] origin {"node":"v20.10.0","pid":2390,"http":"127.0.0.1:35607","raw":"127.0.0.1:39015","h2c":"127.0.0.1:44199","https":"127.0.0.1:45867","https-expired":"127.0.0.1:36209","https-wrong-host":"127.0.0.1:42859","https-untrusted":"127.0.0.1:35469","raw-tls":"127.0.0.1:44035","h2":"127.0.0.1:35385"}
+[floor] stand-in ctl=43113 raw=43593 h2c=41039
+[floor] probe lane=floor libcurl=7.85.0 OpenSSL/3.0.13 mime=#t probe=((formadd . 0) (mime-init . made))
+[floor] load lane=floor version=7.85.0 probe=((formadd . 0) (mime-init . made)) mime=#t counts-after-load=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[floor] cell load multipart-post outcome=(status 200 version http/1.1) body=parts http method=POST cl=141 te=- expect=- ct=multipart/form-data;_boundary=------------------------20d79d825e124162 bytes=141 sha256=2444728311b81f9e13c254e418c02bb08c7f93d883e03278004b8ae51c49e842 boundary=------------------------20d79d825e124162 preamble=0 closed=1 epilogue=2 count=1
+[floor] part 0 headers=Content-Disposition: form-data; name="a" len=5 sha256=8ed3f6ad685b959e pattern=bad@0 data=alpha
+[floor] 
+[floor] cell load get outcome=(status 200 version http/1.1) body=status 200
+[floor] 
+[floor] cell load bytevector-post outcome=(status 200 version http/1.1) body=sink http method=POST cl=5 te=- expect=- ct=- bytes=5 sha256=2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824 pattern=bad@0 arrivals=1 gap=0.5@0 seen=1
+[floor] 
+[floor] cell load curl-request-check outcome=(other passed)
+[floor] load counts-at-end=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[floor] cell memory string face=h1 method=post asked=(s string:7) outcome=(status 200 version http/1.1) sizes=(174) [s meta=same data=same] ms=19.5
+[floor]   | parts http method=POST cl=143 te=- expect=- ct=multipart/form-data;_boundary=------------------------73358c75030baa3d bytes=143 sha256=c6666a61f80162780eaa9d9157d04695e0efaa0549d693cfb4dfd1a336fc0d13 boundary=------------------------73358c75030baa3d preamble=0 closed=1 epilogue=2 count=1
+[floor]   | part 0 headers=Content-Disposition: form-data; name="s" len=7 sha256=992b3299061eb2b2 pattern=bad@0 data=Holiday
+[floor] cell memory bytes face=h1 method=post asked=(b bytes:3 filename:b.bin) outcome=(status 200 version http/1.1) sizes=(174) [b meta=same data=same] ms=12.0
+[floor]   | parts http method=POST cl=157 te=- expect=- ct=multipart/form-data;_boundary=------------------------b82c0cfbb939ee7d bytes=157 sha256=5a1ac5c4dbadec50058969f5561a6bbb998e936664750ecc1c94d88422ff59b9 boundary=------------------------b82c0cfbb939ee7d preamble=0 closed=1 epilogue=2 count=1
+[floor]   | part 0 headers=Content-Disposition: form-data; name="b"; filename="b.bin" len=3 sha256=039058c6f2c0cb49 pattern=bad@0 data=\x01\x02\x03
+[floor] cell memory file face=h1 method=post asked=(f file:mem.bin type:text/plain) outcome=(status 200 version http/1.1) sizes=(175) [f meta=same data=same] ms=39.8
+[floor]   | parts http method=POST cl=3182 te=- expect=- ct=multipart/form-data;_boundary=------------------------57c4ba196ed6d8a4 bytes=3182 sha256=009c65891d0de432d41bde05606757645b50b0069cf24ce89c52f976076a5d2a boundary=------------------------57c4ba196ed6d8a4 preamble=0 closed=1 epilogue=2 count=1
+[floor]   | part 0 headers=Content-Disposition: form-data; name="f"; filename="mem.bin"|Content-Type: text/plain len=3000 sha256=e8ca4bf83f56152c pattern=ok data=-
+[floor] cell memory mixed-h2 face=h2 method=post asked=(s string:1)(f file:mem.bin) outcome=(status 200 version http/2) sizes=(173) [s meta=same data=same] [f meta=default-type:Content-Type: application/octet-stream data=same] ms=1136.2
+[floor]   | parts h2 method=POST cl=3287 te=- expect=- ct=multipart/form-data;_boundary=------------------------ef34439e2fe2cf69 bytes=3287 sha256=a15fe0c337d48163993d565bf04b7fd9aa9635d3af1e6f1b379272ff8e8229f9 boundary=------------------------ef34439e2fe2cf69 preamble=0 closed=1 epilogue=2 count=2
+[floor]   | part 0 headers=Content-Disposition: form-data; name="s" len=1 sha256=2d711642b726b044 pattern=bad@0 data=x
+[floor]   | part 1 headers=Content-Disposition: form-data; name="f"; filename="mem.bin"|Content-Type: application/octet-stream len=3000 sha256=e8ca4bf83f56152c pattern=ok data=-
+[floor] cell memory unreadable face=h1 method=post asked=(s string:1)(f file:mem-unreadable) outcome=(failed part-file #f none "" size=0) sizes=() ms=6.9
+[floor] cell memory cancel sunk-before=sunk 0
+[floor] 
+[floor] cell memory cancel outcome=(failed cancelled #f none "" size=#f) sizes=()
+[floor] cell memory timeout outcome=(failed perform-failed 28 timeout "Operation timed out after 4003 milliseconds with 0 bytes received" size=192) sizes=(192)
+[floor] memory counts=((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0) (mime . 0))
+[floor] end counts=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[floor] program exit=0
+[floor] valgrind valgrind-3.22.0 log /w/logs/memory-floor.vg: ==2432== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+[floor] took about 28 s
+== lane openssl: probe in /w/probe, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/usr/lib/x86_64-linux-gnu/libcurl.so.4 CC=gcc NODE=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/node  VALGRIND=/w/logs/memory-openssl.vg
+[openssl] tree /w/probe chez /src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme 10.4.0 libcurl /usr/lib/x86_64-linux-gnu/libcurl.so.4 node v24.18.0 probe sha256 9d95c6782c5bee26 transfer.sls sha256 23e90bbe1730e990 origin.mjs sha256 7e0b2bb6422536a1 affinity=12-17 uid=1000 valgrind=/w/logs/memory-openssl.vg
+[openssl] origin {"node":"v24.18.0","pid":2494,"http":"127.0.0.1:44187","raw":"127.0.0.1:43121","h2c":"127.0.0.1:41089","https":"127.0.0.1:45965","https-expired":"127.0.0.1:36997","https-wrong-host":"127.0.0.1:44449","https-untrusted":"127.0.0.1:38399","raw-tls":"127.0.0.1:41249","h2":"127.0.0.1:46241"}
+[openssl] stand-in ctl=34559 raw=42593 h2c=44167
+[openssl] probe lane=openssl libcurl=8.5.0 OpenSSL/3.0.13 mime=#t probe=((formadd . 0) (mime-init . made))
+[openssl] load lane=openssl version=8.5.0 probe=((formadd . 0) (mime-init . made)) mime=#t counts-after-load=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[openssl] cell load multipart-post outcome=(status 200 version http/1.1) body=parts http method=POST cl=153 te=- expect=- ct=multipart/form-data;_boundary=------------------------eSn8uQDnWT811u8gWPSZht bytes=153 sha256=86d99b3be03cb310cf5aebb35853bbea547302fa7e3eb5d8fef861f08607d738 boundary=------------------------eSn8uQDnWT811u8gWPSZht preamble=0 closed=1 epilogue=2 count=1
+[openssl] part 0 headers=Content-Disposition: form-data; name="a" len=5 sha256=8ed3f6ad685b959e pattern=bad@0 data=alpha
+[openssl] 
+[openssl] cell load get outcome=(status 200 version http/1.1) body=status 200
+[openssl] 
+[openssl] cell load bytevector-post outcome=(status 200 version http/1.1) body=sink http method=POST cl=5 te=- expect=- ct=- bytes=5 sha256=2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824 pattern=bad@0 arrivals=1 gap=0.8@0 seen=1
+[openssl] 
+[openssl] cell load curl-request-check outcome=(other passed)
+[openssl] load counts-at-end=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[openssl] cell memory string face=h1 method=post asked=(s string:7) outcome=(status 200 version http/1.1) sizes=(180) [s meta=same data=same] ms=22.3
+[openssl]   | parts http method=POST cl=155 te=- expect=- ct=multipart/form-data;_boundary=------------------------aX9CKowC8Zuap8yKgxVzha bytes=155 sha256=d06236c9e0f766333facac62049562c0e76130a91cb403e9297dc70c872b6cb2 boundary=------------------------aX9CKowC8Zuap8yKgxVzha preamble=0 closed=1 epilogue=2 count=1
+[openssl]   | part 0 headers=Content-Disposition: form-data; name="s" len=7 sha256=992b3299061eb2b2 pattern=bad@0 data=Holiday
+[openssl] cell memory bytes face=h1 method=post asked=(b bytes:3 filename:b.bin) outcome=(status 200 version http/1.1) sizes=(180) [b meta=same data=same] ms=15.1
+[openssl]   | parts http method=POST cl=169 te=- expect=- ct=multipart/form-data;_boundary=------------------------GzXUIxHcqWwwCyDTZtuUPc bytes=169 sha256=60dbed0474fe47ca714257e05ea0e61eeeb34cc569ebee606abc29cda5caa195 boundary=------------------------GzXUIxHcqWwwCyDTZtuUPc preamble=0 closed=1 epilogue=2 count=1
+[openssl]   | part 0 headers=Content-Disposition: form-data; name="b"; filename="b.bin" len=3 sha256=039058c6f2c0cb49 pattern=bad@0 data=\x01\x02\x03
+[openssl] cell memory file face=h1 method=post asked=(f file:mem.bin type:text/plain) outcome=(status 200 version http/1.1) sizes=(181) [f meta=same data=same] ms=20.5
+[openssl]   | parts http method=POST cl=3194 te=- expect=- ct=multipart/form-data;_boundary=------------------------SluUUJWqYjKjbqfq9yqh0k bytes=3194 sha256=7f7abc2e2f3d829e522c7b3bae2a9aac4d1f9d44a29bc817dd41fd7f9bcc605e boundary=------------------------SluUUJWqYjKjbqfq9yqh0k preamble=0 closed=1 epilogue=2 count=1
+[openssl]   | part 0 headers=Content-Disposition: form-data; name="f"; filename="mem.bin"|Content-Type: text/plain len=3000 sha256=e8ca4bf83f56152c pattern=ok data=-
+[openssl] cell memory mixed-h2 face=h2 method=post asked=(s string:1)(f file:mem.bin) outcome=(status 200 version http/2) sizes=(179) [s meta=same data=same] [f meta=default-type:Content-Type: application/octet-stream data=same] ms=1156.5
+[openssl]   | parts h2 method=POST cl=3305 te=- expect=- ct=multipart/form-data;_boundary=------------------------hmGTpBrdL9fmLAvtZc2ibD bytes=3305 sha256=9a5e63bb4aeefd8384bd866ca8f4dc246d96656500507f757ef70b875998cf66 boundary=------------------------hmGTpBrdL9fmLAvtZc2ibD preamble=0 closed=1 epilogue=2 count=2
+[openssl]   | part 0 headers=Content-Disposition: form-data; name="s" len=1 sha256=2d711642b726b044 pattern=bad@0 data=x
+[openssl]   | part 1 headers=Content-Disposition: form-data; name="f"; filename="mem.bin"|Content-Type: application/octet-stream len=3000 sha256=e8ca4bf83f56152c pattern=ok data=-
+[openssl] cell memory unreadable face=h1 method=post asked=(s string:1)(f file:mem-unreadable) outcome=(failed part-file #f none "" size=0) sizes=() ms=5.7
+[openssl] cell memory cancel sunk-before=sunk 0
+[openssl] 
+[openssl] cell memory cancel outcome=(failed cancelled #f none "" size=#f) sizes=()
+[openssl] cell memory timeout outcome=(failed perform-failed 28 timeout "Operation timed out after 4006 milliseconds with 0 bytes received" size=198) sizes=(198)
+[openssl] memory counts=((block . 1) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 1) (share . 0) (mime . 0))
+[openssl] end counts=((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+[openssl] program exit=0
+[openssl] valgrind valgrind-3.22.0 log /w/logs/memory-openssl.vg: ==2530== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+[openssl] took about 28 s

@@ -573,7 +573,7 @@
   (in-order (lambda (c) (list (car c) (url-refusal (caddr c)))) url-cases))
 
 (test-equal "every count is zero at the end, the jar's and the session's engines stopped"
-  '(freed ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0)))
+  '(freed ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))
   (list holders-freed (native-counts)))
 
 (test-end "printed")

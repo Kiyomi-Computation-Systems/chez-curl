@@ -1569,3 +1569,25 @@ it should not be a comment. (chez-cmark-gfm)
   server that holds its 417 per connection answers the resend 417 again, so the origin's
   `/raw/head417` holds it by key ([trap-417](research/m8/slice2/build/trap-417/)). (chez-curl, M8
   slice 2)
+* **A stand-in that answers at `Content-Length` hides the bytes sent past it.** 7.85.0 and both
+  8.5.0 builds read a file part grown after `curl_mime_filedata` to its new end and send every
+  byte. The mime probe's raw stand-in read the declared 1,291 or 1,309 bytes, answered 200, and
+  logged the 2,000 after as garbage, and its tables, built from the body it framed, showed a whole
+  200 (`mime-files/results/docker-1.log:347`, `:4132`, `:7876`). Through the engine, Node read the
+  same bytes as a second request and answered 400, and over HTTP/2 reset the stream, 92, in both
+  runs ([slice3](research/m8/slice3/), `after grown`; my reading of both). A check of what was
+  sent reads what follows the body too. (chez-curl, M8 slice 3)
+* **A server started after `exec 3> FIFO` holds the FIFO's write end too.** A script that feeds
+  two servers' stdin from FIFOs it holds on fds 3 and 4 starts the second after opening fd 3, so
+  the second inherits it, and closing fd 3 never ends the first's stdin: slice 3's probe runner
+  saw its origin killed by its watchdog, 143, after every early run. Close the others in each
+  child, `3>&-` ([slice3](research/m8/slice3/), `trap-fd.sh`, two runs; my two runs under dash).
+  (chez-curl, M8 slice 3)
+* **A check of Valgrind's suppressed total counts `default.supp`'s blocks too.** The load's mime
+  probe, from M8 slice 3, calls `curl_mime_init`, and on the Guix lane that adds one block
+  `default.supp`'s `dtv-addr-tail` suppresses, 80 bytes: `test-version` under the gate suppressed
+  171 bytes in 1 block on `main` and 251 bytes in 2 blocks on the branch, the Guix entry's own
+  count 1 block in both (`trap-dtv-main.valgrind`, `trap-dtv-branch.valgrind`, my runs). `check-memory-gate`'s case d read the total, " bytes in 2
+  blocks", and failed on 3 though the entry was unchanged
+  ([slice3 build](research/m8/slice3/build/), `more-with-probe.valgrind`). A check of one
+  suppression reads that entry's own `used_suppression` line. (chez-curl, M8 slice 3)

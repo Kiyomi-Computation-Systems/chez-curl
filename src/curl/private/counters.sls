@@ -35,7 +35,10 @@
   ;;   transfer     a transfer (M2, slice 2)
   ;;   multi        a multi handle, an engine's (M3, slice 2)
   ;;   share        a share, a cookie jar's (M7, slice 4)
-  (define native-kinds '(block easy url slist curl-string transfer multi share))
+  ;;   mime         a mime handle, a multipart body's, made with its
+  ;;                transfer's easy handle (M8, slice 3); its parts are its
+  ;;                own, not counted
+  (define native-kinds '(block easy url slist curl-string transfer multi share mime))
 
   ;; The counts, one per kind, in native-kinds order, and the mutex every
   ;; read and write holds.

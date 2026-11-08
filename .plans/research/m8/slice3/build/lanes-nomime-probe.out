@@ -1,0 +1,42 @@
+image ubuntu:24.04 sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+lanes.sh start 2026-11-07T17:36:25Z mode=probe tree=build-tree lanes= nomime785 nomime823 cpuset=6-11 args=
+network interfaces: lo 
+package libcurl3t64-gnutls 8.5.0-2ubuntu10.16
+package libcurl4t64 8.5.0-2ubuntu10.16
+package libgnutls30t64 3.8.3-1.1ubuntu3.6
+package libnghttp2-14 1.59.0-1ubuntu0.4
+package libssl3t64 3.0.13-0ubuntu3.16
+package openssl 3.0.13-0ubuntu3.16
+package valgrind 1:3.22.0-0ubuntu3
+== lane nomime785: probe in /w/build-tree, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/m8/mime-files/nomime-7.85.0/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/m8/mime-files/nomime-7.85.0/include NODE=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/node NOFILES=1 
+== nomime785: CHEZ_CURL_LIBCURL=/src/build/m8/mime-files/nomime-7.85.0/lib/libcurl.so.4
+(loaded . "/src/build/m8/mime-files/nomime-7.85.0/lib/libcurl.so.4")
+(source . override)
+(version . "7.85.0")
+(version-num . 480512)
+(features . 1361691293)
+(ssl-version . "OpenSSL/3.0.13")
+(host . "x86_64-pc-linux-gnu")
+(protocols "dict" "file" "ftp" "ftps" "gopher" "gophers" "http" "https" "imap" "imaps" "mqtt" "pop3" "pop3s" "rtsp" "smb" "smbs" "smtp" "smtps" "telnet" "tftp")
+(again same same)
+(mime (formadd . 7) (mime-init . made))
+(multipart refused multipart-unsupported body multipart (multipart ((formadd . 7) (mime-init . made))))
+(whole . checked)
+(counts (block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+== nomime785: refusal-probe exit 0
+== lane nomime823: probe in /w/build-tree, CHEZ=/src/build/e1/ci/chez-threads/lib/csv10.4.0/ta6le/scheme CHEZ_CURL_LIBCURL=/src/build/m8/mime-files/nomime-8.23.0/lib/libcurl.so.4 CC=gcc C_INCLUDE_PATH=/src/build/m8/mime-files/nomime-8.23.0/include NODE=/gnu/store/iczfwsvwwd0srk2h3339vcq7qj8zs54k-profile/bin/node NOFILES=1 
+== nomime823: CHEZ_CURL_LIBCURL=/src/build/m8/mime-files/nomime-8.23.0/lib/libcurl.so.4
+(loaded . "/src/build/m8/mime-files/nomime-8.23.0/lib/libcurl.so.4")
+(source . override)
+(version . "8.23.0")
+(version-num . 530176)
+(features . 1361642125)
+(ssl-version . "OpenSSL/3.0.13")
+(host . "x86_64-pc-linux-gnu")
+(protocols "dict" "file" "ftp" "ftps" "gopher" "gophers" "http" "https" "imap" "imaps" "mqtt" "mqtts" "pop3" "pop3s" "rtsp" "smtp" "smtps" "telnet" "tftp" "ws" "wss")
+(again same same)
+(mime (formadd . 7) (mime-init . null))
+(multipart refused multipart-unsupported body multipart (multipart ((formadd . 7) (mime-init . null))))
+(whole . checked)
+(counts (block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0))
+== nomime823: refusal-probe exit 0

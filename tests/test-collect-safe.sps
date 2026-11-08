@@ -30,7 +30,7 @@
 ;;; use, an alias and an argument, among them.
 ;;;
 ;;; A row may name the one way its entry must be bound, (bound-by BINDER).
-;;; ADR-0001's four variadic rows name bind-variadic, so a binding of one
+;;; ADR-0001's five variadic rows name bind-variadic, so a binding of one
 ;;; made any other way is the wrong binder, its convention right or not.
 ;;;
 ;;; Every macro a tree may define is a row of a table, known-macros for
@@ -59,16 +59,18 @@
 ;;; so a reader that reads nothing fails.
 ;;;
 ;;; ADR-0001's variadic entries, curl_easy_setopt, curl_easy_getinfo,
-;;; curl_multi_setopt and curl_share_setopt, must carry (__varargs_after 2).
+;;; curl_multi_setopt, curl_share_setopt and curl_formadd, must carry
+;;; (__varargs_after 2).
 ;;; x86-64 and Linux arm64 pass variadic arguments as they pass named ones,
 ;;; so a binding without it works there; only Apple arm64 shows it failing.
 ;;; This suite is what fails on every platform: make check-variadic removes
 ;;; the convention from bind-variadic's template, in a copy, and requires
-;;; this suite to name each of its six uses as a mismatch, curl_easy_setopt
-;;; three times, curl_easy_getinfo, curl_multi_setopt and curl_share_setopt
-;;; once each; then from each use alone, bound through bind-required, and
-;;; requires it to name that one binding, a mismatch and a wrong binder.
-;;; curl_share_setopt is bound from M7 slice 4, for an int.
+;;; this suite to name each of its seven uses as a mismatch, curl_easy_setopt
+;;; three times, curl_easy_getinfo, curl_multi_setopt, curl_share_setopt and
+;;; curl_formadd once each; then from each use alone, bound through
+;;; bind-required, and requires it to name that one binding, a mismatch and
+;;; a wrong binder. curl_share_setopt is bound from M7 slice 4, for an int,
+;;; and curl_formadd from M8 slice 3, for the load's mime probe's form.
 ;;;
 ;;; Each call into the library runs under `outcome`, so a raise is a value
 ;;; to compare, never a #f from SRFI-64 nor a suite that dies unnamed.
@@ -640,7 +642,7 @@
              (wrong-binder "curl_multi_perform" bind-blocking foreign-procedure ,p)
              (mismatch "memcpy" () (__collect_safe) ,p)))
      (list "variadic"
-           "ADR-0001's variadic rows: (__varargs_after 2) through the variadic wrapper holds; directly, with it, is the wrong binder; through the plain wrapper, with no convention, (__varargs_after 1) and __varargs alone each mismatch, and is the wrong binder"
+           "ADR-0001's variadic rows: (__varargs_after 2) through the variadic wrapper holds, curl_formadd's seven parameters among them; directly, with it, is the wrong binder; through the plain wrapper, with no convention, (__varargs_after 1) and __varargs alone each mismatch, and is the wrong binder"
            (listed 'binder "curl/v.sls" 'bind-required 'bind-variadic)
            `(("curl_easy_setopt" ((__varargs_after 2)) ,va bind-variadic ())
              ("curl_easy_getinfo" ((__varargs_after 2)) ,va bind-variadic ())
@@ -648,7 +650,9 @@
              ("curl_multi_setopt" ((__varargs_after 2)) ,va foreign-procedure ())
              ("curl_share_setopt" () ,va foreign-procedure ())
              ("curl_multi_setopt" ((__varargs_after 1)) ,va foreign-procedure ())
-             ("curl_share_setopt" (__varargs) ,va foreign-procedure ()))
+             ("curl_share_setopt" (__varargs) ,va foreign-procedure ())
+             ("curl_formadd" ((__varargs_after 2)) ,va bind-variadic ())
+             ("curl_formadd" () ,va bind-required ()))
            `((mismatch "curl_easy_setopt" ((__varargs_after 2)) () ,va)
              (wrong-binder "curl_easy_setopt" bind-variadic bind-required ,va)
              (wrong-binder "curl_multi_setopt" bind-variadic foreign-procedure ,va)
@@ -657,7 +661,9 @@
              (mismatch "curl_multi_setopt" ((__varargs_after 2)) ((__varargs_after 1)) ,va)
              (wrong-binder "curl_multi_setopt" bind-variadic foreign-procedure ,va)
              (mismatch "curl_share_setopt" ((__varargs_after 2)) (__varargs) ,va)
-             (wrong-binder "curl_share_setopt" bind-variadic foreign-procedure ,va)))
+             (wrong-binder "curl_share_setopt" bind-variadic foreign-procedure ,va)
+             (mismatch "curl_formadd" ((__varargs_after 2)) () ,va)
+             (wrong-binder "curl_formadd" bind-variadic bind-required ,va)))
      (list "wrong-binder"
            "rows that name their binder: a variadic entry through another wrapper that carries its convention, and directly with it; an entry whose row names foreign-procedure, bound so and through a wrapper; a callable whose row names foreign-procedure; a marked row's binder, the mark clearing its string either way"
            (listed 'binder "curl/w.sls" 'bind-required 'bind-varargs)
@@ -1101,18 +1107,20 @@
 
 ;; ADR-0001, decision 1: once per value type, each through bind-variadic,
 ;; whose template carries the convention; curl_multi_setopt for a long
-;; alone (ADR-0001, amended 2026-10-25), and curl_share_setopt for an int
-;; alone (M7 slice 4). make check-variadic removes it there, and requires
-;; this suite to fail.
-(test-equal "the scan of src/ finds curl_easy_setopt bound three times, once per value type, curl_easy_getinfo once, curl_multi_setopt once, for a long, and curl_share_setopt once, for an int, each through bind-variadic with (__varargs_after 2)"
+;; alone (ADR-0001, amended 2026-10-25), curl_share_setopt for an int
+;; alone (M7 slice 4), and curl_formadd for the load's form of one field,
+;; two string options and CURLFORM_END (M8 slice 3). make check-variadic
+;; removes it there, and requires this suite to fail.
+(test-equal "the scan of src/ finds curl_easy_setopt bound three times, once per value type, curl_easy_getinfo once, curl_multi_setopt once, for a long, curl_share_setopt once, for an int, and curl_formadd once, for the load's form of one field, each through bind-variadic with (__varargs_after 2)"
   '(("curl_easy_setopt" ((((__varargs_after 2)) bind-variadic)
                          (((__varargs_after 2)) bind-variadic)
                          (((__varargs_after 2)) bind-variadic)))
     ("curl_easy_getinfo" ((((__varargs_after 2)) bind-variadic)))
     ("curl_multi_setopt" ((((__varargs_after 2)) bind-variadic)))
-    ("curl_share_setopt" ((((__varargs_after 2)) bind-variadic))))
+    ("curl_share_setopt" ((((__varargs_after 2)) bind-variadic)))
+    ("curl_formadd" ((((__varargs_after 2)) bind-variadic))))
   (map (lambda (key) (list key (bound-via key)))
-       '("curl_easy_setopt" "curl_easy_getinfo" "curl_multi_setopt" "curl_share_setopt")))
+       '("curl_easy_setopt" "curl_easy_getinfo" "curl_multi_setopt" "curl_share_setopt" "curl_formadd")))
 
 (test-equal "src/ holds to the table: no violation"
   '()
@@ -1200,18 +1208,18 @@
   ".plans/decisions/0001-bind-libcurl-directly.md: Variadic entry points are bound once per value type, with `(__varargs_after 2)`.")
 
 (define variadic-entries
-  '("curl_easy_setopt" "curl_easy_getinfo" "curl_multi_setopt" "curl_share_setopt"))
+  '("curl_easy_setopt" "curl_easy_getinfo" "curl_multi_setopt" "curl_share_setopt" "curl_formadd"))
 
 ;; tagged? : Symbol -> Any -> Boolean
 ;; X is a list headed by TAG: a row's mark, or its binder.
 (define (tagged? tag)
   (lambda (x) (and (pair? x) (eq? (car x) tag))))
 
-;; Each binding of these four must also be made through bind-variadic,
+;; Each binding of these five must also be made through bind-variadic,
 ;; whose template carries the convention: a direct binding with it is the
 ;; wrong binder, and make check-variadic's mutation reaches only the
 ;; template.
-(test-equal "the table requires exactly (__varargs_after 2) of the four variadic entries ADR-0001 names, citing its decision 1, each bound through bind-variadic, and of no other entry, nor names bind-variadic for any other"
+(test-equal "the table requires exactly (__varargs_after 2) of the five variadic entries ADR-0001 names, citing its decision 1, each bound through bind-variadic, and of no other entry, nor names bind-variadic for any other"
   (map (lambda (key) (list key '((__varargs_after 2)) variadic-citation '(bound-by bind-variadic)))
        variadic-entries)
   (guard (e (#t (list 'unreadable (describe e))))
@@ -1237,19 +1245,24 @@
 ;; call was plain (the plan's section 4.1, as measured).
 (define pause-citation
   ".plans/decisions/0012-engine-thread-owns-every-handle.md: so the callbacks run on the engine's thread, inside that call, as inside a perform.")
+;; curl_mime_filedata stats its path, and on 7.85.0 and 8.5.0 accesses it
+;; (the M8 plan, section 3.9): ADR-0013's decision 1.
+(define filedata-citation
+  ".plans/decisions/0013-collect-safe-blocking-calls.md: A libcurl call that can block is a `__collect_safe` foreign procedure.")
 
 ;; The calls that can block (M3 plan, section 3.2), each bound through
 ;; bind-blocking.
 (define blocking-entries
   '("curl_multi_poll" "curl_multi_perform" "curl_multi_remove_handle" "curl_multi_cleanup"))
 
-(test-equal "the table's rows that name a binder are the four variadic ones, through bind-variadic, the four multi calls that can block, __collect_safe, each citing what showed it can block, and curl_easy_pause, __collect_safe, citing its replay of the callables, each through bind-blocking"
+(test-equal "the table's rows that name a binder are the five variadic ones, through bind-variadic, the four multi calls that can block, __collect_safe, each citing what showed it can block, curl_easy_pause, __collect_safe, citing its replay of the callables, and curl_mime_filedata, __collect_safe, citing ADR-0013's decision 1, each through bind-blocking"
   (append (map (lambda (key) (list key '(bound-by bind-variadic))) variadic-entries)
           (list (list "curl_multi_poll" '(__collect_safe) can-block-citation '(bound-by bind-blocking))
                 (list "curl_multi_perform" '(__collect_safe) e1-can-block-citation '(bound-by bind-blocking))
                 (list "curl_multi_remove_handle" '(__collect_safe) e1-can-block-citation '(bound-by bind-blocking))
                 (list "curl_multi_cleanup" '(__collect_safe) e1-can-block-citation '(bound-by bind-blocking))
-                (list "curl_easy_pause" '(__collect_safe) pause-citation '(bound-by bind-blocking))))
+                (list "curl_easy_pause" '(__collect_safe) pause-citation '(bound-by bind-blocking))
+                (list "curl_mime_filedata" '(__collect_safe) filedata-citation '(bound-by bind-blocking))))
   (guard (e (#t (list 'unreadable (describe e))))
     (append
      (map (lambda (row) (list (car row) (list-ref row (- (length row) 1))))
@@ -1260,12 +1273,12 @@
                                 (exists (tagged? 'bound-by) (cdddr row))))
              conventions-table))))
 
-(test-equal "the scan of src/ finds each of the four multi calls that can block, and curl_easy_pause, bound once, through bind-blocking, with __collect_safe, and curl_easy_perform bound nowhere"
+(test-equal "the scan of src/ finds each of the four multi calls that can block, curl_easy_pause and curl_mime_filedata, bound once, through bind-blocking, with __collect_safe, and curl_easy_perform bound nowhere"
   (append (map (lambda (key) (list key '(((__collect_safe) bind-blocking))))
-               (append blocking-entries '("curl_easy_pause")))
+               (append blocking-entries '("curl_easy_pause" "curl_mime_filedata")))
           (list (list "curl_easy_perform" '())))
   (map (lambda (key) (list key (bound-via key)))
-       (append blocking-entries '("curl_easy_pause" "curl_easy_perform"))))
+       (append blocking-entries '("curl_easy_pause" "curl_mime_filedata" "curl_easy_perform"))))
 
 ;; ADR-0013's decision 2, as spike E1 held it, written out here.
 (define callback-citation
@@ -1334,14 +1347,27 @@
        '("curl_multi_init" "curl_multi_add_handle" "curl_multi_wakeup" "curl_multi_info_read"
          "curl_multi_strerror")))
 
+;; The mime API but curl_mime_filedata, and curl_formfree (M8 slice 3):
+;; each a call into libcurl's own memory, which waits on nothing.
+(test-equal "the table's rows for curl_mime_init, curl_mime_free, curl_mime_addpart, curl_mime_name, curl_mime_data, curl_mime_filename, curl_mime_type and curl_formfree are plain, citing ADR-0013's cannot-block sentence, with no mark and no binder"
+  (map (lambda (key) (list key '() cannot-block-citation))
+       '("curl_mime_init" "curl_mime_free" "curl_mime_addpart" "curl_mime_name" "curl_mime_data"
+         "curl_mime_filename" "curl_mime_type" "curl_formfree"))
+  (guard (e (#t (list 'unreadable (describe e))))
+    (filter (lambda (row)
+              (member (car row) '("curl_mime_init" "curl_mime_free" "curl_mime_addpart" "curl_mime_name"
+                                  "curl_mime_data" "curl_mime_filename" "curl_mime_type" "curl_formfree")))
+            conventions-table)))
+
 (test-equal "the table's row for curl_multi_strerror is plain, citing ADR-0013's cannot-block sentence, with no mark and no binder"
   (list (list "curl_multi_strerror" '() cannot-block-citation))
   (guard (e (#t (list 'unreadable (describe e))))
     (filter (lambda (row) (equal? (car row) "curl_multi_strerror")) conventions-table)))
 
-(test-equal "the table's __collect_safe entries are exactly the calls that can block, curl_multi_poll and the three E1 measured, and curl_easy_pause, whose replay runs the callables"
+(test-equal "the table's __collect_safe entries are exactly the calls that can block, curl_multi_poll and the three E1 measured, curl_easy_pause, whose replay runs the callables, and curl_mime_filedata, which stats its path"
   (list-sort string<? '("curl_multi_poll" "curl_multi_perform"
-                        "curl_multi_remove_handle" "curl_multi_cleanup" "curl_easy_pause"))
+                        "curl_multi_remove_handle" "curl_multi_cleanup" "curl_easy_pause"
+                        "curl_mime_filedata"))
   (guard (e (#t (list 'unreadable (describe e))))
     (list-sort string<?
                (map car (filter (lambda (row) (and (string? (car row))

@@ -2,7 +2,10 @@
 
 - **Status:** Accepted; amended 2026-11-06, after the M8 plan's review: decision 3 revised, the
   FIFO window recorded, decision 4 made exact
-  ([amendment](#amendment-2026-11-06-after-the-m8-plans-review))
+  ([amendment](#amendment-2026-11-06-after-the-m8-plans-review)); amended 2026-11-07, after slice
+  3's measurement: a grown file corrected by version, the request's body handed out as a copy, a
+  relative path refused at submit; and after its review, a file whose size is not its content
+  ([amendment](#amendment-2026-11-07-after-slice-3s-measurement))
 - **Date:** 2026-11-06
 - **Scope:** chez-curl v1, M8: a multipart body's parts in memory and its files by path
   ([ADR-0038](0038-m8s-scope.md), decision 1)
@@ -171,3 +174,76 @@ family is amended as slice 3 builds.
 there; a FIFO's open blocked `curl_multi_perform` 1.5 s; with `CURLMIMEOPT_FORMESCAPE`, CR and LF in
 a name go out raw, as on 7.85.0 to 8.20.0; `CURLINFO_REQUEST_SIZE` reads 0, the earlier trap's. No
 decision moved.
+
+## Amendment, 2026-11-07: after slice 3's measurement
+
+M8 slice 3 measured a prototype of this record through the engine, on the five Linux libcurls and
+the two builds without mime, two runs each ([research/m8/slice3/](../research/m8/slice3/)). I
+reran its Guix lane: every cell matched but the reset inside a large part, the race the plan
+names.
+
+**The Context's grown file was wrong on two versions.** 7.85.0 and both 8.5.0 builds read a file
+grown after `curl_mime_filedata` to its new end and send every byte, past `Content-Length`: over
+HTTP/1.1 the server reads the surplus, the file's own bytes, as the next request on the connection
+(Node answered 400), and over HTTP/2 it resets the stream (92). The mime probe's own log shows it
+too: its stand-in answered at `Content-Length` and logged the 2,000 bytes after as garbage
+(`mime-files/results/docker-1.log`, case C-grown), which its tables did not show. 8.20.0, 8.23.0
+and Apple's 8.7.1 stop at the declared length: an unterminated body, answered 200. And:
+
+- a file shrunk after the check stalls over HTTP/1.1 on 7.85.0 and 8.5.0 until `timeout-ms`, and
+  for ever with none, but fails 92 at once over HTTP/2 there; 26 at once on 8.20.0 and 8.23.0;
+- a file removed fails 26 on every lane;
+- a FIFO swapped in after the check holds the engine's thread until a writer comes: a transfer
+  submitted to that engine 200 ms later took 1.8 s, a `timeout-ms` of 500 ended only after the
+  writer came, and `curl-engine-stop` waited for it too (`results/races-*.log`).
+
+**And `curl-request-body` handed out the request's own copy.** The plan had it answer a multipart
+body uncopied, as a bytevector body is. But that list is the request's copy, its paths resolved: a
+caller's `set-car!` on it made a path relative again, and a submit in another directory sent that
+directory's file, answered 200, on all five lanes (the probe's `hole` cell).
+
+**Decided by the maintainer, 2026-11-07, the recommended option each time:**
+
+1. **`curl-request-body` answers a copy of a multipart body:** fresh pairs and fresh name,
+   filename, type and path strings, the data as given, as `curl-request-credentials` and
+   `curl-request-proxy` answer theirs. **And submit refuses a file part whose path is not
+   absolute,** `part-file`.
+2. **A file changed after the engine's check stays the caller's** (decision 3, and the FIFO
+   window above). The docs say, by version, what libcurl then sends, the overrun among it, and
+   that a caller who cannot trust its files sends a data part. Rejected again: a file part through
+   `curl_mime_data_cb`, from a file the engine opens at its check, reading at most the size it
+   saw. It is the one change that closes the FIFO window, the shrunk stall and the overrun
+   together, on every version, and brings back the callables ADR-0038 left out.
+
+**The plan's own, decided with them** (the M8 plan, §3.1, §3.9 and §11):
+
+- `current-directory` is admitted by `check-seam`, to `(curl private transfer)` alone: a path is
+  resolved there.
+- The high level copies each part's data once, as the call starts, as `call-body` copies a body;
+  a retry or a hop then sends the bytes the call began with. The low level copies it at submit.
+- The strings handed `curl_mime_name`, `_filename`, `_type` and `_filedata` are counted foreign
+  copies, `uptr`, never `string-not-kept` rows: no new string crossing (ADR-0013, amended
+  2026-10-23). The plan's §3.9 line on them was wrong.
+
+**After slice 3's review, 2026-11-07** (an Opus review, read-only; its probes and my reruns in
+[research/m8/slice3/review/](../research/m8/slice3/review/)):
+
+- **A file whose size is not its content passes the regular-file rule.** procfs and sysfs files
+  are regular by `stat`. `/proc/self/status`, size 0, sent an empty part, answered 200, on 8.20.0
+  and 7.85.0. A sysfs file of size 4096 holding 23 bytes is sent as a file shrunk after the check
+  is: 26 at once on 8.20.0, and on 7.85.0 a stall until `timeout-ms`, 28 at 5,011 ms, for ever
+  with none (`review-wire-rerun.log`, `review-wire-floor.log`). **Decided by the maintainer, the
+  recommended option:** the rule stays as `stat` sees it, and the docs say that such a file sends
+  what a shrunk one sends, by version, and that a caller reads it and sends a data part. Rejected:
+  refusing procfs and sysfs by `statfs`'s filesystem type, a new libc binding with a layout per
+  platform, on Linux alone, each other pseudo filesystem named in turn.
+- **A `stat` on the engine's thread.** The plan's review measured an open of a FIFO outside a
+  critical section: Chez deactivates the thread for it, and other threads ran 69,846 to 73,479
+  collections across it ([review](../research/m8/review/), `critical-open/`). A `stat` that blocks,
+  on a hung network mount, was not measured: none can be made here.
+- **As fixed after the review:** `file-regular?` runs with no guard on either side, since it never
+  raises for a string, so a caller's interrupt or timer handler's raise inside it leaves as it
+  was raised: the guard had turned it into `part-file` in 6 of 20,000 timer runs
+  (`review/review-timer-rerun.log`). The engine's open takes the I/O conditions alone. A private
+  seam, `transfer-mime-gate-set!`, removes a file between the engine's check and
+  `curl_mime_filedata`, so a test meets libcurl's own 26.
