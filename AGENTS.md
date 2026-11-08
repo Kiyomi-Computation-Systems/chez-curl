@@ -632,6 +632,9 @@ chez-cmark-gfm, chez-libuv or here. The incident behind each is in
 * Valgrind's suppressed total counts `default.supp`'s blocks too: the load's
   `curl_mime_init` added one on Guix. A check of one suppression reads that
   entry's own `used_suppression` line.
+* On macOS `/var` is a symbolic link to `/private/var`: `current-directory`,
+  set to a `TMPDIR` path, answers the real one. A test of a resolved path takes
+  its expectation from `current-directory`; `TMPDIR` at a link shows it on Linux.
 
 ## Closing ritual
 

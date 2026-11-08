@@ -1,0 +1,17 @@
+=== tests/zz-old-multipart.sps
+%%%% Starting test multipart
+test-multipart: timer swept a tick at a time to 512 ticks for make-curl-request, 512 for curl-request-check and 512 for curl-submit
+FAIL curl-request-body answers a copy of a multipart body: fresh pairs, fresh name, filename, type and path strings, each path resolved, the data as given; a change to it reaches neither the request nor a second answer
+  expected: ((multipart ("n" "data" filename "f.txt" type "t/x") ("f" (file "/home/kishu/src/chez-curl/build/m8s3/mine.k1jxo8/tmp-link/curl-testing.yqr8jR/a.bin"))) fresh-strings the-data-itself (multipart ("n" "data" filename "f.txt" type "t/x") ("f" (file "/home/kishu/src/chez-curl/build/m8s3/mine.k1jxo8/tmp-link/curl-testing.yqr8jR/a.bin"))))
+  actual:   ((multipart ("n" "data" filename "f.txt" type "t/x") ("f" (file "/home/kishu/src/chez-curl/build/m8s3/mine.k1jxo8/tmp-real/curl-testing.yqr8jR/a.bin"))) fresh-strings the-data-itself (multipart ("n" "data" filename "f.txt" type "t/x") ("f" (file "/home/kishu/src/chez-curl/build/m8s3/mine.k1jxo8/tmp-real/curl-testing.yqr8jR/a.bin"))))
+test-multipart: libcurl "8.20.0" measured ("8.20.0" (request-size . head-and-body) (after-grown-h1 response 200 unterminated) (after-shrunk-h1 failed perform-failed 26) (after-shrunk-none-h1 failed perform-failed 26) (after-removed-h1 failed perform-failed 26) (after-fifo-h1 response 200 whole held) (after-grown-h2 response 200 unterminated) (after-shrunk-h2 failed perform-failed 26) (after-removed-h2 failed perform-failed 26) (after-fifo-h2 response 200 whole held) (resend-kill-data response 200 whole 2) (resend-kill-file response 200 whole 2) (resend-refused-data response 200 whole 2) (resend-307-data response 200 whole 1) (resend-307-file response 200 whole 1) (resend-reset-file failed perform-failed 55 1))
+# of expected passes      72
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 72, fail 1, xpass 0): a suite needs a pass, and no fail or xpass
+exit 1
+=== tests/test-multipart.sps
+%%%% Starting test multipart
+test-multipart: timer swept a tick at a time to 512 ticks for make-curl-request, 512 for curl-request-check and 512 for curl-submit
+test-multipart: libcurl "8.20.0" measured ("8.20.0" (request-size . head-and-body) (after-grown-h1 response 200 unterminated) (after-shrunk-h1 failed perform-failed 26) (after-shrunk-none-h1 failed perform-failed 26) (after-removed-h1 failed perform-failed 26) (after-fifo-h1 response 200 whole held) (after-grown-h2 response 200 unterminated) (after-shrunk-h2 failed perform-failed 26) (after-removed-h2 failed perform-failed 26) (after-fifo-h2 response 200 whole held) (resend-kill-data response 200 whole 2) (resend-kill-file response 200 whole 2) (resend-refused-data response 200 whole 2) (resend-307-data response 200 whole 1) (resend-307-file response 200 whole 1) (resend-reset-file response 200 whole 2))
+# of expected passes      73
+exit 0

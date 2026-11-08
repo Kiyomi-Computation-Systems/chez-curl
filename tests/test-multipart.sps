@@ -818,10 +818,21 @@
 
 ;; --- the copies (the M8 plan, section 3.1; ADR-0039, amended 2026-11-07) --------------
 
+;; scratch-resolved : String
+;; What a relative path made in scratch resolves to: current-directory's
+;; answer there. On macOS that names /private/var where TMPDIR names /var,
+;; a symbolic link to it, so scratch's own name is not it (the Mac's run,
+;; 2026-11-07). Under a guard: a raise in an expected value kills the suite.
+(define scratch-resolved
+  (guard (e (#t "current-directory-refused"))
+    (parameterize ((current-directory scratch)) (current-directory))))
+
 (test-equal "curl-request-body answers a copy of a multipart body: fresh pairs, fresh name, filename, type and path strings, each path resolved, the data as given; a change to it reaches neither the request nor a second answer"
-  (list (list 'multipart (list "n" "data" 'filename "f.txt" 'type "t/x") (list "f" (list 'file file-a)))
+  (list (list 'multipart (list "n" "data" 'filename "f.txt" 'type "t/x")
+              (list "f" (list 'file (string-append scratch-resolved "/a.bin"))))
         'fresh-strings 'the-data-itself
-        (list 'multipart (list "n" "data" 'filename "f.txt" 'type "t/x") (list "f" (list 'file file-a))))
+        (list 'multipart (list "n" "data" 'filename "f.txt" 'type "t/x")
+              (list "f" (list 'file (string-append scratch-resolved "/a.bin")))))
   (guard (e (#t (list 'raised (describe e))))
     (let* ((data (string-copy "data"))
            (resolved (parameterize ((current-directory scratch))
@@ -1744,9 +1755,10 @@
 ;; rows : (Listof (Pair String (Listof (Pair Symbol Answer))))
 ;; Each libcurl's answer to every case, written out: the Linux libcurls'
 ;; measured through the engine by M8 slice 3's build, two runs each, 8.5.0
-;; with OpenSSL and with GnuTLS alike; Apple's 8.7.1's from the mime-files
-;; probe's run on the Mac (research/m8/mime-files/results/mac-8.7.1.log),
-;; over HTTP/1.1, where it measured them: the rest print on the Mac's run.
+;; with OpenSSL and with GnuTLS alike; Apple's 8.7.1's from this suite's two
+;; runs on the Mac, 2026-11-07 (research/m8/slice3/mac/), which agreed with
+;; the mime-files probe's run there over HTTP/1.1, and with each other but
+;; for the reset inside a large part, the race every lane holds.
 ;; An answer is the cell's, (one-of ANSWER ...) for a cell that races.
 (define rows
   '(("7.85.0"
@@ -1789,7 +1801,17 @@
      (after-shrunk-h1 . (failed perform-failed 26))
      (after-shrunk-none-h1 . (failed perform-failed 26))
      (after-removed-h1 . (failed perform-failed 26))
-     (after-fifo-h1 . (response 200 whole held)))
+     (after-fifo-h1 . (response 200 whole held))
+     (after-grown-h2 . (response 200 unterminated))
+     (after-shrunk-h2 . (failed perform-failed 26))
+     (after-removed-h2 . (failed perform-failed 26))
+     (after-fifo-h2 . (response 200 whole held))
+     (resend-kill-data . (response 200 whole 2))
+     (resend-kill-file . (response 200 whole 2))
+     (resend-refused-data . (response 200 whole 2))
+     (resend-307-data . (response 200 whole 1))
+     (resend-307-file . (response 200 whole 1))
+     (resend-reset-file . (one-of (response 200 whole 2) (failed perform-failed 55 1))))
     ("8.20.0"
      (request-size . head-and-body)
      (after-grown-h1 . (response 200 unterminated))

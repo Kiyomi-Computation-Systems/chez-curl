@@ -1591,3 +1591,11 @@ it should not be a comment. (chez-cmark-gfm)
   blocks", and failed on 3 though the entry was unchanged
   ([slice3 build](research/m8/slice3/build/), `more-with-probe.valgrind`). A check of one
   suppression reads that entry's own `used_suppression` line. (chez-curl, M8 slice 3)
+* **On macOS, `/var` is a symbolic link to `/private/var`, so a scratch directory has two
+  names.** `current-directory`, set to the directory `TMPDIR` named, answers the real one:
+  `test-multipart`'s accessor test built its expected path from the scratch directory's given
+  name, `/var/folders/...`, and the request, resolving against `current-directory`, held
+  `/private/var/folders/...`. It passed on every Linux lane and failed in both of the Mac's runs
+  ([slice3 mac](research/m8/slice3/mac/)). Pointing `TMPDIR` at a symbolic link reproduces it on
+  Linux (`linux-symlink-tmpdir.log`). A test of a resolved path takes its expectation from
+  `current-directory`'s own answer. (chez-curl, M8 slice 3)

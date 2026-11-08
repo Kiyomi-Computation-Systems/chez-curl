@@ -17,8 +17,11 @@ close-out under **Close-outs**, newest first.
   option (ADR-0039 and ADR-0023, amended 2026-11-07): `curl-request-body` answers a copy, and a
   relative path is refused at submit; a grown file, and a pseudo-file whose size is not its
   content, are documented by version; and `curl-request-with` takes a `url` key, through which the
-  high level builds each hop. It owes the Mac `make test`, `test-multipart` a second time for its
-  8.7.1 row, and `make check-variadic`, for `curl_formadd`.
+  high level builds each hop. The Mac ran it, 2026-11-07, at `424cb5b`
+  ([logs](research/m8/slice3/mac/)): `make check-variadic` passed all 37 steps on `tarm64osx`, the
+  `curl_formadd` use watched failing there; `make test` passed 42 of 43, and `test-multipart`, run
+  twice, filled its 8.7.1 row and failed one test of its own, which the macOS `/private/var`
+  symbolic link exposed, fixed and reproduced on Linux.
   - **Decided by the maintainer, 2026-11-06,** each the recommended option, from three read-only
     surveys and three probes on the five Linux libcurls ([`research/m8/`](research/m8/)):
     - the scope ([ADR-0038](decisions/0038-m8s-scope.md)): parts in memory and files by path; a
