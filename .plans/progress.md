@@ -17,8 +17,9 @@ close-out under **Close-outs**, newest first.
   ten examples and three suites; reviewed (Opus, read-only), no blocker and seven majors, each
   reproduced and fixed, and thirteen minors. The suites now fail on 9 of the review's 13 planted
   faults; a wrong type, a wrong "Raises", a wrong page and a fragment's wrong answer only a reading
-  of the code catches. The CI main chain passed in the container, 46 of 46. The Mac's `make test`
-  is owed before the pull request. The measurement's nine questions were the plan's design or the
+  of the code catches. The CI main chain passed in the container, 46 of 46, and the Mac's `make
+  test` at `ad0cfb0`, 46 of 46, the examples' 45 tests among them
+  ([log](research/m8/slice4/mac/mac-8.7.1-make-test.log)). The measurement's nine questions were the plan's design or the
   records', each taken as recommended (ADR-0038, amended 2026-11-08; the plan's §3.5 and §3.8
   corrected).
   - **Decided by the maintainer, 2026-11-06,** each the recommended option, from three read-only
