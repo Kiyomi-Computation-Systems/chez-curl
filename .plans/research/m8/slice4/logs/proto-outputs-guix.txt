@@ -1,0 +1,48 @@
+(begin params-and-form)
+GET /echo?q=chez+scheme&page=2 HTTP/1.1
+POST /echo HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+name=Ada+Lovelace&lang=Scheme
+(end params-and-form)
+(begin multipart)
+count=4
+part 0 headers=Content-Disposition: form-data; name="title" len=7 sha256=992b3299061eb2b2 pattern=bad@0 data=Holiday
+part 1 headers=Content-Disposition: form-data; name="notes"; filename="notes.txt"|Content-Type: text/plain len=2 sha256=8f434346648f6b96 pattern=bad@0 data=hi
+part 2 headers=Content-Disposition: form-data; name="doc"; filename="hello.txt"|Content-Type: text/plain len=12 sha256=b33f4304b9a6bd81 pattern=bad@0 data=hello, file\x0a
+part 3 headers=Content-Disposition: form-data; name="blob"|Content-Type: application/x-thing len=3 sha256=039058c6f2c0cb49 pattern=bad@0 data=\x01\x02\x03
+(end multipart)
+(begin retries)
+200 (302)
+200
+parts http method=GET cl=- te=- expect=- ct=- bytes=0 sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 boundary=- preamble=- closed=0 epilogue=- count=0
+
+seen 3
+
+(end retries)
+(begin cookies)
+200
+"127.0.0.1\tFALSE\t/\tFALSE\t0\tflavour\toat"
+Cookie: flavour=oat
+"127.0.0.1\tFALSE\t/\tFALSE\t0\tflavour\toat"
+"127.0.0.1\tFALSE\t/\tFALSE\t0\tsize\tlarge"
+(end cookies)
+(begin upload)
+200
+sink http method=PUT cl=300000 te=- expect=- ct=- bytes=300000 sha256=3c65ea93424a9c362fec0e3a69ea36031e8a358441479dd665cc6110eabe7b08 pattern=ok arrivals=5 gap=2.4@130981 seen=1
+method=PUT cl=300000 te=- bytes=300000 pattern=ok
+(end upload)
+(begin download)
+200
+1000000 bytes, pattern ok
+(end download)
+(begin group)
+(200 201 404)
+(202 203)
+(end group)
+(begin errors)
+404
+(timeout 200 #t)
+(too-large perform-failed)
+(http-version prior-knowledge-over-https)
+(end errors)
+status=0

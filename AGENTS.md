@@ -46,6 +46,12 @@
 * Add entries to `CHANGELOG.md` for each release
 * `/docs` is for user facing documentation only.
 * Documentation should be very concise, focused, to the point, ELI5 style.
+* Every export of `(curl)`, `(curl unsupported)` and `(http-client)` needs an
+  entry in `docs/reference.md` (`tests/test-reference.sps`). A Scheme block in
+  README.org or `docs/` is an example's text or a fragment, and a program's
+  output a run of its `examples/expected/` file (`tests/test-docs.sps`). An
+  example imports public libraries alone; `tests/example-runner.sps` prints
+  its counts (`tests/test-examples.sps`).
 * `Makefile` should have a `help` command which lists all of its commands
 * Libraries are R6RS `.sls`; libraries and programs contain their own code —
   no shared include bodies. R6RS forbids assigning an exported variable —

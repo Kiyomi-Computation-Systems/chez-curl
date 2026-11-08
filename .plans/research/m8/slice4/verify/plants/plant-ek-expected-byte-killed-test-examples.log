@@ -1,0 +1,10 @@
+%%%% Starting test examples
+FAIL examples/quick-start.sps, run 1 by tests/example-runner.sps against the origin's http base URL, exits 0, writes examples/expected/quick-start.out byte for byte, and on stderr one counts line, every count zero
+  expected: (0 "200\nstatus 201\n" "(counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))\n")
+  actual:   (0 "200\nstatus 200\n" "(counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))\n")
+FAIL examples/quick-start.sps, run 2 by tests/example-runner.sps against the origin's http base URL, exits 0, writes examples/expected/quick-start.out byte for byte, and on stderr one counts line, every count zero
+  expected: (0 "200\nstatus 201\n" "(counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))\n")
+  actual:   (0 "200\nstatus 200\n" "(counts ((block . 0) (easy . 0) (url . 0) (slist . 0) (curl-string . 0) (transfer . 0) (multi . 0) (share . 0) (mime . 0)))\n")
+# of expected passes      43
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 43, fail 2, xpass 0): a suite needs a pass, and no fail or xpass

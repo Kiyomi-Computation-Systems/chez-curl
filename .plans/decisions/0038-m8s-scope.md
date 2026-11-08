@@ -118,3 +118,16 @@ On `main` at `fbc6fce`:
   the probe, as M7's twins were.
 - **The docs keep the records' promises:** the plan lists the 45, and closes each one README.org
   does not keep today.
+
+## Amendment, 2026-11-08: where the docs keep the records' promises
+
+M8 slice 4 measured the docs' surface again on the merged slices
+([research/m8/slice4/](../research/m8/slice4/)): 194 exports, as before, and the records' 45
+promises with M8's 23 more. Eleven record lines name README.org as the place a thing is told:
+ADR-0009 (the hatch's `VERBOSE` and `NOPROGRESS`), ADR-0024 (the TLS variables), ADR-0030,
+ADR-0031 and ADR-0032 (the streams), and `global-constraints.md`'s TLS variables. Decision 3 moves
+those sections into `docs/`.
+
+**A record's "documented in README.org", or "the README says", is kept by the docs:** README.org
+or a page of `docs/` that README.org links. `** Requirements` stays in README.org, which
+`check-floors` holds (ADR-0016). The lines themselves are not rewritten.

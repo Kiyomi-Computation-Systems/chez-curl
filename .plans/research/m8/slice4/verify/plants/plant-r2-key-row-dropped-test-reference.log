@@ -1,0 +1,9 @@
+%%%% Starting test reference
+a procedure whose key tables leave out keys it takes, as (procedure keys):
+  ("make-curl-request" ("cookie-jar"))
+FAIL the entry of each procedure that takes keys holds a key table naming every key it takes
+  expected: ()
+  actual:   (("make-curl-request" ("cookie-jar")))
+# of expected passes      20
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 20, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

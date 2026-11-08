@@ -1,0 +1,14 @@
+%%%% Starting test reference
+exported, and docs/reference.md has no entry for:
+  ("(curl)" "curl-token-wait")
+FAIL every export of (curl), (curl unsupported) and (http-client) has an entry in docs/reference.md
+  expected: ()
+  actual:   (("(curl)" "curl-token-wait"))
+named by docs/reference.md, and exported by none of the three, as (name line):
+  ("curl-token-wait-x" 374)
+FAIL no entry names anything the three libraries do not export
+  expected: ()
+  actual:   (("curl-token-wait-x" 374))
+# of expected passes      19
+# of unexpected failures  2
+suite-exit-status: exit 1 (pass 19, fail 2, xpass 0): a suite needs a pass, and no fail or xpass

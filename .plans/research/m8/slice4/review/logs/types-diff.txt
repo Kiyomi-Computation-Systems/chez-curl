@@ -1,0 +1,43 @@
+DIFFERS curl-connect-error?
+   ref: Any -> Boolean
+   src: Any -> Boolean 5, 6, 7, 45, 96, 97
+DIFFERS curl-head-headers
+   ref: Head -> Headers
+   src: Head -> (Listof (Pairof String String))
+   src: Head -> (Listof (Pairof String String))
+DIFFERS curl-protocol-error?
+   ref: Any -> Boolean
+   src: Any -> Boolean 1, 8, 16, 61, 92, 95
+DIFFERS curl-request-headers
+   ref: Request -> Headers
+   src: Request -> (Listof (Pairof String String))
+   src: Request -> (Listof (Pairof String String))
+DIFFERS curl-response-headers
+   ref: Response -> Headers
+   src: Response -> (Listof (Pairof String String))
+   src: Response -> (Listof (Pairof String String))
+DIFFERS curl-send-receive-error?
+   ref: Any -> Boolean
+   src: Any -> Boolean 18, 52, 55, 56
+DIFFERS curl-timeout?
+   ref: Any -> Boolean
+   src: Any -> Boolean 28
+DIFFERS curl-tls-error?
+   ref: Any -> Boolean
+   src: Any -> Boolean 35, 53, 54, 58, 59, 60, 64, 66,
+DIFFERS curl-too-large?
+   ref: Any -> Boolean
+   src: Any -> Boolean 63, 100, the body limit and the header cap
+DIFFERS go
+   ref: Symbol String Any ... -> Pending
+   src: Symbol String Any ... -> Pending (go METHOD URL KEY VALUE ...): starts a call, as http-request takes
+NO-SIG  http-delete : Session String Any ... -> Response
+NO-SIG  http-get : Session String Any ... -> Response
+NO-SIG  http-head : Session String Any ... -> Response
+NO-SIG  http-patch : Session String Any ... -> Response
+NO-SIG  http-post : Session String Any ... -> Response
+NO-SIG  http-put : Session String Any ... -> Response
+DIFFERS http-response-headers
+   ref: Response -> Headers
+   src: Response -> (Listof (Pairof String String))
+   src: Response -> (Listof (Pairof String String))

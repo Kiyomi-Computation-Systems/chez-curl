@@ -1,0 +1,225 @@
+=== build/verify/current/curl-7.85.0/lib/mime.c (sha256 0c1a37189eda7fbd)
+1714:const char *Curl_mime_contenttype(const char *filename)
+1715-{
+1716-  /*
+1717-   * If no content type was specified, we scan through a few well-known
+1718-   * extensions and pick the first we match!
+1719-   */
+1720-  struct ContentType {
+1721-    const char *extension;
+1722-    const char *type;
+1723-  };
+1724-  static const struct ContentType ctts[] = {
+1725-    {".gif",  "image/gif"},
+1726-    {".jpg",  "image/jpeg"},
+1727-    {".jpeg", "image/jpeg"},
+1728-    {".png",  "image/png"},
+1729-    {".svg",  "image/svg+xml"},
+1730-    {".txt",  "text/plain"},
+1731-    {".htm",  "text/html"},
+1732-    {".html", "text/html"},
+1733-    {".pdf",  "application/pdf"},
+1734-    {".xml",  "application/xml"}
+1735-  };
+1736-
+1737-  if(filename) {
+1738-    size_t len1 = strlen(filename);
+1739-    const char *nameend = filename + len1;
+1740-    unsigned int i;
+1741-
+1742-    for(i = 0; i < sizeof(ctts) / sizeof(ctts[0]); i++) {
+1743-      size_t len2 = strlen(ctts[i].extension);
+1744-
+1745-      if(len1 >= len2 && strcasecompare(nameend - len2, ctts[i].extension))
+1746-          return ctts[i].type;
+1747-    }
+1748-  }
+1801:      contenttype = Curl_mime_contenttype(part->filename);
+1803:        contenttype = Curl_mime_contenttype(part->data);
+1805:        contenttype = FILE_CONTENTTYPE_DEFAULT;
+1808:      contenttype = Curl_mime_contenttype(part->filename);
+1819:          content_type_match(contenttype, STRCONST("text/plain")))
+1820:    if(strategy == MIMESTRATEGY_MAIL || !part->filename)
+39:#define FILE_CONTENTTYPE_DEFAULT        "application/octet-stream"
+
+=== build/m7s4r/src/curl-8.5.0/lib/mime.c (sha256 3fd876c7c88b366a)
+1706:const char *Curl_mime_contenttype(const char *filename)
+1707-{
+1708-  /*
+1709-   * If no content type was specified, we scan through a few well-known
+1710-   * extensions and pick the first we match!
+1711-   */
+1712-  struct ContentType {
+1713-    const char *extension;
+1714-    const char *type;
+1715-  };
+1716-  static const struct ContentType ctts[] = {
+1717-    {".gif",  "image/gif"},
+1718-    {".jpg",  "image/jpeg"},
+1719-    {".jpeg", "image/jpeg"},
+1720-    {".png",  "image/png"},
+1721-    {".svg",  "image/svg+xml"},
+1722-    {".txt",  "text/plain"},
+1723-    {".htm",  "text/html"},
+1724-    {".html", "text/html"},
+1725-    {".pdf",  "application/pdf"},
+1726-    {".xml",  "application/xml"}
+1727-  };
+1728-
+1729-  if(filename) {
+1730-    size_t len1 = strlen(filename);
+1731-    const char *nameend = filename + len1;
+1732-    unsigned int i;
+1733-
+1734-    for(i = 0; i < sizeof(ctts) / sizeof(ctts[0]); i++) {
+1735-      size_t len2 = strlen(ctts[i].extension);
+1736-
+1737-      if(len1 >= len2 && strcasecompare(nameend - len2, ctts[i].extension))
+1738-        return ctts[i].type;
+1739-    }
+1740-  }
+1794:      contenttype = Curl_mime_contenttype(part->filename);
+1796:        contenttype = Curl_mime_contenttype(part->data);
+1798:        contenttype = FILE_CONTENTTYPE_DEFAULT;
+1801:      contenttype = Curl_mime_contenttype(part->filename);
+1812:          content_type_match(contenttype, STRCONST("text/plain")))
+1813:    if(strategy == MIMESTRATEGY_MAIL || !part->filename)
+39:#define FILE_CONTENTTYPE_DEFAULT        "application/octet-stream"
+
+=== build/m4s3/src/curl-8.7.1/lib/mime.c (sha256 ebac7e0a0a2c23b4)
+1704:const char *Curl_mime_contenttype(const char *filename)
+1705-{
+1706-  /*
+1707-   * If no content type was specified, we scan through a few well-known
+1708-   * extensions and pick the first we match!
+1709-   */
+1710-  struct ContentType {
+1711-    const char *extension;
+1712-    const char *type;
+1713-  };
+1714-  static const struct ContentType ctts[] = {
+1715-    {".gif",  "image/gif"},
+1716-    {".jpg",  "image/jpeg"},
+1717-    {".jpeg", "image/jpeg"},
+1718-    {".png",  "image/png"},
+1719-    {".svg",  "image/svg+xml"},
+1720-    {".txt",  "text/plain"},
+1721-    {".htm",  "text/html"},
+1722-    {".html", "text/html"},
+1723-    {".pdf",  "application/pdf"},
+1724-    {".xml",  "application/xml"}
+1725-  };
+1726-
+1727-  if(filename) {
+1728-    size_t len1 = strlen(filename);
+1729-    const char *nameend = filename + len1;
+1730-    unsigned int i;
+1731-
+1732-    for(i = 0; i < sizeof(ctts) / sizeof(ctts[0]); i++) {
+1733-      size_t len2 = strlen(ctts[i].extension);
+1734-
+1735-      if(len1 >= len2 && strcasecompare(nameend - len2, ctts[i].extension))
+1736-        return ctts[i].type;
+1737-    }
+1738-  }
+1792:      contenttype = Curl_mime_contenttype(part->filename);
+1794:        contenttype = Curl_mime_contenttype(part->data);
+1796:        contenttype = FILE_CONTENTTYPE_DEFAULT;
+1799:      contenttype = Curl_mime_contenttype(part->filename);
+1810:          content_type_match(contenttype, STRCONST("text/plain")))
+1811:    if(strategy == MIMESTRATEGY_MAIL || !part->filename)
+39:#define FILE_CONTENTTYPE_DEFAULT        "application/octet-stream"
+
+=== build/verify/current/curl-8.20.0/lib/mime.c (sha256 2ddda44fe386243a)
+1641:const char *Curl_mime_contenttype(const char *filename)
+1642-{
+1643-  /*
+1644-   * If no content type was specified, we scan through a few well-known
+1645-   * extensions and pick the first we match!
+1646-   */
+1647-  struct ContentType {
+1648-    const char *extension;
+1649-    const char *type;
+1650-  };
+1651-  static const struct ContentType ctts[] = {
+1652-    { ".gif",  "image/gif" },
+1653-    { ".jpg",  "image/jpeg" },
+1654-    { ".jpeg", "image/jpeg" },
+1655-    { ".png",  "image/png" },
+1656-    { ".svg",  "image/svg+xml" },
+1657-    { ".txt",  "text/plain" },
+1658-    { ".htm",  "text/html" },
+1659-    { ".html", "text/html" },
+1660-    { ".pdf",  "application/pdf" },
+1661-    { ".xml",  "application/xml" }
+1662-  };
+1663-
+1664-  if(filename) {
+1665-    size_t len1 = strlen(filename);
+1666-    const char *nameend = filename + len1;
+1667-    unsigned int i;
+1668-
+1669-    for(i = 0; i < CURL_ARRAYSIZE(ctts); i++) {
+1670-      size_t len2 = strlen(ctts[i].extension);
+1671-
+1672-      if(len1 >= len2 && curl_strequal(nameend - len2, ctts[i].extension))
+1673-        return ctts[i].type;
+1674-    }
+1675-  }
+1729:      contenttype = Curl_mime_contenttype(part->filename);
+1731:        contenttype = Curl_mime_contenttype(part->data);
+1733:        contenttype = FILE_CONTENTTYPE_DEFAULT;
+1736:      contenttype = Curl_mime_contenttype(part->filename);
+1747:          content_type_match(contenttype, STRCONST("text/plain")))
+1748:    if(strategy == MIMESTRATEGY_MAIL || !part->filename)
+38:#define FILE_CONTENTTYPE_DEFAULT        "application/octet-stream"
+
+=== build/verify/current/curl-8.23.0/lib/mime.c (sha256 651178f1a2540727)
+1683:const char *Curl_mime_contenttype(const char *filename)
+1684-{
+1685-  /*
+1686-   * If no content type was specified, we scan through a few well-known
+1687-   * extensions and pick the first we match!
+1688-   */
+1689-  struct ContentType {
+1690-    const char *extension;
+1691-    const char *type;
+1692-  };
+1693-  static const struct ContentType ctts[] = {
+1694-    { ".gif",  "image/gif" },
+1695-    { ".jpg",  "image/jpeg" },
+1696-    { ".jpeg", "image/jpeg" },
+1697-    { ".png",  "image/png" },
+1698-    { ".svg",  "image/svg+xml" },
+1699-    { ".txt",  "text/plain" },
+1700-    { ".htm",  "text/html" },
+1701-    { ".html", "text/html" },
+1702-    { ".pdf",  "application/pdf" },
+1703-    { ".xml",  "application/xml" }
+1704-  };
+1705-
+1706-  if(filename) {
+1707-    size_t len1 = strlen(filename);
+1708-    const char *nameend = filename + len1;
+1709-    unsigned int i;
+1710-
+1711-    for(i = 0; i < CURL_ARRAYSIZE(ctts); i++) {
+1712-      size_t len2 = strlen(ctts[i].extension);
+1713-
+1714-      if(len1 >= len2 && curl_strequal(nameend - len2, ctts[i].extension))
+1715-        return ctts[i].type;
+1716-    }
+1717-  }
+1833:      contenttype = Curl_mime_contenttype(part->filename);
+1835:        contenttype = Curl_mime_contenttype(part->data);
+1837:        contenttype = FILE_CONTENTTYPE_DEFAULT;
+1840:      contenttype = Curl_mime_contenttype(part->filename);
+1851:          content_type_match(contenttype, STRCONST("text/plain")) &&
+1852:          (strategy == MIMESTRATEGY_MAIL || !part->filename))
+38:#define FILE_CONTENTTYPE_DEFAULT        "application/octet-stream"
+
+f6b80a62ab11be4cc44b6ffbf817d934  build/verify/current/curl-7.85.0 ctts 1725-1734
+f6b80a62ab11be4cc44b6ffbf817d934  build/m7s4r/src/curl-8.5.0 ctts 1717-1726
+f6b80a62ab11be4cc44b6ffbf817d934  build/m4s3/src/curl-8.7.1 ctts 1715-1724
+f6b80a62ab11be4cc44b6ffbf817d934  build/verify/current/curl-8.20.0 ctts 1652-1661
+f6b80a62ab11be4cc44b6ffbf817d934  build/verify/current/curl-8.23.0 ctts 1694-1703

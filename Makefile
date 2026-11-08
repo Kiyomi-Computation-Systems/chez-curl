@@ -88,6 +88,7 @@ MEMORY_SUITES_1 := \
   tests/test-conditions.sps \
   tests/test-drift.sps \
   tests/test-engine.sps \
+  tests/test-examples.sps \
   tests/test-group.sps \
   tests/test-http-client.sps \
   tests/test-load-state.sps \
@@ -110,12 +111,14 @@ MEMORY_SUITES_2 := \
   tests/test-cookies.sps \
   tests/test-curl-testing.sps \
   tests/test-discovery.sps \
+  tests/test-docs.sps \
   tests/test-headers.sps \
   tests/test-library-loading.sps \
   tests/test-mailbox.sps \
   tests/test-memory-safety.sps \
   tests/test-native.sps \
   tests/test-proxy.sps \
+  tests/test-reference.sps \
   tests/test-require-threaded.sps \
   tests/test-stream-call.sps \
   tests/test-stream.sps \

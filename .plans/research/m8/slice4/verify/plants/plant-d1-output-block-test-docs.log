@@ -1,0 +1,9 @@
+%%%% Starting test docs
+an output block that is no run of its file's lines, as (page line path):
+  ("docs/errors.md" 29 "examples/expected/errors.out")
+FAIL every output block is a run of its expected file's whole, consecutive lines, byte for byte
+  expected: ()
+  actual:   (("docs/errors.md" 29 "examples/expected/errors.out"))
+# of expected passes      41
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 41, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

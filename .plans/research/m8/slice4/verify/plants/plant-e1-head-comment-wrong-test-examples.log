@@ -1,0 +1,7 @@
+%%%% Starting test examples
+FAIL examples/quick-start.sps's head comment holds one run line, the pages' form, naming itself: ;;;   scheme --libdirs src --program examples/quick-start.sps URL
+  expected: (";;;   scheme --libdirs src --program examples/quick-start.sps URL")
+  actual:   (";;;   scheme --program examples/quick-start.sps")
+# of expected passes      44
+# of unexpected failures  1
+suite-exit-status: exit 1 (pass 44, fail 1, xpass 0): a suite needs a pass, and no fail or xpass

@@ -75,7 +75,7 @@
    curl-wrong-thread-who curl-wrong-thread-expected curl-wrong-thread-actual
 
    ;; --- the request (ADR-0023) ---------------------------------------------
-   ;; make-curl-request : String Symbol Any ... -> Request
+   ;; make-curl-request : String Any ... -> Request
    ;; (make-curl-request URL KEY VALUE ...): a request for URL, http:// or
    ;; https://, with these keys, each once at most, each left out taking its
    ;; default, libcurl's own:
@@ -196,7 +196,7 @@
    ;; prior-knowledge-through-proxy, and an https:// URL through an https://
    ;; proxy URL where TLS inside TLS stalls, Ubuntu's 8.5.0 with GnuTLS and
    ;; 7.85.0 unless http/1.1 is asked, as proxy-tls-in-tls.
-   ;; curl-request-with : Request Symbol Any ... -> Request
+   ;; curl-request-with : Request Any ... -> Request
    ;; A new request, with the keys given replaced and the rest kept. It
    ;; takes make-curl-request's keys, and url, a new URL, checked as
    ;; make-curl-request checks its first argument, its refusals naming
@@ -205,7 +205,7 @@
    ;; holds it, its files not stat'd again; a submit stats them.
    ;; curl-request? : Any -> Boolean
    ;; curl-request-url : Request -> String
-   ;; curl-request-method : Request -> Symbol
+   ;; curl-request-method : Request -> (U 'get 'head 'post 'put 'patch 'delete)
    ;; curl-request-headers : Request -> (Listof (Pairof String String))
    ;; curl-request-body : Request -> (U Bytevector 'stream Multipart #f)
    ;;   a multipart body as a copy, fresh pairs and metadata strings, its
@@ -334,12 +334,13 @@
    ;; #HttpOnly_ before an HttpOnly cookie's domain, in libcurl's order,
    ;; which moves: compare them sorted. By version some are lines a load
    ;; refuses: 7.85.0 lists a tab in a name, a value or a server's Path as
-   ;; eight fields; 7.85.0 and 8.5.0 a server's Path=, Path=TRUE, Path=FALSE
-   ;; or a path that is not absolute as given; and 7.85.0, 8.20.0 and 8.23.0
-   ;; a server's cookie whose name starts __Secure- or __Host- in another
-   ;; case than the prefix's own, beside fields the prefix does not allow,
-   ;; which 8.5.0 drops. 7.85.0 and 8.5.0 list a deleted cookie, with expiry
-   ;; 1, and a loaded one whose expiry has passed, until a cookie is added.
+   ;; eight fields; 7.85.0, 8.5.0 and 8.7.1 a server's Path=, Path=TRUE,
+   ;; Path=FALSE or a path that is not absolute as given; and 7.85.0, 8.20.0
+   ;; and 8.23.0 a server's cookie whose name starts __Secure- or __Host- in
+   ;; another case than the prefix's own, beside fields the prefix does not
+   ;; allow, which 8.5.0 and 8.7.1 drop. 7.85.0, 8.5.0 and 8.7.1 list a
+   ;; deleted cookie, with expiry 1, and a loaded one whose expiry has
+   ;; passed, until a cookie is added.
    ;; curl-cookie-jar-load! : Jar (Listof String) -> Void
    ;; Loads the lines, in order, once every one is checked: one not in the
    ;; form a read-out writes is refused, &curl-request-error cookie-line,
@@ -540,7 +541,7 @@
    ;; curl-tls-error? : Any -> Boolean          35, 53, 54, 58, 59, 60, 64, 66,
    ;;                                           77, 80, 82, 83, 90, 91, 98, 101
    ;; curl-protocol-error? : Any -> Boolean     1, 8, 16, 61, 92, 95
-   ;; curl-too-large? : Any -> Boolean          63, 100, and the body limit
+   ;; curl-too-large? : Any -> Boolean          63, 100, the body limit and the header cap
    &curl-timeout curl-timeout? &curl-connect-error curl-connect-error?
    &curl-send-receive-error curl-send-receive-error? &curl-tls-error curl-tls-error?
    &curl-protocol-error curl-protocol-error? &curl-too-large curl-too-large?

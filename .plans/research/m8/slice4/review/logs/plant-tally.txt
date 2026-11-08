@@ -1,0 +1,19 @@
+plant-control-test-docs: FAIL lines 0; exit 0
+plant-control-test-examples: FAIL lines 0; exit 0
+plant-control-test-reference: FAIL lines 0; exit 0
+plant-d1-output-block-test-docs: FAIL lines 0; exit 0
+plant-d2-fragment-wrong-name-test-docs: FAIL lines 0; exit 0
+plant-d3-fragment-wrong-answer-test-docs: FAIL lines 0; exit 0
+plant-d4-anchor-gone-test-docs: FAIL lines 0; exit 0
+plant-d5-prose-no-such-export-test-docs: FAIL lines 0; exit 0
+plant-d6-slice-and-adr-history-test-docs: FAIL lines 0; exit 0
+plant-d7-readme-drops-a-page-test-docs: FAIL lines 0; exit 0
+plant-d8-index-example-table-wrong-test-docs: FAIL lines 0; exit 0
+plant-dk-adr-killed-test-docs: FAIL lines 1; suite-exit-status: exit 1
+plant-e1-head-comment-wrong-test-examples: FAIL lines 0; exit 0
+plant-ek-expected-byte-killed-test-examples: FAIL lines 1; suite-exit-status: exit 1
+plant-r1-type-wrong-test-reference: FAIL lines 0; exit 0
+plant-r2-key-row-dropped-test-reference: FAIL lines 0; exit 0
+plant-r3-raises-nothing-test-reference: FAIL lines 0; exit 0
+plant-r4-wrong-page-test-reference: FAIL lines 0; exit 0
+plant-rk-entry-dropped-killed-test-reference: FAIL lines 2; suite-exit-status: exit 1
